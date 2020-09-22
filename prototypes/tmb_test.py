@@ -3,7 +3,7 @@
 import os
 import unittest
 
-from tmb import find_tmb
+from prototypes.tmb import find_tmb
 
 class TestSampleMetrics(unittest.TestCase):
 
