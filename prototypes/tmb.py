@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 # This script will calculate TMB given a MAF File, and TMB percentile
+import json
 import pandas as pd
 from statsmodels.distributions.empirical_distribution import ECDF
 import sys
@@ -17,7 +18,12 @@ def find_tmb(maf_path, bed_path, tcga_path, cancer_type):
     tmb = len(maf.loc[maf["Variant_Classification"].isin(keep)]) / target_space
     tcga_pct = ECDF(tcga.tcgaTMB)(tmb)
     cohort_pct = ECDF(tcga_cohort.cohortTMB)(tmb)
-    return tmb, tcga_pct, cohort_pct
+    tcga_tmb = tcga.tcgaTMB
+    tcga_cohort_tmb = tcga_cohort.cohortTMB
+    return tmb, tcga_pct, cohort_pct, tcga_tmb, tcga_cohort_tmb
 
 if __name__ == "__main__":
-    print(find_tmb(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]))
+    results = find_tmb(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+    [tmb, tcga_pct, cohort_pct, tcga_tmb, tcga_cohort_tmb] = results
+    json_data = [tmb, tcga_pct, cohort_pct, tcga_tmb.to_dict(), tcga_cohort_tmb.to_dict()]
+    print(json.dumps(json_data, indent=4, sort_keys=True))
