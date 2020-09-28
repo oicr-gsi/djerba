@@ -12,9 +12,9 @@ Reporting formats supported by Janus include:
 
 ## Development plan
 
-Janus development originated with the [cbioportal_tools](https://github.com/oicr-gsi/cbioportal_tools) project, which included creation of data folders for cBioPortal.
+Djerba development originated with the [cbioportal_tools](https://github.com/oicr-gsi/cbioportal_tools) project (also known as Janus). This included creation of data folders for cBioPortal.
 
-As of September 2020, the scope of Janus has been expanded to include ShinyReport. Relevant code from `cbioportal_tools` will be ported to the `janus` repository. Meanwhile, additional code will be developed to handle output for ShinyReport.
+As of September 2020, the scope of Djerba has been expanded to include ShinyReport. Relevant code from `cbioportal_tools` will be ported to the `djerba` repository. Meanwhile, additional code will be developed to handle output for ShinyReport.
 
 ## Copyright and License
 
