@@ -1,10 +1,10 @@
-# janus
+# djerba
 
 Create reports from metadata and workflow output
 
 ## Introduction
 
-Janus is named for the Roman god of doorways and transitions. It acts as a gateway between pipeline workflows and standard reporting formats.
+Djerba is named for an [island](https://en.wikipedia.org/wiki/Djerba) off the coast of North Africa. It acts as a gateway between pipeline workflows and standard reporting formats.
 
 Reporting formats supported by Janus include:
 - JSON data structure for the OICR [ShinyReport](https://github.com/oicr-gsi/ShinyReport)
