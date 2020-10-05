@@ -1,0 +1,34 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://github.com/oicr-gsi/djerba/TODO_add_rest_of_identifier",
+    "type": "object",
+    "properties":
+    {
+	"study_meta": {
+	    "type": "object"
+	},
+	"cancer_type": {
+	    "type": "object"
+	},
+	"case_lists": {
+	    "type": "array"
+	},
+	"samples_meta": {
+	    "type": "object"
+	},
+	"samples": {
+	    "type": "array"
+	},
+	"genetic_alterations": {
+	    "type": "array"
+	}
+    },
+    "required": [
+	"study_meta",
+	"cancer_type",
+	"case_lists",
+	"samples_meta",
+	"samples",
+	"genetic_alterations"
+    ]
+}

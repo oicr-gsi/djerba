@@ -1,0 +1,553 @@
+ABBREVIATION,NAME,COLOUR
+mychs,Myxoid Chondrosarcoma,White
+unec,Uterine Neuroendocrine Carcinoma,PeachPuff
+tcca,Choriocarcinoma,Red
+ptpr,Papillary Tumor of the Pineal Region,Gray
+biliary_tract,Biliary Tract,Green
+ustad,Undifferentiated Stomach Adenocarcinoma,LightSkyBlue
+uccc,Uterine Clear Cell Carcinoma,PeachPuff
+breast,Breast,HotPink
+ucca,Choriocarcinoma,PeachPuff
+ansc,Anal Squamous Cell Carcinoma,SaddleBrown
+hccihch,Hepatocellular Carcinoma plus Intrahepatic Cholangiocarcinoma,MediumSeaGreen
+sbmov,Serous Borderline Ovarian Tumor Micropapillary,LightBlue
+lihb,Hepatoblastoma,MediumSeaGreen
+acrm,Acral Melanoma,Black
+blad,Bladder Adenocarcinoma,Yellow
+ogct,Ovarian Germ Cell Tumor,LightBlue
+istad,Intestinal Type Stomach Adenocarcinoma,LightSkyBlue
+gist,Gastrointestinal Stromal Tumor,LightYellow
+df,Dermatofibroma,Black
+ilc,Breast Invasive Lobular Carcinoma,HotPink
+dlbcl,Diffuse Large B-Cell Lymphoma,LimeGreen
+poro,Poroma/Acrospiroma,Black
+umec,Uterine Mixed Endometrial Carcinoma,PeachPuff
+gctb,Giant Cell Tumor of Bone,White
+stsc,Small Cell Carcinoma of the Stomach,LightSkyBlue
+mrls,Myxoid/Round-Cell Liposarcoma,LightYellow
+gej,Adenocarcinoma of the Gastroesophageal Junction,LightSkyBlue
+imt,Inflammatory Myofibroblastic Tumor,LightYellow
+ebov,Endometrioid Borderlin Ovarian Tumor,LightBlue
+nsgct,Non-Seminomatous Germ Cell Tumor,Red
+es,Ewing Sarcoma,White
+uterine sarcoma,Uterine Sarcoma,PeachPuff
+thyc,Thymic Carcinoma,Purple
+osos,Osteoblastic Osteosarcoma,White
+gb,Glioblastoma,Gray
+mlym,Malignant Lymphoma,Gray
+oec,Embryonal Carcinoma,LightBlue
+leukemia,Leukemia,LightSalmon
+acpg,Craniopharyngioma Adamantinomatous Type,Gray
+occa,Choriocarcinoma,LightBlue
+gsarc,Gliosarcoma,Gray
+cevg,Villoglandular Carcinoma,Teal
+fl,Follicular Lymphoma,LimeGreen
+hgnet,High-grade Neuroepithelial Tumor,Gray
+tnkl,T-Cell and Natural Killer Lymphoma,LimeGreen
+sccnos,Squamous Cell Carcinoma NOS,Black
+cup,Cancer of Unknown Primary,Black
+ousarc,Uterine Sarcoma Other,PeachPuff
+phc,Pheochromocytoma,Purple
+prscc,Prostate Small Cell Carcinoma,Cyan
+acpp,Atypical Choroid Plexus Papilloma,Gray
+atm,Atypical Meningioma,Gray
+hgnec,High Grade Neuroendocrine Carcinoma of the Colon and Rectum,SaddleBrown
+odg,Oligodendroglioma,Gray
+ogbl,Gonadoblastoma,LightBlue
+phm,Partial Hydatidiform Mole,PeachPuff
+mbov,Mucinous Borderline Ovarian Tumor,LightBlue
+sbov,Serous Borderline Ovarian Tumor,LightBlue
+paac,Acinar Cell Carcinoma of the Pancreas,Purple
+paad,Pancreatic Adenocarcinoma,Purple
+pcgp,Craniopharyngioma Papillary Type,Gray
+pecoma,Perivascular Epithelioid Cell Tumor,LightYellow
+myf,Myelofibrosis/Osteomyelofibrosis,LightSalmon
+peos,Periosteal Osteosarcoma,White
+cervix,Cervix,Teal
+ovary,Ovary,LightBlue
+ihm,Invasive Hydatidiform Mole,PeachPuff
+glioma,Glioma,Gray
+pptid,Pineal Parenchymal Tumor of Intermediate Differentiation,Gray
+mixed,Mixed Cancer Types,Black
+clnc,Cerebellar Liponeurocytoma,Gray
+ampulla_of_vater,Ampulla of Vater,Purple
+upecoma,Uterine Perivascular Epithelioid Cell Tumor,PeachPuff
+mzl,Marginal Zone Lymphoma,LimeGreen
+ucec,Endometrial Carcinoma,PeachPuff
+pma,Pilomyxoid Astrocytoma,Gray
+thym,Thymoma,Purple
+rms,Rhabdomyosarcoma,LightYellow
+icemu,Intestinal Type Mucinous Carcinoma,Teal
+fios,Fibroblastic Osteosarcoma,White
+liver,Liver,MediumSeaGreen
+aluca,Atypical Lung Carcinoid,Gainsboro
+dstad,Diffuse Type Stomach Adenocarcinoma,LightSkyBlue
+uscc,Urethral Squamous Cell Carcinoma,Yellow
+lcis,Breast Lobular Carcinoma In Situ,HotPink
+omgct,Mixed Germ Cell Tumor,LightBlue
+ccbov,Clear Cell Borderline Ovarian Tumor,LightBlue
+nerve sheath tumor,Nerve Sheath Tumor,Gray
+adpa,Aggressive Digital Papillary Adenocarcinoma,Black
+bl,Burkitt Lymphoma,LimeGreen
+amol,Acute Monocytic Leukemia,LightSalmon
+snsc,Sinonasal Squamous Cell Carcinoma,DarkRed
+panet,Pancreatic Neuroendocrine Tumor,Purple
+apad,Appendiceal Adenocarcinoma,SaddleBrown
+spir,Spiroma/Spiradenoma,Black
+selt,Sellar Tumor,Gray
+masc,Metaplastic Adenosquamous Carcinoma,HotPink
+vcca,Choriocarcinoma,Purple
+ddchs,Dedifferentiated Chondrosarcoma,White
+cesc,Cervical Squamous Cell Carcinoma,Teal
+brca,Invasive Breast Carcinoma,HotPink
+aastr,Anaplastic Astrocytoma,Gray
+cese,Cervical Serous Carcinoma,Teal
+mgct,Mixed Germ Cell Tumor,Red
+myec,Myoepithelial Carcinoma,DarkRed
+umlms,Uterine Myxoid Leiomyosarcoma,PeachPuff
+atrt,Atypical Teratoid/Rhabdoid Tumor,Gray
+cm,Conjunctival Melanoma,Green
+eye,Eye,Green
+peritoneum,Peritoneum,Green
+mpnst,Malignant Peripheral Nerve Sheath Tumor,Gray
+lclc,Large Cell Lung Carcinoma,Gainsboro
+asps,Alveolar Soft Part Sarcoma,LightYellow
+idc,Breast Invasive Ductal Carcinoma,HotPink
+mft,Malignant Fibrothecoma,LightBlue
+cabc,Cervival Adenoid Basal Carcinoma,Teal
+mfs,Myxofibrosarcoma,LightYellow
+mschw,Melanotic Schwannoma,Gray
+slct,Sertoli-Leydig Cell Tumor,LightBlue
+nccrcc,Renal Non-Clear Cell Carcinoma,Orange
+dcis,Breast Ductal Carcinoma In Situ,HotPink
+cscc,Cutaneous Squamous Cell Carcinoma,Black
+mfh,Undifferentiated Pleomorphic Sarcoma/Malignant Fibrous Histiocytoma/High Grade Spindle Cell Sarcoma,LightYellow
+ovarian cancer,Ovarian Cancer,LightBlue
+past,Pilocytic Astrocytoma,Gray
+oyst,Yolk Sac Tumor,LightBlue
+blsc,Bladder Squamous Cell Carcinoma,Yellow
+cacc,Cervival Adenoid Cystic Carcinoma,Teal
+thap,Anaplastic Thyroid Cancer,Teal
+oimt,Immature Teratoma,LightBlue
+mm,Multiple Myeloma,LightSalmon
+vyst,Yolk Sac Tumor,Purple
+mp,Molar Pregnancy,PeachPuff
+chbl,Chondroblastoma,White
+epis,Epitheloid Sarcoma,LightYellow
+mt,Malignant Tumor,Gray
+prcc,Papillary Renal Cell Carcinoma,Orange
+rlclc,Large Cell Lung Carcinoma With Rhabdoid Phenotype,Gainsboro
+pscc,Penile Squamous Cell Carcinoma,Blue
+lgfms,Low-Grade Fibromyxoid Sarcoma,LightYellow
+ints,Intimal Sarcoma,LightYellow
+cchdm,Conventional Type Chordoma,White
+blood,Blood,LightSalmon
+plrms,Pleomorphic Rhabdomyosarcoma,LightYellow
+mds,Myelodysplasia,LightSalmon
+mmbl,Melanotic Medulloblastoma,Gray
+nhl,Non-Hodgkin’s Lymphoma,LimeGreen
+hgess,High Grade Endometrial Stromal Sarcoma,PeachPuff
+thymus,Thymus,Purple
+mmbc,Mixed Type Metaplastic Breast Cancer,HotPink
+om,Ocular Melanoma,Green
+uec,Uterine Endometrioid Carcinoma,PeachPuff
+cclc,Clear Cell Carcinoma of the Lung,Gainsboro
+liad,Hepatocellular Adenoma,MediumSeaGreen
+etantr,Embryonal Tumor with Abundant Neuropil and True Rosettes,Gray
+egc,Esophagogastric Adenocarcinoma,LightSkyBlue
+encg,Encapsulated Glioma,Gray
+lias,Liver Angiosarcoma,MediumSeaGreen
+sgttl,Salivary Gland–Type Tumor of the Lung,Gainsboro
+fibs,Fibrosarcoma,LightYellow
+prostate,Prostate,Cyan
+ucs,Uterine Carcinosarcoma/Uterine Malignant Mixed Mullerian Tumor,PeachPuff
+soft_tissue,Soft Tissue,LightYellow
+os,Osteosarcoma,White
+armm,Anorectal Mucosal Melanoma,SaddleBrown
+vmgct,Mixed Germ Cell Tumor,Purple
+arms,Alveolar Rhabdomyosarcoma,LightYellow
+empsgc,Endocrine Mucin Producing Sweat Gland Carcinoma,Black
+mel,Melanoma,Black
+rhm,Rhabdoid Meningioma,Gray
+lusc,Lung Squamous Cell Carcinoma,Gainsboro
+prad,Prostate Adenocarcinoma,Cyan
+pd,Paget Disease of the Nipple,HotPink
+coad,Colon Adenocarcinoma,SaddleBrown
+leuk,Leukemia,LightSalmon
+btbeov,Brenner Tumor Benign,LightBlue
+pleura,Pleura,Blue
+nbl,Neuroblastoma,Gray
+lgnet,Low-grade Neuroepithelial Tumor,Gray
+imtl,Inflammatory Myofibroblastic Lung Tumor,Gainsboro
+cegcc,Glassy Cell Carcinoma of the Cervix,Teal
+mbl,Medulloblastoma,Gray
+ocs,Ovarian Carcinosarcoma/Malignant Mixed Mesodermal Tumor,LightBlue
+hl,Hodgkin's Lymphoma,LimeGreen
+mbt,Miscellaneous Brain Tumor,Gray
+bgct,Germ Cell Tumor Brain,Gray
+btbov,Brenner Tumor Borderline,LightBlue
+ehae,Epithelioid Hemangioendothelioma,LightYellow
+imtb,Inflammatory Myofibroblastic Bladder Tumor,Yellow
+des,Desmoid/Aggressive Fibromatosis,LightYellow
+pbt,Primary Brain Tumor,Gray
+mbc,Metaplastic Breast Cancer,HotPink
+rcc,Renal Cell Carcinoma,Orange
+dsrct,Desmoplastic Small-Round-Cell Tumor,LightYellow
+uca,Urethral Cancer,Yellow
+mcl,Mantle Cell Lymphoma,LimeGreen
+epmt,Ependymomal Tumor,Gray
+embc,Epithelial Type Metaplastic Breast Cancer,HotPink
+uas,Uterine Adenosarcoma,PeachPuff
+pbl,Pineoblastoma,Gray
+mcs,Metaplastic Carcinosarcoma,HotPink
+ras,Radiation-Associated Sarcoma,LightYellow
+seba,Sebaceous Carcinoma,Black
+lch,Langerhans Cell Histiocytosis,LightSalmon
+embt,Embryonal Tumor,Gray
+ecad,Endocervical Adenocarcinoma,Teal
+rbl,Retinoblastoma,Green
+dmbl,Desmoplastic/Nodular Medulloblastoma,Gray
+plls,Pleomorphic Liposarcoma,LightYellow
+mcc,Merkel Cell Carcinoma,Black
+erms,Embryonal Rhabdomyosarcoma,LightYellow
+ofmt,Ossifying Fibromyxoid Tumor,LightYellow
+rea,Renal Epithelioid Angiomyolipoma,Orange
+ccm,Clear cell Meningioma,Gray
+ehch,Extrahepatic Cholangiocarcinoma,Green
+gccap,Goblet Cell Carcinoid of the Appendix,SaddleBrown
+ldd,Dysplastic Gangliocytoma of the Cerebellum/Lhermitte-Duclos Disease,Gray
+gbm,Glioblastoma Multiforme,Gray
+ibc,Inflammatory Breast Cancer,HotPink
+cce,Clear Cell Ependymoma,Gray
+uad,Urethral Adenocarcinoma,Yellow
+dcs,Dendritic Cell Sarcoma,LightYellow
+gbc,Gallbladder Cancer,Green
+scoah,Spindle Cell Oncocytoma of the Adenohypophysis,Gray
+ecd,Non-Langerhans Cell Histiocytosis/Erdheim-Chester Disease,LightSalmon
+accc,Acinic Cell Carcinoma,DarkRed
+sdac,Salivary Duct Adenocarcinoma,DarkRed
+ccs,Clear Cell Sarcoma,LightYellow
+outt,Other Uterine Tumor,PeachPuff
+gestational trophoblastic disease,Gestational Trophoblastic Disease,PeachPuff
+thyroid,Thyroid,Teal
+scgbm,Small Cell Glioblastoma,Gray
+rgnt,Rosette-forming Glioneuronal Tumor of the Fourth Ventricle,Gray
+lung,Lung,Gainsboro
+gct,Granular Cell Tumor,Gray
+lune,Large Cell Neuroendocrine Carcinoma,Gainsboro
+hggnos,High-Grade Glioma NOS,Gray
+scrms,Spindle Cell Rhabdomyosarcoma,LightYellow
+chdm,Chordoma,White
+hcl,Hairy Cell Leukemia,LightSalmon
+odgc,Odontogenic Carcinoma,DarkRed
+cchm,Carcinoma with Chondroid Metaplasia,HotPink
+pcv,Polycythemia Vera,LightSalmon
+pct,Porphyria Cutania Tarda,Black
+mac,Microcystic Adnexal Carcinoma,Black
+mampca,Mixed Ampullary Carcinoma,Purple
+hnscup,Head and Neck Squamous Cell Carcinoma of Unknown Primary,DarkRed
+hcc,Hepatocellular Carcinoma,MediumSeaGreen
+srap,Signet Ring Cell Type of the Appendix,SaddleBrown
+stas,Adenosquamous Carcinoma of the Stomach,LightSkyBlue
+ppct,Proliferating Pilar Cystic Tumor,Black
+vm,Melanoma of the Vulva,Purple
+ccsk,Clear Cell Sarcoma of the Kidney,Orange
+ovt,Ovarian Epithelial Tumor,LightBlue
+ptad,Pituitary Adenoma,Gray
+tlym,Testicular Lymphoma,Red
+blpt,Borderline Phyllodes Tumor of the Breast,HotPink
+stad,Stomach Adenocarcinoma,LightSkyBlue
+mov,Mucinous Ovarian Cancer,LightBlue
+aeca,Sweat Gland Carcinoma/Apocrine Eccrine Carcinoma,Black
+um,Uveal Melanoma,Green
+wpscc,Warty Penile Squamous Cell Carcinoma,Blue
+ball,B-Cell Acute Lymphoid Leukemia,LightSalmon
+eov,Endometrioid Ovarian Cancer,LightBlue
+mng,Meningioma,Gray
+byst,Yolk Sac Tumor,Gray
+bcc,Basal Cell Carcinoma,Black
+srcc,Sarcomatoid Renal Cell Carcinoma,Orange
+stomach,Esophagus_Esophagus/Stomach,LightSkyBlue
+pxa,Pleomorphic Xanthoastrocytoma,Gray
+vmt,Mature Teratoma,Purple
+chgl,Chordoid Glioma of the Third Ventricle,Gray
+bimt,Immature Teratoma,Gray
+aptad,Atypical Pituitary Adenoma,Gray
+bcl,B-Cell Lymphoma,LimeGreen
+tt,Teratoma,Red
+penis,Penis,Blue
+btmov,Brenner Tumor Malignant,LightBlue
+ptcl,Peripheral T-Cell Lymphoma,LimeGreen
+sbc,Small Bowel Cancer,SaddleBrown
+non-small cell lung cancer,Non-Small Cell Lung Cancer,Gainsboro
+hnne,Head and Neck Neuroendocrine Carcinoma,DarkRed
+sezs,Sezary Syndrome,LimeGreen
+skac,Skin Adnexal Carcinoma,Black
+ssrcc,Signet Ring Cell Carcinoma of the Stomach,LightSkyBlue
+mmb,Medullomyoblastoma,Gray
+scbc,Small Cell Bladder Cancer,Yellow
+ptca,Pituitary Carcinoma,Gray
+acc,Adrenocortical Carcinoma,Purple
+ophsc,Oropharynx Squamous Cell Carcinoma,DarkRed
+sube,Subependymoma,Gray
+ptcy,Pituicytoma,Gray
+mcca,Mucinous Colorectal Carcinoma,SaddleBrown
+pcnsl,Primary CNS Lymphoma,LimeGreen
+alcl,Anaplastic Large Cell Lymphoma,LimeGreen
+scco,Small Cell Carcinoma of the Ovary,LightBlue
+sccr,Scirrhous Carcinoma of the Colon and Rectum,SaddleBrown
+bone,Bone,White
+npc,Nasopharyngeal Carcinoma,DarkRed
+ocsc,Oral Cavity Squamous Cell Carcinoma,DarkRed
+mucm,Mucosal Melanoma,Black
+wt,Wilms' Tumor,Orange
+ceen,Endometrioid Carcinoma,Teal
+vimt,Immature Teratoma,Purple
+difg,Diffuse Glioma,Gray
+read,Rectal Adenocarcinoma,SaddleBrown
+mscc,Metaplastic Squamous Cell Carcinoma,HotPink
+mcap,Malignant Carcinoid of the Appendix,SaddleBrown
+oast,Oligoastrocytoma,Gray
+tall,T-Cell Acute Lymphoid Leukemia,LightSalmon
+aca,Adrenocortical Adenoma,Purple
+pint,Pineal Tumor,Gray
+wm,Waldenstrom Macroglobulinemia,LimeGreen
+aodg,Anaplastic Oligodendroglioma,Gray
+scce,Small Cell Carcinoma of the Cervix,Teal
+ccrcc,Renal Clear Cell Carcinoma,Orange
+pgnt,Papillary Glioneuronal Tumor,Gray
+gcemu,Gastric Type Mucinous Carcinoma,Teal
+sgad,Sweat Gland Adenocarcinoma,Black
+utuc,Upper Tract Urothelial Carcinoma,Yellow
+bec,Embryonal Carcinoma,Gray
+pgng,Paraganglioma,Gray
+mdep,Medulloepithelioma,Gray
+pinc,Pineocytoma,Gray
+mucc,Mucoepidermoid Carcinoma,DarkRed
+secos,Secondary Osteosarcoma,White
+btov,Brenner Tumor,LightBlue
+vdys,Dysgerminoma,Purple
+vgce,Villoglandular Adenocarcinoma of the Cervix,Teal
+thfo,Follicular Thyroid Cancer,Teal
+hphsc,Hypopharynx Squamous Cell Carcinoma,DarkRed
+bpscc,Basaloid Penile Squamous Cell Carcinoma,Blue
+ccoc,Clear Cell Odontogenic Carcinoma,DarkRed
+tyst,Yolk Sac Tumor,Red
+vpe,Polyembryona,Purple
+hema,Hemangioma,LightYellow
+mben,Medulloblastoma with Extensive Nodularity,Gray
+hpccns,Hemangiopericytoma of the Central Nervous System,Gray
+immc,Breast Invasive Mixed Mucinous Carcinoma,HotPink
+mascc,Metaplastic Adenocarcinoma with Spindle Cell Differentiation,HotPink
+mngt,Meningothelial Tumor,Gray
+osmad,Ovarian Seromucinous Adenoma,LightBlue
+ulm,Uterine Leiomyoma,PeachPuff
+non-hodgkin’s lymphoma,Non-Hodgkin’s Lymphoma,LimeGreen
+hnsc,Head and Neck Squamous Cell Carcinoma,DarkRed
+cecc,Cervical Clear Cell Carcinoma,Teal
+osmbt,Ovarian Seromucinous Borderline Tumor,LightBlue
+umc,Uterine Mucinous Carcinoma,PeachPuff
+sem,Seminoma,Red
+rocy,Renal Oncocytoma,Orange
+astb,Astroblastoma,Gray
+pt,Phyllodes Tumor of the Breast,HotPink
+vgct,Germ Cell Tumor of the Vulva,Purple
+vulva,Vulva,Purple
+pampca,Pancreatobiliary Ampullary Carcinoma,Purple
+lgsoc,Low Grade Serous Ovarian Cancer,LightBlue
+ambl,Large Cell/Anaplastic Medulloblastoma,Gray
+astr,Astrocytoma,Gray
+angs,Angiosarcoma,LightYellow
+lms,Leiomyosarcoma,LightYellow
+tstad,Tubular Stomach Adenocarcinoma,LightSkyBlue
+head_neck,Head and Neck,DarkRed
+uterus,Uterus,PeachPuff
+angl,Angiocentric Glioma,Gray
+mnet,Miscellaneous Neuroepithelial Tumor,Gray
+spdac,Poorly Differentiated Carcinoma of the Stomach,LightSkyBlue
+thhc,Hurthle Cell Thyroid Cancer,Teal
+cerms,Cervical Rhabdomyosarcoma,Teal
+iampca,Intestinal Ampullary Carcinoma,Purple
+sklmm,Lentigo Maligna Melanoma,Black
+mbcl,Mediastinal Large B-Cell Lymphoma,LimeGreen
+bowel,Bowel,SaddleBrown
+chm,Complete Hydatidiform Mole,PeachPuff
+dia,Desmoplastic Infantile Astrocytoma,Gray
+uasc,Uterine Adenosquamous Carcinoma,PeachPuff
+unk,Unknown,Black
+tet,Thymic Epithelial Tumor,Purple
+chs,Chondrosarcoma,White
+cead,Cervical Adenocarcinoma,Teal
+dig,Desmoplastic Infantile Ganglioglioma,Gray
+afx,Atypical Fibroxanthoma,Black
+agng,Anaplastic Ganglioglioma,Gray
+maap,Mucinous Adenocarcinoma of the Appendix,SaddleBrown
+myxo,Myxoma,LightYellow
+paos,Parosteal Osteosarcoma,White
+ginet,Gastrointestinal Neuroendocrine Tumors,SaddleBrown
+blclc,Basaloid Large Cell Carcinoma of the Lung,Gainsboro
+ceas,Cervical Adenosquamous Carcinoma,Teal
+sft,Solitary Fibrous Tumor/Hemangiopericytoma,LightYellow
+pnet,Primitive Neuroectodermal Tumor,Gray
+pemeso,Peritoneal Mesothelioma,Green
+bpdcn,Blastic Plasmacytoid Dendritic Cell Neoplasm,LightSalmon
+skcm,Cutaneous Melanoma,Black
+usarc,Uterine Sarcoma/Mesenchymal,PeachPuff
+skcn,Congenital Nevus,Black
+chrcc,Chromophobe Renal Cell Carcinoma,Orange
+brsrcc,Breast Carcinoma with Signet Ring,HotPink
+ccov,Clear Cell Ovarian Cancer,LightBlue
+sarcl,Sarcomatoid Carcinoma of the Lung,Gainsboro
+mtscc,Renal Mucinous Tubular Spindle Cell Carcinoma,Orange
+embca,Embryonal Carcinoma,Red
+cns,Brain/CNS,Gray
+lxsc,Larynx Squamous Cell Carcinoma,DarkRed
+bladder,Bladder/Urinary Tract,Yellow
+flc,Fibrolamellar Carcinoma,MediumSeaGreen
+sclc,Small Cell Lung Cancer,Gainsboro
+poca,Porocarcinoma/Spiroadenocarcinoma,Black
+ulms,Uterine Leiomyosarcoma,PeachPuff
+ihch,Intrahepatic Cholangiocarcinoma,Green
+breast carcinoma,Breast Carcinoma,HotPink
+uelms,Uterine Epithelioid Leiomyosarcoma,PeachPuff
+sftcns,Solitary Fibrous Tumor of the Central Nervous System,Gray
+mchs,Mesenchymal Chondrosarcoma,White
+usmt,Uterine Smooth Muscle Tumor,PeachPuff
+odys,Dysgerminoma,LightBlue
+ddls,Dedifferentiated Liposarcoma,LightYellow
+luca,Lung Carcinoid,Gainsboro
+chos,Chondroblastic Osteosarcoma,White
+dte,Desmoplastic Trichoepithelioma,Black
+chom,Chordoid Meningioma,Gray
+com,Carcinoma with Osseous Metaplasia,HotPink
+chol,Cholangiocarcinoma,Green
+paasc,Adenosquamous Carcinoma of the Pancreas,Purple
+cpc,Choroid Plexus Carcinoma,Gray
+gng,Ganglioglioma,Gray
+pancreas,Pancreas,Purple
+esca,Esophageal Adenocarcinoma,LightSkyBlue
+pact,Cystic Tumor of the Pancreas,Purple
+escc,Esophageal Squamous Cell Carcinoma,LightSkyBlue
+dipg,Diffuse Intrinsic Pontine Glioma,Gray
+gclc,Giant Cell Carcinoma of the Lung,Gainsboro
+osmca,Ovarian Seromucinous Carcinoma,LightBlue
+bmgct,Mixed Germ Cell Tumor,Gray
+gnc,Gangliocytoma,Gray
+aoast,Anaplastic Oligoastrocytoma,Gray
+cll,Chronic Lymphocytic Leukemia,LightSalmon
+adrenal_gland,Adrenal Gland,Purple
+emchs,Extraskeletal Myxoid Chondrosarcoma,White
+ustump,Uterine Smooth Muscle Tumor of Uncertain Malignant Potential,PeachPuff
+testis,Testis,Red
+hgsos,High Grade Surface Osteosarcoma,White
+onbl,Olfactory Neuroblastoma,Gray
+mxov,Mixed Ovarian Carcinoma,LightBlue
+gmn,Germinoma,Gray
+mup,Melanoma of Unknown Primary,Black
+acyc,Adenoid Cystic Carcinoma,DarkRed
+ett,Epithelioid Trophoblastic Tumor,PeachPuff
+ppm,Papillary Meningioma,Gray
+srcbc,Plasmacytoid/Signet Ring Cell Bladder Carcinoma,Yellow
+luacc,Adenoid Cystic Carcinoma of the Lung,Gainsboro
+hgsoc,High Grade Serous Ovarian Cancer,LightBlue
+skin,Skin,Black
+scemu,Signet Ring Mucinous Carcinoma,Teal
+lggnos,Low-Grade Glioma NOS,Gray
+omt,Mature Teratoma,LightBlue
+bmgt,Malignant Teratoma,Gray
+cene,Cervical Neuroendocrine Tumor,Teal
+lgll,Large Granular Lymphocytic Leukemia,LightSalmon
+cervical cancer,Cervical Cancer,Teal
+plmeso,Pleural Mesothelioma,Blue
+cml,Chronic Myelogenous Leukemia,LightSalmon
+bmt,Mature Teratoma,Gray
+evn,Extraventricular Neurocytoma,Gray
+cschw,Cellular Schwannoma,Gray
+cnc,Central Neurocytoma,Gray
+usc,Uterine Serous Carcinoma/Uterine Papillary Serous Carcinoma,PeachPuff
+cemu,Mucinous Carcinoma,Teal
+scst,Sex Cord Stromal Tumors,LightBlue
+epdca,Esophageal Poorly Differentiated Carcinoma,LightSkyBlue
+pstt,Placental Site Trophoblastic Tumor,PeachPuff
+vsc,Squamous Cell Carcinoma of the Vulva,Purple
+saca,Salivary Carcinoma,DarkRed
+ctaap,Colonic Type Adenocarcinoma of the Appendix,SaddleBrown
+cemn,Mesonephric Carcinoma,Teal
+lgcos,Low Grade Central Osteosarcoma,White
+gtd,Gestational Trophoblastic Disease,PeachPuff
+phch,Perihilar Cholangiocarcinoma,Green
+lumec,Mucoepidermoid Carcinoma of the Lung,Gainsboro
+aml,Acute Myeloid Leukemia,LightSalmon
+grct,Granulosa Cell Tumor,LightBlue
+nst,Nerve Sheath Tumor,Gray
+sll,Small Lymphocytic Lymphoma,LimeGreen
+dnt,Dysembryoplastic Neuroepithelial Tumor,Gray
+coadread,Colorectal Adenocarcinoma,SaddleBrown
+schw,Schwannoma,Gray
+urca,Urachal Carcinoma,Yellow
+urcc,Unclassified Renal Cell Carcinoma,Orange
+thme,Medullary Thyroid Cancer,Teal
+etc,Essential Thrombocythaemia,LightSalmon
+mdlc,Breast Mixed Ductal and Lobular Carcinoma,HotPink
+tmeso,Testicular Mesothelioma,Red
+fdcs,Follicular Dendritic Cell Sarcoma,LightYellow
+all,Acute Lymphoid Leukemia,LightSalmon
+ddchdm,Dedifferentiated Chordoma,White
+celi,Cervical Leiomyosarcoma,Teal
+uus,Undifferentiated Uterine Sarcoma,PeachPuff
+ess,Endometrial Stromal Sarcoma,PeachPuff
+mchscns,Mesenchymal Chondrosarcoma of the CNS,Gray
+hmbl,Hemangioblastoma,Gray
+mrt,Rhabdoid Cancer,Orange
+voec,Embryonal Carcinoma,Purple
+uuc,Uterine Undifferentiated Carcinoma,PeachPuff
+cpp,Choroid Plexus Papilloma,Gray
+renal cell carcinoma,Renal Cell Carcinoma,Orange
+hist,Histiocytosis,LightSalmon
+thpd,Poorly Differentiated Thyroid Cancer,Teal
+cpt,Choroid Plexus Tumor,Gray
+other,Other,Black
+prne,Prostate Neuroendocrine Carcinoma,Cyan
+thpa,Papillary Thyroid Cancer,Teal
+bpt,Benign Phyllodes Tumor of the Breast,HotPink
+mrc,Renal Medullary Carcinoma,Orange
+wdls,Well-Differentiated Liposarcoma,LightYellow
+grc,Gastric Remnant Adenocarcinoma,LightSkyBlue
+idcs,Interdigitating Dendritic Cell Sarcoma,LightYellow
+lymph,Lymph,LimeGreen
+ccprc,Clear Cell Papillary Renal Cell Carcinoma,Orange
+epm,Ependymoma,Gray
+esophagogastric carcinoma,Esophagogastric Carcinoma,LightSkyBlue
+ope,Polyembryona,LightBlue
+mstad,Mucinous Stomach Adenocarcinoma,LightSkyBlue
+ape,Anaplastic Ependymoma,Gray
+luad,Lung Adenocarcinoma,Gainsboro
+mpt,Malignant Phyllodes Tumor of the Breast,HotPink
+leclc,Lymphoepithelioma-like Carcinoma of the Lung,Gainsboro
+pstad,Papillary Stomach Adenocarcinoma,LightSkyBlue
+soc,Serous Ovarian Cancer,LightBlue
+anm,Anaplastic Meningioma,Gray
+lgess,Low Grade Endometrial Stromal Sarcoma,PeachPuff
+blca,Bladder Urothelial Carcinoma,Yellow
+dfsp,Dermatofibrosarcoma Protuberans,LightYellow
+prnet,Primary Neuroepithelial Tumor,Gray
+brcanos,Breast Invasive Cancer NOS,HotPink
+adnos,Adenocarcinoma NOS,Black
+lipo,Liposarcoma,LightYellow
+luas,Lung Adenosquamous Carcinoma,Gainsboro
+syns,Synovial Sarcoma,LightYellow
+nsclc,Non-Small Cell Lung Cancer,Gainsboro
+mpc,Myopericytoma,LightYellow
+hdcs,Histiocytic Dendritic Cell Sarcoma,LightYellow
+acbc,Adenoid Cystic Breast Cancer,HotPink
+mpe,Myxopapillary Ependymoma,Gray
+kidney,Kidney,Orange
+scos,Small Cell Osteosarcoma,White
+vpscc,Verrucous Penile Squamous Cell Carcinoma,Blue
+desm,Desmoplastic Melanoma,Black
+ampca,Ampullary Carcinoma,Purple
+mpn,Myeloproliferative Neoplasm,LightSalmon
+teos,Telangiectatic Osteosarcoma,White
+bcca,Choriocarcinoma,Gray
+nfib,Neurofibroma,Gray
+pan_cancer,Pan-Cancer,Red
