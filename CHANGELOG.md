@@ -13,3 +13,4 @@
   - Live test of cBioPortal mutation data, with MAF input
   - Test for dummy version of ShinyReport JSON output
 - `setup.py` script for installation
+- `prototypes` directory for metric code in development which is not production-ready
