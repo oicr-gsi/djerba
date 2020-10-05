@@ -15,10 +15,13 @@ class genetic_alteration(dual_output_component):
     # get_attributes_for_sample and get_genes are for demonstration only
     # will override in subclasses
     
-    INPUT_DIRECTORY_KEY = 'input_directory'
     WORKFLOW_KEY = 'oicr_workflow'
     METADATA_KEY = 'metadata'
     INPUT_FILES_KEY = 'input_files'
+    # additional metadata keys
+    FILTER_VCF_KEY = 'filter_vcf'
+    INPUT_DIRECTORY_KEY = 'input_directory'
+    REGIONS_BED_KEY = 'regions_bed'
     
     def __init__(self, config, study_id, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, "%s.%s" % (__name__, type(self).__name__), log_path)
@@ -100,11 +103,13 @@ class mutation_extended(genetic_alteration):
     DATA_FILENAME = 'data_mutation_extended.maf'
     META_FILENAME = 'meta_mutation_extended.txt'
 
-    FILTER_VCF = '/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz' # TODO make configurable
+    def find_tmb(self):
+        pass
 
     def get_attributes_for_sample(self, sample_id):
         # TODO compute and return sample-level metrics
-        return []
+        # TODO use self.REGIONS_BED_KEY and the prototype TMB function to compute the metric
+        return {}
     
     def get_genes(self):
         """Find gene names from the input MAF files"""
@@ -144,7 +149,7 @@ class mutation_extended(genetic_alteration):
                   "--ref-fasta ${HG19_ROOT}/hg19_random.fa "+\
                   "--vep-path ${VEP_ROOT}/bin "+\
                   "--vep-data ${VEP_HG19_CACHE_ROOT}/.vep "+\
-                  "--filter-vcf "+self.FILTER_VCF
+                  "--filter-vcf "+self.metadata.get(self.FILTER_VCF_KEY)
             commands.append(cmd)
             output_paths.append(out_path)
         # run the maf2maf commands
