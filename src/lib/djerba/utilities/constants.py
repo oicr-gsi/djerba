@@ -21,7 +21,7 @@ CASE_LIST_DATATYPE = 'CASE_LIST'
 PATIENT_DATATYPE = 'PATIENT_ATTRIBUTES'
 SAMPLE_DATATYPE = 'SAMPLE_ATTRIBUTES'
 
-# keys for ShinyReport generation
+# keys for Elba report generation
 SAMPLE_ID_KEY = 'SAMPLE_ID'
 GENE_KEY = 'Gene'
 CLINICAL_DATA_KEY = 'ClinData'
