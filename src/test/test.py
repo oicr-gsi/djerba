@@ -2,7 +2,6 @@
 
 import hashlib, logging, json, os, random, tempfile, unittest
 
-from djerba.genetic_alteration import genetic_alteration
 from djerba.report import report, DjerbaReportError
 from djerba.sample import sample
 from djerba.study import study
@@ -38,20 +37,19 @@ class TestReport(TestBase):
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_report_test_')
 
     def test_demo(self):
-        """Test with default 'demo' output of the genetic_alteration superclass"""
+        """Test with dummy 'demonstration' genetic_alteration class"""
         random.seed(42) # set the random seed to ensure consistent demo output
         out_dir = os.path.join(self.tmp.name, 'test_report_demo')
         os.mkdir(out_dir)
-        with open(os.path.join(self.dataDir, 'study_config.json')) as configFile:
+        with open(os.path.join(self.dataDir, 'study_config_demo_report.json')) as configFile:
             config = json.loads(configFile.read())
         report_name = 'sample_report.json'
         report_path = os.path.join(out_dir, report_name)
         sample_id = 'OCT-01-0472-CAP'
-        study_id = config[constants.STUDY_META_KEY][constants.STUDY_ID_KEY]
         test_report = report(config, sample_id, log_level=logging.ERROR)
         test_report.write_report_config(report_path)
         self.assertTrue(os.path.exists(report_path), "JSON report exists")
-        checksum = {report_name: '2adf75bd2f70586b7703fe4bfb1c1759'}
+        checksum = {report_name: '199b271c456cfef023abdf3b736a8260'}
         self.verify_checksums(checksum, out_dir)
         args = [config, 'nonexistent sample', logging.CRITICAL]
         self.assertRaises(DjerbaReportError, report, *args)

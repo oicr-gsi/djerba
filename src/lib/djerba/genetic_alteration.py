@@ -7,13 +7,15 @@ import tempfile
 import yaml
 from djerba.components import dual_output_component
 from djerba.utilities import constants
+from djerba.utilities.base import base
 from djerba.utilities.tools import system_tools
 
 class genetic_alteration(dual_output_component):
-    """Base class; unit of genetic alteration data for cBioPortal"""
+    """Base class; unit of genetic alteration data for cBioPortal and other reports"""
 
-    # get_attributes_for_sample and get_genes are for demonstration only
-    # will override in subclasses
+    # TODO in some instances, could write cBioPortal data to a tempdir and then extract elba metrics
+    # The 'elba' methods get_attributes_for_sample and get_metrics_by_gene should be consistent
+    # and avoid duplication with cBioPortal write_metrics
     
     WORKFLOW_KEY = 'oicr_workflow'
     METADATA_KEY = 'metadata'
@@ -23,15 +25,13 @@ class genetic_alteration(dual_output_component):
     INPUT_DIRECTORY_KEY = 'input_directory'
     REGIONS_BED_KEY = 'regions_bed'
     
-    def __init__(self, config, study_id, log_level=logging.WARNING, log_path=None):
+    def __init__(self, config, study_id=None, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, "%s.%s" % (__name__, type(self).__name__), log_path)
-        self.study_id = study_id
-        # TODO shouldn't need to configure genetic_alteration_type and datatype
-        # as these are fixed for each subclass
+        self.study_id = study_id # required for cBioPortal, not for Elba
         try:
             self.genetic_alteration_type = config[constants.GENETIC_ALTERATION_TYPE_KEY]
             self.datatype = config[constants.DATATYPE_KEY]
-            self.workflow = config[self.WORKFLOW_KEY]
+            #self.workflow = config[self.WORKFLOW_KEY] # TODO is this field necessary?
             self.metadata = config[self.METADATA_KEY]
             self.input_files = config[self.INPUT_FILES_KEY]
             self.input_directory = self.metadata[self.INPUT_DIRECTORY_KEY]
@@ -39,23 +39,27 @@ class genetic_alteration(dual_output_component):
             self.logger.error("Missing required config key: {0}".format(err))
             raise
         self.sample_ids = sorted(self.input_files.keys())
-        self.sample_attributes = self.read_sample_attributes()
+        self.sample_attributes = self._find_all_sample_attributes()
         # identifier for the genetic_alteration; should be unique in any given config
         self.alteration_id = "%s:%s" % (self.genetic_alteration_type, self.datatype)
         self.gene_names = None # used to cache the gene names
 
+    def _find_all_sample_attributes(self):
+        """PLACEHOLDER. Read self.input_files and populate a sample attributes dictionary"""
+        msg = "_find_all_sample_attributes method of parent class; not intended for production"
+        self.logger.error(msg)
+        attributes = {}
+        for sample_id in self.sample_ids:
+            attributes[sample_id] = {}
+        return attributes
+
     def get_alteration_id(self):
+        """ID defined as 'alteration_type:datatype', eg. 'MUTATION_EXTENDED:MAF'"""
         return self.alteration_id
 
-    def get_attributes_for_sample(self, sample):
-        """Get sample-level metrics for ShinyReport"""
-        msg = "get_attributes_for_sample demo method of parent class; not intended for production"
-        self.logger.warning(msg)
-        metric_key = ":".join([self.genetic_alteration_type, self.datatype, 'dummy_sample_metric'])
-        attributes = {
-            metric_key: random.randrange(100)
-        }
-        return attributes
+    def get_attributes_for_sample(self, sample_id):
+        """Find attributes for given sample_id."""
+        return self.sample_attributes[sample_id]
 
     def get_datatype(self):
         return self.datatype
@@ -63,35 +67,83 @@ class genetic_alteration(dual_output_component):
     def get_genetic_alteration_type(self):
         return self.genetic_alteration_type
 
-    def get_genes(self):
-        """Placeholder; subclasses will read genes from input files"""
-        msg = "get_genes demo method of parent class; not intended for production"
-        self.logger.warning(msg)
-        return ["Gene001", "Gene002"]
+    def get_gene_names(self):
+        """PLACEHOLDER. Get a list of gene names from the input files."""
+        msg = "get_genes method of parent class; not intended for production"
+        self.logger.error(msg)
+        return []
+
+    def get_metrics_by_gene(self, sample_id):
+        """PLACEHOLDER. Get a dictionary of metric values for the given sample, indexed by gene."""
+        msg = "get_metrics_by_gene method of parent class; not intended for production"
+        self.logger.error(msg)
+        return {}
 
     def get_sample_ids(self):
         return self.sample_ids
 
-    def get_small_mutation_indel_data(self, sample_id):
-        """Get small mutation and indel data for ShinyReport"""
-        msg = "get_small_mutation_indel_data demo method of parent class; not intended for production"
+
+class genetic_alteration_factory(base):
+    """Supply an instance of the appropriate genetic_alteration subclass for a given ALTERATIONTYPE"""
+
+    CLASSNAMES = {
+        constants.DEMONSTRATION_TYPE: 'genetic_alteration_demo',
+        constants.MUTATION_TYPE: 'mutation_extended'
+    }
+
+    def __init__(self, log_level=logging.WARN, log_path=None):
+        self.log_level = log_level
+        self.log_path = log_path
+        self.logger = self.get_logger(log_level, "%s.%s" % (__name__, type(self).__name__), log_path)
+
+    def create_instance(self, config, study_id=None):
+        """Return an instance of the genetic_alteration class named in the config"""
+        alteration_type = config.get(constants.GENETIC_ALTERATION_TYPE_KEY)
+        classname = self.CLASSNAMES.get(alteration_type)
+        if alteration_type == None or classname == None:
+            msg = "Unknown or missing %s value in config. " % constants.GENETIC_ALTERATION_TYPE_KEY
+            msg = msg+" Permitted values are: %s" % str(sorted(list(self.CLASSNAMES.keys())))
+            self.logger.error(msg)
+            raise ValueError(msg)
+        klass = globals().get(classname)
+        return klass(config, study_id, self.log_level, self.log_path)
+
+
+class genetic_alteration_demo(genetic_alteration):
+    """Dummy class for demonstration and initial testing; not for production use"""
+
+    def _find_all_sample_attributes(self):
+        """DEMONSTRATION METHOD. Return empty attributes"""
+        return {}
+
+    def get_attributes_for_sample(self, sample_id):
+        """DEMONSTRATION METHOD. Get sample-level metrics for Elba"""
+        msg = "get_attributes_for_sample demo method; not intended for production"
+        self.logger.warning(msg)
+        metric_key = ":".join([self.genetic_alteration_type, self.datatype, 'dummy_sample_metric'])
+        attributes = {
+            metric_key: random.randrange(100)
+        }
+        return attributes
+
+    def get_gene_names(self):
+        """DEMONSTRATION METHOD. Get a list of gene names."""
+        return ["Gene001", "Gene002"]
+
+    def get_metrics_by_gene(self, sample_id):
+        """"DEMONSTRATION METHOD. Get small mutation and indel data for Elba."""
+        msg = "get_metrics_by_gene demo method; not intended for production"
         self.logger.warning(msg)
         input_file = self.input_files[sample_id]
         # generate dummy results as a demonstration
-        metric_key = ":".join([self.genetic_alteration_type, self.datatype, 'dummy_metric'])
-        data = []
-        for gene in self.get_genes():
-            data.append(
-                {
-                    "Gene": gene,
-                    metric_key: random.randrange(101, 1000)
-                }
-            )
-        return data
-
-    def read_sample_attributes(self):
-        """Placeholder; read self.input_files and populate a sample attributes dictionary"""
-        return {}
+        metric_key = ":".join([self.alteration_id, 'dummy_metric'])
+        metrics = {}
+        for gene in self.get_gene_names():
+            metrics[gene] = {
+                constants.GENE_KEY: gene,
+                metric_key: random.randrange(101, 1000)
+            }
+        return metrics
 
 
 class mutation_extended(genetic_alteration):
@@ -103,15 +155,13 @@ class mutation_extended(genetic_alteration):
     DATA_FILENAME = 'data_mutation_extended.maf'
     META_FILENAME = 'meta_mutation_extended.txt'
 
-    def find_tmb(self):
+    def _find_all_sample_attributes(self):
         pass
 
-    def get_attributes_for_sample(self, sample_id):
-        # TODO compute and return sample-level metrics
-        # TODO use self.REGIONS_BED_KEY and the prototype TMB function to compute the metric
-        return {}
+    def find_tmb(self):
+        pass
     
-    def get_genes(self):
+    def get_gene_names(self):
         """Find gene names from the input MAF files"""
         if self.gene_names:
             return self.gene_names
@@ -124,6 +174,12 @@ class mutation_extended(genetic_alteration):
         gene_names = sorted(list(gene_name_set))
         self.gene_names = gene_names # store the gene names in case needed later
         return gene_names
+
+    def get_metrics_by_gene(self, sample_id):
+        pass
+
+    def get_small_mutation_indel_data(self, sample_id):
+        pass
 
     def write_data(self, out_dir):
         """Write mutation data table for cBioPortal"""
