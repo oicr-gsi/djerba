@@ -3,6 +3,7 @@
 CNA_TYPE = 'COPY_NUMBER_ALTERATION'
 EXPRESSION_TYPE = 'MRNA_EXPRESSION'
 MUTATION_TYPE = 'MUTATION_EXTENDED'
+DEMONSTRATION_TYPE = 'DEMONSTRATION'
 DISCRETE_DATATYPE = 'DISCRETE'
 
 # metadata keys for cBioPortal
@@ -24,9 +25,11 @@ SAMPLE_DATATYPE = 'SAMPLE_ATTRIBUTES'
 # keys for Elba report generation
 SAMPLE_ID_KEY = 'SAMPLE_ID'
 GENE_KEY = 'Gene'
-CLINICAL_DATA_KEY = 'ClinData'
+CLINICAL_DATA_KEY = 'ClinData' # obsolete? depends on report JSON
 GENOMIC_LANDSCAPE_KEY = 'genomicLandscape'
-SMALL_MUTATION_INDEL_KEY = 'smallMutAndIndel'
+GENE_METRICS_KEY = 'gene_metrics'
+SAMPLE_INFO_KEY = 'sample_info'
+SMALL_MUTATION_INDEL_KEY = 'smallMutAndIndel' # obsolete? depends on report JSON
 
 # keys for Djerba config
 GENETIC_ALTERATIONS_KEY = 'genetic_alterations'

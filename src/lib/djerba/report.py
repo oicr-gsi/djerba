@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import sys
-from djerba.genetic_alteration import genetic_alteration
+from djerba.genetic_alteration import genetic_alteration_factory
 from djerba.sample import sample
 from djerba.utilities import constants
 from djerba.utilities.base import base
@@ -10,11 +10,12 @@ from djerba.utilities.base import base
 
 class report(base):
 
-    """Class representing a genome interpretation Clinical Report"""
+    """Class representing a genome interpretation Clinical Report in Elba"""
 
     def __init__(self, config, sample_id=None, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, "%s.%s" % (__name__, type(self).__name__), log_path)
         study_id = config[constants.STUDY_META_KEY][constants.STUDY_ID_KEY]
+        # configure the sample for the report
         if sample_id==None: # only one sample
             if len(config[constants.SAMPLES_KEY])==1:
                 self.sample = sample(config[constants.SAMPLES_KEY][0], log_level)
@@ -36,34 +37,37 @@ class report(base):
                 msg = "Could not find requested sample ID '%s' in config" % sample_id
                 self.logger.error(msg)
                 raise DjerbaReportError(msg)
-        ga_key = constants.GENETIC_ALTERATIONS_KEY
+        # populate the list of genetic alterations
+        ga_factory = genetic_alteration_factory(log_level, log_path)
+        ga_configs = config[constants.GENETIC_ALTERATIONS_KEY]
         self.alterations = [
-            genetic_alteration(ga_conf, study_id, log_level) for ga_conf in config[ga_key]
+            ga_factory.create_instance(conf, study_id) for conf in ga_configs
         ]
-        report_sample = None
 
     def get_report_config(self):
         """Construct the reporting config data structure"""
-        config = {}
-        config[constants.GENOMIC_LANDSCAPE_KEY] = {}
-        smi_results_by_gene = {} # small mutations and indels
-        # for each genetic alteration, find values for smallMutAndIndel (if any) and update
+        # for each genetic alteration, find metric values at sample/gene level
+        all_metrics_by_gene = {}
         for alteration in self.alterations:
-            # find small mutation and indel data
-            smi_data = alteration.get_small_mutation_indel_data(self.sample_id)
-            for gene_result in smi_data:
-                gene_name = gene_result[constants.GENE_KEY]
-                if gene_name in smi_results_by_gene:
-                    smi_results_by_gene[gene_name].update(gene_result)
+            # update gene-level metrics
+            metrics_by_gene = alteration.get_metrics_by_gene(self.sample_id)
+            for gene_id in metrics_by_gene.keys():
+                if gene_id in all_metrics_by_gene:
+                    all_metrics_by_gene[gene_id].update(metrics_by_gene[gene_id])
                 else:
-                    smi_results_by_gene[gene_name] = gene_result
+                    all_metrics_by_gene[gene_id] = metrics_by_gene[gene_id]
+            # update sample-level metrics
             self.sample.update_attributes(alteration.get_attributes_for_sample(self.sample_id))
-        # sort the results by gene name
-        smi_sorted = [smi_results_by_gene[k] for k in sorted(smi_results_by_gene.keys())]
-        config[constants.GENOMIC_LANDSCAPE_KEY][constants.SMALL_MUTATION_INDEL_KEY] = smi_sorted
-        config[constants.CLINICAL_DATA_KEY] = self.sample.get_attributes()
-        # TODO add other parts of the "genomic landscape", eg. oncoKB SVs & CNVs
-        # TODO add other elements of report JSON, eg. "SVandFus", "exprOutliers"
+        # reorder gene-level metrics into a list
+        gene_metrics_list = []
+        for gene_id in all_metrics_by_gene.keys():
+            metrics = all_metrics_by_gene[gene_id]
+            metrics[constants.GENE_KEY] = gene_id
+            gene_metrics_list.append(metrics)
+        # assemble the config data structure
+        config = {}
+        config[constants.SAMPLE_INFO_KEY] = self.sample.get_attributes()
+        config[constants.GENE_METRICS_KEY] = gene_metrics_list
         return config
 
     def write_report_config(self, out_path, force=False):

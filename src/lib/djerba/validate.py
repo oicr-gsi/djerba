@@ -12,6 +12,9 @@ class validator(base):
 
     """Validate a Djerba config file; check schema format and existence of inputs"""
 
+    # TODO have separate schemas for 'elba' and 'cbioportal' modes
+    # not all cbioportal fields are required by elba, and vice versa, although there is much overlap
+
     SCHEMA_FILENAME = 'input_schema.json'
     
     def __init__(self, log_level=logging.WARN, log_path=None):
