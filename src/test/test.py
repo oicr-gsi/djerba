@@ -138,7 +138,7 @@ class TestStudy(TestBase):
         config_path = os.path.join(self.dataDir, 'study_config.json')
         with open(config_path) as configFile:
             config = json.loads(configFile.read())
-        test_study = study(config, log_level=logging.ERROR)
+        test_study = study(config, log_level=logging.CRITICAL)
         test_study.write_all(out_dir, dry_run=True)
         self.verify_checksums(self.base_checksums, out_dir)
 
