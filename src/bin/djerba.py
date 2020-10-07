@@ -88,7 +88,7 @@ def output_file_errors(out_path, function, stdout_allowed=False):
             errors.append("Parent of %s path '%s' does not exist" % (function, out_path))
         elif not os.path.isdir(out_dir):
             errors.append("Parent of %s path '%s' is not a directory" % (function, out_path))
-        elif not os.path.access(out_dir, os.W_OK):
+        elif not os.access(out_dir, os.W_OK):
             errors.append("Parent of %s path  '%s' is not writable" % (function, out_path))
     return errors
 
