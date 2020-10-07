@@ -9,7 +9,7 @@ from prototypes.tmb import find_tmb
 class TestSampleMetrics(unittest.TestCase):
 
     def setUp(self):
-        self.data_dir = '/.mounts/labs/gsiprojects/gsi/janus/prototypes/'
+        self.data_dir = '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/'
         self.delta = 10**(-10)
 
 # need to discuss how to do this when there are multiple function outputs

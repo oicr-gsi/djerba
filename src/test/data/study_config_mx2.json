@@ -36,7 +36,10 @@
                 "input_directory": "/.mounts/labs/gsiprojects/gsi/djerba/mutation_extended",
                 "oncokb_api_token": "e326982a-02ba-4f04-8ef6-80b04fa74acd",
                 "profile_description": "Dummy profile for Djerba test",
-                "profile_name": "Djerba test 001"
+                "profile_name": "Djerba test 001",
+		"bed_path": "/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed",
+		"tcga_path": "/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt",
+		"cancer_type": "blca"
             },
             "oicr_workflow": "cap_strelka2_somatic_0_1_0.niassawf"
         }
