@@ -159,6 +159,9 @@ class mutation_extended(genetic_alteration):
     TCGA_PATH_KEY = 'tcga_path'
     CANCER_TYPE_KEY = 'cancer_type'
 
+    # MAF column headers
+    HUGO_SYMBOL = 'Hugo_Symbol'
+
     def _find_all_sample_attributes(self):
         # TODO 'cancer_type' appears in study-level config. Could read it from there and
         # insert into the genetic_alteration config structure, instead of having duplicate
@@ -187,8 +190,14 @@ class mutation_extended(genetic_alteration):
         gene_name_set = set()
         for input_file in self.input_files.values():
             # pandas read_csv() will automatically decompress .gz input
-            df = pd.read_csv(os.path.join(self.input_directory, input_file))
-            gene_name_set.update(set(df['Hugo_Symbol'].tolist()))
+            self.logger.debug("Reading gene names from %s/%s" % (self.input_directory, input_file))
+            df = pd.read_csv(
+                os.path.join(self.input_directory, input_file),
+                delimiter="\t",
+                usecols=[self.HUGO_SYMBOL],
+                comment="#"
+            )
+            gene_name_set.update(set(df[self.HUGO_SYMBOL].tolist()))
         # convert to list and sort
         gene_names = sorted(list(gene_name_set))
         self.gene_names = gene_names # store the gene names in case needed later
@@ -198,7 +207,7 @@ class mutation_extended(genetic_alteration):
         """Return an empty data structure for now; TODO insert gene-level metrics"""
         metrics_by_gene = {}
         for name in self.get_gene_names():
-            metrics_by_gene[gene] = {}
+            metrics_by_gene[name] = {}
         return metrics_by_gene
 
     def write_data(self, out_dir):
