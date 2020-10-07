@@ -164,21 +164,21 @@ class mutation_extended(genetic_alteration):
         # insert into the genetic_alteration config structure, instead of having duplicate
         # values in the study-level JSON config.
         try:
-            bed_path = self.metadata[self.BED_PATH_KEY]
-            tcga_path = self.metadata[self.TCGA_PATH_KEY]
+            bed_path = os.path.join(self.input_directory, self.metadata[self.BED_PATH_KEY])
+            tcga_path = os.path.join(self.input_directory, self.metadata[self.TCGA_PATH_KEY])
             cancer_type = self.metadata[self.CANCER_TYPE_KEY]
         except KeyError as err:
             self.logger.error("Missing required metadata key: {0}".format(err))
             raise
         attributes = {}
         for sample_id in self.sample_ids:
-            maf_path = self.input_files[sample_id]
+            maf_path = os.path.join(self.input_directory, self.input_files[sample_id])
             mx_metrics = mutation_extended_metrics(maf_path, bed_path, tcga_path, cancer_type)
             sample_attributes = {
                 constants.TMB_PER_MB_KEY: mx_metrics.get_tmb()
             }
             attributes[sample_id] = sample_attributes
-        return attirbutes
+        return attributes
     
     def get_gene_names(self):
         """Find gene names from the input MAF files"""

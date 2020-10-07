@@ -143,7 +143,7 @@ class TestStudy(TestBase):
         self.verify_checksums(self.base_checksums, out_dir)
 
     def test_mutation_extended(self):
-        """Test the mutation extended genetic alteration type"""
+        """Test a cBioPortal study with mutation data"""
         out_dir = os.path.join(self.tmp.name, 'study_mutation_extended')
         os.mkdir(out_dir)
         config_path = os.path.join(self.dataDir, 'study_config_mx.json')
@@ -154,11 +154,11 @@ class TestStudy(TestBase):
         checksums = self.base_checksums.copy()
         # clinical patient/sample data differs from default
         extra_checksums = {
-            'data_clinical_patients.txt': '89980a5953c405fcf9cf8aa2037e0058',
-            'data_clinical_samples.txt': '89980a5953c405fcf9cf8aa2037e0058',
-            'data_mutation_extended.maf': '957c36b2dee54c9272da7591d0796bf8',
+            'data_clinical_patients.txt': 'd6fb18fa41b196964b45603fa06daf93',
+            'data_clinical_samples.txt': 'd6fb18fa41b196964b45603fa06daf93',
+            'data_mutation_extended.maf': 'ead2c80324fd319ac22ca7ea3936944e',
             'meta_mutation_extended.txt': 'cc5684c4b1558fb3fc93d30945e3cfeb',
-            'case_lists/cases_sequenced.txt': 'de25114a2102fd0d67ba7335b8feaa25'
+            'case_lists/cases_sequenced.txt': '093c0dff5731561d1253092b112bf880'
         }
         checksums.update(extra_checksums)
         self.verify_checksums(checksums, out_dir)
@@ -171,6 +171,7 @@ class TestValidator(unittest.TestCase):
         self.dataDir = os.path.realpath(os.path.join(self.testDir, 'data'))
 
     def test(self):
+        """Test validation of Djerba config against the schema"""
         config_path = os.path.join(self.dataDir, 'study_config.json')
         with open(config_path) as configFile:
             config = json.loads(configFile.read())
