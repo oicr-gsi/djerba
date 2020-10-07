@@ -11,9 +11,9 @@ class mutation_extended_metrics:
     
     def __init__(self, maf_path, bed_path, tcga_path, cancer_type):
         self.tmb = self._find_tmb(maf_path, bed_path)        
-        [self.tcga_tmb, self.tcga_cohort_tmb] = self.read_tcga(tcga_path, cancer_type)
-        self.tcga_pct = ECDF(tcga.tcgaTMB)(self.tmb)
-        self.cohort_pct = ECDF(tcga_cohort.cohortTMB)(self.tmb)
+        [self.tcga_tmb, self.tcga_cohort_tmb] = self._read_tcga(tcga_path, cancer_type)
+        self.tcga_pct = ECDF(self.tcga_tmb)(self.tmb)
+        self.cohort_pct = ECDF(self.tcga_cohort_tmb)(self.tmb)
         
     def _find_tmb(self, maf_path, bed_path):
         """Find the TMB metric: tumor mutation burden / megabase"""
@@ -58,6 +58,6 @@ class mutation_extended_metrics:
         """Convert the pandas Series to a dictionary"""
         return self.tcga_tmb.to_dict()
 
-    def get_tcga_cohort_tmb_as_dict(self):
+    def get_cohort_tmb_as_dict(self):
         """Convert the pandas Series to a dictionary"""
         return self.tcga_cohort_tmb.to_dict()
