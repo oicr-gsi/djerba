@@ -6,6 +6,7 @@ import random
 import tempfile
 import yaml
 from djerba.components import dual_output_component
+from djerba.metrics import mutation_extended_metrics
 from djerba.utilities import constants
 from djerba.utilities.base import base
 from djerba.utilities.tools import system_tools
@@ -84,7 +85,7 @@ class genetic_alteration(dual_output_component):
 
 
 class genetic_alteration_factory(base):
-    """Supply an instance of the appropriate genetic_alteration subclass for a given ALTERATIONTYPE"""
+    """Supply an instance of the appropriate genetic_alteration subclass for an ALTERATIONTYPE"""
 
     CLASSNAMES = {
         constants.DEMONSTRATION_TYPE: 'genetic_alteration_demo',
@@ -149,17 +150,35 @@ class genetic_alteration_demo(genetic_alteration):
 class mutation_extended(genetic_alteration):
     """
     Represents the MUTATION_EXTENDED genetic alteration type in cBioPortal.
-    Generates reports for either cBioPortal or ShinyReport.
+    Generates reports for either cBioPortal or Elba.
     """
 
     DATA_FILENAME = 'data_mutation_extended.maf'
     META_FILENAME = 'meta_mutation_extended.txt'
+    BED_PATH_KEY = 'bed_path'
+    TCGA_PATH_KEY = 'tcga_path'
+    CANCER_TYPE_KEY = 'cancer_type'
 
     def _find_all_sample_attributes(self):
-        pass
-
-    def find_tmb(self):
-        pass
+        # TODO 'cancer_type' appears in study-level config. Could read it from there and
+        # insert into the genetic_alteration config structure, instead of having duplicate
+        # values in the study-level JSON config.
+        try:
+            bed_path = self.metadata[self.BED_PATH_KEY]
+            tcga_path = self.metadata[self.TCGA_PATH_KEY]
+            cancer_type = self.metadata[self.CANCER_TYPE_KEY]
+        except KeyError as err:
+            self.logger.error("Missing required metadata key: {0}".format(err))
+            raise
+        attributes = {}
+        for sample_id in self.sample_ids:
+            maf_path = self.input_files[sample_id]
+            mx_metrics = mutation_extended_metrics(maf_path, bed_path, tcga_path, cancer_type)
+            sample_attributes = {
+                constants.TMB_PER_MB_KEY: mx_metrics.get_tmb()
+            }
+            attributes[sample_id] = sample_attributes
+        return attirbutes
     
     def get_gene_names(self):
         """Find gene names from the input MAF files"""
@@ -176,13 +195,14 @@ class mutation_extended(genetic_alteration):
         return gene_names
 
     def get_metrics_by_gene(self, sample_id):
-        pass
-
-    def get_small_mutation_indel_data(self, sample_id):
-        pass
+        """Return an empty data structure for now; TODO insert gene-level metrics"""
+        metrics_by_gene = {}
+        for name in self.get_gene_names():
+            metrics_by_gene[gene] = {}
+        return metrics_by_gene
 
     def write_data(self, out_dir):
-        """Write mutation data table for cBioPortal"""
+        """cBioPortal. Write mutation data table."""
 
         # Read mutation data in MAF format and output in cBioPortal's required MAF format
         # May enable VCF input at a later date
@@ -224,7 +244,7 @@ class mutation_extended(genetic_alteration):
         tmp.cleanup()
         
     def write_meta(self, out_dir):
-        """Write mutation metadata for cBioPortal"""
+        """cBioPortal. Write mutation metadata."""
         try:
             meta = {
                 constants.STUDY_ID_KEY: self.study_id,

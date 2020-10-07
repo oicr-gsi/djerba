@@ -2,6 +2,7 @@
 
 import hashlib, logging, json, os, random, tempfile, unittest
 
+from djerba.metrics import mutation_extended_metrics
 from djerba.report import report, DjerbaReportError
 from djerba.sample import sample
 from djerba.study import study
@@ -27,6 +28,42 @@ class TestBase(unittest.TestCase):
 
     def tearDown(self):
         self.tmp.cleanup()
+
+class TestMetrics(TestBase):
+    """Tests for genetic alteration metrics"""
+
+    def setUp(self):
+        self.testDir = os.path.dirname(os.path.realpath(__file__))
+        self.data_dir = '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/'
+        self.tmp = tempfile.TemporaryDirectory(prefix='djerba_mx_metrics_test_')
+
+    def test_mx_tmb(self):
+        """Test the Tumor Mutation Burden metric"""
+        maf_path = os.path.join(self.data_dir, 'tmb', 'somatic.maf.txt.gz')
+        bed_path = os.path.join(self.data_dir, 'tmb', 'S31285117_Regions.bed')
+        tcga_path = os.path.join(self.data_dir, 'tmb', 'tcga_tmbs.txt')
+        cancer_type = "blca"
+        with open(os.path.join(self.data_dir, 'tmb_expected.json')) as exp_file:
+            expected = json.loads(exp_file.read())
+        mx_metrics = mutation_extended_metrics(maf_path, bed_path, tcga_path, cancer_type)
+        output = [
+            mx_metrics.get_tmb(),
+            mx_metrics.get_tcga_pct(),
+            mx_metrics.get_cohort_pct(),
+            mx_metrics.get_tcga_tmb_as_dict(),
+            mx_metrics.get_cohort_tmb_as_dict(),
+        ]
+        for i in (0,1,2):
+            # Test singleton floats
+            self.assertAlmostEqual(output[i], expected[i])
+        for i in (3,4):
+            # Test dictionaries. JSON converts dictionary keys to strings.
+            # So keys are integers for output dictionaries, strings for expected dictionaries.
+            # List equality is ambiguous, so convert the key collections to sets before comparison
+            self.assertEqual(set(output[i].keys()), set([int(k) for k in expected[i].keys()]))
+            for key in output[i].keys():
+                self.assertAlmostEqual(output[i][key], expected[i][str(key)])
+
 
 class TestReport(TestBase):
     """Tests for clinical report output"""

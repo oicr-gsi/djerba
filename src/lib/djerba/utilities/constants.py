@@ -1,5 +1,6 @@
 """Module to define constants"""
 
+# cbioportal datatypes
 CNA_TYPE = 'COPY_NUMBER_ALTERATION'
 EXPRESSION_TYPE = 'MRNA_EXPRESSION'
 MUTATION_TYPE = 'MUTATION_EXTENDED'
@@ -23,7 +24,11 @@ PATIENT_DATATYPE = 'PATIENT_ATTRIBUTES'
 SAMPLE_DATATYPE = 'SAMPLE_ATTRIBUTES'
 
 # keys for Elba report generation
+
+## keys for sample attributes
 SAMPLE_ID_KEY = 'SAMPLE_ID'
+TMB_PER_MB_KEY = 'TMB_PER_MB'
+## other
 GENE_KEY = 'Gene'
 CLINICAL_DATA_KEY = 'ClinData' # obsolete? depends on report JSON
 GENOMIC_LANDSCAPE_KEY = 'genomicLandscape'
