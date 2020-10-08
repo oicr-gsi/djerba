@@ -50,13 +50,20 @@ The script requires a config file in JSON format; it validates the file against 
 - `cbioportal`: Write a study directory for upload to a cBioPortal instance, for multiple samples
 - `validate`: Validate a Djerba config file and report any errors
 
-## Repository structure
+## Repository Structure
 
 - [src](./src): Production source code
 - [src/bin/djerba.py](./src/bin/djerba.py): Main script to run Djerba
 - [src/lib/djerba](./src/lib/djerba): Python package for Djerba functions
 - [src/test](./src/test): Tests for production code
 - [prototypes](./prototypes): Development area for non-production scripts and tests
+
+## Release Procedure
+
+- Update `CHANGELOG.md`
+- Update the version number in `setup.py`
+- Tag the release on Github
+- Create, test, and install a new environment module in [OICR Modulator](https://gitlab.oicr.on.ca/ResearchIT/modulator) to install the newly tagged release
 
 ## Development History and Plans
 

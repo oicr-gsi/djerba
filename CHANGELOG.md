@@ -1,6 +1,8 @@
 # CHANGELOG
 
-## Unreleased
+## v0.0.1: 2020-10-08
+Initial development release
+### Added
 - `djerba.py` script to run Djerba functions from the command line
 - `djerba` Python package with modules to:
   - Validate Djerba config: `validate.py`
@@ -15,3 +17,4 @@
   - Test for dummy version of ShinyReport JSON output
 - `setup.py` script for installation
 - `prototypes` directory for metric code in development which is not production-ready
+- Example JSON config for Elba: [elba_expected_mx.json](./src/test/data/elba_expected_mx.json)
