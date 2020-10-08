@@ -4,7 +4,7 @@ Create reports from metadata and workflow output
 
 ## Introduction
 
-Djerba translates workflow outputs and metadata into standard reporting formats. Input is metadata and workflow results specified in a JSON config file; output is one or more report files.
+Djerba translates cancer bioinformatics workflow outputs and metadata into standard reporting formats. Input is metadata and workflow results specified in a JSON config file; output is one or more report files.
 
 Reporting formats supported by Djerba include:
 - JSON data structure for the [Elba data review server](https://github.com/oicr-gsi/Elba)
@@ -26,7 +26,7 @@ Djerba is named for an [island](https://en.wikipedia.org/wiki/Djerba) off the co
 
 ### Testing
 
-- Ensure prerequisites listed above are available
+- Ensure prerequisites are available.
 - Ensure test data at `/.mounts/labs/gsiprojects` is accessible (some dry-run tests can be run without this data)
 - Check out the `djerba` repo: `git checkout git@github.com:oicr-gsi/djerba.git`
 - Set the `PYTHONPATH` environment variable: `export PYTHONPATH=${MY_DJERBA_CHECKOUT_PATH}/src/lib:$PYTHONPATH`

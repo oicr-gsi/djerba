@@ -67,10 +67,10 @@
     "genetic_alterations": [
 	{
 	    "genetic_alteration_type": "MUTATION_EXTENDED_dummy_test",
-	    "oicr_workflow": "cap_strelka2_somatic_0_1_0.niassawf",
+	    "workflow_run_id": "jabberwocky_workflow_run_0002",
 	    "datatype": "MAF",
+	    "input_directory": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests/data/Strelka",
 	    "metadata": {
-		"input_directory": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests/data/Strelka",
 		"oncokb_api_token": "e326982a-02ba-4f04-8ef6-80b04fa74acd",
 		"filter_vcf": "/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz"
 	    },
@@ -80,10 +80,10 @@
 	},
 	{
 	    "genetic_alteration_type": "COPY_NUMBER_ALTERATION",
-	    "oicr_workflow": "cap_varscan_2_1_1.niassawf",
+	    "input_directory": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests/data/CAP_CNA",
+	    "workflow_run_id": "frumious_workflow_run_0047",
 	    "datatype": "SEG",
 	    "metadata": {
-		"input_directory": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests/data/CAP_CNA",
 		"oncokb_api_token": "e326982a-02ba-4f04-8ef6-80b04fa74acd"
 	    },
 	    "input_files": {
@@ -92,11 +92,11 @@
 	},
 	{
 	    "genetic_alteration_type": "MRNA_EXPRESSION",
-	    "oicr_workflow": "CAP expression",
+	    "workflow_run_id": "vorpal_workflow_run_0022",
+	    "input_directory": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests-handlers/data/CAP_expression",
 	    "datatype": "MULTIPLE_TYPES",
 	    "datatypes": ["CONTINUOUS", "ZSCORE"],
 	    "metadata": {
-		"input_directory": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests-handlers/data/CAP_expression",
 		"zscores": true,
 		"profile_name": "mRNA Expression",
 		"profile_description": "Expression information DCIS (5 Samples)",

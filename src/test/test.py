@@ -72,27 +72,39 @@ class TestReport(TestBase):
         self.testDir = os.path.dirname(os.path.realpath(__file__))
         self.dataDir = os.path.realpath(os.path.join(self.testDir, 'data'))
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_report_test_')
+        self.report_name = 'sample_report.json'
+        self.sample_id = 'OCT-01-0472-CAP'
 
     def test_demo(self):
-        """Test with dummy 'demonstration' genetic_alteration class"""
+        """Test report with dummy 'demonstration' genetic_alteration class"""
         random.seed(42) # set the random seed to ensure consistent demo output
         out_dir = os.path.join(self.tmp.name, 'test_report_demo')
         os.mkdir(out_dir)
         with open(os.path.join(self.dataDir, 'study_config_demo_report.json')) as configFile:
             config = json.loads(configFile.read())
-        report_name = 'sample_report.json'
-        report_path = os.path.join(out_dir, report_name)
-        sample_id = 'OCT-01-0472-CAP'
-        test_report = report(config, sample_id, log_level=logging.ERROR)
-        test_report.write_report_config(report_path)
+        report_path = os.path.join(out_dir, self.report_name)
+        report(config, self.sample_id, log_level=logging.ERROR).write_report_config(report_path)
         self.assertTrue(os.path.exists(report_path), "JSON report exists")
-        checksum = {report_name: '199b271c456cfef023abdf3b736a8260'}
+        checksum = {self.report_name: '199b271c456cfef023abdf3b736a8260'}
+        self.verify_checksums(checksum, out_dir)
+
+    def test_mx(self):
+        """Test report with 'mutation extended' input"""
+        out_dir = os.path.join(self.tmp.name, 'test_report_mx')
+        os.mkdir(out_dir)
+        with open(os.path.join(self.dataDir, 'study_config_mx.json')) as configFile:
+            config = json.loads(configFile.read())
+        report_path = os.path.join(out_dir, self.report_name)
+        report(config, self.sample_id, log_level=logging.ERROR).write_report_config(report_path)
+        self.assertTrue(os.path.exists(report_path), "JSON report exists")
+        checksum = {self.report_name: 'be96ffcfb754f807c669e527e99d0773'}
         self.verify_checksums(checksum, out_dir)
         args = [config, 'nonexistent sample', logging.CRITICAL]
         self.assertRaises(DjerbaReportError, report, *args)
 
+
 class TestScript(TestBase):
-    """Minimal test of command-line script"""
+    """Tests of command-line script"""
 
     def setUp(self):
         super().setUp()
@@ -101,6 +113,7 @@ class TestScript(TestBase):
         self.scriptPath = os.path.join(self.testDir, os.pardir, 'bin', self.scriptName)
 
     def test_compile(self):
+        """Minimal test that command-line script compiles"""
         with open(self.scriptPath, 'rb') as inFile:
             self.assertIsNotNone(
                 compile(inFile.read(), self.scriptName, 'exec'),
