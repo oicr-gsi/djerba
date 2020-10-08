@@ -1,499 +1,664 @@
 {
     "gene_metrics": [
         {
-            "Gene": "ABCB4"
-        },
-        {
+            "Chromosome": "chr1",
             "Gene": "ACTL8"
         },
         {
-            "Gene": "ADAM12"
-        },
-        {
-            "Gene": "ADCY10"
-        },
-        {
-            "Gene": "ADGRG7"
-        },
-        {
-            "Gene": "AMZ2"
-        },
-        {
-            "Gene": "ANAPC1"
-        },
-        {
-            "Gene": "APOBR"
-        },
-        {
-            "Gene": "APOL4"
-        },
-        {
-            "Gene": "ARHGAP5"
-        },
-        {
-            "Gene": "ARHGEF40"
-        },
-        {
-            "Gene": "ASCC2"
-        },
-        {
-            "Gene": "ATP2B2"
-        },
-        {
-            "Gene": "ATP2B3"
-        },
-        {
-            "Gene": "ATP7B"
-        },
-        {
-            "Gene": "ATRN"
-        },
-        {
-            "Gene": "B3GALNT1"
-        },
-        {
-            "Gene": "BCL11B"
-        },
-        {
-            "Gene": "BEST2"
-        },
-        {
-            "Gene": "BRCA2"
-        },
-        {
-            "Gene": "C11orf40"
-        },
-        {
-            "Gene": "C2CD4D"
-        },
-        {
-            "Gene": "CABP1"
-        },
-        {
-            "Gene": "CADM1"
-        },
-        {
-            "Gene": "CADM3"
-        },
-        {
-            "Gene": "CBX4"
-        },
-        {
-            "Gene": "CCNC"
-        },
-        {
-            "Gene": "CDC42EP1"
-        },
-        {
-            "Gene": "CHST13"
-        },
-        {
-            "Gene": "CLDN7"
-        },
-        {
-            "Gene": "CNTD1"
-        },
-        {
-            "Gene": "CNTN3"
-        },
-        {
-            "Gene": "COX17"
-        },
-        {
-            "Gene": "CTDSPL"
-        },
-        {
-            "Gene": "CUL4B"
-        },
-        {
-            "Gene": "DBR1"
-        },
-        {
-            "Gene": "DCD"
-        },
-        {
-            "Gene": "DHRS12"
-        },
-        {
-            "Gene": "DMBT1"
-        },
-        {
-            "Gene": "DNAH11"
-        },
-        {
-            "Gene": "DOT1L"
-        },
-        {
-            "Gene": "EP400"
-        },
-        {
-            "Gene": "EPPK1"
-        },
-        {
-            "Gene": "ERCC2"
-        },
-        {
-            "Gene": "ERGIC1"
-        },
-        {
-            "Gene": "ESAM"
-        },
-        {
-            "Gene": "EXOC3L4"
-        },
-        {
-            "Gene": "FADS6"
-        },
-        {
-            "Gene": "FAM221B"
-        },
-        {
-            "Gene": "FAM83G"
-        },
-        {
-            "Gene": "FAT3"
-        },
-        {
-            "Gene": "FAT4"
-        },
-        {
-            "Gene": "FBXW8"
-        },
-        {
-            "Gene": "FDXR"
-        },
-        {
-            "Gene": "FOXL1"
-        },
-        {
-            "Gene": "GAP43"
-        },
-        {
-            "Gene": "GBF1"
-        },
-        {
-            "Gene": "GOLGA4"
-        },
-        {
-            "Gene": "GPRIN1"
-        },
-        {
-            "Gene": "GPX1"
-        },
-        {
-            "Gene": "GRK4"
-        },
-        {
-            "Gene": "GSR"
-        },
-        {
-            "Gene": "GYPB"
-        },
-        {
-            "Gene": "HEATR5B"
-        },
-        {
-            "Gene": "HOXB1"
-        },
-        {
-            "Gene": "IFT172"
-        },
-        {
-            "Gene": "IGF2"
-        },
-        {
-            "Gene": "IGSF9B"
-        },
-        {
-            "Gene": "IKZF5"
-        },
-        {
-            "Gene": "IQCD"
-        },
-        {
-            "Gene": "KIAA1549"
-        },
-        {
-            "Gene": "KLHL14"
-        },
-        {
-            "Gene": "KLK9"
-        },
-        {
-            "Gene": "KRTAP4-5"
-        },
-        {
-            "Gene": "LAMTOR5"
-        },
-        {
-            "Gene": "LGR6"
-        },
-        {
-            "Gene": "LTN1"
-        },
-        {
-            "Gene": "MAGI1"
-        },
-        {
-            "Gene": "MAPK1"
-        },
-        {
-            "Gene": "MAPK10"
-        },
-        {
-            "Gene": "MAPRE2"
-        },
-        {
-            "Gene": "MCM6"
-        },
-        {
-            "Gene": "MED24"
-        },
-        {
-            "Gene": "METRN"
-        },
-        {
-            "Gene": "MRFAP1"
-        },
-        {
-            "Gene": "MRPL27"
-        },
-        {
-            "Gene": "MUC19"
-        },
-        {
-            "Gene": "MXI1"
-        },
-        {
-            "Gene": "MYH14"
-        },
-        {
-            "Gene": "MYSM1"
-        },
-        {
-            "Gene": "NBPF20"
-        },
-        {
-            "Gene": "NEK3"
-        },
-        {
-            "Gene": "NF2"
-        },
-        {
-            "Gene": "NLRP8"
-        },
-        {
-            "Gene": "NME4"
-        },
-        {
-            "Gene": "NOD2"
-        },
-        {
-            "Gene": "NRG1"
-        },
-        {
-            "Gene": "NRK"
-        },
-        {
-            "Gene": "NYX"
-        },
-        {
-            "Gene": "OR10AD1"
-        },
-        {
-            "Gene": "OR52A1"
-        },
-        {
-            "Gene": "P2RX5"
-        },
-        {
-            "Gene": "PAPPA2"
-        },
-        {
-            "Gene": "PDE10A"
-        },
-        {
-            "Gene": "PI4KA"
-        },
-        {
-            "Gene": "PKDREJ"
-        },
-        {
-            "Gene": "PPM1E"
-        },
-        {
-            "Gene": "PPP1CC"
-        },
-        {
-            "Gene": "PRKAB1"
-        },
-        {
-            "Gene": "PTPN11"
-        },
-        {
-            "Gene": "PTPRQ"
-        },
-        {
-            "Gene": "R3HDM1"
-        },
-        {
-            "Gene": "RNASEH2B"
-        },
-        {
-            "Gene": "RNF145"
-        },
-        {
-            "Gene": "RPH3A"
-        },
-        {
-            "Gene": "SBK1"
-        },
-        {
-            "Gene": "SETD1A"
-        },
-        {
-            "Gene": "SIDT1"
-        },
-        {
-            "Gene": "SIM2"
-        },
-        {
-            "Gene": "SLC1A5"
-        },
-        {
-            "Gene": "SLC38A10"
-        },
-        {
-            "Gene": "SLC39A12"
-        },
-        {
-            "Gene": "SORCS2"
-        },
-        {
-            "Gene": "SPANXD"
-        },
-        {
-            "Gene": "SREK1IP1"
-        },
-        {
-            "Gene": "STK32A"
-        },
-        {
-            "Gene": "SUSD2"
-        },
-        {
-            "Gene": "SV2A"
-        },
-        {
-            "Gene": "SVEP1"
-        },
-        {
-            "Gene": "SYNE1"
-        },
-        {
-            "Gene": "SYT16"
-        },
-        {
+            "Chromosome": "chr1",
             "Gene": "SZT2"
         },
         {
-            "Gene": "TAF1C"
+            "Chromosome": "chr1",
+            "Gene": "MYSM1"
         },
         {
-            "Gene": "TBX6"
+            "Chromosome": "chr1",
+            "Gene": "LAMTOR5"
         },
         {
-            "Gene": "TDRD3"
+            "Chromosome": "chr1",
+            "Gene": "NBPF20"
         },
         {
-            "Gene": "TENM3"
+            "Chromosome": "chr1",
+            "Gene": "SV2A"
         },
         {
-            "Gene": "TGFBR2"
+            "Chromosome": "chr1",
+            "Gene": "C2CD4D"
         },
         {
-            "Gene": "TLX2"
+            "Chromosome": "chr1",
+            "Gene": "CADM3"
         },
         {
-            "Gene": "TM9SF3"
-        },
-        {
-            "Gene": "TMEM232"
-        },
-        {
-            "Gene": "TMIE"
-        },
-        {
-            "Gene": "TNRC6A"
-        },
-        {
-            "Gene": "TOP1MT"
-        },
-        {
-            "Gene": "TP53"
-        },
-        {
-            "Gene": "TPRXL"
-        },
-        {
-            "Gene": "TPSD1"
-        },
-        {
-            "Gene": "TRIOBP"
-        },
-        {
-            "Gene": "TSPAN10"
-        },
-        {
-            "Gene": "TUBGCP3"
-        },
-        {
-            "Gene": "TULP2"
-        },
-        {
-            "Gene": "TXNRD2"
-        },
-        {
-            "Gene": "UCHL3"
-        },
-        {
-            "Gene": "UNC13B"
-        },
-        {
+            "Chromosome": "chr1",
             "Gene": "VANGL2"
         },
         {
-            "Gene": "VAV1"
+            "Chromosome": "chr1",
+            "Gene": "ADCY10"
         },
         {
-            "Gene": "VHL"
+            "Chromosome": "chr1",
+            "Gene": "PAPPA2"
         },
         {
+            "Chromosome": "chr1",
+            "Gene": "LGR6"
+        },
+        {
+            "Chromosome": "chr1",
             "Gene": "VN1R5"
         },
         {
-            "Gene": "WDR90"
+            "Chromosome": "chr2",
+            "Gene": "IFT172"
         },
         {
+            "Chromosome": "chr2",
+            "Gene": "HEATR5B"
+        },
+        {
+            "Chromosome": "chr2",
+            "Gene": "TLX2"
+        },
+        {
+            "Chromosome": "chr2",
+            "Gene": "ANAPC1"
+        },
+        {
+            "Chromosome": "chr2",
+            "Gene": "R3HDM1"
+        },
+        {
+            "Chromosome": "chr2",
+            "Gene": "MCM6"
+        },
+        {
+            "Chromosome": "chr2",
             "Gene": "XIRP2"
         },
         {
+            "Chromosome": "chr2",
             "Gene": "ZNF385B"
         },
         {
+            "Chromosome": "chr3",
+            "Gene": "VHL"
+        },
+        {
+            "Chromosome": "chr3",
+            "Gene": "ATP2B2"
+        },
+        {
+            "Chromosome": "chr3",
+            "Gene": "TPRXL"
+        },
+        {
+            "Chromosome": "chr3",
+            "Gene": "TGFBR2"
+        },
+        {
+            "Chromosome": "chr3",
+            "Gene": "GOLGA4"
+        },
+        {
+            "Chromosome": "chr3",
+            "Gene": "CTDSPL"
+        },
+        {
+            "Chromosome": "chr3",
+            "Gene": "TMIE"
+        },
+        {
+            "Chromosome": "chr3",
+            "Gene": "GPX1"
+        },
+        {
+            "Chromosome": "chr3",
+            "Gene": "MAGI1"
+        },
+        {
+            "Chromosome": "chr3",
+            "Gene": "CNTN3"
+        },
+        {
+            "Chromosome": "chr3",
+            "Gene": "ADGRG7"
+        },
+        {
+            "Chromosome": "chr3",
+            "Gene": "SIDT1"
+        },
+        {
+            "Chromosome": "chr3",
+            "Gene": "GAP43"
+        },
+        {
+            "Chromosome": "chr3",
+            "Gene": "COX17"
+        },
+        {
+            "Chromosome": "chr3",
+            "Gene": "CHST13"
+        },
+        {
+            "Chromosome": "chr3",
+            "Gene": "DBR1"
+        },
+        {
+            "Chromosome": "chr3",
+            "Gene": "B3GALNT1"
+        },
+        {
+            "Chromosome": "chr4",
+            "Gene": "GRK4"
+        },
+        {
+            "Chromosome": "chr4",
+            "Gene": "MRFAP1"
+        },
+        {
+            "Chromosome": "chr4",
+            "Gene": "SORCS2"
+        },
+        {
+            "Chromosome": "chr4",
+            "Gene": "MAPK10"
+        },
+        {
+            "Chromosome": "chr4",
+            "Gene": "FAT4"
+        },
+        {
+            "Chromosome": "chr4",
+            "Gene": "GYPB"
+        },
+        {
+            "Chromosome": "chr4",
+            "Gene": "TENM3"
+        },
+        {
+            "Chromosome": "chr5",
+            "Gene": "SREK1IP1"
+        },
+        {
+            "Chromosome": "chr5",
+            "Gene": "TMEM232"
+        },
+        {
+            "Chromosome": "chr5",
+            "Gene": "STK32A"
+        },
+        {
+            "Chromosome": "chr5",
+            "Gene": "RNF145"
+        },
+        {
+            "Chromosome": "chr5",
+            "Gene": "ERGIC1"
+        },
+        {
+            "Chromosome": "chr5",
+            "Gene": "GPRIN1"
+        },
+        {
+            "Chromosome": "chr6",
+            "Gene": "CCNC"
+        },
+        {
+            "Chromosome": "chr6",
+            "Gene": "SYNE1"
+        },
+        {
+            "Chromosome": "chr6",
+            "Gene": "PDE10A"
+        },
+        {
+            "Chromosome": "chr7",
+            "Gene": "DNAH11"
+        },
+        {
+            "Chromosome": "chr7",
+            "Gene": "ABCB4"
+        },
+        {
+            "Chromosome": "chr7",
+            "Gene": "ZSCAN25"
+        },
+        {
+            "Chromosome": "chr7",
+            "Gene": "KIAA1549"
+        },
+        {
+            "Chromosome": "chr8",
+            "Gene": "GSR"
+        },
+        {
+            "Chromosome": "chr8",
+            "Gene": "NRG1"
+        },
+        {
+            "Chromosome": "chr8",
+            "Gene": "TOP1MT"
+        },
+        {
+            "Chromosome": "chr8",
+            "Gene": "EPPK1"
+        },
+        {
+            "Chromosome": "chr9",
+            "Gene": "UNC13B"
+        },
+        {
+            "Chromosome": "chr9",
+            "Gene": "FAM221B"
+        },
+        {
+            "Chromosome": "chr9",
+            "Gene": "SVEP1"
+        },
+        {
+            "Chromosome": "chr10",
+            "Gene": "SLC39A12"
+        },
+        {
+            "Chromosome": "chr10",
             "Gene": "ZNF503"
         },
         {
+            "Chromosome": "chr10",
+            "Gene": "TM9SF3"
+        },
+        {
+            "Chromosome": "chr10",
+            "Gene": "GBF1"
+        },
+        {
+            "Chromosome": "chr10",
+            "Gene": "MXI1"
+        },
+        {
+            "Chromosome": "chr10",
+            "Gene": "DMBT1"
+        },
+        {
+            "Chromosome": "chr10",
+            "Gene": "IKZF5"
+        },
+        {
+            "Chromosome": "chr10",
+            "Gene": "ADAM12"
+        },
+        {
+            "Chromosome": "chr11",
+            "Gene": "IGF2"
+        },
+        {
+            "Chromosome": "chr11",
+            "Gene": "C11orf40"
+        },
+        {
+            "Chromosome": "chr11",
+            "Gene": "OR52A1"
+        },
+        {
+            "Chromosome": "chr11",
+            "Gene": "FAT3"
+        },
+        {
+            "Chromosome": "chr11",
+            "Gene": "CADM1"
+        },
+        {
+            "Chromosome": "chr11",
+            "Gene": "ESAM"
+        },
+        {
+            "Chromosome": "chr11",
+            "Gene": "IGSF9B"
+        },
+        {
+            "Chromosome": "chr12",
+            "Gene": "MUC19"
+        },
+        {
+            "Chromosome": "chr12",
+            "Gene": "OR10AD1"
+        },
+        {
+            "Chromosome": "chr12",
+            "Gene": "DCD"
+        },
+        {
+            "Chromosome": "chr12",
+            "Gene": "PTPRQ"
+        },
+        {
+            "Chromosome": "chr12",
+            "Gene": "PPP1CC"
+        },
+        {
+            "Chromosome": "chr12",
+            "Gene": "PTPN11"
+        },
+        {
+            "Chromosome": "chr12",
+            "Gene": "RPH3A"
+        },
+        {
+            "Chromosome": "chr12",
+            "Gene": "IQCD"
+        },
+        {
+            "Chromosome": "chr12",
+            "Gene": "FBXW8"
+        },
+        {
+            "Chromosome": "chr12",
+            "Gene": "PRKAB1"
+        },
+        {
+            "Chromosome": "chr12",
+            "Gene": "CABP1"
+        },
+        {
+            "Chromosome": "chr12",
+            "Gene": "EP400"
+        },
+        {
+            "Chromosome": "chr13",
+            "Gene": "BRCA2"
+        },
+        {
+            "Chromosome": "chr13",
+            "Gene": "RNASEH2B"
+        },
+        {
+            "Chromosome": "chr13",
+            "Gene": "DHRS12"
+        },
+        {
+            "Chromosome": "chr13",
+            "Gene": "ATP7B"
+        },
+        {
+            "Chromosome": "chr13",
+            "Gene": "NEK3"
+        },
+        {
+            "Chromosome": "chr13",
+            "Gene": "TDRD3"
+        },
+        {
+            "Chromosome": "chr13",
+            "Gene": "UCHL3"
+        },
+        {
+            "Chromosome": "chr13",
+            "Gene": "TUBGCP3"
+        },
+        {
+            "Chromosome": "chr14",
+            "Gene": "ARHGEF40"
+        },
+        {
+            "Chromosome": "chr14",
+            "Gene": "ARHGAP5"
+        },
+        {
+            "Chromosome": "chr14",
+            "Gene": "SYT16"
+        },
+        {
+            "Chromosome": "chr14",
+            "Gene": "BCL11B"
+        },
+        {
+            "Chromosome": "chr14",
+            "Gene": "EXOC3L4"
+        },
+        {
+            "Chromosome": "chr16",
+            "Gene": "NME4"
+        },
+        {
+            "Chromosome": "chr16",
+            "Gene": "WDR90"
+        },
+        {
+            "Chromosome": "chr16",
+            "Gene": "METRN"
+        },
+        {
+            "Chromosome": "chr16",
+            "Gene": "TPSD1"
+        },
+        {
+            "Chromosome": "chr16",
+            "Gene": "TNRC6A"
+        },
+        {
+            "Chromosome": "chr16",
+            "Gene": "SBK1"
+        },
+        {
+            "Chromosome": "chr16",
+            "Gene": "APOBR"
+        },
+        {
+            "Chromosome": "chr16",
+            "Gene": "TBX6"
+        },
+        {
+            "Chromosome": "chr16",
+            "Gene": "SETD1A"
+        },
+        {
+            "Chromosome": "chr16",
             "Gene": "ZNF720"
         },
         {
+            "Chromosome": "chr16",
+            "Gene": "NOD2"
+        },
+        {
+            "Chromosome": "chr16",
+            "Gene": "TAF1C"
+        },
+        {
+            "Chromosome": "chr16",
+            "Gene": "FOXL1"
+        },
+        {
+            "Chromosome": "chr16",
             "Gene": "ZNF778"
         },
         {
+            "Chromosome": "chr17",
+            "Gene": "P2RX5"
+        },
+        {
+            "Chromosome": "chr17",
+            "Gene": "CLDN7"
+        },
+        {
+            "Chromosome": "chr17",
+            "Gene": "TP53"
+        },
+        {
+            "Chromosome": "chr17",
+            "Gene": "FAM83G"
+        },
+        {
+            "Chromosome": "chr17",
+            "Gene": "MED24"
+        },
+        {
+            "Chromosome": "chr17",
+            "Gene": "KRTAP4-5"
+        },
+        {
+            "Chromosome": "chr17",
+            "Gene": "CNTD1"
+        },
+        {
+            "Chromosome": "chr17",
+            "Gene": "HOXB1"
+        },
+        {
+            "Chromosome": "chr17",
+            "Gene": "MRPL27"
+        },
+        {
+            "Chromosome": "chr17",
+            "Gene": "PPM1E"
+        },
+        {
+            "Chromosome": "chr17",
+            "Gene": "AMZ2"
+        },
+        {
+            "Chromosome": "chr17",
+            "Gene": "FDXR"
+        },
+        {
+            "Chromosome": "chr17",
+            "Gene": "FADS6"
+        },
+        {
+            "Chromosome": "chr17",
+            "Gene": "CBX4"
+        },
+        {
+            "Chromosome": "chr17",
+            "Gene": "SLC38A10"
+        },
+        {
+            "Chromosome": "chr17",
+            "Gene": "TSPAN10"
+        },
+        {
+            "Chromosome": "chr18",
+            "Gene": "KLHL14"
+        },
+        {
+            "Chromosome": "chr18",
+            "Gene": "MAPRE2"
+        },
+        {
+            "Chromosome": "chr19",
+            "Gene": "DOT1L"
+        },
+        {
+            "Chromosome": "chr19",
+            "Gene": "VAV1"
+        },
+        {
+            "Chromosome": "chr19",
+            "Gene": "BEST2"
+        },
+        {
+            "Chromosome": "chr19",
+            "Gene": "ERCC2"
+        },
+        {
+            "Chromosome": "chr19",
+            "Gene": "SLC1A5"
+        },
+        {
+            "Chromosome": "chr19",
+            "Gene": "TULP2"
+        },
+        {
+            "Chromosome": "chr19",
+            "Gene": "MYH14"
+        },
+        {
+            "Chromosome": "chr19",
+            "Gene": "KLK9"
+        },
+        {
+            "Chromosome": "chr19",
+            "Gene": "NLRP8"
+        },
+        {
+            "Chromosome": "chr20",
+            "Gene": "ATRN"
+        },
+        {
+            "Chromosome": "chr21",
+            "Gene": "LTN1"
+        },
+        {
+            "Chromosome": "chr21",
+            "Gene": "SIM2"
+        },
+        {
+            "Chromosome": "chr22",
+            "Gene": "TXNRD2"
+        },
+        {
+            "Chromosome": "chr22",
+            "Gene": "PI4KA"
+        },
+        {
+            "Chromosome": "chr22",
+            "Gene": "MAPK1"
+        },
+        {
+            "Chromosome": "chr22",
+            "Gene": "SUSD2"
+        },
+        {
+            "Chromosome": "chr22",
+            "Gene": "NF2"
+        },
+        {
+            "Chromosome": "chr22",
+            "Gene": "ASCC2"
+        },
+        {
+            "Chromosome": "chr22",
+            "Gene": "APOL4"
+        },
+        {
+            "Chromosome": "chr22",
+            "Gene": "CDC42EP1"
+        },
+        {
+            "Chromosome": "chr22",
+            "Gene": "TRIOBP"
+        },
+        {
+            "Chromosome": "chr22",
+            "Gene": "PKDREJ"
+        },
+        {
+            "Chromosome": "chrX",
+            "Gene": "NYX"
+        },
+        {
+            "Chromosome": "chrX",
             "Gene": "ZNF81"
         },
         {
-            "Gene": "ZSCAN25"
+            "Chromosome": "chrX",
+            "Gene": "NRK"
+        },
+        {
+            "Chromosome": "chrX",
+            "Gene": "CUL4B"
+        },
+        {
+            "Chromosome": "chrX",
+            "Gene": "SPANXD"
+        },
+        {
+            "Chromosome": "chrX",
+            "Gene": "ATP2B3"
         }
     ],
     "sample_info": {

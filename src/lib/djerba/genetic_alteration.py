@@ -17,13 +17,14 @@ class genetic_alteration(dual_output_component):
     # TODO in some instances, could write cBioPortal data to a tempdir and then extract elba metrics
     # The 'elba' methods get_attributes_for_sample and get_metrics_by_gene should be consistent
     # and avoid duplication with cBioPortal write_metrics
-    
-    WORKFLOW_KEY = 'oicr_workflow'
+
+    # top-level config keys
+    WORKFLOW_RUN_ID_KEY = 'workflow_run_id'
     METADATA_KEY = 'metadata'
     INPUT_FILES_KEY = 'input_files'
+    INPUT_DIRECTORY_KEY = 'input_directory'
     # additional metadata keys
     FILTER_VCF_KEY = 'filter_vcf'
-    INPUT_DIRECTORY_KEY = 'input_directory'
     REGIONS_BED_KEY = 'regions_bed'
     
     def __init__(self, config, study_id=None, log_level=logging.WARNING, log_path=None):
@@ -35,7 +36,8 @@ class genetic_alteration(dual_output_component):
             #self.workflow = config[self.WORKFLOW_KEY] # TODO is this field necessary?
             self.metadata = config[self.METADATA_KEY]
             self.input_files = config[self.INPUT_FILES_KEY]
-            self.input_directory = self.metadata[self.INPUT_DIRECTORY_KEY]
+            self.input_directory = config[self.INPUT_DIRECTORY_KEY]
+            self.workflow_run_id = config[self.WORKFLOW_RUN_ID_KEY]
         except KeyError as err:
             self.logger.error("Missing required config key: {0}".format(err))
             raise
@@ -74,6 +76,9 @@ class genetic_alteration(dual_output_component):
         self.logger.error(msg)
         return []
 
+    def get_input_path(self, sample_id):
+        return os.path.join(self.input_directory, self.input_files[sample_id])
+    
     def get_metrics_by_gene(self, sample_id):
         """PLACEHOLDER. Get a dictionary of metric values for the given sample, indexed by gene."""
         msg = "get_metrics_by_gene method of parent class; not intended for production"
@@ -161,6 +166,7 @@ class mutation_extended(genetic_alteration):
 
     # MAF column headers
     HUGO_SYMBOL = 'Hugo_Symbol'
+    CHROMOSOME = 'Chromosome'
 
     def _find_all_sample_attributes(self):
         # TODO 'cancer_type' appears in study-level config. Could read it from there and
@@ -188,26 +194,36 @@ class mutation_extended(genetic_alteration):
         if self.gene_names:
             return self.gene_names
         gene_name_set = set()
-        for input_file in self.input_files.values():
+        for sample_id in self.sample_ids:
             # pandas read_csv() will automatically decompress .gz input
             self.logger.debug("Reading gene names from %s/%s" % (self.input_directory, input_file))
             df = pd.read_csv(
-                os.path.join(self.input_directory, input_file),
+                self.get_input_path(sample_id),
                 delimiter="\t",
                 usecols=[self.HUGO_SYMBOL],
                 comment="#"
             )
-            gene_name_set.update(set(df[self.HUGO_SYMBOL].tolist()))
+            sample_gene_names = set(df[self.HUGO_SYMBOL].tolist())
+            if len(gene_name_set) == 0:
+                gene_name_set = sample_gene_names
+            elif sample_gene_names != gene_name_set:
+                self.logger.warning("Gene name sets are not consistent between input MAF files")
         # convert to list and sort
         gene_names = sorted(list(gene_name_set))
         self.gene_names = gene_names # store the gene names in case needed later
         return gene_names
 
     def get_metrics_by_gene(self, sample_id):
-        """Return an empty data structure for now; TODO insert gene-level metrics"""
+        """Find gene-level mutation metrics. Chromosome name only for now; can add others."""
+        df = pd.read_csv(
+            self.get_input_path(sample_id),
+            delimiter="\t",
+            usecols=[self.HUGO_SYMBOL, self.CHROMOSOME],
+            comment="#"
+        )
         metrics_by_gene = {}
-        for name in self.get_gene_names():
-            metrics_by_gene[name] = {}
+        for index, row in df.iterrows():
+            metrics_by_gene[row[self.HUGO_SYMBOL]] = {self.CHROMOSOME: row[self.CHROMOSOME]}
         return metrics_by_gene
 
     def write_data(self, out_dir):

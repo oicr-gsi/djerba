@@ -68,8 +68,9 @@
 	{
 	    "genetic_alteration_type": "DEMONSTRATION",
 	    "datatype": "MAF",
+	    "input_directory": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests/data/Strelka",
+	    "workflow_run_id": "jabberwocky_workflow_run_0003",
 	    "metadata": {
-		"input_directory": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests/data/Strelka",
 		"oncokb_api_token": "e326982a-02ba-4f04-8ef6-80b04fa74acd",
 		"filter_vcf": "/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz"
 	    },
