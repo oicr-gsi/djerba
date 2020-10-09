@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+### Added
+- `review_status` field in Elba JSON output
+
 ## v0.0.1: 2020-10-08
 Initial development release
 ### Added
