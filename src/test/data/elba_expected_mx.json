@@ -661,6 +661,7 @@
             "Gene": "ATP2B3"
         }
     ],
+    "review_status": -1,
     "sample_info": {
         "AGE": 35,
         "CANCER_TYPE": "Bowel",

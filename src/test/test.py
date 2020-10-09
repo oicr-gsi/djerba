@@ -85,7 +85,7 @@ class TestReport(TestBase):
         report_path = os.path.join(out_dir, self.report_name)
         report(config, self.sample_id, log_level=logging.ERROR).write_report_config(report_path)
         self.assertTrue(os.path.exists(report_path), "JSON report exists")
-        checksum = {self.report_name: '199b271c456cfef023abdf3b736a8260'}
+        checksum = {self.report_name: '4c8466180b33b67a81ec580e51dc88db'}
         self.verify_checksums(checksum, out_dir)
 
     def test_mx(self):
@@ -97,7 +97,7 @@ class TestReport(TestBase):
         report_path = os.path.join(out_dir, self.report_name)
         report(config, self.sample_id, log_level=logging.ERROR).write_report_config(report_path)
         self.assertTrue(os.path.exists(report_path), "JSON report exists")
-        checksum = {self.report_name: 'be96ffcfb754f807c669e527e99d0773'}
+        checksum = {self.report_name: 'd465004e56ece86241d7c6dc89bc7c6b'}
         self.verify_checksums(checksum, out_dir)
         args = [config, 'nonexistent sample', logging.CRITICAL]
         self.assertRaises(DjerbaReportError, report, *args)

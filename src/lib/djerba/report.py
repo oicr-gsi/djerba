@@ -68,6 +68,7 @@ class report(base):
         config = {}
         config[constants.SAMPLE_INFO_KEY] = self.sample.get_attributes()
         config[constants.GENE_METRICS_KEY] = gene_metrics_list
+        config[constants.REVIEW_STATUS_KEY] = -1 # placeholder; will be updated by Elba
         return config
 
     def write_report_config(self, out_path, force=False):
