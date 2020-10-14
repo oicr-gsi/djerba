@@ -24,7 +24,7 @@ setup(
             'data/input_schema.json'
         ]
     },
-    install_requires=['jsonschema', 'numpy', 'pandas', 'scipy', 'statsmodels', 'PyYAML'],
+    install_requires=['jsonschema', 'numpy', 'pandas', 'scipy', 'statsmodels', 'pdoc3', 'PyYAML'],
     python_requires='>=3.7',
     author="Iain Bancarz",
     author_email="ibancarz@oicr.on.ca",
