@@ -3,6 +3,10 @@ Djerba documentation
 
 The `doc` directory contains additional documentation and examples.
 
+## HTML documentation
+
+[HTML documentation](./doc/html/djerba/index.html) pages were generated using [pdoc3](https://pdoc3.github.io/pdoc/). These incorporate documentation strings from source code, and show the structure of classes and methods.
+
 ## Elba config output
 
 Two examples of Elba config output:
