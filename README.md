@@ -12,6 +12,12 @@ Reporting formats supported by Djerba include:
 
 Djerba is named for an [island](https://en.wikipedia.org/wiki/Djerba) off the coast of North Africa. (The initial letter D is silent, so it is pronounced "jerba".)
 
+## Documentation
+
+The [doc](./doc/README.md) directory holds additional documentation and examples.
+
+It includes [HTML documentation](./doc/html/djerba/index.html) generated using [pdoc3](https://pdoc3.github.io/pdoc/).
+
 ## Operation
 
 ### Prerequisites

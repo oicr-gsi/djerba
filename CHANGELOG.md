@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 - `review_status` field in Elba JSON output
+- HTML documentation generated using [pdoc3](https://pdoc3.github.io/pdoc/).
 
 ## v0.0.1: 2020-10-08
 Initial development release
