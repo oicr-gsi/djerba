@@ -16,13 +16,12 @@ import pandas as pd
 import random
 import tempfile
 import yaml
-from djerba.components import dual_output_component
 from djerba.metrics import mutation_extended_metrics
 from djerba.utilities import constants
 from djerba.utilities.base import base
 from djerba.utilities.tools import system_tools
 
-class genetic_alteration(dual_output_component):
+class genetic_alteration(base):
     """Base class; unit of genetic alteration data for cBioPortal and other reports"""
 
     # TODO make into a Python AbstractBaseClass: https://docs.python.org/3/library/abc.html
@@ -352,7 +351,7 @@ class mutation_extended(genetic_alteration):
         self.logger.info("Writing concatenated MAF output to %s" % out_path)
         output_df.to_csv(out_path, sep="\t")
         tmp.cleanup()
-        
+
     def write_meta(self, out_dir):
         """cBioPortal. Write mutation metadata."""
         try:
@@ -376,3 +375,7 @@ class mutation_extended(genetic_alteration):
             raise
         with open(os.path.join(out_dir, self.META_FILENAME), 'w') as out_file:
             out_file.write(yaml.dump(meta, sort_keys=True))
+
+    def write(self, out_dir):
+        self.write_data(out_dir)
+        self.write_meta(out_dir)
