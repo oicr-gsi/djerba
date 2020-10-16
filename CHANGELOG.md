@@ -4,6 +4,7 @@
 ### Added
 - `review_status` field in Elba JSON output
 - HTML documentation generated using [pdoc3](https://pdoc3.github.io/pdoc/).
+- Custom annotation in TSV format with the `custom_annotation` class.
 
 ## v0.0.1: 2020-10-08
 Initial development release

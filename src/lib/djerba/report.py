@@ -1,3 +1,5 @@
+"""Genome interpretation Clinical Report configuration"""
+
 import json
 import logging
 import os
