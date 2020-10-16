@@ -16,7 +16,7 @@ Djerba is named for an [island](https://en.wikipedia.org/wiki/Djerba) off the co
 
 The [doc](./doc/README.md) directory holds additional documentation and examples.
 
-It includes [HTML documentation](./doc/html/djerba/index.html) generated using [pdoc3](https://pdoc3.github.io/pdoc/).
+It includes [HTML documentation](./doc/html/djerba/index.html) generated using [pdoc3](https://pdoc3.github.io/pdoc/); see 'Release Procedure' for details.
 
 ## Operation
 
@@ -67,9 +67,10 @@ The script requires a config file in JSON format; it validates the file against 
 ## Release Procedure
 
 - Update `CHANGELOG.md`
-- Update the version number in `setup.py`
-- Tag the release on Github
-- Create, test, and install a new environment module in [OICR Modulator](https://gitlab.oicr.on.ca/ResearchIT/modulator) to install the newly tagged release
+- Increment the version number in `setup.py`
+- Update HTML documentation by running: `pdoc --html djerba --force -o doc/html`. This requires (1) the [pdoc3](https://pdoc3.github.io/pdoc/) package; (2) an up-to-date version of the `djerba` package on the `PYTHONPATH`.
+- Commit (or merge) to the master branch, and tag the release on Github
+- Update environment module configuration in [OICR Modulator](https://gitlab.oicr.on.ca/ResearchIT/modulator) to install the newly tagged release
 
 ## Development History and Plans
 

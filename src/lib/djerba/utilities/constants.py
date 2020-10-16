@@ -1,10 +1,11 @@
 """Module to define constants"""
 
-# cbioportal datatypes
+# genetic_alteration datatypes
 CNA_TYPE = 'COPY_NUMBER_ALTERATION'
 EXPRESSION_TYPE = 'MRNA_EXPRESSION'
 MUTATION_TYPE = 'MUTATION_EXTENDED'
 DEMONSTRATION_TYPE = 'DEMONSTRATION'
+CUSTOM_ANNOTATION_TYPE = 'CUSTOM_ANNOTATION'
 DISCRETE_DATATYPE = 'DISCRETE'
 
 # metadata keys for cBioPortal
