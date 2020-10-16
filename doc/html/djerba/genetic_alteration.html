@@ -52,13 +52,12 @@ import pandas as pd
 import random
 import tempfile
 import yaml
-from djerba.components import dual_output_component
 from djerba.metrics import mutation_extended_metrics
 from djerba.utilities import constants
 from djerba.utilities.base import base
 from djerba.utilities.tools import system_tools
 
-class genetic_alteration(dual_output_component):
+class genetic_alteration(base):
     &#34;&#34;&#34;Base class; unit of genetic alteration data for cBioPortal and other reports&#34;&#34;&#34;
 
     # TODO make into a Python AbstractBaseClass: https://docs.python.org/3/library/abc.html
@@ -148,7 +147,6 @@ class genetic_alteration_factory(base):
 
     CLASSNAMES = {
         constants.CUSTOM_ANNOTATION_TYPE: &#39;custom_annotation&#39;,
-        constants.DEMONSTRATION_TYPE: &#39;genetic_alteration_demo&#39;,
         constants.MUTATION_TYPE: &#39;mutation_extended&#39;
     }
 
@@ -168,43 +166,6 @@ class genetic_alteration_factory(base):
             raise ValueError(msg)
         klass = globals().get(classname)
         return klass(config, study_id, self.log_level, self.log_path)
-
-
-class genetic_alteration_demo(genetic_alteration):
-    &#34;&#34;&#34;Dummy class for demonstration and initial testing; not for production use&#34;&#34;&#34;
-
-    def _find_all_sample_attributes(self):
-        &#34;&#34;&#34;DEMONSTRATION METHOD. Return empty attributes&#34;&#34;&#34;
-        return {}
-
-    def get_attributes_for_sample(self, sample_id):
-        &#34;&#34;&#34;DEMONSTRATION METHOD. Get sample-level metrics for Elba&#34;&#34;&#34;
-        msg = &#34;get_attributes_for_sample demo method; not intended for production&#34;
-        self.logger.warning(msg)
-        metric_key = &#34;:&#34;.join([self.genetic_alteration_type, self.datatype, &#39;dummy_sample_metric&#39;])
-        attributes = {
-            metric_key: random.randrange(100)
-        }
-        return attributes
-
-    def get_gene_names(self):
-        &#34;&#34;&#34;DEMONSTRATION METHOD. Get a list of gene names.&#34;&#34;&#34;
-        return [&#34;Gene001&#34;, &#34;Gene002&#34;]
-
-    def get_metrics_by_gene(self, sample_id):
-        &#34;&#34;&#34;&#34;DEMONSTRATION METHOD. Get small mutation and indel data for Elba.&#34;&#34;&#34;
-        msg = &#34;get_metrics_by_gene demo method; not intended for production&#34;
-        self.logger.warning(msg)
-        input_file = self.input_files[sample_id]
-        # generate dummy results as a demonstration
-        metric_key = &#34;:&#34;.join([self.alteration_id, &#39;dummy_metric&#39;])
-        metrics = {}
-        for gene in self.get_gene_names():
-            metrics[gene] = {
-                constants.GENE_KEY: gene,
-                metric_key: random.randrange(101, 1000)
-            }
-        return metrics
 
 class custom_annotation(genetic_alteration):
     &#34;&#34;&#34;
@@ -426,7 +387,7 @@ class mutation_extended(genetic_alteration):
         self.logger.info(&#34;Writing concatenated MAF output to %s&#34; % out_path)
         output_df.to_csv(out_path, sep=&#34;\t&#34;)
         tmp.cleanup()
-        
+
     def write_meta(self, out_dir):
         &#34;&#34;&#34;cBioPortal. Write mutation metadata.&#34;&#34;&#34;
         try:
@@ -449,7 +410,11 @@ class mutation_extended(genetic_alteration):
             self.logger.error(&#34;Missing required config key: {0}&#34;.format(err))
             raise
         with open(os.path.join(out_dir, self.META_FILENAME), &#39;w&#39;) as out_file:
-            out_file.write(yaml.dump(meta, sort_keys=True))</code></pre>
+            out_file.write(yaml.dump(meta, sort_keys=True))
+
+    def write(self, out_dir):
+        self.write_data(out_dir)
+        self.write_meta(out_dir)</code></pre>
 </details>
 </section>
 <section>
@@ -595,8 +560,6 @@ class mutation_extended(genetic_alteration):
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="djerba.genetic_alteration.genetic_alteration" href="#djerba.genetic_alteration.genetic_alteration">genetic_alteration</a></li>
-<li><a title="djerba.components.dual_output_component" href="components.html#djerba.components.dual_output_component">dual_output_component</a></li>
-<li><a title="djerba.components.component" href="components.html#djerba.components.component">component</a></li>
 <li><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></li>
 </ul>
 <h3>Class variables</h3>
@@ -691,7 +654,7 @@ class mutation_extended(genetic_alteration):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class genetic_alteration(dual_output_component):
+<pre><code class="python">class genetic_alteration(base):
     &#34;&#34;&#34;Base class; unit of genetic alteration data for cBioPortal and other reports&#34;&#34;&#34;
 
     # TODO make into a Python AbstractBaseClass: https://docs.python.org/3/library/abc.html
@@ -777,14 +740,11 @@ class mutation_extended(genetic_alteration):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="djerba.components.dual_output_component" href="components.html#djerba.components.dual_output_component">dual_output_component</a></li>
-<li><a title="djerba.components.component" href="components.html#djerba.components.component">component</a></li>
 <li><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></li>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="djerba.genetic_alteration.custom_annotation" href="#djerba.genetic_alteration.custom_annotation">custom_annotation</a></li>
-<li><a title="djerba.genetic_alteration.genetic_alteration_demo" href="#djerba.genetic_alteration.genetic_alteration_demo">genetic_alteration_demo</a></li>
 <li><a title="djerba.genetic_alteration.mutation_extended" href="#djerba.genetic_alteration.mutation_extended">mutation_extended</a></li>
 </ul>
 <h3>Class variables</h3>
@@ -935,134 +895,9 @@ Not run from <strong>init</strong>() because it can be quite slow (eg. reading m
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="djerba.components.dual_output_component" href="components.html#djerba.components.dual_output_component">dual_output_component</a></b></code>:
+<li><code><b><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></b></code>:
 <ul class="hlist">
-<li><code><a title="djerba.components.dual_output_component.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
-</ul>
-</li>
-</ul>
-</dd>
-<dt id="djerba.genetic_alteration.genetic_alteration_demo"><code class="flex name class">
-<span>class <span class="ident">genetic_alteration_demo</span></span>
-<span>(</span><span>config, study_id=None, log_level=30, log_path=None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Dummy class for demonstration and initial testing; not for production use</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class genetic_alteration_demo(genetic_alteration):
-    &#34;&#34;&#34;Dummy class for demonstration and initial testing; not for production use&#34;&#34;&#34;
-
-    def _find_all_sample_attributes(self):
-        &#34;&#34;&#34;DEMONSTRATION METHOD. Return empty attributes&#34;&#34;&#34;
-        return {}
-
-    def get_attributes_for_sample(self, sample_id):
-        &#34;&#34;&#34;DEMONSTRATION METHOD. Get sample-level metrics for Elba&#34;&#34;&#34;
-        msg = &#34;get_attributes_for_sample demo method; not intended for production&#34;
-        self.logger.warning(msg)
-        metric_key = &#34;:&#34;.join([self.genetic_alteration_type, self.datatype, &#39;dummy_sample_metric&#39;])
-        attributes = {
-            metric_key: random.randrange(100)
-        }
-        return attributes
-
-    def get_gene_names(self):
-        &#34;&#34;&#34;DEMONSTRATION METHOD. Get a list of gene names.&#34;&#34;&#34;
-        return [&#34;Gene001&#34;, &#34;Gene002&#34;]
-
-    def get_metrics_by_gene(self, sample_id):
-        &#34;&#34;&#34;&#34;DEMONSTRATION METHOD. Get small mutation and indel data for Elba.&#34;&#34;&#34;
-        msg = &#34;get_metrics_by_gene demo method; not intended for production&#34;
-        self.logger.warning(msg)
-        input_file = self.input_files[sample_id]
-        # generate dummy results as a demonstration
-        metric_key = &#34;:&#34;.join([self.alteration_id, &#39;dummy_metric&#39;])
-        metrics = {}
-        for gene in self.get_gene_names():
-            metrics[gene] = {
-                constants.GENE_KEY: gene,
-                metric_key: random.randrange(101, 1000)
-            }
-        return metrics</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="djerba.genetic_alteration.genetic_alteration" href="#djerba.genetic_alteration.genetic_alteration">genetic_alteration</a></li>
-<li><a title="djerba.components.dual_output_component" href="components.html#djerba.components.dual_output_component">dual_output_component</a></li>
-<li><a title="djerba.components.component" href="components.html#djerba.components.component">component</a></li>
-<li><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></li>
-</ul>
-<h3>Methods</h3>
-<dl>
-<dt id="djerba.genetic_alteration.genetic_alteration_demo.get_attributes_for_sample"><code class="name flex">
-<span>def <span class="ident">get_attributes_for_sample</span></span>(<span>self, sample_id)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>DEMONSTRATION METHOD. Get sample-level metrics for Elba</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_attributes_for_sample(self, sample_id):
-    &#34;&#34;&#34;DEMONSTRATION METHOD. Get sample-level metrics for Elba&#34;&#34;&#34;
-    msg = &#34;get_attributes_for_sample demo method; not intended for production&#34;
-    self.logger.warning(msg)
-    metric_key = &#34;:&#34;.join([self.genetic_alteration_type, self.datatype, &#39;dummy_sample_metric&#39;])
-    attributes = {
-        metric_key: random.randrange(100)
-    }
-    return attributes</code></pre>
-</details>
-</dd>
-<dt id="djerba.genetic_alteration.genetic_alteration_demo.get_gene_names"><code class="name flex">
-<span>def <span class="ident">get_gene_names</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>DEMONSTRATION METHOD. Get a list of gene names.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_gene_names(self):
-    &#34;&#34;&#34;DEMONSTRATION METHOD. Get a list of gene names.&#34;&#34;&#34;
-    return [&#34;Gene001&#34;, &#34;Gene002&#34;]</code></pre>
-</details>
-</dd>
-<dt id="djerba.genetic_alteration.genetic_alteration_demo.get_metrics_by_gene"><code class="name flex">
-<span>def <span class="ident">get_metrics_by_gene</span></span>(<span>self, sample_id)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>"DEMONSTRATION METHOD. Get small mutation and indel data for Elba.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_metrics_by_gene(self, sample_id):
-    &#34;&#34;&#34;&#34;DEMONSTRATION METHOD. Get small mutation and indel data for Elba.&#34;&#34;&#34;
-    msg = &#34;get_metrics_by_gene demo method; not intended for production&#34;
-    self.logger.warning(msg)
-    input_file = self.input_files[sample_id]
-    # generate dummy results as a demonstration
-    metric_key = &#34;:&#34;.join([self.alteration_id, &#39;dummy_metric&#39;])
-    metrics = {}
-    for gene in self.get_gene_names():
-        metrics[gene] = {
-            constants.GENE_KEY: gene,
-            metric_key: random.randrange(101, 1000)
-        }
-    return metrics</code></pre>
-</details>
-</dd>
-</dl>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="djerba.genetic_alteration.genetic_alteration" href="#djerba.genetic_alteration.genetic_alteration">genetic_alteration</a></b></code>:
-<ul class="hlist">
-<li><code><a title="djerba.genetic_alteration.genetic_alteration.get_alteration_id" href="#djerba.genetic_alteration.genetic_alteration.get_alteration_id">get_alteration_id</a></code></li>
-<li><code><a title="djerba.genetic_alteration.genetic_alteration.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.utilities.base.base.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1082,7 +917,6 @@ Not run from <strong>init</strong>() because it can be quite slow (eg. reading m
 
     CLASSNAMES = {
         constants.CUSTOM_ANNOTATION_TYPE: &#39;custom_annotation&#39;,
-        constants.DEMONSTRATION_TYPE: &#39;genetic_alteration_demo&#39;,
         constants.MUTATION_TYPE: &#39;mutation_extended&#39;
     }
 
@@ -1274,7 +1108,7 @@ Generates reports for either cBioPortal or Elba.</p></div>
         self.logger.info(&#34;Writing concatenated MAF output to %s&#34; % out_path)
         output_df.to_csv(out_path, sep=&#34;\t&#34;)
         tmp.cleanup()
-        
+
     def write_meta(self, out_dir):
         &#34;&#34;&#34;cBioPortal. Write mutation metadata.&#34;&#34;&#34;
         try:
@@ -1297,13 +1131,15 @@ Generates reports for either cBioPortal or Elba.</p></div>
             self.logger.error(&#34;Missing required config key: {0}&#34;.format(err))
             raise
         with open(os.path.join(out_dir, self.META_FILENAME), &#39;w&#39;) as out_file:
-            out_file.write(yaml.dump(meta, sort_keys=True))</code></pre>
+            out_file.write(yaml.dump(meta, sort_keys=True))
+
+    def write(self, out_dir):
+        self.write_data(out_dir)
+        self.write_meta(out_dir)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="djerba.genetic_alteration.genetic_alteration" href="#djerba.genetic_alteration.genetic_alteration">genetic_alteration</a></li>
-<li><a title="djerba.components.dual_output_component" href="components.html#djerba.components.dual_output_component">dual_output_component</a></li>
-<li><a title="djerba.components.component" href="components.html#djerba.components.component">component</a></li>
 <li><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></li>
 </ul>
 <h3>Class variables</h3>
@@ -1394,6 +1230,20 @@ Generates reports for either cBioPortal or Elba.</p></div>
     for index, row in df.iterrows():
         metrics_by_gene[row[self.HUGO_SYMBOL]] = {self.CHROMOSOME: row[self.CHROMOSOME]}
     return metrics_by_gene</code></pre>
+</details>
+</dd>
+<dt id="djerba.genetic_alteration.mutation_extended.write"><code class="name flex">
+<span>def <span class="ident">write</span></span>(<span>self, out_dir)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def write(self, out_dir):
+    self.write_data(out_dir)
+    self.write_meta(out_dir)</code></pre>
 </details>
 </dd>
 <dt id="djerba.genetic_alteration.mutation_extended.write_data"><code class="name flex">
@@ -1547,14 +1397,6 @@ Generates reports for either cBioPortal or Elba.</p></div>
 </ul>
 </li>
 <li>
-<h4><code><a title="djerba.genetic_alteration.genetic_alteration_demo" href="#djerba.genetic_alteration.genetic_alteration_demo">genetic_alteration_demo</a></code></h4>
-<ul class="">
-<li><code><a title="djerba.genetic_alteration.genetic_alteration_demo.get_attributes_for_sample" href="#djerba.genetic_alteration.genetic_alteration_demo.get_attributes_for_sample">get_attributes_for_sample</a></code></li>
-<li><code><a title="djerba.genetic_alteration.genetic_alteration_demo.get_gene_names" href="#djerba.genetic_alteration.genetic_alteration_demo.get_gene_names">get_gene_names</a></code></li>
-<li><code><a title="djerba.genetic_alteration.genetic_alteration_demo.get_metrics_by_gene" href="#djerba.genetic_alteration.genetic_alteration_demo.get_metrics_by_gene">get_metrics_by_gene</a></code></li>
-</ul>
-</li>
-<li>
 <h4><code><a title="djerba.genetic_alteration.genetic_alteration_factory" href="#djerba.genetic_alteration.genetic_alteration_factory">genetic_alteration_factory</a></code></h4>
 <ul class="">
 <li><code><a title="djerba.genetic_alteration.genetic_alteration_factory.CLASSNAMES" href="#djerba.genetic_alteration.genetic_alteration_factory.CLASSNAMES">CLASSNAMES</a></code></li>
@@ -1573,6 +1415,7 @@ Generates reports for either cBioPortal or Elba.</p></div>
 <li><code><a title="djerba.genetic_alteration.mutation_extended.TCGA_PATH_KEY" href="#djerba.genetic_alteration.mutation_extended.TCGA_PATH_KEY">TCGA_PATH_KEY</a></code></li>
 <li><code><a title="djerba.genetic_alteration.mutation_extended.get_gene_names" href="#djerba.genetic_alteration.mutation_extended.get_gene_names">get_gene_names</a></code></li>
 <li><code><a title="djerba.genetic_alteration.mutation_extended.get_metrics_by_gene" href="#djerba.genetic_alteration.mutation_extended.get_metrics_by_gene">get_metrics_by_gene</a></code></li>
+<li><code><a title="djerba.genetic_alteration.mutation_extended.write" href="#djerba.genetic_alteration.mutation_extended.write">write</a></code></li>
 <li><code><a title="djerba.genetic_alteration.mutation_extended.write_data" href="#djerba.genetic_alteration.mutation_extended.write_data">write_data</a></code></li>
 <li><code><a title="djerba.genetic_alteration.mutation_extended.write_meta" href="#djerba.genetic_alteration.mutation_extended.write_meta">write_meta</a></code></li>
 </ul>
