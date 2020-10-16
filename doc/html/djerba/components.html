@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.1" />
 <title>djerba.components API documentation</title>
-<meta name="description" content="Classes to represent components of a cBioPortal study …" />
+<meta name="description" content="Classes to represent components specific to a cBioPortal study …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -22,15 +22,16 @@
 <h1 class="title">Module <code>djerba.components</code></h1>
 </header>
 <section id="section-intro">
-<p>Classes to represent components of a cBioPortal study</p>
-<p>Eg. study metadata, clinical sample/patient data, pipeline outputs</p>
+<p>Classes to represent components specific to a cBioPortal study</p>
+<p>Eg. study metadata, clinical sample/patient data, study lists. Genetic alteration is handled by the genetic_alteration class, which is also used for Elba reports.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;Classes to represent components of a cBioPortal study
+<pre><code class="python">&#34;&#34;&#34;
+Classes to represent components specific to a cBioPortal study
 
-Eg. study metadata, clinical sample/patient data, pipeline outputs
+Eg. study metadata, clinical sample/patient data, study lists. Genetic alteration is handled by the genetic_alteration class, which is also used for Elba reports.
 &#34;&#34;&#34;
 
 import logging
@@ -961,7 +962,6 @@ Subclasses can call super().<strong>init</strong>() to set up simple logging</p>
 <ul class="hlist">
 <li><a title="djerba.components.cancer_type" href="#djerba.components.cancer_type">cancer_type</a></li>
 <li><a title="djerba.components.clinical_data_component" href="#djerba.components.clinical_data_component">clinical_data_component</a></li>
-<li><a title="djerba.genetic_alteration.genetic_alteration" href="genetic_alteration.html#djerba.genetic_alteration.genetic_alteration">genetic_alteration</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
