@@ -95,19 +95,6 @@ class TestReport(TestBase):
         args = [config, self.sample_id, logging.CRITICAL]
         self.assertRaises(ValueError, report, *args)
 
-    def test_demo(self):
-        """Test report with dummy 'demonstration' genetic_alteration class"""
-        random.seed(42) # set the random seed to ensure consistent demo output
-        out_dir = os.path.join(self.tmp.name, 'test_report_demo')
-        os.mkdir(out_dir)
-        with open(os.path.join(self.dataDir, 'study_config_demo_report.json')) as configFile:
-            config = json.loads(configFile.read())
-        report_path = os.path.join(out_dir, self.report_name)
-        report(config, self.sample_id, log_level=logging.ERROR).write_report_config(report_path)
-        self.assertTrue(os.path.exists(report_path), "JSON report exists")
-        checksum = {self.report_name: '4c8466180b33b67a81ec580e51dc88db'}
-        self.verify_checksums(checksum, out_dir)
-
     def test_mx(self):
         """Test report with 'mutation extended' input"""
         out_dir = os.path.join(self.tmp.name, 'test_report_mx')

@@ -112,7 +112,6 @@ class genetic_alteration_factory(base):
 
     CLASSNAMES = {
         constants.CUSTOM_ANNOTATION_TYPE: 'custom_annotation',
-        constants.DEMONSTRATION_TYPE: 'genetic_alteration_demo',
         constants.MUTATION_TYPE: 'mutation_extended'
     }
 
@@ -132,43 +131,6 @@ class genetic_alteration_factory(base):
             raise ValueError(msg)
         klass = globals().get(classname)
         return klass(config, study_id, self.log_level, self.log_path)
-
-
-class genetic_alteration_demo(genetic_alteration):
-    """Dummy class for demonstration and initial testing; not for production use"""
-
-    def _find_all_sample_attributes(self):
-        """DEMONSTRATION METHOD. Return empty attributes"""
-        return {}
-
-    def get_attributes_for_sample(self, sample_id):
-        """DEMONSTRATION METHOD. Get sample-level metrics for Elba"""
-        msg = "get_attributes_for_sample demo method; not intended for production"
-        self.logger.warning(msg)
-        metric_key = ":".join([self.genetic_alteration_type, self.datatype, 'dummy_sample_metric'])
-        attributes = {
-            metric_key: random.randrange(100)
-        }
-        return attributes
-
-    def get_gene_names(self):
-        """DEMONSTRATION METHOD. Get a list of gene names."""
-        return ["Gene001", "Gene002"]
-
-    def get_metrics_by_gene(self, sample_id):
-        """"DEMONSTRATION METHOD. Get small mutation and indel data for Elba."""
-        msg = "get_metrics_by_gene demo method; not intended for production"
-        self.logger.warning(msg)
-        input_file = self.input_files[sample_id]
-        # generate dummy results as a demonstration
-        metric_key = ":".join([self.alteration_id, 'dummy_metric'])
-        metrics = {}
-        for gene in self.get_gene_names():
-            metrics[gene] = {
-                constants.GENE_KEY: gene,
-                metric_key: random.randrange(101, 1000)
-            }
-        return metrics
 
 class custom_annotation(genetic_alteration):
     """
