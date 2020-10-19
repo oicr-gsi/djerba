@@ -1,4 +1,4 @@
-
+"""Validate Djerba config files"""
 
 import json
 import jsonschema

@@ -4,6 +4,11 @@
 ### Added
 - `review_status` field in Elba JSON output
 - HTML documentation generated using [pdoc3](https://pdoc3.github.io/pdoc/).
+- Custom annotation in TSV format with the `custom_annotation` class.
+### Removed
+- `genetic_alteration_demo` class
+### Changed
+- `genetic_alteration` is no longer a subclass of `dual_output_component`
 
 ## v0.0.1: 2020-10-08
 Initial development release
