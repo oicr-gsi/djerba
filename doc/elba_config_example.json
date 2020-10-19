@@ -1,0 +1,60 @@
+{
+    "gene_metrics": [
+        {
+            "Allele Fraction (%)": 21,
+            "Chromosome": "chr1",
+            "Copy State": "Neutral",
+            "Drug Annotation": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+            "Exp. percentile (%)": 42,
+            "Exp. z-score": NaN,
+            "FDA Approved Treatment": "Nulla sem augue, pulvinar ac bibendum non, feugiat.",
+            "Gene": "Gene001",
+            "Gene Annotation": "Nullam nulla lacus, gravida id metus ut, fermentum.",
+            "OncoKB": NaN,
+            "Protein Change": "prot001",
+            "Variant / Total Reads": "38/185"
+        },
+        {
+            "Allele Fraction (%)": 10,
+            "Chromosome": "chr1",
+            "Copy State": "Neutral",
+            "Drug Annotation": "Donec sit amet porta orci. Ut a malesuada.",
+            "Exp. percentile (%)": 20,
+            "Exp. z-score": NaN,
+            "FDA Approved Treatment": "Suspendisse potenti. Aliquam a magna pharetra dolor hendrerit.",
+            "Gene": "Gene002",
+            "Gene Annotation": "Etiam lobortis magna pellentesque, blandit nisi id, feugiat.",
+            "OncoKB": NaN,
+            "Protein Change": "prot002",
+            "Variant / Total Reads": "33/156"
+        }
+    ],
+    "review_status": -1,
+    "sample_info": {
+        "AGE": 35,
+        "CANCER_TYPE": "Bowel",
+        "CANCER_TYPE_DETAILED": "MACR",
+        "CENTRE": "TGL",
+        "CLOSEST_TCGA": "coadread",
+        "COSMIC_SIGS": "Signature 6 (0.161)",
+        "ETHNICITY": "Other",
+        "FRACTION_GENOME_ALTERED": 0.1234,
+        "FRAC_CALLABILITY": 7986.3,
+        "HRD_SCORE": NaN,
+        "MEAN_COVERAGE": 97,
+        "MSI_STATUS": "Negative",
+        "PATHOLOGICAL_REVIEW": "Lots of immune cells",
+        "PATIENT_ID": "Patient_001",
+        "PCT_v7_ABOVE_80x": 79.863,
+        "SAMPLE_ANATOMICAL_SITE": "OMENTUM",
+        "SAMPLE_ID": "Sample_001",
+        "SAMPLE_PRIMARY_OR_METASTASIS": "Metastatic Lesion",
+        "SEQUENZA_PLOIDY": 2,
+        "SEQUENZA_PURITY_FRACTION": 71,
+        "SEX": "Male",
+        "TMB_PER_MB": 14.7,
+        "TMB_PLOT": "/data/foo/bar/tmb.png",
+        "TREATMENT_STATUS": "Naive",
+	"VAF_PLOT": "/data/foo/bar/vaf.png"
+    }
+}
