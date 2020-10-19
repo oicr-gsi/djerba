@@ -1,3 +1,4 @@
+"""Sample class; thin wrapper for a dictionary containing sample attributes"""
 
 import logging
 from djerba.utilities import constants
@@ -29,7 +30,7 @@ class sample(base):
 
     def update_attributes(self, new_attributes):
         shared_keys = set(self.attributes.keys()).intersection(set(new_attributes.keys()))
-        if len(shared_keys)>1 or (len(shared_keys)==1 and constants.GENE_KEY not in shared_keys):
+        if len(shared_keys)>0:
             # found shared keys other than 'Gene': issue a warning
             key_string = "\t".join(sorted([str(x) for x in shared_keys]))
             msg = "Existing attribute values will be overwritten for keys: %s" % key_string

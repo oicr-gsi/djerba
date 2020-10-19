@@ -75,18 +75,25 @@ class TestReport(TestBase):
         self.report_name = 'sample_report.json'
         self.sample_id = 'OCT-01-0472-CAP'
 
-    def test_demo(self):
-        """Test report with dummy 'demonstration' genetic_alteration class"""
-        random.seed(42) # set the random seed to ensure consistent demo output
-        out_dir = os.path.join(self.tmp.name, 'test_report_demo')
+    def test_custom(self):
+        """Test report with custom_annotation input"""
+        out_dir = os.path.join(self.tmp.name, 'test_report_custom')
         os.mkdir(out_dir)
-        with open(os.path.join(self.dataDir, 'study_config_demo_report.json')) as configFile:
+        with open(os.path.join(self.dataDir, 'report_config_custom.json')) as configFile:
             config = json.loads(configFile.read())
+        # get input from the local test directory
+        config[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = self.dataDir
         report_path = os.path.join(out_dir, self.report_name)
-        report(config, self.sample_id, log_level=logging.ERROR).write_report_config(report_path)
+        report(config, self.sample_id, log_level=logging.DEBUG).write_report_config(report_path)
         self.assertTrue(os.path.exists(report_path), "JSON report exists")
-        checksum = {self.report_name: '4c8466180b33b67a81ec580e51dc88db'}
+        checksum = {self.report_name: '092df63412c4f15182259112f8b18ecc'}
         self.verify_checksums(checksum, out_dir)
+        # test with incorrect sample headers in metadata
+        with open(os.path.join(self.dataDir, 'report_config_custom_broken.json')) as configFile:
+            config = json.loads(configFile.read())
+        config[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = self.dataDir
+        args = [config, self.sample_id, logging.CRITICAL]
+        self.assertRaises(ValueError, report, *args)
 
     def test_mx(self):
         """Test report with 'mutation extended' input"""

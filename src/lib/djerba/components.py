@@ -1,6 +1,7 @@
-"""Classes to represent components of a cBioPortal study
+"""
+Classes to represent components specific to a cBioPortal study
 
-Eg. study metadata, clinical sample/patient data, pipeline outputs
+Eg. study metadata, clinical sample/patient data, study lists. Genetic alteration is handled by the genetic_alteration class, which is also used for Elba reports.
 """
 
 import logging
