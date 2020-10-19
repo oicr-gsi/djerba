@@ -104,7 +104,7 @@ class TestReport(TestBase):
         report_path = os.path.join(out_dir, self.report_name)
         report(config, self.sample_id, log_level=logging.ERROR).write_report_config(report_path)
         self.assertTrue(os.path.exists(report_path), "JSON report exists")
-        checksum = {self.report_name: 'd465004e56ece86241d7c6dc89bc7c6b'}
+        checksum = {self.report_name: '1c4435ae302c4328d26a52f0fa04d966'}
         self.verify_checksums(checksum, out_dir)
         args = [config, 'nonexistent sample', logging.CRITICAL]
         self.assertRaises(DjerbaReportError, report, *args)
@@ -176,7 +176,7 @@ class TestStudy(TestBase):
         extra_checksums = {
             'data_clinical_patients.txt': 'd6fb18fa41b196964b45603fa06daf93',
             'data_clinical_samples.txt': 'd6fb18fa41b196964b45603fa06daf93',
-            'data_mutation_extended.maf': 'ead2c80324fd319ac22ca7ea3936944e',
+            'data_mutation_extended.maf': 'c612ebe2d46a8844387e1411993ee893',
             'meta_mutation_extended.txt': 'cc5684c4b1558fb3fc93d30945e3cfeb',
             'case_lists/cases_sequenced.txt': '093c0dff5731561d1253092b112bf880'
         }
