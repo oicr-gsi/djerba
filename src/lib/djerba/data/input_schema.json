@@ -20,15 +20,44 @@
 	    "type": "array"
 	},
 	"genetic_alterations": {
-	    "type": "array"
+	    "type": "array",
+	    "items": {
+		"type": "object",
+		"properties": {
+		    "datatype": {
+			"type": "string"
+		    },
+		    "genetic_alteration_type": {
+			"type": "string"
+		    },
+		    "input_directory": {
+			"type": "string"
+		    },
+		    "workflow_run_id": {
+			"type": "string"
+		    },
+		    "input_files": {
+			"type": "object"
+		    },
+		    "metadata": {
+			"type": "object"
+		    }
+		},
+		"required": [
+		    "datatype", "genetic_alteration_type", "input_directory", "input_files", "metadata"
+		],
+		"uniqueItems": true
+	    }
 	}
     },
     "required": [
-	"study_meta",
-	"cancer_type",
-	"case_lists",
-	"samples_meta",
 	"samples",
 	"genetic_alterations"
-    ]
+    ],
+    "dependencies": {
+	"study_meta": ["cancer_type", "case_lists", "samples_meta"],
+	"cancer_type": ["study_meta", "case_lists", "samples_meta"],
+	"case_lists": ["study_meta", "cancer_type", "samples_meta"],
+	"samples_meta": ["study_meta", "cancer_type", "case_lists"]
+    }
 }
