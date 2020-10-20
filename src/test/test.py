@@ -198,32 +198,40 @@ class TestValidator(unittest.TestCase):
 
     def test(self):
         """Test validation of Djerba config against the schema"""
-        config_path = os.path.join(self.dataDir, 'study_config.json')
-        with open(config_path) as configFile:
-            config = json.loads(configFile.read())
-        test_validator = validator(log_level=logging.CRITICAL)
-        sample = 'OCT-01-0472-CAP'
-        self.assertTrue(
-            test_validator.validate(config, None),
-            "Study config is valid"
-        )
-        self.assertTrue(
-            test_validator.validate(config, sample),
-            "Study config is valid with sample name"
-        )
-        args = [config, 'nonexistent_sample']
-        self.assertRaises(
-            DjerbaConfigError,
-            test_validator.validate,
-            *args
-        )      
-        del config[constants.GENETIC_ALTERATIONS_KEY]
-        args = [config, None]
-        self.assertRaises(
-            DjerbaConfigError,
-            test_validator.validate,
-            *args
-        )
+        config_names = [
+            'study_config.json',
+            'study_config_mx.json',
+            'report_config_custom.json',
+            'report_config_custom_with_nan.json',
+            'report_config_custom_broken.json'
+        ]
+        for config_name in config_names:
+            config_path = os.path.join(self.dataDir, config_name)
+            with open(config_path) as configFile:
+                config = json.loads(configFile.read())
+            test_validator = validator(log_level=logging.CRITICAL)
+            sample = 'OCT-01-0472-CAP'
+            self.assertTrue(
+                test_validator.validate(config, None),
+                "Study config is valid"
+            )
+            self.assertTrue(
+                test_validator.validate(config, sample),
+                "Study config is valid with sample name"
+            )
+            args = [config, 'nonexistent_sample']
+            self.assertRaises(
+                DjerbaConfigError,
+                test_validator.validate,
+                *args
+            )
+            del config[constants.GENETIC_ALTERATIONS_KEY]
+            args = [config, None]
+            self.assertRaises(
+                DjerbaConfigError,
+                test_validator.validate,
+                *args
+            )
 
 if __name__ == '__main__':
     unittest.main()
