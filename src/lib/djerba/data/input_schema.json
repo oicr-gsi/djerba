@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "https://github.com/oicr-gsi/djerba/TODO_add_rest_of_identifier",
+    "$id": "https://github.com/oicr-gsi/djerba/blob/master/src/lib/djerba/data/input_schema.json",
     "type": "object",
     "properties":
     {
