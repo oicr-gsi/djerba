@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import sys
+from math import isnan
 from djerba.genetic_alteration import genetic_alteration_factory
 from djerba.sample import sample
 from djerba.utilities import constants
@@ -13,6 +14,8 @@ from djerba.utilities.base import base
 class report(base):
 
     """Class representing a genome interpretation Clinical Report in Elba"""
+
+    NULL_STRING = "NA"
 
     def __init__(self, config, sample_id=None, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, "%s.%s" % (__name__, type(self).__name__), log_path)
@@ -46,7 +49,7 @@ class report(base):
             ga_factory.create_instance(conf, study_id) for conf in ga_configs
         ]
 
-    def get_report_config(self):
+    def get_report_config(self, replace_null):
         """Construct the reporting config data structure"""
         # for each genetic alteration, find metric values at sample/gene level
         all_metrics_by_gene = {}
@@ -71,9 +74,36 @@ class report(base):
         config[constants.SAMPLE_INFO_KEY] = self.sample.get_attributes()
         config[constants.GENE_METRICS_KEY] = gene_metrics_list
         config[constants.REVIEW_STATUS_KEY] = -1 # placeholder; will be updated by Elba
+        if replace_null:
+            config = self.replace_null_with_string(config)
         return config
 
-    def write_report_config(self, out_path, force=False):
+    def is_null(self, val):
+        """Check if a value (not necessarily numeric) is None or NaN"""
+        try:
+            is_nan = isnan(val)
+        except TypeError: # value is a non-numeric type
+            is_nan = False
+        return val==None or is_nan
+
+    def replace_null_with_string(self, config):
+        """Replace null/NaN values in config output with a string, eg. for easier processing in R"""
+        for gene in config[constants.GENE_METRICS_KEY]:
+            for key in gene.keys():
+                if self.is_null(gene[key]):
+                    gene[key] = self.NULL_STRING
+        for key in config[constants.SAMPLE_INFO_KEY].keys():
+            if self.is_null(config[constants.SAMPLE_INFO_KEY][key]):
+                config[constants.SAMPLE_INFO_KEY][key] = self.NULL_STRING
+        return config
+
+    def write_report_config(self, out_path, force=False, replace_null=True):
+        """
+        Write report config JSON to the given path, or stdout if the path is '-'.
+
+        - If force is True, overwrite any existing output.
+        - If replace_null is True, replace any None/NaN values with a standard string.
+        """
         if out_path=='-':
             out_file = sys.stdout
         else:
@@ -86,7 +116,7 @@ class report(base):
                     self.logger.error(msg)
                     raise DjerbaReportError(msg)
             out_file = open(out_path, 'w')
-        out_file.write(json.dumps(self.get_report_config(), sort_keys=True, indent=4))
+        out_file.write(json.dumps(self.get_report_config(replace_null), sort_keys=True, indent=4))
         if out_path!='-':
             out_file.close()
 
