@@ -102,14 +102,15 @@ class TestReport(TestBase):
 
     def test_mx(self):
         """Test report with 'mutation extended' input"""
+        report_name = 'report_mx.json'
         out_dir = os.path.join(self.tmp.name, 'test_report_mx')
         os.mkdir(out_dir)
         with open(os.path.join(self.dataDir, 'study_config_mx.json')) as configFile:
             config = json.loads(configFile.read())
-        report_path = os.path.join(out_dir, self.report_name)
+        report_path = os.path.join(out_dir, report_name)
         report(config, self.sample_id, log_level=logging.ERROR).write_report_config(report_path)
         self.assertTrue(os.path.exists(report_path), "JSON report exists")
-        checksum = {self.report_name: '1c4435ae302c4328d26a52f0fa04d966'}
+        checksum = {report_name: 'a09078c361587a26e48019a21d5b3f43'}
         self.verify_checksums(checksum, out_dir)
         args = [config, 'nonexistent sample', logging.CRITICAL]
         self.assertRaises(DjerbaReportError, report, *args)
