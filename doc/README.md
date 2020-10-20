@@ -9,5 +9,5 @@ The `doc` directory contains additional documentation and examples.
 
 ## Elba config output
 
-- [elba_config.json](./elba_config.json) is an example of the current JSON spec for the Elba report configuration. As of 2020-10-19, Elba config structure is not officially finalised; but there should be little or no difference between this and the final version.
+- [elba_config_example.json](./elba_config_example.json) is an example of the current JSON spec for the Elba report configuration. As of 2020-10-19, Elba config structure is not officially finalised; but there should be little or no difference between this and the final version.
 - **TODO:** Supplement the example JSON file with a formal [JSON schema](https://json-schema.org/).

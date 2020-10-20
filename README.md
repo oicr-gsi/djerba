@@ -18,6 +18,8 @@ The [doc](./doc/README.md) directory holds additional documentation and examples
 
 It includes [HTML documentation](./doc/html/djerba/index.html) generated using [pdoc3](https://pdoc3.github.io/pdoc/); see 'Release Procedure' for details.
 
+In addition, the `test` directory has a [README](./src/test/README.md) with details of tests and test data.
+
 ## Operation
 
 ### Prerequisites
