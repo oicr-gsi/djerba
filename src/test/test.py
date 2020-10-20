@@ -72,22 +72,27 @@ class TestReport(TestBase):
         self.testDir = os.path.dirname(os.path.realpath(__file__))
         self.dataDir = os.path.realpath(os.path.join(self.testDir, 'data'))
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_report_test_')
-        self.report_name = 'sample_report.json'
+        self.config_names = ['report_config_custom.json', 'report_config_custom_with_nan.json']
         self.sample_id = 'OCT-01-0472-CAP'
 
     def test_custom(self):
         """Test report with custom_annotation input"""
         out_dir = os.path.join(self.tmp.name, 'test_report_custom')
         os.mkdir(out_dir)
-        with open(os.path.join(self.dataDir, 'report_config_custom.json')) as configFile:
-            config = json.loads(configFile.read())
-        # get input from the local test directory
-        config[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = self.dataDir
-        report_path = os.path.join(out_dir, self.report_name)
-        report(config, self.sample_id, log_level=logging.DEBUG).write_report_config(report_path)
-        self.assertTrue(os.path.exists(report_path), "JSON report exists")
-        checksum = {self.report_name: '092df63412c4f15182259112f8b18ecc'}
-        self.verify_checksums(checksum, out_dir)
+        report_names = ["report_config_{}".format(i) for i in range(len(self.config_names))]
+        for i in range(len(self.config_names)):
+            with open(os.path.join(self.dataDir, self.config_names[i])) as configFile:
+                config = json.loads(configFile.read())
+                # get input from the local test directory
+            config[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = self.dataDir
+            report_path = os.path.join(out_dir, report_names[i])
+            report(config, self.sample_id, log_level=logging.ERROR).write_report_config(report_path)
+            self.assertTrue(os.path.exists(report_path), "JSON report exists")
+        checksums = {
+            report_names[0]: 'f783396939a9ccd5f1245cf614cfddc1',
+            report_names[1]: '1b78c3c3a382e7035a16804b7ee0180f'
+        }
+        self.verify_checksums(checksums, out_dir)
         # test with incorrect sample headers in metadata
         with open(os.path.join(self.dataDir, 'report_config_custom_broken.json')) as configFile:
             config = json.loads(configFile.read())
