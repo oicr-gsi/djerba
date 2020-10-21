@@ -145,7 +145,10 @@
 		    "AGE": {"type": ["integer", "null"]},
 		    "PATIENT_ID": {"type": ["string", "null"]},
 		    "CENTRE": {"type": ["string", "null"]},
-		    "FRACTION_GENOME_ALTERED": {"type": ["number", "null"]}
+		    "FRACTION_GENOME_ALTERED": {"type": ["number", "null"]},
+		    "TMB_PLOT": {"type": ["string", "null"]},
+		    "VAF_PLOT": {"type": ["string", "null"]},
+		    "ETHNICITY": {"type": ["string", "null"]}
 		},
 		"required": ["SAMPLE_ID"],
 		"uniqueItems": true
