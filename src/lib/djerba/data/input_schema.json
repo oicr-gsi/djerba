@@ -5,19 +5,130 @@
     "properties":
     {
 	"study_meta": {
-	    "type": "object"
+	    "type": "object",
+	    "properties": {
+		"add_global_case_list": {"type": "boolean"},
+		"cancer_study_identifier": {"type": "string"},
+		"citation": {"type": ["string", "null"]},
+		"description": {"type": "string"},
+		"groups": {"type": ["string", "null"]},
+		"name": {"type": "string"},
+		"pmid": {"type": ["string", "null"]},
+		"reference_genome": {"type": ["string", "null"]},
+		"short_name": {"type": "string"},
+		"tags_file": {"type": ["string", "null"]},
+		"type_of_cancer": {"type": "string"}
+	    },
+	    "required": [
+		"add_global_case_list",
+		"cancer_study_identifier",
+		"citation",
+		"description",
+		"groups",
+		"name",
+		"pmid",
+		"reference_genome",
+		"short_name",
+		"tags_file",
+		"type_of_cancer"
+	    ]
 	},
 	"cancer_type": {
-	    "type": "object"
+	    "type": "object",
+	    "properties": {
+		"clinical_trial_keywords": {
+		    "type": "array",
+		    "items": {"type": "string"}
+		},
+		"data_filename": {"type": "string"},
+		"dedicated_color": {"type": ["string", "null"]},
+		"name": {
+		    "type": "array",
+		    "items": {"type": "string"}
+		},
+		"parent_type_of_cancer": {
+		    "type": "array",
+		    "items": {"type": "string"}
+		},
+		"type_of_cancer": {"type": ["string", "null"]}
+	    },
+	    "required": [
+		"clinical_trial_keywords",
+		"data_filename",
+		"dedicated_color",
+		"name",
+		"parent_type_of_cancer",
+		"type_of_cancer"
+	    ]
 	},
 	"case_lists": {
-	    "type": "array"
+	    "type": "array",
+	    "items": {
+		"type": "object",
+		"properties": {
+		    "case_list_category": {"type": ["string", "null"]},
+		    "case_list_description": {"type": "string"},
+		    "case_list_ids": {
+			"type": "array",
+			"items": {"type": "string"}
+		    },
+		    "case_list_name": {"type": "string"},
+		    "suffix": {"type": "string"}
+		},
+		"required": [
+		    "case_list_category",
+		    "case_list_description",
+		    "case_list_ids",
+		    "case_list_name"
+		]
+	    }
 	},
 	"samples_meta": {
-	    "type": "object"
+	    "type": "object",
+	    "properties": {
+		"attribute_names":  {
+		    "type": "array",
+		    "items": {"type": "string"}
+		},
+		"datatypes":  {
+		    "type": "array",
+		    "items": {"type": "string"}
+		},
+		"descriptions":  {
+		    "type": "array",
+		    "items": {"type": "string"}
+		},
+		"display_names":  {
+		    "type": "array",
+		    "items": {"type": "string"}
+		},
+		"precision": {"type": "integer"},
+		"priorities":  {
+		    "type": "array",
+		    "items": {"type": "integer"}
+		},
+		"write_patients":  {"type": "boolean"}
+	    },
+	    "required": [
+		"attribute_names",
+		"datatypes",
+		"descriptions",
+		"display_names",
+		"precision",
+		"priorities",
+		"write_patients"
+	    ]
 	},
 	"samples": {
-	    "type": "array"
+	    "type": "array",
+	    "items": {
+		"type": "object",
+		"properties": {
+		    "SAMPLE_ID": {"type": "string"}
+		},
+		"required": ["SAMPLE_ID"],
+		"uniqueItems": true
+	    }
 	},
 	"genetic_alterations": {
 	    "type": "array",

@@ -33,6 +33,7 @@ class study(base):
     
     def __init__(self, config, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, "%s.%s" % (__name__, type(self).__name__), log_path)
+        self.check_required_keys(config)
         study_meta_config = config.get(self.STUDY_META_KEY)
         self.study_meta = study_meta(study_meta_config)
         self.study_id = study_meta_config.get(constants.STUDY_ID_KEY)
@@ -111,6 +112,21 @@ class study(base):
                  msg = prefix+"exiting. Run with --force to delete contents of directory."
                  self.logger.error(msg)
                  raise OSError(msg)
+
+    def check_required_keys(self, config):
+        required_keys = [
+            self.CANCER_TYPE_KEY,
+            self.CASE_LISTS_KEY,
+            self.GENETIC_ALTERATIONS_KEY,
+            self.SAMPLES_KEY,
+            self.SAMPLES_META_KEY,
+            self.STUDY_META_KEY
+        ]
+        for key in required_keys:
+            if key not in config:
+                msg = "Key %s is required for cBioPortal study but was not found in config" % key
+                self.logger.error(msg)
+                raise ValueError(msg)
 
     def get_case_lists(self, case_list_config):
         """Generate required and custom case lists"""
