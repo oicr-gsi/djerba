@@ -1,29 +1,4 @@
 {
-    "cancer_type": {
-        "clinical_trial_keywords": [
-            "carcinoma,ductal carcinoma"
-        ],
-        "data_filename": "cancer_type.txt",
-        "dedicated_color": null,
-        "name": [
-            "Ductal Carcinoma"
-        ],
-        "parent_type_of_cancer": [
-            "tissue"
-        ],
-        "type_of_cancer": null
-    },
-    "case_lists": [
-        {
-            "case_list_category": null,
-            "case_list_description": "custom case list demonstration",
-            "case_list_ids": [
-                "OCT-01-0472-CAP"
-            ],
-            "case_list_name": "djerba_custom_case_list",
-            "suffix": "custom"
-        }
-    ],
     "genetic_alterations": [
         {
             "datatype": "CUSTOM",
@@ -63,42 +38,5 @@
 	    "TMB_PER_MB":  null,
             "TREATMENT_STATUS": "Naive"
         }
-    ],
-    "samples_meta": {
-        "attribute_names": [
-            "PATIENT_ID",
-            "SAMPLE_ID"
-        ],
-        "datatypes": [
-            "STRING",
-            "STRING"
-        ],
-        "descriptions": [
-            "Patient identifier",
-            "Sample identifier"
-        ],
-        "display_names": [
-            "Patient identifier",
-            "Sample identifier"
-        ],
-        "precision": 3,
-        "priorities": [
-            1,
-            1
-        ],
-        "write_patients": true
-    },
-    "study_meta": {
-        "add_global_case_list": true,
-        "cancer_study_identifier": "djerba_test_001",
-        "citation": null,
-        "description": "Test of Djerba software package (September 2020)",
-        "groups": null,
-        "name": "Djerba Test 001",
-        "pmid": null,
-        "reference_genome": null,
-        "short_name": "Djerba 001",
-        "tags_file": null,
-        "type_of_cancer": "ductal carcinoma"
-    }
+    ]
 }

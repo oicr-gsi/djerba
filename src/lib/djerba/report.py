@@ -19,7 +19,6 @@ class report(base):
 
     def __init__(self, config, sample_id=None, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, "%s.%s" % (__name__, type(self).__name__), log_path)
-        study_id = config[constants.STUDY_META_KEY][constants.STUDY_ID_KEY]
         # configure the sample for the report
         if sample_id==None: # only one sample
             if len(config[constants.SAMPLES_KEY])==1:
@@ -45,8 +44,8 @@ class report(base):
         # populate the list of genetic alterations
         ga_factory = genetic_alteration_factory(log_level, log_path)
         ga_configs = config[constants.GENETIC_ALTERATIONS_KEY]
-        self.alterations = [
-            ga_factory.create_instance(conf, study_id) for conf in ga_configs
+        self.alterations = [ # study_id is only required for cBioPortal, not Elba
+            ga_factory.create_instance(conf, study_id=None) for conf in ga_configs
         ]
 
     def get_report_config(self, replace_null):
