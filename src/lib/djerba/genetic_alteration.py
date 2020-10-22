@@ -165,9 +165,14 @@ class custom_annotation(genetic_alteration):
         except KeyError as err:
             self.logger.error("Missing required metadata key: {0}".format(err))
             raise
+        if column_headers[0] != constants.SAMPLE_ID_KEY:
+            msg = "First sample column header in metadata must be %s" % constants.SAMPLE_ID_KEY
+            self.logger.error(msg)
+            raise ValueError(msg)
         attributes = {}
-        # row.to_list() is a workaround for int64 conversion; see comments in get_metrics_by_gene
-        for (sample_id, row) in self._read_columns(tsv_path, column_headers).iterrows():
+        df = self._read_columns(tsv_path, column_headers, constants.SAMPLE_ID_KEY)
+        for (sample_id, row) in df.iterrows():
+            # row.to_list() is a workaround for int64 conversion; see comments in get_metrics_by_gene
             values = row.to_list()
             attributes[sample_id] = {column_headers[i+1]: values[i] for i in range(len(values))}
         return attributes
@@ -179,13 +184,15 @@ class custom_annotation(genetic_alteration):
         except KeyError as err:
             self.logger.error("Missing required metadata key: {0}".format(err))
             raise
-        df = self._read_columns(tsv_path, [constants.SAMPLE_ID_KEY], index_col=False)
+        df = self._read_columns(tsv_path, [constants.SAMPLE_ID_KEY], None, index_col=False)
         return df[constants.SAMPLE_ID_KEY].tolist()
 
-    def _read_columns(self, input_path, column_headers, index_col=0):
+    def _read_columns(self, input_path, column_headers, index_name, index_col=0):
         """
         Read specified columns from TSV into a Pandas DataFrame.
         Raise an error if any requested columns are missing; warn if any values are null.
+        index_col is the parameter of the same name for Pandas read_csv().
+        index_name is the expected name of the index column; must be None if index_col=False.
         """
         try:
             df = pd.read_csv(
@@ -205,6 +212,15 @@ class custom_annotation(genetic_alteration):
                 'Null values in TSV data read from "{0}" '.format(input_path)+\
                 'with column headers {0}'.format(str(column_headers))
             )
+        if index_col is False and index_name!=None: # 0 has truth-value False, so use 'is' instead of '=='
+            msg = "index_name must be None if index_col is False"
+            self.logger.error(msg)
+            raise ValueError(msg)
+        elif df.index.name != index_name:
+            msg = "First column header in %s: Expected %s, found %s" % \
+                  (input_path, index_name, df.index.name)
+            self.logger.error(msg)
+            raise ValueError(msg)
         return df
 
     def get_gene_names(self):
@@ -216,7 +232,7 @@ class custom_annotation(genetic_alteration):
         except KeyError as err:
             self.logger.error("Missing required metadata key: {0}".format(err))
             raise
-        df = self._read_columns(tsv_path, [constants.GENE_KEY], index_col=False)
+        df = self._read_columns(tsv_path, [constants.GENE_KEY], None, index_col=False)
         return df[constants.GENE_KEY].tolist()
 
     def get_metrics_by_gene(self, sample_id):
@@ -227,8 +243,13 @@ class custom_annotation(genetic_alteration):
         except KeyError as err:
             self.logger.error("Missing required metadata key: {0}".format(err))
             raise
+        if column_headers[0] != constants.GENE_KEY:
+            msg = "First gene column header in metadata must be %s" % constants.GENE_KEY
+            self.logger.error(msg)
+            raise ValueError(msg)
         metrics_by_gene = {}
-        for (gene_name, row) in self._read_columns(tsv_path, column_headers).iterrows():
+        df = self._read_columns(tsv_path, column_headers, constants.GENE_KEY)
+        for (gene_name, row) in df.iterrows():
             # Can't use row.get() because this may return an int64, which can't be serialized to JSON
             # row.to_list() converts all values to Python scalars, so can be used as a workaround
             # See https://bugs.python.org/issue24313

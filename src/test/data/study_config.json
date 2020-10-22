@@ -60,8 +60,8 @@
             "AGE": 35,
             "SEX": "Male",
             "ETHNICITY": "Other",
-            "FGA": 0.33,
-            "sampleTMB": 82.38
+            "FRACTION_GENOME_ALTERED": 0.33,
+            "TMB_PER_MB": 82.38
         }
     ],
     "genetic_alterations": [
