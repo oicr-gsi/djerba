@@ -111,7 +111,8 @@ class genetic_alteration_factory(base):
 
     CLASSNAMES = {
         constants.CUSTOM_ANNOTATION_TYPE: 'custom_annotation',
-        constants.MUTATION_TYPE: 'mutation_extended'
+        constants.EXPRESSION_TYPE:        'mrna_expression',
+        constants.MUTATION_TYPE:          'mutation_extended'
     }
 
     def __init__(self, log_level=logging.WARN, log_path=None):
@@ -256,6 +257,21 @@ class custom_annotation(genetic_alteration):
             values = row.to_list()
             metrics_by_gene[gene_name] = {column_headers[i+1]: values[i] for i in range(len(values))}
         return metrics_by_gene
+
+class mrna_expression(genetic_alteration):
+    """
+    Represents the MRNA_EXPRESSION genetic alteration type in cBioPortal.
+
+    Initially will support only Elba output; longer-term, will support cBioPortal as well.
+    """
+
+    def get_gene_names(self):
+        """Get gene names from the input .results files"""
+        pass
+
+    def get_metrics_by_gene(self, sample_id):
+        """Read gene-level metrics from input .results file: Expression percentile and z-score"""
+        pass
 
 class mutation_extended(genetic_alteration):
     """

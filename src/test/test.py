@@ -100,6 +100,17 @@ class TestReport(TestBase):
         args = [config, self.sample_id, logging.CRITICAL]
         self.assertRaises(ValueError, report, *args)
 
+    def test_expr(self):
+        """Test report with 'mrna expression' input"""
+        report_name = 'report_expr.json'
+        out_dir = os.path.join(self.tmp.name, 'test_report_expr')
+        os.mkdir(out_dir)
+        with open(os.path.join(self.dataDir, 'report_config_expr.json')) as configFile:
+            config = json.loads(configFile.read())
+        report_path = os.path.join(out_dir, report_name)
+        report(config, self.sample_id, log_level=logging.ERROR).write_report_config(report_path)
+        self.assertTrue(os.path.exists(report_path), "JSON report exists")
+
     def test_mx(self):
         """Test report with 'mutation extended' input"""
         report_name = 'report_mx.json'
