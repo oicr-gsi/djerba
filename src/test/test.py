@@ -89,8 +89,8 @@ class TestReport(TestBase):
             report(config, self.sample_id, log_level=logging.ERROR).write_report_config(report_path)
             self.assertTrue(os.path.exists(report_path), "JSON report exists")
         checksums = {
-            report_names[0]: 'f783396939a9ccd5f1245cf614cfddc1',
-            report_names[1]: '1b78c3c3a382e7035a16804b7ee0180f'
+            report_names[0]: 'cda5dd11403673861c96461aae7e1957',
+            report_names[1]: '367c3c202234edf03aa2d6f5f6f65292'
         }
         self.verify_checksums(checksums, out_dir)
         # test with incorrect sample headers in metadata
@@ -110,7 +110,7 @@ class TestReport(TestBase):
         report_path = os.path.join(out_dir, report_name)
         report(config, self.sample_id, log_level=logging.ERROR).write_report_config(report_path)
         self.assertTrue(os.path.exists(report_path), "JSON report exists")
-        checksum = {report_name: 'a09078c361587a26e48019a21d5b3f43'}
+        checksum = {report_name: '3cdb4f97463fb1b77cc2effcb8112a17'}
         self.verify_checksums(checksum, out_dir)
         args = [config, 'nonexistent sample', logging.CRITICAL]
         self.assertRaises(DjerbaReportError, report, *args)
