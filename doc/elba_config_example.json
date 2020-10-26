@@ -47,7 +47,7 @@
         "MSI_STATUS": "Negative",
         "PATHOLOGICAL_REVIEW": "Lots of immune cells",
         "PATIENT_ID": "Patient_001",
-	"PATIENT_SUMMARY": "Nulla a scelerisque ipsum. Aliquam erat volutpat in."
+        "PATIENT_SUMMARY": "Nulla a scelerisque ipsum. Aliquam erat volutpat in.",
         "PCT_v7_ABOVE_80x": 79.863,
         "SAMPLE_ANATOMICAL_SITE": "OMENTUM",
         "SAMPLE_ID": "Sample_001",
@@ -58,6 +58,6 @@
         "TMB_PER_MB": 14.7,
         "TMB_PLOT": "/data/foo/bar/tmb.png",
         "TREATMENT_STATUS": "Naive",
-	"VAF_PLOT": "/data/foo/bar/vaf.png"
+        "VAF_PLOT": "/data/foo/bar/vaf.png"
     }
 }
