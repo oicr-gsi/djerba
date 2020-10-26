@@ -148,7 +148,8 @@
 		    "FRACTION_GENOME_ALTERED": {"type": ["number", "null"]},
 		    "TMB_PLOT": {"type": ["string", "null"]},
 		    "VAF_PLOT": {"type": ["string", "null"]},
-		    "ETHNICITY": {"type": ["string", "null"]}
+		    "ETHNICITY": {"type": ["string", "null"]},
+		    "PATIENT_SUMMARY": {"type": ["string", "null"]}
 		},
 		"required": ["SAMPLE_ID"],
 		"uniqueItems": true

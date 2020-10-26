@@ -61,7 +61,8 @@
             "SEX": "Male",
             "ETHNICITY": "Other",
             "FRACTION_GENOME_ALTERED": 0.33,
-            "TMB_PER_MB": 82.38
+            "TMB_PER_MB": 82.38,
+	    "PATIENT_SUMMARY": "Nulla a scelerisque ipsum. Aliquam erat volutpat in."
         }
     ],
     "genetic_alterations": [

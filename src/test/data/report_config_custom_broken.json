@@ -53,6 +53,7 @@
             "MEAN_COVERAGE": null,
             "PATHOLOGICAL_REVIEW": "Lots of immune cells",
             "PATIENT_ID": "OCT-01-0472",
+	    "PATIENT_SUMMARY": "Nulla a scelerisque ipsum. Aliquam erat volutpat in.",
             "PCT_v7_ABOVE_80x": null,
             "SAMPLE_ANATOMICAL_SITE": "OMENTUM",
             "SAMPLE_ID": "OCT-01-0472-CAP",
