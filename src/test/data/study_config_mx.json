@@ -31,15 +31,15 @@
             "input_files": {
                 "OCT-01-0472-CAP": "somatic01.maf.txt.gz"
             },
-	    "input_directory": "/.mounts/labs/gsiprojects/gsi/djerba/mutation_extended",
+            "input_directory": "/.mounts/labs/gsiprojects/gsi/djerba/mutation_extended",
             "metadata": {
                 "filter_vcf": "/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz",
                 "oncokb_api_token": "e326982a-02ba-4f04-8ef6-80b04fa74acd",
                 "profile_description": "Dummy profile for Djerba test",
                 "profile_name": "Djerba test 001",
-		"bed_path": "/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed",
-		"tcga_path": "/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt",
-		"cancer_type": "blca"
+                "bed_path": "/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed",
+                "tcga_path": "/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt",
+                "cancer_type": "blca"
             },
             "workflow_run_id": "jabberwocky_workflow_run_0001"
         }
@@ -58,7 +58,7 @@
             "MEAN_COVERAGE": null,
             "PATHOLOGICAL_REVIEW": "Lots of immune cells",
             "PATIENT_ID": "OCT-01-0472",
-	    "PATIENT_SUMMARY": "Nulla a scelerisque ipsum. Aliquam erat volutpat in.",
+            "PATIENT_SUMMARY": "Nulla a scelerisque ipsum. Aliquam erat volutpat in.",
             "PCT_v7_ABOVE_80x": null,
             "SAMPLE_ANATOMICAL_SITE": "OMENTUM",
             "SAMPLE_ID": "OCT-01-0472-CAP",
@@ -66,7 +66,7 @@
             "SEQUENZA_PLOIDY": null,
             "SEQUENZA_PURITY_FRACTION": null,
             "SEX": "Male",
-	    "TMB_PER_MB":  null,
+            "TMB_PER_MB": null,
             "TREATMENT_STATUS": "Naive"
         }
     ],
