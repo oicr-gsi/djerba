@@ -34,7 +34,7 @@ class builder(base):
         self.sample_id = sample_id
     
     def build(self, custom_dir, gene_tsv, sample_tsv, maf, bed, cancer_type, oncokb_token, tgca, vcf):
-        """Build a config data structure form the given arguments"""
+        """Build a config data structure from the given arguments"""
         config = {}
         samples = [
             {constants.SAMPLE_ID_KEY: self.sample_id}

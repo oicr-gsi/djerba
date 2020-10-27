@@ -62,6 +62,7 @@ class study(base):
     
     def __init__(self, config, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
+        self.check_required_keys(config)
         study_meta_config = config.get(self.STUDY_META_KEY)
         self.study_meta = study_meta(study_meta_config)
         self.study_id = study_meta_config.get(constants.STUDY_ID_KEY)
@@ -140,6 +141,21 @@ class study(base):
                  msg = prefix+&#34;exiting. Run with --force to delete contents of directory.&#34;
                  self.logger.error(msg)
                  raise OSError(msg)
+
+    def check_required_keys(self, config):
+        required_keys = [
+            self.CANCER_TYPE_KEY,
+            self.CASE_LISTS_KEY,
+            self.GENETIC_ALTERATIONS_KEY,
+            self.SAMPLES_KEY,
+            self.SAMPLES_META_KEY,
+            self.STUDY_META_KEY
+        ]
+        for key in required_keys:
+            if key not in config:
+                msg = &#34;Key %s is required for cBioPortal study but was not found in config&#34; % key
+                self.logger.error(msg)
+                raise ValueError(msg)
 
     def get_case_lists(self, case_list_config):
         &#34;&#34;&#34;Generate required and custom case lists&#34;&#34;&#34;
@@ -269,6 +285,7 @@ class study(base):
     
     def __init__(self, config, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
+        self.check_required_keys(config)
         study_meta_config = config.get(self.STUDY_META_KEY)
         self.study_meta = study_meta(study_meta_config)
         self.study_id = study_meta_config.get(constants.STUDY_ID_KEY)
@@ -347,6 +364,21 @@ class study(base):
                  msg = prefix+&#34;exiting. Run with --force to delete contents of directory.&#34;
                  self.logger.error(msg)
                  raise OSError(msg)
+
+    def check_required_keys(self, config):
+        required_keys = [
+            self.CANCER_TYPE_KEY,
+            self.CASE_LISTS_KEY,
+            self.GENETIC_ALTERATIONS_KEY,
+            self.SAMPLES_KEY,
+            self.SAMPLES_META_KEY,
+            self.STUDY_META_KEY
+        ]
+        for key in required_keys:
+            if key not in config:
+                msg = &#34;Key %s is required for cBioPortal study but was not found in config&#34; % key
+                self.logger.error(msg)
+                raise ValueError(msg)
 
     def get_case_lists(self, case_list_config):
         &#34;&#34;&#34;Generate required and custom case lists&#34;&#34;&#34;
@@ -528,6 +560,31 @@ class study(base):
              raise OSError(msg)</code></pre>
 </details>
 </dd>
+<dt id="djerba.study.study.check_required_keys"><code class="name flex">
+<span>def <span class="ident">check_required_keys</span></span>(<span>self, config)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check_required_keys(self, config):
+    required_keys = [
+        self.CANCER_TYPE_KEY,
+        self.CASE_LISTS_KEY,
+        self.GENETIC_ALTERATIONS_KEY,
+        self.SAMPLES_KEY,
+        self.SAMPLES_META_KEY,
+        self.STUDY_META_KEY
+    ]
+    for key in required_keys:
+        if key not in config:
+            msg = &#34;Key %s is required for cBioPortal study but was not found in config&#34; % key
+            self.logger.error(msg)
+            raise ValueError(msg)</code></pre>
+</details>
+</dd>
 <dt id="djerba.study.study.get_case_lists"><code class="name flex">
 <span>def <span class="ident">get_case_lists</span></span>(<span>self, case_list_config)</span>
 </code></dt>
@@ -686,6 +743,7 @@ class study(base):
 <li><code><a title="djerba.study.study.TYPE_OF_CANCER_KEY" href="#djerba.study.study.TYPE_OF_CANCER_KEY">TYPE_OF_CANCER_KEY</a></code></li>
 <li><code><a title="djerba.study.study.WRITE_PATIENTS_KEY" href="#djerba.study.study.WRITE_PATIENTS_KEY">WRITE_PATIENTS_KEY</a></code></li>
 <li><code><a title="djerba.study.study.check_output_dir" href="#djerba.study.study.check_output_dir">check_output_dir</a></code></li>
+<li><code><a title="djerba.study.study.check_required_keys" href="#djerba.study.study.check_required_keys">check_required_keys</a></code></li>
 <li><code><a title="djerba.study.study.get_case_lists" href="#djerba.study.study.get_case_lists">get_case_lists</a></code></li>
 <li><code><a title="djerba.study.study.get_clinical_data" href="#djerba.study.study.get_clinical_data">get_clinical_data</a></code></li>
 <li><code><a title="djerba.study.study.write_all" href="#djerba.study.study.write_all">write_all</a></code></li>
