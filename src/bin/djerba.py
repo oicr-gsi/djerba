@@ -11,7 +11,7 @@ import sys
 sys.path.pop(0) # do not import from script directory
 from djerba.report import report
 from djerba.study import study
-from djerba.validate import validator
+from djerba.config import validator
 
 ELBA = 'elba'
 CBIOPORTAL = 'cbioportal'
