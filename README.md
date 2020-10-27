@@ -4,9 +4,9 @@ Create reports from metadata and workflow output
 
 ## Introduction
 
-Djerba translates cancer bioinformatics workflow outputs and metadata into standard reporting formats. Input is metadata and workflow results specified in a JSON config file; output is one or more report files.
+Djerba translates cancer bioinformatics workflow outputs and metadata into standard reporting formats.
 
-Reporting formats supported by Djerba include:
+Formats supported by Djerba include:
 - JSON data structure for the [Elba data review server](https://github.com/oicr-gsi/Elba)
 - Directory of data and metadata files for [cBioPortal](https://cbioportal.org/)
 
@@ -14,7 +14,7 @@ Djerba is named for an [island](https://en.wikipedia.org/wiki/Djerba) off the co
 
 ## Documentation
 
-The [doc](./doc/README.md) directory holds additional documentation and examples.
+The [doc](./doc/) directory holds additional documentation and examples, as described in its [README](./doc/README.md) file.
 
 It includes [HTML documentation](./doc/html/djerba/index.html) generated using [pdoc3](https://pdoc3.github.io/pdoc/); see 'Release Procedure' for details.
 
@@ -49,14 +49,11 @@ In addition, the `test` directory has a [README](./src/test/README.md) with deta
 
 ### Running
 
-The [djerba.py](./src/bin/djerba.py) script is the main method of running Djerba. Run with `--help` for a full description of command-line options.
+There are two scripts to run Djerba:
+- [djerba.py](./src/bin/djerba.py) is general-purpose, and requires a correctly formatted Djerba config file. It can be used to generate Elba config; generate a cBioPortal reporting directory; or validate Djerba config before running.
+- [djerba_from_config.py](./src/bin/djerba_from_config.py) is a specialised script to generate Elba config from command-line arguments only, without the need for a config file.
 
-The script requires a config file in JSON format; it validates the file against a [JSON schema](https://json-schema.org/) before proceeding. The config schema is [input_schema.json](src/lib/djerba/data/input_schema.json). Example config files are in [src/test/data](src/test/data).
-
-`djerba.py` has three modes of operation:
-- `elba`: Write a JSON config file for Elba, for a given sample
-- `cbioportal`: Write a study directory for upload to a cBioPortal instance, for multiple samples
-- `validate`: Validate a Djerba config file and report any errors
+Run either script with `--help` for a full description of command-line arguments and options.
 
 ## Repository Structure
 
@@ -78,7 +75,7 @@ The script requires a config file in JSON format; it validates the file against 
 
 Djerba development originated with the [cbioportal_tools](https://github.com/oicr-gsi/cbioportal_tools) project (also known as Janus). This included creation of data folders for cBioPortal.
 
-As of September 2020, the scope of Djerba has expanded to include ShinyReport. Relevant code from `cbioportal_tools` will be ported to the `djerba` repository and further developed to support cBopPortal. Meanwhile, additional code will be developed to handle output for ShinyReport.
+As of September 2020, the scope of Djerba has expanded to include [Elba](https://github.com/oicr-gsi/Elba) (previously known as ShinyReport), a reporting tool developed at OICR. Input data and processing requirements for the two reporting types will overlap significantly, so they are to be handled by the same software repository.
 
 Development progress is documented in [CHANGELOG.md](./CHANGELOG.md).
 

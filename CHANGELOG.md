@@ -5,6 +5,7 @@
 - `review_status` field in Elba JSON output
 - HTML documentation generated using [pdoc3](https://pdoc3.github.io/pdoc/).
 - GCGI-36: Custom annotation in TSV format with the `custom_annotation` class.
+- GCGI-45: Script `djerba_from_command.py` to generate Elba JSON from command-line arguments
 ### Removed
 - `genetic_alteration_demo` class
 ### Changed

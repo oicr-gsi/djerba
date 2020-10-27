@@ -1,0 +1,77 @@
+{
+    "genetic_alterations": [
+        {
+            "datatype": "CUSTOM",
+            "genetic_alteration_type": "CUSTOM_ANNOTATION",
+            "input_directory": "/dummy/to/replace/in/test",
+            "input_files": {},
+            "metadata": {
+                "gene_headers": [
+                    "Gene",
+                    "Allele Fraction (%)",
+                    "Chromosome",
+                    "Copy State",
+                    "Drug Annotation",
+                    "Exp. percentile (%)",
+                    "Exp. z-score",
+                    "FDA Approved Treatment",
+                    "Gene Annotation",
+                    "OncoKB",
+                    "Protein Change",
+                    "Variant / Total Reads",
+                    "Whizbam URL"
+                ],
+                "gene_tsv": "custom_gene_annotation.tsv",
+                "sample_headers": [
+                    "SAMPLE_ID",
+                    "AGE",
+                    "CANCER_TYPE",
+                    "CANCER_TYPE_DETAILED",
+                    "CENTRE",
+                    "CLOSEST_TCGA",
+                    "COSMIC_SIGS",
+                    "ETHNICITY",
+                    "FRACTION_GENOME_ALTERED",
+                    "FRAC_CALLABILITY",
+                    "HRD_SCORE",
+                    "MEAN_COVERAGE",
+                    "MSI_STATUS",
+                    "PATHOLOGICAL_REVIEW",
+                    "PATIENT_ID",
+                    "PATIENT_SUMMARY",
+                    "PCT_v7_ABOVE_80x",
+                    "SAMPLE_ANATOMICAL_SITE",
+                    "SAMPLE_PRIMARY_OR_METASTASIS",
+                    "SEQUENZA_PLOIDY",
+                    "SEQUENZA_PURITY_FRACTION",
+                    "SEX",
+                    "TMB_PER_MB",
+                    "TMB_PLOT",
+                    "TREATMENT_STATUS",
+                    "VAF_PLOT"
+                ],
+                "sample_tsv": "custom_sample_annotation.tsv"
+            }
+        },
+        {
+            "datatype": "MAF",
+            "genetic_alteration_type": "MUTATION_EXTENDED",
+            "input_directory": "/dummy/to/replace/in/test",
+            "input_files": {
+                "OCT-01-0472-CAP": "somatic01.maf.txt.gz"
+            },
+            "metadata": {
+                "bed_path": "/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed",
+                "cancer_type": "blca",
+                "filter_vcf": "/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz",
+                "oncokb_api_token": null,
+                "tcga_path": "/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt"
+            }
+        }
+    ],
+    "samples": [
+        {
+            "SAMPLE_ID": "OCT-01-0472-CAP"
+        }
+    ]
+}
