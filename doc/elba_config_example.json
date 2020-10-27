@@ -1,6 +1,9 @@
 {
     "gene_metrics": [
         {
+            "MutationClass": "Somatic",
+            "Fusion": "NA",
+            "Custom": "NA",
             "Allele Fraction (%)": 21,
             "Chromosome": "chr1",
             "Copy State": "Neutral",
@@ -16,6 +19,9 @@
             "Whizbam URL": "http://example.com/whizbam/Gene001"
         },
         {
+            "MutationClass": "Somatic",
+            "Fusion": "NA",
+            "Custom": "NA",
             "Allele Fraction (%)": 10,
             "Chromosome": "chr1",
             "Copy State": "Neutral",
@@ -24,6 +30,60 @@
             "Exp. z-score": "NA",
             "FDA Approved Treatment": "Suspendisse potenti. Aliquam a magna pharetra dolor hendrerit.",
             "Gene": "Gene002",
+            "Gene Annotation": "Etiam lobortis magna pellentesque, blandit nisi id, feugiat.",
+            "OncoKB": "NA",
+            "Protein Change": "prot002",
+            "Variant / Total Reads": "33/156",
+            "Whizbam URL": "http://example.com/whizbam/Gene002"
+        },
+        {
+            "MutationClass": "Somatic",
+            "Fusion": "NA",
+            "Custom": "NA",
+            "Allele Fraction (%)": 10,
+            "Chromosome": "chr1",
+            "Copy State": "Neutral",
+            "Drug Annotation": "Donec sit amet porta orci. Ut a malesuada.",
+            "Exp. percentile (%)": 20,
+            "Exp. z-score": "NA",
+            "FDA Approved Treatment": "Suspendisse potenti. Aliquam a magna pharetra dolor hendrerit.",
+            "Gene": "Gene002",
+            "Gene Annotation": "Etiam lobortis magna pellentesque, blandit nisi id, feugiat.",
+            "OncoKB": "NA",
+            "Protein Change": "prot002",
+            "Variant / Total Reads": "33/156",
+            "Whizbam URL": "http://example.com/whizbam/Gene002"
+        },
+        {
+            "MutationClass": "Fusion",
+            "Fusion": "C11orf95-RELA",
+            "Custom": "frameshift",
+            "Allele Fraction (%)": 10,
+            "Chromosome": "chr1",
+            "Copy State": "Neutral",
+            "Drug Annotation": "Donec sit amet porta orci. Ut a malesuada.",
+            "Exp. percentile (%)": 20,
+            "Exp. z-score": "NA",
+            "FDA Approved Treatment": "Suspendisse potenti. Aliquam a magna pharetra dolor hendrerit.",
+            "Gene": "C11orf95",
+            "Gene Annotation": "Etiam lobortis magna pellentesque, blandit nisi id, feugiat.",
+            "OncoKB": "NA",
+            "Protein Change": "prot002",
+            "Variant / Total Reads": "33/156",
+            "Whizbam URL": "http://example.com/whizbam/Gene002"
+        },
+        {
+            "MutationClass": "Fusion",
+            "Fusion": "C11orf95-RELA",
+            "Custom": "frameshift",
+            "Allele Fraction (%)": 10,
+            "Chromosome": "chr1",
+            "Copy State": "Neutral",
+            "Drug Annotation": "Donec sit amet porta orci. Ut a malesuada.",
+            "Exp. percentile (%)": 20,
+            "Exp. z-score": "NA",
+            "FDA Approved Treatment": "Suspendisse potenti. Aliquam a magna pharetra dolor hendrerit.",
+            "Gene": "RELA",
             "Gene Annotation": "Etiam lobortis magna pellentesque, blandit nisi id, feugiat.",
             "OncoKB": "NA",
             "Protein Change": "prot002",
@@ -58,6 +118,7 @@
         "TMB_PER_MB": 14.7,
         "TMB_PLOT": "/data/foo/bar/tmb.png",
         "TREATMENT_STATUS": "Naive",
-        "VAF_PLOT": "/data/foo/bar/vaf.png"
+        "VAF_PLOT": "/data/foo/bar/vaf.png",
+        "PATIENT_SUMMARY": "NA"
     }
 }
