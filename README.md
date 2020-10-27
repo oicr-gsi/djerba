@@ -16,7 +16,7 @@ Djerba is named for an [island](https://en.wikipedia.org/wiki/Djerba) off the co
 
 The [doc](./doc/) directory holds additional documentation and examples, as described in its [README](./doc/README.md) file.
 
-It includes [HTML documentation](./doc/html/djerba/index.html) generated using [pdoc3](https://pdoc3.github.io/pdoc/); see 'Release Procedure' for details.
+It includes [HTML documentation](./doc/html/djerba/index.html) of all classes and their attributes. The HTML was generated using [pdoc3](https://pdoc3.github.io/pdoc/); see 'Release Procedure' for details.
 
 In addition, the `test` directory has a [README](./src/test/README.md) with details of tests and test data.
 
@@ -26,11 +26,12 @@ In addition, the `test` directory has a [README](./src/test/README.md) with deta
 
 - Python >= 3.7
 - Python packages as listed in `setup.py`
+- Python prerequisites are in the `djerba` environment module from OICR [Modulator](https://gitlab.oicr.on.ca/ResearchIT/modulator)
 - OICR [Modulator](https://gitlab.oicr.on.ca/ResearchIT/modulator) environment modules required for cBioPortal `MUTATION_EXTENDED` output:
-  - vcf2maf/1.6.17
-  - vep/92.0
-  - vep-hg19-cache/92
-  - hg19/p13
+  - `vcf2maf/1.6.17`
+  - `vep/92.0`
+  - `vep-hg19-cache/92`
+  - `hg19/p13`
 
 ### Testing
 
@@ -58,7 +59,7 @@ Run either script with `--help` for a full description of command-line arguments
 ## Repository Structure
 
 - [src](./src): Production source code
-- [src/bin/djerba.py](./src/bin/djerba.py): Main script to run Djerba
+- [src/bin/](./src/bin/): Scripts to run Djerba
 - [src/lib/djerba](./src/lib/djerba): Python package for Djerba functions
 - [src/test](./src/test): Tests for production code
 - [prototypes](./prototypes): Development area for non-production scripts and tests
