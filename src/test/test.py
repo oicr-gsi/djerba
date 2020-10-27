@@ -7,7 +7,7 @@ from djerba.report import report, DjerbaReportError
 from djerba.sample import sample
 from djerba.study import study
 from djerba.utilities import constants
-from djerba.validate import validator, DjerbaConfigError
+from djerba.config import builder, validator, DjerbaConfigError
 
 class TestBase(unittest.TestCase):
 
@@ -28,6 +28,84 @@ class TestBase(unittest.TestCase):
 
     def tearDown(self):
         self.tmp.cleanup()
+
+class TestBuilder(TestBase):
+    """Tests for Elba config builder"""
+
+    def setUp(self):
+        self.testDir = os.path.dirname(os.path.realpath(__file__))
+        self.dataDir = os.path.realpath(os.path.join(self.testDir, 'data'))
+        self.tmp = tempfile.TemporaryDirectory(prefix='djerba_builder_test_')
+        self.sample_id = "OCT-01-0472-CAP"
+
+    def test(self):
+        test_builder = builder(self.sample_id, log_level=logging.WARN)
+        test_subdir = os.path.join(self.dataDir, 'from_command')
+        maf_dir = '/.mounts/labs/gsiprojects/gsi/djerba/mutation_extended'
+        args = [
+            test_subdir, # custom_dir
+            'custom_gene_annotation.tsv', # gene_tsv
+            'custom_sample_annotation.tsv', # sample_tsv
+            os.path.join(maf_dir, 'somatic01.maf.txt.gz'), # maf
+            '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed', # bed
+            'blca', # cancer_type
+            None, # oncokb_token
+            '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt', # tcga
+            '/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz'
+        ]
+        # generate the Elba config
+        config = test_builder.build(*args)
+        with open(os.path.join(test_subdir, 'expected_djerba_config.json')) as expected_file:
+            expected = json.loads(expected_file.read())
+        # ordering of items in genetic_alterations is fixed in the builder code
+        expected[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = test_subdir
+        expected[constants.GENETIC_ALTERATIONS_KEY][1]['input_directory'] = maf_dir
+        self.assertEqual(config, expected, "Elba config matches expected values")
+        # test writing a report with the generated Elba config
+        out_name = 'elba_report_config.json'
+        out_dir = os.path.join(self.tmp.name, 'builder_test')
+        os.mkdir(out_dir)
+        elba_report = report(config, self.sample_id, log_level=logging.ERROR)
+        elba_report.write_report_config(os.path.join(out_dir, out_name), force=False, strict=True)
+        checksums = {out_name: '5661f5694b0c64b87fba39364299c816'}
+        self.verify_checksums(checksums, out_dir)
+
+    def test_mismatched(self):
+        test_builder = builder(self.sample_id, log_level=logging.WARN)
+        test_subdir = os.path.join(self.dataDir, 'from_command')
+        maf_dir = '/.mounts/labs/gsiprojects/gsi/djerba/mutation_extended'
+        args = [
+            test_subdir, # custom_dir
+            'mismatched_custom_gene_annotation.tsv', # gene_tsv
+            'custom_sample_annotation.tsv', # sample_tsv
+            os.path.join(maf_dir, 'somatic01.maf.txt.gz'), # maf
+            '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed', # bed
+            'blca', # cancer_type
+            None, # oncokb_token
+            '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt', # tcga
+            '/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz'
+        ]
+        # generate the Elba config
+        config = test_builder.build(*args)
+        with open(os.path.join(test_subdir, 'expected_djerba_config_mismatch.json')) as expected_file:
+            expected = json.loads(expected_file.read())
+        # ordering of items in genetic_alterations is fixed in the builder code
+        expected[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = test_subdir
+        expected[constants.GENETIC_ALTERATIONS_KEY][1]['input_directory'] = maf_dir
+        self.assertEqual(config, expected, "Elba config matches expected values")
+        # test writing a report with the generated Elba config
+        out_name = 'elba_report_config.json'
+        out_dir = os.path.join(self.tmp.name, 'builder_test_mismatch')
+        os.mkdir(out_dir)
+        elba_report = report(config, self.sample_id, log_level=logging.ERROR)
+        elba_report.write_report_config(os.path.join(out_dir, out_name), force=False, strict=False)
+        checksums = {out_name: '1c280d3ad86c03e92f67adbbf5b8c74c'}
+        self.verify_checksums(checksums, out_dir)
+        # writing fails in strict mode, because gene attributes are inconsistent
+        args = [config, self.sample_id, logging.CRITICAL]
+        elba_report_strict = report(config, self.sample_id, log_level=logging.CRITICAL)
+        args = [os.path.join(out_dir, out_name), True, True] # force=True, strict=True
+        self.assertRaises(DjerbaReportError, elba_report_strict.write_report_config, *args)
 
 class TestMetrics(TestBase):
     """Tests for genetic alteration metrics"""
@@ -79,7 +157,7 @@ class TestReport(TestBase):
         """Test report with custom_annotation input"""
         out_dir = os.path.join(self.tmp.name, 'test_report_custom')
         os.mkdir(out_dir)
-        report_names = ["report_config_{}".format(i) for i in range(len(self.config_names))]
+        report_names = ["report_config_{}.json".format(i) for i in range(len(self.config_names))]
         for i in range(len(self.config_names)):
             with open(os.path.join(self.dataDir, self.config_names[i])) as configFile:
                 config = json.loads(configFile.read())
@@ -89,8 +167,8 @@ class TestReport(TestBase):
             report(config, self.sample_id, log_level=logging.ERROR).write_report_config(report_path)
             self.assertTrue(os.path.exists(report_path), "JSON report exists")
         checksums = {
-            report_names[0]: 'cda5dd11403673861c96461aae7e1957',
-            report_names[1]: '367c3c202234edf03aa2d6f5f6f65292'
+            report_names[0]: 'eacf20512ebd9e32698913698c6a64fc',
+            report_names[1]: '7730331b5a80f7cdb46e3840a92dc7f6'
         }
         self.verify_checksums(checksums, out_dir)
         # test with incorrect sample headers in metadata
@@ -110,7 +188,7 @@ class TestReport(TestBase):
         report_path = os.path.join(out_dir, report_name)
         report(config, self.sample_id, log_level=logging.ERROR).write_report_config(report_path)
         self.assertTrue(os.path.exists(report_path), "JSON report exists")
-        checksum = {report_name: '3cdb4f97463fb1b77cc2effcb8112a17'}
+        checksum = {report_name: '30d958fb8624e721addf6fad3a64f932'}
         self.verify_checksums(checksum, out_dir)
         args = [config, 'nonexistent sample', logging.CRITICAL]
         self.assertRaises(DjerbaReportError, report, *args)
@@ -122,16 +200,17 @@ class TestScript(TestBase):
     def setUp(self):
         super().setUp()
         self.testDir = os.path.dirname(os.path.realpath(__file__))
-        self.scriptName = 'djerba.py'
-        self.scriptPath = os.path.join(self.testDir, os.pardir, 'bin', self.scriptName)
+        self.scriptNames = ['djerba.py', 'djerba_from_command.py']
 
     def test_compile(self):
-        """Minimal test that command-line script compiles"""
-        with open(self.scriptPath, 'rb') as inFile:
-            self.assertIsNotNone(
-                compile(inFile.read(), self.scriptName, 'exec'),
-                'Script compiled without error'
-            )
+        """Minimal test that command-line scripts compile"""
+        for scriptName in self.scriptNames:
+            scriptPath = os.path.join(self.testDir, os.pardir, 'bin', scriptName)
+            with open(scriptPath, 'rb') as inFile:
+                self.assertIsNotNone(
+                    compile(inFile.read(), scriptName, 'exec'),
+                    'Script {} compiled without error'.format(scriptName)
+                )
 
 class TestStudy(TestBase):
 

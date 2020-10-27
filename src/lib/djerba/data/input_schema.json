@@ -151,6 +151,7 @@
 		    "ETHNICITY": {"type": ["string", "null"]},
 		    "PATIENT_SUMMARY": {"type": ["string", "null"]}
 		},
+		"additionalProperties": false,
 		"required": ["SAMPLE_ID"],
 		"uniqueItems": true
 	    }

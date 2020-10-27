@@ -53,7 +53,6 @@
             "CLOSEST_TCGA": "coadread",
             "COSMIC_SIGS": null,
             "ETHNICITY": "Other",
-            "FGA": null,
             "FRAC_CALLABILITY": null,
             "MEAN_COVERAGE": null,
             "PATHOLOGICAL_REVIEW": "Lots of immune cells",

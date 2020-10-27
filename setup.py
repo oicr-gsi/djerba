@@ -6,7 +6,7 @@ Setup script for Djerba
 
 from setuptools import setup, find_packages
 
-package_version = '0.0.1'
+package_version = '0.0.2'
 package_root = 'src/lib'
 
 with open("README.md", "r") as fh:
@@ -15,7 +15,10 @@ with open("README.md", "r") as fh:
 setup(
     name='djerba',
     version=package_version,
-    scripts=['src/bin/djerba.py'],
+    scripts=[
+        'src/bin/djerba.py',
+        'src/bin/djerba_from_command.py'
+    ],
     packages=find_packages(where=package_root),
     package_dir={'' : package_root},
     package_data={

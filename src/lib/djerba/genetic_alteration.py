@@ -44,10 +44,10 @@ class genetic_alteration(base):
             self.metadata = config[self.METADATA_KEY]
             self.input_files = config[self.INPUT_FILES_KEY]
             self.input_directory = config[self.INPUT_DIRECTORY_KEY]
-            self.workflow_run_id = config[self.WORKFLOW_RUN_ID_KEY]
         except KeyError as err:
             self.logger.error("Missing required config key: {0}".format(err))
             raise
+        self.workflow_run_id = config.get(self.WORKFLOW_RUN_ID_KEY, None) # optional param
         self.sample_ids = self._get_sample_ids()
         self.sample_attributes = self._find_all_sample_attributes()
         # identifier for the genetic_alteration; should be unique in any given config

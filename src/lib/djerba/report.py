@@ -48,7 +48,7 @@ class report(base):
             ga_factory.create_instance(conf, study_id=None) for conf in ga_configs
         ]
 
-    def get_report_config(self, replace_null):
+    def get_report_config(self, replace_null, strict=True):
         """Construct the reporting config data structure"""
         # for each genetic alteration, find metric values at sample/gene level
         all_metrics_by_gene = {}
@@ -62,12 +62,31 @@ class report(base):
                     all_metrics_by_gene[gene_id] = metrics_by_gene[gene_id]
             # update sample-level metrics
             self.sample.update_attributes(alteration.get_attributes_for_sample(self.sample_id))
-        # reorder gene-level metrics into a list
+        # reorder gene-level metrics into a list and check consistency
         gene_metrics_list = []
+        expected_gene_attributes = None
         for gene_id in all_metrics_by_gene.keys():
             metrics = all_metrics_by_gene[gene_id]
+            # check consistency with previous attributes, if any
+            if expected_gene_attributes == None:
+                expected_gene_attributes = set(metrics.keys())
+            else:
+                gene_attributes = set(metrics.keys())
+                if gene_attributes != expected_gene_attributes:
+                    expected = str(sorted(list(expected_gene_attributes)))
+                    found = str(sorted(list(gene_attributes)))
+                    msg = 'Attributes for gene {0} do not match predecessors; '.format(gene_id)+\
+                          'expected {0}, found {1}'.format(expected, found)
+                    if strict:
+                        msg = "Strict validation: "+msg
+                        self.logger.error(msg)
+                        raise DjerbaReportError(msg)
+                    else:
+                        self.logger.warning(msg)
+            # add an attribute for the gene name and append to list
             metrics[constants.GENE_KEY] = gene_id
             gene_metrics_list.append(metrics)
+        gene_attributes = set(gene_metrics_list[0].keys())
         # assemble the config data structure
         config = {}
         config[constants.SAMPLE_INFO_KEY] = self.sample.get_attributes()
@@ -96,13 +115,15 @@ class report(base):
                 config[constants.SAMPLE_INFO_KEY][key] = self.NULL_STRING
         return config
 
-    def write_report_config(self, out_path, force=False, replace_null=True):
+    def write_report_config(self, out_path, force=False, strict=True, replace_null=True):
         """
         Write report config JSON to the given path, or stdout if the path is '-'.
 
         - If force is True, overwrite any existing output.
         - If replace_null is True, replace any None/NaN values with a standard string.
         """
+        # get config before opening an output file, in case of errors
+        config = self.get_report_config(replace_null, strict)
         if out_path=='-':
             out_file = sys.stdout
         else:
@@ -115,7 +136,7 @@ class report(base):
                     self.logger.error(msg)
                     raise DjerbaReportError(msg)
             out_file = open(out_path, 'w')
-        out_file.write(json.dumps(self.get_report_config(replace_null), sort_keys=True, indent=4))
+        out_file.write(json.dumps(config, sort_keys=True, indent=4))
         if out_path!='-':
             out_file.close()
 
