@@ -57,6 +57,12 @@ In addition, the `test` directory has a [README](./src/test/README.md) with deta
 - From the repo directory, run `pip install .` to install using `setup.py`. This will copy `djerba.py` to the `bin` directory, and relevant modules and data files to the `lib` directory, under the installation path.
 - See `pip install --help` for further installation options.
 
+### Input Data
+
+Input data types for Djerba are as follows:
+- `MUTATION_EXTENDED`: Requires a MAF data file, and reference files in BED, TCGA and VCF formats.
+- `CUSTOM_ANNOTATION`: This is a catch-all format, allowing arbitrary gene and sample annotation to be specified by the user in TSV files. See the [class documentation](./doc/html/djerba/genetic_alteration.html#djerba.genetic_alteration.custom_annotation) for details of input format.
+
 ### Running
 
 There are two scripts to run Djerba:
