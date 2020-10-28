@@ -13,5 +13,5 @@ Described in [schema.md](./schema.md).
 
 ## Elba config output
 
-- [elba_config_example.json](./elba_config_example.json) is an example of the current JSON spec for the Elba report configuration. As of 2020-10-19, Elba config structure is not officially finalised; but there should be little or no difference between this and the final version.
+- [elba_config_example.json](./elba_config_example.json) is an example of the current JSON spec for the Elba report configuration. As of Djerba release 0.0.2, Elba config structure is not officially finalised; but any differences between this and the final version should be minor.
 - **TODO:** Supplement the example JSON output file with a formal [JSON schema](https://json-schema.org/).
