@@ -1,0 +1,761 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.1" />
+<title>djerba.study API documentation</title>
+<meta name="description" content="Class to represent a study directory, formatted for upload to cBioPortal" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>djerba.study</code></h1>
+</header>
+<section id="section-intro">
+<p>Class to represent a study directory, formatted for upload to cBioPortal</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;Class to represent a study directory, formatted for upload to cBioPortal&#34;&#34;&#34;
+
+import json
+import logging
+import os
+from shutil import rmtree
+
+from djerba.components import cancer_type, case_list, study_meta, patients_component, samples_component
+from djerba.genetic_alteration import genetic_alteration, mutation_extended
+from djerba.sample import sample
+from djerba.utilities.base import base
+from djerba.utilities import constants
+
+class study(base):
+
+    # TODO move these cBioPortal constants into the shared module
+    CNA_TYPE = &#39;COPY_NUMBER_ALTERATION&#39;
+    EXPRESSION_TYPE = &#39;MRNA_EXPRESSION&#39;
+    MUTATION_TYPE = &#39;MUTATION_EXTENDED&#39;
+    DISCRETE_DATATYPE = &#39;DISCRETE&#39;
+
+    CANCER_TYPE_KEY = &#39;cancer_type&#39;
+    CASE_LISTS_KEY = &#39;case_lists&#39;
+    GENETIC_ALTERATIONS_KEY = &#39;genetic_alterations&#39;
+    SAMPLES_KEY = &#39;samples&#39;
+    SAMPLES_META_KEY = &#39;samples_meta&#39;
+    STUDY_META_KEY = &#39;study_meta&#39;
+    TYPE_OF_CANCER_KEY = &#39;type_of_cancer&#39;
+    WRITE_PATIENTS_KEY = &#39;write_patients&#39;
+
+    # &#39;cancer type&#39; and &#39;type of cancer&#39; are distinct terms in cBioPortal.
+    # Respectively, they are an output file format, and a string in study metadata
+    
+    def __init__(self, config, log_level=logging.WARNING, log_path=None):
+        self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
+        self.check_required_keys(config)
+        study_meta_config = config.get(self.STUDY_META_KEY)
+        self.study_meta = study_meta(study_meta_config)
+        self.study_id = study_meta_config.get(constants.STUDY_ID_KEY)
+        type_of_cancer_string = study_meta_config.get(self.TYPE_OF_CANCER_KEY)
+        if config.get(self.CANCER_TYPE_KEY):
+            self.cancer_type = cancer_type(
+                config.get(self.CANCER_TYPE_KEY), type_of_cancer_string, log_level=log_level
+            )
+        else:
+            self.cancer_type = None
+        # read sample info
+        self.samples = []
+        sample_id_set = set()
+        for sample_json in config.get(self.SAMPLES_KEY):
+            sample_object = sample(sample_json)
+            self.samples.append(sample_object)
+            sample_id_set.add(sample_object.get_id())
+        # TODO allow patient/sample output to be configured independently
+        # for now, we are using the same config for both; technically correct, but inflexible
+        clinical_data = self.get_clinical_data(config.get(self.SAMPLES_META_KEY))
+        [self.sample_component, self.patient_component] = clinical_data
+        self.genetic_alterations = []
+        self.ga_ids = set()
+        # find genetic alterations and check study-wide consistency
+        for ga_config in config.get(self.GENETIC_ALTERATIONS_KEY):
+            if ga_config[constants.GENETIC_ALTERATION_TYPE_KEY] == constants.MUTATION_TYPE:
+                ga = mutation_extended(ga_config, self.study_id, log_level=log_level)
+            else:
+                # default case for testing
+                # make an instance of the base class; should NOT be done in production
+                self.logger.warning(&#34;Using base genetic_alteration class; NOT supported for production&#34;)
+                ga = genetic_alteration(ga_config, self.study_id, log_level=log_level)
+            # check uniqueness of genetic alteration id
+            genetic_alt_id = ga.get_alteration_id()
+            if genetic_alt_id in self.ga_ids:
+                msg = &#34;Non-unique (genetic_alteration_type, datatype) pair : %s&#34; % genetic_alt_id
+                self.logger.error(msg)
+                raise ValueError(msg)
+            else:
+                self.ga_ids.add(genetic_alt_id)
+            ga_sample_id_set = set(ga.get_sample_ids())
+            # check samples are a subset of the study samples list
+            if not ga_sample_id_set.issubset(sample_id_set):
+                diff = ga_sample_id_set - sample_id_set
+                msg = &#34;Sample IDs for alteration %s:%s do not appear in study samples list: %s&#34; \
+                      % (ga.get_alteration_id(), &#34;, &#34;.join(diff))
+                self.logger.error(msg)
+                raise ValueError(msg)
+            self.genetic_alterations.append(ga)
+        # find case lists last, so we can refer to genetic_alteration setup
+        self.case_lists = self.get_case_lists(config.get(self.CASE_LISTS_KEY))
+
+    def check_output_dir(self, out_dir):
+        &#34;&#34;&#34;check if a directory is valid for writing output&#34;&#34;&#34;
+        valid = True
+        if not os.path.exists(out_dir):
+            valid = False
+            self.logger.error(&#34;Output directory %s does not exist&#34; % out_dir)
+        elif not os.path.isdir(out_dir):
+            valid = False
+            self.logger.error(&#34;Output path %s is not a directory&#34; % out_dir)
+        elif not os.access(out_dir, os.W_OK):
+            valid = False
+            self.logger.error(&#34;Output path %s is not writable&#34; % out_dir)
+        if not valid:
+            msg = &#34;Invalid output directory %s; exiting&#34; % out_dir
+            self.logger.error(msg)
+            raise OSError(msg)
+        if len(os.listdir(out_dir)) &gt; 0:
+            prefix = &#34;Output directory %s is not empty; &#34; % out_dir
+            if force:
+                self.logger.info(prefix+&#34;--force is in effect, removing directory contents.&#34;)
+                rmtree(out_dir)
+                os.mkdir(out_dir)
+            else:
+                 msg = prefix+&#34;exiting. Run with --force to delete contents of directory.&#34;
+                 self.logger.error(msg)
+                 raise OSError(msg)
+
+    def check_required_keys(self, config):
+        required_keys = [
+            self.CANCER_TYPE_KEY,
+            self.CASE_LISTS_KEY,
+            self.GENETIC_ALTERATIONS_KEY,
+            self.SAMPLES_KEY,
+            self.SAMPLES_META_KEY,
+            self.STUDY_META_KEY
+        ]
+        for key in required_keys:
+            if key not in config:
+                msg = &#34;Key %s is required for cBioPortal study but was not found in config&#34; % key
+                self.logger.error(msg)
+                raise ValueError(msg)
+
+    def get_case_lists(self, case_list_config):
+        &#34;&#34;&#34;Generate required and custom case lists&#34;&#34;&#34;
+        case_lists = []
+        for config in case_list_config: # custom case lists
+            case_lists.append(case_list(self.study_id, config))
+        cna_samples = set()
+        mutation_samples = set()
+        expression_samples = set()
+        for ga in self.genetic_alterations:
+            ga_type = ga.get_genetic_alteration_type()
+            if ga_type == self.CNA_TYPE:
+                cna_samples.update(set(ga.get_sample_ids()))
+                if ga.get_datatype() == self.DISCRETE_DATATYPE:
+                    config = { # case list required by cBioPortal
+                        case_list.SUFFIX_KEY: &#34;cna&#34;,
+                        case_list.CASE_LIST_NAME_KEY: &#34;CNA discrete&#34;,
+                        case_list.CASE_LIST_DESCRIPTION_KEY: &#34;Samples with discrete CNA data&#34;,
+                        case_list.CASE_LIST_IDS_KEY: ga.get_sample_ids(),
+                    }
+                    case_lists.append(case_list(self.study_id, config))
+            elif ga_type == self.MUTATION_TYPE:
+                mutation_samples.update(set(ga.get_sample_ids()))
+                config = {    # case list required by cBioPortal
+                    case_list.SUFFIX_KEY: &#34;sequenced&#34;,
+                    case_list.CASE_LIST_NAME_KEY: &#34;sequenced mutation data&#34;,
+                    case_list.CASE_LIST_DESCRIPTION_KEY: &#34;Samples with mutation data&#34;,
+                    case_list.CASE_LIST_IDS_KEY: ga.get_sample_ids(),
+                }
+                case_lists.append(case_list(self.study_id, config))
+            elif ga_type == self.EXPRESSION_TYPE:
+                expression_samples.update(set(ga.get_sample_ids()))
+        cnaseq_ids = cna_samples.intersection(mutation_samples)
+        # automatically generate additional case lists of interest
+        if len(cnaseq_ids) &gt; 0:
+            config =  {
+                case_list.SUFFIX_KEY: &#34;cnaseq&#34;,
+                case_list.CASE_LIST_NAME_KEY: &#34;Samples profiled for mutations and CNAs&#34;,
+                case_list.CASE_LIST_DESCRIPTION_KEY: &#34;Case list containing all samples profiled for mutations and CNAs&#34;,
+                case_list.CASE_LIST_IDS_KEY: list(cnaseq_ids),
+            }
+            case_lists.append(case_list(self.study_id, config))
+        triple_complete_ids = cna_samples.intersection(mutation_samples, expression_samples)
+        if len(triple_complete_ids) &gt; 0:
+            config =  {
+                case_list.SUFFIX_KEY: &#34;3way_complete&#34;,
+                case_list.CASE_LIST_NAME_KEY: &#34;Samples profiled for mutations, CNAs, and mRNA expression&#34;,
+                case_list.CASE_LIST_DESCRIPTION_KEY: &#34;Case list containing all samples profiled for mutations, CNAs, and mRNA expression&#34;,
+                case_list.CASE_LIST_IDS_KEY: list(triple_complete_ids),
+            }
+            case_lists.append(case_list(self.study_id, config))
+        return case_lists
+
+    def get_clinical_data(self, samples_meta):
+        &#34;&#34;&#34;Cross-reference samples with samples metadata to get clinical data components&#34;&#34;&#34;
+        sc = samples_component(self.samples, samples_meta, self.study_id)
+        if samples_meta.get(self.WRITE_PATIENTS_KEY):
+            pc = patients_component(self.samples, samples_meta, self.study_id)
+        else:
+            pc = None
+        return [sc, pc]
+
+    def write_all(self, out_dir, dry_run=False, force=False):
+        &#34;&#34;&#34;Write all outputs to the given directory path&#34;&#34;&#34;
+        self.check_output_dir(out_dir)
+        self.study_meta.write(out_dir)
+        self.sample_component.write(out_dir)
+        if self.cancer_type:
+            self.cancer_type.write(out_dir)
+        if self.patient_component:
+            self.patient_component.write(out_dir)
+        case_list_dir = os.path.join(out_dir, &#39;case_lists&#39;)
+        if len(self.case_lists) &gt; 0:
+            if os.path.exists(case_list_dir):
+                self.check_output_dir(case_list_dir)
+            else:
+                os.makedirs(case_list_dir)
+            for case_list in self.case_lists:
+                case_list.write(case_list_dir)
+        for genetic_alteration in self.genetic_alterations:
+            if dry_run:
+                ga_id = genetic_alteration.get_alteration_id()
+                msg = &#34;Dry-run mode; omitting output for genetic alteration %s&#34; % ga_id
+                self.logger.warning(msg)
+            else:
+                genetic_alteration.write(out_dir)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="djerba.study.study"><code class="flex name class">
+<span>class <span class="ident">study</span></span>
+<span>(</span><span>config, log_level=30, log_path=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class study(base):
+
+    # TODO move these cBioPortal constants into the shared module
+    CNA_TYPE = &#39;COPY_NUMBER_ALTERATION&#39;
+    EXPRESSION_TYPE = &#39;MRNA_EXPRESSION&#39;
+    MUTATION_TYPE = &#39;MUTATION_EXTENDED&#39;
+    DISCRETE_DATATYPE = &#39;DISCRETE&#39;
+
+    CANCER_TYPE_KEY = &#39;cancer_type&#39;
+    CASE_LISTS_KEY = &#39;case_lists&#39;
+    GENETIC_ALTERATIONS_KEY = &#39;genetic_alterations&#39;
+    SAMPLES_KEY = &#39;samples&#39;
+    SAMPLES_META_KEY = &#39;samples_meta&#39;
+    STUDY_META_KEY = &#39;study_meta&#39;
+    TYPE_OF_CANCER_KEY = &#39;type_of_cancer&#39;
+    WRITE_PATIENTS_KEY = &#39;write_patients&#39;
+
+    # &#39;cancer type&#39; and &#39;type of cancer&#39; are distinct terms in cBioPortal.
+    # Respectively, they are an output file format, and a string in study metadata
+    
+    def __init__(self, config, log_level=logging.WARNING, log_path=None):
+        self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
+        self.check_required_keys(config)
+        study_meta_config = config.get(self.STUDY_META_KEY)
+        self.study_meta = study_meta(study_meta_config)
+        self.study_id = study_meta_config.get(constants.STUDY_ID_KEY)
+        type_of_cancer_string = study_meta_config.get(self.TYPE_OF_CANCER_KEY)
+        if config.get(self.CANCER_TYPE_KEY):
+            self.cancer_type = cancer_type(
+                config.get(self.CANCER_TYPE_KEY), type_of_cancer_string, log_level=log_level
+            )
+        else:
+            self.cancer_type = None
+        # read sample info
+        self.samples = []
+        sample_id_set = set()
+        for sample_json in config.get(self.SAMPLES_KEY):
+            sample_object = sample(sample_json)
+            self.samples.append(sample_object)
+            sample_id_set.add(sample_object.get_id())
+        # TODO allow patient/sample output to be configured independently
+        # for now, we are using the same config for both; technically correct, but inflexible
+        clinical_data = self.get_clinical_data(config.get(self.SAMPLES_META_KEY))
+        [self.sample_component, self.patient_component] = clinical_data
+        self.genetic_alterations = []
+        self.ga_ids = set()
+        # find genetic alterations and check study-wide consistency
+        for ga_config in config.get(self.GENETIC_ALTERATIONS_KEY):
+            if ga_config[constants.GENETIC_ALTERATION_TYPE_KEY] == constants.MUTATION_TYPE:
+                ga = mutation_extended(ga_config, self.study_id, log_level=log_level)
+            else:
+                # default case for testing
+                # make an instance of the base class; should NOT be done in production
+                self.logger.warning(&#34;Using base genetic_alteration class; NOT supported for production&#34;)
+                ga = genetic_alteration(ga_config, self.study_id, log_level=log_level)
+            # check uniqueness of genetic alteration id
+            genetic_alt_id = ga.get_alteration_id()
+            if genetic_alt_id in self.ga_ids:
+                msg = &#34;Non-unique (genetic_alteration_type, datatype) pair : %s&#34; % genetic_alt_id
+                self.logger.error(msg)
+                raise ValueError(msg)
+            else:
+                self.ga_ids.add(genetic_alt_id)
+            ga_sample_id_set = set(ga.get_sample_ids())
+            # check samples are a subset of the study samples list
+            if not ga_sample_id_set.issubset(sample_id_set):
+                diff = ga_sample_id_set - sample_id_set
+                msg = &#34;Sample IDs for alteration %s:%s do not appear in study samples list: %s&#34; \
+                      % (ga.get_alteration_id(), &#34;, &#34;.join(diff))
+                self.logger.error(msg)
+                raise ValueError(msg)
+            self.genetic_alterations.append(ga)
+        # find case lists last, so we can refer to genetic_alteration setup
+        self.case_lists = self.get_case_lists(config.get(self.CASE_LISTS_KEY))
+
+    def check_output_dir(self, out_dir):
+        &#34;&#34;&#34;check if a directory is valid for writing output&#34;&#34;&#34;
+        valid = True
+        if not os.path.exists(out_dir):
+            valid = False
+            self.logger.error(&#34;Output directory %s does not exist&#34; % out_dir)
+        elif not os.path.isdir(out_dir):
+            valid = False
+            self.logger.error(&#34;Output path %s is not a directory&#34; % out_dir)
+        elif not os.access(out_dir, os.W_OK):
+            valid = False
+            self.logger.error(&#34;Output path %s is not writable&#34; % out_dir)
+        if not valid:
+            msg = &#34;Invalid output directory %s; exiting&#34; % out_dir
+            self.logger.error(msg)
+            raise OSError(msg)
+        if len(os.listdir(out_dir)) &gt; 0:
+            prefix = &#34;Output directory %s is not empty; &#34; % out_dir
+            if force:
+                self.logger.info(prefix+&#34;--force is in effect, removing directory contents.&#34;)
+                rmtree(out_dir)
+                os.mkdir(out_dir)
+            else:
+                 msg = prefix+&#34;exiting. Run with --force to delete contents of directory.&#34;
+                 self.logger.error(msg)
+                 raise OSError(msg)
+
+    def check_required_keys(self, config):
+        required_keys = [
+            self.CANCER_TYPE_KEY,
+            self.CASE_LISTS_KEY,
+            self.GENETIC_ALTERATIONS_KEY,
+            self.SAMPLES_KEY,
+            self.SAMPLES_META_KEY,
+            self.STUDY_META_KEY
+        ]
+        for key in required_keys:
+            if key not in config:
+                msg = &#34;Key %s is required for cBioPortal study but was not found in config&#34; % key
+                self.logger.error(msg)
+                raise ValueError(msg)
+
+    def get_case_lists(self, case_list_config):
+        &#34;&#34;&#34;Generate required and custom case lists&#34;&#34;&#34;
+        case_lists = []
+        for config in case_list_config: # custom case lists
+            case_lists.append(case_list(self.study_id, config))
+        cna_samples = set()
+        mutation_samples = set()
+        expression_samples = set()
+        for ga in self.genetic_alterations:
+            ga_type = ga.get_genetic_alteration_type()
+            if ga_type == self.CNA_TYPE:
+                cna_samples.update(set(ga.get_sample_ids()))
+                if ga.get_datatype() == self.DISCRETE_DATATYPE:
+                    config = { # case list required by cBioPortal
+                        case_list.SUFFIX_KEY: &#34;cna&#34;,
+                        case_list.CASE_LIST_NAME_KEY: &#34;CNA discrete&#34;,
+                        case_list.CASE_LIST_DESCRIPTION_KEY: &#34;Samples with discrete CNA data&#34;,
+                        case_list.CASE_LIST_IDS_KEY: ga.get_sample_ids(),
+                    }
+                    case_lists.append(case_list(self.study_id, config))
+            elif ga_type == self.MUTATION_TYPE:
+                mutation_samples.update(set(ga.get_sample_ids()))
+                config = {    # case list required by cBioPortal
+                    case_list.SUFFIX_KEY: &#34;sequenced&#34;,
+                    case_list.CASE_LIST_NAME_KEY: &#34;sequenced mutation data&#34;,
+                    case_list.CASE_LIST_DESCRIPTION_KEY: &#34;Samples with mutation data&#34;,
+                    case_list.CASE_LIST_IDS_KEY: ga.get_sample_ids(),
+                }
+                case_lists.append(case_list(self.study_id, config))
+            elif ga_type == self.EXPRESSION_TYPE:
+                expression_samples.update(set(ga.get_sample_ids()))
+        cnaseq_ids = cna_samples.intersection(mutation_samples)
+        # automatically generate additional case lists of interest
+        if len(cnaseq_ids) &gt; 0:
+            config =  {
+                case_list.SUFFIX_KEY: &#34;cnaseq&#34;,
+                case_list.CASE_LIST_NAME_KEY: &#34;Samples profiled for mutations and CNAs&#34;,
+                case_list.CASE_LIST_DESCRIPTION_KEY: &#34;Case list containing all samples profiled for mutations and CNAs&#34;,
+                case_list.CASE_LIST_IDS_KEY: list(cnaseq_ids),
+            }
+            case_lists.append(case_list(self.study_id, config))
+        triple_complete_ids = cna_samples.intersection(mutation_samples, expression_samples)
+        if len(triple_complete_ids) &gt; 0:
+            config =  {
+                case_list.SUFFIX_KEY: &#34;3way_complete&#34;,
+                case_list.CASE_LIST_NAME_KEY: &#34;Samples profiled for mutations, CNAs, and mRNA expression&#34;,
+                case_list.CASE_LIST_DESCRIPTION_KEY: &#34;Case list containing all samples profiled for mutations, CNAs, and mRNA expression&#34;,
+                case_list.CASE_LIST_IDS_KEY: list(triple_complete_ids),
+            }
+            case_lists.append(case_list(self.study_id, config))
+        return case_lists
+
+    def get_clinical_data(self, samples_meta):
+        &#34;&#34;&#34;Cross-reference samples with samples metadata to get clinical data components&#34;&#34;&#34;
+        sc = samples_component(self.samples, samples_meta, self.study_id)
+        if samples_meta.get(self.WRITE_PATIENTS_KEY):
+            pc = patients_component(self.samples, samples_meta, self.study_id)
+        else:
+            pc = None
+        return [sc, pc]
+
+    def write_all(self, out_dir, dry_run=False, force=False):
+        &#34;&#34;&#34;Write all outputs to the given directory path&#34;&#34;&#34;
+        self.check_output_dir(out_dir)
+        self.study_meta.write(out_dir)
+        self.sample_component.write(out_dir)
+        if self.cancer_type:
+            self.cancer_type.write(out_dir)
+        if self.patient_component:
+            self.patient_component.write(out_dir)
+        case_list_dir = os.path.join(out_dir, &#39;case_lists&#39;)
+        if len(self.case_lists) &gt; 0:
+            if os.path.exists(case_list_dir):
+                self.check_output_dir(case_list_dir)
+            else:
+                os.makedirs(case_list_dir)
+            for case_list in self.case_lists:
+                case_list.write(case_list_dir)
+        for genetic_alteration in self.genetic_alterations:
+            if dry_run:
+                ga_id = genetic_alteration.get_alteration_id()
+                msg = &#34;Dry-run mode; omitting output for genetic alteration %s&#34; % ga_id
+                self.logger.warning(msg)
+            else:
+                genetic_alteration.write(out_dir)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="djerba.study.study.CANCER_TYPE_KEY"><code class="name">var <span class="ident">CANCER_TYPE_KEY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.study.study.CASE_LISTS_KEY"><code class="name">var <span class="ident">CASE_LISTS_KEY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.study.study.CNA_TYPE"><code class="name">var <span class="ident">CNA_TYPE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.study.study.DISCRETE_DATATYPE"><code class="name">var <span class="ident">DISCRETE_DATATYPE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.study.study.EXPRESSION_TYPE"><code class="name">var <span class="ident">EXPRESSION_TYPE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.study.study.GENETIC_ALTERATIONS_KEY"><code class="name">var <span class="ident">GENETIC_ALTERATIONS_KEY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.study.study.MUTATION_TYPE"><code class="name">var <span class="ident">MUTATION_TYPE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.study.study.SAMPLES_KEY"><code class="name">var <span class="ident">SAMPLES_KEY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.study.study.SAMPLES_META_KEY"><code class="name">var <span class="ident">SAMPLES_META_KEY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.study.study.STUDY_META_KEY"><code class="name">var <span class="ident">STUDY_META_KEY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.study.study.TYPE_OF_CANCER_KEY"><code class="name">var <span class="ident">TYPE_OF_CANCER_KEY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.study.study.WRITE_PATIENTS_KEY"><code class="name">var <span class="ident">WRITE_PATIENTS_KEY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="djerba.study.study.check_output_dir"><code class="name flex">
+<span>def <span class="ident">check_output_dir</span></span>(<span>self, out_dir)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>check if a directory is valid for writing output</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check_output_dir(self, out_dir):
+    &#34;&#34;&#34;check if a directory is valid for writing output&#34;&#34;&#34;
+    valid = True
+    if not os.path.exists(out_dir):
+        valid = False
+        self.logger.error(&#34;Output directory %s does not exist&#34; % out_dir)
+    elif not os.path.isdir(out_dir):
+        valid = False
+        self.logger.error(&#34;Output path %s is not a directory&#34; % out_dir)
+    elif not os.access(out_dir, os.W_OK):
+        valid = False
+        self.logger.error(&#34;Output path %s is not writable&#34; % out_dir)
+    if not valid:
+        msg = &#34;Invalid output directory %s; exiting&#34; % out_dir
+        self.logger.error(msg)
+        raise OSError(msg)
+    if len(os.listdir(out_dir)) &gt; 0:
+        prefix = &#34;Output directory %s is not empty; &#34; % out_dir
+        if force:
+            self.logger.info(prefix+&#34;--force is in effect, removing directory contents.&#34;)
+            rmtree(out_dir)
+            os.mkdir(out_dir)
+        else:
+             msg = prefix+&#34;exiting. Run with --force to delete contents of directory.&#34;
+             self.logger.error(msg)
+             raise OSError(msg)</code></pre>
+</details>
+</dd>
+<dt id="djerba.study.study.check_required_keys"><code class="name flex">
+<span>def <span class="ident">check_required_keys</span></span>(<span>self, config)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check_required_keys(self, config):
+    required_keys = [
+        self.CANCER_TYPE_KEY,
+        self.CASE_LISTS_KEY,
+        self.GENETIC_ALTERATIONS_KEY,
+        self.SAMPLES_KEY,
+        self.SAMPLES_META_KEY,
+        self.STUDY_META_KEY
+    ]
+    for key in required_keys:
+        if key not in config:
+            msg = &#34;Key %s is required for cBioPortal study but was not found in config&#34; % key
+            self.logger.error(msg)
+            raise ValueError(msg)</code></pre>
+</details>
+</dd>
+<dt id="djerba.study.study.get_case_lists"><code class="name flex">
+<span>def <span class="ident">get_case_lists</span></span>(<span>self, case_list_config)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generate required and custom case lists</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_case_lists(self, case_list_config):
+    &#34;&#34;&#34;Generate required and custom case lists&#34;&#34;&#34;
+    case_lists = []
+    for config in case_list_config: # custom case lists
+        case_lists.append(case_list(self.study_id, config))
+    cna_samples = set()
+    mutation_samples = set()
+    expression_samples = set()
+    for ga in self.genetic_alterations:
+        ga_type = ga.get_genetic_alteration_type()
+        if ga_type == self.CNA_TYPE:
+            cna_samples.update(set(ga.get_sample_ids()))
+            if ga.get_datatype() == self.DISCRETE_DATATYPE:
+                config = { # case list required by cBioPortal
+                    case_list.SUFFIX_KEY: &#34;cna&#34;,
+                    case_list.CASE_LIST_NAME_KEY: &#34;CNA discrete&#34;,
+                    case_list.CASE_LIST_DESCRIPTION_KEY: &#34;Samples with discrete CNA data&#34;,
+                    case_list.CASE_LIST_IDS_KEY: ga.get_sample_ids(),
+                }
+                case_lists.append(case_list(self.study_id, config))
+        elif ga_type == self.MUTATION_TYPE:
+            mutation_samples.update(set(ga.get_sample_ids()))
+            config = {    # case list required by cBioPortal
+                case_list.SUFFIX_KEY: &#34;sequenced&#34;,
+                case_list.CASE_LIST_NAME_KEY: &#34;sequenced mutation data&#34;,
+                case_list.CASE_LIST_DESCRIPTION_KEY: &#34;Samples with mutation data&#34;,
+                case_list.CASE_LIST_IDS_KEY: ga.get_sample_ids(),
+            }
+            case_lists.append(case_list(self.study_id, config))
+        elif ga_type == self.EXPRESSION_TYPE:
+            expression_samples.update(set(ga.get_sample_ids()))
+    cnaseq_ids = cna_samples.intersection(mutation_samples)
+    # automatically generate additional case lists of interest
+    if len(cnaseq_ids) &gt; 0:
+        config =  {
+            case_list.SUFFIX_KEY: &#34;cnaseq&#34;,
+            case_list.CASE_LIST_NAME_KEY: &#34;Samples profiled for mutations and CNAs&#34;,
+            case_list.CASE_LIST_DESCRIPTION_KEY: &#34;Case list containing all samples profiled for mutations and CNAs&#34;,
+            case_list.CASE_LIST_IDS_KEY: list(cnaseq_ids),
+        }
+        case_lists.append(case_list(self.study_id, config))
+    triple_complete_ids = cna_samples.intersection(mutation_samples, expression_samples)
+    if len(triple_complete_ids) &gt; 0:
+        config =  {
+            case_list.SUFFIX_KEY: &#34;3way_complete&#34;,
+            case_list.CASE_LIST_NAME_KEY: &#34;Samples profiled for mutations, CNAs, and mRNA expression&#34;,
+            case_list.CASE_LIST_DESCRIPTION_KEY: &#34;Case list containing all samples profiled for mutations, CNAs, and mRNA expression&#34;,
+            case_list.CASE_LIST_IDS_KEY: list(triple_complete_ids),
+        }
+        case_lists.append(case_list(self.study_id, config))
+    return case_lists</code></pre>
+</details>
+</dd>
+<dt id="djerba.study.study.get_clinical_data"><code class="name flex">
+<span>def <span class="ident">get_clinical_data</span></span>(<span>self, samples_meta)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Cross-reference samples with samples metadata to get clinical data components</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_clinical_data(self, samples_meta):
+    &#34;&#34;&#34;Cross-reference samples with samples metadata to get clinical data components&#34;&#34;&#34;
+    sc = samples_component(self.samples, samples_meta, self.study_id)
+    if samples_meta.get(self.WRITE_PATIENTS_KEY):
+        pc = patients_component(self.samples, samples_meta, self.study_id)
+    else:
+        pc = None
+    return [sc, pc]</code></pre>
+</details>
+</dd>
+<dt id="djerba.study.study.write_all"><code class="name flex">
+<span>def <span class="ident">write_all</span></span>(<span>self, out_dir, dry_run=False, force=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Write all outputs to the given directory path</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def write_all(self, out_dir, dry_run=False, force=False):
+    &#34;&#34;&#34;Write all outputs to the given directory path&#34;&#34;&#34;
+    self.check_output_dir(out_dir)
+    self.study_meta.write(out_dir)
+    self.sample_component.write(out_dir)
+    if self.cancer_type:
+        self.cancer_type.write(out_dir)
+    if self.patient_component:
+        self.patient_component.write(out_dir)
+    case_list_dir = os.path.join(out_dir, &#39;case_lists&#39;)
+    if len(self.case_lists) &gt; 0:
+        if os.path.exists(case_list_dir):
+            self.check_output_dir(case_list_dir)
+        else:
+            os.makedirs(case_list_dir)
+        for case_list in self.case_lists:
+            case_list.write(case_list_dir)
+    for genetic_alteration in self.genetic_alterations:
+        if dry_run:
+            ga_id = genetic_alteration.get_alteration_id()
+            msg = &#34;Dry-run mode; omitting output for genetic alteration %s&#34; % ga_id
+            self.logger.warning(msg)
+        else:
+            genetic_alteration.write(out_dir)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></b></code>:
+<ul class="hlist">
+<li><code><a title="djerba.utilities.base.base.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="djerba" href="index.html">djerba</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="djerba.study.study" href="#djerba.study.study">study</a></code></h4>
+<ul class="">
+<li><code><a title="djerba.study.study.CANCER_TYPE_KEY" href="#djerba.study.study.CANCER_TYPE_KEY">CANCER_TYPE_KEY</a></code></li>
+<li><code><a title="djerba.study.study.CASE_LISTS_KEY" href="#djerba.study.study.CASE_LISTS_KEY">CASE_LISTS_KEY</a></code></li>
+<li><code><a title="djerba.study.study.CNA_TYPE" href="#djerba.study.study.CNA_TYPE">CNA_TYPE</a></code></li>
+<li><code><a title="djerba.study.study.DISCRETE_DATATYPE" href="#djerba.study.study.DISCRETE_DATATYPE">DISCRETE_DATATYPE</a></code></li>
+<li><code><a title="djerba.study.study.EXPRESSION_TYPE" href="#djerba.study.study.EXPRESSION_TYPE">EXPRESSION_TYPE</a></code></li>
+<li><code><a title="djerba.study.study.GENETIC_ALTERATIONS_KEY" href="#djerba.study.study.GENETIC_ALTERATIONS_KEY">GENETIC_ALTERATIONS_KEY</a></code></li>
+<li><code><a title="djerba.study.study.MUTATION_TYPE" href="#djerba.study.study.MUTATION_TYPE">MUTATION_TYPE</a></code></li>
+<li><code><a title="djerba.study.study.SAMPLES_KEY" href="#djerba.study.study.SAMPLES_KEY">SAMPLES_KEY</a></code></li>
+<li><code><a title="djerba.study.study.SAMPLES_META_KEY" href="#djerba.study.study.SAMPLES_META_KEY">SAMPLES_META_KEY</a></code></li>
+<li><code><a title="djerba.study.study.STUDY_META_KEY" href="#djerba.study.study.STUDY_META_KEY">STUDY_META_KEY</a></code></li>
+<li><code><a title="djerba.study.study.TYPE_OF_CANCER_KEY" href="#djerba.study.study.TYPE_OF_CANCER_KEY">TYPE_OF_CANCER_KEY</a></code></li>
+<li><code><a title="djerba.study.study.WRITE_PATIENTS_KEY" href="#djerba.study.study.WRITE_PATIENTS_KEY">WRITE_PATIENTS_KEY</a></code></li>
+<li><code><a title="djerba.study.study.check_output_dir" href="#djerba.study.study.check_output_dir">check_output_dir</a></code></li>
+<li><code><a title="djerba.study.study.check_required_keys" href="#djerba.study.study.check_required_keys">check_required_keys</a></code></li>
+<li><code><a title="djerba.study.study.get_case_lists" href="#djerba.study.study.get_case_lists">get_case_lists</a></code></li>
+<li><code><a title="djerba.study.study.get_clinical_data" href="#djerba.study.study.get_clinical_data">get_clinical_data</a></code></li>
+<li><code><a title="djerba.study.study.write_all" href="#djerba.study.study.write_all">write_all</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.1</a>.</p>
+</footer>
+</body>
+</html>

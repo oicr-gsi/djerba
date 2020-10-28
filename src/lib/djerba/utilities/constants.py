@@ -1,10 +1,11 @@
 """Module to define constants"""
 
-# cbioportal datatypes
+# genetic_alteration datatypes
 CNA_TYPE = 'COPY_NUMBER_ALTERATION'
 EXPRESSION_TYPE = 'MRNA_EXPRESSION'
 MUTATION_TYPE = 'MUTATION_EXTENDED'
 DEMONSTRATION_TYPE = 'DEMONSTRATION'
+CUSTOM_ANNOTATION_TYPE = 'CUSTOM_ANNOTATION'
 DISCRETE_DATATYPE = 'DISCRETE'
 
 # metadata keys for cBioPortal
@@ -20,8 +21,10 @@ STUDY_ID_KEY = 'cancer_study_identifier'
 
 CANCER_TYPE_DATATYPE = 'CANCER_TYPE'
 CASE_LIST_DATATYPE = 'CASE_LIST'
+CUSTOM_DATATYPE='CUSTOM' # Djerba only, not used by cBioPortal
 PATIENT_DATATYPE = 'PATIENT_ATTRIBUTES'
 SAMPLE_DATATYPE = 'SAMPLE_ATTRIBUTES'
+MAF_DATATYPE = 'MAF'
 
 # keys for Elba report generation
 
@@ -38,6 +41,7 @@ SMALL_MUTATION_INDEL_KEY = 'smallMutAndIndel' # obsolete? depends on report JSON
 
 # keys for Djerba config
 GENETIC_ALTERATIONS_KEY = 'genetic_alterations'
+REVIEW_STATUS_KEY = 'review_status'
 SAMPLES_KEY = 'samples'
 STUDY_META_KEY = 'study_meta'
 

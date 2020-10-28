@@ -1,23 +1,29 @@
 {
     "study_meta": {
-	"type_of_cancer": "ductal carcinoma",
-	"cancer_study_identifier": "djerba_test_001",
-	"name": "Djerba Test 001",
-	"description": "Test of Djerba software package (September 2020)",
-	"citation": null,
-	"pmid": null,
-	"short_name": "Djerba 001",
-	"groups": null,
-	"add_global_case_list": true,
-	"tags_file": null,
-	"reference_genome": null
+        "type_of_cancer": "ductal carcinoma",
+        "cancer_study_identifier": "djerba_test_001",
+        "name": "Djerba Test 001",
+        "description": "Test of Djerba software package (September 2020)",
+        "citation": null,
+        "pmid": null,
+        "short_name": "Djerba 001",
+        "groups": null,
+        "add_global_case_list": true,
+        "tags_file": null,
+        "reference_genome": null
     },
     "cancer_type": {
         "type_of_cancer": null,
-        "name": ["Ductal Carcinoma"],
-        "clinical_trial_keywords": ["carcinoma,ductal carcinoma"],
+        "name": [
+            "Ductal Carcinoma"
+        ],
+        "clinical_trial_keywords": [
+            "carcinoma,ductal carcinoma"
+        ],
         "dedicated_color": null,
-        "parent_type_of_cancer": ["tissue"],
+        "parent_type_of_cancer": [
+            "tissue"
+        ],
         "data_filename": "cancer_type.txt"
     },
     "case_lists": [
@@ -25,21 +31,38 @@
             "suffix": "custom",
             "case_list_name": "djerba_custom_case_list",
             "case_list_description": "custom case list demonstration",
-            "case_list_ids": ["OCT-01-0472-CAP"],
+            "case_list_ids": [
+                "OCT-01-0472-CAP"
+            ],
             "case_list_category": null
         }
     ],
     "samples_meta": {
-        "display_names": ["Patient identifier", "Sample identifier"],
-        "descriptions": ["Patient identifier", "Sample identifier"],
-        "datatypes": ["STRING", "STRING"],
-        "priorities": [1,1],
-        "attribute_names": ["PATIENT_ID", "SAMPLE_ID"],
+        "display_names": [
+            "Patient identifier",
+            "Sample identifier"
+        ],
+        "descriptions": [
+            "Patient identifier",
+            "Sample identifier"
+        ],
+        "datatypes": [
+            "STRING",
+            "STRING"
+        ],
+        "priorities": [
+            1,
+            1
+        ],
+        "attribute_names": [
+            "PATIENT_ID",
+            "SAMPLE_ID"
+        ],
         "write_patients": true,
         "precision": 3
     },
     "samples": [
-	{
+        {
             "PATIENT_ID": "OCT-01-0472",
             "SAMPLE_ID": "OCT-01-0472-CAP",
             "COSMIC_SIGS": "Signature 6 (0.161)",
@@ -60,54 +83,58 @@
             "AGE": 35,
             "SEX": "Male",
             "ETHNICITY": "Other",
-            "FGA": 0.33,
-            "sampleTMB": 82.38
+            "FRACTION_GENOME_ALTERED": 0.33,
+            "TMB_PER_MB": 82.38,
+            "PATIENT_SUMMARY": "Nulla a scelerisque ipsum. Aliquam erat volutpat in."
         }
     ],
     "genetic_alterations": [
-	{
-	    "genetic_alteration_type": "MUTATION_EXTENDED_dummy_test",
-	    "workflow_run_id": "jabberwocky_workflow_run_0002",
-	    "datatype": "MAF",
-	    "input_directory": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests/data/Strelka",
-	    "metadata": {
-		"oncokb_api_token": "e326982a-02ba-4f04-8ef6-80b04fa74acd",
-		"filter_vcf": "/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz"
-	    },
-	    "input_files": {
-		"OCT-01-0472-CAP": "OCT-01-0472-CAP.sorted.filter.dedup.P.GID1.final.strelka.snvs.vcf.gz"
-	    }
-	},
-	{
-	    "genetic_alteration_type": "COPY_NUMBER_ALTERATION",
-	    "input_directory": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests/data/CAP_CNA",
-	    "workflow_run_id": "frumious_workflow_run_0047",
-	    "datatype": "SEG",
-	    "metadata": {
-		"oncokb_api_token": "e326982a-02ba-4f04-8ef6-80b04fa74acd"
-	    },
-	    "input_files": {
-		"OCT-01-0472-CAP": "OCT-01-0472-CAP.tumour.bam.varscanSomatic_Total_CN.seg"
-	    }
-	},
-	{
-	    "genetic_alteration_type": "MRNA_EXPRESSION",
-	    "workflow_run_id": "vorpal_workflow_run_0022",
-	    "input_directory": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests-handlers/data/CAP_expression",
-	    "datatype": "MULTIPLE_TYPES",
-	    "datatypes": ["CONTINUOUS", "ZSCORE"],
-	    "metadata": {
-		"zscores": true,
-		"profile_name": "mRNA Expression",
-		"profile_description": "Expression information DCIS (5 Samples)",
-		"gepfile": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests-handlers/data/CAP_expression/gepcomp.list",
-		"gepcomp": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests-handlers/data/CAP_expression/gepcomp",
-		"tcgadata": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests-handlers/data/CAP_expression/TCGA_ALL_TUMOR.csv",
-		"studyid": "OCTCAP"
-	    },
-	    "input_files": {
-		"OCT-01-0472-CAP": "OCT-01-0472-TS_191121_A00469_0067_BHK3JLDSXX_ATTCAGAA-CCTATCCT_L001.genes.results"
-	    }
-	}
+        {
+            "genetic_alteration_type": "MUTATION_EXTENDED_dummy_test",
+            "workflow_run_id": "jabberwocky_workflow_run_0002",
+            "datatype": "MAF",
+            "input_directory": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests/data/Strelka",
+            "metadata": {
+                "oncokb_api_token": "e326982a-02ba-4f04-8ef6-80b04fa74acd",
+                "filter_vcf": "/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz"
+            },
+            "input_files": {
+                "OCT-01-0472-CAP": "OCT-01-0472-CAP.sorted.filter.dedup.P.GID1.final.strelka.snvs.vcf.gz"
+            }
+        },
+        {
+            "genetic_alteration_type": "COPY_NUMBER_ALTERATION",
+            "input_directory": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests/data/CAP_CNA",
+            "workflow_run_id": "frumious_workflow_run_0047",
+            "datatype": "SEG",
+            "metadata": {
+                "oncokb_api_token": "e326982a-02ba-4f04-8ef6-80b04fa74acd"
+            },
+            "input_files": {
+                "OCT-01-0472-CAP": "OCT-01-0472-CAP.tumour.bam.varscanSomatic_Total_CN.seg"
+            }
+        },
+        {
+            "genetic_alteration_type": "MRNA_EXPRESSION",
+            "workflow_run_id": "vorpal_workflow_run_0022",
+            "input_directory": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests-handlers/data/CAP_expression",
+            "datatype": "MULTIPLE_TYPES",
+            "datatypes": [
+                "CONTINUOUS",
+                "ZSCORE"
+            ],
+            "metadata": {
+                "zscores": true,
+                "profile_name": "mRNA Expression",
+                "profile_description": "Expression information DCIS (5 Samples)",
+                "gepfile": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests-handlers/data/CAP_expression/gepcomp.list",
+                "gepcomp": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests-handlers/data/CAP_expression/gepcomp",
+                "tcgadata": "/.mounts/labs/gsiprojects/gsi/cBioGSI/tests-handlers/data/CAP_expression/TCGA_ALL_TUMOR.csv",
+                "studyid": "OCTCAP"
+            },
+            "input_files": {
+                "OCT-01-0472-CAP": "OCT-01-0472-TS_191121_A00469_0067_BHK3JLDSXX_ATTCAGAA-CCTATCCT_L001.genes.results"
+            }
+        }
     ]
 }

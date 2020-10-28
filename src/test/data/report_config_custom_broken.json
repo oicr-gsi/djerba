@@ -26,20 +26,25 @@
     ],
     "genetic_alterations": [
         {
-            "datatype": "MAF",
-            "genetic_alteration_type": "MUTATION_EXTENDED",
-            "input_files": {
-                "OCT-01-0472-CAP": "somatic01.maf.txt.gz"
-            },
-            "input_directory": "/.mounts/labs/gsiprojects/gsi/djerba/mutation_extended",
+            "datatype": "CUSTOM",
+            "genetic_alteration_type": "CUSTOM_ANNOTATION",
+            "input_files": {},
+            "input_directory": "/dummy/directory/replaced/in/test",
             "metadata": {
-                "filter_vcf": "/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz",
-                "oncokb_api_token": "e326982a-02ba-4f04-8ef6-80b04fa74acd",
-                "profile_description": "Dummy profile for Djerba test",
-                "profile_name": "Djerba test 001",
-                "bed_path": "/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed",
-                "tcga_path": "/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt",
-                "cancer_type": "blca"
+                "gene_headers": [
+                    "Gene",
+                    "Gene_metric_1",
+                    "Gene_metric_2",
+                    "Gene_metric_nonexistent"
+                ],
+                "gene_tsv": "custom_gene_annotation.tsv",
+                "sample_headers": [
+                    "SAMPLE_ID",
+                    "SAMPLE_METRIC_1",
+                    "SAMPLE_METRIC_2",
+                    "SAMPLE_METRIC_NONEXISTENT"
+                ],
+                "sample_tsv": "custom_sample_annotation.tsv"
             },
             "workflow_run_id": "jabberwocky_workflow_run_0001"
         }
