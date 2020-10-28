@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## v0.0.2: 2020-10-28
+### Added
+- `review_status` field in Elba JSON output
+- HTML documentation generated using [pdoc3](https://pdoc3.github.io/pdoc/).
+- GCGI-36: Custom annotation in TSV format with the `custom_annotation` class.
+- GCGI-45: Script `djerba_from_command.py` to generate Elba JSON from command-line arguments
+### Removed
+- `genetic_alteration_demo` class
+### Changed
+- GCGI-39: Update JSON schema, example files and documentation. Much more detail added to Djerba config schema.
+- GCGI-54: Updated example JSON output with fields for `MutationClass`, `Fusion` and `Variant_Classification`
+- `genetic_alteration` is no longer a subclass of `dual_output_component`
+- `validate.py` renamed to `config.py` and includes a new `builder` class
+
 ## v0.0.1: 2020-10-08
 Initial development release
 ### Added
