@@ -12,6 +12,15 @@ Formats supported by Djerba include:
 
 Djerba is named for an [island](https://en.wikipedia.org/wiki/Djerba) off the coast of North Africa. (The initial letter D is silent, so it is pronounced "jerba".)
 
+## Quick Start
+
+Requires OICR [Modulator](https://gitlab.oicr.on.ca/ResearchIT/modulator).
+
+- Load the Djerba environment module: `module load djerba`
+- Run either of the two command-line scripts with `--help` for instructions:
+  - `djerba.py`
+  - `djerba_from_command.py`
+
 ## Documentation
 
 The [doc](./doc/) directory holds additional documentation and examples, as described in its [README](./doc/README.md) file.
@@ -56,7 +65,13 @@ There are two scripts to run Djerba:
 
 Run either script with `--help` for a full description of command-line arguments and options.
 
-## Repository Structure
+## Development
+
+### Conventions
+
+- JSON example files should be formatted using `python -m json.tool` for consistency
+
+### Repository Structure
 
 - [src](./src): Production source code
 - [src/bin/](./src/bin/): Scripts to run Djerba
@@ -64,7 +79,7 @@ Run either script with `--help` for a full description of command-line arguments
 - [src/test](./src/test): Tests for production code
 - [prototypes](./prototypes): Development area for non-production scripts and tests
 
-## Release Procedure
+### Release Procedure
 
 - Update `CHANGELOG.md`
 - Increment the version number in `setup.py`
@@ -72,7 +87,7 @@ Run either script with `--help` for a full description of command-line arguments
 - Commit (or merge) to the master branch, and tag the release on Github
 - Update environment module configuration in [OICR Modulator](https://gitlab.oicr.on.ca/ResearchIT/modulator) to install the newly tagged release
 
-## Development History and Plans
+### Development History and Plans
 
 Djerba development originated with the [cbioportal_tools](https://github.com/oicr-gsi/cbioportal_tools) project (also known as Janus). This included creation of data folders for cBioPortal.
 
