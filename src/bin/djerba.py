@@ -28,8 +28,16 @@ def get_parser():
     parser.add_argument('--config', metavar='PATH', required=True, help="Path to Djerba config file, or - to read from STDIN")
     parser.add_argument('--debug', action='store_true', help="Highly verbose logging")
     parser.add_argument('--force', action='store_true', help="Overwrite existing output, if any")
-    parser.add_argument('--log-path', metavar='PATH', help='Path of file where '+\
-                        'log output will be appended. Optional, defaults to STDERR.')
+    parser.add_argument(
+        '--log-path',
+        metavar='PATH',
+        help='Path of file where log output will be appended. Optional; defaults to STDERR.'
+    )
+    parser.add_argument(
+        '--elba-schema',
+        metavar='PATH',
+        help="Path to JSON schema for Elba output. Optional; relevant only in elba mode."
+    )
     parser.add_argument(
         '--out',
         metavar='PATH',
@@ -68,6 +76,13 @@ def args_errors(args):
         errors.append("--out argument is required for %s mode" % args.mode)
     elif args.mode == ELBA:
         errors.extend(output_file_errors(args.out, 'output', True))
+        if args.elba_schema:
+            if not os.path.exists(args.elba_schema):
+                errors.append("--elba-schema path '%s' does not exist" % args.elba_schema)
+            elif not os.path.isfile(args.elba_schema):
+                errors.append("--elba-schema path '%s' is not a file" % args.elba_schema)
+            elif not os.access(args.elba_schema, os.R_OK):
+                errors.append("--elba-schema path '%s' is not readable" % args.elba_schema)
     elif args.mode == CBIOPORTAL:
         if not os.path.isdir(args.out):
             errors.append("--out must be a directory for %s mode" % CBIOPORTAL)
@@ -117,7 +132,7 @@ def main(args):
     # run Djerba in the appropriate mode
     if args.mode == ELBA:
         validator(log_level, args.log_path).validate(config, args.sample)
-        djerba_report = report(config, args.sample, log_level, args.log_path)
+        djerba_report = report(config, args.sample, args.elba_schema, log_level, args.log_path)
         djerba_report.write_report_config(args.out, args.force)
     elif args.mode == CBIOPORTAL:
         validator(log_level, args.log_path).validate(config, None, log_level)

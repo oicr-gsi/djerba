@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import hashlib, logging, json, os, random, tempfile, unittest
+import hashlib, logging, json, os, random, subprocess, tempfile, unittest
 
 from djerba.metrics import mutation_extended_metrics
 from djerba.report import report, DjerbaReportError
@@ -11,6 +11,8 @@ from djerba.config import builder, validator, DjerbaConfigError
 
 class TestBase(unittest.TestCase):
 
+    SCHEMA_PATH = '/.mounts/labs/gsiprojects/gsi/djerba/tmp/elba-config-schema/elba_config_schema.json' # path to Elba JSON schema
+    
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_test_')
     
@@ -150,32 +152,33 @@ class TestReport(TestBase):
         self.testDir = os.path.dirname(os.path.realpath(__file__))
         self.dataDir = os.path.realpath(os.path.join(self.testDir, 'data'))
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_report_test_')
-        self.config_names = ['report_config_custom.json', 'report_config_custom_with_nan.json']
         self.sample_id = 'OCT-01-0472-CAP'
 
     def test_custom(self):
         """Test report with custom_annotation input"""
         out_dir = os.path.join(self.tmp.name, 'test_report_custom')
         os.mkdir(out_dir)
-        report_names = ["report_config_{}.json".format(i) for i in range(len(self.config_names))]
-        for i in range(len(self.config_names)):
-            with open(os.path.join(self.dataDir, self.config_names[i])) as configFile:
+        config_names = ['report_config_custom.json', 'report_config_custom_with_nan.json']
+        report_names = ["report_config_{}.json".format(i) for i in range(len(config_names))]
+        for i in range(len(config_names)):
+            with open(os.path.join(self.dataDir, config_names[i])) as configFile:
                 config = json.loads(configFile.read())
-                # get input from the local test directory
+            # get input from the local test directory
             config[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = self.dataDir
             report_path = os.path.join(out_dir, report_names[i])
-            report(config, self.sample_id, log_level=logging.ERROR).write_report_config(report_path)
+            custom_report = report(config, self.sample_id, self.SCHEMA_PATH, log_level=logging.ERROR)
+            custom_report.write_report_config(report_path)
             self.assertTrue(os.path.exists(report_path), "JSON report exists")
         checksums = {
-            report_names[0]: 'eacf20512ebd9e32698913698c6a64fc',
-            report_names[1]: '7730331b5a80f7cdb46e3840a92dc7f6'
+            report_names[0]: '46216115cbf87e14a98c6c9fa491159d',
+            report_names[1]: 'b1ba933aadcfaa657c7d7003474833c6'
         }
         self.verify_checksums(checksums, out_dir)
         # test with incorrect sample headers in metadata
         with open(os.path.join(self.dataDir, 'report_config_custom_broken.json')) as configFile:
             config = json.loads(configFile.read())
         config[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = self.dataDir
-        args = [config, self.sample_id, logging.CRITICAL]
+        args = [config, self.sample_id, self.SCHEMA_PATH, logging.CRITICAL]
         self.assertRaises(ValueError, report, *args)
 
     def test_mx(self):
@@ -183,14 +186,18 @@ class TestReport(TestBase):
         report_name = 'report_mx.json'
         out_dir = os.path.join(self.tmp.name, 'test_report_mx')
         os.mkdir(out_dir)
-        with open(os.path.join(self.dataDir, 'study_config_mx.json')) as configFile:
+        # can't use study_config_mx.json; djerba does not yet support custom annotation for cBioPortal
+        with open(os.path.join(self.dataDir, 'report_config_mx.json')) as configFile:
             config = json.loads(configFile.read())
+        # get custom config input from the local test directory
+        config[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = self.dataDir
         report_path = os.path.join(out_dir, report_name)
-        report(config, self.sample_id, log_level=logging.ERROR).write_report_config(report_path)
+        mx_report = report(config, self.sample_id, self.SCHEMA_PATH, log_level=logging.ERROR)
+        mx_report.write_report_config(report_path)
         self.assertTrue(os.path.exists(report_path), "JSON report exists")
-        checksum = {report_name: '30d958fb8624e721addf6fad3a64f932'}
+        checksum = {report_name: 'cf5ca81637e09ac499fcaed502a4c92e'}
         self.verify_checksums(checksum, out_dir)
-        args = [config, 'nonexistent sample', logging.CRITICAL]
+        args = [config, 'nonexistent sample', self.SCHEMA_PATH, logging.CRITICAL]
         self.assertRaises(DjerbaReportError, report, *args)
 
 
@@ -200,17 +207,68 @@ class TestScript(TestBase):
     def setUp(self):
         super().setUp()
         self.testDir = os.path.dirname(os.path.realpath(__file__))
+        self.dataDir = os.path.realpath(os.path.join(self.testDir, 'data'))
+        self.binDir =  os.path.realpath(os.path.join(self.testDir, os.pardir, 'bin'))
         self.scriptNames = ['djerba.py', 'djerba_from_command.py']
 
     def test_compile(self):
         """Minimal test that command-line scripts compile"""
         for scriptName in self.scriptNames:
-            scriptPath = os.path.join(self.testDir, os.pardir, 'bin', scriptName)
+            scriptPath = os.path.join(self.binDir, scriptName)
             with open(scriptPath, 'rb') as inFile:
                 self.assertIsNotNone(
                     compile(inFile.read(), scriptName, 'exec'),
                     'Script {} compiled without error'.format(scriptName)
                 )
+
+    def test_equivalence(self):
+        """
+        Test that config from djerba_from_command.py produces identical output from djerba.py
+        Also tests script operation on the command line in Elba mode
+        """
+        out_dir = os.path.join(self.tmp.name, 'test_script_equivalence')
+        os.mkdir(out_dir)
+        output_path_1 = os.path.join(out_dir, 'elba_config_1.json')
+        output_path_2 = os.path.join(out_dir, 'elba_config_2.json')
+        config_path = os.path.join(out_dir, 'djerba_config.json')
+        args_1 = [
+            os.path.join(self.binDir, 'djerba_from_command.py'),
+            '--conf', config_path,
+            '--sample-id' ,'OCT-01-0472-CAP',
+            '--custom-dir', self.dataDir,
+            '--elba-schema', self.SCHEMA_PATH,
+            '--gene-tsv', 'custom_gene_annotation.tsv',
+            '--sample-tsv', 'custom_sample_annotation.tsv',
+            '--maf', '/.mounts/labs/gsiprojects/gsi/djerba/mutation_extended/somatic01.maf.txt.gz',
+            '--bed', '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed',
+            '--cancer-type', 'blca',
+            '--tcga', '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt',
+            '--vcf',
+            '/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz',
+            '--out', output_path_1
+        ]
+        subprocess.run(args_1)
+        self.assertTrue(os.path.exists(output_path_1))
+        self.assertTrue(os.path.exists(config_path))
+        args_2 = [
+            os.path.join(self.binDir, 'djerba.py'),
+            '--config', config_path,
+            '--mode', 'elba',
+            '--elba-schema', self.SCHEMA_PATH,
+            '--out', output_path_2
+        ]
+        subprocess.run(args_2)
+        self.assertTrue(os.path.exists(output_path_2))
+        with open(output_path_1) as file_1, open(output_path_2) as file_2:
+            data_1 = json.loads(file_1.read())
+            data_2 = json.loads(file_2.read())
+        self.assertDictEqual(data_1, data_2)
+        checksums = {
+            'djerba_config.json': '58b304c4379bbf6a36b1ebaf1ad176e8',
+            'elba_config_1.json': 'cf5ca81637e09ac499fcaed502a4c92e',
+            'elba_config_2.json': 'cf5ca81637e09ac499fcaed502a4c92e'
+            }
+        self.verify_checksums(checksums, out_dir)
 
 class TestStudy(TestBase):
 
