@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+### Added
+- GCGI-55: Test Elba JSON output against the schema
+
 ## v0.0.2: 2020-10-28
 ### Added
 - `review_status` field in Elba JSON output

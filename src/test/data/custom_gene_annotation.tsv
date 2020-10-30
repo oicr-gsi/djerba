@@ -1,3 +1,9 @@
-Gene	Gene_metric_1	Gene_metric_2	Gene_metric_3
-gene001	48393	342	boojum
-gene002	32243	43621	snark
+Gene	Allele Fraction (%)	Chromosome	Copy State	Drug Annotation	Exp. percentile (%)	Exp. z-score	FDA Approved Treatment	Gene Annotation	OncoKB	Protein Change	Variant / Total Reads	Whizbam URL	Fusion	MutationClass	Variant_Classification
+ACTL8	3	chr1	Neutral	Lorem ipsum dolor sit amet, consectetur adipiscing elit.	94	NA	Nulla sem augue, pulvinar ac bibendum non, feugiat.	Nullam nulla lacus, gravida id metus ut, fermentum.	NA	prot001	654/711	http://example.com/whizbam/ACTL8	NA	Somatic	Nonsense Mutation
+SZT2	28	chr1	Neutral	Lorem ipsum dolor sit amet, consectetur adipiscing elit.	17	NA	Nulla sem augue, pulvinar ac bibendum non, feugiat.	Nullam nulla lacus, gravida id metus ut, fermentum.	NA	prot002	281/531	http://example.com/whizbam/SZT2	NA	Somatic	Nonsense Mutation
+MYSM1	86	chr1	Neutral	Lorem ipsum dolor sit amet, consectetur adipiscing elit.	94	NA	Nulla sem augue, pulvinar ac bibendum non, feugiat.	Nullam nulla lacus, gravida id metus ut, fermentum.	NA	prot003	754/780	http://example.com/whizbam/MYSM1	NA	Somatic	Nonsense Mutation
+LAMTOR5	11	chr1	Neutral	Lorem ipsum dolor sit amet, consectetur adipiscing elit.	75	NA	Nulla sem augue, pulvinar ac bibendum non, feugiat.	Nullam nulla lacus, gravida id metus ut, fermentum.	NA	prot004	913/982	http://example.com/whizbam/LAMTOR5	NA	Somatic	Nonsense Mutation
+NBPF20	3	chr1	Neutral	Lorem ipsum dolor sit amet, consectetur adipiscing elit.	11	NA	Nulla sem augue, pulvinar ac bibendum non, feugiat.	Nullam nulla lacus, gravida id metus ut, fermentum.	NA	prot005	432/464	http://example.com/whizbam/NBPF20	NA	Somatic	Nonsense Mutation
+SV2A	64	chr1	Neutral	Lorem ipsum dolor sit amet, consectetur adipiscing elit.	77	NA	Nulla sem augue, pulvinar ac bibendum non, feugiat.	Nullam nulla lacus, gravida id metus ut, fermentum.	NA	prot006	223/461	http://example.com/whizbam/SV2A	NA	Somatic	Nonsense Mutation
+C2CD4D	25	chr1	Neutral	Lorem ipsum dolor sit amet, consectetur adipiscing elit.	91	NA	Nulla sem augue, pulvinar ac bibendum non, feugiat.	Nullam nulla lacus, gravida id metus ut, fermentum.	NA	prot007	27/601	http://example.com/whizbam/C2CD4D	NA	Somatic	Nonsense Mutation
+CADM3	53	chr1	Neutral	Lorem ipsum dolor sit amet, consectetur adipiscing elit.	28	NA	Nulla sem augue, pulvinar ac bibendum non, feugiat.	Nullam nulla lacus, gravida id metus ut, fermentum.	NA	prot008	665/944	http://example.com/whizbam/CADM3	NA	Somatic	Nonsense Mutation
