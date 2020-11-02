@@ -11,11 +11,11 @@ from djerba.config import builder, validator, DjerbaConfigError
 
 class TestBase(unittest.TestCase):
 
-    SCHEMA_PATH = '/.mounts/labs/gsiprojects/gsi/djerba/tmp/elba-config-schema/elba_config_schema.json' # path to Elba JSON schema
+    SCHEMA_PATH = '/.mounts/labs/gsi/modulator/sw/data/elba-config-schema-1.0.0/elba_config_schema.json' # path to Elba JSON schema
     
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_test_')
-    
+
     def verify_checksums(self, checksums, out_dir):
         """Checksums is a dictionary: md5sum -> relative path from output directory """
         for relative_path in checksums.keys():
