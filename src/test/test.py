@@ -69,7 +69,7 @@ class TestBuilder(TestBase):
         os.mkdir(out_dir)
         elba_report = report(config, self.sample_id, log_level=logging.ERROR)
         elba_report.write_report_config(os.path.join(out_dir, out_name), force=False, strict=True)
-        checksums = {out_name: '5661f5694b0c64b87fba39364299c816'}
+        checksums = {out_name: '9ff34457654edf49eef4104e23680710'}
         self.verify_checksums(checksums, out_dir)
 
     def test_mismatched(self):
@@ -170,8 +170,8 @@ class TestReport(TestBase):
             custom_report.write_report_config(report_path)
             self.assertTrue(os.path.exists(report_path), "JSON report exists")
         checksums = {
-            report_names[0]: '46216115cbf87e14a98c6c9fa491159d',
-            report_names[1]: 'b1ba933aadcfaa657c7d7003474833c6'
+            report_names[0]: '924d017ffd6f744b37c1c6650abd6aca',
+            report_names[1]: 'bf7f60aab3a144ffe112794aa2744208'
         }
         self.verify_checksums(checksums, out_dir)
         # test with incorrect sample headers in metadata
@@ -195,7 +195,7 @@ class TestReport(TestBase):
         mx_report = report(config, self.sample_id, self.SCHEMA_PATH, log_level=logging.ERROR)
         mx_report.write_report_config(report_path)
         self.assertTrue(os.path.exists(report_path), "JSON report exists")
-        checksum = {report_name: 'cf5ca81637e09ac499fcaed502a4c92e'}
+        checksum = {report_name: 'c37c953b63227730d4009c7a0ec56896'}
         self.verify_checksums(checksum, out_dir)
         args = [config, 'nonexistent sample', self.SCHEMA_PATH, logging.CRITICAL]
         self.assertRaises(DjerbaReportError, report, *args)
@@ -264,9 +264,9 @@ class TestScript(TestBase):
             data_2 = json.loads(file_2.read())
         self.assertDictEqual(data_1, data_2)
         checksums = {
-            'djerba_config.json': '58b304c4379bbf6a36b1ebaf1ad176e8',
-            'elba_config_1.json': 'cf5ca81637e09ac499fcaed502a4c92e',
-            'elba_config_2.json': 'cf5ca81637e09ac499fcaed502a4c92e'
+            'djerba_config.json': 'ec2370dc76e494894d24139e07a19d12',
+            'elba_config_1.json': 'c37c953b63227730d4009c7a0ec56896',
+            'elba_config_2.json': 'c37c953b63227730d4009c7a0ec56896'
             }
         self.verify_checksums(checksums, out_dir)
 
