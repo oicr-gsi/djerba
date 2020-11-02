@@ -38,7 +38,7 @@ def get_parser():
     parser.add_argument(
         '--elba-schema',
         metavar='PATH',
-        help="Path to JSON schema for Elba output. Optional; relevant only in elba mode."
+        help="Path to JSON schema for Elba output. Optional."
     )
     general.add_argument('--sample-id', metavar='ID', help='Sample ID', required=True)
     general.add_argument('--strict', action='store_true', help="Strict output checking")
