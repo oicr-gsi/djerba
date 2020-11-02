@@ -208,7 +208,7 @@ class custom_annotation(genetic_alteration):
             self.logger.error(msg)
             raise
         if df.isnull().values.any():
-            self.logger.warning(
+            self.logger.info(
                 'Null values in TSV data read from "{0}" '.format(input_path)+\
                 'with column headers {0}'.format(str(column_headers))
             )
