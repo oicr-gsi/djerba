@@ -1,10 +1,12 @@
 """Genome interpretation Clinical Report configuration"""
 
 import json
+import jsonschema
 import logging
 import os
 import sys
 from math import isnan
+from jsonschema.exceptions import ValidationError, SchemaError
 from djerba.genetic_alteration import genetic_alteration_factory
 from djerba.sample import sample
 from djerba.utilities import constants
@@ -17,7 +19,7 @@ class report(base):
 
     NULL_STRING = "NA"
 
-    def __init__(self, config, sample_id=None, log_level=logging.WARNING, log_path=None):
+    def __init__(self, config, sample_id=None, schema_path=None, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, "%s.%s" % (__name__, type(self).__name__), log_path)
         # configure the sample for the report
         if sample_id==None: # only one sample
@@ -47,6 +49,11 @@ class report(base):
         self.alterations = [ # study_id is only required for cBioPortal, not Elba
             ga_factory.create_instance(conf, study_id=None) for conf in ga_configs
         ]
+        if schema_path:
+            with open(schema_path, 'r') as schema_file:
+                self.schema = json.loads(schema_file.read())
+        else:
+            self.schema = None
 
     def get_report_config(self, replace_null, strict=True):
         """Construct the reporting config data structure"""
@@ -94,6 +101,11 @@ class report(base):
         config[constants.REVIEW_STATUS_KEY] = -1 # placeholder; will be updated by Elba
         if replace_null:
             config = self.replace_null_with_string(config)
+        if self.schema != None:
+            self.validate(config) # raises an error if not valid
+            self.logger.info("Elba config output is valid with respect to schema")
+        else:
+            self.logger.info("Elba config schema not supplied; validation of output omitted")
         return config
 
     def is_null(self, val):
@@ -114,6 +126,15 @@ class report(base):
             if self.is_null(config[constants.SAMPLE_INFO_KEY][key]):
                 config[constants.SAMPLE_INFO_KEY][key] = self.NULL_STRING
         return config
+
+    def validate(self, config):
+        try:
+            jsonschema.validate(config, self.schema)
+        except (ValidationError, SchemaError) as err:
+            msg = "Elba config output is invalid with respect to schema"
+            self.logger.error("{}: {}".format(msg, err))
+            self.logger.debug("Invalid Elba config output:\n"+json.dumps(config, sort_keys=True, indent=4))
+            raise
 
     def write_report_config(self, out_path, force=False, strict=True, replace_null=True):
         """

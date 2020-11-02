@@ -1,0 +1,166 @@
+{
+    "cancer_type": {
+        "clinical_trial_keywords": [
+            "carcinoma,ductal carcinoma"
+        ],
+        "data_filename": "cancer_type.txt",
+        "dedicated_color": null,
+        "name": [
+            "Ductal Carcinoma"
+        ],
+        "parent_type_of_cancer": [
+            "tissue"
+        ],
+        "type_of_cancer": null
+    },
+    "case_lists": [
+        {
+            "case_list_category": null,
+            "case_list_description": "custom case list demonstration",
+            "case_list_ids": [
+                "OCT-01-0472-CAP"
+            ],
+            "case_list_name": "djerba_custom_case_list",
+            "suffix": "custom"
+        }
+    ],
+    "genetic_alterations": [
+	        {
+            "datatype": "CUSTOM",
+            "genetic_alteration_type": "CUSTOM_ANNOTATION",
+            "input_files": {},
+            "input_directory": "/dummy/directory/replaced/in/test",
+            "metadata": {
+                "gene_headers": [
+		    "Gene",
+                    "Allele_Fraction_Percentile",
+                    "Chromosome",
+                    "Copy_State",
+                    "Drug_Annotation",
+                    "Exp_Percentile",
+                    "Exp_Z_Score",
+                    "FDA_Approved_Treatment",
+                    "Gene_Annotation",
+                    "OncoKB",
+                    "Protein_Change",
+                    "Variant_Reads_And_Total_Reads",
+                    "Whizbam_URL",
+		    "Fusion",
+		    "Mutation_Class",
+		    "Variant_Classification"
+                ],
+                "gene_tsv": "custom_gene_annotation.tsv",
+                "sample_headers": [
+		    "SAMPLE_ID",
+                    "AGE",
+                    "CANCER_TYPE",
+                    "CANCER_TYPE_DETAILED",
+                    "CENTRE",
+                    "CLOSEST_TCGA",
+                    "COSMIC_SIGS",
+                    "ETHNICITY",
+                    "FRACTION_GENOME_ALTERED",
+                    "FRAC_CALLABILITY",
+                    "HRD_SCORE",
+                    "MEAN_COVERAGE",
+                    "MSI_STATUS",
+                    "PATHOLOGICAL_REVIEW",
+                    "PATIENT_ID",
+                    "PATIENT_SUMMARY",
+                    "PCT_v7_ABOVE_80x",
+                    "SAMPLE_ANATOMICAL_SITE",
+                    "SAMPLE_PRIMARY_OR_METASTASIS",
+                    "SEQUENZA_PLOIDY",
+                    "SEQUENZA_PURITY_FRACTION",
+                    "SEX",
+                    "TMB_PER_MB",
+                    "TMB_PLOT",
+                    "TREATMENT_STATUS",
+                    "VAF_PLOT"
+                ],
+                "sample_tsv": "custom_sample_annotation.tsv"
+            },
+            "workflow_run_id": "jabberwocky_workflow_run_0001"
+		},
+        {
+            "datatype": "MAF",
+            "genetic_alteration_type": "MUTATION_EXTENDED",
+            "input_files": {
+                "OCT-01-0472-CAP": "somatic01.maf.txt.gz"
+            },
+            "input_directory": "/.mounts/labs/gsiprojects/gsi/djerba/mutation_extended",
+            "metadata": {
+                "filter_vcf": "/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz",
+                "oncokb_api_token": "e326982a-02ba-4f04-8ef6-80b04fa74acd",
+                "profile_description": "Dummy profile for Djerba test",
+                "profile_name": "Djerba test 001",
+                "bed_path": "/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed",
+                "tcga_path": "/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt",
+                "cancer_type": "blca"
+            },
+            "workflow_run_id": "jabberwocky_workflow_run_0001"
+        }
+    ],
+    "samples": [
+        {
+            "AGE": 35,
+            "CANCER_TYPE": "Bowel",
+            "CANCER_TYPE_DETAILED": "MACR",
+            "CENTRE": "TGL",
+            "CLOSEST_TCGA": "coadread",
+            "COSMIC_SIGS": null,
+            "ETHNICITY": "Other",
+            "FRAC_CALLABILITY": null,
+            "MEAN_COVERAGE": null,
+            "PATHOLOGICAL_REVIEW": "Lots of immune cells",
+            "PATIENT_ID": "OCT-01-0472",
+            "PATIENT_SUMMARY": "Nulla a scelerisque ipsum. Aliquam erat volutpat in.",
+            "PCT_v7_ABOVE_80x": null,
+            "SAMPLE_ANATOMICAL_SITE": "OMENTUM",
+            "SAMPLE_ID": "OCT-01-0472-CAP",
+            "SAMPLE_PRIMARY_OR_METASTASIS": "Metastatic Lesion",
+            "SEQUENZA_PLOIDY": null,
+            "SEQUENZA_PURITY_FRACTION": null,
+            "SEX": "Male",
+            "TMB_PER_MB": null,
+            "TREATMENT_STATUS": "Naive"
+        }
+    ],
+    "samples_meta": {
+        "attribute_names": [
+            "PATIENT_ID",
+            "SAMPLE_ID"
+        ],
+        "datatypes": [
+            "STRING",
+            "STRING"
+        ],
+        "descriptions": [
+            "Patient identifier",
+            "Sample identifier"
+        ],
+        "display_names": [
+            "Patient identifier",
+            "Sample identifier"
+        ],
+        "precision": 3,
+        "priorities": [
+            1,
+            1
+        ],
+        "write_patients": true
+    },
+    "study_meta": {
+        "add_global_case_list": true,
+        "cancer_study_identifier": "djerba_test_001",
+        "citation": null,
+        "description": "Test of Djerba software package (September 2020)",
+        "groups": null,
+        "name": "Djerba Test 001",
+        "pmid": null,
+        "reference_genome": null,
+        "short_name": "Djerba 001",
+        "tags_file": null,
+        "type_of_cancer": "ductal carcinoma"
+    }
+}
