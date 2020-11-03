@@ -21,8 +21,10 @@ STUDY_ID_KEY = 'cancer_study_identifier'
 
 CANCER_TYPE_DATATYPE = 'CANCER_TYPE'
 CASE_LIST_DATATYPE = 'CASE_LIST'
+CUSTOM_DATATYPE='CUSTOM' # Djerba only, not used by cBioPortal
 PATIENT_DATATYPE = 'PATIENT_ATTRIBUTES'
 SAMPLE_DATATYPE = 'SAMPLE_ATTRIBUTES'
+MAF_DATATYPE = 'MAF'
 
 # keys for Elba report generation
 

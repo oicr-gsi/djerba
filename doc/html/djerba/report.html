@@ -33,6 +33,7 @@ import json
 import logging
 import os
 import sys
+from math import isnan
 from djerba.genetic_alteration import genetic_alteration_factory
 from djerba.sample import sample
 from djerba.utilities import constants
@@ -43,9 +44,10 @@ class report(base):
 
     &#34;&#34;&#34;Class representing a genome interpretation Clinical Report in Elba&#34;&#34;&#34;
 
+    NULL_STRING = &#34;NA&#34;
+
     def __init__(self, config, sample_id=None, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
-        study_id = config[constants.STUDY_META_KEY][constants.STUDY_ID_KEY]
         # configure the sample for the report
         if sample_id==None: # only one sample
             if len(config[constants.SAMPLES_KEY])==1:
@@ -71,11 +73,11 @@ class report(base):
         # populate the list of genetic alterations
         ga_factory = genetic_alteration_factory(log_level, log_path)
         ga_configs = config[constants.GENETIC_ALTERATIONS_KEY]
-        self.alterations = [
-            ga_factory.create_instance(conf, study_id) for conf in ga_configs
+        self.alterations = [ # study_id is only required for cBioPortal, not Elba
+            ga_factory.create_instance(conf, study_id=None) for conf in ga_configs
         ]
 
-    def get_report_config(self):
+    def get_report_config(self, replace_null, strict=True):
         &#34;&#34;&#34;Construct the reporting config data structure&#34;&#34;&#34;
         # for each genetic alteration, find metric values at sample/gene level
         all_metrics_by_gene = {}
@@ -89,20 +91,68 @@ class report(base):
                     all_metrics_by_gene[gene_id] = metrics_by_gene[gene_id]
             # update sample-level metrics
             self.sample.update_attributes(alteration.get_attributes_for_sample(self.sample_id))
-        # reorder gene-level metrics into a list
+        # reorder gene-level metrics into a list and check consistency
         gene_metrics_list = []
+        expected_gene_attributes = None
         for gene_id in all_metrics_by_gene.keys():
             metrics = all_metrics_by_gene[gene_id]
+            # check consistency with previous attributes, if any
+            if expected_gene_attributes == None:
+                expected_gene_attributes = set(metrics.keys())
+            else:
+                gene_attributes = set(metrics.keys())
+                if gene_attributes != expected_gene_attributes:
+                    expected = str(sorted(list(expected_gene_attributes)))
+                    found = str(sorted(list(gene_attributes)))
+                    msg = &#39;Attributes for gene {0} do not match predecessors; &#39;.format(gene_id)+\
+                          &#39;expected {0}, found {1}&#39;.format(expected, found)
+                    if strict:
+                        msg = &#34;Strict validation: &#34;+msg
+                        self.logger.error(msg)
+                        raise DjerbaReportError(msg)
+                    else:
+                        self.logger.warning(msg)
+            # add an attribute for the gene name and append to list
             metrics[constants.GENE_KEY] = gene_id
             gene_metrics_list.append(metrics)
+        gene_attributes = set(gene_metrics_list[0].keys())
         # assemble the config data structure
         config = {}
         config[constants.SAMPLE_INFO_KEY] = self.sample.get_attributes()
         config[constants.GENE_METRICS_KEY] = gene_metrics_list
         config[constants.REVIEW_STATUS_KEY] = -1 # placeholder; will be updated by Elba
+        if replace_null:
+            config = self.replace_null_with_string(config)
         return config
 
-    def write_report_config(self, out_path, force=False):
+    def is_null(self, val):
+        &#34;&#34;&#34;Check if a value (not necessarily numeric) is None or NaN&#34;&#34;&#34;
+        try:
+            is_nan = isnan(val)
+        except TypeError: # value is a non-numeric type
+            is_nan = False
+        return val==None or is_nan
+
+    def replace_null_with_string(self, config):
+        &#34;&#34;&#34;Replace null/NaN values in config output with a string, eg. for easier processing in R&#34;&#34;&#34;
+        for gene in config[constants.GENE_METRICS_KEY]:
+            for key in gene.keys():
+                if self.is_null(gene[key]):
+                    gene[key] = self.NULL_STRING
+        for key in config[constants.SAMPLE_INFO_KEY].keys():
+            if self.is_null(config[constants.SAMPLE_INFO_KEY][key]):
+                config[constants.SAMPLE_INFO_KEY][key] = self.NULL_STRING
+        return config
+
+    def write_report_config(self, out_path, force=False, strict=True, replace_null=True):
+        &#34;&#34;&#34;
+        Write report config JSON to the given path, or stdout if the path is &#39;-&#39;.
+
+        - If force is True, overwrite any existing output.
+        - If replace_null is True, replace any None/NaN values with a standard string.
+        &#34;&#34;&#34;
+        # get config before opening an output file, in case of errors
+        config = self.get_report_config(replace_null, strict)
         if out_path==&#39;-&#39;:
             out_file = sys.stdout
         else:
@@ -115,7 +165,7 @@ class report(base):
                     self.logger.error(msg)
                     raise DjerbaReportError(msg)
             out_file = open(out_path, &#39;w&#39;)
-        out_file.write(json.dumps(self.get_report_config(), sort_keys=True, indent=4))
+        out_file.write(json.dumps(config, sort_keys=True, indent=4))
         if out_path!=&#39;-&#39;:
             out_file.close()
 
@@ -165,9 +215,10 @@ class DjerbaReportError(Exception):
 
     &#34;&#34;&#34;Class representing a genome interpretation Clinical Report in Elba&#34;&#34;&#34;
 
+    NULL_STRING = &#34;NA&#34;
+
     def __init__(self, config, sample_id=None, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
-        study_id = config[constants.STUDY_META_KEY][constants.STUDY_ID_KEY]
         # configure the sample for the report
         if sample_id==None: # only one sample
             if len(config[constants.SAMPLES_KEY])==1:
@@ -193,11 +244,11 @@ class DjerbaReportError(Exception):
         # populate the list of genetic alterations
         ga_factory = genetic_alteration_factory(log_level, log_path)
         ga_configs = config[constants.GENETIC_ALTERATIONS_KEY]
-        self.alterations = [
-            ga_factory.create_instance(conf, study_id) for conf in ga_configs
+        self.alterations = [ # study_id is only required for cBioPortal, not Elba
+            ga_factory.create_instance(conf, study_id=None) for conf in ga_configs
         ]
 
-    def get_report_config(self):
+    def get_report_config(self, replace_null, strict=True):
         &#34;&#34;&#34;Construct the reporting config data structure&#34;&#34;&#34;
         # for each genetic alteration, find metric values at sample/gene level
         all_metrics_by_gene = {}
@@ -211,20 +262,68 @@ class DjerbaReportError(Exception):
                     all_metrics_by_gene[gene_id] = metrics_by_gene[gene_id]
             # update sample-level metrics
             self.sample.update_attributes(alteration.get_attributes_for_sample(self.sample_id))
-        # reorder gene-level metrics into a list
+        # reorder gene-level metrics into a list and check consistency
         gene_metrics_list = []
+        expected_gene_attributes = None
         for gene_id in all_metrics_by_gene.keys():
             metrics = all_metrics_by_gene[gene_id]
+            # check consistency with previous attributes, if any
+            if expected_gene_attributes == None:
+                expected_gene_attributes = set(metrics.keys())
+            else:
+                gene_attributes = set(metrics.keys())
+                if gene_attributes != expected_gene_attributes:
+                    expected = str(sorted(list(expected_gene_attributes)))
+                    found = str(sorted(list(gene_attributes)))
+                    msg = &#39;Attributes for gene {0} do not match predecessors; &#39;.format(gene_id)+\
+                          &#39;expected {0}, found {1}&#39;.format(expected, found)
+                    if strict:
+                        msg = &#34;Strict validation: &#34;+msg
+                        self.logger.error(msg)
+                        raise DjerbaReportError(msg)
+                    else:
+                        self.logger.warning(msg)
+            # add an attribute for the gene name and append to list
             metrics[constants.GENE_KEY] = gene_id
             gene_metrics_list.append(metrics)
+        gene_attributes = set(gene_metrics_list[0].keys())
         # assemble the config data structure
         config = {}
         config[constants.SAMPLE_INFO_KEY] = self.sample.get_attributes()
         config[constants.GENE_METRICS_KEY] = gene_metrics_list
         config[constants.REVIEW_STATUS_KEY] = -1 # placeholder; will be updated by Elba
+        if replace_null:
+            config = self.replace_null_with_string(config)
         return config
 
-    def write_report_config(self, out_path, force=False):
+    def is_null(self, val):
+        &#34;&#34;&#34;Check if a value (not necessarily numeric) is None or NaN&#34;&#34;&#34;
+        try:
+            is_nan = isnan(val)
+        except TypeError: # value is a non-numeric type
+            is_nan = False
+        return val==None or is_nan
+
+    def replace_null_with_string(self, config):
+        &#34;&#34;&#34;Replace null/NaN values in config output with a string, eg. for easier processing in R&#34;&#34;&#34;
+        for gene in config[constants.GENE_METRICS_KEY]:
+            for key in gene.keys():
+                if self.is_null(gene[key]):
+                    gene[key] = self.NULL_STRING
+        for key in config[constants.SAMPLE_INFO_KEY].keys():
+            if self.is_null(config[constants.SAMPLE_INFO_KEY][key]):
+                config[constants.SAMPLE_INFO_KEY][key] = self.NULL_STRING
+        return config
+
+    def write_report_config(self, out_path, force=False, strict=True, replace_null=True):
+        &#34;&#34;&#34;
+        Write report config JSON to the given path, or stdout if the path is &#39;-&#39;.
+
+        - If force is True, overwrite any existing output.
+        - If replace_null is True, replace any None/NaN values with a standard string.
+        &#34;&#34;&#34;
+        # get config before opening an output file, in case of errors
+        config = self.get_report_config(replace_null, strict)
         if out_path==&#39;-&#39;:
             out_file = sys.stdout
         else:
@@ -237,7 +336,7 @@ class DjerbaReportError(Exception):
                     self.logger.error(msg)
                     raise DjerbaReportError(msg)
             out_file = open(out_path, &#39;w&#39;)
-        out_file.write(json.dumps(self.get_report_config(), sort_keys=True, indent=4))
+        out_file.write(json.dumps(config, sort_keys=True, indent=4))
         if out_path!=&#39;-&#39;:
             out_file.close()</code></pre>
 </details>
@@ -245,10 +344,17 @@ class DjerbaReportError(Exception):
 <ul class="hlist">
 <li><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="djerba.report.report.NULL_STRING"><code class="name">var <span class="ident">NULL_STRING</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="djerba.report.report.get_report_config"><code class="name flex">
-<span>def <span class="ident">get_report_config</span></span>(<span>self)</span>
+<span>def <span class="ident">get_report_config</span></span>(<span>self, replace_null, strict=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Construct the reporting config data structure</p></div>
@@ -256,7 +362,7 @@ class DjerbaReportError(Exception):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_report_config(self):
+<pre><code class="python">def get_report_config(self, replace_null, strict=True):
     &#34;&#34;&#34;Construct the reporting config data structure&#34;&#34;&#34;
     # for each genetic alteration, find metric values at sample/gene level
     all_metrics_by_gene = {}
@@ -270,30 +376,102 @@ class DjerbaReportError(Exception):
                 all_metrics_by_gene[gene_id] = metrics_by_gene[gene_id]
         # update sample-level metrics
         self.sample.update_attributes(alteration.get_attributes_for_sample(self.sample_id))
-    # reorder gene-level metrics into a list
+    # reorder gene-level metrics into a list and check consistency
     gene_metrics_list = []
+    expected_gene_attributes = None
     for gene_id in all_metrics_by_gene.keys():
         metrics = all_metrics_by_gene[gene_id]
+        # check consistency with previous attributes, if any
+        if expected_gene_attributes == None:
+            expected_gene_attributes = set(metrics.keys())
+        else:
+            gene_attributes = set(metrics.keys())
+            if gene_attributes != expected_gene_attributes:
+                expected = str(sorted(list(expected_gene_attributes)))
+                found = str(sorted(list(gene_attributes)))
+                msg = &#39;Attributes for gene {0} do not match predecessors; &#39;.format(gene_id)+\
+                      &#39;expected {0}, found {1}&#39;.format(expected, found)
+                if strict:
+                    msg = &#34;Strict validation: &#34;+msg
+                    self.logger.error(msg)
+                    raise DjerbaReportError(msg)
+                else:
+                    self.logger.warning(msg)
+        # add an attribute for the gene name and append to list
         metrics[constants.GENE_KEY] = gene_id
         gene_metrics_list.append(metrics)
+    gene_attributes = set(gene_metrics_list[0].keys())
     # assemble the config data structure
     config = {}
     config[constants.SAMPLE_INFO_KEY] = self.sample.get_attributes()
     config[constants.GENE_METRICS_KEY] = gene_metrics_list
     config[constants.REVIEW_STATUS_KEY] = -1 # placeholder; will be updated by Elba
+    if replace_null:
+        config = self.replace_null_with_string(config)
     return config</code></pre>
 </details>
 </dd>
-<dt id="djerba.report.report.write_report_config"><code class="name flex">
-<span>def <span class="ident">write_report_config</span></span>(<span>self, out_path, force=False)</span>
+<dt id="djerba.report.report.is_null"><code class="name flex">
+<span>def <span class="ident">is_null</span></span>(<span>self, val)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Check if a value (not necessarily numeric) is None or NaN</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def write_report_config(self, out_path, force=False):
+<pre><code class="python">def is_null(self, val):
+    &#34;&#34;&#34;Check if a value (not necessarily numeric) is None or NaN&#34;&#34;&#34;
+    try:
+        is_nan = isnan(val)
+    except TypeError: # value is a non-numeric type
+        is_nan = False
+    return val==None or is_nan</code></pre>
+</details>
+</dd>
+<dt id="djerba.report.report.replace_null_with_string"><code class="name flex">
+<span>def <span class="ident">replace_null_with_string</span></span>(<span>self, config)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Replace null/NaN values in config output with a string, eg. for easier processing in R</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def replace_null_with_string(self, config):
+    &#34;&#34;&#34;Replace null/NaN values in config output with a string, eg. for easier processing in R&#34;&#34;&#34;
+    for gene in config[constants.GENE_METRICS_KEY]:
+        for key in gene.keys():
+            if self.is_null(gene[key]):
+                gene[key] = self.NULL_STRING
+    for key in config[constants.SAMPLE_INFO_KEY].keys():
+        if self.is_null(config[constants.SAMPLE_INFO_KEY][key]):
+            config[constants.SAMPLE_INFO_KEY][key] = self.NULL_STRING
+    return config</code></pre>
+</details>
+</dd>
+<dt id="djerba.report.report.write_report_config"><code class="name flex">
+<span>def <span class="ident">write_report_config</span></span>(<span>self, out_path, force=False, strict=True, replace_null=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Write report config JSON to the given path, or stdout if the path is '-'.</p>
+<ul>
+<li>If force is True, overwrite any existing output.</li>
+<li>If replace_null is True, replace any None/NaN values with a standard string.</li>
+</ul></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def write_report_config(self, out_path, force=False, strict=True, replace_null=True):
+    &#34;&#34;&#34;
+    Write report config JSON to the given path, or stdout if the path is &#39;-&#39;.
+
+    - If force is True, overwrite any existing output.
+    - If replace_null is True, replace any None/NaN values with a standard string.
+    &#34;&#34;&#34;
+    # get config before opening an output file, in case of errors
+    config = self.get_report_config(replace_null, strict)
     if out_path==&#39;-&#39;:
         out_file = sys.stdout
     else:
@@ -306,7 +484,7 @@ class DjerbaReportError(Exception):
                 self.logger.error(msg)
                 raise DjerbaReportError(msg)
         out_file = open(out_path, &#39;w&#39;)
-    out_file.write(json.dumps(self.get_report_config(), sort_keys=True, indent=4))
+    out_file.write(json.dumps(config, sort_keys=True, indent=4))
     if out_path!=&#39;-&#39;:
         out_file.close()</code></pre>
 </details>
@@ -343,7 +521,10 @@ class DjerbaReportError(Exception):
 <li>
 <h4><code><a title="djerba.report.report" href="#djerba.report.report">report</a></code></h4>
 <ul class="">
+<li><code><a title="djerba.report.report.NULL_STRING" href="#djerba.report.report.NULL_STRING">NULL_STRING</a></code></li>
 <li><code><a title="djerba.report.report.get_report_config" href="#djerba.report.report.get_report_config">get_report_config</a></code></li>
+<li><code><a title="djerba.report.report.is_null" href="#djerba.report.report.is_null">is_null</a></code></li>
+<li><code><a title="djerba.report.report.replace_null_with_string" href="#djerba.report.report.replace_null_with_string">replace_null_with_string</a></code></li>
 <li><code><a title="djerba.report.report.write_report_config" href="#djerba.report.report.write_report_config">write_report_config</a></code></li>
 </ul>
 </li>

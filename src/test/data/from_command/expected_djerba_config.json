@@ -3,11 +3,11 @@
         {
             "datatype": "CUSTOM",
             "genetic_alteration_type": "CUSTOM_ANNOTATION",
+            "input_directory": "/dummy/to/replace/in/test",
             "input_files": {},
-            "input_directory": "/dummy/directory/replaced/in/test",
             "metadata": {
                 "gene_headers": [
-		    "Gene",
+                    "Gene",
                     "Allele_Fraction_Percentile",
                     "Chromosome",
                     "Copy_State",
@@ -19,14 +19,11 @@
                     "OncoKB",
                     "Protein_Change",
                     "Variant_Reads_And_Total_Reads",
-                    "Whizbam_URL",
-		    "Fusion",
-		    "Mutation_Class",
-		    "Variant_Classification"
+                    "Whizbam_URL"
                 ],
-                "gene_tsv": "custom_gene_annotation_with_nan.tsv",
+                "gene_tsv": "custom_gene_annotation.tsv",
                 "sample_headers": [
-		    "SAMPLE_ID",
+                    "SAMPLE_ID",
                     "AGE",
                     "CANCER_TYPE",
                     "CANCER_TYPE_DETAILED",
@@ -53,9 +50,23 @@
                     "TREATMENT_STATUS",
                     "VAF_PLOT"
                 ],
-                "sample_tsv": "custom_sample_annotation_with_nan.tsv"
+                "sample_tsv": "custom_sample_annotation.tsv"
+            }
+        },
+        {
+            "datatype": "MAF",
+            "genetic_alteration_type": "MUTATION_EXTENDED",
+            "input_directory": "/dummy/to/replace/in/test",
+            "input_files": {
+                "OCT-01-0472-CAP": "somatic01.maf.txt.gz"
             },
-            "workflow_run_id": "jabberwocky_workflow_run_0001"
+            "metadata": {
+                "bed_path": "/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed",
+                "cancer_type": "blca",
+                "filter_vcf": "/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz",
+                "oncokb_api_token": null,
+                "tcga_path": "/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt"
+            }
         }
     ],
     "samples": [
