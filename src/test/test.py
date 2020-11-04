@@ -11,7 +11,7 @@ from djerba.config import builder, validator, DjerbaConfigError
 
 class TestBase(unittest.TestCase):
 
-    SCHEMA_PATH = '/.mounts/labs/gsi/modulator/sw/data/elba-config-schema-1.0.0/elba_config_schema.json' # path to Elba JSON schema
+    SCHEMA_PATH = '/.mounts/labs/gsi/modulator/sw/data/elba-config-schema-1.0.1/elba_config_schema.json' # path to Elba JSON schema
     
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_test_')
@@ -65,11 +65,11 @@ class TestBuilder(TestBase):
         self.assertEqual(config, expected, "Elba config matches expected values")
         # test writing a report with the generated Elba config
         out_name = 'elba_report_config.json'
-        out_dir = os.path.join(self.tmp.name, 'builder_test')
+        out_dir = os.path.join(self.tmp.name, 'djerba_builder_test')
         os.mkdir(out_dir)
         elba_report = report(config, self.sample_id, log_level=logging.ERROR)
         elba_report.write_report_config(os.path.join(out_dir, out_name), force=False, strict=True)
-        checksums = {out_name: '9ff34457654edf49eef4104e23680710'}
+        checksums = {out_name: 'ba3ed5de7ca2d0f611580b01fc2b01e3'}
         self.verify_checksums(checksums, out_dir)
 
     def test_mismatched(self):
@@ -170,8 +170,8 @@ class TestReport(TestBase):
             custom_report.write_report_config(report_path)
             self.assertTrue(os.path.exists(report_path), "JSON report exists")
         checksums = {
-            report_names[0]: '924d017ffd6f744b37c1c6650abd6aca',
-            report_names[1]: 'bf7f60aab3a144ffe112794aa2744208'
+            report_names[0]: '649e3f38ba07dc88b156f8d60a3ad175',
+            report_names[1]: 'd447899ea3b887482133ed3a152bcdf2'
         }
         self.verify_checksums(checksums, out_dir)
         # test with incorrect sample headers in metadata
@@ -195,7 +195,7 @@ class TestReport(TestBase):
         mx_report = report(config, self.sample_id, self.SCHEMA_PATH, log_level=logging.ERROR)
         mx_report.write_report_config(report_path)
         self.assertTrue(os.path.exists(report_path), "JSON report exists")
-        checksum = {report_name: 'c37c953b63227730d4009c7a0ec56896'}
+        checksum = {report_name: 'b48e06410fce3018e871efc82eefb3f7'}
         self.verify_checksums(checksum, out_dir)
         args = [config, 'nonexistent sample', self.SCHEMA_PATH, logging.CRITICAL]
         self.assertRaises(DjerbaReportError, report, *args)
@@ -264,9 +264,9 @@ class TestScript(TestBase):
             data_2 = json.loads(file_2.read())
         self.assertDictEqual(data_1, data_2)
         checksums = {
-            'djerba_config.json': 'ec2370dc76e494894d24139e07a19d12',
-            'elba_config_1.json': 'c37c953b63227730d4009c7a0ec56896',
-            'elba_config_2.json': 'c37c953b63227730d4009c7a0ec56896'
+            'djerba_config.json': '026e5675696506ca8a8c26d60e3b43cf',
+            'elba_config_1.json': '7ea48c32c98f102140ad44778a882e77',
+            'elba_config_2.json': '7ea48c32c98f102140ad44778a882e77'
             }
         self.verify_checksums(checksums, out_dir)
 
