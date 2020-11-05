@@ -17,6 +17,7 @@
                     "FDA_Approved_Treatment",
                     "Gene_Annotation",
                     "OncoKB",
+		    "Oncogenic_Binary",
                     "Protein_Change",
                     "Variant_Reads_And_Total_Reads",
                     "Whizbam_URL"
