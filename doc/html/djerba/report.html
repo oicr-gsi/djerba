@@ -30,10 +30,12 @@
 <pre><code class="python">&#34;&#34;&#34;Genome interpretation Clinical Report configuration&#34;&#34;&#34;
 
 import json
+import jsonschema
 import logging
 import os
 import sys
 from math import isnan
+from jsonschema.exceptions import ValidationError, SchemaError
 from djerba.genetic_alteration import genetic_alteration_factory
 from djerba.sample import sample
 from djerba.utilities import constants
@@ -46,7 +48,7 @@ class report(base):
 
     NULL_STRING = &#34;NA&#34;
 
-    def __init__(self, config, sample_id=None, log_level=logging.WARNING, log_path=None):
+    def __init__(self, config, sample_id=None, schema_path=None, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
         # configure the sample for the report
         if sample_id==None: # only one sample
@@ -76,6 +78,11 @@ class report(base):
         self.alterations = [ # study_id is only required for cBioPortal, not Elba
             ga_factory.create_instance(conf, study_id=None) for conf in ga_configs
         ]
+        if schema_path:
+            with open(schema_path, &#39;r&#39;) as schema_file:
+                self.schema = json.loads(schema_file.read())
+        else:
+            self.schema = None
 
     def get_report_config(self, replace_null, strict=True):
         &#34;&#34;&#34;Construct the reporting config data structure&#34;&#34;&#34;
@@ -121,8 +128,14 @@ class report(base):
         config[constants.SAMPLE_INFO_KEY] = self.sample.get_attributes()
         config[constants.GENE_METRICS_KEY] = gene_metrics_list
         config[constants.REVIEW_STATUS_KEY] = -1 # placeholder; will be updated by Elba
+        config[constants.SAMPLE_NAME_KEY] = self.sample.get_id()
         if replace_null:
             config = self.replace_null_with_string(config)
+        if self.schema != None:
+            self.validate(config) # raises an error if not valid
+            self.logger.info(&#34;Elba config output is valid with respect to schema&#34;)
+        else:
+            self.logger.info(&#34;Elba config schema not supplied; validation of output omitted&#34;)
         return config
 
     def is_null(self, val):
@@ -143,6 +156,15 @@ class report(base):
             if self.is_null(config[constants.SAMPLE_INFO_KEY][key]):
                 config[constants.SAMPLE_INFO_KEY][key] = self.NULL_STRING
         return config
+
+    def validate(self, config):
+        try:
+            jsonschema.validate(config, self.schema)
+        except (ValidationError, SchemaError) as err:
+            msg = &#34;Elba config output is invalid with respect to schema&#34;
+            self.logger.error(&#34;{}: {}&#34;.format(msg, err))
+            self.logger.debug(&#34;Invalid Elba config output:\n&#34;+json.dumps(config, sort_keys=True, indent=4))
+            raise
 
     def write_report_config(self, out_path, force=False, strict=True, replace_null=True):
         &#34;&#34;&#34;
@@ -203,7 +225,7 @@ class DjerbaReportError(Exception):
 </dd>
 <dt id="djerba.report.report"><code class="flex name class">
 <span>class <span class="ident">report</span></span>
-<span>(</span><span>config, sample_id=None, log_level=30, log_path=None)</span>
+<span>(</span><span>config, sample_id=None, schema_path=None, log_level=30, log_path=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Class representing a genome interpretation Clinical Report in Elba</p></div>
@@ -217,7 +239,7 @@ class DjerbaReportError(Exception):
 
     NULL_STRING = &#34;NA&#34;
 
-    def __init__(self, config, sample_id=None, log_level=logging.WARNING, log_path=None):
+    def __init__(self, config, sample_id=None, schema_path=None, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
         # configure the sample for the report
         if sample_id==None: # only one sample
@@ -247,6 +269,11 @@ class DjerbaReportError(Exception):
         self.alterations = [ # study_id is only required for cBioPortal, not Elba
             ga_factory.create_instance(conf, study_id=None) for conf in ga_configs
         ]
+        if schema_path:
+            with open(schema_path, &#39;r&#39;) as schema_file:
+                self.schema = json.loads(schema_file.read())
+        else:
+            self.schema = None
 
     def get_report_config(self, replace_null, strict=True):
         &#34;&#34;&#34;Construct the reporting config data structure&#34;&#34;&#34;
@@ -292,8 +319,14 @@ class DjerbaReportError(Exception):
         config[constants.SAMPLE_INFO_KEY] = self.sample.get_attributes()
         config[constants.GENE_METRICS_KEY] = gene_metrics_list
         config[constants.REVIEW_STATUS_KEY] = -1 # placeholder; will be updated by Elba
+        config[constants.SAMPLE_NAME_KEY] = self.sample.get_id()
         if replace_null:
             config = self.replace_null_with_string(config)
+        if self.schema != None:
+            self.validate(config) # raises an error if not valid
+            self.logger.info(&#34;Elba config output is valid with respect to schema&#34;)
+        else:
+            self.logger.info(&#34;Elba config schema not supplied; validation of output omitted&#34;)
         return config
 
     def is_null(self, val):
@@ -314,6 +347,15 @@ class DjerbaReportError(Exception):
             if self.is_null(config[constants.SAMPLE_INFO_KEY][key]):
                 config[constants.SAMPLE_INFO_KEY][key] = self.NULL_STRING
         return config
+
+    def validate(self, config):
+        try:
+            jsonschema.validate(config, self.schema)
+        except (ValidationError, SchemaError) as err:
+            msg = &#34;Elba config output is invalid with respect to schema&#34;
+            self.logger.error(&#34;{}: {}&#34;.format(msg, err))
+            self.logger.debug(&#34;Invalid Elba config output:\n&#34;+json.dumps(config, sort_keys=True, indent=4))
+            raise
 
     def write_report_config(self, out_path, force=False, strict=True, replace_null=True):
         &#34;&#34;&#34;
@@ -406,8 +448,14 @@ class DjerbaReportError(Exception):
     config[constants.SAMPLE_INFO_KEY] = self.sample.get_attributes()
     config[constants.GENE_METRICS_KEY] = gene_metrics_list
     config[constants.REVIEW_STATUS_KEY] = -1 # placeholder; will be updated by Elba
+    config[constants.SAMPLE_NAME_KEY] = self.sample.get_id()
     if replace_null:
         config = self.replace_null_with_string(config)
+    if self.schema != None:
+        self.validate(config) # raises an error if not valid
+        self.logger.info(&#34;Elba config output is valid with respect to schema&#34;)
+    else:
+        self.logger.info(&#34;Elba config schema not supplied; validation of output omitted&#34;)
     return config</code></pre>
 </details>
 </dd>
@@ -448,6 +496,25 @@ class DjerbaReportError(Exception):
         if self.is_null(config[constants.SAMPLE_INFO_KEY][key]):
             config[constants.SAMPLE_INFO_KEY][key] = self.NULL_STRING
     return config</code></pre>
+</details>
+</dd>
+<dt id="djerba.report.report.validate"><code class="name flex">
+<span>def <span class="ident">validate</span></span>(<span>self, config)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate(self, config):
+    try:
+        jsonschema.validate(config, self.schema)
+    except (ValidationError, SchemaError) as err:
+        msg = &#34;Elba config output is invalid with respect to schema&#34;
+        self.logger.error(&#34;{}: {}&#34;.format(msg, err))
+        self.logger.debug(&#34;Invalid Elba config output:\n&#34;+json.dumps(config, sort_keys=True, indent=4))
+        raise</code></pre>
 </details>
 </dd>
 <dt id="djerba.report.report.write_report_config"><code class="name flex">
@@ -525,6 +592,7 @@ class DjerbaReportError(Exception):
 <li><code><a title="djerba.report.report.get_report_config" href="#djerba.report.report.get_report_config">get_report_config</a></code></li>
 <li><code><a title="djerba.report.report.is_null" href="#djerba.report.report.is_null">is_null</a></code></li>
 <li><code><a title="djerba.report.report.replace_null_with_string" href="#djerba.report.report.replace_null_with_string">replace_null_with_string</a></code></li>
+<li><code><a title="djerba.report.report.validate" href="#djerba.report.report.validate">validate</a></code></li>
 <li><code><a title="djerba.report.report.write_report_config" href="#djerba.report.report.write_report_config">write_report_config</a></code></li>
 </ul>
 </li>
