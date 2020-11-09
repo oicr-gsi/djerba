@@ -36,6 +36,7 @@ In addition, the `test` directory has a [README](./src/test/README.md) with deta
 - Python >= 3.7
 - Python packages as listed in `setup.py`
 - Python prerequisites are in the `djerba` environment module from OICR [Modulator](https://gitlab.oicr.on.ca/ResearchIT/modulator)
+- Use of an Elba config schema is strongly recommended. See the [elba-config-schema](https://github.com/oicr-gsi/elba-config-schema) repository and environment module, and the `--elba-schema` option in script documentation.
 - OICR [Modulator](https://gitlab.oicr.on.ca/ResearchIT/modulator) environment modules required for cBioPortal `MUTATION_EXTENDED` output:
   - `vcf2maf/1.6.17`
   - `vep/92.0`

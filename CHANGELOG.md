@@ -1,9 +1,10 @@
 # CHANGELOG
 
-## Unreleased
+## v0.0.3: 2020-11-10
 ### Added
 - GCGI-55: Test Elba JSON output against the schema
 - GCGI-62: Add Oncogenic_Binary to Elba config schema
+- GCGI-63: Additional fields in Elba config schema
 
 ## v0.0.2: 2020-10-28
 ### Added
