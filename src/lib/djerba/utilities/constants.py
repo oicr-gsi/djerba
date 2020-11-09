@@ -42,6 +42,7 @@ SMALL_MUTATION_INDEL_KEY = 'smallMutAndIndel' # obsolete? depends on report JSON
 # keys for Djerba config
 GENETIC_ALTERATIONS_KEY = 'genetic_alterations'
 REVIEW_STATUS_KEY = 'review_status'
+SAMPLE_NAME_KEY = 'sample_name'
 SAMPLES_KEY = 'samples'
 STUDY_META_KEY = 'study_meta'
 

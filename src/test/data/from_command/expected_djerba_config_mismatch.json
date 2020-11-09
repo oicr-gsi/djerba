@@ -1,10 +1,15 @@
 {
+    "samples": [
+        {
+            "SAMPLE_ID": "OCT-01-0472-CAP"
+        }
+    ],
     "genetic_alterations": [
         {
-            "datatype": "CUSTOM",
-            "genetic_alteration_type": "CUSTOM_ANNOTATION",
             "input_directory": "/dummy/to/replace/in/test",
             "input_files": {},
+            "datatype": "CUSTOM",
+            "genetic_alteration_type": "CUSTOM_ANNOTATION",
             "metadata": {
                 "gene_headers": [
                     "Gene",
@@ -39,7 +44,14 @@
                     "TMB_PER_MB",
                     "TMB_PLOT",
                     "TREATMENT_STATUS",
-                    "VAF_PLOT"
+                    "VAF_PLOT",
+                    "DATE_REPORT",
+                    "DATE_SAMPLE_RECEIVED",
+                    "ORDERING_PHYSICIAN",
+                    "REPORT_IDENTIFIER",
+                    "SAMPLE_TYPE",
+                    "TCGA_PERCENTILE_ALL",
+                    "TCGA_PERCENTILE_COHORT"
                 ],
                 "sample_tsv": "custom_sample_annotation.tsv"
             }
@@ -54,15 +66,10 @@
             "metadata": {
                 "bed_path": "/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed",
                 "cancer_type": "blca",
-                "filter_vcf": "/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz",
                 "oncokb_api_token": null,
-                "tcga_path": "/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt"
+                "tcga_path": "/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt",
+                "filter_vcf": "/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz"
             }
-        }
-    ],
-    "samples": [
-        {
-            "SAMPLE_ID": "OCT-01-0472-CAP"
         }
     ]
 }

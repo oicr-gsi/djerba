@@ -54,7 +54,14 @@
                     "TMB_PER_MB",
                     "TMB_PLOT",
                     "TREATMENT_STATUS",
-                    "VAF_PLOT"
+                    "VAF_PLOT",
+                    "DATE_REPORT",
+                    "DATE_SAMPLE_RECEIVED",
+                    "ORDERING_PHYSICIAN",
+                    "REPORT_IDENTIFIER",
+                    "SAMPLE_TYPE",
+                    "TCGA_PERCENTILE_ALL",
+                    "TCGA_PERCENTILE_COHORT"
                 ],
                 "sample_tsv": "custom_sample_annotation.tsv"
             }
