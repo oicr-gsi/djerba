@@ -53,7 +53,7 @@
                     "TCGA_PERCENTILE_ALL",
                     "TCGA_PERCENTILE_COHORT"
                 ],
-                "sample_tsv": "custom_sample_annotation.tsv"
+                "sample_tsv": "custom_sample_annotation_for_mismatch.tsv"
             }
         },
         {

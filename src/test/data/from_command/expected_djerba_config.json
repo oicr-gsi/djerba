@@ -25,6 +25,9 @@
                     "Protein_Change",
                     "Variant_Reads_And_Total_Reads",
                     "Whizbam_URL",
+                    "Fusion",
+                    "Mutation_Class",
+                    "Variant_Classification",
                     "Oncogenic_Binary"
                 ],
                 "gene_tsv": "custom_gene_annotation.tsv",
