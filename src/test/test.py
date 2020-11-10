@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import hashlib, logging, json, os, random, subprocess, tempfile, unittest
+import hashlib, logging, json, jsonschema, os, random, subprocess, tempfile, unittest
 
 from djerba.metrics import mutation_extended_metrics
 from djerba.report import report, DjerbaReportError
@@ -11,7 +11,7 @@ from djerba.config import builder, validator, DjerbaConfigError
 
 class TestBase(unittest.TestCase):
 
-    SCHEMA_PATH = '/.mounts/labs/gsi/modulator/sw/data/elba-config-schema-1.0.0/elba_config_schema.json' # path to Elba JSON schema
+    SCHEMA_PATH = '/.mounts/labs/gsi/modulator/sw/data/elba-config-schema-1.0.2/elba_config_schema.json' # path to Elba JSON schema
     
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_test_')
@@ -45,7 +45,7 @@ class TestBuilder(TestBase):
         test_subdir = os.path.join(self.dataDir, 'from_command')
         maf_dir = '/.mounts/labs/gsiprojects/gsi/djerba/mutation_extended'
         args = [
-            test_subdir, # custom_dir
+            self.dataDir, # custom_dir
             'custom_gene_annotation.tsv', # gene_tsv
             'custom_sample_annotation.tsv', # sample_tsv
             os.path.join(maf_dir, 'somatic01.maf.txt.gz'), # maf
@@ -60,26 +60,33 @@ class TestBuilder(TestBase):
         with open(os.path.join(test_subdir, 'expected_djerba_config.json')) as expected_file:
             expected = json.loads(expected_file.read())
         # ordering of items in genetic_alterations is fixed in the builder code
-        expected[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = test_subdir
+        expected[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = self.dataDir
         expected[constants.GENETIC_ALTERATIONS_KEY][1]['input_directory'] = maf_dir
+        self.maxDiff = None
         self.assertEqual(config, expected, "Elba config matches expected values")
         # test writing a report with the generated Elba config
         out_name = 'elba_report_config.json'
-        out_dir = os.path.join(self.tmp.name, 'builder_test')
+        out_dir = os.path.join(self.tmp.name, 'djerba_builder_test')
         os.mkdir(out_dir)
         elba_report = report(config, self.sample_id, log_level=logging.ERROR)
+        elba_config = elba_report.get_report_config(replace_null=True)
+        with open(self.SCHEMA_PATH) as schema_file:
+            elba_schema = json.loads(schema_file.read())
+        jsonschema.validate(elba_config, elba_schema) # returns None if valid; raises exception otherwise
         elba_report.write_report_config(os.path.join(out_dir, out_name), force=False, strict=True)
-        checksums = {out_name: '9ff34457654edf49eef4104e23680710'}
+        checksums = {out_name: '62c2d852eef400443842e4c3f97d4cee'}
         self.verify_checksums(checksums, out_dir)
 
     def test_mismatched(self):
+        # test Djerba's check for inconsistent gene attributes
+        # data does not match the Elba config schema, but this is not required
         test_builder = builder(self.sample_id, log_level=logging.WARN)
         test_subdir = os.path.join(self.dataDir, 'from_command')
         maf_dir = '/.mounts/labs/gsiprojects/gsi/djerba/mutation_extended'
         args = [
             test_subdir, # custom_dir
             'mismatched_custom_gene_annotation.tsv', # gene_tsv
-            'custom_sample_annotation.tsv', # sample_tsv
+            'custom_sample_annotation_for_mismatch.tsv', # sample_tsv
             os.path.join(maf_dir, 'somatic01.maf.txt.gz'), # maf
             '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed', # bed
             'blca', # cancer_type
@@ -101,7 +108,7 @@ class TestBuilder(TestBase):
         os.mkdir(out_dir)
         elba_report = report(config, self.sample_id, log_level=logging.ERROR)
         elba_report.write_report_config(os.path.join(out_dir, out_name), force=False, strict=False)
-        checksums = {out_name: '1c280d3ad86c03e92f67adbbf5b8c74c'}
+        checksums = {out_name: '7bdbf6ae5c8bcfd132be9b887eb62c23'}
         self.verify_checksums(checksums, out_dir)
         # writing fails in strict mode, because gene attributes are inconsistent
         args = [config, self.sample_id, logging.CRITICAL]
@@ -170,8 +177,8 @@ class TestReport(TestBase):
             custom_report.write_report_config(report_path)
             self.assertTrue(os.path.exists(report_path), "JSON report exists")
         checksums = {
-            report_names[0]: '924d017ffd6f744b37c1c6650abd6aca',
-            report_names[1]: 'bf7f60aab3a144ffe112794aa2744208'
+            report_names[0]: 'f1ac0cf7f46b1b9ef6f16dbf87ff6121',
+            report_names[1]: '02e0e2c9c7628610516efad530e1efb1'
         }
         self.verify_checksums(checksums, out_dir)
         # test with incorrect sample headers in metadata
@@ -195,7 +202,7 @@ class TestReport(TestBase):
         mx_report = report(config, self.sample_id, self.SCHEMA_PATH, log_level=logging.ERROR)
         mx_report.write_report_config(report_path)
         self.assertTrue(os.path.exists(report_path), "JSON report exists")
-        checksum = {report_name: 'c37c953b63227730d4009c7a0ec56896'}
+        checksum = {report_name: '7998ed41b2617270dd1d4d924ed1554e'}
         self.verify_checksums(checksum, out_dir)
         args = [config, 'nonexistent sample', self.SCHEMA_PATH, logging.CRITICAL]
         self.assertRaises(DjerbaReportError, report, *args)
@@ -264,9 +271,9 @@ class TestScript(TestBase):
             data_2 = json.loads(file_2.read())
         self.assertDictEqual(data_1, data_2)
         checksums = {
-            'djerba_config.json': 'ec2370dc76e494894d24139e07a19d12',
-            'elba_config_1.json': 'c37c953b63227730d4009c7a0ec56896',
-            'elba_config_2.json': 'c37c953b63227730d4009c7a0ec56896'
+            'djerba_config.json': 'c6a99cb036d30642532a8f275468a1a4',
+            'elba_config_1.json': '62c2d852eef400443842e4c3f97d4cee',
+            'elba_config_2.json': '62c2d852eef400443842e4c3f97d4cee'
             }
         self.verify_checksums(checksums, out_dir)
 

@@ -99,6 +99,7 @@ class report(base):
         config[constants.SAMPLE_INFO_KEY] = self.sample.get_attributes()
         config[constants.GENE_METRICS_KEY] = gene_metrics_list
         config[constants.REVIEW_STATUS_KEY] = -1 # placeholder; will be updated by Elba
+        config[constants.SAMPLE_NAME_KEY] = self.sample.get_id()
         if replace_null:
             config = self.replace_null_with_string(config)
         if self.schema != None:

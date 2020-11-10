@@ -1,3 +1,0 @@
-SAMPLE_ID	SAMPLE_METRIC_1	SAMPLE_METRIC_2	SAMPLE_METRIC_3
-OCT-01-0472-CAP	87.3	101	"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor	incididunt ut labore et dolore magna aliqua."
-# this is a comment; the above line has a <tab> between 'tempor' and 'incididunt'

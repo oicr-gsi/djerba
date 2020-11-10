@@ -171,10 +171,11 @@ class custom_annotation(genetic_alteration):
             raise ValueError(msg)
         attributes = {}
         df = self._read_columns(tsv_path, column_headers, constants.SAMPLE_ID_KEY)
+        keys = df.columns.values.tolist() # use df instead of column_headers, to preserve column order
         for (sample_id, row) in df.iterrows():
             # row.to_list() is a workaround for int64 conversion; see comments in get_metrics_by_gene
             values = row.to_list()
-            attributes[sample_id] = {column_headers[i+1]: values[i] for i in range(len(values))}
+            attributes[sample_id] = {keys[i]: values[i] for i in range(len(values))}
         return attributes
 
     def _get_sample_ids(self):
