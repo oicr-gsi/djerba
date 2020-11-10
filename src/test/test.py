@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import hashlib, logging, json, os, random, subprocess, tempfile, unittest
+import hashlib, logging, json, jsonschema, os, random, subprocess, tempfile, unittest
 
 from djerba.metrics import mutation_extended_metrics
 from djerba.report import report, DjerbaReportError
@@ -45,7 +45,7 @@ class TestBuilder(TestBase):
         test_subdir = os.path.join(self.dataDir, 'from_command')
         maf_dir = '/.mounts/labs/gsiprojects/gsi/djerba/mutation_extended'
         args = [
-            test_subdir, # custom_dir
+            self.dataDir, # custom_dir
             'custom_gene_annotation.tsv', # gene_tsv
             'custom_sample_annotation.tsv', # sample_tsv
             os.path.join(maf_dir, 'somatic01.maf.txt.gz'), # maf
@@ -60,26 +60,33 @@ class TestBuilder(TestBase):
         with open(os.path.join(test_subdir, 'expected_djerba_config.json')) as expected_file:
             expected = json.loads(expected_file.read())
         # ordering of items in genetic_alterations is fixed in the builder code
-        expected[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = test_subdir
+        expected[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = self.dataDir
         expected[constants.GENETIC_ALTERATIONS_KEY][1]['input_directory'] = maf_dir
+        self.maxDiff = None
         self.assertEqual(config, expected, "Elba config matches expected values")
         # test writing a report with the generated Elba config
         out_name = 'elba_report_config.json'
         out_dir = os.path.join(self.tmp.name, 'djerba_builder_test')
         os.mkdir(out_dir)
         elba_report = report(config, self.sample_id, log_level=logging.ERROR)
+        elba_config = elba_report.get_report_config(replace_null=True)
+        with open(self.SCHEMA_PATH) as schema_file:
+            elba_schema = json.loads(schema_file.read())
+        jsonschema.validate(elba_config, elba_schema) # returns None if valid; raises exception otherwise
         elba_report.write_report_config(os.path.join(out_dir, out_name), force=False, strict=True)
-        checksums = {out_name: '3604fc417bfa0df19de521b6d896923f'}
+        checksums = {out_name: '62c2d852eef400443842e4c3f97d4cee'}
         self.verify_checksums(checksums, out_dir)
 
     def test_mismatched(self):
+        # test Djerba's check for inconsistent gene attributes
+        # data does not match the Elba config schema, but this is not required
         test_builder = builder(self.sample_id, log_level=logging.WARN)
         test_subdir = os.path.join(self.dataDir, 'from_command')
         maf_dir = '/.mounts/labs/gsiprojects/gsi/djerba/mutation_extended'
         args = [
             test_subdir, # custom_dir
             'mismatched_custom_gene_annotation.tsv', # gene_tsv
-            'custom_sample_annotation.tsv', # sample_tsv
+            'custom_sample_annotation_for_mismatch.tsv', # sample_tsv
             os.path.join(maf_dir, 'somatic01.maf.txt.gz'), # maf
             '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed', # bed
             'blca', # cancer_type
