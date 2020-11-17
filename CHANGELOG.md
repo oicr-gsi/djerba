@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## Unreleased
+### Added
+- GCGI-27: Upload config to Elba server
+  - Standalone script `upload.py`
+  - Upload options added to `djerba_from_command.py`
+  - New `uploader` class as parent of `report`
+
 ## v0.0.3: 2020-11-10
 ### Added
 - GCGI-55: Test Elba JSON output against the schema

@@ -1,5 +1,6 @@
 """Genome interpretation Clinical Report configuration"""
 
+import couchdb2
 import json
 import jsonschema
 import logging
@@ -12,15 +13,100 @@ from djerba.sample import sample
 from djerba.utilities import constants
 from djerba.utilities.base import base
 
+class uploader(base):
+    """Class to validate report config and upload to an Elba instance"""
 
-class report(base):
+    ID_KEY = "_id" # reserved key to identify CouchDB documents
 
-    """Class representing a genome interpretation Clinical Report in Elba"""
+    # Elba upload config
+    UPLOAD_CONFIG_FILENAME = 'upload_config.json'
+    DB_NAME_KEY = 'db_name'
+    DB_PORT_KEY = 'db_port'
+    DB_URL_KEY = 'db_url'
+
+    def __init__(self, schema_path=None, log_level=logging.WARNING, log_path=None):
+        self.logger = self.get_logger(log_level, "%s.%s" % (__name__, type(self).__name__), log_path)
+        self.schema = self.get_schema(schema_path)
+
+    def get_schema(self, schema_path):
+        if schema_path:
+            with open(schema_path, 'r') as schema_file:
+                self.schema = json.loads(schema_file.read())
+        else:
+            self.schema = None
+        return self.schema
+
+    def upload(self, config_input, upload_config=None, report_id=None):
+        """Upload report configuration to an Elba database"""
+        config = config_input.copy() # avoid modifying the original input as a side effect
+        if not upload_config:
+            upload_config_path = os.path.join(
+                os.path.dirname(__file__),
+                constants.DATA_DIRNAME,
+                self.UPLOAD_CONFIG_FILENAME
+            )
+            self.logger.info("Loading default Elba DB config from %s" % upload_config_path)
+            with open(upload_config_path, 'r') as in_file:
+                upload_config = json.loads(in_file.read())
+        db_url = upload_config.get(self.DB_URL_KEY)
+        db_port = upload_config.get(self.DB_PORT_KEY)
+        db_name = upload_config.get(self.DB_NAME_KEY)
+        db_user = os.environ.get(constants.ELBA_DB_USER)
+        db_pass = os.environ.get(constants.ELBA_DB_PASSWORD)
+        if not (db_user and db_pass):
+            msg = "Username and password for Elba database must be stored as environment variables "+\
+                  "%s and %s, respectively." % (constants.ELBA_DB_USER, constants.ELBA_DB_PASSWORD)
+            self.logger.error(msg)
+            raise DjerbaReportError(msg)
+        db_req = "http://%s:%s@%s:%s/" % (db_user, db_pass, db_url, db_port)
+        try:
+            db = couchdb2.Server(db_req).get(db_name)
+        except Error as err:
+            msg = "Failed to open Elba database '{0}' at {1}: {2}".format(db_name, db_url, err)
+            self.logger.error(msg)
+            raise DjerbaReportError(msg) from err
+        self.logger.info("Opened connection to Elba database at {}".format(db_url))
+        # check the ID_KEY entry; if not present, CouchDB will create one
+        if self.ID_KEY in config:
+            msg = "Elba config is not permitted to use reserved key %s" % self.ID_KEY
+            self.logger.error(msg)
+            raise DjerbaReportError(msg)
+        elif report_id:
+            config[self.ID_KEY] = report_id
+            self.logger.debug("Using report ID '%s' for Elba database" % report_id)
+        else:
+            self.logger.debug("Using automatically-generated default ID in Elba database")
+        db.put(config)
+        self.logger.info("Uploaded config to Elba server")
+
+    def validate(self, config):
+        if self.schema:
+            try:
+                jsonschema.validate(config, self.schema)
+                self.logger.info("Elba config is valid with respect to schema")
+            except (ValidationError, SchemaError) as err:
+                msg = "Elba config is invalid with respect to schema"
+                self.logger.error("{}: {}".format(msg, err))
+                debug_msg = "Invalid Elba config output:\n"+\
+                            json.dumps(config, sort_keys=True, indent=4)
+                self.logger.debug(debug_msg)
+                raise
+        else:
+            self.logger.info("Elba config schema not available; validation omitted")
+
+class report(uploader):
+
+    """
+    Class representing a genome interpretation Clinical Report in Elba
+
+    Inherits upload and validation methods from the parent class
+    """
 
     NULL_STRING = "NA"
 
     def __init__(self, config, sample_id=None, schema_path=None, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, "%s.%s" % (__name__, type(self).__name__), log_path)
+        self.schema = self.get_schema(schema_path)
         # configure the sample for the report
         if sample_id==None: # only one sample
             if len(config[constants.SAMPLES_KEY])==1:
@@ -49,13 +135,8 @@ class report(base):
         self.alterations = [ # study_id is only required for cBioPortal, not Elba
             ga_factory.create_instance(conf, study_id=None) for conf in ga_configs
         ]
-        if schema_path:
-            with open(schema_path, 'r') as schema_file:
-                self.schema = json.loads(schema_file.read())
-        else:
-            self.schema = None
 
-    def get_report_config(self, replace_null, strict=True):
+    def get_report_config(self, replace_null=True, strict=True):
         """Construct the reporting config data structure"""
         # for each genetic alteration, find metric values at sample/gene level
         all_metrics_by_gene = {}
@@ -102,11 +183,7 @@ class report(base):
         config[constants.SAMPLE_NAME_KEY] = self.sample.get_id()
         if replace_null:
             config = self.replace_null_with_string(config)
-        if self.schema != None:
-            self.validate(config) # raises an error if not valid
-            self.logger.info("Elba config output is valid with respect to schema")
-        else:
-            self.logger.info("Elba config schema not supplied; validation of output omitted")
+        self.validate(config)
         return config
 
     def is_null(self, val):
@@ -128,24 +205,13 @@ class report(base):
                 config[constants.SAMPLE_INFO_KEY][key] = self.NULL_STRING
         return config
 
-    def validate(self, config):
-        try:
-            jsonschema.validate(config, self.schema)
-        except (ValidationError, SchemaError) as err:
-            msg = "Elba config output is invalid with respect to schema"
-            self.logger.error("{}: {}".format(msg, err))
-            self.logger.debug("Invalid Elba config output:\n"+json.dumps(config, sort_keys=True, indent=4))
-            raise
-
-    def write_report_config(self, out_path, force=False, strict=True, replace_null=True):
+    def write(self, config, out_path, force=False):
         """
         Write report config JSON to the given path, or stdout if the path is '-'.
 
         - If force is True, overwrite any existing output.
         - If replace_null is True, replace any None/NaN values with a standard string.
         """
-        # get config before opening an output file, in case of errors
-        config = self.get_report_config(replace_null, strict)
         if out_path=='-':
             out_file = sys.stdout
         else:
