@@ -69,7 +69,7 @@ Input data types for Djerba are as follows:
 
 There are three scripts to run Djerba operations:
 - [djerba.py](./src/bin/djerba.py) is general-purpose, and requires a correctly formatted Djerba config file. It can be used to generate Elba config; generate a cBioPortal reporting directory; or validate Djerba config before running.
-- [djerba_from_config.py](./src/bin/djerba_from_config.py) is a specialised script to generate Elba config from command-line arguments only, without the need for a config file. It can also upload the resulting config to an Elba server.
+- [djerba_from_command.py](./src/bin/djerba_from_command.py) is a specialised script to generate Elba config from command-line arguments only, without the need for a config file. It can also upload the resulting config to an Elba server.
 - [upload.py](./src/bin/upload.py) is even more specialised; it uploads existing Elba config to a server. Optionally, it can validate the config against a schema before upload.
 
 Run any script with `--help` for a full description of command-line arguments and options.
