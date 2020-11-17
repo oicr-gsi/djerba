@@ -72,6 +72,8 @@ There are two scripts to run Djerba:
 
 Run either script with `--help` for a full description of command-line arguments and options.
 
+For uploading report data to an Elba server instance, the `ELBA_DB_USER` and `ELBA_DB_PASSWORD` environment variables to be set to appropriate values.
+
 ## Development
 
 ### Conventions
