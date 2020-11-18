@@ -6,6 +6,8 @@
   - Standalone script `upload.py`
   - Upload options added to `djerba_from_command.py`
   - New `uploader` class as parent of `report`
+- GCGI-67: Input data from SEG files
+  - Computes the FRACTION_GENOME_ALTERED metric
 
 ## v0.0.3: 2020-11-10
 ### Added

@@ -14,6 +14,7 @@ import logging
 import os
 import pandas as pd
 import random
+import re
 import tempfile
 import yaml
 from djerba.metrics import mutation_extended_metrics
@@ -111,7 +112,8 @@ class genetic_alteration_factory(base):
 
     CLASSNAMES = {
         constants.CUSTOM_ANNOTATION_TYPE: 'custom_annotation',
-        constants.MUTATION_TYPE: 'mutation_extended'
+        constants.MUTATION_TYPE: 'mutation_extended',
+        constants.SEGMENTED_TYPE: 'segmented'
     }
 
     def __init__(self, log_level=logging.WARN, log_path=None):
@@ -401,3 +403,42 @@ class mutation_extended(genetic_alteration):
     def write(self, out_dir):
         self.write_data(out_dir)
         self.write_meta(out_dir)
+
+class segmented(genetic_alteration):
+    """
+    Segmented data format from cBioPortal; input is SEG files.
+
+    Currently supports Elba output only, not cBioPortal.
+    """
+
+    MINIMUM_ABS_SEG_MEAN = 0.2
+
+    def _find_all_sample_attributes(self):
+        """Find FGA for each SEG file"""
+        attributes = {}
+        for sample_id in self.sample_ids:
+            seg_path = os.path.join(self.input_directory, self.input_files[sample_id])
+            sample_attributes = {
+                constants.FRACTION_GENOME_ALTERED_KEY: self._find_fga(seg_path, sample_id)
+            }
+            attributes[sample_id] = sample_attributes
+        return attributes
+
+    def _find_fga(self, seg_path, sample_id):
+        seg = pd.read_csv(seg_path, sep='\t', skiprows= 0)
+        # ID column of .seg file may be of the form ${SAMPLE_ID}.tumour.bam.varscanSomatic
+        # So, select rows where the ID column starts with $SAMPLE_ID
+        seg_sample = seg.loc[seg.ID.str.contains("^"+sample_id)]
+        seg_alt = seg_sample.loc[abs(seg_sample["seg.mean"]) > self.MINIMUM_ABS_SEG_MEAN]
+        denom = sum(seg_sample['loc.end'] - seg_sample['loc.start'])
+        try:
+            fga = sum(seg_alt['loc.end'] - seg_alt['loc.start'])/denom
+        except ZeroDivisionError:
+            self.logger.warning('FGA interval has zero width; FRACTION_GENOME_ALTERED is NA')
+            fga = "NA"
+        return fga
+
+    def get_metrics_by_gene(self, sample_id):
+        """Return an empty dictionary, because SEG data has no gene-level metrics"""
+        self.logger.debug("SEG data has no gene-level metrics, only sample-level; returning empty dictionary")
+        return {}
