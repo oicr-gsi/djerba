@@ -14,7 +14,6 @@ import logging
 import os
 import pandas as pd
 import random
-import re
 import tempfile
 import yaml
 from djerba.metrics import mutation_extended_metrics
