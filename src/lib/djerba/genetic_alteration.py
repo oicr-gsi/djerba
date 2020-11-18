@@ -426,8 +426,8 @@ class segmented(genetic_alteration):
     def _find_fga(self, seg_path, sample_id):
         seg = pd.read_csv(seg_path, sep='\t', skiprows= 0)
         # ID column of .seg file may be of the form ${SAMPLE_ID}.tumour.bam.varscanSomatic
-        # So, select rows where the ID column starts with $SAMPLE_ID
-        seg_sample = seg.loc[seg.ID.str.contains("^"+sample_id)]
+        # Match against $SAMPLE_ID, followed by a dot, followed by a letter
+        seg_sample = seg.loc[seg.ID.str.match("^"+sample_id+"\.[a-zA-Z]")]
         seg_alt = seg_sample.loc[abs(seg_sample["seg.mean"]) > self.MINIMUM_ABS_SEG_MEAN]
         denom = sum(seg_sample['loc.end'] - seg_sample['loc.start'])
         try:
