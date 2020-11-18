@@ -133,7 +133,7 @@ def main(args):
     if args.mode == ELBA:
         validator(log_level, args.log_path).validate(config, args.sample)
         djerba_report = report(config, args.sample, args.elba_schema, log_level, args.log_path)
-        djerba_report.write_report_config(args.out, args.force)
+        djerba_report.write(djerba_report.get_report_config(), args.out, args.force)
     elif args.mode == CBIOPORTAL:
         validator(log_level, args.log_path).validate(config, None, log_level)
         djerba_study = study(config, log_level, args.log_path)

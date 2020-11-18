@@ -27,6 +27,8 @@ SAMPLE_DATATYPE = 'SAMPLE_ATTRIBUTES'
 MAF_DATATYPE = 'MAF'
 
 # keys for Elba report generation
+ELBA_DB_USER = 'ELBA_DB_USER'
+ELBA_DB_PASSWORD = 'ELBA_DB_PASSWORD'
 
 ## keys for sample attributes
 SAMPLE_ID_KEY = 'SAMPLE_ID'

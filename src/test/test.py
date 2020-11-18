@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 
-import hashlib, logging, json, jsonschema, os, random, subprocess, tempfile, unittest
+import couchdb2, hashlib, logging, json, jsonschema, os, random, subprocess, tempfile, unittest
+
+from unittest.mock import Mock, patch
 
 from djerba.metrics import mutation_extended_metrics
 from djerba.report import report, DjerbaReportError
@@ -73,7 +75,7 @@ class TestBuilder(TestBase):
         with open(self.SCHEMA_PATH) as schema_file:
             elba_schema = json.loads(schema_file.read())
         jsonschema.validate(elba_config, elba_schema) # returns None if valid; raises exception otherwise
-        elba_report.write_report_config(os.path.join(out_dir, out_name), force=False, strict=True)
+        elba_report.write(elba_config, os.path.join(out_dir, out_name))
         checksums = {out_name: '62c2d852eef400443842e4c3f97d4cee'}
         self.verify_checksums(checksums, out_dir)
 
@@ -107,14 +109,13 @@ class TestBuilder(TestBase):
         out_dir = os.path.join(self.tmp.name, 'builder_test_mismatch')
         os.mkdir(out_dir)
         elba_report = report(config, self.sample_id, log_level=logging.ERROR)
-        elba_report.write_report_config(os.path.join(out_dir, out_name), force=False, strict=False)
+        elba_report.write(elba_report.get_report_config(strict=False), os.path.join(out_dir, out_name))
         checksums = {out_name: '7bdbf6ae5c8bcfd132be9b887eb62c23'}
         self.verify_checksums(checksums, out_dir)
         # writing fails in strict mode, because gene attributes are inconsistent
-        args = [config, self.sample_id, logging.CRITICAL]
         elba_report_strict = report(config, self.sample_id, log_level=logging.CRITICAL)
-        args = [os.path.join(out_dir, out_name), True, True] # force=True, strict=True
-        self.assertRaises(DjerbaReportError, elba_report_strict.write_report_config, *args)
+        args = []
+        self.assertRaises(DjerbaReportError, elba_report_strict.get_report_config, *args)
 
 class TestMetrics(TestBase):
     """Tests for genetic alteration metrics"""
@@ -174,7 +175,7 @@ class TestReport(TestBase):
             config[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = self.dataDir
             report_path = os.path.join(out_dir, report_names[i])
             custom_report = report(config, self.sample_id, self.SCHEMA_PATH, log_level=logging.ERROR)
-            custom_report.write_report_config(report_path)
+            custom_report.write(custom_report.get_report_config(), report_path)
             self.assertTrue(os.path.exists(report_path), "JSON report exists")
         checksums = {
             report_names[0]: 'f1ac0cf7f46b1b9ef6f16dbf87ff6121',
@@ -200,23 +201,42 @@ class TestReport(TestBase):
         config[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = self.dataDir
         report_path = os.path.join(out_dir, report_name)
         mx_report = report(config, self.sample_id, self.SCHEMA_PATH, log_level=logging.ERROR)
-        mx_report.write_report_config(report_path)
+        mx_report.write(mx_report.get_report_config(), report_path)
         self.assertTrue(os.path.exists(report_path), "JSON report exists")
         checksum = {report_name: '7998ed41b2617270dd1d4d924ed1554e'}
         self.verify_checksums(checksum, out_dir)
         args = [config, 'nonexistent sample', self.SCHEMA_PATH, logging.CRITICAL]
         self.assertRaises(DjerbaReportError, report, *args)
 
+    def test_upload(self):
+        """Test uploading the report JSON to mock Elba instances"""
+        # This tests the child 'report' class; TODO add a separate test for the parent 'uploader' class
+        with open(os.path.join(self.dataDir, 'report_config_mx.json')) as configFile:
+            djerba_config = json.loads(configFile.read()) # same config as test_mx
+        djerba_config[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = self.dataDir
+        mx_report = report(djerba_config, self.sample_id, self.SCHEMA_PATH, log_level=logging.ERROR)
+        db_name = 'cgi_report'
+        elba_config = mx_report.get_report_config(replace_null=True)
+        os.environ[constants.ELBA_DB_USER] = 'test_elba_user'
+        os.environ[constants.ELBA_DB_PASSWORD] = 'test_elba_password'
+        with patch('couchdb2.Server') as server_class, self.assertLogs(mx_report.logger) as test_log:
+            mock_server_instance = server_class.return_value
+            mock_db_instance = Mock()
+            mock_server_instance.get.return_value = mock_db_instance
+            mx_report.upload(elba_config)
+            mock_server_instance.get.assert_called_with(db_name)
+            mock_db_instance.put.assert_called_with(elba_config)
+            self.assertEqual(test_log.output.pop(), 'INFO:djerba.report.report:Uploaded config to Elba server')
 
-class TestScript(TestBase):
-    """Tests of command-line script"""
+class TestScripts(TestBase):
+    """Tests of command-line scripts"""
 
     def setUp(self):
         super().setUp()
         self.testDir = os.path.dirname(os.path.realpath(__file__))
         self.dataDir = os.path.realpath(os.path.join(self.testDir, 'data'))
         self.binDir =  os.path.realpath(os.path.join(self.testDir, os.pardir, 'bin'))
-        self.scriptNames = ['djerba.py', 'djerba_from_command.py']
+        self.scriptNames = ['djerba.py', 'djerba_from_command.py', 'upload.py']
 
     def test_compile(self):
         """Minimal test that command-line scripts compile"""
