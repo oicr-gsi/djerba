@@ -33,7 +33,8 @@ class builder(base):
         self.log_path = log_path
         self.sample_id = sample_id
     
-    def build(self, custom_dir, gene_tsv, sample_tsv, maf, bed, cancer_type, oncokb_token, tgca, vcf):
+    def build(self, custom_dir, gene_tsv, sample_tsv, maf, bed,
+              cancer_type, oncokb_token, tgca, vcf, seg):
         """Build a config data structure from the given arguments"""
         config = {}
         samples = [
@@ -45,6 +46,8 @@ class builder(base):
         genetic_alterations.append(custom_config)
         mutex_config = self.build_mutex(maf, bed, cancer_type, oncokb_token, tgca, vcf)
         genetic_alterations.append(mutex_config)
+        seg_config = self.build_segmented(seg)
+        genetic_alterations.append(seg_config)
         config[constants.GENETIC_ALTERATIONS_KEY] = genetic_alterations
         self.logger.info("Djerba configuration complete; validating against schema")
         validator(self.logger.getEffectiveLevel(), self.log_path).validate(config, self.sample_id)
@@ -86,6 +89,20 @@ class builder(base):
                 self.TCGA_PATH_KEY: tcga,
                 self.FILTER_VCF_KEY: vcf
             }
+        }
+        return config
+
+    def build_segmented(self, seg):
+        """Create a data structure for SEGMENTED config"""
+        [seg_dir, seg_file] = os.path.split(seg)
+        config = {
+            constants.DATATYPE_KEY: constants.SEG_DATATYPE,
+            constants.GENETIC_ALTERATION_TYPE_KEY: constants.SEGMENTED_TYPE,
+            self.INPUT_DIRECTORY_KEY: seg_dir,
+            self.INPUT_FILES_KEY: {
+                self.sample_id: seg_file
+            },
+            self.METADATA_KEY: {}
         }
         return config
 

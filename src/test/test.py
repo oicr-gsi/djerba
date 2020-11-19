@@ -46,6 +46,7 @@ class TestBuilder(TestBase):
         test_builder = builder(self.sample_id, log_level=logging.WARN)
         test_subdir = os.path.join(self.dataDir, 'from_command')
         maf_dir = '/.mounts/labs/gsiprojects/gsi/djerba/mutation_extended'
+        seg_dir = '/.mounts/labs/gsiprojects/gsi/djerba/segmented'
         args = [
             self.dataDir, # custom_dir
             'custom_gene_annotation.tsv', # gene_tsv
@@ -55,7 +56,8 @@ class TestBuilder(TestBase):
             'blca', # cancer_type
             None, # oncokb_token
             '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt', # tcga
-            '/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz'
+            '/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz',
+            os.path.join(seg_dir, 'OCT-01-0472-CAP.tumour.bam.varscanSomatic_Total_CN.seg')
         ]
         # generate the Elba config
         config = test_builder.build(*args)
@@ -64,7 +66,8 @@ class TestBuilder(TestBase):
         # ordering of items in genetic_alterations is fixed in the builder code
         expected[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = self.dataDir
         expected[constants.GENETIC_ALTERATIONS_KEY][1]['input_directory'] = maf_dir
-        self.maxDiff = None
+        expected[constants.GENETIC_ALTERATIONS_KEY][2]['input_directory'] = seg_dir
+        #self.maxDiff = None # uncomment to show unlimited JSON diff
         self.assertEqual(config, expected, "Elba config matches expected values")
         # test writing a report with the generated Elba config
         out_name = 'elba_report_config.json'
@@ -76,7 +79,7 @@ class TestBuilder(TestBase):
             elba_schema = json.loads(schema_file.read())
         jsonschema.validate(elba_config, elba_schema) # returns None if valid; raises exception otherwise
         elba_report.write(elba_config, os.path.join(out_dir, out_name))
-        checksums = {out_name: '62c2d852eef400443842e4c3f97d4cee'}
+        checksums = {out_name: '2e3c98ec62faede34b2d1c6c98067493'}
         self.verify_checksums(checksums, out_dir)
 
     def test_mismatched(self):
@@ -85,6 +88,7 @@ class TestBuilder(TestBase):
         test_builder = builder(self.sample_id, log_level=logging.WARN)
         test_subdir = os.path.join(self.dataDir, 'from_command')
         maf_dir = '/.mounts/labs/gsiprojects/gsi/djerba/mutation_extended'
+        seg_dir = '/.mounts/labs/gsiprojects/gsi/djerba/segmented'
         args = [
             test_subdir, # custom_dir
             'mismatched_custom_gene_annotation.tsv', # gene_tsv
@@ -94,7 +98,8 @@ class TestBuilder(TestBase):
             'blca', # cancer_type
             None, # oncokb_token
             '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt', # tcga
-            '/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz'
+            '/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz',
+            os.path.join(seg_dir, 'OCT-01-0472-CAP.tumour.bam.varscanSomatic_Total_CN.seg')
         ]
         # generate the Elba config
         config = test_builder.build(*args)
@@ -103,6 +108,7 @@ class TestBuilder(TestBase):
         # ordering of items in genetic_alterations is fixed in the builder code
         expected[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = test_subdir
         expected[constants.GENETIC_ALTERATIONS_KEY][1]['input_directory'] = maf_dir
+        expected[constants.GENETIC_ALTERATIONS_KEY][2]['input_directory'] = seg_dir
         self.assertEqual(config, expected, "Elba config matches expected values")
         # test writing a report with the generated Elba config
         out_name = 'elba_report_config.json'
@@ -110,7 +116,7 @@ class TestBuilder(TestBase):
         os.mkdir(out_dir)
         elba_report = report(config, self.sample_id, log_level=logging.ERROR)
         elba_report.write(elba_report.get_report_config(strict=False), os.path.join(out_dir, out_name))
-        checksums = {out_name: '7bdbf6ae5c8bcfd132be9b887eb62c23'}
+        checksums = {out_name: '9a0f3269d02576aec810b636d37812c1'}
         self.verify_checksums(checksums, out_dir)
         # writing fails in strict mode, because gene attributes are inconsistent
         elba_report_strict = report(config, self.sample_id, log_level=logging.CRITICAL)
@@ -208,6 +214,22 @@ class TestReport(TestBase):
         args = [config, 'nonexistent sample', self.SCHEMA_PATH, logging.CRITICAL]
         self.assertRaises(DjerbaReportError, report, *args)
 
+    def test_seg(self):
+        """Test report with 'seg' segmented input for FGA metric"""
+        report_name = 'report_seg.json'
+        out_dir = os.path.join(self.tmp.name, 'test_report_seg')
+        os.mkdir(out_dir)
+        with open(os.path.join(self.dataDir, 'report_config_seg.json')) as configFile:
+            config = json.loads(configFile.read())
+        # get custom config input from the local test directory
+        config[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = self.dataDir
+        report_path = os.path.join(out_dir, report_name)
+        seg_report = report(config, self.sample_id, self.SCHEMA_PATH, log_level=logging.ERROR)
+        seg_report.write(seg_report.get_report_config(), report_path)
+        self.assertTrue(os.path.exists(report_path), "JSON report exists")
+        checksum = {report_name: '1cfe83de1bb545efb7f6b617739cbe27'}
+        self.verify_checksums(checksum, out_dir)
+        
     def test_upload(self):
         """Test uploading the report JSON to mock Elba instances"""
         # This tests the child 'report' class; TODO add a separate test for the parent 'uploader' class
@@ -272,6 +294,8 @@ class TestScripts(TestBase):
             '--tcga', '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt',
             '--vcf',
             '/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz',
+            '--seg',
+            '/.mounts/labs/gsiprojects/gsi/djerba/segmented/OCT-01-0472-CAP.tumour.bam.varscanSomatic_Total_CN.seg',
             '--out', output_path_1
         ]
         subprocess.run(args_1)
@@ -291,9 +315,9 @@ class TestScripts(TestBase):
             data_2 = json.loads(file_2.read())
         self.assertDictEqual(data_1, data_2)
         checksums = {
-            'djerba_config.json': 'c6a99cb036d30642532a8f275468a1a4',
-            'elba_config_1.json': '62c2d852eef400443842e4c3f97d4cee',
-            'elba_config_2.json': '62c2d852eef400443842e4c3f97d4cee'
+            'djerba_config.json': '6ebc01c3f4f3c017340a094a0176b261',
+            'elba_config_1.json': '2e3c98ec62faede34b2d1c6c98067493',
+            'elba_config_2.json': '2e3c98ec62faede34b2d1c6c98067493'
             }
         self.verify_checksums(checksums, out_dir)
 
