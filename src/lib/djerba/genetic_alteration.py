@@ -14,6 +14,7 @@ import logging
 import os
 import pandas as pd
 import random
+import re
 import tempfile
 import yaml
 from djerba.metrics import mutation_extended_metrics
@@ -426,8 +427,10 @@ class segmented(genetic_alteration):
     def _find_fga(self, seg_path, sample_id):
         seg = pd.read_csv(seg_path, sep='\t', skiprows= 0)
         # ID column of .seg file may be of the form ${SAMPLE_ID}.tumour.bam.varscanSomatic
-        # Match against $SAMPLE_ID, followed by a dot, followed by a letter
-        seg_sample = seg.loc[seg.ID.str.match("^"+sample_id+"\.[a-zA-Z]")]
+        # Match against $SAMPLE_ID, followed by end-of-string OR a dot followed by a word character
+        # Escape the $SAMPLE_ID in case it contains regex metacharacters
+        # This will not catch pathological cases, eg. two samples with respective IDs "foo" and "foo.bar"
+        seg_sample = seg.loc[seg.ID.str.match(re.escape(sample_id)+"(\.\w|$)")]
         seg_alt = seg_sample.loc[abs(seg_sample["seg.mean"]) > self.MINIMUM_ABS_SEG_MEAN]
         denom = sum(seg_sample['loc.end'] - seg_sample['loc.start'])
         try:
