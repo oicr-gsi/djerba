@@ -93,6 +93,11 @@ def get_parser():
     mutex.add_argument('--oncokb-token', metavar='TOKEN', help="OncoKB token", required=False)
     mutex.add_argument('--tcga', metavar='PATH', help="TCGA reference file", required=True)
     mutex.add_argument('--vcf', metavar='PATH', help="Filter VCF file", required=True)
+
+    # SEGMENTED argument
+    segmented = parser.add_argument_group("seg", "Parameters for SEGMENTED genetic alteration")
+    segmented.add_argument('--seg', metavar='PATH', help="SEG data file", required=True)
+
     return parser
 
 def validate_paths(args):
@@ -105,7 +110,8 @@ def validate_paths(args):
         args.tcga,
         args.vcf,
         os.path.join(args.custom_dir, args.gene_tsv),
-        os.path.join(args.custom_dir, args.sample_tsv)
+        os.path.join(args.custom_dir, args.sample_tsv),
+        args.seg
     ]
     for i in range(len(input_paths)):
         input_path = input_paths[i]
@@ -151,7 +157,8 @@ def main(args):
         args.cancer_type,
         args.oncokb_token,
         args.tcga,
-        args.vcf
+        args.vcf,
+        args.seg
     )
     if not (args.conf or args.upload or args.upload_config or args.out):
         msg = "No upload or output arguments specified. Exiting without further action."
