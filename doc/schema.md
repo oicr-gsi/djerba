@@ -1,5 +1,7 @@
 # Djerba JSON schema
 
+## Introduction
+
 Djerba validates input config files against a [JSON schema document](../src/lib/djerba/data/input_schema.json), in the format defined by [json-schema.org](https://json-schema.org).
 
 Validation is automatically run by the command-line script [djerba.py](../src/bin/djerba.py) in `elba` or `cbioportal` modes; and can be run as a standalone operation by using `validate` mode.
@@ -41,3 +43,7 @@ The JSON objects in the `genetic_alterations` array are used to construct instan
 ### Optional entries
 
 - `workflow_run_id`: An identifier for the workflow run which produced the genetic alteration data.
+
+## Related: Elba schema
+
+Djerba also uses a JSON schema to validate output for Elba. This schema is described in the [elba-config-schema](https://github.com/oicr-gsi/elba-config-schema) repository.

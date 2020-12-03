@@ -6,8 +6,18 @@
   - Standalone script `upload.py`
   - Upload options added to `djerba_from_command.py`
   - New `uploader` class as parent of `report`
-- GCGI-67: Input data from SEG files
-  - Computes the FRACTION_GENOME_ALTERED metric
+- GCGI-30: Expand MAF processing to populate the following fields:
+  - `Gene`
+  - `Chromosome`
+  - `Protein_Change`
+  - `Allele_Fraction_Percentile`
+  - `FDA_Approved_Treatment`
+  - `OncoKB`
+  - `Variant_Reads_And_Total Reads`
+  - `TMB_PER_MB`
+  - `COSMIC_SIGS`: Placeholder only
+- GCGI-67: Input data from SEG files for the FRACTION_GENOME_ALTERED metric
+
 
 ## v0.0.3: 2020-11-10
 ### Added

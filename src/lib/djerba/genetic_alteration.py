@@ -17,7 +17,7 @@ import random
 import re
 import tempfile
 import yaml
-from djerba.metrics import mutation_extended_metrics
+from djerba.metrics import mutation_extended_gene_metrics, mutation_extended_sample_metrics
 from djerba.utilities import constants
 from djerba.utilities.base import base
 from djerba.utilities.tools import system_tools
@@ -38,6 +38,7 @@ class genetic_alteration(base):
     
     def __init__(self, config, study_id=None, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, "%s.%s" % (__name__, type(self).__name__), log_path)
+        self.log_path = log_path
         self.study_id = study_id # required for cBioPortal, not for Elba
         try:
             self.genetic_alteration_type = config[constants.GENETIC_ALTERATION_TYPE_KEY]
@@ -131,6 +132,7 @@ class genetic_alteration_factory(base):
             self.logger.error(msg)
             raise ValueError(msg)
         klass = globals().get(classname)
+        self.logger.debug("Created instance of %s" % classname)
         return klass(config, study_id, self.log_level, self.log_path)
 
 class custom_annotation(genetic_alteration):
@@ -272,10 +274,6 @@ class mutation_extended(genetic_alteration):
     TCGA_PATH_KEY = 'tcga_path'
     CANCER_TYPE_KEY = 'cancer_type'
 
-    # MAF column headers
-    HUGO_SYMBOL = 'Hugo_Symbol'
-    CHROMOSOME = 'Chromosome'
-
     def _find_all_sample_attributes(self):
         # TODO 'cancer_type' appears in study-level config. Could read it from there and
         # insert into the genetic_alteration config structure, instead of having duplicate
@@ -290,9 +288,17 @@ class mutation_extended(genetic_alteration):
         attributes = {}
         for sample_id in self.sample_ids:
             maf_path = os.path.join(self.input_directory, self.input_files[sample_id])
-            mx_metrics = mutation_extended_metrics(maf_path, bed_path, tcga_path, cancer_type)
+            mx_metrics = mutation_extended_sample_metrics(
+                maf_path,
+                bed_path,
+                tcga_path,
+                cancer_type,
+                self.logger.getEffectiveLevel(),
+                self.log_path
+            )
             sample_attributes = {
-                constants.TMB_PER_MB_KEY: mx_metrics.get_tmb()
+                constants.TMB_PER_MB_KEY: mx_metrics.get_tmb(),
+                constants.COSMIC_SIGS_KEY: mx_metrics.get_cosmic_sigs()
             }
             attributes[sample_id] = sample_attributes
         return attributes
@@ -322,17 +328,22 @@ class mutation_extended(genetic_alteration):
         return gene_names
 
     def get_metrics_by_gene(self, sample_id):
-        """Find gene-level mutation metrics. Chromosome name only for now; can add others."""
-        df = pd.read_csv(
+        """
+        Find gene-level mutation fields using the mutation_extended_gene_metrics class:
+        - Gene
+        - Chromosome
+        - Protein Change
+        - Variant Reads And Total Reads
+        - Allele Fraction Percentile
+        - OncoKB
+        - FDA Approved Treatment
+        """
+        self.logger.debug("Finding mutation_extended gene metrics")
+        return mutation_extended_gene_metrics(
             self.get_input_path(sample_id),
-            delimiter="\t",
-            usecols=[self.HUGO_SYMBOL, self.CHROMOSOME],
-            comment="#"
-        )
-        metrics_by_gene = {}
-        for index, row in df.iterrows():
-            metrics_by_gene[row[self.HUGO_SYMBOL]] = {self.CHROMOSOME: row[self.CHROMOSOME]}
-        return metrics_by_gene
+            self.logger.getEffectiveLevel(),
+            self.log_path
+        ).get_metrics()
 
     def write_data(self, out_dir):
         """cBioPortal. Write mutation data table.
