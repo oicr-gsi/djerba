@@ -4,7 +4,7 @@ import couchdb2, hashlib, logging, json, jsonschema, os, random, subprocess, tem
 
 from unittest.mock import Mock, patch
 
-from djerba.metrics import mutation_extended_metrics
+from djerba.metrics import mutation_extended_gene_metrics, mutation_extended_sample_metrics
 from djerba.report import report, DjerbaReportError
 from djerba.sample import sample
 from djerba.study import study
@@ -79,7 +79,7 @@ class TestBuilder(TestBase):
             elba_schema = json.loads(schema_file.read())
         jsonschema.validate(elba_config, elba_schema) # returns None if valid; raises exception otherwise
         elba_report.write(elba_config, os.path.join(out_dir, out_name))
-        checksums = {out_name: '2e3c98ec62faede34b2d1c6c98067493'}
+        checksums = {out_name: '6ff793481509f26fdf9ea5e3031a364e'}
         self.verify_checksums(checksums, out_dir)
 
     def test_mismatched(self):
@@ -116,36 +116,52 @@ class TestBuilder(TestBase):
         os.mkdir(out_dir)
         elba_report = report(config, self.sample_id, log_level=logging.ERROR)
         elba_report.write(elba_report.get_report_config(strict=False), os.path.join(out_dir, out_name))
-        checksums = {out_name: '9a0f3269d02576aec810b636d37812c1'}
+        checksums = {out_name: '65ce8f022f03e0b3f7cf7787b0dfe436'}
         self.verify_checksums(checksums, out_dir)
         # writing fails in strict mode, because gene attributes are inconsistent
         elba_report_strict = report(config, self.sample_id, log_level=logging.CRITICAL)
         args = []
         self.assertRaises(DjerbaReportError, elba_report_strict.get_report_config, *args)
 
+
 class TestMetrics(TestBase):
     """Tests for genetic alteration metrics"""
 
     def setUp(self):
         self.testDir = os.path.dirname(os.path.realpath(__file__))
-        self.data_dir = '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/'
+        self.data_dir = '/.mounts/labs/gsiprojects/gsi/djerba/mutation_extended'
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_mx_metrics_test_')
+
+    def test_mx_gene_metrics(self):
+        """Test gene-level mutation extended metrics"""
+        subdir = 'gene_metrics'
+        maf_path = os.path.join(self.data_dir, subdir, 'data_mutations_extended.txt')
+        mx_gene_metrics = mutation_extended_gene_metrics(maf_path)
+        metrics = mx_gene_metrics.get_metrics()
+        out_dir = os.path.join(self.tmp.name, 'mx_gene_metrics')
+        os.mkdir(out_dir)
+        out_name = 'mx_gene_metrics.json'
+        with open(os.path.join(out_dir, out_name), 'w') as out_file:
+            print(json.dumps(metrics, indent=4, sort_keys=True), file=out_file)
+        checksums = {out_name: '559f46232347a17425577ed347390bf8'}
+        self.verify_checksums(checksums, out_dir)
 
     def test_mx_tmb(self):
         """Test the Tumor Mutation Burden metric"""
-        maf_path = os.path.join(self.data_dir, 'tmb', 'somatic.maf.txt.gz')
-        bed_path = os.path.join(self.data_dir, 'tmb', 'S31285117_Regions.bed')
-        tcga_path = os.path.join(self.data_dir, 'tmb', 'tcga_tmbs.txt')
+        subdir = 'sample_metrics'
+        maf_path = os.path.join(self.data_dir, subdir, 'somatic.maf.txt.gz')
+        bed_path = os.path.join(self.data_dir, subdir, 'S31285117_Regions.bed')
+        tcga_path = os.path.join(self.data_dir, subdir, 'tcga_tmbs.txt')
         cancer_type = "blca"
-        with open(os.path.join(self.data_dir, 'tmb_expected.json')) as exp_file:
+        with open(os.path.join(self.data_dir, subdir, 'tmb_expected.json')) as exp_file:
             expected = json.loads(exp_file.read())
-        mx_metrics = mutation_extended_metrics(maf_path, bed_path, tcga_path, cancer_type)
+        mx_sample_metrics = mutation_extended_sample_metrics(maf_path, bed_path, tcga_path, cancer_type)
         output = [
-            mx_metrics.get_tmb(),
-            mx_metrics.get_tcga_pct(),
-            mx_metrics.get_cohort_pct(),
-            mx_metrics.get_tcga_tmb_as_dict(),
-            mx_metrics.get_cohort_tmb_as_dict(),
+            mx_sample_metrics.get_tmb(),
+            mx_sample_metrics.get_tcga_pct(),
+            mx_sample_metrics.get_cohort_pct(),
+            mx_sample_metrics.get_tcga_tmb_as_dict(),
+            mx_sample_metrics.get_cohort_tmb_as_dict(),
         ]
         for i in (0,1,2):
             # Test singleton floats
@@ -209,7 +225,7 @@ class TestReport(TestBase):
         mx_report = report(config, self.sample_id, self.SCHEMA_PATH, log_level=logging.ERROR)
         mx_report.write(mx_report.get_report_config(), report_path)
         self.assertTrue(os.path.exists(report_path), "JSON report exists")
-        checksum = {report_name: '7998ed41b2617270dd1d4d924ed1554e'}
+        checksum = {report_name: '424c61048c98f21e5506c33fef7a529e'}
         self.verify_checksums(checksum, out_dir)
         args = [config, 'nonexistent sample', self.SCHEMA_PATH, logging.CRITICAL]
         self.assertRaises(DjerbaReportError, report, *args)
@@ -227,7 +243,7 @@ class TestReport(TestBase):
         seg_report = report(config, self.sample_id, self.SCHEMA_PATH, log_level=logging.ERROR)
         seg_report.write(seg_report.get_report_config(), report_path)
         self.assertTrue(os.path.exists(report_path), "JSON report exists")
-        checksum = {report_name: '1cfe83de1bb545efb7f6b617739cbe27'}
+        checksum = {report_name: 'e1e5c3124a0e7bd6797015f209a5cbf2'}
         self.verify_checksums(checksum, out_dir)
         
     def test_upload(self):
@@ -316,8 +332,8 @@ class TestScripts(TestBase):
         self.assertDictEqual(data_1, data_2)
         checksums = {
             'djerba_config.json': '6ebc01c3f4f3c017340a094a0176b261',
-            'elba_config_1.json': '2e3c98ec62faede34b2d1c6c98067493',
-            'elba_config_2.json': '2e3c98ec62faede34b2d1c6c98067493'
+            'elba_config_1.json': '6ff793481509f26fdf9ea5e3031a364e',
+            'elba_config_2.json': '6ff793481509f26fdf9ea5e3031a364e'
             }
         self.verify_checksums(checksums, out_dir)
 
