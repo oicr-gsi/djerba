@@ -32,7 +32,7 @@ class sample(base):
         shared_keys = set(self.attributes.keys()).intersection(set(new_attributes.keys()))
         if len(shared_keys)>0:
             # found shared keys other than 'Gene': issue a warning
-            key_string = "\t".join(sorted([str(x) for x in shared_keys]))
+            key_string = ", ".join(sorted([str(x) for x in shared_keys]))
             msg = "Existing attribute values will be overwritten for keys: %s" % key_string
             self.logger.warning(msg)
         self.attributes.update(new_attributes)

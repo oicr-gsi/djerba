@@ -137,12 +137,20 @@ class report(uploader):
         ]
 
     def get_report_config(self, replace_null=True, strict=True):
-        """Construct the reporting config data structure"""
+        """
+        Construct the reporting config data structure.
+        If 'strict' is True: Check that each gene has the same attribute names; if not, raise an error.
+        """
         # for each genetic alteration, find metric values at sample/gene level
         all_metrics_by_gene = {}
         for alteration in self.alterations:
             # update gene-level metrics
+            # TODO raise a warning if metrics are overwritten, eg. by two different alterations
+            # TODO May want a parameter to control whether custom annotation will overwrite other types
+            # (overwrite check is already present for sample attributes)
+            self.logger.debug("Processing gene-level alteration: "+type(alteration).__name__)
             metrics_by_gene = alteration.get_metrics_by_gene(self.sample_id)
+            self.logger.debug("Found gene-level metrics: "+json.dumps(metrics_by_gene))
             for gene_id in metrics_by_gene.keys():
                 if gene_id in all_metrics_by_gene:
                     all_metrics_by_gene[gene_id].update(metrics_by_gene[gene_id])
