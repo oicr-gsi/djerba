@@ -6,6 +6,7 @@ import re
 import shutil
 import subprocess
 import time
+from djerba.utilities import constants
 
 class system_tools:
 
@@ -19,7 +20,9 @@ class system_tools:
         logger.debug("Running %i subprocess commands" % total)
         for cmd in commands:
             logger.info("Running subprocess command: %s" % cmd)
-            processes.add(subprocess.Popen(cmd, shell=shell, stderr=subprocess.PIPE, stdout=subprocess.PIPE))
+            processes.add(
+                subprocess.Popen(cmd, shell=shell, stderr=subprocess.PIPE, stdout=subprocess.PIPE, encoding=constants.ENCODING)
+            )
             if len(processes) >= max_processes:
                 os.wait()
                 processes.difference_update([p for p in processes if p.poll() is not None])
@@ -33,8 +36,10 @@ class system_tools:
                 raise RuntimeError(msg)
         logger.info("Finished running %i subprocesses (run with debug logging to view stdout/stderr)" % total)
         for p in processes:
-            logger.debug("STDOUT status %i, command '%s': '%s'" % (p.returncode, str(p.args), p.stdout.read()))
-            logger.debug("STDERR status %i, command '%s': '%s'" % (p.returncode, str(p.args), p.stderr.read()))
+            msg = "Exit status %i for command: %s\n" % (p.returncode, str(p.args)) +\
+                  "STDOUT: '%s'\n" % p.stdout.read() +\
+                  "STDERR: '%s'" % p.stderr.read()
+            logger.debug(msg)
             p.stdout.close()
             p.stderr.close()
         # check return codes
@@ -43,7 +48,8 @@ class system_tools:
             for f in failed:
                 msg = "Non-zero exit status %i from command %s" % (f.returncode, str(f.args))
                 logger.error(msg)
-            msg = "%i of %i commands had non-zero exit status; see log output for details" % (len(failed), len(commands))
+            msg = "%i of %i commands had non-zero exit status; " % (len(failed), len(commands)) +\
+                  "see log output for details, run with debug logging to view stdout/stderr."
             logger.error(msg)
             raise RuntimeError(msg)
         else:

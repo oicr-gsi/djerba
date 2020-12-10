@@ -69,3 +69,6 @@ OPTIONAL_STUDY_META_FIELDS = [
     'add_global_case_list',
     'tags_file'
 ]
+
+# text encoding format
+ENCODING = 'utf-8'
