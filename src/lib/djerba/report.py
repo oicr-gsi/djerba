@@ -136,53 +136,33 @@ class report(uploader):
             ga_factory.create_instance(conf, study_id=None) for conf in ga_configs
         ]
 
-    def get_report_config(self, replace_null=True, strict=True):
+    def get_report_config(self, replace_null=True, require_consistent=True, overwrite=False):
         """
         Construct the reporting config data structure.
-        If 'strict' is True: Check that each gene has the same attribute names; if not, raise an error.
+        Finds metric values at sample level and gene level.
+        If 'require_consistent' is True: Check that each gene has the same attribute names
+        If 'overwrite' is True: Replace any existing values for a metric with new ones
         """
-        # for each genetic alteration, find metric values at sample/gene level
-        all_metrics_by_gene = {}
+        gene_metrics = {}
         for alteration in self.alterations:
-            # update gene-level metrics
-            # TODO raise a warning if metrics are overwritten, eg. by two different alterations
-            # TODO May want a parameter to control whether custom annotation will overwrite other types
-            # (overwrite check is already present for sample attributes)
-            self.logger.debug("Processing gene-level alteration: "+type(alteration).__name__)
-            metrics_by_gene = alteration.get_metrics_by_gene(self.sample_id)
-            self.logger.debug("Found gene-level metrics: "+json.dumps(metrics_by_gene))
-            for gene_id in metrics_by_gene.keys():
-                if gene_id in all_metrics_by_gene:
-                    all_metrics_by_gene[gene_id].update(metrics_by_gene[gene_id])
-                else:
-                    all_metrics_by_gene[gene_id] = metrics_by_gene[gene_id]
-            # update sample-level metrics
-            self.sample.update_attributes(alteration.get_attributes_for_sample(self.sample_id))
-        # reorder gene-level metrics into a list and check consistency
+            self.logger.debug("Processing genetic alteration: "+type(alteration).__name__)
+            gene_metrics = alteration.update_gene_metrics(
+                gene_metrics,
+                self.sample_id,
+                require_consistent,
+                overwrite
+            )
+            self.sample.update_attributes(
+                alteration.get_attributes_for_sample(self.sample_id),
+                overwrite
+            )
+        # reorder gene-level metrics into a list
         gene_metrics_list = []
-        expected_gene_attributes = None
-        for gene_id in all_metrics_by_gene.keys():
-            metrics = all_metrics_by_gene[gene_id]
-            # check consistency with previous attributes, if any
-            if expected_gene_attributes == None:
-                expected_gene_attributes = set(metrics.keys())
-            else:
-                gene_attributes = set(metrics.keys())
-                if gene_attributes != expected_gene_attributes:
-                    expected = str(sorted(list(expected_gene_attributes)))
-                    found = str(sorted(list(gene_attributes)))
-                    msg = 'Attributes for gene {0} do not match predecessors; '.format(gene_id)+\
-                          'expected {0}, found {1}'.format(expected, found)
-                    if strict:
-                        msg = "Strict validation: "+msg
-                        self.logger.error(msg)
-                        raise DjerbaReportError(msg)
-                    else:
-                        self.logger.warning(msg)
+        for gene_id in gene_metrics.keys():
             # add an attribute for the gene name and append to list
+            metrics = gene_metrics[gene_id]
             metrics[constants.GENE_KEY] = gene_id
             gene_metrics_list.append(metrics)
-        gene_attributes = set(gene_metrics_list[0].keys())
         # assemble the config data structure
         config = {}
         config[constants.SAMPLE_INFO_KEY] = self.sample.get_attributes()
@@ -193,14 +173,6 @@ class report(uploader):
             config = self.replace_null_with_string(config)
         self.validate(config)
         return config
-
-    def is_null(self, val):
-        """Check if a value (not necessarily numeric) is None or NaN"""
-        try:
-            is_nan = isnan(val)
-        except TypeError: # value is a non-numeric type
-            is_nan = False
-        return val==None or is_nan
 
     def replace_null_with_string(self, config):
         """Replace null/NaN values in config output with a string, eg. for easier processing in R"""

@@ -17,7 +17,10 @@
   - `TMB_PER_MB`
   - `COSMIC_SIGS`: Placeholder only
 - GCGI-67: Input data from SEG files for the FRACTION_GENOME_ALTERED metric
-
+- GCGI-89: Consistency checks on metric inputs
+  - Error if a sample/gene attribute has a non-null value in more than one input source
+  - Refactoring and simplification of unit tests
+  - Reformat JSON files using `json.tool` in Python
 
 ## v0.0.3: 2020-11-10
 ### Added
