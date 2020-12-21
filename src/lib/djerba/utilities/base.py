@@ -3,6 +3,7 @@
 import logging
 import os
 import sys
+from math import isnan
 
 class base:
 
@@ -45,3 +46,21 @@ class base:
         logger.addHandler(handler)
         return logger
 
+    def is_null(self, value):
+        """
+        Check if a config value is null. Unfortunately representation of null values is not consistent in Djerba input sources.
+        Any of the following is considered null:
+        - Python `None` value
+        - Empty string
+        - String "NA"
+        - Numeric NaN
+        """
+        null = False
+        if value=='' or value=='NA' or value==None:
+            null = True
+        else:
+            try:
+                null = isnan(value)
+            except TypeError:
+                pass
+        return null

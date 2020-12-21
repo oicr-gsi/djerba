@@ -157,8 +157,7 @@ class mutation_extended_gene_metrics(base):
         biomarker_values = []
         for level in self.BIOMARKER_LEVELS:
             value = row.get(level) # will be None if no column in MAF file for this level
-            # test for null values (unfortunately there is no standard representation for these)
-            if value != '' and value != 'NA' and value != None and str(value) != 'nan':
+            if not self.is_null(value):
                 biomarker_values.append('%s:%s' % (level, value))
         if len(biomarker_values) == 0:
             return 'NA'

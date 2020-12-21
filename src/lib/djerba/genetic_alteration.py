@@ -93,7 +93,7 @@ class genetic_alteration(base):
         """
         msg = "get_genes method of parent class; not intended for production"
         self.logger.error(msg)
-        return []
+        raise RuntimeError(msg)
 
     def get_input_path(self, sample_id):
         return os.path.join(self.input_directory, self.input_files[sample_id])
@@ -102,11 +102,61 @@ class genetic_alteration(base):
         """PLACEHOLDER. Get a dictionary of metric values for the given sample, indexed by gene."""
         msg = "get_metrics_by_gene method of parent class; not intended for production"
         self.logger.error(msg)
-        return {}
+        raise RuntimeError(msg)
 
     def get_sample_ids(self):
         return self.sample_ids
 
+    def update_gene_metrics(self, metrics, sample_id, require_consistent=True, overwrite=False):
+        """
+        Update the gene metrics dictionary
+        If overwrite is True, replace any existing values for a metric with new ones
+        If require_consistent is True, check all genes have the same set of metric names
+        """
+        new_metrics_by_gene = self.get_metrics_by_gene(sample_id)
+        expected_names = None
+        for gene_id in new_metrics_by_gene.keys():
+            # update existing metrics (if any) with new ones
+            new_metrics = new_metrics_by_gene.get(gene_id)
+            metrics_to_update = metrics.get(gene_id)
+            if metrics_to_update: # existing metrics found, update with new values
+                if overwrite:
+                    # for any existing metric names, overwrite old values with new ones
+                    metrics_to_update.update(new_metrics)
+                else:
+                    # check metrics to avoid overwriting
+                    shared_set = set(metrics_to_update.keys()).intersection(set(new_metrics.keys()))
+                    if len(shared_set) > 0:
+                        shared = ', '.join(sorted(list(shared_set)))
+                        msg = "Multiple gene-level metric values found for sample "+\
+                              "%s, gene %s, metric(s): %s. " % (sample_id, gene_id, shared) +\
+                              "Overwrite mode is not in effect."
+                        self.logger.error(msg)
+                        raise RuntimeError(msg)
+                    else:
+                        metrics_to_update.update(new_metrics)
+                updated_metrics = metrics_to_update
+            else: # no existing metrics
+                updated_metrics = new_metrics
+            # check the metric names for consistency with previous genes
+            if expected_names:
+                latest_names = set(updated_metrics.keys())
+                if latest_names != expected_names:
+                    old_names = str(sorted(list(expected_names)))
+                    new_names = str(sorted(list(latest_names)))
+                    msg = "Gene metric names %s and %s " % (old_names, new_names) +\
+                          "are not consistent for sample %s. " % sample_id
+                    if require_consistent:
+                        msg += "Consistent name requirement is in effect; raising an error."
+                        self.logger.error(msg)
+                        raise RuntimeError(msg)
+                    else:
+                        msg += "Consistent name requirement is not in effect; continuing."
+                        self.logger.warning(msg)
+            else:
+                expected_names = set(updated_metrics.keys())
+            metrics[gene_id] = updated_metrics
+        return metrics
 
 class genetic_alteration_factory(base):
     """Supply an instance of the appropriate genetic_alteration subclass for an ALTERATIONTYPE"""
