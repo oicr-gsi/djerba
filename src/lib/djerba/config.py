@@ -66,8 +66,7 @@ class builder(base):
             args[self.CANCER_TYPE_INPUT],
             args[self.ONCOKB_INPUT],
             args[self.TCGA_INPUT],
-            args[self.VCF_INPUT],
-            args[self.SEG_INPUT]
+            args[self.VCF_INPUT]
         )
         genetic_alterations.append(mutex_config)
         seg_config = self.build_segmented(args[SEG_INPUT])
