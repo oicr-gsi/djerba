@@ -148,18 +148,19 @@ def main(args):
         log_level = logging.ERROR
     validate_paths(args)
     djerba_config_builder = builder(args.sample_id, log_level, args.log_path)
-    djerba_config = djerba_config_builder.build(
-        args.custom_dir,
-        args.gene_tsv,
-        args.sample_tsv,
-        args.maf,
-        args.bed,
-        args.cancer_type,
-        args.oncokb_token,
-        args.tcga,
-        args.vcf,
-        args.seg
-    )
+    builder_args = {
+        djerba_config_builder.CUSTOM_DIR_INPUT: args.custom_dir,
+        djerba_config_builder.GENE_TSV_INPUT: args.gene_tsv,
+        djerba_config_builder.SAMPLE_TSV_INPUT: args.sample_tsv,
+        djerba_config_builder.MAF_INPUT: args.maf,
+        djerba_config_builder.BED_INPUT: args.bed,
+        djerba_config_builder.CANCER_TYPE: args.cancer_type,
+        djerba_config_builder.ONCOKB_INPUT: args.oncokb_token,
+        djerba_config_builder.TCGA_INPUT: args.tcga,
+        djerba_config_builder.VCF_INPUT: args.vcf,
+        djerba_config_builder.SEG_INPUT: args.seg
+    }
+    djerba_config = djerba_config_builder.build(builder_args)
     if not (args.conf or args.upload or args.upload_config or args.out):
         msg = "No upload or output arguments specified. Exiting without further action."
         print(msg, file=sys.stderr)

@@ -12,7 +12,8 @@ from djerba.utilities import constants
 
 class builder(base):
     """Build a Djerba config data structure for Elba output"""
-    
+
+    ### output keys
     INPUT_DIRECTORY_KEY = 'input_directory'
     INPUT_FILES_KEY = 'input_files'
     METADATA_KEY = 'metadata'
@@ -28,13 +29,24 @@ class builder(base):
     TCGA_PATH_KEY = 'tcga_path'
     CANCER_TYPE_KEY = 'cancer_type'
 
+    ### input keys
+    CUSTOM_DIR_INPUT = 'custom_dir'
+    GENE_TSV_INPUT = GENE_TSV_KEY
+    SAMPLE_TSV_INPUT = SAMPLE_TSV_KEY
+    MAF_INPUT = 'maf'
+    BED_INPUT = BED_PATH_KEY
+    CANCER_TYPE_INPUT = CANCER_TYPE_KEY
+    ONCOKB_INPUT = ONCOKB_TOKEN_KEY
+    TCGA_INPUT = TCGA_PATH_KEY
+    VCF_INPUT = FILTER_VCF_KEY
+    SEG_INPUT = 'seg'
+
     def __init__(self, sample_id, log_level=logging.WARN, log_path=None):
         self.logger = self.get_logger(log_level, "%s.%s" % (__name__, type(self).__name__), log_path)
         self.log_path = log_path
         self.sample_id = sample_id
     
-    def build(self, custom_dir, gene_tsv, sample_tsv, maf, bed,
-              cancer_type, oncokb_token, tgca, vcf, seg):
+    def build(self, args):
         """Build a config data structure from the given arguments"""
         config = {}
         samples = [
@@ -42,11 +54,23 @@ class builder(base):
         ]
         config[constants.SAMPLES_KEY] = samples
         genetic_alterations = []
-        custom_config = self.build_custom(custom_dir, gene_tsv, sample_tsv)
+        custom_config = self.build_custom(
+            args[self.CUSTOM_DIR_INPUT],
+            args[self.GENE_TSV_INPUT],
+            args[self.SAMPLE_TSV_INPUT]
+        )
         genetic_alterations.append(custom_config)
-        mutex_config = self.build_mutex(maf, bed, cancer_type, oncokb_token, tgca, vcf)
+        mutex_config = self.build_mutex(
+            args[self.MAF_INPUT],
+            args[self.BED_INPUT],
+            args[self.CANCER_TYPE_INPUT],
+            args[self.ONCOKB_INPUT],
+            args[self.TCGA_INPUT],
+            args[self.VCF_INPUT],
+            args[self.SEG_INPUT]
+        )
         genetic_alterations.append(mutex_config)
-        seg_config = self.build_segmented(seg)
+        seg_config = self.build_segmented(args[SEG_INPUT])
         genetic_alterations.append(seg_config)
         config[constants.GENETIC_ALTERATIONS_KEY] = genetic_alterations
         self.logger.info("Djerba configuration complete; validating against schema")
