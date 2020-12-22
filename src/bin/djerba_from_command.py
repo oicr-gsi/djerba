@@ -154,7 +154,7 @@ def main(args):
         djerba_config_builder.SAMPLE_TSV_INPUT: args.sample_tsv,
         djerba_config_builder.MAF_INPUT: args.maf,
         djerba_config_builder.BED_INPUT: args.bed,
-        djerba_config_builder.CANCER_TYPE: args.cancer_type,
+        djerba_config_builder.CANCER_TYPE_INPUT: args.cancer_type,
         djerba_config_builder.ONCOKB_INPUT: args.oncokb_token,
         djerba_config_builder.TCGA_INPUT: args.tcga,
         djerba_config_builder.VCF_INPUT: args.vcf,

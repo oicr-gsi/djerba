@@ -47,20 +47,24 @@ class TestBuilder(TestBase):
         test_builder = builder(self.sample_id, log_level=logging.WARN)
         maf_dir = '/.mounts/labs/gsiprojects/gsi/djerba/mutation_extended'
         seg_dir = '/.mounts/labs/gsiprojects/gsi/djerba/segmented'
-        args = [
-            self.dataDir, # custom_dir
-            'custom_gene_annotation.tsv', # gene_tsv
-            'custom_sample_annotation.tsv', # sample_tsv
-            os.path.join(maf_dir, 'somatic01.maf.txt.gz'), # maf
-            '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed', # bed
-            'blca', # cancer_type
-            None, # oncokb_token
-            '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt', # tcga
-            '/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz',
-            os.path.join(seg_dir, 'OCT-01-0472-CAP.tumour.bam.varscanSomatic_Total_CN.seg')
-        ]
-        # generate the Elba config
-        config = test_builder.build(*args)
+        bed = '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed'
+        tcga = '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt'
+        vcf = '/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/'+\
+              'ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz'
+        seg = os.path.join(seg_dir, 'OCT-01-0472-CAP.tumour.bam.varscanSomatic_Total_CN.seg')
+        builder_args = {
+            test_builder.CUSTOM_DIR_INPUT: self.dataDir,
+            test_builder.GENE_TSV_INPUT: 'custom_gene_annotation.tsv', # gene_tsv
+            test_builder.SAMPLE_TSV_INPUT: 'custom_sample_annotation.tsv', # sample_tsv
+            test_builder.MAF_INPUT: os.path.join(maf_dir, 'somatic01.maf.txt.gz'),
+            test_builder.BED_INPUT: bed,
+            test_builder.CANCER_TYPE_INPUT: 'blca', # cancer_type
+            test_builder.ONCOKB_INPUT: None,
+            test_builder.TCGA_INPUT: tcga,
+            test_builder.VCF_INPUT: vcf,
+            test_builder.SEG_INPUT: seg
+        }
+        config = test_builder.build(builder_args)
         with open(os.path.join(self.dataDir, 'builder_expected_djerba_config.json')) as expected_file:
             expected = json.loads(expected_file.read())
         # ordering of items in genetic_alterations is fixed in the builder code
