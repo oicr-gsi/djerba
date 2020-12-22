@@ -69,7 +69,7 @@ class builder(base):
             args[self.VCF_INPUT]
         )
         genetic_alterations.append(mutex_config)
-        seg_config = self.build_segmented(args[SEG_INPUT])
+        seg_config = self.build_segmented(args[self.SEG_INPUT])
         genetic_alterations.append(seg_config)
         config[constants.GENETIC_ALTERATIONS_KEY] = genetic_alterations
         self.logger.info("Djerba configuration complete; validating against schema")
