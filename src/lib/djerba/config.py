@@ -1,10 +1,13 @@
 """Classes to handle Djerba configuration data"""
 
+import configparser
 import json
 import jsonschema
 import logging
 import os
 import pandas as pd
+import subprocess
+from glob import glob
 from jsonschema.exceptions import ValidationError, SchemaError
 from djerba.utilities.base import base
 from djerba.utilities import constants
@@ -29,7 +32,13 @@ class builder(base):
     TCGA_PATH_KEY = 'tcga_path'
     CANCER_TYPE_KEY = 'cancer_type'
 
-    ### input keys
+    ### directory names for constructing input paths
+    SEQUENZA = 'sequenza'
+    REVIEW = 'review'
+    VEP = 'variantEffectPredictor'
+    RSEM = 'RSEM'
+    
+    ### input keys -- old style
     CUSTOM_DIR_INPUT = 'custom_dir'
     GENE_TSV_INPUT = GENE_TSV_KEY
     SAMPLE_TSV_INPUT = SAMPLE_TSV_KEY
@@ -40,14 +49,189 @@ class builder(base):
     TCGA_INPUT = TCGA_PATH_KEY
     VCF_INPUT = FILTER_VCF_KEY
     SEG_INPUT = 'seg'
+    ### input keys -- new style
+    STUDY_ID_INPUT = 'study_id'
+    PATIENT_ID_INPUT = 'patient_id'
+    ANALYSIS_UNIT_INPUT = 'analysis_unit'
+    ONCOTREE_CODE_INPUT = 'oncotree_code'
+    VERSION_NUM_INPUT = 'version_num'
+    DATA_DIR_INPUT = 'data_dir'
+    ONCOTREE_PATH_INPUT = 'oncotree_data'
+
+    ### selections.ini keys
+    INI_PURITY = 'purity'
+    INI_PLOIDY = 'ploidy'
+    INI_GAMMA = 'gamma'
+    INI_DATE = 'date'
+    INI_REV_1 = 'reviewer1'
+    INI_REV_2 = 'reviewer2'
+    INI_KEYS = [INI_PURITY, INI_PLOIDY, INI_GAMMA, INI_DATE, INI_REV_1, INI_REV_2]
+    
+    ### Defaults for CGI config building
+    DEFAULT_DATA_DIR = '/.mounts/labs/TGL/cap'
+    DEFAULT_ONCOTREE_FILENAME = '20201201-OncoTree.txt'
 
     def __init__(self, sample_id, log_level=logging.WARN, log_path=None):
         self.logger = self.get_logger(log_level, "%s.%s" % (__name__, type(self).__name__), log_path)
         self.log_path = log_path
         self.sample_id = sample_id
+
+    def _check_cgi_inputs(self, args):
+        """Check required arguments are present for build_from_cgi_inputs"""
+        # existence of paths etc. will be checked upstream, eg. in the calling script
+        required_args = [
+            self.STUDY_ID_INPUT,
+            self.PATIENT_ID_INPUT,
+            self.ANALYSIS_UNIT_INPUT,
+            self.ONCOTREE_CODE_INPUT,
+            self.VERSION_NUM_INPUT,
+            self.DATA_DIR_INPUT # required but may be None
+            self.ONCOTREE_PATH_INPUT # required but may be None
+        ]
+        if not set(required_args).equals(set(args.keys())):
+            expected = str(sorted(required_args))
+            found = str(sorted(list(args.keys())))
+            msg = "Incorrect arguments; expected %s, found %s" % (expected, found)
+            self.logger.error(msg)
+            raise DjerbaConfigError(msg)
+
+    def _find_fus_path(self, version_dir):
+        """Find the Mavis summary path"""
+        fus_pattern = os.path.join(
+            version_dir, 'mavis', 'execution', 'summary', 'mavis_summary_all_WG.*.tab'
+        )
+        fus_paths = glob(fus_pattern)
+        error_msg = None
+        if len(fus_paths)==0:
+            error_msg = "No fusfile in %s; failure to run Mavis?" % version_dir
+        elif len(fus_paths)>1:
+            error_msg = "Multiple fusfiles in %s; " % version_dir +\
+                        "should be only one mavis_summary_all_WG.*.tab"
+        if error_msg:
+            self.logger.error(error_msg)
+            raise DjerbaConfigError(error_msg)
+        fus_path = fus_paths.pop()
+        return fus_path
+
+    def _read_cgi_inputs(self, args):
+                analysis_unit = args[self.ANALYSIS_UNIT_INPUT]
+        version = args[self.VERSION_NUM_INPUT]
+        if args[self.DATA_DIR_INPUT]:
+            data_dir = args[self.DATA_DIR_INPUT]
+        else:
+            data_dir = self.DEFAULT_DATA_DIR
+        # find input files
+        patient_dir = os.path.join(data_dir, args[self.STUDY_ID_INPUT], args[self.PATIENT_ID_INPUT])
+        version_dir = os.path.join(patient_dir, analysis_unit, version)
+        ms_path = os.path.join(patient_dir, "mastersheet-v{0}.psv".format(version))
+        ini_path = os.path.join(version_dir, self.SEQUENZA, self.REVIEW, 'selection.ini')
+        for input_path in (ms_path, ini_path):
+            if not os.access(input_path, os.R_OK):
+                msg = "Cannot read input path %s" % input_path
+                self.logger.error(msg)
+                raise DjerbaConfigError(msg)
+        # process the input files
+        [tumor_id, normal_id] = self._read_mastersheet(ms_path, args[self.ANALYSIS_UNIT_INPUT])
+        selections = self._read_selections(ini_path)
+        [cancer_type, cancer_desc] = self._read_oncotree(
+            args[self.ONCOTREE_CODE_INPUT]
+            args[self.ONCOTREE_PATH_INPUT]
+        )
+        # construct additional file paths
+        fus_path = self._find_fus_path(version_dir)
+        maf_path = os.path.join(
+            version_dir, self.VEP, '{0}.maf.gz'.format(analysis_unit)
+        )
+        seg_path = os.path.join(
+            version_dir, self.SEQUENZA, self.REVIEW, "{0}.seg".format(selections[self.INI_GAMMA])
+        )
+        gep_path = os.path.join(
+            version_dir, self.RSEM, "{0}.genes.results".format(analysis_unit)
+        )
+        # check path readability
+        unreadable = []
+        for file_path in [fus_path, maf_path, seg_path, gep_path]:
+            if not os.access(file_path, os.R_OK):
+                unreadable.append(file_path)
+        if len(unreadable)>0:
+            msg = "Cannot read data files: {0}".format(str(sorted(unreadable)))
+            self.logger.error(msg)
+            raise DjerbaConfigError(msg)
+        # TODO tidy up representation of these return values, eg. by making a class to store them?
+        scalars = [tumor_id, normal_id, cancer_type, cancer_desc]
+        paths = [fus_path, maf_path, seg_path, gep_path]
+        return [scalars, paths, selections] 
+    
+    def _read_mastersheet(self, ms_path, analysis_unit):
+        """Parse the mastersheet file to find tumor/normal IDs"""
+        # TODO reimplement the bash one-liner in Python
+        template = """awk -F "|" -v OFS="|" -v u={0} '{ if (($11 == u) && ($6 =="WG")) {print $11,$12,$15} }' {1} | awk -F "|" '!seen[$1]++' | cut -f{2} -d'|'"""
+        output = []
+        for col in [2,3]: # column 2 = tumor, column 3 = normal
+            args = template.format(analysis_unit, ms_path, col)
+            try:
+                result = subprocess.run(args, capture_output=True, check=True)
+            except CalledProcessError as cpe:
+                msg = "Non-zero exit code from bash one-liner "+\
+                      "to find tumor/normal ID: {0}".format(args)
+                self.logger.error(msg)
+                raise DjerbaConfigError(msg) from cpe
+            output.append(result.stdout.decode(constants.TEXT_ENCODING))
+        return output
+
+    def _read_oncotree(self, oncocode, oncotree_path):
+        """Read the cancer type and cancer type description"""
+        # TODO reimplement the bash one-liners in Python
+        if self.is_null(oncotree_path):
+            oncotree_path = os.path.join(
+                os.path.dirname(__file__),
+                constants.DATA_DIRNAME,
+                self.DEFAULT_ONCOTREE_FILENAME 
+            )
+        args_1 = """grep -iw {0} {1} | cut -f1 | sed -e 's/([^()]*)//g' | sort | uniq | sed 's/[[:space:]]*$//'""".format(oncocode, oncotree_path) # CANCER_TYPE
+        args_2 = """cat {0} | tr '\t' '\n' | grep -iw {1} | sed "s/({2})//" | sed 's/[[:space:]]*$//'""".format(oncotree_path, oncocode, oncocode) # CANCER_TYPE_DESCRIPTION
+        output = []
+        for args in [args_1, args_2]:
+            try:
+                result = subprocess.run(args, capture_output=True, check=True)
+            except CalledProcessError as cpe:
+                msg = "Non-zero exit code from bash one-liner "+\
+                      "to cancer type/description from oncotree: {0}".format(args)
+                self.logger.error(msg)
+                raise DjerbaConfigError(msg) from cpe
+            output.append(result.stdout.decode(constants.TEXT_ENCODING))
+        return output
+
+    def _read_selections(self, ini_path):
+        """
+        Read the selections INI file; check required options are present.
+        Returns a dictionary-like configparser object.
+        """
+        # need to prepend a dummy section header to use the configparser module
+        # see https://stackoverflow.com/questions/2885190/using-configparser-to-read-a-file-without-section-name
+        cp = configparser.ConfigParser()
+        section = "section"
+        with open(ini_path) as stream:
+            cp.read_string("[{0}]\n".format(section) + stream.read())
+        missing = []
+        for key in self.INI_KEYS:
+            if not cp.has_option(section, key):
+                missing.append(key)
+            elif self.is_null(cp.get(section, key)):
+                missing.append(key)
+        if len(missing)>0:
+            msg = "Required values in selections INI are null or "+\
+                  "missing: {0}".format(str(sorted(missing)))
+            self.logger.error(msg)
+            raise DjerbaConfigError(msg)
+        return cp[section]
     
     def build(self, args):
-        """Build a config data structure from the given arguments"""
+        """
+        Build a config data structure from the given arguments
+        TODO Add clinical_report_meta
+        TODO This method may become obsolete given build_from_cgi
+        """
         config = {}
         samples = [
             {constants.SAMPLE_ID_KEY: self.sample_id}
@@ -75,6 +259,56 @@ class builder(base):
         self.logger.info("Djerba configuration complete; validating against schema")
         validator(self.logger.getEffectiveLevel(), self.log_path).validate(config, self.sample_id)
         return config
+
+    def build_from_cgi_inputs(self, args):
+        """Build Djerba config from CGI data sources, eg. the mastersheet"""
+        # TODO construct the config in line with CGI-Tools 3-configureSingleSample.sh
+        # TODO create a class for the mastersheet, with input validation
+        # TODO may later want to generate mastersheet within Djerba, instead of by shell script
+        # "mastersheet" extracted from file provenance by 1-linkNiassa.sh
+        self._check_cgi_inputs(args)
+        cgi_data = self.read_cgi_inputs(args)
+        [scalars, paths, selections_ini] = cgi_data
+        [tumor_id, normal_id, cancer_type, cancer_desc] = scalars
+        # build the config data structure (including clinical_report_meta)
+        config = {}
+        # populate sample attributes from the CGI data
+        sample = {
+            constants.SAMPLE_ID_KEY: self.sample_id,
+            constants.CANCER_TYPE_KEY: cancer_type,
+            constants.CANCER_TYPE_DETAILED_KEY: args[self.ONCOTREE_CODE_INPUT],
+            constants.CANCER_TYPE_DESCRIPTION_KEY: cancer_desc,
+            constants.SEQUENZA_PLOIDY_KEY: selections_ini[self.INI_PURITY],
+            constants.SEQUENZA_PURITY_FRACTION_KEY:selections_ini[self.INI_PLOIDY]
+        }
+        config[constants.SAMPLES_KEY] = [sample]
+        clinical_report_meta_config = self.build_clinical_report_meta(args, cgi_data)
+        config[constants.CLINICAL_REPORT_META_KEY] = clinical_report_meta_config
+        # TODO from here on, substantially the same as older build() method
+
+    def build_clinical_report_meta(self, args, cgi_data):
+        """Build the clinical_report_meta config object"""
+        """
+        Schema:
+        meta =  {
+	    "report_version": {"type": ["number", "string"]},
+	    "study_id": {"type": "string"},
+	    "patient": {"type": "string"},
+	    "analysis_unit": {"type": "string"},
+	    "tumor_id": {"type": "string"},
+	    "normal_id": {"type": "string"},
+	    "gamma": {"type": "string"},
+	    "maf_file": {"type": "string"},
+	    "seg_file": {"type": "string"},
+	    "fus_file": {"type": "string"},
+	    "gep_file": {"type": "string"},
+	    "out_dir": {"type": "string"}
+	}
+        """
+        [scalars, paths, selections_ini] = cgi_data
+        [fus_path, maf_path, seg_path, gep_path] = paths
+        meta = {}
+        return meta
 
     def build_custom(self, custom_dir, gene_tsv, sample_tsv):
         """Create a data structure for CUSTOM_ANNOTATION config"""

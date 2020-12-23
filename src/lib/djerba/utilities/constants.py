@@ -32,10 +32,16 @@ ELBA_DB_USER = 'ELBA_DB_USER'
 ELBA_DB_PASSWORD = 'ELBA_DB_PASSWORD'
 
 ## keys for sample attributes
+CANCER_TYPE_KEY = 'CANCER_TYPE'
+CANCER_TYPE_DETAILED_KEY = 'CANCER_TYPE_DETAILED'
+CANCER_TYPE_DESCRIPTION_KEY = 'CANCER_TYPE_DESCRIPTION'
 COSMIC_SIGS_KEY = 'COSMIC_SIGS'
 SAMPLE_ID_KEY = 'SAMPLE_ID'
+SEQUENZA_PLOIDY_KEY = 'SEQUENZA_PLOIDY'
+SEQUENZA_PURITY_FRACTION_KEY = 'SEQUENZA_PURITY_FRACTION'
 TMB_PER_MB_KEY = 'TMB_PER_MB'
 FRACTION_GENOME_ALTERED_KEY = 'FRACTION_GENOME_ALTERED'
+
 ## other
 GENE_KEY = 'Gene'
 CLINICAL_DATA_KEY = 'ClinData' # obsolete? depends on report JSON
@@ -45,6 +51,7 @@ SAMPLE_INFO_KEY = 'sample_info'
 SMALL_MUTATION_INDEL_KEY = 'smallMutAndIndel' # obsolete? depends on report JSON
 
 # keys for Djerba config
+CLINICAL_REPORT_META_KEY = 'clinical_report_meta'
 GENETIC_ALTERATIONS_KEY = 'genetic_alterations'
 REVIEW_STATUS_KEY = 'review_status'
 SAMPLE_NAME_KEY = 'sample_name'
@@ -69,3 +76,6 @@ OPTIONAL_STUDY_META_FIELDS = [
     'add_global_case_list',
     'tags_file'
 ]
+
+# default text encoding
+TEXT_ENCODING = 'utf-8'

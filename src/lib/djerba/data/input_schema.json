@@ -4,6 +4,26 @@
     "type": "object",
     "properties":
     {
+	"clinical_report_meta": {
+	    "type": "object",
+	    "properties": {
+		"report_version": {"type": ["number", "string"]},
+		"study_id": {"type": "string"},
+		"patient": {"type": "string"},
+		"analysis_unit": {"type": "string"},
+		"tumor_id": {"type": "string"},
+		"normal_id": {"type": "string"},
+		"gamma": {"type": "string"},
+		"maf_file": {"type": "string"},
+		"seg_file": {"type": "string"},
+		"fus_file": {"type": "string"},
+		"gep_file": {"type": "string"},
+		"out_dir": {"type": "string"}
+	    },
+	    "required": [
+		"report_version"
+	    ]
+	},
 	"study_meta": {
 	    "type": "object",
 	    "properties": {
