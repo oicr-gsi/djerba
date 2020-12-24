@@ -61,6 +61,9 @@ STUDY_META_KEY = 'study_meta'
 # for constructing paths to supplementary data files
 DATA_DIRNAME = 'data'
 
+# default value for INI section header (required by Python ConfigParser)
+SECTION_DEFAULT = 'section'
+
 # fields for cBioPortal study metadata
 REQUIRED_STUDY_META_FIELDS = [
     'type_of_cancer',
@@ -79,3 +82,13 @@ OPTIONAL_STUDY_META_FIELDS = [
 
 # default text encoding
 TEXT_ENCODING = 'utf-8'
+
+# keys for clinical report metadata
+TUMOR_ID_KEY = 'tumor_id'
+NORMAL_ID_KEY = 'normal_id'
+GAMMA_KEY = 'gamma'
+MAF_FILE_KEY = 'maf_file'
+SEG_FILE_KEY = 'seg_file'
+FUS_FILE_KEY = 'fus_file'
+GEP_FILE_KEY = 'gep_file'
+

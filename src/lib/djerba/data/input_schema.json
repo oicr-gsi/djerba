@@ -17,8 +17,7 @@
 		"maf_file": {"type": "string"},
 		"seg_file": {"type": "string"},
 		"fus_file": {"type": "string"},
-		"gep_file": {"type": "string"},
-		"out_dir": {"type": "string"}
+		"gep_file": {"type": "string"}
 	    },
 	    "required": [
 		"report_version"

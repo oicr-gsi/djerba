@@ -86,6 +86,25 @@ class TestBuilder(TestBase):
         checksums = {out_name: '5c6dea4fc34c28de6c636a060971d39a'}
         self.verify_checksums(checksums, out_dir)
 
+    def test_cgi(self):
+        """Test building from CGI inputs"""
+        test_builder = builder(self.sample_id, log_level=logging.WARN)
+        """
+        # TODO update the builder args
+        builder_args = {
+            test_builder.CUSTOM_DIR_INPUT: self.dataDir,
+            test_builder.GENE_TSV_INPUT: 'custom_gene_annotation.tsv', # gene_tsv
+            test_builder.SAMPLE_TSV_INPUT: 'custom_sample_annotation.tsv', # sample_tsv
+            test_builder.MAF_INPUT: os.path.join(maf_dir, 'somatic01.maf.txt.gz'),
+            test_builder.BED_INPUT: bed,
+            test_builder.CANCER_TYPE_INPUT: 'blca', # cancer_type
+            test_builder.ONCOKB_INPUT: None,
+            test_builder.TCGA_INPUT: tcga,
+            test_builder.VCF_INPUT: vcf,
+            test_builder.SEG_INPUT: seg
+        }
+        """
+
 class TestMetrics(TestBase):
     """Tests for genetic alteration metrics"""
 

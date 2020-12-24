@@ -69,7 +69,7 @@ class builder(base):
     
     ### Defaults for CGI config building
     DEFAULT_DATA_DIR = '/.mounts/labs/TGL/cap'
-    DEFAULT_ONCOTREE_FILENAME = '20201201-OncoTree.txt'
+    DEFAULT_ONCOTREE_FILENAME = '20201201-OncoTree.txt' # from CGI-Tools repo
 
     def __init__(self, sample_id, log_level=logging.WARN, log_path=None):
         self.logger = self.get_logger(log_level, "%s.%s" % (__name__, type(self).__name__), log_path)
@@ -114,7 +114,9 @@ class builder(base):
         return fus_path
 
     def _read_cgi_inputs(self, args):
-                analysis_unit = args[self.ANALYSIS_UNIT_INPUT]
+        """Find and process CGI data for generating Djerba config"""
+        self._check_cgi_inputs(args)
+        analysis_unit = args[self.ANALYSIS_UNIT_INPUT]
         version = args[self.VERSION_NUM_INPUT]
         if args[self.DATA_DIR_INPUT]:
             data_dir = args[self.DATA_DIR_INPUT]
@@ -157,10 +159,9 @@ class builder(base):
             msg = "Cannot read data files: {0}".format(str(sorted(unreadable)))
             self.logger.error(msg)
             raise DjerbaConfigError(msg)
-        # TODO tidy up representation of these return values, eg. by making a class to store them?
         scalars = [tumor_id, normal_id, cancer_type, cancer_desc]
         paths = [fus_path, maf_path, seg_path, gep_path]
-        return [scalars, paths, selections] 
+        return cgi_params(scalars, paths, selections)
     
     def _read_mastersheet(self, ms_path, analysis_unit):
         """Parse the mastersheet file to find tumor/normal IDs"""
@@ -181,13 +182,13 @@ class builder(base):
 
     def _read_oncotree(self, oncocode, oncotree_path):
         """Read the cancer type and cancer type description"""
-        # TODO reimplement the bash one-liners in Python
         if self.is_null(oncotree_path):
             oncotree_path = os.path.join(
                 os.path.dirname(__file__),
                 constants.DATA_DIRNAME,
                 self.DEFAULT_ONCOTREE_FILENAME 
             )
+        # TODO reimplement the bash one-liners in Python
         args_1 = """grep -iw {0} {1} | cut -f1 | sed -e 's/([^()]*)//g' | sort | uniq | sed 's/[[:space:]]*$//'""".format(oncocode, oncotree_path) # CANCER_TYPE
         args_2 = """cat {0} | tr '\t' '\n' | grep -iw {1} | sed "s/({2})//" | sed 's/[[:space:]]*$//'""".format(oncotree_path, oncocode, oncocode) # CANCER_TYPE_DESCRIPTION
         output = []
@@ -210,7 +211,7 @@ class builder(base):
         # need to prepend a dummy section header to use the configparser module
         # see https://stackoverflow.com/questions/2885190/using-configparser-to-read-a-file-without-section-name
         cp = configparser.ConfigParser()
-        section = "section"
+        section = constants.SECTION_DEFAULT
         with open(ini_path) as stream:
             cp.read_string("[{0}]\n".format(section) + stream.read())
         missing = []
@@ -266,27 +267,45 @@ class builder(base):
         # TODO create a class for the mastersheet, with input validation
         # TODO may later want to generate mastersheet within Djerba, instead of by shell script
         # "mastersheet" extracted from file provenance by 1-linkNiassa.sh
-        self._check_cgi_inputs(args)
-        cgi_data = self.read_cgi_inputs(args)
-        [scalars, paths, selections_ini] = cgi_data
-        [tumor_id, normal_id, cancer_type, cancer_desc] = scalars
-        # build the config data structure (including clinical_report_meta)
+        cgi_params = self._read_cgi_inputs(args)
         config = {}
         # populate sample attributes from the CGI data
         sample = {
             constants.SAMPLE_ID_KEY: self.sample_id,
-            constants.CANCER_TYPE_KEY: cancer_type,
+            constants.CANCER_TYPE_KEY: cgi_params.cancer_type,
             constants.CANCER_TYPE_DETAILED_KEY: args[self.ONCOTREE_CODE_INPUT],
-            constants.CANCER_TYPE_DESCRIPTION_KEY: cancer_desc,
-            constants.SEQUENZA_PLOIDY_KEY: selections_ini[self.INI_PURITY],
-            constants.SEQUENZA_PURITY_FRACTION_KEY:selections_ini[self.INI_PLOIDY]
+            constants.CANCER_TYPE_DESCRIPTION_KEY: cgi_params.cancer_desc,
+            constants.SEQUENZA_PLOIDY_KEY: cgi_params.selections.get(self.INI_PURITY),
+            constants.SEQUENZA_PURITY_FRACTION_KEY: cgi_params.selections.get(self.INI_PLOIDY)
         }
         config[constants.SAMPLES_KEY] = [sample]
-        clinical_report_meta_config = self.build_clinical_report_meta(args, cgi_data)
-        config[constants.CLINICAL_REPORT_META_KEY] = clinical_report_meta_config
-        # TODO from here on, substantially the same as older build() method
+        clinical_report_meta = self.build_clinical_report_meta(args, cgi_params)
+        config[constants.CLINICAL_REPORT_META_KEY] = clinical_report_meta
+        # from here on, same as older build() method
+        genetic_alterations = []
+        custom_config = self.build_custom(
+            args[self.CUSTOM_DIR_INPUT],
+            args[self.GENE_TSV_INPUT],
+            args[self.SAMPLE_TSV_INPUT]
+        )
+        genetic_alterations.append(custom_config)
+        mutex_config = self.build_mutex(
+            clinical_report_meta.get(constants.MAF_FILE_KEY),
+            args[self.BED_INPUT],
+            args[self.CANCER_TYPE_INPUT],
+            args[self.ONCOKB_INPUT],
+            args[self.TCGA_INPUT],
+            args[self.VCF_INPUT]
+        )
+        genetic_alterations.append(mutex_config)
+        seg_config = self.build_segmented(clinical_report_meta.get(constants.SEG_FILE_KEY))
+        genetic_alterations.append(seg_config)
+        config[constants.GENETIC_ALTERATIONS_KEY] = genetic_alterations
+        self.logger.info("Djerba configuration complete; validating against schema")
+        validator(self.logger.getEffectiveLevel(), self.log_path).validate(config, self.sample_id)
+        return config
 
-    def build_clinical_report_meta(self, args, cgi_data):
+    def build_clinical_report_meta(self, args, cgi_params):
         """Build the clinical_report_meta config object"""
         """
         Schema:
@@ -301,13 +320,25 @@ class builder(base):
 	    "maf_file": {"type": "string"},
 	    "seg_file": {"type": "string"},
 	    "fus_file": {"type": "string"},
-	    "gep_file": {"type": "string"},
-	    "out_dir": {"type": "string"}
+	    "gep_file": {"type": "string"}
 	}
         """
-        [scalars, paths, selections_ini] = cgi_data
-        [fus_path, maf_path, seg_path, gep_path] = paths
         meta = {}
+        args_keys = [
+            self.STUDY_ID_INPUT,
+            self.VERSION_NUM_INPUT,
+            self.PATIENT_ID_INPUT,
+            self.ANALYSIS_UNIT_INPUT
+        ]
+        for key in args_keys:
+            meta[key] = args.get(key)
+        meta[constants.TUMOR_ID_KEY] = cgi_params.tumor_id
+        meta[constants.NORMAL_ID_KEY] = cgi_params.normal_id
+        meta[constants.GAMMA_KEY] = cgi_params.selections.get(self.INI_GAMMA)
+        meta[constants.MAF_FILE_KEY] = cgi_params.maf_file
+        meta[constants.SEG_FILE_KEY] = cgi_params.seg_file
+        meta[constants.FUS_FILE_KEY] = cgi_params.fus_file
+        meta[constants.GEP_FILE_KEY] = cgi_params.gep_file
         return meta
 
     def build_custom(self, custom_dir, gene_tsv, sample_tsv):
@@ -410,6 +441,15 @@ class validator(base):
             self.logger.debug("No sample name supplied, omitting check")
         self.logger.info("Djerba config is valid")
         return True
+
+class cgi_params:
+    """Simple container class for results from _read_cgi_inputs"""
+
+    def __init__(self, scalars, paths, selections_config):        
+        [self.tumor_id, self.normal_id, self.cancer_type, self.cancer_desc] = scalars
+        [self.fus_path, self.maf_path, self.seg_path, self.gep_path] = paths
+        # convert the configParser to a dictionary
+        self.selections = dict(selections_config.items(constants.SECTION_DEFAULT))
 
 class DjerbaConfigError(Exception):
     pass
