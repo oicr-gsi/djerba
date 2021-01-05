@@ -198,7 +198,7 @@ class builder(base):
                       "to find tumor/normal ID: {0}".format(args)
                 self.logger.error(msg)
                 raise DjerbaConfigError(msg) from cpe
-            output.append(result.stdout.decode(constants.TEXT_ENCODING))
+            output.append(result.stdout.decode(constants.TEXT_ENCODING).rstrip()) # strip trailing whitespace
         return output
 
     def _read_oncotree(self, oncocode, oncotree_path):
@@ -221,7 +221,7 @@ class builder(base):
                       "to cancer type/description from oncotree: {0}".format(args)
                 self.logger.error(msg)
                 raise DjerbaConfigError(msg) from cpe
-            output.append(result.stdout.decode(constants.TEXT_ENCODING))
+            output.append(result.stdout.decode(constants.TEXT_ENCODING).rstrip()) # strip trailing whitespace
         return output
 
     def _read_selections(self, ini_path):
