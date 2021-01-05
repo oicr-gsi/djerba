@@ -1,0 +1,108 @@
+{
+    "clinical_report_meta": {
+        "analysis_unit": "OCT_011351_Ov_P_OCT-01-1351-CAP",
+        "fus_file": null,
+        "gamma": "700",
+        "gep_file": "/.mounts/labs/gsiprojects/gsi/djerba/cgi_builder/OCTCAP/OCT_011351/OCT_011351_Ov_P_OCT-01-1351-CAP/1/RSEM/OCT_011351_Ov_P_OCT-01-1351-CAP.genes.results",
+        "maf_file": "/.mounts/labs/gsiprojects/gsi/djerba/cgi_builder/OCTCAP/OCT_011351/OCT_011351_Ov_P_OCT-01-1351-CAP/1/variantEffectPredictor/OCT_011351_Ov_P_OCT-01-1351-CAP.maf.gz",
+        "normal_id": "OCT-01-1351-BC-10",
+        "patient_id": "OCT_011351",
+        "report_version": 1,
+        "seg_file": "/.mounts/labs/gsiprojects/gsi/djerba/cgi_builder/OCTCAP/OCT_011351/OCT_011351_Ov_P_OCT-01-1351-CAP/1/sequenza/review/700.seg",
+        "study_id": "OCTCAP",
+        "tumor_id": "OCT_011351-TS"
+    },
+    "genetic_alterations": [
+        {
+            "datatype": "CUSTOM",
+            "genetic_alteration_type": "CUSTOM_ANNOTATION",
+            "input_directory": "/u/ibancarz/git/djerba/src/test/data",
+            "input_files": {},
+            "metadata": {
+                "gene_headers": [
+                    "Gene",
+                    "Copy_State",
+                    "Drug_Annotation",
+                    "Exp_Percentile",
+                    "Exp_Z_Score",
+                    "Gene_Annotation",
+                    "Whizbam_URL",
+                    "Fusion",
+                    "Mutation_Class",
+                    "Variant_Classification",
+                    "Oncogenic_Binary"
+                ],
+                "gene_tsv": "custom_gene_annotation.tsv",
+                "sample_headers": [
+                    "SAMPLE_ID",
+                    "AGE",
+                    "CANCER_TYPE",
+                    "CANCER_TYPE_DETAILED",
+                    "CENTRE",
+                    "CLOSEST_TCGA",
+                    "COSMIC_SIGS",
+                    "DATE_REPORT",
+                    "DATE_SAMPLE_RECEIVED",
+                    "ETHNICITY",
+                    "FRAC_CALLABILITY",
+                    "HRD_SCORE",
+                    "MEAN_COVERAGE",
+                    "MSI_STATUS",
+                    "ORDERING_PHYSICIAN",
+                    "PATHOLOGICAL_REVIEW",
+                    "PATIENT_ID",
+                    "PATIENT_SUMMARY",
+                    "PCT_v7_ABOVE_80x",
+                    "REPORT_IDENTIFIER",
+                    "SAMPLE_ANATOMICAL_SITE",
+                    "SAMPLE_PRIMARY_OR_METASTASIS",
+                    "SAMPLE_TYPE",
+                    "SEQUENZA_PLOIDY",
+                    "SEQUENZA_PURITY_FRACTION",
+                    "SEX",
+                    "TCGA_PERCENTILE_ALL",
+                    "TCGA_PERCENTILE_COHORT",
+                    "TMB_PER_MB",
+                    "TMB_PLOT",
+                    "TREATMENT_STATUS",
+                    "VAF_PLOT"
+                ],
+                "sample_tsv": "custom_sample_annotation.tsv"
+            }
+        },
+        {
+            "datatype": "MAF",
+            "genetic_alteration_type": "MUTATION_EXTENDED",
+            "input_directory": "/.mounts/labs/gsiprojects/gsi/djerba/cgi_builder/OCTCAP/OCT_011351/OCT_011351_Ov_P_OCT-01-1351-CAP/1/variantEffectPredictor",
+            "input_files": {
+                "OCT-01-0472-CAP": "OCT_011351_Ov_P_OCT-01-1351-CAP.maf.gz"
+            },
+            "metadata": {
+                "bed_path": "/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed",
+                "cancer_type": "blca",
+                "filter_vcf": "/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz",
+                "oncokb_api_token": null,
+                "tcga_path": "/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt"
+            }
+        },
+        {
+            "datatype": "SEG",
+            "genetic_alteration_type": "SEGMENTED",
+            "input_directory": "/.mounts/labs/gsiprojects/gsi/djerba/cgi_builder/OCTCAP/OCT_011351/OCT_011351_Ov_P_OCT-01-1351-CAP/1/sequenza/review",
+            "input_files": {
+                "OCT-01-0472-CAP": "700.seg"
+            },
+            "metadata": {}
+        }
+    ],
+    "samples": [
+        {
+            "CANCER_TYPE": "Bowel",
+            "CANCER_TYPE_DESCRIPTION": "Bowel (BOWEL)\nBowel Cancer, NOS\nBowel (BOWEL)\nBowel (BOWEL)\nBowel (BOWEL)\nBowel (BOWEL)\nBowel (BOWEL)\nBowel (BOWEL)\nBowel (BOWEL)\nBowel (BOWEL)\nBowel (BOWEL)\nBowel (BOWEL)\nBowel (BOWEL)\nBowel (BOWEL)\nBowel (BOWEL)\nBowel (BOWEL)\nBowel (BOWEL)\nBowel (BOWEL)\nBowel (BOWEL)\nSmall Bowel Well-Differentiated Neuroendocrine Tumor (SBWDNET)\nBowel (BOWEL)\nBowel (BOWEL)\nBowel (BOWEL)\nBowel (BOWEL)\nBowel (BOWEL)\nSmall Bowel Cancer (SBC)\nSmall Bowel Cancer\nBowel (BOWEL)\nSmall Bowel Cancer (SBC)\nSmall Bowel Cancer\nBowel (BOWEL)\nSmall Bowel Cancer\nBowel (BOWEL)",
+            "CANCER_TYPE_DETAILED": "Bowel",
+            "SAMPLE_ID": "OCT-01-0472-CAP",
+            "SEQUENZA_PLOIDY": 2.8,
+            "SEQUENZA_PURITY_FRACTION": 0.23
+        }
+    ]
+}

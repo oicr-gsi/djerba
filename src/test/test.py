@@ -109,8 +109,12 @@ class TestBuilder(TestBase):
             test_builder.SEG_INPUT: self.seg
         }
         config = test_builder.build_from_cgi_inputs(builder_args)
-        with open('/u/ibancarz/tmp/new_djerba_config.json', 'w') as out_file:
-            print(json.dumps(config, indent=4, sort_keys=True), file=out_file)
+        #with open('/u/ibancarz/tmp/new_djerba_config.json', 'w') as out_file:
+        #    print(json.dumps(config, indent=4, sort_keys=True), file=out_file)
+        with open(os.path.join(self.dataDir, 'builder_expected_cgi_djerba_config.json')) as expected_file:
+            expected = json.loads(expected_file.read())
+        # TODO replace local paths in the test output
+        self.assertEqual(config, expected, "Djerba config matches expected values")
 
 class TestMetrics(TestBase):
     """Tests for genetic alteration metrics"""
