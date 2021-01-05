@@ -104,6 +104,16 @@ class TestBuilder(TestBase):
             test_builder.SEG_INPUT: seg
         }
         """
+        builder_args = {
+            test_builder.STUDY_ID_INPUT: 'hobbit',
+            test_builder.PATIENT_ID_INPUT: 'frodo',
+            test_builder.ANALYSIS_UNIT_INPUT: 'samwise',
+            test_builder.ONCOTREE_CODE_INPUT: 'merry',
+            test_builder.VERSION_NUM_INPUT: 1,
+            test_builder.DATA_DIR_INPUT: None,
+            test_builder.ONCOTREE_PATH_INPUT: None
+        }
+        config = test_builder.build_from_cgi_inputs(builder_args)
 
 class TestMetrics(TestBase):
     """Tests for genetic alteration metrics"""

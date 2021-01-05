@@ -38,7 +38,7 @@ class builder(base):
     VEP = 'variantEffectPredictor'
     RSEM = 'RSEM'
     
-    ### input keys -- old style
+    ### input keys -- old style, for "build"
     CUSTOM_DIR_INPUT = 'custom_dir'
     GENE_TSV_INPUT = GENE_TSV_KEY
     SAMPLE_TSV_INPUT = SAMPLE_TSV_KEY
@@ -49,7 +49,7 @@ class builder(base):
     TCGA_INPUT = TCGA_PATH_KEY
     VCF_INPUT = FILTER_VCF_KEY
     SEG_INPUT = 'seg'
-    ### input keys -- new style
+    ### input keys -- new style, for "build_from_cgi_inputs"
     STUDY_ID_INPUT = 'study_id'
     PATIENT_ID_INPUT = 'patient_id'
     ANALYSIS_UNIT_INPUT = 'analysis_unit'
@@ -85,7 +85,7 @@ class builder(base):
             self.ANALYSIS_UNIT_INPUT,
             self.ONCOTREE_CODE_INPUT,
             self.VERSION_NUM_INPUT,
-            self.DATA_DIR_INPUT # required but may be None
+            self.DATA_DIR_INPUT, # required but may be None
             self.ONCOTREE_PATH_INPUT # required but may be None
         ]
         if not set(required_args).equals(set(args.keys())):
