@@ -16,7 +16,7 @@
         {
             "datatype": "CUSTOM",
             "genetic_alteration_type": "CUSTOM_ANNOTATION",
-            "input_directory": "/u/ibancarz/git/djerba/src/test/data",
+            "input_directory": "/dummy/to/replace/in/tests",
             "input_files": {},
             "metadata": {
                 "gene_headers": [
