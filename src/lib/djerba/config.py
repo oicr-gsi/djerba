@@ -7,6 +7,7 @@ import logging
 import os
 import pandas as pd
 import subprocess
+from subprocess import CalledProcessError
 from glob import glob
 from jsonschema.exceptions import ValidationError, SchemaError
 from djerba.utilities.base import base
@@ -20,6 +21,7 @@ class builder(base):
     INPUT_DIRECTORY_KEY = 'input_directory'
     INPUT_FILES_KEY = 'input_files'
     METADATA_KEY = 'metadata'
+    REPORT_VERSION_KEY = 'report_version'
     # custom data
     GENE_HEADERS_KEY = 'gene_headers'
     GENE_TSV_KEY = 'gene_tsv'
@@ -86,14 +88,30 @@ class builder(base):
             self.ONCOTREE_CODE_INPUT,
             self.VERSION_NUM_INPUT,
             self.DATA_DIR_INPUT, # required but may be None
-            self.ONCOTREE_PATH_INPUT # required but may be None
+            self.ONCOTREE_PATH_INPUT, # required but may be None
+            self.CUSTOM_DIR_INPUT, # required but may be None
+            self.GENE_TSV_INPUT,
+            self.SAMPLE_TSV_INPUT,
+            self.BED_INPUT,
+	    self.CANCER_TYPE_INPUT,
+            self.ONCOKB_INPUT,
+            self.TCGA_INPUT,
+            self.VCF_INPUT,
+            self.SEG_INPUT
         ]
-        if not set(required_args).equals(set(args.keys())):
+        if not (set(required_args) == set(args.keys())):
             expected = str(sorted(required_args))
             found = str(sorted(list(args.keys())))
             msg = "Incorrect arguments; expected %s, found %s" % (expected, found)
             self.logger.error(msg)
             raise DjerbaConfigError(msg)
+
+    def _float_or_none(self, x):
+        """If x is not None, convert it to a float; raises exception if not possible"""
+        if x == None:
+            return x
+        else:
+            return float(x)
 
     def _find_fus_path(self, version_dir):
         """Find the Mavis summary path"""
@@ -101,16 +119,19 @@ class builder(base):
             version_dir, 'mavis', 'execution', 'summary', 'mavis_summary_all_WG.*.tab'
         )
         fus_paths = glob(fus_pattern)
-        error_msg = None
-        if len(fus_paths)==0:
-            error_msg = "No fusfile in %s; failure to run Mavis?" % version_dir
-        elif len(fus_paths)>1:
+        total = len(fus_paths)
+        # TODO fus_path is optional here; should it be required?
+        if total==0:
+            self.logger.warning("No fusfile in %s; failure to run Mavis?" % version_dir)
+            fus_path = None
+        elif total==1:
+            fus_path = fus_paths.pop()
+            self.logger.debug("Found fusfile: %s" % fus_path)
+        else:
             error_msg = "Multiple fusfiles in %s; " % version_dir +\
-                        "should be only one mavis_summary_all_WG.*.tab"
-        if error_msg:
+                        "should be at most one mavis_summary_all_WG.*.tab"
             self.logger.error(error_msg)
             raise DjerbaConfigError(error_msg)
-        fus_path = fus_paths.pop()
         return fus_path
 
     def _read_cgi_inputs(self, args):
@@ -124,7 +145,7 @@ class builder(base):
             data_dir = self.DEFAULT_DATA_DIR
         # find input files
         patient_dir = os.path.join(data_dir, args[self.STUDY_ID_INPUT], args[self.PATIENT_ID_INPUT])
-        version_dir = os.path.join(patient_dir, analysis_unit, version)
+        version_dir = os.path.join(patient_dir, analysis_unit, str(version))
         ms_path = os.path.join(patient_dir, "mastersheet-v{0}.psv".format(version))
         ini_path = os.path.join(version_dir, self.SEQUENZA, self.REVIEW, 'selection.ini')
         for input_path in (ms_path, ini_path):
@@ -136,7 +157,7 @@ class builder(base):
         [tumor_id, normal_id] = self._read_mastersheet(ms_path, args[self.ANALYSIS_UNIT_INPUT])
         selections = self._read_selections(ini_path)
         [cancer_type, cancer_desc] = self._read_oncotree(
-            args[self.ONCOTREE_CODE_INPUT]
+            args[self.ONCOTREE_CODE_INPUT],
             args[self.ONCOTREE_PATH_INPUT]
         )
         # construct additional file paths
@@ -153,7 +174,7 @@ class builder(base):
         # check path readability
         unreadable = []
         for file_path in [fus_path, maf_path, seg_path, gep_path]:
-            if not os.access(file_path, os.R_OK):
+            if file_path != None and not os.access(file_path, os.R_OK):
                 unreadable.append(file_path)
         if len(unreadable)>0:
             msg = "Cannot read data files: {0}".format(str(sorted(unreadable)))
@@ -166,12 +187,12 @@ class builder(base):
     def _read_mastersheet(self, ms_path, analysis_unit):
         """Parse the mastersheet file to find tumor/normal IDs"""
         # TODO reimplement the bash one-liner in Python
-        template = """awk -F "|" -v OFS="|" -v u={0} '{ if (($11 == u) && ($6 =="WG")) {print $11,$12,$15} }' {1} | awk -F "|" '!seen[$1]++' | cut -f{2} -d'|'"""
+        template = """awk -F "|" -v OFS="|" -v u=%s '{ if (($11 == u) && ($6 =="WG")) {print $11,$12,$15} }' %s | awk -F "|" '!seen[$1]++' | cut -f%s -d'|'"""
         output = []
         for col in [2,3]: # column 2 = tumor, column 3 = normal
-            args = template.format(analysis_unit, ms_path, col)
+            args = template % (analysis_unit, ms_path, col)
             try:
-                result = subprocess.run(args, capture_output=True, check=True)
+                result = subprocess.run(args, capture_output=True, check=True, shell=True)
             except CalledProcessError as cpe:
                 msg = "Non-zero exit code from bash one-liner "+\
                       "to find tumor/normal ID: {0}".format(args)
@@ -194,7 +215,7 @@ class builder(base):
         output = []
         for args in [args_1, args_2]:
             try:
-                result = subprocess.run(args, capture_output=True, check=True)
+                result = subprocess.run(args, capture_output=True, check=True, shell=True)
             except CalledProcessError as cpe:
                 msg = "Non-zero exit code from bash one-liner "+\
                       "to cancer type/description from oncotree: {0}".format(args)
@@ -206,7 +227,7 @@ class builder(base):
     def _read_selections(self, ini_path):
         """
         Read the selections INI file; check required options are present.
-        Returns a dictionary-like configparser object.
+        Returns a dictionary of key/value pairs from the INI
         """
         # need to prepend a dummy section header to use the configparser module
         # see https://stackoverflow.com/questions/2885190/using-configparser-to-read-a-file-without-section-name
@@ -225,7 +246,7 @@ class builder(base):
                   "missing: {0}".format(str(sorted(missing)))
             self.logger.error(msg)
             raise DjerbaConfigError(msg)
-        return cp[section]
+        return dict(cp.items(section))
     
     def build(self, args):
         """
@@ -270,13 +291,15 @@ class builder(base):
         cgi_params = self._read_cgi_inputs(args)
         config = {}
         # populate sample attributes from the CGI data
+        ploidy = self._float_or_none(cgi_params.selections.get(self.INI_PLOIDY))
+        purity = self._float_or_none(cgi_params.selections.get(self.INI_PURITY))
         sample = {
             constants.SAMPLE_ID_KEY: self.sample_id,
             constants.CANCER_TYPE_KEY: cgi_params.cancer_type,
             constants.CANCER_TYPE_DETAILED_KEY: args[self.ONCOTREE_CODE_INPUT],
             constants.CANCER_TYPE_DESCRIPTION_KEY: cgi_params.cancer_desc,
-            constants.SEQUENZA_PLOIDY_KEY: cgi_params.selections.get(self.INI_PURITY),
-            constants.SEQUENZA_PURITY_FRACTION_KEY: cgi_params.selections.get(self.INI_PLOIDY)
+            constants.SEQUENZA_PLOIDY_KEY: ploidy,
+            constants.SEQUENZA_PURITY_FRACTION_KEY: purity
         }
         config[constants.SAMPLES_KEY] = [sample]
         clinical_report_meta = self.build_clinical_report_meta(args, cgi_params)
@@ -326,19 +349,19 @@ class builder(base):
         meta = {}
         args_keys = [
             self.STUDY_ID_INPUT,
-            self.VERSION_NUM_INPUT,
             self.PATIENT_ID_INPUT,
             self.ANALYSIS_UNIT_INPUT
         ]
         for key in args_keys:
             meta[key] = args.get(key)
+        meta[self.REPORT_VERSION_KEY] = args.get(self.VERSION_NUM_INPUT)
         meta[constants.TUMOR_ID_KEY] = cgi_params.tumor_id
         meta[constants.NORMAL_ID_KEY] = cgi_params.normal_id
         meta[constants.GAMMA_KEY] = cgi_params.selections.get(self.INI_GAMMA)
-        meta[constants.MAF_FILE_KEY] = cgi_params.maf_file
-        meta[constants.SEG_FILE_KEY] = cgi_params.seg_file
-        meta[constants.FUS_FILE_KEY] = cgi_params.fus_file
-        meta[constants.GEP_FILE_KEY] = cgi_params.gep_file
+        meta[constants.MAF_FILE_KEY] = cgi_params.maf_path
+        meta[constants.SEG_FILE_KEY] = cgi_params.seg_path
+        meta[constants.FUS_FILE_KEY] = cgi_params.fus_path
+        meta[constants.GEP_FILE_KEY] = cgi_params.gep_path
         return meta
 
     def build_custom(self, custom_dir, gene_tsv, sample_tsv):
@@ -445,11 +468,11 @@ class validator(base):
 class cgi_params:
     """Simple container class for results from _read_cgi_inputs"""
 
-    def __init__(self, scalars, paths, selections_config):        
+    def __init__(self, scalars, paths, selections):
         [self.tumor_id, self.normal_id, self.cancer_type, self.cancer_desc] = scalars
         [self.fus_path, self.maf_path, self.seg_path, self.gep_path] = paths
         # convert the configParser to a dictionary
-        self.selections = dict(selections_config.items(constants.SECTION_DEFAULT))
+        self.selections = selections
 
 class DjerbaConfigError(Exception):
     pass

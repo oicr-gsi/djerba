@@ -41,28 +41,29 @@ class TestBuilder(TestBase):
         self.dataDir = os.path.realpath(os.path.join(self.testDir, 'data'))
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_builder_test_')
         self.sample_id = "OCT-01-0472-CAP"
+        self.seg_dir = '/.mounts/labs/gsiprojects/gsi/djerba/segmented'
+        self.bed = '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed'
+        self.tcga = '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt'
+        self.vcf = '/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/'+\
+                'ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz'
+        self.seg = os.path.join(self.seg_dir, 'OCT-01-0472-CAP.tumour.bam.varscanSomatic_Total_CN.seg')
+
 
     def test(self):
         """Test the builder class"""
         test_builder = builder(self.sample_id, log_level=logging.WARN)
         maf_dir = '/.mounts/labs/gsiprojects/gsi/djerba/mutation_extended'
-        seg_dir = '/.mounts/labs/gsiprojects/gsi/djerba/segmented'
-        bed = '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed'
-        tcga = '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt'
-        vcf = '/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/'+\
-              'ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz'
-        seg = os.path.join(seg_dir, 'OCT-01-0472-CAP.tumour.bam.varscanSomatic_Total_CN.seg')
         builder_args = {
             test_builder.CUSTOM_DIR_INPUT: self.dataDir,
             test_builder.GENE_TSV_INPUT: 'custom_gene_annotation.tsv', # gene_tsv
             test_builder.SAMPLE_TSV_INPUT: 'custom_sample_annotation.tsv', # sample_tsv
             test_builder.MAF_INPUT: os.path.join(maf_dir, 'somatic01.maf.txt.gz'),
-            test_builder.BED_INPUT: bed,
+            test_builder.BED_INPUT: self.bed,
             test_builder.CANCER_TYPE_INPUT: 'blca', # cancer_type
             test_builder.ONCOKB_INPUT: None,
-            test_builder.TCGA_INPUT: tcga,
-            test_builder.VCF_INPUT: vcf,
-            test_builder.SEG_INPUT: seg
+            test_builder.TCGA_INPUT: self.tcga,
+            test_builder.VCF_INPUT: self.vcf,
+            test_builder.SEG_INPUT: self.seg
         }
         config = test_builder.build(builder_args)
         with open(os.path.join(self.dataDir, 'builder_expected_djerba_config.json')) as expected_file:
@@ -70,7 +71,7 @@ class TestBuilder(TestBase):
         # ordering of items in genetic_alterations is fixed in the builder code
         expected[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = self.dataDir
         expected[constants.GENETIC_ALTERATIONS_KEY][1]['input_directory'] = maf_dir
-        expected[constants.GENETIC_ALTERATIONS_KEY][2]['input_directory'] = seg_dir
+        expected[constants.GENETIC_ALTERATIONS_KEY][2]['input_directory'] = self.seg_dir
         #self.maxDiff = None # uncomment to show unlimited JSON diff
         self.assertEqual(config, expected, "Djerba config matches expected values")
         # test writing a report with the generated Djerba config
@@ -88,30 +89,24 @@ class TestBuilder(TestBase):
 
     def test_cgi(self):
         """Test building from CGI inputs"""
-        test_builder = builder(self.sample_id, log_level=logging.WARN)
-        """
-        # TODO update the builder args
+        test_builder = builder(self.sample_id, log_level=logging.ERROR)
         builder_args = {
+            test_builder.STUDY_ID_INPUT: 'OCTCAP',
+            test_builder.PATIENT_ID_INPUT: 'OCT_011351',
+            test_builder.ANALYSIS_UNIT_INPUT: 'OCT_011351_Ov_P_OCT-01-1351-CAP',
+            test_builder.ONCOTREE_CODE_INPUT: 'Bowel',
+            test_builder.VERSION_NUM_INPUT: 1,
+            test_builder.DATA_DIR_INPUT: '/.mounts/labs/gsiprojects/gsi/djerba/cgi_builder',
+            test_builder.ONCOTREE_PATH_INPUT: None,
             test_builder.CUSTOM_DIR_INPUT: self.dataDir,
             test_builder.GENE_TSV_INPUT: 'custom_gene_annotation.tsv', # gene_tsv
             test_builder.SAMPLE_TSV_INPUT: 'custom_sample_annotation.tsv', # sample_tsv
-            test_builder.MAF_INPUT: os.path.join(maf_dir, 'somatic01.maf.txt.gz'),
-            test_builder.BED_INPUT: bed,
-            test_builder.CANCER_TYPE_INPUT: 'blca', # cancer_type
+            test_builder.BED_INPUT: self.bed,
+	    test_builder.CANCER_TYPE_INPUT: 'blca', # cancer_type
             test_builder.ONCOKB_INPUT: None,
-            test_builder.TCGA_INPUT: tcga,
-            test_builder.VCF_INPUT: vcf,
-            test_builder.SEG_INPUT: seg
-        }
-        """
-        builder_args = {
-            test_builder.STUDY_ID_INPUT: 'hobbit',
-            test_builder.PATIENT_ID_INPUT: 'frodo',
-            test_builder.ANALYSIS_UNIT_INPUT: 'samwise',
-            test_builder.ONCOTREE_CODE_INPUT: 'merry',
-            test_builder.VERSION_NUM_INPUT: 1,
-            test_builder.DATA_DIR_INPUT: None,
-            test_builder.ONCOTREE_PATH_INPUT: None
+            test_builder.TCGA_INPUT: self.tcga,
+            test_builder.VCF_INPUT: self.vcf,
+            test_builder.SEG_INPUT: self.seg
         }
         config = test_builder.build_from_cgi_inputs(builder_args)
 
