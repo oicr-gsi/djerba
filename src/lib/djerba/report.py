@@ -152,6 +152,7 @@ class report(uploader):
                 require_consistent,
                 overwrite
             )
+            self.logger.debug("Gene metrics after update: %s" % json.dumps(gene_metrics)[0:1000]+"...")
             self.sample.update_attributes(
                 alteration.get_attributes_for_sample(self.sample_id),
                 overwrite
@@ -163,6 +164,7 @@ class report(uploader):
             metrics = gene_metrics[gene_id]
             metrics[constants.GENE_KEY] = gene_id
             gene_metrics_list.append(metrics)
+        self.logger.debug("Example gene metrics list entry: %s" % json.dumps(gene_metrics_list[0]))
         # assemble the config data structure
         config = {}
         config[constants.SAMPLE_INFO_KEY] = self.sample.get_attributes()

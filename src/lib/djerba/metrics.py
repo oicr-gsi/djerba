@@ -94,7 +94,9 @@ class mutation_extended_gene_metrics(base):
                 self.ONCOKB: oncokb,
                 self.FDA_APPROVED_TREATMENT: self._find_treatment_string(row)
             }
-            self.logger.debug("Found metrics for gene %s" % row[self.HUGO_SYMBOL])
+        metric_string = json.dumps(self.metrics[row[self.HUGO_SYMBOL]], sort_keys=True)
+        self.logger.debug("Example of metrics for gene %s: %s" % (row[self.HUGO_SYMBOL], metric_string))
+        self.logger.info("Found mutation_extended metrics for %i genes" % len(self.metrics))
 
     def _find_columns_to_use(self, maf_path):
         """

@@ -72,6 +72,48 @@ class genetic_alteration(base):
         """
         return sorted(self.input_files.keys())
 
+    def _validate_metric_names(self, existing_metrics, new_metrics, require_consistent=True):
+        """
+        Check that metric name sets are consistent; if not, raise a warning or error.
+        Inputs are the dictionaries of metrics for a single gene, or None for existing_metrics
+        If existing_metrics are None (eg. first update in a list), nothing happens
+        """
+        if existing_metrics:
+            existing_name_set = set(existing_metrics.keys())
+            new_name_set = set(new_metrics.keys())
+            if existing_name_set != new_name_set:
+                old_names = str(sorted(list(existing_name_set)))
+                new_names = str(sorted(list(new_name_set)))
+                msg = "Gene metric name sets %s and %s are inconsistent. " % (old_names, new_names)
+                if require_consistent:
+                    msg += "Consistent name requirement is in effect; raising an error."
+                    self.logger.error(msg)
+                    raise RuntimeError(msg)
+                else:
+                    msg += "Consistent name requirement is not in effect; continuing."
+                    self.logger.warning(msg)
+
+    def _validate_gene_ids(self, existing_metrics, new_metrics, require_consistent=True):
+        """
+        Check gene ID sets are consistent; if not, raise a warning or error
+        Inputs are the dictionaries of metrics for all genes, or None for existing_metrics
+        If existing_metrics are None (eg. first update in a list), nothing happens
+        """
+        if existing_metrics and set(existing_metrics.keys()) != set(new_metrics.keys()):
+            msg = "Inconsistent gene names in genetic alteration update; "+\
+                  "run with debug logging for complete list. "
+            existing_genes = str(sorted(list(existing_metrics.keys())))
+            new_genes = str(sorted(list(new_metrics.keys())))
+            debug_msg = "Inconsistent gene names: Expected %s, found %s" % (existing_genes, new_genes)
+            self.logger.debug(debug_msg)
+            if require_consistent:
+                msg += "Consistent name requirement is in effect; raising an error."
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            else:
+                msg += "Consistent name requirement is not in effect; continuing."
+                self.logger.warning(msg)
+
     def get_alteration_id(self):
         """ID defined as 'alteration_type:datatype', eg. 'MUTATION_EXTENDED:MAF'"""
         return self.alteration_id
@@ -111,21 +153,28 @@ class genetic_alteration(base):
         """
         Update the gene metrics dictionary
         If overwrite is True, replace any existing values for a metric with new ones
-        If require_consistent is True, check all genes have the same set of metric names
+        If require_consistent is True:
+        - Check all genes have the same set of metric names
+        - Check the old and new metric sets have the same set of gene IDs
         """
         new_metrics_by_gene = self.get_metrics_by_gene(sample_id)
+        self._validate_gene_ids(metrics, new_metrics_by_gene)
         expected_names = None
+        total_genes = len(new_metrics_by_gene)
+        self.logger.debug("Updating metrics for %i genes on sample %s" % (total_genes, sample_id))
         for gene_id in new_metrics_by_gene.keys():
             # update existing metrics (if any) with new ones
+            existing_metrics = metrics.get(gene_id)
             new_metrics = new_metrics_by_gene.get(gene_id)
-            metrics_to_update = metrics.get(gene_id)
-            if metrics_to_update: # existing metrics found, update with new values
+            self._validate_metric_names(existing_metrics, new_metrics)
+            if existing_metrics: # existing metrics found, update with new values
+                before = len(existing_metrics)
                 if overwrite:
                     # for any existing metric names, overwrite old values with new ones
-                    metrics_to_update.update(new_metrics)
+                    existing_metrics.update(new_metrics)
                 else:
                     # check metrics to avoid overwriting
-                    shared_set = set(metrics_to_update.keys()).intersection(set(new_metrics.keys()))
+                    shared_set = set(existing_metrics.keys()).intersection(set(new_metrics.keys()))
                     if len(shared_set) > 0:
                         shared = ', '.join(sorted(list(shared_set)))
                         msg = "Multiple gene-level metric values found for sample "+\
@@ -134,27 +183,14 @@ class genetic_alteration(base):
                         self.logger.error(msg)
                         raise RuntimeError(msg)
                     else:
-                        metrics_to_update.update(new_metrics)
-                updated_metrics = metrics_to_update
+                        existing_metrics.update(new_metrics)
+                updated_metrics = existing_metrics
+                after = len(updated_metrics)
+                self.logger.debug("Updated from %i to %i metrics for gene %s " % (before, after, gene_id))
             else: # no existing metrics
                 updated_metrics = new_metrics
             # check the metric names for consistency with previous genes
-            if expected_names:
-                latest_names = set(updated_metrics.keys())
-                if latest_names != expected_names:
-                    old_names = str(sorted(list(expected_names)))
-                    new_names = str(sorted(list(latest_names)))
-                    msg = "Gene metric names %s and %s " % (old_names, new_names) +\
-                          "are not consistent for sample %s. " % sample_id
-                    if require_consistent:
-                        msg += "Consistent name requirement is in effect; raising an error."
-                        self.logger.error(msg)
-                        raise RuntimeError(msg)
-                    else:
-                        msg += "Consistent name requirement is not in effect; continuing."
-                        self.logger.warning(msg)
-            else:
-                expected_names = set(updated_metrics.keys())
+            self._validate_metric_names(expected_names, set(updated_metrics.keys()))
             metrics[gene_id] = updated_metrics
         return metrics
 

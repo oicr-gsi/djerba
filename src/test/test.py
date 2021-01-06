@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
-import couchdb2, hashlib, logging, json, jsonschema, os, random, subprocess, tempfile, unittest
+import couchdb2, hashlib, logging, json, jsonschema, os, random, shutil, subprocess, tempfile, unittest
+import pandas as pd
 
 from unittest.mock import Mock, patch
 
@@ -13,10 +14,20 @@ from djerba.config import builder, validator, DjerbaConfigError
 
 class TestBase(unittest.TestCase):
 
-    SCHEMA_PATH = '/.mounts/labs/gsi/modulator/sw/data/elba-config-schema-1.0.2/elba_config_schema.json' # path to Elba JSON schema
+    #SCHEMA_PATH = '/.mounts/labs/gsi/modulator/sw/data/elba-config-schema-1.0.2/elba_config_schema.json' # path to Elba JSON schema
+    # FIXME temporary path for testing schema modifications
+    SCHEMA_PATH = '/u/ibancarz/tmp/elba_config_schema.json'
     
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_test_')
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def write_tsv_omitting_columns(self, input_path, output_path, column_names):
+        """Write a copy of a TSV file with particular columns removed"""
+        df = pd.read_csv(input_path, sep="\t", index_col=False).drop(columns=column_names)
+        df.to_csv(output_path, sep="\t", index=False)
 
     def verify_checksums(self, checksums, out_dir):
         """Checksums is a dictionary: md5sum -> relative path from output directory """
@@ -30,8 +41,6 @@ class TestBase(unittest.TestCase):
                              checksums[relative_path],
                              out_path+" checksums match")
 
-    def tearDown(self):
-        self.tmp.cleanup()
 
 class TestBuilder(TestBase):
     """Tests for Elba config builder"""
@@ -90,6 +99,18 @@ class TestBuilder(TestBase):
     def test_cgi(self):
         """Test building from CGI inputs"""
         test_builder = builder(self.sample_id, log_level=logging.ERROR)
+        gene_custom = 'custom_gene_annotation.tsv'
+        sample_custom = 'custom_sample_annotation.tsv'
+        # write custom annotation files, omitting columns derived from CGI inputs to avoid conflicts
+        # this is easier than maintaining multiple slightly-different test input files
+        out_dir = os.path.join(self.tmp.name, 'djerba_cgi_builder_test')
+        os.mkdir(out_dir)
+        shutil.copyfile(os.path.join(self.dataDir, gene_custom), os.path.join(out_dir, gene_custom))
+        self.write_tsv_omitting_columns(
+            os.path.join(self.dataDir, sample_custom),
+            os.path.join(out_dir, sample_custom),
+            ['CANCER_TYPE', 'CANCER_TYPE_DETAILED', 'SEQUENZA_PLOIDY', 'SEQUENZA_PURITY_FRACTION']
+        )
         builder_args = {
             test_builder.STUDY_ID_INPUT: 'OCTCAP',
             test_builder.PATIENT_ID_INPUT: 'OCT_011351',
@@ -98,9 +119,9 @@ class TestBuilder(TestBase):
             test_builder.VERSION_NUM_INPUT: 1,
             test_builder.DATA_DIR_INPUT: '/.mounts/labs/gsiprojects/gsi/djerba/cgi_builder',
             test_builder.ONCOTREE_PATH_INPUT: None,
-            test_builder.CUSTOM_DIR_INPUT: self.dataDir,
-            test_builder.GENE_TSV_INPUT: 'custom_gene_annotation.tsv', # gene_tsv
-            test_builder.SAMPLE_TSV_INPUT: 'custom_sample_annotation.tsv', # sample_tsv
+            test_builder.CUSTOM_DIR_INPUT: out_dir, # was self.dataDir,
+            test_builder.GENE_TSV_INPUT: gene_custom,
+            test_builder.SAMPLE_TSV_INPUT: sample_custom,
             test_builder.BED_INPUT: self.bed,
 	    test_builder.CANCER_TYPE_INPUT: 'blca', # cancer_type
             test_builder.ONCOKB_INPUT: None,
@@ -109,11 +130,24 @@ class TestBuilder(TestBase):
             test_builder.SEG_INPUT: self.seg
         }
         config = test_builder.build_from_cgi_inputs(builder_args)
+        #import sys
+        #print(json.dumps(config, sort_keys=True, indent=4), file=sys.stderr)
         with open(os.path.join(self.dataDir, 'builder_expected_cgi_djerba_config.json')) as expected_file:
             expected = json.loads(expected_file.read())
         # replace dummy path for custom annotation
-        expected[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = self.dataDir
+        expected[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = out_dir
         self.assertEqual(config, expected, "Djerba config matches expected values")
+        # test writing a report with the generated Djerba config
+        out_name = 'elba_report_config.json'
+        elba_report = report(config, self.sample_id, log_level=logging.DEBUG)
+        elba_config = elba_report.get_report_config(replace_null=True)
+        with open(self.SCHEMA_PATH) as schema_file:
+            elba_schema = json.loads(schema_file.read())
+        jsonschema.validate(elba_config, elba_schema) # returns None if valid; raises exception otherwise
+        elba_report.write(elba_config, os.path.join(out_dir, out_name))
+        checksums = {out_name: '5c6dea4fc34c28de6c636a060971d39a'}
+        self.verify_checksums(checksums, out_dir)
+
 
 class TestMetrics(TestBase):
     """Tests for genetic alteration metrics"""

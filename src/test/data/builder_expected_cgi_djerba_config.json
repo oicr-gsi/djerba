@@ -16,7 +16,7 @@
         {
             "datatype": "CUSTOM",
             "genetic_alteration_type": "CUSTOM_ANNOTATION",
-            "input_directory": "/dummy/to/replace/in/tests",
+            "input_directory": "/u/ibancarz/tmp/djerba20210106",
             "input_files": {},
             "metadata": {
                 "gene_headers": [
@@ -36,8 +36,6 @@
                 "sample_headers": [
                     "SAMPLE_ID",
                     "AGE",
-                    "CANCER_TYPE",
-                    "CANCER_TYPE_DETAILED",
                     "CENTRE",
                     "CLOSEST_TCGA",
                     "COSMIC_SIGS",
@@ -57,8 +55,6 @@
                     "SAMPLE_ANATOMICAL_SITE",
                     "SAMPLE_PRIMARY_OR_METASTASIS",
                     "SAMPLE_TYPE",
-                    "SEQUENZA_PLOIDY",
-                    "SEQUENZA_PURITY_FRACTION",
                     "SEX",
                     "TCGA_PERCENTILE_ALL",
                     "TCGA_PERCENTILE_COHORT",
