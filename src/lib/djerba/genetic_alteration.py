@@ -72,40 +72,40 @@ class genetic_alteration(base):
         """
         return sorted(self.input_files.keys())
 
-    def _validate_metric_names(self, existing_metrics, new_metrics, require_consistent=True):
-        """
-        Check that metric name sets are consistent; if not, raise a warning or error.
-        Inputs are the dictionaries of metrics for a single gene, or None for existing_metrics
-        If existing_metrics are None (eg. first update in a list), nothing happens
-        """
-        if existing_metrics:
-            existing_name_set = set(existing_metrics.keys())
-            new_name_set = set(new_metrics.keys())
-            if existing_name_set != new_name_set:
-                old_names = str(sorted(list(existing_name_set)))
-                new_names = str(sorted(list(new_name_set)))
-                msg = "Gene metric name sets %s and %s are inconsistent. " % (old_names, new_names)
-                if require_consistent:
-                    msg += "Consistent name requirement is in effect; raising an error."
-                    self.logger.error(msg)
-                    raise RuntimeError(msg)
-                else:
-                    msg += "Consistent name requirement is not in effect; continuing."
-                    self.logger.warning(msg)
-
     def _validate_gene_ids(self, existing_metrics, new_metrics, require_consistent=True):
         """
         Check gene ID sets are consistent; if not, raise a warning or error
         Inputs are the dictionaries of metrics for all genes, or None for existing_metrics
-        If existing_metrics are None (eg. first update in a list), nothing happens
+        Nothing happens if:
+        - existing_metrics are None: First in a series of updates
+        - existing_metrics or new_metrics are empty: No gene-level metrics are defined
         """
-        if existing_metrics and set(existing_metrics.keys()) != set(new_metrics.keys()):
+        if existing_metrics and len(existing_metrics)>0 and len(new_metrics)>0 and \
+           set(existing_metrics.keys()) != set(new_metrics.keys()):
             msg = "Inconsistent gene names in genetic alteration update; "+\
                   "run with debug logging for complete list. "
             existing_genes = str(sorted(list(existing_metrics.keys())))
             new_genes = str(sorted(list(new_metrics.keys())))
             debug_msg = "Inconsistent gene names: Expected %s, found %s" % (existing_genes, new_genes)
             self.logger.debug(debug_msg)
+            if require_consistent:
+                msg += "Consistent name requirement is in effect; raising an error."
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            else:
+                msg += "Consistent name requirement is not in effect; continuing."
+                self.logger.warning(msg)
+
+    def _validate_metric_names(self, existing_name_set, new_name_set, require_consistent=True):
+        """
+        Check that metric name sets are consistent; if not, raise a warning or error.
+        Inputs are the sets of metric names, or None for existing_name_set
+        If existing_name_set is None (eg. first update in a list), nothing happens
+        """
+        if existing_name_set and existing_name_set != new_name_set:
+            old_names = str(sorted(list(existing_name_set)))
+            new_names = str(sorted(list(new_name_set)))
+            msg = "Gene metric name sets %s and %s are inconsistent. " % (old_names, new_names)
             if require_consistent:
                 msg += "Consistent name requirement is in effect; raising an error."
                 self.logger.error(msg)
@@ -158,7 +158,7 @@ class genetic_alteration(base):
         - Check the old and new metric sets have the same set of gene IDs
         """
         new_metrics_by_gene = self.get_metrics_by_gene(sample_id)
-        self._validate_gene_ids(metrics, new_metrics_by_gene)
+        self._validate_gene_ids(metrics, new_metrics_by_gene, require_consistent)
         expected_names = None
         total_genes = len(new_metrics_by_gene)
         self.logger.debug("Updating metrics for %i genes on sample %s" % (total_genes, sample_id))
@@ -166,7 +166,6 @@ class genetic_alteration(base):
             # update existing metrics (if any) with new ones
             existing_metrics = metrics.get(gene_id)
             new_metrics = new_metrics_by_gene.get(gene_id)
-            self._validate_metric_names(existing_metrics, new_metrics)
             if existing_metrics: # existing metrics found, update with new values
                 before = len(existing_metrics)
                 if overwrite:
@@ -190,7 +189,9 @@ class genetic_alteration(base):
             else: # no existing metrics
                 updated_metrics = new_metrics
             # check the metric names for consistency with previous genes
-            self._validate_metric_names(expected_names, set(updated_metrics.keys()))
+            updated_names = set(updated_metrics.keys())
+            self._validate_metric_names(expected_names, updated_names, require_consistent)
+            expected_names = updated_names
             metrics[gene_id] = updated_metrics
         return metrics
 
