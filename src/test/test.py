@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import couchdb2, hashlib, logging, json, jsonschema, os, random, shutil, subprocess, tempfile, unittest
+import couchdb2, gzip, hashlib, logging, json, jsonschema, os, random, subprocess, tempfile, unittest
 import pandas as pd
 
 from unittest.mock import Mock, patch
@@ -41,13 +41,15 @@ class TestBase(unittest.TestCase):
                              checksums[relative_path],
                              out_path+" checksums match")
 
-
 class TestBuilder(TestBase):
     """Tests for Elba config builder"""
 
     def setUp(self):
         self.testDir = os.path.dirname(os.path.realpath(__file__))
         self.dataDir = os.path.realpath(os.path.join(self.testDir, 'data'))
+        self.input_schema_path = os.path.realpath(
+            os.path.join(self.testDir, '..', 'lib', 'djerba', 'data', 'input_schema.json')
+        )
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_builder_test_')
         self.sample_id = "OCT-01-0472-CAP"
         self.seg_dir = '/.mounts/labs/gsiprojects/gsi/djerba/segmented'
@@ -56,7 +58,6 @@ class TestBuilder(TestBase):
         self.vcf = '/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/'+\
                 'ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz'
         self.seg = os.path.join(self.seg_dir, 'OCT-01-0472-CAP.tumour.bam.varscanSomatic_Total_CN.seg')
-
 
     def test(self):
         """Test the builder class"""
@@ -98,26 +99,33 @@ class TestBuilder(TestBase):
 
     def test_cgi(self):
         """Test building from CGI inputs"""
-        test_builder = builder(self.sample_id, log_level=logging.ERROR)
+        input_dir = '/.mounts/labs/gsiprojects/gsi/djerba/cgi_builder'
+        # construct custom annotation files
+        # this is preferred to maintaining multiple slightly-different test input files
         gene_custom = 'custom_gene_annotation.tsv'
         sample_custom = 'custom_sample_annotation.tsv'
-        # write custom annotation files, omitting columns derived from CGI inputs to avoid conflicts
-        # this is easier than maintaining multiple slightly-different test input files
         out_dir = os.path.join(self.tmp.name, 'djerba_cgi_builder_test')
         os.mkdir(out_dir)
-        shutil.copyfile(os.path.join(self.dataDir, gene_custom), os.path.join(out_dir, gene_custom))
+        # generate custom gene annotation on the fly
+        maf_path = os.path.join(
+            input_dir, 'OCTCAP', 'OCT_011351', 'OCT_011351_Ov_P_OCT-01-1351-CAP', '1',
+            'variantEffectPredictor', 'OCT_011351_Ov_P_OCT-01-1351-CAP.maf.gz'
+        )
+        self.write_custom_gene_annotation(os.path.join(out_dir, gene_custom), maf_path)
+        # write custom sample annotation, omitting columns derived from CGI inputs to avoid conflicts
         self.write_tsv_omitting_columns(
             os.path.join(self.dataDir, sample_custom),
             os.path.join(out_dir, sample_custom),
             ['CANCER_TYPE', 'CANCER_TYPE_DETAILED', 'SEQUENZA_PLOIDY', 'SEQUENZA_PURITY_FRACTION']
         )
+        test_builder = builder(self.sample_id, log_level=logging.ERROR)
         builder_args = {
             test_builder.STUDY_ID_INPUT: 'OCTCAP',
             test_builder.PATIENT_ID_INPUT: 'OCT_011351',
             test_builder.ANALYSIS_UNIT_INPUT: 'OCT_011351_Ov_P_OCT-01-1351-CAP',
             test_builder.ONCOTREE_CODE_INPUT: 'Bowel',
             test_builder.VERSION_NUM_INPUT: 1,
-            test_builder.DATA_DIR_INPUT: '/.mounts/labs/gsiprojects/gsi/djerba/cgi_builder',
+            test_builder.DATA_DIR_INPUT: input_dir,
             test_builder.ONCOTREE_PATH_INPUT: None,
             test_builder.CUSTOM_DIR_INPUT: out_dir, # was self.dataDir,
             test_builder.GENE_TSV_INPUT: gene_custom,
@@ -130,8 +138,6 @@ class TestBuilder(TestBase):
             test_builder.SEG_INPUT: self.seg
         }
         config = test_builder.build_from_cgi_inputs(builder_args)
-        #import sys
-        #print(json.dumps(config, sort_keys=True, indent=4), file=sys.stderr)
         with open(os.path.join(self.dataDir, 'builder_expected_cgi_djerba_config.json')) as expected_file:
             expected = json.loads(expected_file.read())
         # replace dummy path for custom annotation
@@ -139,15 +145,44 @@ class TestBuilder(TestBase):
         self.assertEqual(config, expected, "Djerba config matches expected values")
         # test writing a report with the generated Djerba config
         out_name = 'elba_report_config.json'
-        elba_report = report(config, self.sample_id, log_level=logging.DEBUG)
+        elba_report = report(config, self.sample_id, log_level=logging.ERROR)
         elba_config = elba_report.get_report_config(replace_null=True)
         with open(self.SCHEMA_PATH) as schema_file:
             elba_schema = json.loads(schema_file.read())
         jsonschema.validate(elba_config, elba_schema) # returns None if valid; raises exception otherwise
         elba_report.write(elba_config, os.path.join(out_dir, out_name))
-        checksums = {out_name: '5c6dea4fc34c28de6c636a060971d39a'}
+        checksums = {out_name: 'c5bcd02ab27a9b86edf71eadc3f8c3e3'}
         self.verify_checksums(checksums, out_dir)
 
+    def write_custom_gene_annotation(self, output_path, maf_path):
+        """
+        Generate custom gene annotation on the fly; useful for large gene sets
+        maf_path is used to find the gene names
+        """
+        random.seed(42) # set the seed so random values are consistent between tests
+        maf_file = gzip.open(maf_path)
+        hs = 'Hugo_Symbol'
+        gene_names = pd.read_csv(maf_file, sep="\t", usecols=[hs], comment='#')[hs].to_list()
+        custom_cols = ['Gene', 'Copy_State', 'Drug_Annotation', 'Exp_Percentile', 'Exp_Z_Score',
+                       'Gene_Annotation', 'Whizbam_URL', 'Fusion', 'Mutation_Class',
+                       'Variant_Classification', 'Oncogenic_Binary']
+        out_file = open(output_path, 'w')
+        print("\t".join(custom_cols), file=out_file)
+        for gene in gene_names:
+            outputs = [
+                gene,
+                'Neutral',
+                'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+                random.randint(0,100),
+                'NA',
+                'Nullam nulla lacus, gravida id metus ut, fermentum.',
+                'http://example.com/whizbam/%s' % gene,
+                'NA',
+                'Somatic Nonsense Mutation',
+                'NA'
+            ]
+            print("\t".join([str(x) for x in outputs]), file=out_file)
+        out_file.close()
 
 class TestMetrics(TestBase):
     """Tests for genetic alteration metrics"""
