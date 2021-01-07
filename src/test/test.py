@@ -76,6 +76,8 @@ class TestBuilder(TestBase):
             test_builder.SEG_INPUT: self.seg
         }
         config = test_builder.build(builder_args)
+        with open('/u/ibancarz/tmp/djerba_config.json', 'w') as out_file:
+            print(json.dumps(config, indent=4, sort_keys=True), file=out_file)
         with open(os.path.join(self.dataDir, 'builder_expected_djerba_config.json')) as expected_file:
             expected = json.loads(expected_file.read())
         # ordering of items in genetic_alterations is fixed in the builder code
@@ -92,9 +94,9 @@ class TestBuilder(TestBase):
         elba_config = elba_report.get_report_config(replace_null=True)
         with open(self.SCHEMA_PATH) as schema_file:
             elba_schema = json.loads(schema_file.read())
-        jsonschema.validate(elba_config, elba_schema) # returns None if valid; raises exception otherwise
+        jsonschema.validate(elba_config, elba_schema) # returns None if valid; exception otherwise
         elba_report.write(elba_config, os.path.join(out_dir, out_name))
-        checksums = {out_name: '5c6dea4fc34c28de6c636a060971d39a'}
+        checksums = {out_name: '5f6764af829169400f4e65deabb21b9d'}
         self.verify_checksums(checksums, out_dir)
 
     def test_cgi(self):
@@ -113,10 +115,10 @@ class TestBuilder(TestBase):
         )
         self.write_custom_gene_annotation(os.path.join(out_dir, gene_custom), maf_path)
         # write custom sample annotation, omitting columns derived from CGI inputs to avoid conflicts
+        drop = ['CANCER_TYPE', 'CANCER_TYPE_DESCRIPTION', 'CANCER_TYPE_DETAILED', 'SEQUENZA_PLOIDY',
+                'SEQUENZA_PURITY_FRACTION']
         self.write_tsv_omitting_columns(
-            os.path.join(self.dataDir, sample_custom),
-            os.path.join(out_dir, sample_custom),
-            ['CANCER_TYPE', 'CANCER_TYPE_DETAILED', 'SEQUENZA_PLOIDY', 'SEQUENZA_PURITY_FRACTION']
+            os.path.join(self.dataDir, sample_custom), os.path.join(out_dir, sample_custom), drop
         )
         test_builder = builder(self.sample_id, log_level=logging.ERROR)
         builder_args = {
@@ -261,7 +263,7 @@ class TestReport(TestBase):
         test_report = report(config, self.sample_id, self.SCHEMA_PATH, log_level=logging.ERROR)
         test_report.write(test_report.get_report_config(), report_path)
         self.assertTrue(os.path.exists(report_path), "JSON report exists")
-        checksum = {report_name: '8405eeb825de623446dc24c613408e18'}
+        checksum = {report_name: '57f42d44545860b6e0e6c6349aadaa08'}
         self.verify_checksums(checksum, out_dir)
         args = [config, 'nonexistent sample', self.SCHEMA_PATH, logging.CRITICAL]
         self.assertRaises(DjerbaReportError, report, *args)
@@ -351,10 +353,10 @@ class TestScripts(TestBase):
             data_2 = json.loads(file_2.read())
         self.assertDictEqual(data_1, data_2)
         checksums = {
-            'djerba_config.json': '03cde7e832df481c22f33c7d2381e27d',
-            'elba_config_1.json': '5c6dea4fc34c28de6c636a060971d39a',
-            'elba_config_2.json': '5c6dea4fc34c28de6c636a060971d39a'
-            }
+            'djerba_config.json': 'a63ac6df2f6af016b997a96da346a5ab',
+            'elba_config_1.json': '5f6764af829169400f4e65deabb21b9d',
+            'elba_config_2.json': '5f6764af829169400f4e65deabb21b9d'
+        }
         self.verify_checksums(checksums, out_dir)
 
 class TestStudy(TestBase):
