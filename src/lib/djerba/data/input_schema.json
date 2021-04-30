@@ -4,6 +4,25 @@
     "type": "object",
     "properties":
     {
+	"clinical_report_meta": {
+	    "type": "object",
+	    "properties": {
+		"report_version": {"type": ["number", "string"]},
+		"study_id": {"type": "string"},
+		"patient": {"type": "string"},
+		"analysis_unit": {"type": "string"},
+		"tumor_id": {"type": "string"},
+		"normal_id": {"type": "string"},
+		"gamma": {"type": "string"},
+		"maf_file": {"type": "string"},
+		"seg_file": {"type": "string"},
+		"fus_file": {"type": ["string", "null"]},
+		"gep_file": {"type": ["string", "null"]}
+	    },
+	    "required": [
+		"report_version"
+	    ]
+	},
 	"study_meta": {
 	    "type": "object",
 	    "properties": {
@@ -127,6 +146,7 @@
 		    "SAMPLE_ID": {"type": "string"},
 		    "COSMIC_SIGS": {"type": ["string", "null"]},
 		    "CANCER_TYPE": {"type": ["string", "null"]},
+		    "CANCER_TYPE_DESCRIPTION": {"type": ["string", "null"]},
 		    "CANCER_TYPE_DETAILED": {"type": ["string", "null"]},
 		    "CLOSEST_TCGA": {"type": ["string", "null"]},
 		    "SAMPLE_ANATOMICAL_SITE": {"type": ["string", "null"]},
@@ -136,8 +156,8 @@
 		    "MEAN_COVERAGE": {"type": ["integer", "null"]},
 		    "PCT_v7_ABOVE_80x": {"type": ["number", "null"]},
 		    "FRAC_CALLABILITY": {"type": ["number", "null"]},
-		    "SEQUENZA_PURITY_FRACTION": {"type": ["integer", "null"]},
-		    "SEQUENZA_PLOIDY": {"type": ["integer", "null"]},
+		    "SEQUENZA_PURITY_FRACTION": {"type": ["number", "null"]},
+		    "SEQUENZA_PLOIDY": {"type": ["number", "null"]},
 		    "TMB_PER_MB": {"type": ["number", "null"]},
 		    "HRD_SCORE": {"type": ["string", "null"]},
 		    "MSI_STATUS": {"type": ["string", "null"]},

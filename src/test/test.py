@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
-import couchdb2, hashlib, logging, json, jsonschema, os, random, subprocess, tempfile, unittest
+import couchdb2, gzip, hashlib, logging, json, jsonschema, os, random, subprocess, tempfile, unittest
+import pandas as pd
 
 from unittest.mock import Mock, patch
 
@@ -13,10 +14,20 @@ from djerba.config import builder, validator, DjerbaConfigError
 
 class TestBase(unittest.TestCase):
 
-    SCHEMA_PATH = '/.mounts/labs/gsi/modulator/sw/data/elba-config-schema-1.0.2/elba_config_schema.json' # path to Elba JSON schema
+    #SCHEMA_PATH = '/.mounts/labs/gsi/modulator/sw/data/elba-config-schema-1.0.2/elba_config_schema.json' # path to Elba JSON schema
+    # FIXME temporary path for testing schema modifications
+    SCHEMA_PATH = '/u/ibancarz/tmp/elba_config_schema.json'
     
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_test_')
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def write_tsv_omitting_columns(self, input_path, output_path, column_names):
+        """Write a copy of a TSV file with particular columns removed"""
+        df = pd.read_csv(input_path, sep="\t", index_col=False).drop(columns=column_names)
+        df.to_csv(output_path, sep="\t", index=False)
 
     def verify_checksums(self, checksums, out_dir):
         """Checksums is a dictionary: md5sum -> relative path from output directory """
@@ -30,43 +41,49 @@ class TestBase(unittest.TestCase):
                              checksums[relative_path],
                              out_path+" checksums match")
 
-    def tearDown(self):
-        self.tmp.cleanup()
-
 class TestBuilder(TestBase):
     """Tests for Elba config builder"""
 
     def setUp(self):
         self.testDir = os.path.dirname(os.path.realpath(__file__))
         self.dataDir = os.path.realpath(os.path.join(self.testDir, 'data'))
+        self.input_schema_path = os.path.realpath(
+            os.path.join(self.testDir, '..', 'lib', 'djerba', 'data', 'input_schema.json')
+        )
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_builder_test_')
         self.sample_id = "OCT-01-0472-CAP"
+        self.seg_dir = '/.mounts/labs/gsiprojects/gsi/djerba/segmented'
+        self.bed = '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed'
+        self.tcga = '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt'
+        self.vcf = '/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/'+\
+                'ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz'
+        self.seg = os.path.join(self.seg_dir, 'OCT-01-0472-CAP.tumour.bam.varscanSomatic_Total_CN.seg')
 
     def test(self):
         """Test the builder class"""
         test_builder = builder(self.sample_id, log_level=logging.WARN)
         maf_dir = '/.mounts/labs/gsiprojects/gsi/djerba/mutation_extended'
-        seg_dir = '/.mounts/labs/gsiprojects/gsi/djerba/segmented'
-        args = [
-            self.dataDir, # custom_dir
-            'custom_gene_annotation.tsv', # gene_tsv
-            'custom_sample_annotation.tsv', # sample_tsv
-            os.path.join(maf_dir, 'somatic01.maf.txt.gz'), # maf
-            '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/S31285117_Regions.bed', # bed
-            'blca', # cancer_type
-            None, # oncokb_token
-            '/.mounts/labs/gsiprojects/gsi/djerba/prototypes/tmb/tcga_tmbs.txt', # tcga
-            '/.mounts/labs/gsiprojects/gsi/cBioGSI/data/reference/ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz',
-            os.path.join(seg_dir, 'OCT-01-0472-CAP.tumour.bam.varscanSomatic_Total_CN.seg')
-        ]
-        # generate the Elba config
-        config = test_builder.build(*args)
+        builder_args = {
+            test_builder.CUSTOM_DIR_INPUT: self.dataDir,
+            test_builder.GENE_TSV_INPUT: 'custom_gene_annotation.tsv', # gene_tsv
+            test_builder.SAMPLE_TSV_INPUT: 'custom_sample_annotation.tsv', # sample_tsv
+            test_builder.MAF_INPUT: os.path.join(maf_dir, 'somatic01.maf.txt.gz'),
+            test_builder.BED_INPUT: self.bed,
+            test_builder.CANCER_TYPE_INPUT: 'blca', # cancer_type
+            test_builder.ONCOKB_INPUT: None,
+            test_builder.TCGA_INPUT: self.tcga,
+            test_builder.VCF_INPUT: self.vcf,
+            test_builder.SEG_INPUT: self.seg
+        }
+        config = test_builder.build(builder_args)
+        with open('/u/ibancarz/tmp/djerba_config.json', 'w') as out_file:
+            print(json.dumps(config, indent=4, sort_keys=True), file=out_file)
         with open(os.path.join(self.dataDir, 'builder_expected_djerba_config.json')) as expected_file:
             expected = json.loads(expected_file.read())
         # ordering of items in genetic_alterations is fixed in the builder code
         expected[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = self.dataDir
         expected[constants.GENETIC_ALTERATIONS_KEY][1]['input_directory'] = maf_dir
-        expected[constants.GENETIC_ALTERATIONS_KEY][2]['input_directory'] = seg_dir
+        expected[constants.GENETIC_ALTERATIONS_KEY][2]['input_directory'] = self.seg_dir
         #self.maxDiff = None # uncomment to show unlimited JSON diff
         self.assertEqual(config, expected, "Djerba config matches expected values")
         # test writing a report with the generated Djerba config
@@ -77,10 +94,97 @@ class TestBuilder(TestBase):
         elba_config = elba_report.get_report_config(replace_null=True)
         with open(self.SCHEMA_PATH) as schema_file:
             elba_schema = json.loads(schema_file.read())
+        jsonschema.validate(elba_config, elba_schema) # returns None if valid; exception otherwise
+        elba_report.write(elba_config, os.path.join(out_dir, out_name))
+        checksums = {out_name: '5f6764af829169400f4e65deabb21b9d'}
+        self.verify_checksums(checksums, out_dir)
+
+    def test_cgi(self):
+        """Test building from CGI inputs"""
+        input_dir = '/.mounts/labs/gsiprojects/gsi/djerba/cgi_builder'
+        # construct custom annotation files
+        # this is preferred to maintaining multiple slightly-different test input files
+        gene_custom = 'custom_gene_annotation.tsv'
+        sample_custom = 'custom_sample_annotation.tsv'
+        out_dir = os.path.join(self.tmp.name, 'djerba_cgi_builder_test')
+        os.mkdir(out_dir)
+        # generate custom gene annotation on the fly
+        maf_path = os.path.join(
+            input_dir, 'OCTCAP', 'OCT_011351', 'OCT_011351_Ov_P_OCT-01-1351-CAP', '1',
+            'variantEffectPredictor', 'OCT_011351_Ov_P_OCT-01-1351-CAP.maf.gz'
+        )
+        self.write_custom_gene_annotation(os.path.join(out_dir, gene_custom), maf_path)
+        # write custom sample annotation, omitting columns derived from CGI inputs to avoid conflicts
+        drop = ['CANCER_TYPE', 'CANCER_TYPE_DESCRIPTION', 'CANCER_TYPE_DETAILED', 'SEQUENZA_PLOIDY',
+                'SEQUENZA_PURITY_FRACTION']
+        self.write_tsv_omitting_columns(
+            os.path.join(self.dataDir, sample_custom), os.path.join(out_dir, sample_custom), drop
+        )
+        test_builder = builder(self.sample_id, log_level=logging.ERROR)
+        builder_args = {
+            test_builder.STUDY_ID_INPUT: 'OCTCAP',
+            test_builder.PATIENT_ID_INPUT: 'OCT_011351',
+            test_builder.ANALYSIS_UNIT_INPUT: 'OCT_011351_Ov_P_OCT-01-1351-CAP',
+            test_builder.ONCOTREE_CODE_INPUT: 'Bowel',
+            test_builder.VERSION_NUM_INPUT: 1,
+            test_builder.DATA_DIR_INPUT: input_dir,
+            test_builder.ONCOTREE_PATH_INPUT: None,
+            test_builder.CUSTOM_DIR_INPUT: out_dir, # was self.dataDir,
+            test_builder.GENE_TSV_INPUT: gene_custom,
+            test_builder.SAMPLE_TSV_INPUT: sample_custom,
+            test_builder.BED_INPUT: self.bed,
+	    test_builder.CANCER_TYPE_INPUT: 'blca', # cancer_type
+            test_builder.ONCOKB_INPUT: None,
+            test_builder.TCGA_INPUT: self.tcga,
+            test_builder.VCF_INPUT: self.vcf,
+            test_builder.SEG_INPUT: self.seg
+        }
+        config = test_builder.build_from_cgi_inputs(builder_args)
+        with open(os.path.join(self.dataDir, 'builder_expected_cgi_djerba_config.json')) as expected_file:
+            expected = json.loads(expected_file.read())
+        # replace dummy path for custom annotation
+        expected[constants.GENETIC_ALTERATIONS_KEY][0]['input_directory'] = out_dir
+        self.assertEqual(config, expected, "Djerba config matches expected values")
+        # test writing a report with the generated Djerba config
+        out_name = 'elba_report_config.json'
+        elba_report = report(config, self.sample_id, log_level=logging.ERROR)
+        elba_config = elba_report.get_report_config(replace_null=True)
+        with open(self.SCHEMA_PATH) as schema_file:
+            elba_schema = json.loads(schema_file.read())
         jsonschema.validate(elba_config, elba_schema) # returns None if valid; raises exception otherwise
         elba_report.write(elba_config, os.path.join(out_dir, out_name))
-        checksums = {out_name: '5c6dea4fc34c28de6c636a060971d39a'}
+        checksums = {out_name: 'c5bcd02ab27a9b86edf71eadc3f8c3e3'}
         self.verify_checksums(checksums, out_dir)
+
+    def write_custom_gene_annotation(self, output_path, maf_path):
+        """
+        Generate custom gene annotation on the fly; useful for large gene sets
+        maf_path is used to find the gene names
+        """
+        random.seed(42) # set the seed so random values are consistent between tests
+        maf_file = gzip.open(maf_path)
+        hs = 'Hugo_Symbol'
+        gene_names = pd.read_csv(maf_file, sep="\t", usecols=[hs], comment='#')[hs].to_list()
+        custom_cols = ['Gene', 'Copy_State', 'Drug_Annotation', 'Exp_Percentile', 'Exp_Z_Score',
+                       'Gene_Annotation', 'Whizbam_URL', 'Fusion', 'Mutation_Class',
+                       'Variant_Classification', 'Oncogenic_Binary']
+        out_file = open(output_path, 'w')
+        print("\t".join(custom_cols), file=out_file)
+        for gene in gene_names:
+            outputs = [
+                gene,
+                'Neutral',
+                'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+                random.randint(0,100),
+                'NA',
+                'Nullam nulla lacus, gravida id metus ut, fermentum.',
+                'http://example.com/whizbam/%s' % gene,
+                'NA',
+                'Somatic Nonsense Mutation',
+                'NA'
+            ]
+            print("\t".join([str(x) for x in outputs]), file=out_file)
+        out_file.close()
 
 class TestMetrics(TestBase):
     """Tests for genetic alteration metrics"""
@@ -159,7 +263,7 @@ class TestReport(TestBase):
         test_report = report(config, self.sample_id, self.SCHEMA_PATH, log_level=logging.ERROR)
         test_report.write(test_report.get_report_config(), report_path)
         self.assertTrue(os.path.exists(report_path), "JSON report exists")
-        checksum = {report_name: '8405eeb825de623446dc24c613408e18'}
+        checksum = {report_name: '57f42d44545860b6e0e6c6349aadaa08'}
         self.verify_checksums(checksum, out_dir)
         args = [config, 'nonexistent sample', self.SCHEMA_PATH, logging.CRITICAL]
         self.assertRaises(DjerbaReportError, report, *args)
@@ -249,10 +353,10 @@ class TestScripts(TestBase):
             data_2 = json.loads(file_2.read())
         self.assertDictEqual(data_1, data_2)
         checksums = {
-            'djerba_config.json': '03cde7e832df481c22f33c7d2381e27d',
-            'elba_config_1.json': '5c6dea4fc34c28de6c636a060971d39a',
-            'elba_config_2.json': '5c6dea4fc34c28de6c636a060971d39a'
-            }
+            'djerba_config.json': 'a63ac6df2f6af016b997a96da346a5ab',
+            'elba_config_1.json': '5f6764af829169400f4e65deabb21b9d',
+            'elba_config_2.json': '5f6764af829169400f4e65deabb21b9d'
+        }
         self.verify_checksums(checksums, out_dir)
 
 class TestStudy(TestBase):

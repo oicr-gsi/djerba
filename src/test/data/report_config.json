@@ -49,6 +49,7 @@
                     "SAMPLE_ID",
                     "AGE",
                     "CANCER_TYPE",
+		    "CANCER_TYPE_DESCRIPTION",
                     "CANCER_TYPE_DETAILED",
                     "CENTRE",
                     "CLOSEST_TCGA",

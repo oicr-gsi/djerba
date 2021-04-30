@@ -29,7 +29,7 @@ setup(
             'data/upload_config.json'
         ]
     },
-    install_requires=['couchdb2', 'jsonschema', 'numpy', 'pandas', 'scipy', 'statsmodels', 'PyYAML'],
+    install_requires=['configparse', 'couchdb2', 'jsonschema', 'numpy', 'pandas', 'scipy', 'statsmodels', 'PyYAML'],
     python_requires='>=3.7',
     author="Iain Bancarz",
     author_email="ibancarz@oicr.on.ca",
