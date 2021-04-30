@@ -14,9 +14,10 @@ import logging
 import os
 import pandas as pd
 import random
+import re
 import tempfile
 import yaml
-from djerba.metrics import mutation_extended_metrics
+from djerba.metrics import mutation_extended_gene_metrics, mutation_extended_sample_metrics
 from djerba.utilities import constants
 from djerba.utilities.base import base
 from djerba.utilities.tools import system_tools
@@ -37,6 +38,7 @@ class genetic_alteration(base):
     
     def __init__(self, config, study_id=None, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, "%s.%s" % (__name__, type(self).__name__), log_path)
+        self.log_path = log_path
         self.study_id = study_id # required for cBioPortal, not for Elba
         try:
             self.genetic_alteration_type = config[constants.GENETIC_ALTERATION_TYPE_KEY]
@@ -70,6 +72,48 @@ class genetic_alteration(base):
         """
         return sorted(self.input_files.keys())
 
+    def _validate_gene_ids(self, existing_metrics, new_metrics, require_consistent=True):
+        """
+        Check gene ID sets are consistent; if not, raise a warning or error
+        Inputs are the dictionaries of metrics for all genes, or None for existing_metrics
+        Nothing happens if:
+        - existing_metrics are None: First in a series of updates
+        - existing_metrics or new_metrics are empty: No gene-level metrics are defined
+        """
+        if existing_metrics and len(existing_metrics)>0 and len(new_metrics)>0 and \
+           set(existing_metrics.keys()) != set(new_metrics.keys()):
+            msg = "Inconsistent gene names in genetic alteration update; "+\
+                  "run with debug logging for complete list. "
+            existing_genes = str(sorted(list(existing_metrics.keys())))
+            new_genes = str(sorted(list(new_metrics.keys())))
+            debug_msg = "Inconsistent gene names: Expected %s, found %s" % (existing_genes, new_genes)
+            self.logger.debug(debug_msg)
+            if require_consistent:
+                msg += "Consistent name requirement is in effect; raising an error."
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            else:
+                msg += "Consistent name requirement is not in effect; continuing."
+                self.logger.warning(msg)
+
+    def _validate_metric_names(self, existing_name_set, new_name_set, require_consistent=True):
+        """
+        Check that metric name sets are consistent; if not, raise a warning or error.
+        Inputs are the sets of metric names, or None for existing_name_set
+        If existing_name_set is None (eg. first update in a list), nothing happens
+        """
+        if existing_name_set and existing_name_set != new_name_set:
+            old_names = str(sorted(list(existing_name_set)))
+            new_names = str(sorted(list(new_name_set)))
+            msg = "Gene metric name sets %s and %s are inconsistent. " % (old_names, new_names)
+            if require_consistent:
+                msg += "Consistent name requirement is in effect; raising an error."
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            else:
+                msg += "Consistent name requirement is not in effect; continuing."
+                self.logger.warning(msg)
+
     def get_alteration_id(self):
         """ID defined as 'alteration_type:datatype', eg. 'MUTATION_EXTENDED:MAF'"""
         return self.alteration_id
@@ -91,7 +135,7 @@ class genetic_alteration(base):
         """
         msg = "get_genes method of parent class; not intended for production"
         self.logger.error(msg)
-        return []
+        raise RuntimeError(msg)
 
     def get_input_path(self, sample_id):
         return os.path.join(self.input_directory, self.input_files[sample_id])
@@ -100,18 +144,64 @@ class genetic_alteration(base):
         """PLACEHOLDER. Get a dictionary of metric values for the given sample, indexed by gene."""
         msg = "get_metrics_by_gene method of parent class; not intended for production"
         self.logger.error(msg)
-        return {}
+        raise RuntimeError(msg)
 
     def get_sample_ids(self):
         return self.sample_ids
 
+    def update_gene_metrics(self, metrics, sample_id, require_consistent=True, overwrite=False):
+        """
+        Update the gene metrics dictionary
+        If overwrite is True, replace any existing values for a metric with new ones
+        If require_consistent is True:
+        - Check all genes have the same set of metric names
+        - Check the old and new metric sets have the same set of gene IDs
+        """
+        new_metrics_by_gene = self.get_metrics_by_gene(sample_id)
+        self._validate_gene_ids(metrics, new_metrics_by_gene, require_consistent)
+        expected_names = None
+        total_genes = len(new_metrics_by_gene)
+        self.logger.debug("Updating metrics for %i genes on sample %s" % (total_genes, sample_id))
+        for gene_id in new_metrics_by_gene.keys():
+            # update existing metrics (if any) with new ones
+            existing_metrics = metrics.get(gene_id)
+            new_metrics = new_metrics_by_gene.get(gene_id)
+            if existing_metrics: # existing metrics found, update with new values
+                before = len(existing_metrics)
+                if overwrite:
+                    # for any existing metric names, overwrite old values with new ones
+                    existing_metrics.update(new_metrics)
+                else:
+                    # check metrics to avoid overwriting
+                    shared_set = set(existing_metrics.keys()).intersection(set(new_metrics.keys()))
+                    if len(shared_set) > 0:
+                        shared = ', '.join(sorted(list(shared_set)))
+                        msg = "Multiple gene-level metric values found for sample "+\
+                              "%s, gene %s, metric(s): %s. " % (sample_id, gene_id, shared) +\
+                              "Overwrite mode is not in effect."
+                        self.logger.error(msg)
+                        raise RuntimeError(msg)
+                    else:
+                        existing_metrics.update(new_metrics)
+                updated_metrics = existing_metrics
+                after = len(updated_metrics)
+                self.logger.debug("Updated from %i to %i metrics for gene %s " % (before, after, gene_id))
+            else: # no existing metrics
+                updated_metrics = new_metrics
+            # check the metric names for consistency with previous genes
+            updated_names = set(updated_metrics.keys())
+            self._validate_metric_names(expected_names, updated_names, require_consistent)
+            expected_names = updated_names
+            metrics[gene_id] = updated_metrics
+        return metrics
 
 class genetic_alteration_factory(base):
     """Supply an instance of the appropriate genetic_alteration subclass for an ALTERATIONTYPE"""
 
     CLASSNAMES = {
         constants.CUSTOM_ANNOTATION_TYPE: 'custom_annotation',
-        constants.MUTATION_TYPE: 'mutation_extended'
+        constants.MUTATION_TYPE: 'mutation_extended',
+        constants.SEGMENTED_TYPE: 'segmented'
     }
 
     def __init__(self, log_level=logging.WARN, log_path=None):
@@ -129,6 +219,7 @@ class genetic_alteration_factory(base):
             self.logger.error(msg)
             raise ValueError(msg)
         klass = globals().get(classname)
+        self.logger.debug("Created instance of %s" % classname)
         return klass(config, study_id, self.log_level, self.log_path)
 
 class custom_annotation(genetic_alteration):
@@ -270,10 +361,6 @@ class mutation_extended(genetic_alteration):
     TCGA_PATH_KEY = 'tcga_path'
     CANCER_TYPE_KEY = 'cancer_type'
 
-    # MAF column headers
-    HUGO_SYMBOL = 'Hugo_Symbol'
-    CHROMOSOME = 'Chromosome'
-
     def _find_all_sample_attributes(self):
         # TODO 'cancer_type' appears in study-level config. Could read it from there and
         # insert into the genetic_alteration config structure, instead of having duplicate
@@ -288,9 +375,17 @@ class mutation_extended(genetic_alteration):
         attributes = {}
         for sample_id in self.sample_ids:
             maf_path = os.path.join(self.input_directory, self.input_files[sample_id])
-            mx_metrics = mutation_extended_metrics(maf_path, bed_path, tcga_path, cancer_type)
+            mx_metrics = mutation_extended_sample_metrics(
+                maf_path,
+                bed_path,
+                tcga_path,
+                cancer_type,
+                self.logger.getEffectiveLevel(),
+                self.log_path
+            )
             sample_attributes = {
-                constants.TMB_PER_MB_KEY: mx_metrics.get_tmb()
+                constants.TMB_PER_MB_KEY: mx_metrics.get_tmb(),
+                constants.COSMIC_SIGS_KEY: mx_metrics.get_cosmic_sigs()
             }
             attributes[sample_id] = sample_attributes
         return attributes
@@ -320,17 +415,22 @@ class mutation_extended(genetic_alteration):
         return gene_names
 
     def get_metrics_by_gene(self, sample_id):
-        """Find gene-level mutation metrics. Chromosome name only for now; can add others."""
-        df = pd.read_csv(
+        """
+        Find gene-level mutation fields using the mutation_extended_gene_metrics class:
+        - Gene
+        - Chromosome
+        - Protein Change
+        - Variant Reads And Total Reads
+        - Allele Fraction Percentile
+        - OncoKB
+        - FDA Approved Treatment
+        """
+        self.logger.debug("Finding mutation_extended gene metrics")
+        return mutation_extended_gene_metrics(
             self.get_input_path(sample_id),
-            delimiter="\t",
-            usecols=[self.HUGO_SYMBOL, self.CHROMOSOME],
-            comment="#"
-        )
-        metrics_by_gene = {}
-        for index, row in df.iterrows():
-            metrics_by_gene[row[self.HUGO_SYMBOL]] = {self.CHROMOSOME: row[self.CHROMOSOME]}
-        return metrics_by_gene
+            self.logger.getEffectiveLevel(),
+            self.log_path
+        ).get_metrics()
 
     def write_data(self, out_dir):
         """cBioPortal. Write mutation data table.
@@ -401,3 +501,44 @@ class mutation_extended(genetic_alteration):
     def write(self, out_dir):
         self.write_data(out_dir)
         self.write_meta(out_dir)
+
+class segmented(genetic_alteration):
+    """
+    Segmented data format from cBioPortal; input is SEG files.
+
+    Currently supports Elba output only, not cBioPortal.
+    """
+
+    MINIMUM_ABS_SEG_MEAN = 0.2
+
+    def _find_all_sample_attributes(self):
+        """Find FGA for each SEG file"""
+        attributes = {}
+        for sample_id in self.sample_ids:
+            seg_path = os.path.join(self.input_directory, self.input_files[sample_id])
+            sample_attributes = {
+                constants.FRACTION_GENOME_ALTERED_KEY: self._find_fga(seg_path, sample_id)
+            }
+            attributes[sample_id] = sample_attributes
+        return attributes
+
+    def _find_fga(self, seg_path, sample_id):
+        seg = pd.read_csv(seg_path, sep='\t', skiprows= 0)
+        # ID column of .seg file may be of the form ${SAMPLE_ID}.tumour.bam.varscanSomatic
+        # Match against $SAMPLE_ID, followed by end-of-string OR a dot followed by a word character
+        # Escape the $SAMPLE_ID in case it contains regex metacharacters
+        # This will not catch pathological cases, eg. two samples with respective IDs "foo" and "foo.bar"
+        seg_sample = seg.loc[seg.ID.str.match(re.escape(sample_id)+"(\.\w|$)")]
+        seg_alt = seg_sample.loc[abs(seg_sample["seg.mean"]) > self.MINIMUM_ABS_SEG_MEAN]
+        denom = sum(seg_sample['loc.end'] - seg_sample['loc.start'])
+        try:
+            fga = sum(seg_alt['loc.end'] - seg_alt['loc.start'])/denom
+        except ZeroDivisionError:
+            self.logger.warning('FGA interval has zero width; FRACTION_GENOME_ALTERED is NA')
+            fga = "NA"
+        return fga
+
+    def get_metrics_by_gene(self, sample_id):
+        """Return an empty dictionary, because SEG data has no gene-level metrics"""
+        self.logger.debug("SEG data has no gene-level metrics, only sample-level; returning empty dictionary")
+        return {}

@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## Unreleased
+### Added
+- GCGI-27: Upload config to Elba server
+  - Standalone script `upload.py`
+  - Upload options added to `djerba_from_command.py`
+  - New `uploader` class as parent of `report`
+- GCGI-30: Expand MAF processing to populate the following fields:
+  - `Gene`
+  - `Chromosome`
+  - `Protein_Change`
+  - `Allele_Fraction_Percentile`
+  - `FDA_Approved_Treatment`
+  - `OncoKB`
+  - `Variant_Reads_And_Total Reads`
+  - `TMB_PER_MB`
+  - `COSMIC_SIGS`: Placeholder only
+- GCGI-67: Input data from SEG files for the FRACTION_GENOME_ALTERED metric
+- GCGI-89: Consistency checks on metric inputs
+  - Error if a sample/gene attribute has a non-null value in more than one input source
+  - Refactoring and simplification of unit tests
+  - Reformat JSON files using `json.tool` in Python
+
 ## v0.0.3: 2020-11-10
 ### Added
 - GCGI-55: Test Elba JSON output against the schema

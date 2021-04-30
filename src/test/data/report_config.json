@@ -25,62 +25,56 @@
         }
     ],
     "genetic_alterations": [
-	        {
+        {
             "datatype": "CUSTOM",
             "genetic_alteration_type": "CUSTOM_ANNOTATION",
             "input_files": {},
             "input_directory": "/dummy/directory/replaced/in/test",
             "metadata": {
                 "gene_headers": [
-		    "Gene",
-                    "Allele_Fraction_Percentile",
-                    "Chromosome",
+                    "Gene",
                     "Copy_State",
                     "Drug_Annotation",
                     "Exp_Percentile",
                     "Exp_Z_Score",
-                    "FDA_Approved_Treatment",
                     "Gene_Annotation",
-                    "OncoKB",
-		    "Oncogenic_Binary",
-                    "Protein_Change",
-                    "Variant_Reads_And_Total_Reads",
+                    "Oncogenic_Binary",
                     "Whizbam_URL",
-		    "Fusion",
-		    "Mutation_Class",
-		    "Variant_Classification"
+                    "Fusion",
+                    "Mutation_Class",
+                    "Variant_Classification"
                 ],
                 "gene_tsv": "custom_gene_annotation.tsv",
                 "sample_headers": [
-		    "SAMPLE_ID",
+                    "SAMPLE_ID",
                     "AGE",
                     "CANCER_TYPE",
+		    "CANCER_TYPE_DESCRIPTION",
                     "CANCER_TYPE_DETAILED",
                     "CENTRE",
                     "CLOSEST_TCGA",
                     "COSMIC_SIGS",
-		    "DATE_REPORT",
-		    "DATE_SAMPLE_RECEIVED",
+                    "DATE_REPORT",
+                    "DATE_SAMPLE_RECEIVED",
                     "ETHNICITY",
-                    "FRACTION_GENOME_ALTERED",
                     "FRAC_CALLABILITY",
                     "HRD_SCORE",
                     "MEAN_COVERAGE",
                     "MSI_STATUS",
-		    "ORDERING_PHYSICIAN",
+                    "ORDERING_PHYSICIAN",
                     "PATHOLOGICAL_REVIEW",
                     "PATIENT_ID",
                     "PATIENT_SUMMARY",
                     "PCT_v7_ABOVE_80x",
-		    "REPORT_IDENTIFIER",
+                    "REPORT_IDENTIFIER",
                     "SAMPLE_ANATOMICAL_SITE",
                     "SAMPLE_PRIMARY_OR_METASTASIS",
-		    "SAMPLE_TYPE",
+                    "SAMPLE_TYPE",
                     "SEQUENZA_PLOIDY",
                     "SEQUENZA_PURITY_FRACTION",
                     "SEX",
-		    "TCGA_PERCENTILE_ALL",
-		    "TCGA_PERCENTILE_COHORT",
+                    "TCGA_PERCENTILE_ALL",
+                    "TCGA_PERCENTILE_COHORT",
                     "TMB_PER_MB",
                     "TMB_PLOT",
                     "TREATMENT_STATUS",
@@ -89,7 +83,7 @@
                 "sample_tsv": "custom_sample_annotation.tsv"
             },
             "workflow_run_id": "jabberwocky_workflow_run_0001"
-		},
+        },
         {
             "datatype": "MAF",
             "genetic_alteration_type": "MUTATION_EXTENDED",
@@ -107,31 +101,21 @@
                 "cancer_type": "blca"
             },
             "workflow_run_id": "jabberwocky_workflow_run_0001"
+        },
+        {
+            "datatype": "SEG",
+            "genetic_alteration_type": "SEGMENTED",
+            "input_files": {
+                "OCT-01-0472-CAP": "OCT-01-0472-CAP.tumour.bam.varscanSomatic_Total_CN.seg"
+            },
+            "input_directory": "/.mounts/labs/gsiprojects/gsi/djerba/segmented",
+            "metadata": {},
+            "workflow_run_id": "sequenza_workflow_run_0001"
         }
     ],
     "samples": [
         {
-            "AGE": 35,
-            "CANCER_TYPE": "Bowel",
-            "CANCER_TYPE_DETAILED": "MACR",
-            "CENTRE": "TGL",
-            "CLOSEST_TCGA": "coadread",
-            "COSMIC_SIGS": null,
-            "ETHNICITY": "Other",
-            "FRAC_CALLABILITY": null,
-            "MEAN_COVERAGE": null,
-            "PATHOLOGICAL_REVIEW": "Lots of immune cells",
-            "PATIENT_ID": "OCT-01-0472",
-            "PATIENT_SUMMARY": "Nulla a scelerisque ipsum. Aliquam erat volutpat in.",
-            "PCT_v7_ABOVE_80x": null,
-            "SAMPLE_ANATOMICAL_SITE": "OMENTUM",
-            "SAMPLE_ID": "OCT-01-0472-CAP",
-            "SAMPLE_PRIMARY_OR_METASTASIS": "Metastatic Lesion",
-            "SEQUENZA_PLOIDY": null,
-            "SEQUENZA_PURITY_FRACTION": null,
-            "SEX": "Male",
-            "TMB_PER_MB": null,
-            "TREATMENT_STATUS": "Naive"
+            "SAMPLE_ID": "OCT-01-0472-CAP"
         }
     ],
     "samples_meta": {

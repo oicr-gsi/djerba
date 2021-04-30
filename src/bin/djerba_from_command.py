@@ -24,7 +24,12 @@ def get_parser():
     )
     # General-purpose inputs
     general = parser.add_argument_group("general", "General-purpose parameters")
-    general.add_argument('--conf', metavar='PATH', help="Write intermediate Djerba config to PATH in JSON format. Allows Djerba config to be inspected or saved for later use; not required to write Elba config.")
+    general.add_argument(
+        '--conf',
+        metavar='PATH',
+        help="Write intermediate Djerba config to PATH in JSON format. Allows Djerba config "+\
+        "to be inspected or saved for later use; not required to write Elba config."
+    )
     general.add_argument('--debug', action='store_true', help="Highly verbose logging")
     general.add_argument('--force', action='store_true', help="Overwrite existing output, if any")
     general.add_argument('--log-path', metavar='PATH', help='Path of file where '+\
@@ -32,17 +37,34 @@ def get_parser():
     general.add_argument(
         '--out',
         metavar='PATH',
-        help="Output location for Elba config. File path or - for STDOUT",
-        required=True
+        help="Output location for Elba config. File path or - for STDOUT. Optional."
     )
-    parser.add_argument(
+    general.add_argument(
         '--elba-schema',
         metavar='PATH',
         help="Path to JSON schema for Elba output. Optional."
     )
+    general.add_argument(
+        '--report-id',
+        metavar='ID',
+        help='ID string for Elba database. Optional. Only takes effect if '+\
+        'an upload option is specified.'
+    )
     general.add_argument('--sample-id', metavar='ID', help='Sample ID', required=True)
     general.add_argument('--strict', action='store_true', help="Strict output checking")
     general.add_argument('--verbose', action='store_true', help="Moderately verbose logging")
+    # uploading modes
+    upload = general.add_mutually_exclusive_group()
+    upload.add_argument(
+        '--upload',
+        action='store_true',
+        help="Upload to Elba server, with default configuration"
+    )
+    upload.add_argument(
+        '--upload-config',
+        metavar='PATH',
+        help="Upload to Elba server, with custom configuration read from PATH"
+    )
     # CUSTOM_ANNOTATION
     custom = parser.add_argument_group("custom", "Parameters for CUSTOM_ANNOTATION genetic alteration")
     custom.add_argument(
@@ -71,23 +93,30 @@ def get_parser():
     mutex.add_argument('--oncokb-token', metavar='TOKEN', help="OncoKB token", required=False)
     mutex.add_argument('--tcga', metavar='PATH', help="TCGA reference file", required=True)
     mutex.add_argument('--vcf', metavar='PATH', help="Filter VCF file", required=True)
+
+    # SEGMENTED argument
+    segmented = parser.add_argument_group("seg", "Parameters for SEGMENTED genetic alteration")
+    segmented.add_argument('--seg', metavar='PATH', help="SEG data file", required=True)
+
     return parser
 
 def validate_paths(args):
     """Check that input/output paths are valid"""
     input_paths = [
         args.elba_schema,
+        args.upload_config,
         args.maf,
         args.bed,
         args.tcga,
         args.vcf,
         os.path.join(args.custom_dir, args.gene_tsv),
-        os.path.join(args.custom_dir, args.sample_tsv)
+        os.path.join(args.custom_dir, args.sample_tsv),
+        args.seg
     ]
     for i in range(len(input_paths)):
         input_path = input_paths[i]
-        if i==0 and input_path==None:
-            continue # elba_schema is optional
+        if i<2 and input_path==None:
+            continue # elba_schema and upload_config are optional
         elif not os.path.exists(input_path):
             raise OSError("Input path %s does not exist" % input_path)
         if not os.path.isfile(input_path):
@@ -97,8 +126,8 @@ def validate_paths(args):
     output_paths = [args.out, args.conf, args.log_path]
     for i in range(len(output_paths)):
         out_path = output_paths[i]
-        if i > 0 and out_path == None:
-            continue # conf and log_path are optional
+        if out_path == None:
+            continue # output paths are optional
         elif i == 0 and out_path == '-':
             continue # out may be - for STDOUT
         out_dir = os.path.realpath(os.path.dirname(out_path))
@@ -119,22 +148,34 @@ def main(args):
         log_level = logging.ERROR
     validate_paths(args)
     djerba_config_builder = builder(args.sample_id, log_level, args.log_path)
-    djerba_config = djerba_config_builder.build(
-        args.custom_dir,
-        args.gene_tsv,
-        args.sample_tsv,
-        args.maf,
-        args.bed,
-        args.cancer_type,
-        args.oncokb_token,
-        args.tcga,
-        args.vcf
-    )
+    builder_args = {
+        djerba_config_builder.CUSTOM_DIR_INPUT: args.custom_dir,
+        djerba_config_builder.GENE_TSV_INPUT: args.gene_tsv,
+        djerba_config_builder.SAMPLE_TSV_INPUT: args.sample_tsv,
+        djerba_config_builder.MAF_INPUT: args.maf,
+        djerba_config_builder.BED_INPUT: args.bed,
+        djerba_config_builder.CANCER_TYPE_INPUT: args.cancer_type,
+        djerba_config_builder.ONCOKB_INPUT: args.oncokb_token,
+        djerba_config_builder.TCGA_INPUT: args.tcga,
+        djerba_config_builder.VCF_INPUT: args.vcf,
+        djerba_config_builder.SEG_INPUT: args.seg
+    }
+    djerba_config = djerba_config_builder.build(builder_args)
+    if not (args.conf or args.upload or args.upload_config or args.out):
+        msg = "No upload or output arguments specified. Exiting without further action."
+        print(msg, file=sys.stderr)
+        sys.exit(1)
     if args.conf:
         with open(args.conf, 'w') as out:
             out.write(json.dumps(djerba_config, indent=4, sort_keys=True))
     elba_report = report(djerba_config, args.sample_id, args.elba_schema, log_level, args.log_path)
-    elba_report.write_report_config(args.out, args.force, args.strict)
+    elba_config = elba_report.get_report_config()
+    if args.upload:
+        elba_report.upload(elba_config, report_id=args.report_id)
+    elif args.upload_config:
+        elba_report.upload(elba_config, args.upload_config, args.report_id)
+    if args.out:
+        elba_report.write(elba_config, args.out, args.force)
 
 if __name__ == '__main__':
     parser = get_parser()

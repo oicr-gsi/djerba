@@ -4,9 +4,10 @@
 CNA_TYPE = 'COPY_NUMBER_ALTERATION'
 EXPRESSION_TYPE = 'MRNA_EXPRESSION'
 MUTATION_TYPE = 'MUTATION_EXTENDED'
-DEMONSTRATION_TYPE = 'DEMONSTRATION'
+SEGMENTED_TYPE = 'SEGMENTED'
 CUSTOM_ANNOTATION_TYPE = 'CUSTOM_ANNOTATION'
 DISCRETE_DATATYPE = 'DISCRETE'
+SEG_DATATYPE = 'SEG'
 
 # metadata keys for cBioPortal
 DATATYPE_KEY = 'datatype'
@@ -27,10 +28,20 @@ SAMPLE_DATATYPE = 'SAMPLE_ATTRIBUTES'
 MAF_DATATYPE = 'MAF'
 
 # keys for Elba report generation
+ELBA_DB_USER = 'ELBA_DB_USER'
+ELBA_DB_PASSWORD = 'ELBA_DB_PASSWORD'
 
 ## keys for sample attributes
+CANCER_TYPE_KEY = 'CANCER_TYPE'
+CANCER_TYPE_DETAILED_KEY = 'CANCER_TYPE_DETAILED'
+CANCER_TYPE_DESCRIPTION_KEY = 'CANCER_TYPE_DESCRIPTION'
+COSMIC_SIGS_KEY = 'COSMIC_SIGS'
 SAMPLE_ID_KEY = 'SAMPLE_ID'
+SEQUENZA_PLOIDY_KEY = 'SEQUENZA_PLOIDY'
+SEQUENZA_PURITY_FRACTION_KEY = 'SEQUENZA_PURITY_FRACTION'
 TMB_PER_MB_KEY = 'TMB_PER_MB'
+FRACTION_GENOME_ALTERED_KEY = 'FRACTION_GENOME_ALTERED'
+
 ## other
 GENE_KEY = 'Gene'
 CLINICAL_DATA_KEY = 'ClinData' # obsolete? depends on report JSON
@@ -40,6 +51,7 @@ SAMPLE_INFO_KEY = 'sample_info'
 SMALL_MUTATION_INDEL_KEY = 'smallMutAndIndel' # obsolete? depends on report JSON
 
 # keys for Djerba config
+CLINICAL_REPORT_META_KEY = 'clinical_report_meta'
 GENETIC_ALTERATIONS_KEY = 'genetic_alterations'
 REVIEW_STATUS_KEY = 'review_status'
 SAMPLE_NAME_KEY = 'sample_name'
@@ -48,6 +60,9 @@ STUDY_META_KEY = 'study_meta'
 
 # for constructing paths to supplementary data files
 DATA_DIRNAME = 'data'
+
+# default value for INI section header (required by Python ConfigParser)
+SECTION_DEFAULT = 'section'
 
 # fields for cBioPortal study metadata
 REQUIRED_STUDY_META_FIELDS = [
@@ -64,3 +79,16 @@ OPTIONAL_STUDY_META_FIELDS = [
     'add_global_case_list',
     'tags_file'
 ]
+
+# default text encoding
+TEXT_ENCODING = 'utf-8'
+
+# keys for clinical report metadata
+TUMOR_ID_KEY = 'tumor_id'
+NORMAL_ID_KEY = 'normal_id'
+GAMMA_KEY = 'gamma'
+MAF_FILE_KEY = 'maf_file'
+SEG_FILE_KEY = 'seg_file'
+FUS_FILE_KEY = 'fus_file'
+GEP_FILE_KEY = 'gep_file'
+

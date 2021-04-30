@@ -1,0 +1,5 @@
+{
+    "db_url": "couchdb-dev.gsi.oicr.on.ca",
+    "db_port": "8080",
+    "db_name": "cgi_report"
+}

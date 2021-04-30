@@ -17,17 +17,19 @@ setup(
     version=package_version,
     scripts=[
         'src/bin/djerba.py',
-        'src/bin/djerba_from_command.py'
+        'src/bin/djerba_from_command.py',
+        'src/bin/upload.py'
     ],
     packages=find_packages(where=package_root),
     package_dir={'' : package_root},
     package_data={
         'djerba': [
             'data/cancer_colours.csv',
-            'data/input_schema.json'
+            'data/input_schema.json',
+            'data/upload_config.json'
         ]
     },
-    install_requires=['jsonschema', 'numpy', 'pandas', 'scipy', 'statsmodels', 'PyYAML'],
+    install_requires=['configparse', 'couchdb2', 'jsonschema', 'numpy', 'pandas', 'scipy', 'statsmodels', 'PyYAML'],
     python_requires='>=3.7',
     author="Iain Bancarz",
     author_email="ibancarz@oicr.on.ca",
