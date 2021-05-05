@@ -29,7 +29,7 @@ class reader:
         self.sample_info = {}  # attribute name -> value
 
     def update_genes(self, genes):
-        # genes is an array of dictionaries (as specified in the output schema) for the reader to update
+        # genes is an array of dictionaries for the reader to update
         if len(genes)==0:
             genes = self.gene_metrics.values()
         else:
@@ -45,13 +45,14 @@ class reader:
                         new = metrics_for_update[key]
                         if old != new:
                             fields = (key, gene_name, str(old), str(new))
+                            msg = 
                             raise ValueError("Inconsistent values for metric %s on gene %s: Expected %s, found %s" % fields)
                     else:
                         gene[key] = metrics_for_update[key]
         return genes
 
     def update_sample(self, info):
-        # info is a dictionary of sample attributes (as specified in the output schema) for the reader to update
+        # info is a dictionary of sample attributes for the reader to update
         for key in info.keys():
             new_value = self.sample_info[key]
             if info.has_key(key):
@@ -84,7 +85,7 @@ class reader:
             if not name in self.permitted_gene_attributes:
                 errors.append("Attribute %s in sample_info is not defined in schema" % name)
         return errors
-
+            
     def validate(self):
         """Validate reader contents against the output schema -- call after reading any new data"""
         gene_errors = self.find_gene_attribute_errors()
