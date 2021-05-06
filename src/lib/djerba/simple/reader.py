@@ -6,7 +6,7 @@ class reader:
     """Parent class for Djerba data readers."""
 
     GENE_METRICS_KEY = 'gene_metrics'
-    GENE_NAME_KEY = 'gene'
+    GENE_NAME_KEY = 'Gene'
     ITEMS_KEY = 'items'
     PROPERTIES_KEY = 'properties'
     SAMPLE_INFO_KEY = 'sample_info'
@@ -31,35 +31,39 @@ class reader:
     def update_genes(self, genes):
         # genes is an array of dictionaries (as specified in the output schema) for the reader to update
         if len(genes)==0:
-            genes = self.gene_metrics.values()
+            genes = list(self.gene_metrics.values())
         else:
             # check consistency with previous entries, and update
             # cannot have two conflicting values for same gene and metric
             # TODO warn/error if genes and self.gene_metrics are of unequal length?
             for gene in genes:
-                gene_name = gene.get(self.GENE_NAME_KEY)
+                gene_name = gene[self.GENE_NAME_KEY]
                 metrics_for_update = self.gene_metrics.get(gene_name)
                 for key in metrics_for_update.keys():
-                    if gene.has_key(key): # check if metric values are consistent
+                    if key in gene: # check if metric values are consistent
                         old = gene[key]
                         new = metrics_for_update[key]
                         if old != new:
-                            fields = (key, gene_name, str(old), str(new))
-                            raise ValueError("Inconsistent values for metric %s on gene %s: Expected %s, found %s" % fields)
+                            msg = 'Inconsistent values for metric %s on gene %s. ' % (key, gene_name)+\
+                                      'Expected: %s; Found: %s' % (str(old), str(new))
+                            raise ValueError(msg)
                     else:
                         gene[key] = metrics_for_update[key]
         return genes
 
     def update_sample(self, info):
-        # info is a dictionary of sample attributes (as specified in the output schema) for the reader to update
-        for key in info.keys():
+        # info is a dictionary of sample attributes for the reader to update
+        # TODO should info be a class instead of a dictionary?
+        for key in self.sample_info.keys():
             new_value = self.sample_info[key]
-            if info.has_key(key):
+            if key in info:
                 if info[key] != new_value:
-                    fields = (key, str(info[key]), str(new_value))
-                    raise ValueError("Inconsistent values for sample attribute %s: Expected %s, found %s" % fields)
+                    msg = "Inconsistent values for sample_attribute %s: " % key +\
+                        "Expected %s, found %s" % (str(info[key]), str(new_value))
+                    raise ValueError(msg)
             else:
                 info[key] = new_value
+        return info
 
     def find_gene_attribute_errors(self):
         """Check all gene attribute names are consistent and defined in the schema"""
@@ -85,7 +89,7 @@ class reader:
                 errors.append("Attribute %s in sample_info is not defined in schema" % name)
         return errors
 
-    def validate(self):
+    def validate_with_schema(self):
         """Validate reader contents against the output schema -- call after reading any new data"""
         gene_errors = self.find_gene_attribute_errors()
         sample_errors = self.find_sample_attribute_errors()
@@ -131,4 +135,4 @@ class json_reader(reader):
         for gene in genes:
             self.gene_metrics[gene.get(self.GENE_NAME_KEY)] = gene
         self.sample_info = config.get(self.SAMPLE_INFO_KEY)
-        self.validate()
+        self.validate_with_schema()
