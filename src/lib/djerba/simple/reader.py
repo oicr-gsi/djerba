@@ -126,24 +126,23 @@ class mastersheet_reader(single_reader):
 
     ANALYSIS_UNIT_KEY = 'analysis_unit'
     MASTERSHEET_PATH_KEY = 'mastersheet_path'
+    PATIENT_ID_KEY = 'PATIENT_ID'
 
     def read(self):
-        [tumor_id, normal_id, patient_id] = [None]*3
+        patient_id = None
         ms_path = self.config.get(self.MASTERSHEET_PATH_KEY)
         with open(ms_path, newline='') as ms_file:
             csv_reader = csv.reader(ms_file, delimiter="|")
             for row in csv_reader:
                 if row[5] == 'WG' and row[10] == self.config.get(self.ANALYSIS_UNIT_KEY):
-                    tumor_id = row[11]
-                    normal_id = row[12]
+                    #tumor_id = row[11]
+                    #normal_id = row[12]
                     patient_id = row[1]
                     break
-        if not (tumor_id and normal_id and patient_id):
-            msg = "Cannot read one or more fields from mastersheet %s" % ms_path
+        if not patient_id:
+            msg = "Cannot read %s from mastersheet %s" % (self.PATIENT_ID_KEY, ms_path)
             raise RuntimeError(msg)
         attributes = {
-            self.TUMOR_ID_KEY: tumor_id,
-            self.NORMAL_ID_KEY: normal_id,
             self.PATIENT_ID_KEY: patient_id
         }
         self.sample_info = sample(attributes, self.schema)
