@@ -1,109 +1,90 @@
 """Read input data for Djerba"""
 
 import json
+import jsonschema
+from djerba.simple.containers import gene, sample
 
 class reader:
-    """Parent class for Djerba data readers."""
+    """
+    Parent class for Djerba data readers.
+
+    Subclasses need to:
+    - Read data
+    - Store it in gene and sample objects
+    - Use the objects to update self.genes and self.sample_info
+    """
 
     GENE_METRICS_KEY = 'gene_metrics'
     GENE_NAME_KEY = 'Gene'
     ITEMS_KEY = 'items'
     PROPERTIES_KEY = 'properties'
+    REVIEW_STATUS_KEY = 'review_status'
     SAMPLE_INFO_KEY = 'sample_info'
+    SAMPLE_NAME_KEY = 'sample_name'
 
-    def __init__(self, config, schema_path):
+    def __init__(self, schema_path):
         """Constructor for superclass; should be called in all subclass constructors"""
-        # TODO does config need to be an argument here?
         with open(schema_path) as schema_file:
-            schema = json.loads(schema_file.read())
-        try:
-            self.permitted_gene_attributes = set(
-                schema[self.PROPERTIES_KEY][self.GENE_METRICS_KEY][self.ITEMS_KEY][self.PROPERTIES_KEY].keys()
-            )
-            self.permitted_sample_attributes = set(
-                schema[self.PROPERTIES_KEY][self.SAMPLE_INFO_KEY][self.PROPERTIES_KEY].keys()
-            )
-        except KeyError as err:
-            raise RuntimeError('Bad schema format; could not find expected keys') from err
-        self.gene_metrics = {} # gene name -> dictionary of metrics
-        self.sample_info = {}  # attribute name -> value
+            self.schema = json.loads(schema_file.read())
+        self.genes = {} # gene name -> gene object
+        self.sample_info = None  # sample object
 
-    def update_genes(self, genes):
-        # genes is an array of dictionaries (as specified in the output schema) for the reader to update
-        if len(genes)==0:
-            genes = list(self.gene_metrics.values())
+    def get_genes(self):
+        return self.genes
+
+    def get_output(self):
+        """
+        Get final output, ready to be written as JSON
+        """
+        if not self.is_complete():
+            raise RuntimeError("Refusing to generate output from incomplete Djerba reader")
+        output = {}
+        output[self.GENE_METRICS_KEY] = [x.get_attributes() for x in self.genes.values()]
+        output[self.REVIEW_STATUS_KEY] = -1
+        output[self.SAMPLE_INFO_KEY] = self.sample_info.get_attributes()
+        output[self.SAMPLE_NAME_KEY] = self.sample_info.get_name()
+        jsonschema.validate(output, self.schema)
+        return output
+
+    def get_sample_info(self):
+        return self.sample_info
+
+    def is_complete(self):
+        complete = True
+        for gene in self.genes.values():
+            if not gene.is_complete():
+                complete = False
+                break
+        if complete: # all genes are OK, check the sample
+            complete = self.sample_info.is_complete()
+        return complete
+
+    def update_multiple_genes(self, new_genes):
+        # input an array of gene objects
+        for new_gene in new_genes:
+            self.update_single_gene(new_gene)
+
+    def update_single_gene(self, new_gene):
+        # input a single gene object
+        name = new_gene.get_name()
+        if name == None:
+            raise RunTimeError("Gene name is required")
+        elif name in self.genes:
+            self.genes[name].update(new_gene)
         else:
-            # check consistency with previous entries, and update
-            # cannot have two conflicting values for same gene and metric
-            # TODO warn/error if genes and self.gene_metrics are of unequal length?
-            for gene in genes:
-                gene_name = gene[self.GENE_NAME_KEY]
-                metrics_for_update = self.gene_metrics.get(gene_name)
-                for key in metrics_for_update.keys():
-                    if key in gene: # check if metric values are consistent
-                        old = gene[key]
-                        new = metrics_for_update[key]
-                        if old != new:
-                            msg = 'Inconsistent values for metric %s on gene %s. ' % (key, gene_name)+\
-                                      'Expected: %s; Found: %s' % (str(old), str(new))
-                            raise ValueError(msg)
-                    else:
-                        gene[key] = metrics_for_update[key]
-        return genes
+            self.genes[name] = new_gene
 
-    def update_sample(self, info):
-        # info is a dictionary of sample attributes for the reader to update
-        # TODO should info be a class instead of a dictionary?
-        for key in self.sample_info.keys():
-            new_value = self.sample_info[key]
-            if key in info:
-                if info[key] != new_value:
-                    msg = "Inconsistent values for sample_attribute %s: " % key +\
-                        "Expected %s, found %s" % (str(info[key]), str(new_value))
-                    raise ValueError(msg)
-            else:
-                info[key] = new_value
-        return info
-
-    def find_gene_attribute_errors(self):
-        """Check all gene attribute names are consistent and defined in the schema"""
-        expected_names = set()
-        errors = []
-        for gene_name in self.gene_metrics.keys():
-            gene = self.gene_metrics[gene_name]
-            names = set(gene.keys())
-            if len(expected_names)==0:
-                expected_names = names
-            elif names != expected_names:
-                errors.append("Gene %s has inconsistent attribute names" % gene_name)
-            for name in names:
-                if not name in self.permitted_gene_attributes:
-                    errors.append("Attribute %s on gene %s is not defined in schema" % (name, gene_name))
-        return errors
-
-    def find_sample_attribute_errors(self):
-        """Check all sample attribute names are defined in the schema"""
-        errors = []
-        for name in self.sample_info.keys():
-            if not name in self.permitted_gene_attributes:
-                errors.append("Attribute %s in sample_info is not defined in schema" % name)
-        return errors
-
-    def validate_with_schema(self):
-        """Validate reader contents against the output schema -- call after reading any new data"""
-        gene_errors = self.find_gene_attribute_errors()
-        sample_errors = self.find_sample_attribute_errors()
-        # TODO log the gene/sample error messages, if any
-        if len(gene_errors)==0 and len(sample_errors)==0:
-            return True
+    def update_sample_info(self, sample_info):
+        # update with a sample info object
+        if self.sample_info == None:
+            self.sample_info = sample_info
         else:
-            return False
-    
+            self.sample_info.update(sample_info)
+
 
 class reader_factory:
     """Given the config, construct a reader of the appropriate subclass"""
 
-    GENE_METRICS_KEY = "gene_metrics"
     READER_CLASS_KEY = "reader_class"
 
     def __init__(self):
@@ -129,10 +110,10 @@ class json_reader(reader):
     Supply input as JSON, as default/fallback if other sources not available
     """
 
-    def __init__(self, config, schema_path):
-        super().__init__(config, schema_path)
-        genes = config.get(self.GENE_METRICS_KEY)
-        for gene in genes:
-            self.gene_metrics[gene.get(self.GENE_NAME_KEY)] = gene
-        self.sample_info = config.get(self.SAMPLE_INFO_KEY)
-        self.validate_with_schema()
+    def update(self, config):
+        """Update from a config data structure"""
+        for attributes in config.get(self.GENE_METRICS_KEY):
+            self.update_single_gene(gene(attributes, self.schema))
+        sample_attributes = config.get(self.SAMPLE_INFO_KEY)
+        self.update_sample_info(sample(sample_attributes, self.schema))
+
