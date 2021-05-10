@@ -22,15 +22,15 @@ class reader:
     SAMPLE_INFO_KEY = 'sample_info'
     SAMPLE_NAME_KEY = 'sample_name'
 
-    def __init__(self, schema_path):
+    def __init__(self, config, schema):
         """Constructor for superclass; should be called in all subclass constructors"""
-        with open(schema_path) as schema_file:
-            self.schema = json.loads(schema_file.read())
+        self.config = config
+        self.schema = schema
         self.genes = {} # gene name -> gene object
         self.sample_info = None  # sample object
 
-    def get_genes(self):
-        return self.genes
+    def get_genes_list(self):
+        return list(self.genes.values())
 
     def get_output(self):
         """
@@ -59,6 +59,9 @@ class reader:
             complete = self.sample_info.is_complete()
         return complete
 
+    def total_genes(self):
+        return len(self.genes)
+
     def update_multiple_genes(self, new_genes):
         # input an array of gene objects
         for new_gene in new_genes:
@@ -81,6 +84,42 @@ class reader:
         else:
             self.sample_info.update(sample_info)
 
+class multiple_reader(reader):
+    """Create a list of single_reader objects; read data; collate into JSON report"""
+
+    def __init__(self, config, schema):
+        super().__init__(config, schema)
+        self.factory = reader_factory()
+        self.read_all()
+
+    def read_all(self):
+        """Similarly to single_reader, this is called as part of the constructor"""
+        for single_config in self.config: # array of reader configuration objects
+            reader = self.factory.create_instance(single_config, self.schema)
+            self.update_sample_info(reader.get_sample_info())
+            self.update_multiple_genes(reader.get_genes_list())
+
+class single_reader(reader):
+    """Read a single data source with parameters in config, using a read() method"""
+
+    def __init__(self, config, schema):
+        super().__init__(config, schema)
+        self.read()
+
+class json_reader(single_reader):
+    """
+    Reader for JSON data.
+    Supply input as JSON, as default/fallback if other sources not available
+    """
+
+    def read(self):
+        """
+        Similarly to multiple_reader, this is called as part of the constructor
+        """
+        for attributes in self.config.get(self.GENE_METRICS_KEY):
+            self.update_single_gene(gene(attributes, self.schema))
+        sample_attributes = self.config.get(self.SAMPLE_INFO_KEY)
+        self.update_sample_info(sample(sample_attributes, self.schema))
 
 class reader_factory:
     """Given the config, construct a reader of the appropriate subclass"""
@@ -90,7 +129,7 @@ class reader_factory:
     def __init__(self):
         pass
 
-    def create_instance(self, config):
+    def create_instance(self, config, schema):
         """
         Return an instance of the reader class named in the config
         Config is a dictionary with a reader_class name, plus other parameters as needed
@@ -102,18 +141,4 @@ class reader_factory:
             raise ValueError(msg)
         klass = globals().get(classname)
         #self.logger.debug("Created instance of %s" % classname)
-        return klass(config)
-
-class json_reader(reader):
-    """
-    Reader for JSON data.
-    Supply input as JSON, as default/fallback if other sources not available
-    """
-
-    def update(self, config):
-        """Update from a config data structure"""
-        for attributes in config.get(self.GENE_METRICS_KEY):
-            self.update_single_gene(gene(attributes, self.schema))
-        sample_attributes = config.get(self.SAMPLE_INFO_KEY)
-        self.update_sample_info(sample(sample_attributes, self.schema))
-
+        return klass(config, schema)
