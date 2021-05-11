@@ -16,11 +16,14 @@ class TestReader(unittest.TestCase):
         with open(schema_path) as f:
             self.schema = json.loads(f.read())
         self.config = []
-        config_filenames = ['simple_config_1.json', 'simple_config_2.json', 'simple_config_3.json']
+        config_filenames = ['json_reader_config_%d.json' % i for i in range(1,4)]
         for name in config_filenames:
             with open(os.path.join(self.dataDir, name)) as f:
                 self.config.append(json.loads(f.read()))
 
+    #def test_datasheet_reader(self):
+    #    ms_config = os.path.join(self.dataDir)
+                
     def test_json_reader(self):
         # read a config path with all fields specified
         reader1 = json_reader(self.config[0], self.schema)
