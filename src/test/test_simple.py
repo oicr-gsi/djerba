@@ -5,7 +5,7 @@ import jsonschema
 import os
 import unittest
 from jsonschema.exceptions import ValidationError
-from djerba.simple.reader import json_reader, multiple_reader
+from djerba.simple.reader import json_reader, mastersheet_reader, multiple_reader
 
 class TestReader(unittest.TestCase):
 
@@ -21,9 +21,15 @@ class TestReader(unittest.TestCase):
             with open(os.path.join(self.dataDir, name)) as f:
                 self.config.append(json.loads(f.read()))
 
-    #def test_datasheet_reader(self):
-    #    ms_config = os.path.join(self.dataDir)
-                
+    def test_mastersheet_reader(self):
+        ms_config_path = os.path.join(self.dataDir, 'mastersheet_reader_config.json')
+        with open(ms_config_path) as f:
+            ms_config = json.loads(f.read())
+        ms_config['mastersheet_path'] = os.path.join(self.dataDir, 'mastersheet-v1.psv')
+        reader = mastersheet_reader(ms_config, self.schema)
+        patient_id = reader.get_sample_info().get_attribute('PATIENT_ID')
+        self.assertEqual(patient_id, '123-456-789')
+
     def test_json_reader(self):
         # read a config path with all fields specified
         reader1 = json_reader(self.config[0], self.schema)

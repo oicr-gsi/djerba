@@ -86,6 +86,7 @@ class multiple_reader(reader):
     """Create a list of single_reader objects; read data; collate into JSON report"""
 
     def __init__(self, config, schema):
+        """config input is an iterable of single-reader config objects """
         super().__init__(config, schema)
         self.factory = reader_factory()
         self.read_all()
@@ -130,8 +131,11 @@ class mastersheet_reader(single_reader):
 
     def read(self):
         patient_id = None
-        ms_path = self.config.get(self.MASTERSHEET_PATH_KEY)
-        with open(ms_path, newline='') as ms_file:
+        for key in [self.MASTERSHEET_PATH_KEY, self.ANALYSIS_UNIT_KEY]:
+            if not key in self.config:
+                msg = "Missing required configuration parameter: %s" % key
+                raise RuntimeError(msg)
+        with open(self.config.get(self.MASTERSHEET_PATH_KEY), newline='') as ms_file:
             csv_reader = csv.reader(ms_file, delimiter="|")
             for row in csv_reader:
                 if row[5] == 'WG' and row[10] == self.config.get(self.ANALYSIS_UNIT_KEY):
@@ -140,16 +144,14 @@ class mastersheet_reader(single_reader):
                     patient_id = row[1]
                     break
         if not patient_id:
-            msg = "Cannot read %s from mastersheet %s" % (self.PATIENT_ID_KEY, ms_path)
+            msg = "Cannot find %s in mastersheet %s" % (self.PATIENT_ID_KEY, ms_path)
             raise RuntimeError(msg)
         attributes = {
             self.PATIENT_ID_KEY: patient_id
         }
         self.sample_info = sample(attributes, self.schema)
 
-    # TODO test on a real mastersheet (eg. /.mounts/labs/CGI/cap/PASS01/PANX_1219/mastersheet-v1.psv) and merge with data from a JSON reader to make a complete report
-
-# TODO more readers for mastersheet, mafffile, segfile, fusfile, gepfile
+# TODO more readers for mafffile, segfile, fusfile, gepfile
 # upstream "builder" class to find where these files are, and generate a reader config
 # cf. config.build_clinical_report_meta
 
