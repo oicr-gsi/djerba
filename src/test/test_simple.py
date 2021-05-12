@@ -1,12 +1,40 @@
 #! /usr/bin/env python3
 
+import hashlib
 import json
 import jsonschema
 import os
+import tempfile
 import unittest
 from jsonschema.exceptions import ValidationError
+from djerba.simple.processor import processor
 from djerba.simple.reader import json_reader, mastersheet_reader, multiple_reader
 
+class TestProcessor(unittest.TestCase):
+
+    def getMD5(self, inputPath):
+        md5 = hashlib.md5()
+        with open(inputPath, 'rb') as f:
+            md5.update(f.read())
+        return md5.hexdigest()
+
+    def setUp(self):
+        self.testDir = os.path.dirname(os.path.realpath(__file__))
+        self.dataDir = os.path.realpath(os.path.join(self.testDir, 'data'))
+        self.tmp = tempfile.TemporaryDirectory(prefix='djerba_simple_test_processor_')
+        self.tmpDir = self.tmp.name
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_writeIniParams(self):
+        # TODO sanitize the ini and commit to repo
+        iniPath = '/home/iain/oicr/workspace/djerba/test_data/PANX_1249_Lv_M_100-PM-013_LCM5/1/report/report_configuration.ini'
+        outDir = '/home/iain/tmp/djerba/test'
+        processor(iniPath, outDir).run()
+        sampleParamsPath = os.path.join(outDir, 'sample_params.json')
+        self.assertEqual(self.getMD5(sampleParamsPath), '26757d8f945df33087bbe47c328dcf22')
+    
 class TestReader(unittest.TestCase):
 
     def setUp(self):
