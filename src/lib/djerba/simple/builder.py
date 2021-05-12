@@ -1,33 +1,32 @@
-"""Build CGI report JSON for Djerba"""
+"""Scan files/directories to locate inputs and build configuration for reader objects"""
 
-from reader import reader_factory
+import json
 
 class builder:
 
-    GENE_METRICS_KEY = 'gene_metrics'
-    SAMPLE_INFO_KEY = 'sample_info'
-    
-    def __init__(self, config):
-        """config is a JSON data structure: List of objects to configure readers"""
-        self.readers = []
-        factory = reader_factory()
-        for config_item in config:
-            self.readers.append(factory.create_instance(config_item))
+    """Build configuration for readers"""
+
+    def __init__(self, analysis_unit):
+        self.analysis_unit = analysis_unit
 
     def build(self):
-        """Build the CGI report JSON structure"""
-        pass
+        """Build all configuration objects"""
+        configs = []
+        return configs
 
-    def build_gene_metrics(self):
-        """Build the gene metrics array"""
-        genes = []
-        for reader in self.readers:
-            genes = reader.update_genes(genes)
-        return genes
+    def build_json(self, input_paths):
+        """Build config for json readers, by simply reading the config files"""
+        configs = []
+        for input_path in input_paths:
+            with open(input_path) as f:
+                configs.append(json.loads(f.read()))
+        return configs
 
-    def build_sample_info(self):
-        """Build the sample info dictionary"""
-        info = {}
-        for reader in self.readers:
-            info = reader.update_sample(info)
-        return info
+    def build_mastersheet(self, mastersheet_path):
+        """Build config for a mastersheet reader"""
+        config = {
+            "analysis_unit": self.analysis_unit,
+            "mastersheet_path": mastersheet_path,
+            "reader_class": "mastersheet_reader"
+        }
+        return config
