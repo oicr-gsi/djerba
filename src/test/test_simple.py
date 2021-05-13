@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import configparser
 import hashlib
 import json
 import jsonschema
@@ -38,7 +39,12 @@ class TestProcessor(TestBase):
         # TODO sanitize the ini and commit to repo
         iniPath = '/home/iain/oicr/workspace/djerba/test_data/PANX_1249_Lv_M_100-PM-013_LCM5/1/report/report_configuration.ini'
         outDir = '/home/iain/tmp/djerba/test'
-        processor(iniPath, outDir).run()
+        with open(iniPath) as iniFile:
+            # prepend header required by configparser; TODO import from constants
+            configString = "[%s]\n%s" % ('REPORT_CONFIG', iniFile.read())
+        config = configparser.ConfigParser()
+        config.read_string(configString)
+        processor(config, outDir).run()
         sampleParamsPath = os.path.join(outDir, 'sample_params.json')
         self.assertEqual(self.getMD5(sampleParamsPath), 'c539ae365d6fc754a3bb9b074d618607')
     

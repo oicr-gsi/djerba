@@ -1,11 +1,15 @@
 """Run Djerba, eg. on the command line"""
 
+import configparser
+
 import json
 import os
 from djerba.simple.preprocess.processor import processor
 from djerba.simple.build.reader import multiple_reader
 
 class runner:
+
+    HEADER = 'REPORT_CONFIG'
 
     def __init__(self, iniPath, workDir, outPath, schemaPath,
                  overwrite=False, require_complete=False, validate=False):
@@ -37,7 +41,12 @@ class runner:
         self.validate = validate
 
     def run(self):
-        preprocessor = processor(self.iniPath, self.workDir)
+        with open(self.iniPath) as iniFile:
+            # prepend header required by configparser
+            configString = "[%s]\n%s" % (self.HEADER, iniFile.read())
+        config = configparser.ConfigParser()
+        config.read_string(configString)
+        preprocessor = processor(config, self.workDir)
         preprocessor.run()
         configs = []
         for configPath in preprocessor.getConfigPaths():

@@ -1,6 +1,5 @@
 """Pre-process data, so it can be read into a clinical report JSON document"""
 
-import configparser
 import json
 import os
 
@@ -11,18 +10,16 @@ class processor:
     Output: Directory of .txt and .json files for downstream processing
     """
 
-    HEADER = 'REPORT_CONFIG'
+    HEADER = 'REPORT_CONFIG' # TODO redundant with runner.py
     READER_CLASS_KEY = 'reader_class' # TODO redundant with reader.py
     SAMPLE_INFO_KEY = 'sample_info'
     SAMPLE_PARAMS_FILENAME = 'sample_params.json'
 
     
-    def __init__(self, iniPath, outDir):
+    def __init__(self, config, outDir):
+        # config is a ConfigParser object with required parameters (eg. from INI file)
         # INI section header is required by Python configparser, but not written by upstream script
-        with open(iniPath) as iniFile:
-            configString = "[%s]\n%s" % (self.HEADER, iniFile.read())
-        self.config = configparser.ConfigParser()
-        self.config.read_string(configString)
+        self.config = config
         self.outDir = outDir
         self.configPaths = []
 
