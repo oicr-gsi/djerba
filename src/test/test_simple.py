@@ -4,6 +4,7 @@ import hashlib
 import json
 import jsonschema
 import os
+import subprocess
 import tempfile
 import unittest
 from jsonschema.exceptions import ValidationError
@@ -98,16 +99,32 @@ class TestReader(TestBase):
 
 class TestRunner(TestBase):
 
+    def setUp(self):
+        super().setUp()
+        self.iniPath = '/home/iain/oicr/workspace/djerba/test_data/PANX_1249_Lv_M_100-PM-013_LCM5/1/report/report_configuration.ini'
+        self.workDir = os.path.join(self.tmpDir, 'work')
+        os.mkdir(self.workDir)
+        
     def test_runner(self):
-        iniPath = '/home/iain/oicr/workspace/djerba/test_data/PANX_1249_Lv_M_100-PM-013_LCM5/1/report/report_configuration.ini'
-        workDir = os.path.join(self.tmpDir, 'work')
-        os.mkdir(workDir)
-        outDir = '/home/iain/tmp/djerba/test'
         #outPath = os.path.join(self.tmpDir, 'report.json')
+        outDir = '/home/iain/tmp/djerba/test'
         outPath = os.path.join(outDir, 'report.json')
-        runner(iniPath, workDir, outPath, self.schema_path).run()
+        runner(self.iniPath, self.workDir, outPath, self.schema_path).run()
         self.assertEqual(self.getMD5(outPath), 'b2feb4a44f6ce98398d68e7148ab4682')
 
+    def test_script(self):
+        outDir = '/home/iain/tmp/djerba/script'
+        outPath = os.path.join(outDir, 'report.json')
+        cmd = [
+            "djerba_simple.py", 
+            "--ini", self.iniPath,
+            "--out", outPath,
+            "--schema", self.schema_path,
+            "--ini", self.iniPath,
+            "--work-dir", self.workDir
+        ]
+        subprocess.run(cmd)
+        self.assertEqual(self.getMD5(outPath), 'b2feb4a44f6ce98398d68e7148ab4682')
 
 if __name__ == '__main__':
     unittest.main()
