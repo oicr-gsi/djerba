@@ -26,6 +26,7 @@ class container:
         for key in self.attributes.keys():
             if not key in self.permitted_attributes:
                 msg = "Key '%s' is not permitted by schema" % str(key)
+                msg += "\nPermitted attributes: "+str(sorted(list(self.permitted_attributes)))
                 raise ValueError(msg)                
 
     def _get_permitted_attributes(self, schema):

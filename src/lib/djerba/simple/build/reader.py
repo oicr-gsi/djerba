@@ -33,18 +33,19 @@ class reader:
     def get_genes_list(self):
         return list(self.genes.values())
 
-    def get_output(self):
+    def get_output(self, require_complete=True, validate=True):
         """
         Get final output, ready to be written as JSON
         """
-        if not self.is_complete():
+        if require_complete and not self.is_complete():
             raise RuntimeError("Refusing to generate output from incomplete Djerba reader")
         output = {}
         output[self.GENE_METRICS_KEY] = [x.get_attributes() for x in self.genes.values()]
         output[self.REVIEW_STATUS_KEY] = -1
         output[self.SAMPLE_INFO_KEY] = self.sample_info.get_attributes()
         output[self.SAMPLE_NAME_KEY] = self.sample_info.get_name()
-        jsonschema.validate(output, self.schema)
+        if validate:
+            jsonschema.validate(output, self.schema)
         return output
 
     def get_sample_info(self):
@@ -115,10 +116,14 @@ class json_reader(single_reader):
         """
         Similarly to multiple_reader, this is called as part of the constructor
         """
-        for attributes in self.config.get(self.GENE_METRICS_KEY):
-            self.update_single_gene(gene(attributes, self.schema))
+        gene_metrics = self.config.get(self.GENE_METRICS_KEY)
+        if gene_metrics:
+            for attributes in gene_metrics:
+                self.update_single_gene(gene(attributes, self.schema))
         sample_attributes = self.config.get(self.SAMPLE_INFO_KEY)
-        self.update_sample_info(sample(sample_attributes, self.schema))
+        if sample_attributes:
+            self.update_sample_info(sample(sample_attributes, self.schema))
+        # TODO warn if both gene metrics and sample attributes are missing
 
 class mastersheet_reader(single_reader):
     """

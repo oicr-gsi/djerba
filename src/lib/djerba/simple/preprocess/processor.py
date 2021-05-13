@@ -12,8 +12,10 @@ class processor:
     """
 
     HEADER = 'REPORT_CONFIG'
+    READER_CLASS_KEY = 'reader_class' # TODO redundant with reader.py
     SAMPLE_INFO_KEY = 'sample_info'
     SAMPLE_PARAMS_FILENAME = 'sample_params.json'
+
     
     def __init__(self, iniPath, outDir):
         # INI section header is required by Python configparser, but not written by upstream script
@@ -21,18 +23,16 @@ class processor:
             configString = "[%s]\n%s" % (self.HEADER, iniFile.read())
         self.config = configparser.ConfigParser()
         self.config.read_string(configString)
-        if not os.path.exists(outDir):
-            raise RuntimeError("Output path %s does not exist" % outDir)
-        if not os.path.isdir(outDir):
-            raise RuntimeError("Output path %s is not a directory" % outDir)
-        if not os.access(outDir, os.W_OK):
-            raise RuntimeError("Output path %s is not writable" % outDir)
-        # TODO warn if outDir is not empty?
         self.outDir = outDir
-        
+        self.configPaths = []
+
+    def getConfigPaths(self):
+        """JSON configuration paths to create reader objects and build the report"""
+        return self.configPaths
+
     def run(self):
         """Run all processing and write output"""
-        self.writeIniParams()
+        self.configPaths.append(self.writeIniParams())
 
     def writeIniParams(self):
         """
@@ -46,12 +46,10 @@ class processor:
             'CANCER_TYPE',
             'CANCER_TYPE_DETAILED',
             'CANCER_TYPE_DESCRIPTION',
-            'DATE_SAMPLE_RECIEVED',
+            'DATE_SAMPLE_RECEIVED',
             'CLOSEST_TCGA',
             'SAMPLE_ANATOMICAL_SITE',
             'SAMPLE_PRIMARY_OR_METASTASIS',
-            'QC_STATUS',
-            'QC_COMMENT',
             'SEX'
         ]
         floatKeys = [
@@ -66,5 +64,11 @@ class processor:
             sampleParams[key] = self.config[self.HEADER][key].strip('"')
         for key in floatKeys:
             sampleParams[key] = float(self.config[self.HEADER][key])
-        with open(os.path.join(self.outDir, self.SAMPLE_PARAMS_FILENAME), 'w') as out:
-            out.write(json.dumps({self.SAMPLE_INFO_KEY: sampleParams}, sort_keys=True, indent=4))
+        config = {
+            self.READER_CLASS_KEY: 'json_reader',
+            self.SAMPLE_INFO_KEY: sampleParams
+        }
+        outPath = os.path.join(self.outDir, self.SAMPLE_PARAMS_FILENAME)
+        with open(outPath, 'w') as out:
+            out.write(json.dumps(config, sort_keys=True, indent=4))
+        return outPath

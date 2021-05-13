@@ -9,8 +9,9 @@ import unittest
 from jsonschema.exceptions import ValidationError
 from djerba.simple.preprocess.processor import processor
 from djerba.simple.build.reader import json_reader, mastersheet_reader, multiple_reader
+from djerba.simple.runner import runner
 
-class TestProcessor(unittest.TestCase):
+class TestBase(unittest.TestCase):
 
     def getMD5(self, inputPath):
         md5 = hashlib.md5()
@@ -21,11 +22,16 @@ class TestProcessor(unittest.TestCase):
     def setUp(self):
         self.testDir = os.path.dirname(os.path.realpath(__file__))
         self.dataDir = os.path.realpath(os.path.join(self.testDir, 'data'))
-        self.tmp = tempfile.TemporaryDirectory(prefix='djerba_simple_test_processor_')
+        self.tmp = tempfile.TemporaryDirectory(prefix='djerba_simple_')
         self.tmpDir = self.tmp.name
+        self.schema_path = '/home/iain/oicr/git/elba-config-schema/elba_config_schema.json'
+        with open(self.schema_path) as f:
+            self.schema = json.loads(f.read())
 
     def tearDown(self):
         self.tmp.cleanup()
+
+class TestProcessor(TestBase):
 
     def test_writeIniParams(self):
         # TODO sanitize the ini and commit to repo
@@ -33,16 +39,12 @@ class TestProcessor(unittest.TestCase):
         outDir = '/home/iain/tmp/djerba/test'
         processor(iniPath, outDir).run()
         sampleParamsPath = os.path.join(outDir, 'sample_params.json')
-        self.assertEqual(self.getMD5(sampleParamsPath), '26757d8f945df33087bbe47c328dcf22')
+        self.assertEqual(self.getMD5(sampleParamsPath), 'c539ae365d6fc754a3bb9b074d618607')
     
-class TestReader(unittest.TestCase):
+class TestReader(TestBase):
 
     def setUp(self):
-        self.testDir = os.path.dirname(os.path.realpath(__file__))
-        self.dataDir = os.path.realpath(os.path.join(self.testDir, 'data'))
-        schema_path = '/home/iain/oicr/git/elba-config-schema/elba_config_schema.json'
-        with open(schema_path) as f:
-            self.schema = json.loads(f.read())
+        super().setUp()
         self.config = []
         config_filenames = ['json_reader_config_%d.json' % i for i in range(1,4)]
         for name in config_filenames:
@@ -93,6 +95,19 @@ class TestReader(unittest.TestCase):
         # inconsistent values
         with self.assertRaises(ValueError):
             reader2 = multiple_reader([self.config[0], self.config[2]], self.schema)
+
+class TestRunner(TestBase):
+
+    def test_runner(self):
+        iniPath = '/home/iain/oicr/workspace/djerba/test_data/PANX_1249_Lv_M_100-PM-013_LCM5/1/report/report_configuration.ini'
+        workDir = os.path.join(self.tmpDir, 'work')
+        os.mkdir(workDir)
+        outDir = '/home/iain/tmp/djerba/test'
+        #outPath = os.path.join(self.tmpDir, 'report.json')
+        outPath = os.path.join(outDir, 'report.json')
+        runner(iniPath, workDir, outPath, self.schema_path).run()
+        self.assertEqual(self.getMD5(outPath), 'b2feb4a44f6ce98398d68e7148ab4682')
+
 
 if __name__ == '__main__':
     unittest.main()
