@@ -7,8 +7,8 @@ import os
 import tempfile
 import unittest
 from jsonschema.exceptions import ValidationError
-from djerba.simple.processor import processor
-from djerba.simple.reader import json_reader, mastersheet_reader, multiple_reader
+from djerba.simple.preprocess.processor import processor
+from djerba.simple.build.reader import json_reader, mastersheet_reader, multiple_reader
 
 class TestProcessor(unittest.TestCase):
 

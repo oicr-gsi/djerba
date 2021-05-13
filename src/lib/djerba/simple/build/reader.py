@@ -3,7 +3,7 @@
 import csv
 import json
 import jsonschema
-from djerba.simple.containers import gene, sample
+from djerba.simple.build.containers import gene, sample
 
 class reader:
     """
