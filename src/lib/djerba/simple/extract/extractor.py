@@ -1,11 +1,11 @@
-"""Pre-process data, so it can be read into a clinical report JSON document"""
+"""Extract and pre-process data, so it can be read into a clinical report JSON document"""
 
 import json
 import os
 
-class processor:
+class extractor:
     """
-    Pre-process the clinical report data; replaces 4-singleSample.sh
+    Extract the clinical report data; replaces 4-singleSample.sh
     Input: INI config file from 3-configureSingleSample.sh
     Output: Directory of .txt and .json files for downstream processing
     """
@@ -28,7 +28,7 @@ class processor:
         return self.configPaths
 
     def run(self):
-        """Run all processing and write output"""
+        """Run all extractions and write output"""
         self.configPaths.append(self.writeIniParams())
 
     def writeIniParams(self):

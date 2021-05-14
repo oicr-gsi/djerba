@@ -4,7 +4,7 @@ import configparser
 
 import json
 import os
-from djerba.simple.preprocess.processor import processor
+from djerba.simple.extract.extractor import extractor
 from djerba.simple.build.reader import multiple_reader
 
 class runner:
@@ -46,10 +46,10 @@ class runner:
             configString = "[%s]\n%s" % (self.HEADER, iniFile.read())
         config = configparser.ConfigParser()
         config.read_string(configString)
-        preprocessor = processor(config, self.workDir)
-        preprocessor.run()
+        ext = extractor(config, self.workDir)
+        ext.run()
         configs = []
-        for configPath in preprocessor.getConfigPaths():
+        for configPath in ext.getConfigPaths():
             with open(configPath) as f:
                 configs.append(json.loads(f.read()))
         reader = multiple_reader(configs, self.schema)

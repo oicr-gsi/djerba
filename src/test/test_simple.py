@@ -9,7 +9,7 @@ import subprocess
 import tempfile
 import unittest
 from jsonschema.exceptions import ValidationError
-from djerba.simple.preprocess.processor import processor
+from djerba.simple.extract.extractor import extractor
 from djerba.simple.build.reader import json_reader, mastersheet_reader, multiple_reader
 from djerba.simple.runner import runner
 
@@ -33,7 +33,7 @@ class TestBase(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-class TestProcessor(TestBase):
+class TestExtractor(TestBase):
 
     def test_writeIniParams(self):
         # TODO sanitize the ini and commit to repo
@@ -44,7 +44,7 @@ class TestProcessor(TestBase):
             configString = "[%s]\n%s" % ('REPORT_CONFIG', iniFile.read())
         config = configparser.ConfigParser()
         config.read_string(configString)
-        processor(config, outDir).run()
+        extractor(config, outDir).run()
         sampleParamsPath = os.path.join(outDir, 'sample_params.json')
         self.assertEqual(self.getMD5(sampleParamsPath), 'c539ae365d6fc754a3bb9b074d618607')
     
