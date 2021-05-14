@@ -137,8 +137,10 @@ class TestSearcher(TestBase):
 
     def test_searcher(self):
         provenance = '/home/iain/oicr/workspace/djerba/test_data/pass01_panx_provenance.tsv.gz'
-        test_searcher = searcher(provenance, 'PASS01', 'PANX_1249', 'PANX_1249_Lv_M_100-PM-013_LCM5')
-        #test_searcher.parse_maf_path()
+        test_searcher = searcher(provenance, 'PASS01', 'PANX_1249')
+        maf_path = test_searcher.parse_maf_path()
+        expected = '/oicr/data/archive/seqware/seqware_analysis_12/hsqwprod/seqware-results/variantEffectPredictor_2.0.2/21783975/PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.mutect2.tumor_only.filtered.unmatched.maf.gz'
+        self.assertEqual(maf_path, expected)
 
 if __name__ == '__main__':
     unittest.main()
