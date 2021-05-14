@@ -9,6 +9,7 @@ import subprocess
 import tempfile
 import unittest
 from jsonschema.exceptions import ValidationError
+from djerba.simple.discover.search import searcher
 from djerba.simple.extract.extractor import extractor
 from djerba.simple.build.reader import json_reader, mastersheet_reader, multiple_reader
 from djerba.simple.runner import runner
@@ -131,6 +132,13 @@ class TestRunner(TestBase):
         ]
         subprocess.run(cmd)
         self.assertEqual(self.getMD5(outPath), 'b2feb4a44f6ce98398d68e7148ab4682')
+
+class TestSearcher(TestBase):
+
+    def test_searcher(self):
+        provenance = '/home/iain/oicr/workspace/djerba/test_data/pass01_panx_provenance.tsv.gz'
+        test_searcher = searcher(provenance, 'PASS01', 'PANX_1249', 'PANX_1249_Lv_M_100-PM-013_LCM5')
+        #test_searcher.parse_maf_path()
 
 if __name__ == '__main__':
     unittest.main()
