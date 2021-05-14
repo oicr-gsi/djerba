@@ -18,8 +18,6 @@ import djerba.simple.discover.index as x
 
 class searcher:
 
-    TMP_PROVENANCE_FILENAME = 'provenance_subset.tsv'
-    
     def __init__(self, provenance_path, project, donor):
         # get provenance for the project and donor
         # if this proves to be too slow, can preprocess the file using zgrep
