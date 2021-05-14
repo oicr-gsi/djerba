@@ -9,6 +9,8 @@
 # - preprocess file to extract MAF metrics
 # - supply metrics (eg. as JSON) to final output
 
+# TODO write or update INI config for extractor; then extract eg. MAF metrics
+
 import csv
 import gzip
 import re
@@ -34,12 +36,12 @@ class searcher:
         # return the row with the most recent date field (last in lexical sort order)
         return sorted(rows, key=lambda row: row[0], reverse=True)[0]
 
-    def _parse_rows(self, workflow, suffix):
+    def _parse_rows(self, workflow, file_pattern):
         # get matching rows from the provenance array
-        # suffix = suffix of file path
+        # file_pattern = regex pattern for file path
         a = x.WORKFLOW_NAME
         b = x.FILE_PATH
-        return [z for z in self.provenance if z[a]==workflow and re.search(suffix, z[b])]
+        return [z for z in self.provenance if z[a]==workflow and re.search(file_pattern, z[b])]
 
     def parse_maf_path(self):
         # TODO raise an error if no rows are found
