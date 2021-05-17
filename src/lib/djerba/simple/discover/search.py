@@ -14,7 +14,7 @@
 import csv
 import gzip
 import re
-import djerba.simple.discover.index as x
+import djerba.simple.discover.index as index
 
 class searcher:
 
@@ -25,9 +25,9 @@ class searcher:
         with gzip.open(provenance_path, 'rt') as infile:
             reader = csv.reader(infile, delimiter="\t")
             for row in reader:
-                if row[x.STUDY_TITLE] == project and \
-                   row[x.ROOT_SAMPLE_NAME] == donor and \
-                   row[x.SEQUENCER_RUN_PLATFORM_ID] != 'Illumina_MiSeq':
+                if row[index.STUDY_TITLE] == project and \
+                   row[index.ROOT_SAMPLE_NAME] == donor and \
+                   row[index.SEQUENCER_RUN_PLATFORM_ID] != 'Illumina_MiSeq':
                     self.provenance.append(row)
 
     def _get_most_recent_row(self, rows):
@@ -37,13 +37,13 @@ class searcher:
     def _parse_rows(self, workflow, file_pattern):
         # get matching rows from the provenance array
         # file_pattern = regex pattern for file path
-        a = x.WORKFLOW_NAME
-        b = x.FILE_PATH
-        return [z for z in self.provenance if z[a]==workflow and re.search(file_pattern, z[b])]
+        i = index.WORKFLOW_NAME
+        j = index.FILE_PATH
+        return filter(lambda x: x[i]==workflow and re.search(file_pattern, x[j]), self.provenance)
 
     def parse_maf_path(self):
         # TODO raise an error if no rows are found
         rows = self._parse_rows('variantEffectPredictor', '\.maf\.gz$')
-        a = x.WORKFLOW_RUN_SWID
-        row = self._get_most_recent_row([z for z in rows if not re.search('tumor_only', z[a])])
-        return row[x.FILE_PATH]
+        i = index.WORKFLOW_RUN_SWID
+        row = self._get_most_recent_row(filter(lambda x: not re.search('tumor_only', x[i]), rows))
+        return row[index.FILE_PATH]
