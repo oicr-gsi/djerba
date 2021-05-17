@@ -9,7 +9,7 @@ import subprocess
 import tempfile
 import unittest
 from jsonschema.exceptions import ValidationError
-from djerba.simple.discover.search import searcher
+from djerba.simple.discover.search import searcher, MissingProvenanceError
 from djerba.simple.extract.extractor import extractor
 from djerba.simple.build.reader import json_reader, mastersheet_reader, multiple_reader
 from djerba.simple.runner import runner
@@ -141,6 +141,8 @@ class TestSearcher(TestBase):
         maf_path = test_searcher.parse_maf_path()
         expected = '/oicr/data/archive/seqware/seqware_analysis_12/hsqwprod/seqware-results/variantEffectPredictor_2.0.2/21783975/PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.mutect2.tumor_only.filtered.unmatched.maf.gz'
         self.assertEqual(maf_path, expected)
+        with self.assertRaises(MissingProvenanceError):
+            test_searcher_2 = searcher(provenance, 'PASS01', 'nonexistent_donor')
 
 if __name__ == '__main__':
     unittest.main()
