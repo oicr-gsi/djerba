@@ -11,7 +11,7 @@ from djerba.simple.build.reader import multiple_reader
 
 class runner:
 
-    def __init__(self, provenance, project, donor, iniPath, workDir, outPath, schemaPath,
+    def __init__(self, provenance, project, donor, bedPath, iniPath, workDir, outPath, schemaPath,
                  overwrite=False, require_complete=False, validate=False):
         # validate the iniPath
         if not os.path.exists(iniPath):
@@ -33,12 +33,13 @@ class runner:
         self.workDir = workDir
         # TODO confirm outPath is writable
         self.outPath = outPath
-        # TODO confirm schemaPath, provenance are readable
+        # TODO confirm schemaPath, provenance, bedPath are readable
         with open(schemaPath) as f:
             self.schema = json.loads(f.read())
         self.provenancePath = provenance
         self.project = project
         self.donor = donor
+        self.bedPath = bedPath
         self.require_complete = require_complete
         self.validate = validate
 
@@ -50,7 +51,7 @@ class runner:
         config = configparser.ConfigParser()
         config.read_string(configString)
         config = searcher(self.provenancePath, self.project, self.donor).update_config(config)
-        ext = extractor(config, self.workDir)
+        ext = extractor(config, self.bedPath, self.workDir)
         ext.run()
         configs = []
         for configPath in ext.getConfigPaths():

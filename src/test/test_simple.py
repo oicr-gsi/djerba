@@ -28,7 +28,9 @@ class TestBase(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_simple_')
         self.tmpDir = self.tmp.name
         self.schema_path = '/home/iain/oicr/git/elba-config-schema/elba_config_schema.json'
-        self.provenance_path = '/home/iain/oicr/workspace/djerba/test_data/pass01_panx_provenance.tsv.gz'
+        self.provenance_path = '/home/iain/oicr/workspace/djerba/test_data/'+\
+            'pass01_panx_provenance.modified.tsv.gz'
+        self.bed_path = '/home/iain/oicr/workspace/djerba/test_data/djerba/tmb/S31285117_Regions.bed'
         self.project = 'PASS01'
         self.donor = 'PANX_1249'
 
@@ -42,14 +44,14 @@ class TestExtractor(TestBase):
 
     def test_writeIniParams(self):
         # TODO sanitize the ini and commit to repo
-        iniPath = '/home/iain/oicr/workspace/djerba/test_data/PANX_1249_Lv_M_100-PM-013_LCM5/1/report/report_configuration.ini'
+        iniPath = '/home/iain/oicr/workspace/djerba/test_data/report_configuration.ini'
         outDir = '/home/iain/tmp/djerba/test'
         with open(iniPath) as iniFile:
             # prepend header required by configparser; TODO import from constants
             configString = "[%s]\n%s" % ('REPORT_CONFIG', iniFile.read())
         config = configparser.ConfigParser()
         config.read_string(configString)
-        extractor(config, outDir).run()
+        extractor(config, self.bed_path, outDir).run()
         sampleParamsPath = os.path.join(outDir, 'sample_params.json')
         self.assertEqual(self.getMD5(sampleParamsPath), 'c539ae365d6fc754a3bb9b074d618607')
     
@@ -112,8 +114,8 @@ class TestRunner(TestBase):
 
     def setUp(self):
         super().setUp()
-        self.expectedMD5 = '236acf821f7c0e3cc4724940c769f8a9'
-        self.iniPath = '/home/iain/oicr/workspace/djerba/test_data/PANX_1249_Lv_M_100-PM-013_LCM5/1/report/report_configuration.ini'
+        self.expectedMD5 = '2a1d86db2248f90aef4b7a7dc6698bfc'
+        self.iniPath = '/home/iain/oicr/workspace/djerba/test_data/report_configuration.ini'
         self.workDir = os.path.join(self.tmpDir, 'work')
         os.mkdir(self.workDir)
         
@@ -124,6 +126,7 @@ class TestRunner(TestBase):
         runner(self.provenance_path,
                self.project,
                self.donor,
+               self.bed_path,
                self.iniPath,
                self.workDir,
                outPath,
@@ -138,6 +141,7 @@ class TestRunner(TestBase):
             "--provenance", self.provenance_path,
             "--project", self.project,
             "--donor", self.donor,
+            "--bed", self.bed_path,
             "--ini", self.iniPath,
             "--out", outPath,
             "--schema", self.schema_path,
@@ -152,7 +156,7 @@ class TestSearcher(TestBase):
     def test_searcher(self):
         test_searcher = searcher(self.provenance_path, self.project, self.donor)
         maf_path = test_searcher.parse_maf_path()
-        expected = '/oicr/data/archive/seqware/seqware_analysis_12/hsqwprod/seqware-results/variantEffectPredictor_2.0.2/21783975/PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.mutect2.tumor_only.filtered.unmatched.maf.gz'
+        expected = '/home/iain/oicr/workspace/djerba/test_data/djerba/tmb/PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.mutect2.tumor_only.filtered.unmatched.DUMMY.maf.gz'
         self.assertEqual(maf_path, expected)
         with self.assertRaises(MissingProvenanceError):
             test_searcher_2 = searcher(self.provenance_path, self.project, 'nonexistent_donor')
