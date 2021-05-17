@@ -14,6 +14,7 @@
 import csv
 import gzip
 import re
+import djerba.simple.constants as constants
 import djerba.simple.discover.index as index
 
 class searcher:
@@ -54,6 +55,11 @@ class searcher:
         ))
         row = self._get_most_recent_row(rows)
         return row[index.FILE_PATH]
+
+    def update_config(self, config):
+        """Update provenance fields in a config object"""
+        config[constants.CONFIG_HEADER][constants.MAFFILE] = self.parse_maf_path()
+        return config
 
 class MissingProvenanceError(Exception):
     pass

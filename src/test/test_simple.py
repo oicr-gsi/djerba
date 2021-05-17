@@ -28,6 +28,10 @@ class TestBase(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_simple_')
         self.tmpDir = self.tmp.name
         self.schema_path = '/home/iain/oicr/git/elba-config-schema/elba_config_schema.json'
+        self.provenance_path = '/home/iain/oicr/workspace/djerba/test_data/pass01_panx_provenance.tsv.gz'
+        self.project = 'PASS01'
+        self.donor = 'PANX_1249'
+
         with open(self.schema_path) as f:
             self.schema = json.loads(f.read())
 
@@ -108,6 +112,7 @@ class TestRunner(TestBase):
 
     def setUp(self):
         super().setUp()
+        self.expectedMD5 = '236acf821f7c0e3cc4724940c769f8a9'
         self.iniPath = '/home/iain/oicr/workspace/djerba/test_data/PANX_1249_Lv_M_100-PM-013_LCM5/1/report/report_configuration.ini'
         self.workDir = os.path.join(self.tmpDir, 'work')
         os.mkdir(self.workDir)
@@ -116,14 +121,23 @@ class TestRunner(TestBase):
         #outPath = os.path.join(self.tmpDir, 'report.json')
         outDir = '/home/iain/tmp/djerba/test'
         outPath = os.path.join(outDir, 'report.json')
-        runner(self.iniPath, self.workDir, outPath, self.schema_path).run()
-        self.assertEqual(self.getMD5(outPath), 'b2feb4a44f6ce98398d68e7148ab4682')
+        runner(self.provenance_path,
+               self.project,
+               self.donor,
+               self.iniPath,
+               self.workDir,
+               outPath,
+               self.schema_path).run()
+        self.assertEqual(self.getMD5(outPath), self.expectedMD5)
 
     def test_script(self):
-        outDir = '/home/iain/tmp/djerba/script'
+        outDir = '/home/iain/tmp/djerba/script' # TODO replace with tempdir
         outPath = os.path.join(outDir, 'report.json')
         cmd = [
-            "djerba_simple.py", 
+            "djerba_simple.py",
+            "--provenance", self.provenance_path,
+            "--project", self.project,
+            "--donor", self.donor,
             "--ini", self.iniPath,
             "--out", outPath,
             "--schema", self.schema_path,
@@ -131,18 +145,17 @@ class TestRunner(TestBase):
             "--work-dir", self.workDir
         ]
         subprocess.run(cmd)
-        self.assertEqual(self.getMD5(outPath), 'b2feb4a44f6ce98398d68e7148ab4682')
+        self.assertEqual(self.getMD5(outPath), self.expectedMD5)
 
 class TestSearcher(TestBase):
 
     def test_searcher(self):
-        provenance = '/home/iain/oicr/workspace/djerba/test_data/pass01_panx_provenance.tsv.gz'
-        test_searcher = searcher(provenance, 'PASS01', 'PANX_1249')
+        test_searcher = searcher(self.provenance_path, self.project, self.donor)
         maf_path = test_searcher.parse_maf_path()
         expected = '/oicr/data/archive/seqware/seqware_analysis_12/hsqwprod/seqware-results/variantEffectPredictor_2.0.2/21783975/PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.mutect2.tumor_only.filtered.unmatched.maf.gz'
         self.assertEqual(maf_path, expected)
         with self.assertRaises(MissingProvenanceError):
-            test_searcher_2 = searcher(provenance, 'PASS01', 'nonexistent_donor')
+            test_searcher_2 = searcher(self.provenance_path, self.project, 'nonexistent_donor')
 
 if __name__ == '__main__':
     unittest.main()

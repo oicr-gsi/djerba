@@ -4,16 +4,15 @@ import configparser
 
 import json
 import os
+import djerba.simple.constants as constants
+from djerba.simple.discover.search import searcher
 from djerba.simple.extract.extractor import extractor
 from djerba.simple.build.reader import multiple_reader
 
 class runner:
 
-    HEADER = 'REPORT_CONFIG'
-
-    def __init__(self, iniPath, workDir, outPath, schemaPath,
+    def __init__(self, provenance, project, donor, iniPath, workDir, outPath, schemaPath,
                  overwrite=False, require_complete=False, validate=False):
-        # TODO replace iniPath with a "find" step to discover/link input data
         # validate the iniPath
         if not os.path.exists(iniPath):
             raise OSError("Input path %s does not exist" % iniPath)
@@ -34,18 +33,23 @@ class runner:
         self.workDir = workDir
         # TODO confirm outPath is writable
         self.outPath = outPath
-        # TODO confirm schemaPath is readable
+        # TODO confirm schemaPath, provenance are readable
         with open(schemaPath) as f:
             self.schema = json.loads(f.read())
+        self.provenancePath = provenance
+        self.project = project
+        self.donor = donor
         self.require_complete = require_complete
         self.validate = validate
 
     def run(self):
+        """Read the starting INI path; update with a searcher; extract data, collate and write as JSON"""
         with open(self.iniPath) as iniFile:
             # prepend header required by configparser
-            configString = "[%s]\n%s" % (self.HEADER, iniFile.read())
+            configString = "[%s]\n%s" % (constants.CONFIG_HEADER, iniFile.read())
         config = configparser.ConfigParser()
         config.read_string(configString)
+        config = searcher(self.provenancePath, self.project, self.donor).update_config(config)
         ext = extractor(config, self.workDir)
         ext.run()
         configs = []

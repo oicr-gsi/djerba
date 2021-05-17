@@ -3,6 +3,7 @@
 import csv
 import json
 import jsonschema
+import djerba.simple.constants as constants
 from djerba.simple.build.containers import gene, sample
 
 class reader:
@@ -163,8 +164,6 @@ class mastersheet_reader(single_reader):
 class reader_factory:
     """Given the config, construct a reader of the appropriate subclass"""
 
-    READER_CLASS_KEY = "reader_class"
-
     def __init__(self):
         pass
 
@@ -173,9 +172,9 @@ class reader_factory:
         Return an instance of the reader class named in the config
         Config is a dictionary with a reader_class name, plus other parameters as needed
         """
-        classname = config.get(self.READER_CLASS_KEY)
+        classname = config.get(constants.READER_CLASS_KEY)
         if classname == None:
-            msg = "Unknown or missing %s value in config. " % self.READER_CLASS_KEY
+            msg = "Unknown or missing %s value in config. " % constants.READER_CLASS_KEY
             #self.logger.error(msg)
             raise ValueError(msg)
         klass = globals().get(classname)
