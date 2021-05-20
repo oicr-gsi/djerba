@@ -11,6 +11,7 @@ import unittest
 from jsonschema.exceptions import ValidationError
 from djerba.simple.discover.search import searcher, MissingProvenanceError
 from djerba.simple.extract.extractor import extractor
+from djerba.simple.extract.sequenza import sequenza_extractor
 from djerba.simple.build.reader import json_reader, mastersheet_reader, multiple_reader
 from djerba.simple.runner import runner
 
@@ -54,7 +55,7 @@ class TestExtractor(TestBase):
         extractor(config, self.bed_path, outDir).run()
         sampleParamsPath = os.path.join(outDir, 'sample_params.json')
         self.assertEqual(self.getMD5(sampleParamsPath), 'c539ae365d6fc754a3bb9b074d618607')
-    
+
 class TestReader(TestBase):
 
     def setUp(self):
@@ -160,6 +161,32 @@ class TestSearcher(TestBase):
         self.assertEqual(maf_path, expected)
         with self.assertRaises(MissingProvenanceError):
             test_searcher_2 = searcher(self.provenance_path, self.project, 'nonexistent_donor')
+
+class TestSequenzaExtractor(TestBase):
+
+    def test(self):
+        zip_path = '/home/iain/oicr/workspace/djerba/test_data/sequenza/PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip'
+        seqex = sequenza_extractor(zip_path)
+        [purity, ploidy] = seqex.get_purity_ploidy()
+        self.assertEqual(purity, 0.6)
+        self.assertEqual(ploidy, 3.1)
+        expected_segments = {
+            50: 8669,
+            100: 4356,
+            200: 1955,
+            300: 1170,
+            400: 839,
+            500: 622,
+            600: 471,
+            700: 407,
+            800: 337,
+            900: 284,
+            1000: 245,
+            1250: 165,
+            1500: 123,
+            2000: 84
+        }
+        self.assertEqual(seqex.get_segments(), expected_segments)
 
 if __name__ == '__main__':
     unittest.main()
