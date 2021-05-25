@@ -164,9 +164,13 @@ class TestSearcher(TestBase):
 
 class TestSequenzaExtractor(TestBase):
 
+    def setUp(self):
+        super().setUp()
+        self.zip_path = '/home/iain/oicr/workspace/djerba/test_data/sequenza/PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip'
+        self.expected_gamma = 400
+    
     def test(self):
-        zip_path = '/home/iain/oicr/workspace/djerba/test_data/sequenza/PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip'
-        seqex = sequenza_extractor(zip_path)
+        seqex = sequenza_extractor(self.zip_path)
         [purity, ploidy] = seqex.get_purity_ploidy()
         self.assertEqual(purity, 0.6)
         self.assertEqual(ploidy, 3.1)
@@ -187,8 +191,16 @@ class TestSequenzaExtractor(TestBase):
             2000: 84
         }
         self.assertEqual(seqex.get_segments(), expected_segments)
-        self.assertEqual(seqex.get_default_gamma(), 400)
+        self.assertEqual(seqex.get_default_gamma(), self.expected_gamma)
 
+    def test_finder_script(self):
+        """Test the command-line script to find gamma"""
+        cmd = [
+            "find_sequenza_gamma.py",
+            "--in", self.zip_path
+        ]
+        result = subprocess.run(cmd, capture_output=True)
+        self.assertEqual(int(result.stdout), self.expected_gamma)
 
 if __name__ == '__main__':
     unittest.main()
