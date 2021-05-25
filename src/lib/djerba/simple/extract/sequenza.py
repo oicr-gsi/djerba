@@ -33,7 +33,7 @@ class sequenza_extractor:
             self.segments[gamma] = self._count_segments(seg[0])
             self.metrics[gamma] = self._find_purity_ploidy(sol[0])
         tempdir.cleanup()
-        self.default_gamma = self.find_default_gamma()
+        self.default_gamma = self._find_default_gamma()
 
     def _count_segments(self, seg_path):
         """Count the number of segments; equal to length of file, excluding the header"""
@@ -44,7 +44,8 @@ class sequenza_extractor:
     def _find_default_gamma(self):
         """
         Gamma heuristic:
-        - Draw a straight line between least and greatest gamma (usually 50 and 2000, respectively)
+        - Draw a straight line between least and greatest gamma (usually 50 and 2000, respectively),
+          to get the "expected gradient"
         - We want to find the transition from steeper-than-linear to shallower-than-linear
         - Compare actual gradient between N-1th and Nth gamma with expected linear gradient
         - (This takes account of non-equal gamma intervals)
