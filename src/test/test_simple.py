@@ -187,6 +187,8 @@ class TestSequenzaExtractor(TestBase):
             2000: 84
         }
         self.assertEqual(seqex.get_segments(), expected_segments)
+        self.assertEqual(seqex.get_default_gamma(), 400)
+
 
 if __name__ == '__main__':
     unittest.main()

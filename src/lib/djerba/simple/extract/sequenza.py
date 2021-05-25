@@ -33,6 +33,7 @@ class sequenza_extractor:
             self.segments[gamma] = self._count_segments(seg[0])
             self.metrics[gamma] = self._find_purity_ploidy(sol[0])
         tempdir.cleanup()
+        self.default_gamma = self.find_default_gamma()
 
     def _count_segments(self, seg_path):
         """Count the number of segments; equal to length of file, excluding the header"""
@@ -41,8 +42,29 @@ class sequenza_extractor:
         return length - 1
 
     def _find_default_gamma(self):
-        """TODO implement heuristic for finding default gamma from segement counts"""
-        return 400
+        """
+        Gamma heuristic:
+        - Draw a straight line between least and greatest gamma (usually 50 and 2000, respectively)
+        - We want to find the transition from steeper-than-linear to shallower-than-linear
+        - Compare actual gradient between N-1th and Nth gamma with expected linear gradient
+        - (This takes account of non-equal gamma intervals)
+        - When actual gradient is less in magnitude than expected gradient, stop and use Nth gamma
+        """
+        gammas = sorted(list(self.segments.keys()))
+        gamma_min = gammas[0]
+        gamma_max = gammas[-1]
+        delta_y = self.segments[gamma_max] - self.segments[gamma_min]
+        delta_x = gamma_max - gamma_min
+        linear_gradient = float(delta_y)/delta_x
+        chosen_gamma = None
+        for i in range(1, len(gammas)):
+            delta_y = self.segments[gammas[i]] - self.segments[gammas[i-1]]
+            delta_x = gammas[i] - gammas[i-1]
+            gradient = float(delta_y)/delta_x
+            if abs(gradient) <= abs(linear_gradient):
+                chosen_gamma = gammas[i]
+                break
+        return chosen_gamma
 
     def _find_purity_ploidy(self, sol_path):
         """Find most probable purity/ploidy from an alternative_solutions.txt file"""
@@ -59,10 +81,13 @@ class sequenza_extractor:
                     break
         return [purity, ploidy]
 
+    def get_default_gamma(self):
+        return self.default_gamma
+
     def get_purity_ploidy(self, gamma=None):
         """Get purity and ploidy for supplied gamma (if any), default gamma otherwise"""
         if gamma==None:
-            gamma = self._find_default_gamma()
+            gamma = self.default_gamma
         return self.metrics[gamma]
 
     def get_segments(self):
