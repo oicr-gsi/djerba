@@ -17,6 +17,10 @@ def get_parser():
         '-i', '--in', metavar='PATH', required=True, dest='inPath',
         help='Path to .ZIP archive of Sequenza results'
     )
+    parser.add_argument(
+        '-v', '--verbose', action='store_true',
+        help='Print gamma selection parameters to STDERR'
+    )
     return parser
 
 def main(args):
@@ -26,7 +30,10 @@ def main(args):
         raise OSError("{0} is not a file".format(args.inPath))
     elif not os.access(args.inPath, os.R_OK):
         raise OSError("{0} is not readable".format(args.inPath))
-    print(sequenza_extractor(args.inPath).get_default_gamma())
+    if args.verbose:
+        print(sequenza_extractor(args.inPath, sys.stderr).get_default_gamma())
+    else:
+        print(sequenza_extractor(args.inPath).get_default_gamma())
 
 if __name__ == '__main__':
     parser = get_parser()

@@ -3,13 +3,14 @@
 import csv
 import os
 import re
+import sys
 import tempfile
 import zipfile
 from glob import glob
 
 class sequenza_extractor:
 
-    def __init__(self, zip_path):
+    def __init__(self, zip_path, out_file=None):
         """Decompress the zip archive to a temporary directory; read relevant values"""
         tempdir = tempfile.TemporaryDirectory(prefix='djerba_sequenza_')
         tmp = tempdir.name
@@ -33,7 +34,7 @@ class sequenza_extractor:
             self.segments[gamma] = self._count_segments(seg[0])
             self.metrics[gamma] = self._find_purity_ploidy(sol[0])
         tempdir.cleanup()
-        self.default_gamma = self._find_default_gamma()
+        self.default_gamma = self._find_default_gamma(out_file)
 
     def _count_segments(self, seg_path):
         """Count the number of segments; equal to length of file, excluding the header"""
@@ -41,7 +42,7 @@ class sequenza_extractor:
             length = len(seg.readlines())
         return length - 1
 
-    def _find_default_gamma(self):
+    def _find_default_gamma(self, out_file=None):
         """
         Gamma heuristic:
         - Draw a straight line between least and greatest gamma (usually 50 and 2000, respectively),
@@ -50,6 +51,7 @@ class sequenza_extractor:
         - Compare actual gradient between N-1th and Nth gamma with expected linear gradient
         - (This takes account of non-equal gamma intervals)
         - When actual gradient is less in magnitude than expected gradient, stop and use Nth gamma
+        - Optionally, write parameters as TSV
         """
         gammas = sorted(list(self.segments.keys()))
         gamma_min = gammas[0]
@@ -58,13 +60,26 @@ class sequenza_extractor:
         delta_x = gamma_max - gamma_min
         linear_gradient = float(delta_y)/delta_x
         chosen_gamma = None
+        if out_file:
+            print("\t".join(['gamma', 'segments', 'gradient', 'expected']), file=out_file)
+            fields = [gammas[0], self.segments[gammas[0]], 'NA', 'NA']
+            print("\t".join([str(x) for x in fields]), file=out_file)
         for i in range(1, len(gammas)):
             delta_y = self.segments[gammas[i]] - self.segments[gammas[i-1]]
             delta_x = gammas[i] - gammas[i-1]
             gradient = float(delta_y)/delta_x
-            if abs(gradient) <= abs(linear_gradient):
+            fields = [
+                gammas[i],
+                self.segments[gammas[i]],
+                gradient,
+                linear_gradient
+            ]
+            if out_file:
+                print("\t".join([str(x) for x in fields]), file=out_file)
+            if abs(gradient) <= abs(linear_gradient) and chosen_gamma==None:
                 chosen_gamma = gammas[i]
-                break
+                if not out_file:
+                    break
         return chosen_gamma
 
     def _find_purity_ploidy(self, sol_path):

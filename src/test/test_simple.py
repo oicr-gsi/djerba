@@ -8,6 +8,7 @@ import os
 import subprocess
 import tempfile
 import unittest
+import djerba.simple.constants as constants
 from jsonschema.exceptions import ValidationError
 from djerba.simple.discover.search import searcher, MissingProvenanceError
 from djerba.simple.extract.extractor import extractor
@@ -196,11 +197,15 @@ class TestSequenzaExtractor(TestBase):
     def test_finder_script(self):
         """Test the command-line script to find gamma"""
         cmd = [
-            "find_sequenza_gamma.py",
-            "--in", self.zip_path
+            "sequenza_gamma_selector.py",
+            "--in", self.zip_path,
+            "--verbose"
         ]
         result = subprocess.run(cmd, capture_output=True)
+        with open(os.path.join(self.dataDir, 'gamma_test.tsv'), 'rt') as in_file:
+            expected_params = in_file.read()
         self.assertEqual(int(result.stdout), self.expected_gamma)
+        self.assertEqual(result.stderr.decode(constants.TEXT_ENCODING), expected_params)
 
 if __name__ == '__main__':
     unittest.main()
