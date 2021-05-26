@@ -1,0 +1,43 @@
+{
+    "reader_class": "json_reader",
+    "gene_metrics": [
+        {
+	    "Gene": "Gene001",
+            "Mutation_Class": "Somatic",
+            "Fusion": "NA",
+            "Variant_Classification": "Nonsense Mutation",
+            "Allele_Fraction_Percentile": 21,
+            "Chromosome": "chr1",
+            "Copy_State": "Neutral",
+            "Drug_Annotation": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+            "Exp_Percentile": 42
+        },
+        {
+	    "Gene": "MYC",
+            "Mutation_Class": "CNV",
+            "Fusion": "NA",
+            "Variant_Classification": "Amplification",
+            "Allele_Fraction_Percentile": "NA",
+            "Chromosome": "chr8",
+            "Copy_State": "Amplified",
+            "Drug_Annotation": "Donec sit amet porta orci. Ut a malesuada.",
+            "Exp_Percentile": 88
+        }
+    ],
+    "sample_info": {
+        "AGE": 35,
+        "CANCER_TYPE": "Bowel",
+	"CANCER_TYPE_DESCRIPTION": "Bowel",
+        "CANCER_TYPE_DETAILED": "MACR",
+        "CENTRE": "TGL",
+        "CLOSEST_TCGA": "coadread",
+        "COSMIC_SIGS": "Signature 6 (0.161)",
+	"DATE_REPORT": "NA",
+	"DATE_SAMPLE_RECEIVED": "NA",
+        "ETHNICITY": "Other",
+        "FRACTION_GENOME_ALTERED": 0.1234,
+        "FRAC_CALLABILITY": 7986.3,
+        "HRD_SCORE": "NA",
+        "MEAN_COVERAGE": 97
+     }
+}

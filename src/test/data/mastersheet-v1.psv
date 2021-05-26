@@ -1,0 +1,3 @@
+miso_donor|geo_external_name|geo_tube_id|geo_tissue_origin|geo_tissue_type|geo_library_source_template_type|geo_group_id|unit|lims_keys|merged_library_name|analysis_unit|effective_tumour_name|reference_tubeid|reference_groupid|effective_normal_name
+FOO_0001|123-456-789|123-456-789_LCM3|Lv|M|WG|123-456-789_LCM3|123-456-789_LCM3|9876_1_BAR54321|FOO_0001_Lv_M_WG_123-456-789_LCM3|FOO_0001_Lv_M_123-456-789_LCM3|123-456-789_LCM3|123-456-789_BC|123-456-789_BC|123-456-789_BC
+FOO_0001|123-456-789|123-456-789_LCM3|Lv|M|WT|123-456-789_LCM3|123-456-789_LCM3|5109_1_LDI59483|FOO_0001_Lv_M_WT_123-456-789_LCM3|FOO_0001_Lv_M_123-456-789_LCM3|123-456-789_LCM3|123-456-789_BC|123-456-789_BC|123-456-789_BC
