@@ -10,7 +10,7 @@ import tempfile
 import unittest
 import djerba.simple.constants as constants
 from jsonschema.exceptions import ValidationError
-from djerba.simple.discover.search import searcher, MissingProvenanceError
+from djerba.simple.discover.discover import provenance_reader, MissingProvenanceError
 from djerba.simple.extract.extractor import extractor
 from djerba.simple.extract.sequenza import sequenza_extractor
 from djerba.simple.build.reader import json_reader, mastersheet_reader, multiple_reader
@@ -155,13 +155,13 @@ class TestRunner(TestBase):
 
 class TestSearcher(TestBase):
 
-    def test_searcher(self):
-        test_searcher = searcher(self.provenance_path, self.project, self.donor)
-        maf_path = test_searcher.parse_maf_path()
+    def test_reader(self):
+        test_reader = provenance_reader(self.provenance_path, self.project, self.donor)
+        maf_path = test_reader.parse_maf_path()
         expected = '/home/iain/oicr/workspace/djerba/test_data/djerba/tmb/PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.mutect2.tumor_only.filtered.unmatched.DUMMY.maf.gz'
         self.assertEqual(maf_path, expected)
         with self.assertRaises(MissingProvenanceError):
-            test_searcher_2 = searcher(self.provenance_path, self.project, 'nonexistent_donor')
+            test_reader_2 = provenance_reader(self.provenance_path, self.project, 'nonexistent_donor')
 
 class TestSequenzaExtractor(TestBase):
 

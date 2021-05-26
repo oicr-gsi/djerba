@@ -17,7 +17,7 @@ import re
 import djerba.simple.constants as constants
 import djerba.simple.discover.index as index
 
-class searcher:
+class provenance_reader:
 
     def __init__(self, provenance_path, project, donor):
         # get provenance for the project and donor
