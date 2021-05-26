@@ -53,11 +53,11 @@ class runner:
         config = provenance_reader(self.provenancePath, self.project, self.donor).update_config(config)
         ext = extractor(config, self.bedPath, self.workDir)
         ext.run()
-        configs = []
-        for configPath in ext.getConfigPaths():
-            with open(configPath) as f:
-                configs.append(json.loads(f.read()))
-        reader = multiple_reader(configs, self.schema)
+        components = []
+        for componentPath in ext.getComponentPaths():
+            with open(componentPath) as f:
+                components.append(json.loads(f.read()))
+        reader = multiple_reader(components, self.schema)
         with open(self.outPath, 'w') as out:
             output = reader.get_output(self.require_complete, self.validate)
             out.write(json.dumps(output, sort_keys=True, indent=4))

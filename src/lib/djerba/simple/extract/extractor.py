@@ -22,7 +22,7 @@ class extractor:
         self.config = config
         self.outDir = outDir
         self.bedPath = bedPath # .bed file for MAF calculation; TODO check readability?
-        self.configPaths = []
+        self.componentPaths = []
 
     def _write_json(self, config, fileName):
         outPath = os.path.join(self.outDir, fileName)
@@ -30,14 +30,14 @@ class extractor:
             out.write(json.dumps(config, sort_keys=True, indent=4))
         return outPath
 
-    def getConfigPaths(self):
-        """JSON configuration paths to create reader objects and build the report"""
-        return self.configPaths
+    def getComponentPaths(self):
+        """JSON component paths to create reader objects and build the report"""
+        return self.componentPaths
 
     def run(self):
         """Run all extractions and write output"""
-        self.configPaths.append(self.writeMafParams())
-        self.configPaths.append(self.writeIniParams())
+        self.componentPaths.append(self.writeMafParams())
+        self.componentPaths.append(self.writeIniParams())
 
     def writeIniParams(self):
         """

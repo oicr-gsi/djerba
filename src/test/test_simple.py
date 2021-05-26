@@ -61,24 +61,24 @@ class TestReader(TestBase):
 
     def setUp(self):
         super().setUp()
-        self.config = []
-        config_filenames = ['json_reader_config_%d.json' % i for i in range(1,4)]
-        for name in config_filenames:
+        self.components = []
+        component_filenames = ['json_reader_component_%d.json' % i for i in range(1,4)]
+        for name in component_filenames:
             with open(os.path.join(self.dataDir, name)) as f:
-                self.config.append(json.loads(f.read()))
+                self.components.append(json.loads(f.read()))
 
     def test_mastersheet_reader(self):
-        ms_config_path = os.path.join(self.dataDir, 'mastersheet_reader_config.json')
-        with open(ms_config_path) as f:
-            ms_config = json.loads(f.read())
-        ms_config['mastersheet_path'] = os.path.join(self.dataDir, 'mastersheet-v1.psv')
-        reader = mastersheet_reader(ms_config, self.schema)
+        ms_component_path = os.path.join(self.dataDir, 'mastersheet_reader_component.json')
+        with open(ms_component_path) as f:
+            ms_component = json.loads(f.read())
+        ms_component['mastersheet_path'] = os.path.join(self.dataDir, 'mastersheet-v1.psv')
+        reader = mastersheet_reader(ms_component, self.schema)
         patient_id = reader.get_sample_info().get_attribute('PATIENT_ID')
         self.assertEqual(patient_id, '123-456-789')
 
     def test_json_reader(self):
-        # read a config path with all fields specified
-        reader1 = json_reader(self.config[0], self.schema)
+        # read a component path with all fields specified
+        reader1 = json_reader(self.components[0], self.schema)
         self.assertEqual(reader1.total_genes(), 2)
         for gene in reader1.get_genes_list():
             self.assertEqual(len(gene.get_attributes()), 17)
@@ -89,8 +89,8 @@ class TestReader(TestBase):
         reader1.sample_info.attributes['ORDERING_PHYSICIAN'] = 999
         with self.assertRaises(ValidationError):
             reader1.get_output()
-        # read an incomplete config path
-        reader2 = json_reader(self.config[1], self.schema)
+        # read an incomplete component path
+        reader2 = json_reader(self.components[1], self.schema)
         self.assertEqual(reader2.total_genes(), 2)
         for gene in reader2.get_genes_list():
             self.assertEqual(len(gene.get_attributes()), 9)
@@ -101,7 +101,7 @@ class TestReader(TestBase):
 
     def test_multiple_reader(self):
         # multiple reader with consistent values
-        reader1 = multiple_reader(self.config[0:2], self.schema)
+        reader1 = multiple_reader(self.components[0:2], self.schema)
         self.assertEqual(reader1.total_genes(), 2)
         for gene in reader1.get_genes_list():
             self.assertEqual(len(gene.get_attributes()), 17)
@@ -110,7 +110,7 @@ class TestReader(TestBase):
         self.assertIsNone(jsonschema.validate(reader1.get_output(), self.schema))
         # inconsistent values
         with self.assertRaises(ValueError):
-            reader2 = multiple_reader([self.config[0], self.config[2]], self.schema)
+            reader2 = multiple_reader([self.components[0], self.components[2]], self.schema)
 
 class TestRunner(TestBase):
 
