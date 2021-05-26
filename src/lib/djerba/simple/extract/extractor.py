@@ -17,9 +17,8 @@ class extractor:
     MAF_PARAMS_FILENAME = 'maf_params.json'
     
     def __init__(self, config, bedPath, outDir):
-        # config is a ConfigParser object with required parameters (eg. from INI file)
-        # INI section header is required by Python configparser; but we have only one section
-        self.config = config[constants.CONFIG_HEADER]
+        # config is a dictionary with required parameters (eg. from INI file)
+        self.config = config
         self.outDir = outDir
         self.bedPath = bedPath # .bed file for MAF calculation; TODO check readability?
         self.componentPaths = []
@@ -66,9 +65,17 @@ class extractor:
         # TODO if value is empty, should we replace with NA? Or raise an error?
         # TODO can other values be used? Is 'patient'=='SAMPLE_ID'?
         for key in stringKeys:
-            sampleParams[key] = self.config[key].strip('"')
+            # annoyingly, ConfigParser converts keys to lowercase
+            # see https://stackoverflow.com/questions/19359556/configparser-reads-capital-keys-and-make-them-lower-case
+            # TODO find a less hacky solution to this issue
+            configKey = key.lower()
+            if configKey in self.config:
+                # TODO print a warning for missing key?
+                sampleParams[key] = self.config[configKey].strip('"')
         for key in floatKeys:
-            sampleParams[key] = float(self.config[key])
+            configKey = key.lower()
+            if configKey in self.config:
+                sampleParams[key] = float(self.config[configKey])
         config = {
             constants.READER_CLASS_KEY: 'json_reader',
             self.SAMPLE_INFO_KEY: sampleParams

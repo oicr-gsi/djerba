@@ -10,7 +10,7 @@ import tempfile
 import unittest
 import djerba.simple.constants as constants
 from jsonschema.exceptions import ValidationError
-from djerba.simple.discover.discover import provenance_reader, MissingProvenanceError
+from djerba.simple.discover.discover import config, provenance_reader, MissingProvenanceError
 from djerba.simple.extract.extractor import extractor
 from djerba.simple.extract.sequenza import sequenza_extractor
 from djerba.simple.build.reader import json_reader, mastersheet_reader, multiple_reader
@@ -42,6 +42,23 @@ class TestBase(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
+class TestDiscover(TestBase):
+
+    def test_config(self):
+        # test config structure generation, without supplying pre-created INI parameters
+        test_config = config(self.provenance_path, self.project, self.donor)
+        with open(os.path.join(self.dataDir, 'discovered_config.json')) as expected_file:
+            expected = json.loads(expected_file.read())
+        self.assertEqual(test_config.get_params(), expected)
+
+    def test_reader(self):
+        test_reader = provenance_reader(self.provenance_path, self.project, self.donor)
+        maf_path = test_reader.parse_maf_path()
+        expected = '/home/iain/oicr/workspace/djerba/test_data/djerba/tmb/PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.mutect2.tumor_only.filtered.unmatched.DUMMY.maf.gz'
+        self.assertEqual(maf_path, expected)
+        with self.assertRaises(MissingProvenanceError):
+            test_reader_2 = provenance_reader(self.provenance_path, self.project, 'nonexistent_donor')
+
 class TestExtractor(TestBase):
 
     def test_writeIniParams(self):
@@ -51,9 +68,9 @@ class TestExtractor(TestBase):
         with open(iniPath) as iniFile:
             # prepend header required by configparser; TODO import from constants
             configString = "[%s]\n%s" % ('REPORT_CONFIG', iniFile.read())
-        config = configparser.ConfigParser()
-        config.read_string(configString)
-        extractor(config, self.bed_path, outDir).run()
+        parser = configparser.ConfigParser()
+        parser.read_string(configString)
+        extractor(parser['REPORT_CONFIG'], self.bed_path, outDir).run()
         sampleParamsPath = os.path.join(outDir, 'sample_params.json')
         self.assertEqual(self.getMD5(sampleParamsPath), 'c539ae365d6fc754a3bb9b074d618607')
 
@@ -152,16 +169,6 @@ class TestRunner(TestBase):
         ]
         subprocess.run(cmd)
         self.assertEqual(self.getMD5(outPath), self.expectedMD5)
-
-class TestSearcher(TestBase):
-
-    def test_reader(self):
-        test_reader = provenance_reader(self.provenance_path, self.project, self.donor)
-        maf_path = test_reader.parse_maf_path()
-        expected = '/home/iain/oicr/workspace/djerba/test_data/djerba/tmb/PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.mutect2.tumor_only.filtered.unmatched.DUMMY.maf.gz'
-        self.assertEqual(maf_path, expected)
-        with self.assertRaises(MissingProvenanceError):
-            test_reader_2 = provenance_reader(self.provenance_path, self.project, 'nonexistent_donor')
 
 class TestSequenzaExtractor(TestBase):
 

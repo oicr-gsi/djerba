@@ -14,22 +14,35 @@
 import csv
 import gzip
 import re
+
 import djerba.simple.constants as constants
 import djerba.simple.discover.index as index
 
-class config_handler:
+class config:
     """
     Populate a config structure with parameters for data extraction
-    Can write as an INI config file
     """
 
     def __init__(self, provenance_path, project, donor):
         self.reader = provenance_reader(provenance_path, project, donor)
+        self.project = project
+        self.donor = donor
+        self.params = self._generate_params()
 
-    def update_config(self, config):
-        """Update fields in a config object"""
-        config[constants.CONFIG_HEADER][constants.MAFFILE] = self.reader.parse_maf_path()
-        return config
+    def _generate_params(self):
+        """Generate dictionary of parameters to be stored in a ConfigParser"""
+        # TODO may omit some parameters while this class is a work-in-progress
+        params = {}
+        params[constants.MAFFILE] = self.reader.parse_maf_path()
+        return params
+
+    def get_params(self):
+        return self.params
+
+    def update(self, params_for_update):
+        """Update the params dictionary"""
+        # TODO validate the input before updating?
+        self.params.update(params_for_update)
 
 class provenance_reader:
 

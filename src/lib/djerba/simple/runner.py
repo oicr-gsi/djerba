@@ -5,7 +5,7 @@ import configparser
 import json
 import os
 import djerba.simple.constants as constants
-from djerba.simple.discover.discover import config_handler
+from djerba.simple.discover.discover import config
 from djerba.simple.extract.extractor import extractor
 from djerba.simple.build.reader import multiple_reader
 
@@ -43,15 +43,23 @@ class runner:
         self.require_complete = require_complete
         self.validate = validate
 
+    def read_bare_ini(self, iniPath):
+        """Read a 'bare' INI file without section headers; return its single section as a dictionary"""
+        header = 'foo'
+        with open(iniPath) as iniFile:
+            # prepend header required by configparser
+            configString = "[%s]\n%s" % (header, iniFile.read())
+        parser = configparser.ConfigParser()
+        parser.read_string(configString)
+        return dict(parser[header])
+
     def run(self):
         """Read the starting INI path; update with provenance; extract data, collate & write as JSON"""
-        with open(self.iniPath) as iniFile:
-            # prepend header required by configparser
-            configString = "[%s]\n%s" % (constants.CONFIG_HEADER, iniFile.read())
-        config = configparser.ConfigParser()
-        config.read_string(configString)
-        config = config_handler(self.provenancePath, self.project, self.donor).update_config(config)
-        ext = extractor(config, self.bedPath, self.workDir)
+
+        ini_params = self.read_bare_ini(self.iniPath)
+        runner_config = config(self.provenancePath, self.project, self.donor)
+        runner_config.update(ini_params)
+        ext = extractor(runner_config.get_params(), self.bedPath, self.workDir)
         ext.run()
         components = []
         for componentPath in ext.getComponentPaths():
