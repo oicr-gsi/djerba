@@ -18,8 +18,8 @@ class extractor:
     
     def __init__(self, config, bedPath, outDir):
         # config is a ConfigParser object with required parameters (eg. from INI file)
-        # INI section header is required by Python configparser, but not written by upstream script
-        self.config = config
+        # INI section header is required by Python configparser; but we have only one section
+        self.config = config[constants.CONFIG_HEADER]
         self.outDir = outDir
         self.bedPath = bedPath # .bed file for MAF calculation; TODO check readability?
         self.componentPaths = []
@@ -45,7 +45,7 @@ class extractor:
         Output approximates data_clinical.txt in CGI-Tools, but only has fields for final JSON output
         """
         sampleParams = {}
-        sampleParams['PATIENT_ID'] = self.config[constants.CONFIG_HEADER]['patientid'].strip('"')
+        sampleParams['PATIENT_ID'] = self.config['patientid'].strip('"')
         stringKeys = [
             'SAMPLE_TYPE',
             'CANCER_TYPE',
@@ -66,9 +66,9 @@ class extractor:
         # TODO if value is empty, should we replace with NA? Or raise an error?
         # TODO can other values be used? Is 'patient'=='SAMPLE_ID'?
         for key in stringKeys:
-            sampleParams[key] = self.config[constants.CONFIG_HEADER][key].strip('"')
+            sampleParams[key] = self.config[key].strip('"')
         for key in floatKeys:
-            sampleParams[key] = float(self.config[constants.CONFIG_HEADER][key])
+            sampleParams[key] = float(self.config[key])
         config = {
             constants.READER_CLASS_KEY: 'json_reader',
             self.SAMPLE_INFO_KEY: sampleParams
@@ -77,7 +77,7 @@ class extractor:
 
     def writeMafParams(self):
         """Read the MAF file, extract relevant parameters, and write as JSON"""
-        maf_path = self.config[constants.CONFIG_HEADER][constants.MAFFILE]
+        maf_path = self.config[constants.MAFFILE]
         tmb = maf_extractor(maf_path, self.bedPath).find_tmb()
         config = {
             constants.READER_CLASS_KEY: 'json_reader',
