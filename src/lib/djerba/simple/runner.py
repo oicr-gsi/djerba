@@ -5,7 +5,7 @@ import configparser
 import json
 import os
 import djerba.simple.constants as constants
-from djerba.simple.discover.discover import provenance_reader
+from djerba.simple.discover.discover import config_handler
 from djerba.simple.extract.extractor import extractor
 from djerba.simple.build.reader import multiple_reader
 
@@ -50,7 +50,7 @@ class runner:
             configString = "[%s]\n%s" % (constants.CONFIG_HEADER, iniFile.read())
         config = configparser.ConfigParser()
         config.read_string(configString)
-        config = provenance_reader(self.provenancePath, self.project, self.donor).update_config(config)
+        config = config_handler(self.provenancePath, self.project, self.donor).update_config(config)
         ext = extractor(config, self.bedPath, self.workDir)
         ext.run()
         components = []

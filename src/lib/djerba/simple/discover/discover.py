@@ -17,6 +17,20 @@ import re
 import djerba.simple.constants as constants
 import djerba.simple.discover.index as index
 
+class config_handler:
+    """
+    Populate a config structure with parameters for data extraction
+    Can write as an INI config file
+    """
+
+    def __init__(self, provenance_path, project, donor):
+        self.reader = provenance_reader(provenance_path, project, donor)
+
+    def update_config(self, config):
+        """Update fields in a config object"""
+        config[constants.CONFIG_HEADER][constants.MAFFILE] = self.reader.parse_maf_path()
+        return config
+
 class provenance_reader:
 
     def __init__(self, provenance_path, project, donor):
@@ -55,11 +69,6 @@ class provenance_reader:
         ))
         row = self._get_most_recent_row(rows)
         return row[index.FILE_PATH]
-
-    def update_config(self, config):
-        """Update provenance fields in a config object"""
-        config[constants.CONFIG_HEADER][constants.MAFFILE] = self.parse_maf_path()
-        return config
 
 class MissingProvenanceError(Exception):
     pass
