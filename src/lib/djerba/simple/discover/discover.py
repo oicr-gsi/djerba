@@ -39,10 +39,18 @@ class extraction_config:
     def get_params(self):
         return self.params
 
-    def update(self, params_for_update):
+    def update(self, params_for_update, overwrite=False):
         """Update the params dictionary"""
-        # TODO validate the input before updating?
-        self.params.update(params_for_update)
+        # TODO validate against a schema before updating?
+        if overwrite:
+            self.params.update(params_for_update)
+        else:
+            for key in params_for_update:
+                if key in self.params:
+                    msg = "Key '{0}' already present in config, overwrite mode not in effect".format(key)
+                    raise RuntimeError(msg)
+                else:
+                    self.params[key] = params_for_update[key]
 
 class provenance_reader:
 

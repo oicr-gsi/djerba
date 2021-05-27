@@ -1,7 +1,6 @@
 """Run Djerba, eg. on the command line"""
 
 import configparser
-
 import json
 import os
 import djerba.simple.constants as constants
@@ -54,10 +53,10 @@ class runner:
         return dict(parser[header])
 
     def run(self):
-        """Read the starting INI path; update with provenance; extract data, collate & write as JSON"""
-        ini_params = self.read_bare_ini(self.iniPath)
+        """Get params from provenance; update with INI parameters; extract data, collate & write as JSON"""
+        # Eventually, we want to get all params from provenance/filesystem without a supplementary INI
         config = extraction_config(self.provenancePath, self.project, self.donor)
-        config.update(ini_params)
+        config.update(self.read_bare_ini(self.iniPath))
         ext = extractor(config.get_params(), self.bedPath, self.workDir)
         ext.run()
         components = []

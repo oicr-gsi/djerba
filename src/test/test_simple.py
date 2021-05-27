@@ -134,7 +134,7 @@ class TestRunner(TestBase):
     def setUp(self):
         super().setUp()
         self.expectedMD5 = '2a1d86db2248f90aef4b7a7dc6698bfc'
-        self.iniPath = '/home/iain/oicr/workspace/djerba/test_data/report_configuration.ini'
+        self.iniPath = '/home/iain/oicr/workspace/djerba/test_data/report_configuration_reduced.ini'
         self.workDir = os.path.join(self.tmpDir, 'work')
         os.mkdir(self.workDir)
         
@@ -164,7 +164,6 @@ class TestRunner(TestBase):
             "--ini", self.iniPath,
             "--out", outPath,
             "--schema", self.schema_path,
-            "--ini", self.iniPath,
             "--work-dir", self.workDir
         ]
         subprocess.run(cmd)
