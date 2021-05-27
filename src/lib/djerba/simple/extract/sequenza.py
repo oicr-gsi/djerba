@@ -34,7 +34,9 @@ class sequenza_extractor:
             self.segments[gamma] = self._count_segments(seg[0])
             self.metrics[gamma] = self._find_purity_ploidy(sol[0])
         tempdir.cleanup()
+        self.gammas = sorted(list(self.segments.keys()))
         self.default_gamma = self._find_default_gamma(out_file)
+        self.zip_path = zip_path
 
     def _count_segments(self, seg_path):
         """Count the number of segments; equal to length of file, excluding the header"""
@@ -53,31 +55,30 @@ class sequenza_extractor:
         - When actual gradient is less in magnitude than expected gradient, stop and use Nth gamma
         - Optionally, write parameters as TSV
         """
-        gammas = sorted(list(self.segments.keys()))
-        gamma_min = gammas[0]
-        gamma_max = gammas[-1]
+        gamma_min = self.gammas[0]
+        gamma_max = self.gammas[-1]
         delta_y = self.segments[gamma_max] - self.segments[gamma_min]
         delta_x = gamma_max - gamma_min
         linear_gradient = float(delta_y)/delta_x
         chosen_gamma = None
         if out_file:
             print("\t".join(['gamma', 'segments', 'gradient', 'expected']), file=out_file)
-            fields = [gammas[0], self.segments[gammas[0]], 'NA', 'NA']
+            fields = [self.gammas[0], self.segments[self.gammas[0]], 'NA', 'NA']
             print("\t".join([str(x) for x in fields]), file=out_file)
-        for i in range(1, len(gammas)):
-            delta_y = self.segments[gammas[i]] - self.segments[gammas[i-1]]
-            delta_x = gammas[i] - gammas[i-1]
+        for i in range(1, len(self.gammas)):
+            delta_y = self.segments[self.gammas[i]] - self.segments[self.gammas[i-1]]
+            delta_x = self.gammas[i] - self.gammas[i-1]
             gradient = float(delta_y)/delta_x
             fields = [
-                gammas[i],
-                self.segments[gammas[i]],
+                self.gammas[i],
+                self.segments[self.gammas[i]],
                 gradient,
                 linear_gradient
             ]
             if out_file:
                 print("\t".join([str(x) for x in fields]), file=out_file)
             if abs(gradient) <= abs(linear_gradient) and chosen_gamma==None:
-                chosen_gamma = gammas[i]
+                chosen_gamma = self.gammas[i]
                 if not out_file:
                     break
         return chosen_gamma
@@ -104,7 +105,13 @@ class sequenza_extractor:
         """Get purity and ploidy for supplied gamma (if any), default gamma otherwise"""
         if gamma==None:
             gamma = self.default_gamma
-        return self.metrics[gamma]
+        if gamma in self.metrics:
+            return self.metrics[gamma]
+        else:
+            valid = sorted(list(self.segments.keys()))
+            msg = "gamma={0} not found in '{1}'; ".format(gamma, self.zip_path) +\
+                "available gammas are: {0}".format(str(self.gammas))
+            raise MissingDataError(msg)
 
     def get_segments(self):
         return self.segments

@@ -1,6 +1,7 @@
 {
     "maffile": "/home/iain/oicr/workspace/djerba/test_data/djerba/tmb/PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.mutect2.tumor_only.filtered.unmatched.DUMMY.maf.gz",
     "patientid": "PANX_1249",
+    "sequenza_gamma": null,
     "sequenzafile": "/home/iain/oicr/workspace/djerba/test_data/sequenza/PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip",
     "studyid": "PASS01"
 }

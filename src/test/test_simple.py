@@ -12,7 +12,7 @@ import djerba.simple.constants as constants
 from jsonschema.exceptions import ValidationError
 from djerba.simple.discover.discover import extraction_config, provenance_reader, MissingProvenanceError
 from djerba.simple.extract.extractor import extractor
-from djerba.simple.extract.sequenza import sequenza_extractor
+from djerba.simple.extract.sequenza import sequenza_extractor, MissingDataError
 from djerba.simple.build.reader import json_reader, mastersheet_reader, multiple_reader
 from djerba.simple.runner import runner
 
@@ -199,6 +199,13 @@ class TestSequenzaExtractor(TestBase):
         }
         self.assertEqual(seqex.get_segments(), expected_segments)
         self.assertEqual(seqex.get_default_gamma(), self.expected_gamma)
+        # test with alternate gamma
+        [purity, ploidy] = seqex.get_purity_ploidy(gamma=50)
+        self.assertEqual(purity, 0.56)
+        self.assertEqual(ploidy, 3.2)
+        # test with nonexistent gamma
+        with self.assertRaises(MissingDataError):
+            seqex.get_purity_ploidy(gamma=999999)
 
     def test_finder_script(self):
         """Test the command-line script to find gamma"""

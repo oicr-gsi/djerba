@@ -20,16 +20,18 @@ class extraction_config:
     Populate a config structure with parameters for data extraction
     """
 
-    def __init__(self, provenance_path, project, donor):
+    def __init__(self, provenance_path, project, donor, gamma=None):
         self.reader = provenance_reader(provenance_path, project, donor)
         self.project = project
         self.donor = donor
+        self.gamma = gamma
         self.params = self._generate_params()
 
     def _generate_params(self):
-        """Generate dictionary of parameters to be stored in a ConfigParser"""
+        """Generate dictionary of parameters"""
         # TODO may omit some parameters while this class is a work-in-progress
         params = {}
+        params[constants.SEQUENZA_GAMMA] = self.gamma
         params[constants.MAFFILE] = self.reader.parse_maf_path()
         params[constants.PATIENTID] = self.donor
         params[constants.SEQUENZAFILE] = self.reader.parse_sequenza_path()

@@ -102,7 +102,7 @@ class extractor:
         """Read the Sequenza results.zip, extract relevant parameters, and write as JSON"""
         ex = sequenza_extractor(self.config[constants.SEQUENZAFILE])
         gamma = self.config.get(constants.SEQUENZA_GAMMA)
-        [purity, ploidy] = ex.get_purity_ploidy(gamma) # if gamma==None, use default
+        [purity, ploidy] = ex.get_purity_ploidy(gamma) # if gamma==None, this uses the default
         config = {
             constants.READER_CLASS_KEY: 'json_reader',
             self.SAMPLE_INFO_KEY: {
