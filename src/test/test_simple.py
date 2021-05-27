@@ -10,7 +10,7 @@ import tempfile
 import unittest
 import djerba.simple.constants as constants
 from jsonschema.exceptions import ValidationError
-from djerba.simple.discover.discover import config, provenance_reader, MissingProvenanceError
+from djerba.simple.discover.discover import extraction_config, provenance_reader, MissingProvenanceError
 from djerba.simple.extract.extractor import extractor
 from djerba.simple.extract.sequenza import sequenza_extractor
 from djerba.simple.build.reader import json_reader, mastersheet_reader, multiple_reader
@@ -46,7 +46,7 @@ class TestDiscover(TestBase):
 
     def test_config(self):
         # test config structure generation, without supplying pre-created INI parameters
-        test_config = config(self.provenance_path, self.project, self.donor)
+        test_config = extraction_config(self.provenance_path, self.project, self.donor)
         with open(os.path.join(self.dataDir, 'discovered_config.json')) as expected_file:
             expected = json.loads(expected_file.read())
         self.assertEqual(test_config.get_params(), expected)

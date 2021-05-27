@@ -18,7 +18,7 @@ import re
 import djerba.simple.constants as constants
 import djerba.simple.discover.index as index
 
-class config:
+class extraction_config:
     """
     Populate a config structure with parameters for data extraction
     """

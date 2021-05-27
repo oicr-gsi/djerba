@@ -5,7 +5,7 @@ import configparser
 import json
 import os
 import djerba.simple.constants as constants
-from djerba.simple.discover.discover import config
+from djerba.simple.discover.discover import extraction_config
 from djerba.simple.extract.extractor import extractor
 from djerba.simple.build.reader import multiple_reader
 
@@ -55,11 +55,10 @@ class runner:
 
     def run(self):
         """Read the starting INI path; update with provenance; extract data, collate & write as JSON"""
-
         ini_params = self.read_bare_ini(self.iniPath)
-        runner_config = config(self.provenancePath, self.project, self.donor)
-        runner_config.update(ini_params)
-        ext = extractor(runner_config.get_params(), self.bedPath, self.workDir)
+        config = extraction_config(self.provenancePath, self.project, self.donor)
+        config.update(ini_params)
+        ext = extractor(config.get_params(), self.bedPath, self.workDir)
         ext.run()
         components = []
         for componentPath in ext.getComponentPaths():
