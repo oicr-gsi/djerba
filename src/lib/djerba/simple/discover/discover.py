@@ -68,27 +68,43 @@ class provenance_reader:
             msg = "No provenance records found for project '%s' and donor '%s'" % (project, donor)
             raise MissingProvenanceError(msg)
 
+    def _filter_rows(self, index, value, rows=None):
+        # find matching provenance rows from a list
+        if rows == None: rows = self.provenance
+        return filter(lambda x: x[index]==value, rows)
+
+    def _filter_metatype(self, metatype, rows=None):
+        return self._filter_rows(index.FILE_META_TYPE, metatype, rows)
+
+    def _filter_pattern(self, pattern, rows=None):
+        if rows == None: rows = self.provenance
+        return filter(lambda x: re.search(pattern, x[index.FILE_PATH]), rows)
+
+    def _filter_workflow(self, workflow, rows=None):
+        return self._filter_rows(index.WORKFLOW_NAME, workflow, rows)
+
     def _get_most_recent_row(self, rows):
         # if input is empty, raise an error
         # otherwise, return the row with the most recent date field (last in lexical sort order)
+        # rows may be an iterator; if so, convert to a list
+        rows = list(rows)
         if len(rows)==0:
             raise MissingProvenanceError("No provenance records found")
         return sorted(rows, key=lambda row: row[index.LAST_MODIFIED], reverse=True)[0]
 
-    def _parse_rows(self, workflow, file_pattern):
-        # get matching rows from the provenance array
-        # file_pattern = regex pattern for file path
-        i = index.WORKFLOW_NAME
-        j = index.FILE_PATH
-        return filter(lambda x: x[i]==workflow and re.search(file_pattern, x[j]), self.provenance)
-
-    def parse_maf_path(self):
-        rows = list(filter(
-            lambda x: not re.search('tumor_only', x[index.WORKFLOW_RUN_SWID]),
-            self._parse_rows('variantEffectPredictor', '\.maf\.gz$')
-        ))
+    def _parse_default(self, workflow, metatype, pattern):
+        # get most recent file of given workflow, metatype, and file path pattern
+        rows = self._filter_workflow(workflow)
+        rows = self._filter_metatype(metatype, rows)
+        rows = self._filter_pattern(pattern, rows) # metatype usually suffices, but double-check
         row = self._get_most_recent_row(rows)
         return row[index.FILE_PATH]
+
+    def parse_maf_path(self):
+        return self._parse_default('variantEffectPredictor', 'application/txt-gz', '\.maf\.gz$')
+
+    def parse_sequenza_path(self):
+        return self._parse_default('sequenza', 'application/zip-report-bundle', '\.results\.zip$')
 
 class MissingProvenanceError(Exception):
     pass
