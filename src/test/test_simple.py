@@ -72,7 +72,7 @@ class TestExtractor(TestBase):
         parser.read_string(configString)
         extractor(dict(parser['REPORT_CONFIG']), self.bed_path, outDir).run()
         sampleParamsPath = os.path.join(outDir, 'sample_params.json')
-        self.assertEqual(self.getMD5(sampleParamsPath), 'c539ae365d6fc754a3bb9b074d618607')
+        self.assertEqual(self.getMD5(sampleParamsPath), 'bf36eb4b0fe358ea5abdf2efc4670f40')
 
 class TestReader(TestBase):
 
