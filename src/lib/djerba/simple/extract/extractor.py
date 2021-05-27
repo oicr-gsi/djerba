@@ -36,11 +36,11 @@ class extractor:
     def run(self):
         """Run all extractions and write output"""
         self.componentPaths.append(self.writeMafParams())
-        self.componentPaths.append(self.writeIniParams())
+        self.componentPaths.append(self.writeConfigParams())
 
-    def writeIniParams(self):
+    def writeConfigParams(self):
         """
-        Take parameters directly from the config file, and write as JSON for later use
+        Take parameters directly from extraction config, and write as JSON for later use
         Output approximates data_clinical.txt in CGI-Tools, but only has fields for final JSON output
         """
         sampleParams = {}

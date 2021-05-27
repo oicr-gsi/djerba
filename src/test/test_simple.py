@@ -133,7 +133,7 @@ class TestRunner(TestBase):
 
     def setUp(self):
         super().setUp()
-        self.expectedMD5 = '2a1d86db2248f90aef4b7a7dc6698bfc'
+        self.expectedMD5 = 'b3439442f8612b5eec3b3728c57a31dc'
         self.iniPath = '/home/iain/oicr/workspace/djerba/test_data/report_configuration_reduced.ini'
         self.workDir = os.path.join(self.tmpDir, 'work')
         os.mkdir(self.workDir)

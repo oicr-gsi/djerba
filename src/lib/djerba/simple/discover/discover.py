@@ -1,15 +1,12 @@
 """Search for Djerba inputs"""
 
-# proof-of-concept -- find a MAF file from provenance
-
-# TODO:
-# - find MAF file
-# - (optionally) link file
-# - add file to INI (or other config) for preprocessor
-# - preprocess file to extract MAF metrics
+# initial proof-of-concept was to find a MAF file from provenance
+# TODO expand to other inputs:
+# - find files
+# - (optionally) link files
+# - add file to extraction_config
+# - run extractor to get metrics
 # - supply metrics (eg. as JSON) to final output
-
-# TODO write or update INI config for extractor; then extract eg. MAF metrics
 
 import csv
 import gzip
@@ -34,6 +31,8 @@ class extraction_config:
         # TODO may omit some parameters while this class is a work-in-progress
         params = {}
         params[constants.MAFFILE] = self.reader.parse_maf_path()
+        params[constants.PATIENTID] = self.donor
+        params[constants.STUDYID] = self.project
         return params
 
     def get_params(self):
