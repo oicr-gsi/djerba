@@ -70,7 +70,7 @@ class TestExtractor(TestBase):
             configString = "[%s]\n%s" % ('REPORT_CONFIG', iniFile.read())
         parser = configparser.ConfigParser()
         parser.read_string(configString)
-        extractor(parser['REPORT_CONFIG'], self.bed_path, outDir).run()
+        extractor(dict(parser['REPORT_CONFIG']), self.bed_path, outDir).run()
         sampleParamsPath = os.path.join(outDir, 'sample_params.json')
         self.assertEqual(self.getMD5(sampleParamsPath), 'c539ae365d6fc754a3bb9b074d618607')
 

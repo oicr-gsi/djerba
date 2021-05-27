@@ -32,6 +32,7 @@ class extraction_config:
         params = {}
         params[constants.MAFFILE] = self.reader.parse_maf_path()
         params[constants.PATIENTID] = self.donor
+        params[constants.SEQUENZAFILE] = self.reader.parse_sequenza_path()
         params[constants.STUDYID] = self.project
         return params
 
@@ -104,7 +105,7 @@ class provenance_reader:
         return self._parse_default('variantEffectPredictor', 'application/txt-gz', '\.maf\.gz$')
 
     def parse_sequenza_path(self):
-        return self._parse_default('sequenza', 'application/zip-report-bundle', '\.results\.zip$')
+        return self._parse_default('sequenza', 'application/zip-report-bundle', '_results\.zip$')
 
 class MissingProvenanceError(Exception):
     pass

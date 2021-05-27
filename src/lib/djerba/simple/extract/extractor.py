@@ -3,7 +3,9 @@
 import json
 import os
 import pandas as pd
+from djerba.simple.extract.sequenza import sequenza_extractor
 import djerba.simple.constants as constants
+
 
 class extractor:
     """
@@ -15,6 +17,7 @@ class extractor:
     SAMPLE_INFO_KEY = 'sample_info'
     SAMPLE_PARAMS_FILENAME = 'sample_params.json'
     MAF_PARAMS_FILENAME = 'maf_params.json'
+    SEQUENZA_PARAMS_FILENAME = 'sequenza_params.json'
     
     def __init__(self, config, bedPath, outDir):
         # config is a dictionary with required parameters (eg. from INI file)
@@ -36,6 +39,7 @@ class extractor:
     def run(self):
         """Run all extractions and write output"""
         self.componentPaths.append(self.writeMafParams())
+        self.componentPaths.append(self.writeSequenzaParams())
         self.componentPaths.append(self.writeConfigParams())
 
     def writeConfigParams(self):
@@ -93,6 +97,20 @@ class extractor:
             }
         }
         return self._write_json(config, self.MAF_PARAMS_FILENAME)
+
+    def writeSequenzaParams(self):
+        """Read the Sequenza results.zip, extract relevant parameters, and write as JSON"""
+        ex = sequenza_extractor(self.config[constants.SEQUENZAFILE])
+        gamma = self.config.get(constants.SEQUENZA_GAMMA)
+        [purity, ploidy] = ex.get_purity_ploidy(gamma) # if gamma==None, use default
+        config = {
+            constants.READER_CLASS_KEY: 'json_reader',
+            self.SAMPLE_INFO_KEY: {
+                constants.SEQUENZA_PURITY_KEY: purity,
+                constants.SEQUENZA_PLOIDY_KEY: ploidy
+            }
+        }
+        return self._write_json(config, self.SEQUENZA_PARAMS_FILENAME)
 
 class maf_extractor:
 
