@@ -27,6 +27,10 @@ class TestBase(unittest.TestCase):
     def setUp(self):
         self.testDir = os.path.dirname(os.path.realpath(__file__))
         self.dataDir = os.path.realpath(os.path.join(self.testDir, 'data'))
+        # TODO specify all non-public data paths relative to self.sup_dir
+        # modified test provenance file gets its own environment variable
+        self.sup_dir = os.environ('DJERBA_TEST_SUPPLEMENTARY_DIR')
+        self.provenance_path = os.environ('DJERBA_TEST_PROVENANCE')
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_simple_')
         self.tmpDir = self.tmp.name
         self.schema_path = '/home/iain/oicr/git/elba-config-schema/elba_config_schema.json'
@@ -35,7 +39,6 @@ class TestBase(unittest.TestCase):
         self.bed_path = '/home/iain/oicr/workspace/djerba/test_data/djerba/tmb/S31285117_Regions.bed'
         self.project = 'PASS01'
         self.donor = 'PANX_1249'
-
         with open(self.schema_path) as f:
             self.schema = json.loads(f.read())
 
