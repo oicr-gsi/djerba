@@ -41,7 +41,7 @@ def main(args):
         'S31285117_Regions.bed': 'd6b2700955084e39161fd345145f328e',
         'sequenza/PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip': '6a95febce31ac8e6ede8927f2a5e7937',
         'PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.mutect2.tumor_only.filtered.unmatched.DUMMY.maf.gz': '1b1d47cc56518e1818c4146273a663dd',
-        'report_configuration.ini': '72b35ef15554c315a8307cca73dcb020',
+        'report_configuration.ini': 'e03e6f839d1a2699c7d5ad1c61a239d7',
         'report_configuration_reduced.ini': '816e60589071bc20e90efe425a463a20'
     }
     for name in expected.keys():
@@ -49,17 +49,14 @@ def main(args):
         if not (os.path.isfile(in_path)):
             raise OSError("Path '{0}' is not a file: ".format(in_path))
         elif getMD5(in_path) != expected[name]:
-            msg = "Checksums do not match for {0}: ".format(name) +\
-                "Found {0}, expected {1}".format(md5, expected[name])
+            msg = "Checksums do not match for {0}: ".format(name)+\
+                "Found {0}, expected {1}".format(getMD5(in_path), expected[name])
             raise ValueError(msg)
     if args.verbose:
         print("MD5 sums match for all expected inputs")
-    if args.out:
-        provenance_path = args.out
-    else:
-        provenance_path = os.path.join(in_dir, 'provenance_modified.tsv.gz')
     # now use csv and gzip to write the modified provenance path
     # we modify file paths for data that is read in tests
+    provenance_path = args.out
     new_paths = {
         '/oicr/data/archive/seqware/seqware_analysis_12/hsqwprod/seqware-results/sequenza_2.1/21562306/PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip': os.path.join(in_dir, 'sequenza', 'PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip'),
         '/oicr/data/archive/seqware/seqware_analysis_12/hsqwprod/seqware-results/variantEffectPredictor_2.0.2/21783975/PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.mutect2.tumor_only.filtered.unmatched.maf.gz': os.path.join(in_dir, 'PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.mutect2.tumor_only.filtered.unmatched.DUMMY.maf.gz')
