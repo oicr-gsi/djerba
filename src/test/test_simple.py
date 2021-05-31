@@ -27,16 +27,26 @@ class TestBase(unittest.TestCase):
     def setUp(self):
         self.testDir = os.path.dirname(os.path.realpath(__file__))
         self.dataDir = os.path.realpath(os.path.join(self.testDir, 'data'))
-        # TODO specify all non-public data paths relative to self.sup_dir
+        # specify all non-public data paths relative to self.sup_dir
         # modified test provenance file gets its own environment variable
-        self.sup_dir = os.environ.get('DJERBA_TEST_SUPPLEMENTARY_DIR')
-        self.provenance_path = os.environ.get('DJERBA_TEST_PROVENANCE')
+        sup_dir_var = 'DJERBA_TEST_DATA'
+        provenance_var = 'DJERBA_TEST_PROVENANCE'
+        self.sup_dir = os.environ.get(sup_dir_var)
+        self.provenance_path = os.environ.get(provenance_var)
+        if not (self.sup_dir):
+            raise RuntimeError('Need to specify environment variable {0}'.format(sup_dir_var))
+        elif not os.path.isdir(self.sup_dir):
+            raise OSError("Supplementary directory path '{0}' is not a directory".format(self.sup_dir))
+        if not self.provenance_path:
+            raise RuntimeError('Need to specify environment variable {0}'.format(provenance_var))
+        elif not os.path.isfile(self.provenance_path):
+            raise OSError("Provenance path '{0}' is not a file".format(self.provenance_path))
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_simple_')
         self.tmpDir = self.tmp.name
-        self.schema_path = '/home/iain/oicr/git/elba-config-schema/elba_config_schema.json'
-        self.provenance_path = '/home/iain/oicr/workspace/djerba/test_data/'+\
-            'pass01_panx_provenance.modified.tsv.gz'
-        self.bed_path = '/home/iain/oicr/workspace/djerba/test_data/djerba/tmb/S31285117_Regions.bed'
+        self.schema_path = os.path.join(self.sup_dir, 'elba_config_schema.json')
+        self.bed_path = os.path.join(self.sup_dir, 'S31285117_Regions.bed')
+        self.dummy_maf_name = 'PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.mutect2.tumor_only.filtered.unmatched.DUMMY.maf.gz'
+        self.dummy_maf_path = os.path.join(self.sup_dir, self.dummy_maf_name)
         self.project = 'PASS01'
         self.donor = 'PANX_1249'
         with open(self.schema_path) as f:
@@ -50,14 +60,19 @@ class TestDiscover(TestBase):
     def test_config(self):
         # test config structure generation, without supplying pre-created INI parameters
         test_config = extraction_config(self.provenance_path, self.project, self.donor)
-        with open(os.path.join(self.dataDir, 'discovered_config.json')) as expected_file:
-            expected = json.loads(expected_file.read())
+        expected = {
+            "maffile": self.dummy_maf_path,
+            "patientid": "PANX_1249",
+            "sequenza_gamma": None,
+            "sequenzafile": os.path.join(self.sup_dir, "sequenza", "PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip"),
+            "studyid": "PASS01"
+        }
         self.assertEqual(test_config.get_params(), expected)
 
     def test_reader(self):
         test_reader = provenance_reader(self.provenance_path, self.project, self.donor)
         maf_path = test_reader.parse_maf_path()
-        expected = '/home/iain/oicr/workspace/djerba/test_data/djerba/tmb/PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.mutect2.tumor_only.filtered.unmatched.DUMMY.maf.gz'
+        expected = self.dummy_maf_path
         self.assertEqual(maf_path, expected)
         with self.assertRaises(MissingProvenanceError):
             test_reader_2 = provenance_reader(self.provenance_path, self.project, 'nonexistent_donor')
@@ -66,7 +81,7 @@ class TestExtractor(TestBase):
 
     def test_writeIniParams(self):
         # TODO sanitize the ini and commit to repo
-        iniPath = '/home/iain/oicr/workspace/djerba/test_data/report_configuration.ini'
+        iniPath = os.path.join(self.sup_dir, 'report_configuration.ini')
         outDir = '/home/iain/tmp/djerba/test'
         with open(iniPath) as iniFile:
             # prepend header required by configparser; TODO import from constants
@@ -137,7 +152,7 @@ class TestRunner(TestBase):
     def setUp(self):
         super().setUp()
         self.expectedMD5 = 'b3439442f8612b5eec3b3728c57a31dc'
-        self.iniPath = '/home/iain/oicr/workspace/djerba/test_data/report_configuration_reduced.ini'
+        self.iniPath = os.path.join(self.sup_dir, 'report_configuration_reduced.ini')
         self.workDir = os.path.join(self.tmpDir, 'work')
         os.mkdir(self.workDir)
         
@@ -176,7 +191,7 @@ class TestSequenzaExtractor(TestBase):
 
     def setUp(self):
         super().setUp()
-        self.zip_path = '/home/iain/oicr/workspace/djerba/test_data/sequenza/PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip'
+        self.zip_path = os.path.join(self.sup_dir, 'sequenza', 'PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip')
         self.expected_gamma = 400
     
     def test(self):
