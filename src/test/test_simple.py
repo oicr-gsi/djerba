@@ -29,8 +29,8 @@ class TestBase(unittest.TestCase):
         self.dataDir = os.path.realpath(os.path.join(self.testDir, 'data'))
         # TODO specify all non-public data paths relative to self.sup_dir
         # modified test provenance file gets its own environment variable
-        self.sup_dir = os.environ('DJERBA_TEST_SUPPLEMENTARY_DIR')
-        self.provenance_path = os.environ('DJERBA_TEST_PROVENANCE')
+        self.sup_dir = os.environ.get('DJERBA_TEST_SUPPLEMENTARY_DIR')
+        self.provenance_path = os.environ.get('DJERBA_TEST_PROVENANCE')
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_simple_')
         self.tmpDir = self.tmp.name
         self.schema_path = '/home/iain/oicr/git/elba-config-schema/elba_config_schema.json'
