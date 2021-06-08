@@ -6,21 +6,24 @@ Create reports from metadata and workflow output
 
 Djerba translates cancer bioinformatics workflow outputs and metadata into standard reporting formats.
 
-Formats supported by Djerba include:
-- JSON data structure for the [Elba data review server](https://github.com/oicr-gsi/Elba)
-- Directory of data and metadata files for [cBioPortal](https://cbioportal.org/)
+The current focus of Djerba is producing clinical reports, in the format developed by the Clinical Genome Informatics (CGI) group at [OICR](https://oicr.on.ca).
 
 Djerba is named for an [island](https://en.wikipedia.org/wiki/Djerba) off the coast of North Africa. (The initial letter D is silent, so it is pronounced "jerba".)
 
-## Quick Start
+## What Djerba Does
 
-Requires OICR [Modulator](https://gitlab.oicr.on.ca/ResearchIT/modulator).
+Djerba consists of 5 steps:
+1. **Discover**: Parse file provenance (in the internal OICR format) and workflow outputs, to determine input data and parameters. These may optionally be written as JSON for future reference.
+2. **Extract**: Process the inputs to find clinical reporting attributes, at both gene and sample level. An attribute may be a numerical metric, text field, or other quantity. Extracted metrics are typically written as JSON; other file formats may also be used, for example to write images. As part of this step, Djerba can choose the [Sequenza](https://cran.r-project.org/web/packages/sequenza/vignettes/sequenza.html) gamma parameter, which selects a purity/ploidy solution from Sequenza.
+3. **Build**: Merge outputs from the extraction step into a single JSON document, which must conform to the [Elba config schema](https://github.com/oicr-gsi/elba-config-schema).
+4. **Render**: Use the JSON to create an HTML document.
+4. **Publish**: Convert the HTML to PDF.
 
-- Load the Djerba environment module: `module load djerba`
-- Run any of the command-line scripts with `--help` for instructions:
-  - `djerba.py`
-  - `djerba_from_command.py`
-  - `upload.py`
+## Development History
+
+- **January 2019 to September 2020**: The [cbioportal_tools](https://github.com/oicr-gsi/cbioportal_tools) project, also known as Janus, was a precursor to Djerba. This project was intended to produce reporting directories for [cBioPortal](https://cbioportal.org/).
+- **September 2020**: The Djerba repository is created to replace `cbioportal_tools`. Its scope includes CGI clinical reporting as well as cBioPortal. Development releases, up to and including 0.0.4, address both output formats.
+- **May 2021**: The scope of Djerba changes, to focus exclusively on CGI clinical reports and drop support for cBioPortal. Major overhaul and simplification of code, prior to release 0.0.5. Data processing for cBioPortal remains an option for the future.
 
 ## Documentation
 
@@ -98,9 +101,11 @@ For uploading Elba config JSON to an Elba server, the `ELBA_DB_USER` and `ELBA_D
 - Commit (or merge) to the master branch, and tag the release on Github
 - Update environment module configuration in [OICR Modulator](https://gitlab.oicr.on.ca/ResearchIT/modulator) to install the newly tagged release
 
-### Development History and Plans
+### Development
 
 Djerba development originated with the [cbioportal_tools](https://github.com/oicr-gsi/cbioportal_tools) project (also known as Janus). This included creation of data folders for cBioPortal.
+
+
 
 As of September 2020, the scope of Djerba has expanded to include [Elba](https://github.com/oicr-gsi/Elba) (previously known as ShinyReport), a reporting tool developed at OICR. Input data and processing requirements for the two reporting types will overlap significantly, so they are to be handled by the same software repository.
 
@@ -108,6 +113,6 @@ Development progress is documented in [CHANGELOG.md](./CHANGELOG.md).
 
 ## Copyright and License
 
-Copyright (C) 2020 by Genome Sequence Informatics, Ontario Institute for Cancer Research.
+Copyright (C) 2020, 2021 by Genome Sequence Informatics, Ontario Institute for Cancer Research.
 
 Licensed under the [GPL 3.0 license](https://www.gnu.org/licenses/gpl-3.0.en.html).
