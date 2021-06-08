@@ -22,7 +22,9 @@ def get_parser():
         help='BED interval file for TMB calculation'
     )
     parser.add_argument('-d', '--donor', metavar='ID', required=True, help='Donor ID')
-    parser.add_argument('-g', '--gamma', metavar='NUM', default=None, help='Sequenza gamma parameter')
+    parser.add_argument(
+        '-g', '--gamma', metavar='NUM', default=None,
+        help='Sequenza gamma parameter; if not given, will be selected automatically')
     # TODO replace the INI file with a method to find and configure inputs
     parser.add_argument(
         '-i', '--ini', metavar='PATH', required=True,

@@ -12,7 +12,7 @@ import djerba.simple.constants as constants
 from jsonschema.exceptions import ValidationError
 from djerba.simple.discover.discover import extraction_config, provenance_reader, MissingProvenanceError
 from djerba.simple.extract.extractor import extractor
-from djerba.simple.extract.sequenza import sequenza_extractor, MissingDataError
+from djerba.simple.extract.sequenza import sequenza_extractor, SequenzaExtractionError
 from djerba.simple.build.reader import json_reader, mastersheet_reader, multiple_reader
 from djerba.simple.runner import runner
 
@@ -23,6 +23,16 @@ class TestBase(unittest.TestCase):
         with open(inputPath, 'rb') as f:
             md5.update(f.read())
         return md5.hexdigest()
+
+    def run_command(self, cmd):
+        """Run a command; in case of failure, capture STDERR."""
+        result = subprocess.run(cmd, encoding=constants.TEXT_ENCODING, capture_output=True)
+        try:
+            result.check_returncode()
+        except subprocess.CalledProcessError as err:
+            msg = "Script failed with STDERR: "+result.stderr
+            raise RuntimeError(msg) from err
+        return result
 
     def setUp(self):
         self.testDir = os.path.dirname(os.path.realpath(__file__))
@@ -184,7 +194,7 @@ class TestRunner(TestBase):
             "--schema", self.schema_path,
             "--work-dir", self.workDir
         ]
-        subprocess.run(cmd)
+        self.run_command(cmd)
         self.assertEqual(self.getMD5(outPath), self.expectedMD5)
 
 class TestSequenzaExtractor(TestBase):
@@ -194,7 +204,20 @@ class TestSequenzaExtractor(TestBase):
         self.zip_path = os.path.join(self.sup_dir, 'sequenza', 'PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip')
         self.expected_gamma = 400
     
-    def test(self):
+    def test_finder_script(self):
+        """Test the command-line script to find gamma"""
+        cmd = [
+            "sequenza_gamma_selector.py",
+            "--in", self.zip_path,
+            "--verbose"
+        ]
+        result = self.run_command(cmd)
+        with open(os.path.join(self.dataDir, 'gamma_test.tsv'), 'rt') as in_file:
+            expected_params = in_file.read()
+        self.assertEqual(int(result.stdout), self.expected_gamma)
+        self.assertEqual(result.stderr, expected_params)
+
+    def test_purity_ploidy(self):
         seqex = sequenza_extractor(self.zip_path)
         [purity, ploidy] = seqex.get_purity_ploidy()
         self.assertEqual(purity, 0.6)
@@ -215,28 +238,20 @@ class TestSequenzaExtractor(TestBase):
             1500: 123,
             2000: 84
         }
-        self.assertEqual(seqex.get_segments(), expected_segments)
+        self.assertEqual(seqex.get_segment_counts(), expected_segments)
         self.assertEqual(seqex.get_default_gamma(), self.expected_gamma)
         # test with alternate gamma
         [purity, ploidy] = seqex.get_purity_ploidy(gamma=50)
         self.assertEqual(purity, 0.56)
         self.assertEqual(ploidy, 3.2)
         # test with nonexistent gamma
-        with self.assertRaises(MissingDataError):
+        with self.assertRaises(SequenzaExtractionError):
             seqex.get_purity_ploidy(gamma=999999)
 
-    def test_finder_script(self):
-        """Test the command-line script to find gamma"""
-        cmd = [
-            "sequenza_gamma_selector.py",
-            "--in", self.zip_path,
-            "--verbose"
-        ]
-        result = subprocess.run(cmd, capture_output=True)
-        with open(os.path.join(self.dataDir, 'gamma_test.tsv'), 'rt') as in_file:
-            expected_params = in_file.read()
-        self.assertEqual(int(result.stdout), self.expected_gamma)
-        self.assertEqual(result.stderr.decode(constants.TEXT_ENCODING), expected_params)
+    def test_seg_file(self):
+        seqex = sequenza_extractor(self.zip_path)
+        seg_path = seqex.extract_seg_file(self.tmpDir)
+        print('###', seg_path)
 
 if __name__ == '__main__':
     unittest.main()

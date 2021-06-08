@@ -3,6 +3,7 @@
 import csv
 import os
 import re
+import shutil
 import sys
 import tempfile
 import zipfile
@@ -11,32 +12,51 @@ from glob import glob
 class sequenza_extractor:
 
     def __init__(self, zip_path, out_file=None):
-        """Decompress the zip archive to a temporary directory; read relevant values"""
+        """
+        Decompress the zip archive to a temporary directory
+        Read values for default gamma, and purity/ploidy
+        """
+        self.zip_path = zip_path
+        self.segment_counts = {}
+        self.metrics = {}
+        self.seg_archive = {} # archive paths to .seg files
+        self.gammas = []
         tempdir = tempfile.TemporaryDirectory(prefix='djerba_sequenza_')
         tmp = tempdir.name
         # zip archives are large (~500 MB) -- only extract the files we need
-        zf = zipfile.ZipFile(zip_path)
+        # Sequenza archives *should* have correct file contents, but we do some basic sanity checking
+        gamma_set = set()
+        zf = zipfile.ZipFile(self.zip_path)
+        multiple_files = False
         for name in zf.namelist():
-            if re.search('_(segments|alternative_solutions)\.txt$', name):
-                zf.extract(name, tmp)
-        gamma_dir = os.path.join(tmp, 'gammas')
-        gamma_names = os.listdir(gamma_dir)
-        self.segments = {}
-        self.metrics = {}
-        for gamma_name in gamma_names:
-            seg = glob(os.path.join(gamma_dir, gamma_name, '*_segments.txt'))
-            sol = glob(os.path.join(gamma_dir, gamma_name, '*_alternative_solutions.txt'))
-            if len(seg)!=1 or len(sol)!=1:
-                msg = "Incorrect number of segment/solution files in " +\
-                    "%s for gamma %s; should have one of each" % (zip_path, gamma_name)
-                raise MissingDataError(msg)
-            gamma = int(gamma_name)
-            self.segments[gamma] = self._count_segments(seg[0])
-            self.metrics[gamma] = self._find_purity_ploidy(sol[0])
+            if re.search('/sol[0-9]_', name):
+                continue # exclude Sequenza's lower-probability alternative results
+            terms = re.split(os.sep, name)
+            try:
+                gamma = int(terms[1])
+            except Exception as exc:
+                msg = "Unable to parse gamma parameter from {0} ".format(name) +\
+                    "in archive {0}".format(self.zip_path)
+                raise SequenzaExtractionError(msg) from exc
+            gamma_set.add(gamma)
+            if re.search('_segments\.txt$', name):
+                if gamma in self.segment_counts: multiple_files = True
+                self.segment_counts[gamma] = self._count_segments(zf.extract(name, tmp))
+            elif re.search('_alternative_solutions\.txt$', name):
+                if gamma in self.metrics: multiple_files = True
+                self.metrics[gamma] = self._find_purity_ploidy(zf.extract(name, tmp))
+            elif re.search('_Total_CN.seg', name):
+                if gamma in self.seg_archive: multiple_files = True
+                self.seg_archive[gamma] = name
+        if multiple_files:
+            msg = "Multiple files of same type in Sequenza archive {0}".format(self.zip_path)
+            raise SequenzaExtractionError(msg)
         tempdir.cleanup()
-        self.gammas = sorted(list(self.segments.keys()))
+        self.gammas = sorted(list(gamma_set))
+        total = len(self.gammas)
+        if len(self.segment_counts)!=total or len(self.metrics)!=total or len(self.seg_archive)!=total:
+            raise SequenzaExtractionError("Inconsistent number of files in {0}".format(self.zip_path))
         self.default_gamma = self._find_default_gamma(out_file)
-        self.zip_path = zip_path
 
     def _count_segments(self, seg_path):
         """Count the number of segments; equal to length of file, excluding the header"""
@@ -57,21 +77,21 @@ class sequenza_extractor:
         """
         gamma_min = self.gammas[0]
         gamma_max = self.gammas[-1]
-        delta_y = self.segments[gamma_max] - self.segments[gamma_min]
+        delta_y = self.segment_counts[gamma_max] - self.segment_counts[gamma_min]
         delta_x = gamma_max - gamma_min
         linear_gradient = float(delta_y)/delta_x
         chosen_gamma = None
         if out_file:
             print("\t".join(['gamma', 'segments', 'gradient', 'expected']), file=out_file)
-            fields = [self.gammas[0], self.segments[self.gammas[0]], 'NA', 'NA']
+            fields = [self.gammas[0], self.segment_counts[self.gammas[0]], 'NA', 'NA']
             print("\t".join([str(x) for x in fields]), file=out_file)
         for i in range(1, len(self.gammas)):
-            delta_y = self.segments[self.gammas[i]] - self.segments[self.gammas[i-1]]
+            delta_y = self.segment_counts[self.gammas[i]] - self.segment_counts[self.gammas[i-1]]
             delta_x = self.gammas[i] - self.gammas[i-1]
             gradient = float(delta_y)/delta_x
             fields = [
                 self.gammas[i],
-                self.segments[self.gammas[i]],
+                self.segment_counts[self.gammas[i]],
                 gradient,
                 linear_gradient
             ]
@@ -98,23 +118,42 @@ class sequenza_extractor:
                     break
         return [purity, ploidy]
 
+    def _gamma_not_found_message(self, gamma):
+        valid = sorted(list(self.segment_counts.keys()))
+        msg = "gamma={0} not found in '{1}'; ".format(gamma, self.zip_path) +\
+            "available gammas are: {0}".format(str(self.gammas))
+        return msg
+    
+    def extract_seg_file(self, dest_dir, gamma=None):
+        """
+        Extract the Total_CN.seg file; for the supplied gamma (if any), default gamma otherwise.
+        dest_dir is a directory path for the extracted file.
+        The .seg file is further processed downstream, before input to singleSample.R
+        """
+        if gamma == None:
+            gamma = self.default_gamma
+        if gamma in self.gammas:
+            zf = zipfile.ZipFile(self.zip_path)
+            extracted = zf.extract(self.seg_archive[gamma], dest_dir)
+        else:
+            raise SequenzaExtractionError(self._gamma_not_found_message(gamma))
+        return extracted
+
     def get_default_gamma(self):
         return self.default_gamma
 
     def get_purity_ploidy(self, gamma=None):
         """Get purity and ploidy for supplied gamma (if any), default gamma otherwise"""
-        if gamma==None:
+        if gamma == None:
             gamma = self.default_gamma
         if gamma in self.metrics:
             return self.metrics[gamma]
         else:
-            valid = sorted(list(self.segments.keys()))
-            msg = "gamma={0} not found in '{1}'; ".format(gamma, self.zip_path) +\
-                "available gammas are: {0}".format(str(self.gammas))
-            raise MissingDataError(msg)
+            raise SequenzaExtractionError(self._gamma_not_found_message(gamma))
 
-    def get_segments(self):
-        return self.segments
+    def get_segment_counts(self):
+        return self.segment_counts
 
-class MissingDataError(Exception):
+
+class SequenzaExtractionError(Exception):
     pass
