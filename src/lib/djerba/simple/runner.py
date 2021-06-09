@@ -10,9 +10,20 @@ from djerba.simple.build.reader import multiple_reader
 
 class runner:
 
-    def __init__(self, provenance, project, donor, bedPath, iniPath, workDir, outPath, schemaPath,
-                 rScriptDir,
-                 gamma=None, overwrite=False, require_complete=False, validate=False):
+    def __init__(self,
+                 provenance,
+                 project,
+                 donor,
+                 bedPath,
+                 iniPath,
+                 workDir,
+                 outPath,
+                 schemaPath,
+                 rScriptDir=None,
+                 gamma=None,
+                 overwrite=False,
+                 require_complete=False,
+                 validate=False):
         # validate the iniPath
         if not os.path.exists(iniPath):
             raise OSError("Input path %s does not exist" % iniPath)
@@ -34,11 +45,14 @@ class runner:
         # TODO confirm outPath is writable
         self.outPath = outPath
         # TODO confirm schemaPath, provenance, bedPath are readable
+        if rScriptDir:
+            self.rScriptDir = rScriptDir
+        else:
+            self.rScriptDir = os.path.join(os.path.dirname(__file__), 'R')
         with open(schemaPath) as f:
             self.schema = json.loads(f.read())
         self.provenancePath = provenance
         self.project = project
-        self.rScriptDir = rScriptDir
         self.donor = donor
         self.gamma = gamma
         self.bedPath = bedPath

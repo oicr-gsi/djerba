@@ -55,8 +55,18 @@ def main(args):
     project = args.project
     provenance = args.provenance
     schema_path = args.schema
+    r_script_dir = None
     work_dir = args.work_dir
-    runner(provenance, project, donor, bed_path, ini_path, work_dir, out_path, schema_path, gamma).run()
+    runner(provenance,
+           project,
+           donor,
+           bed_path,
+           ini_path,
+           work_dir,
+           out_path,
+           schema_path,
+           r_script_dir,
+           gamma).run()
 
 if __name__ == '__main__':
     parser = get_parser()
