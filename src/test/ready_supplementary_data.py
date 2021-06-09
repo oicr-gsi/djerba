@@ -37,6 +37,7 @@ def main(args):
     # dictionary of relative paths -> md5 sums
     expected = {
         'elba_config_schema.json': '591eff214424d8a9216960cb89d62738',
+        'mavis_summary_all_WG.PANX.1249.Lv.M.100-PM-013.LCM5_WT.PANX.1249.Lv.M.100-PM-013.LCM5.tab': 'e5b148e6dee1b4a46ecabc7e05239cc5',
         'pass01_panx_provenance.original.tsv.gz': 'd1909b18d00d6d2531f3ff939ba03716',
         'S31285117_Regions.bed': 'd6b2700955084e39161fd345145f328e',
         'sequenza/PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip': '6a95febce31ac8e6ede8927f2a5e7937',

@@ -12,6 +12,7 @@ import djerba.simple.constants as constants
 from jsonschema.exceptions import ValidationError
 from djerba.simple.discover.discover import extraction_config, provenance_reader, MissingProvenanceError
 from djerba.simple.extract.extractor import extractor
+from djerba.simple.extract.r_script_wrapper import wrapper
 from djerba.simple.extract.sequenza import sequenza_extractor, SequenzaExtractionError
 from djerba.simple.build.reader import json_reader, mastersheet_reader, multiple_reader
 from djerba.simple.runner import runner
@@ -90,16 +91,19 @@ class TestDiscover(TestBase):
 
 class TestExtractor(TestBase):
 
+    def setUp(self):
+        super().setUp()
+        self.ini_header = 'REPORT_CONFIG' #  INI section header required by configparser
+
     def test_writeIniParams(self):
         # TODO sanitize the ini and commit to repo
-        iniPath = os.path.join(self.sup_dir, 'report_configuration.ini')
         outDir = '/home/iain/tmp/djerba/test' # TODO change to testing temp dir
+        iniPath = os.path.join(self.sup_dir, 'report_configuration.ini')
         with open(iniPath) as iniFile:
-            # prepend header required by configparser; TODO import from constants
-            configString = "[%s]\n%s" % ('REPORT_CONFIG', iniFile.read())
-        parser = configparser.ConfigParser()
-        parser.read_string(configString)
-        extractor(dict(parser['REPORT_CONFIG']), self.bed_path, outDir, self.rScriptDir).run()
+            configString = "[%s]\n%s" % (self.ini_header, iniFile.read())
+        params = configparser.ConfigParser()
+        params.read_string(configString)
+        extractor(dict(params[self.ini_header]), self.bed_path, outDir, self.rScriptDir).run()
         sampleParamsPath = os.path.join(outDir, 'sample_params.json')
         self.assertEqual(self.getMD5(sampleParamsPath), 'bf36eb4b0fe358ea5abdf2efc4670f40')
 
@@ -266,6 +270,24 @@ class TestSequenzaExtractor(TestBase):
         self.assertEqual(self.getMD5(seg_path), '5d433e47431029219b6922fba63a8fcf')
         with self.assertRaises(SequenzaExtractionError):
             seqex.extract_seg_file(self.tmpDir, gamma=999999)
+
+class TestWrapper(TestBase):
+
+    def test(self):
+        ini_header = 'RSCRIPT_CONFIG'
+        iniPath = os.path.join(self.sup_dir, 'rscript_config.ini')
+        with open(iniPath) as iniFile:
+            # prepend header required by configparser
+            configString = "[%s]\n%s" % (ini_header, iniFile.read())
+        parser = configparser.ConfigParser()
+        parser.read_string(configString)
+        outDir = '/home/iain/tmp/djerba/rscript' # TODO use tmpdir
+        test_wrapper = wrapper(parser[ini_header], self.rScriptDir, outDir)
+        result = test_wrapper.run()
+        #self.assertEqual(0, result.returncode)
+        if result.returncode!=0:
+            msg = "Script failed with STDERR:\n"+result.stderr
+            raise RuntimeError(msg)
 
 if __name__ == '__main__':
     unittest.main()
