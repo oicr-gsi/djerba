@@ -34,10 +34,10 @@ class sequenza_extractor:
             terms = re.split(os.sep, name)
             try:
                 gamma = int(terms[1])
-            except Exception as exc:
+            except (IndexError, ValueError) as err:
                 msg = "Unable to parse gamma parameter from {0} ".format(name) +\
                     "in archive {0}".format(self.zip_path)
-                raise SequenzaExtractionError(msg) from exc
+                raise SequenzaExtractionError(msg) from err
             gamma_set.add(gamma)
             if re.search('_segments\.txt$', name):
                 if gamma in self.segment_counts: multiple_files = True
@@ -49,7 +49,7 @@ class sequenza_extractor:
                 if gamma in self.seg_archive: multiple_files = True
                 self.seg_archive[gamma] = name
         if multiple_files:
-            msg = "Multiple files of same type in Sequenza archive {0}".format(self.zip_path)
+            msg = "Multiple files of same gamma & type in Sequenza archive {0}".format(self.zip_path)
             raise SequenzaExtractionError(msg)
         tempdir.cleanup()
         self.gammas = sorted(list(gamma_set))

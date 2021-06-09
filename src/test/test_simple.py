@@ -251,7 +251,19 @@ class TestSequenzaExtractor(TestBase):
     def test_seg_file(self):
         seqex = sequenza_extractor(self.zip_path)
         seg_path = seqex.extract_seg_file(self.tmpDir)
-        print('###', seg_path)
+        self.assertEqual(
+            seg_path,
+            os.path.join(self.tmpDir, 'gammas/400/PANX_1249_Lv_M_WG_100-PM-013_LCM5_Total_CN.seg')
+        )
+        self.assertEqual(self.getMD5(seg_path), '25b0e3c01fe77a28b24cff46081cfb1b')
+        seg_path = seqex.extract_seg_file(self.tmpDir, gamma=1000)
+        self.assertEqual(
+            seg_path,
+            os.path.join(self.tmpDir, 'gammas/1000/PANX_1249_Lv_M_WG_100-PM-013_LCM5_Total_CN.seg')
+        )
+        self.assertEqual(self.getMD5(seg_path), '5d433e47431029219b6922fba63a8fcf')
+        with self.assertRaises(SequenzaExtractionError):
+            seqex.extract_seg_file(self.tmpDir, gamma=999999)
 
 if __name__ == '__main__':
     unittest.main()
