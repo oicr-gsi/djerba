@@ -71,11 +71,11 @@ print("Running singleSample with the following options:")
 print(opt)
 
 # source functions
-source(paste0(basedir, "/R/convert_seg_to_gene_singlesample.r"))
-source(paste0(basedir, "/R/convert_rsem_results_zscore.r"))
-source(paste0(basedir, "/R/convert_vep92_to_filtered_cbio.r"))
-source(paste0(basedir, "/R/convert_mavis_to_filtered_fusions.r"))
-source(paste0(basedir, "/R/calc_mut_sigs.r"))
+source(paste0(basedir, "/convert_seg_to_gene_singlesample.r"))
+source(paste0(basedir, "/convert_rsem_results_zscore.r"))
+source(paste0(basedir, "/convert_vep92_to_filtered_cbio.r"))
+source(paste0(basedir, "/convert_mavis_to_filtered_fusions.r"))
+source(paste0(basedir, "/calc_mut_sigs.r"))
 
 ###################### VEP #####################
 if (maffile == "blank") {
