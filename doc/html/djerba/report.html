@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.1" />
+<meta name="generator" content="pdoc 0.9.2" />
 <title>djerba.report API documentation</title>
 <meta name="description" content="Genome interpretation Clinical Report configuration" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -29,6 +29,7 @@
 </summary>
 <pre><code class="python">&#34;&#34;&#34;Genome interpretation Clinical Report configuration&#34;&#34;&#34;
 
+import couchdb2
 import json
 import jsonschema
 import logging
@@ -41,15 +42,100 @@ from djerba.sample import sample
 from djerba.utilities import constants
 from djerba.utilities.base import base
 
+class uploader(base):
+    &#34;&#34;&#34;Class to validate report config and upload to an Elba instance&#34;&#34;&#34;
 
-class report(base):
+    ID_KEY = &#34;_id&#34; # reserved key to identify CouchDB documents
 
-    &#34;&#34;&#34;Class representing a genome interpretation Clinical Report in Elba&#34;&#34;&#34;
+    # Elba upload config
+    UPLOAD_CONFIG_FILENAME = &#39;upload_config.json&#39;
+    DB_NAME_KEY = &#39;db_name&#39;
+    DB_PORT_KEY = &#39;db_port&#39;
+    DB_URL_KEY = &#39;db_url&#39;
+
+    def __init__(self, schema_path=None, log_level=logging.WARNING, log_path=None):
+        self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
+        self.schema = self.get_schema(schema_path)
+
+    def get_schema(self, schema_path):
+        if schema_path:
+            with open(schema_path, &#39;r&#39;) as schema_file:
+                self.schema = json.loads(schema_file.read())
+        else:
+            self.schema = None
+        return self.schema
+
+    def upload(self, config_input, upload_config=None, report_id=None):
+        &#34;&#34;&#34;Upload report configuration to an Elba database&#34;&#34;&#34;
+        config = config_input.copy() # avoid modifying the original input as a side effect
+        if not upload_config:
+            upload_config_path = os.path.join(
+                os.path.dirname(__file__),
+                constants.DATA_DIRNAME,
+                self.UPLOAD_CONFIG_FILENAME
+            )
+            self.logger.info(&#34;Loading default Elba DB config from %s&#34; % upload_config_path)
+            with open(upload_config_path, &#39;r&#39;) as in_file:
+                upload_config = json.loads(in_file.read())
+        db_url = upload_config.get(self.DB_URL_KEY)
+        db_port = upload_config.get(self.DB_PORT_KEY)
+        db_name = upload_config.get(self.DB_NAME_KEY)
+        db_user = os.environ.get(constants.ELBA_DB_USER)
+        db_pass = os.environ.get(constants.ELBA_DB_PASSWORD)
+        if not (db_user and db_pass):
+            msg = &#34;Username and password for Elba database must be stored as environment variables &#34;+\
+                  &#34;%s and %s, respectively.&#34; % (constants.ELBA_DB_USER, constants.ELBA_DB_PASSWORD)
+            self.logger.error(msg)
+            raise DjerbaReportError(msg)
+        db_req = &#34;http://%s:%s@%s:%s/&#34; % (db_user, db_pass, db_url, db_port)
+        try:
+            db = couchdb2.Server(db_req).get(db_name)
+        except Error as err:
+            msg = &#34;Failed to open Elba database &#39;{0}&#39; at {1}: {2}&#34;.format(db_name, db_url, err)
+            self.logger.error(msg)
+            raise DjerbaReportError(msg) from err
+        self.logger.info(&#34;Opened connection to Elba database at {}&#34;.format(db_url))
+        # check the ID_KEY entry; if not present, CouchDB will create one
+        if self.ID_KEY in config:
+            msg = &#34;Elba config is not permitted to use reserved key %s&#34; % self.ID_KEY
+            self.logger.error(msg)
+            raise DjerbaReportError(msg)
+        elif report_id:
+            config[self.ID_KEY] = report_id
+            self.logger.debug(&#34;Using report ID &#39;%s&#39; for Elba database&#34; % report_id)
+        else:
+            self.logger.debug(&#34;Using automatically-generated default ID in Elba database&#34;)
+        db.put(config)
+        self.logger.info(&#34;Uploaded config to Elba server&#34;)
+
+    def validate(self, config):
+        if self.schema:
+            try:
+                jsonschema.validate(config, self.schema)
+                self.logger.info(&#34;Elba config is valid with respect to schema&#34;)
+            except (ValidationError, SchemaError) as err:
+                msg = &#34;Elba config is invalid with respect to schema&#34;
+                self.logger.error(&#34;{}: {}&#34;.format(msg, err))
+                debug_msg = &#34;Invalid Elba config output:\n&#34;+\
+                            json.dumps(config, sort_keys=True, indent=4)
+                self.logger.debug(debug_msg)
+                raise
+        else:
+            self.logger.info(&#34;Elba config schema not available; validation omitted&#34;)
+
+class report(uploader):
+
+    &#34;&#34;&#34;
+    Class representing a genome interpretation Clinical Report in Elba
+
+    Inherits upload and validation methods from the parent class
+    &#34;&#34;&#34;
 
     NULL_STRING = &#34;NA&#34;
 
     def __init__(self, config, sample_id=None, schema_path=None, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
+        self.schema = self.get_schema(schema_path)
         # configure the sample for the report
         if sample_id==None: # only one sample
             if len(config[constants.SAMPLES_KEY])==1:
@@ -78,51 +164,36 @@ class report(base):
         self.alterations = [ # study_id is only required for cBioPortal, not Elba
             ga_factory.create_instance(conf, study_id=None) for conf in ga_configs
         ]
-        if schema_path:
-            with open(schema_path, &#39;r&#39;) as schema_file:
-                self.schema = json.loads(schema_file.read())
-        else:
-            self.schema = None
 
-    def get_report_config(self, replace_null, strict=True):
-        &#34;&#34;&#34;Construct the reporting config data structure&#34;&#34;&#34;
-        # for each genetic alteration, find metric values at sample/gene level
-        all_metrics_by_gene = {}
+    def get_report_config(self, replace_null=True, require_consistent=True, overwrite=False):
+        &#34;&#34;&#34;
+        Construct the reporting config data structure.
+        Finds metric values at sample level and gene level.
+        If &#39;require_consistent&#39; is True: Check that each gene has the same attribute names
+        If &#39;overwrite&#39; is True: Replace any existing values for a metric with new ones
+        &#34;&#34;&#34;
+        gene_metrics = {}
         for alteration in self.alterations:
-            # update gene-level metrics
-            metrics_by_gene = alteration.get_metrics_by_gene(self.sample_id)
-            for gene_id in metrics_by_gene.keys():
-                if gene_id in all_metrics_by_gene:
-                    all_metrics_by_gene[gene_id].update(metrics_by_gene[gene_id])
-                else:
-                    all_metrics_by_gene[gene_id] = metrics_by_gene[gene_id]
-            # update sample-level metrics
-            self.sample.update_attributes(alteration.get_attributes_for_sample(self.sample_id))
-        # reorder gene-level metrics into a list and check consistency
+            self.logger.debug(&#34;Processing genetic alteration: &#34;+type(alteration).__name__)
+            gene_metrics = alteration.update_gene_metrics(
+                gene_metrics,
+                self.sample_id,
+                require_consistent,
+                overwrite
+            )
+            self.logger.debug(&#34;Gene metrics after update: %s&#34; % json.dumps(gene_metrics)[0:1000]+&#34;...&#34;)
+            self.sample.update_attributes(
+                alteration.get_attributes_for_sample(self.sample_id),
+                overwrite
+            )
+        # reorder gene-level metrics into a list
         gene_metrics_list = []
-        expected_gene_attributes = None
-        for gene_id in all_metrics_by_gene.keys():
-            metrics = all_metrics_by_gene[gene_id]
-            # check consistency with previous attributes, if any
-            if expected_gene_attributes == None:
-                expected_gene_attributes = set(metrics.keys())
-            else:
-                gene_attributes = set(metrics.keys())
-                if gene_attributes != expected_gene_attributes:
-                    expected = str(sorted(list(expected_gene_attributes)))
-                    found = str(sorted(list(gene_attributes)))
-                    msg = &#39;Attributes for gene {0} do not match predecessors; &#39;.format(gene_id)+\
-                          &#39;expected {0}, found {1}&#39;.format(expected, found)
-                    if strict:
-                        msg = &#34;Strict validation: &#34;+msg
-                        self.logger.error(msg)
-                        raise DjerbaReportError(msg)
-                    else:
-                        self.logger.warning(msg)
+        for gene_id in gene_metrics.keys():
             # add an attribute for the gene name and append to list
+            metrics = gene_metrics[gene_id]
             metrics[constants.GENE_KEY] = gene_id
             gene_metrics_list.append(metrics)
-        gene_attributes = set(gene_metrics_list[0].keys())
+        self.logger.debug(&#34;Example gene metrics list entry: %s&#34; % json.dumps(gene_metrics_list[0]))
         # assemble the config data structure
         config = {}
         config[constants.SAMPLE_INFO_KEY] = self.sample.get_attributes()
@@ -131,20 +202,8 @@ class report(base):
         config[constants.SAMPLE_NAME_KEY] = self.sample.get_id()
         if replace_null:
             config = self.replace_null_with_string(config)
-        if self.schema != None:
-            self.validate(config) # raises an error if not valid
-            self.logger.info(&#34;Elba config output is valid with respect to schema&#34;)
-        else:
-            self.logger.info(&#34;Elba config schema not supplied; validation of output omitted&#34;)
+        self.validate(config)
         return config
-
-    def is_null(self, val):
-        &#34;&#34;&#34;Check if a value (not necessarily numeric) is None or NaN&#34;&#34;&#34;
-        try:
-            is_nan = isnan(val)
-        except TypeError: # value is a non-numeric type
-            is_nan = False
-        return val==None or is_nan
 
     def replace_null_with_string(self, config):
         &#34;&#34;&#34;Replace null/NaN values in config output with a string, eg. for easier processing in R&#34;&#34;&#34;
@@ -157,24 +216,13 @@ class report(base):
                 config[constants.SAMPLE_INFO_KEY][key] = self.NULL_STRING
         return config
 
-    def validate(self, config):
-        try:
-            jsonschema.validate(config, self.schema)
-        except (ValidationError, SchemaError) as err:
-            msg = &#34;Elba config output is invalid with respect to schema&#34;
-            self.logger.error(&#34;{}: {}&#34;.format(msg, err))
-            self.logger.debug(&#34;Invalid Elba config output:\n&#34;+json.dumps(config, sort_keys=True, indent=4))
-            raise
-
-    def write_report_config(self, out_path, force=False, strict=True, replace_null=True):
+    def write(self, config, out_path, force=False):
         &#34;&#34;&#34;
         Write report config JSON to the given path, or stdout if the path is &#39;-&#39;.
 
         - If force is True, overwrite any existing output.
         - If replace_null is True, replace any None/NaN values with a standard string.
         &#34;&#34;&#34;
-        # get config before opening an output file, in case of errors
-        config = self.get_report_config(replace_null, strict)
         if out_path==&#39;-&#39;:
             out_file = sys.stdout
         else:
@@ -228,19 +276,25 @@ class DjerbaReportError(Exception):
 <span>(</span><span>config, sample_id=None, schema_path=None, log_level=30, log_path=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing a genome interpretation Clinical Report in Elba</p></div>
+<div class="desc"><p>Class representing a genome interpretation Clinical Report in Elba</p>
+<p>Inherits upload and validation methods from the parent class</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class report(base):
+<pre><code class="python">class report(uploader):
 
-    &#34;&#34;&#34;Class representing a genome interpretation Clinical Report in Elba&#34;&#34;&#34;
+    &#34;&#34;&#34;
+    Class representing a genome interpretation Clinical Report in Elba
+
+    Inherits upload and validation methods from the parent class
+    &#34;&#34;&#34;
 
     NULL_STRING = &#34;NA&#34;
 
     def __init__(self, config, sample_id=None, schema_path=None, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
+        self.schema = self.get_schema(schema_path)
         # configure the sample for the report
         if sample_id==None: # only one sample
             if len(config[constants.SAMPLES_KEY])==1:
@@ -269,51 +323,36 @@ class DjerbaReportError(Exception):
         self.alterations = [ # study_id is only required for cBioPortal, not Elba
             ga_factory.create_instance(conf, study_id=None) for conf in ga_configs
         ]
-        if schema_path:
-            with open(schema_path, &#39;r&#39;) as schema_file:
-                self.schema = json.loads(schema_file.read())
-        else:
-            self.schema = None
 
-    def get_report_config(self, replace_null, strict=True):
-        &#34;&#34;&#34;Construct the reporting config data structure&#34;&#34;&#34;
-        # for each genetic alteration, find metric values at sample/gene level
-        all_metrics_by_gene = {}
+    def get_report_config(self, replace_null=True, require_consistent=True, overwrite=False):
+        &#34;&#34;&#34;
+        Construct the reporting config data structure.
+        Finds metric values at sample level and gene level.
+        If &#39;require_consistent&#39; is True: Check that each gene has the same attribute names
+        If &#39;overwrite&#39; is True: Replace any existing values for a metric with new ones
+        &#34;&#34;&#34;
+        gene_metrics = {}
         for alteration in self.alterations:
-            # update gene-level metrics
-            metrics_by_gene = alteration.get_metrics_by_gene(self.sample_id)
-            for gene_id in metrics_by_gene.keys():
-                if gene_id in all_metrics_by_gene:
-                    all_metrics_by_gene[gene_id].update(metrics_by_gene[gene_id])
-                else:
-                    all_metrics_by_gene[gene_id] = metrics_by_gene[gene_id]
-            # update sample-level metrics
-            self.sample.update_attributes(alteration.get_attributes_for_sample(self.sample_id))
-        # reorder gene-level metrics into a list and check consistency
+            self.logger.debug(&#34;Processing genetic alteration: &#34;+type(alteration).__name__)
+            gene_metrics = alteration.update_gene_metrics(
+                gene_metrics,
+                self.sample_id,
+                require_consistent,
+                overwrite
+            )
+            self.logger.debug(&#34;Gene metrics after update: %s&#34; % json.dumps(gene_metrics)[0:1000]+&#34;...&#34;)
+            self.sample.update_attributes(
+                alteration.get_attributes_for_sample(self.sample_id),
+                overwrite
+            )
+        # reorder gene-level metrics into a list
         gene_metrics_list = []
-        expected_gene_attributes = None
-        for gene_id in all_metrics_by_gene.keys():
-            metrics = all_metrics_by_gene[gene_id]
-            # check consistency with previous attributes, if any
-            if expected_gene_attributes == None:
-                expected_gene_attributes = set(metrics.keys())
-            else:
-                gene_attributes = set(metrics.keys())
-                if gene_attributes != expected_gene_attributes:
-                    expected = str(sorted(list(expected_gene_attributes)))
-                    found = str(sorted(list(gene_attributes)))
-                    msg = &#39;Attributes for gene {0} do not match predecessors; &#39;.format(gene_id)+\
-                          &#39;expected {0}, found {1}&#39;.format(expected, found)
-                    if strict:
-                        msg = &#34;Strict validation: &#34;+msg
-                        self.logger.error(msg)
-                        raise DjerbaReportError(msg)
-                    else:
-                        self.logger.warning(msg)
+        for gene_id in gene_metrics.keys():
             # add an attribute for the gene name and append to list
+            metrics = gene_metrics[gene_id]
             metrics[constants.GENE_KEY] = gene_id
             gene_metrics_list.append(metrics)
-        gene_attributes = set(gene_metrics_list[0].keys())
+        self.logger.debug(&#34;Example gene metrics list entry: %s&#34; % json.dumps(gene_metrics_list[0]))
         # assemble the config data structure
         config = {}
         config[constants.SAMPLE_INFO_KEY] = self.sample.get_attributes()
@@ -322,20 +361,8 @@ class DjerbaReportError(Exception):
         config[constants.SAMPLE_NAME_KEY] = self.sample.get_id()
         if replace_null:
             config = self.replace_null_with_string(config)
-        if self.schema != None:
-            self.validate(config) # raises an error if not valid
-            self.logger.info(&#34;Elba config output is valid with respect to schema&#34;)
-        else:
-            self.logger.info(&#34;Elba config schema not supplied; validation of output omitted&#34;)
+        self.validate(config)
         return config
-
-    def is_null(self, val):
-        &#34;&#34;&#34;Check if a value (not necessarily numeric) is None or NaN&#34;&#34;&#34;
-        try:
-            is_nan = isnan(val)
-        except TypeError: # value is a non-numeric type
-            is_nan = False
-        return val==None or is_nan
 
     def replace_null_with_string(self, config):
         &#34;&#34;&#34;Replace null/NaN values in config output with a string, eg. for easier processing in R&#34;&#34;&#34;
@@ -348,24 +375,13 @@ class DjerbaReportError(Exception):
                 config[constants.SAMPLE_INFO_KEY][key] = self.NULL_STRING
         return config
 
-    def validate(self, config):
-        try:
-            jsonschema.validate(config, self.schema)
-        except (ValidationError, SchemaError) as err:
-            msg = &#34;Elba config output is invalid with respect to schema&#34;
-            self.logger.error(&#34;{}: {}&#34;.format(msg, err))
-            self.logger.debug(&#34;Invalid Elba config output:\n&#34;+json.dumps(config, sort_keys=True, indent=4))
-            raise
-
-    def write_report_config(self, out_path, force=False, strict=True, replace_null=True):
+    def write(self, config, out_path, force=False):
         &#34;&#34;&#34;
         Write report config JSON to the given path, or stdout if the path is &#39;-&#39;.
 
         - If force is True, overwrite any existing output.
         - If replace_null is True, replace any None/NaN values with a standard string.
         &#34;&#34;&#34;
-        # get config before opening an output file, in case of errors
-        config = self.get_report_config(replace_null, strict)
         if out_path==&#39;-&#39;:
             out_file = sys.stdout
         else:
@@ -384,6 +400,7 @@ class DjerbaReportError(Exception):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="djerba.report.uploader" href="#djerba.report.uploader">uploader</a></li>
 <li><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></li>
 </ul>
 <h3>Class variables</h3>
@@ -396,53 +413,46 @@ class DjerbaReportError(Exception):
 <h3>Methods</h3>
 <dl>
 <dt id="djerba.report.report.get_report_config"><code class="name flex">
-<span>def <span class="ident">get_report_config</span></span>(<span>self, replace_null, strict=True)</span>
+<span>def <span class="ident">get_report_config</span></span>(<span>self, replace_null=True, require_consistent=True, overwrite=False)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Construct the reporting config data structure</p></div>
+<div class="desc"><p>Construct the reporting config data structure.
+Finds metric values at sample level and gene level.
+If 'require_consistent' is True: Check that each gene has the same attribute names
+If 'overwrite' is True: Replace any existing values for a metric with new ones</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_report_config(self, replace_null, strict=True):
-    &#34;&#34;&#34;Construct the reporting config data structure&#34;&#34;&#34;
-    # for each genetic alteration, find metric values at sample/gene level
-    all_metrics_by_gene = {}
+<pre><code class="python">def get_report_config(self, replace_null=True, require_consistent=True, overwrite=False):
+    &#34;&#34;&#34;
+    Construct the reporting config data structure.
+    Finds metric values at sample level and gene level.
+    If &#39;require_consistent&#39; is True: Check that each gene has the same attribute names
+    If &#39;overwrite&#39; is True: Replace any existing values for a metric with new ones
+    &#34;&#34;&#34;
+    gene_metrics = {}
     for alteration in self.alterations:
-        # update gene-level metrics
-        metrics_by_gene = alteration.get_metrics_by_gene(self.sample_id)
-        for gene_id in metrics_by_gene.keys():
-            if gene_id in all_metrics_by_gene:
-                all_metrics_by_gene[gene_id].update(metrics_by_gene[gene_id])
-            else:
-                all_metrics_by_gene[gene_id] = metrics_by_gene[gene_id]
-        # update sample-level metrics
-        self.sample.update_attributes(alteration.get_attributes_for_sample(self.sample_id))
-    # reorder gene-level metrics into a list and check consistency
+        self.logger.debug(&#34;Processing genetic alteration: &#34;+type(alteration).__name__)
+        gene_metrics = alteration.update_gene_metrics(
+            gene_metrics,
+            self.sample_id,
+            require_consistent,
+            overwrite
+        )
+        self.logger.debug(&#34;Gene metrics after update: %s&#34; % json.dumps(gene_metrics)[0:1000]+&#34;...&#34;)
+        self.sample.update_attributes(
+            alteration.get_attributes_for_sample(self.sample_id),
+            overwrite
+        )
+    # reorder gene-level metrics into a list
     gene_metrics_list = []
-    expected_gene_attributes = None
-    for gene_id in all_metrics_by_gene.keys():
-        metrics = all_metrics_by_gene[gene_id]
-        # check consistency with previous attributes, if any
-        if expected_gene_attributes == None:
-            expected_gene_attributes = set(metrics.keys())
-        else:
-            gene_attributes = set(metrics.keys())
-            if gene_attributes != expected_gene_attributes:
-                expected = str(sorted(list(expected_gene_attributes)))
-                found = str(sorted(list(gene_attributes)))
-                msg = &#39;Attributes for gene {0} do not match predecessors; &#39;.format(gene_id)+\
-                      &#39;expected {0}, found {1}&#39;.format(expected, found)
-                if strict:
-                    msg = &#34;Strict validation: &#34;+msg
-                    self.logger.error(msg)
-                    raise DjerbaReportError(msg)
-                else:
-                    self.logger.warning(msg)
+    for gene_id in gene_metrics.keys():
         # add an attribute for the gene name and append to list
+        metrics = gene_metrics[gene_id]
         metrics[constants.GENE_KEY] = gene_id
         gene_metrics_list.append(metrics)
-    gene_attributes = set(gene_metrics_list[0].keys())
+    self.logger.debug(&#34;Example gene metrics list entry: %s&#34; % json.dumps(gene_metrics_list[0]))
     # assemble the config data structure
     config = {}
     config[constants.SAMPLE_INFO_KEY] = self.sample.get_attributes()
@@ -451,30 +461,8 @@ class DjerbaReportError(Exception):
     config[constants.SAMPLE_NAME_KEY] = self.sample.get_id()
     if replace_null:
         config = self.replace_null_with_string(config)
-    if self.schema != None:
-        self.validate(config) # raises an error if not valid
-        self.logger.info(&#34;Elba config output is valid with respect to schema&#34;)
-    else:
-        self.logger.info(&#34;Elba config schema not supplied; validation of output omitted&#34;)
+    self.validate(config)
     return config</code></pre>
-</details>
-</dd>
-<dt id="djerba.report.report.is_null"><code class="name flex">
-<span>def <span class="ident">is_null</span></span>(<span>self, val)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Check if a value (not necessarily numeric) is None or NaN</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_null(self, val):
-    &#34;&#34;&#34;Check if a value (not necessarily numeric) is None or NaN&#34;&#34;&#34;
-    try:
-        is_nan = isnan(val)
-    except TypeError: # value is a non-numeric type
-        is_nan = False
-    return val==None or is_nan</code></pre>
 </details>
 </dd>
 <dt id="djerba.report.report.replace_null_with_string"><code class="name flex">
@@ -498,27 +486,8 @@ class DjerbaReportError(Exception):
     return config</code></pre>
 </details>
 </dd>
-<dt id="djerba.report.report.validate"><code class="name flex">
-<span>def <span class="ident">validate</span></span>(<span>self, config)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def validate(self, config):
-    try:
-        jsonschema.validate(config, self.schema)
-    except (ValidationError, SchemaError) as err:
-        msg = &#34;Elba config output is invalid with respect to schema&#34;
-        self.logger.error(&#34;{}: {}&#34;.format(msg, err))
-        self.logger.debug(&#34;Invalid Elba config output:\n&#34;+json.dumps(config, sort_keys=True, indent=4))
-        raise</code></pre>
-</details>
-</dd>
-<dt id="djerba.report.report.write_report_config"><code class="name flex">
-<span>def <span class="ident">write_report_config</span></span>(<span>self, out_path, force=False, strict=True, replace_null=True)</span>
+<dt id="djerba.report.report.write"><code class="name flex">
+<span>def <span class="ident">write</span></span>(<span>self, config, out_path, force=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Write report config JSON to the given path, or stdout if the path is '-'.</p>
@@ -530,15 +499,13 @@ class DjerbaReportError(Exception):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def write_report_config(self, out_path, force=False, strict=True, replace_null=True):
+<pre><code class="python">def write(self, config, out_path, force=False):
     &#34;&#34;&#34;
     Write report config JSON to the given path, or stdout if the path is &#39;-&#39;.
 
     - If force is True, overwrite any existing output.
     - If replace_null is True, replace any None/NaN values with a standard string.
     &#34;&#34;&#34;
-    # get config before opening an output file, in case of errors
-    config = self.get_report_config(replace_null, strict)
     if out_path==&#39;-&#39;:
         out_file = sys.stdout
     else:
@@ -559,9 +526,242 @@ class DjerbaReportError(Exception):
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
+<li><code><b><a title="djerba.report.uploader" href="#djerba.report.uploader">uploader</a></b></code>:
+<ul class="hlist">
+<li><code><a title="djerba.report.uploader.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.report.uploader.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
+<li><code><a title="djerba.report.uploader.upload" href="#djerba.report.uploader.upload">upload</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="djerba.report.uploader"><code class="flex name class">
+<span>class <span class="ident">uploader</span></span>
+<span>(</span><span>schema_path=None, log_level=30, log_path=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Class to validate report config and upload to an Elba instance</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class uploader(base):
+    &#34;&#34;&#34;Class to validate report config and upload to an Elba instance&#34;&#34;&#34;
+
+    ID_KEY = &#34;_id&#34; # reserved key to identify CouchDB documents
+
+    # Elba upload config
+    UPLOAD_CONFIG_FILENAME = &#39;upload_config.json&#39;
+    DB_NAME_KEY = &#39;db_name&#39;
+    DB_PORT_KEY = &#39;db_port&#39;
+    DB_URL_KEY = &#39;db_url&#39;
+
+    def __init__(self, schema_path=None, log_level=logging.WARNING, log_path=None):
+        self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
+        self.schema = self.get_schema(schema_path)
+
+    def get_schema(self, schema_path):
+        if schema_path:
+            with open(schema_path, &#39;r&#39;) as schema_file:
+                self.schema = json.loads(schema_file.read())
+        else:
+            self.schema = None
+        return self.schema
+
+    def upload(self, config_input, upload_config=None, report_id=None):
+        &#34;&#34;&#34;Upload report configuration to an Elba database&#34;&#34;&#34;
+        config = config_input.copy() # avoid modifying the original input as a side effect
+        if not upload_config:
+            upload_config_path = os.path.join(
+                os.path.dirname(__file__),
+                constants.DATA_DIRNAME,
+                self.UPLOAD_CONFIG_FILENAME
+            )
+            self.logger.info(&#34;Loading default Elba DB config from %s&#34; % upload_config_path)
+            with open(upload_config_path, &#39;r&#39;) as in_file:
+                upload_config = json.loads(in_file.read())
+        db_url = upload_config.get(self.DB_URL_KEY)
+        db_port = upload_config.get(self.DB_PORT_KEY)
+        db_name = upload_config.get(self.DB_NAME_KEY)
+        db_user = os.environ.get(constants.ELBA_DB_USER)
+        db_pass = os.environ.get(constants.ELBA_DB_PASSWORD)
+        if not (db_user and db_pass):
+            msg = &#34;Username and password for Elba database must be stored as environment variables &#34;+\
+                  &#34;%s and %s, respectively.&#34; % (constants.ELBA_DB_USER, constants.ELBA_DB_PASSWORD)
+            self.logger.error(msg)
+            raise DjerbaReportError(msg)
+        db_req = &#34;http://%s:%s@%s:%s/&#34; % (db_user, db_pass, db_url, db_port)
+        try:
+            db = couchdb2.Server(db_req).get(db_name)
+        except Error as err:
+            msg = &#34;Failed to open Elba database &#39;{0}&#39; at {1}: {2}&#34;.format(db_name, db_url, err)
+            self.logger.error(msg)
+            raise DjerbaReportError(msg) from err
+        self.logger.info(&#34;Opened connection to Elba database at {}&#34;.format(db_url))
+        # check the ID_KEY entry; if not present, CouchDB will create one
+        if self.ID_KEY in config:
+            msg = &#34;Elba config is not permitted to use reserved key %s&#34; % self.ID_KEY
+            self.logger.error(msg)
+            raise DjerbaReportError(msg)
+        elif report_id:
+            config[self.ID_KEY] = report_id
+            self.logger.debug(&#34;Using report ID &#39;%s&#39; for Elba database&#34; % report_id)
+        else:
+            self.logger.debug(&#34;Using automatically-generated default ID in Elba database&#34;)
+        db.put(config)
+        self.logger.info(&#34;Uploaded config to Elba server&#34;)
+
+    def validate(self, config):
+        if self.schema:
+            try:
+                jsonschema.validate(config, self.schema)
+                self.logger.info(&#34;Elba config is valid with respect to schema&#34;)
+            except (ValidationError, SchemaError) as err:
+                msg = &#34;Elba config is invalid with respect to schema&#34;
+                self.logger.error(&#34;{}: {}&#34;.format(msg, err))
+                debug_msg = &#34;Invalid Elba config output:\n&#34;+\
+                            json.dumps(config, sort_keys=True, indent=4)
+                self.logger.debug(debug_msg)
+                raise
+        else:
+            self.logger.info(&#34;Elba config schema not available; validation omitted&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="djerba.report.report" href="#djerba.report.report">report</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="djerba.report.uploader.DB_NAME_KEY"><code class="name">var <span class="ident">DB_NAME_KEY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.report.uploader.DB_PORT_KEY"><code class="name">var <span class="ident">DB_PORT_KEY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.report.uploader.DB_URL_KEY"><code class="name">var <span class="ident">DB_URL_KEY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.report.uploader.ID_KEY"><code class="name">var <span class="ident">ID_KEY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.report.uploader.UPLOAD_CONFIG_FILENAME"><code class="name">var <span class="ident">UPLOAD_CONFIG_FILENAME</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="djerba.report.uploader.get_schema"><code class="name flex">
+<span>def <span class="ident">get_schema</span></span>(<span>self, schema_path)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_schema(self, schema_path):
+    if schema_path:
+        with open(schema_path, &#39;r&#39;) as schema_file:
+            self.schema = json.loads(schema_file.read())
+    else:
+        self.schema = None
+    return self.schema</code></pre>
+</details>
+</dd>
+<dt id="djerba.report.uploader.upload"><code class="name flex">
+<span>def <span class="ident">upload</span></span>(<span>self, config_input, upload_config=None, report_id=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Upload report configuration to an Elba database</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def upload(self, config_input, upload_config=None, report_id=None):
+    &#34;&#34;&#34;Upload report configuration to an Elba database&#34;&#34;&#34;
+    config = config_input.copy() # avoid modifying the original input as a side effect
+    if not upload_config:
+        upload_config_path = os.path.join(
+            os.path.dirname(__file__),
+            constants.DATA_DIRNAME,
+            self.UPLOAD_CONFIG_FILENAME
+        )
+        self.logger.info(&#34;Loading default Elba DB config from %s&#34; % upload_config_path)
+        with open(upload_config_path, &#39;r&#39;) as in_file:
+            upload_config = json.loads(in_file.read())
+    db_url = upload_config.get(self.DB_URL_KEY)
+    db_port = upload_config.get(self.DB_PORT_KEY)
+    db_name = upload_config.get(self.DB_NAME_KEY)
+    db_user = os.environ.get(constants.ELBA_DB_USER)
+    db_pass = os.environ.get(constants.ELBA_DB_PASSWORD)
+    if not (db_user and db_pass):
+        msg = &#34;Username and password for Elba database must be stored as environment variables &#34;+\
+              &#34;%s and %s, respectively.&#34; % (constants.ELBA_DB_USER, constants.ELBA_DB_PASSWORD)
+        self.logger.error(msg)
+        raise DjerbaReportError(msg)
+    db_req = &#34;http://%s:%s@%s:%s/&#34; % (db_user, db_pass, db_url, db_port)
+    try:
+        db = couchdb2.Server(db_req).get(db_name)
+    except Error as err:
+        msg = &#34;Failed to open Elba database &#39;{0}&#39; at {1}: {2}&#34;.format(db_name, db_url, err)
+        self.logger.error(msg)
+        raise DjerbaReportError(msg) from err
+    self.logger.info(&#34;Opened connection to Elba database at {}&#34;.format(db_url))
+    # check the ID_KEY entry; if not present, CouchDB will create one
+    if self.ID_KEY in config:
+        msg = &#34;Elba config is not permitted to use reserved key %s&#34; % self.ID_KEY
+        self.logger.error(msg)
+        raise DjerbaReportError(msg)
+    elif report_id:
+        config[self.ID_KEY] = report_id
+        self.logger.debug(&#34;Using report ID &#39;%s&#39; for Elba database&#34; % report_id)
+    else:
+        self.logger.debug(&#34;Using automatically-generated default ID in Elba database&#34;)
+    db.put(config)
+    self.logger.info(&#34;Uploaded config to Elba server&#34;)</code></pre>
+</details>
+</dd>
+<dt id="djerba.report.uploader.validate"><code class="name flex">
+<span>def <span class="ident">validate</span></span>(<span>self, config)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate(self, config):
+    if self.schema:
+        try:
+            jsonschema.validate(config, self.schema)
+            self.logger.info(&#34;Elba config is valid with respect to schema&#34;)
+        except (ValidationError, SchemaError) as err:
+            msg = &#34;Elba config is invalid with respect to schema&#34;
+            self.logger.error(&#34;{}: {}&#34;.format(msg, err))
+            debug_msg = &#34;Invalid Elba config output:\n&#34;+\
+                        json.dumps(config, sort_keys=True, indent=4)
+            self.logger.debug(debug_msg)
+            raise
+    else:
+        self.logger.info(&#34;Elba config schema not available; validation omitted&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
 <li><code><b><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></b></code>:
 <ul class="hlist">
 <li><code><a title="djerba.utilities.base.base.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.utilities.base.base.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
 </ul>
 </li>
 </ul>
@@ -590,10 +790,21 @@ class DjerbaReportError(Exception):
 <ul class="">
 <li><code><a title="djerba.report.report.NULL_STRING" href="#djerba.report.report.NULL_STRING">NULL_STRING</a></code></li>
 <li><code><a title="djerba.report.report.get_report_config" href="#djerba.report.report.get_report_config">get_report_config</a></code></li>
-<li><code><a title="djerba.report.report.is_null" href="#djerba.report.report.is_null">is_null</a></code></li>
 <li><code><a title="djerba.report.report.replace_null_with_string" href="#djerba.report.report.replace_null_with_string">replace_null_with_string</a></code></li>
-<li><code><a title="djerba.report.report.validate" href="#djerba.report.report.validate">validate</a></code></li>
-<li><code><a title="djerba.report.report.write_report_config" href="#djerba.report.report.write_report_config">write_report_config</a></code></li>
+<li><code><a title="djerba.report.report.write" href="#djerba.report.report.write">write</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="djerba.report.uploader" href="#djerba.report.uploader">uploader</a></code></h4>
+<ul class="">
+<li><code><a title="djerba.report.uploader.DB_NAME_KEY" href="#djerba.report.uploader.DB_NAME_KEY">DB_NAME_KEY</a></code></li>
+<li><code><a title="djerba.report.uploader.DB_PORT_KEY" href="#djerba.report.uploader.DB_PORT_KEY">DB_PORT_KEY</a></code></li>
+<li><code><a title="djerba.report.uploader.DB_URL_KEY" href="#djerba.report.uploader.DB_URL_KEY">DB_URL_KEY</a></code></li>
+<li><code><a title="djerba.report.uploader.ID_KEY" href="#djerba.report.uploader.ID_KEY">ID_KEY</a></code></li>
+<li><code><a title="djerba.report.uploader.UPLOAD_CONFIG_FILENAME" href="#djerba.report.uploader.UPLOAD_CONFIG_FILENAME">UPLOAD_CONFIG_FILENAME</a></code></li>
+<li><code><a title="djerba.report.uploader.get_schema" href="#djerba.report.uploader.get_schema">get_schema</a></code></li>
+<li><code><a title="djerba.report.uploader.upload" href="#djerba.report.uploader.upload">upload</a></code></li>
+<li><code><a title="djerba.report.uploader.validate" href="#djerba.report.uploader.validate">validate</a></code></li>
 </ul>
 </li>
 </ul>
@@ -602,7 +813,7 @@ class DjerbaReportError(Exception):
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
 </footer>
 </body>
 </html>

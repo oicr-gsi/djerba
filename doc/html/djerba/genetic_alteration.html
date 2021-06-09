@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.1" />
+<meta name="generator" content="pdoc 0.9.2" />
 <title>djerba.genetic_alteration API documentation</title>
 <meta name="description" content="Source of input data for Djerba; corresponds to the genetic_alteration_type metadata field in cBioPortal …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -50,9 +50,10 @@ import logging
 import os
 import pandas as pd
 import random
+import re
 import tempfile
 import yaml
-from djerba.metrics import mutation_extended_metrics
+from djerba.metrics import mutation_extended_gene_metrics, mutation_extended_sample_metrics
 from djerba.utilities import constants
 from djerba.utilities.base import base
 from djerba.utilities.tools import system_tools
@@ -73,6 +74,7 @@ class genetic_alteration(base):
     
     def __init__(self, config, study_id=None, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
+        self.log_path = log_path
         self.study_id = study_id # required for cBioPortal, not for Elba
         try:
             self.genetic_alteration_type = config[constants.GENETIC_ALTERATION_TYPE_KEY]
@@ -106,6 +108,48 @@ class genetic_alteration(base):
         &#34;&#34;&#34;
         return sorted(self.input_files.keys())
 
+    def _validate_gene_ids(self, existing_metrics, new_metrics, require_consistent=True):
+        &#34;&#34;&#34;
+        Check gene ID sets are consistent; if not, raise a warning or error
+        Inputs are the dictionaries of metrics for all genes, or None for existing_metrics
+        Nothing happens if:
+        - existing_metrics are None: First in a series of updates
+        - existing_metrics or new_metrics are empty: No gene-level metrics are defined
+        &#34;&#34;&#34;
+        if existing_metrics and len(existing_metrics)&gt;0 and len(new_metrics)&gt;0 and \
+           set(existing_metrics.keys()) != set(new_metrics.keys()):
+            msg = &#34;Inconsistent gene names in genetic alteration update; &#34;+\
+                  &#34;run with debug logging for complete list. &#34;
+            existing_genes = str(sorted(list(existing_metrics.keys())))
+            new_genes = str(sorted(list(new_metrics.keys())))
+            debug_msg = &#34;Inconsistent gene names: Expected %s, found %s&#34; % (existing_genes, new_genes)
+            self.logger.debug(debug_msg)
+            if require_consistent:
+                msg += &#34;Consistent name requirement is in effect; raising an error.&#34;
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            else:
+                msg += &#34;Consistent name requirement is not in effect; continuing.&#34;
+                self.logger.warning(msg)
+
+    def _validate_metric_names(self, existing_name_set, new_name_set, require_consistent=True):
+        &#34;&#34;&#34;
+        Check that metric name sets are consistent; if not, raise a warning or error.
+        Inputs are the sets of metric names, or None for existing_name_set
+        If existing_name_set is None (eg. first update in a list), nothing happens
+        &#34;&#34;&#34;
+        if existing_name_set and existing_name_set != new_name_set:
+            old_names = str(sorted(list(existing_name_set)))
+            new_names = str(sorted(list(new_name_set)))
+            msg = &#34;Gene metric name sets %s and %s are inconsistent. &#34; % (old_names, new_names)
+            if require_consistent:
+                msg += &#34;Consistent name requirement is in effect; raising an error.&#34;
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            else:
+                msg += &#34;Consistent name requirement is not in effect; continuing.&#34;
+                self.logger.warning(msg)
+
     def get_alteration_id(self):
         &#34;&#34;&#34;ID defined as &#39;alteration_type:datatype&#39;, eg. &#39;MUTATION_EXTENDED:MAF&#39;&#34;&#34;&#34;
         return self.alteration_id
@@ -127,7 +171,7 @@ class genetic_alteration(base):
         &#34;&#34;&#34;
         msg = &#34;get_genes method of parent class; not intended for production&#34;
         self.logger.error(msg)
-        return []
+        raise RuntimeError(msg)
 
     def get_input_path(self, sample_id):
         return os.path.join(self.input_directory, self.input_files[sample_id])
@@ -136,18 +180,64 @@ class genetic_alteration(base):
         &#34;&#34;&#34;PLACEHOLDER. Get a dictionary of metric values for the given sample, indexed by gene.&#34;&#34;&#34;
         msg = &#34;get_metrics_by_gene method of parent class; not intended for production&#34;
         self.logger.error(msg)
-        return {}
+        raise RuntimeError(msg)
 
     def get_sample_ids(self):
         return self.sample_ids
 
+    def update_gene_metrics(self, metrics, sample_id, require_consistent=True, overwrite=False):
+        &#34;&#34;&#34;
+        Update the gene metrics dictionary
+        If overwrite is True, replace any existing values for a metric with new ones
+        If require_consistent is True:
+        - Check all genes have the same set of metric names
+        - Check the old and new metric sets have the same set of gene IDs
+        &#34;&#34;&#34;
+        new_metrics_by_gene = self.get_metrics_by_gene(sample_id)
+        self._validate_gene_ids(metrics, new_metrics_by_gene, require_consistent)
+        expected_names = None
+        total_genes = len(new_metrics_by_gene)
+        self.logger.debug(&#34;Updating metrics for %i genes on sample %s&#34; % (total_genes, sample_id))
+        for gene_id in new_metrics_by_gene.keys():
+            # update existing metrics (if any) with new ones
+            existing_metrics = metrics.get(gene_id)
+            new_metrics = new_metrics_by_gene.get(gene_id)
+            if existing_metrics: # existing metrics found, update with new values
+                before = len(existing_metrics)
+                if overwrite:
+                    # for any existing metric names, overwrite old values with new ones
+                    existing_metrics.update(new_metrics)
+                else:
+                    # check metrics to avoid overwriting
+                    shared_set = set(existing_metrics.keys()).intersection(set(new_metrics.keys()))
+                    if len(shared_set) &gt; 0:
+                        shared = &#39;, &#39;.join(sorted(list(shared_set)))
+                        msg = &#34;Multiple gene-level metric values found for sample &#34;+\
+                              &#34;%s, gene %s, metric(s): %s. &#34; % (sample_id, gene_id, shared) +\
+                              &#34;Overwrite mode is not in effect.&#34;
+                        self.logger.error(msg)
+                        raise RuntimeError(msg)
+                    else:
+                        existing_metrics.update(new_metrics)
+                updated_metrics = existing_metrics
+                after = len(updated_metrics)
+                self.logger.debug(&#34;Updated from %i to %i metrics for gene %s &#34; % (before, after, gene_id))
+            else: # no existing metrics
+                updated_metrics = new_metrics
+            # check the metric names for consistency with previous genes
+            updated_names = set(updated_metrics.keys())
+            self._validate_metric_names(expected_names, updated_names, require_consistent)
+            expected_names = updated_names
+            metrics[gene_id] = updated_metrics
+        return metrics
 
 class genetic_alteration_factory(base):
     &#34;&#34;&#34;Supply an instance of the appropriate genetic_alteration subclass for an ALTERATIONTYPE&#34;&#34;&#34;
 
     CLASSNAMES = {
         constants.CUSTOM_ANNOTATION_TYPE: &#39;custom_annotation&#39;,
-        constants.MUTATION_TYPE: &#39;mutation_extended&#39;
+        constants.MUTATION_TYPE: &#39;mutation_extended&#39;,
+        constants.SEGMENTED_TYPE: &#39;segmented&#39;
     }
 
     def __init__(self, log_level=logging.WARN, log_path=None):
@@ -165,6 +255,7 @@ class genetic_alteration_factory(base):
             self.logger.error(msg)
             raise ValueError(msg)
         klass = globals().get(classname)
+        self.logger.debug(&#34;Created instance of %s&#34; % classname)
         return klass(config, study_id, self.log_level, self.log_path)
 
 class custom_annotation(genetic_alteration):
@@ -306,10 +397,6 @@ class mutation_extended(genetic_alteration):
     TCGA_PATH_KEY = &#39;tcga_path&#39;
     CANCER_TYPE_KEY = &#39;cancer_type&#39;
 
-    # MAF column headers
-    HUGO_SYMBOL = &#39;Hugo_Symbol&#39;
-    CHROMOSOME = &#39;Chromosome&#39;
-
     def _find_all_sample_attributes(self):
         # TODO &#39;cancer_type&#39; appears in study-level config. Could read it from there and
         # insert into the genetic_alteration config structure, instead of having duplicate
@@ -324,9 +411,17 @@ class mutation_extended(genetic_alteration):
         attributes = {}
         for sample_id in self.sample_ids:
             maf_path = os.path.join(self.input_directory, self.input_files[sample_id])
-            mx_metrics = mutation_extended_metrics(maf_path, bed_path, tcga_path, cancer_type)
+            mx_metrics = mutation_extended_sample_metrics(
+                maf_path,
+                bed_path,
+                tcga_path,
+                cancer_type,
+                self.logger.getEffectiveLevel(),
+                self.log_path
+            )
             sample_attributes = {
-                constants.TMB_PER_MB_KEY: mx_metrics.get_tmb()
+                constants.TMB_PER_MB_KEY: mx_metrics.get_tmb(),
+                constants.COSMIC_SIGS_KEY: mx_metrics.get_cosmic_sigs()
             }
             attributes[sample_id] = sample_attributes
         return attributes
@@ -356,17 +451,22 @@ class mutation_extended(genetic_alteration):
         return gene_names
 
     def get_metrics_by_gene(self, sample_id):
-        &#34;&#34;&#34;Find gene-level mutation metrics. Chromosome name only for now; can add others.&#34;&#34;&#34;
-        df = pd.read_csv(
+        &#34;&#34;&#34;
+        Find gene-level mutation fields using the mutation_extended_gene_metrics class:
+        - Gene
+        - Chromosome
+        - Protein Change
+        - Variant Reads And Total Reads
+        - Allele Fraction Percentile
+        - OncoKB
+        - FDA Approved Treatment
+        &#34;&#34;&#34;
+        self.logger.debug(&#34;Finding mutation_extended gene metrics&#34;)
+        return mutation_extended_gene_metrics(
             self.get_input_path(sample_id),
-            delimiter=&#34;\t&#34;,
-            usecols=[self.HUGO_SYMBOL, self.CHROMOSOME],
-            comment=&#34;#&#34;
-        )
-        metrics_by_gene = {}
-        for index, row in df.iterrows():
-            metrics_by_gene[row[self.HUGO_SYMBOL]] = {self.CHROMOSOME: row[self.CHROMOSOME]}
-        return metrics_by_gene
+            self.logger.getEffectiveLevel(),
+            self.log_path
+        ).get_metrics()
 
     def write_data(self, out_dir):
         &#34;&#34;&#34;cBioPortal. Write mutation data table.
@@ -436,7 +536,48 @@ class mutation_extended(genetic_alteration):
 
     def write(self, out_dir):
         self.write_data(out_dir)
-        self.write_meta(out_dir)</code></pre>
+        self.write_meta(out_dir)
+
+class segmented(genetic_alteration):
+    &#34;&#34;&#34;
+    Segmented data format from cBioPortal; input is SEG files.
+
+    Currently supports Elba output only, not cBioPortal.
+    &#34;&#34;&#34;
+
+    MINIMUM_ABS_SEG_MEAN = 0.2
+
+    def _find_all_sample_attributes(self):
+        &#34;&#34;&#34;Find FGA for each SEG file&#34;&#34;&#34;
+        attributes = {}
+        for sample_id in self.sample_ids:
+            seg_path = os.path.join(self.input_directory, self.input_files[sample_id])
+            sample_attributes = {
+                constants.FRACTION_GENOME_ALTERED_KEY: self._find_fga(seg_path, sample_id)
+            }
+            attributes[sample_id] = sample_attributes
+        return attributes
+
+    def _find_fga(self, seg_path, sample_id):
+        seg = pd.read_csv(seg_path, sep=&#39;\t&#39;, skiprows= 0)
+        # ID column of .seg file may be of the form ${SAMPLE_ID}.tumour.bam.varscanSomatic
+        # Match against $SAMPLE_ID, followed by end-of-string OR a dot followed by a word character
+        # Escape the $SAMPLE_ID in case it contains regex metacharacters
+        # This will not catch pathological cases, eg. two samples with respective IDs &#34;foo&#34; and &#34;foo.bar&#34;
+        seg_sample = seg.loc[seg.ID.str.match(re.escape(sample_id)+&#34;(\.\w|$)&#34;)]
+        seg_alt = seg_sample.loc[abs(seg_sample[&#34;seg.mean&#34;]) &gt; self.MINIMUM_ABS_SEG_MEAN]
+        denom = sum(seg_sample[&#39;loc.end&#39;] - seg_sample[&#39;loc.start&#39;])
+        try:
+            fga = sum(seg_alt[&#39;loc.end&#39;] - seg_alt[&#39;loc.start&#39;])/denom
+        except ZeroDivisionError:
+            self.logger.warning(&#39;FGA interval has zero width; FRACTION_GENOME_ALTERED is NA&#39;)
+            fga = &#34;NA&#34;
+        return fga
+
+    def get_metrics_by_gene(self, sample_id):
+        &#34;&#34;&#34;Return an empty dictionary, because SEG data has no gene-level metrics&#34;&#34;&#34;
+        self.logger.debug(&#34;SEG data has no gene-level metrics, only sample-level; returning empty dictionary&#34;)
+        return {}</code></pre>
 </details>
 </section>
 <section>
@@ -689,6 +830,8 @@ class mutation_extended(genetic_alteration):
 <li><code><a title="djerba.genetic_alteration.genetic_alteration.get_alteration_id" href="#djerba.genetic_alteration.genetic_alteration.get_alteration_id">get_alteration_id</a></code></li>
 <li><code><a title="djerba.genetic_alteration.genetic_alteration.get_attributes_for_sample" href="#djerba.genetic_alteration.genetic_alteration.get_attributes_for_sample">get_attributes_for_sample</a></code></li>
 <li><code><a title="djerba.genetic_alteration.genetic_alteration.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.genetic_alteration.genetic_alteration.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
+<li><code><a title="djerba.genetic_alteration.genetic_alteration.update_gene_metrics" href="#djerba.genetic_alteration.genetic_alteration.update_gene_metrics">update_gene_metrics</a></code></li>
 </ul>
 </li>
 </ul>
@@ -719,6 +862,7 @@ class mutation_extended(genetic_alteration):
     
     def __init__(self, config, study_id=None, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
+        self.log_path = log_path
         self.study_id = study_id # required for cBioPortal, not for Elba
         try:
             self.genetic_alteration_type = config[constants.GENETIC_ALTERATION_TYPE_KEY]
@@ -752,6 +896,48 @@ class mutation_extended(genetic_alteration):
         &#34;&#34;&#34;
         return sorted(self.input_files.keys())
 
+    def _validate_gene_ids(self, existing_metrics, new_metrics, require_consistent=True):
+        &#34;&#34;&#34;
+        Check gene ID sets are consistent; if not, raise a warning or error
+        Inputs are the dictionaries of metrics for all genes, or None for existing_metrics
+        Nothing happens if:
+        - existing_metrics are None: First in a series of updates
+        - existing_metrics or new_metrics are empty: No gene-level metrics are defined
+        &#34;&#34;&#34;
+        if existing_metrics and len(existing_metrics)&gt;0 and len(new_metrics)&gt;0 and \
+           set(existing_metrics.keys()) != set(new_metrics.keys()):
+            msg = &#34;Inconsistent gene names in genetic alteration update; &#34;+\
+                  &#34;run with debug logging for complete list. &#34;
+            existing_genes = str(sorted(list(existing_metrics.keys())))
+            new_genes = str(sorted(list(new_metrics.keys())))
+            debug_msg = &#34;Inconsistent gene names: Expected %s, found %s&#34; % (existing_genes, new_genes)
+            self.logger.debug(debug_msg)
+            if require_consistent:
+                msg += &#34;Consistent name requirement is in effect; raising an error.&#34;
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            else:
+                msg += &#34;Consistent name requirement is not in effect; continuing.&#34;
+                self.logger.warning(msg)
+
+    def _validate_metric_names(self, existing_name_set, new_name_set, require_consistent=True):
+        &#34;&#34;&#34;
+        Check that metric name sets are consistent; if not, raise a warning or error.
+        Inputs are the sets of metric names, or None for existing_name_set
+        If existing_name_set is None (eg. first update in a list), nothing happens
+        &#34;&#34;&#34;
+        if existing_name_set and existing_name_set != new_name_set:
+            old_names = str(sorted(list(existing_name_set)))
+            new_names = str(sorted(list(new_name_set)))
+            msg = &#34;Gene metric name sets %s and %s are inconsistent. &#34; % (old_names, new_names)
+            if require_consistent:
+                msg += &#34;Consistent name requirement is in effect; raising an error.&#34;
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            else:
+                msg += &#34;Consistent name requirement is not in effect; continuing.&#34;
+                self.logger.warning(msg)
+
     def get_alteration_id(self):
         &#34;&#34;&#34;ID defined as &#39;alteration_type:datatype&#39;, eg. &#39;MUTATION_EXTENDED:MAF&#39;&#34;&#34;&#34;
         return self.alteration_id
@@ -773,7 +959,7 @@ class mutation_extended(genetic_alteration):
         &#34;&#34;&#34;
         msg = &#34;get_genes method of parent class; not intended for production&#34;
         self.logger.error(msg)
-        return []
+        raise RuntimeError(msg)
 
     def get_input_path(self, sample_id):
         return os.path.join(self.input_directory, self.input_files[sample_id])
@@ -782,10 +968,56 @@ class mutation_extended(genetic_alteration):
         &#34;&#34;&#34;PLACEHOLDER. Get a dictionary of metric values for the given sample, indexed by gene.&#34;&#34;&#34;
         msg = &#34;get_metrics_by_gene method of parent class; not intended for production&#34;
         self.logger.error(msg)
-        return {}
+        raise RuntimeError(msg)
 
     def get_sample_ids(self):
-        return self.sample_ids</code></pre>
+        return self.sample_ids
+
+    def update_gene_metrics(self, metrics, sample_id, require_consistent=True, overwrite=False):
+        &#34;&#34;&#34;
+        Update the gene metrics dictionary
+        If overwrite is True, replace any existing values for a metric with new ones
+        If require_consistent is True:
+        - Check all genes have the same set of metric names
+        - Check the old and new metric sets have the same set of gene IDs
+        &#34;&#34;&#34;
+        new_metrics_by_gene = self.get_metrics_by_gene(sample_id)
+        self._validate_gene_ids(metrics, new_metrics_by_gene, require_consistent)
+        expected_names = None
+        total_genes = len(new_metrics_by_gene)
+        self.logger.debug(&#34;Updating metrics for %i genes on sample %s&#34; % (total_genes, sample_id))
+        for gene_id in new_metrics_by_gene.keys():
+            # update existing metrics (if any) with new ones
+            existing_metrics = metrics.get(gene_id)
+            new_metrics = new_metrics_by_gene.get(gene_id)
+            if existing_metrics: # existing metrics found, update with new values
+                before = len(existing_metrics)
+                if overwrite:
+                    # for any existing metric names, overwrite old values with new ones
+                    existing_metrics.update(new_metrics)
+                else:
+                    # check metrics to avoid overwriting
+                    shared_set = set(existing_metrics.keys()).intersection(set(new_metrics.keys()))
+                    if len(shared_set) &gt; 0:
+                        shared = &#39;, &#39;.join(sorted(list(shared_set)))
+                        msg = &#34;Multiple gene-level metric values found for sample &#34;+\
+                              &#34;%s, gene %s, metric(s): %s. &#34; % (sample_id, gene_id, shared) +\
+                              &#34;Overwrite mode is not in effect.&#34;
+                        self.logger.error(msg)
+                        raise RuntimeError(msg)
+                    else:
+                        existing_metrics.update(new_metrics)
+                updated_metrics = existing_metrics
+                after = len(updated_metrics)
+                self.logger.debug(&#34;Updated from %i to %i metrics for gene %s &#34; % (before, after, gene_id))
+            else: # no existing metrics
+                updated_metrics = new_metrics
+            # check the metric names for consistency with previous genes
+            updated_names = set(updated_metrics.keys())
+            self._validate_metric_names(expected_names, updated_names, require_consistent)
+            expected_names = updated_names
+            metrics[gene_id] = updated_metrics
+        return metrics</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -795,6 +1027,7 @@ class mutation_extended(genetic_alteration):
 <ul class="hlist">
 <li><a title="djerba.genetic_alteration.custom_annotation" href="#djerba.genetic_alteration.custom_annotation">custom_annotation</a></li>
 <li><a title="djerba.genetic_alteration.mutation_extended" href="#djerba.genetic_alteration.mutation_extended">mutation_extended</a></li>
+<li><a title="djerba.genetic_alteration.segmented" href="#djerba.genetic_alteration.segmented">segmented</a></li>
 </ul>
 <h3>Class variables</h3>
 <dl>
@@ -883,7 +1116,7 @@ Not run from <strong>init</strong>() because it can be quite slow (eg. reading m
     &#34;&#34;&#34;
     msg = &#34;get_genes method of parent class; not intended for production&#34;
     self.logger.error(msg)
-    return []</code></pre>
+    raise RuntimeError(msg)</code></pre>
 </details>
 </dd>
 <dt id="djerba.genetic_alteration.genetic_alteration.get_genetic_alteration_type"><code class="name flex">
@@ -925,7 +1158,7 @@ Not run from <strong>init</strong>() because it can be quite slow (eg. reading m
     &#34;&#34;&#34;PLACEHOLDER. Get a dictionary of metric values for the given sample, indexed by gene.&#34;&#34;&#34;
     msg = &#34;get_metrics_by_gene method of parent class; not intended for production&#34;
     self.logger.error(msg)
-    return {}</code></pre>
+    raise RuntimeError(msg)</code></pre>
 </details>
 </dd>
 <dt id="djerba.genetic_alteration.genetic_alteration.get_sample_ids"><code class="name flex">
@@ -941,12 +1174,73 @@ Not run from <strong>init</strong>() because it can be quite slow (eg. reading m
     return self.sample_ids</code></pre>
 </details>
 </dd>
+<dt id="djerba.genetic_alteration.genetic_alteration.update_gene_metrics"><code class="name flex">
+<span>def <span class="ident">update_gene_metrics</span></span>(<span>self, metrics, sample_id, require_consistent=True, overwrite=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Update the gene metrics dictionary
+If overwrite is True, replace any existing values for a metric with new ones
+If require_consistent is True:
+- Check all genes have the same set of metric names
+- Check the old and new metric sets have the same set of gene IDs</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def update_gene_metrics(self, metrics, sample_id, require_consistent=True, overwrite=False):
+    &#34;&#34;&#34;
+    Update the gene metrics dictionary
+    If overwrite is True, replace any existing values for a metric with new ones
+    If require_consistent is True:
+    - Check all genes have the same set of metric names
+    - Check the old and new metric sets have the same set of gene IDs
+    &#34;&#34;&#34;
+    new_metrics_by_gene = self.get_metrics_by_gene(sample_id)
+    self._validate_gene_ids(metrics, new_metrics_by_gene, require_consistent)
+    expected_names = None
+    total_genes = len(new_metrics_by_gene)
+    self.logger.debug(&#34;Updating metrics for %i genes on sample %s&#34; % (total_genes, sample_id))
+    for gene_id in new_metrics_by_gene.keys():
+        # update existing metrics (if any) with new ones
+        existing_metrics = metrics.get(gene_id)
+        new_metrics = new_metrics_by_gene.get(gene_id)
+        if existing_metrics: # existing metrics found, update with new values
+            before = len(existing_metrics)
+            if overwrite:
+                # for any existing metric names, overwrite old values with new ones
+                existing_metrics.update(new_metrics)
+            else:
+                # check metrics to avoid overwriting
+                shared_set = set(existing_metrics.keys()).intersection(set(new_metrics.keys()))
+                if len(shared_set) &gt; 0:
+                    shared = &#39;, &#39;.join(sorted(list(shared_set)))
+                    msg = &#34;Multiple gene-level metric values found for sample &#34;+\
+                          &#34;%s, gene %s, metric(s): %s. &#34; % (sample_id, gene_id, shared) +\
+                          &#34;Overwrite mode is not in effect.&#34;
+                    self.logger.error(msg)
+                    raise RuntimeError(msg)
+                else:
+                    existing_metrics.update(new_metrics)
+            updated_metrics = existing_metrics
+            after = len(updated_metrics)
+            self.logger.debug(&#34;Updated from %i to %i metrics for gene %s &#34; % (before, after, gene_id))
+        else: # no existing metrics
+            updated_metrics = new_metrics
+        # check the metric names for consistency with previous genes
+        updated_names = set(updated_metrics.keys())
+        self._validate_metric_names(expected_names, updated_names, require_consistent)
+        expected_names = updated_names
+        metrics[gene_id] = updated_metrics
+    return metrics</code></pre>
+</details>
+</dd>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></b></code>:
 <ul class="hlist">
 <li><code><a title="djerba.utilities.base.base.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.utilities.base.base.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
 </ul>
 </li>
 </ul>
@@ -966,7 +1260,8 @@ Not run from <strong>init</strong>() because it can be quite slow (eg. reading m
 
     CLASSNAMES = {
         constants.CUSTOM_ANNOTATION_TYPE: &#39;custom_annotation&#39;,
-        constants.MUTATION_TYPE: &#39;mutation_extended&#39;
+        constants.MUTATION_TYPE: &#39;mutation_extended&#39;,
+        constants.SEGMENTED_TYPE: &#39;segmented&#39;
     }
 
     def __init__(self, log_level=logging.WARN, log_path=None):
@@ -984,6 +1279,7 @@ Not run from <strong>init</strong>() because it can be quite slow (eg. reading m
             self.logger.error(msg)
             raise ValueError(msg)
         klass = globals().get(classname)
+        self.logger.debug(&#34;Created instance of %s&#34; % classname)
         return klass(config, study_id, self.log_level, self.log_path)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -1018,6 +1314,7 @@ Not run from <strong>init</strong>() because it can be quite slow (eg. reading m
         self.logger.error(msg)
         raise ValueError(msg)
     klass = globals().get(classname)
+    self.logger.debug(&#34;Created instance of %s&#34; % classname)
     return klass(config, study_id, self.log_level, self.log_path)</code></pre>
 </details>
 </dd>
@@ -1027,6 +1324,7 @@ Not run from <strong>init</strong>() because it can be quite slow (eg. reading m
 <li><code><b><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></b></code>:
 <ul class="hlist">
 <li><code><a title="djerba.utilities.base.base.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.utilities.base.base.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1054,10 +1352,6 @@ Generates reports for either cBioPortal or Elba.</p></div>
     TCGA_PATH_KEY = &#39;tcga_path&#39;
     CANCER_TYPE_KEY = &#39;cancer_type&#39;
 
-    # MAF column headers
-    HUGO_SYMBOL = &#39;Hugo_Symbol&#39;
-    CHROMOSOME = &#39;Chromosome&#39;
-
     def _find_all_sample_attributes(self):
         # TODO &#39;cancer_type&#39; appears in study-level config. Could read it from there and
         # insert into the genetic_alteration config structure, instead of having duplicate
@@ -1072,9 +1366,17 @@ Generates reports for either cBioPortal or Elba.</p></div>
         attributes = {}
         for sample_id in self.sample_ids:
             maf_path = os.path.join(self.input_directory, self.input_files[sample_id])
-            mx_metrics = mutation_extended_metrics(maf_path, bed_path, tcga_path, cancer_type)
+            mx_metrics = mutation_extended_sample_metrics(
+                maf_path,
+                bed_path,
+                tcga_path,
+                cancer_type,
+                self.logger.getEffectiveLevel(),
+                self.log_path
+            )
             sample_attributes = {
-                constants.TMB_PER_MB_KEY: mx_metrics.get_tmb()
+                constants.TMB_PER_MB_KEY: mx_metrics.get_tmb(),
+                constants.COSMIC_SIGS_KEY: mx_metrics.get_cosmic_sigs()
             }
             attributes[sample_id] = sample_attributes
         return attributes
@@ -1104,17 +1406,22 @@ Generates reports for either cBioPortal or Elba.</p></div>
         return gene_names
 
     def get_metrics_by_gene(self, sample_id):
-        &#34;&#34;&#34;Find gene-level mutation metrics. Chromosome name only for now; can add others.&#34;&#34;&#34;
-        df = pd.read_csv(
+        &#34;&#34;&#34;
+        Find gene-level mutation fields using the mutation_extended_gene_metrics class:
+        - Gene
+        - Chromosome
+        - Protein Change
+        - Variant Reads And Total Reads
+        - Allele Fraction Percentile
+        - OncoKB
+        - FDA Approved Treatment
+        &#34;&#34;&#34;
+        self.logger.debug(&#34;Finding mutation_extended gene metrics&#34;)
+        return mutation_extended_gene_metrics(
             self.get_input_path(sample_id),
-            delimiter=&#34;\t&#34;,
-            usecols=[self.HUGO_SYMBOL, self.CHROMOSOME],
-            comment=&#34;#&#34;
-        )
-        metrics_by_gene = {}
-        for index, row in df.iterrows():
-            metrics_by_gene[row[self.HUGO_SYMBOL]] = {self.CHROMOSOME: row[self.CHROMOSOME]}
-        return metrics_by_gene
+            self.logger.getEffectiveLevel(),
+            self.log_path
+        ).get_metrics()
 
     def write_data(self, out_dir):
         &#34;&#34;&#34;cBioPortal. Write mutation data table.
@@ -1201,15 +1508,7 @@ Generates reports for either cBioPortal or Elba.</p></div>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="djerba.genetic_alteration.mutation_extended.CHROMOSOME"><code class="name">var <span class="ident">CHROMOSOME</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
 <dt id="djerba.genetic_alteration.mutation_extended.DATA_FILENAME"><code class="name">var <span class="ident">DATA_FILENAME</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="djerba.genetic_alteration.mutation_extended.HUGO_SYMBOL"><code class="name">var <span class="ident">HUGO_SYMBOL</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1262,23 +1561,35 @@ Generates reports for either cBioPortal or Elba.</p></div>
 <span>def <span class="ident">get_metrics_by_gene</span></span>(<span>self, sample_id)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Find gene-level mutation metrics. Chromosome name only for now; can add others.</p></div>
+<div class="desc"><p>Find gene-level mutation fields using the mutation_extended_gene_metrics class:
+- Gene
+- Chromosome
+- Protein Change
+- Variant Reads And Total Reads
+- Allele Fraction Percentile
+- OncoKB
+- FDA Approved Treatment</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_metrics_by_gene(self, sample_id):
-    &#34;&#34;&#34;Find gene-level mutation metrics. Chromosome name only for now; can add others.&#34;&#34;&#34;
-    df = pd.read_csv(
+    &#34;&#34;&#34;
+    Find gene-level mutation fields using the mutation_extended_gene_metrics class:
+    - Gene
+    - Chromosome
+    - Protein Change
+    - Variant Reads And Total Reads
+    - Allele Fraction Percentile
+    - OncoKB
+    - FDA Approved Treatment
+    &#34;&#34;&#34;
+    self.logger.debug(&#34;Finding mutation_extended gene metrics&#34;)
+    return mutation_extended_gene_metrics(
         self.get_input_path(sample_id),
-        delimiter=&#34;\t&#34;,
-        usecols=[self.HUGO_SYMBOL, self.CHROMOSOME],
-        comment=&#34;#&#34;
-    )
-    metrics_by_gene = {}
-    for index, row in df.iterrows():
-        metrics_by_gene[row[self.HUGO_SYMBOL]] = {self.CHROMOSOME: row[self.CHROMOSOME]}
-    return metrics_by_gene</code></pre>
+        self.logger.getEffectiveLevel(),
+        self.log_path
+    ).get_metrics()</code></pre>
 </details>
 </dd>
 <dt id="djerba.genetic_alteration.mutation_extended.write"><code class="name flex">
@@ -1395,6 +1706,104 @@ Generates reports for either cBioPortal or Elba.</p></div>
 <li><code><a title="djerba.genetic_alteration.genetic_alteration.get_alteration_id" href="#djerba.genetic_alteration.genetic_alteration.get_alteration_id">get_alteration_id</a></code></li>
 <li><code><a title="djerba.genetic_alteration.genetic_alteration.get_attributes_for_sample" href="#djerba.genetic_alteration.genetic_alteration.get_attributes_for_sample">get_attributes_for_sample</a></code></li>
 <li><code><a title="djerba.genetic_alteration.genetic_alteration.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.genetic_alteration.genetic_alteration.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
+<li><code><a title="djerba.genetic_alteration.genetic_alteration.update_gene_metrics" href="#djerba.genetic_alteration.genetic_alteration.update_gene_metrics">update_gene_metrics</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="djerba.genetic_alteration.segmented"><code class="flex name class">
+<span>class <span class="ident">segmented</span></span>
+<span>(</span><span>config, study_id=None, log_level=30, log_path=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Segmented data format from cBioPortal; input is SEG files.</p>
+<p>Currently supports Elba output only, not cBioPortal.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class segmented(genetic_alteration):
+    &#34;&#34;&#34;
+    Segmented data format from cBioPortal; input is SEG files.
+
+    Currently supports Elba output only, not cBioPortal.
+    &#34;&#34;&#34;
+
+    MINIMUM_ABS_SEG_MEAN = 0.2
+
+    def _find_all_sample_attributes(self):
+        &#34;&#34;&#34;Find FGA for each SEG file&#34;&#34;&#34;
+        attributes = {}
+        for sample_id in self.sample_ids:
+            seg_path = os.path.join(self.input_directory, self.input_files[sample_id])
+            sample_attributes = {
+                constants.FRACTION_GENOME_ALTERED_KEY: self._find_fga(seg_path, sample_id)
+            }
+            attributes[sample_id] = sample_attributes
+        return attributes
+
+    def _find_fga(self, seg_path, sample_id):
+        seg = pd.read_csv(seg_path, sep=&#39;\t&#39;, skiprows= 0)
+        # ID column of .seg file may be of the form ${SAMPLE_ID}.tumour.bam.varscanSomatic
+        # Match against $SAMPLE_ID, followed by end-of-string OR a dot followed by a word character
+        # Escape the $SAMPLE_ID in case it contains regex metacharacters
+        # This will not catch pathological cases, eg. two samples with respective IDs &#34;foo&#34; and &#34;foo.bar&#34;
+        seg_sample = seg.loc[seg.ID.str.match(re.escape(sample_id)+&#34;(\.\w|$)&#34;)]
+        seg_alt = seg_sample.loc[abs(seg_sample[&#34;seg.mean&#34;]) &gt; self.MINIMUM_ABS_SEG_MEAN]
+        denom = sum(seg_sample[&#39;loc.end&#39;] - seg_sample[&#39;loc.start&#39;])
+        try:
+            fga = sum(seg_alt[&#39;loc.end&#39;] - seg_alt[&#39;loc.start&#39;])/denom
+        except ZeroDivisionError:
+            self.logger.warning(&#39;FGA interval has zero width; FRACTION_GENOME_ALTERED is NA&#39;)
+            fga = &#34;NA&#34;
+        return fga
+
+    def get_metrics_by_gene(self, sample_id):
+        &#34;&#34;&#34;Return an empty dictionary, because SEG data has no gene-level metrics&#34;&#34;&#34;
+        self.logger.debug(&#34;SEG data has no gene-level metrics, only sample-level; returning empty dictionary&#34;)
+        return {}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="djerba.genetic_alteration.genetic_alteration" href="#djerba.genetic_alteration.genetic_alteration">genetic_alteration</a></li>
+<li><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="djerba.genetic_alteration.segmented.MINIMUM_ABS_SEG_MEAN"><code class="name">var <span class="ident">MINIMUM_ABS_SEG_MEAN</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="djerba.genetic_alteration.segmented.get_metrics_by_gene"><code class="name flex">
+<span>def <span class="ident">get_metrics_by_gene</span></span>(<span>self, sample_id)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return an empty dictionary, because SEG data has no gene-level metrics</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_metrics_by_gene(self, sample_id):
+    &#34;&#34;&#34;Return an empty dictionary, because SEG data has no gene-level metrics&#34;&#34;&#34;
+    self.logger.debug(&#34;SEG data has no gene-level metrics, only sample-level; returning empty dictionary&#34;)
+    return {}</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="djerba.genetic_alteration.genetic_alteration" href="#djerba.genetic_alteration.genetic_alteration">genetic_alteration</a></b></code>:
+<ul class="hlist">
+<li><code><a title="djerba.genetic_alteration.genetic_alteration.get_alteration_id" href="#djerba.genetic_alteration.genetic_alteration.get_alteration_id">get_alteration_id</a></code></li>
+<li><code><a title="djerba.genetic_alteration.genetic_alteration.get_attributes_for_sample" href="#djerba.genetic_alteration.genetic_alteration.get_attributes_for_sample">get_attributes_for_sample</a></code></li>
+<li><code><a title="djerba.genetic_alteration.genetic_alteration.get_gene_names" href="#djerba.genetic_alteration.genetic_alteration.get_gene_names">get_gene_names</a></code></li>
+<li><code><a title="djerba.genetic_alteration.genetic_alteration.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.genetic_alteration.genetic_alteration.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
+<li><code><a title="djerba.genetic_alteration.genetic_alteration.update_gene_metrics" href="#djerba.genetic_alteration.genetic_alteration.update_gene_metrics">update_gene_metrics</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1443,6 +1852,7 @@ Generates reports for either cBioPortal or Elba.</p></div>
 <li><code><a title="djerba.genetic_alteration.genetic_alteration.get_input_path" href="#djerba.genetic_alteration.genetic_alteration.get_input_path">get_input_path</a></code></li>
 <li><code><a title="djerba.genetic_alteration.genetic_alteration.get_metrics_by_gene" href="#djerba.genetic_alteration.genetic_alteration.get_metrics_by_gene">get_metrics_by_gene</a></code></li>
 <li><code><a title="djerba.genetic_alteration.genetic_alteration.get_sample_ids" href="#djerba.genetic_alteration.genetic_alteration.get_sample_ids">get_sample_ids</a></code></li>
+<li><code><a title="djerba.genetic_alteration.genetic_alteration.update_gene_metrics" href="#djerba.genetic_alteration.genetic_alteration.update_gene_metrics">update_gene_metrics</a></code></li>
 </ul>
 </li>
 <li>
@@ -1457,9 +1867,7 @@ Generates reports for either cBioPortal or Elba.</p></div>
 <ul class="two-column">
 <li><code><a title="djerba.genetic_alteration.mutation_extended.BED_PATH_KEY" href="#djerba.genetic_alteration.mutation_extended.BED_PATH_KEY">BED_PATH_KEY</a></code></li>
 <li><code><a title="djerba.genetic_alteration.mutation_extended.CANCER_TYPE_KEY" href="#djerba.genetic_alteration.mutation_extended.CANCER_TYPE_KEY">CANCER_TYPE_KEY</a></code></li>
-<li><code><a title="djerba.genetic_alteration.mutation_extended.CHROMOSOME" href="#djerba.genetic_alteration.mutation_extended.CHROMOSOME">CHROMOSOME</a></code></li>
 <li><code><a title="djerba.genetic_alteration.mutation_extended.DATA_FILENAME" href="#djerba.genetic_alteration.mutation_extended.DATA_FILENAME">DATA_FILENAME</a></code></li>
-<li><code><a title="djerba.genetic_alteration.mutation_extended.HUGO_SYMBOL" href="#djerba.genetic_alteration.mutation_extended.HUGO_SYMBOL">HUGO_SYMBOL</a></code></li>
 <li><code><a title="djerba.genetic_alteration.mutation_extended.META_FILENAME" href="#djerba.genetic_alteration.mutation_extended.META_FILENAME">META_FILENAME</a></code></li>
 <li><code><a title="djerba.genetic_alteration.mutation_extended.TCGA_PATH_KEY" href="#djerba.genetic_alteration.mutation_extended.TCGA_PATH_KEY">TCGA_PATH_KEY</a></code></li>
 <li><code><a title="djerba.genetic_alteration.mutation_extended.get_gene_names" href="#djerba.genetic_alteration.mutation_extended.get_gene_names">get_gene_names</a></code></li>
@@ -1469,13 +1877,20 @@ Generates reports for either cBioPortal or Elba.</p></div>
 <li><code><a title="djerba.genetic_alteration.mutation_extended.write_meta" href="#djerba.genetic_alteration.mutation_extended.write_meta">write_meta</a></code></li>
 </ul>
 </li>
+<li>
+<h4><code><a title="djerba.genetic_alteration.segmented" href="#djerba.genetic_alteration.segmented">segmented</a></code></h4>
+<ul class="">
+<li><code><a title="djerba.genetic_alteration.segmented.MINIMUM_ABS_SEG_MEAN" href="#djerba.genetic_alteration.segmented.MINIMUM_ABS_SEG_MEAN">MINIMUM_ABS_SEG_MEAN</a></code></li>
+<li><code><a title="djerba.genetic_alteration.segmented.get_metrics_by_gene" href="#djerba.genetic_alteration.segmented.get_metrics_by_gene">get_metrics_by_gene</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
 </footer>
 </body>
 </html>
