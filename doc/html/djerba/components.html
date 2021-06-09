@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.1" />
+<meta name="generator" content="pdoc 0.9.2" />
 <title>djerba.components API documentation</title>
 <meta name="description" content="Classes to represent components specific to a cBioPortal study …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -527,6 +527,7 @@ class study_meta(component):
 <li><code><b><a title="djerba.components.dual_output_component" href="#djerba.components.dual_output_component">dual_output_component</a></b></code>:
 <ul class="hlist">
 <li><code><a title="djerba.components.dual_output_component.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.components.dual_output_component.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
 </ul>
 </li>
 </ul>
@@ -663,6 +664,7 @@ Subclasses can call super().<strong>init</strong>() to set up simple logging</p>
 <li><code><b><a title="djerba.components.component" href="#djerba.components.component">component</a></b></code>:
 <ul class="hlist">
 <li><code><a title="djerba.components.component.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.components.component.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
 </ul>
 </li>
 </ul>
@@ -854,6 +856,7 @@ Subclasses can call super().<strong>init</strong>() to set up simple logging</p>
 <li><code><b><a title="djerba.components.dual_output_component" href="#djerba.components.dual_output_component">dual_output_component</a></b></code>:
 <ul class="hlist">
 <li><code><a title="djerba.components.dual_output_component.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.components.dual_output_component.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
 </ul>
 </li>
 </ul>
@@ -919,6 +922,7 @@ Subclasses can call super().<strong>init</strong>() to set up simple logging</p>
 <li><code><b><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></b></code>:
 <ul class="hlist">
 <li><code><a title="djerba.utilities.base.base.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.utilities.base.base.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1015,6 +1019,7 @@ Subclasses can call super().<strong>init</strong>() to set up simple logging</p>
 <li><code><b><a title="djerba.components.component" href="#djerba.components.component">component</a></b></code>:
 <ul class="hlist">
 <li><code><a title="djerba.components.component.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.components.component.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1062,6 +1067,7 @@ Subclasses can call super().<strong>init</strong>() to set up simple logging</p>
 <li><code><b><a title="djerba.components.clinical_data_component" href="#djerba.components.clinical_data_component">clinical_data_component</a></b></code>:
 <ul class="hlist">
 <li><code><a title="djerba.components.clinical_data_component.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.components.clinical_data_component.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
 <li><code><a title="djerba.components.clinical_data_component.write_data" href="#djerba.components.clinical_data_component.write_data">write_data</a></code></li>
 </ul>
 </li>
@@ -1110,6 +1116,7 @@ Subclasses can call super().<strong>init</strong>() to set up simple logging</p>
 <li><code><b><a title="djerba.components.clinical_data_component" href="#djerba.components.clinical_data_component">clinical_data_component</a></b></code>:
 <ul class="hlist">
 <li><code><a title="djerba.components.clinical_data_component.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.components.clinical_data_component.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
 <li><code><a title="djerba.components.clinical_data_component.write_data" href="#djerba.components.clinical_data_component.write_data">write_data</a></code></li>
 </ul>
 </li>
@@ -1213,6 +1220,7 @@ Subclasses can call super().<strong>init</strong>() to set up simple logging</p>
 <li><code><b><a title="djerba.components.component" href="#djerba.components.component">component</a></b></code>:
 <ul class="hlist">
 <li><code><a title="djerba.components.component.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.components.component.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1326,7 +1334,7 @@ Subclasses can call super().<strong>init</strong>() to set up simple logging</p>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
 </footer>
 </body>
 </html>

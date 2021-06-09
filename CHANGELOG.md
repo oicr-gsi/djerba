@@ -1,6 +1,8 @@
 # CHANGELOG
 
-## Unreleased
+## v0.0.4: 2021-06-09
+- Work-in-progress on features for the old Djerba design.
+- To be replaced by a simplified Djerba handling CGI reports only, in release 0.0.5.
 ### Added
 - GCGI-27: Upload config to Elba server
   - Standalone script `upload.py`
