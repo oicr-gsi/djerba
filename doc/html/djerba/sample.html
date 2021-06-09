@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.1" />
+<meta name="generator" content="pdoc 0.9.2" />
 <title>djerba.sample API documentation</title>
-<meta name="description" content="Sample class; thin wrapper for a dictionary containing sample attributes" />
+<meta name="description" content="Sample class; wrapper for a dictionary containing sample attributes" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -22,12 +22,12 @@
 <h1 class="title">Module <code>djerba.sample</code></h1>
 </header>
 <section id="section-intro">
-<p>Sample class; thin wrapper for a dictionary containing sample attributes</p>
+<p>Sample class; wrapper for a dictionary containing sample attributes</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;Sample class; thin wrapper for a dictionary containing sample attributes&#34;&#34;&#34;
+<pre><code class="python">&#34;&#34;&#34;Sample class; wrapper for a dictionary containing sample attributes&#34;&#34;&#34;
 
 import logging
 from djerba.utilities import constants
@@ -37,7 +37,8 @@ class sample(base):
 
     &#34;&#34;&#34;
     Sample for rShiny or cBioPortal reports. Input is a simple dictionary of attributes 
-    (key/value pairs) for the sample. The only required attribute is SAMPLE_ID.&#34;&#34;&#34;
+    (key/value pairs) for the sample. The only required attribute is SAMPLE_ID.
+    &#34;&#34;&#34;
     
     def __init__(self, attributes, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
@@ -57,13 +58,17 @@ class sample(base):
     def get_id(self):
         return self.sample_id
 
-    def update_attributes(self, new_attributes):
-        shared_keys = set(self.attributes.keys()).intersection(set(new_attributes.keys()))
-        if len(shared_keys)&gt;0:
-            # found shared keys other than &#39;Gene&#39;: issue a warning
-            key_string = &#34;\t&#34;.join(sorted([str(x) for x in shared_keys]))
-            msg = &#34;Existing attribute values will be overwritten for keys: %s&#34; % key_string
-            self.logger.warning(msg)
+    def update_attributes(self, new_attributes, overwrite=False):
+        shared_set = set(self.attributes.keys()).intersection(set(new_attributes.keys()))
+        shared_set.discard(constants.GENE_KEY)
+        # overwriting null sample attributes is permitted; filter out null values
+        shared = [x for x in shared_set if not self.is_null(self.attributes.get(x))]
+        if overwrite==False and len(shared)&gt;0:
+            key_string = &#34;, &#34;.join(sorted([str(x) for x in shared]))
+            msg = &#34;Multiple non-null sample attribute values found for keys: [%s]. &#34; % key_string +\
+                  &#34;Overwrite mode is not in effect.&#34;
+            self.logger.error(msg)
+            raise RuntimeError(msg)
         self.attributes.update(new_attributes)</code></pre>
 </details>
 </section>
@@ -91,7 +96,8 @@ class sample(base):
 
     &#34;&#34;&#34;
     Sample for rShiny or cBioPortal reports. Input is a simple dictionary of attributes 
-    (key/value pairs) for the sample. The only required attribute is SAMPLE_ID.&#34;&#34;&#34;
+    (key/value pairs) for the sample. The only required attribute is SAMPLE_ID.
+    &#34;&#34;&#34;
     
     def __init__(self, attributes, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
@@ -111,13 +117,17 @@ class sample(base):
     def get_id(self):
         return self.sample_id
 
-    def update_attributes(self, new_attributes):
-        shared_keys = set(self.attributes.keys()).intersection(set(new_attributes.keys()))
-        if len(shared_keys)&gt;0:
-            # found shared keys other than &#39;Gene&#39;: issue a warning
-            key_string = &#34;\t&#34;.join(sorted([str(x) for x in shared_keys]))
-            msg = &#34;Existing attribute values will be overwritten for keys: %s&#34; % key_string
-            self.logger.warning(msg)
+    def update_attributes(self, new_attributes, overwrite=False):
+        shared_set = set(self.attributes.keys()).intersection(set(new_attributes.keys()))
+        shared_set.discard(constants.GENE_KEY)
+        # overwriting null sample attributes is permitted; filter out null values
+        shared = [x for x in shared_set if not self.is_null(self.attributes.get(x))]
+        if overwrite==False and len(shared)&gt;0:
+            key_string = &#34;, &#34;.join(sorted([str(x) for x in shared]))
+            msg = &#34;Multiple non-null sample attribute values found for keys: [%s]. &#34; % key_string +\
+                  &#34;Overwrite mode is not in effect.&#34;
+            self.logger.error(msg)
+            raise RuntimeError(msg)
         self.attributes.update(new_attributes)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -166,7 +176,7 @@ class sample(base):
 </details>
 </dd>
 <dt id="djerba.sample.sample.update_attributes"><code class="name flex">
-<span>def <span class="ident">update_attributes</span></span>(<span>self, new_attributes)</span>
+<span>def <span class="ident">update_attributes</span></span>(<span>self, new_attributes, overwrite=False)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -174,13 +184,17 @@ class sample(base):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def update_attributes(self, new_attributes):
-    shared_keys = set(self.attributes.keys()).intersection(set(new_attributes.keys()))
-    if len(shared_keys)&gt;0:
-        # found shared keys other than &#39;Gene&#39;: issue a warning
-        key_string = &#34;\t&#34;.join(sorted([str(x) for x in shared_keys]))
-        msg = &#34;Existing attribute values will be overwritten for keys: %s&#34; % key_string
-        self.logger.warning(msg)
+<pre><code class="python">def update_attributes(self, new_attributes, overwrite=False):
+    shared_set = set(self.attributes.keys()).intersection(set(new_attributes.keys()))
+    shared_set.discard(constants.GENE_KEY)
+    # overwriting null sample attributes is permitted; filter out null values
+    shared = [x for x in shared_set if not self.is_null(self.attributes.get(x))]
+    if overwrite==False and len(shared)&gt;0:
+        key_string = &#34;, &#34;.join(sorted([str(x) for x in shared]))
+        msg = &#34;Multiple non-null sample attribute values found for keys: [%s]. &#34; % key_string +\
+              &#34;Overwrite mode is not in effect.&#34;
+        self.logger.error(msg)
+        raise RuntimeError(msg)
     self.attributes.update(new_attributes)</code></pre>
 </details>
 </dd>
@@ -190,6 +204,7 @@ class sample(base):
 <li><code><b><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></b></code>:
 <ul class="hlist">
 <li><code><a title="djerba.utilities.base.base.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.utilities.base.base.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
 </ul>
 </li>
 </ul>
@@ -225,7 +240,7 @@ class sample(base):
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
 </footer>
 </body>
 </html>

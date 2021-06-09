@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.1" />
+<meta name="generator" content="pdoc 0.9.2" />
 <title>djerba.metrics API documentation</title>
 <meta name="description" content="Classes to contain genetic_alteration metric functions; see prototypes directory" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -29,16 +29,190 @@
 </summary>
 <pre><code class="python">&#34;&#34;&#34;Classes to contain genetic_alteration metric functions; see prototypes directory&#34;&#34;&#34;
 
+import gzip
 import json
+import logging
 import pandas as pd
+import re
+
 from statsmodels.distributions.empirical_distribution import ECDF
-import sys
+from math import isnan
+from djerba.utilities.base import base
 
-class mutation_extended_metrics:
+class mutation_extended_gene_metrics(base):
 
-    &#34;&#34;&#34;Metrics for the MUTATION_EXTENDED alteration type&#34;&#34;&#34;
+    &#34;&#34;&#34;
+    Gene-level fields for the MUTATION_EXTENDED alteration type
+
+    Includes fields for Elba output:
+    - Allele Fraction Percentage
+    - Chromosome
+    - Gene
+    - FDA Approved Treatment
+    - OncoKB
+    - Protein Change
+    - Variant Reads And Total Reads
+    &#34;&#34;&#34;
+
+    # MAF column headers
+    HUGO_SYMBOL = &#39;Hugo_Symbol&#39;
+    CHROMOSOME = &#39;Chromosome&#39;
+    HGVSP_SHORT = &#39;HGVSp_Short&#39;
+    T_DEPTH = &#39;t_depth&#39;
+    T_ALT_COUNT = &#39;t_alt_count&#39;
+    HIGHEST_LEVEL = &#39;Highest_level&#39;
+    FDA_APPROVED_TREATMENT = &#39;FDA_Approved_Treatment&#39;
+    LEVEL_1  = &#39;LEVEL_1&#39;
+    LEVEL_2A = &#39;LEVEL_2A&#39;
+    LEVEL_2B = &#39;LEVEL_2B&#39;
+    LEVEL_3A = &#39;LEVEL_3A&#39;
+    LEVEL_3B = &#39;LEVEL_3B&#39;
+    LEVEL_4  = &#39;LEVEL_4&#39;
+    LEVEL_R1 = &#39;LEVEL_R1&#39;
+    LEVEL_R2 = &#39;LEVEL_R2&#39;
+    REQUIRED_MAF_COLS = [
+        HUGO_SYMBOL,
+        CHROMOSOME,
+        HGVSP_SHORT,
+        T_DEPTH,
+        T_ALT_COUNT,
+    ]
+    BIOMARKER_LEVELS = [
+        LEVEL_1,
+        LEVEL_2A,
+        LEVEL_2B,
+        LEVEL_3A,
+        LEVEL_3B,
+        LEVEL_4,
+        LEVEL_R1,
+        LEVEL_R2
+    ]
+
+    # Output headers
+    PROTEIN_CHANGE = &#39;Protein_Change&#39;
+    ALLELE_FRACTION_PERCENTILE = &#39;Allele_Fraction_Percentile&#39;
+    VARIANT_READS_AND_TOTAL_READS = &#39;Variant_Reads_And_Total_Reads&#39;
+    ONCOKB = &#39;OncoKB&#39;
+
+    def __init__(self, maf_path, log_level=logging.WARNING, log_path=None):
+        self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
+        cols = self._find_columns_to_use(maf_path)
+        df = pd.read_csv(maf_path, usecols=cols, delimiter=&#34;\t&#34;, comment=&#34;#&#34;)
+        if df.size == 0:
+            msg = &#34;No rows found in MAF input %s&#34; % maf_path
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        else:
+            self.logger.debug(&#34;Found %d MAF rows from input path %s&#34; % (df.size, maf_path))
+        self.metrics = {}
+        for index, row in df.iterrows():
+            total = row[self.T_DEPTH]
+            variants = row[self.T_ALT_COUNT]
+            try:
+                afp = (float(variants)/float(total))*100
+            except ZeroDivisionError:
+                afp = &#34;NA&#34;
+            oncokb = row.get(self.HIGHEST_LEVEL)
+            if oncokb == None:
+                oncokb = &#34;NA&#34;
+            self.metrics[row[self.HUGO_SYMBOL]] = {
+                self.CHROMOSOME: row[self.CHROMOSOME],
+                self.PROTEIN_CHANGE: row[self.HGVSP_SHORT],
+                self.VARIANT_READS_AND_TOTAL_READS: &#34;%d/%d&#34; % (variants, total),
+                self.ALLELE_FRACTION_PERCENTILE: afp,
+                self.ONCOKB: oncokb,
+                self.FDA_APPROVED_TREATMENT: self._find_treatment_string(row)
+            }
+        metric_string = json.dumps(self.metrics[row[self.HUGO_SYMBOL]], sort_keys=True)
+        self.logger.debug(&#34;Example of metrics for gene %s: %s&#34; % (row[self.HUGO_SYMBOL], metric_string))
+        self.logger.info(&#34;Found mutation_extended metrics for %i genes&#34; % len(self.metrics))
+
+    def _find_columns_to_use(self, maf_path):
+        &#34;&#34;&#34;
+        Read column headers from the MAF file, to determine what columns to input in pandas
+        Handles the case where not all OncoKB LEVEL columns are present
+        MAF files may have 100+ columns, so this is preferred to reading in the whole file
+        &#34;&#34;&#34;
+        if re.search(&#34;\.gz$&#34;, maf_path):
+            in_file = gzip.open(maf_path, &#39;rt&#39;)
+        else:
+            in_file = open(maf_path, &#39;r&#39;)
+        header_line = None
+        # read the first non-comment line to get column headers
+        while True:
+            line = in_file.readline()
+            if line == &#39;&#39;: # end of file
+                break
+            elif re.match(&#34;#&#34;, line):
+                continue
+            else:
+                header_line = line
+                break
+        in_file.close()
+        if not header_line:
+            msg = &#34;No header line found in MAF file &#39;%s&#39;&#34; % maf_path
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        column_names = re.split(&#34;\t&#34;, line.strip())
+        self.logger.debug(&#34;Found MAF column names: &#34;+&#34;, &#34;.join(column_names))
+        missing = []
+        for name in self.REQUIRED_MAF_COLS:
+            if not name in column_names:
+                missing.append(name)
+        if len(missing) &gt; 0:
+            msg = &#34;Missing required MAF columns: &#34;+&#34;, &#34;.join(missing)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        use_cols = self.REQUIRED_MAF_COLS.copy() # list of columns to read
+        optional_total = 0
+        optional_cols = [self.HIGHEST_LEVEL]
+        optional_cols.extend(self.BIOMARKER_LEVELS)
+        for name in optional_cols:
+            if name in column_names:
+                use_cols.append(name)
+                optional_total += 1
+        if optional_total == 0:
+            msg = &#34;No optional MAF columns found. OncoKB annotation not applied? &#34;+\
+                  &#34;OncoKB output fields will receive &#39;NA&#39; values.&#34;
+            self.logger.warning(msg)
+        self.logger.debug(&#34;Found MAF columns for input: &#34;+&#34;, &#34;.join(use_cols))
+        return use_cols
+
+    def _find_treatment_string(self, row):
+        &#34;&#34;&#34;
+        Find the &#39;FDA Approved Treatment&#39; string
+        Concatenation of level codes and approved treatments
+        &#34;&#34;&#34;
+        # This string is a temporary placeholder, will be replaced by a more complex structure
+        # See https://jira.oicr.on.ca/browse/GCGI-69
+        biomarker_values = []
+        for level in self.BIOMARKER_LEVELS:
+            value = row.get(level) # will be None if no column in MAF file for this level
+            if not self.is_null(value):
+                biomarker_values.append(&#39;%s:%s&#39; % (level, value))
+        if len(biomarker_values) == 0:
+            return &#39;NA&#39;
+        else:
+            return &#39;;&#39;.join(biomarker_values)
+
+    def get_metrics_for_gene(self, gene):
+        &#34;&#34;&#34;Get metric dictionary for the named gene, or None if gene is not present&#34;&#34;&#34;
+        return self.metrics.get(gene)
+
+    def get_metrics(self):
+        return self.metrics
+
+class mutation_extended_sample_metrics(base):
+
+    &#34;&#34;&#34;
+    Sample-level metrics for the MUTATION_EXTENDED alteration type
+
+    Includes metrics for Elba output:
+    - TMB_PER_MB
+    &#34;&#34;&#34;
     
-    def __init__(self, maf_path, bed_path, tcga_path, cancer_type):
+    def __init__(self, maf_path, bed_path, tcga_path, cancer_type, log_level=logging.WARNING, log_path=None):
+        self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
         self.tmb = self._find_tmb(maf_path, bed_path)        
         [self.tcga_tmb, self.tcga_cohort_tmb] = self._read_tcga(tcga_path, cancer_type)
         self.tcga_pct = ECDF(self.tcga_tmb)(self.tmb)
@@ -73,6 +247,15 @@ class mutation_extended_metrics:
         tcga_cohort = tcga_cohort.rename(columns={&#39;tcgaTMB&#39;: &#39;cohortTMB&#39;})
         tcga_cohort_tmb = tcga_cohort.cohortTMB
         return (tcga_tmb, tcga_cohort_tmb)
+
+    def get_cosmic_sigs(self):
+        &#34;&#34;&#34;
+        TODO: Compute the COSMIC_SIGS metric
+        - Currently implemented as an R script
+        - Not yet ready for production, requires more validation
+        - Return &#34;NA&#34; as a placeholder for now
+        &#34;&#34;&#34;
+        return &#34;NA&#34;
 
     def get_tmb(self):
         return self.tmb
@@ -101,21 +284,341 @@ class mutation_extended_metrics:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="djerba.metrics.mutation_extended_metrics"><code class="flex name class">
-<span>class <span class="ident">mutation_extended_metrics</span></span>
-<span>(</span><span>maf_path, bed_path, tcga_path, cancer_type)</span>
+<dt id="djerba.metrics.mutation_extended_gene_metrics"><code class="flex name class">
+<span>class <span class="ident">mutation_extended_gene_metrics</span></span>
+<span>(</span><span>maf_path, log_level=30, log_path=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Metrics for the MUTATION_EXTENDED alteration type</p></div>
+<div class="desc"><p>Gene-level fields for the MUTATION_EXTENDED alteration type</p>
+<p>Includes fields for Elba output:
+- Allele Fraction Percentage
+- Chromosome
+- Gene
+- FDA Approved Treatment
+- OncoKB
+- Protein Change
+- Variant Reads And Total Reads</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class mutation_extended_metrics:
+<pre><code class="python">class mutation_extended_gene_metrics(base):
 
-    &#34;&#34;&#34;Metrics for the MUTATION_EXTENDED alteration type&#34;&#34;&#34;
+    &#34;&#34;&#34;
+    Gene-level fields for the MUTATION_EXTENDED alteration type
+
+    Includes fields for Elba output:
+    - Allele Fraction Percentage
+    - Chromosome
+    - Gene
+    - FDA Approved Treatment
+    - OncoKB
+    - Protein Change
+    - Variant Reads And Total Reads
+    &#34;&#34;&#34;
+
+    # MAF column headers
+    HUGO_SYMBOL = &#39;Hugo_Symbol&#39;
+    CHROMOSOME = &#39;Chromosome&#39;
+    HGVSP_SHORT = &#39;HGVSp_Short&#39;
+    T_DEPTH = &#39;t_depth&#39;
+    T_ALT_COUNT = &#39;t_alt_count&#39;
+    HIGHEST_LEVEL = &#39;Highest_level&#39;
+    FDA_APPROVED_TREATMENT = &#39;FDA_Approved_Treatment&#39;
+    LEVEL_1  = &#39;LEVEL_1&#39;
+    LEVEL_2A = &#39;LEVEL_2A&#39;
+    LEVEL_2B = &#39;LEVEL_2B&#39;
+    LEVEL_3A = &#39;LEVEL_3A&#39;
+    LEVEL_3B = &#39;LEVEL_3B&#39;
+    LEVEL_4  = &#39;LEVEL_4&#39;
+    LEVEL_R1 = &#39;LEVEL_R1&#39;
+    LEVEL_R2 = &#39;LEVEL_R2&#39;
+    REQUIRED_MAF_COLS = [
+        HUGO_SYMBOL,
+        CHROMOSOME,
+        HGVSP_SHORT,
+        T_DEPTH,
+        T_ALT_COUNT,
+    ]
+    BIOMARKER_LEVELS = [
+        LEVEL_1,
+        LEVEL_2A,
+        LEVEL_2B,
+        LEVEL_3A,
+        LEVEL_3B,
+        LEVEL_4,
+        LEVEL_R1,
+        LEVEL_R2
+    ]
+
+    # Output headers
+    PROTEIN_CHANGE = &#39;Protein_Change&#39;
+    ALLELE_FRACTION_PERCENTILE = &#39;Allele_Fraction_Percentile&#39;
+    VARIANT_READS_AND_TOTAL_READS = &#39;Variant_Reads_And_Total_Reads&#39;
+    ONCOKB = &#39;OncoKB&#39;
+
+    def __init__(self, maf_path, log_level=logging.WARNING, log_path=None):
+        self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
+        cols = self._find_columns_to_use(maf_path)
+        df = pd.read_csv(maf_path, usecols=cols, delimiter=&#34;\t&#34;, comment=&#34;#&#34;)
+        if df.size == 0:
+            msg = &#34;No rows found in MAF input %s&#34; % maf_path
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        else:
+            self.logger.debug(&#34;Found %d MAF rows from input path %s&#34; % (df.size, maf_path))
+        self.metrics = {}
+        for index, row in df.iterrows():
+            total = row[self.T_DEPTH]
+            variants = row[self.T_ALT_COUNT]
+            try:
+                afp = (float(variants)/float(total))*100
+            except ZeroDivisionError:
+                afp = &#34;NA&#34;
+            oncokb = row.get(self.HIGHEST_LEVEL)
+            if oncokb == None:
+                oncokb = &#34;NA&#34;
+            self.metrics[row[self.HUGO_SYMBOL]] = {
+                self.CHROMOSOME: row[self.CHROMOSOME],
+                self.PROTEIN_CHANGE: row[self.HGVSP_SHORT],
+                self.VARIANT_READS_AND_TOTAL_READS: &#34;%d/%d&#34; % (variants, total),
+                self.ALLELE_FRACTION_PERCENTILE: afp,
+                self.ONCOKB: oncokb,
+                self.FDA_APPROVED_TREATMENT: self._find_treatment_string(row)
+            }
+        metric_string = json.dumps(self.metrics[row[self.HUGO_SYMBOL]], sort_keys=True)
+        self.logger.debug(&#34;Example of metrics for gene %s: %s&#34; % (row[self.HUGO_SYMBOL], metric_string))
+        self.logger.info(&#34;Found mutation_extended metrics for %i genes&#34; % len(self.metrics))
+
+    def _find_columns_to_use(self, maf_path):
+        &#34;&#34;&#34;
+        Read column headers from the MAF file, to determine what columns to input in pandas
+        Handles the case where not all OncoKB LEVEL columns are present
+        MAF files may have 100+ columns, so this is preferred to reading in the whole file
+        &#34;&#34;&#34;
+        if re.search(&#34;\.gz$&#34;, maf_path):
+            in_file = gzip.open(maf_path, &#39;rt&#39;)
+        else:
+            in_file = open(maf_path, &#39;r&#39;)
+        header_line = None
+        # read the first non-comment line to get column headers
+        while True:
+            line = in_file.readline()
+            if line == &#39;&#39;: # end of file
+                break
+            elif re.match(&#34;#&#34;, line):
+                continue
+            else:
+                header_line = line
+                break
+        in_file.close()
+        if not header_line:
+            msg = &#34;No header line found in MAF file &#39;%s&#39;&#34; % maf_path
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        column_names = re.split(&#34;\t&#34;, line.strip())
+        self.logger.debug(&#34;Found MAF column names: &#34;+&#34;, &#34;.join(column_names))
+        missing = []
+        for name in self.REQUIRED_MAF_COLS:
+            if not name in column_names:
+                missing.append(name)
+        if len(missing) &gt; 0:
+            msg = &#34;Missing required MAF columns: &#34;+&#34;, &#34;.join(missing)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        use_cols = self.REQUIRED_MAF_COLS.copy() # list of columns to read
+        optional_total = 0
+        optional_cols = [self.HIGHEST_LEVEL]
+        optional_cols.extend(self.BIOMARKER_LEVELS)
+        for name in optional_cols:
+            if name in column_names:
+                use_cols.append(name)
+                optional_total += 1
+        if optional_total == 0:
+            msg = &#34;No optional MAF columns found. OncoKB annotation not applied? &#34;+\
+                  &#34;OncoKB output fields will receive &#39;NA&#39; values.&#34;
+            self.logger.warning(msg)
+        self.logger.debug(&#34;Found MAF columns for input: &#34;+&#34;, &#34;.join(use_cols))
+        return use_cols
+
+    def _find_treatment_string(self, row):
+        &#34;&#34;&#34;
+        Find the &#39;FDA Approved Treatment&#39; string
+        Concatenation of level codes and approved treatments
+        &#34;&#34;&#34;
+        # This string is a temporary placeholder, will be replaced by a more complex structure
+        # See https://jira.oicr.on.ca/browse/GCGI-69
+        biomarker_values = []
+        for level in self.BIOMARKER_LEVELS:
+            value = row.get(level) # will be None if no column in MAF file for this level
+            if not self.is_null(value):
+                biomarker_values.append(&#39;%s:%s&#39; % (level, value))
+        if len(biomarker_values) == 0:
+            return &#39;NA&#39;
+        else:
+            return &#39;;&#39;.join(biomarker_values)
+
+    def get_metrics_for_gene(self, gene):
+        &#34;&#34;&#34;Get metric dictionary for the named gene, or None if gene is not present&#34;&#34;&#34;
+        return self.metrics.get(gene)
+
+    def get_metrics(self):
+        return self.metrics</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.ALLELE_FRACTION_PERCENTILE"><code class="name">var <span class="ident">ALLELE_FRACTION_PERCENTILE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.BIOMARKER_LEVELS"><code class="name">var <span class="ident">BIOMARKER_LEVELS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.CHROMOSOME"><code class="name">var <span class="ident">CHROMOSOME</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.FDA_APPROVED_TREATMENT"><code class="name">var <span class="ident">FDA_APPROVED_TREATMENT</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.HGVSP_SHORT"><code class="name">var <span class="ident">HGVSP_SHORT</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.HIGHEST_LEVEL"><code class="name">var <span class="ident">HIGHEST_LEVEL</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.HUGO_SYMBOL"><code class="name">var <span class="ident">HUGO_SYMBOL</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.LEVEL_1"><code class="name">var <span class="ident">LEVEL_1</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.LEVEL_2A"><code class="name">var <span class="ident">LEVEL_2A</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.LEVEL_2B"><code class="name">var <span class="ident">LEVEL_2B</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.LEVEL_3A"><code class="name">var <span class="ident">LEVEL_3A</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.LEVEL_3B"><code class="name">var <span class="ident">LEVEL_3B</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.LEVEL_4"><code class="name">var <span class="ident">LEVEL_4</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.LEVEL_R1"><code class="name">var <span class="ident">LEVEL_R1</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.LEVEL_R2"><code class="name">var <span class="ident">LEVEL_R2</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.ONCOKB"><code class="name">var <span class="ident">ONCOKB</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.PROTEIN_CHANGE"><code class="name">var <span class="ident">PROTEIN_CHANGE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.REQUIRED_MAF_COLS"><code class="name">var <span class="ident">REQUIRED_MAF_COLS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.T_ALT_COUNT"><code class="name">var <span class="ident">T_ALT_COUNT</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.T_DEPTH"><code class="name">var <span class="ident">T_DEPTH</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.VARIANT_READS_AND_TOTAL_READS"><code class="name">var <span class="ident">VARIANT_READS_AND_TOTAL_READS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.get_metrics"><code class="name flex">
+<span>def <span class="ident">get_metrics</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_metrics(self):
+    return self.metrics</code></pre>
+</details>
+</dd>
+<dt id="djerba.metrics.mutation_extended_gene_metrics.get_metrics_for_gene"><code class="name flex">
+<span>def <span class="ident">get_metrics_for_gene</span></span>(<span>self, gene)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get metric dictionary for the named gene, or None if gene is not present</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_metrics_for_gene(self, gene):
+    &#34;&#34;&#34;Get metric dictionary for the named gene, or None if gene is not present&#34;&#34;&#34;
+    return self.metrics.get(gene)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></b></code>:
+<ul class="hlist">
+<li><code><a title="djerba.utilities.base.base.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.utilities.base.base.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="djerba.metrics.mutation_extended_sample_metrics"><code class="flex name class">
+<span>class <span class="ident">mutation_extended_sample_metrics</span></span>
+<span>(</span><span>maf_path, bed_path, tcga_path, cancer_type, log_level=30, log_path=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Sample-level metrics for the MUTATION_EXTENDED alteration type</p>
+<p>Includes metrics for Elba output:
+- TMB_PER_MB</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class mutation_extended_sample_metrics(base):
+
+    &#34;&#34;&#34;
+    Sample-level metrics for the MUTATION_EXTENDED alteration type
+
+    Includes metrics for Elba output:
+    - TMB_PER_MB
+    &#34;&#34;&#34;
     
-    def __init__(self, maf_path, bed_path, tcga_path, cancer_type):
+    def __init__(self, maf_path, bed_path, tcga_path, cancer_type, log_level=logging.WARNING, log_path=None):
+        self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
         self.tmb = self._find_tmb(maf_path, bed_path)        
         [self.tcga_tmb, self.tcga_cohort_tmb] = self._read_tcga(tcga_path, cancer_type)
         self.tcga_pct = ECDF(self.tcga_tmb)(self.tmb)
@@ -151,6 +654,15 @@ class mutation_extended_metrics:
         tcga_cohort_tmb = tcga_cohort.cohortTMB
         return (tcga_tmb, tcga_cohort_tmb)
 
+    def get_cosmic_sigs(self):
+        &#34;&#34;&#34;
+        TODO: Compute the COSMIC_SIGS metric
+        - Currently implemented as an R script
+        - Not yet ready for production, requires more validation
+        - Return &#34;NA&#34; as a placeholder for now
+        &#34;&#34;&#34;
+        return &#34;NA&#34;
+
     def get_tmb(self):
         return self.tmb
 
@@ -168,9 +680,13 @@ class mutation_extended_metrics:
         &#34;&#34;&#34;Convert the pandas Series to a dictionary&#34;&#34;&#34;
         return self.tcga_cohort_tmb.to_dict()</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></li>
+</ul>
 <h3>Methods</h3>
 <dl>
-<dt id="djerba.metrics.mutation_extended_metrics.get_cohort_pct"><code class="name flex">
+<dt id="djerba.metrics.mutation_extended_sample_metrics.get_cohort_pct"><code class="name flex">
 <span>def <span class="ident">get_cohort_pct</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -183,7 +699,7 @@ class mutation_extended_metrics:
     return self.cohort_pct</code></pre>
 </details>
 </dd>
-<dt id="djerba.metrics.mutation_extended_metrics.get_cohort_tmb_as_dict"><code class="name flex">
+<dt id="djerba.metrics.mutation_extended_sample_metrics.get_cohort_tmb_as_dict"><code class="name flex">
 <span>def <span class="ident">get_cohort_tmb_as_dict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -197,7 +713,29 @@ class mutation_extended_metrics:
     return self.tcga_cohort_tmb.to_dict()</code></pre>
 </details>
 </dd>
-<dt id="djerba.metrics.mutation_extended_metrics.get_tcga_pct"><code class="name flex">
+<dt id="djerba.metrics.mutation_extended_sample_metrics.get_cosmic_sigs"><code class="name flex">
+<span>def <span class="ident">get_cosmic_sigs</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO: Compute the COSMIC_SIGS metric
+- Currently implemented as an R script
+- Not yet ready for production, requires more validation
+- Return "NA" as a placeholder for now</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_cosmic_sigs(self):
+    &#34;&#34;&#34;
+    TODO: Compute the COSMIC_SIGS metric
+    - Currently implemented as an R script
+    - Not yet ready for production, requires more validation
+    - Return &#34;NA&#34; as a placeholder for now
+    &#34;&#34;&#34;
+    return &#34;NA&#34;</code></pre>
+</details>
+</dd>
+<dt id="djerba.metrics.mutation_extended_sample_metrics.get_tcga_pct"><code class="name flex">
 <span>def <span class="ident">get_tcga_pct</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -210,7 +748,7 @@ class mutation_extended_metrics:
     return self.tcga_pct</code></pre>
 </details>
 </dd>
-<dt id="djerba.metrics.mutation_extended_metrics.get_tcga_tmb_as_dict"><code class="name flex">
+<dt id="djerba.metrics.mutation_extended_sample_metrics.get_tcga_tmb_as_dict"><code class="name flex">
 <span>def <span class="ident">get_tcga_tmb_as_dict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -224,7 +762,7 @@ class mutation_extended_metrics:
     return self.tcga_tmb.to_dict()</code></pre>
 </details>
 </dd>
-<dt id="djerba.metrics.mutation_extended_metrics.get_tmb"><code class="name flex">
+<dt id="djerba.metrics.mutation_extended_sample_metrics.get_tmb"><code class="name flex">
 <span>def <span class="ident">get_tmb</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -238,6 +776,15 @@ class mutation_extended_metrics:
 </details>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></b></code>:
+<ul class="hlist">
+<li><code><a title="djerba.utilities.base.base.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.utilities.base.base.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -256,13 +803,42 @@ class mutation_extended_metrics:
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="djerba.metrics.mutation_extended_metrics" href="#djerba.metrics.mutation_extended_metrics">mutation_extended_metrics</a></code></h4>
+<h4><code><a title="djerba.metrics.mutation_extended_gene_metrics" href="#djerba.metrics.mutation_extended_gene_metrics">mutation_extended_gene_metrics</a></code></h4>
 <ul class="">
-<li><code><a title="djerba.metrics.mutation_extended_metrics.get_cohort_pct" href="#djerba.metrics.mutation_extended_metrics.get_cohort_pct">get_cohort_pct</a></code></li>
-<li><code><a title="djerba.metrics.mutation_extended_metrics.get_cohort_tmb_as_dict" href="#djerba.metrics.mutation_extended_metrics.get_cohort_tmb_as_dict">get_cohort_tmb_as_dict</a></code></li>
-<li><code><a title="djerba.metrics.mutation_extended_metrics.get_tcga_pct" href="#djerba.metrics.mutation_extended_metrics.get_tcga_pct">get_tcga_pct</a></code></li>
-<li><code><a title="djerba.metrics.mutation_extended_metrics.get_tcga_tmb_as_dict" href="#djerba.metrics.mutation_extended_metrics.get_tcga_tmb_as_dict">get_tcga_tmb_as_dict</a></code></li>
-<li><code><a title="djerba.metrics.mutation_extended_metrics.get_tmb" href="#djerba.metrics.mutation_extended_metrics.get_tmb">get_tmb</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.ALLELE_FRACTION_PERCENTILE" href="#djerba.metrics.mutation_extended_gene_metrics.ALLELE_FRACTION_PERCENTILE">ALLELE_FRACTION_PERCENTILE</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.BIOMARKER_LEVELS" href="#djerba.metrics.mutation_extended_gene_metrics.BIOMARKER_LEVELS">BIOMARKER_LEVELS</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.CHROMOSOME" href="#djerba.metrics.mutation_extended_gene_metrics.CHROMOSOME">CHROMOSOME</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.FDA_APPROVED_TREATMENT" href="#djerba.metrics.mutation_extended_gene_metrics.FDA_APPROVED_TREATMENT">FDA_APPROVED_TREATMENT</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.HGVSP_SHORT" href="#djerba.metrics.mutation_extended_gene_metrics.HGVSP_SHORT">HGVSP_SHORT</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.HIGHEST_LEVEL" href="#djerba.metrics.mutation_extended_gene_metrics.HIGHEST_LEVEL">HIGHEST_LEVEL</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.HUGO_SYMBOL" href="#djerba.metrics.mutation_extended_gene_metrics.HUGO_SYMBOL">HUGO_SYMBOL</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.LEVEL_1" href="#djerba.metrics.mutation_extended_gene_metrics.LEVEL_1">LEVEL_1</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.LEVEL_2A" href="#djerba.metrics.mutation_extended_gene_metrics.LEVEL_2A">LEVEL_2A</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.LEVEL_2B" href="#djerba.metrics.mutation_extended_gene_metrics.LEVEL_2B">LEVEL_2B</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.LEVEL_3A" href="#djerba.metrics.mutation_extended_gene_metrics.LEVEL_3A">LEVEL_3A</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.LEVEL_3B" href="#djerba.metrics.mutation_extended_gene_metrics.LEVEL_3B">LEVEL_3B</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.LEVEL_4" href="#djerba.metrics.mutation_extended_gene_metrics.LEVEL_4">LEVEL_4</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.LEVEL_R1" href="#djerba.metrics.mutation_extended_gene_metrics.LEVEL_R1">LEVEL_R1</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.LEVEL_R2" href="#djerba.metrics.mutation_extended_gene_metrics.LEVEL_R2">LEVEL_R2</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.ONCOKB" href="#djerba.metrics.mutation_extended_gene_metrics.ONCOKB">ONCOKB</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.PROTEIN_CHANGE" href="#djerba.metrics.mutation_extended_gene_metrics.PROTEIN_CHANGE">PROTEIN_CHANGE</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.REQUIRED_MAF_COLS" href="#djerba.metrics.mutation_extended_gene_metrics.REQUIRED_MAF_COLS">REQUIRED_MAF_COLS</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.T_ALT_COUNT" href="#djerba.metrics.mutation_extended_gene_metrics.T_ALT_COUNT">T_ALT_COUNT</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.T_DEPTH" href="#djerba.metrics.mutation_extended_gene_metrics.T_DEPTH">T_DEPTH</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.VARIANT_READS_AND_TOTAL_READS" href="#djerba.metrics.mutation_extended_gene_metrics.VARIANT_READS_AND_TOTAL_READS">VARIANT_READS_AND_TOTAL_READS</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.get_metrics" href="#djerba.metrics.mutation_extended_gene_metrics.get_metrics">get_metrics</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_gene_metrics.get_metrics_for_gene" href="#djerba.metrics.mutation_extended_gene_metrics.get_metrics_for_gene">get_metrics_for_gene</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="djerba.metrics.mutation_extended_sample_metrics" href="#djerba.metrics.mutation_extended_sample_metrics">mutation_extended_sample_metrics</a></code></h4>
+<ul class="">
+<li><code><a title="djerba.metrics.mutation_extended_sample_metrics.get_cohort_pct" href="#djerba.metrics.mutation_extended_sample_metrics.get_cohort_pct">get_cohort_pct</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_sample_metrics.get_cohort_tmb_as_dict" href="#djerba.metrics.mutation_extended_sample_metrics.get_cohort_tmb_as_dict">get_cohort_tmb_as_dict</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_sample_metrics.get_cosmic_sigs" href="#djerba.metrics.mutation_extended_sample_metrics.get_cosmic_sigs">get_cosmic_sigs</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_sample_metrics.get_tcga_pct" href="#djerba.metrics.mutation_extended_sample_metrics.get_tcga_pct">get_tcga_pct</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_sample_metrics.get_tcga_tmb_as_dict" href="#djerba.metrics.mutation_extended_sample_metrics.get_tcga_tmb_as_dict">get_tcga_tmb_as_dict</a></code></li>
+<li><code><a title="djerba.metrics.mutation_extended_sample_metrics.get_tmb" href="#djerba.metrics.mutation_extended_sample_metrics.get_tmb">get_tmb</a></code></li>
 </ul>
 </li>
 </ul>
@@ -271,7 +847,7 @@ class mutation_extended_metrics:
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
 </footer>
 </body>
 </html>

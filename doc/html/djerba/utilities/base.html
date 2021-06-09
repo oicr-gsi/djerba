@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.1" />
+<meta name="generator" content="pdoc 0.9.2" />
 <title>djerba.utilities.base API documentation</title>
 <meta name="description" content="Base class with some general-purpose methods" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -32,6 +32,7 @@
 import logging
 import os
 import sys
+from math import isnan
 
 class base:
 
@@ -72,7 +73,26 @@ class base:
                                       datefmt=&#39;%Y-%m-%d_%H:%M:%S&#39;)
         handler.setFormatter(formatter)
         logger.addHandler(handler)
-        return logger</code></pre>
+        return logger
+
+    def is_null(self, value):
+        &#34;&#34;&#34;
+        Check if a config value is null. Unfortunately representation of null values is not consistent in Djerba input sources.
+        Any of the following is considered null:
+        - Python `None` value
+        - Empty string
+        - String &#34;NA&#34;
+        - Numeric NaN
+        &#34;&#34;&#34;
+        null = False
+        if value==&#39;&#39; or value==&#39;NA&#39; or value==None:
+            null = True
+        else:
+            try:
+                null = isnan(value)
+            except TypeError:
+                pass
+        return null</code></pre>
 </details>
 </section>
 <section>
@@ -132,7 +152,26 @@ class base:
                                       datefmt=&#39;%Y-%m-%d_%H:%M:%S&#39;)
         handler.setFormatter(formatter)
         logger.addHandler(handler)
-        return logger</code></pre>
+        return logger
+
+    def is_null(self, value):
+        &#34;&#34;&#34;
+        Check if a config value is null. Unfortunately representation of null values is not consistent in Djerba input sources.
+        Any of the following is considered null:
+        - Python `None` value
+        - Empty string
+        - String &#34;NA&#34;
+        - Numeric NaN
+        &#34;&#34;&#34;
+        null = False
+        if value==&#39;&#39; or value==&#39;NA&#39; or value==None:
+            null = True
+        else:
+            try:
+                null = isnan(value)
+            except TypeError:
+                pass
+        return null</code></pre>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -141,7 +180,9 @@ class base:
 <li><a title="djerba.config.validator" href="../config.html#djerba.config.validator">validator</a></li>
 <li><a title="djerba.genetic_alteration.genetic_alteration" href="../genetic_alteration.html#djerba.genetic_alteration.genetic_alteration">genetic_alteration</a></li>
 <li><a title="djerba.genetic_alteration.genetic_alteration_factory" href="../genetic_alteration.html#djerba.genetic_alteration.genetic_alteration_factory">genetic_alteration_factory</a></li>
-<li><a title="djerba.report.report" href="../report.html#djerba.report.report">report</a></li>
+<li><a title="djerba.metrics.mutation_extended_gene_metrics" href="../metrics.html#djerba.metrics.mutation_extended_gene_metrics">mutation_extended_gene_metrics</a></li>
+<li><a title="djerba.metrics.mutation_extended_sample_metrics" href="../metrics.html#djerba.metrics.mutation_extended_sample_metrics">mutation_extended_sample_metrics</a></li>
+<li><a title="djerba.report.uploader" href="../report.html#djerba.report.uploader">uploader</a></li>
 <li><a title="djerba.sample.sample" href="../sample.html#djerba.sample.sample">sample</a></li>
 <li><a title="djerba.study.study" href="../study.html#djerba.study.study">study</a></li>
 </ul>
@@ -206,6 +247,40 @@ class base:
     return logger</code></pre>
 </details>
 </dd>
+<dt id="djerba.utilities.base.base.is_null"><code class="name flex">
+<span>def <span class="ident">is_null</span></span>(<span>self, value)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Check if a config value is null. Unfortunately representation of null values is not consistent in Djerba input sources.
+Any of the following is considered null:
+- Python <code>None</code> value
+- Empty string
+- String "NA"
+- Numeric NaN</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_null(self, value):
+    &#34;&#34;&#34;
+    Check if a config value is null. Unfortunately representation of null values is not consistent in Djerba input sources.
+    Any of the following is considered null:
+    - Python `None` value
+    - Empty string
+    - String &#34;NA&#34;
+    - Numeric NaN
+    &#34;&#34;&#34;
+    null = False
+    if value==&#39;&#39; or value==&#39;NA&#39; or value==None:
+        null = True
+    else:
+        try:
+            null = isnan(value)
+        except TypeError:
+            pass
+    return null</code></pre>
+</details>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -229,6 +304,7 @@ class base:
 <ul class="">
 <li><code><a title="djerba.utilities.base.base.get_log_level" href="#djerba.utilities.base.base.get_log_level">get_log_level</a></code></li>
 <li><code><a title="djerba.utilities.base.base.get_logger" href="#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.utilities.base.base.is_null" href="#djerba.utilities.base.base.is_null">is_null</a></code></li>
 </ul>
 </li>
 </ul>
@@ -237,7 +313,7 @@ class base:
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
 </footer>
 </body>
 </html>

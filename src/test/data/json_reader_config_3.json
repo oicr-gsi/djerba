@@ -1,0 +1,49 @@
+{
+    "reader_class": "json_reader",
+    "gene_metrics": [
+        {
+            "Exp_Z_Score": "NA",
+            "FDA_Approved_Treatment": "Nulla sem augue, pulvinar ac bibendum non, feugiat.",
+            "Gene": "Gene001",
+            "Gene_Annotation": "Nullam nulla lacus, gravida id metus ut, fermentum.",
+	    "Oncogenic_Binary": "NA",
+            "OncoKB": "NA",
+            "Protein_Change": "prot001",
+            "Variant_Reads_And_Total_Reads": "38/185",
+            "Whizbam_URL": "http://example.com/whizbam/Gene001"
+        },
+        {
+            "Exp_Z_Score": 7,
+            "FDA_Approved_Treatment": "Suspendisse potenti. Aliquam a magna pharetra dolor hendrerit.",
+            "Gene": "MYC",
+            "Gene_Annotation": "Nemo me impune lacessit.",
+	    "Oncogenic_Binary": "NA",
+            "OncoKB": "NA",
+            "Protein_Change": "NA",
+            "Variant_Reads_And_Total_Reads": "NA",
+            "Whizbam_URL": "NA"
+        }
+    ],
+     "sample_info": {
+        "MSI_STATUS": "Negative",
+	"ORDERING_PHYSICIAN": "Beverly Crusher",
+        "PATHOLOGICAL_REVIEW": "Lots of immune cells",
+        "PATIENT_ID": "Patient_001",
+        "PATIENT_SUMMARY": "NA",
+        "PCT_v7_ABOVE_80x": 79.863,
+	"REPORT_IDENTIFIER": "NA",
+        "SAMPLE_ANATOMICAL_SITE": "OMENTUM",
+        "SAMPLE_ID": "Sample_001",
+        "SAMPLE_PRIMARY_OR_METASTASIS": "Metastatic Lesion",
+	"SAMPLE_TYPE": "NA",
+        "SEQUENZA_PLOIDY": 2,
+        "SEQUENZA_PURITY_FRACTION": 71,
+        "SEX": "Male",
+	"TCGA_PERCENTILE_ALL": "NA",
+	"TCGA_PERCENTILE_COHORT": "NA",
+        "TMB_PER_MB": 14.7,
+        "TMB_PLOT": "/data/foo/bar/tmb.png",
+        "TREATMENT_STATUS": "Naive",
+        "VAF_PLOT": "/data/foo/bar/vaf.png"
+    }
+}

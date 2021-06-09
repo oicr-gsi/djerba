@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.1" />
+<meta name="generator" content="pdoc 0.9.2" />
 <title>djerba.config API documentation</title>
 <meta name="description" content="Classes to handle Djerba configuration data" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -29,11 +29,15 @@
 </summary>
 <pre><code class="python">&#34;&#34;&#34;Classes to handle Djerba configuration data&#34;&#34;&#34;
 
+import configparser
 import json
 import jsonschema
 import logging
 import os
 import pandas as pd
+import subprocess
+from subprocess import CalledProcessError
+from glob import glob
 from jsonschema.exceptions import ValidationError, SchemaError
 from djerba.utilities.base import base
 from djerba.utilities import constants
@@ -41,10 +45,12 @@ from djerba.utilities import constants
 
 class builder(base):
     &#34;&#34;&#34;Build a Djerba config data structure for Elba output&#34;&#34;&#34;
-    
+
+    ### output keys
     INPUT_DIRECTORY_KEY = &#39;input_directory&#39;
     INPUT_FILES_KEY = &#39;input_files&#39;
     METADATA_KEY = &#39;metadata&#39;
+    REPORT_VERSION_KEY = &#39;report_version&#39;
     # custom data
     GENE_HEADERS_KEY = &#39;gene_headers&#39;
     GENE_TSV_KEY = &#39;gene_tsv&#39;
@@ -57,27 +63,335 @@ class builder(base):
     TCGA_PATH_KEY = &#39;tcga_path&#39;
     CANCER_TYPE_KEY = &#39;cancer_type&#39;
 
+    ### directory names for constructing input paths
+    SEQUENZA = &#39;sequenza&#39;
+    REVIEW = &#39;review&#39;
+    VEP = &#39;variantEffectPredictor&#39;
+    RSEM = &#39;RSEM&#39;
+    
+    ### input keys -- old style, for &#34;build&#34;
+    CUSTOM_DIR_INPUT = &#39;custom_dir&#39;
+    GENE_TSV_INPUT = GENE_TSV_KEY
+    SAMPLE_TSV_INPUT = SAMPLE_TSV_KEY
+    MAF_INPUT = &#39;maf&#39;
+    BED_INPUT = BED_PATH_KEY
+    CANCER_TYPE_INPUT = CANCER_TYPE_KEY
+    ONCOKB_INPUT = ONCOKB_TOKEN_KEY
+    TCGA_INPUT = TCGA_PATH_KEY
+    VCF_INPUT = FILTER_VCF_KEY
+    SEG_INPUT = &#39;seg&#39;
+    ### input keys -- new style, for &#34;build_from_cgi_inputs&#34;
+    STUDY_ID_INPUT = &#39;study_id&#39;
+    PATIENT_ID_INPUT = &#39;patient_id&#39;
+    ANALYSIS_UNIT_INPUT = &#39;analysis_unit&#39;
+    ONCOTREE_CODE_INPUT = &#39;oncotree_code&#39;
+    VERSION_NUM_INPUT = &#39;version_num&#39;
+    DATA_DIR_INPUT = &#39;data_dir&#39;
+    ONCOTREE_PATH_INPUT = &#39;oncotree_data&#39;
+
+    ### selections.ini keys
+    INI_PURITY = &#39;purity&#39;
+    INI_PLOIDY = &#39;ploidy&#39;
+    INI_GAMMA = &#39;gamma&#39;
+    INI_DATE = &#39;date&#39;
+    INI_REV_1 = &#39;reviewer1&#39;
+    INI_REV_2 = &#39;reviewer2&#39;
+    INI_KEYS = [INI_PURITY, INI_PLOIDY, INI_GAMMA, INI_DATE, INI_REV_1, INI_REV_2]
+    
+    ### Defaults for CGI config building
+    DEFAULT_DATA_DIR = &#39;/.mounts/labs/TGL/cap&#39;
+    DEFAULT_ONCOTREE_FILENAME = &#39;20201201-OncoTree.txt&#39; # from CGI-Tools repo
+
     def __init__(self, sample_id, log_level=logging.WARN, log_path=None):
         self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
         self.log_path = log_path
         self.sample_id = sample_id
+
+    def _check_cgi_inputs(self, args):
+        &#34;&#34;&#34;Check required arguments are present for build_from_cgi_inputs&#34;&#34;&#34;
+        # existence of paths etc. will be checked upstream, eg. in the calling script
+        required_args = [
+            self.STUDY_ID_INPUT,
+            self.PATIENT_ID_INPUT,
+            self.ANALYSIS_UNIT_INPUT,
+            self.ONCOTREE_CODE_INPUT,
+            self.VERSION_NUM_INPUT,
+            self.DATA_DIR_INPUT, # required but may be None
+            self.ONCOTREE_PATH_INPUT, # required but may be None
+            self.CUSTOM_DIR_INPUT, # required but may be None
+            self.GENE_TSV_INPUT,
+            self.SAMPLE_TSV_INPUT,
+            self.BED_INPUT,
+            self.CANCER_TYPE_INPUT,
+            self.ONCOKB_INPUT,
+            self.TCGA_INPUT,
+            self.VCF_INPUT,
+            self.SEG_INPUT
+        ]
+        if not (set(required_args) == set(args.keys())):
+            expected = str(sorted(required_args))
+            found = str(sorted(list(args.keys())))
+            msg = &#34;Incorrect arguments; expected %s, found %s&#34; % (expected, found)
+            self.logger.error(msg)
+            raise DjerbaConfigError(msg)
+
+    def _float_or_none(self, x):
+        &#34;&#34;&#34;If x is not None, convert it to a float; raises exception if not possible&#34;&#34;&#34;
+        if x == None:
+            return x
+        else:
+            return float(x)
+
+    def _find_fus_path(self, version_dir):
+        &#34;&#34;&#34;Find the Mavis summary path&#34;&#34;&#34;
+        fus_pattern = os.path.join(
+            version_dir, &#39;mavis&#39;, &#39;execution&#39;, &#39;summary&#39;, &#39;mavis_summary_all_WG.*.tab&#39;
+        )
+        fus_paths = glob(fus_pattern)
+        total = len(fus_paths)
+        # TODO fus_path is optional here; should it be required?
+        if total==0:
+            self.logger.warning(&#34;No fusfile in %s; failure to run Mavis?&#34; % version_dir)
+            fus_path = None
+        elif total==1:
+            fus_path = fus_paths.pop()
+            self.logger.debug(&#34;Found fusfile: %s&#34; % fus_path)
+        else:
+            error_msg = &#34;Multiple fusfiles in %s; &#34; % version_dir +\
+                        &#34;should be at most one mavis_summary_all_WG.*.tab&#34;
+            self.logger.error(error_msg)
+            raise DjerbaConfigError(error_msg)
+        return fus_path
+
+    def _read_cgi_inputs(self, args):
+        &#34;&#34;&#34;Find and process CGI data for generating Djerba config&#34;&#34;&#34;
+        self._check_cgi_inputs(args)
+        analysis_unit = args[self.ANALYSIS_UNIT_INPUT]
+        version = args[self.VERSION_NUM_INPUT]
+        if args[self.DATA_DIR_INPUT]:
+            data_dir = args[self.DATA_DIR_INPUT]
+        else:
+            data_dir = self.DEFAULT_DATA_DIR
+        # find input files
+        patient_dir = os.path.join(data_dir, args[self.STUDY_ID_INPUT], args[self.PATIENT_ID_INPUT])
+        version_dir = os.path.join(patient_dir, analysis_unit, str(version))
+        ms_path = os.path.join(patient_dir, &#34;mastersheet-v{0}.psv&#34;.format(version))
+        ini_path = os.path.join(version_dir, self.SEQUENZA, self.REVIEW, &#39;selection.ini&#39;)
+        for input_path in (ms_path, ini_path):
+            if not os.access(input_path, os.R_OK):
+                msg = &#34;Cannot read input path %s&#34; % input_path
+                self.logger.error(msg)
+                raise DjerbaConfigError(msg)
+        # process the input files
+        [tumor_id, normal_id] = self._read_mastersheet(ms_path, args[self.ANALYSIS_UNIT_INPUT])
+        selections = self._read_selections(ini_path)
+        [cancer_type, cancer_desc] = self._read_oncotree(
+            args[self.ONCOTREE_CODE_INPUT],
+            args[self.ONCOTREE_PATH_INPUT]
+        )
+        # construct additional file paths
+        fus_path = self._find_fus_path(version_dir)
+        maf_path = os.path.join(
+            version_dir, self.VEP, &#39;{0}.maf.gz&#39;.format(analysis_unit)
+        )
+        seg_path = os.path.join(
+            version_dir, self.SEQUENZA, self.REVIEW, &#34;{0}.seg&#34;.format(selections[self.INI_GAMMA])
+        )
+        gep_path = os.path.join(
+            version_dir, self.RSEM, &#34;{0}.genes.results&#34;.format(analysis_unit)
+        )
+        # check path readability
+        unreadable = []
+        for file_path in [fus_path, maf_path, seg_path, gep_path]:
+            if file_path != None and not os.access(file_path, os.R_OK):
+                unreadable.append(file_path)
+        if len(unreadable)&gt;0:
+            msg = &#34;Cannot read data files: {0}&#34;.format(str(sorted(unreadable)))
+            self.logger.error(msg)
+            raise DjerbaConfigError(msg)
+        scalars = [tumor_id, normal_id, cancer_type, cancer_desc]
+        paths = [fus_path, maf_path, seg_path, gep_path]
+        return cgi_params(scalars, paths, selections)
     
-    def build(self, custom_dir, gene_tsv, sample_tsv, maf, bed, cancer_type, oncokb_token, tgca, vcf):
-        &#34;&#34;&#34;Build a config data structure from the given arguments&#34;&#34;&#34;
+    def _read_mastersheet(self, ms_path, analysis_unit):
+        &#34;&#34;&#34;Parse the mastersheet file to find tumor/normal IDs&#34;&#34;&#34;
+        # TODO reimplement the bash one-liner in Python
+        template = &#34;&#34;&#34;awk -F &#34;|&#34; -v OFS=&#34;|&#34; -v u=%s &#39;{ if (($11 == u) &amp;&amp; ($6 ==&#34;WG&#34;)) {print $11,$12,$15} }&#39; %s | awk -F &#34;|&#34; &#39;!seen[$1]++&#39; | cut -f%s -d&#39;|&#39;&#34;&#34;&#34;
+        output = []
+        for col in [2,3]: # column 2 = tumor, column 3 = normal
+            args = template % (analysis_unit, ms_path, col)
+            try:
+                result = subprocess.run(args, capture_output=True, check=True, shell=True)
+            except CalledProcessError as cpe:
+                msg = &#34;Non-zero exit code from bash one-liner &#34;+\
+                      &#34;to find tumor/normal ID: {0}&#34;.format(args)
+                self.logger.error(msg)
+                raise DjerbaConfigError(msg) from cpe
+            output.append(result.stdout.decode(constants.TEXT_ENCODING).rstrip()) # strip trailing whitespace
+        return output
+
+    def _read_oncotree(self, oncocode, oncotree_path):
+        &#34;&#34;&#34;Read the cancer type and cancer type description&#34;&#34;&#34;
+        if self.is_null(oncotree_path):
+            oncotree_path = os.path.join(
+                os.path.dirname(__file__),
+                constants.DATA_DIRNAME,
+                self.DEFAULT_ONCOTREE_FILENAME 
+            )
+        # TODO reimplement the bash one-liners in Python
+        args_1 = &#34;&#34;&#34;grep -iw {0} {1} | cut -f1 | sed -e &#39;s/([^()]*)//g&#39; | sort | uniq | sed &#39;s/[[:space:]]*$//&#39;&#34;&#34;&#34;.format(oncocode, oncotree_path) # CANCER_TYPE
+        args_2 = &#34;&#34;&#34;cat {0} | tr &#39;\t&#39; &#39;\n&#39; | grep -iw {1} | sed &#34;s/({2})//&#34; | sed &#39;s/[[:space:]]*$//&#39;&#34;&#34;&#34;.format(oncotree_path, oncocode, oncocode) # CANCER_TYPE_DESCRIPTION
+        output = []
+        for args in [args_1, args_2]:
+            try:
+                result = subprocess.run(args, capture_output=True, check=True, shell=True)
+            except CalledProcessError as cpe:
+                msg = &#34;Non-zero exit code from bash one-liner &#34;+\
+                      &#34;to cancer type/description from oncotree: {0}&#34;.format(args)
+                self.logger.error(msg)
+                raise DjerbaConfigError(msg) from cpe
+            output.append(result.stdout.decode(constants.TEXT_ENCODING).rstrip()) # strip trailing whitespace
+        return output
+
+    def _read_selections(self, ini_path):
+        &#34;&#34;&#34;
+        Read the selections INI file; check required options are present.
+        Returns a dictionary of key/value pairs from the INI
+        &#34;&#34;&#34;
+        # need to prepend a dummy section header to use the configparser module
+        # see https://stackoverflow.com/questions/2885190/using-configparser-to-read-a-file-without-section-name
+        cp = configparser.ConfigParser()
+        section = constants.SECTION_DEFAULT
+        with open(ini_path) as stream:
+            cp.read_string(&#34;[{0}]\n&#34;.format(section) + stream.read())
+        missing = []
+        for key in self.INI_KEYS:
+            if not cp.has_option(section, key):
+                missing.append(key)
+            elif self.is_null(cp.get(section, key)):
+                missing.append(key)
+        if len(missing)&gt;0:
+            msg = &#34;Required values in selections INI are null or &#34;+\
+                  &#34;missing: {0}&#34;.format(str(sorted(missing)))
+            self.logger.error(msg)
+            raise DjerbaConfigError(msg)
+        return dict(cp.items(section))
+    
+    def build(self, args):
+        &#34;&#34;&#34;
+        Build a config data structure from the given arguments
+        TODO Add clinical_report_meta
+        TODO This method may become obsolete given build_from_cgi
+        &#34;&#34;&#34;
         config = {}
         samples = [
             {constants.SAMPLE_ID_KEY: self.sample_id}
         ]
         config[constants.SAMPLES_KEY] = samples
         genetic_alterations = []
-        custom_config = self.build_custom(custom_dir, gene_tsv, sample_tsv)
+        custom_config = self.build_custom(
+            args[self.CUSTOM_DIR_INPUT],
+            args[self.GENE_TSV_INPUT],
+            args[self.SAMPLE_TSV_INPUT]
+        )
         genetic_alterations.append(custom_config)
-        mutex_config = self.build_mutex(maf, bed, cancer_type, oncokb_token, tgca, vcf)
+        mutex_config = self.build_mutex(
+            args[self.MAF_INPUT],
+            args[self.BED_INPUT],
+            args[self.CANCER_TYPE_INPUT],
+            args[self.ONCOKB_INPUT],
+            args[self.TCGA_INPUT],
+            args[self.VCF_INPUT]
+        )
         genetic_alterations.append(mutex_config)
+        seg_config = self.build_segmented(args[self.SEG_INPUT])
+        genetic_alterations.append(seg_config)
         config[constants.GENETIC_ALTERATIONS_KEY] = genetic_alterations
         self.logger.info(&#34;Djerba configuration complete; validating against schema&#34;)
         validator(self.logger.getEffectiveLevel(), self.log_path).validate(config, self.sample_id)
         return config
+
+    def build_from_cgi_inputs(self, args):
+        &#34;&#34;&#34;Build Djerba config from CGI data sources, eg. the mastersheet&#34;&#34;&#34;
+        # TODO construct the config in line with CGI-Tools 3-configureSingleSample.sh
+        # TODO create a class for the mastersheet, with input validation
+        # TODO may later want to generate mastersheet within Djerba, instead of by shell script
+        # &#34;mastersheet&#34; extracted from file provenance by 1-linkNiassa.sh
+        cgi_params = self._read_cgi_inputs(args)
+        config = {}
+        # populate sample attributes from the CGI data
+        ploidy = self._float_or_none(cgi_params.selections.get(self.INI_PLOIDY))
+        purity = self._float_or_none(cgi_params.selections.get(self.INI_PURITY))
+        sample = {
+            constants.SAMPLE_ID_KEY: self.sample_id,
+            constants.CANCER_TYPE_KEY: cgi_params.cancer_type,
+            constants.CANCER_TYPE_DETAILED_KEY: args[self.ONCOTREE_CODE_INPUT],
+            constants.CANCER_TYPE_DESCRIPTION_KEY: cgi_params.cancer_desc,
+            constants.SEQUENZA_PLOIDY_KEY: ploidy,
+            constants.SEQUENZA_PURITY_FRACTION_KEY: purity
+        }
+        config[constants.SAMPLES_KEY] = [sample]
+        clinical_report_meta = self.build_clinical_report_meta(args, cgi_params)
+        config[constants.CLINICAL_REPORT_META_KEY] = clinical_report_meta
+        # from here on, same as older build() method
+        genetic_alterations = []
+        custom_config = self.build_custom(
+            args[self.CUSTOM_DIR_INPUT],
+            args[self.GENE_TSV_INPUT],
+            args[self.SAMPLE_TSV_INPUT]
+        )
+        genetic_alterations.append(custom_config)
+        mutex_config = self.build_mutex(
+            clinical_report_meta.get(constants.MAF_FILE_KEY),
+            args[self.BED_INPUT],
+            args[self.CANCER_TYPE_INPUT],
+            args[self.ONCOKB_INPUT],
+            args[self.TCGA_INPUT],
+            args[self.VCF_INPUT]
+        )
+        genetic_alterations.append(mutex_config)
+        seg_config = self.build_segmented(clinical_report_meta.get(constants.SEG_FILE_KEY))
+        genetic_alterations.append(seg_config)
+        config[constants.GENETIC_ALTERATIONS_KEY] = genetic_alterations
+        self.logger.info(&#34;Djerba configuration complete; validating against schema&#34;)
+        validator(self.logger.getEffectiveLevel(), self.log_path).validate(config, self.sample_id)
+        return config
+
+    def build_clinical_report_meta(self, args, cgi_params):
+        &#34;&#34;&#34;Build the clinical_report_meta config object&#34;&#34;&#34;
+        &#34;&#34;&#34;
+        Schema:
+        meta =  {
+            &#34;report_version&#34;: {&#34;type&#34;: [&#34;number&#34;, &#34;string&#34;]},
+            &#34;study_id&#34;: {&#34;type&#34;: &#34;string&#34;},
+            &#34;patient&#34;: {&#34;type&#34;: &#34;string&#34;},
+            &#34;analysis_unit&#34;: {&#34;type&#34;: &#34;string&#34;},
+            &#34;tumor_id&#34;: {&#34;type&#34;: &#34;string&#34;},
+            &#34;normal_id&#34;: {&#34;type&#34;: &#34;string&#34;},
+            &#34;gamma&#34;: {&#34;type&#34;: &#34;string&#34;},
+            &#34;maf_file&#34;: {&#34;type&#34;: &#34;string&#34;},
+            &#34;seg_file&#34;: {&#34;type&#34;: &#34;string&#34;},
+            &#34;fus_file&#34;: {&#34;type&#34;: &#34;string&#34;},
+            &#34;gep_file&#34;: {&#34;type&#34;: &#34;string&#34;}
+        }
+        &#34;&#34;&#34;
+        meta = {}
+        args_keys = [
+            self.STUDY_ID_INPUT,
+            self.PATIENT_ID_INPUT,
+            self.ANALYSIS_UNIT_INPUT
+        ]
+        for key in args_keys:
+            meta[key] = args.get(key)
+        meta[self.REPORT_VERSION_KEY] = args.get(self.VERSION_NUM_INPUT)
+        meta[constants.TUMOR_ID_KEY] = cgi_params.tumor_id
+        meta[constants.NORMAL_ID_KEY] = cgi_params.normal_id
+        meta[constants.GAMMA_KEY] = cgi_params.selections.get(self.INI_GAMMA)
+        meta[constants.MAF_FILE_KEY] = cgi_params.maf_path
+        meta[constants.SEG_FILE_KEY] = cgi_params.seg_path
+        meta[constants.FUS_FILE_KEY] = cgi_params.fus_path
+        meta[constants.GEP_FILE_KEY] = cgi_params.gep_path
+        return meta
 
     def build_custom(self, custom_dir, gene_tsv, sample_tsv):
         &#34;&#34;&#34;Create a data structure for CUSTOM_ANNOTATION config&#34;&#34;&#34;
@@ -115,6 +429,20 @@ class builder(base):
                 self.TCGA_PATH_KEY: tcga,
                 self.FILTER_VCF_KEY: vcf
             }
+        }
+        return config
+
+    def build_segmented(self, seg):
+        &#34;&#34;&#34;Create a data structure for SEGMENTED config&#34;&#34;&#34;
+        [seg_dir, seg_file] = os.path.split(seg)
+        config = {
+            constants.DATATYPE_KEY: constants.SEG_DATATYPE,
+            constants.GENETIC_ALTERATION_TYPE_KEY: constants.SEGMENTED_TYPE,
+            self.INPUT_DIRECTORY_KEY: seg_dir,
+            self.INPUT_FILES_KEY: {
+                self.sample_id: seg_file
+            },
+            self.METADATA_KEY: {}
         }
         return config
 
@@ -166,6 +494,15 @@ class validator(base):
         self.logger.info(&#34;Djerba config is valid&#34;)
         return True
 
+class cgi_params:
+    &#34;&#34;&#34;Simple container class for results from _read_cgi_inputs&#34;&#34;&#34;
+
+    def __init__(self, scalars, paths, selections):
+        [self.tumor_id, self.normal_id, self.cancer_type, self.cancer_desc] = scalars
+        [self.fus_path, self.maf_path, self.seg_path, self.gep_path] = paths
+        # convert the configParser to a dictionary
+        self.selections = selections
+
 class DjerbaConfigError(Exception):
     pass</code></pre>
 </details>
@@ -210,10 +547,12 @@ class DjerbaConfigError(Exception):
 </summary>
 <pre><code class="python">class builder(base):
     &#34;&#34;&#34;Build a Djerba config data structure for Elba output&#34;&#34;&#34;
-    
+
+    ### output keys
     INPUT_DIRECTORY_KEY = &#39;input_directory&#39;
     INPUT_FILES_KEY = &#39;input_files&#39;
     METADATA_KEY = &#39;metadata&#39;
+    REPORT_VERSION_KEY = &#39;report_version&#39;
     # custom data
     GENE_HEADERS_KEY = &#39;gene_headers&#39;
     GENE_TSV_KEY = &#39;gene_tsv&#39;
@@ -226,27 +565,335 @@ class DjerbaConfigError(Exception):
     TCGA_PATH_KEY = &#39;tcga_path&#39;
     CANCER_TYPE_KEY = &#39;cancer_type&#39;
 
+    ### directory names for constructing input paths
+    SEQUENZA = &#39;sequenza&#39;
+    REVIEW = &#39;review&#39;
+    VEP = &#39;variantEffectPredictor&#39;
+    RSEM = &#39;RSEM&#39;
+    
+    ### input keys -- old style, for &#34;build&#34;
+    CUSTOM_DIR_INPUT = &#39;custom_dir&#39;
+    GENE_TSV_INPUT = GENE_TSV_KEY
+    SAMPLE_TSV_INPUT = SAMPLE_TSV_KEY
+    MAF_INPUT = &#39;maf&#39;
+    BED_INPUT = BED_PATH_KEY
+    CANCER_TYPE_INPUT = CANCER_TYPE_KEY
+    ONCOKB_INPUT = ONCOKB_TOKEN_KEY
+    TCGA_INPUT = TCGA_PATH_KEY
+    VCF_INPUT = FILTER_VCF_KEY
+    SEG_INPUT = &#39;seg&#39;
+    ### input keys -- new style, for &#34;build_from_cgi_inputs&#34;
+    STUDY_ID_INPUT = &#39;study_id&#39;
+    PATIENT_ID_INPUT = &#39;patient_id&#39;
+    ANALYSIS_UNIT_INPUT = &#39;analysis_unit&#39;
+    ONCOTREE_CODE_INPUT = &#39;oncotree_code&#39;
+    VERSION_NUM_INPUT = &#39;version_num&#39;
+    DATA_DIR_INPUT = &#39;data_dir&#39;
+    ONCOTREE_PATH_INPUT = &#39;oncotree_data&#39;
+
+    ### selections.ini keys
+    INI_PURITY = &#39;purity&#39;
+    INI_PLOIDY = &#39;ploidy&#39;
+    INI_GAMMA = &#39;gamma&#39;
+    INI_DATE = &#39;date&#39;
+    INI_REV_1 = &#39;reviewer1&#39;
+    INI_REV_2 = &#39;reviewer2&#39;
+    INI_KEYS = [INI_PURITY, INI_PLOIDY, INI_GAMMA, INI_DATE, INI_REV_1, INI_REV_2]
+    
+    ### Defaults for CGI config building
+    DEFAULT_DATA_DIR = &#39;/.mounts/labs/TGL/cap&#39;
+    DEFAULT_ONCOTREE_FILENAME = &#39;20201201-OncoTree.txt&#39; # from CGI-Tools repo
+
     def __init__(self, sample_id, log_level=logging.WARN, log_path=None):
         self.logger = self.get_logger(log_level, &#34;%s.%s&#34; % (__name__, type(self).__name__), log_path)
         self.log_path = log_path
         self.sample_id = sample_id
+
+    def _check_cgi_inputs(self, args):
+        &#34;&#34;&#34;Check required arguments are present for build_from_cgi_inputs&#34;&#34;&#34;
+        # existence of paths etc. will be checked upstream, eg. in the calling script
+        required_args = [
+            self.STUDY_ID_INPUT,
+            self.PATIENT_ID_INPUT,
+            self.ANALYSIS_UNIT_INPUT,
+            self.ONCOTREE_CODE_INPUT,
+            self.VERSION_NUM_INPUT,
+            self.DATA_DIR_INPUT, # required but may be None
+            self.ONCOTREE_PATH_INPUT, # required but may be None
+            self.CUSTOM_DIR_INPUT, # required but may be None
+            self.GENE_TSV_INPUT,
+            self.SAMPLE_TSV_INPUT,
+            self.BED_INPUT,
+            self.CANCER_TYPE_INPUT,
+            self.ONCOKB_INPUT,
+            self.TCGA_INPUT,
+            self.VCF_INPUT,
+            self.SEG_INPUT
+        ]
+        if not (set(required_args) == set(args.keys())):
+            expected = str(sorted(required_args))
+            found = str(sorted(list(args.keys())))
+            msg = &#34;Incorrect arguments; expected %s, found %s&#34; % (expected, found)
+            self.logger.error(msg)
+            raise DjerbaConfigError(msg)
+
+    def _float_or_none(self, x):
+        &#34;&#34;&#34;If x is not None, convert it to a float; raises exception if not possible&#34;&#34;&#34;
+        if x == None:
+            return x
+        else:
+            return float(x)
+
+    def _find_fus_path(self, version_dir):
+        &#34;&#34;&#34;Find the Mavis summary path&#34;&#34;&#34;
+        fus_pattern = os.path.join(
+            version_dir, &#39;mavis&#39;, &#39;execution&#39;, &#39;summary&#39;, &#39;mavis_summary_all_WG.*.tab&#39;
+        )
+        fus_paths = glob(fus_pattern)
+        total = len(fus_paths)
+        # TODO fus_path is optional here; should it be required?
+        if total==0:
+            self.logger.warning(&#34;No fusfile in %s; failure to run Mavis?&#34; % version_dir)
+            fus_path = None
+        elif total==1:
+            fus_path = fus_paths.pop()
+            self.logger.debug(&#34;Found fusfile: %s&#34; % fus_path)
+        else:
+            error_msg = &#34;Multiple fusfiles in %s; &#34; % version_dir +\
+                        &#34;should be at most one mavis_summary_all_WG.*.tab&#34;
+            self.logger.error(error_msg)
+            raise DjerbaConfigError(error_msg)
+        return fus_path
+
+    def _read_cgi_inputs(self, args):
+        &#34;&#34;&#34;Find and process CGI data for generating Djerba config&#34;&#34;&#34;
+        self._check_cgi_inputs(args)
+        analysis_unit = args[self.ANALYSIS_UNIT_INPUT]
+        version = args[self.VERSION_NUM_INPUT]
+        if args[self.DATA_DIR_INPUT]:
+            data_dir = args[self.DATA_DIR_INPUT]
+        else:
+            data_dir = self.DEFAULT_DATA_DIR
+        # find input files
+        patient_dir = os.path.join(data_dir, args[self.STUDY_ID_INPUT], args[self.PATIENT_ID_INPUT])
+        version_dir = os.path.join(patient_dir, analysis_unit, str(version))
+        ms_path = os.path.join(patient_dir, &#34;mastersheet-v{0}.psv&#34;.format(version))
+        ini_path = os.path.join(version_dir, self.SEQUENZA, self.REVIEW, &#39;selection.ini&#39;)
+        for input_path in (ms_path, ini_path):
+            if not os.access(input_path, os.R_OK):
+                msg = &#34;Cannot read input path %s&#34; % input_path
+                self.logger.error(msg)
+                raise DjerbaConfigError(msg)
+        # process the input files
+        [tumor_id, normal_id] = self._read_mastersheet(ms_path, args[self.ANALYSIS_UNIT_INPUT])
+        selections = self._read_selections(ini_path)
+        [cancer_type, cancer_desc] = self._read_oncotree(
+            args[self.ONCOTREE_CODE_INPUT],
+            args[self.ONCOTREE_PATH_INPUT]
+        )
+        # construct additional file paths
+        fus_path = self._find_fus_path(version_dir)
+        maf_path = os.path.join(
+            version_dir, self.VEP, &#39;{0}.maf.gz&#39;.format(analysis_unit)
+        )
+        seg_path = os.path.join(
+            version_dir, self.SEQUENZA, self.REVIEW, &#34;{0}.seg&#34;.format(selections[self.INI_GAMMA])
+        )
+        gep_path = os.path.join(
+            version_dir, self.RSEM, &#34;{0}.genes.results&#34;.format(analysis_unit)
+        )
+        # check path readability
+        unreadable = []
+        for file_path in [fus_path, maf_path, seg_path, gep_path]:
+            if file_path != None and not os.access(file_path, os.R_OK):
+                unreadable.append(file_path)
+        if len(unreadable)&gt;0:
+            msg = &#34;Cannot read data files: {0}&#34;.format(str(sorted(unreadable)))
+            self.logger.error(msg)
+            raise DjerbaConfigError(msg)
+        scalars = [tumor_id, normal_id, cancer_type, cancer_desc]
+        paths = [fus_path, maf_path, seg_path, gep_path]
+        return cgi_params(scalars, paths, selections)
     
-    def build(self, custom_dir, gene_tsv, sample_tsv, maf, bed, cancer_type, oncokb_token, tgca, vcf):
-        &#34;&#34;&#34;Build a config data structure from the given arguments&#34;&#34;&#34;
+    def _read_mastersheet(self, ms_path, analysis_unit):
+        &#34;&#34;&#34;Parse the mastersheet file to find tumor/normal IDs&#34;&#34;&#34;
+        # TODO reimplement the bash one-liner in Python
+        template = &#34;&#34;&#34;awk -F &#34;|&#34; -v OFS=&#34;|&#34; -v u=%s &#39;{ if (($11 == u) &amp;&amp; ($6 ==&#34;WG&#34;)) {print $11,$12,$15} }&#39; %s | awk -F &#34;|&#34; &#39;!seen[$1]++&#39; | cut -f%s -d&#39;|&#39;&#34;&#34;&#34;
+        output = []
+        for col in [2,3]: # column 2 = tumor, column 3 = normal
+            args = template % (analysis_unit, ms_path, col)
+            try:
+                result = subprocess.run(args, capture_output=True, check=True, shell=True)
+            except CalledProcessError as cpe:
+                msg = &#34;Non-zero exit code from bash one-liner &#34;+\
+                      &#34;to find tumor/normal ID: {0}&#34;.format(args)
+                self.logger.error(msg)
+                raise DjerbaConfigError(msg) from cpe
+            output.append(result.stdout.decode(constants.TEXT_ENCODING).rstrip()) # strip trailing whitespace
+        return output
+
+    def _read_oncotree(self, oncocode, oncotree_path):
+        &#34;&#34;&#34;Read the cancer type and cancer type description&#34;&#34;&#34;
+        if self.is_null(oncotree_path):
+            oncotree_path = os.path.join(
+                os.path.dirname(__file__),
+                constants.DATA_DIRNAME,
+                self.DEFAULT_ONCOTREE_FILENAME 
+            )
+        # TODO reimplement the bash one-liners in Python
+        args_1 = &#34;&#34;&#34;grep -iw {0} {1} | cut -f1 | sed -e &#39;s/([^()]*)//g&#39; | sort | uniq | sed &#39;s/[[:space:]]*$//&#39;&#34;&#34;&#34;.format(oncocode, oncotree_path) # CANCER_TYPE
+        args_2 = &#34;&#34;&#34;cat {0} | tr &#39;\t&#39; &#39;\n&#39; | grep -iw {1} | sed &#34;s/({2})//&#34; | sed &#39;s/[[:space:]]*$//&#39;&#34;&#34;&#34;.format(oncotree_path, oncocode, oncocode) # CANCER_TYPE_DESCRIPTION
+        output = []
+        for args in [args_1, args_2]:
+            try:
+                result = subprocess.run(args, capture_output=True, check=True, shell=True)
+            except CalledProcessError as cpe:
+                msg = &#34;Non-zero exit code from bash one-liner &#34;+\
+                      &#34;to cancer type/description from oncotree: {0}&#34;.format(args)
+                self.logger.error(msg)
+                raise DjerbaConfigError(msg) from cpe
+            output.append(result.stdout.decode(constants.TEXT_ENCODING).rstrip()) # strip trailing whitespace
+        return output
+
+    def _read_selections(self, ini_path):
+        &#34;&#34;&#34;
+        Read the selections INI file; check required options are present.
+        Returns a dictionary of key/value pairs from the INI
+        &#34;&#34;&#34;
+        # need to prepend a dummy section header to use the configparser module
+        # see https://stackoverflow.com/questions/2885190/using-configparser-to-read-a-file-without-section-name
+        cp = configparser.ConfigParser()
+        section = constants.SECTION_DEFAULT
+        with open(ini_path) as stream:
+            cp.read_string(&#34;[{0}]\n&#34;.format(section) + stream.read())
+        missing = []
+        for key in self.INI_KEYS:
+            if not cp.has_option(section, key):
+                missing.append(key)
+            elif self.is_null(cp.get(section, key)):
+                missing.append(key)
+        if len(missing)&gt;0:
+            msg = &#34;Required values in selections INI are null or &#34;+\
+                  &#34;missing: {0}&#34;.format(str(sorted(missing)))
+            self.logger.error(msg)
+            raise DjerbaConfigError(msg)
+        return dict(cp.items(section))
+    
+    def build(self, args):
+        &#34;&#34;&#34;
+        Build a config data structure from the given arguments
+        TODO Add clinical_report_meta
+        TODO This method may become obsolete given build_from_cgi
+        &#34;&#34;&#34;
         config = {}
         samples = [
             {constants.SAMPLE_ID_KEY: self.sample_id}
         ]
         config[constants.SAMPLES_KEY] = samples
         genetic_alterations = []
-        custom_config = self.build_custom(custom_dir, gene_tsv, sample_tsv)
+        custom_config = self.build_custom(
+            args[self.CUSTOM_DIR_INPUT],
+            args[self.GENE_TSV_INPUT],
+            args[self.SAMPLE_TSV_INPUT]
+        )
         genetic_alterations.append(custom_config)
-        mutex_config = self.build_mutex(maf, bed, cancer_type, oncokb_token, tgca, vcf)
+        mutex_config = self.build_mutex(
+            args[self.MAF_INPUT],
+            args[self.BED_INPUT],
+            args[self.CANCER_TYPE_INPUT],
+            args[self.ONCOKB_INPUT],
+            args[self.TCGA_INPUT],
+            args[self.VCF_INPUT]
+        )
         genetic_alterations.append(mutex_config)
+        seg_config = self.build_segmented(args[self.SEG_INPUT])
+        genetic_alterations.append(seg_config)
         config[constants.GENETIC_ALTERATIONS_KEY] = genetic_alterations
         self.logger.info(&#34;Djerba configuration complete; validating against schema&#34;)
         validator(self.logger.getEffectiveLevel(), self.log_path).validate(config, self.sample_id)
         return config
+
+    def build_from_cgi_inputs(self, args):
+        &#34;&#34;&#34;Build Djerba config from CGI data sources, eg. the mastersheet&#34;&#34;&#34;
+        # TODO construct the config in line with CGI-Tools 3-configureSingleSample.sh
+        # TODO create a class for the mastersheet, with input validation
+        # TODO may later want to generate mastersheet within Djerba, instead of by shell script
+        # &#34;mastersheet&#34; extracted from file provenance by 1-linkNiassa.sh
+        cgi_params = self._read_cgi_inputs(args)
+        config = {}
+        # populate sample attributes from the CGI data
+        ploidy = self._float_or_none(cgi_params.selections.get(self.INI_PLOIDY))
+        purity = self._float_or_none(cgi_params.selections.get(self.INI_PURITY))
+        sample = {
+            constants.SAMPLE_ID_KEY: self.sample_id,
+            constants.CANCER_TYPE_KEY: cgi_params.cancer_type,
+            constants.CANCER_TYPE_DETAILED_KEY: args[self.ONCOTREE_CODE_INPUT],
+            constants.CANCER_TYPE_DESCRIPTION_KEY: cgi_params.cancer_desc,
+            constants.SEQUENZA_PLOIDY_KEY: ploidy,
+            constants.SEQUENZA_PURITY_FRACTION_KEY: purity
+        }
+        config[constants.SAMPLES_KEY] = [sample]
+        clinical_report_meta = self.build_clinical_report_meta(args, cgi_params)
+        config[constants.CLINICAL_REPORT_META_KEY] = clinical_report_meta
+        # from here on, same as older build() method
+        genetic_alterations = []
+        custom_config = self.build_custom(
+            args[self.CUSTOM_DIR_INPUT],
+            args[self.GENE_TSV_INPUT],
+            args[self.SAMPLE_TSV_INPUT]
+        )
+        genetic_alterations.append(custom_config)
+        mutex_config = self.build_mutex(
+            clinical_report_meta.get(constants.MAF_FILE_KEY),
+            args[self.BED_INPUT],
+            args[self.CANCER_TYPE_INPUT],
+            args[self.ONCOKB_INPUT],
+            args[self.TCGA_INPUT],
+            args[self.VCF_INPUT]
+        )
+        genetic_alterations.append(mutex_config)
+        seg_config = self.build_segmented(clinical_report_meta.get(constants.SEG_FILE_KEY))
+        genetic_alterations.append(seg_config)
+        config[constants.GENETIC_ALTERATIONS_KEY] = genetic_alterations
+        self.logger.info(&#34;Djerba configuration complete; validating against schema&#34;)
+        validator(self.logger.getEffectiveLevel(), self.log_path).validate(config, self.sample_id)
+        return config
+
+    def build_clinical_report_meta(self, args, cgi_params):
+        &#34;&#34;&#34;Build the clinical_report_meta config object&#34;&#34;&#34;
+        &#34;&#34;&#34;
+        Schema:
+        meta =  {
+            &#34;report_version&#34;: {&#34;type&#34;: [&#34;number&#34;, &#34;string&#34;]},
+            &#34;study_id&#34;: {&#34;type&#34;: &#34;string&#34;},
+            &#34;patient&#34;: {&#34;type&#34;: &#34;string&#34;},
+            &#34;analysis_unit&#34;: {&#34;type&#34;: &#34;string&#34;},
+            &#34;tumor_id&#34;: {&#34;type&#34;: &#34;string&#34;},
+            &#34;normal_id&#34;: {&#34;type&#34;: &#34;string&#34;},
+            &#34;gamma&#34;: {&#34;type&#34;: &#34;string&#34;},
+            &#34;maf_file&#34;: {&#34;type&#34;: &#34;string&#34;},
+            &#34;seg_file&#34;: {&#34;type&#34;: &#34;string&#34;},
+            &#34;fus_file&#34;: {&#34;type&#34;: &#34;string&#34;},
+            &#34;gep_file&#34;: {&#34;type&#34;: &#34;string&#34;}
+        }
+        &#34;&#34;&#34;
+        meta = {}
+        args_keys = [
+            self.STUDY_ID_INPUT,
+            self.PATIENT_ID_INPUT,
+            self.ANALYSIS_UNIT_INPUT
+        ]
+        for key in args_keys:
+            meta[key] = args.get(key)
+        meta[self.REPORT_VERSION_KEY] = args.get(self.VERSION_NUM_INPUT)
+        meta[constants.TUMOR_ID_KEY] = cgi_params.tumor_id
+        meta[constants.NORMAL_ID_KEY] = cgi_params.normal_id
+        meta[constants.GAMMA_KEY] = cgi_params.selections.get(self.INI_GAMMA)
+        meta[constants.MAF_FILE_KEY] = cgi_params.maf_path
+        meta[constants.SEG_FILE_KEY] = cgi_params.seg_path
+        meta[constants.FUS_FILE_KEY] = cgi_params.fus_path
+        meta[constants.GEP_FILE_KEY] = cgi_params.gep_path
+        return meta
 
     def build_custom(self, custom_dir, gene_tsv, sample_tsv):
         &#34;&#34;&#34;Create a data structure for CUSTOM_ANNOTATION config&#34;&#34;&#34;
@@ -287,6 +934,20 @@ class DjerbaConfigError(Exception):
         }
         return config
 
+    def build_segmented(self, seg):
+        &#34;&#34;&#34;Create a data structure for SEGMENTED config&#34;&#34;&#34;
+        [seg_dir, seg_file] = os.path.split(seg)
+        config = {
+            constants.DATATYPE_KEY: constants.SEG_DATATYPE,
+            constants.GENETIC_ALTERATION_TYPE_KEY: constants.SEGMENTED_TYPE,
+            self.INPUT_DIRECTORY_KEY: seg_dir,
+            self.INPUT_FILES_KEY: {
+                self.sample_id: seg_file
+            },
+            self.METADATA_KEY: {}
+        }
+        return config
+
     def read_tsv_headers(self, input_path):
         &#34;&#34;&#34;Read a list of headers from a TSV file&#34;&#34;&#34;
         df = pd.read_csv(input_path, delimiter=&#34;\t&#34;, index_col=False)
@@ -298,11 +959,39 @@ class DjerbaConfigError(Exception):
 </ul>
 <h3>Class variables</h3>
 <dl>
+<dt id="djerba.config.builder.ANALYSIS_UNIT_INPUT"><code class="name">var <span class="ident">ANALYSIS_UNIT_INPUT</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.BED_INPUT"><code class="name">var <span class="ident">BED_INPUT</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="djerba.config.builder.BED_PATH_KEY"><code class="name">var <span class="ident">BED_PATH_KEY</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="djerba.config.builder.CANCER_TYPE_INPUT"><code class="name">var <span class="ident">CANCER_TYPE_INPUT</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="djerba.config.builder.CANCER_TYPE_KEY"><code class="name">var <span class="ident">CANCER_TYPE_KEY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.CUSTOM_DIR_INPUT"><code class="name">var <span class="ident">CUSTOM_DIR_INPUT</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.DATA_DIR_INPUT"><code class="name">var <span class="ident">DATA_DIR_INPUT</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.DEFAULT_DATA_DIR"><code class="name">var <span class="ident">DEFAULT_DATA_DIR</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.DEFAULT_ONCOTREE_FILENAME"><code class="name">var <span class="ident">DEFAULT_ONCOTREE_FILENAME</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -314,7 +1003,39 @@ class DjerbaConfigError(Exception):
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="djerba.config.builder.GENE_TSV_INPUT"><code class="name">var <span class="ident">GENE_TSV_INPUT</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="djerba.config.builder.GENE_TSV_KEY"><code class="name">var <span class="ident">GENE_TSV_KEY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.INI_DATE"><code class="name">var <span class="ident">INI_DATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.INI_GAMMA"><code class="name">var <span class="ident">INI_GAMMA</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.INI_KEYS"><code class="name">var <span class="ident">INI_KEYS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.INI_PLOIDY"><code class="name">var <span class="ident">INI_PLOIDY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.INI_PURITY"><code class="name">var <span class="ident">INI_PURITY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.INI_REV_1"><code class="name">var <span class="ident">INI_REV_1</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.INI_REV_2"><code class="name">var <span class="ident">INI_REV_2</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -326,7 +1047,15 @@ class DjerbaConfigError(Exception):
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="djerba.config.builder.MAF_INPUT"><code class="name">var <span class="ident">MAF_INPUT</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="djerba.config.builder.METADATA_KEY"><code class="name">var <span class="ident">METADATA_KEY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.ONCOKB_INPUT"><code class="name">var <span class="ident">ONCOKB_INPUT</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -334,7 +1063,35 @@ class DjerbaConfigError(Exception):
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="djerba.config.builder.ONCOTREE_CODE_INPUT"><code class="name">var <span class="ident">ONCOTREE_CODE_INPUT</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.ONCOTREE_PATH_INPUT"><code class="name">var <span class="ident">ONCOTREE_PATH_INPUT</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.PATIENT_ID_INPUT"><code class="name">var <span class="ident">PATIENT_ID_INPUT</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.REPORT_VERSION_KEY"><code class="name">var <span class="ident">REPORT_VERSION_KEY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.REVIEW"><code class="name">var <span class="ident">REVIEW</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.RSEM"><code class="name">var <span class="ident">RSEM</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="djerba.config.builder.SAMPLE_HEADERS_KEY"><code class="name">var <span class="ident">SAMPLE_HEADERS_KEY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.SAMPLE_TSV_INPUT"><code class="name">var <span class="ident">SAMPLE_TSV_INPUT</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -342,7 +1099,35 @@ class DjerbaConfigError(Exception):
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="djerba.config.builder.SEG_INPUT"><code class="name">var <span class="ident">SEG_INPUT</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.SEQUENZA"><code class="name">var <span class="ident">SEQUENZA</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.STUDY_ID_INPUT"><code class="name">var <span class="ident">STUDY_ID_INPUT</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.TCGA_INPUT"><code class="name">var <span class="ident">TCGA_INPUT</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="djerba.config.builder.TCGA_PATH_KEY"><code class="name">var <span class="ident">TCGA_PATH_KEY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.VCF_INPUT"><code class="name">var <span class="ident">VCF_INPUT</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.VEP"><code class="name">var <span class="ident">VEP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="djerba.config.builder.VERSION_NUM_INPUT"><code class="name">var <span class="ident">VERSION_NUM_INPUT</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -350,30 +1135,95 @@ class DjerbaConfigError(Exception):
 <h3>Methods</h3>
 <dl>
 <dt id="djerba.config.builder.build"><code class="name flex">
-<span>def <span class="ident">build</span></span>(<span>self, custom_dir, gene_tsv, sample_tsv, maf, bed, cancer_type, oncokb_token, tgca, vcf)</span>
+<span>def <span class="ident">build</span></span>(<span>self, args)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Build a config data structure from the given arguments</p></div>
+<div class="desc"><p>Build a config data structure from the given arguments
+TODO Add clinical_report_meta
+TODO This method may become obsolete given build_from_cgi</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def build(self, custom_dir, gene_tsv, sample_tsv, maf, bed, cancer_type, oncokb_token, tgca, vcf):
-    &#34;&#34;&#34;Build a config data structure from the given arguments&#34;&#34;&#34;
+<pre><code class="python">def build(self, args):
+    &#34;&#34;&#34;
+    Build a config data structure from the given arguments
+    TODO Add clinical_report_meta
+    TODO This method may become obsolete given build_from_cgi
+    &#34;&#34;&#34;
     config = {}
     samples = [
         {constants.SAMPLE_ID_KEY: self.sample_id}
     ]
     config[constants.SAMPLES_KEY] = samples
     genetic_alterations = []
-    custom_config = self.build_custom(custom_dir, gene_tsv, sample_tsv)
+    custom_config = self.build_custom(
+        args[self.CUSTOM_DIR_INPUT],
+        args[self.GENE_TSV_INPUT],
+        args[self.SAMPLE_TSV_INPUT]
+    )
     genetic_alterations.append(custom_config)
-    mutex_config = self.build_mutex(maf, bed, cancer_type, oncokb_token, tgca, vcf)
+    mutex_config = self.build_mutex(
+        args[self.MAF_INPUT],
+        args[self.BED_INPUT],
+        args[self.CANCER_TYPE_INPUT],
+        args[self.ONCOKB_INPUT],
+        args[self.TCGA_INPUT],
+        args[self.VCF_INPUT]
+    )
     genetic_alterations.append(mutex_config)
+    seg_config = self.build_segmented(args[self.SEG_INPUT])
+    genetic_alterations.append(seg_config)
     config[constants.GENETIC_ALTERATIONS_KEY] = genetic_alterations
     self.logger.info(&#34;Djerba configuration complete; validating against schema&#34;)
     validator(self.logger.getEffectiveLevel(), self.log_path).validate(config, self.sample_id)
     return config</code></pre>
+</details>
+</dd>
+<dt id="djerba.config.builder.build_clinical_report_meta"><code class="name flex">
+<span>def <span class="ident">build_clinical_report_meta</span></span>(<span>self, args, cgi_params)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Build the clinical_report_meta config object</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def build_clinical_report_meta(self, args, cgi_params):
+    &#34;&#34;&#34;Build the clinical_report_meta config object&#34;&#34;&#34;
+    &#34;&#34;&#34;
+    Schema:
+    meta =  {
+        &#34;report_version&#34;: {&#34;type&#34;: [&#34;number&#34;, &#34;string&#34;]},
+        &#34;study_id&#34;: {&#34;type&#34;: &#34;string&#34;},
+        &#34;patient&#34;: {&#34;type&#34;: &#34;string&#34;},
+        &#34;analysis_unit&#34;: {&#34;type&#34;: &#34;string&#34;},
+        &#34;tumor_id&#34;: {&#34;type&#34;: &#34;string&#34;},
+        &#34;normal_id&#34;: {&#34;type&#34;: &#34;string&#34;},
+        &#34;gamma&#34;: {&#34;type&#34;: &#34;string&#34;},
+        &#34;maf_file&#34;: {&#34;type&#34;: &#34;string&#34;},
+        &#34;seg_file&#34;: {&#34;type&#34;: &#34;string&#34;},
+        &#34;fus_file&#34;: {&#34;type&#34;: &#34;string&#34;},
+        &#34;gep_file&#34;: {&#34;type&#34;: &#34;string&#34;}
+    }
+    &#34;&#34;&#34;
+    meta = {}
+    args_keys = [
+        self.STUDY_ID_INPUT,
+        self.PATIENT_ID_INPUT,
+        self.ANALYSIS_UNIT_INPUT
+    ]
+    for key in args_keys:
+        meta[key] = args.get(key)
+    meta[self.REPORT_VERSION_KEY] = args.get(self.VERSION_NUM_INPUT)
+    meta[constants.TUMOR_ID_KEY] = cgi_params.tumor_id
+    meta[constants.NORMAL_ID_KEY] = cgi_params.normal_id
+    meta[constants.GAMMA_KEY] = cgi_params.selections.get(self.INI_GAMMA)
+    meta[constants.MAF_FILE_KEY] = cgi_params.maf_path
+    meta[constants.SEG_FILE_KEY] = cgi_params.seg_path
+    meta[constants.FUS_FILE_KEY] = cgi_params.fus_path
+    meta[constants.GEP_FILE_KEY] = cgi_params.gep_path
+    return meta</code></pre>
 </details>
 </dd>
 <dt id="djerba.config.builder.build_custom"><code class="name flex">
@@ -402,6 +1252,62 @@ class DjerbaConfigError(Exception):
             self.SAMPLE_TSV_KEY: sample_tsv
         }
     }
+    return config</code></pre>
+</details>
+</dd>
+<dt id="djerba.config.builder.build_from_cgi_inputs"><code class="name flex">
+<span>def <span class="ident">build_from_cgi_inputs</span></span>(<span>self, args)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Build Djerba config from CGI data sources, eg. the mastersheet</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def build_from_cgi_inputs(self, args):
+    &#34;&#34;&#34;Build Djerba config from CGI data sources, eg. the mastersheet&#34;&#34;&#34;
+    # TODO construct the config in line with CGI-Tools 3-configureSingleSample.sh
+    # TODO create a class for the mastersheet, with input validation
+    # TODO may later want to generate mastersheet within Djerba, instead of by shell script
+    # &#34;mastersheet&#34; extracted from file provenance by 1-linkNiassa.sh
+    cgi_params = self._read_cgi_inputs(args)
+    config = {}
+    # populate sample attributes from the CGI data
+    ploidy = self._float_or_none(cgi_params.selections.get(self.INI_PLOIDY))
+    purity = self._float_or_none(cgi_params.selections.get(self.INI_PURITY))
+    sample = {
+        constants.SAMPLE_ID_KEY: self.sample_id,
+        constants.CANCER_TYPE_KEY: cgi_params.cancer_type,
+        constants.CANCER_TYPE_DETAILED_KEY: args[self.ONCOTREE_CODE_INPUT],
+        constants.CANCER_TYPE_DESCRIPTION_KEY: cgi_params.cancer_desc,
+        constants.SEQUENZA_PLOIDY_KEY: ploidy,
+        constants.SEQUENZA_PURITY_FRACTION_KEY: purity
+    }
+    config[constants.SAMPLES_KEY] = [sample]
+    clinical_report_meta = self.build_clinical_report_meta(args, cgi_params)
+    config[constants.CLINICAL_REPORT_META_KEY] = clinical_report_meta
+    # from here on, same as older build() method
+    genetic_alterations = []
+    custom_config = self.build_custom(
+        args[self.CUSTOM_DIR_INPUT],
+        args[self.GENE_TSV_INPUT],
+        args[self.SAMPLE_TSV_INPUT]
+    )
+    genetic_alterations.append(custom_config)
+    mutex_config = self.build_mutex(
+        clinical_report_meta.get(constants.MAF_FILE_KEY),
+        args[self.BED_INPUT],
+        args[self.CANCER_TYPE_INPUT],
+        args[self.ONCOKB_INPUT],
+        args[self.TCGA_INPUT],
+        args[self.VCF_INPUT]
+    )
+    genetic_alterations.append(mutex_config)
+    seg_config = self.build_segmented(clinical_report_meta.get(constants.SEG_FILE_KEY))
+    genetic_alterations.append(seg_config)
+    config[constants.GENETIC_ALTERATIONS_KEY] = genetic_alterations
+    self.logger.info(&#34;Djerba configuration complete; validating against schema&#34;)
+    validator(self.logger.getEffectiveLevel(), self.log_path).validate(config, self.sample_id)
     return config</code></pre>
 </details>
 </dd>
@@ -435,6 +1341,30 @@ class DjerbaConfigError(Exception):
     return config</code></pre>
 </details>
 </dd>
+<dt id="djerba.config.builder.build_segmented"><code class="name flex">
+<span>def <span class="ident">build_segmented</span></span>(<span>self, seg)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a data structure for SEGMENTED config</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def build_segmented(self, seg):
+    &#34;&#34;&#34;Create a data structure for SEGMENTED config&#34;&#34;&#34;
+    [seg_dir, seg_file] = os.path.split(seg)
+    config = {
+        constants.DATATYPE_KEY: constants.SEG_DATATYPE,
+        constants.GENETIC_ALTERATION_TYPE_KEY: constants.SEGMENTED_TYPE,
+        self.INPUT_DIRECTORY_KEY: seg_dir,
+        self.INPUT_FILES_KEY: {
+            self.sample_id: seg_file
+        },
+        self.METADATA_KEY: {}
+    }
+    return config</code></pre>
+</details>
+</dd>
 <dt id="djerba.config.builder.read_tsv_headers"><code class="name flex">
 <span>def <span class="ident">read_tsv_headers</span></span>(<span>self, input_path)</span>
 </code></dt>
@@ -456,9 +1386,30 @@ class DjerbaConfigError(Exception):
 <li><code><b><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></b></code>:
 <ul class="hlist">
 <li><code><a title="djerba.utilities.base.base.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.utilities.base.base.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
 </ul>
 </li>
 </ul>
+</dd>
+<dt id="djerba.config.cgi_params"><code class="flex name class">
+<span>class <span class="ident">cgi_params</span></span>
+<span>(</span><span>scalars, paths, selections)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Simple container class for results from _read_cgi_inputs</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class cgi_params:
+    &#34;&#34;&#34;Simple container class for results from _read_cgi_inputs&#34;&#34;&#34;
+
+    def __init__(self, scalars, paths, selections):
+        [self.tumor_id, self.normal_id, self.cancer_type, self.cancer_desc] = scalars
+        [self.fus_path, self.maf_path, self.seg_path, self.gep_path] = paths
+        # convert the configParser to a dictionary
+        self.selections = selections</code></pre>
+</details>
 </dd>
 <dt id="djerba.config.validator"><code class="flex name class">
 <span>class <span class="ident">validator</span></span>
@@ -569,6 +1520,7 @@ class DjerbaConfigError(Exception):
 <li><code><b><a title="djerba.utilities.base.base" href="utilities/base.html#djerba.utilities.base.base">base</a></b></code>:
 <ul class="hlist">
 <li><code><a title="djerba.utilities.base.base.get_logger" href="utilities/base.html#djerba.utilities.base.base.get_logger">get_logger</a></code></li>
+<li><code><a title="djerba.utilities.base.base.is_null" href="utilities/base.html#djerba.utilities.base.base.is_null">is_null</a></code></li>
 </ul>
 </li>
 </ul>
@@ -594,24 +1546,61 @@ class DjerbaConfigError(Exception):
 </li>
 <li>
 <h4><code><a title="djerba.config.builder" href="#djerba.config.builder">builder</a></code></h4>
-<ul class="two-column">
+<ul class="">
+<li><code><a title="djerba.config.builder.ANALYSIS_UNIT_INPUT" href="#djerba.config.builder.ANALYSIS_UNIT_INPUT">ANALYSIS_UNIT_INPUT</a></code></li>
+<li><code><a title="djerba.config.builder.BED_INPUT" href="#djerba.config.builder.BED_INPUT">BED_INPUT</a></code></li>
 <li><code><a title="djerba.config.builder.BED_PATH_KEY" href="#djerba.config.builder.BED_PATH_KEY">BED_PATH_KEY</a></code></li>
+<li><code><a title="djerba.config.builder.CANCER_TYPE_INPUT" href="#djerba.config.builder.CANCER_TYPE_INPUT">CANCER_TYPE_INPUT</a></code></li>
 <li><code><a title="djerba.config.builder.CANCER_TYPE_KEY" href="#djerba.config.builder.CANCER_TYPE_KEY">CANCER_TYPE_KEY</a></code></li>
+<li><code><a title="djerba.config.builder.CUSTOM_DIR_INPUT" href="#djerba.config.builder.CUSTOM_DIR_INPUT">CUSTOM_DIR_INPUT</a></code></li>
+<li><code><a title="djerba.config.builder.DATA_DIR_INPUT" href="#djerba.config.builder.DATA_DIR_INPUT">DATA_DIR_INPUT</a></code></li>
+<li><code><a title="djerba.config.builder.DEFAULT_DATA_DIR" href="#djerba.config.builder.DEFAULT_DATA_DIR">DEFAULT_DATA_DIR</a></code></li>
+<li><code><a title="djerba.config.builder.DEFAULT_ONCOTREE_FILENAME" href="#djerba.config.builder.DEFAULT_ONCOTREE_FILENAME">DEFAULT_ONCOTREE_FILENAME</a></code></li>
 <li><code><a title="djerba.config.builder.FILTER_VCF_KEY" href="#djerba.config.builder.FILTER_VCF_KEY">FILTER_VCF_KEY</a></code></li>
 <li><code><a title="djerba.config.builder.GENE_HEADERS_KEY" href="#djerba.config.builder.GENE_HEADERS_KEY">GENE_HEADERS_KEY</a></code></li>
+<li><code><a title="djerba.config.builder.GENE_TSV_INPUT" href="#djerba.config.builder.GENE_TSV_INPUT">GENE_TSV_INPUT</a></code></li>
 <li><code><a title="djerba.config.builder.GENE_TSV_KEY" href="#djerba.config.builder.GENE_TSV_KEY">GENE_TSV_KEY</a></code></li>
+<li><code><a title="djerba.config.builder.INI_DATE" href="#djerba.config.builder.INI_DATE">INI_DATE</a></code></li>
+<li><code><a title="djerba.config.builder.INI_GAMMA" href="#djerba.config.builder.INI_GAMMA">INI_GAMMA</a></code></li>
+<li><code><a title="djerba.config.builder.INI_KEYS" href="#djerba.config.builder.INI_KEYS">INI_KEYS</a></code></li>
+<li><code><a title="djerba.config.builder.INI_PLOIDY" href="#djerba.config.builder.INI_PLOIDY">INI_PLOIDY</a></code></li>
+<li><code><a title="djerba.config.builder.INI_PURITY" href="#djerba.config.builder.INI_PURITY">INI_PURITY</a></code></li>
+<li><code><a title="djerba.config.builder.INI_REV_1" href="#djerba.config.builder.INI_REV_1">INI_REV_1</a></code></li>
+<li><code><a title="djerba.config.builder.INI_REV_2" href="#djerba.config.builder.INI_REV_2">INI_REV_2</a></code></li>
 <li><code><a title="djerba.config.builder.INPUT_DIRECTORY_KEY" href="#djerba.config.builder.INPUT_DIRECTORY_KEY">INPUT_DIRECTORY_KEY</a></code></li>
 <li><code><a title="djerba.config.builder.INPUT_FILES_KEY" href="#djerba.config.builder.INPUT_FILES_KEY">INPUT_FILES_KEY</a></code></li>
+<li><code><a title="djerba.config.builder.MAF_INPUT" href="#djerba.config.builder.MAF_INPUT">MAF_INPUT</a></code></li>
 <li><code><a title="djerba.config.builder.METADATA_KEY" href="#djerba.config.builder.METADATA_KEY">METADATA_KEY</a></code></li>
+<li><code><a title="djerba.config.builder.ONCOKB_INPUT" href="#djerba.config.builder.ONCOKB_INPUT">ONCOKB_INPUT</a></code></li>
 <li><code><a title="djerba.config.builder.ONCOKB_TOKEN_KEY" href="#djerba.config.builder.ONCOKB_TOKEN_KEY">ONCOKB_TOKEN_KEY</a></code></li>
+<li><code><a title="djerba.config.builder.ONCOTREE_CODE_INPUT" href="#djerba.config.builder.ONCOTREE_CODE_INPUT">ONCOTREE_CODE_INPUT</a></code></li>
+<li><code><a title="djerba.config.builder.ONCOTREE_PATH_INPUT" href="#djerba.config.builder.ONCOTREE_PATH_INPUT">ONCOTREE_PATH_INPUT</a></code></li>
+<li><code><a title="djerba.config.builder.PATIENT_ID_INPUT" href="#djerba.config.builder.PATIENT_ID_INPUT">PATIENT_ID_INPUT</a></code></li>
+<li><code><a title="djerba.config.builder.REPORT_VERSION_KEY" href="#djerba.config.builder.REPORT_VERSION_KEY">REPORT_VERSION_KEY</a></code></li>
+<li><code><a title="djerba.config.builder.REVIEW" href="#djerba.config.builder.REVIEW">REVIEW</a></code></li>
+<li><code><a title="djerba.config.builder.RSEM" href="#djerba.config.builder.RSEM">RSEM</a></code></li>
 <li><code><a title="djerba.config.builder.SAMPLE_HEADERS_KEY" href="#djerba.config.builder.SAMPLE_HEADERS_KEY">SAMPLE_HEADERS_KEY</a></code></li>
+<li><code><a title="djerba.config.builder.SAMPLE_TSV_INPUT" href="#djerba.config.builder.SAMPLE_TSV_INPUT">SAMPLE_TSV_INPUT</a></code></li>
 <li><code><a title="djerba.config.builder.SAMPLE_TSV_KEY" href="#djerba.config.builder.SAMPLE_TSV_KEY">SAMPLE_TSV_KEY</a></code></li>
+<li><code><a title="djerba.config.builder.SEG_INPUT" href="#djerba.config.builder.SEG_INPUT">SEG_INPUT</a></code></li>
+<li><code><a title="djerba.config.builder.SEQUENZA" href="#djerba.config.builder.SEQUENZA">SEQUENZA</a></code></li>
+<li><code><a title="djerba.config.builder.STUDY_ID_INPUT" href="#djerba.config.builder.STUDY_ID_INPUT">STUDY_ID_INPUT</a></code></li>
+<li><code><a title="djerba.config.builder.TCGA_INPUT" href="#djerba.config.builder.TCGA_INPUT">TCGA_INPUT</a></code></li>
 <li><code><a title="djerba.config.builder.TCGA_PATH_KEY" href="#djerba.config.builder.TCGA_PATH_KEY">TCGA_PATH_KEY</a></code></li>
+<li><code><a title="djerba.config.builder.VCF_INPUT" href="#djerba.config.builder.VCF_INPUT">VCF_INPUT</a></code></li>
+<li><code><a title="djerba.config.builder.VEP" href="#djerba.config.builder.VEP">VEP</a></code></li>
+<li><code><a title="djerba.config.builder.VERSION_NUM_INPUT" href="#djerba.config.builder.VERSION_NUM_INPUT">VERSION_NUM_INPUT</a></code></li>
 <li><code><a title="djerba.config.builder.build" href="#djerba.config.builder.build">build</a></code></li>
+<li><code><a title="djerba.config.builder.build_clinical_report_meta" href="#djerba.config.builder.build_clinical_report_meta">build_clinical_report_meta</a></code></li>
 <li><code><a title="djerba.config.builder.build_custom" href="#djerba.config.builder.build_custom">build_custom</a></code></li>
+<li><code><a title="djerba.config.builder.build_from_cgi_inputs" href="#djerba.config.builder.build_from_cgi_inputs">build_from_cgi_inputs</a></code></li>
 <li><code><a title="djerba.config.builder.build_mutex" href="#djerba.config.builder.build_mutex">build_mutex</a></code></li>
+<li><code><a title="djerba.config.builder.build_segmented" href="#djerba.config.builder.build_segmented">build_segmented</a></code></li>
 <li><code><a title="djerba.config.builder.read_tsv_headers" href="#djerba.config.builder.read_tsv_headers">read_tsv_headers</a></code></li>
 </ul>
+</li>
+<li>
+<h4><code><a title="djerba.config.cgi_params" href="#djerba.config.cgi_params">cgi_params</a></code></h4>
 </li>
 <li>
 <h4><code><a title="djerba.config.validator" href="#djerba.config.validator">validator</a></code></h4>
@@ -626,7 +1615,7 @@ class DjerbaConfigError(Exception):
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
 </footer>
 </body>
 </html>
