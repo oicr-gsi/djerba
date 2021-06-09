@@ -58,7 +58,7 @@ class searcher:
 
     def update_config(self, config):
         """Update provenance fields in a config object"""
-        config[constants.CONFIG_HEADER][constants.MAFFILE] = self.parse_maf_path()
+        config[constants.CONFIG_HEADER][constants.MAF_FILE] = self.parse_maf_path()
         return config
 
 class MissingProvenanceError(Exception):

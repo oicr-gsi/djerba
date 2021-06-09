@@ -11,6 +11,7 @@ from djerba.simple.build.reader import multiple_reader
 class runner:
 
     def __init__(self, provenance, project, donor, bedPath, iniPath, workDir, outPath, schemaPath,
+                 rScriptDir,
                  gamma=None, overwrite=False, require_complete=False, validate=False):
         # validate the iniPath
         if not os.path.exists(iniPath):
@@ -37,6 +38,7 @@ class runner:
             self.schema = json.loads(f.read())
         self.provenancePath = provenance
         self.project = project
+        self.rScriptDir = rScriptDir
         self.donor = donor
         self.gamma = gamma
         self.bedPath = bedPath
@@ -58,7 +60,7 @@ class runner:
         # Eventually, we want to get all params from provenance/filesystem without a supplementary INI
         config = extraction_config(self.provenancePath, self.project, self.donor, self.gamma)
         config.update(self.read_bare_ini(self.iniPath))
-        ext = extractor(config.get_params(), self.bedPath, self.workDir)
+        ext = extractor(config.get_params(), self.bedPath, self.workDir, self.rScriptDir)
         ext.run()
         components = []
         for componentPath in ext.getComponentPaths():

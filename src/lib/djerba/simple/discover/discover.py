@@ -32,10 +32,10 @@ class extraction_config:
         # TODO may omit some parameters while this class is a work-in-progress
         params = {}
         params[constants.SEQUENZA_GAMMA] = self.gamma
-        params[constants.MAFFILE] = self.reader.parse_maf_path()
-        params[constants.PATIENTID] = self.donor
+        params[constants.MAF_FILE] = self.reader.parse_maf_path()
+        params[constants.PATIENT_ID] = self.donor
         params[constants.SEQUENZAFILE] = self.reader.parse_sequenza_path()
-        params[constants.STUDYID] = self.project
+        params[constants.STUDY_ID] = self.project
         return params
 
     def get_params(self):

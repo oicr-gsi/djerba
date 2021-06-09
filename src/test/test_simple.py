@@ -61,6 +61,7 @@ class TestBase(unittest.TestCase):
         self.donor = 'PANX_1249'
         with open(self.schema_path) as f:
             self.schema = json.loads(f.read())
+        self.rScriptDir = os.path.realpath(os.path.join(self.testDir, '../lib/djerba/simple/R/'))
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -92,13 +93,13 @@ class TestExtractor(TestBase):
     def test_writeIniParams(self):
         # TODO sanitize the ini and commit to repo
         iniPath = os.path.join(self.sup_dir, 'report_configuration.ini')
-        outDir = '/home/iain/tmp/djerba/test'
+        outDir = '/home/iain/tmp/djerba/test' # TODO change to testing temp dir
         with open(iniPath) as iniFile:
             # prepend header required by configparser; TODO import from constants
             configString = "[%s]\n%s" % ('REPORT_CONFIG', iniFile.read())
         parser = configparser.ConfigParser()
         parser.read_string(configString)
-        extractor(dict(parser['REPORT_CONFIG']), self.bed_path, outDir).run()
+        extractor(dict(parser['REPORT_CONFIG']), self.bed_path, outDir, self.rScriptDir).run()
         sampleParamsPath = os.path.join(outDir, 'sample_params.json')
         self.assertEqual(self.getMD5(sampleParamsPath), 'bf36eb4b0fe358ea5abdf2efc4670f40')
 
@@ -177,7 +178,8 @@ class TestRunner(TestBase):
                self.iniPath,
                self.workDir,
                outPath,
-               self.schema_path).run()
+               self.schema_path,
+               self.rScriptDir).run()
         self.assertEqual(self.getMD5(outPath), self.expectedMD5)
 
     def test_script(self):

@@ -3,6 +3,8 @@
 import json
 import os
 import pandas as pd
+import subprocess
+
 from djerba.simple.extract.sequenza import sequenza_extractor
 import djerba.simple.constants as constants
 
@@ -10,7 +12,7 @@ import djerba.simple.constants as constants
 class extractor:
     """
     Extract the clinical report data; replaces 4-singleSample.sh
-    Input: INI config from 3-configureSingleSample.sh
+    Input: config from 'discover' step; replaces INI config from 3-configureSingleSample.sh
     Output: Directory of .txt and .json files for downstream processing
     """
 
@@ -19,11 +21,12 @@ class extractor:
     MAF_PARAMS_FILENAME = 'maf_params.json'
     SEQUENZA_PARAMS_FILENAME = 'sequenza_params.json'
     
-    def __init__(self, config, bedPath, outDir):
+    def __init__(self, config, bedPath, outDir, rscript_dir):
         # config is a dictionary with required parameters (eg. from INI file)
         self.config = config
-        self.outDir = outDir
         self.bedPath = bedPath # .bed file for MAF calculation; TODO check readability?
+        self.outDir = outDir
+        self.rscript_dir = rscript_dir
         self.componentPaths = []
 
     def _write_json(self, config, fileName):
@@ -42,13 +45,41 @@ class extractor:
         self.componentPaths.append(self.writeSequenzaParams())
         self.componentPaths.append(self.writeConfigParams())
 
+    def run_Rscript(self):
+        """Run the singleSample.r legacy script"""
+        cmd = [
+            'Rscript', os.path.join(self.rscript_dir, 'singleSample.r'),
+            '--basedir', self.rscript_dir,
+            '--studyid', self.config[constants.STUDY_ID],
+            '--tumourid', self.config[constants.TUMOR_ID],
+            '--normalid', self.config[constants.NORMAL_ID],
+            '--maffile', self.config[constants.MAF_FILE],
+            '--segfile', self.config[constants.SEG_FILE],
+            '--fusfile', self.config[constants.FUS_FILE],
+            '--minfusionreads', self.config[constants.MIN_FUSION_READS],
+            '--enscon', self.config[constants.ENSCON],
+            '--entcon', self.config[constants.ENTCON],
+            '--genebed', self.config[constants.GENE_BED],
+            '--genelist', self.config[constants.GENE_LIST],
+            '--oncolist', self.config[constants.ONCO_LIST],
+            '--tcgadata', self.config[constants.TGCA_DATA],
+            '--whizbam_url', self.config[constants.WHIZBAM_URL_KEY],
+            '--tcgacode', self.config[constants.TGCA_CODE],
+            '--gain', self.config[constants.GAIN],
+            '--ampl', self.config[constants.AMPL],
+            '--htzd', self.config[constants.HTZD],
+            '--hmzd', self.config[constants.HMZD],
+            '--outdir', self.config[constants.OUT_DIR]
+        ]
+        result = subprocess.run(cmd, capture_output=True)
+
     def writeConfigParams(self):
         """
         Take parameters directly from extraction config, and write as JSON for later use
         Output approximates data_clinical.txt in CGI-Tools, but only has fields for final JSON output
         """
         sampleParams = {}
-        sampleParams['PATIENT_ID'] = self.config['patientid'].strip('"')
+        sampleParams['PATIENT_ID'] = self.config[constants.PATIENT_ID].strip('"')
         stringKeys = [
             'SAMPLE_TYPE',
             'CANCER_TYPE',
@@ -88,7 +119,7 @@ class extractor:
 
     def writeMafParams(self):
         """Read the MAF file, extract relevant parameters, and write as JSON"""
-        maf_path = self.config[constants.MAFFILE]
+        maf_path = self.config[constants.MAF_FILE]
         tmb = maf_extractor(maf_path, self.bedPath).find_tmb()
         config = {
             constants.READER_CLASS_KEY: 'json_reader',
