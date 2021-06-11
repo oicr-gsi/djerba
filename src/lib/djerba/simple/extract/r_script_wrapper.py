@@ -98,10 +98,10 @@ class wrapper:
                     total += 1
                     if self._maf_body_row_ok(row):
                         # filter rows in the MAF body and update the tumour_id
-                        row[15] = self.config[constants.TUMOUR_ID]
+                        row[self.TUMOR_SAMPLE_BARCODE] = self.config[constants.TUMOUR_ID]
                         writer.writerow(row)
                         kept += 1
-        print("Kept {0} of {1} MAF data rows".format(kept, total))
+        print("Kept {0} of {1} MAF data rows".format(kept, total)) # TODO record with a logger
         # apply annotation to tempfile and return final output
         out_path = tmp_path
         return out_path
