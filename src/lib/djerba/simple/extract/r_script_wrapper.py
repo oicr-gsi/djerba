@@ -42,12 +42,35 @@ class wrapper:
     MIN_VAF = 0.1
     MAX_UNMATCHED_GNOMAD_AF = 0.001
 
-    def __init__(self, config, rscript_dir, out_dir, tmp_dir=None):
+    # TODO make this portable -- read from config file?
+    ONCOKB_TOKEN_PATH = '/home/iain/oicr/workspace/resources/oncokb_api_token'
+
+    def __init__(self, config, rscript_dir, out_dir, supplied_tmp_dir=None):
         self.config = config
         self.rscript_dir = os.path.realpath(rscript_dir)
         self.out_dir = out_dir
-        self.tmp_dir = tmp_dir
+        self.supplied_tmp_dir = supplied_tmp_dir
         self.exclusions = [re.compile(x) for x in self.FILTER_FLAGS_EXCLUDE]
+
+    def _annotate_maf(self, in_path, tmp_dir):
+        # TODO import the main() method of MafAnnotator.py instead of running in subprocess
+        info_path = os.path.join(tmp_dir, "oncokb_clinical_info.txt")
+        args = [self.config[constants.TUMOUR_ID], self.config[constants.CANCER_TYPE_DETAILED]]
+        with open(info_path, 'w') as info_file:
+            print("SAMPLE_ID\tONCOTREE_CODE", file=info_file)
+            print("{0}\t{1}".format(*args), file=info_file)
+        out_path = os.path.join(tmp_dir, "annotated_maf.tsv")
+        cmd = [
+            '/home/iain/oicr/workspace/venv/djerba/bin/python3',
+            '/home/iain/oicr/git/oncokb-annotator/MafAnnotator.py',
+            '-i', in_path,
+            '-o', out_path,
+            '-c', info_path,
+            '-b', self.ONCOKB_TOKEN_PATH
+        ]
+        print('###', ' '.join(cmd))
+        result = subprocess.run(cmd, check=True)
+        return out_path
 
     def _maf_body_row_ok(self, row):
         """
@@ -103,7 +126,7 @@ class wrapper:
                         kept += 1
         print("Kept {0} of {1} MAF data rows".format(kept, total)) # TODO record with a logger
         # apply annotation to tempfile and return final output
-        out_path = tmp_path
+        out_path = self._annotate_maf(tmp_path, tmp_dir)
         return out_path
 
     def preprocess_seg(self, seg_path, tmp_dir):
@@ -111,11 +134,11 @@ class wrapper:
         return seg_path
 
     def run(self):
-        if self.tmp_dir == None:
+        if self.supplied_tmp_dir == None:
             tmp = tempfile.TemporaryDirectory(prefix="djerba_r_script_")
             tmp_dir = tmp.name
         else:
-            tmp_dir = self.tmp_dir
+            tmp_dir = self.supplied_tmp_dir
         fus_path = self.preprocess_fus(self.config[constants.FUS_FILE], tmp_dir)
         maf_path = self.preprocess_maf(self.config[constants.MAF_FILE], tmp_dir)
         seg_path = self.preprocess_seg(self.config[constants.SEG_FILE], tmp_dir)
@@ -145,6 +168,6 @@ class wrapper:
         ]
         print('###', ' '.join(cmd))
         result = subprocess.run(cmd, capture_output=True, encoding=constants.TEXT_ENCODING)
-        if self.tmp_dir == None:
+        if self.supplied_tmp_dir == None:
             tmp.cleanup()
         return result

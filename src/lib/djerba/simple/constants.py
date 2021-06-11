@@ -1,6 +1,7 @@
 """Constants for use across multiple Djerba classes"""
 
 AMPL = 'ampl'
+CANCER_TYPE_DETAILED = 'CANCER_TYPE_DETAILED'
 ENSCON = 'enscon'
 ENTCON = 'entcon'
 FUS_FILE = 'fusfile'
