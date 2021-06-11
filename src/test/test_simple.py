@@ -281,8 +281,9 @@ class TestWrapper(TestBase):
             configString = "[%s]\n%s" % (ini_header, iniFile.read())
         parser = configparser.ConfigParser()
         parser.read_string(configString)
-        outDir = '/home/iain/tmp/djerba/rscript' # TODO use tmpdir
-        test_wrapper = wrapper(parser[ini_header], self.rScriptDir, outDir)
+        outDir = '/home/iain/tmp/djerba/rscript' # TODO use testing tmpdir
+        tmpDir = '/home/iain/tmp/djerba/wrapper_tmp' # TODO use testing tmpdir
+        test_wrapper = wrapper(parser[ini_header], self.rScriptDir, outDir, tmpDir)
         result = test_wrapper.run()
         #self.assertEqual(0, result.returncode)
         if result.returncode!=0:
