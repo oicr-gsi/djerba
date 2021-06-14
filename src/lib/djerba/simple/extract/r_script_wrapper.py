@@ -17,6 +17,7 @@ class wrapper:
     T_DEPTH = 39
     T_ALT_COUNT = 41
     GNOMAD_AF = 123
+    ONCOGENIC = 136
 
     # permitted MAF mutation types; from mutation_types.exonic in CGI-Tools
     MUTATION_TYPES_EXONIC = [
@@ -59,17 +60,30 @@ class wrapper:
         with open(info_path, 'w') as info_file:
             print("SAMPLE_ID\tONCOTREE_CODE", file=info_file)
             print("{0}\t{1}".format(*args), file=info_file)
-        out_path = os.path.join(tmp_dir, "annotated_maf.tsv")
+        tmp_path = os.path.join(tmp_dir, "annotated_maf_tmp.tsv")
         cmd = [
             '/home/iain/oicr/workspace/venv/djerba/bin/python3',
             '/home/iain/oicr/git/oncokb-annotator/MafAnnotator.py',
             '-i', in_path,
-            '-o', out_path,
+            '-o', tmp_path,
             '-c', info_path,
             '-b', self.ONCOKB_TOKEN_PATH
         ]
         print('###', ' '.join(cmd))
         result = subprocess.run(cmd, check=True)
+        # column header changed from lowercase to uppercase in newer versions of MafAnnotator
+        # Rscript singleSample.r expects lowercase
+        # TODO upgrade to newer version and leave header as-is?
+        out_path = os.path.join(tmp_dir, "annotated_maf.tsv")
+        with open(tmp_path) as tmp_file, open(out_path, 'w') as out_file:
+            first = True
+            reader = csv.reader(tmp_file, delimiter="\t")
+            writer = csv.writer(out_file, delimiter="\t")
+            for row in reader:
+                if first:
+                    row[self.ONCOGENIC] = row[self.ONCOGENIC].lower()
+                    first = False
+                writer.writerow(row)
         return out_path
 
     def _maf_body_row_ok(self, row):
@@ -93,8 +107,24 @@ class wrapper:
         return ok
 
     def preprocess_fus(self, fus_path, tmp_dir):
-        """Apply preprocessing to a FUS file; write results to tmp_dir"""
-        return fus_path
+        """
+        Apply preprocessing to a FUS file; write results to tmp_dir
+        Prepend a column with the tumor id
+        """
+        out_path = os.path.join(tmp_dir, 'fus.txt')
+        with open(fus_path, 'rt') as fus_file, open(out_path, 'wt') as out_file:
+            reader = csv.reader(fus_file, delimiter="\t")
+            writer = csv.writer(out_file, delimiter="\t")
+            in_header = True
+            for row in reader:
+                if in_header:
+                    value = 'Sample'
+                    in_header = False
+                else:
+                    value = self.config[constants.TUMOUR_ID]
+                new_row = [value] + row
+                writer.writerow(new_row)
+        return out_path
 
     def preprocess_maf(self, maf_path, tmp_dir):
         """Apply preprocessing and annotation to a MAF file; write results to tmp_dir"""
@@ -130,8 +160,22 @@ class wrapper:
         return out_path
 
     def preprocess_seg(self, seg_path, tmp_dir):
-        """Apply preprocessing to a SEG file; write results to tmp_dir"""
-        return seg_path
+        """
+        Apply preprocessing to a SEG file; write results to tmp_dir
+        Replace entry in the first column with the tumour ID
+        """
+        out_path = os.path.join(tmp_dir, 'seg.txt')
+        with open(seg_path, 'rt') as seg_file, open(out_path, 'wt') as out_file:
+            reader = csv.reader(seg_file, delimiter="\t")
+            writer = csv.writer(out_file, delimiter="\t")
+            in_header = True
+            for row in reader:
+                if in_header:
+                    in_header = False
+                else:
+                    row[0] = self.config[constants.TUMOUR_ID]
+                writer.writerow(row)
+        return out_path
 
     def run(self):
         if self.supplied_tmp_dir == None:
