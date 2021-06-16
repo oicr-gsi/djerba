@@ -11,3 +11,5 @@ export PYTHONPATH=$HOME/oicr/git/djerba/src/lib:$PYTHONPATH
 export PATH=$HOME/oicr/git/djerba/src/bin:$PATH
 export DJERBA_TEST_DATA=$HOME/oicr/workspace/djerba/supplementary
 export DJERBA_TEST_PROVENANCE=$HOME/oicr/workspace/djerba/modified_provenance/pass01_panx_provenance.modified.tsv.gz
+# environment variable required for production, not just testing
+export ONCOKB_TOKEN=/home/iain/oicr/workspace/resources/oncokb_api_token

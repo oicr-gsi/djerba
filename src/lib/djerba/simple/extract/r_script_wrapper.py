@@ -47,8 +47,17 @@ class wrapper:
     MIN_VAF = 0.1
     MAX_UNMATCHED_GNOMAD_AF = 0.001
 
-    # TODO make this portable -- read from config file?
-    ONCOKB_TOKEN_PATH = '/home/iain/oicr/workspace/resources/oncokb_api_token'
+    # output filenames
+    ANNOTATED_MAF = 'annotated_maf.tsv'
+    DATA_CNA_ONCOKB_GENES = 'data_CNA_oncoKBgenes.txt'
+    DATA_CNA_ONCOKB_GENES_NON_DIPLOID = 'data_CNA_oncoKBgenes_nonDiploid.txt'
+    DATA_CNA_ONCOKB_GENES_NON_DIPLOID_ANNOTATED = 'data_CNA_oncoKBgenes_nonDiploid_annotated.txt'
+    DATA_FUSIONS_ONCOKB = 'data_fusions_oncokb.txt'
+    DATA_FUSIONS_ONCOKB_ANNOTATED = 'data_fusions_oncokb_annotated.txt'
+    ONCOKB_CLINICAL_INFO = 'oncokb_clinical_info.txt'
+
+    # environment variable for ONCOKB token path
+    ONCOKB_TOKEN_VARIABLE = 'ONCOKB_TOKEN'
 
     def __init__(self, config, rscript_dir, out_dir, supplied_tmp_dir=None):
         self.config = config
@@ -56,15 +65,45 @@ class wrapper:
         self.out_dir = out_dir
         self.supplied_tmp_dir = supplied_tmp_dir
         self.exclusions = [re.compile(x) for x in self.FILTER_FLAGS_EXCLUDE]
+        self.oncokb_token = os.environ[self.ONCOKB_TOKEN_VARIABLE]
 
-    def _annotate_maf(self, in_path, tmp_dir):
+    def _annotate_cna(self, info_path):
+        # TODO import the main() method of CnaAnnotator.py instead of running in subprocess
+        # TODO as a stopgap, replace local paths with call to an executable script
+        in_path = os.path.join(self.out_dir, self.DATA_CNA_ONCOKB_GENES_NON_DIPLOID)
+        out_path = os.path.join(self.out_dir, self.DATA_CNA_ONCOKB_GENES_NON_DIPLOID_ANNOTATED)
+        cmd = [
+            '/home/iain/oicr/workspace/venv/djerba/bin/python3',
+            '/home/iain/oicr/git/oncokb-annotator/CnaAnnotator.py',
+            '-i', in_path,
+            '-o', out_path,
+            '-c', info_path,
+            '-b', self.oncokb_token
+        ]
+        print('###', ' '.join(cmd))
+        result = subprocess.run(cmd, check=True)
+        return out_path
+
+    def _annotate_fusion(self, info_path):
+        # TODO import the main() method of FusionAnnotator.py instead of running in subprocess
+        # TODO as a stopgap, replace local paths with call to an executable script
+        in_path = os.path.join(self.out_dir, self.DATA_FUSIONS_ONCOKB)
+        out_path = os.path.join(self.out_dir, self.DATA_FUSIONS_ONCOKB_ANNOTATED)
+        cmd = [
+            '/home/iain/oicr/workspace/venv/djerba/bin/python3',
+            '/home/iain/oicr/git/oncokb-annotator/FusionAnnotator.py',
+            '-i', in_path,
+            '-o', out_path,
+            '-c', info_path,
+            '-b', self.oncokb_token
+        ]
+        print('###', ' '.join(cmd))
+        result = subprocess.run(cmd, check=True)
+        return out_path
+
+    def _annotate_maf(self, in_path, tmp_dir, info_path):
         # TODO import the main() method of MafAnnotator.py instead of running in subprocess
         # TODO as a stopgap, replace local paths with call to an executable script
-        info_path = os.path.join(tmp_dir, "oncokb_clinical_info.txt")
-        args = [self.config[constants.TUMOUR_ID], self.config[constants.CANCER_TYPE_DETAILED]]
-        with open(info_path, 'w') as info_file:
-            print("SAMPLE_ID\tONCOTREE_CODE", file=info_file)
-            print("{0}\t{1}".format(*args), file=info_file)
         tmp_path = os.path.join(tmp_dir, "annotated_maf_tmp.tsv")
         cmd = [
             '/home/iain/oicr/workspace/venv/djerba/bin/python3',
@@ -72,14 +111,14 @@ class wrapper:
             '-i', in_path,
             '-o', tmp_path,
             '-c', info_path,
-            '-b', self.ONCOKB_TOKEN_PATH
+            '-b', self.oncokb_token
         ]
         print('###', ' '.join(cmd))
         result = subprocess.run(cmd, check=True)
         # column header changed from lowercase to uppercase in newer versions of MafAnnotator
         # Rscript singleSample.r expects lowercase
         # TODO upgrade to newer version and leave header as-is?
-        out_path = os.path.join(tmp_dir, "annotated_maf.tsv")
+        out_path = os.path.join(tmp_dir, self.ANNOTATED_MAF)
         with open(tmp_path) as tmp_file, open(out_path, 'w') as out_file:
             first = True
             reader = csv.reader(tmp_file, delimiter="\t")
@@ -171,7 +210,7 @@ class wrapper:
                 writer.writerow(new_row)
         return out_path
 
-    def preprocess_maf(self, maf_path, tmp_dir):
+    def preprocess_maf(self, maf_path, tmp_dir, oncokb_info_path):
         """Apply preprocessing and annotation to a MAF file; write results to tmp_dir"""
         tmp_path = os.path.join(tmp_dir, 'tmp_maf.tsv')
         with \
@@ -201,7 +240,7 @@ class wrapper:
                         kept += 1
         print("Kept {0} of {1} MAF data rows".format(kept, total)) # TODO record with a logger
         # apply annotation to tempfile and return final output
-        out_path = self._annotate_maf(tmp_path, tmp_dir)
+        out_path = self._annotate_maf(tmp_path, tmp_dir, oncokb_info_path)
         return out_path
 
     def preprocess_seg(self, seg_path, tmp_dir):
@@ -228,9 +267,10 @@ class wrapper:
             tmp_dir = tmp.name
         else:
             tmp_dir = self.supplied_tmp_dir
+        oncokb_info = self.write_oncokb_info(tmp_dir)
         gep_path = self.preprocess_gep(self.config[constants.GEP_FILE], tmp_dir)
         fus_path = self.preprocess_fus(self.config[constants.FUS_FILE], tmp_dir)
-        maf_path = self.preprocess_maf(self.config[constants.MAF_FILE], tmp_dir)
+        maf_path = self.preprocess_maf(self.config[constants.MAF_FILE], tmp_dir, oncokb_info)
         seg_path = self.preprocess_seg(self.config[constants.SEG_FILE], tmp_dir)
         cmd = [
             'Rscript', os.path.join(self.rscript_dir, 'singleSample.r'),
@@ -257,8 +297,25 @@ class wrapper:
             '--hmzd', self.config[constants.HMZD],
             '--outdir', self.out_dir
         ]
-        print('###', ' '.join(cmd))
         result = subprocess.run(cmd, capture_output=True, encoding=constants.TEXT_ENCODING)
+        self.postprocess(tmp_dir, oncokb_info)
         if self.supplied_tmp_dir == None:
             tmp.cleanup()
         return result
+
+    def postprocess(self, tmp_dir, oncokb_info):
+        """Apply postprocessing to the Rscript output directory"""
+        self._annotate_cna(oncokb_info)
+        self._annotate_fusion(oncokb_info)
+        # remove unnecessary files, for consistency with CGI-Tools
+        os.remove(os.path.join(self.out_dir, self.DATA_CNA_ONCOKB_GENES))
+        os.remove(os.path.join(self.out_dir, self.DATA_FUSIONS_ONCOKB))
+
+    def write_oncokb_info(self, info_dir):
+        """Write a file of oncoKB data for use by annotation scripts"""
+        info_path = os.path.join(info_dir, self.ONCOKB_CLINICAL_INFO)
+        args = [self.config[constants.TUMOUR_ID], self.config[constants.CANCER_TYPE_DETAILED]]
+        with open(info_path, 'w') as info_file:
+            print("SAMPLE_ID\tONCOTREE_CODE", file=info_file)
+            print("{0}\t{1}".format(*args), file=info_file)
+        return info_path

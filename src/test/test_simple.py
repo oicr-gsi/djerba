@@ -285,10 +285,7 @@ class TestWrapper(TestBase):
         tmpDir = '/home/iain/tmp/djerba/wrapper_tmp' # TODO use testing tmpdir
         test_wrapper = wrapper(parser[ini_header], self.rScriptDir, outDir, tmpDir)
         result = test_wrapper.run()
-        #self.assertEqual(0, result.returncode)
-        if result.returncode!=0:
-            msg = "Script failed with STDERR:\n"+result.stderr
-            raise RuntimeError(msg)
+        self.assertEqual(0, result.returncode)
 
 if __name__ == '__main__':
     unittest.main()
