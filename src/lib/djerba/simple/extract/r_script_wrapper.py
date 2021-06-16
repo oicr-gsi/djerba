@@ -19,6 +19,10 @@ class wrapper:
     GNOMAD_AF = 123
     ONCOGENIC = 136
 
+    # 0-based index for GEP results file
+    GENE_ID = 0
+    FPKM = 6
+
     # permitted MAF mutation types; from mutation_types.exonic in CGI-Tools
     MUTATION_TYPES_EXONIC = [
         'Frame_Shift_Del',
@@ -39,7 +43,7 @@ class wrapper:
         't_lod_fstar'
     ]
 
-    # maf filter thresholds
+    # MAF filter thresholds
     MIN_VAF = 0.1
     MAX_UNMATCHED_GNOMAD_AF = 0.001
 
@@ -55,6 +59,7 @@ class wrapper:
 
     def _annotate_maf(self, in_path, tmp_dir):
         # TODO import the main() method of MafAnnotator.py instead of running in subprocess
+        # TODO as a stopgap, replace local paths with call to an executable script
         info_path = os.path.join(tmp_dir, "oncokb_clinical_info.txt")
         args = [self.config[constants.TUMOUR_ID], self.config[constants.CANCER_TYPE_DETAILED]]
         with open(info_path, 'w') as info_file:
@@ -105,6 +110,46 @@ class wrapper:
            not any([any([x.search(z) for x in self.exclusions]) for z in row]):
             ok = True
         return ok
+
+    def preprocess_gep(self, gep_path, tmp_dir):
+        """
+        Apply preprocessing to a GEP file; write results to tmp_dir
+        CGI-Tools constructs the GEP file from scratch, but only the first column actually varies
+        As a shortcut, we insert the first column into a ready-made file
+        """
+        # read the gene id and FPKM metric from the GEP file for this report
+        fkpm = {}
+        with open(gep_path) as gep_file:
+            reader = csv.reader(gep_file, delimiter="\t")
+            for row in reader:
+                try:
+                    fkpm[row[self.GENE_ID]] = row[self.FPKM]
+                except IndexError:
+                    print(row)
+        # insert as the first column in the generic GEP file
+        ref_path = self.config[constants.GEP_REFERENCE]
+        out_path = os.path.join(tmp_dir, 'gep.txt')
+        with \
+             gzip.open(ref_path, 'rt', encoding=constants.TEXT_ENCODING) as in_file, \
+             open(out_path, 'wt') as out_file:
+            # preprocess the MAF file
+            reader = csv.reader(in_file, delimiter="\t")
+            writer = csv.writer(out_file, delimiter="\t")
+            first = True
+            for row in reader:
+                if first:
+                    row.insert(1, self.config[constants.TUMOUR_ID])
+                    first = False
+                else:
+                    gene_id = row[0]
+                    try:
+                        row.insert(1, fkpm[gene_id])
+                    except KeyError as err:
+                        msg = 'Cannot find gene ID {0} in '.format(gene_id) +\
+                            'gep results path {0}'.format(gep_path)
+                        raise KeyError(msg) from err
+                writer.writerow(row)
+        return out_path
 
     def preprocess_fus(self, fus_path, tmp_dir):
         """
@@ -183,6 +228,7 @@ class wrapper:
             tmp_dir = tmp.name
         else:
             tmp_dir = self.supplied_tmp_dir
+        gep_path = self.preprocess_gep(self.config[constants.GEP_FILE], tmp_dir)
         fus_path = self.preprocess_fus(self.config[constants.FUS_FILE], tmp_dir)
         maf_path = self.preprocess_maf(self.config[constants.MAF_FILE], tmp_dir)
         seg_path = self.preprocess_seg(self.config[constants.SEG_FILE], tmp_dir)
@@ -194,6 +240,7 @@ class wrapper:
             '--normalid', self.config[constants.NORMAL_ID],
             '--maffile', maf_path,
             '--segfile', seg_path,
+            '--gepfile', gep_path,
             '--fusfile', fus_path,
             '--minfusionreads', self.config[constants.MIN_FUSION_READS],
             '--enscon', self.config[constants.ENSCON],

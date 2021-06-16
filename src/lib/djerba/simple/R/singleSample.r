@@ -5,6 +5,7 @@ library(deconstructSigs)
 library(BSgenome.Hsapiens.UCSC.hg38)
 
 # command line options
+# TODO gepcomp and tmbcomp do not appear to be in use; if so, can remove them
 option_list = list(
   make_option(c("-a", "--basedir"), type="character", default=NULL, help="cBioWrap base directory", metavar="character"),
   make_option(c("-b", "--maffile"), type="character", default=NULL, help="concatenated maf file", metavar="character"),
