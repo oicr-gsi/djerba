@@ -153,8 +153,9 @@ class wrapper:
     def preprocess_gep(self, gep_path, tmp_dir):
         """
         Apply preprocessing to a GEP file; write results to tmp_dir
-        CGI-Tools constructs the GEP file from scratch, but only the first column actually varies
+        CGI-Tools constructs the GEP file from scratch, but only one column actually varies
         As a shortcut, we insert the first column into a ready-made file
+        TODO Should GEP_REFERENCE (list of past GEP results) be updated on a regular basis?
         """
         # read the gene id and FPKM metric from the GEP file for this report
         fkpm = {}
@@ -165,7 +166,7 @@ class wrapper:
                     fkpm[row[self.GENE_ID]] = row[self.FPKM]
                 except IndexError:
                     print(row)
-        # insert as the first column in the generic GEP file
+        # insert as the second column in the generic GEP file
         ref_path = self.config[constants.GEP_REFERENCE]
         out_path = os.path.join(tmp_dir, 'gep.txt')
         with \

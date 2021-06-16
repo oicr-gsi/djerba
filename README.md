@@ -17,7 +17,7 @@ Djerba consists of 5 steps:
 2. **Extract**: Process the inputs to find clinical reporting attributes, at both gene and sample level. An attribute may be a numerical metric, text field, or other quantity. Extracted metrics are typically written as JSON; other file formats may also be used, for example to write images. As part of this step, Djerba can choose the [Sequenza](https://cran.r-project.org/web/packages/sequenza/vignettes/sequenza.html) gamma parameter, which selects a purity/ploidy solution from Sequenza.
 3. **Build**: Merge outputs from the extraction step into a single JSON document, which must conform to the [Elba config schema](https://github.com/oicr-gsi/elba-config-schema).
 4. **Render**: Use the JSON to create an HTML document.
-4. **Publish**: Convert the HTML to PDF.
+5. **Publish**: Convert the HTML to PDF.
 
 ## Development History
 
