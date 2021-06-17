@@ -7,8 +7,9 @@ import re
 import subprocess
 import tempfile
 import djerba.simple.constants as constants
+import djerba.simple.ini_fields as ini
 
-class wrapper:
+class r_script_wrapper:
 
     # 0-based indices for important MAF columns
     VARIANT_CLASSIFICATION = 8
@@ -59,11 +60,22 @@ class wrapper:
     # environment variable for ONCOKB token path
     ONCOKB_TOKEN_VARIABLE = 'ONCOKB_TOKEN'
 
-    def __init__(self, config, rscript_dir, out_dir, supplied_tmp_dir=None):
+    def __init__(self, config):
         self.config = config
-        self.rscript_dir = os.path.realpath(rscript_dir)
-        self.out_dir = out_dir
-        self.supplied_tmp_dir = supplied_tmp_dir
+        r_script_dir = config[ini.SETTINGS].get(ini.R_SCRIPT_DIR)
+        if not r_script_dir:
+            r_script_dir = os.path.join(os.path.dirname(__file__), '..', 'R')
+        self.r_script_dir = self._validate_r_script_dir(r_script_dir)
+        scratch_dir = config[ini.SETTINGS][ini.SCRATCH_DIR]
+        self.supplied_tmp_dir = scratch_dir # TODO allow for multiple runs sharing scratch dir
+        self.out_dir = config[ini.INPUTS][ini.OUT_DIR]
+        self.tumour_id = config[ini.INPUTS][ini.TUMOUR_ID]
+        self.cancer_type_detailed = config[ini.INPUTS][ini.CANCER_TYPE_DETAILED]
+        self.gep_reference = config[ini.SETTINGS][ini.GEP_REFERENCE]
+        self.min_fusion_reads = self.config[ini.SETTINGS][ini.MIN_FUSION_READS]
+        if not self.min_fusion_reads.isdigit():
+            msg = "Min fusion reads '{}' is not a non-negative integer".format(min_fusion_reads)
+            raise ValueError(msg)
         self.exclusions = [re.compile(x) for x in self.FILTER_FLAGS_EXCLUDE]
         self.oncokb_token = os.environ[self.ONCOKB_TOKEN_VARIABLE]
 
@@ -150,6 +162,32 @@ class wrapper:
             ok = True
         return ok
 
+    def _validate_r_script_dir(self, path):
+        """
+        Check R script directory exists, is readable, and contains required scripts
+        """
+        if not os.path.exists(path):
+            raise OSError("R script directory path '{}' does not exist".format(path))
+        elif not os.path.isdir(path):
+            raise OSError("R script directory path '{}' is not a directory".format(path))
+        elif not os.access(path, os.R_OK):
+            raise OSError("R script directory path '{}' is not readable".format(path))
+        required_files = [
+            'calc_mut_sigs.r',
+            'convert_mavis_to_filtered_fusions.r',
+            'convert_rsem_results_zscore.r',
+            'convert_seg_to_gene_singlesample.r',
+            'convert_vep92_to_filtered_cbio.r',
+            'singleSample.r'
+        ]
+        for req in required_files:
+            req_path = os.path.join(path, req)
+            if not (os.path.exists(req_path) and \
+                    os.path.isfile(req_path) and \
+                    os.access(req_path, os.R_OK)):
+                raise OSError("R script path '{}' is not valid".format(req_path))
+        return os.path.abspath(path)
+
     def preprocess_gep(self, gep_path, tmp_dir):
         """
         Apply preprocessing to a GEP file; write results to tmp_dir
@@ -167,7 +205,7 @@ class wrapper:
                 except IndexError:
                     print(row)
         # insert as the second column in the generic GEP file
-        ref_path = self.config[constants.GEP_REFERENCE]
+        ref_path = self.gep_reference
         out_path = os.path.join(tmp_dir, 'gep.txt')
         with \
              gzip.open(ref_path, 'rt', encoding=constants.TEXT_ENCODING) as in_file, \
@@ -178,7 +216,7 @@ class wrapper:
             first = True
             for row in reader:
                 if first:
-                    row.insert(1, self.config[constants.TUMOUR_ID])
+                    row.insert(1, self.tumour_id)
                     first = False
                 else:
                     gene_id = row[0]
@@ -206,7 +244,7 @@ class wrapper:
                     value = 'Sample'
                     in_header = False
                 else:
-                    value = self.config[constants.TUMOUR_ID]
+                    value = self.tumour_id
                 new_row = [value] + row
                 writer.writerow(new_row)
         return out_path
@@ -236,7 +274,7 @@ class wrapper:
                     total += 1
                     if self._maf_body_row_ok(row):
                         # filter rows in the MAF body and update the tumour_id
-                        row[self.TUMOR_SAMPLE_BARCODE] = self.config[constants.TUMOUR_ID]
+                        row[self.TUMOR_SAMPLE_BARCODE] = self.tumour_id
                         writer.writerow(row)
                         kept += 1
         print("Kept {0} of {1} MAF data rows".format(kept, total)) # TODO record with a logger
@@ -258,7 +296,7 @@ class wrapper:
                 if in_header:
                     in_header = False
                 else:
-                    row[0] = self.config[constants.TUMOUR_ID]
+                    row[0] = self.tumour_id
                 writer.writerow(row)
         return out_path
 
@@ -269,33 +307,33 @@ class wrapper:
         else:
             tmp_dir = self.supplied_tmp_dir
         oncokb_info = self.write_oncokb_info(tmp_dir)
-        gep_path = self.preprocess_gep(self.config[constants.GEP_FILE], tmp_dir)
-        fus_path = self.preprocess_fus(self.config[constants.FUS_FILE], tmp_dir)
-        maf_path = self.preprocess_maf(self.config[constants.MAF_FILE], tmp_dir, oncokb_info)
-        seg_path = self.preprocess_seg(self.config[constants.SEG_FILE], tmp_dir)
+        gep_path = self.preprocess_gep(self.config[ini.DISCOVERED][ini.GEP_FILE], tmp_dir)
+        fus_path = self.preprocess_fus(self.config[ini.DISCOVERED][ini.FUS_FILE], tmp_dir)
+        maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE], tmp_dir, oncokb_info)
+        seg_path = self.preprocess_seg(self.config[ini.DISCOVERED][ini.SEG_FILE], tmp_dir)
         cmd = [
-            'Rscript', os.path.join(self.rscript_dir, 'singleSample.r'),
-            '--basedir', self.rscript_dir,
-            '--studyid', self.config[constants.STUDY_ID],
-            '--tumourid', self.config[constants.TUMOUR_ID],
-            '--normalid', self.config[constants.NORMAL_ID],
+            'Rscript', os.path.join(self.r_script_dir, 'singleSample.r'),
+            '--basedir', self.r_script_dir,
+            '--studyid', self.config[ini.INPUTS][ini.STUDY_ID],
+            '--tumourid', self.tumour_id,
+            '--normalid', self.config[ini.INPUTS][ini.NORMAL_ID],
             '--maffile', maf_path,
             '--segfile', seg_path,
             '--gepfile', gep_path,
             '--fusfile', fus_path,
-            '--minfusionreads', self.config[constants.MIN_FUSION_READS],
-            '--enscon', self.config[constants.ENSCON],
-            '--entcon', self.config[constants.ENTCON],
-            '--genebed', self.config[constants.GENE_BED],
-            '--genelist', self.config[constants.GENE_LIST],
-            '--oncolist', self.config[constants.ONCO_LIST],
-            '--tcgadata', self.config[constants.TGCA_DATA],
-            '--whizbam_url', self.config[constants.WHIZBAM_URL_KEY],
-            '--tcgacode', self.config[constants.TGCA_CODE],
-            '--gain', self.config[constants.GAIN],
-            '--ampl', self.config[constants.AMPL],
-            '--htzd', self.config[constants.HTZD],
-            '--hmzd', self.config[constants.HMZD],
+            '--minfusionreads', self.min_fusion_reads,
+            '--enscon', self.config[ini.DISCOVERED][ini.ENSCON],
+            '--entcon', self.config[ini.DISCOVERED][ini.ENTCON],
+            '--genebed', self.config[ini.DISCOVERED][ini.GENE_BED],
+            '--genelist', self.config[ini.DISCOVERED][ini.GENE_LIST],
+            '--oncolist', self.config[ini.DISCOVERED][ini.ONCO_LIST],
+            '--tcgadata', self.config[ini.SETTINGS][ini.TGCA_DATA],
+            '--whizbam_url', self.config[ini.SETTINGS][ini.WHIZBAM_URL],
+            '--tcgacode', self.config[ini.INPUTS][ini.TGCA_CODE],
+            '--gain', self.config[ini.SEG][ini.GAIN],
+            '--ampl', self.config[ini.SEG][ini.AMPL],
+            '--htzd', self.config[ini.SEG][ini.HTZD],
+            '--hmzd', self.config[ini.SEG][ini.HMZD],
             '--outdir', self.out_dir
         ]
         result = subprocess.run(cmd, capture_output=True, encoding=constants.TEXT_ENCODING)
@@ -315,7 +353,7 @@ class wrapper:
     def write_oncokb_info(self, info_dir):
         """Write a file of oncoKB data for use by annotation scripts"""
         info_path = os.path.join(info_dir, self.ONCOKB_CLINICAL_INFO)
-        args = [self.config[constants.TUMOUR_ID], self.config[constants.CANCER_TYPE_DETAILED]]
+        args = [self.tumour_id, self.cancer_type_detailed]
         with open(info_path, 'w') as info_file:
             print("SAMPLE_ID\tONCOTREE_CODE", file=info_file)
             print("{0}\t{1}".format(*args), file=info_file)

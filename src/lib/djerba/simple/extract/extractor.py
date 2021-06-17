@@ -5,9 +5,9 @@ import os
 import pandas as pd
 
 from djerba.simple.extract.sequenza import sequenza_extractor
-from djerba.simple.extract.r_script_wrapper import wrapper
+from djerba.simple.extract.r_script_wrapper import r_script_wrapper
 import djerba.simple.constants as constants
-
+import djerba.simple.ini_fields as ini
 
 class extractor:
     """
@@ -20,17 +20,20 @@ class extractor:
     SAMPLE_PARAMS_FILENAME = 'sample_params.json'
     MAF_PARAMS_FILENAME = 'maf_params.json'
     SEQUENZA_PARAMS_FILENAME = 'sequenza_params.json'
-    
-    def __init__(self, config, bedPath, outDir, rscript_dir):
-        # config is a dictionary with required parameters (eg. from INI file)
+
+    # TODO
+    # - only input is a ConfigParser object (updated using config_updater)
+    # - get segfile path from sequenza reader, for rscript
+    # - get fusfile and gepfile paths from provenance, for rscript
+    # - run the rscript
+    # - parse rscript results into JSON for final collation
+
+    def __init__(self, config):
         self.config = config
-        self.bedPath = bedPath # .bed file for MAF calculation; TODO check readability?
-        self.outDir = outDir
-        self.rscript_dir = rscript_dir
-        self.componentPaths = []
+        self.work_dir = config[ini.SETTINGS][ini.SCRATCH_DIR]
 
     def _write_json(self, config, fileName):
-        outPath = os.path.join(self.outDir, fileName)
+        outPath = os.path.join(self.work_dir, fileName)
         with open(outPath, 'w') as out:
             out.write(json.dumps(config, sort_keys=True, indent=4))
         return outPath
@@ -43,13 +46,19 @@ class extractor:
         """Run all extractions and write output"""
         self.componentPaths.append(self.writeMafParams())
         self.componentPaths.append(self.writeSequenzaParams())
-        self.componentPaths.append(self.writeConfigParams())
+        #self.componentPaths.append(self.writeConfigParams())
+
+    def run_r_script(self):
+        wrapper = r_script_wrapper(config)
+        wrapper.run()
 
     def writeConfigParams(self):
         """
         Take parameters directly from extraction config, and write as JSON for later use
         Output approximates data_clinical.txt in CGI-Tools, but only has fields for final JSON output
         """
+        # TODO simplify and take params from INI config
+        # may introduce an 'attributes' INI section for params which will be carried forward unchanged
         sampleParams = {}
         sampleParams['PATIENT_ID'] = self.config[constants.PATIENT_ID].strip('"')
         stringKeys = [

@@ -45,7 +45,7 @@ class config_updater:
         if self.config[ini.SETTINGS].get(ini.DATA_DIR):
             data_dir = self.config[ini.SETTINGS][ini.DATA_DIR]
         else:
-            data_dir = os.path.join(os.path.dirname(__file__), constants.DATA_DIR_NAME)
+            data_dir = os.path.join(os.path.dirname(__file__), '..', constants.DATA_DIR_NAME)
         data_files[ini.ENSCON] = os.path.join(data_dir, self.ENSCON_NAME)
         data_files[ini.ENTCON] = os.path.join(data_dir, self.ENTCON_NAME)
         data_files[ini.GENEBED] = os.path.join(data_dir, self.GENEBED_NAME)
@@ -84,6 +84,7 @@ class extraction_config:
     """
     Populate a config structure with parameters for data extraction
     """
+    # TODO this will be obsolete with config updater
 
     def __init__(self, provenance_path, project, donor, gamma=None):
         self.reader = provenance_reader(provenance_path, project, donor)

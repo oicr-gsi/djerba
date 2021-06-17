@@ -5,7 +5,7 @@ import json
 import os
 import djerba.simple.constants as constants
 import djerba.simple.ini_fields as ini
-from djerba.simple.configure.configure import extraction_config
+from djerba.simple.configure.configure import config_updater
 from djerba.simple.extract.extractor import extractor
 from djerba.simple.build.reader import multiple_reader
 
@@ -21,11 +21,6 @@ class runner:
         self.provenancePath = config[ini.SETTINGS][ini.PROVENANCE]
         outdir = config[ini.INPUTS][ini.OUT_DIR]
         self.outPath = os.path.join(outdir, config[ini.SETTINGS][ini.METRICS_FILENAME])
-        rScriptDir = config[ini.SETTINGS].get(ini.R_SCRIPT_DIR)
-        if rScriptDir:
-            self.rScriptDir = rScriptDir
-        else:
-            self.rScriptDir = os.path.join(os.path.dirname(__file__), 'R')
         schemaPath = config[ini.SETTINGS][ini.METRICS_SCHEMA]
         with open(schemaPath) as f:
             self.schema = json.loads(f.read())
@@ -34,8 +29,10 @@ class runner:
 
     def run(self):
         """Configure extraction; extract data, collate & write as JSON"""
-        config = extraction_config(self.provenancePath, self.project, self.donor, self.gamma)
-        ext = extractor(config.get_params(), self.bedPath, self.workDir, self.rScriptDir)
+        updater = config_updater(self.config)
+        updater.update()
+        self.config = updater.get_config()
+        ext = extractor(self.config)
         ext.run()
         components = []
         for componentPath in ext.getComponentPaths():

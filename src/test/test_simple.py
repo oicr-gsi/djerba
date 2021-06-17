@@ -12,7 +12,7 @@ import djerba.simple.constants as constants
 from jsonschema.exceptions import ValidationError
 from djerba.simple.configure.configure import config_updater, extraction_config, provenance_reader, MissingProvenanceError
 from djerba.simple.extract.extractor import extractor
-from djerba.simple.extract.r_script_wrapper import wrapper
+from djerba.simple.extract.r_script_wrapper import r_script_wrapper
 from djerba.simple.extract.sequenza import sequenza_extractor, SequenzaExtractionError
 from djerba.simple.build.reader import json_reader, mastersheet_reader, multiple_reader
 from djerba.simple.runner import runner
@@ -275,16 +275,10 @@ class TestSequenzaExtractor(TestBase):
 class TestWrapper(TestBase):
 
     def test(self):
-        ini_header = 'RSCRIPT_CONFIG'
-        iniPath = os.path.join(self.sup_dir, 'rscript_config.ini')
-        with open(iniPath) as iniFile:
-            # prepend header required by configparser
-            configString = "[%s]\n%s" % (ini_header, iniFile.read())
-        parser = configparser.ConfigParser()
-        parser.read_string(configString)
-        outDir = '/home/iain/tmp/djerba/rscript' # TODO use testing tmpdir
-        tmpDir = '/home/iain/tmp/djerba/wrapper_tmp' # TODO use testing tmpdir
-        test_wrapper = wrapper(parser[ini_header], self.rScriptDir, outDir, tmpDir)
+        iniPath = os.path.join(self.sup_dir, 'rscript_config_updated.ini')
+        config = configparser.ConfigParser()
+        config.read(iniPath)
+        test_wrapper = r_script_wrapper(config)
         result = test_wrapper.run()
         self.assertEqual(0, result.returncode)
 
