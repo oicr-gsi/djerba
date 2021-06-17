@@ -42,7 +42,7 @@ class config_updater:
 
     def find_data_files(self):
         data_files = {}
-        if self.config[ini.SETTINGS][ini.DATA_DIR]:
+        if self.config[ini.SETTINGS].get(ini.DATA_DIR):
             data_dir = self.config[ini.SETTINGS][ini.DATA_DIR]
         else:
             data_dir = os.path.join(os.path.dirname(__file__), constants.DATA_DIR_NAME)
@@ -79,7 +79,6 @@ class config_updater:
             # Do not overwrite existing params; TODO log when existing param is being skipped
             if self.config[ini.DISCOVERED].get(key) == None:
                 self.config[ini.DISCOVERED][key] = updates[key]
-
 
 class extraction_config:
     """

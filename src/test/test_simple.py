@@ -95,11 +95,12 @@ class TestConfigure(TestBase):
         config.read(iniPath)
         updater = config_updater(config)
         updater.update()
-        updated_path = os.path.join(self.tmpDir, 'updated_config.ini')
+        #updated_path = os.path.join(self.tmpDir, 'updated_config.ini')
+        updated_path = os.path.join('/home/iain/tmp', 'updated_config.ini')
         with open(updated_path, 'w') as f:
             updater.get_config().write(f)
         # TODO this relies on local paths being identical; make it portable
-        self.assertEqual(self.getMD5(updated_path), '4a75dba639db26298decd80a1860cc43')
+        self.assertEqual(self.getMD5(updated_path), '78fe5074525386958f90e0fc99569643')
 
 class TestExtractor(TestBase):
 
