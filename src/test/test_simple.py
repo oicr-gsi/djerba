@@ -10,7 +10,7 @@ import tempfile
 import unittest
 import djerba.simple.constants as constants
 from jsonschema.exceptions import ValidationError
-from djerba.simple.discover.discover import extraction_config, provenance_reader, MissingProvenanceError
+from djerba.simple.configure.configure import extraction_config, provenance_reader, MissingProvenanceError
 from djerba.simple.extract.extractor import extractor
 from djerba.simple.extract.r_script_wrapper import wrapper
 from djerba.simple.extract.sequenza import sequenza_extractor, SequenzaExtractionError
@@ -166,39 +166,27 @@ class TestRunner(TestBase):
 
     def setUp(self):
         super().setUp()
-        self.expectedMD5 = 'b3439442f8612b5eec3b3728c57a31dc'
-        self.iniPath = os.path.join(self.sup_dir, 'report_configuration_reduced.ini')
+        self.expectedMD5 = 'bf15d9648510cbcc462da9b5b7fe7c89'
+        self.iniPath = os.path.join(self.dataDir, 'config.ini')
         self.workDir = os.path.join(self.tmpDir, 'work')
         os.mkdir(self.workDir)
         
     def test_runner(self):
         #outPath = os.path.join(self.tmpDir, 'report.json')
-        outDir = '/home/iain/tmp/djerba/test'
-        outPath = os.path.join(outDir, 'report.json')
-        runner(self.provenance_path,
-               self.project,
-               self.donor,
-               self.bed_path,
-               self.iniPath,
-               self.workDir,
-               outPath,
-               self.schema_path,
-               self.rScriptDir).run()
+        # TODO customize INI params to use temporary test dir
+        outDir = '/home/iain/oicr/workspace/djerba/cli_output_wip'
+        outPath = os.path.join(outDir, 'cgi_metrics.json')
+        config = configparser.ConfigParser()
+        config.read(self.iniPath)
+        runner(config).run()
         self.assertEqual(self.getMD5(outPath), self.expectedMD5)
 
     def test_script(self):
-        outDir = '/home/iain/tmp/djerba/script' # TODO replace with tempdir
-        outPath = os.path.join(outDir, 'report.json')
+        outDir = '/home/iain/oicr/workspace/djerba/cli_output_wip'  # TODO replace with tempdir
+        outPath = os.path.join(outDir, 'cgi_metrics.json')
         cmd = [
             "djerba_simple.py",
-            "--provenance", self.provenance_path,
-            "--project", self.project,
-            "--donor", self.donor,
-            "--bed", self.bed_path,
-            "--ini", self.iniPath,
-            "--out", outPath,
-            "--schema", self.schema_path,
-            "--work-dir", self.workDir
+            "--ini", self.iniPath
         ]
         self.run_command(cmd)
         self.assertEqual(self.getMD5(outPath), self.expectedMD5)

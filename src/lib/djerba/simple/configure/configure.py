@@ -13,7 +13,7 @@ import gzip
 import re
 
 import djerba.simple.constants as constants
-import djerba.simple.discover.index as index
+import djerba.simple.configure.index as index
 
 class extraction_config:
     """
@@ -68,7 +68,8 @@ class provenance_reader:
                    row[index.SEQUENCER_RUN_PLATFORM_ID] != 'Illumina_MiSeq':
                     self.provenance.append(row)
         if len(self.provenance)==0:
-            msg = "No provenance records found for project '%s' and donor '%s'" % (project, donor)
+            msg = "No provenance records found for project '%s' and donor '%s' " % (project, donor) +\
+                "in '%s'" % provenance_path
             raise MissingProvenanceError(msg)
 
     def _filter_rows(self, index, value, rows=None):
