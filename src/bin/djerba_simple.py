@@ -78,7 +78,7 @@ class djerba_validator:
     def validate_config(self, config):
         """Validate the config params, eg. from an INI file"""
         self.validate_input_file(config[fields.SETTINGS][fields.PROVENANCE])
-        self.validate_output_dir(config[fields.SETTINGS][fields.WORK_DIR])
+        self.validate_output_dir(config[fields.SETTINGS][fields.SCRATCH_DIR])
         self.validate_present(config, fields.INPUTS, fields.NORMAL_ID)
         self.validate_present(config, fields.INPUTS, fields.PATIENT_ID)
         self.validate_present(config, fields.INPUTS, fields.STUDY_ID)

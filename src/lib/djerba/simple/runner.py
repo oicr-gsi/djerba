@@ -12,9 +12,9 @@ from djerba.simple.build.reader import multiple_reader
 class runner:
 
     def __init__(self, config):
-        config = config
+        self.config = config
         self.bedPath = config[ini.SETTINGS][ini.BED_PATH]
-        self.workDir = config[ini.SETTINGS][ini.WORK_DIR]
+        self.workDir = config[ini.SETTINGS][ini.SCRATCH_DIR]
         self.donor = config[ini.INPUTS][ini.PATIENT]
         self.gamma = config[ini.INPUTS].getint(ini.GAMMA)
         self.project = config[ini.INPUTS][ini.STUDY_ID]

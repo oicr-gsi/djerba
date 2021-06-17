@@ -48,10 +48,10 @@ class config_updater:
             data_dir = os.path.join(os.path.dirname(__file__), '..', constants.DATA_DIR_NAME)
         data_files[ini.ENSCON] = os.path.join(data_dir, self.ENSCON_NAME)
         data_files[ini.ENTCON] = os.path.join(data_dir, self.ENTCON_NAME)
-        data_files[ini.GENEBED] = os.path.join(data_dir, self.GENEBED_NAME)
-        data_files[ini.ONCOLIST] = os.path.join(data_dir, self.ONCOLIST_NAME)
+        data_files[ini.GENE_BED] = os.path.join(data_dir, self.GENEBED_NAME)
+        data_files[ini.ONCO_LIST] = os.path.join(data_dir, self.ONCOLIST_NAME)
         data_files[ini.MUTATION_NONSYN] = os.path.join(data_dir, self.MUTATION_NONSYN_NAME)
-        data_files[ini.GENELIST] = os.path.join(data_dir, self.GENELIST_NAME)
+        data_files[ini.GENE_LIST] = os.path.join(data_dir, self.GENELIST_NAME)
         data_files[ini.TMBCOMP] = os.path.join(data_dir, self.TMBCOMP_NAME)
         return data_files
 

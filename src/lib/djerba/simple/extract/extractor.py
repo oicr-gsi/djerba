@@ -31,6 +31,7 @@ class extractor:
     def __init__(self, config):
         self.config = config
         self.work_dir = config[ini.SETTINGS][ini.SCRATCH_DIR]
+        self.componentPaths = []
 
     def _write_json(self, config, fileName):
         outPath = os.path.join(self.work_dir, fileName)
@@ -100,8 +101,8 @@ class extractor:
 
     def writeMafParams(self):
         """Read the MAF file, extract relevant parameters, and write as JSON"""
-        maf_path = self.config[constants.MAF_FILE]
-        tmb = maf_extractor(maf_path, self.bedPath).find_tmb()
+        maf_path = self.config[ini.DISCOVERED][ini.MAF_FILE]
+        tmb = maf_extractor(maf_path, self.config[ini.SETTINGS][ini.BED_PATH]).find_tmb()
         config = {
             constants.READER_CLASS_KEY: 'json_reader',
             self.SAMPLE_INFO_KEY: {
@@ -112,8 +113,8 @@ class extractor:
 
     def writeSequenzaParams(self):
         """Read the Sequenza results.zip, extract relevant parameters, and write as JSON"""
-        ex = sequenza_extractor(self.config[constants.SEQUENZAFILE])
-        gamma = self.config.get(constants.SEQUENZA_GAMMA)
+        ex = sequenza_extractor(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE])
+        gamma = self.config.getint(ini.INPUTS, ini.GAMMA)
         [purity, ploidy] = ex.get_purity_ploidy(gamma) # if gamma==None, this uses the default
         config = {
             constants.READER_CLASS_KEY: 'json_reader',
