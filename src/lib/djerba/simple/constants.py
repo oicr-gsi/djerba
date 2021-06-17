@@ -2,6 +2,7 @@
 
 AMPL = 'ampl'
 CANCER_TYPE_DETAILED = 'CANCER_TYPE_DETAILED'
+DATA_DIR_NAME = 'data'
 ENSCON = 'enscon'
 ENTCON = 'entcon'
 FUS_FILE = 'fusfile'

@@ -10,10 +10,76 @@
 
 import csv
 import gzip
+import os
 import re
 
 import djerba.simple.constants as constants
 import djerba.simple.configure.index as index
+import djerba.simple.ini_fields as ini
+
+class config_updater:
+    """
+    Discover and apply param updates to a ConfigParser object
+    Param updates are automatically extracted from data sources, eg. file provenance
+    """
+
+    # data filenames
+    # mutationcode and filterflagexc are obsolete; included in r_script_wrapper.py
+    ENSCON_NAME = 'ensemble_conversion_hg38.txt'
+    ENTCON_NAME = 'entrez_conversion.txt'
+    GENEBED_NAME = 'gencode_v33_hg38_genes.bed'
+    ONCOLIST_NAME = '20200818-oncoKBcancerGeneList.tsv'
+    MUTATION_NONSYN_NAME = 'mutation_types.nonsynonymous'
+    GENELIST_NAME = 'targeted_genelist.txt'
+    TMBCOMP_NAME = 'tmbcomp.txt'
+
+    def __init__(self, config):
+        self.config = config
+        provenance = self.config[ini.SETTINGS][ini.PROVENANCE]
+        project = self.config[ini.INPUTS][ini.STUDY_ID]
+        donor = self.config[ini.INPUTS][ini.PATIENT]
+        self.reader = provenance_reader(provenance, project, donor)
+
+    def find_data_files(self):
+        data_files = {}
+        if self.config[ini.SETTINGS][ini.DATA_DIR]:
+            data_dir = self.config[ini.SETTINGS][ini.DATA_DIR]
+        else:
+            data_dir = os.path.join(os.path.dirname(__file__), constants.DATA_DIR_NAME)
+        data_files[ini.ENSCON] = os.path.join(data_dir, self.ENSCON_NAME)
+        data_files[ini.ENTCON] = os.path.join(data_dir, self.ENTCON_NAME)
+        data_files[ini.GENEBED] = os.path.join(data_dir, self.GENEBED_NAME)
+        data_files[ini.ONCOLIST] = os.path.join(data_dir, self.ONCOLIST_NAME)
+        data_files[ini.MUTATION_NONSYN] = os.path.join(data_dir, self.MUTATION_NONSYN_NAME)
+        data_files[ini.GENELIST] = os.path.join(data_dir, self.GENELIST_NAME)
+        data_files[ini.TMBCOMP] = os.path.join(data_dir, self.TMBCOMP_NAME)
+        return data_files
+
+    def discover(self):
+        updates = {}
+        # TODO
+        # - get file paths from provenance
+        # - get data file paths from data dir, eg. enscon, gep reference
+        # - check if all data files are needed (some may be obsolete)
+        # - verify all discovered files exist and are readable
+        updates[ini.MAF_FILE] = self.reader.parse_maf_path()
+        updates[ini.SEQUENZA_FILE] = self.reader.parse_sequenza_path()
+        updates.update(self.find_data_files())
+        return updates
+
+    def get_config(self):
+        return self.config
+
+    def update(self):
+        """Input a ConfigParser; discover and apply updates"""
+        updates = self.discover()
+        if not self.config.has_section(ini.DISCOVERED):
+            self.config.add_section(ini.DISCOVERED)
+        for key in updates.keys():
+            # Do not overwrite existing params; TODO log when existing param is being skipped
+            if self.config[ini.DISCOVERED].get(key) == None:
+                self.config[ini.DISCOVERED][key] = updates[key]
+
 
 class extraction_config:
     """

@@ -10,7 +10,7 @@ import tempfile
 import unittest
 import djerba.simple.constants as constants
 from jsonschema.exceptions import ValidationError
-from djerba.simple.configure.configure import extraction_config, provenance_reader, MissingProvenanceError
+from djerba.simple.configure.configure import config_updater, extraction_config, provenance_reader, MissingProvenanceError
 from djerba.simple.extract.extractor import extractor
 from djerba.simple.extract.r_script_wrapper import wrapper
 from djerba.simple.extract.sequenza import sequenza_extractor, SequenzaExtractionError
@@ -67,7 +67,7 @@ class TestBase(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-class TestDiscover(TestBase):
+class TestConfigure(TestBase):
 
     def test_config(self):
         # test config structure generation, without supplying pre-created INI parameters
@@ -88,6 +88,18 @@ class TestDiscover(TestBase):
         self.assertEqual(maf_path, expected)
         with self.assertRaises(MissingProvenanceError):
             test_reader_2 = provenance_reader(self.provenance_path, self.project, 'nonexistent_donor')
+
+    def test_updater(self):
+        iniPath = os.path.join(self.dataDir, 'config.ini')
+        config = configparser.ConfigParser()
+        config.read(iniPath)
+        updater = config_updater(config)
+        updater.update()
+        updated_path = os.path.join(self.tmpDir, 'updated_config.ini')
+        with open(updated_path, 'w') as f:
+            updater.get_config().write(f)
+        # TODO this relies on local paths being identical; make it portable
+        self.assertEqual(self.getMD5(updated_path), '4a75dba639db26298decd80a1860cc43')
 
 class TestExtractor(TestBase):
 
