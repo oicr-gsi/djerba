@@ -126,8 +126,10 @@ class TestParser(TestBase):
         outDir = '/home/iain/tmp/djerba/test/parser' # TODO change to testing temp dir
         parser = r_script_results_parser(inDir, outDir)
         parser.run()
-        dmeop = os.path.join(outDir, parser.DATA_MUTEX_ONCOGENIC_PARSED)
-        self.assertEqual(self.getMD5(dmeop), '4ea69551ca0556d85bf7fb339088f701')
+        result = os.path.join(outDir, parser.DATA_MUTEX_ONCOGENIC_PARSED)
+        self.assertEqual(self.getMD5(result), '5a379d10d4c81cef1f0f06be41702987')
+        result = os.path.join(outDir, parser.DATA_CNA_PARSED)
+        self.assertEqual(self.getMD5(result), '1c3125937cf627c2e4969d8916f4486d')
 
 class TestReader(TestBase):
 
