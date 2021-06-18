@@ -9,8 +9,11 @@ DISCOVERED = 'discovered'
 # parameter names
 AMPL = 'ampl'
 BED_PATH = 'bed_path'
+CANCER_TYPE = 'cancer_type'
+CANCER_TYPE_DESCRIPTION = 'cancer_type_description'
 CANCER_TYPE_DETAILED = 'cancer_type_detailed'
 DATA_DIR = 'data_dir'
+DATE_SAMPLE_RECEIVED = 'date_sample_received'
 ENSCON = 'enscon'
 ENTCON = 'entcon'
 FUS_FILE = 'fusfile'
@@ -35,9 +38,13 @@ PATIENT_ID = 'patientid'
 PROVENANCE = 'provenance'
 R_SCRIPT_DIR = 'r_script_dir'
 REQUIRE_COMPLETE = 'require_complete'
+SAMPLE_ANATOMICAL_SITE = 'sample_anatomical_site'
+SAMPLE_PRIMARY_OR_METASTASIS = 'sample_primary_or_metastasis'
+SAMPLE_TYPE = 'sample_type'
 SCRATCH_DIR = 'scratch_dir'
 SEG_FILE = 'segfile'
 SEQUENZA_FILE = 'sequenza_file'
+SEX = 'sex'
 STUDY_ID = 'studyid'
 TGCA_CODE = 'tcgacode'
 TGCA_DATA = 'tcgadata'
@@ -45,3 +52,13 @@ TMBCOMP = 'tmbcomp'
 TUMOUR_ID = 'tumourid'
 VALIDATE = 'validate'
 WHIZBAM_URL = 'whizbam_url'
+
+META_FIELDS = [
+    SAMPLE_TYPE,
+    CANCER_TYPE,
+    CANCER_TYPE_DESCRIPTION,
+    DATE_SAMPLE_RECEIVED,
+    SAMPLE_ANATOMICAL_SITE,
+    SAMPLE_PRIMARY_OR_METASTASIS,
+    SEX
+]
