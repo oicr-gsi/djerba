@@ -14,6 +14,7 @@ from jsonschema.exceptions import ValidationError
 from djerba.simple.configure.configure import config_updater, provenance_reader, MissingProvenanceError
 from djerba.simple.extract.extractor import extractor
 from djerba.simple.extract.r_script_wrapper import r_script_wrapper
+from djerba.simple.extract.r_script_results_parser import r_script_results_parser
 from djerba.simple.extract.sequenza import sequenza_extractor, SequenzaExtractionError
 from djerba.simple.build.reader import json_reader, mastersheet_reader, multiple_reader
 from djerba.simple.runner import runner
@@ -117,6 +118,16 @@ class TestExtractor(TestBase):
             '3412d95745bcf3d968a609d448f12cea'
         )
 
+class TestParser(TestBase):
+    """test the R script results parser"""
+
+    def test_parser(self):
+        inDir = '/home/iain/oicr/workspace/djerba/data/PANX_1249_report/report/' # TODO move to supplementary
+        outDir = '/home/iain/tmp/djerba/test/parser' # TODO change to testing temp dir
+        parser = r_script_results_parser(inDir, outDir)
+        parser.run()
+        dmeop = os.path.join(outDir, parser.DATA_MUTEX_ONCOGENIC_PARSED)
+        self.assertEqual(self.getMD5(dmeop), '4ea69551ca0556d85bf7fb339088f701')
 
 class TestReader(TestBase):
 
