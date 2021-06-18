@@ -114,7 +114,7 @@ class TestExtractor(TestBase):
         )
         self.assertEqual(
             self.getMD5(os.path.join(outDir, 'sample_meta_params.json')),
-            '0ea5bf8257f8ba6db677c8fbc0d285ab'
+            '3412d95745bcf3d968a609d448f12cea'
         )
 
 
@@ -179,7 +179,7 @@ class TestRunner(TestBase):
         super().setUp()
         # TODO output has sample name = null; will change once carried-through params are updated
         self.expectedMD5 = 'ca2850a3acda9f47bcc01fe04ee359a9'
-        self.iniPath = os.path.join(self.dataDir, 'config.ini')
+        self.iniPath = os.path.join(self.dataDir, 'config_full.ini')
         self.workDir = os.path.join(self.tmpDir, 'work')
         os.mkdir(self.workDir)
         
