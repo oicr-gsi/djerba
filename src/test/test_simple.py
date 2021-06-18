@@ -9,6 +9,7 @@ import subprocess
 import tempfile
 import unittest
 import djerba.simple.constants as constants
+import djerba.simple.ini_fields as ini
 from jsonschema.exceptions import ValidationError
 from djerba.simple.configure.configure import config_updater, provenance_reader, MissingProvenanceError
 from djerba.simple.extract.extractor import extractor
@@ -88,25 +89,30 @@ class TestConfigure(TestBase):
         with open(updated_path, 'w') as f:
             updater.get_config().write(f)
         # TODO this relies on local paths being identical; make it portable
-        self.assertEqual(self.getMD5(updated_path), '78fe5074525386958f90e0fc99569643')
+        self.assertEqual(self.getMD5(updated_path), '72a8676a348a82e7d0dcbc896eb88972')
 
 class TestExtractor(TestBase):
 
     def setUp(self):
         super().setUp()
-        self.ini_header = 'REPORT_CONFIG' #  INI section header required by configparser
+        self.iniPath = os.path.join(self.sup_dir, 'rscript_config_updated.ini')
 
     def test_writeIniParams(self):
-        # TODO sanitize the ini and commit to repo
-        outDir = '/home/iain/tmp/djerba/test' # TODO change to testing temp dir
-        iniPath = os.path.join(self.sup_dir, 'report_configuration.ini')
-        with open(iniPath) as iniFile:
-            configString = "[%s]\n%s" % (self.ini_header, iniFile.read())
-        params = configparser.ConfigParser()
-        params.read_string(configString)
-        extractor(dict(params[self.ini_header]), self.bed_path, outDir, self.rScriptDir).run()
-        sampleParamsPath = os.path.join(outDir, 'sample_params.json')
-        self.assertEqual(self.getMD5(sampleParamsPath), 'bf36eb4b0fe358ea5abdf2efc4670f40')
+        outDir = '/home/iain/tmp/djerba/test/extractor' # TODO change to testing temp dir
+        config = configparser.ConfigParser()
+        config.read(self.iniPath)
+        config[ini.SETTINGS][ini.SCRATCH_DIR] = outDir
+        ex = extractor(config)
+        ex.run()
+        self.assertEqual(
+            self.getMD5(os.path.join(outDir, 'maf_params.json')),
+            '1bfd7eb6d0bb974b02f6e13e63074001'
+        )
+        self.assertEqual(
+            self.getMD5(os.path.join(outDir, 'sequenza_params.json')),
+            '48ad764f0da71feeda301cd2c71d1627'
+        )
+
 
 class TestReader(TestBase):
 

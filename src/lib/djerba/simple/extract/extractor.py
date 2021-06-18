@@ -129,7 +129,9 @@ class maf_extractor:
 
     def __init__(self, maf_path, bed_path):
         bed_cols = ['chrom', 'start', 'end']
-        self.maf = pd.read_csv(maf_path, sep='\t', skiprows=1)
+        # low_memory=False is to suppress DtypeWarning
+        # TODO specify dtypes, see: https://stackoverflow.com/questions/24251219/pandas-read-csv-low-memory-and-dtype-options
+        self.maf = pd.read_csv(maf_path, sep='\t', skiprows=1, low_memory=False)
         self.bed = pd.read_csv(bed_path, sep='\t', skiprows=2, header=None, names=bed_cols)
 
     def find_tmb(self):
