@@ -5,6 +5,7 @@ INPUTS = 'inputs'
 SEG = 'seg'
 SETTINGS = 'settings'
 DISCOVERED = 'discovered'
+SAMPLE_META = 'sample_meta'
 
 # parameter names
 AMPL = 'ampl'
@@ -26,6 +27,7 @@ GEP_REFERENCE = 'gep_reference'
 HTZD = 'htzd'
 HMZD = 'hmzd'
 MAF_FILE = 'maf_file'
+MEAN_COVERAGE = 'mean_coverage'
 METRICS_FILENAME = 'metrics_filename'
 METRICS_SCHEMA = 'metrics_schema'
 MIN_FUSION_READS = 'min_fusion_reads'
@@ -35,6 +37,7 @@ ONCO_LIST = 'oncolist'
 OUT_DIR = 'out_dir'
 PATIENT = 'patient'
 PATIENT_ID = 'patientid'
+PCT_V7_ABOVE_80X = 'pct_v7_above_80x' # TODO was 'PCT_v7_ABOVE_80x'; need to fix for rmarkdown
 PROVENANCE = 'provenance'
 R_SCRIPT_DIR = 'r_script_dir'
 REQUIRE_COMPLETE = 'require_complete'
@@ -53,11 +56,14 @@ TUMOUR_ID = 'tumourid'
 VALIDATE = 'validate'
 WHIZBAM_URL = 'whizbam_url'
 
-META_FIELDS = [
+# lists of fields by section
+SAMPLE_META_FIELDS = [
     SAMPLE_TYPE,
     CANCER_TYPE,
     CANCER_TYPE_DESCRIPTION,
     DATE_SAMPLE_RECEIVED,
+    MEAN_COVERAGE,
+    PCT_V7_ABOVE_80X,
     SAMPLE_ANATOMICAL_SITE,
     SAMPLE_PRIMARY_OR_METASTASIS,
     SEX

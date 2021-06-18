@@ -95,7 +95,7 @@ class TestExtractor(TestBase):
 
     def setUp(self):
         super().setUp()
-        self.iniPath = os.path.join(self.sup_dir, 'rscript_config_updated.ini')
+        self.iniPath = os.path.join(self.dataDir, 'config_full.ini')
 
     def test_writeIniParams(self):
         outDir = '/home/iain/tmp/djerba/test/extractor' # TODO change to testing temp dir
@@ -111,6 +111,10 @@ class TestExtractor(TestBase):
         self.assertEqual(
             self.getMD5(os.path.join(outDir, 'sequenza_params.json')),
             '48ad764f0da71feeda301cd2c71d1627'
+        )
+        self.assertEqual(
+            self.getMD5(os.path.join(outDir, 'sample_meta_params.json')),
+            '0ea5bf8257f8ba6db677c8fbc0d285ab'
         )
 
 

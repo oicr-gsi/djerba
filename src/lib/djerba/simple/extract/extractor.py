@@ -17,7 +17,7 @@ class extractor:
     """
 
     SAMPLE_INFO_KEY = 'sample_info'
-    SAMPLE_PARAMS_FILENAME = 'sample_params.json'
+    SAMPLE_META_PARAMS_FILENAME = 'sample_meta_params.json'
     MAF_PARAMS_FILENAME = 'maf_params.json'
     SEQUENZA_PARAMS_FILENAME = 'sequenza_params.json'
 
@@ -47,57 +47,12 @@ class extractor:
         """Run all extractions and write output"""
         self.componentPaths.append(self.writeMafParams())
         self.componentPaths.append(self.writeSequenzaParams())
+        self.componentPaths.append(self.writeSampleMeta())
         #self.componentPaths.append(self.writeConfigParams())
 
     def run_r_script(self):
         wrapper = r_script_wrapper(config)
         wrapper.run()
-
-    def writeConfigParams(self):
-        """
-        Take parameters directly from extraction config, and write as JSON for later use
-        Output approximates data_clinical.txt in CGI-Tools, but only has fields for final JSON output
-        """
-        # TODO simplify and take params from INI config
-        # may introduce an 'attributes' INI section for params which will be carried forward unchanged
-        sampleParams = {}
-        sampleParams['PATIENT_ID'] = self.config[constants.PATIENT_ID].strip('"')
-        stringKeys = [
-            'SAMPLE_TYPE',
-            'CANCER_TYPE',
-            'CANCER_TYPE_DETAILED',
-            'CANCER_TYPE_DESCRIPTION',
-            'DATE_SAMPLE_RECEIVED',
-            'CLOSEST_TCGA',
-            'SAMPLE_ANATOMICAL_SITE',
-            'SAMPLE_PRIMARY_OR_METASTASIS',
-            'SEX'
-        ]
-        floatKeys = [
-            'MEAN_COVERAGE',
-            'PCT_v7_ABOVE_80x',
-            'SEQUENZA_PURITY_FRACTION',
-            'SEQUENZA_PLOIDY'
-        ]
-        # TODO if value is empty, should we replace with NA? Or raise an error?
-        # TODO can other values be used? Is 'patient'=='SAMPLE_ID'?
-        for key in stringKeys:
-            # annoyingly, ConfigParser converts keys to lowercase
-            # see https://stackoverflow.com/questions/19359556/configparser-reads-capital-keys-and-make-them-lower-case
-            # TODO find a less hacky solution to this issue
-            configKey = key.lower()
-            if configKey in self.config:
-                # TODO print a warning for missing key?
-                sampleParams[key] = self.config[configKey].strip('"')
-        for key in floatKeys:
-            configKey = key.lower()
-            if configKey in self.config:
-                sampleParams[key] = float(self.config[configKey])
-        config = {
-            constants.READER_CLASS_KEY: 'json_reader',
-            self.SAMPLE_INFO_KEY: sampleParams
-        }
-        return self._write_json(config, self.SAMPLE_PARAMS_FILENAME)
 
     def writeMafParams(self):
         """Read the MAF file, extract relevant parameters, and write as JSON"""
@@ -110,6 +65,24 @@ class extractor:
             }
         }
         return self._write_json(config, self.MAF_PARAMS_FILENAME)
+
+    def writeSampleMeta(self):
+        """
+        Write sample metadata fields from the INI file
+        Metadata is read from the INI, and output unchanged for the final report
+        """
+        # annoyingly, ConfigParser converts keys to lowercase
+        # see https://stackoverflow.com/questions/19359556/configparser-reads-capital-keys-and-make-them-lower-case
+        # so we apply upper() to key names for output
+        # TODO change 'PCT_v7_ABOVE_80x' in rmarkdown to 'PCT_V7_ABOVE_80X'
+        meta = {}
+        for field in ini.SAMPLE_META_FIELDS:
+            meta[field.upper()] = self.config[ini.SAMPLE_META][field]
+        output = {
+            constants.READER_CLASS_KEY: 'json_reader',
+            self.SAMPLE_INFO_KEY: meta
+        }
+        return self._write_json(output, self.SAMPLE_META_PARAMS_FILENAME)
 
     def writeSequenzaParams(self):
         """Read the Sequenza results.zip, extract relevant parameters, and write as JSON"""
