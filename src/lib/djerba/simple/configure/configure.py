@@ -1,13 +1,5 @@
 """Search for Djerba inputs"""
 
-# initial proof-of-concept was to find a MAF file from provenance
-# TODO expand to other inputs:
-# - find files
-# - (optionally) link files
-# - add file to extraction_config
-# - run extractor to get metrics
-# - supply metrics (eg. as JSON) to final output
-
 import csv
 import gzip
 import os
@@ -79,46 +71,6 @@ class config_updater:
             # Do not overwrite existing params; TODO log when existing param is being skipped
             if self.config[ini.DISCOVERED].get(key) == None:
                 self.config[ini.DISCOVERED][key] = updates[key]
-
-class extraction_config:
-    """
-    Populate a config structure with parameters for data extraction
-    """
-    # TODO this will be obsolete with config updater
-
-    def __init__(self, provenance_path, project, donor, gamma=None):
-        self.reader = provenance_reader(provenance_path, project, donor)
-        self.project = project
-        self.donor = donor
-        self.gamma = gamma
-        self.params = self._generate_params()
-
-    def _generate_params(self):
-        """Generate dictionary of parameters"""
-        # TODO may omit some parameters while this class is a work-in-progress
-        params = {}
-        params[constants.SEQUENZA_GAMMA] = self.gamma
-        params[constants.MAF_FILE] = self.reader.parse_maf_path()
-        params[constants.PATIENT_ID] = self.donor
-        params[constants.SEQUENZAFILE] = self.reader.parse_sequenza_path()
-        params[constants.STUDY_ID] = self.project
-        return params
-
-    def get_params(self):
-        return self.params
-
-    def update(self, params_for_update, overwrite=False):
-        """Update the params dictionary"""
-        # TODO validate against a schema before updating?
-        if overwrite:
-            self.params.update(params_for_update)
-        else:
-            for key in params_for_update:
-                if key in self.params:
-                    msg = "Key '{0}' already present in config, overwrite mode not in effect".format(key)
-                    raise RuntimeError(msg)
-                else:
-                    self.params[key] = params_for_update[key]
 
 class provenance_reader:
 

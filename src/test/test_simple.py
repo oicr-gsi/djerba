@@ -10,7 +10,7 @@ import tempfile
 import unittest
 import djerba.simple.constants as constants
 from jsonschema.exceptions import ValidationError
-from djerba.simple.configure.configure import config_updater, extraction_config, provenance_reader, MissingProvenanceError
+from djerba.simple.configure.configure import config_updater, provenance_reader, MissingProvenanceError
 from djerba.simple.extract.extractor import extractor
 from djerba.simple.extract.r_script_wrapper import r_script_wrapper
 from djerba.simple.extract.sequenza import sequenza_extractor, SequenzaExtractionError
@@ -68,18 +68,6 @@ class TestBase(unittest.TestCase):
         self.tmp.cleanup()
 
 class TestConfigure(TestBase):
-
-    def test_config(self):
-        # test config structure generation, without supplying pre-created INI parameters
-        test_config = extraction_config(self.provenance_path, self.project, self.donor)
-        expected = {
-            "maffile": self.dummy_maf_path,
-            "patientid": "PANX_1249",
-            "sequenza_gamma": None,
-            "sequenzafile": os.path.join(self.sup_dir, "sequenza", "PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip"),
-            "studyid": "PASS01"
-        }
-        self.assertEqual(test_config.get_params(), expected)
 
     def test_reader(self):
         test_reader = provenance_reader(self.provenance_path, self.project, self.donor)

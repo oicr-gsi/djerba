@@ -23,8 +23,8 @@ class extractor:
 
     # TODO
     # - only input is a ConfigParser object (updated using config_updater)
-    # - get segfile path from sequenza reader, for rscript
-    # - get fusfile and gepfile paths from provenance, for rscript
+    # - get segfile path from sequenza reader, for rscript (using sequenza path from updater)
+    # - get fusfile and gepfile paths from provenance, for rscript (via config updater)
     # - run the rscript
     # - parse rscript results into JSON for final collation
 
