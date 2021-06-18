@@ -177,8 +177,8 @@ class TestRunner(TestBase):
 
     def setUp(self):
         super().setUp()
-        # TODO output has sample name = null; will change once carried-through params are updated
-        self.expectedMD5 = 'ca2850a3acda9f47bcc01fe04ee359a9'
+        # TODO output has sample name = null; need to fix in JSON collation
+        self.expectedMD5 = '399f2484ebd70fa4771e6fa21ddf90c4'
         self.iniPath = os.path.join(self.dataDir, 'config_full.ini')
         self.workDir = os.path.join(self.tmpDir, 'work')
         os.mkdir(self.workDir)
