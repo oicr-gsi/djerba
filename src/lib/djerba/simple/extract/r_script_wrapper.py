@@ -77,16 +77,15 @@ class r_script_wrapper:
             msg = "Min fusion reads '{}' is not a non-negative integer".format(min_fusion_reads)
             raise ValueError(msg)
         self.exclusions = [re.compile(x) for x in self.FILTER_FLAGS_EXCLUDE]
-        self.oncokb_token = os.environ[self.ONCOKB_TOKEN_VARIABLE]
+        with open(os.environ[self.ONCOKB_TOKEN_VARIABLE]) as token_file:
+            self.oncokb_token = token_file.read().strip()
 
     def _annotate_cna(self, info_path):
         # TODO import the main() method of CnaAnnotator.py instead of running in subprocess
-        # TODO as a stopgap, replace local paths with call to an executable script
         in_path = os.path.join(self.out_dir, self.DATA_CNA_ONCOKB_GENES_NON_DIPLOID)
         out_path = os.path.join(self.out_dir, self.DATA_CNA_ONCOKB_GENES_NON_DIPLOID_ANNOTATED)
         cmd = [
-            '/home/iain/oicr/workspace/venv/djerba/bin/python3',
-            '/home/iain/oicr/git/oncokb-annotator/CnaAnnotator.py',
+            'CnaAnnotator.py',
             '-i', in_path,
             '-o', out_path,
             '-c', info_path,
@@ -98,12 +97,10 @@ class r_script_wrapper:
 
     def _annotate_fusion(self, info_path):
         # TODO import the main() method of FusionAnnotator.py instead of running in subprocess
-        # TODO as a stopgap, replace local paths with call to an executable script
         in_path = os.path.join(self.out_dir, self.DATA_FUSIONS_ONCOKB)
         out_path = os.path.join(self.out_dir, self.DATA_FUSIONS_ONCOKB_ANNOTATED)
         cmd = [
-            '/home/iain/oicr/workspace/venv/djerba/bin/python3',
-            '/home/iain/oicr/git/oncokb-annotator/FusionAnnotator.py',
+            'FusionAnnotator.py',
             '-i', in_path,
             '-o', out_path,
             '-c', info_path,
@@ -115,11 +112,9 @@ class r_script_wrapper:
 
     def _annotate_maf(self, in_path, tmp_dir, info_path):
         # TODO import the main() method of MafAnnotator.py instead of running in subprocess
-        # TODO as a stopgap, replace local paths with call to an executable script
         tmp_path = os.path.join(tmp_dir, "annotated_maf_tmp.tsv")
         cmd = [
-            '/home/iain/oicr/workspace/venv/djerba/bin/python3',
-            '/home/iain/oicr/git/oncokb-annotator/MafAnnotator.py',
+            'MafAnnotator.py',
             '-i', in_path,
             '-o', tmp_path,
             '-c', info_path,

@@ -58,8 +58,8 @@ class TestBase(unittest.TestCase):
         self.tmpDir = self.tmp.name
         self.schema_path = os.path.join(self.sup_dir, 'elba_config_schema.json')
         self.bed_path = os.path.join(self.sup_dir, 'S31285117_Regions.bed')
-        self.dummy_maf_name = 'PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.mutect2.tumor_only.filtered.unmatched.DUMMY.maf.gz'
-        self.dummy_maf_path = os.path.join(self.sup_dir, self.dummy_maf_name)
+        self.maf_name = 'PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.mutect2.tumor_only.filtered.unmatched.maf.gz'
+        self.expected_maf_path = os.path.join(self.sup_dir, self.maf_name)
         self.project = 'PASS01'
         self.donor = 'PANX_1249'
         with open(self.schema_path) as f:
@@ -74,8 +74,7 @@ class TestConfigure(TestBase):
     def test_reader(self):
         test_reader = provenance_reader(self.provenance_path, self.project, self.donor)
         maf_path = test_reader.parse_maf_path()
-        expected = self.dummy_maf_path
-        self.assertEqual(maf_path, expected)
+        self.assertEqual(maf_path, os.readlink(self.expected_maf_path)) # resolve symlink
         with self.assertRaises(MissingProvenanceError):
             test_reader_2 = provenance_reader(self.provenance_path, self.project, 'nonexistent_donor')
 
