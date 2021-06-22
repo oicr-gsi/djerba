@@ -48,6 +48,7 @@ class extractor:
         self.componentPaths.append(self.writeMafParams())
         self.componentPaths.append(self.writeSequenzaParams())
         self.componentPaths.append(self.writeSampleMeta())
+        self.run_r_script()
 
     def run_r_script(self):
         wrapper = r_script_wrapper(config)
