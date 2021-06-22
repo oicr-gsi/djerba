@@ -191,25 +191,28 @@ class TestRunner(TestBase):
         # TODO output has sample name = null; need to fix in JSON collation
         self.expectedMD5 = '399f2484ebd70fa4771e6fa21ddf90c4'
         self.iniPath = os.path.join(self.dataDir, 'config_full.ini')
-        self.workDir = os.path.join(self.tmpDir, 'work')
-        os.mkdir(self.workDir)
         
     def test_runner(self):
-        #outPath = os.path.join(self.tmpDir, 'report.json')
-        # TODO customize INI params to use temporary test dir
-        outDir = '/home/iain/oicr/workspace/djerba/cli_output_wip'
+        outDir = self.tmpDir
         outPath = os.path.join(outDir, 'cgi_metrics.json')
         config = configparser.ConfigParser()
         config.read(self.iniPath)
+        config['inputs']['out_dir'] = outDir
         runner(config).run()
         self.assertEqual(self.getMD5(outPath), self.expectedMD5)
 
     def test_script(self):
-        outDir = '/home/iain/oicr/workspace/djerba/cli_output_wip'  # TODO replace with tempdir
+        outDir = self.tmpDir
         outPath = os.path.join(outDir, 'cgi_metrics.json')
+        config = configparser.ConfigParser()
+        config.read(self.iniPath)
+        config['inputs']['out_dir'] = outDir
+        modified_config_path = os.path.join(self.tmpDir, 'config.ini')
+        with open(modified_config_path, 'w') as mod_config:
+            config.write(mod_config)
         cmd = [
             "djerba_simple.py",
-            "--ini", self.iniPath
+            "--ini", modified_config_path
         ]
         self.run_command(cmd)
         self.assertEqual(self.getMD5(outPath), self.expectedMD5)
