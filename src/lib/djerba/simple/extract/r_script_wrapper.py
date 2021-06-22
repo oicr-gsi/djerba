@@ -332,9 +332,8 @@ class r_script_wrapper:
             '--outdir', self.out_dir
         ]
         print('###', ' '.join(cmd))
-        try:
-            result = subprocess.run(cmd, check=True, capture_output=True, encoding=constants.TEXT_ENCODING)
-        except subprocess.CalledProcessError as err:
+        result = subprocess.run(cmd, capture_output=True, encoding=constants.TEXT_ENCODING)
+        if result.returncode != 0:
             msg = "R script failed with STDERR: "+result.stderr
             raise RuntimeError(msg) from err
         if self.supplied_tmp_dir == None:
