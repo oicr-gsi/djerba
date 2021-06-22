@@ -16,6 +16,7 @@ from djerba.simple.extract.extractor import extractor
 from djerba.simple.extract.r_script_wrapper import r_script_wrapper
 from djerba.simple.extract.r_script_results_parser import r_script_results_parser
 from djerba.simple.extract.sequenza import sequenza_extractor, SequenzaExtractionError
+from djerba.simple.render import html_renderer
 from djerba.simple.build.reader import json_reader, mastersheet_reader, multiple_reader
 from djerba.simple.runner import runner
 
@@ -183,6 +184,22 @@ class TestReader(TestBase):
         # inconsistent values
         with self.assertRaises(ValueError):
             reader2 = multiple_reader([self.components[0], self.components[2]], self.schema)
+
+class TestRender(TestBase):
+
+    def setUp(self):
+        super().setUp()
+        self.iniPath = os.path.join(self.dataDir, 'config_full.ini')
+
+    def test_render(self):
+        outDir = '/u/ibancarz/workspace/djerba/TestRender'
+        outPath = os.path.join(outDir, 'djerba_test.html')
+        reportDir = '/u/ibancarz/workspace/djerba/cli_output_wip'
+        config = configparser.ConfigParser()
+        config.read(self.iniPath)
+        config['inputs']['out_dir'] = outDir
+        test_renderer = html_renderer(config)
+        test_renderer.write_html(reportDir, outPath)
 
 class TestRunner(TestBase):
 

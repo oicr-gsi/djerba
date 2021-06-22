@@ -125,16 +125,17 @@ class r_script_wrapper:
         # column header changed from lowercase to uppercase in newer versions of MafAnnotator
         # Rscript singleSample.r expects lowercase
         # TODO upgrade to newer version and leave header as-is?
-        out_path = os.path.join(tmp_dir, self.ANNOTATED_MAF)
-        with open(tmp_path) as tmp_file, open(out_path, 'w') as out_file:
-            first = True
-            reader = csv.reader(tmp_file, delimiter="\t")
-            writer = csv.writer(out_file, delimiter="\t")
-            for row in reader:
-                if first:
-                    row[self.ONCOGENIC] = row[self.ONCOGENIC].lower()
-                    first = False
-                writer.writerow(row)
+        # fixed by correcting the oncokb-token; TODO update tests and delete this modification
+        #out_path = os.path.join(tmp_dir, self.ANNOTATED_MAF)
+        #with open(tmp_path) as tmp_file, open(out_path, 'w') as out_file:
+        #    first = True
+        #    reader = csv.reader(tmp_file, delimiter="\t")
+        #    writer = csv.writer(out_file, delimiter="\t")
+        #    for row in reader:
+        #        if first:
+        #            row[self.ONCOGENIC] = row[self.ONCOGENIC].lower()
+        #            first = False
+        #        writer.writerow(row)
         return out_path
 
     def _maf_body_row_ok(self, row):
