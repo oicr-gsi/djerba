@@ -84,12 +84,11 @@ class TestConfigure(TestBase):
         config.read(iniPath)
         updater = config_updater(config)
         updater.update()
-        #updated_path = os.path.join(self.tmpDir, 'updated_config.ini')
-        updated_path = os.path.join('/home/iain/tmp', 'updated_config.ini')
+        updated_path = os.path.join(self.tmpDir, 'updated_config.ini')
         with open(updated_path, 'w') as f:
             updater.get_config().write(f)
         # TODO this relies on local paths being identical; make it portable
-        self.assertEqual(self.getMD5(updated_path), '72a8676a348a82e7d0dcbc896eb88972')
+        self.assertEqual(self.getMD5(updated_path), '269e8722fd985c7b0a7c01cb8da4edd9')
 
 class TestExtractor(TestBase):
 
@@ -98,7 +97,7 @@ class TestExtractor(TestBase):
         self.iniPath = os.path.join(self.dataDir, 'config_full.ini')
 
     def test_writeIniParams(self):
-        outDir = '/home/iain/tmp/djerba/test/extractor' # TODO change to testing temp dir
+        outDir = self.tmpDir
         config = configparser.ConfigParser()
         config.read(self.iniPath)
         config[ini.SETTINGS][ini.SCRATCH_DIR] = outDir
@@ -219,7 +218,7 @@ class TestSequenzaExtractor(TestBase):
 
     def setUp(self):
         super().setUp()
-        self.zip_path = os.path.join(self.sup_dir, 'sequenza', 'PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip')
+        self.zip_path = os.path.join(self.sup_dir, 'PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip')
         self.expected_gamma = 400
     
     def test_finder_script(self):
