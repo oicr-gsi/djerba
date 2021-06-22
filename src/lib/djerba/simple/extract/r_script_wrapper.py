@@ -331,13 +331,18 @@ class r_script_wrapper:
             '--hmzd', self.config[ini.SEG][ini.HMZD],
             '--outdir', self.out_dir
         ]
-        result = subprocess.run(cmd, capture_output=True, encoding=constants.TEXT_ENCODING)
-        self.postprocess(tmp_dir, oncokb_info)
+        print('###', ' '.join(cmd))
+        try:
+            result = subprocess.run(cmd, check=True, capture_output=True, encoding=constants.TEXT_ENCODING)
+        except subprocess.CalledProcessError as err:
+            msg = "R script failed with STDERR: "+result.stderr
+            raise RuntimeError(msg) from err
         if self.supplied_tmp_dir == None:
             tmp.cleanup()
+        self.postprocess(oncokb_info)
         return result
 
-    def postprocess(self, tmp_dir, oncokb_info):
+    def postprocess(self, oncokb_info):
         """Apply postprocessing to the Rscript output directory"""
         self._annotate_cna(oncokb_info)
         self._annotate_fusion(oncokb_info)
