@@ -335,7 +335,7 @@ class r_script_wrapper:
         result = subprocess.run(cmd, capture_output=True, encoding=constants.TEXT_ENCODING)
         if result.returncode != 0:
             msg = "R script failed with STDERR: "+result.stderr
-            raise RuntimeError(msg) from err
+            raise RuntimeError(msg)
         if self.supplied_tmp_dir == None:
             tmp.cleanup()
         self.postprocess(oncokb_info)
