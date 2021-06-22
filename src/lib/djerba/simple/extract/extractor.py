@@ -51,7 +51,7 @@ class extractor:
         self.run_r_script()
 
     def run_r_script(self):
-        wrapper = r_script_wrapper(config)
+        wrapper = r_script_wrapper(self.config)
         wrapper.run()
 
     def writeMafParams(self):
