@@ -6,7 +6,7 @@ Setup script for Djerba
 
 from setuptools import setup, find_packages
 
-package_version = '0.0.4'
+package_version = '0.0.5a'
 package_root = 'src/lib'
 
 with open("README.md", "r") as fh:
@@ -17,8 +17,7 @@ setup(
     version=package_version,
     scripts=[
         'src/bin/djerba.py',
-        'src/bin/djerba_from_command.py',
-        'src/bin/upload.py'
+        'src/bin/sequenza_gamma_selector.py'
     ],
     packages=find_packages(where=package_root),
     package_dir={'' : package_root},
@@ -29,10 +28,10 @@ setup(
             'data/upload_config.json'
         ]
     },
-    install_requires=['configparse', 'couchdb2', 'jsonschema', 'numpy', 'pandas', 'scipy', 'statsmodels', 'PyYAML'],
+    install_requires=['configparse', 'numpy', 'pandas', 'scipy'],
     python_requires='>=3.7',
     author="Iain Bancarz",
-    author_email="ibancarz@oicr.on.ca",
+    author_email="ibancarz [at] oicr [dot] on [dot] ca",
     description="Create reports from metadata and workflow output",
     long_description=long_description,
     long_description_content_type="text/markdown",
