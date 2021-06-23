@@ -75,12 +75,7 @@ class extractor:
         # see https://stackoverflow.com/questions/19359556/configparser-reads-capital-keys-and-make-them-lower-case
         meta = {}
         for field in ini.SAMPLE_META_FIELDS:
-            if field == ini.PCT_V7_ABOVE_80X:
-                 # special case; TODO change to all-upper downstream, in schema and rmarkdown
-                output_field = 'PCT_v7_ABOVE_80x'
-            else:
-                output_field = field.upper()
-            meta[output_field] = self.config[ini.SAMPLE_META][field]
+            meta[field.upper()] = self.config[ini.SAMPLE_META][field]
         output = {
             constants.READER_CLASS_KEY: 'json_reader',
             self.SAMPLE_INFO_KEY: meta

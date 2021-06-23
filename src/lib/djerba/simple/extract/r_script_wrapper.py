@@ -138,6 +138,26 @@ class r_script_wrapper:
         #        writer.writerow(row)
         return out_path
 
+    def _get_config_field(self, name):
+        """
+        Brute-force method to get a named field from config, without caring about section name
+        Returns the first non-null match, None otherwise
+        TODO Could replace with eg. a class to wrap the ConfigParser object
+        """
+        val = None
+        sections = [
+            ini.INPUTS,
+            ini.SEG,
+            ini.SETTINGS,
+            ini.DISCOVERED,
+            ini.SAMPLE_META
+        ]
+        for section in sections:
+            val = self.config[section].get(name)
+            if val != None:
+                break
+        return val
+
     def _maf_body_row_ok(self, row):
         """
         Should a MAF row be kept for output?
@@ -183,6 +203,41 @@ class r_script_wrapper:
                     os.access(req_path, os.R_OK)):
                 raise OSError("R script path '{}' is not valid".format(req_path))
         return os.path.abspath(path)
+
+    def _write_clinical_data(self):
+        headers = [
+            'PATIENT_LIMS_ID',
+            'PATIENT_STUDY_ID',
+            'TUMOR_SAMPLE_ID',
+            'BLOOD_SAMPLE_ID',
+            'REPORT_VERSION',
+            'SAMPLE_TYPE',
+            'CANCER_TYPE',
+            'CANCER_TYPE_DETAILED',
+            'CANCER_TYPE_DESCRIPTION',
+            'DATE_SAMPLE_RECIEVED',
+            'CLOSEST_TCGA',
+            'SAMPLE_ANATOMICAL_SITE',
+            'SAMPLE_PRIMARY_OR_METASTASIS',
+            'MEAN_COVERAGE',
+            'PCT_V7_ABOVE_80X',
+            'SEQUENZA_PURITY_FRACTION',
+            'SEQUENZA_PLOIDY',
+            'QC_STATUS',
+            'QC_COMMENT',
+            'SEX'
+        ]
+        body = []
+        for header in headers:
+            key = ini.getattr(header)
+            val = self._get_config_field(key)
+            if val == None:
+                val = 'NA'
+            body.append(str(val))
+        out_path = os.path.join(self.out_dir, 'data_clinical.txt')
+        with open(out_path, 'w') as out_file:
+            print("\t".join(headers), out_file)
+            print("\t".join(body), out_file)
 
     def preprocess_gep(self, gep_path, tmp_dir):
         """
@@ -349,6 +404,8 @@ class r_script_wrapper:
         # remove unnecessary files, for consistency with CGI-Tools
         os.remove(os.path.join(self.out_dir, self.DATA_CNA_ONCOKB_GENES))
         os.remove(os.path.join(self.out_dir, self.DATA_FUSIONS_ONCOKB))
+        # write the clinical_data.txt file to the report directory
+        self._write_clinical_data()
 
     def write_oncokb_info(self, info_dir):
         """Write a file of oncoKB data for use by annotation scripts"""

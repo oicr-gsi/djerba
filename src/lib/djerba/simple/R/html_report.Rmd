@@ -404,7 +404,7 @@ Other <- subset(Tx, OncoKB %in% c("LEVEL_3A", "LEVEL_3B", "LEVEL_4", "LEVEL_R2")
 <table width="100%">
   <tr>
     <td width="33%"><strong>OncoTree code:</strong> `r clinicalData$CANCER_TYPE`</td>
-    <td width="33%"><strong>Callability (%):</strong> `r clinicalData$PCT_v7_ABOVE_80x`</td>
+    <td width="33%"><strong>Callability (%):</strong> `r clinicalData$PCT_V7_ABOVE_80X`</td>
     <td width="33%"><strong>Coverage (mean):</strong> `r clinicalData$MEAN_COVERAGE`</td>
   </tr>
   <tr>
