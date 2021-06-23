@@ -64,7 +64,7 @@ class r_script_wrapper:
         self.config = config
         r_script_dir = config[ini.SETTINGS].get(ini.R_SCRIPT_DIR)
         if not r_script_dir:
-            r_script_dir = os.path.join(os.path.dirname(__file__), '..', 'R')
+            r_script_dir = os.path.join(os.path.dirname(__file__), '..', 'R_stats')
         self.r_script_dir = self._validate_r_script_dir(r_script_dir)
         scratch_dir = config[ini.SETTINGS][ini.SCRATCH_DIR]
         self.supplied_tmp_dir = scratch_dir # TODO allow for multiple runs sharing scratch dir
@@ -112,30 +112,16 @@ class r_script_wrapper:
 
     def _annotate_maf(self, in_path, tmp_dir, info_path):
         # TODO import the main() method of MafAnnotator.py instead of running in subprocess
-        tmp_path = os.path.join(tmp_dir, "annotated_maf_tmp.tsv")
+        out_path = os.path.join(tmp_dir, "annotated_maf_tmp.tsv")
         cmd = [
             'MafAnnotator.py',
             '-i', in_path,
-            '-o', tmp_path,
+            '-o', out_path,
             '-c', info_path,
             '-b', self.oncokb_token
         ]
         print('###', ' '.join(cmd))
         result = subprocess.run(cmd, check=True)
-        # column header changed from lowercase to uppercase in newer versions of MafAnnotator
-        # Rscript singleSample.r expects lowercase
-        # TODO upgrade to newer version and leave header as-is?
-        # fixed by correcting the oncokb-token; TODO update tests and delete this modification
-        #out_path = os.path.join(tmp_dir, self.ANNOTATED_MAF)
-        #with open(tmp_path) as tmp_file, open(out_path, 'w') as out_file:
-        #    first = True
-        #    reader = csv.reader(tmp_file, delimiter="\t")
-        #    writer = csv.writer(out_file, delimiter="\t")
-        #    for row in reader:
-        #        if first:
-        #            row[self.ONCOGENIC] = row[self.ONCOGENIC].lower()
-        #            first = False
-        #        writer.writerow(row)
         return out_path
 
     def _get_config_field(self, name):
@@ -206,11 +192,11 @@ class r_script_wrapper:
 
     def _write_clinical_data(self):
         headers = [
-            'PATIENT_LIMS_ID',
-            'PATIENT_STUDY_ID',
-            'TUMOR_SAMPLE_ID',
-            'BLOOD_SAMPLE_ID',
-            'REPORT_VERSION',
+            'PATIENT', # was PATIENT_LIMS_ID in CGI-Tools, eg. PANX_1249
+            'PATIENT_ID', # was PATIENT_STUDY_ID, eg. 100-PM-013
+            'TUMOR_ID', # was TUMOUR_SAMPLE_ID
+            'NORMAL_ID', # was BLOOD_SAMPLE_ID
+            'REPORT_VERSION', # was REPORT_VERSION
             'SAMPLE_TYPE',
             'CANCER_TYPE',
             'CANCER_TYPE_DETAILED',
@@ -229,7 +215,7 @@ class r_script_wrapper:
         ]
         body = []
         for header in headers:
-            key = ini.getattr(header)
+            key = getattr(ini, header)
             val = self._get_config_field(key)
             if val == None:
                 val = 'NA'
@@ -404,8 +390,8 @@ class r_script_wrapper:
         # remove unnecessary files, for consistency with CGI-Tools
         os.remove(os.path.join(self.out_dir, self.DATA_CNA_ONCOKB_GENES))
         os.remove(os.path.join(self.out_dir, self.DATA_FUSIONS_ONCOKB))
-        # write the clinical_data.txt file to the report directory
-        self._write_clinical_data()
+        # TODO write the clinical_data.txt file to the report directory
+        # self._write_clinical_data()
 
     def write_oncokb_info(self, info_dir):
         """Write a file of oncoKB data for use by annotation scripts"""
