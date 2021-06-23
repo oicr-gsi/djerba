@@ -3,7 +3,7 @@ output:
   html_document:
     includes:
       before_body: header.html
-      after_body: footer.html
+      after_body: footer-40x.html
     number sections: yes
 ---
 
@@ -46,6 +46,9 @@ levels <- c("LEVEL_1", "LEVEL_2", "LEVEL_3A", "LEVEL_3B", "LEVEL_4", "LEVEL_R1",
 cytoBand <- read.csv((paste(cgiTools, "data/cytoBand.txt", sep = "/")), sep = "\t",
   header = TRUE, stringsAsFactors = FALSE)
 
+# clinical data should be parsed from data_clinical_patients
+clinicalData <- read.csv(paste(folder, "data_clinical.txt", sep = "/"), stringsAsFactors = F, sep = "\t")
+
 # mutation data
 MAF <- read.csv(paste(folder, "data_mutations_extended.txt", sep = "/"), sep = "\t",
   header = TRUE, stringsAsFactors = FALSE) %>% filter(Variant_Classification !=
@@ -60,13 +63,12 @@ cbioMAF <- read.csv(paste(folder, "data_mutations_extended_oncogenic.txt", sep =
 
 if (dim(cbioMAF)[1] != 0) {
   cbioMAF <- inner_join(cbioMAF, cytoBand) %>% mutate(OncoKB = ifelse(is.na(Highest_level),
-    oncogenic, Highest_level)) %>% inner_join(cytoBand) %>% mutate(HGVSp_Short = base::gsub("p.",
-    "", HGVSp_Short))
+    oncogenic, Highest_level)) %>% inner_join(cytoBand)
   cbioMAFTx <- cbioMAF %>% select(Hugo_Symbol, Chromosome, HGVSp_Short, LEVEL_1,
     LEVEL_2, LEVEL_3A, LEVEL_3B, LEVEL_4, LEVEL_R1, LEVEL_R2, LEVEL_R3, OncoKB,
     Highest_level) %>% drop_na(Highest_level) %>% rename(Alteration = HGVSp_Short)
-  cbioMAF <- cbioMAF %>% mutate(HGVSp_Short = paste0("[", HGVSp_Short, "](", whizbam,
-    ")"))
+  cbioMAF <- cbioMAF %>% mutate(HGVSp_Short = paste0("[", HGVSp_Short,
+  "](", "https://www.oncokb.org/gene/", Hugo_Symbol, "/", HGVSp_Short, "/", clinicalData$CANCER_TYPE_DETAILED, ")"))
 }
 
 # Count number of mutations for TMB Calculation
@@ -100,8 +102,8 @@ if (dim(cbioCNV)[1] != 0) {
   cbioCNV <- inner_join(cbioCNV, cytoBand) %>% mutate(OncoKB = ifelse(is.na(Highest_level),
     oncogenic, Highest_level)) %>% select(-oncogenic) %>% drop_na(OncoKB) %>%
     inner_join(CNA) %>% mutate(Copy_State = base::gsub("0", "Neutral", Copy_State),
-    Copy_State = base::gsub("^1", "Low-level Amplification", Copy_State), Copy_State = base::gsub("^2",
-      "High-level Amplification", Copy_State), Copy_State = base::gsub("^-1",
+    Copy_State = base::gsub("^1", "Gain", Copy_State), Copy_State = base::gsub("^2",
+      "Amplification", Copy_State), Copy_State = base::gsub("^-1",
       "Shallow Deletion", Copy_State), Copy_State = base::gsub("^-2", "Deep Deletion",
       Copy_State)) %>% select(-Alteration) %>% rename(Alteration = Copy_State)
   cbioCNVTx <- cbioCNV %>% select(Hugo_Symbol, Chromosome, Alteration, LEVEL_1,
@@ -153,9 +155,6 @@ cbioFusAnno <- cbioFusOnco %>% select(Hugo_Symbol, Chromosome, Fusion, Frame, mu
   `Mutation effect` = mutation_effect) %>% mutate(Gene = paste0("[", Gene,
   "](", "https://www.oncokb.org/gene/", Gene, ")"))
 
-# clinical data should be parsed from data_clinical_patients
-clinicalData <- read.csv(paste(folder, "data_clinical.txt", sep = "/"), stringsAsFactors = F, sep = "\t")
-
 #tmb is number of non-synonymous mutations over size of v7 target
 sampleTMB <- round(mutationCount/(37.285536), 2)
 
@@ -181,8 +180,8 @@ if (dim(cbioMAF)[1] != 0) {
     100)) %>% select(Hugo_Symbol, Chromosome, HGVSp_Short, Variant_Classification,
     tumor_vaf, t_depth, t_alt_count, Copy_State, mRNA, OncoKB) %>% mutate(mRNA = round(mRNA,
     1), tumor_vaf = round(tumor_vaf, 2), tumor_vaf = (tumor_vaf * 100), Copy_State = base::gsub("0",
-    "Neutral", Copy_State), Copy_State = base::gsub("^1", "Low-level Amplification",
-    Copy_State), Copy_State = base::gsub("^2", "High-level Amplification", Copy_State),
+    "Neutral", Copy_State), Copy_State = base::gsub("^1", "Gain",
+    Copy_State), Copy_State = base::gsub("^2", "Amplification", Copy_State),
     Copy_State = base::gsub("^-1", "Shallow Deletion", Copy_State), Copy_State = base::gsub("^-2",
       "Deep Deletion", Copy_State)) %>% mutate(OncoKB = base::gsub("LEVEL_",
     "Level ", OncoKB)) %>% mutate(Variant_Classification = base::gsub("_", " ",
@@ -193,7 +192,7 @@ if (dim(cbioMAF)[1] != 0) {
     mutate(Gene = paste0("[", Gene, "](", "https://www.oncokb.org/gene/", Gene,
       ")"))
   # order table by OncoKB target
-  out1 <- out1[order(ordered(out1$OncoKB, target), -xtfrm(out1$Chromosome)), ]
+  out1 <- out1[order(ordered(out1$OncoKB, target), out1$`Copy State`, out1$Gene), ]
 }
 
 
@@ -221,20 +220,18 @@ if (dim(cbioCNV)[1] == 0) {
 CNV_statement <- length(unique(cbioCNV$Hugo_Symbol))
 
 #join and create treatment and definitions
-
-
 defTable <- rbindlist(list(out1, CNV, cbioFusAnno, ExprZ), fill = TRUE) %>% select(Gene,
-  Chromosome, OncoKB) %>% left_join(oncoKBsummaries) %>% unique() %>% rename(Summary = summary) %>% mutate(Summary = base::gsub("^NA",
+  Chromosome) %>% left_join(oncoKBsummaries) %>% unique() %>% rename(Summary = summary) %>% mutate(Summary = base::gsub("^NA",
   "No information currently available in OncoKB.", Summary))
 
-defTable <- defTable[order(ordered(defTable$OncoKB, target)),]
+defTable <- defTable[order(Gene),]
 
 Tx <- rbindlist(list(cbioMAFTx, cbioCNVTx, cbioFusTx), fill = TRUE) %>% select(-c(Highest_level,
   Chromosome, mutation_effect)) %>% rename(`Gene(s)` = Hugo_Symbol) %>% unite(`Treatment(s)`,
   LEVEL_1:LEVEL_R3, na.rm = TRUE) %>% mutate(Alteration = paste0("[", Alteration,
-  "](", "https://www.oncokb.org/gene/", `Gene(s)`, "/", Alteration, ")")) %>% mutate(`Gene(s)` = paste0("[",
+  "](", "https://www.oncokb.org/gene/", `Gene(s)`, "/", Alteration, "/", clinicalData$CANCER_TYPE_DETAILED, ")")) %>% mutate(`Gene(s)` = paste0("[",
   `Gene(s)`, "](", "https://www.oncokb.org/gene/", `Gene(s)`, ")")) %>% mutate(Alteration = base::gsub("/Deep Deletion",
-    "/Truncating%20Mutations", Alteration))
+    "/Truncating%20Mutations", Alteration)) %>% mutate(`Treatment(s)` = base::gsub(",", ", ", `Treatment(s)`))
 
 Tx <- Tx[order(ordered(Tx$OncoKB, levels)), ]
 
@@ -367,24 +364,24 @@ Other <- subset(Tx, OncoKB %in% c("LEVEL_3A", "LEVEL_3B", "LEVEL_4", "LEVEL_R2")
 </table>
 <table width="100%">
   <tr>
-    <td width="33%"><strong>Date of Report:</strong> `r format(Sys.time(), '%d %B, %Y')`</td>
-    <td width="33%"><strong>Requisition Approved:</strong> `r format(Sys.time(), '%d %B, %Y')`</td>
-    <td width="33%"><strong>Report Identifier:</strong> `r paste0(clinicalData$SAMPLE_ID, " (v", clinicalData$REPORT_VERSION, ")")`</td>
+    <td width="35%"><strong>Date of Report:</strong> `r format(Sys.time(), '%Y/%m/%d')`</td>
+    <td width="28%"><strong>Requisition Approved:</strong> yyyy/mm/dd</td>
+    <td width="37%"><strong>Report ID:</strong> `r paste0(clinicalData$TUMOR_SAMPLE_ID, "-v", clinicalData$REPORT_VERSION)`</td>
   </tr>
   <tr>
-    <td width="33%"><strong>Study:</strong> PASS-01</td>
-    <td width="33%"><strong>Patient Study ID:</strong> `r clinicalData$SAMPLE_ID`</td>
-    <td width="33%"><strong>Assay ID:</strong> `r clinicalData$SAMPLE_ID`</td>
+    <td width="35%"><strong>Study:</strong> PASS-01</td>
+    <td width="28%"><strong>Patient Study ID:</strong> `r clinicalData$PATIENT_STUDY_ID`</td>
+    <td width="37%"><strong>Patient LIMS ID:</strong> `r clinicalData$PATIENT_LIMS_ID`</td>
   </tr>
   <tr>
-    <td width="33%"><strong>Name:</strong> LAST NAME, FIRST NAME</td>
-    <td width="33%"><strong>DOB:</strong> yyyy/mm/dd</td>
-    <td width="33%"><strong>Genetic Sex:</strong> `r clinicalData$SEX`</td>
+    <td width="35%"><strong>Name:</strong> LAST NAME, FIRST NAME</td>
+    <td width="28%"><strong>DOB:</strong> yyyy/mm/dd</td>
+    <td width="37%"><strong>Genetic Sex:</strong> `r clinicalData$SEX`</td>
   </tr>
   <tr>
-    <td width="33%"><strong>Physician:</strong> LAST, FIRST</td>
-    <td width="33%"><strong>Licence #:</strong> nnnnnnnn</td>
-    <td width="33%"><strong>Phone #:</strong> nnn-nnn-nnnn</td>
+    <td width="35%"><strong>Physician:</strong> LAST, FIRST</td>
+    <td width="28%"><strong>Licence #:</strong> nnnnnnnn</td>
+    <td width="37%"><strong>Phone #:</strong> nnn-nnn-nnnn</td>
   </tr>
 </table>
 <table width="100%">
@@ -397,8 +394,8 @@ Other <- subset(Tx, OncoKB %in% c("LEVEL_3A", "LEVEL_3B", "LEVEL_4", "LEVEL_R2")
     <td width="50%"><strong>Site of biopsy/surgery:</strong> `r clinicalData$SAMPLE_ANATOMICAL_SITE`</td>
   </tr>
   <tr>
-    <td width="50%"><strong>Tumour Sample ID:</strong> nnnnnnnn</td>
-    <td width="50%"><strong>Blood Sample ID:</strong> nnnnnnnn</td>
+    <td width="50%"><strong>Tumour Sample ID:</strong> `r clinicalData$TUMOR_SAMPLE_ID`</td>
+    <td width="50%"><strong>Blood Sample ID:</strong> `r clinicalData$BLOOD_SAMPLE_ID`</td>
   </tr>
 </table>
 <div id="header1">
@@ -463,14 +460,13 @@ if (dim(Other)[1] != 0) {
 </table>
 </html>
 
-```{r, figures-side, fig.show="hold", out.width="50%", echo=FALSE, message=FALSE, warning=FALSE}
+```{r, figures-side, fig.show="hold", out.width="50%", fig.height=3, echo=FALSE, message=FALSE, warning=FALSE}
 
-par(mar = c(3, 3, 0.1, 0.1))
 ggplot(tmb_data, aes(TCGA.tmb)) + geom_density(aes(color = "All TCGA"), fill = "grey",
   alpha = 0.1) + theme_classic() + scale_x_continuous(expand = c(0, 0), limit = c(0, max(sampleTMB,25))) +
   scale_y_continuous(expand = c(0, 0)) + geom_vline(xintercept = sampleTMB,
   size = 3) + xlab(" coding mutations per Mb") + ylab("density") + theme(text = element_text(size = 15),
-  legend.position = "top") + scale_color_manual(name = "Cohort", breaks = c("All TCGA",
+  legend.position = c(1,0.8), plot.margin = unit(c(2,3,0,2), "lines")) + scale_color_manual(name = "Cohort", breaks = c("All TCGA",
   "Closest TCGA"), values = c(`All TCGA` = "black", `Closest TCGA` = "#65bc45")) +
   {
     if (!is.na(sample_pct_type))
@@ -481,10 +477,9 @@ ggplot(tmb_data, aes(TCGA.tmb)) + geom_density(aes(color = "All TCGA"), fill = "
 ggplot(MAF) + geom_density(aes(x = tumor_vaf), fill = "grey", alpha = 0.5) + geom_rug(aes(x = tumor_vaf,
   y = 0), position = position_jitter(height = 0)) + xlab("Variant Allele Frequency") +
   theme_classic() + theme(text = element_text(size = 15)) + scale_x_continuous(expand = c(0,
-  0), limit = c(0, 1)) + scale_y_continuous(expand = c(0, 0))
+  0), limit = c(0, 1)) + scale_y_continuous(expand = c(0, 0)) + theme(plot.margin = unit(c(2,3,0,2), "lines"))
 
 ```
-<br style="clear: both;" />
 
 <div id="header1">
   <h3>Oncogenic Small Mutations and Indels</h3>
@@ -506,7 +501,7 @@ if (!is.null(out1)) {
   <h3>Oncogenic Somatic Copy Number Variation</h3>
 </div>
 
-**`r CNVcount`** genes were subject to copy number variation, of which **`r CNV_statement`** corresponded to an oncogenic alteration, as defined by OncoKB.
+**`r CNVcount`** cancer genes were subject to copy number variation, of which **`r CNV_statement`** corresponded to an oncogenic alteration, as defined by OncoKB.
 
 
 ```{r, echo = FALSE, message= FALSE, warning=FALSE}
@@ -521,7 +516,7 @@ if (!is.null(CNV)) {
   <h3>Structural Variants and Fusions</h3>
 </div>
 
-**`r FUScount`** genes were subject to rearrangement, of which **`r length(unique(cbioFusOnco$Hugo_Symbol))`** corresponded to oncogenic fusions, as defined by OncoKB.
+**`r FUScount`** cancer genes were subject to rearrangement, of which **`r length(unique(cbioFusOnco$Hugo_Symbol))`** corresponded to oncogenic fusions, as defined by OncoKB.
 
 ```{r, echo = FALSE, message= FALSE, warning=FALSE}
 
