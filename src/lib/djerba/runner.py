@@ -3,11 +3,11 @@
 import configparser
 import json
 import os
-import djerba.simple.constants as constants
-import djerba.simple.ini_fields as ini
-from djerba.simple.configure.configure import config_updater
-from djerba.simple.extract.extractor import extractor
-from djerba.simple.build.reader import multiple_reader
+import djerba.constants as constants
+import djerba.ini_fields as ini
+from djerba.configure.configure import config_updater
+from djerba.extract.extractor import extractor
+from djerba.build.reader import multiple_reader
 
 class runner:
 

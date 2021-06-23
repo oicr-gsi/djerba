@@ -6,8 +6,8 @@ import os
 import re
 import subprocess
 import tempfile
-import djerba.simple.constants as constants
-import djerba.simple.ini_fields as ini
+import djerba.constants as constants
+import djerba.ini_fields as ini
 
 class r_script_wrapper:
 

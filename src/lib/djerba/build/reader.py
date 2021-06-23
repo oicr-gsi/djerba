@@ -3,8 +3,8 @@
 import csv
 import json
 import jsonschema
-import djerba.simple.constants as constants
-from djerba.simple.build.containers import gene, sample
+import djerba.constants as constants
+from djerba.build.containers import gene, sample
 
 class reader:
     """

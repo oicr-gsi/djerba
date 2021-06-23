@@ -8,17 +8,17 @@ import os
 import subprocess
 import tempfile
 import unittest
-import djerba.simple.constants as constants
-import djerba.simple.ini_fields as ini
+import djerba.constants as constants
+import djerba.ini_fields as ini
 from jsonschema.exceptions import ValidationError
-from djerba.simple.configure.configure import config_updater, provenance_reader, MissingProvenanceError
-from djerba.simple.extract.extractor import extractor
-from djerba.simple.extract.r_script_wrapper import r_script_wrapper
-from djerba.simple.extract.r_script_results_parser import r_script_results_parser
-from djerba.simple.extract.sequenza import sequenza_extractor, SequenzaExtractionError
-from djerba.simple.render import html_renderer
-from djerba.simple.build.reader import json_reader, mastersheet_reader, multiple_reader
-from djerba.simple.runner import runner
+from djerba.configure.configure import config_updater, provenance_reader, MissingProvenanceError
+from djerba.extract.extractor import extractor
+from djerba.extract.r_script_wrapper import r_script_wrapper
+from djerba.extract.r_script_results_parser import r_script_results_parser
+from djerba.extract.sequenza import sequenza_extractor, SequenzaExtractionError
+from djerba.render import html_renderer
+from djerba.build.reader import json_reader, mastersheet_reader, multiple_reader
+from djerba.runner import runner
 
 class TestBase(unittest.TestCase):
 
@@ -55,7 +55,7 @@ class TestBase(unittest.TestCase):
             raise RuntimeError('Need to specify environment variable {0}'.format(provenance_var))
         elif not os.path.isfile(self.provenance_path):
             raise OSError("Provenance path '{0}' is not a file".format(self.provenance_path))
-        self.tmp = tempfile.TemporaryDirectory(prefix='djerba_simple_')
+        self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmpDir = self.tmp.name
         self.schema_path = os.path.join(self.sup_dir, 'elba_config_schema.json')
         self.bed_path = os.path.join(self.sup_dir, 'S31285117_Regions.bed')
@@ -65,7 +65,7 @@ class TestBase(unittest.TestCase):
         self.donor = 'PANX_1249'
         with open(self.schema_path) as f:
             self.schema = json.loads(f.read())
-        self.rScriptDir = os.path.realpath(os.path.join(self.testDir, '../lib/djerba/simple/R/'))
+        self.rScriptDir = os.path.realpath(os.path.join(self.testDir, '../lib/djerba/R/'))
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -228,7 +228,7 @@ class TestRunner(TestBase):
         with open(modified_config_path, 'w') as mod_config:
             config.write(mod_config)
         cmd = [
-            "djerba_simple.py",
+            "djerba.py",
             "--ini", modified_config_path
         ]
         self.run_command(cmd)

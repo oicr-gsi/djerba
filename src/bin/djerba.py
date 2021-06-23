@@ -12,8 +12,8 @@ import os
 import sys
 
 sys.path.pop(0) # do not import from script directory
-import djerba.simple.ini_fields as fields
-from djerba.simple.runner import runner
+import djerba.ini_fields as fields
+from djerba.runner import runner
 
 #CONFIGURE = 'configure'
 #EXTRACT = 'extract'

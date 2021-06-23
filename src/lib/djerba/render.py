@@ -5,7 +5,7 @@ Wrap an Rmarkdown script to output HTML from a Djerba results directory.
 
 import os
 import subprocess
-import djerba.simple.ini_fields as ini
+import djerba.ini_fields as ini
 
 class html_renderer:
 

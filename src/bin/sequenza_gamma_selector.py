@@ -7,7 +7,7 @@ import os
 import sys
 
 sys.path.pop(0) # do not import from script directory
-from djerba.simple.extract.sequenza import sequenza_extractor
+from djerba.extract.sequenza import sequenza_extractor
 
 def get_parser():
     parser = argparse.ArgumentParser(

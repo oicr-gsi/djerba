@@ -7,7 +7,7 @@
 import csv
 import json
 import os
-import djerba.simple.constants as constants
+import djerba.constants as constants
 
 class r_script_results_parser:
 

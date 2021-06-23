@@ -4,10 +4,10 @@ import json
 import os
 import pandas as pd
 
-from djerba.simple.extract.sequenza import sequenza_extractor
-from djerba.simple.extract.r_script_wrapper import r_script_wrapper
-import djerba.simple.constants as constants
-import djerba.simple.ini_fields as ini
+from djerba.extract.sequenza import sequenza_extractor
+from djerba.extract.r_script_wrapper import r_script_wrapper
+import djerba.constants as constants
+import djerba.ini_fields as ini
 
 class extractor:
     """

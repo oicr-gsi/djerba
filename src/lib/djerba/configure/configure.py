@@ -5,9 +5,9 @@ import gzip
 import os
 import re
 
-import djerba.simple.constants as constants
-import djerba.simple.configure.index as index
-import djerba.simple.ini_fields as ini
+import djerba.constants as constants
+import djerba.configure.index as index
+import djerba.ini_fields as ini
 
 class config_updater:
     """

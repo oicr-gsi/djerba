@@ -14,8 +14,8 @@
 import csv
 import gzip
 import re
-import djerba.simple.constants as constants
-import djerba.simple.discover.index as index
+import djerba.constants as constants
+import djerba.discover.index as index
 
 class searcher:
 
