@@ -1,147 +1,135 @@
 #! /usr/bin/env python3
 
-"""Command-line script to run Djerba functions"""
+# Simplified djerba script for CGI reports only
+# - supply input config
+# - read inputs
+# - collate results; transform from input-major to gene-major order
+# - write JSON output
 
 import argparse
-import json
-import logging
+import configparser
 import os
 import sys
 
 sys.path.pop(0) # do not import from script directory
-from djerba.report import report
-from djerba.study import study
-from djerba.config import validator
+import djerba.simple.ini_fields as fields
+from djerba.simple.runner import runner
 
-ELBA = 'elba'
-CBIOPORTAL = 'cbioportal'
-VALIDATE = 'validate'
-MODES = (ELBA, CBIOPORTAL, VALIDATE)
+#CONFIGURE = 'configure'
+#EXTRACT = 'extract'
+#BUILD = 'build'
+#RUN_ALL = 'all'
+#MODES = [CONFIGURE, EXTRACT, BUILD, RUN_ALL]
+# TODO add modes for RENDER (to HTML) and PUBLISH (to PDF)
+# TODO are separate modes needed?
+
+# HOW TO RUN DJERBA:
+#
+# 1. CONFIGURE
+# Supply an INI config file (TODO allow multiple files, eg. default settings and run params)
+# Override INI arguments (if present) with command line options
+# Validate the inputs; all required arguments are present
+# Create the configuration, eg. by reading file provenance
+# Write config JSON
+#
+# 2. EXTRACT
+# Run singleSample.R
+# Extract other params, eg. Sequenza data for given gamma
+# Write files to a working directory
+#
+# 3. BUILD
+# Collate outputs from step 2
+# TODO Parse singleSample.R text outputs here, or in step 2?
+# Write as a single JSON document for step 4
+#
+# 4. RENDER
+# Use a template (Rmarkdown or Jinja) to render JSON from step 3 as HTML
+#
+# 5. PUBLISH
+# Convert HTML from step 4 to PDF using Python
+
+
+# TODO make a class to process the INI params and check consistency/completeness
+
+# INI param types
+# Settings: General system params for Djerba
+# Inputs: Data to be processed
+# Rscript: Inputs specifically for singleSample.R
+
+# example settings:
+# - working directory
+# - JSON config path
+# - logging/verbosity options
+# - provenance path
+# - BED interval file for TMB calculation
+# - JSON config schema path (step 1)
+# - JSON output schema path (step 3)
+
+# example inputs:
+# - donor
+# - project
+# - gamma
+
+class djerba_validator:
+
+    def __init__(self):
+        pass
+
+    def validate_config(self, config):
+        """Validate the config params, eg. from an INI file"""
+        self.validate_input_file(config[fields.SETTINGS][fields.PROVENANCE])
+        self.validate_output_dir(config[fields.SETTINGS][fields.SCRATCH_DIR])
+        self.validate_present(config, fields.INPUTS, fields.NORMAL_ID)
+        self.validate_present(config, fields.INPUTS, fields.PATIENT_ID)
+        self.validate_present(config, fields.INPUTS, fields.STUDY_ID)
+
+    def validate_input_file(self, path):
+        """Confirm an input file exists and is readable"""
+        valid = False
+        if not os.path.exists(path):
+            raise OSError("Input path %s does not exist" % path)
+        elif not os.path.isfile(path):
+            raise OSError("Input path %s is not a file" % path)
+        elif not os.access(path, os.R_OK):
+            raise OSError("Input path %s is not readable" % path)
+        else:
+            valid = True
+        return valid
+
+    def validate_output_dir(self, path):
+        """Confirm an output directory exists and is writable"""
+        valid = False
+        if not os.path.exists(path):
+            raise OSError("Output path %s does not exist" % path)
+        elif not os.path.isdir(path):
+            raise OSError("Output path %s is not a directory" % path)
+        elif not os.access(path, os.W_OK):
+            raise OSError("Output path %s is not writable" % path)
+        else:
+            valid = True
+        return valid
+
+    def validate_present(self, config, section, param):
+        # throws a KeyError if param is missing; TODO informative error message
+        return config[section][param]
 
 def get_parser():
     """Construct the parser for command-line arguments"""
-
-    epilog_str = 'Must be run in one of the following modes: '+\
-                 '%s, %s, or %s. See above for additional help.' % MODES
     parser = argparse.ArgumentParser(
-        description='djerba: A reporting tool for cancer bioinformatics', epilog=epilog_str)
-    parser.add_argument('--config', metavar='PATH', required=True, help="Path to Djerba config file, or - to read from STDIN")
-    parser.add_argument('--debug', action='store_true', help="Highly verbose logging")
-    parser.add_argument('--force', action='store_true', help="Overwrite existing output, if any")
-    parser.add_argument(
-        '--log-path',
-        metavar='PATH',
-        help='Path of file where log output will be appended. Optional; defaults to STDERR.'
+        description='Djerba: A tool for making bioinformatics clinical reports'
     )
     parser.add_argument(
-        '--elba-schema',
-        metavar='PATH',
-        help="Path to JSON schema for Elba output. Optional; relevant only in elba mode."
+        '-i', '--ini', metavar='PATH', help='INI file with config params'
     )
-    parser.add_argument(
-        '--out',
-        metavar='PATH',
-        help="Output location. For %s, may be a file or - for STDOUT; for %s, must be a directory; for %s, not required." % MODES
-    )
-    parser.add_argument(
-        '--mode',
-        metavar='MODE',
-        choices=list(MODES),
-        required=True,
-        help="Mode of action; must be '%s', '%s' or '%s'. Respectively, these write an Elba config file; write a cBioPortal study directory; and validate a Djerba config file without writing output." % MODES
-    )
-    parser.add_argument(
-        '--sample',
-        metavar='SAMPLE_ID',
-        help="Sample ID. For %s, required only if the config contains more than one sample; ignored for %s; optional for %s." % MODES
-    )
-    parser.add_argument('--verbose', action='store_true', help="Moderately verbose logging")
-
     return parser
 
-def args_errors(args):
-    """Check command-line arguments for errors"""
-    errors = []
-    if args.config=='-':
-        pass
-    elif not os.path.exists(args.config):
-        errors.append("--config path '%s' does not exist" % args.config)
-    elif not os.path.isfile(args.config):
-        errors.append("--config path '%s' is not a file" % args.config)
-    elif not os.access(args.config, os.R_OK):
-        errors.append("--config path '%s' is not readable" % args.config)
-    if args.log_path:
-        errors.extend(output_file_errors(args.log_path, 'log'))
-    if (args.mode==ELBA or args.mode==CBIOPORTAL) and args.out == None:
-        errors.append("--out argument is required for %s mode" % args.mode)
-    elif args.mode == ELBA:
-        errors.extend(output_file_errors(args.out, 'output', True))
-        if args.elba_schema:
-            if not os.path.exists(args.elba_schema):
-                errors.append("--elba-schema path '%s' does not exist" % args.elba_schema)
-            elif not os.path.isfile(args.elba_schema):
-                errors.append("--elba-schema path '%s' is not a file" % args.elba_schema)
-            elif not os.access(args.elba_schema, os.R_OK):
-                errors.append("--elba-schema path '%s' is not readable" % args.elba_schema)
-    elif args.mode == CBIOPORTAL:
-        if not os.path.isdir(args.out):
-            errors.append("--out must be a directory for %s mode" % CBIOPORTAL)
-        elif not os.access(args.out, os.W_OK):
-            errors.append("--out directory '%s' is not writable" % args.out)
-    return errors
-
-def output_file_errors(out_path, function, stdout_allowed=False):
-    """Check if an output file path is usable"""
-    errors = []
-    if stdout_allowed and out_path=="-": # output to STDOUT
-        pass
-    else:
-        out_dir = os.path.realpath(os.path.dirname(out_path))
-        if os.path.isdir(out_path):
-            errors.append("The %s path '%s' is a directory; a file is required" % (function, out_path))
-        elif not os.path.exists(out_dir):
-            errors.append("Parent of %s path '%s' does not exist" % (function, out_path))
-        elif not os.path.isdir(out_dir):
-            errors.append("Parent of %s path '%s' is not a directory" % (function, out_path))
-        elif not os.access(out_dir, os.W_OK):
-            errors.append("Parent of %s path  '%s' is not writable" % (function, out_path))
-    return errors
-
 def main(args):
-    # check arguments for errors
-    errors = args_errors(args)
-    if len(errors)>0:
-        print("Errors found in command-line arguments:", file=sys.stderr)
-        for error in errors:
-            print("*", error, file=sys.stderr)
-        raise RuntimeError("Incorrect command-line arguments")
-    if args.debug:
-        log_level = logging.DEBUG
-    elif args.verbose:
-        log_level = logging.INFO
-    else:
-        log_level = logging.ERROR
-    # read config from file path or STDIN
-    if args.config=='-':
-        config_file = sys.stdin
-    else:
-        config_file = open(args.config, 'r')
-    config = json.loads(config_file.read())
-    if args.config!='-':
-        config_file.close()
-    # run Djerba in the appropriate mode
-    if args.mode == ELBA:
-        validator(log_level, args.log_path).validate(config, args.sample)
-        djerba_report = report(config, args.sample, args.elba_schema, log_level, args.log_path)
-        djerba_report.write(djerba_report.get_report_config(), args.out, args.force)
-    elif args.mode == CBIOPORTAL:
-        validator(log_level, args.log_path).validate(config, None, log_level)
-        djerba_study = study(config, log_level, args.log_path)
-        djerba_study.write_all(args.out, args.force)
-    elif args.mode == VALIDATE:
-        validator(log_level, args.log_path).validate(config, args.sample)
-    else:
-        raise ValueError("Undefined mode %s" % args.mode)
+    validator = djerba_validator()
+    validator.validate_input_file(args.ini)
+    config = configparser.ConfigParser()
+    config.read(args.ini) # TODO update config with command-line options
+    validator.validate_config(config)
+    runner(config).run()
 
 if __name__ == '__main__':
     parser = get_parser()
