@@ -89,7 +89,7 @@ class TestConfigure(TestBase):
         with open(updated_path, 'w') as f:
             updater.get_config().write(f)
         # TODO this relies on local paths being identical; make it portable
-        self.assertEqual(self.getMD5(updated_path), '269e8722fd985c7b0a7c01cb8da4edd9')
+        self.assertEqual(self.getMD5(updated_path), '9bd00c056015407f094f2e7a390a7882')
 
 class TestExtractor(TestBase):
 
