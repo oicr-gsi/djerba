@@ -1,5 +1,11 @@
 # MAF file usage in Djerba
 
+## About this document
+
+This document describes the MAF format in use at OICR. MAF files in this format are used by the legacy R script `singleSample.r`.
+
+Discussion of MAF processing refers to an early development version of Djerba `<= 0.0.4`, intended to handle both CGI reports and cBioPortal. This functionality has been removed in Djerba release `0.0.5`. The document is retained as it may be useful for future implementation of MAF processing.
+
 ## OICR MAF input format
 
 The basic MAF format was defined by [TCGA](https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga). It is a TSV format with 34 required column headers, as described in [this document](https://docs.gdc.cancer.gov/Encyclopedia/pages/Mutation_Annotation_Format_TCGAv2/).
