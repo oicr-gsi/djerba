@@ -116,11 +116,33 @@ class djerba_validator:
 def get_parser():
     """Construct the parser for command-line arguments"""
     parser = argparse.ArgumentParser(
-        description='Djerba: A tool for making bioinformatics clinical reports'
+        description='Djerba: A tool for making bioinformatics clinical reports',
+        epilog='Run any subcommand with --help for additional information'
     )
     parser.add_argument(
-        '-i', '--ini', metavar='PATH', help='INI file with config params'
+        '-v', '--verbose', action='store_true', help='Print additional status information'
     )
+    subparsers = parser.add_subparsers(title='subcommands', help='sub-command help')
+    config_parser = subparsers.add_parser('configure', help='get configuration parameters')
+    config_parser.add_argument('-i', '--in', metavar='PATH', required=True, help='INI config file with user inputs')
+    config_parser.add_argument('-o', '--out', metavar='PATH', required=True, help='Path for output of fully specified INI config file')
+    extract_parser = subparsers.add_parser('extract', help='extract metrics from configuration')
+    extract_parser.add_argument('-i', '--in', metavar='PATH', required=True, help='Fully specified INI config file')
+    extract_parser.add_argument('-d', '--dir', metavar='DIR', required=True, help='Directory for output of metrics')
+    extract_parser.add_argument('-j', '--json', metavar='PATH', help='Output path for JSON summary')
+    render_parser = subparsers.add_parser('html', help='read metrics directory and write HTML')
+    render_parser.add_argument('-d', '--dir', metavar='DIR', required=True, help='Metrics directory for input')
+    render_parser.add_argument('-H', '--html', metavar='PATH', required=True, help='Path for HTML output')
+    publish_parser = subparsers.add_parser('pdf', help='read Djerba HTML output and write PDF')
+    publish_parser.add_argument('-H', '--html', metavar='PATH', required=True, help='Path for HTML input')
+    publish_parser.add_argument('-p', '--pdf', metavar='PATH', required=True, help='Path for PDF output')
+    all_parser = subparsers.add_parser('all', help='run all Djerba steps and output PDF')
+    all_parser.add_argument('-i', '--in', metavar='PATH', required=True, help='INI config file with user inputs')
+    all_parser.add_argument('-c', '--config', metavar='PATH', help='Path for output of fully specified INI config file')
+    all_parser.add_argument('-d', '--dir', metavar='DIR', required=True, help='Directory for extracted metrics output') # TODO write to tempdir if not supplied?
+    all_parser.add_argument('-j', '--json', metavar='PATH', help='Output path for JSON summary')
+    all_parser.add_argument('-H', '--html', metavar='PATH', help='Path for HTML output')
+    all_parser.add_argument('-p', '--pdf', metavar='PATH', required=True, help='Path for PDF output')
     return parser
 
 def main(args):
