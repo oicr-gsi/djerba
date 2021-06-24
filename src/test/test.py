@@ -117,18 +117,20 @@ class TestExtractor(TestBase):
             '0ea5bf8257f8ba6db677c8fbc0d285ab'
         )
 
-class TestParser(TestBase):
-    """test the R script results parser"""
+# commented out; parsing report directory for JSON output is low-priority for initial release
 
-    def test_parser(self):
-        inDir = '/home/iain/oicr/workspace/djerba/data/PANX_1249_report/report/' # TODO move to supplementary
-        outDir = '/home/iain/tmp/djerba/test/parser' # TODO change to testing temp dir
-        parser = r_script_results_parser(inDir, outDir)
-        parser.run()
-        result = os.path.join(outDir, parser.DATA_MUTEX_ONCOGENIC_PARSED)
-        self.assertEqual(self.getMD5(result), '5a379d10d4c81cef1f0f06be41702987')
-        result = os.path.join(outDir, parser.DATA_CNA_PARSED)
-        self.assertEqual(self.getMD5(result), '1c3125937cf627c2e4969d8916f4486d')
+#class TestParser(TestBase):
+#    """test the R script results parser"""
+#
+#    def test_parser(self):
+#        inDir = '/home/iain/oicr/workspace/djerba/data/PANX_1249_report/report/' # TODO move to supplementary
+#        outDir = '/home/iain/tmp/djerba/test/parser' # TODO change to testing temp dir
+#        parser = r_script_results_parser(inDir, outDir)
+#        parser.run()
+#        result = os.path.join(outDir, parser.DATA_MUTEX_ONCOGENIC_PARSED)
+#        self.assertEqual(self.getMD5(result), '5a379d10d4c81cef1f0f06be41702987')
+#        result = os.path.join(outDir, parser.DATA_CNA_PARSED)
+#        self.assertEqual(self.getMD5(result), '1c3125937cf627c2e4969d8916f4486d')
 
 class TestReader(TestBase):
 
@@ -210,7 +212,7 @@ class TestRunner(TestBase):
         # TODO output has sample name = null; need to fix in JSON collation
         self.expectedMD5 = '399f2484ebd70fa4771e6fa21ddf90c4'
         self.iniPath = os.path.join(self.dataDir, 'config_full.ini')
-        
+
     def test_runner(self):
         outDir = self.tmpDir
         outPath = os.path.join(outDir, 'cgi_metrics.json')
