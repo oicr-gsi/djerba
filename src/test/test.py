@@ -103,7 +103,7 @@ class TestExtractor(TestBase):
         config.read(self.iniPath)
         config[ini.SETTINGS][ini.SCRATCH_DIR] = outDir
         ex = extractor(config)
-        ex.run()
+        ex.run(run_r_script=False)
         self.assertEqual(
             self.getMD5(os.path.join(outDir, 'maf_params.json')),
             '1bfd7eb6d0bb974b02f6e13e63074001'
@@ -114,7 +114,7 @@ class TestExtractor(TestBase):
         )
         self.assertEqual(
             self.getMD5(os.path.join(outDir, 'sample_meta_params.json')),
-            '3412d95745bcf3d968a609d448f12cea'
+            '0ea5bf8257f8ba6db677c8fbc0d285ab'
         )
 
 class TestParser(TestBase):
@@ -192,14 +192,16 @@ class TestRender(TestBase):
         self.iniPath = os.path.join(self.dataDir, 'config_full.ini')
 
     def test_render(self):
-        outDir = '/u/ibancarz/workspace/djerba/TestRender'
+        outDir = self.tmpDir
         outPath = os.path.join(outDir, 'djerba_test.html')
-        reportDir = '/u/ibancarz/workspace/djerba/cli_output_wip'
+        reportDir = os.path.join(self.sup_dir, 'report_example')
         config = configparser.ConfigParser()
         config.read(self.iniPath)
         config['inputs']['out_dir'] = outDir
         test_renderer = html_renderer(config)
         test_renderer.write_html(reportDir, outPath)
+        # TODO check file contents; need to omit the report date etc.
+        self.assertTrue(os.path.exists(outPath))
 
 class TestRunner(TestBase):
 

@@ -19,15 +19,16 @@ class html_renderer:
 
     def write_html(self, report_dir, out_path):
         """Read the reporting directory, and use the Rmarkdown script to write HTML"""
-        render = "\"rmarkdown::render('{0}', output_file = '{1}')\"".format(self.markdown_script, out_path)
+        # no need for double quotes around the '-e' argument; subprocess does not use a shell
+        render = "rmarkdown::render('{0}', output_file = '{1}')".format(self.markdown_script, out_path)
         cmd = [
             'Rscript', '-e',
             render,
             report_dir
         ]
         print('###', ' '.join(cmd))
-        result = subprocess.run(cmd, check=True, capture_output=True)
+        result = subprocess.run(cmd, capture_output=True)
+        if result.returncode!=0:
+            print('###', result.stderr.decode('utf-8'))
+            raise subprocess.CalledProcessError
         return result
-
-
-

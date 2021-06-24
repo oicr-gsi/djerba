@@ -43,12 +43,14 @@ class extractor:
         """JSON component paths to create reader objects and build the report"""
         return self.componentPaths
 
-    def run(self):
+    def run(self, run_r_script=True):
         """Run all extractions and write output"""
         self.componentPaths.append(self.writeMafParams())
         self.componentPaths.append(self.writeSequenzaParams())
         self.componentPaths.append(self.writeSampleMeta())
-        self.run_r_script()
+        # allows us to omit singleSample.R, for faster testing
+        if run_r_script:
+            self.run_r_script()
 
     def run_r_script(self):
         wrapper = r_script_wrapper(self.config)
