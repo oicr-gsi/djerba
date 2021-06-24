@@ -210,7 +210,7 @@ class TestRunner(TestBase):
     def setUp(self):
         super().setUp()
         # TODO output has sample name = null; need to fix in JSON collation
-        self.expectedMD5 = '399f2484ebd70fa4771e6fa21ddf90c4'
+        self.expectedMD5 = 'c42c25c4ea2f1e23440e7a40473ae9f5'
         self.iniPath = os.path.join(self.dataDir, 'config_full.ini')
 
     def test_runner(self):
