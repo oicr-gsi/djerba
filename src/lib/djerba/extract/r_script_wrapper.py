@@ -66,8 +66,8 @@ class r_script_wrapper:
         if not r_script_dir:
             r_script_dir = os.path.join(os.path.dirname(__file__), '..', 'R_stats')
         self.r_script_dir = self._validate_r_script_dir(r_script_dir)
-        scratch_dir = config[ini.SETTINGS][ini.SCRATCH_DIR]
-        self.supplied_tmp_dir = scratch_dir # TODO allow for multiple runs sharing scratch dir
+        scratch_dir = config[ini.SETTINGS][ini.R_SCRATCH_DIR]
+        self.supplied_tmp_dir = scratch_dir # may be None
         self.out_dir = config[ini.INPUTS][ini.OUT_DIR]
         self.tumour_id = config[ini.INPUTS][ini.TUMOUR_ID]
         self.cancer_type_detailed = config[ini.INPUTS][ini.CANCER_TYPE_DETAILED]

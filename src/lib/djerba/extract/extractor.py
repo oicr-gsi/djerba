@@ -30,7 +30,7 @@ class extractor:
 
     def __init__(self, config):
         self.config = config
-        self.work_dir = config[ini.SETTINGS][ini.SCRATCH_DIR]
+        self.work_dir = config[ini.SETTINGS][ini.R_SCRATCH_DIR]
         self.componentPaths = []
 
     def _write_json(self, config, fileName):

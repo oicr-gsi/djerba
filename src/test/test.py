@@ -101,7 +101,7 @@ class TestExtractor(TestBase):
         outDir = self.tmpDir
         config = configparser.ConfigParser()
         config.read(self.iniPath)
-        config[ini.SETTINGS][ini.SCRATCH_DIR] = outDir
+        config[ini.SETTINGS][ini.R_SCRATCH_DIR] = outDir
         ex = extractor(config)
         ex.run(run_r_script=False)
         self.assertEqual(
