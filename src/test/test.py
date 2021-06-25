@@ -105,6 +105,11 @@ class TestExtractor(TestBase):
         self.assertEqual(self.getMD5(sequenza_path), '0d1971a322b9aa0a00d7f298ae92b8a3')
         self.assertEqual(self.getMD5(summary_path), '9945fa608f8960964e967f7aecd8fda7')
 
+class TestMain(TestBase):
+    # TODO test the run_all method of main.py, and the djerba.py script
+    # will need to either copy in a data_clinical.txt file, or generate one
+    pass
+
 class TestRender(TestBase):
 
     def setUp(self):

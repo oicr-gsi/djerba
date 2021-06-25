@@ -28,31 +28,30 @@ class main:
         ini_config.read(self.ini_defaults)
         ini_config.read(args.ini) # overwrites the defaults
         if args.subparser_name == constants.CONFIGURE:
-            print(args.subparser_name)
             configurer(ini_config).run(args.out)
         elif args.subparser_name == constants.EXTRACT:
-            print(args.subparser_name)
             extractor(ini_config).run(args.dir, args.json)
         elif args.subparser_name == constants.HTML:
-            print(args.subparser_name)
             html_renderer(ini_config).run(args.dir, args.html)
         elif args.subparser_name == constants.PDF:
-            print(args.subparser_name)
             pdf_renderer(ini_config).run(args.html, args.pdf)
         elif args.subparser_name == constants.ALL:
-            print(args.subparser_name)
-            with tempfile.TemporaryDirectory(prefix='djerba_all_') as tmp:
-                ini_full = args.config if args.config else os.path.join(tmp, 'djerba_config_full.ini')
-                html_path = args.html if args.html else os.path.join(tmp, 'djerba_report.html')
-                if args.dir:
-                    report_dir = args.dir
-                else:
-                    report_dir = os.path.join(tmp, 'report')
-                    os.mkdir(report_dir)
-                configurer(ini_config).run(ini_full)
-                extractor(ini_full).run(report_dir, args.json)
-                html_renderer(ini_full).run(report_dir, html_path)
-                pdf_renderer(ini_full).run(html_path, args.pdf)
+            self.run_all(args)
+
+    def run_all(self, args):
+        """Run all Djerba operations in sequence"""
+        with tempfile.TemporaryDirectory(prefix='djerba_all_') as tmp:
+            ini_full = args.config if args.config else os.path.join(tmp, 'djerba_config_full.ini')
+            html_path = args.html if args.html else os.path.join(tmp, 'djerba_report.html')
+            if args.dir:
+                report_dir = args.dir
+            else:
+                report_dir = os.path.join(tmp, 'report')
+                os.mkdir(report_dir)
+            configurer(ini_config).run(ini_full)
+            extractor(ini_full).run(report_dir, args.json)
+            html_renderer(ini_full).run(report_dir, html_path)
+            pdf_renderer(ini_full).run(html_path, args.pdf)
 
     def validate_args(self, args):
         """Validate the command-line arguments"""
