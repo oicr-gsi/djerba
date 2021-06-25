@@ -10,6 +10,7 @@ import tempfile
 import unittest
 import djerba.util.constants as constants
 from djerba.configure import configurer
+from djerba.extract.extractor import extractor
 from djerba.extract.sequenza import sequenza_extractor, SequenzaExtractionError
 from djerba.extract.r_script_wrapper import r_script_wrapper
 from djerba.render import html_renderer, pdf_renderer
@@ -82,6 +83,27 @@ class TestConfigure(TestBase):
         test_configurer.run(out_path)
         # TODO check contents of output path; need to account for supplementary data location
         self.assertTrue(os.path.exists(out_path))
+
+class TestExtractor(TestBase):
+
+    def setUp(self):
+        super().setUp()
+        self.iniPath = os.path.join(self.dataDir, 'config_full.ini')
+
+    def test_extractor(self):
+        config = configparser.ConfigParser()
+        config.read(self.default_ini)
+        config.read(self.iniPath)
+        out_dir = self.tmpDir
+        sequenza_path = os.path.join(out_dir, 'sequenza_params.json')
+        summary_path = os.path.join(out_dir, 'summary.json')
+        test_extractor = extractor(config)
+        # do not test R script here; done by TestWrapper
+        test_extractor.run(out_dir, summary_path, r_script=False)
+        self.assertTrue(os.path.exists(sequenza_path))
+        self.assertTrue(os.path.exists(summary_path))
+        self.assertEqual(self.getMD5(sequenza_path), '0d1971a322b9aa0a00d7f298ae92b8a3')
+        self.assertEqual(self.getMD5(summary_path), '9945fa608f8960964e967f7aecd8fda7')
 
 class TestRender(TestBase):
 

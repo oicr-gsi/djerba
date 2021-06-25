@@ -31,7 +31,7 @@ class extractor:
     def _write_json(self, data, out_path):
         with open(out_path, 'w') as out:
             out.write(json.dumps(data, sort_keys=True, indent=4))
-        return outPath
+        return out_path
 
     def run(self, work_dir, out_path, r_script=True):
         """Run extraction and write output"""
@@ -64,7 +64,7 @@ class extractor:
         gamma = self.config.getint(ini.INPUTS, ini.GAMMA)
         [purity, ploidy] = ex.get_purity_ploidy(gamma) # if gamma==None, this uses the default
         data = {
-            constants.SEQUENZA_GAMMA_KEY: gamma,
+            constants.SEQUENZA_GAMMA: gamma,
             constants.SEQUENZA_PURITY_KEY: purity,
             constants.SEQUENZA_PLOIDY_KEY: ploidy
         }
