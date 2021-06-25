@@ -52,7 +52,7 @@ setup(
             'R_stats/singleSample.r'
         ]
     },
-    install_requires=['configparse', 'numpy', 'pandas', 'scipy'],
+    install_requires=['configparse', 'numpy', 'pandas', 'pdfkit', 'scipy'],
     python_requires='>=3.7',
     author="Iain Bancarz",
     author_email="ibancarz [at] oicr [dot] on [dot] ca",
