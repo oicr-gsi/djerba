@@ -4,8 +4,9 @@ Wrap an Rmarkdown script to output HTML from a Djerba results directory.
 """
 
 import os
+import pdfkit
 import subprocess
-import djerba.ini_fields as ini
+import djerba.util.ini_fields as ini
 
 class html_renderer:
 
@@ -17,7 +18,7 @@ class html_renderer:
             self.r_script_dir = os.path.join(os.path.dirname(__file__), self.R_MARKDOWN_DIRNAME)
         self.markdown_script = os.path.join(self.r_script_dir, 'html_report.Rmd')
 
-    def write_html(self, report_dir, out_path):
+    def run(self, report_dir, out_path):
         """Read the reporting directory, and use the Rmarkdown script to write HTML"""
         # no need for double quotes around the '-e' argument; subprocess does not use a shell
         render = "rmarkdown::render('{0}', output_file = '{1}')".format(self.markdown_script, out_path)
@@ -32,3 +33,19 @@ class html_renderer:
             print('###', result.stderr.decode('utf-8'))
             raise subprocess.CalledProcessError
         return result
+
+class pdf_renderer:
+
+    def __init__(self, config):
+        # input config for consistency with other classes, and later for logging params etc.
+        self.config = config
+
+    def run(self, html_path, pdf_path):
+        """Render HTML to PDF"""
+        #create options, which are arguments to wkhtmltopdf for footer generation
+        options = {
+            'footer-right': '[page] of [topage]',
+            'footer-left': '[date]',
+            'footer-center': '${ANALYSIS_UNIT}'
+        }
+        pdfkit.from_url(html_path, pdf_path, options = options)

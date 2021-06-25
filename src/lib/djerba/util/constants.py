@@ -26,3 +26,10 @@ PROTEIN_CHANGE = 'Protein_Change'
 VARIANT_READS_AND_TOTAL_READS = 'Variant_Reads_And_Total_Reads'
 VARIANT_CLASSIFICATION = 'Variant_Classification'
 WHIZBAM_URL = 'Whizbam_URL'
+
+# script mode names
+CONFIGURE = 'configure'
+EXTRACT = 'extract'
+HTML = 'html'
+PDF = 'pdf'
+ALL = 'all'

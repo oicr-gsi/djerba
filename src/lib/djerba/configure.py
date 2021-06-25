@@ -5,9 +5,24 @@ import gzip
 import os
 import re
 
-import djerba.constants as constants
-import djerba.configure.index as index
-import djerba.ini_fields as ini
+import djerba.util.constants as constants
+import djerba.util.index as index
+import djerba.util.ini_fields as ini
+
+class configurer:
+    """Class to do configuration in main Djerba method"""
+
+    # TODO validate that discovered config paths are readable
+
+    def __init__(self, config, validate=True):
+        self.config = config
+
+    def run(out_path):
+        updater = config_updater(self.config)
+        updater.update()
+        new_config = updater.get_config()
+        with open(out_path, 'w') as out_file:
+            new_config.write(out_file)
 
 class config_updater:
     """
@@ -68,9 +83,8 @@ class config_updater:
         if not self.config.has_section(ini.DISCOVERED):
             self.config.add_section(ini.DISCOVERED)
         for key in updates.keys():
-            # Do not overwrite existing params; TODO log when existing param is being skipped
-            if self.config[ini.DISCOVERED].get(key) == None:
-                self.config[ini.DISCOVERED][key] = updates[key]
+            # Overwrite existing params, if any
+            self.config[ini.DISCOVERED][key] = updates[key]
 
 class provenance_reader:
 

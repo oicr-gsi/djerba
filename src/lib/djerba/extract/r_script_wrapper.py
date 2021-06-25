@@ -6,8 +6,8 @@ import os
 import re
 import subprocess
 import tempfile
-import djerba.constants as constants
-import djerba.ini_fields as ini
+import djerba.util.constants as constants
+import djerba.util.ini_fields as ini
 
 class r_script_wrapper:
 
@@ -66,7 +66,7 @@ class r_script_wrapper:
         if not r_script_dir:
             r_script_dir = os.path.join(os.path.dirname(__file__), '..', 'R_stats')
         self.r_script_dir = self._validate_r_script_dir(r_script_dir)
-        scratch_dir = config[ini.SETTINGS][ini.R_SCRATCH_DIR]
+        scratch_dir = config[ini.SETTINGS][ini.EXTRACTION_DIR]
         self.supplied_tmp_dir = scratch_dir # may be None
         self.out_dir = config[ini.INPUTS][ini.OUT_DIR]
         self.tumour_id = config[ini.INPUTS][ini.TUMOUR_ID]

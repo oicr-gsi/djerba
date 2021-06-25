@@ -6,99 +6,77 @@ import pandas as pd
 
 from djerba.extract.sequenza import sequenza_extractor
 from djerba.extract.r_script_wrapper import r_script_wrapper
-import djerba.constants as constants
-import djerba.ini_fields as ini
+import djerba.util.constants as constants
+import djerba.util.ini_fields as ini
 
 class extractor:
     """
-    Extract the clinical report data; replaces 4-singleSample.sh
-    Input: config from 'discover' step; replaces INI config from 3-configureSingleSample.sh
-    Output: Directory of .txt and .json files for downstream processing
+    Extract the clinical report data from inptut configuration
+    To start with, mostly a wrapper for the legacy R script singleSample.r
+    Output: Directory of .txt and .tsv files for downstream processing
+    Later on, will replace R script functionality with Python, and output JSON
     """
+
+    # TODO extract clinical data from config and write to data_clinical.txt
 
     SAMPLE_INFO_KEY = 'sample_info'
     SAMPLE_META_PARAMS_FILENAME = 'sample_meta_params.json'
     MAF_PARAMS_FILENAME = 'maf_params.json'
     SEQUENZA_PARAMS_FILENAME = 'sequenza_params.json'
 
-    # TODO
-    # - only input is a ConfigParser object (updated using config_updater)
-    # - get segfile path from sequenza reader, for rscript (using sequenza path from updater)
-    # - get fusfile and gepfile paths from provenance, for rscript (via config updater)
-    # - run the rscript
-    # - parse rscript results into JSON for final collation
-
     def __init__(self, config):
         self.config = config
-        self.work_dir = config[ini.SETTINGS][ini.R_SCRATCH_DIR]
-        self.componentPaths = []
+        self.work_dir = config[ini.SETTINGS][ini.EXTRACTION_DIR]
 
-    def _write_json(self, config, fileName):
-        outPath = os.path.join(self.work_dir, fileName)
-        with open(outPath, 'w') as out:
-            out.write(json.dumps(config, sort_keys=True, indent=4))
+    def _write_json(self, data, out_path):
+        with open(out_path, 'w') as out:
+            out.write(json.dumps(data, sort_keys=True, indent=4))
         return outPath
 
-    def getComponentPaths(self):
-        """JSON component paths to create reader objects and build the report"""
-        return self.componentPaths
-
-    def run(self, run_r_script=True):
-        """Run all extractions and write output"""
-        self.componentPaths.append(self.writeMafParams())
-        self.componentPaths.append(self.writeSequenzaParams())
-        self.componentPaths.append(self.writeSampleMeta())
-        # allows us to omit singleSample.R, for faster testing
-        if run_r_script:
-            self.run_r_script()
+    def run(self, work_dir, out_path, r_script=True):
+        """Run extraction and write output"""
+        if work_dir:
+            self.work_dir = work_dir # can override work_dir from INI
+        if r_script:
+            self.run_r_script() # can omit the R script for testing
+        self.write_sequenza_params()
+        if out_path:
+            self.write_json_summary(out_path)
 
     def run_r_script(self):
         wrapper = r_script_wrapper(self.config)
         wrapper.run()
 
-    def writeMafParams(self):
-        """Read the MAF file, extract relevant parameters, and write as JSON"""
-        maf_path = self.config[ini.DISCOVERED][ini.MAF_FILE]
-        tmb = maf_extractor(maf_path, self.config[ini.SETTINGS][ini.BED_PATH]).find_tmb()
-        config = {
-            constants.READER_CLASS_KEY: 'json_reader',
-            self.SAMPLE_INFO_KEY: {
-                constants.TMB_PER_MB_KEY: tmb
-            }
+    def write_json_summary(self, out_path):
+        """Write a JSON summary of extracted data"""
+        # TODO write summary, in keeping with an updated Elba schema
+        # for now, this is just a placeholder
+        # TODO log status instead of printing to STDOUT
+        print('### placeholder; JSON summary not yet implemented')
+        data = {
+            'summary': 'JSON summary goes here'
         }
-        return self._write_json(config, self.MAF_PARAMS_FILENAME)
-
-    def writeSampleMeta(self):
-        """
-        Write sample metadata fields from the INI file
-        Metadata is read from the INI, and output unchanged for the final report
-        """
-        # annoyingly, ConfigParser converts keys to lowercase
-        # see https://stackoverflow.com/questions/19359556/configparser-reads-capital-keys-and-make-them-lower-case
-        meta = {}
-        for field in ini.SAMPLE_META_FIELDS:
-            meta[field.upper()] = self.config[ini.SAMPLE_META][field]
-        output = {
-            constants.READER_CLASS_KEY: 'json_reader',
-            self.SAMPLE_INFO_KEY: meta
-        }
-        return self._write_json(output, self.SAMPLE_META_PARAMS_FILENAME)
-
-    def writeSequenzaParams(self):
+        return self._write_json(data, out_path)
+        
+    def write_sequenza_params(self):
         """Read the Sequenza results.zip, extract relevant parameters, and write as JSON"""
         ex = sequenza_extractor(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE])
         gamma = self.config.getint(ini.INPUTS, ini.GAMMA)
         [purity, ploidy] = ex.get_purity_ploidy(gamma) # if gamma==None, this uses the default
-        config = {
-            constants.READER_CLASS_KEY: 'json_reader',
-            self.SAMPLE_INFO_KEY: {
-                constants.SEQUENZA_PURITY_KEY: purity,
-                constants.SEQUENZA_PLOIDY_KEY: ploidy
-            }
+        data = {
+            constants.SEQUENZA_GAMMA_KEY: gamma,
+            constants.SEQUENZA_PURITY_KEY: purity,
+            constants.SEQUENZA_PLOIDY_KEY: ploidy
         }
-        return self._write_json(config, self.SEQUENZA_PARAMS_FILENAME)
+        return self._write_json(data, os.path.join(self.work_dir, self.SEQUENZA_PARAMS_FILENAME))
 
 class maf_extractor:
+
+    """
+    Class for extracting MAF stats using Python
+    """
+    # Proof-of-concept; not in production for release 0.0.5
+    # TODO expand and use to replace relevant outputs from R script
 
     def __init__(self, maf_path, bed_path):
         bed_cols = ['chrom', 'start', 'end']
