@@ -8,17 +8,10 @@ import os
 import subprocess
 import tempfile
 import unittest
-import djerba.constants as constants
-import djerba.ini_fields as ini
-from jsonschema.exceptions import ValidationError
-from djerba.configure.configure import config_updater, provenance_reader, MissingProvenanceError
-from djerba.extract.extractor import extractor
-from djerba.extract.r_script_wrapper import r_script_wrapper
-from djerba.extract.r_script_results_parser import r_script_results_parser
+import djerba.util.constants as constants
 from djerba.extract.sequenza import sequenza_extractor, SequenzaExtractionError
+from djerba.extract.r_script_wrapper import r_script_wrapper
 from djerba.render import html_renderer
-from djerba.build.reader import json_reader, mastersheet_reader, multiple_reader
-from djerba.runner import runner
 
 class TestBase(unittest.TestCase):
 
@@ -70,130 +63,13 @@ class TestBase(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-class TestConfigure(TestBase):
-
-    def test_reader(self):
-        test_reader = provenance_reader(self.provenance_path, self.project, self.donor)
-        maf_path = test_reader.parse_maf_path()
-        self.assertEqual(maf_path, os.readlink(self.expected_maf_path)) # resolve symlink
-        with self.assertRaises(MissingProvenanceError):
-            test_reader_2 = provenance_reader(self.provenance_path, self.project, 'nonexistent_donor')
-
-    def test_updater(self):
-        iniPath = os.path.join(self.dataDir, 'config.ini')
-        config = configparser.ConfigParser()
-        config.read(iniPath)
-        updater = config_updater(config)
-        updater.update()
-        updated_path = os.path.join(self.tmpDir, 'updated_config.ini')
-        with open(updated_path, 'w') as f:
-            updater.get_config().write(f)
-        # TODO this relies on local paths being identical; make it portable
-        self.assertEqual(self.getMD5(updated_path), '9bd00c056015407f094f2e7a390a7882')
-
-class TestExtractor(TestBase):
-
-    def setUp(self):
-        super().setUp()
-        self.iniPath = os.path.join(self.dataDir, 'config_full.ini')
-
-    def test_writeIniParams(self):
-        outDir = self.tmpDir
-        config = configparser.ConfigParser()
-        config.read(self.iniPath)
-        config[ini.SETTINGS][ini.EXTRACTION_DIR] = outDir
-        ex = extractor(config)
-        ex.run(run_r_script=False)
-        self.assertEqual(
-            self.getMD5(os.path.join(outDir, 'maf_params.json')),
-            '1bfd7eb6d0bb974b02f6e13e63074001'
-        )
-        self.assertEqual(
-            self.getMD5(os.path.join(outDir, 'sequenza_params.json')),
-            '48ad764f0da71feeda301cd2c71d1627'
-        )
-        self.assertEqual(
-            self.getMD5(os.path.join(outDir, 'sample_meta_params.json')),
-            '0ea5bf8257f8ba6db677c8fbc0d285ab'
-        )
-
-# commented out; parsing report directory for JSON output is low-priority for initial release
-
-#class TestParser(TestBase):
-#    """test the R script results parser"""
-#
-#    def test_parser(self):
-#        inDir = '/home/iain/oicr/workspace/djerba/data/PANX_1249_report/report/' # TODO move to supplementary
-#        outDir = '/home/iain/tmp/djerba/test/parser' # TODO change to testing temp dir
-#        parser = r_script_results_parser(inDir, outDir)
-#        parser.run()
-#        result = os.path.join(outDir, parser.DATA_MUTEX_ONCOGENIC_PARSED)
-#        self.assertEqual(self.getMD5(result), '5a379d10d4c81cef1f0f06be41702987')
-#        result = os.path.join(outDir, parser.DATA_CNA_PARSED)
-#        self.assertEqual(self.getMD5(result), '1c3125937cf627c2e4969d8916f4486d')
-
-class TestReader(TestBase):
-
-    def setUp(self):
-        super().setUp()
-        self.components = []
-        component_filenames = ['json_reader_component_%d.json' % i for i in range(1,4)]
-        for name in component_filenames:
-            with open(os.path.join(self.dataDir, name)) as f:
-                self.components.append(json.loads(f.read()))
-
-    def test_mastersheet_reader(self):
-        ms_component_path = os.path.join(self.dataDir, 'mastersheet_reader_component.json')
-        with open(ms_component_path) as f:
-            ms_component = json.loads(f.read())
-        ms_component['mastersheet_path'] = os.path.join(self.dataDir, 'mastersheet-v1.psv')
-        reader = mastersheet_reader(ms_component, self.schema)
-        patient_id = reader.get_sample_info().get_attribute('PATIENT_ID')
-        self.assertEqual(patient_id, '123-456-789')
-
-    def test_json_reader(self):
-        # read a component path with all fields specified
-        reader1 = json_reader(self.components[0], self.schema)
-        self.assertEqual(reader1.total_genes(), 2)
-        for gene in reader1.get_genes_list():
-            self.assertEqual(len(gene.get_attributes()), 17)
-        self.assertEqual(len(reader1.get_sample_info().get_attributes()), 34)
-        self.assertTrue(reader1.is_complete())
-        self.assertIsNone(jsonschema.validate(reader1.get_output(), self.schema))
-        # insert a value not permitted by the schema; output validation now fails
-        reader1.sample_info.attributes['ORDERING_PHYSICIAN'] = 999
-        with self.assertRaises(ValidationError):
-            reader1.get_output()
-        # read an incomplete component path
-        reader2 = json_reader(self.components[1], self.schema)
-        self.assertEqual(reader2.total_genes(), 2)
-        for gene in reader2.get_genes_list():
-            self.assertEqual(len(gene.get_attributes()), 9)
-        self.assertEqual(len(reader2.get_sample_info().get_attributes()), 14)
-        self.assertFalse(reader2.is_complete())
-        with self.assertRaises(RuntimeError):
-            reader2.get_output()
-
-    def test_multiple_reader(self):
-        # multiple reader with consistent values
-        reader1 = multiple_reader(self.components[0:2], self.schema)
-        self.assertEqual(reader1.total_genes(), 2)
-        for gene in reader1.get_genes_list():
-            self.assertEqual(len(gene.get_attributes()), 17)
-        self.assertEqual(len(reader1.get_sample_info().get_attributes()), 34)
-        self.assertTrue(reader1.is_complete())
-        self.assertIsNone(jsonschema.validate(reader1.get_output(), self.schema))
-        # inconsistent values
-        with self.assertRaises(ValueError):
-            reader2 = multiple_reader([self.components[0], self.components[2]], self.schema)
-
 class TestRender(TestBase):
 
     def setUp(self):
         super().setUp()
         self.iniPath = os.path.join(self.dataDir, 'config_full.ini')
 
-    def test_render(self):
+    def test_html(self):
         outDir = self.tmpDir
         outPath = os.path.join(outDir, 'djerba_test.html')
         reportDir = os.path.join(self.sup_dir, 'report_example')
@@ -201,42 +77,9 @@ class TestRender(TestBase):
         config.read(self.iniPath)
         config['inputs']['out_dir'] = outDir
         test_renderer = html_renderer(config)
-        test_renderer.write_html(reportDir, outPath)
+        test_renderer.run(reportDir, outPath)
         # TODO check file contents; need to omit the report date etc.
         self.assertTrue(os.path.exists(outPath))
-
-class TestRunner(TestBase):
-
-    def setUp(self):
-        super().setUp()
-        # TODO output has sample name = null; need to fix in JSON collation
-        self.expectedMD5 = 'c42c25c4ea2f1e23440e7a40473ae9f5'
-        self.iniPath = os.path.join(self.dataDir, 'config_full.ini')
-
-    def test_runner(self):
-        outDir = self.tmpDir
-        outPath = os.path.join(outDir, 'cgi_metrics.json')
-        config = configparser.ConfigParser()
-        config.read(self.iniPath)
-        config['inputs']['out_dir'] = outDir
-        runner(config).run()
-        self.assertEqual(self.getMD5(outPath), self.expectedMD5)
-
-    def test_script(self):
-        outDir = self.tmpDir
-        outPath = os.path.join(outDir, 'cgi_metrics.json')
-        config = configparser.ConfigParser()
-        config.read(self.iniPath)
-        config['inputs']['out_dir'] = outDir
-        modified_config_path = os.path.join(self.tmpDir, 'config.ini')
-        with open(modified_config_path, 'w') as mod_config:
-            config.write(mod_config)
-        cmd = [
-            "djerba.py",
-            "--ini", modified_config_path
-        ]
-        self.run_command(cmd)
-        self.assertEqual(self.getMD5(outPath), self.expectedMD5)
 
 class TestSequenzaExtractor(TestBase):
 
