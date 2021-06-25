@@ -17,7 +17,7 @@ class configurer:
     def __init__(self, config, validate=True):
         self.config = config
 
-    def run(out_path):
+    def run(self, out_path):
         updater = config_updater(self.config)
         updater.update()
         new_config = updater.get_config()
@@ -53,6 +53,7 @@ class config_updater:
             data_dir = self.config[ini.SETTINGS][ini.DATA_DIR]
         else:
             data_dir = os.path.join(os.path.dirname(__file__), '..', constants.DATA_DIR_NAME)
+        data_dir = os.path.realpath(data_dir)
         data_files[ini.ENSCON] = os.path.join(data_dir, self.ENSCON_NAME)
         data_files[ini.ENTCON] = os.path.join(data_dir, self.ENTCON_NAME)
         data_files[ini.GENE_BED] = os.path.join(data_dir, self.GENEBED_NAME)

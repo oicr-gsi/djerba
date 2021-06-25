@@ -9,9 +9,10 @@ import subprocess
 import tempfile
 import unittest
 import djerba.util.constants as constants
+from djerba.configure import configurer
 from djerba.extract.sequenza import sequenza_extractor, SequenzaExtractionError
 from djerba.extract.r_script_wrapper import r_script_wrapper
-from djerba.render import html_renderer
+from djerba.render import html_renderer, pdf_renderer
 
 class TestBase(unittest.TestCase):
 
@@ -59,9 +60,28 @@ class TestBase(unittest.TestCase):
         with open(self.schema_path) as f:
             self.schema = json.loads(f.read())
         self.rScriptDir = os.path.realpath(os.path.join(self.testDir, '../lib/djerba/R/'))
+        self.default_ini = os.path.realpath(os.path.join(self.testDir, '../lib/djerba/data/defaults.ini'))
 
     def tearDown(self):
         self.tmp.cleanup()
+
+class TestConfigure(TestBase):
+
+    def setUp(self):
+        super().setUp()
+        self.iniPath = os.path.join(self.dataDir, 'config_user.ini')
+
+    def test_configurer(self):
+        config = configparser.ConfigParser()
+        config.read(self.default_ini)
+        config.read(self.iniPath)
+        config['settings']['provenance'] = os.path.join(self.sup_dir, 'pass01_panx_provenance.original.tsv.gz')
+        test_configurer = configurer(config)
+        out_dir = self.tmpDir
+        out_path = os.path.join(out_dir, 'config_test_output.ini')
+        test_configurer.run(out_path)
+        # TODO check contents of output path; need to account for supplementary data location
+        self.assertTrue(os.path.exists(out_path))
 
 class TestRender(TestBase):
 
@@ -81,13 +101,25 @@ class TestRender(TestBase):
         # TODO check file contents; need to omit the report date etc.
         self.assertTrue(os.path.exists(outPath))
 
+    def OMIT_test_pdf(self):
+        # TODO omit this test until wkhtmltopdf is installed
+        in_path = os.path.join(self.sup_dir, 'djerba_test.html')
+        #out_dir = self.tmpDir
+        out_dir = '/u/ibancarz/workspace/djerba/TestRender'
+        out_path = os.path.join(out_dir, 'djerba_test.pdf')
+        config = configparser.ConfigParser()
+        config.read(self.iniPath)
+        test_renderer = pdf_renderer(config)
+        test_renderer.run(in_path, out_path)
+        self.assertTrue(os.path.exists(out_path))
+
 class TestSequenzaExtractor(TestBase):
 
     def setUp(self):
         super().setUp()
         self.zip_path = os.path.join(self.sup_dir, 'PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip')
         self.expected_gamma = 400
-    
+
     def test_finder_script(self):
         """Test the command-line script to find gamma"""
         cmd = [
