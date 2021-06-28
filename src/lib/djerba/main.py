@@ -30,9 +30,9 @@ class main:
         if args.subparser_name == constants.CONFIGURE:
             configurer(ini_config).run(args.out)
         elif args.subparser_name == constants.EXTRACT:
-            extractor(ini_config).run(args.dir, args.json)
+            extractor(ini_config, args.dir).run(args.json)
         elif args.subparser_name == constants.HTML:
-            html_renderer(ini_config).run(args.dir, args.html)
+            html_renderer(ini_config, args.dir).run(args.html)
         elif args.subparser_name == constants.PDF:
             pdf_renderer(ini_config).run(args.html, args.pdf)
         elif args.subparser_name == constants.ALL:
@@ -49,7 +49,7 @@ class main:
                 report_dir = os.path.join(tmp, 'report')
                 os.mkdir(report_dir)
             configurer(ini_config).run(ini_full)
-            extractor(ini_full).run(report_dir, args.json)
+            extractor(ini_full, report_dir).run(args.json)
             html_renderer(ini_full).run(report_dir, html_path)
             pdf_renderer(ini_full).run(html_path, args.pdf)
 

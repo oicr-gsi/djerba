@@ -20,32 +20,85 @@ class extractor:
     # TODO extract clinical data from config and write to data_clinical.txt
 
     SAMPLE_INFO_KEY = 'sample_info'
+    CLINICAL_DATA_FILENAME = 'data_clinical.txt'
     SAMPLE_META_PARAMS_FILENAME = 'sample_meta_params.json'
     MAF_PARAMS_FILENAME = 'maf_params.json'
     SEQUENZA_PARAMS_FILENAME = 'sequenza_params.json'
 
-    def __init__(self, config):
+    def __init__(self, config, work_dir=None):
         self.config = config
-        self.work_dir = config[ini.SETTINGS][ini.EXTRACTION_DIR]
+        if work_dir == None:
+            self.work_dir = config[ini.SETTINGS][ini.EXTRACTION_DIR]
+        else:
+            self.work_dir = work_dir
 
     def _write_json(self, data, out_path):
         with open(out_path, 'w') as out:
             out.write(json.dumps(data, sort_keys=True, indent=4))
         return out_path
 
-    def run(self, work_dir, out_path, r_script=True):
+    def get_sequenza_params(self):
+        """Read the Sequenza results.zip, extract relevant parameters, and write as JSON"""
+        ex = sequenza_extractor(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE])
+        gamma = self.config.getint(ini.INPUTS, ini.GAMMA)
+        [purity, ploidy] = ex.get_purity_ploidy(gamma) # if gamma==None, this uses the default
+        params = {
+            constants.SEQUENZA_GAMMA: gamma,
+            constants.SEQUENZA_PURITY_KEY: purity,
+            constants.SEQUENZA_PLOIDY_KEY: ploidy
+        }
+        return params
+
+    def run(self, json_path=None, r_script=True):
         """Run extraction and write output"""
-        if work_dir:
-            self.work_dir = work_dir # can override work_dir from INI
         if r_script:
             self.run_r_script() # can omit the R script for testing
-        self.write_sequenza_params()
-        if out_path:
-            self.write_json_summary(out_path)
+        self.write_clinical_data(self.get_sequenza_params())
+        if json_path:
+            self.write_json_summary(json_path)
 
     def run_r_script(self):
         wrapper = r_script_wrapper(self.config)
         wrapper.run()
+
+    def write_clinical_data(self, sequenza_params):
+        """Write the data_clinical.txt file; based on legacy format from CGI-Tools"""
+        purity = sequenza_params[constants.SEQUENZA_PURITY_KEY]
+        ploidy = sequenza_params[constants.SEQUENZA_PLOIDY_KEY]
+        # TODO move config values from inputs to sample_meta?
+        try:
+            data = [
+                ['PATIENT_LIMS_ID', self.config[ini.INPUTS][ini.PATIENT] ],
+                ['PATIENT_STUDY_ID', self.config[ini.INPUTS][ini.PATIENT_ID] ],
+                ['TUMOR_SAMPLE_ID', self.config[ini.INPUTS][ini.TUMOUR_ID] ],
+                ['BLOOD_SAMPLE_ID', self.config[ini.INPUTS][ini.NORMAL_ID] ],
+                ['REPORT_VERSION', self.config[ini.SAMPLE_META][ini.REPORT_VERSION] ],
+                ['SAMPLE_TYPE', self.config[ini.SAMPLE_META][ini.SAMPLE_TYPE] ],
+                ['CANCER_TYPE', self.config[ini.SAMPLE_META][ini.CANCER_TYPE] ],
+                ['CANCER_TYPE_DETAILED', self.config[ini.INPUTS][ini.CANCER_TYPE_DETAILED] ],
+                ['CANCER_TYPE_DESCRIPTION', self.config[ini.SAMPLE_META][ini.CANCER_TYPE_DESCRIPTION] ],
+                ['CLOSEST_TCGA', self.config[ini.INPUTS][ini.TCGA_CODE] ],
+                ['SAMPLE_ANATOMICAL_SITE', self.config[ini.SAMPLE_META][ini.SAMPLE_ANATOMICAL_SITE]],
+                ['MEAN_COVERAGE', self.config[ini.SAMPLE_META][ini.MEAN_COVERAGE] ],
+                ['PCT_V7_ABOVE_80X', self.config[ini.SAMPLE_META][ini.PCT_V7_ABOVE_80X] ], # capitalization changed from CGI-Tools
+                ['SEQUENZA_PURITY_FRACTION', purity],
+                ['SEQUENZA_PLOIDY', ploidy],
+                ['SEX', self.config[ini.SAMPLE_META][ini.SEX] ]
+            ]
+        except KeyError as err:
+            msg = "Missing required clinical data value from config"
+            raise KeyError(msg) from err
+        # columns omitted from CGI-Tools format, as they are not in use for R markdown:
+        # - DATE_SAMPLE_RECIEVED
+        # - SAMPLE_PRIMARY_OR_METASTASIS
+        # - QC_STATUS
+        # - QC_COMMENT
+        head = "\t".join([x[0] for x in data])
+        body = "\t".join([str(x[1]) for x in data])
+        out_path = os.path.join(self.work_dir, self.CLINICAL_DATA_FILENAME)
+        with open(out_path, 'w') as out_file:
+            print(head, file=out_file)
+            print(body, file=out_file)
 
     def write_json_summary(self, out_path):
         """Write a JSON summary of extracted data"""
@@ -57,18 +110,6 @@ class extractor:
             'summary': 'JSON summary goes here'
         }
         return self._write_json(data, out_path)
-        
-    def write_sequenza_params(self):
-        """Read the Sequenza results.zip, extract relevant parameters, and write as JSON"""
-        ex = sequenza_extractor(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE])
-        gamma = self.config.getint(ini.INPUTS, ini.GAMMA)
-        [purity, ploidy] = ex.get_purity_ploidy(gamma) # if gamma==None, this uses the default
-        data = {
-            constants.SEQUENZA_GAMMA: gamma,
-            constants.SEQUENZA_PURITY_KEY: purity,
-            constants.SEQUENZA_PLOIDY_KEY: ploidy
-        }
-        return self._write_json(data, os.path.join(self.work_dir, self.SEQUENZA_PARAMS_FILENAME))
 
 class maf_extractor:
 

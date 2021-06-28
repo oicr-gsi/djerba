@@ -94,15 +94,15 @@ class TestExtractor(TestBase):
         config = configparser.ConfigParser()
         config.read(self.default_ini)
         config.read(self.iniPath)
-        out_dir = self.tmpDir
-        sequenza_path = os.path.join(out_dir, 'sequenza_params.json')
+        out_dir = '/u/ibancarz/workspace/djerba/TestExtractor'  # self.tmpDir
+        clinical_data_path = os.path.join(out_dir, 'data_clinical.txt')
         summary_path = os.path.join(out_dir, 'summary.json')
-        test_extractor = extractor(config)
+        test_extractor = extractor(config, out_dir)
         # do not test R script here; done by TestWrapper
-        test_extractor.run(out_dir, summary_path, r_script=False)
-        self.assertTrue(os.path.exists(sequenza_path))
+        test_extractor.run(summary_path, r_script=False)
+        self.assertTrue(os.path.exists(clinical_data_path))
         self.assertTrue(os.path.exists(summary_path))
-        self.assertEqual(self.getMD5(sequenza_path), '0d1971a322b9aa0a00d7f298ae92b8a3')
+        self.assertEqual(self.getMD5(clinical_data_path), '6ab526ddd5dfcb9ee21a5590c23ef195')
         self.assertEqual(self.getMD5(summary_path), '9945fa608f8960964e967f7aecd8fda7')
 
 class TestMain(TestBase):
