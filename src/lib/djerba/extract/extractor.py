@@ -65,7 +65,7 @@ class extractor:
             self.write_json_summary(json_path)
 
     def run_r_script(self, sequenza_params):
-        wrapper = r_script_wrapper(self.config, sequenza_params.get[constants.SEQUENZA_GAMMA])
+        wrapper = r_script_wrapper(self.config, sequenza_params.get(constants.SEQUENZA_GAMMA))
         wrapper.run()
 
     def write_clinical_data(self, sequenza_params):
