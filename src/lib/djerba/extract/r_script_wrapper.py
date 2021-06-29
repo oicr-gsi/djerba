@@ -9,6 +9,7 @@ import tempfile
 import zipfile
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
+from djerba.extract.sequenza import sequenza_extractor
 
 class r_script_wrapper:
 
@@ -61,8 +62,9 @@ class r_script_wrapper:
     # environment variable for ONCOKB token path
     ONCOKB_TOKEN_VARIABLE = 'ONCOKB_TOKEN'
 
-    def __init__(self, config):
+    def __init__(self, config, gamma):
         self.config = config
+        self.gamma = gamma
         r_script_dir = config[ini.SETTINGS].get(ini.R_SCRIPT_DIR)
         if not r_script_dir:
             r_script_dir = os.path.join(os.path.dirname(__file__), '..', 'R_stats')
@@ -334,11 +336,13 @@ class r_script_wrapper:
         out_path = self._annotate_maf(tmp_path, tmp_dir, oncokb_info_path)
         return out_path
 
-    def preprocess_seg(self, seg_path, tmp_dir):
+    def preprocess_seg(self, sequenza_path, tmp_dir):
         """
-        Apply preprocessing to a SEG file; write results to tmp_dir
+        Extract the SEG file from the .zip archive output by Sequenza
+        Apply preprocessing and write results to tmp_dir
         Replace entry in the first column with the tumour ID
         """
+        seg_path = sequenza_extractor(sequenza_path).extract_seg_file(tmp_dir, self.gamma)
         out_path = os.path.join(tmp_dir, 'seg.txt')
         with open(seg_path, 'rt') as seg_file, open(out_path, 'wt') as out_file:
             reader = csv.reader(seg_file, delimiter="\t")
@@ -362,7 +366,7 @@ class r_script_wrapper:
         gep_path = self.preprocess_gep(self.config[ini.DISCOVERED][ini.GEP_FILE], tmp_dir)
         fus_path = self.preprocess_fus(self.config[ini.DISCOVERED][ini.MAVIS_FILE], tmp_dir)
         maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE], tmp_dir, oncokb_info)
-        seg_path = self.preprocess_seg(self.config[ini.DISCOVERED][ini.SEG_FILE], tmp_dir)
+        seg_path = self.preprocess_seg(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir)
         cmd = [
             'Rscript', os.path.join(self.r_script_dir, 'singleSample.r'),
             '--basedir', self.r_script_dir,

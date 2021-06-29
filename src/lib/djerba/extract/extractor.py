@@ -41,7 +41,13 @@ class extractor:
         """Read the Sequenza results.zip, extract relevant parameters, and write as JSON"""
         ex = sequenza_extractor(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE])
         gamma = self.config.getint(ini.INPUTS, ini.GAMMA)
-        [purity, ploidy] = ex.get_purity_ploidy(gamma) # if gamma==None, this uses the default
+        # TODO replace print calls with logger
+        if gamma == None:
+            gamma = ex.get_default_gamma()
+            print("### Automatically generated Sequenza gamma:", gamma)
+        else:
+            print("### User-supplied Sequenza gamma:", gamma)
+        [purity, ploidy] = ex.get_purity_ploidy(gamma)
         params = {
             constants.SEQUENZA_GAMMA: gamma,
             constants.SEQUENZA_PURITY_KEY: purity,
@@ -51,14 +57,15 @@ class extractor:
 
     def run(self, json_path=None, r_script=True):
         """Run extraction and write output"""
+        sequenza_params = self.get_sequenza_params()
         if r_script:
-            self.run_r_script() # can omit the R script for testing
-        self.write_clinical_data(self.get_sequenza_params())
+            self.run_r_script(sequenza_params) # can omit the R script for testing
+        self.write_clinical_data(sequenza_params)
         if json_path:
             self.write_json_summary(json_path)
 
-    def run_r_script(self):
-        wrapper = r_script_wrapper(self.config)
+    def run_r_script(self, sequenza_params):
+        wrapper = r_script_wrapper(self.config, sequenza_params.get[constants.SEQUENZA_GAMMA])
         wrapper.run()
 
     def write_clinical_data(self, sequenza_params):

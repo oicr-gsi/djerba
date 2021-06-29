@@ -135,8 +135,6 @@ class TestMain(TestBase):
         #config.read(ini_path)
         #main().run_all(config, args)
 
-
-
 class TestRender(TestBase):
 
     def setUp(self):
@@ -241,7 +239,7 @@ class TestWrapper(TestBase):
         iniPath = os.path.join(self.sup_dir, 'rscript_config_updated.ini')
         config = configparser.ConfigParser()
         config.read(iniPath)
-        test_wrapper = r_script_wrapper(config)
+        test_wrapper = r_script_wrapper(config, gamma=500)
         result = test_wrapper.run()
         self.assertEqual(0, result.returncode)
 
