@@ -54,7 +54,7 @@ class config_updater:
         if self.config[ini.SETTINGS].get(ini.DATA_DIR):
             data_dir = self.config[ini.SETTINGS][ini.DATA_DIR]
         else:
-            data_dir = os.path.join(os.path.dirname(__file__), '..', constants.DATA_DIR_NAME)
+            data_dir = os.path.join(os.path.dirname(__file__), constants.DATA_DIR_NAME)
         data_dir = os.path.realpath(data_dir)
         data_files[ini.ENSCON] = os.path.join(data_dir, self.ENSCON_NAME)
         data_files[ini.ENTCON] = os.path.join(data_dir, self.ENTCON_NAME)
@@ -135,7 +135,8 @@ class provenance_reader:
         # rows may be an iterator; if so, convert to a list
         rows = list(rows)
         if len(rows)==0:
-            raise MissingProvenanceError("No provenance records found")
+            msg = "Empty input to find most recent row; no rows meet filter criteria?"
+            raise MissingProvenanceError(msg)
         return sorted(rows, key=lambda row: row[index.LAST_MODIFIED], reverse=True)[0]
 
     def _parse_default(self, workflow, metatype, pattern):
@@ -143,12 +144,16 @@ class provenance_reader:
         rows = self._filter_workflow(workflow)
         rows = self._filter_metatype(metatype, rows)
         rows = self._filter_pattern(pattern, rows) # metatype usually suffices, but double-check
-        try:
+        if len(rows)==0:
+            msg = "No provenance records meet filter criteria: Workflow = {0}, ".format(workflow) +\
+                  "metatype = {0}, regex = {1}".format(metatype, pattern)
+            # TODO record in logger
+            print('###', msg)
+            path = None
+        else:
             row = self._get_most_recent_row(rows)
-            return row[index.FILE_PATH]
-        except MissingProvenanceError as err:
-            print('### Cannot find provenance: '+str(err))
-            return None
+            path = row[index.FILE_PATH]
+        return path
 
     def parse_gep_path(self):
         return self._parse_default('rsem', 'application/octet-stream', '\.results$')
