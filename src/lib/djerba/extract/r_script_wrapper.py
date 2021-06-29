@@ -250,7 +250,7 @@ class r_script_wrapper:
         with \
              gzip.open(ref_path, 'rt', encoding=constants.TEXT_ENCODING) as in_file, \
              open(out_path, 'wt') as out_file:
-            # preprocess the MAF file
+            # preprocess the GEP file
             reader = csv.reader(in_file, delimiter="\t")
             writer = csv.writer(out_file, delimiter="\t")
             first = True
