@@ -80,7 +80,7 @@ class extractor:
                 ['CLOSEST_TCGA', self.config[ini.INPUTS][ini.TCGA_CODE] ],
                 ['SAMPLE_ANATOMICAL_SITE', self.config[ini.SAMPLE_META][ini.SAMPLE_ANATOMICAL_SITE]],
                 ['MEAN_COVERAGE', self.config[ini.SAMPLE_META][ini.MEAN_COVERAGE] ],
-                ['PCT_V7_ABOVE_80X', self.config[ini.SAMPLE_META][ini.PCT_V7_ABOVE_80X] ], # capitalization changed from CGI-Tools
+                ['PCT_V7_ABOVE_80X', self.config[ini.SAMPLE_META][ini.PCT_V7_ABOVE_80X] ],
                 ['SEQUENZA_PURITY_FRACTION', purity],
                 ['SEQUENZA_PLOIDY', ploidy],
                 ['SEX', self.config[ini.SAMPLE_META][ini.SEX] ]
@@ -93,6 +93,7 @@ class extractor:
         # - SAMPLE_PRIMARY_OR_METASTASIS
         # - QC_STATUS
         # - QC_COMMENT
+        # capitalization changed from CGI-Tools: PCT_v7_ABOVE_80x -> PCT_V7_ABOVE_80X
         head = "\t".join([x[0] for x in data])
         body = "\t".join([str(x[1]) for x in data])
         out_path = os.path.join(self.work_dir, self.CLINICAL_DATA_FILENAME)

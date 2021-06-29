@@ -50,7 +50,7 @@ class validator:
             valid = True
         return valid
 
-    def validate_output_path(self, path):
+    def validate_output_file(self, path):
         """Confirm an output file can be written"""
         valid = False
         if os.path.isdir(path):

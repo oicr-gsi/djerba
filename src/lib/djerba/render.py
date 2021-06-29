@@ -43,9 +43,10 @@ class pdf_renderer:
     def run(self, html_path, pdf_path):
         """Render HTML to PDF"""
         #create options, which are arguments to wkhtmltopdf for footer generation
+        print('### placeholder; PDF renderer still in development')
         options = {
             'footer-right': '[page] of [topage]',
             'footer-left': '[date]',
-            'footer-center': '${ANALYSIS_UNIT}'
+            'footer-center': '${ANALYSIS_UNIT}' # TODO ensure env variable is present
         }
-        pdfkit.from_url(html_path, pdf_path, options = options)
+        #pdfkit.from_url(html_path, pdf_path, options = options)

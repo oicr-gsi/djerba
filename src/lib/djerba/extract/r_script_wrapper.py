@@ -6,6 +6,7 @@ import os
 import re
 import subprocess
 import tempfile
+import zipfile
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 
@@ -266,11 +267,25 @@ class r_script_wrapper:
                 writer.writerow(row)
         return out_path
 
-    def preprocess_fus(self, fus_path, tmp_dir):
+    def preprocess_fus(self, mavis_path, tmp_dir):
         """
-        Apply preprocessing to a FUS file; write results to tmp_dir
+        Extract the FUS file from the .zip archive output by Mavis
+        Apply preprocessing and write results to tmp_dir
         Prepend a column with the tumor id
         """
+        zf = zipfile.ZipFile(mavis_path)
+        matched = []
+        for name in zf.namelist():
+            if re.search('mavis_summary_all_.*\.tab$', name):
+                matched.append(name)
+        if len(matched) == 0:
+            msg = "Could not find Mavis summary .tab in "+mavis_path
+            raise RuntimeError(msg)
+        elif len(matched) > 1:
+            msg = "Found more than one Mavis summary .tab file in "+mavis_path
+            raise RuntimeError(msg)
+        fus_path = zf.extract(matched[0], tmp_dir)
+        # prepend column to the extracted summary path
         out_path = os.path.join(tmp_dir, 'fus.txt')
         with open(fus_path, 'rt') as fus_file, open(out_path, 'wt') as out_file:
             reader = csv.reader(fus_file, delimiter="\t")
@@ -345,7 +360,7 @@ class r_script_wrapper:
             tmp_dir = self.supplied_tmp_dir
         oncokb_info = self.write_oncokb_info(tmp_dir)
         gep_path = self.preprocess_gep(self.config[ini.DISCOVERED][ini.GEP_FILE], tmp_dir)
-        fus_path = self.preprocess_fus(self.config[ini.DISCOVERED][ini.FUS_FILE], tmp_dir)
+        fus_path = self.preprocess_fus(self.config[ini.DISCOVERED][ini.MAVIS_FILE], tmp_dir)
         maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE], tmp_dir, oncokb_info)
         seg_path = self.preprocess_seg(self.config[ini.DISCOVERED][ini.SEG_FILE], tmp_dir)
         cmd = [

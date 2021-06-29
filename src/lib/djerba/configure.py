@@ -18,9 +18,7 @@ class configurer:
         self.config = config
 
     def run(self, out_path):
-        updater = config_updater(self.config)
-        updater.update()
-        new_config = updater.get_config()
+        new_config = config_updater(self.config).get_updated_config()
         with open(out_path, 'w') as out_file:
             new_config.write(out_file)
 
@@ -45,7 +43,11 @@ class config_updater:
         provenance = self.config[ini.SETTINGS][ini.PROVENANCE]
         project = self.config[ini.INPUTS][ini.STUDY_ID]
         donor = self.config[ini.INPUTS][ini.PATIENT]
-        self.reader = provenance_reader(provenance, project, donor)
+        try:
+            self.reader = provenance_reader(provenance, project, donor)
+        except MissingProvenanceError as err:
+            print("### Warning: Cannot create provenance reader: "+str(err)) # TODO record in logger
+            self.reader = None
 
     def find_data_files(self):
         data_files = {}
@@ -65,17 +67,21 @@ class config_updater:
 
     def discover(self):
         updates = {}
-        # TODO
-        # - get file paths from provenance
-        # - get data file paths from data dir, eg. enscon, gep reference
-        # - check if all data files are needed (some may be obsolete)
-        # - verify all discovered files exist and are readable
-        updates[ini.MAF_FILE] = self.reader.parse_maf_path()
-        updates[ini.SEQUENZA_FILE] = self.reader.parse_sequenza_path()
+        if self.reader:
+            updates[ini.GEP_FILE] = self.reader.parse_gep_path()
+            updates[ini.MAF_FILE] = self.reader.parse_maf_path()
+            updates[ini.MAVIS_FILE] = self.reader.parse_mavis_path()
+            updates[ini.SEQUENZA_FILE] = self.reader.parse_sequenza_path()
+        else:
+            updates[ini.GEP_FILE] = None
+            updates[ini.MAF_FILE] = None
+            updates[ini.MAVIS_FILE] = None
+            updates[ini.SEQUENZA_FILE] = None
         updates.update(self.find_data_files())
         return updates
 
-    def get_config(self):
+    def get_updated_config(self):
+        self.update()
         return self.config
 
     def update(self):
@@ -84,8 +90,11 @@ class config_updater:
         if not self.config.has_section(ini.DISCOVERED):
             self.config.add_section(ini.DISCOVERED)
         for key in updates.keys():
-            # Overwrite existing params, if any
-            self.config[ini.DISCOVERED][key] = updates[key]
+            # *do not* overwrite existing params
+            # allows user to specify params which will not be overwritten by automated discovery
+            if not self.config.has_option(ini.DISCOVERED, key):
+                value = updates[key] if updates[key]!=None else ''
+                self.config[ini.DISCOVERED][key] = value
 
 class provenance_reader:
 
@@ -134,11 +143,21 @@ class provenance_reader:
         rows = self._filter_workflow(workflow)
         rows = self._filter_metatype(metatype, rows)
         rows = self._filter_pattern(pattern, rows) # metatype usually suffices, but double-check
-        row = self._get_most_recent_row(rows)
-        return row[index.FILE_PATH]
+        try:
+            row = self._get_most_recent_row(rows)
+            return row[index.FILE_PATH]
+        except MissingProvenanceError as err:
+            print('### Cannot find provenance: '+str(err))
+            return None
+
+    def parse_gep_path(self):
+        return self._parse_default('rsem', 'application/octet-stream', '\.results$')
 
     def parse_maf_path(self):
         return self._parse_default('variantEffectPredictor', 'application/txt-gz', '\.maf\.gz$')
+
+    def parse_mavis_path(self):
+        return self._parse_default('mavis', 'application/zip-report-bundle', '(mavis-output|summary)\.zip$')
 
     def parse_sequenza_path(self):
         return self._parse_default('sequenza', 'application/zip-report-bundle', '_results\.zip$')

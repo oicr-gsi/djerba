@@ -13,6 +13,7 @@ from djerba.configure import configurer
 from djerba.extract.extractor import extractor
 from djerba.extract.sequenza import sequenza_extractor, SequenzaExtractionError
 from djerba.extract.r_script_wrapper import r_script_wrapper
+from djerba.main import main
 from djerba.render import html_renderer, pdf_renderer
 
 class TestBase(unittest.TestCase):
@@ -106,9 +107,35 @@ class TestExtractor(TestBase):
         self.assertEqual(self.getMD5(summary_path), '9945fa608f8960964e967f7aecd8fda7')
 
 class TestMain(TestBase):
-    # TODO test the run_all method of main.py, and the djerba.py script
-    # will need to either copy in a data_clinical.txt file, or generate one
-    pass
+
+    class mock_args:
+        """Use instead of argparse to store params for testing"""
+
+        def __init__(self, ini_path, config_path, html_path, pdf_path, work_dir):
+            self.config = config_path
+            self.dir = work_dir
+            self.html = html_path
+            self.ini = ini_path
+            self.pdf = pdf_path
+            self.json = None
+            self.subparser_name = constants.ALL
+
+    def test_main(self):
+        out_dir = '/u/ibancarz/workspace/djerba/TestMain'
+        ini_path = os.path.join(self.dataDir, 'config_user.ini')
+        config_path = os.path.join(out_dir, 'config.ini')
+        html_path = os.path.join(out_dir, 'report.html')
+        pdf_path = os.path.join(out_dir, 'report.pdf')
+        work_dir = os.path.join(out_dir, 'report')
+        if not os.path.exists(work_dir):
+            os.mkdir(work_dir)
+        args = self.mock_args(ini_path, config_path, html_path, pdf_path, work_dir)
+        main().run(args)
+        #config = configparser.ConfigParser()
+        #config.read(ini_path)
+        #main().run_all(config, args)
+
+
 
 class TestRender(TestBase):
 
