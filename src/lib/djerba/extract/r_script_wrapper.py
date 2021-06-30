@@ -62,15 +62,14 @@ class r_script_wrapper:
     # environment variable for ONCOKB token path
     ONCOKB_TOKEN_VARIABLE = 'ONCOKB_TOKEN'
 
-    def __init__(self, config, gamma):
+    def __init__(self, config, gamma, work_dir=None):
         self.config = config
         self.gamma = gamma
         r_script_dir = config[ini.SETTINGS].get(ini.R_SCRIPT_DIR)
         if not r_script_dir:
             r_script_dir = os.path.join(os.path.dirname(__file__), '..', 'R_stats')
         self.r_script_dir = self._validate_r_script_dir(r_script_dir)
-        scratch_dir = config[ini.SETTINGS][ini.EXTRACTION_DIR]
-        self.supplied_tmp_dir = scratch_dir # may be None
+        self.supplied_tmp_dir = work_dir # may be None
         self.out_dir = config[ini.INPUTS][ini.OUT_DIR]
         self.tumour_id = config[ini.INPUTS][ini.TUMOUR_ID]
         self.cancer_type_detailed = config[ini.INPUTS][ini.CANCER_TYPE_DETAILED]
@@ -397,9 +396,9 @@ class r_script_wrapper:
         if result.returncode != 0:
             msg = "R script failed with STDERR: "+result.stderr
             raise RuntimeError(msg)
+        self.postprocess(oncokb_info)
         if self.supplied_tmp_dir == None:
             tmp.cleanup()
-        self.postprocess(oncokb_info)
         return result
 
     def postprocess(self, oncokb_info):
@@ -409,8 +408,6 @@ class r_script_wrapper:
         # remove unnecessary files, for consistency with CGI-Tools
         os.remove(os.path.join(self.out_dir, self.DATA_CNA_ONCOKB_GENES))
         os.remove(os.path.join(self.out_dir, self.DATA_FUSIONS_ONCOKB))
-        # TODO write the clinical_data.txt file to the report directory
-        # self._write_clinical_data()
 
     def write_oncokb_info(self, info_dir):
         """Write a file of oncoKB data for use by annotation scripts"""
