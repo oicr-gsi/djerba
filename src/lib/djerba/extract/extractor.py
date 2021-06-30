@@ -3,6 +3,7 @@
 import json
 import os
 import pandas as pd
+from shutil import copyfile
 
 from djerba.extract.sequenza import sequenza_extractor
 from djerba.extract.r_script_wrapper import r_script_wrapper
@@ -17,20 +18,20 @@ class extractor:
     Later on, will replace R script functionality with Python, and output JSON
     """
 
-    # TODO extract clinical data from config and write to data_clinical.txt
-
-    SAMPLE_INFO_KEY = 'sample_info'
     CLINICAL_DATA_FILENAME = 'data_clinical.txt'
-    SAMPLE_META_PARAMS_FILENAME = 'sample_meta_params.json'
+    GENOMIC_SUMMARY_FILENAME = 'genomic_summary.txt'
     MAF_PARAMS_FILENAME = 'maf_params.json'
+    SAMPLE_INFO_KEY = 'sample_info'
+    SAMPLE_META_PARAMS_FILENAME = 'sample_meta_params.json'
     SEQUENZA_PARAMS_FILENAME = 'sequenza_params.json'
 
-    def __init__(self, config, work_dir=None):
+    def __init__(self, config, report_dir=None):
         self.config = config
-        if work_dir == None:
-            self.work_dir = config[ini.SETTINGS][ini.EXTRACTION_DIR]
+        if report_dir == None:
+            self.report_dir = config[ini.SETTINGS][ini.OUT_DIR]
         else:
-            self.work_dir = work_dir
+            self.report_dir = report_dir
+        self.data_dir = os.path.join(os.path.dirname(__file__), '..', constants.DATA_DIR_NAME)
 
     def _write_json(self, data, out_path):
         with open(out_path, 'w') as out:
@@ -61,12 +62,13 @@ class extractor:
         if r_script:
             self.run_r_script(sequenza_params) # can omit the R script for testing
         self.write_clinical_data(sequenza_params)
+        self.write_genomic_summary()
         if json_path:
             self.write_json_summary(json_path)
 
     def run_r_script(self, sequenza_params):
         gamma = sequenza_params.get(constants.SEQUENZA_GAMMA)
-        wrapper = r_script_wrapper(self.config, gamma, self.work_dir)
+        wrapper = r_script_wrapper(self.config, gamma, self.report_dir)
         wrapper.run()
 
     def write_clinical_data(self, sequenza_params):
@@ -104,10 +106,22 @@ class extractor:
         # capitalization changed from CGI-Tools: PCT_v7_ABOVE_80x -> PCT_V7_ABOVE_80X
         head = "\t".join([x[0] for x in data])
         body = "\t".join([str(x[1]) for x in data])
-        out_path = os.path.join(self.work_dir, self.CLINICAL_DATA_FILENAME)
+        out_path = os.path.join(self.report_dir, self.CLINICAL_DATA_FILENAME)
         with open(out_path, 'w') as out_file:
             print(head, file=out_file)
             print(body, file=out_file)
+
+    def write_genomic_summary(self):
+        """
+        Write the genomic_summary.txt file to the working directory
+        If none given, write a default file
+        (Long-term ambition is to generate the summary text automatically)
+        """
+        input_path = self.config[ini.INPUTS].get(ini.GENOMIC_SUMMARY)
+        output_path = os.path.join(self.report_dir, self.GENOMIC_SUMMARY_FILENAME)
+        if not input_path:
+            input_path = os.path.join(self.data_dir, self.GENOMIC_SUMMARY_FILENAME)
+        copyfile(input_path, output_path)
 
     def write_json_summary(self, out_path):
         """Write a JSON summary of extracted data"""

@@ -120,6 +120,7 @@ class TestMain(TestBase):
             self.json = None
             self.subparser_name = constants.ALL
 
+    #@unittest.SkipTest
     def test_main(self):
         out_dir = '/u/ibancarz/workspace/djerba/TestMain'
         ini_path = os.path.join(self.dataDir, 'config_user.ini')
@@ -239,7 +240,8 @@ class TestWrapper(TestBase):
         iniPath = os.path.join(self.sup_dir, 'rscript_config_updated.ini')
         config = configparser.ConfigParser()
         config.read(iniPath)
-        test_wrapper = r_script_wrapper(config, gamma=500)
+        out_dir = '/u/ibancarz/workspace/djerba/TestWrapper' # TODO change to tempdir
+        test_wrapper = r_script_wrapper(config, gamma=500, work_dir=out_dir)
         result = test_wrapper.run()
         self.assertEqual(0, result.returncode)
 

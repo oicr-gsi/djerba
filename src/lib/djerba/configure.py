@@ -160,7 +160,8 @@ class provenance_reader:
         return self._parse_default('rsem', 'application/octet-stream', '\.results$')
 
     def parse_maf_path(self):
-        return self._parse_default('variantEffectPredictor', 'application/txt-gz', '\.maf\.gz$')
+        suffix = 'filter\.deduped\.realigned\.recalibrated\.mutect2\.filtered\.maf\.gz$'
+        return self._parse_default('variantEffectPredictor', 'application/txt-gz', suffix)
 
     def parse_mavis_path(self):
         return self._parse_default('mavis', 'application/zip-report-bundle', '(mavis-output|summary)\.zip$')

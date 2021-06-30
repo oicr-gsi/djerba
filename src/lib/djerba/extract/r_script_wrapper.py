@@ -62,15 +62,18 @@ class r_script_wrapper:
     # environment variable for ONCOKB token path
     ONCOKB_TOKEN_VARIABLE = 'ONCOKB_TOKEN'
 
-    def __init__(self, config, gamma, work_dir=None):
+    def __init__(self, config, gamma, report_dir=None, tmp_dir=None):
         self.config = config
         self.gamma = gamma
         r_script_dir = config[ini.SETTINGS].get(ini.R_SCRIPT_DIR)
         if not r_script_dir:
             r_script_dir = os.path.join(os.path.dirname(__file__), '..', 'R_stats')
         self.r_script_dir = self._validate_r_script_dir(r_script_dir)
-        self.supplied_tmp_dir = work_dir # may be None
-        self.out_dir = config[ini.INPUTS][ini.OUT_DIR]
+        self.supplied_tmp_dir = tmp_dir # may be None
+        if report_dir:
+            self.report_dir = report_dir
+        else:
+            self.report_dir = config[ini.INPUTS][ini.OUT_DIR]
         self.tumour_id = config[ini.INPUTS][ini.TUMOUR_ID]
         self.cancer_type_detailed = config[ini.INPUTS][ini.CANCER_TYPE_DETAILED]
         self.gep_reference = config[ini.SETTINGS][ini.GEP_REFERENCE]
@@ -84,8 +87,8 @@ class r_script_wrapper:
 
     def _annotate_cna(self, info_path):
         # TODO import the main() method of CnaAnnotator.py instead of running in subprocess
-        in_path = os.path.join(self.out_dir, self.DATA_CNA_ONCOKB_GENES_NON_DIPLOID)
-        out_path = os.path.join(self.out_dir, self.DATA_CNA_ONCOKB_GENES_NON_DIPLOID_ANNOTATED)
+        in_path = os.path.join(self.report_dir, self.DATA_CNA_ONCOKB_GENES_NON_DIPLOID)
+        out_path = os.path.join(self.report_dir, self.DATA_CNA_ONCOKB_GENES_NON_DIPLOID_ANNOTATED)
         cmd = [
             'CnaAnnotator.py',
             '-i', in_path,
@@ -99,8 +102,8 @@ class r_script_wrapper:
 
     def _annotate_fusion(self, info_path):
         # TODO import the main() method of FusionAnnotator.py instead of running in subprocess
-        in_path = os.path.join(self.out_dir, self.DATA_FUSIONS_ONCOKB)
-        out_path = os.path.join(self.out_dir, self.DATA_FUSIONS_ONCOKB_ANNOTATED)
+        in_path = os.path.join(self.report_dir, self.DATA_FUSIONS_ONCOKB)
+        out_path = os.path.join(self.report_dir, self.DATA_FUSIONS_ONCOKB_ANNOTATED)
         cmd = [
             'FusionAnnotator.py',
             '-i', in_path,
@@ -222,7 +225,7 @@ class r_script_wrapper:
             if val == None:
                 val = 'NA'
             body.append(str(val))
-        out_path = os.path.join(self.out_dir, 'data_clinical.txt')
+        out_path = os.path.join(self.report_dir, 'data_clinical.txt')
         with open(out_path, 'w') as out_file:
             print("\t".join(headers), out_file)
             print("\t".join(body), out_file)
@@ -389,7 +392,7 @@ class r_script_wrapper:
             '--ampl', self.config[ini.SEG][ini.AMPL],
             '--htzd', self.config[ini.SEG][ini.HTZD],
             '--hmzd', self.config[ini.SEG][ini.HMZD],
-            '--outdir', self.out_dir
+            '--outdir', self.report_dir
         ]
         print('###', ' '.join(cmd))
         result = subprocess.run(cmd, capture_output=True, encoding=constants.TEXT_ENCODING)
@@ -406,8 +409,8 @@ class r_script_wrapper:
         self._annotate_cna(oncokb_info)
         self._annotate_fusion(oncokb_info)
         # remove unnecessary files, for consistency with CGI-Tools
-        os.remove(os.path.join(self.out_dir, self.DATA_CNA_ONCOKB_GENES))
-        os.remove(os.path.join(self.out_dir, self.DATA_FUSIONS_ONCOKB))
+        os.remove(os.path.join(self.report_dir, self.DATA_CNA_ONCOKB_GENES))
+        os.remove(os.path.join(self.report_dir, self.DATA_FUSIONS_ONCOKB))
 
     def write_oncokb_info(self, info_dir):
         """Write a file of oncoKB data for use by annotation scripts"""

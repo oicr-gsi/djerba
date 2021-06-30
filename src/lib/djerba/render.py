@@ -29,9 +29,11 @@ class html_renderer:
         ]
         print('###', ' '.join(cmd))
         result = subprocess.run(cmd, capture_output=True)
-        if result.returncode!=0:
+        try:
+            result.check_returncode()
+        except subprocess.CalledProcessError:
             print('###', result.stderr.decode('utf-8'))
-            raise subprocess.CalledProcessError
+            raise
         return result
 
 class pdf_renderer:
