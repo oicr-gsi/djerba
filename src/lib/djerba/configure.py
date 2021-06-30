@@ -141,18 +141,19 @@ class provenance_reader:
 
     def _parse_default(self, workflow, metatype, pattern):
         # get most recent file of given workflow, metatype, and file path pattern
-        rows = self._filter_workflow(workflow)
-        rows = self._filter_metatype(metatype, rows)
-        rows = self._filter_pattern(pattern, rows) # metatype usually suffices, but double-check
-        if len(rows)==0:
+        # self._filter_* functions return an iterator
+        iterrows = self._filter_workflow(workflow)
+        iterrows = self._filter_metatype(metatype, iterrows)
+        iterrows = self._filter_pattern(pattern, iterrows) # metatype usually suffices, but double-check
+        try:
+            row = self._get_most_recent_row(iterrows)
+            path = row[index.FILE_PATH]
+        except MissingProvenanceError as err:
             msg = "No provenance records meet filter criteria: Workflow = {0}, ".format(workflow) +\
-                  "metatype = {0}, regex = {1}".format(metatype, pattern)
+                  "metatype = {0}, regex = {1}. Exception: {2}".format(metatype, pattern, str(err))
             # TODO record in logger
             print('###', msg)
             path = None
-        else:
-            row = self._get_most_recent_row(rows)
-            path = row[index.FILE_PATH]
         return path
 
     def parse_gep_path(self):
