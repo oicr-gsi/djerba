@@ -35,6 +35,7 @@ setup(
             'data/entrez_conversion.txt',
             'data/filter_flags.exclude',
             'data/gencode_v33_hg38_genes.bed',
+            'data/genomic_summary.txt',
             'data/mutation_types.exonic',
             'data/mutation_types.nonsynonymous',
             'data/targeted_genelist.txt',
