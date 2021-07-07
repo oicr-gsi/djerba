@@ -241,7 +241,7 @@ class TestWrapper(TestBase):
         config = configparser.ConfigParser()
         config.read(iniPath)
         out_dir = '/u/ibancarz/workspace/djerba/TestWrapper' # TODO change to tempdir
-        test_wrapper = r_script_wrapper(config, gamma=500, work_dir=out_dir)
+        test_wrapper = r_script_wrapper(config, gamma=500, report_dir=out_dir)
         result = test_wrapper.run()
         self.assertEqual(0, result.returncode)
 
