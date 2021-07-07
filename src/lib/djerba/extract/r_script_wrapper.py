@@ -65,10 +65,7 @@ class r_script_wrapper:
     def __init__(self, config, gamma, report_dir=None, tmp_dir=None):
         self.config = config
         self.gamma = gamma
-        r_script_dir = config[ini.SETTINGS].get(ini.R_SCRIPT_DIR)
-        if not r_script_dir:
-            r_script_dir = os.path.join(os.path.dirname(__file__), '..', 'R_stats')
-        self.r_script_dir = self._validate_r_script_dir(r_script_dir)
+        self.r_script_dir = os.path.join(os.path.dirname(__file__), '..', 'R_stats')
         self.supplied_tmp_dir = tmp_dir # may be None
         if report_dir:
             self.report_dir = report_dir
@@ -168,32 +165,6 @@ class r_script_wrapper:
            not any([any([x.search(z) for x in self.exclusions]) for z in row]):
             ok = True
         return ok
-
-    def _validate_r_script_dir(self, path):
-        """
-        Check R script directory exists, is readable, and contains required scripts
-        """
-        if not os.path.exists(path):
-            raise OSError("R script directory path '{}' does not exist".format(path))
-        elif not os.path.isdir(path):
-            raise OSError("R script directory path '{}' is not a directory".format(path))
-        elif not os.access(path, os.R_OK):
-            raise OSError("R script directory path '{}' is not readable".format(path))
-        required_files = [
-            'calc_mut_sigs.r',
-            'convert_mavis_to_filtered_fusions.r',
-            'convert_rsem_results_zscore.r',
-            'convert_seg_to_gene_singlesample.r',
-            'convert_vep92_to_filtered_cbio.r',
-            'singleSample.r'
-        ]
-        for req in required_files:
-            req_path = os.path.join(path, req)
-            if not (os.path.exists(req_path) and \
-                    os.path.isfile(req_path) and \
-                    os.access(req_path, os.R_OK)):
-                raise OSError("R script path '{}' is not valid".format(req_path))
-        return os.path.abspath(path)
 
     def _write_clinical_data(self):
         headers = [

@@ -12,11 +12,9 @@ class html_renderer:
 
     R_MARKDOWN_DIRNAME = 'R_markdown'
 
-    def __init__(self, config):
-        self.r_script_dir = config[ini.SETTINGS].get(ini.R_SCRIPT_DIR)
-        if not self.r_script_dir:
-            self.r_script_dir = os.path.join(os.path.dirname(__file__), self.R_MARKDOWN_DIRNAME)
-        self.markdown_script = os.path.join(self.r_script_dir, 'html_report.Rmd')
+    def __init__(self):
+        r_script_dir = os.path.join(os.path.dirname(__file__), self.R_MARKDOWN_DIRNAME)
+        self.markdown_script = os.path.join(r_script_dir, 'html_report.Rmd')
 
     def run(self, report_dir, out_path):
         """Read the reporting directory, and use the Rmarkdown script to write HTML"""
@@ -38,9 +36,8 @@ class html_renderer:
 
 class pdf_renderer:
 
-    def __init__(self, config):
-        # input config for consistency with other classes, and later for logging params etc.
-        self.config = config
+    def __init__(self):
+        pass
 
     def run(self, html_path, pdf_path):
         """Render HTML to PDF"""

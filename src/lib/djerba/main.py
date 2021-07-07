@@ -33,9 +33,9 @@ class main:
         elif args.subparser_name == constants.EXTRACT:
             extractor(ini_config, args.dir).run(args.json)
         elif args.subparser_name == constants.HTML:
-            html_renderer(ini_config, args.dir).run(args.html)
+            html_renderer(args.dir).run(args.html)
         elif args.subparser_name == constants.PDF:
-            pdf_renderer(ini_config).run(args.html, args.pdf)
+            pdf_renderer().run(args.html, args.pdf)
         elif args.subparser_name == constants.ALL:
             self.run_all(ini_config, args)
 
@@ -53,8 +53,8 @@ class main:
             full_config = configparser.ConfigParser()
             full_config.read(ini_path_full)
             extractor(full_config, report_dir).run(args.json)
-            html_renderer(full_config).run(report_dir, html_path)
-            pdf_renderer(full_config).run(html_path, args.pdf)
+            html_renderer().run(report_dir, html_path)
+            pdf_renderer().run(html_path, args.pdf)
 
     def validate_args(self, args):
         """Validate the command-line arguments"""

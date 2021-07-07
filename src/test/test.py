@@ -132,37 +132,25 @@ class TestMain(TestBase):
             os.mkdir(work_dir)
         args = self.mock_args(ini_path, config_path, html_path, pdf_path, work_dir)
         main().run(args)
-        #config = configparser.ConfigParser()
-        #config.read(ini_path)
-        #main().run_all(config, args)
 
 class TestRender(TestBase):
-
-    def setUp(self):
-        super().setUp()
-        self.iniPath = os.path.join(self.dataDir, 'config_full.ini')
 
     def test_html(self):
         outDir = self.tmpDir
         outPath = os.path.join(outDir, 'djerba_test.html')
         reportDir = os.path.join(self.sup_dir, 'report_example')
-        config = configparser.ConfigParser()
-        config.read(self.iniPath)
-        config['inputs']['out_dir'] = outDir
-        test_renderer = html_renderer(config)
-        test_renderer.run(reportDir, outPath)
+        html_renderer().run(reportDir, outPath)
         # TODO check file contents; need to omit the report date etc.
         self.assertTrue(os.path.exists(outPath))
 
-    def OMIT_test_pdf(self):
+    @unittest.SkipTest
+    def test_pdf(self):
         # TODO omit this test until wkhtmltopdf is installed
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
         #out_dir = self.tmpDir
         out_dir = '/u/ibancarz/workspace/djerba/TestRender'
         out_path = os.path.join(out_dir, 'djerba_test.pdf')
-        config = configparser.ConfigParser()
-        config.read(self.iniPath)
-        test_renderer = pdf_renderer(config)
+        test_renderer = pdf_renderer()
         test_renderer.run(in_path, out_path)
         self.assertTrue(os.path.exists(out_path))
 
