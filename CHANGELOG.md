@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.0.5a: 2021-07-07
+- Alpha release of a new version of Djerba, for generating CGI reports only
+- For initial testing and evaluation only; *not* intended for production
+- Installed and run successfully for the svc.cgiprod user
+
 ## v0.0.4: 2021-06-09
 - Work-in-progress on features for the old Djerba design.
 - To be replaced by a simplified Djerba handling CGI reports only, in release 0.0.5.
