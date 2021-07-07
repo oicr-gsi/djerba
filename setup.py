@@ -29,6 +29,7 @@ setup(
             'data/civic/01-Jun-2020-VariantGroupSummaries.tsv',
             'data/civic/01-Jun-2020-VariantSummaries.tsv',
             'data/cytoBand.txt',
+            'data/defaults.ini',
             'data/ensemble_conversion_hg38.txt',
             'data/ensemble_conversion.txt',
             'data/entrez_conversion.txt',
