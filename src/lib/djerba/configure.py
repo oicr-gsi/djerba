@@ -1,29 +1,19 @@
-"""Search for Djerba inputs"""
+"""Configure an INI file with Djerba inputs"""
 
 import csv
 import gzip
+import logging
 import os
 import re
 
 import djerba.util.constants as constants
 import djerba.util.index as index
 import djerba.util.ini_fields as ini
+from djerba.util.logger import logger
 
-class configurer:
-    """Class to do configuration in main Djerba method"""
-
-    # TODO validate that discovered config paths are readable
-
-    def __init__(self, config, validate=True):
-        self.config = config
-
-    def run(self, out_path):
-        new_config = config_updater(self.config).get_updated_config()
-        with open(out_path, 'w') as out_file:
-            new_config.write(out_file)
-
-class config_updater:
+class configurer(logger):
     """
+    Class to do configuration in main Djerba method
     Discover and apply param updates to a ConfigParser object
     Param updates are automatically extracted from data sources, eg. file provenance
     """
@@ -38,15 +28,19 @@ class config_updater:
     GENELIST_NAME = 'targeted_genelist.txt'
     TMBCOMP_NAME = 'tmbcomp.txt'
 
-    def __init__(self, config):
+    # TODO validate that discovered config paths are readable
+
+    def __init__(self, config, validate=True, log_level=logging.WARNING, log_path=None):
         self.config = config
+        self.logger = self.get_logger(log_level, __name__, log_path)
         provenance = self.config[ini.SETTINGS][ini.PROVENANCE]
         project = self.config[ini.INPUTS][ini.STUDY_ID]
         donor = self.config[ini.INPUTS][ini.PATIENT]
         try:
-            self.reader = provenance_reader(provenance, project, donor)
+            self.reader = provenance_reader(provenance, project, donor, log_level, log_path)
         except MissingProvenanceError as err:
-            print("### Warning: Cannot create provenance reader: "+str(err)) # TODO record in logger
+            msg = "Cannot create provenance reader; file provenance updates will be omitted: "+str(err)
+            self.logger.warning(msg)
             self.reader = None
 
     def find_data_files(self):
@@ -80,12 +74,14 @@ class config_updater:
         updates.update(self.find_data_files())
         return updates
 
-    def get_updated_config(self):
+    def run(self, out_path):
+        """Main method to run configuration"""
         self.update()
-        return self.config
+        with open(out_path, 'w') as out_file:
+            self.config.write(out_file)
 
     def update(self):
-        """Input a ConfigParser; discover and apply updates"""
+        """Discover and apply updates to the configuration"""
         updates = self.discover()
         if not self.config.has_section(ini.DISCOVERED):
             self.config.add_section(ini.DISCOVERED)
@@ -96,11 +92,12 @@ class config_updater:
                 value = updates[key] if updates[key]!=None else ''
                 self.config[ini.DISCOVERED][key] = value
 
-class provenance_reader:
+class provenance_reader(logger):
 
-    def __init__(self, provenance_path, project, donor):
+    def __init__(self, provenance_path, project, donor,  log_level=logging.WARNING, log_path=None):
         # get provenance for the project and donor
         # if this proves to be too slow, can preprocess the file using zgrep
+        self.logger = self.get_logger(log_level, __name__, log_path)
         self.provenance = []
         with gzip.open(provenance_path, 'rt') as infile:
             reader = csv.reader(infile, delimiter="\t")
@@ -112,6 +109,7 @@ class provenance_reader:
         if len(self.provenance)==0:
             msg = "No provenance records found for project '%s' and donor '%s' " % (project, donor) +\
                 "in '%s'" % provenance_path
+            self.logger.error(msg)
             raise MissingProvenanceError(msg)
 
     def _filter_rows(self, index, value, rows=None):
@@ -150,9 +148,9 @@ class provenance_reader:
             path = row[index.FILE_PATH]
         except MissingProvenanceError as err:
             msg = "No provenance records meet filter criteria: Workflow = {0}, ".format(workflow) +\
-                  "metatype = {0}, regex = {1}. Exception: {2}".format(metatype, pattern, str(err))
-            # TODO record in logger
-            print('###', msg)
+                  "metatype = {0}, regex = {1}. ".format(metatype, pattern) +\
+                  "(Djerba will run with user-supplied INI params, if available.)"
+            self.logger.warning(msg)
             path = None
         return path
 

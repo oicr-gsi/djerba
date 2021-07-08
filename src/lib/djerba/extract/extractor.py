@@ -1,6 +1,7 @@
 """Extract and pre-process data, so it can be read into a clinical report JSON document"""
 
 import json
+import logging
 import os
 import pandas as pd
 from shutil import copyfile
@@ -9,8 +10,9 @@ from djerba.extract.sequenza import sequenza_extractor
 from djerba.extract.r_script_wrapper import r_script_wrapper
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
+from djerba.util.logger import logger
 
-class extractor:
+class extractor(logger):
     """
     Extract the clinical report data from inptut configuration
     To start with, mostly a wrapper for the legacy R script singleSample.r
@@ -25,8 +27,11 @@ class extractor:
     SAMPLE_META_PARAMS_FILENAME = 'sample_meta_params.json'
     SEQUENZA_PARAMS_FILENAME = 'sequenza_params.json'
 
-    def __init__(self, config, report_dir=None):
+    def __init__(self, config, report_dir=None, log_level=logging.WARNING, log_path=None):
         self.config = config
+        self.logger = self.get_logger(log_level, __name__, log_path)
+        self.log_level = log_level
+        self.log_path = log_path
         if report_dir == None:
             self.report_dir = config[ini.SETTINGS][ini.OUT_DIR]
         else:
@@ -42,13 +47,13 @@ class extractor:
         """Read the Sequenza results.zip, extract relevant parameters, and write as JSON"""
         ex = sequenza_extractor(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE])
         gamma = self.config.getint(ini.INPUTS, ini.GAMMA)
-        # TODO replace print calls with logger
         if gamma == None:
             gamma = ex.get_default_gamma()
-            print("### Automatically generated Sequenza gamma:", gamma)
+            self.logger.info("Automatically generated Sequenza gamma: {0}".format(gamma))
         else:
-            print("### User-supplied Sequenza gamma:", gamma)
+            self.logger.info("User-supplied Sequenza gamma: {0}".format(gamma))
         [purity, ploidy] = ex.get_purity_ploidy(gamma)
+        self.logger.info("Sequenza purity {0}, ploidy {1}".format(purity, ploidy))
         params = {
             constants.SEQUENZA_GAMMA: gamma,
             constants.SEQUENZA_PURITY_KEY: purity,
@@ -68,7 +73,9 @@ class extractor:
 
     def run_r_script(self, sequenza_params):
         gamma = sequenza_params.get(constants.SEQUENZA_GAMMA)
-        wrapper = r_script_wrapper(self.config, gamma, self.report_dir)
+        wrapper = r_script_wrapper(
+            self.config, gamma, self.report_dir, log_level=self.log_level, log_path=self.log_path
+        )
         wrapper.run()
 
     def write_clinical_data(self, sequenza_params):
@@ -127,8 +134,9 @@ class extractor:
         """Write a JSON summary of extracted data"""
         # TODO write summary, in keeping with an updated Elba schema
         # for now, this is just a placeholder
-        # TODO log status instead of printing to STDOUT
-        print('### placeholder; JSON summary not yet implemented')
+        self.logger.warning(
+            'Writing placeholder to {0}; JSON summary not yet implemented'.format(out_path)
+        )
         data = {
             'summary': 'JSON summary goes here'
         }

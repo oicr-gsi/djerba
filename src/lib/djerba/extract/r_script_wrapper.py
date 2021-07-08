@@ -2,6 +2,7 @@
 
 import csv
 import gzip
+import logging
 import os
 import re
 import subprocess
@@ -10,8 +11,9 @@ import zipfile
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 from djerba.extract.sequenza import sequenza_extractor
+from djerba.util.logger import logger
 
-class r_script_wrapper:
+class r_script_wrapper(logger):
 
     # 0-based indices for important MAF columns
     VARIANT_CLASSIFICATION = 8
@@ -62,9 +64,11 @@ class r_script_wrapper:
     # environment variable for ONCOKB token path
     ONCOKB_TOKEN_VARIABLE = 'ONCOKB_TOKEN'
 
-    def __init__(self, config, gamma, report_dir=None, tmp_dir=None):
+    def __init__(self, config, gamma, report_dir=None, tmp_dir=None,
+                 log_level=logging.WARNING, log_path=None):
         self.config = config
         self.gamma = gamma
+        self.logger = self.get_logger(log_level, __name__, log_path)
         self.r_script_dir = os.path.join(os.path.dirname(__file__), '..', 'R_stats')
         self.supplied_tmp_dir = tmp_dir # may be None
         if report_dir:
@@ -93,8 +97,7 @@ class r_script_wrapper:
             '-c', info_path,
             '-b', self.oncokb_token
         ]
-        print('###', ' '.join(cmd))
-        result = subprocess.run(cmd, check=True)
+        self._run_command(cmd, 'CNA annotator', redact_oncokb=True)
         return out_path
 
     def _annotate_fusion(self, info_path):
@@ -108,8 +111,7 @@ class r_script_wrapper:
             '-c', info_path,
             '-b', self.oncokb_token
         ]
-        print('###', ' '.join(cmd))
-        result = subprocess.run(cmd, check=True)
+        self._run_command(cmd, 'fusion annotator', redact_oncokb=True)
         return out_path
 
     def _annotate_maf(self, in_path, tmp_dir, info_path):
@@ -122,8 +124,7 @@ class r_script_wrapper:
             '-c', info_path,
             '-b', self.oncokb_token
         ]
-        print('###', ' '.join(cmd))
-        result = subprocess.run(cmd, check=True)
+        self._run_command(cmd, 'MAF annotator', redact_oncokb=True)
         return out_path
 
     def _get_config_field(self, name):
@@ -165,6 +166,33 @@ class r_script_wrapper:
            not any([any([x.search(z) for x in self.exclusions]) for z in row]):
             ok = True
         return ok
+
+    def _run_command(self, cmd, description, redact_oncokb=False):
+        """
+        Run a command as a subprocess and log the result.
+        If redact_oncokb==True, redact the oncokb access token from logging.
+        """
+        cmd_redacted = cmd.copy()
+        if redact_oncokb:
+            for i in range(len(cmd_redacted)):
+                if cmd_redacted[i] == '-b':
+                    cmd_redacted[i+1] = '***ONCOKB_TOKEN_REDACTED***'
+                    break
+        self.logger.info("Running {0}: '{1}'".format(description, ' '.join(cmd_redacted)))
+        result = subprocess.run(cmd, capture_output=True)
+        stdout = result.stdout.decode(constants.TEXT_ENCODING)
+        stderr = result.stderr.decode(constants.TEXT_ENCODING)
+        try:
+            result.check_returncode()
+        except CalledProcessError as err:
+            self.logger.error("Failed to run {0}: {1}".format(description, err))
+            self.logger.error("{0} STDOUT: '{1}'".format(description, stdout))
+            self.logger.error("{0} STDERR: '{1}'".format(description, stderr))
+            raise
+        self.logger.info("Successfully ran {0}".format(description))
+        self.logger.debug("{0} STDOUT: '{1}'".format(description, stdout))
+        self.logger.debug("{0} STDERR: '{1}'".format(description, stderr))
+        return result
 
     def _write_clinical_data(self):
         headers = [
@@ -279,6 +307,7 @@ class r_script_wrapper:
     def preprocess_maf(self, maf_path, tmp_dir, oncokb_info_path):
         """Apply preprocessing and annotation to a MAF file; write results to tmp_dir"""
         tmp_path = os.path.join(tmp_dir, 'tmp_maf.tsv')
+        self.logger.info("Preprocessing MAF input")
         with \
              gzip.open(maf_path, 'rt', encoding=constants.TEXT_ENCODING) as in_file, \
              open(tmp_path, 'wt') as tmp_file:
@@ -304,7 +333,7 @@ class r_script_wrapper:
                         row[self.TUMOR_SAMPLE_BARCODE] = self.tumour_id
                         writer.writerow(row)
                         kept += 1
-        print("Kept {0} of {1} MAF data rows".format(kept, total)) # TODO record with a logger
+        self.logger.info("Kept {0} of {1} MAF data rows".format(kept, total))
         # apply annotation to tempfile and return final output
         out_path = self._annotate_maf(tmp_path, tmp_dir, oncokb_info_path)
         return out_path
@@ -365,11 +394,7 @@ class r_script_wrapper:
             '--hmzd', self.config[ini.SEG][ini.HMZD],
             '--outdir', self.report_dir
         ]
-        print('###', ' '.join(cmd))
-        result = subprocess.run(cmd, capture_output=True, encoding=constants.TEXT_ENCODING)
-        if result.returncode != 0:
-            msg = "R script failed with STDERR: "+result.stderr
-            raise RuntimeError(msg)
+        result = self._run_command(cmd, "main R script")
         self.postprocess(oncokb_info)
         if self.supplied_tmp_dir == None:
             tmp.cleanup()

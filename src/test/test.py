@@ -4,6 +4,7 @@ import configparser
 import hashlib
 import json
 import jsonschema
+import logging
 import os
 import subprocess
 import tempfile
@@ -78,7 +79,7 @@ class TestConfigure(TestBase):
         config.read(self.default_ini)
         config.read(self.iniPath)
         config['settings']['provenance'] = os.path.join(self.sup_dir, 'pass01_panx_provenance.original.tsv.gz')
-        test_configurer = configurer(config)
+        test_configurer = configurer(config, log_level=logging.ERROR)
         out_dir = self.tmpDir
         out_path = os.path.join(out_dir, 'config_test_output.ini')
         test_configurer.run(out_path)
@@ -98,7 +99,7 @@ class TestExtractor(TestBase):
         out_dir = '/u/ibancarz/workspace/djerba/TestExtractor'  # self.tmpDir
         clinical_data_path = os.path.join(out_dir, 'data_clinical.txt')
         summary_path = os.path.join(out_dir, 'summary.json')
-        test_extractor = extractor(config, out_dir)
+        test_extractor = extractor(config, out_dir, log_level=logging.ERROR)
         # do not test R script here; done by TestWrapper
         test_extractor.run(summary_path, r_script=False)
         self.assertTrue(os.path.exists(clinical_data_path))
@@ -119,6 +120,11 @@ class TestMain(TestBase):
             self.pdf = pdf_path
             self.json = None
             self.subparser_name = constants.ALL
+            # logging
+            self.log_path = None
+            self.debug = False
+            self.verbose = False
+            self.quiet = True
 
     #@unittest.SkipTest
     def test_main(self):
@@ -139,7 +145,7 @@ class TestRender(TestBase):
         outDir = self.tmpDir
         outPath = os.path.join(outDir, 'djerba_test.html')
         reportDir = os.path.join(self.sup_dir, 'report_example')
-        html_renderer().run(reportDir, outPath)
+        html_renderer(log_level=logging.ERROR).run(reportDir, outPath)
         # TODO check file contents; need to omit the report date etc.
         self.assertTrue(os.path.exists(outPath))
 
@@ -150,7 +156,7 @@ class TestRender(TestBase):
         #out_dir = self.tmpDir
         out_dir = '/u/ibancarz/workspace/djerba/TestRender'
         out_path = os.path.join(out_dir, 'djerba_test.pdf')
-        test_renderer = pdf_renderer()
+        test_renderer = pdf_renderer(log_level=logging.ERROR)
         test_renderer.run(in_path, out_path)
         self.assertTrue(os.path.exists(out_path))
 

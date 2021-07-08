@@ -1,18 +1,22 @@
 """
 Publish Djerba results in human-readable format.
 Wrap an Rmarkdown script to output HTML from a Djerba results directory.
+Subsequently use pdfkit to convert the HTML to PDF.
 """
 
+import logging
 import os
 import pdfkit
 import subprocess
-import djerba.util.ini_fields as ini
+import djerba.util.constants as constants
+from djerba.util.logger import logger
 
-class html_renderer:
+class html_renderer(logger):
 
     R_MARKDOWN_DIRNAME = 'R_markdown'
 
-    def __init__(self):
+    def __init__(self, log_level=logging.WARNING, log_path=None):
+        self.logger = self.get_logger(log_level, __name__, log_path)
         r_script_dir = os.path.join(os.path.dirname(__file__), self.R_MARKDOWN_DIRNAME)
         self.markdown_script = os.path.join(r_script_dir, 'html_report.Rmd')
 
@@ -25,27 +29,29 @@ class html_renderer:
             render,
             report_dir
         ]
-        print('###', ' '.join(cmd))
+        self.logger.info('Rendering HTML with Rmarkdown command "'+' '.join(cmd)+'"')
         result = subprocess.run(cmd, capture_output=True)
         try:
             result.check_returncode()
         except subprocess.CalledProcessError:
-            print('###', result.stderr.decode('utf-8'))
+            self.logger.error("Unexpected error from Rmarkdown script")
+            self.logger.error("Rmarkdown STDOUT: "+result.stdout.decode(constants.TEXT_ENCODING))
+            self.logger.error("Rmarkdown STDERR: "+result.stderr.decode(constants.TEXT_ENCODING))
             raise
         return result
 
-class pdf_renderer:
+class pdf_renderer(logger):
 
-    def __init__(self):
-        pass
+    def __init__(self, log_level=logging.WARNING, log_path=None):
+        self.logger = self.get_logger(log_level, __name__, log_path)
 
     def run(self, html_path, pdf_path):
         """Render HTML to PDF"""
         #create options, which are arguments to wkhtmltopdf for footer generation
-        print('### placeholder; PDF renderer still in development')
         options = {
             'footer-right': '[page] of [topage]',
             'footer-left': '[date]',
             'footer-center': '${ANALYSIS_UNIT}' # TODO ensure env variable is present
         }
+        self.logger.warning('Omitting PDF output; renderer still in development')
         #pdfkit.from_url(html_path, pdf_path, options = options)
