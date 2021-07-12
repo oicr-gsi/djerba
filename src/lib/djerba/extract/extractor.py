@@ -52,7 +52,8 @@ class extractor(logger):
             self.logger.info("Automatically generated Sequenza gamma: {0}".format(gamma))
         else:
             self.logger.info("User-supplied Sequenza gamma: {0}".format(gamma))
-        [purity, ploidy] = ex.get_purity_ploidy(gamma)
+        purity = ex.get_purity(gamma)
+        ploidy = ex.get_ploidy(gamma)
         self.logger.info("Sequenza purity {0}, ploidy {1}".format(purity, ploidy))
         params = {
             constants.SEQUENZA_GAMMA: gamma,

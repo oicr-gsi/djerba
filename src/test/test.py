@@ -112,8 +112,8 @@ class TestMain(TestBase):
     class mock_args:
         """Use instead of argparse to store params for testing"""
 
-        def __init__(self, ini_path, config_path, html_path, pdf_path, work_dir):
-            self.config = config_path
+        def __init__(self, ini_path, ini_out_path, html_path, pdf_path, work_dir):
+            self.ini_out = ini_out_path
             self.dir = work_dir
             self.html = html_path
             self.ini = ini_path
@@ -126,7 +126,6 @@ class TestMain(TestBase):
             self.verbose = False
             self.quiet = True
 
-    #@unittest.SkipTest
     def test_main(self):
         out_dir = '/u/ibancarz/workspace/djerba/TestMain'
         ini_path = os.path.join(self.dataDir, 'config_user.ini')
@@ -165,51 +164,100 @@ class TestSequenzaExtractor(TestBase):
     def setUp(self):
         super().setUp()
         self.zip_path = os.path.join(self.sup_dir, 'PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip')
-        self.expected_gamma = 400
+        self.expected_gamma_id = (400, 'primary')
 
     def test_finder_script(self):
         """Test the command-line script to find gamma"""
+        json_path = os.path.join(self.tmpDir, 'sequenza_gamma.json')
         cmd = [
-            "sequenza_gamma_selector.py",
+            "sequenza_solutions.py",
             "--in", self.zip_path,
-            "--verbose"
+            "--json", json_path,
+            "--gamma-selection",
+            "--purity-ploidy",
+            "--summary"
         ]
         result = self.run_command(cmd)
-        with open(os.path.join(self.dataDir, 'gamma_test.tsv'), 'rt') as in_file:
-            expected_params = in_file.read()
-        self.assertEqual(int(result.stdout), self.expected_gamma)
-        self.assertEqual(result.stderr, expected_params)
+        with open(os.path.join(self.dataDir, 'expected_sequenza.txt'), 'rt') as in_file:
+            expected_text = in_file.read()
+        self.assertEqual(result.stdout, expected_text)
+        expected_json = os.path.join(self.dataDir, 'expected_sequenza.json')
+        with open(expected_json, 'rt') as exp_file, open(json_path, 'rt') as out_file:
+            output = json.loads(out_file.read())
+            expected = json.loads(exp_file.read())
+            self.assertEqual(output, expected)
 
     def test_purity_ploidy(self):
         seqex = sequenza_extractor(self.zip_path)
-        [purity, ploidy] = seqex.get_purity_ploidy()
-        self.assertEqual(purity, 0.6)
-        self.assertEqual(ploidy, 3.1)
+        self.assertEqual(seqex.get_purity(), 0.6)
+        self.assertEqual(seqex.get_ploidy(), 3.1)
         expected_segments = {
-            50: 8669,
-            100: 4356,
-            200: 1955,
-            300: 1170,
-            400: 839,
-            500: 622,
-            600: 471,
-            700: 407,
-            800: 337,
-            900: 284,
-            1000: 245,
-            1250: 165,
-            1500: 123,
-            2000: 84
+            (100, 'primary'): 4356,
+            (100, 'sol2_0.59'): 4356,
+            (1000, 'sol3_0.42'): 245,
+            (1000, 'sol4_0.73'): 245,
+            (1000, 'primary'): 245,
+            (1000, 'sol2_0.49'): 245,
+            (1250, 'sol3_0.42'): 165,
+            (1250, 'sol4_0.73'): 165,
+            (1250, 'sol5_0.4'): 165,
+            (1250, 'primary'): 165,
+            (1250, 'sol2_0.49'): 165,
+            (1500, 'sol2_0.48'): 123,
+            (1500, 'sol3_0.42'): 123,
+            (1500, 'sol5_0.4'): 123,
+            (1500, 'primary'): 123,
+            (1500, 'sol4_0.72'): 123,
+            (200, 'sol2_0.24'): 1955,
+            (200, 'primary'): 1955,
+            (200, 'sol3_0.31'): 1955,
+            (2000, 'sol2_0.42'): 84,
+            (2000, 'sol6_0.39'): 84,
+            (2000, 'sol3_0.48'): 84,
+            (2000, 'primary'): 84,
+            (2000, 'sol4_1'): 84,
+            (2000, 'sol5_0.72'): 84,
+            (300, 'sol4_0.43'): 1170,
+            (300, 'sol2_0.32'): 1170,
+            (300, 'sol3_0.24'): 1170,
+            (300, 'primary'): 1170,
+            (400, 'sol3_0.43'): 839,
+            (400, 'primary'): 839,
+            (400, 'sol4_1'): 839,
+            (400, 'sol2_0.44'): 839,
+            (400, 'sol5_0.39'): 839,
+            (50, 'primary'): 8669,
+            (500, 'sol2_0.48'): 622,
+            (500, 'sol3_0.42'): 622,
+            (500, 'primary'): 622,
+            (500, 'sol4_0.39'): 622,
+            (600, 'sol2_0.48'): 471,
+            (600, 'sol3_0.42'): 471,
+            (600, 'sol4_0.73'): 471,
+            (600, 'primary'): 471,
+            (700, 'sol2_0.48'): 407,
+            (700, 'sol3_0.42'): 407,
+            (700, 'sol4_0.73'): 407,
+            (700, 'primary'): 407,
+            (800, 'sol3_0.42'): 337,
+            (800, 'sol4_0.73'): 337,
+            (800, 'primary'): 337,
+            (800, 'sol2_0.49'): 337,
+            (900, 'sol3_0.42'): 284,
+            (900, 'sol4_0.73'): 284,
+            (900, 'primary'): 284,
+            (900, 'sol2_0.49'): 284
         }
         self.assertEqual(seqex.get_segment_counts(), expected_segments)
-        self.assertEqual(seqex.get_default_gamma(), self.expected_gamma)
+        self.assertEqual(seqex.get_default_gamma_id(), self.expected_gamma_id)
         # test with alternate gamma
-        [purity, ploidy] = seqex.get_purity_ploidy(gamma=50)
-        self.assertEqual(purity, 0.56)
-        self.assertEqual(ploidy, 3.2)
+        self.assertEqual(seqex.get_purity(gamma=50), 0.56)
+        self.assertEqual(seqex.get_ploidy(gamma=50), 3.2)
         # test with nonexistent gamma
         with self.assertRaises(SequenzaExtractionError):
-            seqex.get_purity_ploidy(gamma=999999)
+            seqex.get_purity(gamma=999999)
+        with self.assertRaises(SequenzaExtractionError):
+            seqex.get_ploidy(gamma=999999)
 
     def test_seg_file(self):
         seqex = sequenza_extractor(self.zip_path)
