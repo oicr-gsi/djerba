@@ -11,7 +11,7 @@ from djerba.extract.extractor import extractor
 from djerba.render import html_renderer
 from djerba.render import pdf_renderer
 from djerba.util.logger import logger
-from djerba.util.validator import validator
+from djerba.util.validator import config_validator, path_validator
 
 class main(logger):
 
@@ -33,19 +33,24 @@ class main(logger):
     def run(self, args):
         """Main method to run Djerba"""
         self.validate_args(args)
-        # TODO validate that config has required params
         lv = self.get_log_level(args.debug, args.verbose, args.quiet)
         lp = args.log_path
         if args.subparser_name == constants.CONFIGURE:
-            configurer(self.read_config(args.ini), log_level=lv, log_path=lp).run(args.out)
+            config = self.read_config(args.ini)
+            config_validator(lv, lp).validate_minimal(config)
+            configurer(config, log_level=lv, log_path=lp).run(args.out)
         elif args.subparser_name == constants.EXTRACT:
-            extractor(self.read_config(args.ini), args.dir, log_level=lv, log_path=lp).run(args.json)
+            config = self.read_config(args.ini)
+            config_validator(lv, lp).validate_full(config)
+            extractor(config, args.dir, log_level=lv, log_path=lp).run(args.json)
         elif args.subparser_name == constants.HTML:
-            html_renderer(log_level=lv, log_path=lp).run(args.html)
+            html_renderer(log_level=lv, log_path=lp).run(args.dir, args.html)
         elif args.subparser_name == constants.PDF:
             pdf_renderer(log_level=lv, log_path=lp).run(args.html, args.pdf)
         elif args.subparser_name == constants.ALL:
-            self.run_all(self.read_config(args.ini), args, lv, lp)
+            config = self.read_config(args.ini)
+            config_validator(lv, lp).validate_minimal(config)
+            self.run_all(config, args, lv, lp)
 
     def run_all(self, input_config, args, log_level, log_path):
         """Run all Djerba operations in sequence"""
@@ -60,19 +65,22 @@ class main(logger):
             configurer(input_config, log_level=log_level, log_path=log_path).run(ini_path_full)
             full_config = configparser.ConfigParser()
             full_config.read(ini_path_full)
+            # auto-generated full_config should be OK, but run the validator as a sanity check
+            config_validator(log_level, log_path).validate_full(full_config)
             extractor(full_config, report_dir, log_level=log_level, log_path=log_path).run(args.json)
             html_renderer(log_level=log_level, log_path=log_path).run(report_dir, html_path)
             pdf_renderer(log_level=log_level, log_path=log_path).run(html_path, args.pdf)
 
     def validate_args(self, args):
         """Validate the command-line arguments"""
-        v = validator()
-        v.validate_input_file(args.ini)
+        v = path_validator()
         if args.log_path:
             v.validate_output_file(args.log_path)
         if args.subparser_name == constants.CONFIGURE:
+            v.validate_input_file(args.ini)
             v.validate_output_file(args.out)
         elif args.subparser_name == constants.EXTRACT:
+            v.validate_input_file(args.ini)
             v.validate_output_dir(args.dir)
             if args.json:
                 v.validate_output_file(args.json)
@@ -83,6 +91,7 @@ class main(logger):
             v.validate_input_file(args.html)
             v.validate_output_file(args.pdf)
         elif args.subparser_name == constants.ALL:
+            v.validate_input_file(args.ini)
             v.validate_output_file(args.pdf)
             if args.ini_out:
                 v.validate_output_file(args.ini_out)

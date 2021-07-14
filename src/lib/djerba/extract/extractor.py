@@ -21,21 +21,17 @@ class extractor(logger):
     """
 
     CLINICAL_DATA_FILENAME = 'data_clinical.txt'
-    GENOMIC_SUMMARY_FILENAME = 'genomic_summary.txt'
     MAF_PARAMS_FILENAME = 'maf_params.json'
     SAMPLE_INFO_KEY = 'sample_info'
     SAMPLE_META_PARAMS_FILENAME = 'sample_meta_params.json'
     SEQUENZA_PARAMS_FILENAME = 'sequenza_params.json'
 
-    def __init__(self, config, report_dir=None, log_level=logging.WARNING, log_path=None):
+    def __init__(self, config, report_dir, log_level=logging.WARNING, log_path=None):
         self.config = config
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.log_level = log_level
         self.log_path = log_path
-        if report_dir == None:
-            self.report_dir = config[ini.SETTINGS][ini.OUT_DIR]
-        else:
-            self.report_dir = report_dir
+        self.report_dir = report_dir
         self.data_dir = os.path.join(os.path.dirname(__file__), '..', constants.DATA_DIR_NAME)
 
     def _write_json(self, data, out_path):
@@ -46,7 +42,7 @@ class extractor(logger):
     def get_sequenza_params(self):
         """Read the Sequenza results.zip, extract relevant parameters, and write as JSON"""
         ex = sequenza_extractor(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE])
-        gamma = self.config.getint(ini.INPUTS, ini.GAMMA)
+        gamma = self.config.getint(ini.DISCOVERED, ini.GAMMA)
         if gamma == None:
             gamma = ex.get_default_gamma()
             self.logger.info("Automatically generated Sequenza gamma: {0}".format(gamma))
@@ -64,6 +60,7 @@ class extractor(logger):
 
     def run(self, json_path=None, r_script=True):
         """Run extraction and write output"""
+        self.logger.info("Djerba extract step started")
         sequenza_params = self.get_sequenza_params()
         if r_script:
             self.run_r_script(sequenza_params) # can omit the R script for testing
@@ -71,6 +68,7 @@ class extractor(logger):
         self.write_genomic_summary()
         if json_path:
             self.write_json_summary(json_path)
+        self.logger.info("Djerba extract step finished; extracted metrics written to {0}".format(self.report_dir))
 
     def run_r_script(self, sequenza_params):
         gamma = sequenza_params.get(constants.SEQUENZA_GAMMA)
@@ -90,18 +88,18 @@ class extractor(logger):
                 ['PATIENT_STUDY_ID', self.config[ini.INPUTS][ini.PATIENT_ID] ],
                 ['TUMOR_SAMPLE_ID', self.config[ini.INPUTS][ini.TUMOUR_ID] ],
                 ['BLOOD_SAMPLE_ID', self.config[ini.INPUTS][ini.NORMAL_ID] ],
-                ['REPORT_VERSION', self.config[ini.SAMPLE_META][ini.REPORT_VERSION] ],
-                ['SAMPLE_TYPE', self.config[ini.SAMPLE_META][ini.SAMPLE_TYPE] ],
-                ['CANCER_TYPE', self.config[ini.SAMPLE_META][ini.CANCER_TYPE] ],
+                ['REPORT_VERSION', self.config[ini.INPUTS][ini.REPORT_VERSION] ],
+                ['SAMPLE_TYPE', self.config[ini.INPUTS][ini.SAMPLE_TYPE] ],
+                ['CANCER_TYPE', self.config[ini.INPUTS][ini.CANCER_TYPE] ],
                 ['CANCER_TYPE_DETAILED', self.config[ini.INPUTS][ini.CANCER_TYPE_DETAILED] ],
-                ['CANCER_TYPE_DESCRIPTION', self.config[ini.SAMPLE_META][ini.CANCER_TYPE_DESCRIPTION] ],
+                ['CANCER_TYPE_DESCRIPTION', self.config[ini.INPUTS][ini.CANCER_TYPE_DESCRIPTION] ],
                 ['CLOSEST_TCGA', self.config[ini.INPUTS][ini.TCGA_CODE] ],
-                ['SAMPLE_ANATOMICAL_SITE', self.config[ini.SAMPLE_META][ini.SAMPLE_ANATOMICAL_SITE]],
-                ['MEAN_COVERAGE', self.config[ini.SAMPLE_META][ini.MEAN_COVERAGE] ],
-                ['PCT_V7_ABOVE_80X', self.config[ini.SAMPLE_META][ini.PCT_V7_ABOVE_80X] ],
+                ['SAMPLE_ANATOMICAL_SITE', self.config[ini.INPUTS][ini.SAMPLE_ANATOMICAL_SITE]],
+                ['MEAN_COVERAGE', self.config[ini.INPUTS][ini.MEAN_COVERAGE] ],
+                ['PCT_V7_ABOVE_80X', self.config[ini.INPUTS][ini.PCT_V7_ABOVE_80X] ],
                 ['SEQUENZA_PURITY_FRACTION', purity],
                 ['SEQUENZA_PLOIDY', ploidy],
-                ['SEX', self.config[ini.SAMPLE_META][ini.SEX] ]
+                ['SEX', self.config[ini.INPUTS][ini.SEX] ]
             ]
         except KeyError as err:
             msg = "Missing required clinical data value from config"
@@ -121,14 +119,12 @@ class extractor(logger):
 
     def write_genomic_summary(self):
         """
-        Write the genomic_summary.txt file to the working directory
-        If none given, write a default file
+        Copy a genomic_summary.txt file to the working directory
+        File may have been manually configured; otherwise a default file is used
         (Long-term ambition is to generate the summary text automatically)
         """
-        input_path = self.config[ini.INPUTS].get(ini.GENOMIC_SUMMARY)
-        output_path = os.path.join(self.report_dir, self.GENOMIC_SUMMARY_FILENAME)
-        if not input_path:
-            input_path = os.path.join(self.data_dir, self.GENOMIC_SUMMARY_FILENAME)
+        input_path = self.config[ini.DISCOVERED][ini.GENOMIC_SUMMARY]
+        output_path = os.path.join(self.report_dir, constants.GENOMIC_SUMMARY_FILENAME)
         copyfile(input_path, output_path)
 
     def write_json_summary(self, out_path):

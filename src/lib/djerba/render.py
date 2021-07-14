@@ -38,6 +38,7 @@ class html_renderer(logger):
             self.logger.error("Rmarkdown STDOUT: "+result.stdout.decode(constants.TEXT_ENCODING))
             self.logger.error("Rmarkdown STDERR: "+result.stderr.decode(constants.TEXT_ENCODING))
             raise
+        self.logger.info("Djerba HTML rendering finished; wrote output to {0}".format(out_path))
         return result
 
 class pdf_renderer(logger):

@@ -64,17 +64,14 @@ class r_script_wrapper(logger):
     # environment variable for ONCOKB token path
     ONCOKB_TOKEN_VARIABLE = 'ONCOKB_TOKEN'
 
-    def __init__(self, config, gamma, report_dir=None, tmp_dir=None,
+    def __init__(self, config, gamma, report_dir, tmp_dir=None,
                  log_level=logging.WARNING, log_path=None):
         self.config = config
         self.gamma = gamma
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.r_script_dir = os.path.join(os.path.dirname(__file__), '..', 'R_stats')
         self.supplied_tmp_dir = tmp_dir # may be None
-        if report_dir:
-            self.report_dir = report_dir
-        else:
-            self.report_dir = config[ini.INPUTS][ini.OUT_DIR]
+        self.report_dir = report_dir
         self.tumour_id = config[ini.INPUTS][ini.TUMOUR_ID]
         self.cancer_type_detailed = config[ini.INPUTS][ini.CANCER_TYPE_DETAILED]
         self.gep_reference = config[ini.SETTINGS][ini.GEP_REFERENCE]

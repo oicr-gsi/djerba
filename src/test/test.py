@@ -16,6 +16,7 @@ from djerba.extract.sequenza import sequenza_extractor, SequenzaExtractionError
 from djerba.extract.r_script_wrapper import r_script_wrapper
 from djerba.main import main
 from djerba.render import html_renderer, pdf_renderer
+from djerba.util.validator import config_validator, DjerbaConfigError
 
 class TestBase(unittest.TestCase):
 
@@ -275,6 +276,21 @@ class TestSequenzaExtractor(TestBase):
         self.assertEqual(self.getMD5(seg_path), '5d433e47431029219b6922fba63a8fcf')
         with self.assertRaises(SequenzaExtractionError):
             seqex.extract_seg_file(self.tmpDir, gamma=999999)
+
+class TestValidator(TestBase):
+
+    def test_config_validator(self):
+        config_user = configparser.ConfigParser()
+        config_user.read(os.path.join(self.dataDir, 'config_user.ini'))
+        config_full = configparser.ConfigParser()
+        config_full.read(os.path.join(self.dataDir, 'config_full.ini'))
+        validator = config_validator(log_level=logging.ERROR)
+        self.assertTrue(validator.validate_minimal(config_user))
+        self.assertTrue(validator.validate_full(config_full))
+        # minimal config will fail the validate_full check
+        validator_critical = config_validator(log_level=logging.CRITICAL)
+        with self.assertRaises(DjerbaConfigError):
+            self.assertTrue(validator_critical.validate_full(config_user))
 
 class TestWrapper(TestBase):
 

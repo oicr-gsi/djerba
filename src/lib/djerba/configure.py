@@ -45,18 +45,22 @@ class configurer(logger):
 
     def find_data_files(self):
         data_files = {}
-        if self.config[ini.SETTINGS].get(ini.DATA_DIR):
+        if self.config[ini.DISCOVERED].get(ini.DATA_DIR):
             data_dir = self.config[ini.SETTINGS][ini.DATA_DIR]
         else:
             data_dir = os.path.join(os.path.dirname(__file__), constants.DATA_DIR_NAME)
         data_dir = os.path.realpath(data_dir)
-        data_files[ini.ENSCON] = os.path.join(data_dir, self.ENSCON_NAME)
-        data_files[ini.ENTCON] = os.path.join(data_dir, self.ENTCON_NAME)
-        data_files[ini.GENE_BED] = os.path.join(data_dir, self.GENEBED_NAME)
-        data_files[ini.ONCO_LIST] = os.path.join(data_dir, self.ONCOLIST_NAME)
-        data_files[ini.MUTATION_NONSYN] = os.path.join(data_dir, self.MUTATION_NONSYN_NAME)
-        data_files[ini.GENE_LIST] = os.path.join(data_dir, self.GENELIST_NAME)
-        data_files[ini.TMBCOMP] = os.path.join(data_dir, self.TMBCOMP_NAME)
+        data_files[ini.DATA_DIR] = data_dir
+        # use values from the input config, if available; otherwise, fall back to DATA_DIR
+        s = self.config[ini.SETTINGS]
+        data_files[ini.ENSCON] = s.get(ini.ENSCON) if s.get(ini.ENSCON) else os.path.join(data_dir, self.ENSCON_NAME)
+        data_files[ini.ENTCON] = s.get(ini.ENTCON) if s.get(ini.ENTCON) else os.path.join(data_dir, self.ENTCON_NAME)
+        data_files[ini.GENE_BED] = s.get(ini.GENE_BED) if s.get(ini.GENE_BED) else os.path.join(data_dir, self.GENEBED_NAME)
+        data_files[ini.GENOMIC_SUMMARY] = s.get(ini.GENOMIC_SUMMARY) if s.get(ini.GENOMIC_SUMMARY) else os.path.join(data_dir, constants.GENOMIC_SUMMARY_FILENAME)
+        data_files[ini.ONCO_LIST] = s.get(ini.ONCO_LIST) if s.get(ini.ONCO_LIST) else os.path.join(data_dir, self.ONCOLIST_NAME)
+        data_files[ini.MUTATION_NONSYN] = s.get(ini.MUTATION_NONSYN) if s.get(ini.MUTATION_NONSYN) else os.path.join(data_dir, self.MUTATION_NONSYN_NAME)
+        data_files[ini.GENE_LIST] = s.get(ini.GENE_LIST) if s.get(ini.GENE_LIST) else os.path.join(data_dir, self.GENELIST_NAME)
+        data_files[ini.TMBCOMP] = s.get(ini.TMBCOMP) if s.get(ini.TMBCOMP) else os.path.join(data_dir, self.TMBCOMP_NAME)
         return data_files
 
     def discover(self):
@@ -76,9 +80,11 @@ class configurer(logger):
 
     def run(self, out_path):
         """Main method to run configuration"""
+        self.logger.info("Djerba config started")
         self.update()
         with open(out_path, 'w') as out_file:
             self.config.write(out_file)
+        self.logger.info("Djerba config finished; wrote output to {0}".format(out_path))
 
     def update(self):
         """Discover and apply updates to the configuration"""
@@ -98,6 +104,7 @@ class provenance_reader(logger):
         # get provenance for the project and donor
         # if this proves to be too slow, can preprocess the file using zgrep
         self.logger = self.get_logger(log_level, __name__, log_path)
+        self.logger.info("Reading provenance for project '%s' and donor '%s' " % (project, donor))
         self.provenance = []
         with gzip.open(provenance_path, 'rt') as infile:
             reader = csv.reader(infile, delimiter="\t")
@@ -111,6 +118,8 @@ class provenance_reader(logger):
                 "in '%s'" % provenance_path
             self.logger.error(msg)
             raise MissingProvenanceError(msg)
+        else:
+            self.logger.info("Found %d provenance records" % len(self.provenance))
 
     def _filter_rows(self, index, value, rows=None):
         # find matching provenance rows from a list

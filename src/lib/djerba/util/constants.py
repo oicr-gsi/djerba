@@ -1,6 +1,7 @@
 """Constants for use across multiple Djerba classes"""
 
 DATA_DIR_NAME = 'data'
+GENOMIC_SUMMARY_FILENAME = 'genomic_summary.txt'
 SEQUENZA_GAMMA = 'sequenza_gamma'
 SEQUENZA_PURITY_KEY = 'SEQUENZA_PURITY_FRACTION'
 SEQUENZA_PLOIDY_KEY = 'SEQUENZA_PLOIDY'
