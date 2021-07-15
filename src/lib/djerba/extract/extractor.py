@@ -135,9 +135,9 @@ class extractor(logger):
         try:
             data = [
                 ['PATIENT_LIMS_ID', self.config[ini.INPUTS][ini.PATIENT] ],
-                ['PATIENT_STUDY_ID', self.config[ini.INPUTS][ini.PATIENT_ID] ],
-                ['TUMOR_SAMPLE_ID', self.config[ini.INPUTS][ini.TUMOUR_ID] ],
-                ['BLOOD_SAMPLE_ID', self.config[ini.INPUTS][ini.NORMAL_ID] ],
+                ['PATIENT_STUDY_ID', self.config[ini.DISCOVERED][ini.PATIENT_ID] ],
+                ['TUMOR_SAMPLE_ID', self.config[ini.DISCOVERED][ini.TUMOUR_ID] ],
+                ['BLOOD_SAMPLE_ID', self.config[ini.DISCOVERED][ini.NORMAL_ID] ],
                 ['REPORT_VERSION', self.config[ini.INPUTS][ini.REPORT_VERSION] ],
                 ['SAMPLE_TYPE', self.config[ini.INPUTS][ini.SAMPLE_TYPE] ],
                 ['CANCER_TYPE', oncotree_info[self.CANCER_TYPE] ],

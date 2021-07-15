@@ -95,10 +95,13 @@ So, there are three different ways to configure a `data_dir` parameter such as `
 | `[discovered]` | `maf_file`    | File provenance | MAF input file from VariantEffectPredictor                 |
 | `[discovered]` | `mavis_file`  | File provenance | Mavis input file                                 |
 | `[discovered]` | `mutation_nonsyn`    | `data_dir` | Non-synonymous mutation list file                    |
+| `[discovered]` | `normal_id` | File provenance | Normal ID, eg. 100-PM-013_BC                |
 | `[discovered]` | `oncolist`    | `data_dir` | OncoKB listing file                    |
 | `[discovered]` | `oncotree_data`    | `data_dir` | [OncoTree](http://oncotree.mskcc.org/#/home) data file with cancer type and description                    |
+| `[discovered]` | `patient_id` | File provenance | Patient ID, eg. 100-PM-013                                 |
 | `[discovered]` | `sequenza_file` | File provenance |Sequenza input file                                 |
 | `[discovered]` | `tmbcomp` | `data_dir` | TCGA TMB file                                 |
+| `[discovered]` | `tumour_id` | File provenance | Tumour ID, eg. 100-PM-013_LCM5                |
 | `[seg]`        | `ampl` | defaults.ini |  |
 | `[seg]`        | `gain` | defaults.ini |  |
 | `[seg]`        | `hmzd` | defaults.ini |  |

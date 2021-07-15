@@ -72,7 +72,7 @@ class r_script_wrapper(logger):
         self.r_script_dir = os.path.join(os.path.dirname(__file__), '..', 'R_stats')
         self.supplied_tmp_dir = tmp_dir # may be None
         self.report_dir = report_dir
-        self.tumour_id = config[ini.INPUTS][ini.TUMOUR_ID]
+        self.tumour_id = config[ini.DISCOVERED][ini.TUMOUR_ID]
         self.oncotree_code = config[ini.INPUTS][ini.ONCOTREE_CODE]
         self.gep_reference = config[ini.SETTINGS][ini.GEP_REFERENCE]
         self.min_fusion_reads = self.config[ini.SETTINGS][ini.MIN_FUSION_READS]
@@ -371,7 +371,7 @@ class r_script_wrapper(logger):
             '--basedir', self.r_script_dir,
             '--studyid', self.config[ini.INPUTS][ini.STUDY_ID],
             '--tumourid', self.tumour_id,
-            '--normalid', self.config[ini.INPUTS][ini.NORMAL_ID],
+            '--normalid', self.config[ini.DISCOVERED][ini.NORMAL_ID],
             '--maffile', maf_path,
             '--segfile', seg_path,
             '--gepfile', gep_path,

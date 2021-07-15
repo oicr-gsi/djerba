@@ -60,25 +60,25 @@ SCHEMA = {
         MAF_FILE,
         MAVIS_FILE,
         MUTATION_NONSYN,
+        NORMAL_ID,
         ONCO_LIST,
         ONCOTREE_DATA,
+        PATIENT_ID,
         SEQUENZA_FILE,
-        TMBCOMP
+        TMBCOMP,
+        TUMOUR_ID
     ],
     INPUTS: [
         MEAN_COVERAGE,
-        NORMAL_ID,
         ONCOTREE_CODE,
         PATIENT,
-        PATIENT_ID,
         PCT_V7_ABOVE_80X,
         REPORT_VERSION,
         SAMPLE_ANATOMICAL_SITE,
         SAMPLE_TYPE,
         SEX,
         STUDY_ID,
-        TCGA_CODE,
-        TUMOUR_ID
+        TCGA_CODE
     ],
     SEG: [
         GAIN,
