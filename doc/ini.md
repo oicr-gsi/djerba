@@ -41,25 +41,23 @@ The INI file is divided into a number of sections, with headers in square bracke
 
 ### Required parameters
 
-All required parameters go in the `[inputs]` section. Parameters listed as "metadata" are simply inserted into the final output, without being used for any intermediate processing such as database or file provenance lookups. Metadata parameters may be given placeholder values in the INI, for instance if they are not available for a draft version of the report.
+All required parameters go in the `[inputs]` section. The "Source" column lists data source, as per version 2.0 of SOP "TM-005: Data Review and Reporting Procedure"; where "req" denotes the requisition system, and "user" denotes the member of CGI staff compiling the report.
 
-| Name                   | Metadata | Notes                                                    |
+| Name                   | Source | Notes                                                    |
 |------------------------|----------|------------------------------------------------|
-| `cancer_type`            | Yes | |
-| `cancer_type_description`            | Yes | |
-| `cancer_type_detailed` | No       | [OncoTree](http://oncotree.mskcc.org/#/home) cancer type |
-| `mean_coverage`            | Yes | |
-| `normalid`                | No       | Identifier of normal sample, eg. 100-PM-013_BC |
-| `patient`                | No       | Study name and patient number, eg. PANX_1249 |
-| `patientid`                | No       | Patient ID within study, eg. 100-PM-013 |
-| `pct_v7_above_80x`            | Yes | |
-| `report_version`            | Yes | |
-| `sample_anatomical_site`            | Yes | |
-| `sample_type`            | Yes | |
-| `sex`            | Yes | Patient sex |
-| `studyid`                | No       | Study ID within requisition system, eg. PASS01 |
-| `tcgacode`                | No       | [TCGA](https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga) code for the tumour, eg. PAAD |
-| `tumourid`                | No | Identifier of tumour sample, eg. 100-PM-013_LCM5 |
+| `mean_coverage`            | Dashi | |
+| `normalid`                | NA       | Identifier of normal sample, eg. 100-PM-013_BC |
+| `oncotree_code`             | req       | [OncoTree](http://oncotree.mskcc.org/#/home) code (case-insensitive), eg. paad |
+| `patient`                | req       | Study name and patient number, eg. PANX_1249 |
+| `patientid`                | NA       | Patient ID within study, eg. 100-PM-013 |
+| `pct_v7_above_80x`            | Dashi | |
+| `report_version`            | user | |
+| `sample_anatomical_site`            | req | |
+| `sample_type`            | req | |
+| `sex`            | req | Patient sex |
+| `studyid`                | req       | Study ID within requisition system, eg. PASS01 |
+| `tcgacode`                | req    | [TCGA](https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga) code for the tumour, eg. PAAD |
+| `tumourid`                | NA | Identifier of tumour sample, eg. 100-PM-013_LCM5 |
 
 ### Optional parameters
 
@@ -84,7 +82,7 @@ So, there are three different ways to configure a `data_dir` parameter such as `
 
 #### Table of optional parameters
 
-| Section        | Name          | Parameter source | Notes                                          |
+| Section        | Name          | Source | Notes                                          |
 |----------------|---------------|-------------| -----------------------------------|
 | `[discovered]` | `data_dir`    | Djerba installation | Directory for miscellaneous data files          |
 | `[discovered]` | `enscon`    | `data_dir` | Ensembl conversion file                    |
@@ -98,6 +96,7 @@ So, there are three different ways to configure a `data_dir` parameter such as `
 | `[discovered]` | `mavis_file`  | File provenance | Mavis input file                                 |
 | `[discovered]` | `mutation_nonsyn`    | `data_dir` | Non-synonymous mutation list file                    |
 | `[discovered]` | `oncolist`    | `data_dir` | OncoKB listing file                    |
+| `[discovered]` | `oncotree_data`    | `data_dir` | [OncoTree](http://oncotree.mskcc.org/#/home) data file with cancer type and description                    |
 | `[discovered]` | `sequenza_file` | File provenance |Sequenza input file                                 |
 | `[discovered]` | `tmbcomp` | `data_dir` | TCGA TMB file                                 |
 | `[seg]`        | `ampl` | defaults.ini |  |
@@ -110,7 +109,6 @@ So, there are three different ways to configure a `data_dir` parameter such as `
 | `[settings]`   | `provenance` | defaults.ini | Path to file provenance report  |
 | `[settings]`   | `tcga_data` | defaults.ini | Path to TCGA data directory  |
 | `[settings]`   | `whizbam_url` | defaults.ini | Base URL of OICR Whizbam site; used to construct links in report  |
-
 
 ## Summary
 

@@ -1,9 +1,11 @@
 """Extract and pre-process data, so it can be read into a clinical report JSON document"""
 
+import csv
 import json
 import logging
 import os
 import pandas as pd
+import re
 from shutil import copyfile
 
 from djerba.extract.sequenza import sequenza_extractor
@@ -20,9 +22,10 @@ class extractor(logger):
     Later on, will replace R script functionality with Python, and output JSON
     """
 
+    CANCER_TYPE = 'cancer_type'
+    CANCER_TYPE_DESCRIPTION = 'cancer_description'
     CLINICAL_DATA_FILENAME = 'data_clinical.txt'
     MAF_PARAMS_FILENAME = 'maf_params.json'
-    SAMPLE_INFO_KEY = 'sample_info'
     SAMPLE_META_PARAMS_FILENAME = 'sample_meta_params.json'
     SEQUENZA_PARAMS_FILENAME = 'sequenza_params.json'
 
@@ -34,10 +37,58 @@ class extractor(logger):
         self.report_dir = report_dir
         self.data_dir = os.path.join(os.path.dirname(__file__), '..', constants.DATA_DIR_NAME)
 
+    def _remove_oncotree_suffix(self, entry):
+        """Remove a suffix of the form ' (PAAD)' or ' (AMLCBFBMYH11)' from an oncotree entry"""
+        return re.sub(' \(\w+\)$', '', entry)
+
     def _write_json(self, data, out_path):
         with open(out_path, 'w') as out:
             out.write(json.dumps(data, sort_keys=True, indent=4))
         return out_path
+
+    def get_description(self):
+        """
+        Get cancer type and description from the oncotree file and code
+        If nothing is found, warn and return empty strings
+        """
+        oncotree_path = self.config[ini.DISCOVERED][ini.ONCOTREE_DATA]
+        oncotree_code = self.config[ini.INPUTS][ini.ONCOTREE_CODE]
+        self.logger.info("Finding OncoTree info for code {0}".format(oncotree_code))
+        # parse the oncotree file
+        # if any of columns 1-7 contains the ONCOTREE_CODE (case-insensitive):
+        # - column 1 has a CANCER_TYPE
+        # - any column containing the ONCOTREE_CODE has a CANCER_TYPE_DESCRIPTION
+        # - keep all distinct values of CANCER_TYPE and CANCER_TYPE_DESCRIPTION
+        # - remove the suffix, eg. 'Astroblastoma (ASTB)' -> 'Astroblastoma'
+        oncotree_regex = re.compile(oncotree_code, re.IGNORECASE)
+        ct = set() # set of distinct CANCER_TYPE strings
+        ctd = set() # set of distinct CANCER_TYPE_DESCRIPTION strings
+        with open(oncotree_path) as oncotree_file:
+            reader = csv.reader(oncotree_file, delimiter="\t")
+            first = True
+            for row in reader:
+                if first: # skip the header row
+                    first = False
+                    continue
+                for i in range(7):
+                    if oncotree_regex.search(row[i]):
+                        ct.add(self._remove_oncotree_suffix(row[0]))
+                        ctd.add(self._remove_oncotree_suffix(row[i]))
+        ct_str = '; '.join(sorted(list(ct)))
+        ctd_str = '; '.join(sorted(list(ctd)))
+        if len(ct)==0:
+            self.logger.warning("Type not found in OncoTree for code {0}".format(oncotree_code))
+        else:
+            self.logger.info("Found {0} cancer type(s) in OncoTree: {1}".format(len(ct), ct_str))
+        if len(ctd)==0:
+            self.logger.warning("Description not found in OncoTree for code {0}".format(oncotree_code))
+        else:
+            self.logger.info("Found {0} cancer type description(s) in OncoTree: {1}".format(len(ctd), ctd_str))
+        description = {
+            self.CANCER_TYPE: ct_str,
+            self.CANCER_TYPE_DESCRIPTION: ctd_str
+        }
+        return description
 
     def get_sequenza_params(self):
         """Read the Sequenza results.zip, extract relevant parameters, and write as JSON"""
@@ -64,7 +115,7 @@ class extractor(logger):
         sequenza_params = self.get_sequenza_params()
         if r_script:
             self.run_r_script(sequenza_params) # can omit the R script for testing
-        self.write_clinical_data(sequenza_params)
+        self.write_clinical_data(sequenza_params, self.get_description())
         self.write_genomic_summary()
         if json_path:
             self.write_json_summary(json_path)
@@ -77,11 +128,10 @@ class extractor(logger):
         )
         wrapper.run()
 
-    def write_clinical_data(self, sequenza_params):
+    def write_clinical_data(self, sequenza_params, oncotree_info):
         """Write the data_clinical.txt file; based on legacy format from CGI-Tools"""
         purity = sequenza_params[constants.SEQUENZA_PURITY_KEY]
         ploidy = sequenza_params[constants.SEQUENZA_PLOIDY_KEY]
-        # TODO move config values from inputs to sample_meta?
         try:
             data = [
                 ['PATIENT_LIMS_ID', self.config[ini.INPUTS][ini.PATIENT] ],
@@ -90,9 +140,9 @@ class extractor(logger):
                 ['BLOOD_SAMPLE_ID', self.config[ini.INPUTS][ini.NORMAL_ID] ],
                 ['REPORT_VERSION', self.config[ini.INPUTS][ini.REPORT_VERSION] ],
                 ['SAMPLE_TYPE', self.config[ini.INPUTS][ini.SAMPLE_TYPE] ],
-                ['CANCER_TYPE', self.config[ini.INPUTS][ini.CANCER_TYPE] ],
-                ['CANCER_TYPE_DETAILED', self.config[ini.INPUTS][ini.CANCER_TYPE_DETAILED] ],
-                ['CANCER_TYPE_DESCRIPTION', self.config[ini.INPUTS][ini.CANCER_TYPE_DESCRIPTION] ],
+                ['CANCER_TYPE', oncotree_info[self.CANCER_TYPE] ],
+                ['CANCER_TYPE_DETAILED', self.config[ini.INPUTS][ini.ONCOTREE_CODE] ],
+                ['CANCER_TYPE_DESCRIPTION', oncotree_info[self.CANCER_TYPE_DESCRIPTION] ],
                 ['CLOSEST_TCGA', self.config[ini.INPUTS][ini.TCGA_CODE] ],
                 ['SAMPLE_ANATOMICAL_SITE', self.config[ini.INPUTS][ini.SAMPLE_ANATOMICAL_SITE]],
                 ['MEAN_COVERAGE', self.config[ini.INPUTS][ini.MEAN_COVERAGE] ],

@@ -24,6 +24,7 @@ class configurer(logger):
     ENTCON_NAME = 'entrez_conversion.txt'
     GENEBED_NAME = 'gencode_v33_hg38_genes.bed'
     ONCOLIST_NAME = '20200818-oncoKBcancerGeneList.tsv'
+    ONCOTREE_NAME = '20201201-OncoTree.txt'
     MUTATION_NONSYN_NAME = 'mutation_types.nonsynonymous'
     GENELIST_NAME = 'targeted_genelist.txt'
     TMBCOMP_NAME = 'tmbcomp.txt'
@@ -58,6 +59,7 @@ class configurer(logger):
         data_files[ini.GENE_BED] = s.get(ini.GENE_BED) if s.get(ini.GENE_BED) else os.path.join(data_dir, self.GENEBED_NAME)
         data_files[ini.GENOMIC_SUMMARY] = s.get(ini.GENOMIC_SUMMARY) if s.get(ini.GENOMIC_SUMMARY) else os.path.join(data_dir, constants.GENOMIC_SUMMARY_FILENAME)
         data_files[ini.ONCO_LIST] = s.get(ini.ONCO_LIST) if s.get(ini.ONCO_LIST) else os.path.join(data_dir, self.ONCOLIST_NAME)
+        data_files[ini.ONCOTREE_DATA] = s.get(ini.ONCOTREE_DATA) if s.get(ini.ONCOTREE_DATA) else os.path.join(data_dir, self.ONCOTREE_NAME)
         data_files[ini.MUTATION_NONSYN] = s.get(ini.MUTATION_NONSYN) if s.get(ini.MUTATION_NONSYN) else os.path.join(data_dir, self.MUTATION_NONSYN_NAME)
         data_files[ini.GENE_LIST] = s.get(ini.GENE_LIST) if s.get(ini.GENE_LIST) else os.path.join(data_dir, self.GENELIST_NAME)
         data_files[ini.TMBCOMP] = s.get(ini.TMBCOMP) if s.get(ini.TMBCOMP) else os.path.join(data_dir, self.TMBCOMP_NAME)

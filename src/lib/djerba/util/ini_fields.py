@@ -9,9 +9,6 @@ DISCOVERED = 'discovered'
 # parameter names
 AMPL = 'ampl'
 BED_PATH = 'bed_path'
-CANCER_TYPE = 'cancer_type'
-CANCER_TYPE_DESCRIPTION = 'cancer_type_description'
-CANCER_TYPE_DETAILED = 'cancer_type_detailed'
 DATA_DIR = 'data_dir'
 ENSCON = 'enscon'
 ENTCON = 'entcon'
@@ -31,6 +28,8 @@ MIN_FUSION_READS = 'min_fusion_reads'
 MUTATION_NONSYN = 'mutation_nonsyn'
 NORMAL_ID = 'normalid'
 ONCO_LIST = 'oncolist'
+ONCOTREE_DATA = 'oncotree_data'
+ONCOTREE_CODE = 'oncotree_code' # was CANCER_TYPE_DETAILED
 PATIENT = 'patient'
 PATIENT_ID = 'patientid'
 PCT_V7_ABOVE_80X = 'pct_v7_above_80x'
@@ -62,15 +61,14 @@ SCHEMA = {
         MAVIS_FILE,
         MUTATION_NONSYN,
         ONCO_LIST,
+        ONCOTREE_DATA,
         SEQUENZA_FILE,
         TMBCOMP
     ],
     INPUTS: [
-        CANCER_TYPE,
-        CANCER_TYPE_DESCRIPTION,
-        CANCER_TYPE_DETAILED,
         MEAN_COVERAGE,
         NORMAL_ID,
+        ONCOTREE_CODE,
         PATIENT,
         PATIENT_ID,
         PCT_V7_ABOVE_80X,
