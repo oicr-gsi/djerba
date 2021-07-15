@@ -46,10 +46,8 @@ All required parameters go in the `[inputs]` section. The "Source" column lists 
 | Name                   | Source | Notes                                                    |
 |------------------------|----------|------------------------------------------------|
 | `mean_coverage`            | Dashi | |
-| `normalid`                | NA       | Identifier of normal sample, eg. 100-PM-013_BC |
 | `oncotree_code`             | req       | [OncoTree](http://oncotree.mskcc.org/#/home) code (case-insensitive), eg. paad |
 | `patient`                | req       | Study name and patient number, eg. PANX_1249 |
-| `patientid`                | NA       | Patient ID within study, eg. 100-PM-013 |
 | `pct_v7_above_80x`            | Dashi | |
 | `report_version`            | user | |
 | `sample_anatomical_site`            | req | |
@@ -57,7 +55,6 @@ All required parameters go in the `[inputs]` section. The "Source" column lists 
 | `sex`            | req | Patient sex |
 | `studyid`                | req       | Study ID within requisition system, eg. PASS01 |
 | `tcgacode`                | req    | [TCGA](https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga) code for the tumour, eg. PAAD |
-| `tumourid`                | NA | Identifier of tumour sample, eg. 100-PM-013_LCM5 |
 
 ### Optional parameters
 
