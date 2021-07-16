@@ -151,8 +151,8 @@ class provenance_reader(logger):
 
     def _get_unique_value(self, attributes, key, reference=False):
         """
-        Attributes is a list of dictionaries (rows)
-        First, check the tissue type ID to determine if the row refers to a reference (normal)
+        Attributes is a list of dictionaries, each corresponding to one or more provenance rows
+        First, check the tissue type ID to determine if the row refers to a reference (ie. normal)
         Then:
         - If key is present, confirm that all members of the list have the same value
         - If key does not exist for any member, return None
@@ -171,27 +171,15 @@ class provenance_reader(logger):
         elif len(value_set)==1:
             value = list(value_set).pop()
         else:
-            msg = "Value for '{0}' with reference = {1} is not unique: Found {2}".format(key, reference, value_set)
+            msg = "Value for '{0}' with reference={1} is not unique: Found {2}".format(key, reference, value_set)
             self.logger.error(msg)
             raise ValueError(msg)
         return value
 
-    def _id_normal(self, attributes):
-        # normal ID: ref_extn > ref_grid > constructed, in order of preference
-        ref_tube_id = self._get_unique_value(attributes, self.GEO_TUBE_ID, reference=True)
-        ref_group_id = self._get_unique_value(attributes, self.GEO_GROUP_ID, reference=True)
-        if ref_tube_id:
-            normal_id = ref_tube_id
-        elif ref_group_id:
-            msg = "Could not find reference {0}, using {1} for normal ID".format(self.GEO_TUBE_ID, self.GEO_GROUP_ID)
-            self.logger.warning(msg)
-            normal_id = group_id
-        else:
-            msg = "Could not find reference {0} or {1}, constructing alternate normal ID".format(self.GEO_TUBE_ID, self.GEO_GROUP_ID)
-            self.logger.warning(msg)
-            donor_id = self._get_unique_value(attributes, self.ROOT_SAMPLE_NAME_KEY)
-            tissue_origin = self._get_unique_value(attributes, self.GEO_TISSUE_ORIGIN_ID)
-            normal_id = "{0}_{1}_R".format(donor_id, tissue_origin)
+    def _id_normal(self, attributes, patient_id):
+        self.logger.debug("Finding normal ID")
+        normal_id = self._id_tumour_normal(attributes, patient_id, reference=True)
+        self.logger.debug("Found normal ID: {0}".format(normal_id))
         return normal_id
 
     def _id_patient(self, attributes):
@@ -199,24 +187,37 @@ class provenance_reader(logger):
         patient_id_raw = self._get_unique_value(attributes, self.GEO_EXTERNAL_NAME)
         return re.split(',', patient_id_raw).pop(0)
 
-    def _id_tumour(self, attributes):
-        # tumour ID: tube ID > group_ID > constructed, in order of preference
-        tube_id = self._get_unique_value(attributes, self.GEO_TUBE_ID)
-        group_id = self._get_unique_value(attributes, self.GEO_GROUP_ID)
-        if tube_id:
-            tumour_id = tube_id
-        elif group_id:
-            msg = "Could not find {0}, using {1} for tumour ID".format(self.GEO_TUBE_ID, self.GEO_GROUP_ID)
-            self.logger.warning(msg)
-            tumour_id = group_id
-        else:
-            msg = "Could not find {0} or {1}, constructing alternate tumour ID".format(self.GEO_TUBE_ID, self.GEO_GROUP_ID)
-            self.logger.warning(msg)
-            donor_id = self._get_unique_value(attributes, self.ROOT_SAMPLE_NAME_KEY)
-            tissue_origin = self._get_unique_value(attributes, self.GEO_TISSUE_ORIGIN_ID)
-            tissue_type = self._get_unique_value(attributes, self.GEO_TISSUE_TYPE_ID)
-            tumour_id = "{0}_{1}_{2}".format(donor_id, tissue_origin, tissue_type)
+    def _id_tumour(self, attributes, patient_id):
+        self.logger.debug("Finding tumour ID")
+        tumour_id = self._id_tumour_normal(attributes, patient_id, reference=False)
+        self.logger.debug("Found tumour ID: {0}".format(tumour_id))
         return tumour_id
+
+    def _id_tumour_normal(self, attributes, patient_id, reference):
+        """
+        Find the tumour or normal ID -- process differs only by value of the 'reference' flag
+        tube ID > group_ID > constructed, in order of preference
+        """
+        tube_id = self._get_unique_value(attributes, self.GEO_TUBE_ID, reference)
+        group_id = self._get_unique_value(attributes, self.GEO_GROUP_ID, reference)
+        tissue_origin = self._get_unique_value(attributes, self.GEO_TISSUE_ORIGIN_ID)
+        if reference:
+            tissue_type = 'R'
+        else:
+            tissue_type = self._get_unique_value(attributes, self.GEO_TISSUE_TYPE_ID)
+        constructed_id = "{0}_{1}_{2}".format(patient_id, tissue_origin, tissue_type)
+        self.logger.debug("ID candidates: {0}, {1}, {2}".format(tube_id, group_id, constructed_id))
+        if tube_id:
+            chosen_id = tube_id
+        elif group_id:
+            msg = "Could not find {0}, using {1} for ID".format(self.GEO_TUBE_ID, self.GEO_GROUP_ID)
+            self.logger.warning(msg)
+            chosen_id = group_id
+        else:
+            msg = "Could not find {0} or {1}, constructing alternate ID".format(self.GEO_TUBE_ID, self.GEO_GROUP_ID)
+            self.logger.warning(msg)
+            chosen_id = ref_constructed_id
+        return chosen_id
 
     def _parse_default(self, workflow, metatype, pattern):
         # get most recent file of given workflow, metatype, and file path pattern
@@ -269,10 +270,11 @@ class provenance_reader(logger):
         # parse the 'parent sample attributes' value and get a list of dictionaries
         # then use the list to compute identifiers
         attributes = [self._parse_row_attributes(row) for row in provenance_subset]
+        patient_id = self._id_patient(attributes)
         identifiers = {
-            ini.TUMOUR_ID: self._id_tumour(attributes),
-            ini.NORMAL_ID: self._id_normal(attributes),
-            ini.PATIENT_ID: self._id_patient(attributes)
+            ini.TUMOUR_ID: self._id_tumour(attributes, patient_id),
+            ini.NORMAL_ID: self._id_normal(attributes, patient_id),
+            ini.PATIENT_ID: patient_id
         }
         self.logger.debug("Found identifiers: {0}".format(identifiers))
         return identifiers
