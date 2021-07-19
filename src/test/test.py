@@ -12,6 +12,7 @@ import unittest
 import djerba.util.constants as constants
 from djerba.configure import configurer
 from djerba.extract.extractor import extractor
+from djerba.extract.report_directory_parser import report_directory_parser
 from djerba.extract.sequenza import sequenza_extractor, SequenzaExtractionError
 from djerba.extract.r_script_wrapper import r_script_wrapper
 from djerba.main import main
@@ -105,7 +106,7 @@ class TestExtractor(TestBase):
         test_extractor.run(summary_path, r_script=False)
         self.assertTrue(os.path.exists(clinical_data_path))
         self.assertTrue(os.path.exists(summary_path))
-        self.assertEqual(self.getMD5(clinical_data_path), '6ab526ddd5dfcb9ee21a5590c23ef195')
+        self.assertEqual(self.getMD5(clinical_data_path), '02003366977d66578c097295f12f4638')
         self.assertEqual(self.getMD5(summary_path), '9945fa608f8960964e967f7aecd8fda7')
 
 class TestMain(TestBase):
@@ -159,6 +160,18 @@ class TestRender(TestBase):
         test_renderer = pdf_renderer(log_level=logging.ERROR)
         test_renderer.run(in_path, out_path)
         self.assertTrue(os.path.exists(out_path))
+
+class TestReport(TestBase):
+
+    def test_parser(self):
+        report_dir = os.path.join(self.sup_dir, 'report_for_parser_test')
+        parser = report_directory_parser(report_dir, log_level=logging.DEBUG)
+        summary = parser.get_summary()
+        #parser.write_json(os.path.join('/u/ibancarz/tmp/djerba_parser_tmp', 'djerba.json'))
+        expected_path = os.path.join(self.sup_dir, 'expected_summary.json')
+        with open(expected_path) as expected_file:
+            expected = json.loads(expected_file.read())
+        self.assertEqual(summary, expected)
 
 class TestSequenzaExtractor(TestBase):
 

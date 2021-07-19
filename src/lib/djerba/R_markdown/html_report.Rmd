@@ -178,8 +178,8 @@ sample_pct_type <- ifelse(sample_tcga %in% tmb_data$CANCER.TYPE, ecdf(tmb_data_t
 if (dim(cbioMAF)[1] != 0) {
   out1 <- left_join(cbioMAF, CNA) %>% left_join(Expr) %>% mutate(mRNA = (mRNA *
     100)) %>% select(Hugo_Symbol, Chromosome, HGVSp_Short, Variant_Classification,
-    tumor_vaf, t_depth, t_alt_count, Copy_State, mRNA, OncoKB) %>% mutate(mRNA = round(mRNA,
-    1), tumor_vaf = round(tumor_vaf, 2), tumor_vaf = (tumor_vaf * 100), Copy_State = base::gsub("0",
+    tumour_vaf, t_depth, t_alt_count, Copy_State, mRNA, OncoKB) %>% mutate(mRNA = round(mRNA,
+    1), tumour_vaf = round(tumour_vaf, 2), tumour_vaf = (tumour_vaf * 100), Copy_State = base::gsub("0",
     "Neutral", Copy_State), Copy_State = base::gsub("^1", "Gain",
     Copy_State), Copy_State = base::gsub("^2", "Amplification", Copy_State),
     Copy_State = base::gsub("^-1", "Shallow Deletion", Copy_State), Copy_State = base::gsub("^-2",
@@ -187,7 +187,7 @@ if (dim(cbioMAF)[1] != 0) {
     "Level ", OncoKB)) %>% mutate(Variant_Classification = base::gsub("_", " ",
     Variant_Classification)) %>% mutate(Depth = paste(t_alt_count, t_depth, sep = "/")) %>%
     rename(Gene = Hugo_Symbol, Type = Variant_Classification, HGVS = HGVSp_Short,
-      `Copy State` = Copy_State, `VAF (%)` = tumor_vaf) %>%
+      `Copy State` = Copy_State, `VAF (%)` = tumour_vaf) %>%
     select(-c(t_depth, t_alt_count)) %>% relocate(Depth, .after = `VAF (%)`) %>%
     mutate(Gene = paste0("[", Gene, "](", "https://www.oncokb.org/gene/", Gene,
       ")"))
@@ -366,7 +366,7 @@ Other <- subset(Tx, OncoKB %in% c("LEVEL_3A", "LEVEL_3B", "LEVEL_4", "LEVEL_R2")
   <tr>
     <td width="35%"><strong>Date of Report:</strong> `r format(Sys.time(), '%Y/%m/%d')`</td>
     <td width="28%"><strong>Requisition Approved:</strong> yyyy/mm/dd</td>
-    <td width="37%"><strong>Report ID:</strong> `r paste0(clinicalData$TUMOR_SAMPLE_ID, "-v", clinicalData$REPORT_VERSION)`</td>
+    <td width="37%"><strong>Report ID:</strong> `r paste0(clinicalData$TUMOUR_SAMPLE_ID, "-v", clinicalData$REPORT_VERSION)`</td>
   </tr>
   <tr>
     <td width="35%"><strong>Study:</strong> PASS-01</td>
@@ -394,7 +394,7 @@ Other <- subset(Tx, OncoKB %in% c("LEVEL_3A", "LEVEL_3B", "LEVEL_4", "LEVEL_R2")
     <td width="50%"><strong>Site of biopsy/surgery:</strong> `r clinicalData$SAMPLE_ANATOMICAL_SITE`</td>
   </tr>
   <tr>
-    <td width="50%"><strong>Tumour Sample ID:</strong> `r clinicalData$TUMOR_SAMPLE_ID`</td>
+    <td width="50%"><strong>Tumour Sample ID:</strong> `r clinicalData$TUMOUR_SAMPLE_ID`</td>
     <td width="50%"><strong>Blood Sample ID:</strong> `r clinicalData$BLOOD_SAMPLE_ID`</td>
   </tr>
 </table>
@@ -474,7 +474,7 @@ ggplot(tmb_data, aes(TCGA.tmb)) + geom_density(aes(color = "All TCGA"), fill = "
         alpha = 0.1)
   }
 
-ggplot(MAF) + geom_density(aes(x = tumor_vaf), fill = "grey", alpha = 0.5) + geom_rug(aes(x = tumor_vaf,
+ggplot(MAF) + geom_density(aes(x = tumour_vaf), fill = "grey", alpha = 0.5) + geom_rug(aes(x = tumour_vaf,
   y = 0), position = position_jitter(height = 0)) + xlab("Variant Allele Frequency") +
   theme_classic() + theme(text = element_text(size = 15)) + scale_x_continuous(expand = c(0,
   0), limit = c(0, 1)) + scale_y_continuous(expand = c(0, 0)) + theme(plot.margin = unit(c(2,3,0,2), "lines"))

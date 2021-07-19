@@ -17,7 +17,7 @@ class r_script_wrapper(logger):
 
     # 0-based indices for important MAF columns
     VARIANT_CLASSIFICATION = 8
-    TUMOR_SAMPLE_BARCODE = 15
+    TUMOUR_SAMPLE_BARCODE = 15
     MATCHED_NORM_SAMPLE_BARCODE = 16
     T_DEPTH = 39
     T_ALT_COUNT = 41
@@ -193,26 +193,26 @@ class r_script_wrapper(logger):
 
     def _write_clinical_data(self):
         headers = [
-            'PATIENT', # was PATIENT_LIMS_ID in CGI-Tools, eg. PANX_1249
-            'PATIENT_ID', # was PATIENT_STUDY_ID, eg. 100-PM-013
-            'TUMOR_ID', # was TUMOUR_SAMPLE_ID
-            'NORMAL_ID', # was BLOOD_SAMPLE_ID
-            'REPORT_VERSION', # was REPORT_VERSION
-            'SAMPLE_TYPE',
-            'CANCER_TYPE',
-            'CANCER_TYPE_DETAILED',
-            'CANCER_TYPE_DESCRIPTION',
-            'DATE_SAMPLE_RECIEVED',
-            'CLOSEST_TCGA',
-            'SAMPLE_ANATOMICAL_SITE',
-            'SAMPLE_PRIMARY_OR_METASTASIS',
-            'MEAN_COVERAGE',
-            'PCT_V7_ABOVE_80X',
-            'SEQUENZA_PURITY_FRACTION',
-            'SEQUENZA_PLOIDY',
-            'QC_STATUS',
-            'QC_COMMENT',
-            'SEX'
+            ini.PATIENT, # was PATIENT_LIMS_ID in CGI-Tools, eg. PANX_1249
+            ini.PATIENT_ID, # was PATIENT_STUDY_ID, eg. 100-PM-013
+            ini.TUMOUR_ID, # was TUMOUR_SAMPLE_ID
+            ini.NORMAL_ID, # was BLOOD_SAMPLE_ID
+            ini.REPORT_VERSION,
+            ini.SAMPLE_TYPE,
+            ini.CANCER_TYPE,
+            ini.CANCER_TYPE_DETAILED,
+            ini.CANCER_TYPE_DESCRIPTION,
+            ini.DATE_SAMPLE_RECIEVED,
+            ini.CLOSEST_TCGA,
+            ini.SAMPLE_ANATOMICAL_SITE,
+            ini.SAMPLE_PRIMARY_OR_METASTASIS,
+            ini.MEAN_COVERAGE,
+            ini.PCT_V7_ABOVE_80X,
+            ini.SEQUENZA_PURITY_FRACTION,
+            ini.SEQUENZA_PLOIDY,
+            ini.QC_STATUS,
+            ini.QC_COMMENT,
+            ini.SEX
         ]
         body = []
         for header in headers:
@@ -271,7 +271,7 @@ class r_script_wrapper(logger):
         """
         Extract the FUS file from the .zip archive output by Mavis
         Apply preprocessing and write results to tmp_dir
-        Prepend a column with the tumor id
+        Prepend a column with the tumour id
         """
         zf = zipfile.ZipFile(mavis_path)
         matched = []
@@ -327,7 +327,7 @@ class r_script_wrapper(logger):
                     total += 1
                     if self._maf_body_row_ok(row):
                         # filter rows in the MAF body and update the tumour_id
-                        row[self.TUMOR_SAMPLE_BARCODE] = self.tumour_id
+                        row[self.TUMOUR_SAMPLE_BARCODE] = self.tumour_id
                         writer.writerow(row)
                         kept += 1
         self.logger.info("Kept {0} of {1} MAF data rows".format(kept, total))

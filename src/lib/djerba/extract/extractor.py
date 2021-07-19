@@ -86,7 +86,7 @@ class extractor(logger):
             data = [
                 ['PATIENT_LIMS_ID', self.config[ini.INPUTS][ini.PATIENT] ],
                 ['PATIENT_STUDY_ID', self.config[ini.INPUTS][ini.PATIENT_ID] ],
-                ['TUMOR_SAMPLE_ID', self.config[ini.INPUTS][ini.TUMOUR_ID] ],
+                ['TUMOUR_SAMPLE_ID', self.config[ini.INPUTS][ini.TUMOUR_ID] ],
                 ['BLOOD_SAMPLE_ID', self.config[ini.INPUTS][ini.NORMAL_ID] ],
                 ['REPORT_VERSION', self.config[ini.INPUTS][ini.REPORT_VERSION] ],
                 ['SAMPLE_TYPE', self.config[ini.INPUTS][ini.SAMPLE_TYPE] ],

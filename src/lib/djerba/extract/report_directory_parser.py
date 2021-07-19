@@ -8,6 +8,9 @@ but is not compliant with the Elba schema
 import csv
 import json
 import logging
+import os
+import djerba.util.constants as constants
+import djerba.util.ini_fields as ini
 from djerba.util.logger import logger
 
 class report_directory_parser(logger):
@@ -57,4 +60,42 @@ class report_directory_parser(logger):
                 msg = "Reporting file {0} not found in {1}".format(filename, self.report_dir)
                 self.logger.error(msg)
                 raise OSError(msg)
-        self.logger.debug("All required files found in reporting directory {0}".format(self.report_dir))
+        total = len(self.ALL_CONTENTS)
+        msg = "{0} required files found in reporting directory {1}".format(total, self.report_dir)
+        self.logger.debug(msg)
+        self.summary = {}
+        self.summary[self.DATA_CLINICAL] = self.read_clinical_data(os.path.join(report_dir, self.DATA_CLINICAL))
+
+    def get_summary(self):
+        return self.summary
+
+    def read_clinical_data(self, in_path):
+        with open(in_path) as in_file:
+            reader = csv.reader(in_file, delimiter="\t")
+            i = 0
+            for row in reader:
+                if i==0:
+                    header = row
+                elif i==1:
+                    body = row
+                else:
+                    msg = "Too many lines in clinical data file {0}".format(in_path)
+                    self.logger.error(msg)
+                    raise ValueError(msg)
+                i += 1
+        if len(header)!=len(body):
+            msg = "Mismatched header/body lengths in clinical data file {0}".format(in_path)
+            self.logger.error(msg)
+            raise ValueError(msg)
+        data = {}
+        for i in range(len(header)):
+            data[header[i]] = body[i]
+        data[ini.MEAN_COVERAGE] = int(data[ini.MEAN_COVERAGE])
+        for key in [ini.PCT_V7_ABOVE_80X, constants.SEQUENZA_PLOIDY_KEY, constants.SEQUENZA_PURITY_KEY]:
+            data[key] = float(data[key])
+        self.logger.debug("Read clinical data from {0}".format(in_path))
+        return data
+
+    def write_json(self, out_path):
+        with open(out_path, 'w') as out_file:
+            out_file.write(json.dumps(self.summary, indent=4, sort_keys='true'))
