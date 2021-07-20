@@ -165,9 +165,8 @@ class TestReport(TestBase):
 
     def test_parser(self):
         report_dir = os.path.join(self.sup_dir, 'report_for_parser_test')
-        parser = report_directory_parser(report_dir, log_level=logging.DEBUG)
+        parser = report_directory_parser(report_dir)
         summary = parser.get_summary()
-        #parser.write_json(os.path.join('/u/ibancarz/tmp/djerba_parser_tmp', 'djerba.json'))
         expected_path = os.path.join(self.sup_dir, 'expected_summary.json')
         with open(expected_path) as expected_file:
             expected = json.loads(expected_file.read())
