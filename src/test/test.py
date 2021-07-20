@@ -9,6 +9,8 @@ import os
 import subprocess
 import tempfile
 import unittest
+from string import Template
+
 import djerba.util.constants as constants
 from djerba.configure import configurer
 from djerba.extract.extractor import extractor
@@ -64,10 +66,37 @@ class TestBase(unittest.TestCase):
         with open(self.schema_path) as f:
             self.schema = json.loads(f.read())
         self.rScriptDir = os.path.realpath(os.path.join(self.testDir, '../lib/djerba/R/'))
-        self.default_ini = os.path.realpath(os.path.join(self.testDir, '../lib/djerba/data/defaults.ini'))
+        self.lib_data = os.path.realpath(os.path.join(self.testDir, '../lib/djerba/data')) # installed data files from src/lib
+        self.default_ini = os.path.realpath(os.path.join(self.lib_data, 'defaults.ini'))
+        [self.config_user, self.config_full] = self.write_config_files(self.tmpDir)
 
     def tearDown(self):
         self.tmp.cleanup()
+
+    def write_config_files(self, output_dir):
+        """
+        Use Python string templates to write customized test config files
+        """
+        settings = {
+            "SUPPLEMENTARY": self.sup_dir,
+            "LIB_DATA": self.lib_data
+        }
+        out_paths = []
+        for name in ['config_user.ini', 'config_full.ini']:
+            template_path = os.path.join(self.dataDir, name)
+            out_path = os.path.join(output_dir, name)
+            with open(template_path) as in_file, open(out_path, 'w') as out_file:
+                src = Template(in_file.read())
+                out_file.write(src.substitute(settings))
+            out_paths.append(out_path)
+        return out_paths
+
+class TestSetup(TestBase):
+    """Test the setup methods"""
+
+    def test_config_setup(self):
+        out_dir = '/u/ibancarz/tmp/djerba/config_test_20210720'
+        self.write_config_files(out_dir)
 
 class TestConfigure(TestBase):
 
@@ -105,7 +134,7 @@ class TestExtractor(TestBase):
         test_extractor.run(summary_path, r_script=False)
         self.assertTrue(os.path.exists(clinical_data_path))
         self.assertTrue(os.path.exists(summary_path))
-        self.assertEqual(self.getMD5(clinical_data_path), '6ab526ddd5dfcb9ee21a5590c23ef195')
+        self.assertEqual(self.getMD5(clinical_data_path), '02003366977d66578c097295f12f4638')
         self.assertEqual(self.getMD5(summary_path), '9945fa608f8960964e967f7aecd8fda7')
 
 class TestMain(TestBase):
