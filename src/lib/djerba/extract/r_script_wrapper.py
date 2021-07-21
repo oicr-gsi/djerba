@@ -72,8 +72,8 @@ class r_script_wrapper(logger):
         self.r_script_dir = os.path.join(os.path.dirname(__file__), '..', 'R_stats')
         self.supplied_tmp_dir = tmp_dir # may be None
         self.report_dir = report_dir
-        self.tumour_id = config[ini.INPUTS][ini.TUMOUR_ID]
-        self.cancer_type_detailed = config[ini.INPUTS][ini.CANCER_TYPE_DETAILED]
+        self.tumour_id = config[ini.DISCOVERED][ini.TUMOUR_ID]
+        self.oncotree_code = config[ini.INPUTS][ini.ONCOTREE_CODE]
         self.gep_reference = config[ini.SETTINGS][ini.GEP_REFERENCE]
         self.min_fusion_reads = self.config[ini.SETTINGS][ini.MIN_FUSION_READS]
         if not self.min_fusion_reads.isdigit():
@@ -371,7 +371,7 @@ class r_script_wrapper(logger):
             '--basedir', self.r_script_dir,
             '--studyid', self.config[ini.INPUTS][ini.STUDY_ID],
             '--tumourid', self.tumour_id,
-            '--normalid', self.config[ini.INPUTS][ini.NORMAL_ID],
+            '--normalid', self.config[ini.DISCOVERED][ini.NORMAL_ID],
             '--maffile', maf_path,
             '--segfile', seg_path,
             '--gepfile', gep_path,
@@ -408,7 +408,7 @@ class r_script_wrapper(logger):
     def write_oncokb_info(self, info_dir):
         """Write a file of oncoKB data for use by annotation scripts"""
         info_path = os.path.join(info_dir, self.ONCOKB_CLINICAL_INFO)
-        args = [self.tumour_id, self.cancer_type_detailed]
+        args = [self.tumour_id, self.oncotree_code]
         with open(info_path, 'w') as info_file:
             print("SAMPLE_ID\tONCOTREE_CODE", file=info_file)
             print("{0}\t{1}".format(*args), file=info_file)
