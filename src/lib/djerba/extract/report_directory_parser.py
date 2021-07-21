@@ -138,10 +138,18 @@ class report_directory_parser(logger):
             self.logger.error(msg)
             raise ValueError(msg)
         data = {keys[i]:values[i] for i in range(len(keys))}
+        self.logger.debug("Read clinical data: {}".format(data))
         # convert the numeric data types
-        data[ini.MEAN_COVERAGE] = int(data[ini.MEAN_COVERAGE])
-        for key in [ini.PCT_V7_ABOVE_80X, constants.SEQUENZA_PLOIDY_KEY, constants.SEQUENZA_PURITY_KEY]:
-            data[key] = float(data[key])
+        # column headers in data_clinical.txt are upper-case, Djerba constants are lower-case
+        # inconsistent, but kept for compatibility with html_report.Rmd
+        keys = [
+            ini.MEAN_COVERAGE,
+            ini.PCT_V7_ABOVE_80X,
+            constants.SEQUENZA_PLOIDY_KEY,
+            constants.SEQUENZA_PURITY_KEY
+        ]
+        for key in keys:
+            data[key] = float(data[key.upper()])
         # create the output structure
         header = ["data_clinical"]
         data = {
