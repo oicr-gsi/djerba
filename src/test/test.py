@@ -14,6 +14,7 @@ from string import Template
 import djerba.util.constants as constants
 from djerba.configure import configurer
 from djerba.extract.extractor import extractor
+from djerba.extract.report_directory_parser import report_directory_parser
 from djerba.extract.sequenza import sequenza_extractor, SequenzaExtractionError
 from djerba.extract.r_script_wrapper import r_script_wrapper
 from djerba.main import main
@@ -188,6 +189,17 @@ class TestRender(TestBase):
         test_renderer = pdf_renderer(log_level=logging.ERROR)
         test_renderer.run(in_path, out_path)
         self.assertTrue(os.path.exists(out_path))
+
+class TestReport(TestBase):
+
+    def test_parser(self):
+        report_dir = os.path.join(self.sup_dir, 'report_for_parser_test')
+        parser = report_directory_parser(report_dir)
+        summary = parser.get_summary()
+        expected_path = os.path.join(self.sup_dir, 'expected_summary.json')
+        with open(expected_path) as expected_file:
+            expected = json.loads(expected_file.read())
+        self.assertEqual(summary, expected)
 
 class TestSequenzaExtractor(TestBase):
 

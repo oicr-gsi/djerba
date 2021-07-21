@@ -34,7 +34,7 @@ procVEP <- function(datafile){
  print("--- adding VAF column ---")
 
  # add vaf columns
- data <- addVAFtoMAF(data, "t_alt_count", "t_depth", "tumor_vaf")
+ data <- addVAFtoMAF(data, "t_alt_count", "t_depth", "tumour_vaf")
  data <- addVAFtoMAF(data, "n_alt_count", "n_depth", "normal_vaf")
 
  # clear memory (important when the mafs are huge - will maybe outgrow R if files are millions and millions of lines)
@@ -113,7 +113,7 @@ procVEP <- function(datafile){
  # VAF Filter
  print("--- VAF filter ---") 
  df_anno <- transform(df_anno,
-  TGL_FILTER_VAF = ifelse(tumor_vaf >= 0.15 | (tumor_vaf < 0.15 & oncogenic_binary == "YES"),
+  TGL_FILTER_VAF = ifelse(tumour_vaf >= 0.15 | (tumour_vaf < 0.15 & oncogenic_binary == "YES"),
                       "PASS", "low_VAF")
  )
 
