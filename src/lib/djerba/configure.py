@@ -7,7 +7,7 @@ import os
 import re
 
 import djerba.util.constants as constants
-import djerba.util.index as index
+import djerba.util.provenance_index as index
 import djerba.util.ini_fields as ini
 from djerba.util.logger import logger
 
@@ -24,6 +24,7 @@ class configurer(logger):
     ENTCON_NAME = 'entrez_conversion.txt'
     GENEBED_NAME = 'gencode_v33_hg38_genes.bed'
     ONCOLIST_NAME = '20200818-oncoKBcancerGeneList.tsv'
+    ONCOTREE_NAME = '20201201-OncoTree.txt'
     MUTATION_NONSYN_NAME = 'mutation_types.nonsynonymous'
     GENELIST_NAME = 'targeted_genelist.txt'
     TMBCOMP_NAME = 'tmbcomp.txt'
@@ -36,12 +37,7 @@ class configurer(logger):
         provenance = self.config[ini.SETTINGS][ini.PROVENANCE]
         project = self.config[ini.INPUTS][ini.STUDY_ID]
         donor = self.config[ini.INPUTS][ini.PATIENT]
-        try:
-            self.reader = provenance_reader(provenance, project, donor, log_level, log_path)
-        except MissingProvenanceError as err:
-            msg = "Cannot create provenance reader; file provenance updates will be omitted: "+str(err)
-            self.logger.warning(msg)
-            self.reader = None
+        self.reader = provenance_reader(provenance, project, donor, log_level, log_path)
 
     def find_data_files(self):
         data_files = {}
@@ -58,6 +54,7 @@ class configurer(logger):
         data_files[ini.GENE_BED] = s.get(ini.GENE_BED) if s.get(ini.GENE_BED) else os.path.join(data_dir, self.GENEBED_NAME)
         data_files[ini.GENOMIC_SUMMARY] = s.get(ini.GENOMIC_SUMMARY) if s.get(ini.GENOMIC_SUMMARY) else os.path.join(data_dir, constants.GENOMIC_SUMMARY_FILENAME)
         data_files[ini.ONCO_LIST] = s.get(ini.ONCO_LIST) if s.get(ini.ONCO_LIST) else os.path.join(data_dir, self.ONCOLIST_NAME)
+        data_files[ini.ONCOTREE_DATA] = s.get(ini.ONCOTREE_DATA) if s.get(ini.ONCOTREE_DATA) else os.path.join(data_dir, self.ONCOTREE_NAME)
         data_files[ini.MUTATION_NONSYN] = s.get(ini.MUTATION_NONSYN) if s.get(ini.MUTATION_NONSYN) else os.path.join(data_dir, self.MUTATION_NONSYN_NAME)
         data_files[ini.GENE_LIST] = s.get(ini.GENE_LIST) if s.get(ini.GENE_LIST) else os.path.join(data_dir, self.GENELIST_NAME)
         data_files[ini.TMBCOMP] = s.get(ini.TMBCOMP) if s.get(ini.TMBCOMP) else os.path.join(data_dir, self.TMBCOMP_NAME)
@@ -65,16 +62,11 @@ class configurer(logger):
 
     def discover(self):
         updates = {}
-        if self.reader:
-            updates[ini.GEP_FILE] = self.reader.parse_gep_path()
-            updates[ini.MAF_FILE] = self.reader.parse_maf_path()
-            updates[ini.MAVIS_FILE] = self.reader.parse_mavis_path()
-            updates[ini.SEQUENZA_FILE] = self.reader.parse_sequenza_path()
-        else:
-            updates[ini.GEP_FILE] = None
-            updates[ini.MAF_FILE] = None
-            updates[ini.MAVIS_FILE] = None
-            updates[ini.SEQUENZA_FILE] = None
+        updates[ini.GEP_FILE] = self.reader.parse_gep_path()
+        updates[ini.MAF_FILE] = self.reader.parse_maf_path()
+        updates[ini.MAVIS_FILE] = self.reader.parse_mavis_path()
+        updates[ini.SEQUENZA_FILE] = self.reader.parse_sequenza_path()
+        updates.update(self.reader.find_identifiers())
         updates.update(self.find_data_files())
         return updates
 
@@ -100,7 +92,18 @@ class configurer(logger):
 
 class provenance_reader(logger):
 
-    def __init__(self, provenance_path, project, donor,  log_level=logging.WARNING, log_path=None):
+    # internal dictionary keys
+    ROOT_SAMPLE_NAME_KEY = 'root_sample_name'
+    LIMS_ID_KEY = 'lims_id'
+
+    # parent sample attribute keys
+    GEO_EXTERNAL_NAME = 'geo_external_name'
+    GEO_GROUP_ID = 'geo_group_id'
+    GEO_TISSUE_ORIGIN_ID = 'geo_tissue_origin'
+    GEO_TISSUE_TYPE_ID = 'geo_tissue_type'
+    GEO_TUBE_ID = 'geo_tube_id'
+
+    def __init__(self, provenance_path, project, donor, log_level=logging.WARNING, log_path=None):
         # get provenance for the project and donor
         # if this proves to be too slow, can preprocess the file using zgrep
         self.logger = self.get_logger(log_level, __name__, log_path)
@@ -146,6 +149,76 @@ class provenance_reader(logger):
             raise MissingProvenanceError(msg)
         return sorted(rows, key=lambda row: row[index.LAST_MODIFIED], reverse=True)[0]
 
+    def _get_unique_value(self, attributes, key, reference=False):
+        """
+        Attributes is a list of dictionaries, each corresponding to one or more provenance rows
+        First, check the tissue type ID to determine if the row refers to a reference (ie. normal)
+        Then:
+        - If key is present, confirm that all members of the list have the same value
+        - If key does not exist for any member, return None
+        """
+        value_set = set()
+        for row in attributes:
+            if reference and row.get(self.GEO_TISSUE_TYPE_ID)!='R':
+                continue
+            elif not reference and row.get(self.GEO_TISSUE_TYPE_ID)=='R':
+                continue
+            else:
+                value_set.add(row.get(key))
+        if len(value_set)==0:
+            self.logger.warning("No value found for {}, reference = {1}".format(key, reference))
+            value = None
+        elif len(value_set)==1:
+            value = list(value_set).pop()
+        else:
+            msg = "Value for '{0}' with reference={1} is not unique: Found {2}".format(key, reference, value_set)
+            self.logger.error(msg)
+            raise ValueError(msg)
+        return value
+
+    def _id_normal(self, attributes, patient_id):
+        self.logger.debug("Finding normal ID")
+        normal_id = self._id_tumour_normal(attributes, patient_id, reference=True)
+        self.logger.debug("Found normal ID: {0}".format(normal_id))
+        return normal_id
+
+    def _id_patient(self, attributes):
+        # parse the external name to get patient ID
+        patient_id_raw = self._get_unique_value(attributes, self.GEO_EXTERNAL_NAME)
+        return re.split(',', patient_id_raw).pop(0)
+
+    def _id_tumour(self, attributes, patient_id):
+        self.logger.debug("Finding tumour ID")
+        tumour_id = self._id_tumour_normal(attributes, patient_id, reference=False)
+        self.logger.debug("Found tumour ID: {0}".format(tumour_id))
+        return tumour_id
+
+    def _id_tumour_normal(self, attributes, patient_id, reference):
+        """
+        Find the tumour or normal ID -- process differs only by value of the 'reference' flag
+        tube ID > group_ID > constructed, in order of preference
+        """
+        tube_id = self._get_unique_value(attributes, self.GEO_TUBE_ID, reference)
+        group_id = self._get_unique_value(attributes, self.GEO_GROUP_ID, reference)
+        tissue_origin = self._get_unique_value(attributes, self.GEO_TISSUE_ORIGIN_ID)
+        if reference:
+            tissue_type = 'R'
+        else:
+            tissue_type = self._get_unique_value(attributes, self.GEO_TISSUE_TYPE_ID)
+        constructed_id = "{0}_{1}_{2}".format(patient_id, tissue_origin, tissue_type)
+        self.logger.debug("ID candidates: {0}, {1}, {2}".format(tube_id, group_id, constructed_id))
+        if tube_id:
+            chosen_id = tube_id
+        elif group_id:
+            msg = "Could not find {0}, using {1} for ID".format(self.GEO_TUBE_ID, self.GEO_GROUP_ID)
+            self.logger.warning(msg)
+            chosen_id = group_id
+        else:
+            msg = "Could not find {0} or {1}, constructing alternate ID".format(self.GEO_TUBE_ID, self.GEO_GROUP_ID)
+            self.logger.warning(msg)
+            chosen_id = ref_constructed_id
+        return chosen_id
+
     def _parse_default(self, workflow, metatype, pattern):
         # get most recent file of given workflow, metatype, and file path pattern
         # self._filter_* functions return an iterator
@@ -162,6 +235,49 @@ class provenance_reader(logger):
             self.logger.warning(msg)
             path = None
         return path
+
+    def _parse_row_attributes(self, row):
+        """
+        Input is a triple of (name, attributes, lims_id) from a provenance row
+        Parse the attributes string and return a dictionary
+        """
+        attrs = {}
+        attrs[self.ROOT_SAMPLE_NAME_KEY] = row[0]
+        attrs[self.LIMS_ID_KEY] = row[2]
+        for entry in re.split(';', row[1]):
+            pair = re.split('=', entry)
+            if len(pair)!=2:
+                msg = "Expected attribute of the form KEY=VALUE, found '{0}'".format(entry)
+                self.logger.error(msg)
+                raise ValueError(msg)
+            attrs[pair[0]] = pair[1]
+        self.logger.debug("Found row attributes: {0}".format(attrs))
+        return attrs
+
+    def find_identifiers(self):
+        """
+        Find the tumour/normal/patient identifiers from file provenance
+        """
+        # start by finding unique combinations of name/attributes/LIMS_ID
+        provenance_subset = set()
+        for row in self.provenance:
+            columns = (
+                row[index.ROOT_SAMPLE_NAME],
+                row[index.PARENT_SAMPLE_ATTRIBUTES],
+                row[index.LIMS_ID]
+            )
+            provenance_subset.add(columns)
+        # parse the 'parent sample attributes' value and get a list of dictionaries
+        # then use the list to compute identifiers
+        attributes = [self._parse_row_attributes(row) for row in provenance_subset]
+        patient_id = self._id_patient(attributes)
+        identifiers = {
+            ini.TUMOUR_ID: self._id_tumour(attributes, patient_id),
+            ini.NORMAL_ID: self._id_normal(attributes, patient_id),
+            ini.PATIENT_ID: patient_id
+        }
+        self.logger.debug("Found identifiers: {0}".format(identifiers))
+        return identifiers
 
     def parse_gep_path(self):
         return self._parse_default('rsem', 'application/octet-stream', '\.results$')
