@@ -44,7 +44,8 @@ class TestBase(unittest.TestCase):
         test_dir = os.path.dirname(os.path.realpath(__file__))
         self.data_dir = os.path.realpath(os.path.join(test_dir, 'data'))
         # specify all non-public data paths relative to self.sup_dir
-        self.sup_dir = os.environ.get('DJERBA_TEST_DATA')
+        sup_dir_var = 'DJERBA_TEST_DATA'
+        self.sup_dir = os.environ.get(sup_dir_var)
         if not (self.sup_dir):
             raise RuntimeError('Need to specify environment variable {0}'.format(sup_dir_var))
         elif not os.path.isdir(self.sup_dir):
@@ -52,8 +53,6 @@ class TestBase(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
         self.bed_path = os.path.join(self.sup_dir, 'S31285117_Regions.bed')
-        self.maf_name = 'PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.mutect2.tumor_only.filtered.unmatched.maf.gz'
-        self.expected_maf_path = os.path.join(self.sup_dir, self.maf_name)
         self.project = 'PASS01'
         self.donor = 'PANX_1249'
         self.rScriptDir = os.path.realpath(os.path.join(test_dir, '../lib/djerba/R/'))
