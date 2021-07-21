@@ -1,5 +1,0 @@
-{
-    "analysis_unit": "FOO_0001_Lv_M_123-456-789_LCM3",
-    "mastersheet_path": "insert path here at test runtime",
-    "reader_class": "mastersheet_reader"
-}

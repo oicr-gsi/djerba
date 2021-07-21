@@ -44,6 +44,9 @@ Djerba has a `setup.py` script which will install its source code and Python dep
 
 ## Testing
 
+- Clone the [Djerba test data repository](https://bitbucket.oicr.on.ca/projects/GSI/repos/djerba_test_data/browse)
+- Set the environment variable `DJERBA_TEST_DATA` to the test data directory path
+- Ensure all prerequisites are available
 - Run unit tests with `src/test/test.py`
 
 ## Installation
