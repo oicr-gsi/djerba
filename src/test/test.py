@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import configparser
+import gzip
 import hashlib
 import json
 import jsonschema
@@ -43,17 +44,11 @@ class TestBase(unittest.TestCase):
         test_dir = os.path.dirname(os.path.realpath(__file__))
         self.data_dir = os.path.realpath(os.path.join(test_dir, 'data'))
         # specify all non-public data paths relative to self.sup_dir
-        # modified test provenance file gets its own environment variable
         self.sup_dir = os.environ.get('DJERBA_TEST_DATA')
-        self.provenance_path = os.environ.get('DJERBA_TEST_PROVENANCE')
         if not (self.sup_dir):
             raise RuntimeError('Need to specify environment variable {0}'.format(sup_dir_var))
         elif not os.path.isdir(self.sup_dir):
             raise OSError("Supplementary directory path '{0}' is not a directory".format(self.sup_dir))
-        if not self.provenance_path:
-            raise RuntimeError('Need to specify environment variable {0}'.format(provenance_var))
-        elif not os.path.isfile(self.provenance_path):
-            raise OSError("Provenance path '{0}' is not a file".format(self.provenance_path))
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
         self.bed_path = os.path.join(self.sup_dir, 'S31285117_Regions.bed')
@@ -87,14 +82,6 @@ class TestBase(unittest.TestCase):
             out_paths.append(out_path)
         return out_paths
 
-class TestSetup(TestBase):
-    """Test the setup methods"""
-
-    @unittest.SkipTest
-    def test_config_setup(self):
-        out_dir = '/u/ibancarz/tmp/djerba/config_test_20210720'
-        self.write_config_files(out_dir)
-
 class TestConfigure(TestBase):
 
     def test_configurer(self):
@@ -115,7 +102,7 @@ class TestExtractor(TestBase):
         config = configparser.ConfigParser()
         config.read(self.default_ini)
         config.read(self.config_full)
-        out_dir = '/u/ibancarz/workspace/djerba/TestExtractor'  # self.tmp_dir
+        out_dir = self.tmp_dir
         clinical_data_path = os.path.join(out_dir, 'data_clinical.txt')
         summary_path = os.path.join(out_dir, 'summary.json')
         test_extractor = extractor(config, out_dir, log_level=logging.ERROR)
@@ -146,7 +133,7 @@ class TestMain(TestBase):
             self.quiet = True
 
     def test_main(self):
-        out_dir = '/u/ibancarz/workspace/djerba/TestMain'
+        out_dir = self.tmp_dir
         ini_path = self.config_user
         config_path = os.path.join(out_dir, 'config.ini')
         html_path = os.path.join(out_dir, 'report.html')
@@ -172,7 +159,7 @@ class TestRender(TestBase):
         # TODO omit this test until wkhtmltopdf is installed
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
         #out_dir = self.tmp_dir
-        out_dir = '/u/ibancarz/workspace/djerba/TestRender'
+        out_dir = self.tmp_dir
         out_path = os.path.join(out_dir, 'djerba_test.pdf')
         test_renderer = pdf_renderer(log_level=logging.ERROR)
         test_renderer.run(in_path, out_path)
@@ -181,11 +168,11 @@ class TestRender(TestBase):
 class TestReport(TestBase):
 
     def test_parser(self):
-        report_dir = os.path.join(self.sup_dir, 'report_for_parser_test')
+        report_dir = os.path.join(self.sup_dir, 'report_example')
         parser = report_directory_parser(report_dir)
         summary = parser.get_summary()
-        expected_path = os.path.join(self.sup_dir, 'expected_summary.json')
-        with open(expected_path) as expected_file:
+        expected_path = os.path.join(self.sup_dir, 'expected_summary.json.gz')
+        with gzip.open(expected_path) as expected_file:
             expected = json.loads(expected_file.read())
         self.assertEqual(summary, expected)
 
@@ -326,7 +313,7 @@ class TestWrapper(TestBase):
     def test(self):
         config = configparser.ConfigParser()
         config.read(self.config_full)
-        out_dir = '/u/ibancarz/workspace/djerba/TestWrapper' # TODO change to tempdir
+        out_dir = self.tmp_dir
         test_wrapper = r_script_wrapper(config, gamma=500, report_dir=out_dir)
         result = test_wrapper.run()
         self.assertEqual(0, result.returncode)
