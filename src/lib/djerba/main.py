@@ -23,6 +23,9 @@ class main(logger):
         source_dir = os.path.dirname(os.path.realpath(__file__))
         self.ini_defaults = os.path.join(source_dir, constants.DATA_DIR_NAME, self.INI_DEFAULT_NAME)
 
+    def _get_pdf_name(self, args):
+        return args.pdf_name if args.pdf_name else "{0}.pdf".format(args.unit)
+
     def read_config(self, ini_path):
         """Read INI config from the given path"""
         ini_config = configparser.ConfigParser()
@@ -46,7 +49,8 @@ class main(logger):
         elif args.subparser_name == constants.HTML:
             html_renderer(log_level=lv, log_path=lp).run(args.dir, args.html)
         elif args.subparser_name == constants.PDF:
-            pdf_renderer(log_level=lv, log_path=lp).run(args.html, args.pdf)
+            pdf = os.path.join(args.pdf_dir, self._get_pdf_name(args))
+            pdf_renderer(log_level=lv, log_path=lp).run(args.html, pdf, args.unit)
         elif args.subparser_name == constants.ALL:
             config = self.read_config(args.ini)
             config_validator(lv, lp).validate_minimal(config)
@@ -69,7 +73,8 @@ class main(logger):
             config_validator(log_level, log_path).validate_full(full_config)
             extractor(full_config, report_dir, log_level=log_level, log_path=log_path).run(args.json)
             html_renderer(log_level=log_level, log_path=log_path).run(report_dir, html_path)
-            pdf_renderer(log_level=log_level, log_path=log_path).run(html_path, args.pdf)
+            pdf = os.path.join(args.pdf_dir, self._get_pdf_name(args))
+            pdf_renderer(log_level=log_level, log_path=log_path).run(html_path, pdf, args.unit)
 
     def validate_args(self, args):
         """Validate the command-line arguments"""
@@ -89,10 +94,10 @@ class main(logger):
             v.validate_output_file(args.html)
         elif args.subparser_name == constants.PDF:
             v.validate_input_file(args.html)
-            v.validate_output_file(args.pdf)
+            v.validate_output_dir(args.pdf_dir)
         elif args.subparser_name == constants.ALL:
             v.validate_input_file(args.ini)
-            v.validate_output_file(args.pdf)
+            v.validate_output_dir(args.pdf_dir)
             if args.ini_out:
                 v.validate_output_file(args.ini_out)
             if args.dir:

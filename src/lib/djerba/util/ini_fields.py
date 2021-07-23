@@ -8,6 +8,7 @@ DISCOVERED = 'discovered'
 
 # parameter names
 AMPL = 'ampl'
+ANALYSIS_UNIT = 'analysis_unit'
 BED_PATH = 'bed_path'
 DATA_DIR = 'data_dir'
 ENSCON = 'enscon'
@@ -49,6 +50,7 @@ WHIZBAM_URL = 'whizbam_url'
 # schema to represent required structure for the INI file
 SCHEMA = {
     DISCOVERED: [
+        ANALYSIS_UNIT,
         DATA_DIR,
         ENSCON,
         ENTCON,

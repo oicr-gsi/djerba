@@ -88,7 +88,7 @@ class TestConfigure(TestBase):
         config.read(self.default_ini)
         config.read(self.config_user)
         config['settings']['provenance'] = os.path.join(self.sup_dir, 'pass01_panx_provenance.original.tsv.gz')
-        test_configurer = configurer(config, log_level=logging.ERROR)
+        test_configurer = configurer(config)
         out_dir = self.tmp_dir
         out_path = os.path.join(out_dir, 'config_test_output.ini')
         test_configurer.run(out_path)
@@ -105,25 +105,25 @@ class TestExtractor(TestBase):
         clinical_data_path = os.path.join(out_dir, 'data_clinical.txt')
         summary_path = os.path.join(out_dir, 'summary.json')
         test_extractor = extractor(config, out_dir, log_level=logging.ERROR)
-        # do not test R script here; done by TestWrapper
-        test_extractor.run(summary_path, r_script=False)
+        # do not test R script or JSON here; done respectively by TestWrapper and TestReport
+        test_extractor.run(json_path=None, r_script=False)
         self.assertTrue(os.path.exists(clinical_data_path))
-        self.assertTrue(os.path.exists(summary_path))
         self.assertEqual(self.getMD5(clinical_data_path), '02003366977d66578c097295f12f4638')
-        self.assertEqual(self.getMD5(summary_path), '9945fa608f8960964e967f7aecd8fda7')
 
 class TestMain(TestBase):
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
 
-        def __init__(self, ini_path, ini_out_path, html_path, pdf_path, work_dir):
+        def __init__(self, ini_path, ini_out_path, html_path, pdf_dir, work_dir, analysis_unit):
             self.ini_out = ini_out_path
             self.dir = work_dir
             self.html = html_path
             self.ini = ini_path
-            self.pdf = pdf_path
+            self.pdf_dir = pdf_dir
+            self.unit = analysis_unit
             self.json = None
+            self.pdf_name = None
             self.subparser_name = constants.ALL
             # logging
             self.log_path = None
@@ -136,12 +136,15 @@ class TestMain(TestBase):
         ini_path = self.config_user
         config_path = os.path.join(out_dir, 'config.ini')
         html_path = os.path.join(out_dir, 'report.html')
-        pdf_path = os.path.join(out_dir, 'report.pdf')
+        pdf_dir = out_dir
         work_dir = os.path.join(out_dir, 'report')
+        analysis_unit = 'test_unit'
         if not os.path.exists(work_dir):
             os.mkdir(work_dir)
-        args = self.mock_args(ini_path, config_path, html_path, pdf_path, work_dir)
+        args = self.mock_args(ini_path, config_path, html_path, pdf_dir, work_dir, analysis_unit)
         main().run(args)
+        self.assertTrue(os.path.exists(html_path))
+        # TODO check for PDF when this is implemented
 
 class TestRender(TestBase):
 

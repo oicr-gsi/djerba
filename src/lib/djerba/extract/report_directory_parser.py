@@ -9,6 +9,7 @@ import csv
 import json
 import logging
 import os
+import re
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 from djerba.util.logger import logger
@@ -20,7 +21,8 @@ class report_directory_parser(logger):
     BODY = 'body'
 
     # files in report directory
-    DATA_CLINICAL = 'data_clinical.txt'
+    ANALYSIS_UNIT = constants.ANALYSIS_UNIT_FILENAME
+    DATA_CLINICAL = constants.CLINICAL_DATA_FILENAME
     DATA_CNA_ONCOKBGENES_NONDIPLOID_ANNOTATED = 'data_CNA_oncoKBgenes_nonDiploid_annotated.txt'
     DATA_CNA_ONCOKBGENES_NONDIPLOID = 'data_CNA_oncoKBgenes_nonDiploid.txt'
     DATA_CNA = 'data_CNA.txt'
@@ -34,11 +36,12 @@ class report_directory_parser(logger):
     DATA_MUTATIONS_EXTENDED_ONCOGENIC = 'data_mutations_extended_oncogenic.txt'
     DATA_MUTATIONS_EXTENDED = 'data_mutations_extended.txt'
     DATA_SEGMENTS = 'data_segments.txt'
-    GENOMIC_SUMMARY = 'genomic_summary.txt'
+    GENOMIC_SUMMARY = constants.GENOMIC_SUMMARY_FILENAME
     SIGS_WEIGHTS = 'sigs/weights.txt'
 
     # list of all input files
     ALL_CONTENTS = [
+        ANALYSIS_UNIT,
         DATA_CLINICAL, 
         DATA_CNA_ONCOKBGENES_NONDIPLOID_ANNOTATED, 
         DATA_CNA_ONCOKBGENES_NONDIPLOID, 
@@ -105,24 +108,44 @@ class report_directory_parser(logger):
         self.summary = {}
         for filename in self.ALL_CONTENTS:
             in_path = os.path.join(report_dir, filename)
-            if filename == self.DATA_CLINICAL:
-                self.summary[filename] = self.read_clinical_data(in_path)
+            key = re.split('\.[A-Za-z]+$', filename).pop(0)
+            if filename == self.ANALYSIS_UNIT:
+                self.summary[key] = self.read_analysis_unit(in_path)
+            elif filename == self.DATA_CLINICAL:
+                self.summary[key] = self.read_clinical_data(in_path)
             elif filename == self.GENOMIC_SUMMARY:
-                self.summary[filename] = self.read_genomic_summary(in_path)
+                self.summary[key] = self.read_genomic_summary(in_path)
             elif filename == self.DATA_SEGMENTS:
-                self.summary[filename] = self.read_data_file(in_path, self.SEGMENTS_MODE)
+                self.summary[key] = self.read_data_file(in_path, self.SEGMENTS_MODE)
             elif filename in self.INTEGER_INPUTS:
-                self.summary[filename] = self.read_data_file(in_path, self.INTEGER_DICT_MODE)
+                self.summary[key] = self.read_data_file(in_path, self.INTEGER_DICT_MODE)
             elif filename in self.FLOAT_INPUTS:
-                self.summary[filename] = self.read_data_file(in_path, self.FLOAT_DICT_MODE)
+                self.summary[key] = self.read_data_file(in_path, self.FLOAT_DICT_MODE)
             elif filename in self.FLOAT_LIST_DICT_INPUTS:
-                self.summary[filename] = self.read_data_file(in_path, self.FLOAT_LIST_DICT_MODE)
+                self.summary[key] = self.read_data_file(in_path, self.FLOAT_LIST_DICT_MODE)
             else:
-                self.summary[filename] = self.read_data_file(in_path, self.TSV_MODE)
+                self.summary[key] = self.read_data_file(in_path, self.TSV_MODE)
             self.logger.debug("Read data from {0}".format(in_path))
 
     def get_summary(self):
         return self.summary
+
+    def read_analysis_unit(self, in_path):
+        """
+        Read the analysis unit
+        Record a dummy header for consistency with other inputs
+        """
+        with open(in_path) as in_file:
+            analysis_unit = in_file.read().strip()
+        header = [ini.ANALYSIS_UNIT]
+        body = {ini.ANALYSIS_UNIT: analysis_unit}
+        data = {
+            self.HEADER: header,
+            self.BODY: body
+        }
+        self.logger.debug("Read analysis_unit from {0}".format(in_path))
+        return data
+
 
     def read_clinical_data(self, in_path):
         """

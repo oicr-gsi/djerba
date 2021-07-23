@@ -81,6 +81,7 @@ So, there are three different ways to configure a `data_dir` parameter such as `
 
 | Section        | Name          | Source | Notes                                          |
 |----------------|---------------|-------------| -----------------------------------|
+| `[discovered]` | `analysis_unit`    | File provenance | Identifier for a matched set of samples; see below          |
 | `[discovered]` | `data_dir`    | Djerba installation | Directory for miscellaneous data files          |
 | `[discovered]` | `enscon`    | `data_dir` | Ensembl conversion file                    |
 | `[discovered]` | `entcon`    | `data_dir` | Entrez conversion file                    |
@@ -109,6 +110,22 @@ So, there are three different ways to configure a `data_dir` parameter such as `
 | `[settings]`   | `provenance` | defaults.ini | Path to file provenance report  |
 | `[settings]`   | `tcga_data` | defaults.ini | Path to TCGA data directory  |
 | `[settings]`   | `whizbam_url` | defaults.ini | Base URL of OICR Whizbam site; used to construct links in report  |
+
+#### Note on `analysis_unit`
+
+The "analysis unit" identifies a matched set of samples for clinical analysis:
+1. A merged DNA tumour sample
+2. A merged matched DNA reference sample
+3. A merged "matched" RNA sequencing sample
+
+By default, the group ID is used as the matching criterion for DNA and RNA samples from the same donor. Merged libraries with the same group ID are analysed together. The analysis unit string is defined as `${DONOR_ID}_${TISSUE_ORIGIN}_${TISSUE_TYPE}_${GROUP_ID}`. For example:
+```
+Merged DNA library: OCT_010118_Ut_P_WG_OCT-01-0118-TS
+Merged RNA library: OCT_010118_Ut_P_WT_OCT-01-0118-TS
+     Analysis unit: OCT_010118_Ut_P_OCT-01-0118-TS
+```
+
+The analysis unit is not needed to generate the HTML report; but by convention, it is used as the filename for the final PDF report, and inserted into the PDF footer. If the analysis unit is not supplied by the user, Djerba will attempt to construct a standard value from file provenance, and raise an error if it is unable to do so.
 
 ## Summary
 

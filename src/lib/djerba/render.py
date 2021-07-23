@@ -46,13 +46,14 @@ class pdf_renderer(logger):
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
 
-    def run(self, html_path, pdf_path):
+    def run(self, html_path, pdf_path, analysis_unit):
         """Render HTML to PDF"""
         #create options, which are arguments to wkhtmltopdf for footer generation
         options = {
             'footer-right': '[page] of [topage]',
             'footer-left': '[date]',
-            'footer-center': '${ANALYSIS_UNIT}' # TODO ensure env variable is present
+            'footer-center': analysis_unit
         }
+        self.logger.info('Writing PDF for analysis unit "{0}" to {1}'.format(analysis_unit, pdf_path))
         self.logger.warning('Omitting PDF output; renderer still in development')
         #pdfkit.from_url(html_path, pdf_path, options = options)

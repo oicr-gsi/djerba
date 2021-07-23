@@ -10,6 +10,7 @@ from shutil import copyfile
 
 from djerba.extract.sequenza import sequenza_extractor
 from djerba.extract.r_script_wrapper import r_script_wrapper
+from djerba.extract.report_directory_parser import report_directory_parser
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 from djerba.util.logger import logger
@@ -24,10 +25,6 @@ class extractor(logger):
 
     CANCER_TYPE = 'cancer_type'
     CANCER_TYPE_DESCRIPTION = 'cancer_description'
-    CLINICAL_DATA_FILENAME = 'data_clinical.txt'
-    MAF_PARAMS_FILENAME = 'maf_params.json'
-    SAMPLE_META_PARAMS_FILENAME = 'sample_meta_params.json'
-    SEQUENZA_PARAMS_FILENAME = 'sequenza_params.json'
 
     def __init__(self, config, report_dir, log_level=logging.WARNING, log_path=None):
         self.config = config
@@ -40,11 +37,6 @@ class extractor(logger):
     def _remove_oncotree_suffix(self, entry):
         """Remove a suffix of the form ' (PAAD)' or ' (AMLCBFBMYH11)' from an oncotree entry"""
         return re.sub(' \(\w+\)$', '', entry)
-
-    def _write_json(self, data, out_path):
-        with open(out_path, 'w') as out:
-            out.write(json.dumps(data, sort_keys=True, indent=4))
-        return out_path
 
     def get_description(self):
         """
@@ -117,6 +109,7 @@ class extractor(logger):
             self.run_r_script(sequenza_params) # can omit the R script for testing
         self.write_clinical_data(sequenza_params, self.get_description())
         self.write_genomic_summary()
+        self.write_analysis_unit()
         if json_path:
             self.write_json_summary(json_path)
         self.logger.info("Djerba extract step finished; extracted metrics written to {0}".format(self.report_dir))
@@ -127,6 +120,15 @@ class extractor(logger):
             self.config, gamma, self.report_dir, log_level=self.log_level, log_path=self.log_path
         )
         wrapper.run()
+
+    def write_analysis_unit(self):
+        """
+        Write the analysis unit in its own (small) file
+        Not needed for HTML generation, but used for the PDF report
+        """
+        out_path = os.path.join(self.report_dir, constants.ANALYSIS_UNIT_FILENAME)
+        with open(out_path, 'w') as out_file:
+            print(self.config[ini.DISCOVERED][ini.ANALYSIS_UNIT], file=out_file)
 
     def write_clinical_data(self, sequenza_params, oncotree_info):
         """Write the data_clinical.txt file; based on legacy format from CGI-Tools"""
@@ -162,7 +164,7 @@ class extractor(logger):
         # capitalization changed from CGI-Tools: PCT_v7_ABOVE_80x -> PCT_V7_ABOVE_80X
         head = "\t".join([x[0] for x in data])
         body = "\t".join([str(x[1]) for x in data])
-        out_path = os.path.join(self.report_dir, self.CLINICAL_DATA_FILENAME)
+        out_path = os.path.join(self.report_dir, constants.CLINICAL_DATA_FILENAME)
         with open(out_path, 'w') as out_file:
             print(head, file=out_file)
             print(body, file=out_file)
@@ -179,15 +181,7 @@ class extractor(logger):
 
     def write_json_summary(self, out_path):
         """Write a JSON summary of extracted data"""
-        # TODO write summary, in keeping with an updated Elba schema
-        # for now, this is just a placeholder
-        self.logger.warning(
-            'Writing placeholder to {0}; JSON summary not yet implemented'.format(out_path)
-        )
-        data = {
-            'summary': 'JSON summary goes here'
-        }
-        return self._write_json(data, out_path)
+        report_directory_parser(self.report_dir).write_json(out_path)
 
 class maf_extractor:
 

@@ -32,14 +32,18 @@ def get_parser():
     render_parser.add_argument('-H', '--html', metavar='PATH', required=True, help='Path for HTML output')
     publish_parser = subparsers.add_parser(constants.PDF, help='read Djerba HTML output and write PDF')
     publish_parser.add_argument('-H', '--html', metavar='PATH', required=True, help='Path for HTML input')
-    publish_parser.add_argument('-p', '--pdf', metavar='PATH', required=True, help='Path for PDF output')
+    publish_parser.add_argument('-n', '--pdf-name', metavar='NAME', help='Filename for PDF output; overrides default from analysis unit')
+    publish_parser.add_argument('-p', '--pdf-dir', metavar='DIR', required=True, help='Directory for PDF output; default filename derived from analysis unit')
+    publish_parser.add_argument('-u', '--unit', metavar='PATH', required=True, help='Analysis unit identifier')
     all_parser = subparsers.add_parser(constants.ALL, help='run all Djerba steps and output PDF')
     all_parser.add_argument('-D', '--dir', metavar='DIR', help='Directory for extracted metrics output') # uses temporary dir if not supplied
     all_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with user inputs')
-    all_parser.add_argument('-o', '--ini_out', metavar='PATH', help='Path for output of fully specified INI config file')
+    all_parser.add_argument('-o', '--ini-out', metavar='PATH', help='Path for output of fully specified INI config file')
     all_parser.add_argument('-j', '--json', metavar='PATH', help='Output path for JSON summary')
+    all_parser.add_argument('-n', '--pdf-name', metavar='NAME', help='Filename for PDF output; overrides default from analysis unit')
     all_parser.add_argument('-H', '--html', metavar='PATH', help='Path for HTML output') # uses temporary dir if not supplied
-    all_parser.add_argument('-p', '--pdf', metavar='PATH', required=True, help='Path for PDF output')
+    all_parser.add_argument('-p', '--pdf-dir', metavar='DIR', required=True, help='Directory for PDF output; default filename derived from analysis unit')
+    all_parser.add_argument('-u', '--unit', metavar='PATH', required=True, help='Analysis unit identifier')
     return parser
 
 if __name__ == '__main__':
