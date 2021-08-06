@@ -41,7 +41,7 @@ The INI file is divided into a number of sections, with headers in square bracke
 
 ### Required parameters
 
-All required parameters go in the `[inputs]` section. The "Source" column lists data source, as per version 2.0 of SOP "TM-005: Data Review and Reporting Procedure"; where "req" denotes the requisition system, and "user" denotes the member of CGI staff compiling the report.
+All required parameters go in the `[inputs]` section. The "Source" column lists data source, as per SOP "TM-005: Data Review and Reporting Procedure"; where "req" denotes the requisition system, and "user" denotes the member of CGI staff compiling the report.
 
 | Name                   | Source | Notes                                                    |
 |------------------------|----------|------------------------------------------------|

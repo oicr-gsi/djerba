@@ -14,7 +14,9 @@ Djerba is named for an [island](https://en.wikipedia.org/wiki/Djerba) off the co
 
 ### `djerba.py`
 
-This is the main script to run Djerba and generate reports. It has the following modes:
+This is the main script to run Djerba and generate reports.
+
+#### Script modes
 
 - `configure`: Read the INI config file supplied by the user; gather inputs from file provenance and other sources; write a fully-specified INI
 - `extract`: Take a fully-specified INI as input; extract metrics and write to a reporting directory; optionally, write a JSON summary of metrics
@@ -23,6 +25,12 @@ This is the main script to run Djerba and generate reports. It has the following
 - `all`: Run the complete reporting process, starting with user-supplied INI and finishing with PDF. Intermediate outputs such as HTML are optional.
 
 Run with `--help` for more information.
+
+#### INI configuration
+
+The `configure`, `extract` and `all` modes require an INI configuration file. Some parameters are required, while others are optional.
+
+Documentation of file format and required parameters: [ini.md](./doc/ini.md)
 
 ### `sequenza_gamma_selector.py`
 
@@ -37,10 +45,9 @@ The following OICR [Modulator](https://gitlab.oicr.on.ca/ResearchIT/modulator) e
 - `oncokb-annotator/2.0`
 - `cbioportal/0.1`
 - `rmarkdown/0.1m`
+- `wkhtmltopdf/0.12.6`
 
 Djerba has a `setup.py` script which will install its source code and Python dependencies. Production releases will be installed as an environment modules in Modulator. Alternatively, install as described under `Installation`.
-
-**TODO**: PDF conversion requires [wkhtmltopdf](https://github.com/JazzCore/python-pdfkit/wiki/Installing-wkhtmltopdf), not yet installed in Modulator
 
 ## Testing
 
@@ -94,6 +101,7 @@ Djerba has a `setup.py` script which will install its source code and Python dep
 - **2019-01 to 2020-09**: The [cbioportal_tools](https://github.com/oicr-gsi/cbioportal_tools) project, also known as Janus, was a precursor to Djerba. This project was intended to produce reporting directories for [cBioPortal](https://cbioportal.org/).
 - **2020-09**: The Djerba repository is created to replace `cbioportal_tools`. Its scope includes CGI clinical reporting as well as cBioPortal. Development releases, up to and including 0.0.4, address both output formats.
 - **2021-05**: The scope of Djerba changes, to focus exclusively on CGI clinical reports and drop support for cBioPortal. Major overhaul and simplification of code, prior to release 0.0.5. Data processing for cBioPortal remains an option for the future.
+- **2021-08**: Production release of Djerba for CGI reports.
 
 ## Copyright and License
 

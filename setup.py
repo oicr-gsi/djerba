@@ -63,6 +63,6 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/oicr-gsi/djerba",
-    keywords=['cancer', 'bioinformatics', 'cBioPortal'],
+    keywords=['cancer', 'bioinformatics'],
     license='GPL 3.0',
 )

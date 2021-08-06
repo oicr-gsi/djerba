@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-173: Logging for Djerba
+- GCGI-174: Report min/max purity in gamma selector
+- GCGI-175: INI documentation and validation
+- GCGI-176: Prototype JSON summary output
+- GCGI-177: Clean up and document Djerba test data; make tests portable
+- GCGI-178: Automatically discover tumour/normal/patient ID and OncoTree data
+- GCGI-180: PDF generation with wkhtmltopdf
+- GCGI-182: Generate the "analysis unit" string for the final PDF report
+
 ## v0.0.5a: 2021-07-07
 - Alpha release of a new version of Djerba, for generating CGI reports only
 - For initial testing and evaluation only; *not* intended for production
