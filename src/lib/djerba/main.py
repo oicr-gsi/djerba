@@ -47,7 +47,8 @@ class main(logger):
             config_validator(lv, lp).validate_full(config)
             extractor(config, args.dir, log_level=lv, log_path=lp).run(args.json)
         elif args.subparser_name == constants.HTML:
-            html_renderer(log_level=lv, log_path=lp).run(args.dir, args.html)
+            html_path = os.path.realpath(args.html) # needed to correctly render links
+            html_renderer(log_level=lv, log_path=lp).run(args.dir, html_path)
         elif args.subparser_name == constants.PDF:
             pdf = os.path.join(args.pdf_dir, self._get_pdf_name(args))
             pdf_renderer(log_level=lv, log_path=lp).run(args.html, pdf, args.unit)
@@ -60,9 +61,11 @@ class main(logger):
         """Run all Djerba operations in sequence"""
         with tempfile.TemporaryDirectory(prefix='djerba_all_') as tmp:
             ini_path_full = args.ini_out if args.ini_out else os.path.join(tmp, 'djerba_config_full.ini')
-            html_path = args.html if args.html else os.path.join(tmp, 'djerba_report.html')
+            # *must* use absolute HTML path to render links correctly in Rmarkdown
+            html_path = os.path.realpath(args.html) if args.html else os.path.join(tmp, 'djerba_report.html')
+            json_path = os.path.realpath(args.json) if args.json else None
             if args.dir:
-                report_dir = args.dir
+                report_dir = os.path.realpath(args.dir)
             else:
                 report_dir = os.path.join(tmp, 'report')
                 os.mkdir(report_dir)

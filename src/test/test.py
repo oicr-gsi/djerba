@@ -156,15 +156,14 @@ class TestRender(TestBase):
         # TODO check file contents; need to omit the report date etc.
         self.assertTrue(os.path.exists(outPath))
 
-    @unittest.SkipTest
     def test_pdf(self):
-        # TODO omit this test until wkhtmltopdf is installed
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
-        #out_dir = self.tmp_dir
         out_dir = self.tmp_dir
         out_path = os.path.join(out_dir, 'djerba_test.pdf')
-        test_renderer = pdf_renderer(log_level=logging.ERROR)
-        test_renderer.run(in_path, out_path)
+        analysis_unit = 'PANX_1249_Lv_M_100-PM-013_LCM5__TEST__'
+        test_renderer = pdf_renderer()
+        test_renderer.run(in_path, out_path, analysis_unit)
+        # TODO check file contents; need to omit the report date etc.
         self.assertTrue(os.path.exists(out_path))
 
 class TestReport(TestBase):
