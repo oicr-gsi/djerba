@@ -142,9 +142,10 @@ class TestMain(TestBase):
         if not os.path.exists(work_dir):
             os.mkdir(work_dir)
         args = self.mock_args(ini_path, config_path, html_path, pdf_dir, work_dir, analysis_unit)
-        main().run(args)
+        main(args).run()
         self.assertTrue(os.path.exists(html_path))
-        # TODO check for PDF when this is implemented
+        pdf_path = os.path.join(pdf_dir, analysis_unit+'.pdf')
+        self.assertTrue(os.path.exists(pdf_path))
 
 class TestRender(TestBase):
 

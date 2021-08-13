@@ -35,6 +35,12 @@ def get_parser():
     publish_parser.add_argument('-n', '--pdf-name', metavar='NAME', help='Filename for PDF output; overrides default from analysis unit')
     publish_parser.add_argument('-p', '--pdf-dir', metavar='DIR', required=True, help='Directory for PDF output; default filename derived from analysis unit')
     publish_parser.add_argument('-u', '--unit', metavar='PATH', required=True, help='Analysis unit identifier')
+    draft_parser = subparsers.add_parser(constants.DRAFT, help='run configure/extract/html steps; output HTML')
+    draft_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with user inputs')
+    draft_parser.add_argument('-o', '--ini-out', metavar='PATH', help='Path for output of fully specified INI config file')
+    draft_parser.add_argument('-D', '--dir', metavar='DIR', required=True, help='Directory for output of metrics')
+    draft_parser.add_argument('-j', '--json', metavar='PATH', help='Output path for JSON summary')
+    draft_parser.add_argument('-H', '--html', metavar='PATH', required=True, help='Path for HTML output')
     all_parser = subparsers.add_parser(constants.ALL, help='run all Djerba steps and output PDF')
     all_parser.add_argument('-D', '--dir', metavar='DIR', help='Directory for extracted metrics output') # uses temporary dir if not supplied
     all_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with user inputs')
@@ -51,4 +57,4 @@ if __name__ == '__main__':
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         sys.exit(1)
-    main().run(parser.parse_args())
+    main(parser.parse_args()).run()
