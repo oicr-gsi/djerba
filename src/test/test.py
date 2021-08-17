@@ -123,7 +123,7 @@ class TestMain(TestBase):
             self.pdf_dir = pdf_dir
             self.unit = analysis_unit
             self.json = None
-            self.pdf_name = None
+            self.pdf = None
             self.subparser_name = constants.ALL
             # logging
             self.log_path = None

@@ -31,16 +31,17 @@ class main(logger):
         self.logger = self.get_logger(self.log_level, __name__, self.log_path)
         self.validate_args(args) # checks subparser and args are valid
 
-    def _get_pdf_name(self):
-        if self.args.pdf_name:
-            name = self.args.pdf_name
-        elif self.args.unit:
+    def _get_pdf_path(self):
+        if self.args.pdf:
+            pdf_path = self.args.pdf
+        elif self.args.pdf_dir and self.args.unit:
             name = "{0}.pdf".format(self.args.unit)
+            pdf_path = os.path.join(self.args.pdf_dir, name)
         else:
-            msg = "Must specify a PDF name or analysis unit"
+            msg = "Must specify either a PDF output path, or a directory and analysis unit"
             self.logger.error(msg)
-            raise ValueError(msg)
-        return name
+            raise RuntimeError(msg)
+        return pdf_path
 
     def read_config(self, ini_path):
         """Read INI config from the given path"""
@@ -64,8 +65,11 @@ class main(logger):
             html_path = os.path.realpath(self.args.html) # needed to correctly render links
             html_renderer(self.log_level, self.log_path).run(self.args.dir, html_path)
         elif self.args.subparser_name == constants.PDF:
-            pdf = os.path.join(self.args.pdf_dir, self._get_pdf_name())
-            pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, self.args.unit)
+            pdf = self._get_pdf_path()
+            if self.args.no_footer:
+                pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, footer=False)
+            else:
+                pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, self.args.unit)
         elif self.args.subparser_name == constants.DRAFT:
             config = self.read_config(self.args.ini)
             cv.validate_minimal(config)
@@ -94,7 +98,7 @@ class main(logger):
             config_validator(self.log_level, self.log_path).validate_full(full_config)
             extractor(full_config, report_dir, self.log_level, self.log_path).run(json_path)
             html_renderer(self.log_level, self.log_path).run(report_dir, html_path)
-            pdf = os.path.join(self.args.pdf_dir, self._get_pdf_name())
+            pdf = self._get_pdf_path()
             pdf_renderer(self.log_level, self.log_path).run(html_path, pdf, self.args.unit)
 
     def run_draft(self, input_config):
@@ -144,7 +148,10 @@ class main(logger):
             v.validate_output_file(args.html)
         elif args.subparser_name == constants.PDF:
             v.validate_input_file(args.html)
-            v.validate_output_dir(args.pdf_dir)
+            if args.pdf:
+                v.validate_output_file(args.pdf)
+            elif args.dir: # --pdf overrides --dir
+                v.validate_output_dir(args.dir)
         elif args.subparser_name == constants.DRAFT:
             v.validate_input_file(args.ini)
             v.validate_output_dir(args.dir)
