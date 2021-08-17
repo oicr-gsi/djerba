@@ -19,12 +19,29 @@ class main(logger):
     
     INI_DEFAULT_NAME = 'defaults.ini'
     
-    def __init__(self):
+    def __init__(self, args):
         source_dir = os.path.dirname(os.path.realpath(__file__))
         self.ini_defaults = os.path.join(source_dir, constants.DATA_DIR_NAME, self.INI_DEFAULT_NAME)
+        self.args = args
+        self.log_level = self.get_log_level(self.args.debug, self.args.verbose, self.args.quiet)
+        self.log_path = self.args.log_path
+        if self.log_path:
+            # we are verifying the log path, so don't write output there yet
+            path_validator(self.log_level).validate_output_file(self.log_path)
+        self.logger = self.get_logger(self.log_level, __name__, self.log_path)
+        self.validate_args(args) # checks subparser and args are valid
 
-    def _get_pdf_name(self, args):
-        return args.pdf_name if args.pdf_name else "{0}.pdf".format(args.unit)
+    def _get_pdf_path(self):
+        if self.args.pdf:
+            pdf_path = self.args.pdf
+        elif self.args.pdf_dir and self.args.unit:
+            name = "{0}.pdf".format(self.args.unit)
+            pdf_path = os.path.join(self.args.pdf_dir, name)
+        else:
+            msg = "Must specify either a PDF output path, or a directory and analysis unit"
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        return pdf_path
 
     def read_config(self, ini_path):
         """Read INI config from the given path"""
@@ -33,52 +50,89 @@ class main(logger):
         ini_config.read(ini_path) # overwrites the defaults
         return ini_config
 
-    def run(self, args):
+    def run(self):
         """Main method to run Djerba"""
-        self.validate_args(args)
-        lv = self.get_log_level(args.debug, args.verbose, args.quiet)
-        lp = args.log_path
-        if args.subparser_name == constants.CONFIGURE:
-            config = self.read_config(args.ini)
-            config_validator(lv, lp).validate_minimal(config)
-            configurer(config, log_level=lv, log_path=lp).run(args.out)
-        elif args.subparser_name == constants.EXTRACT:
-            config = self.read_config(args.ini)
-            config_validator(lv, lp).validate_full(config)
-            extractor(config, args.dir, log_level=lv, log_path=lp).run(args.json)
-        elif args.subparser_name == constants.HTML:
-            html_renderer(log_level=lv, log_path=lp).run(args.dir, args.html)
-        elif args.subparser_name == constants.PDF:
-            pdf = os.path.join(args.pdf_dir, self._get_pdf_name(args))
-            pdf_renderer(log_level=lv, log_path=lp).run(args.html, pdf, args.unit)
-        elif args.subparser_name == constants.ALL:
-            config = self.read_config(args.ini)
-            config_validator(lv, lp).validate_minimal(config)
-            self.run_all(config, args, lv, lp)
+        cv = config_validator(self.log_level, self.log_path)
+        if self.args.subparser_name == constants.CONFIGURE:
+            config = self.read_config(self.args.ini)
+            cv.validate_minimal(config)
+            configurer(config, self.log_level, self.log_path).run(self.args.out)
+        elif self.args.subparser_name == constants.EXTRACT:
+            config = self.read_config(self.args.ini)
+            cv.validate_full(config)
+            extractor(config, self.args.dir, self.log_level, self.log_path).run(self.args.json)
+        elif self.args.subparser_name == constants.HTML:
+            html_path = os.path.realpath(self.args.html) # needed to correctly render links
+            html_renderer(self.log_level, self.log_path).run(self.args.dir, html_path)
+        elif self.args.subparser_name == constants.PDF:
+            pdf = self._get_pdf_path()
+            if self.args.no_footer:
+                pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, footer=False)
+            else:
+                pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, self.args.unit)
+        elif self.args.subparser_name == constants.DRAFT:
+            config = self.read_config(self.args.ini)
+            cv.validate_minimal(config)
+            self.run_draft(config)
+        elif self.args.subparser_name == constants.ALL:
+            config = self.read_config(self.args.ini)
+            cv.validate_minimal(config)
+            self.run_all(config)
 
-    def run_all(self, input_config, args, log_level, log_path):
+    def run_all(self, input_config):
         """Run all Djerba operations in sequence"""
         with tempfile.TemporaryDirectory(prefix='djerba_all_') as tmp:
-            ini_path_full = args.ini_out if args.ini_out else os.path.join(tmp, 'djerba_config_full.ini')
-            html_path = args.html if args.html else os.path.join(tmp, 'djerba_report.html')
-            if args.dir:
-                report_dir = args.dir
+            ini_path_full = self.args.ini_out if self.args.ini_out else os.path.join(tmp, 'djerba_config_full.ini')
+            # *must* use absolute HTML path to render links correctly in Rmarkdown
+            html_path = os.path.realpath(self.args.html) if self.args.html else os.path.join(tmp, 'djerba_report.html')
+            json_path = os.path.realpath(self.args.json) if self.args.json else None
+            if self.args.dir:
+                report_dir = os.path.realpath(self.args.dir)
             else:
                 report_dir = os.path.join(tmp, 'report')
                 os.mkdir(report_dir)
-            configurer(input_config, log_level=log_level, log_path=log_path).run(ini_path_full)
+            configurer(input_config, self.log_level, self.log_path).run(ini_path_full)
             full_config = configparser.ConfigParser()
             full_config.read(ini_path_full)
             # auto-generated full_config should be OK, but run the validator as a sanity check
-            config_validator(log_level, log_path).validate_full(full_config)
-            extractor(full_config, report_dir, log_level=log_level, log_path=log_path).run(args.json)
-            html_renderer(log_level=log_level, log_path=log_path).run(report_dir, html_path)
-            pdf = os.path.join(args.pdf_dir, self._get_pdf_name(args))
-            pdf_renderer(log_level=log_level, log_path=log_path).run(html_path, pdf, args.unit)
+            config_validator(self.log_level, self.log_path).validate_full(full_config)
+            extractor(full_config, report_dir, self.log_level, self.log_path).run(json_path)
+            html_renderer(self.log_level, self.log_path).run(report_dir, html_path)
+            pdf = self._get_pdf_path()
+            pdf_renderer(self.log_level, self.log_path).run(html_path, pdf, self.args.unit)
+
+    def run_draft(self, input_config):
+        """
+        Run Djerba operations up to and including HTML; do not render PDF
+        Reporting directory and HTML paths are required
+        """
+        with tempfile.TemporaryDirectory(prefix='djerba_draft_') as tmp:
+            ini_path_full = self.args.ini_out if self.args.ini_out else os.path.join(tmp, 'djerba_config_full.ini')
+            json_path = os.path.realpath(self.args.json) if self.args.json else None
+            if self.args.dir:
+                report_dir = os.path.realpath(self.args.dir)
+            else:
+                msg = "Report directory path is required in {0} mode".format(constants.DRAFT)
+                self.logger.error(msg)
+                raise ValueError(msg)
+            if self.args.html:
+                # *must* use absolute HTML path to render links correctly in Rmarkdown
+                html_path = os.path.realpath(self.args.html)
+            else:
+                msg = "HTML path is required in {0} mode".format(constants.DRAFT)
+                self.logger.error(msg)
+                raise ValueError(msg)
+            configurer(input_config, self.log_level, self.log_path).run(ini_path_full)
+            full_config = configparser.ConfigParser()
+            full_config.read(ini_path_full)
+            # auto-generated full_config should be OK, but run the validator as a sanity check
+            config_validator(self.log_level, self.log_path).validate_full(full_config)
+            extractor(full_config, report_dir, self.log_level, self.log_path).run(json_path)
+            html_renderer(self.log_level, self.log_path).run(report_dir, html_path)
 
     def validate_args(self, args):
         """Validate the command-line arguments"""
-        v = path_validator()
+        v = path_validator(self.log_level, self.log_path)
         if args.log_path:
             v.validate_output_file(args.log_path)
         if args.subparser_name == constants.CONFIGURE:
@@ -94,7 +148,18 @@ class main(logger):
             v.validate_output_file(args.html)
         elif args.subparser_name == constants.PDF:
             v.validate_input_file(args.html)
-            v.validate_output_dir(args.pdf_dir)
+            if args.pdf:
+                v.validate_output_file(args.pdf)
+            elif args.dir: # --pdf overrides --dir
+                v.validate_output_dir(args.dir)
+        elif args.subparser_name == constants.DRAFT:
+            v.validate_input_file(args.ini)
+            v.validate_output_dir(args.dir)
+            v.validate_output_file(args.html)
+            if args.ini_out:
+                v.validate_output_file(args.ini_out)
+            if args.json:
+                v.validate_output_file(args.json)
         elif args.subparser_name == constants.ALL:
             v.validate_input_file(args.ini)
             v.validate_output_dir(args.pdf_dir)

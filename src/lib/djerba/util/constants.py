@@ -34,6 +34,7 @@ WHIZBAM_URL = 'Whizbam_URL'
 
 # script mode names
 CONFIGURE = 'configure'
+DRAFT = 'draft'
 EXTRACT = 'extract'
 HTML = 'html'
 PDF = 'pdf'

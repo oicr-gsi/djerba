@@ -42,7 +42,7 @@ class configurer(logger):
     def find_data_files(self):
         data_files = {}
         if self.config[ini.DISCOVERED].get(ini.DATA_DIR):
-            data_dir = self.config[ini.SETTINGS][ini.DATA_DIR]
+            data_dir = self.config[ini.DISCOVERED][ini.DATA_DIR]
         else:
             data_dir = os.path.join(os.path.dirname(__file__), constants.DATA_DIR_NAME)
         data_dir = os.path.realpath(data_dir)

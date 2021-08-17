@@ -52,68 +52,81 @@ class config_validator(logger):
         self.logger.info("Successfully validated minimal Djerba config")
         return valid
 
-class path_validator:
+class path_validator(logger):
 
     """Check that inputs are valid; if not, raise an error"""
 
-    # TODO instead of raising an error, could log outcome and return boolean
+    def __init__(self, log_level=logging.WARNING, log_path=None):
+        self.logger = self.get_logger(log_level, __name__, log_path)
 
-    def __init__(self):
-        pass        
+    def _process_error_message(self, message):
+        """If message is not empty, log it and raise an error"""
+        if message:
+            valid = False
+            self.logger.error(message)
+            raise OSError(message)
+        else:
+            valid = True
+        return valid
 
     def validate_input_dir(self, path):
         """Confirm an input directory exists and is readable"""
-        valid = False
-        if not os.path.exists(path):
-            raise OSError("Input path %s does not exist" % path)
+        if not path:
+            error = "Input path '%s' is not a valid path value" % path
+        elif not os.path.exists(path):
+            error = "Input path %s does not exist" % path
         elif not os.path.isdir(path):
-            raise OSError("Input path %s is not a directory" % path)
+            error = "Input path %s is not a directory" % path
         elif not os.access(path, os.R_OK):
-            raise OSError("Input path %s is not readable" % path)
+            error = "Input path %s is not readable" % path
         else:
-            valid = True
-        return valid
+            error = None
+        return self._process_error_message(error)
     
     def validate_input_file(self, path):
         """Confirm an input file exists and is readable"""
-        valid = False
-        if not os.path.exists(path):
-            raise OSError("Input path %s does not exist" % path)
+        if not path:
+            error = "Input path '%s' is not a valid path value" % path
+        elif not os.path.exists(path):
+            error = "Input path %s does not exist" % path
         elif not os.path.isfile(path):
-            raise OSError("Input path %s is not a file" % path)
+            error = "Input path %s is not a file" % path
         elif not os.access(path, os.R_OK):
-            raise OSError("Input path %s is not readable" % path)
+            error = "Input path %s is not readable" % path
         else:
-            valid = True
-        return valid
+            error = None
+        return self._process_error_message(error)
         
     def validate_output_dir(self, path):
         """Confirm an output directory exists and is writable"""
-        valid = False
-        if not os.path.exists(path):
-            raise OSError("Output path %s does not exist" % path)
+        if not path:
+            error = "Output path '%s' is not a valid path value" % path
+        elif not os.path.exists(path):
+            error = "Output path %s does not exist" % path
         elif not os.path.isdir(path):
-            raise OSError("Output path %s is not a directory" % path)
+            error = "Output path %s is not a directory" % path
         elif not os.access(path, os.W_OK):
-            raise OSError("Output path %s is not writable" % path)
+            error = "Output path %s is not writable" % path
         else:
-            valid = True
-        return valid
+            error = None
+        return self._process_error_message(error)
 
     def validate_output_file(self, path):
         """Confirm an output file can be written"""
-        valid = False
-        if os.path.isdir(path):
-            raise OSError("Output file %s cannot be a directory" % path)
+        error = None
+        if not path:
+            error = "Output path '%s' is not a valid path value" % path
+        elif os.path.isdir(path):
+            error = "Output file %s cannot be a directory" % path
         elif os.path.exists(path) and not os.access(path, os.W_OK):
-            raise OSError("Output file %s exists and is not writable" % path)
-        else:
+            error = "Output file %s exists and is not writable" % path
+        elif not os.path.exists(path):
             parent = os.path.dirname(os.path.realpath(path))
             try:
                 valid = self.validate_output_dir(parent)
             except OSError as err:
-                raise OSError("Parent directory of output path %s is not valid" % path) from err
-        return valid
+                error = "Parent directory of output path {0} is not valid: {1}".format(path, err)
+        return self._process_error_message(error)
     
     def validate_present(self, config, section, param):
         # throws a KeyError if param is missing; TODO informative error message

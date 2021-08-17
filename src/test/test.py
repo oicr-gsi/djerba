@@ -123,7 +123,7 @@ class TestMain(TestBase):
             self.pdf_dir = pdf_dir
             self.unit = analysis_unit
             self.json = None
-            self.pdf_name = None
+            self.pdf = None
             self.subparser_name = constants.ALL
             # logging
             self.log_path = None
@@ -142,9 +142,10 @@ class TestMain(TestBase):
         if not os.path.exists(work_dir):
             os.mkdir(work_dir)
         args = self.mock_args(ini_path, config_path, html_path, pdf_dir, work_dir, analysis_unit)
-        main().run(args)
+        main(args).run()
         self.assertTrue(os.path.exists(html_path))
-        # TODO check for PDF when this is implemented
+        pdf_path = os.path.join(pdf_dir, analysis_unit+'.pdf')
+        self.assertTrue(os.path.exists(pdf_path))
 
 class TestRender(TestBase):
 
@@ -156,15 +157,14 @@ class TestRender(TestBase):
         # TODO check file contents; need to omit the report date etc.
         self.assertTrue(os.path.exists(outPath))
 
-    @unittest.SkipTest
     def test_pdf(self):
-        # TODO omit this test until wkhtmltopdf is installed
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
-        #out_dir = self.tmp_dir
         out_dir = self.tmp_dir
         out_path = os.path.join(out_dir, 'djerba_test.pdf')
-        test_renderer = pdf_renderer(log_level=logging.ERROR)
-        test_renderer.run(in_path, out_path)
+        analysis_unit = 'PANX_1249_Lv_M_100-PM-013_LCM5__TEST__'
+        test_renderer = pdf_renderer()
+        test_renderer.run(in_path, out_path, analysis_unit)
+        # TODO check file contents; need to omit the report date etc.
         self.assertTrue(os.path.exists(out_path))
 
 class TestReport(TestBase):
@@ -189,7 +189,7 @@ class TestSequenzaExtractor(TestBase):
         """Test the command-line script to find gamma"""
         json_path = os.path.join(self.tmp_dir, 'sequenza_gamma.json')
         cmd = [
-            "sequenza_solutions.py",
+            "sequenza_explorer.py",
             "--in", self.zip_path,
             "--json", json_path,
             "--gamma-selection",

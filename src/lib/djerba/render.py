@@ -46,14 +46,39 @@ class pdf_renderer(logger):
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
 
-    def run(self, html_path, pdf_path, analysis_unit):
+    # Running the PDF renderer requires the wkhtmltopdf binary on the PATH
+    # This can be done by loading the wkhtmltopdf environment module:
+    # https://gitlab.oicr.on.ca/ResearchIT/modulator/-/blob/master/code/gsi/70_wkhtmltopdf.yaml
+
+    # Current implementation runs with javascript disabled
+    # If javascript is enabled, PDF rendering attempts a callout to https://mathjax.rstudio.com
+    # With Internet access, this works; otherwise, it times out after ~4 minutes and PDF rendering completes
+    # But rendering without Javascript runs successfully with no apparent difference in output
+    # So it is disabled, to allow fast running on a machine without Internet (eg. cluster node)
+    # See https://github.com/wkhtmltopdf/wkhtmltopdf/issues/4506
+    # An alternative solution would be changing the HTML generation to omit unnecessary Javascript
+
+    def run(self, html_path, pdf_path, analysis_unit=None, footer=True):
         """Render HTML to PDF"""
-        #create options, which are arguments to wkhtmltopdf for footer generation
-        options = {
-            'footer-right': '[page] of [topage]',
-            'footer-left': '[date]',
-            'footer-center': analysis_unit
-        }
-        self.logger.info('Writing PDF for analysis unit "{0}" to {1}'.format(analysis_unit, pdf_path))
-        self.logger.warning('Omitting PDF output; renderer still in development')
-        #pdfkit.from_url(html_path, pdf_path, options = options)
+        # create options, which are arguments to wkhtmltopdf for footer generation
+        # the 'quiet' option suppresses chatter to STDOUT
+        self.logger.info('Writing PDF to {0}'.format(pdf_path))
+        if footer:
+            self.logger.info("Including footer text for CGI clinical report")
+            if not analysis_unit:
+                self.logger.warning("No analysis unit specified; using placeholder for PDF footer")
+                analysis_unit = "ANALYSIS_UNIT_PLACEHOLDER"
+            options = {
+                'footer-right': '[page] of [topage]',
+                'footer-center': analysis_unit,
+                'quiet': '',
+                'disable-javascript': ''
+            }
+        else:
+            self.logger.info("Omitting footer text")
+            options = {
+                'quiet': '',
+                'disable-javascript': ''
+            }
+        pdfkit.from_url(html_path, pdf_path, options = options)
+        self.logger.info('Finished writing PDF')

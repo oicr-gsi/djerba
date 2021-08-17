@@ -17,7 +17,7 @@ setup(
     version=package_version,
     scripts=[
         'src/bin/djerba.py',
-        'src/bin/sequenza_solutions.py'
+        'src/bin/sequenza_explorer.py'
     ],
     packages=find_packages(where=package_root),
     package_dir={'' : package_root},
