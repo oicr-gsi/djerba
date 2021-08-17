@@ -11,7 +11,7 @@ from djerba.extract.sequenza import sequenza_extractor
 
 def get_parser():
     parser = argparse.ArgumentParser(
-        description='sequenza_solutions: Read purity/ploidy and apply the CGI heuristic to choose a gamma parameter'
+        description='sequenza_explorer: Review purity/ploidy and apply the CGI heuristic to choose a gamma parameter'
     )
     parser.add_argument(
         '-i', '--in', metavar='PATH', required=True, dest='in_path',

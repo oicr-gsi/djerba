@@ -189,7 +189,7 @@ class TestSequenzaExtractor(TestBase):
         """Test the command-line script to find gamma"""
         json_path = os.path.join(self.tmp_dir, 'sequenza_gamma.json')
         cmd = [
-            "sequenza_solutions.py",
+            "sequenza_explorer.py",
             "--in", self.zip_path,
             "--json", json_path,
             "--gamma-selection",
