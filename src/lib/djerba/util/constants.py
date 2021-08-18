@@ -33,6 +33,7 @@ VARIANT_CLASSIFICATION = 'Variant_Classification'
 WHIZBAM_URL = 'Whizbam_URL'
 
 # script mode names
+SETUP = 'setup'
 CONFIGURE = 'configure'
 DRAFT = 'draft'
 EXTRACT = 'extract'

@@ -295,6 +295,32 @@ class TestSequenzaExtractor(TestBase):
         with self.assertRaises(SequenzaExtractionError):
             seqex.extract_seg_file(self.tmp_dir, gamma=999999)
 
+class TestSetup(TestBase):
+
+    class mock_setup_args:
+        """Use instead of argparse to store params for testing"""
+
+        def __init__(self, base, name):
+            self.base = base
+            self.name = name
+            self.subparser_name = constants.SETUP
+            # logging
+            self.log_path = None
+            self.debug = False
+            self.verbose = False
+            self.quiet = True
+
+    def test_setup(self):
+        out_dir = self.tmp_dir
+        name = 'PANX_1249'
+        args = self.mock_setup_args(out_dir, name)
+        main(args).run()
+        work_dir = os.path.join(out_dir, name)
+        report_dir = os.path.join(work_dir, 'report')
+        config_path = os.path.join(work_dir, 'config.ini')
+        for output in (work_dir, report_dir, config_path):
+            self.assertTrue(os.path.exists(output))
+
 class TestValidator(TestBase):
 
     def test_config_validator(self):

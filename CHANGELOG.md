@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-186: Setup mode in main script
+
 ## v0.0.6: 2021-08-19
 
 - Patch release for a misnamed variable in main.py.

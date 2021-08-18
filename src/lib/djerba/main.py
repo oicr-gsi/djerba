@@ -4,6 +4,7 @@ import configparser
 import logging
 import os
 import tempfile
+from shutil import copyfile
 
 import djerba.util.constants as constants
 from djerba.configure import configurer
@@ -16,12 +17,16 @@ from djerba.util.validator import config_validator, path_validator
 class main(logger):
 
     """Main class to run Djerba"""
-    
+
+    CONFIG_NAME = 'config.ini'
     INI_DEFAULT_NAME = 'defaults.ini'
+    INI_TEMPLATE_NAME = 'config_template.ini'
+    REPORT_SUBDIR_NAME = 'report'
     
     def __init__(self, args):
         source_dir = os.path.dirname(os.path.realpath(__file__))
         self.ini_defaults = os.path.join(source_dir, constants.DATA_DIR_NAME, self.INI_DEFAULT_NAME)
+        self.ini_template = os.path.join(source_dir, constants.DATA_DIR_NAME, self.INI_TEMPLATE_NAME)
         self.args = args
         self.log_level = self.get_log_level(self.args.debug, self.args.verbose, self.args.quiet)
         self.log_path = self.args.log_path
@@ -53,7 +58,9 @@ class main(logger):
     def run(self):
         """Main method to run Djerba"""
         cv = config_validator(self.log_level, self.log_path)
-        if self.args.subparser_name == constants.CONFIGURE:
+        if self.args.subparser_name == constants.SETUP:
+            self.run_setup()
+        elif self.args.subparser_name == constants.CONFIGURE:
             config = self.read_config(self.args.ini)
             cv.validate_minimal(config)
             configurer(config, self.log_level, self.log_path).run(self.args.out)
@@ -130,12 +137,24 @@ class main(logger):
             extractor(full_config, report_dir, self.log_level, self.log_path).run(json_path)
             html_renderer(self.log_level, self.log_path).run(report_dir, html_path)
 
+    def run_setup(self):
+        """Set up an empty working directory for a CGI report"""
+        working_dir_path = os.path.join(self.args.base, self.args.name)
+        self.logger.info("Setting up working directory in {0}".format(working_dir_path))
+        os.mkdir(working_dir_path)
+        os.mkdir(os.path.join(working_dir_path, self.REPORT_SUBDIR_NAME))
+        config_dest = os.path.join(working_dir_path, self.CONFIG_NAME)
+        copyfile(self.ini_template, config_dest)
+        self.logger.info("Finished setting up working directory")
+
     def validate_args(self, args):
         """Validate the command-line arguments"""
         v = path_validator(self.log_level, self.log_path)
         if args.log_path:
             v.validate_output_file(args.log_path)
-        if args.subparser_name == constants.CONFIGURE:
+        if args.subparser_name == constants.SETUP:
+            v.validate_output_dir(args.base)
+        elif args.subparser_name == constants.CONFIGURE:
             v.validate_input_file(args.ini)
             v.validate_output_file(args.out)
         elif args.subparser_name == constants.EXTRACT:
