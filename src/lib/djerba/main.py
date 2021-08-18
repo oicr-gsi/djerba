@@ -150,8 +150,8 @@ class main(logger):
             v.validate_input_file(args.html)
             if args.pdf:
                 v.validate_output_file(args.pdf)
-            elif args.dir: # --pdf overrides --dir
-                v.validate_output_dir(args.dir)
+            elif args.pdf_dir: # --pdf overrides --pdf-dir
+                v.validate_output_dir(args.pdf_dir)
         elif args.subparser_name == constants.DRAFT:
             v.validate_input_file(args.ini)
             v.validate_output_dir(args.dir)
@@ -162,7 +162,6 @@ class main(logger):
                 v.validate_output_file(args.json)
         elif args.subparser_name == constants.ALL:
             v.validate_input_file(args.ini)
-            v.validate_output_dir(args.pdf_dir)
             if args.ini_out:
                 v.validate_output_file(args.ini_out)
             if args.dir:
@@ -171,6 +170,10 @@ class main(logger):
                 v.validate_output_file(args.json)
             if args.html:
                 v.validate_output_file(args.html)
+            if args.pdf:
+                v.validate_output_file(args.pdf)
+            elif args.pdf_dir: # --pdf overrides --pdf-dir
+                v.validate_output_dir(args.pdf_dir)
         else:
             # shouldn't happen, but handle this case for completeness
             raise ValueError("Unknown subparser: "+args.subparser_name)

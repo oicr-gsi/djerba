@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.0.6: 2021-08-19
+
+- Patch release for a misnamed variable in main.py.
+
 ## v0.0.5: 2021-08-17
 
 - Release for final testing and validation before going into production
