@@ -32,6 +32,7 @@ def get_parser():
     extract_parser.add_argument('-j', '--json', metavar='PATH', help='Output path for JSON summary')
     render_parser = subparsers.add_parser(constants.HTML, help='read metrics directory and write HTML')
     render_parser.add_argument('-D', '--dir', metavar='DIR', required=True, help='Metrics directory for input')
+    render_parser.add_argument('-f', '--failed', action='store_true', help='Produce report for a failed sample')
     render_parser.add_argument('-H', '--html', metavar='PATH', required=True, help='Path for HTML output')
     publish_parser = subparsers.add_parser(constants.PDF, help='read Djerba HTML output and write PDF')
     publish_parser.add_argument('-H', '--html', metavar='PATH', required=True, help='Path for HTML input')
@@ -40,6 +41,7 @@ def get_parser():
     publish_parser.add_argument('-P', '--pdf-dir', metavar='DIR', help='Directory for PDF output; default filename derived from analysis unit')
     publish_parser.add_argument('-u', '--unit', metavar='UNIT', help='Analysis unit identifier; required for --pdf-dir option')
     draft_parser = subparsers.add_parser(constants.DRAFT, help='run configure/extract/html steps; output HTML')
+    draft_parser.add_argument('-f', '--failed', action='store_true', help='Produce report for a failed sample')
     draft_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with user inputs')
     draft_parser.add_argument('-o', '--ini-out', metavar='PATH', help='Path for output of fully specified INI config file')
     draft_parser.add_argument('-D', '--dir', metavar='DIR', required=True, help='Directory for output of metrics')
@@ -47,6 +49,7 @@ def get_parser():
     draft_parser.add_argument('-H', '--html', metavar='PATH', required=True, help='Path for HTML output')
     all_parser = subparsers.add_parser(constants.ALL, help='run all Djerba steps and output PDF')
     all_parser.add_argument('-D', '--dir', metavar='DIR', help='Directory for extracted metrics output') # uses temporary dir if not supplied
+    all_parser.add_argument('-f', '--failed', action='store_true', help='Produce report for a failed sample')
     all_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with user inputs')
     all_parser.add_argument('-o', '--ini-out', metavar='PATH', help='Path for output of fully specified INI config file')
     all_parser.add_argument('-j', '--json', metavar='PATH', help='Output path for JSON summary')

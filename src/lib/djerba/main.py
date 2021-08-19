@@ -70,7 +70,7 @@ class main(logger):
             extractor(config, self.args.dir, self.log_level, self.log_path).run(self.args.json)
         elif self.args.subparser_name == constants.HTML:
             html_path = os.path.realpath(self.args.html) # needed to correctly render links
-            html_renderer(self.log_level, self.log_path).run(self.args.dir, html_path)
+            html_renderer(self.log_level, self.log_path).run(self.args.dir, html_path, self.args.failed)
         elif self.args.subparser_name == constants.PDF:
             pdf = self._get_pdf_path()
             if self.args.no_footer:
@@ -104,7 +104,7 @@ class main(logger):
             # auto-generated full_config should be OK, but run the validator as a sanity check
             config_validator(self.log_level, self.log_path).validate_full(full_config)
             extractor(full_config, report_dir, self.log_level, self.log_path).run(json_path)
-            html_renderer(self.log_level, self.log_path).run(report_dir, html_path)
+            html_renderer(self.log_level, self.log_path).run(report_dir, html_path, self.args.failed)
             pdf = self._get_pdf_path()
             pdf_renderer(self.log_level, self.log_path).run(html_path, pdf, self.args.unit)
 
@@ -135,7 +135,7 @@ class main(logger):
             # auto-generated full_config should be OK, but run the validator as a sanity check
             config_validator(self.log_level, self.log_path).validate_full(full_config)
             extractor(full_config, report_dir, self.log_level, self.log_path).run(json_path)
-            html_renderer(self.log_level, self.log_path).run(report_dir, html_path)
+            html_renderer(self.log_level, self.log_path).run(report_dir, html_path, self.args.failed)
 
     def run_setup(self):
         """Set up an empty working directory for a CGI report"""

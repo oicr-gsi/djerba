@@ -118,6 +118,7 @@ class TestMain(TestBase):
         def __init__(self, ini_path, ini_out_path, html_path, pdf_dir, work_dir, analysis_unit):
             self.ini_out = ini_out_path
             self.dir = work_dir
+            self.failed = False
             self.html = html_path
             self.ini = ini_path
             self.pdf_dir = pdf_dir
@@ -156,6 +157,9 @@ class TestRender(TestBase):
         html_renderer(log_level=logging.ERROR).run(reportDir, outPath)
         # TODO check file contents; need to omit the report date etc.
         self.assertTrue(os.path.exists(outPath))
+        failPath = os.path.join(outDir, 'djerba_fail_test.html')
+        html_renderer(log_level=logging.ERROR).run(reportDir, failPath, failed=True)
+        self.assertTrue(os.path.exists(failPath))
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')

@@ -18,16 +18,21 @@ class html_renderer(logger):
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
         r_script_dir = os.path.join(os.path.dirname(__file__), self.R_MARKDOWN_DIRNAME)
-        self.markdown_script = os.path.join(r_script_dir, 'html_report.Rmd')
+        self.default_script = os.path.join(r_script_dir, 'html_report_default.Rmd')
+        self.fail_script = os.path.join(r_script_dir, 'html_report_failed.Rmd')
 
-    def run(self, report_dir, out_path):
-        """Read the reporting directory, and use the Rmarkdown script to write HTML"""
+    def run(self, report_dir, out_path, failed=False):
+        """Read the reporting directory, and use an Rmarkdown script to write HTML"""
         # no need for double quotes around the '-e' argument; subprocess does not use a shell
-        render = "rmarkdown::render('{0}', output_file = '{1}')".format(self.markdown_script, out_path)
+        if failed:
+            markdown_script = self.fail_script
+        else:
+            markdown_script = self.default_script
+        render = "rmarkdown::render('{0}', output_file = '{1}')".format(markdown_script, out_path)
         cmd = [
             'Rscript', '-e',
             render,
-            report_dir
+            os.path.abspath(report_dir)
         ]
         self.logger.info('Rendering HTML with Rmarkdown command "'+' '.join(cmd)+'"')
         result = subprocess.run(cmd, capture_output=True)
