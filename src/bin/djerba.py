@@ -34,6 +34,7 @@ def get_parser():
     render_parser.add_argument('-D', '--dir', metavar='DIR', required=True, help='Metrics directory for input')
     render_parser.add_argument('-f', '--failed', action='store_true', help='Produce report for a failed sample')
     render_parser.add_argument('-H', '--html', metavar='PATH', required=True, help='Path for HTML output')
+    render_parser.add_argument('-t', '--target-coverage', metavar='COVER', type=int, choices=[40, 80], default=40, help='Target coverage depth for report footer')
     publish_parser = subparsers.add_parser(constants.PDF, help='read Djerba HTML output and write PDF')
     publish_parser.add_argument('-H', '--html', metavar='PATH', required=True, help='Path for HTML input')
     publish_parser.add_argument('-n', '--no-footer', action='store_true', help='Omit the CGI footer text; for general-purpose HTML to PDF conversion')
@@ -47,6 +48,7 @@ def get_parser():
     draft_parser.add_argument('-D', '--dir', metavar='DIR', required=True, help='Directory for output of metrics')
     draft_parser.add_argument('-j', '--json', metavar='PATH', help='Output path for JSON summary')
     draft_parser.add_argument('-H', '--html', metavar='PATH', required=True, help='Path for HTML output')
+    draft_parser.add_argument('-t', '--target-coverage', metavar='COVER', type=int, choices=[40, 80], default=40, help='Target coverage depth for report footer')
     all_parser = subparsers.add_parser(constants.ALL, help='run all Djerba steps and output PDF')
     all_parser.add_argument('-D', '--dir', metavar='DIR', help='Directory for extracted metrics output') # uses temporary dir if not supplied
     all_parser.add_argument('-f', '--failed', action='store_true', help='Produce report for a failed sample')
@@ -56,6 +58,7 @@ def get_parser():
     all_parser.add_argument('-H', '--html', metavar='PATH', help='Path for HTML output') # uses temporary dir if not supplied
     all_parser.add_argument('-p', '--pdf', metavar='PATH', help='Path for PDF output; overrides --pdf-dir option')
     all_parser.add_argument('-P', '--pdf-dir', metavar='DIR', required=True, help='Directory for PDF output; default filename derived from analysis unit')
+    all_parser.add_argument('-t', '--target-coverage', metavar='COVER', type=int, choices=[40, 80], default=40, help='Target coverage depth for report footer')
     all_parser.add_argument('-u', '--unit', metavar='PATH', required=True, help='Analysis unit identifier; required for --pdf-dir option')
     return parser
 

@@ -3,7 +3,7 @@ output:
   html_document:
     includes:
       before_body: header.html
-      after_body: footer.html
+      after_body: !expr Sys.getenv('DJERBA_RMD_AFTER_BODY')
     number sections: yes
 ---
 

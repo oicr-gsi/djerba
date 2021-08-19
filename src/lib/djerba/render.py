@@ -14,6 +14,9 @@ from djerba.util.logger import logger
 class html_renderer(logger):
 
     R_MARKDOWN_DIRNAME = 'R_markdown'
+    AFTER_BODY = 'DJERBA_RMD_AFTER_BODY'
+    FOOTER_40X = 'footer-40x.html'
+    FOOTER_80X = 'footer-80x.html'
 
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
@@ -21,13 +24,24 @@ class html_renderer(logger):
         self.default_script = os.path.join(r_script_dir, 'html_report_default.Rmd')
         self.fail_script = os.path.join(r_script_dir, 'html_report_failed.Rmd')
 
-    def run(self, report_dir, out_path, failed=False):
+    def run(self, report_dir, out_path, target_coverage, failed=False):
         """Read the reporting directory, and use an Rmarkdown script to write HTML"""
         # no need for double quotes around the '-e' argument; subprocess does not use a shell
         if failed:
             markdown_script = self.fail_script
         else:
             markdown_script = self.default_script
+        if target_coverage==40:
+            os.environ[self.AFTER_BODY] = self.FOOTER_40X
+        elif target_coverage==80:
+            os.environ[self.AFTER_BODY] = self.FOOTER_80X
+        else:
+            msg = "Unknown target coverage '{0}'".format(target_coverage)
+            self.logger.error(msg)
+            raise ValueError(msg)
+        self.logger.debug(
+            "Target coverage {0}, using footer file {1}".format(target_coverage, os.environ[self.AFTER_BODY])
+        )
         render = "rmarkdown::render('{0}', output_file = '{1}')".format(markdown_script, out_path)
         cmd = [
             'Rscript', '-e',

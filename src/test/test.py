@@ -122,6 +122,7 @@ class TestMain(TestBase):
             self.html = html_path
             self.ini = ini_path
             self.pdf_dir = pdf_dir
+            self.target_coverage = 40
             self.unit = analysis_unit
             self.json = None
             self.pdf = None
@@ -154,11 +155,11 @@ class TestRender(TestBase):
         outDir = self.tmp_dir
         outPath = os.path.join(outDir, 'djerba_test.html')
         reportDir = os.path.join(self.sup_dir, 'report_example')
-        html_renderer(log_level=logging.ERROR).run(reportDir, outPath)
+        html_renderer(log_level=logging.ERROR).run(reportDir, outPath, target_coverage=40)
         # TODO check file contents; need to omit the report date etc.
         self.assertTrue(os.path.exists(outPath))
         failPath = os.path.join(outDir, 'djerba_fail_test.html')
-        html_renderer(log_level=logging.ERROR).run(reportDir, failPath, failed=True)
+        html_renderer(log_level=logging.ERROR).run(reportDir, failPath, target_coverage=40, failed=True)
         self.assertTrue(os.path.exists(failPath))
 
     def test_pdf(self):

@@ -3,9 +3,10 @@ output:
   html_document:
     includes:
       before_body: header.html
-      after_body: footer-40x.html
+      after_body: !expr Sys.getenv('DJERBA_RMD_AFTER_BODY')
     number sections: yes
 ---
+# for expressions in header, see https://stackoverflow.com/questions/56681879/how-to-use-here-for-paths-to-css-before-body-and-after-body
 
 ```{r, echo = FALSE, message= FALSE, warning=FALSE}
 library(knitr)
