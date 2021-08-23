@@ -190,11 +190,12 @@ class TestSequenzaExtractor(TestBase):
         self.zip_path = os.path.join(self.sup_dir, 'PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip')
         self.expected_gamma_id = (400, 'primary')
 
-    def test_finder_script(self):
+    def test_gamma_script(self):
         """Test the command-line script to find gamma"""
         json_path = os.path.join(self.tmp_dir, 'sequenza_gamma.json')
         cmd = [
             "sequenza_explorer.py",
+            "read",
             "--in", self.zip_path,
             "--json", json_path,
             "--gamma-selection",
@@ -210,6 +211,20 @@ class TestSequenzaExtractor(TestBase):
             output = json.loads(out_file.read())
             expected = json.loads(exp_file.read())
             self.assertEqual(output, expected)
+
+    def test_locator_script(self):
+        """Test locator mode of the script"""
+        provenance = os.path.join(self.sup_dir, 'pass01_panx_provenance.original.tsv.gz')
+        cmd = [
+            "sequenza_explorer.py",
+            "locate",
+            "--file-provenance", provenance,
+            "--donor", "PANX_1249",
+            "--project", "PASS01"
+        ]
+        result = self.run_command(cmd)
+        expected_text = "/oicr/data/archive/seqware/seqware_analysis_12/hsqwprod/seqware-results/sequenza_2.1/21562306/PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip\n"
+        self.assertEqual(result.stdout, expected_text)
 
     def test_purity_ploidy(self):
         seqex = sequenza_extractor(self.zip_path)

@@ -3,6 +3,7 @@
 ## Unreleased
 - GCGI-186: Setup mode in main script
 - GCGI-187: Fail and target-coverage options for HTML generation
+- GCGI-189: Script option to locate Sequenza results in file provenance
 
 ## v0.0.6: 2021-08-19
 
