@@ -37,6 +37,7 @@ class report_directory_parser(logger):
     DATA_MUTATIONS_EXTENDED = 'data_mutations_extended.txt'
     DATA_SEGMENTS = 'data_segments.txt'
     GENOMIC_SUMMARY = constants.GENOMIC_SUMMARY_FILENAME
+    SEQUENZA_META = constants.SEQUENZA_META_FILENAME
     SIGS_WEIGHTS = 'sigs/weights.txt'
 
     # list of all input files
@@ -56,7 +57,8 @@ class report_directory_parser(logger):
         DATA_MUTATIONS_EXTENDED_ONCOGENIC, 
         DATA_MUTATIONS_EXTENDED, 
         DATA_SEGMENTS, 
-        GENOMIC_SUMMARY, 
+        GENOMIC_SUMMARY,
+        SEQUENZA_META,
         SIGS_WEIGHTS
     ]
 

@@ -5,7 +5,9 @@ import gzip
 import logging
 import os
 import re
+from math import log2
 
+from djerba.sequenza import sequenza_reader
 import djerba.util.constants as constants
 import djerba.util.provenance_index as index
 import djerba.util.ini_fields as ini
@@ -60,7 +62,7 @@ class configurer(logger):
         data_files[ini.TMBCOMP] = s.get(ini.TMBCOMP) if s.get(ini.TMBCOMP) else os.path.join(data_dir, self.TMBCOMP_NAME)
         return data_files
 
-    def discover(self):
+    def discover_primary(self):
         updates = {}
         updates[ini.GEP_FILE] = self.reader.parse_gep_path()
         updates[ini.MAF_FILE] = self.reader.parse_maf_path()
@@ -71,20 +73,52 @@ class configurer(logger):
         updates.update(self.find_data_files())
         return updates
 
+    def discover_secondary(self):
+        updates = {}
+        reader = sequenza_reader(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE])
+        gamma = self.config.getint(ini.DISCOVERED, ini.SEQUENZA_GAMMA, fallback=None)
+        solution = self.config.get(ini.DISCOVERED, ini.SEQUENZA_SOLUTION, fallback=None)
+        # get_default_gamma_id() returns (gamma, solution)
+        if gamma == None:
+            gamma = reader.get_default_gamma_id()[0]
+            self.logger.info("Automatically generated Sequenza gamma: {0}".format(gamma))
+        else:
+            self.logger.info("User-supplied Sequenza gamma: {0}".format(gamma))
+        if solution == None:
+            solution = constants.SEQUENZA_PRIMARY_SOLUTION
+            self.logger.info("Alternate Sequenza solution not supplied, defaulting to primary")
+        try:
+            purity = reader.get_purity(gamma, solution)
+            ploidy = reader.get_ploidy(gamma, solution)
+        except SequenzaError as err:
+            msg = "Unable to find Sequenza purity/ploidy: {0}".format(err)
+            self.logger.error(msg)
+            raise
+        self.logger.info("Sequenza purity {0}, ploidy {1}".format(purity, ploidy))
+        updates[ini.SEQUENZA_GAMMA] = gamma
+        updates[ini.SEQUENZA_SOLUTION] = solution
+        updates[ini.PLOIDY] = ploidy
+        updates[ini.PURITY] = purity
+        return updates
+
     def run(self, out_path):
         """Main method to run configuration"""
         self.logger.info("Djerba config started")
-        self.update()
+        # first pass -- update basic parameters
+        self.update_primary()
+        # second pass -- update Sequenza params using base values
+        self.update_secondary()
+        # third pass -- logR cutoffs using the updated purity
+        self.update_tertiary()
         with open(out_path, 'w') as out_file:
             self.config.write(out_file)
         self.logger.info("Djerba config finished; wrote output to {0}".format(out_path))
 
-    def update(self):
+    def update(self, updates):
         """
-        Discover and apply updates to the configuration; do not overwrite user-supplied parameters
+        Apply discovered updates to the configuration; do not overwrite user-supplied parameters
         If discovered update is None, and user-supplied parameter is missing, raise an error
         """
-        updates = self.discover()
         if not self.config.has_section(ini.DISCOVERED):
             self.config.add_section(ini.DISCOVERED)
         for key in updates.keys():
@@ -100,7 +134,58 @@ class configurer(logger):
                     self.logger.error(msg)
                     raise MissingConfigError(msg)
                 else:
-                    self.config[ini.DISCOVERED][key] = updates[key]
+                    self.config[ini.DISCOVERED][key] = str(updates[key])
+
+    def update_primary(self):
+        """
+        Discover and apply first-pass updates to the configuration; do not overwrite user-supplied parameters
+        """
+        self.update(self.discover_primary())
+
+    def update_secondary(self):
+        """
+        Discover and apply second-pass updates to the configuration; do not overwrite user-supplied parameters
+        Secondary parameters include Sequenza purity/ploidy
+        May depend on discovered value of the Sequenza output file, so we do these after completing first pass
+        """
+        self.update(self.discover_secondary())
+
+    def update_tertiary(self):
+        """
+        Discover and apply third-pass updates to the configuration; do not overwrite user-supplied parameters
+        Tertiary parameters are logR cutoffs
+        May depend on the discovered value of Sequenza purity, so we do these after completing second pass
+        """
+        purity = self.config.getfloat(ini.DISCOVERED, ini.PURITY)
+        self.update(log_r_cutoff_finder().cutoffs(purity))
+
+class log_r_cutoff_finder:
+    """Find logR cutoff values; based on legacy Perl script logRcuts.pl"""
+
+    MIN_LOG_ARG = 0.0078125 # 1/128 = 2^(-7)
+
+    def cutoffs(self, purity):
+        one_copy = purity / 2.0 # essentially assuming ploidy 2 (more accurately, defining htzd as loss of 0.5 ploidy and hmzd as loss of 1 ploidy)
+        # expected values for different states
+        htzd = self.log2_with_minimum(1 - one_copy)
+        hmzd = self.log2_with_minimum(1 - (2*one_copy))
+        gain = self.log2_with_minimum(1 + one_copy)
+        ampl = self.log2_with_minimum(1 + (2*one_copy))
+        # cutoffs halfway between 0 and 1 copy, and halfway between 1 and 2 copies
+        cutoffs = {
+            ini.LOG_R_HTZD: htzd/2.0,
+            ini.LOG_R_HMZD: (hmzd-htzd)/2.0 + htzd,
+            ini.LOG_R_GAIN: gain/2.0,
+            ini.LOG_R_AMPL: (ampl-gain)/2.0 + gain
+        }
+        return cutoffs
+
+    def log2_with_minimum(self, x):
+        """Return log2(x), or log2(min) if x < min; hack to avoid log(0)"""
+        if x < self.MIN_LOG_ARG:
+            return log2(self.MIN_LOG_ARG)
+        else:
+            return log2(x)
 
 class provenance_reader(logger):
 

@@ -9,7 +9,7 @@ import sys
 
 sys.path.pop(0) # do not import from script directory
 from djerba.configure import provenance_reader
-from djerba.extract.sequenza import sequenza_extractor
+from djerba.sequenza import sequenza_reader
 from djerba.util.validator import path_validator
 
 # script mode names
@@ -52,15 +52,15 @@ def main(args):
         print(locate_sequenza_path(args))
     elif args.subparser_name == READ:
         path_validator().validate_input_file(args.in_path)
-        seqex = sequenza_extractor(args.in_path)
+        reader = sequenza_reader(args.in_path)
         if args.gamma_selection:
-            seqex.print_gamma_selection()
+            reader.print_gamma_selection()
         if args.purity_ploidy:
-            seqex.print_purity_ploidy_table()
+            reader.print_purity_ploidy_table()
         if args.summary:
-            seqex.print_summary()
+            reader.print_summary()
         if args.json:
-            seqex.write_json(args.json)
+            reader.write_json(args.json)
 
 if __name__ == '__main__':
     parser = get_parser()

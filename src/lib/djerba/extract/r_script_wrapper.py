@@ -10,7 +10,7 @@ import tempfile
 import zipfile
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
-from djerba.extract.sequenza import sequenza_extractor
+from djerba.sequenza import sequenza_reader
 from djerba.util.logger import logger
 
 class r_script_wrapper(logger):
@@ -64,10 +64,9 @@ class r_script_wrapper(logger):
     # environment variable for ONCOKB token path
     ONCOKB_TOKEN_VARIABLE = 'ONCOKB_TOKEN'
 
-    def __init__(self, config, gamma, report_dir, tmp_dir=None,
+    def __init__(self, config, report_dir, tmp_dir=None,
                  log_level=logging.WARNING, log_path=None):
         self.config = config
-        self.gamma = gamma
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.r_script_dir = os.path.join(os.path.dirname(__file__), '..', 'R_stats')
         self.supplied_tmp_dir = tmp_dir # may be None
@@ -133,7 +132,6 @@ class r_script_wrapper(logger):
         val = None
         sections = [
             ini.INPUTS,
-            ini.SEG,
             ini.SETTINGS,
             ini.DISCOVERED,
             ini.SAMPLE_META
@@ -341,7 +339,9 @@ class r_script_wrapper(logger):
         Apply preprocessing and write results to tmp_dir
         Replace entry in the first column with the tumour ID
         """
-        seg_path = sequenza_extractor(sequenza_path).extract_seg_file(tmp_dir, self.gamma)
+        gamma = self.config.getint(ini.DISCOVERED, ini.SEQUENZA_GAMMA)
+        solution = self.config.get(ini.DISCOVERED, ini.SEQUENZA_SOLUTION)
+        seg_path = sequenza_reader(sequenza_path).extract_seg_file(tmp_dir, gamma, solution)
         out_path = os.path.join(tmp_dir, 'seg.txt')
         with open(seg_path, 'rt') as seg_file, open(out_path, 'wt') as out_file:
             reader = csv.reader(seg_file, delimiter="\t")
@@ -385,10 +385,10 @@ class r_script_wrapper(logger):
             '--tcgadata', self.config[ini.SETTINGS][ini.TCGA_DATA],
             '--whizbam_url', self.config[ini.SETTINGS][ini.WHIZBAM_URL],
             '--tcgacode', self.config[ini.INPUTS][ini.TCGA_CODE],
-            '--gain', self.config[ini.SEG][ini.GAIN],
-            '--ampl', self.config[ini.SEG][ini.AMPL],
-            '--htzd', self.config[ini.SEG][ini.HTZD],
-            '--hmzd', self.config[ini.SEG][ini.HMZD],
+            '--gain', self.config[ini.DISCOVERED][ini.LOG_R_GAIN],
+            '--ampl', self.config[ini.DISCOVERED][ini.LOG_R_AMPL],
+            '--htzd', self.config[ini.DISCOVERED][ini.LOG_R_HTZD],
+            '--hmzd', self.config[ini.DISCOVERED][ini.LOG_R_HMZD],
             '--outdir', self.report_dir
         ]
         result = self._run_command(cmd, "main R script")

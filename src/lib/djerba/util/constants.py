@@ -1,10 +1,10 @@
 """Constants for use across multiple Djerba classes"""
 
 DATA_DIR_NAME = 'data'
+SEQUENZA_PRIMARY_SOLUTION = 'primary'
 SEQUENZA_GAMMA = 'sequenza_gamma'
 SEQUENZA_PURITY_KEY = 'sequenza_purity_fraction'
 SEQUENZA_PLOIDY_KEY = 'sequenza_ploidy'
-READER_CLASS_KEY = 'reader_class'
 TEXT_ENCODING = 'utf-8'
 TMB_PER_MB_KEY = 'TMB_PER_MB'
 
@@ -12,6 +12,7 @@ TMB_PER_MB_KEY = 'TMB_PER_MB'
 ANALYSIS_UNIT_FILENAME = 'analysis_unit.txt'
 CLINICAL_DATA_FILENAME = 'data_clinical.txt'
 GENOMIC_SUMMARY_FILENAME = 'genomic_summary.txt'
+SEQUENZA_META_FILENAME = 'sequenza_meta.txt'
 
 # Gene attributes from Elba schema
 ALLELE_FRACTION_PERCENTILE = 'Allele_Fraction_Percentile'

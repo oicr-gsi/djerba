@@ -13,13 +13,13 @@ import unittest
 from string import Template
 
 import djerba.util.constants as constants
-from djerba.configure import configurer
+from djerba.configure import configurer, log_r_cutoff_finder
 from djerba.extract.extractor import extractor
 from djerba.extract.report_directory_parser import report_directory_parser
-from djerba.extract.sequenza import sequenza_extractor, SequenzaExtractionError
 from djerba.extract.r_script_wrapper import r_script_wrapper
 from djerba.main import main
 from djerba.render import html_renderer, pdf_renderer
+from djerba.sequenza import sequenza_reader, SequenzaError
 from djerba.util.validator import config_validator, DjerbaConfigError
 
 class TestBase(unittest.TestCase):
@@ -95,6 +95,20 @@ class TestConfigure(TestBase):
         # TODO check contents of output path; need to account for supplementary data location
         self.assertTrue(os.path.exists(out_path))
 
+class TestCutoffFinder(TestBase):
+
+    def test_cutoffs(self):
+        purity = 0.65
+        expected = {
+            'htzd': -0.28352029636194687,
+            'hmzd': -1.0408068827768262,
+            'gain': 0.2029961798379184,
+            'ampl': 0.5642291920734639
+        }
+        cutoffs = log_r_cutoff_finder().cutoffs(purity)
+        for key in expected.keys():
+            self.assertAlmostEqual(expected[key], cutoffs[key])
+
 class TestExtractor(TestBase):
 
     def test_extractor(self):
@@ -106,9 +120,16 @@ class TestExtractor(TestBase):
         summary_path = os.path.join(out_dir, 'summary.json')
         test_extractor = extractor(config, out_dir, log_level=logging.ERROR)
         # do not test R script or JSON here; done respectively by TestWrapper and TestReport
+        expected_md5 = {
+            'analysis_unit.txt': '9f831fb25b89c515a9259cf307fb4ae0',
+            'data_clinical.txt': '02003366977d66578c097295f12f4638',
+            'genomic_summary.txt': 'c84eec523dbc81f4fc7b08860ab1a47f'
+        }
         test_extractor.run(json_path=None, r_script=False)
-        self.assertTrue(os.path.exists(clinical_data_path))
-        self.assertEqual(self.getMD5(clinical_data_path), '02003366977d66578c097295f12f4638')
+        for filename in expected_md5.keys():
+            output_path = os.path.join(out_dir, filename)
+            self.assertTrue(os.path.exists(output_path))
+        self.assertEqual(self.getMD5(output_path), expected_md5[filename])
 
 class TestMain(TestBase):
 
@@ -183,7 +204,7 @@ class TestReport(TestBase):
             expected = json.loads(expected_file.read())
         self.assertEqual(summary, expected)
 
-class TestSequenzaExtractor(TestBase):
+class TestSequenzaReader(TestBase):
 
     def setUp(self):
         super().setUp()
@@ -227,9 +248,9 @@ class TestSequenzaExtractor(TestBase):
         self.assertEqual(result.stdout, expected_text)
 
     def test_purity_ploidy(self):
-        seqex = sequenza_extractor(self.zip_path)
-        self.assertEqual(seqex.get_purity(), 0.6)
-        self.assertEqual(seqex.get_ploidy(), 3.1)
+        reader = sequenza_reader(self.zip_path)
+        self.assertEqual(reader.get_purity(), 0.6)
+        self.assertEqual(reader.get_ploidy(), 3.1)
         expected_segments = {
             (100, 'primary'): 4356,
             (100, 'sol2_0.59'): 4356,
@@ -287,33 +308,33 @@ class TestSequenzaExtractor(TestBase):
             (900, 'primary'): 284,
             (900, 'sol2_0.49'): 284
         }
-        self.assertEqual(seqex.get_segment_counts(), expected_segments)
-        self.assertEqual(seqex.get_default_gamma_id(), self.expected_gamma_id)
+        self.assertEqual(reader.get_segment_counts(), expected_segments)
+        self.assertEqual(reader.get_default_gamma_id(), self.expected_gamma_id)
         # test with alternate gamma
-        self.assertEqual(seqex.get_purity(gamma=50), 0.56)
-        self.assertEqual(seqex.get_ploidy(gamma=50), 3.2)
+        self.assertEqual(reader.get_purity(gamma=50), 0.56)
+        self.assertEqual(reader.get_ploidy(gamma=50), 3.2)
         # test with nonexistent gamma
-        with self.assertRaises(SequenzaExtractionError):
-            seqex.get_purity(gamma=999999)
-        with self.assertRaises(SequenzaExtractionError):
-            seqex.get_ploidy(gamma=999999)
+        with self.assertRaises(SequenzaError):
+            reader.get_purity(gamma=999999)
+        with self.assertRaises(SequenzaError):
+            reader.get_ploidy(gamma=999999)
 
     def test_seg_file(self):
-        seqex = sequenza_extractor(self.zip_path)
-        seg_path = seqex.extract_seg_file(self.tmp_dir)
+        reader = sequenza_reader(self.zip_path)
+        seg_path = reader.extract_seg_file(self.tmp_dir)
         self.assertEqual(
             seg_path,
             os.path.join(self.tmp_dir, 'gammas/400/PANX_1249_Lv_M_WG_100-PM-013_LCM5_Total_CN.seg')
         )
         self.assertEqual(self.getMD5(seg_path), '25b0e3c01fe77a28b24cff46081cfb1b')
-        seg_path = seqex.extract_seg_file(self.tmp_dir, gamma=1000)
+        seg_path = reader.extract_seg_file(self.tmp_dir, gamma=1000)
         self.assertEqual(
             seg_path,
             os.path.join(self.tmp_dir, 'gammas/1000/PANX_1249_Lv_M_WG_100-PM-013_LCM5_Total_CN.seg')
         )
         self.assertEqual(self.getMD5(seg_path), '5d433e47431029219b6922fba63a8fcf')
-        with self.assertRaises(SequenzaExtractionError):
-            seqex.extract_seg_file(self.tmp_dir, gamma=999999)
+        with self.assertRaises(SequenzaError):
+            reader.extract_seg_file(self.tmp_dir, gamma=999999)
 
 class TestSetup(TestBase):
 
@@ -362,7 +383,7 @@ class TestWrapper(TestBase):
         config = configparser.ConfigParser()
         config.read(self.config_full)
         out_dir = self.tmp_dir
-        test_wrapper = r_script_wrapper(config, gamma=500, report_dir=out_dir)
+        test_wrapper = r_script_wrapper(config, report_dir=out_dir)
         result = test_wrapper.run()
         self.assertEqual(0, result.returncode)
 

@@ -8,13 +8,13 @@ The main Djerba script will exit with an error if required parameters are missin
 
 ### Reminder: Djerba steps
 
-Djerba works in 4 steps:
+Djerba works in 4 main steps:
 1. `configure`: Input user configuration and populate optional values
 2. `extract`: Find metric values from the inputs specified in configuration
 3. `html`: Take output from the `extract` step and write an HTML report
 4. `pdf`: Convert the HTML report to PDF
 
-The main Djerba script also has an `all` mode, which runs all four steps in sequence.
+The `configure` step populates the INI; while the `extract` step applies parameters in the INI, and writes intermediate results to a reporting directory. An INI file is not used in the `html` and `pdf` steps.
 
 ### Optional and required parameters
 
@@ -28,20 +28,17 @@ It follows that Djerba INI files come in two different types:
 
 ## INI sections
 
-The INI file is divided into a number of sections, with headers in square brackets.
+The INI file is divided into sections, with headers in square brackets.
 
 | Name         | Optional/Required  | Description                              |
 |--------------|--------------------|------------------------------------------|
 | `[inputs]`   | Required | Required parameters from the user                  |
 | `[settings]` | Optional | Parameters relating to the installation and operation of Djerba itself. Not expected to change often. |
-| `[seg]`      | Optional | Thresholds for copy number alteration calculations on .seg files. If not given, they take default values.   |
 | `[discovered]` | Optional | Parameters automatically discovered by Djerba, by reading file provenance, parsing workflow outputs, etc. |
 
-## INI parameters
+## Required INI parameters
 
-### Required parameters
-
-All required parameters go in the `[inputs]` section. The "Source" column lists data source, as per SOP "TM-005: Data Review and Reporting Procedure"; where "req" denotes the requisition system, and "user" denotes the member of CGI staff compiling the report.
+All required parameters go in the `[inputs]` section. The "Source" column lists data source, as per SOP "TM-005: Data Review and Reporting Procedure"; where "req" denotes the requisition system, and "user" is the member of CGI staff compiling the report.
 
 | Name                   | Source | Notes                                                    |
 |------------------------|----------|------------------------------------------------|
@@ -52,58 +49,88 @@ All required parameters go in the `[inputs]` section. The "Source" column lists 
 | `report_version`            | user | |
 | `sample_anatomical_site`            | req | |
 | `sample_type`            | req | |
+| `sequenza_reviewer_1` | user | Name of first reviewer for Sequenza parameters |
+| `sequenza_reviewer_2` | user | Name of second reviewer for Sequenza parameters |
 | `sex`            | req | Patient sex |
 | `studyid`                | req       | Study ID within requisition system, eg. PASS01 |
 | `tcgacode`                | req    | [TCGA](https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga) code for the tumour, eg. PAAD |
 
-### Optional parameters
+## Optional INI parameters
 
-#### Parameter sources
+### Sources
 
 Sources of optional parameters include:
 - INI file with constants: [defaults.ini](../src/lib/djerba/data/defaults.ini)
 - Path relative to the Djerba installation directory
 - Discovery from file provenance
-- Computing a heuristic to find a default value, for Sequenza gamma
+- Computed from other parameters
 
-#### Configuring `data_dir` parameters
+### Resolution order
 
-The automatic parameter discovery first finds the `data_dir` parameter, relative to the Djerba installation path; it then finds other paths relative to `data_dir`, as listed in the table below. If `data_dir` is specified in user config, those parameters will be found relative to the manually-specified path, not the automatic one. This can be used to specify different reference files if needed. For finer control, any individual `data_dir` parameter can be overridden in user config, while leaving the others unaffected.
+Some parameters depend on others for their default values. The order of parameter resolution reflects this.
 
-In particular, the `genomic_summary` parameter can be used to specify a manually-written text file instead of the default placeholder.
+#### `data_dir`
 
-So, there are three different ways to configure a `data_dir` parameter such as `genomic_summary`:
-1. Default: Djerba finds the default `data_dir`, which contains a default `genomic_summary` file.
-2. Alternative directory: If `data_dir` is specified in user config, Djerba will look in that directory for a `genomic_summary` file.
-3. Alternative file: If `genomic_summary` is specified in user config, Djerba will use that file, regardless of the value of `data_dir`.
+The `data_dir` parameter contains various data files used by Djerba; default files form part of the Djerba installation.
 
-#### Table of optional parameters
+Automatic parameter discovery first finds `data_dir`, relative to the Djerba installation path; it then finds other paths relative to `data_dir`, as listed in the table below. If `data_dir` is specified in user config, those parameters will be found relative to the manually-specified path, not the automatic one. This can be used to specify different reference files if needed. For finer control, any individual `data_dir` parameter can be overridden in user config, while leaving the others unaffected.
+
+So, there are three different ways to configure a `data_dir` parameter such as `oncolist`:
+1. Default: Djerba finds the default `data_dir`, which contains a default `oncolist` file.
+2. Alternative directory: If `data_dir` is specified in user config, Djerba will look in that directory for a `oncolist` file.
+3. Alternative file: If `oncolist` is specified in user config, Djerba will use that file, regardless of the value of `data_dir`.
+
+#### Sequenza and logR cutoffs
+
+| Parameters                               | Dependency                                              |
+|------------------------------------------|---------------------------------------------------------|
+| `sequenza_gamma`, `sequenza_solution`    | `sequenza_file`                                         |
+| `purity`, `ploidy`                       | `sequenza_file`, `sequenza_gamma`, `sequenza_solution`  |
+| `ampl`, `gain`, `hmzd`, `htzd`           | `purity`                                                |
+
+These parameters are resolved in dependency order:
+1. Main group of parameters, including `sequenza_file`
+2. `sequenza_gamma`, `sequenza_solution`
+3. `purity`, `ploidy`
+4. logR cutoffs: `ampl`, `gain`, `htzd`, `hmzd`
+
+Permitted values for `sequenza_solution` are either "primary"; or the name of a Sequenza alternate solution directory, such as "sol2_0.28".
+
+Recommended usage is:
+- After reviewing the Sequenza results as per the SOP, manually configure `sequenza_gamma` and `sequenza_solution`
+- Allow Djerba to automatically discover `purity` and `ploidy`, to ensure they are consistent with Sequenza gamma and solution
+- logR cutoffs may be either manually configured or automatically discovered, as decided by the user
+
+### Table of optional parameters
 
 | Section        | Name          | Source | Notes                                          |
 |----------------|---------------|-------------| -----------------------------------|
+| `[discovered]` | `ampl` | Computed from `purity` | logR cutoff value  |
 | `[discovered]` | `analysis_unit`    | File provenance | Identifier for a matched set of samples; see below          |
 | `[discovered]` | `data_dir`    | Djerba installation | Directory for miscellaneous data files          |
 | `[discovered]` | `enscon`    | `data_dir` | Ensembl conversion file                    |
 | `[discovered]` | `entcon`    | `data_dir` | Entrez conversion file                    |
-| `[discovered]` | `gamma`     | Default computation       | Sequenza gamma parameter  |
+| `[discovered]` | `gain` | Computed from `purity` | logR cutoff value |
 | `[discovered]` | `genebed`    | `data_dir` | Interval file                    |
 | `[discovered]` | `genelist`    | `data_dir` | Gene list file                   |
 | `[discovered]` | `genomic_summary`    | `data_dir` | Genomic summary file                   |
-| `[discovered]` | `gep_file`    | File provenance | GEP input file from RSEM                    |
-| `[discovered]` | `maf_file`    | File provenance | MAF input file from VariantEffectPredictor                 |
+| `[discovered]` | `gepfile`    | File provenance | GEP input file from RSEM                    |
+| `[discovered]` | `hmzd` | Computed from `purity` | logR cutoff value |
+| `[discovered]` | `htzd` | Computed from `purity` | logR cutoff value |
+| `[discovered]` | `maf_file`    | File provenance | MAF input file from VariantEffectPredictor       |
 | `[discovered]` | `mavis_file`  | File provenance | Mavis input file                                 |
-| `[discovered]` | `mutation_nonsyn`    | `data_dir` | Non-synonymous mutation list file                    |
-| `[discovered]` | `normal_id` | File provenance | Normal ID, eg. 100-PM-013_BC                |
+| `[discovered]` | `mutation_nonsyn`    | `data_dir` | Non-synonymous mutation list file             |
+| `[discovered]` | `normalid` | File provenance | Normal ID, eg. 100-PM-013_BC                |
+| `[discovered]` | `ploidy` | Read from `sequenza_file`, `sequenza_gamma`, `sequenza_solution` | Estimated tumour ploidy  |
+| `[discovered]` | `purity` | Read from `sequenza_file`, `sequenza_gamma`, `sequenza_solution` | Estimated tumour purity  |
 | `[discovered]` | `oncolist`    | `data_dir` | OncoKB listing file                    |
 | `[discovered]` | `oncotree_data`    | `data_dir` | [OncoTree](http://oncotree.mskcc.org/#/home) data file with cancer type and description                    |
-| `[discovered]` | `patient_id` | File provenance | Patient ID, eg. 100-PM-013                                 |
+| `[discovered]` | `patientid` | File provenance | Patient ID, eg. 100-PM-013                                 |
 | `[discovered]` | `sequenza_file` | File provenance |Sequenza input file                                 |
+| `[discovered]` | `sequenza_gamma`     | Default computation       | Sequenza gamma parameter  |
+| `[discovered]` | `sequenza_solution`     | Default computation       | Sequenza solution identifier  |
 | `[discovered]` | `tmbcomp` | `data_dir` | TCGA TMB file                                 |
 | `[discovered]` | `tumour_id` | File provenance | Tumour ID, eg. 100-PM-013_LCM5                |
-| `[seg]`        | `ampl` | defaults.ini |  |
-| `[seg]`        | `gain` | defaults.ini |  |
-| `[seg]`        | `hmzd` | defaults.ini |  |
-| `[seg]`        | `htzd` | defaults.ini |  |
 | `[settings]`   | `bed_path` | defaults.ini |  |
 | `[settings]`   | `gep_reference` | defaults.ini |  |
 | `[settings]`   | `min_fusion_reads` | defaults.ini |  |
@@ -111,7 +138,11 @@ So, there are three different ways to configure a `data_dir` parameter such as `
 | `[settings]`   | `tcga_data` | defaults.ini | Path to TCGA data directory  |
 | `[settings]`   | `whizbam_url` | defaults.ini | Base URL of OICR Whizbam site; used to construct links in report  |
 
-#### Note on `analysis_unit`
+### Metadata parameters
+
+Some parameters are not directly used to generate the HTML report; instead, they store metadata values for later reference.
+
+#### `analysis_unit`
 
 The "analysis unit" identifies a matched set of samples for clinical analysis:
 1. A merged DNA tumour sample
@@ -125,9 +156,13 @@ Merged RNA library: OCT_010118_Ut_P_WT_OCT-01-0118-TS
      Analysis unit: OCT_010118_Ut_P_OCT-01-0118-TS
 ```
 
-The analysis unit is not needed to generate the HTML report; but by convention, it is used as the filename for the final PDF report, and inserted into the PDF footer. If the analysis unit is not supplied by the user, Djerba will attempt to construct a standard value from file provenance, and raise an error if it is unable to do so.
+The analysis unit is not needed to generate the HTML report; but by convention, it is used as the filename for the final PDF report, and inserted into the PDF footer. If the analysis unit is not supplied by the user, Djerba will attempt to construct a standard value from file provenance, and raise an error if it is unable to do so. The value is written to a file `analysis_unit.txt` in the reporting directory.
 
-## Summary
+#### Sequenza metadata
 
-- Required parameters *must* be supplied by the user in the `[inputs]` section of the INI file.
-- Optional parameters *may* be suppllied by the user, in other sections of the INI file. If so, they will be used in preference to values generated by Djerba.
+Similarly to the analysis unit, the following Sequenza parameters are written to a file `sequenza_meta.txt` in the reporting directory:
+- `sequenza_file`
+- `sequenza_gamma`
+- `sequenza_reviewer_1`
+- `sequenza_reviewer_2`
+- `sequenza_solution`

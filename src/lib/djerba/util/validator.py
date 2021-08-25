@@ -40,7 +40,7 @@ class config_validator(logger):
 
     def validate_full(self, config):
         """Config has all parameters; valid input for extract step"""
-        valid = self.validate(config, [ini.INPUTS, ini.SEG, ini.SETTINGS, ini.DISCOVERED])
+        valid = self.validate(config, [ini.INPUTS, ini.SETTINGS, ini.DISCOVERED])
         self.find_extras(config)
         self.logger.info("Successfully validated fully-specified Djerba config")
         return valid

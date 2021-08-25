@@ -9,9 +9,9 @@ import sys
 import tempfile
 import zipfile
 
-class sequenza_extractor:
+import djerba.util.constants as constants
 
-    PRIMARY_SOLUTION = 'primary'
+class sequenza_reader:
 
     def __init__(self, zip_path):
         """
@@ -35,28 +35,28 @@ class sequenza_extractor:
             gamma_id_set.add(gamma_id)
             if re.search('_segments\.txt$', name):
                 if gamma_id in self.segment_counts:
-                    raise SequenzaExtractionError("Multiple _segments.txt for gamma_id {0}".format(gamma_id))
+                    raise SequenzaError("Multiple _segments.txt for gamma_id {0}".format(gamma_id))
                 self.segment_counts[gamma_id] = self._count_segments(zf.extract(name, tmp))
             elif re.search('_alternative_solutions\.txt$', name):
                 if gamma_id in self.purity:
-                    raise SequenzaExtractionError("Multiple metrics files for gamma_id {0}".format(gamma_id))
+                    raise SequenzaError("Multiple metrics files for gamma_id {0}".format(gamma_id))
                 [purity, ploidy] = self._find_purity_ploidy(zf.extract(name, tmp))
                 self.purity[gamma_id] = purity
                 self.ploidy[gamma_id] = ploidy
             elif re.search('_Total_CN.seg', name):
                 gamma = gamma_id[0] # only one .seg file for each value of gamma
                 if gamma in self.seg_archive:
-                    raise SequenzaExtractionError("Multiple .seg files for gamma {0}".format(gamma))
+                    raise SequenzaError("Multiple .seg files for gamma {0}".format(gamma))
                 self.seg_archive[gamma] = name
         self.gamma_ids = sorted(list(gamma_id_set))
         # check required info is present for each gamma_id
         for gamma_id in self.gamma_ids:
             if gamma_id not in self.segment_counts:
-                raise SequenzaExtractionError("Missing segment count for gamma_id {0}".format(gamma_id))
+                raise SequenzaError("Missing segment count for gamma_id {0}".format(gamma_id))
             elif gamma_id not in self.purity:
-                raise SequenzaExtractionError("Missing metrics for gamma_id {0}".format(gamma_id))
+                raise SequenzaError("Missing metrics for gamma_id {0}".format(gamma_id))
             elif gamma_id[0] not in self.seg_archive:
-                raise SequenzaExtractionError("Missing .seg location for gamma {0}".format(gamma_id[0]))
+                raise SequenzaError("Missing .seg location for gamma {0}".format(gamma_id[0]))
         tempdir.cleanup()
         # find important values of gamma_id
         [self.default_gamma_id, self.gamma_id_selection_table] = self._find_default_gamma_id()
@@ -71,13 +71,13 @@ class sequenza_extractor:
             if solution:
                 gamma_id = (gamma, solution)
             else:
-                gamma_id = (gamma, self.PRIMARY_SOLUTION)
+                gamma_id = (gamma, constants.SEQUENZA_PRIMARY_SOLUTION)
         else:
             gamma_id = self.default_gamma_id
         if gamma_id not in self.gamma_ids:
             msg = "gamma ID {0} not found in '{1}'; ".format(gamma, self.zip_path) +\
             "available IDs are: {0}".format(self.gamma_ids)
-            raise SequenzaExtractionError(msg)
+            raise SequenzaError(msg)
         return gamma_id
 
     def _count_segments(self, seg_path):
@@ -98,9 +98,9 @@ class sequenza_extractor:
         - When actual gradient is less in magnitude than expected gradient, stop and use Nth gamma
         - Return table of working values as a list of lists (may be wanted for output)
         """
-        gammas = sorted([g[0] for g in self.gamma_ids if g[1]==self.PRIMARY_SOLUTION])
-        gamma_min_id = (gammas[0], self.PRIMARY_SOLUTION)
-        gamma_max_id = (gammas[-1], self.PRIMARY_SOLUTION)
+        gammas = sorted([g[0] for g in self.gamma_ids if g[1]==constants.SEQUENZA_PRIMARY_SOLUTION])
+        gamma_min_id = (gammas[0], constants.SEQUENZA_PRIMARY_SOLUTION)
+        gamma_max_id = (gammas[-1], constants.SEQUENZA_PRIMARY_SOLUTION)
         delta_y = self.segment_counts[gamma_max_id] - self.segment_counts[gamma_min_id]
         delta_x = gamma_max_id[0] - gamma_min_id[0]
         linear_gradient = float(delta_y)/delta_x
@@ -109,8 +109,8 @@ class sequenza_extractor:
         # columns for working_values: ['gamma', 'segments', 'gradient', 'expected']
         working_values.append([gamma_min_id[0], self.segment_counts[gamma_min_id], 'NA', 'NA'])
         for i in range(1, len(gammas)):
-            gamma_id_now = (gammas[i], self.PRIMARY_SOLUTION)
-            gamma_id_previous = (gammas[i-1], self.PRIMARY_SOLUTION)
+            gamma_id_now = (gammas[i], constants.SEQUENZA_PRIMARY_SOLUTION)
+            gamma_id_previous = (gammas[i-1], constants.SEQUENZA_PRIMARY_SOLUTION)
             delta_y = self.segment_counts[gamma_id_now] - self.segment_counts[gamma_id_previous]
             delta_x = gamma_id_now[0] - gamma_id_previous[0]
             gradient = float(delta_y)/delta_x
@@ -172,12 +172,12 @@ class sequenza_extractor:
         terms = re.split(os.sep, name)
         try:
             gamma = int(terms[1])
-            solution = terms[2] if re.match('sol[0-9]_[01](\.[0-9]+)?$', terms[2]) else self.PRIMARY_SOLUTION
+            solution = terms[2] if re.match('sol[0-9]_[01](\.[0-9]+)?$', terms[2]) else constants.SEQUENZA_PRIMARY_SOLUTION
             gamma_id = (gamma, solution)
         except (IndexError, ValueError) as err:
             msg = "Unable to parse gamma parameter from {0} ".format(name) +\
                   "in archive {0}".format(self.zip_path)
-            raise SequenzaExtractionError(msg) from err
+            raise SequenzaError(msg) from err
         return gamma_id
 
     def _reformat_metrics(self, metrics):
@@ -206,12 +206,12 @@ class sequenza_extractor:
 
     def get_purity(self, gamma=None, solution=None):
         """Get purity for supplied gamma and solution (if any), defaults otherwise"""
-        gamma_id = self._construct_gamma_id(gamma, solution)
+        gamma_id = self._construct_gamma_id(gamma, solution) # checks gamma_id is valid
         return self.purity[gamma_id]
 
     def get_ploidy(self, gamma=None, solution=None):
         """Get ploidy for supplied gamma and solution (if any), defaults otherwise"""
-        gamma_id = self._construct_gamma_id(gamma, solution)
+        gamma_id = self._construct_gamma_id(gamma, solution) # checks gamma_id is valid
         return self.ploidy[gamma_id]
 
     def get_segment_counts(self):
@@ -261,5 +261,5 @@ class sequenza_extractor:
             print(json.dumps(params, sort_keys=True, indent=4), file=out_file)
 
 
-class SequenzaExtractionError(Exception):
+class SequenzaError(Exception):
     pass

@@ -8,9 +8,9 @@ import pandas as pd
 import re
 from shutil import copyfile
 
-from djerba.extract.sequenza import sequenza_extractor
 from djerba.extract.r_script_wrapper import r_script_wrapper
 from djerba.extract.report_directory_parser import report_directory_parser
+from djerba.sequenza import sequenza_reader
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 from djerba.util.logger import logger
@@ -33,6 +33,35 @@ class extractor(logger):
         self.log_path = log_path
         self.report_dir = report_dir
         self.data_dir = os.path.join(os.path.dirname(__file__), '..', constants.DATA_DIR_NAME)
+        self._check_sequenza_params()
+
+    def _check_sequenza_params(self):
+        """Check that configured purity/ploidy are consistent with Sequenza results; warn if not"""
+        path = self.config.get(ini.DISCOVERED, ini.SEQUENZA_FILE)
+        gamma = self.config.getint(ini.DISCOVERED, ini.SEQUENZA_GAMMA)
+        solution = self.config.get(ini.DISCOVERED, ini.SEQUENZA_SOLUTION)
+        self.logger.debug("Checking consistency of purity/ploidy; gamma={0}, solution={1}".format(gamma, solution))
+        reader = sequenza_reader(path)
+        purity = reader.get_purity(gamma, solution)
+        configured_purity = self.config.getfloat(ini.DISCOVERED, ini.PURITY)
+        ploidy = reader.get_ploidy(gamma, solution)
+        configured_ploidy = self.config.getfloat(ini.DISCOVERED, ini.PLOIDY)
+        if purity != configured_purity:
+            msg = "Sequenza results path={0}, gamma={1}, solution={2} ".format(path, gamma, solution)+\
+                "implies purity={0}, ".format(purity)+\
+                "but INI configured purity={0}; ".format(configured_purity)+\
+                "configured purity value will be used."
+            self.logger.warning(msg)
+        else:
+            self.logger.debug("Purity OK")
+        if ploidy != configured_ploidy:
+            msg = "Sequenza results path={0}, gamma={1}, solution={2} ".format((path, gamma, solution))+\
+                "implies purity={0}, ".format(purity)+\
+                "but INI configured purity is {0}; ".format(configured_purity)+\
+                "configured purity value will be used."
+            self.logger.warning(msg)
+        else:
+            self.logger.debug("Ploidy OK")
 
     def _remove_oncotree_suffix(self, entry):
         """Remove a suffix of the form ' (PAAD)' or ' (AMLCBFBMYH11)' from an oncotree entry"""
@@ -82,42 +111,21 @@ class extractor(logger):
         }
         return description
 
-    def get_sequenza_params(self):
-        """Read the Sequenza results.zip, extract relevant parameters, and write as JSON"""
-        ex = sequenza_extractor(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE])
-        gamma = self.config.getint(ini.DISCOVERED, ini.GAMMA)
-        if gamma == None:
-            gamma = ex.get_default_gamma()
-            self.logger.info("Automatically generated Sequenza gamma: {0}".format(gamma))
-        else:
-            self.logger.info("User-supplied Sequenza gamma: {0}".format(gamma))
-        purity = ex.get_purity(gamma)
-        ploidy = ex.get_ploidy(gamma)
-        self.logger.info("Sequenza purity {0}, ploidy {1}".format(purity, ploidy))
-        params = {
-            constants.SEQUENZA_GAMMA: gamma,
-            constants.SEQUENZA_PURITY_KEY: purity,
-            constants.SEQUENZA_PLOIDY_KEY: ploidy
-        }
-        return params
-
     def run(self, json_path=None, r_script=True):
         """Run extraction and write output"""
         self.logger.info("Djerba extract step started")
-        sequenza_params = self.get_sequenza_params()
         if r_script:
-            self.run_r_script(sequenza_params) # can omit the R script for testing
-        self.write_clinical_data(sequenza_params, self.get_description())
+            self.run_r_script() # can omit the R script for testing
+        self.write_clinical_data(self.get_description())
         self.write_genomic_summary()
         self.write_analysis_unit()
         if json_path:
             self.write_json_summary(json_path)
         self.logger.info("Djerba extract step finished; extracted metrics written to {0}".format(self.report_dir))
 
-    def run_r_script(self, sequenza_params):
-        gamma = sequenza_params.get(constants.SEQUENZA_GAMMA)
+    def run_r_script(self):
         wrapper = r_script_wrapper(
-            self.config, gamma, self.report_dir, log_level=self.log_level, log_path=self.log_path
+            self.config, self.report_dir, log_level=self.log_level, log_path=self.log_path
         )
         wrapper.run()
 
@@ -130,10 +138,10 @@ class extractor(logger):
         with open(out_path, 'w') as out_file:
             print(self.config[ini.DISCOVERED][ini.ANALYSIS_UNIT], file=out_file)
 
-    def write_clinical_data(self, sequenza_params, oncotree_info):
+    def write_clinical_data(self, oncotree_info):
         """Write the data_clinical.txt file; based on legacy format from CGI-Tools"""
-        purity = sequenza_params[constants.SEQUENZA_PURITY_KEY]
-        ploidy = sequenza_params[constants.SEQUENZA_PLOIDY_KEY]
+        purity = self.config[ini.DISCOVERED][ini.PURITY]
+        ploidy = self.config[ini.DISCOVERED][ini.PLOIDY]
         try:
             data = [
                 ['PATIENT_LIMS_ID', self.config[ini.INPUTS][ini.PATIENT] ],
@@ -178,6 +186,24 @@ class extractor(logger):
         input_path = self.config[ini.DISCOVERED][ini.GENOMIC_SUMMARY]
         output_path = os.path.join(self.report_dir, constants.GENOMIC_SUMMARY_FILENAME)
         copyfile(input_path, output_path)
+
+    def write_sequenza_meta(self):
+        """
+        Write a sequenza_meta.txt file to the working directory with metadata fields
+        Metadata is not used directly for HTML/PDF generation, but kept for future reference
+        """
+        keys = [
+            ini.SEQUENZA_FILE,
+            ini.SEQUENZA_GAMMA,
+            ini.SEQUENZA_REVIEWER_1,
+            ini.SEQUENZA_REVIEWER_2,
+            ini.SEQUENZA_SOLUTION
+        ]
+        meta = {k: self.config[ini.DISCOVERED][k] for k in keys}
+        out_path = os.path.join(self.report_dir, constants.SEQUENZA_META_FILENAME)
+        with open(out_path, 'w') as out_file:
+            print("\t".join(keys))
+            print("\t".join([str(meta[k]) for k in keys]))
 
     def write_json_summary(self, out_path):
         """Write a JSON summary of extracted data"""
