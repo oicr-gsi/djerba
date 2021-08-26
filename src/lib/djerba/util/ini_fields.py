@@ -7,6 +7,7 @@ DISCOVERED = 'discovered'
 
 # parameter names
 ANALYSIS_UNIT = 'analysis_unit'
+ARCHIVE_DIR = 'archive_dir'
 BED_PATH = 'bed_path'
 DATA_DIR = 'data_dir'
 ENSCON = 'enscon'
@@ -96,6 +97,7 @@ SCHEMA = {
         TCGA_CODE
     ],
     SETTINGS: [
+        ARCHIVE_DIR,
         BED_PATH,
         GEP_REFERENCE,
         MIN_FUSION_READS,

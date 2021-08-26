@@ -63,7 +63,8 @@ class main(logger):
         elif self.args.subparser_name == constants.CONFIGURE:
             config = self.read_config(self.args.ini)
             cv.validate_minimal(config)
-            configurer(config, self.log_level, self.log_path).run(self.args.out)
+            archive = not self.args.no_archive # True if archiving is in effect
+            configurer(config, self.log_level, self.log_path).run(self.args.out, archive)
         elif self.args.subparser_name == constants.EXTRACT:
             config = self.read_config(self.args.ini)
             cv.validate_full(config)
@@ -99,7 +100,8 @@ class main(logger):
             else:
                 report_dir = os.path.join(tmp, 'report')
                 os.mkdir(report_dir)
-            configurer(input_config, self.log_level, self.log_path).run(ini_path_full)
+            archive = not self.args.no_archive # True if archiving is in effect
+            configurer(input_config, self.log_level, self.log_path).run(ini_path_full, archive)
             full_config = configparser.ConfigParser()
             full_config.read(ini_path_full)
             # auto-generated full_config should be OK, but run the validator as a sanity check
@@ -131,7 +133,8 @@ class main(logger):
                 msg = "HTML path is required in {0} mode".format(constants.DRAFT)
                 self.logger.error(msg)
                 raise ValueError(msg)
-            configurer(input_config, self.log_level, self.log_path).run(ini_path_full)
+            archive = not self.args.no_archive # True if archiving is in effect
+            configurer(input_config, self.log_level, self.log_path).run(ini_path_full, archive)
             full_config = configparser.ConfigParser()
             full_config.read(ini_path_full)
             # auto-generated full_config should be OK, but run the validator as a sanity check

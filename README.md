@@ -62,6 +62,8 @@ Documentation of file format and required parameters: [ini.md](./doc/ini.md)
 
 Example INI file (with dummy value for the `mavis_file` parameter): [config_user.ini](./src/test/data/config_user.ini)
 
+By default, the fully-specified INI file produced by `configure`, `draft`, or `all` will be archived to a location specified in the `archive_dir` INI parameter. This can be cancelled with the `--no-archive` argument to `djerba.py`.
+
 ### `sequenza_explorer.py`
 
 Standalone script to explore available solutions in Sequenza output. (If gamma is not supplied to djerba.py, it will be found automatically.)
@@ -111,6 +113,7 @@ Djerba has a `setup.py` script which will install its source code and Python dep
   - `configure.py`: Discover additional parameters for the user-supplied INI file
   - `main.py`: Main module to run Djerba functions
   - `render.py`: Render output to HTML or PDF
+  - `sequenza.py`: Process output from the Sequenza tool
 - Python subpackages:
   - `extract`: Python classes to extract metrics from the given INI parameters
   - `util`: Constants and utility functions

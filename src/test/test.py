@@ -13,7 +13,7 @@ import unittest
 from string import Template
 
 import djerba.util.constants as constants
-from djerba.configure import configurer, log_r_cutoff_finder
+from djerba.configure import archiver, configurer, log_r_cutoff_finder
 from djerba.extract.extractor import extractor
 from djerba.extract.report_directory_parser import report_directory_parser
 from djerba.extract.r_script_wrapper import r_script_wrapper
@@ -81,6 +81,17 @@ class TestBase(unittest.TestCase):
             out_paths.append(out_path)
         return out_paths
 
+class TestArchive(TestBase):
+
+    def test_archive(self):
+        out_dir = self.tmp_dir
+        archive_path = archiver(self.config_full).run(out_dir)
+        # contents of file are dependent on local paths
+        self.assertTrue(os.path.exists(archive_path))
+        with open(archive_path) as archive_file:
+            lines = len(archive_file.readlines())
+        self.assertEqual(lines, 50)
+
 class TestConfigure(TestBase):
 
     def test_configurer(self):
@@ -91,9 +102,12 @@ class TestConfigure(TestBase):
         test_configurer = configurer(config)
         out_dir = self.tmp_dir
         out_path = os.path.join(out_dir, 'config_test_output.ini')
-        test_configurer.run(out_path)
+        test_configurer.run(out_path, archive=False)
         # TODO check contents of output path; need to account for supplementary data location
         self.assertTrue(os.path.exists(out_path))
+        with open(out_path) as out_file:
+            lines = len(out_file.readlines())
+        self.assertEqual(lines, 51) # unlike archive, configParser puts a blank line at the end of the file
 
 class TestCutoffFinder(TestBase):
 
@@ -148,6 +162,7 @@ class TestMain(TestBase):
             self.json = None
             self.pdf = None
             self.subparser_name = constants.ALL
+            self.no_archive = True
             # logging
             self.log_path = None
             self.debug = False

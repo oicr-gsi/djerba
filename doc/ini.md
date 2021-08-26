@@ -131,6 +131,7 @@ Recommended usage is:
 | `[discovered]` | `sequenza_solution`     | Default computation       | Sequenza solution identifier  |
 | `[discovered]` | `tmbcomp` | `data_dir` | TCGA TMB file                                 |
 | `[discovered]` | `tumour_id` | File provenance | Tumour ID, eg. 100-PM-013_LCM5                |
+| `[settings]`   | `archive_dir` | defaults.ini | Directory for automatic archiving of INI files |
 | `[settings]`   | `bed_path` | defaults.ini |  |
 | `[settings]`   | `gep_reference` | defaults.ini |  |
 | `[settings]`   | `min_fusion_reads` | defaults.ini |  |
@@ -166,3 +167,9 @@ Similarly to the analysis unit, the following Sequenza parameters are written to
 - `sequenza_reviewer_1`
 - `sequenza_reviewer_2`
 - `sequenza_solution`
+
+## Archiving
+
+By default, the fully-specified INI file produced by the `configure` step is archived to a directory given by the `archive_dir` INI parameter. This is intended as a record of what reports have been produced; it may be superseded at a later date, eg. by a database.
+
+The archive destination is: `$ARCHIVE_DIR/$ANALYSIS_UNIT/$MD5_CHECKSUM/${ANALYSIS_UNIT}.ini`, where `$MD5_CHECKSUM` is computed from the INI file. So, non-identical INI files will not be written to the same location. If Djerba produces an INI file which has already been archived, it will log a warning and leave the archived file untouched.
