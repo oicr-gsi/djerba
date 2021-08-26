@@ -5,6 +5,7 @@
 - GCGI-187: Fail and target-coverage options for HTML generation
 - GCGI-189: Script option to locate Sequenza results in file provenance
 - GCGI-193: Sequenza configuration/metadata fixes
+- GCGI-194: Automatically archive INI files
 
 ## v0.0.6: 2021-08-19
 
