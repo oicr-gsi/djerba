@@ -468,6 +468,19 @@ class provenance_reader(logger):
     def parse_sequenza_path(self):
         return self._parse_default('sequenza', 'application/zip-report-bundle', '_results\.zip$')
 
+    def parse_starfusion_predictions_path(self):
+        return self._parse_default('starFusion', 'application/octet-stream', 'star-fusion\.fusion_predictions\.tsv$')
+
+    def parse_wt_bam_path(self):
+        unit = self._get_unique_value(self.GEO_GROUP_ID, check=True, reference=False)
+        suffix = unit+'\.Aligned\.sortedByCoord\.out\.bam$'
+        return self._parse_default('STAR', 'application/bam', suffix)
+
+    def parse_wt_index_path(self):
+        unit = self._get_unique_value(self.GEO_GROUP_ID, check=True, reference=False)
+        suffix = unit+'\.Aligned\.sortedByCoord\.out\.bai$'
+        return self._parse_default('STAR', 'application/bam-index', suffix)
+
 class MissingConfigError(Exception):
     pass
 

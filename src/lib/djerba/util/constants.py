@@ -33,7 +33,7 @@ VARIANT_READS_AND_TOTAL_READS = 'Variant_Reads_And_Total_Reads'
 VARIANT_CLASSIFICATION = 'Variant_Classification'
 WHIZBAM_URL = 'Whizbam_URL'
 
-# script mode names
+# mode names for djerba.py
 SETUP = 'setup'
 CONFIGURE = 'configure'
 DRAFT = 'draft'
@@ -41,3 +41,6 @@ EXTRACT = 'extract'
 HTML = 'html'
 PDF = 'pdf'
 ALL = 'all'
+
+# for running Mavis
+MAVIS_SUBDIR_NAME = 'mavis'

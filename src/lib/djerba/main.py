@@ -149,6 +149,7 @@ class main(logger):
         self.logger.info("Setting up working directory in {0}".format(working_dir_path))
         os.mkdir(working_dir_path)
         os.mkdir(os.path.join(working_dir_path, self.REPORT_SUBDIR_NAME))
+        os.mkdir(os.path.join(working_dir_path, constants.MAVIS_SUBDIR_NAME))
         config_dest = os.path.join(working_dir_path, self.CONFIG_NAME)
         copyfile(self.ini_template, config_dest)
         self.logger.info("Finished setting up working directory")

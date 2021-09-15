@@ -18,6 +18,7 @@ from djerba.extract.extractor import extractor
 from djerba.extract.report_directory_parser import report_directory_parser
 from djerba.extract.r_script_wrapper import r_script_wrapper
 from djerba.main import main
+from djerba.mavis import mavis_runner
 from djerba.render import html_renderer, pdf_renderer
 from djerba.sequenza import sequenza_reader, SequenzaError
 from djerba.util.validator import config_validator, DjerbaConfigError
@@ -184,6 +185,53 @@ class TestMain(TestBase):
         self.assertTrue(os.path.exists(html_path))
         pdf_path = os.path.join(pdf_dir, analysis_unit+'.pdf')
         self.assertTrue(os.path.exists(pdf_path))
+
+class TestMavis(TestBase):
+
+    class mock_mavis_args:
+
+        def __init__(self, work_dir):
+            self.config = None
+            self.dry_run = False
+            self.execute = False
+            self.ready = True
+            self.work_dir = work_dir
+            self.donor = 'PANX_1249'
+            self.study = 'PASS01'
+            self.unit = 'test'
+            # logging
+            self.log_path = None
+            self.debug = False
+            self.verbose = False
+            self.quiet = True
+
+        def set_to_execute_dry_run(self):
+            self.dry_run = True
+            self.execute = True
+            self.ready = False
+
+    def test_ready(self):
+        out_dir = self.tmp_dir
+        provenance = os.path.join(self.sup_dir, 'pass01_panx_provenance.original.tsv.gz')
+        mock_args = self.mock_mavis_args(out_dir)
+        runner = mavis_runner(mock_args)
+        runner.provenance_path = provenance
+        action = runner.main()
+        self.assertEqual(action, 1)
+        filenames = [
+            'mavis_cromwell.json',
+            'PANX_1249_Lv_M_WT_100-PM-013_LCM5.Aligned.sortedByCoord.out.bai',
+            'PANX_1249_Lv_M_WT_100-PM-013_LCM5.Aligned.sortedByCoord.out.bam',
+            'star-fusion.fusion_predictions.tsv'
+        ]
+        for name in filenames:
+            self.assertTrue(os.path.exists(os.path.join(out_dir, name)))
+        # test execute in dry-run mode; live test is separate
+        mock_args.set_to_execute_dry_run()
+        runner = mavis_runner(mock_args)
+        runner.provenance_path = provenance
+        action = runner.main()
+        self.assertEqual(action, 2)
 
 class TestRender(TestBase):
 

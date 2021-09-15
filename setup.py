@@ -18,6 +18,8 @@ setup(
     scripts=[
         'src/bin/djerba.py',
         'src/bin/sequenza_explorer.py'
+        'src/bin/run_mavis.py',
+        'src/bin/wait_for_mavis.py'
     ],
     packages=find_packages(where=package_root),
     package_dir={'' : package_root},
@@ -29,6 +31,7 @@ setup(
             'data/civic/01-Jun-2020-GeneSummaries.tsv',
             'data/civic/01-Jun-2020-VariantGroupSummaries.tsv',
             'data/civic/01-Jun-2020-VariantSummaries.tsv',
+	    'data/cromwell_options.json',
             'data/cytoBand.txt',
             'data/defaults.ini',
             'data/ensemble_conversion_hg38.txt',
@@ -37,6 +40,8 @@ setup(
             'data/filter_flags.exclude',
             'data/gencode_v33_hg38_genes.bed',
             'data/genomic_summary.txt',
+	    'data/mavis_config_template.json',
+            'data/mavis_settings.ini',
             'data/mutation_types.exonic',
             'data/mutation_types.nonsynonymous',
             'data/targeted_genelist.txt',

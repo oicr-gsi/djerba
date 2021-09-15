@@ -36,6 +36,8 @@ Djerba is named for an [island](https://en.wikipedia.org/wiki/Djerba) off the co
 
 ## Command-line scripts
 
+Run any script with `--help` for more information.
+
 ### `djerba.py`
 
 This is the main script to run Djerba and generate reports.
@@ -52,8 +54,6 @@ Logging options are specified before the mode name, eg. `djerba.py --verbose --l
 - `draft`: Generate a draft report, by running the configure/extract/html steps in sequence to output a reporting directory and HTML document. The draft output can then be edited, prior to generating a final PDF report.
 - `all`: Run the complete reporting process, starting with user-supplied INI and finishing with PDF. Intermediate outputs such as HTML are optional.
 
-Run with `--help` for more information.
-
 #### INI configuration
 
 The `configure`, `extract`, `draft` and `all` modes require an INI configuration file. Some parameters are required, while others are optional.
@@ -68,7 +68,13 @@ By default, the fully-specified INI file produced by `configure`, `draft`, or `a
 
 Standalone script to explore available solutions in Sequenza output. (If gamma is not supplied to djerba.py, it will be found automatically.)
 
-Run with `--help` for more information.
+### `run_mavis.py`
+
+Script to manually run the Mavis workflow, via the Cromwell development server. This will be required on a temporary basis before Mavis is added to automated CAP workflows, and later for troubleshooting.
+
+### `wait_for_mavis.py`
+
+Script to monitor the Mavis workflow launched by `run_mavis.py`. On successful completion, copies Mavis results to a given local directory.
 
 ## Prerequisites
 
@@ -112,6 +118,7 @@ Djerba has a `setup.py` script which will install its source code and Python dep
 - Top-level python modules:
   - `configure.py`: Discover additional parameters for the user-supplied INI file
   - `main.py`: Main module to run Djerba functions
+  - `mavis.py`: Manually run the Mavis workflow
   - `render.py`: Render output to HTML or PDF
   - `sequenza.py`: Process output from the Sequenza tool
 - Python subpackages:

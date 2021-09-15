@@ -1,0 +1,34 @@
+{
+    "mavis.annotate.modules": "mavis/2.2.6 mavis-config/1.2 hg19-mavis/2.2.6 hg19/p13",
+    "mavis.config.alignerReference": "$HG19_MAVIS_ROOT/hg19.2bit",
+    "mavis.config.annotations": "$HG19_MAVIS_ROOT/ensembl69_hg19_annotations_with_ncrna.json",
+    "mavis.config.dgvAnnotations": "$HG19_MAVIS_ROOT/dgv_hg19_variants.tab",
+    "mavis.config.masking": "$HG19_MAVIS_ROOT/hg19_masking.tab",
+    "mavis.config.modules": "mavis/2.2.6 mavis-config/1.2 hg19-mavis/2.2.6 hg19/p13",
+    "mavis.config.referenceGenome": "$HG19_ROOT/hg19_random.fa",
+    "mavis.config.templateMetadata": "$HG19_MAVIS_ROOT/cytoBand.txt",
+    "mavis.donor": "PLACEHOLDER",
+    "mavis.generateConfigScript.arribaConverter": "$MAVIS_CONFIG_ROOT/bin/parse_arriba.py",
+    "mavis.generateConfigScript.jobMemory": 12,
+    "mavis.generateConfigScript.modules": "python/3.6",
+    "mavis.generateConfigScript.timeout": 40,
+    "mavis.inputBAMs": [
+        {
+            "bam": "PLACEHOLDER",
+            "bamIndex": "PLACEHOLDER",
+            "libraryDesign": "WT"
+        }
+    ],
+    "mavis.pairing.modules": "mavis/2.2.6 mavis-config/1.2 hg19-mavis/2.2.6 hg19/p13",
+    "mavis.setup.modules": "mavis/2.2.6 mavis-config/1.2 hg19-mavis/2.2.6 hg19/p13",
+    "mavis.summary.modules": "mavis/2.2.6 mavis-config/1.2 hg19-mavis/2.2.6 hg19/p13",
+    "mavis.svData": [
+        {
+            "libraryDesign": "WT",
+            "svFile": "PLACEHOLDER",
+            "workflowName": "StarFusion"
+        }
+    ],
+    "mavis.validate.modules": "mavis/2.2.6 mavis-config/1.2 hg19-mavis/2.2.6 hg19/p13",
+    "mavis.zipResults.modules": "mavis/2.2.6 mavis-config/1.2 hg19-mavis/2.2.6 hg19/p13"
+}
