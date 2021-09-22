@@ -1,7 +1,7 @@
 """Constants for use across multiple Djerba classes"""
 
 DATA_DIR_NAME = 'data'
-SEQUENZA_PRIMARY_SOLUTION = 'primary'
+SEQUENZA_PRIMARY_SOLUTION = '_primary_' # underscores are to make tab-delimited output line up better
 SEQUENZA_GAMMA = 'sequenza_gamma'
 SEQUENZA_PURITY_KEY = 'sequenza_purity_fraction'
 SEQUENZA_PLOIDY_KEY = 'sequenza_ploidy'

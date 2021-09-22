@@ -340,8 +340,7 @@ class r_script_wrapper(logger):
         Replace entry in the first column with the tumour ID
         """
         gamma = self.config.getint(ini.DISCOVERED, ini.SEQUENZA_GAMMA)
-        solution = self.config.get(ini.DISCOVERED, ini.SEQUENZA_SOLUTION)
-        seg_path = sequenza_reader(sequenza_path).extract_seg_file(tmp_dir, gamma, solution)
+        seg_path = sequenza_reader(sequenza_path).extract_seg_file(tmp_dir, gamma)
         out_path = os.path.join(tmp_dir, 'seg.txt')
         with open(seg_path, 'rt') as seg_file, open(out_path, 'wt') as out_file:
             reader = csv.reader(seg_file, delimiter="\t")

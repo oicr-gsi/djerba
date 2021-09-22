@@ -272,7 +272,7 @@ class TestSequenzaReader(TestBase):
     def setUp(self):
         super().setUp()
         self.zip_path = os.path.join(self.sup_dir, 'PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip')
-        self.expected_gamma_id = (400, 'primary')
+        self.expected_gamma_id = (400, constants.SEQUENZA_PRIMARY_SOLUTION)
 
     def test_gamma_script(self):
         """Test the command-line script to find gamma"""
@@ -289,6 +289,8 @@ class TestSequenzaReader(TestBase):
         result = self.run_command(cmd)
         with open(os.path.join(self.data_dir, 'expected_sequenza.txt'), 'rt') as in_file:
             expected_text = in_file.read()
+        with open(os.path.join(self.tmp_dir, 'script.txt') , 'w') as out_file:
+            out_file.write(result.stdout)
         self.assertEqual(result.stdout, expected_text)
         expected_json = os.path.join(self.data_dir, 'expected_sequenza.json')
         with open(expected_json, 'rt') as exp_file, open(json_path, 'rt') as out_file:
@@ -311,64 +313,64 @@ class TestSequenzaReader(TestBase):
         self.assertEqual(result.stdout, expected_text)
 
     def test_purity_ploidy(self):
-        reader = sequenza_reader(self.zip_path)
+        reader = sequenza_reader(self.zip_path, log_level=logging.CRITICAL)
         self.assertEqual(reader.get_purity(), 0.6)
         self.assertEqual(reader.get_ploidy(), 3.1)
         expected_segments = {
-            (100, 'primary'): 4356,
+            (100, '_primary_'): 4356,
             (100, 'sol2_0.59'): 4356,
             (1000, 'sol3_0.42'): 245,
             (1000, 'sol4_0.73'): 245,
-            (1000, 'primary'): 245,
+            (1000, '_primary_'): 245,
             (1000, 'sol2_0.49'): 245,
             (1250, 'sol3_0.42'): 165,
             (1250, 'sol4_0.73'): 165,
             (1250, 'sol5_0.4'): 165,
-            (1250, 'primary'): 165,
+            (1250, '_primary_'): 165,
             (1250, 'sol2_0.49'): 165,
             (1500, 'sol2_0.48'): 123,
             (1500, 'sol3_0.42'): 123,
             (1500, 'sol5_0.4'): 123,
-            (1500, 'primary'): 123,
+            (1500, '_primary_'): 123,
             (1500, 'sol4_0.72'): 123,
             (200, 'sol2_0.24'): 1955,
-            (200, 'primary'): 1955,
+            (200, '_primary_'): 1955,
             (200, 'sol3_0.31'): 1955,
             (2000, 'sol2_0.42'): 84,
             (2000, 'sol6_0.39'): 84,
             (2000, 'sol3_0.48'): 84,
-            (2000, 'primary'): 84,
+            (2000, '_primary_'): 84,
             (2000, 'sol4_1'): 84,
             (2000, 'sol5_0.72'): 84,
             (300, 'sol4_0.43'): 1170,
             (300, 'sol2_0.32'): 1170,
             (300, 'sol3_0.24'): 1170,
-            (300, 'primary'): 1170,
+            (300, '_primary_'): 1170,
             (400, 'sol3_0.43'): 839,
-            (400, 'primary'): 839,
+            (400, '_primary_'): 839,
             (400, 'sol4_1'): 839,
             (400, 'sol2_0.44'): 839,
             (400, 'sol5_0.39'): 839,
-            (50, 'primary'): 8669,
+            (50, '_primary_'): 8669,
             (500, 'sol2_0.48'): 622,
             (500, 'sol3_0.42'): 622,
-            (500, 'primary'): 622,
+            (500, '_primary_'): 622,
             (500, 'sol4_0.39'): 622,
             (600, 'sol2_0.48'): 471,
             (600, 'sol3_0.42'): 471,
             (600, 'sol4_0.73'): 471,
-            (600, 'primary'): 471,
+            (600, '_primary_'): 471,
             (700, 'sol2_0.48'): 407,
             (700, 'sol3_0.42'): 407,
             (700, 'sol4_0.73'): 407,
-            (700, 'primary'): 407,
+            (700, '_primary_'): 407,
             (800, 'sol3_0.42'): 337,
             (800, 'sol4_0.73'): 337,
-            (800, 'primary'): 337,
+            (800, '_primary_'): 337,
             (800, 'sol2_0.49'): 337,
             (900, 'sol3_0.42'): 284,
             (900, 'sol4_0.73'): 284,
-            (900, 'primary'): 284,
+            (900, '_primary_'): 284,
             (900, 'sol2_0.49'): 284
         }
         self.assertEqual(reader.get_segment_counts(), expected_segments)
@@ -383,7 +385,7 @@ class TestSequenzaReader(TestBase):
             reader.get_ploidy(gamma=999999)
 
     def test_seg_file(self):
-        reader = sequenza_reader(self.zip_path)
+        reader = sequenza_reader(self.zip_path, log_level=logging.CRITICAL)
         seg_path = reader.extract_seg_file(self.tmp_dir)
         self.assertEqual(
             seg_path,

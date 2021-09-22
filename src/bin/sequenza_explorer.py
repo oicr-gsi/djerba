@@ -10,6 +10,7 @@ import sys
 sys.path.pop(0) # do not import from script directory
 from djerba.configure import provenance_reader
 from djerba.sequenza import sequenza_reader
+from djerba.util.logger import logger
 from djerba.util.validator import path_validator
 
 # script mode names
@@ -18,12 +19,7 @@ READ = 'read'
 
 def locate_sequenza_path(args):
     path_validator().validate_input_file(args.file_provenance)
-    if args.debug:
-        log_level = logging.DEBUG
-    elif args.verbose:
-        log_level = logging.INFO
-    else:
-        log_level = logging.WARNING
+    log_level = logger.get_args_log_level(args)
     reader = provenance_reader(args.file_provenance, args.project, args.donor, log_level)
     return reader.parse_sequenza_path()
 
@@ -31,10 +27,12 @@ def get_parser():
     parser = argparse.ArgumentParser(
         description='sequenza_explorer: Find Sequenza results, review purity/ploidy and apply the CGI heuristic to choose a gamma parameter'
     )
+    parser.add_argument('--debug', action='store_true', help='More verbose logging')
+    parser.add_argument('--verbose', action='store_true', help='Verbose logging')
+    parser.add_argument('--quiet', action='store_true', help='Logging for error messages only')
+    parser.add_argument('--log-path', help='Output file for log messages; defaults to STDERR')
     subparsers = parser.add_subparsers(title='subcommands', help='sub-command help', dest='subparser_name')
     locate_parser = subparsers.add_parser(LOCATE, help='Locate Sequenza results in file provenance')
-    locate_parser.add_argument('--debug', action='store_true', help='More verbose search logging')
-    locate_parser.add_argument('--verbose', action='store_true', help='Verbose search logging')
     locate_parser.add_argument('-d', '--donor', metavar='DONOR', required=True, help='Donor ID for file provenance search')
     locate_parser.add_argument('-f', '--file-provenance', metavar='PATH', default='/.mounts/labs/seqprodbio/private/backups/seqware_files_report_latest.tsv.gz',
                                help='Path to file provenance report; defaults to latest production report')
@@ -52,7 +50,8 @@ def main(args):
         print(locate_sequenza_path(args))
     elif args.subparser_name == READ:
         path_validator().validate_input_file(args.in_path)
-        reader = sequenza_reader(args.in_path)
+        log_level = logger.get_args_log_level(args)
+        reader = sequenza_reader(args.in_path, log_level, args.log_path)
         if args.gamma_selection:
             reader.print_gamma_selection()
         if args.purity_ploidy:

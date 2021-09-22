@@ -2,6 +2,7 @@
 
 import csv
 import json
+import logging
 import math
 import os
 import re
@@ -10,15 +11,17 @@ import tempfile
 import zipfile
 
 import djerba.util.constants as constants
+from djerba.util.logger import logger
 
-class sequenza_reader:
+class sequenza_reader(logger):
 
-    def __init__(self, zip_path):
+    def __init__(self, zip_path, log_level=logging.WARNING, log_path=None):
         """
         Decompress the zip archive to a temporary directory
         Read values for gamma and purity/ploidy; find default gamma
         """
         self.zip_path = zip_path
+        self.logger = self.get_logger(log_level, __name__, log_path)
         self.segment_counts = {}
         self.purity = {}
         self.ploidy = {}
@@ -30,33 +33,43 @@ class sequenza_reader:
         # 'gamma id' is the value of gamma, plus the solution designator ('primary', 'sol2_0.49', etc.)
         zf = zipfile.ZipFile(self.zip_path)
         gamma_id_set = set()
+        # first pass -- populate the canonical set of gamma IDs
         for name in zf.namelist():
             gamma_id = self._parse_gamma_id(name)
             gamma_id_set.add(gamma_id)
+        self.gamma_ids = sorted(list(gamma_id_set))
+        # second pass -- parse metrics and file locations
+        for name in zf.namelist():
+            gamma_id = self._parse_gamma_id(name)
+            gamma = gamma_id[0]
             if re.search('_segments\.txt$', name):
                 if gamma_id in self.segment_counts:
-                    raise SequenzaError("Multiple _segments.txt for gamma_id {0}".format(gamma_id))
+                    msg = "Multiple _segments.txt for gamma_id {0}".format(gamma_id)
+                    self.logger.error(msg)
+                    raise SequenzaError(msg)
                 self.segment_counts[gamma_id] = self._count_segments(zf.extract(name, tmp))
-            elif re.search('_alternative_solutions\.txt$', name):
-                if gamma_id in self.purity:
-                    raise SequenzaError("Multiple metrics files for gamma_id {0}".format(gamma_id))
-                [purity, ploidy] = self._find_purity_ploidy(zf.extract(name, tmp))
-                self.purity[gamma_id] = purity
-                self.ploidy[gamma_id] = ploidy
-            elif re.search('_Total_CN.seg', name):
-                gamma = gamma_id[0] # only one .seg file for each value of gamma
+            elif re.search('_alternative_solutions\.txt$', name) and self._is_primary(gamma_id):
+                # alternative_solutions.txt is identical for all solutions; only parse once for each gamma
+                self._update_purity_ploidy(gamma, zf.extract(name, tmp))
+            elif re.search('_Total_CN.seg', name) and self._is_primary(gamma_id):
+                # Only one .seg file for each value of gamma
                 if gamma in self.seg_archive:
-                    raise SequenzaError("Multiple .seg files for gamma {0}".format(gamma))
+                    msg = "Multiple .seg files for gamma {0}".format(gamma)
+                    self.logger.error(msg)
+                    raise SequenzaError(msg)
                 self.seg_archive[gamma] = name
-        self.gamma_ids = sorted(list(gamma_id_set))
         # check required info is present for each gamma_id
         for gamma_id in self.gamma_ids:
+            msg = None
             if gamma_id not in self.segment_counts:
-                raise SequenzaError("Missing segment count for gamma_id {0}".format(gamma_id))
-            elif gamma_id not in self.purity:
-                raise SequenzaError("Missing metrics for gamma_id {0}".format(gamma_id))
+                msg = "Missing segment count for gamma_id {0}".format(gamma_id)
+            elif gamma_id not in self.purity or gamma_id not in self.ploidy:
+                msg = "Missing purity/ploidy for gamma_id {0}".format(gamma_id)
             elif gamma_id[0] not in self.seg_archive:
-                raise SequenzaError("Missing .seg location for gamma {0}".format(gamma_id[0]))
+                msg = "Missing .seg location for gamma {0}".format(gamma_id[0])
+            if msg:
+                self.logger.error(msg)
+                raise SequenzaError(msg)
         tempdir.cleanup()
         # find important values of gamma_id
         [self.default_gamma_id, self.gamma_id_selection_table] = self._find_default_gamma_id()
@@ -67,6 +80,7 @@ class sequenza_reader:
         Construct a gamma ID from the given gamma and solution (if any), defaults otherwise
         Raise an error if resulting gamma ID is unknown
         """
+        self.logger.debug("Constructing gamma ID with inputs gamma={0}, solution={1}".format(gamma, solution))
         if gamma:
             if solution:
                 gamma_id = (gamma, solution)
@@ -75,8 +89,9 @@ class sequenza_reader:
         else:
             gamma_id = self.default_gamma_id
         if gamma_id not in self.gamma_ids:
-            msg = "gamma ID {0} not found in '{1}'; ".format(gamma, self.zip_path) +\
+            msg = "gamma ID {0} not found in '{1}'; ".format(gamma_id, self.zip_path) +\
             "available IDs are: {0}".format(self.gamma_ids)
+            self.logger.error(msg)
             raise SequenzaError(msg)
         return gamma_id
 
@@ -148,20 +163,9 @@ class sequenza_reader:
                 min_purity_gamma.append(gamma_id)
         return [min_purity, max_purity, min_purity_gamma, max_purity_gamma]
 
-    def _find_purity_ploidy(self, sol_path):
-        """Find most probable purity/ploidy from an alternative_solutions.txt file"""
-        with open(sol_path, 'rt') as sol_file:
-            reader = csv.reader(sol_file, delimiter="\t")
-            first = True
-            [purity, ploidy] = [None, None]
-            for row in reader:
-                if first: # skip the header row
-                    first = False
-                else:
-                    purity = float(row[0])
-                    ploidy = float(row[1])
-                    break
-        return [purity, ploidy]
+    def _is_primary(self, gamma_id):
+        """Does the given gamma_id denote a primary solution?"""
+        return gamma_id[1]==constants.SEQUENZA_PRIMARY_SOLUTION
 
     def _parse_gamma_id(self, name):
         """
@@ -177,6 +181,7 @@ class sequenza_reader:
         except (IndexError, ValueError) as err:
             msg = "Unable to parse gamma parameter from {0} ".format(name) +\
                   "in archive {0}".format(self.zip_path)
+            self.logger.error(msg)
             raise SequenzaError(msg) from err
         return gamma_id
 
@@ -190,13 +195,42 @@ class sequenza_reader:
             reformatted[key[0]][key[1]] = metrics[key]
         return reformatted
 
-    def extract_seg_file(self, dest_dir, gamma=None, solution=None):
+    def _update_purity_ploidy(self, gamma, input_path):
+        """
+        Update purity and ploidy for the given gamma and alternative_solutions.txt file
+        alternative_solutions.txt is identical for all solution folders; contains purity/ploidy solutions for the given gamma
+        Non-primary solution names are of the form sol${COUNT}_${PURITY}
+        where $COUNT is the line in the alternative_solutions.txt file (header = 0, primary solution = 1)
+        Record the purity and ploidy by gamma_id
+        """
+        count = 0
+        with open(input_path, 'rt') as input_file:
+            reader = csv.reader(input_file, delimiter="\t")
+            for row in reader:
+                if count > 0: # ignore the header row
+                    [purity, ploidy, slpp] = [float(x) for x in row]
+                    if count == 1:
+                        solution = constants.SEQUENZA_PRIMARY_SOLUTION
+                    elif purity == 1:
+                        # annoying quirk of Sequenza output naming
+                        solution = "sol{0}_1".format(count)
+                    else:
+                        solution = "sol{0}_{1}".format(count, purity)
+                    gamma_id = self._construct_gamma_id(gamma, solution)
+                    self.purity[gamma_id] = purity
+                    self.ploidy[gamma_id] = ploidy
+                count += 1
+        msg = "Found purity & ploidy for gamma={0}, input={1}".format(gamma, input_file)
+        self.logger.debug(msg)
+
+    def extract_seg_file(self, dest_dir, gamma=None):
         """
         Extract the Total_CN.seg file; for the supplied gamma (if any), default gamma otherwise.
+        No Sequenza solution specified, as .seg file is shared between all solutions for given gamma
         dest_dir is a directory path for the extracted file.
         The .seg file is further processed downstream, before input to singleSample.R
         """
-        gamma_id = self._construct_gamma_id(gamma, solution)
+        gamma_id = self._construct_gamma_id(gamma) # supplies defaults and checks validity of gamma
         zf = zipfile.ZipFile(self.zip_path)
         extracted = zf.extract(self.seg_archive[gamma_id[0]], dest_dir)
         return extracted
@@ -231,18 +265,17 @@ class sequenza_reader:
             print("\t".join([str(x) for x in row]))
 
     def print_summary(self):
-        min_purity_gamma_str = ", ".join([str(x) for x in self.min_purity_gamma_id])
-        max_purity_gamma_str = ", ".join([str(x) for x in self.max_purity_gamma_id])
-        print("Minimum purity {0} at:\ngamma\tsolution".format(self.min_purity))
+        print("Minimum purity {0} at:\ngamma\tsolution\tpurity\tploidy".format(self.min_purity))
         for x in self.min_purity_gamma_id:
-            print("{0}\t{1}".format(x[0], x[1]))
+            print("\t".join([str(y) for y in [x[0], x[1], self.purity[x], self.ploidy[x]]]))
         print('---------------------------------')
-        print("Maximum purity {0} at:\ngamma\tsolution".format(self.max_purity))
+        print("Maximum purity {0} at:\ngamma\tsolution\tpurity\tploidy".format(self.max_purity))
         for x in self.max_purity_gamma_id:
-            print("{0}\t{1}".format(x[0], x[1]))
+            print("\t".join([str(y) for y in [x[0], x[1], self.purity[x], self.ploidy[x]]]))
         print('---------------------------------')
         print("Default gamma ID = {0}".format(self.default_gamma_id))
         print("Purity at default gamma ID = {0}".format(self.purity[self.default_gamma_id]))
+        print("Ploidy at default gamma ID = {0}".format(self.ploidy[self.default_gamma_id]))
 
     def write_json(self, out_path):
         """Write a JSON summary of gamma parameters"""

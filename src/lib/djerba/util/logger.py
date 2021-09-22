@@ -11,7 +11,12 @@ class logger:
     def __init__(self):
         pass
 
-    def get_log_level(self, debug=False, verbose=False, quiet=False):
+    @staticmethod
+    def get_args_log_level(args):
+        return logger.get_log_level(args.debug, args.verbose, args.quiet)
+
+    @staticmethod
+    def get_log_level(debug=False, verbose=False, quiet=False):
         log_level = logging.WARN
         if debug:
             log_level = logging.DEBUG
