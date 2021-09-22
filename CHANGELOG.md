@@ -7,6 +7,7 @@
 - GCGI-190: Script to manually run Mavis
 - GCGI-193: Sequenza configuration/metadata fixes
 - GCGI-194: Automatically archive INI files
+- GCGI-205: Fix for Sequenza reader on alternate solutions
 
 ## v0.0.6: 2021-08-19
 
