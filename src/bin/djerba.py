@@ -38,10 +38,9 @@ def get_parser():
     render_parser.add_argument('-t', '--target-coverage', metavar='COVER', type=int, choices=[40, 80], default=40, help='Target coverage depth for report footer')
     publish_parser = subparsers.add_parser(constants.PDF, help='read Djerba HTML output and write PDF')
     publish_parser.add_argument('-H', '--html', metavar='PATH', required=True, help='Path for HTML input')
-    publish_parser.add_argument('-n', '--no-footer', action='store_true', help='Omit the CGI footer text; for general-purpose HTML to PDF conversion')
-    publish_parser.add_argument('-p', '--pdf', metavar='PATH', help='Path for PDF output; overrides --pdf-dir option')
-    publish_parser.add_argument('-P', '--pdf-dir', metavar='DIR', help='Directory for PDF output; default filename derived from analysis unit')
-    publish_parser.add_argument('-u', '--unit', metavar='UNIT', help='Analysis unit identifier; required for --pdf-dir option')
+    publish_parser.add_argument('-P', '--pdf-dir', metavar='DIR', required=True, help='Directory for PDF output; default filename derived from analysis unit')
+    publish_parser.add_argument('-u', '--unit', metavar='UNIT', help='Analysis unit identifier; incompatible with --unit-file')
+    publish_parser.add_argument('-U', '--unit-file', metavar='PATH', help='Text file with analysis unit identifier; incompatible with --unit')
     draft_parser = subparsers.add_parser(constants.DRAFT, help='run configure/extract/html steps; output HTML')
     draft_parser.add_argument('-f', '--failed', action='store_true', help='Produce report for a failed sample')
     draft_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with user inputs')
@@ -58,10 +57,10 @@ def get_parser():
     all_parser.add_argument('-o', '--ini-out', metavar='PATH', help='Path for output of fully specified INI config file')
     all_parser.add_argument('-j', '--json', metavar='PATH', help='Output path for JSON summary')
     all_parser.add_argument('-H', '--html', metavar='PATH', help='Path for HTML output') # uses temporary dir if not supplied
-    all_parser.add_argument('-p', '--pdf', metavar='PATH', help='Path for PDF output; overrides --pdf-dir option')
-    all_parser.add_argument('-P', '--pdf-dir', metavar='DIR', required=True, help='Directory for PDF output; default filename derived from analysis unit')
+    all_parser.add_argument('-P', '--pdf-dir', metavar='DIR', help='Directory for PDF output; default filename derived from analysis unit')
     all_parser.add_argument('-t', '--target-coverage', metavar='COVER', type=int, choices=[40, 80], default=40, help='Target coverage depth for report footer')
-    all_parser.add_argument('-u', '--unit', metavar='PATH', required=True, help='Analysis unit identifier; required for --pdf-dir option')
+    all_parser.add_argument('-u', '--unit', metavar='UNIT', help='Analysis unit identifier; incompatible with --unit-file')
+    all_parser.add_argument('-U', '--unit-file', metavar='PATH', help='Text file with analysis unit identifier; incompatible with --unit')
     all_parser.add_argument('--no-archive', action='store_true', help='Do not archive the fully specified INI config file')
     return parser
 

@@ -8,6 +8,7 @@
 - GCGI-193: Sequenza configuration/metadata fixes
 - GCGI-194: Automatically archive INI files
 - GCGI-205: Fix for Sequenza reader on alternate solutions
+- GCGI-212: Refactor PDF command line arguments
 
 ## v0.0.6: 2021-08-19
 

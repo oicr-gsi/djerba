@@ -160,6 +160,7 @@ class TestMain(TestBase):
             self.pdf_dir = pdf_dir
             self.target_coverage = 40
             self.unit = analysis_unit
+            self.unit_file = None
             self.json = None
             self.pdf = None
             self.subparser_name = constants.ALL

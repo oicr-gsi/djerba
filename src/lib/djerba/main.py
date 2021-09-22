@@ -36,14 +36,30 @@ class main(logger):
         self.logger = self.get_logger(self.log_level, __name__, self.log_path)
         self.validate_args(args) # checks subparser and args are valid
 
-    def _get_pdf_path(self):
-        if self.args.pdf:
-            pdf_path = self.args.pdf
-        elif self.args.pdf_dir and self.args.unit:
-            name = "{0}.pdf".format(self.args.unit)
-            pdf_path = os.path.join(self.args.pdf_dir, name)
+    def _get_analysis_unit(self):
+        unit = None
+        err = None
+        if self.args.unit and self.args.unit_file:
+            err = "Cannot specify both --unit and --unit-file"
+        elif self.args.unit:
+            unit = self.args.unit
+            self.logger.debug("Found analysis unit {0} from command-line args".format(unit))
+        elif self.args.unit_file:
+            with open(self.args.unit_file) as uf:
+                unit = uf.readline().strip() # read the first line, ignore others
+            self.logger.debug("Found analysis unit {0} from file {1}".format(unit, self.args.unit_file))
         else:
-            msg = "Must specify either a PDF output path, or a directory and analysis unit"
+            err = "Must specify one of --unit or --unit-file"
+        if err:
+            self.logger.error(err)
+            raise RuntimeError(err)
+        return unit
+
+    def _get_pdf_path(self, unit):
+        if self.args.pdf_dir:            
+            pdf_path = os.path.join(self.args.pdf_dir, "{0}.pdf".format(unit))
+        else:
+            msg = "Must specify a PDF output directory"
             self.logger.error(msg)
             raise RuntimeError(msg)
         return pdf_path
@@ -74,11 +90,9 @@ class main(logger):
             renderer = html_renderer(self.log_level, self.log_path)
             renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed)
         elif self.args.subparser_name == constants.PDF:
-            pdf = self._get_pdf_path()
-            if self.args.no_footer:
-                pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, footer=False)
-            else:
-                pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, self.args.unit)
+            unit = self._get_analysis_unit()
+            pdf = self._get_pdf_path(unit)
+            pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, unit)
         elif self.args.subparser_name == constants.DRAFT:
             config = self.read_config(self.args.ini)
             cv.validate_minimal(config)
@@ -109,8 +123,9 @@ class main(logger):
             extractor(full_config, report_dir, self.log_level, self.log_path).run(json_path)
             renderer = html_renderer(self.log_level, self.log_path)
             renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed)
-            pdf = self._get_pdf_path()
-            pdf_renderer(self.log_level, self.log_path).run(html_path, pdf, self.args.unit)
+            unit = self._get_analysis_unit()
+            pdf = self._get_pdf_path(unit)
+            pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, unit)
 
     def run_draft(self, input_config):
         """
@@ -174,10 +189,9 @@ class main(logger):
             v.validate_output_file(args.html)
         elif args.subparser_name == constants.PDF:
             v.validate_input_file(args.html)
-            if args.pdf:
-                v.validate_output_file(args.pdf)
-            elif args.pdf_dir: # --pdf overrides --pdf-dir
-                v.validate_output_dir(args.pdf_dir)
+            v.validate_output_dir(args.pdf_dir)
+            if args.unit_file:
+                v.validate_input_file(args.unit_file)
         elif args.subparser_name == constants.DRAFT:
             v.validate_input_file(args.ini)
             v.validate_output_dir(args.dir)
