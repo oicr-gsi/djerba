@@ -39,17 +39,19 @@ class main(logger):
     def _get_analysis_unit(self):
         unit = None
         err = None
-        if self.args.unit and self.args.unit_file:
-            err = "Cannot specify both --unit and --unit-file"
-        elif self.args.unit:
+        if self.args.unit:
             unit = self.args.unit
             self.logger.debug("Found analysis unit {0} from command-line args".format(unit))
-        elif self.args.unit_file:
-            with open(self.args.unit_file) as uf:
-                unit = uf.readline().strip() # read the first line, ignore others
-            self.logger.debug("Found analysis unit {0} from file {1}".format(unit, self.args.unit_file))
+        elif self.args.dir:
+            unit_path = os.path.join(self.args.dir, constants.ANALYSIS_UNIT_FILENAME)
+            self.logger.debug("Attempting to find analysis unit from file {0}".format(unit_path))
+            path_validator(self.log_level).validate_input_file(unit_path)
+            with open(unit_path) as unit_file:
+                unit = unit_file.readline().strip() # read the first line, ignore others
+            self.logger.debug("Found analysis unit {0} from file {1}".format(unit, unit_path))
         else:
-            err = "Must specify one of --unit or --unit-file"
+            # shouldn't happen, but specify this for completeness
+            err = "Must specify one of --unit or --dir to find analysis unit"
         if err:
             self.logger.error(err)
             raise RuntimeError(err)
@@ -86,7 +88,11 @@ class main(logger):
             cv.validate_full(config)
             extractor(config, self.args.dir, self.log_level, self.log_path).run(self.args.json)
         elif self.args.subparser_name == constants.HTML:
-            html_path = os.path.realpath(self.args.html) # needed to correctly render links
+            if self.args.html:
+                html_path = self.args.html
+            else:
+                html_path = os.path.join(self.args.dir, '{0}.html'.format(self._get_analysis_unit()))
+            html_path = os.path.realpath(html_path) # needed to correctly render links
             renderer = html_renderer(self.log_level, self.log_path)
             renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed)
         elif self.args.subparser_name == constants.PDF:
@@ -124,7 +130,7 @@ class main(logger):
             renderer = html_renderer(self.log_level, self.log_path)
             renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed)
             unit = self._get_analysis_unit()
-            pdf = self._get_pdf_path(unit)
+            pdf = os.path.join(self.args.pdf_dir, "{0}.pdf".format(unit))
             pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, unit)
 
     def run_draft(self, input_config):
@@ -142,12 +148,10 @@ class main(logger):
                 self.logger.error(msg)
                 raise ValueError(msg)
             if self.args.html:
-                # *must* use absolute HTML path to render links correctly in Rmarkdown
                 html_path = os.path.realpath(self.args.html)
             else:
-                msg = "HTML path is required in {0} mode".format(constants.DRAFT)
-                self.logger.error(msg)
-                raise ValueError(msg)
+                html_path = os.path.join(self.args.dir, '{0}.html'.format(self._get_analysis_unit()))
+            html_path = os.path.realpath(html_path) # needed to correctly render links
             archive = not self.args.no_archive # True if archiving is in effect
             configurer(input_config, self.log_level, self.log_path).run(ini_path_full, archive)
             full_config = configparser.ConfigParser()
@@ -186,12 +190,12 @@ class main(logger):
                 v.validate_output_file(args.json)
         elif args.subparser_name == constants.HTML:
             v.validate_input_dir(args.dir)
-            v.validate_output_file(args.html)
+            if args.html:
+                v.validate_output_file(args.html)
         elif args.subparser_name == constants.PDF:
-            v.validate_input_file(args.html)
-            v.validate_output_dir(args.pdf_dir)
-            if args.unit_file:
-                v.validate_input_file(args.unit_file)
+            v.validate_output_dir(args.dir)
+            if args.html:
+                v.validate_input_file(args.html)
         elif args.subparser_name == constants.DRAFT:
             v.validate_input_file(args.ini)
             v.validate_output_dir(args.dir)
@@ -210,9 +214,7 @@ class main(logger):
                 v.validate_output_file(args.json)
             if args.html:
                 v.validate_output_file(args.html)
-            if args.pdf:
-                v.validate_output_file(args.pdf)
-            elif args.pdf_dir: # --pdf overrides --pdf-dir
+            if args.pdf_dir:
                 v.validate_output_dir(args.pdf_dir)
         else:
             # shouldn't happen, but handle this case for completeness
