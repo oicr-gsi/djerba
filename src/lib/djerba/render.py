@@ -99,5 +99,5 @@ class pdf_renderer(logger):
                 'quiet': '',
                 'disable-javascript': ''
             }
-        pdfkit.from_url(html_path, pdf_path, options = options)
+        pdfkit.from_file(html_path, pdf_path, options = options)
         self.logger.info('Finished writing PDF')

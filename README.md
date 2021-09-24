@@ -24,15 +24,17 @@ Djerba is named for an [island](https://en.wikipedia.org/wiki/Djerba) off the co
 
 #### Convert a CGI clinical report from HTML to PDF
 
-`djerba.py pdf --html ${HTML_INPUT_PATH} --pdf ${PDF_OUTPUT_PATH} --unit ${ANALYSIS_UNIT}`
+Assuming appropriate HTML and analysis unit files are in `--pdf-dir`:
 
-#### General-purpose HTML to PDF conversion (no CGI report footer)
+`djerba.py pdf --pdf-dir ${PDF_OUTPUT_DIR}`
 
-`djerba.py pdf --html ${HTML_INPUT_PATH} --pdf ${PDF_OUTPUT_PATH} --no-footer`
+More generally:
+
+`djerba.py pdf --pdf-dir ${PDF_OUTPUT_DIR} --html ${HTML_PATH} --unit ${ANALYSIS_UNIT}`
 
 #### One-step generation of a PDF report
 
-`djerba.py all --ini ${INI_INPUT_PATH} --pdf ${PDF_OUTPUT_PATH}`
+`djerba.py all --ini ${INI_INPUT_PATH} --pdf-dir ${PDF_OUTPUT_DIR}`
 
 ## Command-line scripts
 
@@ -64,6 +66,10 @@ Example INI file (with dummy value for the `mavis_file` parameter): [config_user
 
 By default, the fully-specified INI file produced by `configure`, `draft`, or `all` will be archived to a location specified in the `archive_dir` INI parameter. This can be cancelled with the `--no-archive` argument to `djerba.py`.
 
+### `html2pdf.py`
+
+Convenience script for simple HTML to PDF conversion. Does not add the page footer used in Djerba reports.
+
 ### `sequenza_explorer.py`
 
 Standalone script to explore available solutions in Sequenza output. (If gamma is not supplied to djerba.py, it will be found automatically.)
@@ -84,6 +90,7 @@ The following OICR [Modulator](https://gitlab.oicr.on.ca/ResearchIT/modulator) e
 - `cbioportal/0.1`
 - `rmarkdown/0.1m`
 - `wkhtmltopdf/0.12.6`
+- `cromwell/45.1`
 
 Djerba has a `setup.py` script which will install its source code and Python dependencies. Production releases of Djerba will be installed as an environment modules in Modulator. Alternatively, install as described under `Installation`.
 

@@ -257,6 +257,21 @@ class TestRender(TestBase):
         # TODO check file contents; need to omit the report date etc.
         self.assertTrue(os.path.exists(out_path))
 
+    def test_script(self):
+        """Test the HTML2PDF script"""
+        html_path = os.path.join(self.data_dir, 'example_page.html')
+        pdf_path = os.path.join(self.tmp_dir, 'example_doc.pdf')
+        cmd = [
+            "html2pdf.py",
+            "--html", html_path,
+            "--pdf", pdf_path
+        ]
+        result = self.run_command(cmd)
+        self.assertTrue(os.path.exists(pdf_path))
+        # Compare file contents; timestamps will differ. TODO Make this more Pythonic.
+        result = subprocess.run("cat {0} | grep -av CreationDate | md5sum | cut -f 1 -d ' '".format(pdf_path), shell=True, capture_output=True)
+        self.assertEqual(str(result.stdout, encoding=constants.TEXT_ENCODING).strip(), '8213bfad2518570c26c9baef746b0b22')
+
 class TestReport(TestBase):
 
     def test_parser(self):

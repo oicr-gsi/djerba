@@ -17,6 +17,7 @@ setup(
     version=package_version,
     scripts=[
         'src/bin/djerba.py',
+        'src/bin/html2pdf.py',
         'src/bin/sequenza_explorer.py'
         'src/bin/run_mavis.py',
         'src/bin/wait_for_mavis.py'
