@@ -6,7 +6,7 @@ Setup script for Djerba
 
 from setuptools import setup, find_packages
 
-package_version = '0.0.6'
+package_version = '0.0.7'
 package_root = 'src/lib'
 
 with open("README.md", "r") as fh:
@@ -18,7 +18,7 @@ setup(
     scripts=[
         'src/bin/djerba.py',
         'src/bin/html2pdf.py',
-        'src/bin/sequenza_explorer.py'
+        'src/bin/sequenza_explorer.py',
         'src/bin/run_mavis.py',
         'src/bin/wait_for_mavis.py'
     ],
