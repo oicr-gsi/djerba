@@ -27,7 +27,7 @@ args <- commandArgs(trailingOnly = T)
 #folder <- '/.mounts/labs/TGL/cap/OCTCAP/OCT_010118/OCT_010118_Ut_P_OCT-01-0118-TS/report'
 
 #cgiTools <- "/u/afortuna/CGI-Tools"
-cgiTools <- Sys.getenv("basedir")
+cgiTools <- Sys.getenv("DJERBA_BASE_DIR")
 
 folder <- args[1]
 

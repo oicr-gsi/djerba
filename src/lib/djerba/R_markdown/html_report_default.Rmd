@@ -21,7 +21,7 @@ library(data.table)
 
 args <- commandArgs(trailingOnly = T)
 
-cgiTools <- Sys.getenv("basedir")
+cgiTools <- Sys.getenv("DJERBA_BASE_DIR")
 
 folder <- args[1]
 
