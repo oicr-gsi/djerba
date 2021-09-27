@@ -1,6 +1,7 @@
 """Main class to run Djerba"""
 
 import configparser
+import getpass
 import logging
 import os
 import tempfile
@@ -18,6 +19,7 @@ class main(logger):
 
     """Main class to run Djerba"""
 
+    AUTHOR_DEFAULT = 'CGI_PLACEHOLDER'
     CONFIG_NAME = 'config.ini'
     INI_DEFAULT_NAME = 'defaults.ini'
     INI_TEMPLATE_NAME = 'config_template.ini'
@@ -35,6 +37,23 @@ class main(logger):
             path_validator(self.log_level).validate_output_file(self.log_path)
         self.logger = self.get_logger(self.log_level, __name__, self.log_path)
         self.validate_args(args) # checks subparser and args are valid
+
+    def _get_author(self):
+        """Find the author name. If not in args, try to find from the username; otherwise use default"""
+        # TODO add a small JSON config file with user ID -> author name for known CGI users?
+        # TODO should author be an INI parameter?
+        authors = {
+            'ibancarz': 'Iain Bancarz',
+            'afortuna': 'Alex Fortuna'
+        }
+        username = getpass.getuser()
+        if self.args.author:
+            author = self.args.author
+        elif username in authors:
+            author = authors[username]
+        else:
+            author = self.AUTHOR_DEFAULT
+        return author
 
     def _get_analysis_unit(self):
         unit = None
@@ -93,7 +112,7 @@ class main(logger):
                 html_path = os.path.join(self.args.dir, '{0}.html'.format(self._get_analysis_unit()))
             html_path = os.path.realpath(html_path) # needed to correctly render links
             renderer = html_renderer(self.log_level, self.log_path)
-            renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed)
+            renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed, self._get_author())
         elif self.args.subparser_name == constants.PDF:
             unit = self._get_analysis_unit()
             pdf = os.path.join(self.args.dir, "{0}.pdf".format(unit))
@@ -123,7 +142,7 @@ class main(logger):
             extractor(full_config, report_dir, self.log_level, self.log_path).run(json_path)
             html_path = self._get_html_path()
             renderer = html_renderer(self.log_level, self.log_path)
-            renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed)
+            renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed, self._get_author())
             unit = self._get_analysis_unit()
             pdf = os.path.join(self.args.dir, "{0}.pdf".format(unit))
             pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, unit)
@@ -151,7 +170,7 @@ class main(logger):
             extractor(full_config, report_dir, self.log_level, self.log_path).run(json_path)
             html_path = self._get_html_path()
             renderer = html_renderer(self.log_level, self.log_path)
-            renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed)
+            renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed, self._get_author())
 
     def run_setup(self):
         """Set up an empty working directory for a CGI report"""

@@ -153,6 +153,7 @@ class TestMain(TestBase):
 
         def __init__(self, ini_path, ini_out_path, html_path, work_dir, analysis_unit):
             self.ini_out = ini_out_path
+            self.author = None
             self.dir = work_dir
             self.failed = False
             self.html = html_path
