@@ -151,13 +151,12 @@ class TestMain(TestBase):
     class mock_args:
         """Use instead of argparse to store params for testing"""
 
-        def __init__(self, ini_path, ini_out_path, html_path, pdf_dir, work_dir, analysis_unit):
+        def __init__(self, ini_path, ini_out_path, html_path, work_dir, analysis_unit):
             self.ini_out = ini_out_path
             self.dir = work_dir
             self.failed = False
             self.html = html_path
             self.ini = ini_path
-            self.pdf_dir = pdf_dir
             self.target_coverage = 40
             self.unit = analysis_unit
             self.unit_file = None
@@ -176,15 +175,14 @@ class TestMain(TestBase):
         ini_path = self.config_user
         config_path = os.path.join(out_dir, 'config.ini')
         html_path = os.path.join(out_dir, 'report.html')
-        pdf_dir = out_dir
         work_dir = os.path.join(out_dir, 'report')
         analysis_unit = 'test_unit'
         if not os.path.exists(work_dir):
             os.mkdir(work_dir)
-        args = self.mock_args(ini_path, config_path, html_path, pdf_dir, work_dir, analysis_unit)
+        args = self.mock_args(ini_path, config_path, html_path, work_dir, analysis_unit)
         main(args).run()
         self.assertTrue(os.path.exists(html_path))
-        pdf_path = os.path.join(pdf_dir, analysis_unit+'.pdf')
+        pdf_path = os.path.join(work_dir, analysis_unit+'.pdf')
         self.assertTrue(os.path.exists(pdf_path))
 
 class TestMavis(TestBase):

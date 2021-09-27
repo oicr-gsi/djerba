@@ -9,7 +9,7 @@ import os
 import re
 from math import log2
 
-from djerba.sequenza import sequenza_reader
+from djerba.sequenza import sequenza_reader, SequenzaError
 import djerba.util.constants as constants
 import djerba.util.provenance_index as index
 import djerba.util.ini_fields as ini

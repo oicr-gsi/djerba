@@ -119,6 +119,7 @@ class extractor(logger):
         self.write_clinical_data(self.get_description())
         self.write_genomic_summary()
         self.write_analysis_unit()
+        self.write_sequenza_meta()
         if json_path:
             self.write_json_summary(json_path)
         self.logger.info("Djerba extract step finished; extracted metrics written to {0}".format(self.report_dir))
@@ -192,18 +193,18 @@ class extractor(logger):
         Write a sequenza_meta.txt file to the working directory with metadata fields
         Metadata is not used directly for HTML/PDF generation, but kept for future reference
         """
-        keys = [
-            ini.SEQUENZA_FILE,
-            ini.SEQUENZA_GAMMA,
-            ini.SEQUENZA_REVIEWER_1,
-            ini.SEQUENZA_REVIEWER_2,
-            ini.SEQUENZA_SOLUTION
-        ]
-        meta = {k: self.config[ini.DISCOVERED][k] for k in keys}
+        meta = {
+            ini.SEQUENZA_FILE: self.config[ini.DISCOVERED][ini.SEQUENZA_FILE],
+            ini.SEQUENZA_GAMMA: self.config[ini.DISCOVERED][ini.SEQUENZA_GAMMA],
+            ini.SEQUENZA_REVIEWER_1: self.config[ini.INPUTS][ini.SEQUENZA_REVIEWER_1],
+            ini.SEQUENZA_REVIEWER_2: self.config[ini.INPUTS][ini.SEQUENZA_REVIEWER_2],
+            ini.SEQUENZA_SOLUTION: self.config[ini.DISCOVERED][ini.SEQUENZA_SOLUTION]
+        }
+        keys = sorted(list(meta.keys()))
         out_path = os.path.join(self.report_dir, constants.SEQUENZA_META_FILENAME)
         with open(out_path, 'w') as out_file:
-            print("\t".join(keys))
-            print("\t".join([str(meta[k]) for k in keys]))
+            print("\t".join(keys), file=out_file)
+            print("\t".join([str(meta[k]) for k in keys]), file=out_file)
 
     def write_json_summary(self, out_path):
         """Write a JSON summary of extracted data"""

@@ -38,7 +38,6 @@ class main(logger):
 
     def _get_analysis_unit(self):
         unit = None
-        err = None
         if self.args.unit:
             unit = self.args.unit
             self.logger.debug("Found analysis unit {0} from command-line args".format(unit))
@@ -52,19 +51,19 @@ class main(logger):
         else:
             # shouldn't happen, but specify this for completeness
             err = "Must specify one of --unit or --dir to find analysis unit"
-        if err:
             self.logger.error(err)
             raise RuntimeError(err)
         return unit
 
-    def _get_pdf_path(self, unit):
-        if self.args.pdf_dir:            
-            pdf_path = os.path.join(self.args.pdf_dir, "{0}.pdf".format(unit))
+    def _get_html_path(self):
+        # find HTML path after running extractor, so we can access the analysis unit if needed
+        if self.args.html:
+            html_path = self.args.html
         else:
-            msg = "Must specify a PDF output directory"
-            self.logger.error(msg)
-            raise RuntimeError(msg)
-        return pdf_path
+            html_path = os.path.join(self.args.dir, '{0}.html'.format(self._get_analysis_unit()))
+        html_path = os.path.realpath(html_path) # needed to correctly render links
+        self.logger.debug("Found HTML path {0}".format(html_path))
+        return html_path
 
     def read_config(self, ini_path):
         """Read INI config from the given path"""
@@ -97,8 +96,9 @@ class main(logger):
             renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed)
         elif self.args.subparser_name == constants.PDF:
             unit = self._get_analysis_unit()
-            pdf = self._get_pdf_path(unit)
-            pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, unit)
+            pdf = os.path.join(self.args.dir, "{0}.pdf".format(unit))
+            html_path = self._get_html_path()
+            pdf_renderer(self.log_level, self.log_path).run(html_path, pdf, unit)
         elif self.args.subparser_name == constants.DRAFT:
             config = self.read_config(self.args.ini)
             cv.validate_minimal(config)
@@ -112,14 +112,8 @@ class main(logger):
         """Run all Djerba operations in sequence"""
         with tempfile.TemporaryDirectory(prefix='djerba_all_') as tmp:
             ini_path_full = self.args.ini_out if self.args.ini_out else os.path.join(tmp, 'djerba_config_full.ini')
-            # *must* use absolute HTML path to render links correctly in Rmarkdown
-            html_path = os.path.realpath(self.args.html) if self.args.html else os.path.join(tmp, 'djerba_report.html')
             json_path = os.path.realpath(self.args.json) if self.args.json else None
-            if self.args.dir:
-                report_dir = os.path.realpath(self.args.dir)
-            else:
-                report_dir = os.path.join(tmp, 'report')
-                os.mkdir(report_dir)
+            report_dir = os.path.realpath(self.args.dir)
             archive = not self.args.no_archive # True if archiving is in effect
             configurer(input_config, self.log_level, self.log_path).run(ini_path_full, archive)
             full_config = configparser.ConfigParser()
@@ -127,10 +121,11 @@ class main(logger):
             # auto-generated full_config should be OK, but run the validator as a sanity check
             config_validator(self.log_level, self.log_path).validate_full(full_config)
             extractor(full_config, report_dir, self.log_level, self.log_path).run(json_path)
+            html_path = self._get_html_path()
             renderer = html_renderer(self.log_level, self.log_path)
             renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed)
             unit = self._get_analysis_unit()
-            pdf = os.path.join(self.args.pdf_dir, "{0}.pdf".format(unit))
+            pdf = os.path.join(self.args.dir, "{0}.pdf".format(unit))
             pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, unit)
 
     def run_draft(self, input_config):
@@ -147,11 +142,6 @@ class main(logger):
                 msg = "Report directory path is required in {0} mode".format(constants.DRAFT)
                 self.logger.error(msg)
                 raise ValueError(msg)
-            if self.args.html:
-                html_path = os.path.realpath(self.args.html)
-            else:
-                html_path = os.path.join(self.args.dir, '{0}.html'.format(self._get_analysis_unit()))
-            html_path = os.path.realpath(html_path) # needed to correctly render links
             archive = not self.args.no_archive # True if archiving is in effect
             configurer(input_config, self.log_level, self.log_path).run(ini_path_full, archive)
             full_config = configparser.ConfigParser()
@@ -159,6 +149,7 @@ class main(logger):
             # auto-generated full_config should be OK, but run the validator as a sanity check
             config_validator(self.log_level, self.log_path).validate_full(full_config)
             extractor(full_config, report_dir, self.log_level, self.log_path).run(json_path)
+            html_path = self._get_html_path()
             renderer = html_renderer(self.log_level, self.log_path)
             renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed)
 
@@ -199,7 +190,8 @@ class main(logger):
         elif args.subparser_name == constants.DRAFT:
             v.validate_input_file(args.ini)
             v.validate_output_dir(args.dir)
-            v.validate_output_file(args.html)
+            if args.html:
+                v.validate_output_file(args.html)
             if args.ini_out:
                 v.validate_output_file(args.ini_out)
             if args.json:
@@ -214,8 +206,6 @@ class main(logger):
                 v.validate_output_file(args.json)
             if args.html:
                 v.validate_output_file(args.html)
-            if args.pdf_dir:
-                v.validate_output_dir(args.pdf_dir)
         else:
             # shouldn't happen, but handle this case for completeness
             raise ValueError("Unknown subparser: "+args.subparser_name)
