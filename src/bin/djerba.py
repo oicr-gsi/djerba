@@ -38,6 +38,7 @@ def get_parser():
     render_parser.add_argument('-H', '--html', metavar='PATH', help='Path for HTML output; optional, defaults to ${ANALYSIS_UNIT}.html in the input directory')
     render_parser.add_argument('-t', '--target-coverage', metavar='COVER', type=int, choices=[40, 80], default=40, help='Target coverage depth for report footer')
     render_parser.add_argument('-u', '--unit', metavar='UNIT', help='Analysis unit identifier; optional')
+    render_parser.add_argument('--pdf', action='store_true', help='Write PDF to the input directory')
     publish_parser = subparsers.add_parser(constants.PDF, help='read Djerba HTML output and write PDF')
     publish_parser.add_argument('-H', '--html', metavar='PATH', help='Path for HTML input; optional')
     publish_parser.add_argument('-D', '--dir', metavar='DIR', required=True, help='Directory for PDF output, and for default source of HTML and analysis unit')

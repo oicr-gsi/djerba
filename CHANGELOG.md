@@ -7,13 +7,20 @@
 - GCGI-186: Setup mode in main script
 - GCGI-187: Fail and target-coverage options for HTML generation
 - GCGI-189: Script option to locate Sequenza results in file provenance
-- GCGI-194: Automatically archive INI files
 - GCGI-190: Script to manually run Mavis
+- GCGI-191: Record Sequenza reviewer names
+- GCGI-192: Add logR cutoff calculation
+- GCGI-194: Automatically archive INI files
+- GCGI-216: Replace CGI_PLACEHOLDER in report footer
 
 ### Fixed
 - GCGI-193: Sequenza configuration/metadata fixes
 - GCGI-205: Fix for Sequenza reader on alternate solutions
-- GCGI-212: Refactor PDF command line arguments.
+- GCGI-212: Refactor PDF command line arguments
+
+### Changed
+- GCGI-215: Rename basedir variable
+- GCGI-217: Add a --pdf option to HTML mode
 
 ## v0.0.6: 2021-08-19
 

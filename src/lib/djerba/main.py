@@ -116,8 +116,12 @@ class main(logger):
             else:
                 html_path = os.path.join(self.args.dir, '{0}.html'.format(self._get_analysis_unit()))
             html_path = os.path.realpath(html_path) # needed to correctly render links
-            renderer = html_renderer(self.log_level, self.log_path)
-            renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed, self._get_author())
+            hr = html_renderer(self.log_level, self.log_path)
+            hr.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed, self._get_author())
+            if self.args.pdf:
+                unit = self._get_analysis_unit()
+                pdf_path = os.path.join(self.args.dir, "{0}.pdf".format(unit))
+                pdf_renderer(self.log_level, self.log_path).run(html_path, pdf_path, unit)
         elif self.args.subparser_name == constants.PDF:
             unit = self._get_analysis_unit()
             pdf = os.path.join(self.args.dir, "{0}.pdf".format(unit))
