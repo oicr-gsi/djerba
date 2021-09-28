@@ -19,6 +19,11 @@ class main(logger):
 
     """Main class to run Djerba"""
 
+    AUTHORS = {
+        'afortuna': 'Alex Fortuna',
+        'ibancarz': 'Iain Bancarz',
+        'valamuri': 'Vivek Alamuri' # co-op student, autumn 2021
+    }
     AUTHOR_DEFAULT = 'CGI_PLACEHOLDER'
     CONFIG_NAME = 'config.ini'
     INI_DEFAULT_NAME = 'defaults.ini'
@@ -40,19 +45,18 @@ class main(logger):
 
     def _get_author(self):
         """Find the author name. If not in args, try to find from the username; otherwise use default"""
-        # TODO add a small JSON config file with user ID -> author name for known CGI users?
-        # TODO should author be an INI parameter?
-        authors = {
-            'ibancarz': 'Iain Bancarz',
-            'afortuna': 'Alex Fortuna'
-        }
+        # author is not an INI parameter, because an INI file is not used in HTML mode
         username = getpass.getuser()
         if self.args.author:
             author = self.args.author
-        elif username in authors:
-            author = authors[username]
+            self.logger.debug("Using author '{0}' from command line".format(author))
+        elif username in self.AUTHORS:
+            author = self.AUTHORS[username]
+            self.logger.debug("Found author '{0}' from username {1}".format(author, username))
         else:
             author = self.AUTHOR_DEFAULT
+            msg = "Username {0} not known, using default author '{1}'".format(username, author)
+            self.logger.warning(msg)
         return author
 
     def _get_analysis_unit(self):
@@ -94,6 +98,7 @@ class main(logger):
     def run(self):
         """Main method to run Djerba"""
         cv = config_validator(self.log_level, self.log_path)
+        self.logger.info("Running Djerba in mode: {0}".format(self.args.subparser_name))
         if self.args.subparser_name == constants.SETUP:
             self.run_setup()
         elif self.args.subparser_name == constants.CONFIGURE:
@@ -126,6 +131,11 @@ class main(logger):
             config = self.read_config(self.args.ini)
             cv.validate_minimal(config)
             self.run_all(config)
+        else:
+            msg = "Unknown subparser name {0}".format(self.args.subparser_name)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        self.logger.info("Finished running Djerba in mode: {0}".format(self.args.subparser_name))
 
     def run_all(self, input_config):
         """Run all Djerba operations in sequence"""
@@ -184,7 +194,8 @@ class main(logger):
         self.logger.info("Finished setting up working directory")
 
     def validate_args(self, args):
-        """Validate the command-line arguments"""
+        """Check we can read/write paths in command-line arguments"""
+        self.logger.info("Validating paths in command-line arguments")
         v = path_validator(self.log_level, self.log_path)
         if args.log_path:
             v.validate_output_file(args.log_path)
@@ -228,4 +239,5 @@ class main(logger):
         else:
             # shouldn't happen, but handle this case for completeness
             raise ValueError("Unknown subparser: "+args.subparser_name)
+        self.logger.info("Command-line path validation finished.")
     
