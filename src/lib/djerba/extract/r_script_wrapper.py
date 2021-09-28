@@ -10,6 +10,7 @@ import tempfile
 import zipfile
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
+from subprocess import CalledProcessError
 from djerba.sequenza import sequenza_reader
 from djerba.util.logger import logger
 
