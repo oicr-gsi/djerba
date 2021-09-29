@@ -64,7 +64,7 @@ class mavis_runner(logger):
             self.logger.error(msg)
             raise ValueError(msg)
         elif args.ready:
-            if not args.donor and args.study:
+            if not (args.donor and args.study):
                 msg = "--ready requires --donor and --study"
                 self.logger.error(msg)
                 raise ValueError(msg)
