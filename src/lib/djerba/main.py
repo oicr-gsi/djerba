@@ -24,7 +24,6 @@ class main(logger):
         'ibancarz': 'Iain Bancarz',
         'valamuri': 'Vivek Alamuri' # co-op student, autumn 2021
     }
-    AUTHOR_DEFAULT = 'CGI_PLACEHOLDER'
     CONFIG_NAME = 'config.ini'
     INI_DEFAULT_NAME = 'defaults.ini'
     INI_TEMPLATE_NAME = 'config_template.ini'
@@ -54,8 +53,8 @@ class main(logger):
             author = self.AUTHORS[username]
             self.logger.debug("Found author '{0}' from username {1}".format(author, username))
         else:
-            author = self.AUTHOR_DEFAULT
-            msg = "Username {0} not known, using default author '{1}'".format(username, author)
+            author = "user {0}".format(username)
+            msg = "Author name not known, falling back to '{0}'".format(author)
             self.logger.warning(msg)
         return author
 
