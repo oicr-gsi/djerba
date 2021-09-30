@@ -1,6 +1,9 @@
 # CHANGELOG
 
-## Unreleased
+## v0.0.7: 2021-09-30
+
+- Implements extra features required to fully replace CGI-Tools
+- Release for validation of SOP update
 
 ### Added
 - `html2pdf.py` convenience script
