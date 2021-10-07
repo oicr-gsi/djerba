@@ -23,44 +23,36 @@ class html_renderer(logger):
 
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
-        r_script_dir = os.path.join(os.path.dirname(__file__), self.R_MARKDOWN_DIRNAME)
-        self.default_script = os.path.join(r_script_dir, 'html_report_default.Rmd')
-        self.fail_script = os.path.join(r_script_dir, 'html_report_failed.Rmd')
-        self.data_dir = os.path.join(os.path.dirname(__file__), constants.DATA_DIR_NAME)
+        self.r_script_dir = os.path.join(os.path.dirname(__file__), self.R_MARKDOWN_DIRNAME)
+        self.default_script = os.path.join(self.r_script_dir, 'html_report_default.Rmd')
+        self.fail_script = os.path.join(self.r_script_dir, 'html_report_failed.Rmd')
 
     def run(self, report_dir, out_path, target_coverage, failed=False, cgi_author=None):
         """Read the reporting directory, and use an Rmarkdown script to write HTML"""
-        # no need for double quotes around the '-e' argument; subprocess does not use a shell
         if failed:
             markdown_script = self.fail_script
         else:
             markdown_script = self.default_script
         cgi_author = cgi_author if cgi_author!=None else 'CGI_PLACEHOLDER'
-        with tempfile.TemporaryDirectory(prefix='djerba_html_footer_') as tmp:
-            # write footer file, customized with author and date
-            if target_coverage==40:
-                template_path = os.path.join(self.data_dir, self.FOOTER_TEMPLATE_40X)
-            elif target_coverage==80:
-                template_path = os.path.join(self.data_dir, self.FOOTER_TEMPLATE_80X)
-            else:
-                msg = "Target coverage '{0}' is not supported for HTML output".format(target_coverage)
-                self.logger.error(msg)
-                raise ValueError(msg)
-            settings = {
-                "CGI_AUTHOR": cgi_author,
-                "DATE": time.strftime("%Y/%m/%d")
-            }
-            self.logger.debug("Writing HTML footer with template {0}, settings {1}".format(template_path, settings))
-            footer_path = os.path.join(tmp, 'djerba_footer.html')
-            # TODO generate all HTML from a single template, eg. in Jinja
-            with open(template_path) as in_file, open(footer_path, 'w') as out_file:
-                src = Template(in_file.read())
-                out_file.write(src.substitute(settings))
-            os.environ[self.AFTER_BODY] = footer_path
+        if target_coverage==40:
+            template_path = os.path.join(self.r_script_dir, self.FOOTER_TEMPLATE_40X)
+        elif target_coverage==80:
+            template_path = os.path.join(self.r_script_dir, self.FOOTER_TEMPLATE_80X)
+        else:
+            msg = "Target coverage '{0}' is not supported for HTML output".format(target_coverage)
+            self.logger.error(msg)
+            raise ValueError(msg)
+        os.environ[self.AFTER_BODY] = template_path
+        # render the HTML to a temporary file and then substitute name/date in the footer
+        # writing a temporary footer file seems to break Rmarkdown
+        with tempfile.TemporaryDirectory(prefix='djerba_html_') as tmp:
+            tmp_out_path = os.path.join(tmp, 'djerba.html')
             self.logger.debug(
-                "Target coverage {0}, using footer file {1}".format(target_coverage, os.environ[self.AFTER_BODY])
+                "Target coverage {0}, using footer template {1}".format(target_coverage, os.environ[self.AFTER_BODY])
             )
-            render = "rmarkdown::render('{0}', output_file = '{1}')".format(markdown_script, out_path)
+            # TODO replace the Rmarkdown; separate out the computation and HTML templating
+            # no need for double quotes around the '-e' argument; subprocess does not use a shell
+            render = "rmarkdown::render('{0}', output_file = '{1}')".format(markdown_script, tmp_out_path)
             cmd = [
                 'Rscript', '-e',
                 render,
@@ -68,13 +60,22 @@ class html_renderer(logger):
             ]
             self.logger.info('Rendering HTML with Rmarkdown command "'+' '.join(cmd)+'"')
             result = subprocess.run(cmd, capture_output=True)
-        try:
-            result.check_returncode()
-        except subprocess.CalledProcessError:
-            self.logger.error("Unexpected error from Rmarkdown script")
-            self.logger.error("Rmarkdown STDOUT: "+result.stdout.decode(constants.TEXT_ENCODING))
-            self.logger.error("Rmarkdown STDERR: "+result.stderr.decode(constants.TEXT_ENCODING))
-            raise
+            try:
+                result.check_returncode()
+            except subprocess.CalledProcessError:
+                self.logger.error("Unexpected error from Rmarkdown script")
+                self.logger.error("Rmarkdown STDOUT: "+result.stdout.decode(constants.TEXT_ENCODING))
+                self.logger.error("Rmarkdown STDERR: "+result.stderr.decode(constants.TEXT_ENCODING))
+                raise
+            self.logger.debug("Wrote HTML to {0}".format(tmp_out_path))
+            # now write final HTML, substituting in the author name/date variables
+            # use string replace instead of Python string.Template to avoid conflicting use of $ character
+            # TODO do this more neatly in an HTML template
+            with open(tmp_out_path) as in_file, open(out_path, 'w') as out_file:
+                report = in_file.read()
+                report = report.replace('DJERBA_REPORT_AUTHOR', cgi_author)
+                report = report.replace('DJERBA_REPORT_DATE', time.strftime("%Y/%m/%d"))
+                out_file.write(report)
         self.logger.info("Djerba HTML rendering finished; wrote output to {0}".format(out_path))
         return result
 
