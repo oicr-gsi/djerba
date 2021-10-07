@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.0.8b: 2021-10-07
+
+- Bugfix for paths in setup.py
+
 ## v0.0.8a: 2021-10-07
 
 - Pre-release to check an HTML rendering bug

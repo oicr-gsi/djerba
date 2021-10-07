@@ -6,7 +6,7 @@ Setup script for Djerba
 
 from setuptools import setup, find_packages
 
-package_version = '0.0.8a'
+package_version = '0.0.8b'
 package_root = 'src/lib'
 
 with open("README.md", "r") as fh:
@@ -40,8 +40,6 @@ setup(
             'data/ensemble_conversion.txt',
             'data/entrez_conversion.txt',
             'data/filter_flags.exclude',
-            'data/footer-40x.html',
-            'data/footer-80x.html',
             'data/gencode_v33_hg38_genes.bed',
             'data/genomic_summary.txt',
 	    'data/mavis_config_template.json',
@@ -50,6 +48,8 @@ setup(
             'data/mutation_types.nonsynonymous',
             'data/targeted_genelist.txt',
             'data/tmbcomp.txt',
+            'R_markdown/footer-40x.html',
+            'R_markdown/footer-80x.html',
             'R_markdown/header.html',
             'R_markdown/html_report_default.Rmd',
             'R_markdown/html_report_failed.Rmd',
