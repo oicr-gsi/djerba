@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.0.8a: 2021-10-07
+
+- Pre-release to check an HTML rendering bug
+- Fixes GCGI-221
+
 ## v0.0.7: 2021-09-30
 
 - Implements extra features required to fully replace CGI-Tools
