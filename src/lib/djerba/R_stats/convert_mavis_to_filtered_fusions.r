@@ -39,7 +39,7 @@ preProcFus <- function(datafile, readfilt, entrfile){
  data <- data[order(-data$read_support), ]
 
  # get unique fusions for each sample
- data$fusion_tuples <- apply(data[, c("gene1_aliases", "gene2_aliases")], 1, function(x) paste0(sort(x), collapse = "-"))
+ data$fusion_tuples <- apply(data[, c("gene1_aliases", "gene2_aliases")], 1, function(x) paste0(sort(x), collapse = "::"))
 
  # add index which is sample, tuple
  data$index <- paste0(data$Sample, data$fusion_tuples)

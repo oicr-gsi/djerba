@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+# Changed
+- GCGI-226: Use double colon :: as fusion gene separator
+
 ## v0.0.8b: 2021-10-07
 
 - Bugfix for paths in setup.py
