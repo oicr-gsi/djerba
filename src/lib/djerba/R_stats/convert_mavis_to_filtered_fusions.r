@@ -39,6 +39,7 @@ preProcFus <- function(datafile, readfilt, entrfile){
  data <- data[order(-data$read_support), ]
 
  # get unique fusions for each sample
+ # :: is the new-style fusion delimiter, see https://www.nature.com/articles/s41375-021-01436-6
  data$fusion_tuples <- apply(data[, c("gene1_aliases", "gene2_aliases")], 1, function(x) paste0(sort(x), collapse = "::"))
 
  # add index which is sample, tuple
@@ -81,14 +82,19 @@ preProcFus <- function(datafile, readfilt, entrfile){
 
  # remove rows where gene is not known (this still keeps the side of the gene which is known)
  df_cbio <- df_cbio[complete.cases(df_cbio),]
+ df_cbio$Fusion <- gsub("None", "intragenic", df_cbio$Fusion)
+
+# change to old-style fusion delimiter for compatibiltiy with FusionAnnotator.py and OncoKB
+ df_cbio_new_delim <- df_cbio
+ df_cbio$Fusion <- gsub("::", "-", df_cbio$Fusion)
 
  # input for oncoKB annotator
  df_cbio_oncokb <- df_cbio[c("Tumor_Sample_Barcode", "Fusion")]
- df_cbio_oncokb$Fusion <- gsub("None", "intragenic", df_cbio_oncokb$Fusion)
 
  FUSs=list()
  FUSs[[1]] <- df_cbio
  FUSs[[2]] <- df_cbio_oncokb
+ FUSs[[3]] <- df_cbio_new_delim
  return(FUSs)
 
  }

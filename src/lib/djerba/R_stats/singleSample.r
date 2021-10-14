@@ -166,6 +166,10 @@ write.table(fusion_cbio[[1]], file=paste0(outdir, "/data_fusions.txt"), sep="\t"
 print("writing fus file for oncokb annotator")
 write.table(fusion_cbio[[2]], file=paste0(outdir, "/data_fusions_oncokb.txt"), sep="\t", row.names=FALSE, quote=FALSE)
 
+# write file with new-style fusion identifiers
+print("writing fus file with new-style fusion delimiter")
+write.table(fusion_cbio[[3]], file=paste0(outdir, "/data_fusions_new_delimiter.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+
 #################### RNASEQ Expression ####################
 print("Processing RNASEQ data")
 

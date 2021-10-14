@@ -4,6 +4,7 @@ Wrap an Rmarkdown script to output HTML from a Djerba results directory.
 Subsequently use pdfkit to convert the HTML to PDF.
 """
 
+import csv
 import logging
 import os
 import pdfkit
@@ -21,14 +22,33 @@ class html_renderer(logger):
     FOOTER_TEMPLATE_40X = 'footer-40x.html'
     FOOTER_TEMPLATE_80X = 'footer-80x.html'
 
+    # constants to construct fusion remapping
+    DATA_FUSION_NEW = 'data_fusions_new_delimiter.txt'
+    DATA_FUSION_OLD = 'data_fusions.txt'
+    FUSION_INDEX = 4
+
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.r_script_dir = os.path.join(os.path.dirname(__file__), self.R_MARKDOWN_DIRNAME)
         self.default_script = os.path.join(self.r_script_dir, 'html_report_default.Rmd')
         self.fail_script = os.path.join(self.r_script_dir, 'html_report_failed.Rmd')
 
+    def _read_fusion_remapping(self, report_dir):
+        """Construct a dictionary from the 'Fusion' column in old and new formats"""
+        with open(os.path.join(report_dir, self.DATA_FUSION_OLD)) as file_old:
+            old = [row[self.FUSION_INDEX] for row in csv.reader(file_old, delimiter="\t")]
+        with open(os.path.join(report_dir, self.DATA_FUSION_NEW)) as file_new:
+            new = [row[self.FUSION_INDEX] for row in csv.reader(file_new, delimiter="\t")]
+        if len(old) != len(new):
+            msg = "Fusion ID lists from {0} are of unequal length".format(report_dir)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        # first item of each list is the header, which can be ignored
+        return {old[i]:new[i] for i in range(1, len(old))}
+
     def run(self, report_dir, out_path, target_coverage, failed=False, cgi_author=None):
         """Read the reporting directory, and use an Rmarkdown script to write HTML"""
+        # TODO replace the Rmarkdown; separate out the computation and HTML templating
         if failed:
             markdown_script = self.fail_script
         else:
@@ -43,14 +63,11 @@ class html_renderer(logger):
             self.logger.error(msg)
             raise ValueError(msg)
         os.environ[self.AFTER_BODY] = template_path
-        # render the HTML to a temporary file and then substitute name/date in the footer
-        # writing a temporary footer file seems to break Rmarkdown
         with tempfile.TemporaryDirectory(prefix='djerba_html_') as tmp:
             tmp_out_path = os.path.join(tmp, 'djerba.html')
             self.logger.debug(
                 "Target coverage {0}, using footer template {1}".format(target_coverage, os.environ[self.AFTER_BODY])
             )
-            # TODO replace the Rmarkdown; separate out the computation and HTML templating
             # no need for double quotes around the '-e' argument; subprocess does not use a shell
             render = "rmarkdown::render('{0}', output_file = '{1}')".format(markdown_script, tmp_out_path)
             cmd = [
@@ -68,16 +85,22 @@ class html_renderer(logger):
                 self.logger.error("Rmarkdown STDERR: "+result.stderr.decode(constants.TEXT_ENCODING))
                 raise
             self.logger.debug("Wrote HTML to {0}".format(tmp_out_path))
-            # now write final HTML, substituting in the author name/date variables
-            # use string replace instead of Python string.Template to avoid conflicting use of $ character
-            # TODO do this more neatly in an HTML template
-            with open(tmp_out_path) as in_file, open(out_path, 'w') as out_file:
-                report = in_file.read()
-                report = report.replace('DJERBA_REPORT_AUTHOR', cgi_author)
-                report = report.replace('DJERBA_REPORT_DATE', time.strftime("%Y/%m/%d"))
-                out_file.write(report)
+            self.postprocess(tmp_out_path, out_path, report_dir, cgi_author)
         self.logger.info("Djerba HTML rendering finished; wrote output to {0}".format(out_path))
         return result
+
+    def postprocess(self, in_path, out_path, report_dir, cgi_author):
+        """Postprocessing for the HTML report"""
+        # Hacked solution to modify the Rmarkdown output; TODO replace with an improved HTML template
+        self.logger.debug("Postprocessing the HTML report")
+        fusions = self._read_fusion_remapping(report_dir)
+        with open(in_path) as in_file, open(out_path, 'w') as out_file:
+            report = in_file.read()
+            report = report.replace('DJERBA_REPORT_AUTHOR', cgi_author)
+            report = report.replace('DJERBA_REPORT_DATE', time.strftime("%Y/%m/%d"))
+            for fusion_id in fusions.keys():
+                report = report.replace(fusion_id, fusions[fusion_id])
+            out_file.write(report)
 
 class pdf_renderer(logger):
 
