@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+# Added
+- GCGI-230: Add the QC report shell script
+
 # Changed
 - GCGI-226: Use double colon :: as fusion gene separator
 

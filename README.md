@@ -26,6 +26,10 @@ Djerba is named for an [island](https://en.wikipedia.org/wiki/Djerba) off the co
 
 `djerba.py html --dir ${INTERMEDIATE_OUTPUT_DIRECTORY} --pdf
 
+#### Generate a QC report to accompany the clinical report
+
+`qc_report.sh ${IDENTITY_ID} ${IDENTITY_ALIAS}`
+
 ## Command-line scripts
 
 Run any script with `--help` for more information.
@@ -59,6 +63,10 @@ By default, the fully-specified INI file produced by `configure`, `draft`, or `a
 ### `html2pdf.py`
 
 Convenience script for simple HTML to PDF conversion. Does not add the page footer used in Djerba reports.
+
+### `qc_report.sh`
+
+Bash script to generate a QC report, which accompanies the clinical report created by `djerba.py`.
 
 ### `sequenza_explorer.py`
 
