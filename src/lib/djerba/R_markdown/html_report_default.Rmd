@@ -163,18 +163,32 @@ sampleTMB <- round(mutationCount/(37.285536), 2)
 sample_tcga <- tolower(ifelse(clinicalData$CLOSEST_TCGA == "COAD" | clinicalData$CLOSEST_TCGA ==
   "READ", "coadread", clinicalData$CLOSEST_TCGA))
 
-# generate TMB plot here instead of seperately
-tmb_file <- paste(cgiTools, "data/tmbcomp.txt", sep = "/")
-tmb_data <- read.delim(tmb_file, header = TRUE, stringsAsFactors = F)
+  #read in external compass data set
+  external_tmb_file <- paste(cgiTools, "data/tmbcomp-externaldata.txt", sep = "/")
+  external_tmb_data <- read.delim(external_tmb_file, header = TRUE, stringsAsFactors = F)
+  tcga_tmb_file <- paste(cgiTools, "data/tmbcomp-tcga.txt", sep = "/")
+  tcga_tmb_data <- read.delim(tcga_tmb_file, header = TRUE, stringsAsFactors = F)
 
-# tmb_data_type <- subset(tmb_data, CANCER.TYPE %in% sample_tcga)
-tmb_data_type <- tmb_data %>% filter(if (sample_tcga %in% tmb_data$CANCER.TYPE) CANCER.TYPE ==
-  sample_tcga else NA)
+  #subset tcga data to cancer type
+  external_tmb_data_type <- external_tmb_data %>% filter(if (sample_tcga %in% external_tmb_data$CANCER.TYPE) CANCER.TYPE ==
+    sample_tcga else NA)
 
-sample_pct = ecdf(tmb_data$TCGA.tmb)(sampleTMB)
-# sample_pct_type = ecdf(tmb_data_type$TCGA.tmb)(sampleTMB)
-sample_pct_type <- ifelse(sample_tcga %in% tmb_data$CANCER.TYPE, ecdf(tmb_data_type$TCGA.tmb)(sampleTMB),
-  NA)
+  #subset external data to cancer type
+  tcga_tmb_data_type <- tcga_tmb_data %>% filter(if (sample_tcga %in% tcga_tmb_data$CANCER.TYPE) CANCER.TYPE ==
+      sample_tcga else NA)
+
+  #calculate tmb percentile vs all tcga samples
+  sample_pct = ecdf(tmb_data$tmb)(sampleTMB)
+
+  #calculate tmb percentile against external dataset or closest tcga
+  sample_pct_type <- ifelse(sample_tcga %in% external_tmb_data_type$CANCER.TYPE, ecdf(external_tmb_data_type$tmb)(sampleTMB),
+    ifelse(sample_tcga %in% tcga_tmb_data$CANCER.TYPE, ecdf(tcga_tmb_data$tmb)(sampleTMB),
+      NA))
+
+  #Extract name of cohort
+  Cohort <- ifelse(sample_tcga %in% external_tmb_data_type$CANCER.TYPE, unique(external_tmb_data_type$Source),
+    ifelse(sample_tcga %in% tcga_tmb_data$CANCER.TYPE, unique(tcga_tmb_data_type$CANCER.TYPE),
+      NA))
 
 # join maf, CNV, and expression
 if (dim(cbioMAF)[1] != 0) {
@@ -388,16 +402,16 @@ Other <- subset(Tx, OncoKB %in% c("LEVEL_3A", "LEVEL_3B", "LEVEL_4", "LEVEL_R2")
 </table>
 <table width="100%">
   <tr>
-    <td width="50%"><strong>Hospital:</strong> HOSPTIAL NAME AND HOSPITAL ADDRESS</td>
-    <td width="50%"><strong>Requisitioner Email:</strong> NAME@DOMAIN.COM</td>
+    <td width="63%"><strong>Hospital:</strong> HOSPTIAL NAME AND HOSPITAL ADDRESS</td>
+    <td width="37%"><strong>Requisitioner Email:</strong> NAME@DOMAIN.COM</td>
   </tr>
   <tr>
-    <td width="50%"><strong>Primary cancer:</strong> `r clinicalData$CANCER_TYPE_DESCRIPTION`</td>
-    <td width="50%"><strong>Site of biopsy/surgery:</strong> `r clinicalData$SAMPLE_ANATOMICAL_SITE`</td>
+    <td width="63%"><strong>Primary cancer:</strong> `r clinicalData$CANCER_TYPE_DESCRIPTION`</td>
+    <td width="37%"><strong>Site of biopsy/surgery:</strong> `r clinicalData$SAMPLE_ANATOMICAL_SITE`</td>
   </tr>
   <tr>
-    <td width="50%"><strong>Tumour Sample ID:</strong> `r clinicalData$TUMOUR_SAMPLE_ID`</td>
-    <td width="50%"><strong>Blood Sample ID:</strong> `r clinicalData$BLOOD_SAMPLE_ID`</td>
+    <td width="63%"><strong>Tumour Sample ID:</strong> `r clinicalData$TUMOUR_SAMPLE_ID`</td>
+    <td width="37%"><strong>Blood Sample ID:</strong> `r clinicalData$BLOOD_SAMPLE_ID`</td>
   </tr>
 </table>
 <div id="header1">
@@ -426,9 +440,12 @@ Review identified **`r length(unique(FDA$Gene))`** mutation(s) in this category
 ```{r, echo = FALSE, message= FALSE, warning=FALSE}
 
 if (dim(FDA)[1] != 0) {
-  FDA %>% knitr::kable(format = "html", escape = FALSE) %>% kable_styling(bootstrap_options = c("striped",
-    "hover", "condensed")) %>% column_spec(1, italic = T)
+  FDA %>%
+    knitr::kable(format = "html", escape = FALSE) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>%
+    column_spec(1, italic = T)
 }
+
 
 ```
 <div id="header3">
@@ -439,9 +456,12 @@ Review identified **`r length(unique(Other$Gene))`** mutation(s) in this categor
 ```{r, echo = FALSE, message= FALSE, warning=FALSE}
 
 if (dim(Other)[1] != 0) {
-  Other %>% knitr::kable(format = "html", escape = FALSE) %>% kable_styling(bootstrap_options = c("striped",
-    "hover", "condensed")) %>% column_spec(1, italic = T)
+  Other %>%
+    knitr::kable(format = "html", escape = FALSE) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>%
+    column_spec(1, italic = T)
 }
+
 
 ```
 <p style="border:3px; border-style:solid; border-color:#000000; padding: 1em;">`r patSum`</p>
@@ -457,7 +477,8 @@ if (dim(Other)[1] != 0) {
   </tr>
   <tr>
     <td width="55%"><strong>All TCGA Percentile:</strong> `r round(sample_pct, 3)`</td>
-    <td width="45%"><strong>TCGA Cohort Percentile:</strong> `r round(sample_pct_type, 3)`</td>
+    <td width="45%"><strong>Cohort Percentile:</strong> `r round(sample_pct_type, 3)`</td>
+    <td width="45%"><strong>Selected Cohort:</strong> `r Cohort`</td>
   </tr>
 </table>
 </html>
@@ -465,21 +486,25 @@ if (dim(Other)[1] != 0) {
 ```{r, figures-side, fig.show="hold", out.width="50%", fig.height=3, echo=FALSE, message=FALSE, warning=FALSE}
 
 ggplot(tmb_data, aes(TCGA.tmb)) + geom_density(aes(color = "All TCGA"), fill = "grey",
-  alpha = 0.1) + theme_classic() + scale_x_continuous(expand = c(0, 0), limit = c(0, max(sampleTMB,25))) +
-  scale_y_continuous(expand = c(0, 0)) + geom_vline(xintercept = sampleTMB,
+  alpha = 0.1) + theme_classic() + scale_x_continuous(expand = c(0, 0), limit = c(0,
+  max(sampleTMB, 25))) + scale_y_continuous(expand = c(0, 0)) + geom_vline(xintercept = sampleTMB,
   size = 3) + xlab(" coding mutations per Mb") + ylab("density") + theme(text = element_text(size = 15),
-  legend.position = c(1,0.8), plot.margin = unit(c(2,3,0,2), "lines")) + scale_color_manual(name = "Cohort", breaks = c("All TCGA",
-  "Closest TCGA"), values = c(`All TCGA` = "black", `Closest TCGA` = "#65bc45")) +
+  legend.position = c(1, 0.8), plot.margin = unit(c(2, 3, 0, 2), "lines")) + scale_color_manual(name = "Cohort",
+  breaks = c("All TCGA", "Closest TCGA"), values = c(`All TCGA` = "black", `Closest TCGA` = "#65bc45")) +
   {
-    if (!is.na(sample_pct_type))
-      geom_density(data = tmb_data_type, aes(color = "Closest TCGA"), fill = "purple",
-        alpha = 0.1)
+    if (sample_tcga %in% external_tmb_data_type$CANCER.TYPE)
+      geom_density(data = external_tmb_data_type, aes(color = "Closest Cohort"),
+        fill = "purple", alpha = 0.1) else (sample_tcga %in% tcga_tmb_data_type$CANCER.TYPE)
+    geom_density(data = tcga_tmb_data_type, aes(color = "Closest Cohort"), fill = "purple",
+      alpha = 0.1)
   }
 
 ggplot(MAF) + geom_density(aes(x = tumour_vaf), fill = "grey", alpha = 0.5) + geom_rug(aes(x = tumour_vaf,
   y = 0), position = position_jitter(height = 0)) + xlab("Variant Allele Frequency") +
   theme_classic() + theme(text = element_text(size = 15)) + scale_x_continuous(expand = c(0,
-  0), limit = c(0, 1)) + scale_y_continuous(expand = c(0, 0)) + theme(plot.margin = unit(c(2,3,0,2), "lines"))
+  0), limit = c(0, 1)) + scale_y_continuous(expand = c(0, 0)) + theme(plot.margin = unit(c(2,
+  3, 0, 2), "lines"))
+
 
 ```
 
@@ -492,10 +517,15 @@ ggplot(MAF) + geom_density(aes(x = tumour_vaf), fill = "grey", alpha = 0.5) + ge
 ```{r, echo = FALSE, message= FALSE, warning=FALSE}
 
 if (!is.null(out1)) {
-  out1 %>% remove_rownames() %>% rename(Protein = HGVS) %>% select(-mRNA) %>% knitr::kable(format = "html", escape = FALSE,
-    align = "l") %>% kable_styling(bootstrap_options = c("striped", "hover",
-    "condensed")) %>% column_spec(1, italic = T)
+  out1 %>%
+    remove_rownames() %>%
+    rename(Protein = HGVS) %>%
+    select(-mRNA) %>%
+    knitr::kable(format = "html", escape = FALSE, align = "l") %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>%
+    column_spec(1, italic = T)
 }
+
 
 
 ```
@@ -509,10 +539,14 @@ if (!is.null(out1)) {
 ```{r, echo = FALSE, message= FALSE, warning=FALSE}
 
 if (!is.null(CNV)) {
-  CNV %>% remove_rownames() %>% knitr::kable(format = "html", escape = FALSE, align = "l") %>%
+  CNV %>%
+    remove_rownames() %>%
+    knitr::kable(format = "html", escape = FALSE, align = "l") %>%
     kable_styling(bootstrap_options = c("striped", "condensed", full_width = F,
-      position = "left")) %>% column_spec(1, italic = T)
+      position = "left")) %>%
+    column_spec(1, italic = T)
 }
+
 ```
 <div id="header1">
   <h3>Structural Variants and Fusions</h3>
@@ -523,10 +557,13 @@ if (!is.null(CNV)) {
 ```{r, echo = FALSE, message= FALSE, warning=FALSE}
 
 if (dim(cbioFusAnno)[1] != 0) {
-  cbioFusAnno %>% knitr::kable(format = "html", escape = FALSE, align = "l") %>%
+  cbioFusAnno %>%
+    knitr::kable(format = "html", escape = FALSE, align = "l") %>%
     kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>%
-    column_spec(1, italic = T) %>% column_spec(3, italic = T)
+    column_spec(1, italic = T) %>%
+    column_spec(3, italic = T)
 }
+
 ```
 
 ```{r, echo = FALSE, message= FALSE, warning=FALSE}
@@ -543,9 +580,12 @@ if (dim(cbioFusAnno)[1] != 0) {
 
 ```{r echo = FALSE, message= FALSE}
 
-defTable %>% remove_rownames() %>% knitr::kable(format = "html", escape = FALSE, align = "l") %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>% column_spec(1,
-  italic = T)
+defTable %>%
+  remove_rownames() %>%
+  knitr::kable(format = "html", escape = FALSE, align = "l") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>%
+  column_spec(1, italic = T)
+
 
 ```
 <div id="header2">
