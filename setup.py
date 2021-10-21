@@ -6,7 +6,7 @@ Setup script for Djerba
 
 from setuptools import setup, find_packages
 
-package_version = '0.0.8b'
+package_version = '0.0.8'
 package_root = 'src/lib'
 
 with open("README.md", "r") as fh:

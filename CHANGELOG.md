@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v0.0.8: 2021-10-21
 
 # Added
 - GCGI-230: Add the QC report shell script
