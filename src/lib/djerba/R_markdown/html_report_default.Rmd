@@ -375,13 +375,13 @@ Other <- subset(Tx, OncoKB %in% c("LEVEL_3A", "LEVEL_3B", "LEVEL_4", "LEVEL_R2")
 </div>
 <table width="100%">
   <tr>
-    <td><strong>Assay: </strong>Tumour-normal whole genome and tumour transcriptome sequencing (WGTS, v1.0)</td>
+    <td><strong>Assay: </strong>Whole genome and transcriptome sequencing (WGTS)-40X Tumour, 30X Normal (v1.0)</td>
   </tr>
 </table>
 <table width="100%">
   <tr>
     <td width="35%"><strong>Date of Report:</strong> `r format(Sys.time(), '%Y/%m/%d')`</td>
-    <td width="28%"><strong>Requisition Approved:</strong> yyyy/mm/dd</td>
+    <td width="28%"><strong>Requisition Approved:</strong> #TissuePortalDateApproved </td>
     <td width="37%"><strong>Report ID:</strong> `r paste0(clinicalData$TUMOUR_SAMPLE_ID, "-v", clinicalData$REPORT_VERSION)`</td>
   </tr>
   <tr>
@@ -478,6 +478,8 @@ if (dim(Other)[1] != 0) {
   <tr>
     <td width="55%"><strong>All TCGA Percentile:</strong> `r round(sample_pct, 3)`</td>
     <td width="45%"><strong>Cohort Percentile:</strong> `r round(sample_pct_type, 3)`</td>
+  </tr>
+  <tr>
     <td width="45%"><strong>Selected Cohort:</strong> `r Cohort`</td>
   </tr>
 </table>
@@ -493,12 +495,12 @@ ggplot(tcga_tmb_data, aes(tmb)) +
   xlab(" coding mutations per Mb") +
   ylab("density") +
   theme(text = element_text(size = 15), legend.position = c(1, 0.8), plot.margin = unit(c(2, 3, 0, 2), "lines")) +
-  scale_color_manual(name = "Cohort", breaks = c("All TCGA", "External Cohort"), values = c(`All TCGA` = "black", `External Cohort` = "#65bc45")) +
+  scale_color_manual(name = "Cohort", breaks = c("All TCGA", "Cohort"), values = c(`All TCGA` = "black", `Cohort` = "#65bc45")) +
   {
     if (sample_tcga %in% external_tmb_data_type$CANCER.TYPE)
-      geom_density(data = external_tmb_data_type, aes(color = "External Cohort"), fill = "purple", alpha = 0.1)
+      geom_density(data = external_tmb_data_type, aes(color = "Cohort"), fill = "purple", alpha = 0.1)
     else
-      geom_density(data = tcga_tmb_data_type, aes(color = "External Cohort"), fill = "purple", alpha = 0.1)
+      geom_density(data = tcga_tmb_data_type, aes(color = "Cohort"), fill = "purple", alpha = 0.1)
   }
 
 ggplot(MAF) + geom_density(aes(x = tumour_vaf), fill = "grey", alpha = 0.5) + geom_rug(aes(x = tumour_vaf,
