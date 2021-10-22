@@ -4,7 +4,6 @@ import configparser
 import gzip
 import hashlib
 import json
-import jsonschema
 import logging
 import os
 import subprocess

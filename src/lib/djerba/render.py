@@ -11,6 +11,7 @@ import pdfkit
 import subprocess
 import tempfile
 import time
+from shutil import copy
 from string import Template
 import djerba.util.constants as constants
 from djerba.util.logger import logger
@@ -21,7 +22,10 @@ class html_renderer(logger):
     AFTER_BODY = 'DJERBA_RMD_AFTER_BODY'
     FOOTER_TEMPLATE_40X = 'footer-40x.html'
     FOOTER_TEMPLATE_80X = 'footer-80x.html'
+    DEFAULT_RMD = 'html_report_default.Rmd'
+    FAILED_RMD = 'html_report_failed.Rmd'
 
+    
     # constants to construct fusion remapping
     DATA_FUSION_NEW = 'data_fusions_new_delimiter.txt'
     DATA_FUSION_OLD = 'data_fusions.txt'
@@ -30,8 +34,6 @@ class html_renderer(logger):
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.r_script_dir = os.path.join(os.path.dirname(__file__), self.R_MARKDOWN_DIRNAME)
-        self.default_script = os.path.join(self.r_script_dir, 'html_report_default.Rmd')
-        self.fail_script = os.path.join(self.r_script_dir, 'html_report_failed.Rmd')
 
     def _read_fusion_remapping(self, report_dir):
         """Construct a dictionary from the 'Fusion' column in old and new formats"""
@@ -49,10 +51,6 @@ class html_renderer(logger):
     def run(self, report_dir, out_path, target_coverage, failed=False, cgi_author=None):
         """Read the reporting directory, and use an Rmarkdown script to write HTML"""
         # TODO replace the Rmarkdown; separate out the computation and HTML templating
-        if failed:
-            markdown_script = self.fail_script
-        else:
-            markdown_script = self.default_script
         cgi_author = cgi_author if cgi_author!=None else 'CGI_PLACEHOLDER'
         if target_coverage==40:
             template_path = os.path.join(self.r_script_dir, self.FOOTER_TEMPLATE_40X)
@@ -63,11 +61,18 @@ class html_renderer(logger):
             self.logger.error(msg)
             raise ValueError(msg)
         os.environ[self.AFTER_BODY] = template_path
+        self.logger.debug(
+            "Target coverage {0}, using footer template {1}".format(target_coverage, os.environ[self.AFTER_BODY])
+        )
+        # copy files as a workaround; horribly, Rmarkdown insists on changing its working directory
         with tempfile.TemporaryDirectory(prefix='djerba_html_') as tmp:
             tmp_out_path = os.path.join(tmp, 'djerba.html')
-            self.logger.debug(
-                "Target coverage {0}, using footer template {1}".format(target_coverage, os.environ[self.AFTER_BODY])
-            )
+            for filename in os.listdir(self.r_script_dir):
+                copy(os.path.join(self.r_script_dir, filename), tmp)
+            if failed:
+                markdown_script = os.path.join(tmp, self.FAILED_RMD)
+            else:
+                markdown_script = os.path.join(tmp, self.DEFAULT_RMD)
             # no need for double quotes around the '-e' argument; subprocess does not use a shell
             render = "rmarkdown::render('{0}', output_file = '{1}')".format(markdown_script, tmp_out_path)
             cmd = [
@@ -101,6 +106,7 @@ class html_renderer(logger):
             for fusion_id in fusions.keys():
                 report = report.replace(fusion_id, fusions[fusion_id])
             out_file.write(report)
+        self.logger.debug("Finished postprocessing {0} to {1}".format(in_path, out_path))
 
 class pdf_renderer(logger):
 
