@@ -6,7 +6,7 @@ Setup script for Djerba
 
 from setuptools import setup, find_packages
 
-package_version = '0.0.8'
+package_version = '0.0.9'
 package_root = 'src/lib'
 
 with open("README.md", "r") as fh:
@@ -65,7 +65,7 @@ setup(
         ]
     },
     install_requires=['configparse', 'numpy', 'pandas', 'pdfkit', 'scipy'],
-    python_requires='>=3.7',
+    python_requires='>=3.9',
     author="Iain Bancarz",
     author_email="ibancarz [at] oicr [dot] on [dot] ca",
     description="Create reports from metadata and workflow output",

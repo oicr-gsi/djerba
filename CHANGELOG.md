@@ -1,11 +1,21 @@
 # CHANGELOG
 
+## v0.0.9: 2021-10-22
+
+### Added
+- GCGI-229 Add external dataset plotting function
+
+### Fixed
+- GCGI-224 HTML template improvements
+- Copy Rmarkdown script and associated files into tempdir, to allow writing to script directory
+- Remove unnecessary import from test
+
 ## v0.0.8: 2021-10-21
 
-# Added
+### Added
 - GCGI-230: Add the QC report shell script
 
-# Changed
+### Changed
 - GCGI-226: Use double colon :: as fusion gene separator
 
 ## v0.0.8b: 2021-10-07
