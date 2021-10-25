@@ -90,7 +90,7 @@ class TestArchive(TestBase):
         self.assertTrue(os.path.exists(archive_path))
         with open(archive_path) as archive_file:
             lines = len(archive_file.readlines())
-        self.assertEqual(lines, 50)
+        self.assertEqual(lines, 51)
 
 class TestConfigure(TestBase):
 
@@ -107,7 +107,7 @@ class TestConfigure(TestBase):
         self.assertTrue(os.path.exists(out_path))
         with open(out_path) as out_file:
             lines = len(out_file.readlines())
-        self.assertEqual(lines, 51) # unlike archive, configParser puts a blank line at the end of the file
+        self.assertEqual(lines, 52) # unlike archive, configParser puts a blank line at the end of the file
 
 class TestCutoffFinder(TestBase):
 

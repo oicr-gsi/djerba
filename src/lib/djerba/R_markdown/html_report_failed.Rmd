@@ -184,7 +184,7 @@ td, th {
 <table width="100%">
   <tr>
     <td width="33%"><strong>Date of Report:</strong> `r format(Sys.time(), '%d %B, %Y')`</td>
-    <td width="33%"><strong>Requisition Approved:</strong> `r format(Sys.time(), '%d %B, %Y')`</td>
+    <td width="33%"><strong>Requisition Approved:</strong> `r clinicalData$REQ_APPROVED_DATE`</td>
     <td width="33%"><strong>Report Identifier:</strong> `r paste0(clinicalData$SAMPLE_ID, " (v", clinicalData$REPORT_VERSION, ")")`</td>
   </tr>
   <tr>

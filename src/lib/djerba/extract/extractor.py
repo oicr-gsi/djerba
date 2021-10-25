@@ -6,6 +6,7 @@ import logging
 import os
 import pandas as pd
 import re
+import time
 from shutil import copyfile
 
 from djerba.extract.r_script_wrapper import r_script_wrapper
@@ -143,6 +144,13 @@ class extractor(logger):
         """Write the data_clinical.txt file; based on legacy format from CGI-Tools"""
         purity = self.config[ini.DISCOVERED][ini.PURITY]
         ploidy = self.config[ini.DISCOVERED][ini.PLOIDY]
+        req_approved_date = self.config[ini.INPUTS][ini.REQ_APPROVED_DATE]
+        try:
+            time.strptime(req_approved_date, "%Y/%m/%d")
+        except ValueError as err:
+            msg = "REQ_APPROVED_DATE '{0}' is not in YYYY/MM/DD format".format(req_approved_date)
+            self.logger.error(msg)
+            raise RuntimeError(msg) from err
         try:
             data = [
                 ['PATIENT_LIMS_ID', self.config[ini.INPUTS][ini.PATIENT] ],
@@ -158,6 +166,7 @@ class extractor(logger):
                 ['SAMPLE_ANATOMICAL_SITE', self.config[ini.INPUTS][ini.SAMPLE_ANATOMICAL_SITE]],
                 ['MEAN_COVERAGE', self.config[ini.INPUTS][ini.MEAN_COVERAGE] ],
                 ['PCT_V7_ABOVE_80X', self.config[ini.INPUTS][ini.PCT_V7_ABOVE_80X] ],
+                ['REQ_APPROVED_DATE', req_approved_date],
                 ['SEQUENZA_PURITY_FRACTION', purity],
                 ['SEQUENZA_PLOIDY', ploidy],
                 ['SEX', self.config[ini.INPUTS][ini.SEX] ]
@@ -165,8 +174,8 @@ class extractor(logger):
         except KeyError as err:
             msg = "Missing required clinical data value from config"
             raise KeyError(msg) from err
-        # columns omitted from CGI-Tools format, as they are not in use for R markdown:
-        # - DATE_SAMPLE_RECIEVED
+        # columns omitted from CGI-Tools format:
+        # - DATE_SAMPLE_RECIEVED (has become REQ_APPROVED_DATE)
         # - SAMPLE_PRIMARY_OR_METASTASIS
         # - QC_STATUS
         # - QC_COMMENT

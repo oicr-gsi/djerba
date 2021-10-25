@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.0.10: 2021-10-25
+
+### Added
+- GCGI-231 New INI field for requisition approved date
+
 ## v0.0.9: 2021-10-22
 
 ### Added

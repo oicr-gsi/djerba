@@ -37,6 +37,7 @@ PLOIDY = 'ploidy'
 PROVENANCE = 'provenance'
 PURITY = 'purity'
 REPORT_VERSION = 'report_version'
+REQ_APPROVED_DATE = 'req_approved_date'
 SAMPLE_ANATOMICAL_SITE = 'sample_anatomical_site'
 SAMPLE_TYPE = 'sample_type'
 SEQUENZA_FILE = 'sequenza_file'
@@ -88,6 +89,7 @@ SCHEMA = {
         PATIENT,
         PCT_V7_ABOVE_80X,
         REPORT_VERSION,
+        REQ_APPROVED_DATE,
         SAMPLE_ANATOMICAL_SITE,
         SAMPLE_TYPE,
         SEQUENZA_REVIEWER_1,

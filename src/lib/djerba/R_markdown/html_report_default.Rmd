@@ -381,7 +381,7 @@ Other <- subset(Tx, OncoKB %in% c("LEVEL_3A", "LEVEL_3B", "LEVEL_4", "LEVEL_R2")
 <table width="100%">
   <tr>
     <td width="35%"><strong>Date of Report:</strong> `r format(Sys.time(), '%Y/%m/%d')`</td>
-    <td width="28%"><strong>Requisition Approved:</strong> #TissuePortalDateApproved </td>
+    <td width="28%"><strong>Requisition Approved:</strong> `r clinicalData$REQ_APPROVED_DATE` </td>
     <td width="37%"><strong>Report ID:</strong> `r paste0(clinicalData$TUMOUR_SAMPLE_ID, "-v", clinicalData$REPORT_VERSION)`</td>
   </tr>
   <tr>

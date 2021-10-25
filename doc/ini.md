@@ -47,6 +47,7 @@ All required parameters go in the `[inputs]` section. The "Source" column lists 
 | `patient`                | req       | Study name and patient number, eg. PANX_1249 |
 | `pct_v7_above_80x`            | Dashi | |
 | `report_version`            | user | |
+| `req_approved_date`            | user | Format must be `YYYY/MM/DD` |
 | `sample_anatomical_site`            | req | |
 | `sample_type`            | req | |
 | `sequenza_reviewer_1` | user | Name of first reviewer for Sequenza parameters |
