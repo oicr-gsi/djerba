@@ -455,6 +455,12 @@ class provenance_reader(logger):
         self.logger.debug("Found identifiers: {0}".format(identifiers))
         return identifiers
 
+    def parse_arriba_path(self):
+        return self._parse_default('arriba', 'application/octet-stream', '\.fusions\.tsv$')
+
+    def parse_delly_path(self):
+        return self._parse_default('delly', 'application/vcf-gz', 'somatic_filtered\.delly\.merged\.vcf\.gz$')
+
     def parse_gep_path(self):
         return self._parse_default('rsem', 'application/octet-stream', '\.results$')
 

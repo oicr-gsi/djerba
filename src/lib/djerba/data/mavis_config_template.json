@@ -10,7 +10,7 @@
     "mavis.donor": "PLACEHOLDER",
     "mavis.generateConfigScript.arribaConverter": "$MAVIS_CONFIG_ROOT/bin/parse_arriba.py",
     "mavis.generateConfigScript.jobMemory": 12,
-    "mavis.generateConfigScript.modules": "python/3.6",
+    "mavis.generateConfigScript.modules": "mavis/2.2.6 mavis-config/1.2",
     "mavis.generateConfigScript.timeout": 40,
     "mavis.inputBAMs": [
         {
@@ -27,6 +27,16 @@
             "libraryDesign": "WT",
             "svFile": "PLACEHOLDER",
             "workflowName": "StarFusion"
+        },
+	{
+	    "libraryDesign": "WG",
+            "svFile": "PLACEHOLDER",
+            "workflowName": "delly"
+        },
+        {
+            "libraryDesign": "WT",
+            "svFile": "PLACEHOLDER",
+            "workflowName": "arriba"
         }
     ],
     "mavis.validate.modules": "mavis/2.2.6 mavis-config/1.2 hg19-mavis/2.2.6 hg19/p13",

@@ -21,10 +21,15 @@ class mavis_runner(logger):
     INPUT_CONFIG = 'mavis_settings.ini'
     WAIT_SCRIPT_NAME = 'wait_for_mavis.py'
 
-    # input file keys
+    # input file keys/indices
     WT_BAM = 'wt_bam'
     WT_INDEX = 'wt_index'
     STARFUSION = 'starfusion'
+    DELLY = 'delly'
+    ARRIBA = 'arriba'
+    STARFUSION_IDX = 0
+    DELLY_IDX = 1
+    ARRIBA_IDX = 2
 
     # mavis workflow config keys
     MAVIS_DONOR = 'mavis.donor'
@@ -164,6 +169,8 @@ class mavis_runner(logger):
             self.WT_BAM: reader.parse_wt_bam_path(), # STAR
             self.WT_INDEX: reader.parse_wt_index_path(), # STAR
             self.STARFUSION: reader.parse_starfusion_predictions_path(), # starFusion
+            self.DELLY: reader.parse_delly_path(), # delly
+            self.ARRIBA: reader.parse_arriba_path(), # arriba
         }
         return inputs
         self.logger.info("Mavis launch done")
@@ -178,9 +185,10 @@ class mavis_runner(logger):
             except FileExistsError as err:
                 self.logger.warning("Not making link: {0}".format(err))
             local[key] = dest
-        starfusion_dest = os.path.join(self.work_dir, os.path.basename(inputs[self.STARFUSION]))
-        copyfile(inputs[self.STARFUSION], starfusion_dest)
-        local[self.STARFUSION] = starfusion_dest
+        # linking sometimes fails on these files (for unknown reasons) so we copy instead
+        for key in [self.STARFUSION, self.ARRIBA, self.DELLY]:
+            dest = os.path.join(self.work_dir, os.path.basename(inputs[key]))
+            local[key] = copyfile(inputs[key], dest)
         return local
 
     def main(self):
@@ -189,7 +197,7 @@ class mavis_runner(logger):
         if self.args.ready:
             self.logger.info("Finding inputs in file provenance: "+self.provenance_path)
             inputs = self.find_inputs()
-            self.logger.info("Linking/copying inputs to working directory: "+self.work_dir)
+            self.logger.info("Linking inputs to working directory: "+self.work_dir)
             local_inputs = self.link_and_copy_inputs(inputs)
             self.logger.info("Writing JSON Cromwell config")
             config_json = self.write_config(local_inputs)
@@ -226,7 +234,9 @@ class mavis_runner(logger):
         config[self.MAVIS_DONOR] = self.args.donor
         config[self.MAVIS_INPUT_BAMS][0][self.MAVIS_BAM] = inputs[self.WT_BAM]
         config[self.MAVIS_INPUT_BAMS][0][self.MAVIS_BAM_INDEX] = inputs[self.WT_INDEX]
-        config[self.MAVIS_SV_DATA][0][self.MAVIS_SV_FILE] = inputs[self.STARFUSION]
+        config[self.MAVIS_SV_DATA][self.STARFUSION_IDX][self.MAVIS_SV_FILE] = inputs[self.STARFUSION]
+        config[self.MAVIS_SV_DATA][self.DELLY_IDX][self.MAVIS_SV_FILE] = inputs[self.DELLY]
+        config[self.MAVIS_SV_DATA][self.ARRIBA_IDX][self.MAVIS_SV_FILE] = inputs[self.ARRIBA]
         out_path = os.path.join(self.work_dir, self.config_name)
         with open(out_path, 'w') as out_file:
             out_file.write(json.dumps(config, indent=4, sort_keys=True))

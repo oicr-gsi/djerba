@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-234 Add delly and arriba inputs to Mavis launch script
+
 ## v0.0.10: 2021-10-25
 
 ### Added

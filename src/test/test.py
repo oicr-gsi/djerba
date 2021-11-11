@@ -221,6 +221,8 @@ class TestMavis(TestBase):
             'mavis_cromwell.json',
             'PANX_1249_Lv_M_WT_100-PM-013_LCM5.Aligned.sortedByCoord.out.bai',
             'PANX_1249_Lv_M_WT_100-PM-013_LCM5.Aligned.sortedByCoord.out.bam',
+            'PANX_1249_Lv_M_WG_100-PM-013_LCM5_somatic.somatic_filtered.delly.merged.vcf.gz',
+            'PANX_1249_Lv_M_WT_100-PM-013_LCM5.fusions.tsv',
             'star-fusion.fusion_predictions.tsv'
         ]
         for name in filenames:
