@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+### Fixed
+- GCGI-244 Launch Mavis with hg38 instead of hg19
+
 ## v0.0.11: 2021-11-11
 
 ### Fixed

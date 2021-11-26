@@ -1,12 +1,12 @@
 {
-    "mavis.annotate.modules": "mavis/2.2.6 mavis-config/1.2 hg19-mavis/2.2.6 hg19/p13",
-    "mavis.config.alignerReference": "$HG19_MAVIS_ROOT/hg19.2bit",
-    "mavis.config.annotations": "$HG19_MAVIS_ROOT/ensembl69_hg19_annotations_with_ncrna.json",
-    "mavis.config.dgvAnnotations": "$HG19_MAVIS_ROOT/dgv_hg19_variants.tab",
-    "mavis.config.masking": "$HG19_MAVIS_ROOT/hg19_masking.tab",
-    "mavis.config.modules": "mavis/2.2.6 mavis-config/1.2 hg19-mavis/2.2.6 hg19/p13",
-    "mavis.config.referenceGenome": "$HG19_ROOT/hg19_random.fa",
-    "mavis.config.templateMetadata": "$HG19_MAVIS_ROOT/cytoBand.txt",
+    "mavis.annotate.modules": "mavis/2.2.6 mavis-config/1.2 hg38-mavis/2.2.6 hg38/p12",
+    "mavis.config.alignerReference": "$HG38_MAVIS_ROOT/hg38.2bit",
+    "mavis.config.annotations": "$HG38_MAVIS_ROOT/ensembl79_hg38_annotations.json",
+    "mavis.config.dgvAnnotations": "$HG38_MAVIS_ROOT/dgv_hg38_variants.tab",
+    "mavis.config.masking": "$HG38_MAVIS_ROOT/hg38_masking.tab",
+    "mavis.config.modules": "mavis/2.2.6 mavis-config/1.2 hg38-mavis/2.2.6 hg38/p12",
+    "mavis.config.referenceGenome": "$HG38_ROOT/hg38_random.fa",
+    "mavis.config.templateMetadata": "$HG38_MAVIS_ROOT/cytoBand.txt",
     "mavis.donor": "PLACEHOLDER",
     "mavis.generateConfigScript.arribaConverter": "$MAVIS_CONFIG_ROOT/bin/parse_arriba.py",
     "mavis.generateConfigScript.jobMemory": 12,
@@ -19,9 +19,9 @@
             "libraryDesign": "WT"
         }
     ],
-    "mavis.pairing.modules": "mavis/2.2.6 mavis-config/1.2 hg19-mavis/2.2.6 hg19/p13",
-    "mavis.setup.modules": "mavis/2.2.6 mavis-config/1.2 hg19-mavis/2.2.6 hg19/p13",
-    "mavis.summary.modules": "mavis/2.2.6 mavis-config/1.2 hg19-mavis/2.2.6 hg19/p13",
+    "mavis.pairing.modules": "mavis/2.2.6 mavis-config/1.2 hg38-mavis/2.2.6 hg38/p12",
+    "mavis.setup.modules": "mavis/2.2.6 mavis-config/1.2 hg38-mavis/2.2.6 hg38/p12",
+    "mavis.summary.modules": "mavis/2.2.6 mavis-config/1.2 hg38-mavis/2.2.6 hg38/p12",
     "mavis.svData": [
         {
             "libraryDesign": "WT",
@@ -39,6 +39,6 @@
             "workflowName": "arriba"
         }
     ],
-    "mavis.validate.modules": "mavis/2.2.6 mavis-config/1.2 hg19-mavis/2.2.6 hg19/p13",
-    "mavis.zipResults.modules": "mavis/2.2.6 mavis-config/1.2 hg19-mavis/2.2.6 hg19/p13"
+    "mavis.validate.modules": "mavis/2.2.6 mavis-config/1.2 hg38-mavis/2.2.6 hg38/p12",
+    "mavis.zipResults.modules": "mavis/2.2.6 mavis-config/1.2 hg38-mavis/2.2.6 hg38/p12"
 }
