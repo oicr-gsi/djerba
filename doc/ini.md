@@ -107,7 +107,6 @@ Recommended usage is:
 | Section        | Name          | Source | Notes                                          |
 |----------------|---------------|-------------| -----------------------------------|
 | `[discovered]` | `ampl` | Computed from `purity` | logR cutoff value  |
-| `[discovered]` | `analysis_unit`    | File provenance | Identifier for a matched set of samples; see below          |
 | `[discovered]` | `data_dir`    | Djerba installation | Directory for miscellaneous data files          |
 | `[discovered]` | `enscon`    | `data_dir` | Ensembl conversion file                    |
 | `[discovered]` | `entcon`    | `data_dir` | Entrez conversion file                    |
@@ -140,29 +139,11 @@ Recommended usage is:
 | `[settings]`   | `tcga_data` | defaults.ini | Path to TCGA data directory  |
 | `[settings]`   | `whizbam_url` | defaults.ini | Base URL of OICR Whizbam site; used to construct links in report  |
 
-### Metadata parameters
+### Sequenza metadata
 
-Some parameters are not directly used to generate the HTML report; instead, they store metadata values for later reference.
+These parameters are not directly used to generate the HTML report; instead, they store metadata values for later reference.
 
-#### `analysis_unit`
-
-The "analysis unit" identifies a matched set of samples for clinical analysis:
-1. A merged DNA tumour sample
-2. A merged matched DNA reference sample
-3. A merged "matched" RNA sequencing sample
-
-By default, the group ID is used as the matching criterion for DNA and RNA samples from the same donor. Merged libraries with the same group ID are analysed together. The analysis unit string is defined as `${DONOR_ID}_${TISSUE_ORIGIN}_${TISSUE_TYPE}_${GROUP_ID}`. For example:
-```
-Merged DNA library: OCT_010118_Ut_P_WG_OCT-01-0118-TS
-Merged RNA library: OCT_010118_Ut_P_WT_OCT-01-0118-TS
-     Analysis unit: OCT_010118_Ut_P_OCT-01-0118-TS
-```
-
-The analysis unit is not needed to generate the HTML report; but by convention, it is used as the filename for the final PDF report, and inserted into the PDF footer. If the analysis unit is not supplied by the user, Djerba will attempt to construct a standard value from file provenance, and raise an error if it is unable to do so. The value is written to a file `analysis_unit.txt` in the reporting directory.
-
-#### Sequenza metadata
-
-Similarly to the analysis unit, the following Sequenza parameters are written to a file `sequenza_meta.txt` in the reporting directory:
+The following Sequenza parameters are written to a file `sequenza_meta.txt` in the reporting directory:
 - `sequenza_file`
 - `sequenza_gamma`
 - `sequenza_reviewer_1`
@@ -173,4 +154,4 @@ Similarly to the analysis unit, the following Sequenza parameters are written to
 
 By default, the fully-specified INI file produced by the `configure` step is archived to a directory given by the `archive_dir` INI parameter. This is intended as a record of what reports have been produced; it may be superseded at a later date, eg. by a database.
 
-The archive destination is: `$ARCHIVE_DIR/$ANALYSIS_UNIT/$MD5_CHECKSUM/${ANALYSIS_UNIT}.ini`, where `$MD5_CHECKSUM` is computed from the INI file. So, non-identical INI files will not be written to the same location. If Djerba produces an INI file which has already been archived, it will log a warning and leave the archived file untouched.
+The archive destination is: `$ARCHIVE_DIR/$PATIENT_STUDY_ID/$MD5_CHECKSUM/${PATIENT_STUDY_ID}.ini`, where `$MD5_CHECKSUM` is computed from the INI file. So, non-identical INI files will not be written to the same location. If Djerba produces an INI file which has already been archived, it will log a warning and leave the archived file untouched.

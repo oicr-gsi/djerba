@@ -77,7 +77,6 @@ class mavis_runner(logger):
         validator.validate_output_dir(args.work_dir)
         self.work_dir = os.path.abspath(args.work_dir)
         self.dry_run = args.dry_run
-        self.unit = args.unit
 
     def _read_config(self, config_path):
         """Set instance variables from the config file"""
@@ -86,9 +85,11 @@ class mavis_runner(logger):
             validator.validate_input_file(config_path)
         else:
             config_path = os.path.join(self.data_dir, self.INPUT_CONFIG)
+        self.logger.debug("Reading config path: {0}".format(config_path))
         config = ConfigParser()
         config.read(config_path)
         settings = config[self.SETTINGS_KEY]
+        self.logger.debug("Mavis settings: {0}".format([(k,settings[k]) for k in settings]))
         self.config_name = settings.get(self.CONFIG_NAME_KEY)
         self.cromwell_host_url = settings.get(self.CROMWELL_HOST_URL_KEY)
         self.cromwell_scratch_dir = settings.get(self.CROMWELL_SCRATCH_DIR_KEY)
@@ -126,13 +127,14 @@ class mavis_runner(logger):
                 self.logger.error(msg)
                 raise RuntimeError(msg)
         # use cromwell job ID to launch the wait/copy script
+        # truncate the job id to generate a name for the cluster job
         wait_command = [
             'qsub',
             '-P', 'gsi',
             '-l', 'h_vmem=1G',
             '-o', os.path.join(self.work_dir, 'waitlog'),
             '-e', os.path.join(self.work_dir, 'waitlog'),
-            '-N', 'mavis_wait_{}'.format(self.find_analysis_unit()),
+            '-N', 'mavis_wait_{}'.format(cromwell_job_id[0:8]),
             self.wait_script,
             '--id', cromwell_job_id,
             '--source', self.cromwell_scratch_dir,
@@ -144,23 +146,6 @@ class mavis_runner(logger):
             self.logger.info("Dry-run mode, omitting command: {0}".format(wait_command))
         else:
             result = self.run_subprocess(wait_command)
-
-    def find_analysis_unit(self):
-        """Find the applicable analysis unit string"""
-        if self.unit:
-            self.logger.info("Using user-supplied analysis unit: {0}".format(self.unit))
-            unit = self.unit
-        else:
-            self.logger.info("Finding analysis unit string from file provenance")
-            reader = provenance_reader(self.provenance_path, self.args.study, self.args.donor, self.log_level, self.log_path)
-            unit = reader.find_analysis_unit()
-            if unit == None:
-                self.logger.warning("Cannot find analysis unit, using 'UNKNOWN' as placeholder")
-                unit = 'UNKNOWN'
-            else:
-                self.logger.info("Found analysis unit: {0}".format(unit))
-            self.unit = unit
-        return unit
 
     def find_inputs(self):
         """Find Mavis inputs from file provenance"""
@@ -179,6 +164,7 @@ class mavis_runner(logger):
         """Link/copy inputs to the working directory"""
         local = {}
         for key in [self.WT_BAM, self.WT_INDEX]:
+            self.logger.debug("Processing {0}: {1}".format(key, inputs[key]))
             dest = os.path.join(self.work_dir, os.path.basename(inputs[key]))
             try:
                 os.symlink(inputs[key], dest)

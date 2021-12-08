@@ -73,7 +73,6 @@ class configurer(logger):
         updates[ini.MAF_FILE] = self.reader.parse_maf_path()
         updates[ini.MAVIS_FILE] = self.reader.parse_mavis_path()
         updates[ini.SEQUENZA_FILE] = self.reader.parse_sequenza_path()
-        updates[ini.ANALYSIS_UNIT] = self.reader.find_analysis_unit()
         updates.update(self.reader.find_identifiers())
         updates.update(self.find_data_files())
         return updates
@@ -176,17 +175,17 @@ class archiver(logger):
             self.config_string = ini_file.read()
         self.config = configparser.ConfigParser()
         self.config.read_string(self.config_string)
-        self.analysis_unit = self.config.get(ini.DISCOVERED, ini.ANALYSIS_UNIT)
+        self.patient_id = self.config.get(ini.DISCOVERED, ini.PATIENT_ID)
         m = hashlib.md5()
         m.update(self.config_string.encode(constants.TEXT_ENCODING))
         self.md5sum = m.hexdigest()
 
     def run(self, archive_dir=None):
-        """Write INI to a file of the form $ARCHIVE_DIR/$ANALYSIS_UNIT/$CHECKSUM/${ANALYSIS_UNIT}.ini"""
+        """Write INI to a file of the form $ARCHIVE_DIR/$PATIENT_INI/$CHECKSUM/${PATIENT_ID}.ini"""
         if not archive_dir:
             archive_dir = self.config.get(ini.SETTINGS, ini.ARCHIVE_DIR)
         path_validator().validate_output_dir(archive_dir)
-        out_dir_0 = os.path.join(archive_dir, self.analysis_unit)
+        out_dir_0 = os.path.join(archive_dir, self.patient_id)
         if not os.path.exists(out_dir_0):
             os.mkdir(out_dir_0)
         out_dir_1 = os.path.join(out_dir_0, self.md5sum)
@@ -196,7 +195,7 @@ class archiver(logger):
             self.logger.warning(msg)
         else:
             os.mkdir(out_dir_1)
-            out_path = os.path.join(out_dir_1, "{0}.ini".format(self.analysis_unit))
+            out_path = os.path.join(out_dir_1, "{0}.ini".format(self.patient_id))
             with open(out_path, 'w') as out_file:
                 out_file.write(self.config_string)
             self.logger.info("Archived INI file to {0}".format(out_path))
@@ -234,10 +233,10 @@ class log_r_cutoff_finder:
 class provenance_reader(logger):
 
     # internal dictionary keys
-    ROOT_SAMPLE_NAME_KEY = 'root_sample_name'
     LIMS_ID_KEY = 'lims_id'
 
     # parent sample attribute keys
+    ROOT_SAMPLE_NAME_ATTR = 'root_sample_name' # _ATTR to disambiguate from file provenance column
     GEO_EXTERNAL_NAME = 'geo_external_name'
     GEO_GROUP_ID = 'geo_group_id'
     GEO_TISSUE_ORIGIN_ID = 'geo_tissue_origin'
@@ -322,7 +321,12 @@ class provenance_reader(logger):
                     continue
                 elif not reference and row.get(self.GEO_TISSUE_TYPE_ID)=='R':
                     continue
-            value_set.add(row.get(key))
+            value = row.get(key)
+            if value:
+                value_set.add(value)
+            else:
+                self.logger.debug("No value found for {0} in {1}".format(key, row))
+        self.logger.debug("Candidate value set: {0}".format(value_set))
         if len(value_set)==0:
             self.logger.debug("No value found for {0}, reference = {1}".format(key, reference))
             value = None
@@ -399,7 +403,7 @@ class provenance_reader(logger):
         Parse the attributes string and return a dictionary
         """
         attrs = {}
-        attrs[self.ROOT_SAMPLE_NAME_KEY] = row[0]
+        attrs[self.ROOT_SAMPLE_NAME_ATTR] = row[0]
         attrs[self.LIMS_ID_KEY] = row[2]
         for entry in re.split(';', row[1]):
             pair = re.split('=', entry)
@@ -410,30 +414,6 @@ class provenance_reader(logger):
             attrs[pair[0]] = pair[1]
         self.logger.debug("Found row attributes: {0}".format(attrs))
         return attrs
-
-    def find_analysis_unit(self):
-        """
-        Find the analysis unit for the final PDF report
-        If any component of the analysis unit string is not available, return None
-        """
-        # defined in CGI-Tools/1-linkNiassa.sh as: ${DONR}_${TORI}_${TYPE}_${UNIT} where:
-        # - DONR = donor id (ie. OCT_010118) = self.donor
-        # - TORI = tissue origin (geo_tissue_origin)
-        # - TYPE = tissue type (geo_tissue_type)
-        # - UNIT = group ID
-        # In legacy CGI-Tools, UNIT could be overridden from a hard-coded file
-        # In Djerba, we instead can override the analysis unit by specifying as an INI parameter
-        tissue_origin = self._get_unique_value(self.GEO_TISSUE_ORIGIN_ID, check=True, reference=False)
-        tissue_type = self._get_unique_value(self.GEO_TISSUE_TYPE_ID, check=True, reference=False)
-        unit = self._get_unique_value(self.GEO_GROUP_ID, check=True, reference=False)
-        if tissue_origin and tissue_type and unit:
-            analysis_unit = "{0}_{1}_{2}_{3}".format(self.donor, tissue_origin, tissue_type, unit)
-        else:
-            msg = "Cannot generate analysis unit from inputs: "+\
-                "{0}".format([self.donor, tissue_origin, tissue_type, unit])
-            self.logger.debug(msg)
-            analysis_unit = None
-        return analysis_unit
 
     def find_identifiers(self):
         """
@@ -478,13 +458,15 @@ class provenance_reader(logger):
         return self._parse_default('starFusion', 'application/octet-stream', 'star-fusion\.fusion_predictions\.tsv$')
 
     def parse_wt_bam_path(self):
-        unit = self._get_unique_value(self.GEO_GROUP_ID, check=True, reference=False)
-        suffix = unit+'\.Aligned\.sortedByCoord\.out\.bam$'
+        unit = self._get_unique_value(self.ROOT_SAMPLE_NAME_ATTR, check=True, reference=False)
+        # matches *Aligned.sortedByCoord.out.bam if *not* preceded by an index of the form ACGTACGT
+        suffix = '('+unit+'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bam$'
         return self._parse_default('STAR', 'application/bam', suffix)
 
     def parse_wt_index_path(self):
-        unit = self._get_unique_value(self.GEO_GROUP_ID, check=True, reference=False)
-        suffix = unit+'\.Aligned\.sortedByCoord\.out\.bai$'
+        unit = self._get_unique_value(self.ROOT_SAMPLE_NAME_ATTR, check=True, reference=False)
+        # matches *Aligned.sortedByCoord.out.bam if *not* preceded by an index of the form ACGTACGT
+        suffix = '('+unit+'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bai$'
         return self._parse_default('STAR', 'application/bam-index', suffix)
 
 class MissingConfigError(Exception):

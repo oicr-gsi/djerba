@@ -90,7 +90,7 @@ class TestArchive(TestBase):
         self.assertTrue(os.path.exists(archive_path))
         with open(archive_path) as archive_file:
             lines = len(archive_file.readlines())
-        self.assertEqual(lines, 51)
+        self.assertEqual(lines, 50)
 
 class TestConfigure(TestBase):
 
@@ -107,7 +107,7 @@ class TestConfigure(TestBase):
         self.assertTrue(os.path.exists(out_path))
         with open(out_path) as out_file:
             lines = len(out_file.readlines())
-        self.assertEqual(lines, 52) # unlike archive, configParser puts a blank line at the end of the file
+        self.assertEqual(lines, 51) # unlike archive, configParser puts a blank line at the end of the file
 
 class TestCutoffFinder(TestBase):
 
@@ -135,7 +135,6 @@ class TestExtractor(TestBase):
         test_extractor = extractor(config, out_dir, log_level=logging.ERROR)
         # do not test R script or JSON here; done respectively by TestWrapper and TestReport
         expected_md5 = {
-            'analysis_unit.txt': '9f831fb25b89c515a9259cf307fb4ae0',
             'data_clinical.txt': '02003366977d66578c097295f12f4638',
             'genomic_summary.txt': 'c84eec523dbc81f4fc7b08860ab1a47f'
         }
@@ -150,7 +149,7 @@ class TestMain(TestBase):
     class mock_args:
         """Use instead of argparse to store params for testing"""
 
-        def __init__(self, ini_path, ini_out_path, html_path, work_dir, analysis_unit):
+        def __init__(self, ini_path, ini_out_path, html_path, work_dir):
             self.ini_out = ini_out_path
             self.author = None
             self.dir = work_dir
@@ -158,7 +157,7 @@ class TestMain(TestBase):
             self.html = html_path
             self.ini = ini_path
             self.target_coverage = 40
-            self.unit = analysis_unit
+            self.unit = None
             self.unit_file = None
             self.json = None
             self.pdf = None
@@ -176,13 +175,13 @@ class TestMain(TestBase):
         config_path = os.path.join(out_dir, 'config.ini')
         html_path = os.path.join(out_dir, 'report.html')
         work_dir = os.path.join(out_dir, 'report')
-        analysis_unit = 'test_unit'
+        patient_id = '100-PM-013'
         if not os.path.exists(work_dir):
             os.mkdir(work_dir)
-        args = self.mock_args(ini_path, config_path, html_path, work_dir, analysis_unit)
+        args = self.mock_args(ini_path, config_path, html_path, work_dir)
         main(args).run()
         self.assertTrue(os.path.exists(html_path))
-        pdf_path = os.path.join(work_dir, analysis_unit+'.pdf')
+        pdf_path = os.path.join(work_dir, '{0}_djerba_report.pdf'.format(patient_id))
         self.assertTrue(os.path.exists(pdf_path))
 
 class TestMavis(TestBase):
@@ -251,9 +250,9 @@ class TestRender(TestBase):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
         out_dir = self.tmp_dir
         out_path = os.path.join(out_dir, 'djerba_test.pdf')
-        analysis_unit = 'PANX_1249_Lv_M_100-PM-013_LCM5__TEST__'
+        footer_text = 'PANX_1249_TEST'
         test_renderer = pdf_renderer()
-        test_renderer.run(in_path, out_path, analysis_unit)
+        test_renderer.run(in_path, out_path, footer_text)
         # TODO check file contents; need to omit the report date etc.
         self.assertTrue(os.path.exists(out_path))
 

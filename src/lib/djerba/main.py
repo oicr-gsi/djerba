@@ -4,6 +4,7 @@ import configparser
 import getpass
 import logging
 import os
+import re
 import tempfile
 from shutil import copyfile
 
@@ -58,34 +59,56 @@ class main(logger):
             self.logger.warning(msg)
         return author
 
-    def _get_analysis_unit(self):
-        unit = None
-        if self.args.unit:
-            unit = self.args.unit
-            self.logger.debug("Found analysis unit {0} from command-line args".format(unit))
-        elif self.args.dir:
-            unit_path = os.path.join(self.args.dir, constants.ANALYSIS_UNIT_FILENAME)
-            self.logger.debug("Attempting to find analysis unit from file {0}".format(unit_path))
-            path_validator(self.log_level).validate_input_file(unit_path)
-            with open(unit_path) as unit_file:
-                unit = unit_file.readline().strip() # read the first line, ignore others
-            self.logger.debug("Found analysis unit {0} from file {1}".format(unit, unit_path))
-        else:
-            # shouldn't happen, but specify this for completeness
-            err = "Must specify one of --unit or --dir to find analysis unit"
-            self.logger.error(err)
-            raise RuntimeError(err)
-        return unit
-
     def _get_html_path(self):
-        # find HTML path after running extractor, so we can access the analysis unit if needed
+        # find HTML path after running extractor, so we can access the clinical data path if needed
         if self.args.html:
             html_path = self.args.html
+        elif self.args.dir:
+            patient_id = self._get_patient_study_id(self.args.dir)
+            html_path = os.path.join(self.args.dir, '{0}_djerba_report.html'.format(patient_id))
         else:
-            html_path = os.path.join(self.args.dir, '{0}.html'.format(self._get_analysis_unit()))
+            # shouldn't happen, but include this for completeness
+            msg = "Must specify --html or --dir to find HTML output path"
+            self.logger.error(msg)
+            raise RuntimeError(msg)
         html_path = os.path.realpath(html_path) # needed to correctly render links
         self.logger.debug("Found HTML path {0}".format(html_path))
         return html_path
+
+    def _get_patient_study_id(self, input_dir):
+        """Read patient LIMS ID from data_clinical.txt file, for constructing filenames"""
+        clinical_data = self._read_clinical_data_fields(input_dir)
+        lims_id = clinical_data[constants.PATIENT_STUDY_ID]
+        self.logger.debug("Found patient study ID: {0}".format(lims_id))
+        return lims_id
+
+    def _get_pdf_path(self, patient_id):
+        """Get PDF path for given patient ID string"""
+        pdf_path = os.path.join(self.args.dir, '{0}_djerba_report.pdf'.format(patient_id))
+        pdf_path = os.path.realpath(pdf_path)
+        self.logger.debug("Found PDF path {0}".format(pdf_path))
+        return pdf_path
+
+    def _read_clinical_data_fields(self, input_dir):
+        """Read the clinical data TSV into a dictionary"""
+        input_path = os.path.join(input_dir, constants.CLINICAL_DATA_FILENAME)
+        path_validator(self.log_level, self.log_path).validate_input_file(input_path)
+        with open(input_path) as input_file:
+            input_lines = input_file.readlines()
+        # first sanity check
+        if not (len(input_lines)==2 and re.match(constants.PATIENT_LIMS_ID, input_lines[0])):
+            msg = "Incorrect format in clinical data file at {0}".format(input_path)
+            self.logger.error(msg)
+            raise ValueError(msg)
+        head = re.split("\t", input_lines[0].strip())
+        body = re.split("\t", input_lines[1].strip())
+        # second sanity check
+        if len(head)!=len(body):
+            msg = "Mismatched header and body fields in {0}".format(input_path)
+            self.logger.error(msg)
+            raise ValueError(msg)
+        clinical_data = {head[i]:body[i] for i in range(len(head))}
+        return clinical_data
 
     def read_config(self, ini_path):
         """Read INI config from the given path"""
@@ -110,22 +133,18 @@ class main(logger):
             cv.validate_full(config)
             extractor(config, self.args.dir, self.log_level, self.log_path).run(self.args.json)
         elif self.args.subparser_name == constants.HTML:
-            if self.args.html:
-                html_path = self.args.html
-            else:
-                html_path = os.path.join(self.args.dir, '{0}.html'.format(self._get_analysis_unit()))
-            html_path = os.path.realpath(html_path) # needed to correctly render links
+            html_path = self._get_html_path()
             hr = html_renderer(self.log_level, self.log_path)
             hr.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed, self._get_author())
             if self.args.pdf:
-                unit = self._get_analysis_unit()
-                pdf_path = os.path.join(self.args.dir, "{0}.pdf".format(unit))
-                pdf_renderer(self.log_level, self.log_path).run(html_path, pdf_path, unit)
+                patient_id = self._get_patient_study_id(self.args.dir)
+                pdf_path = self._get_pdf_path(patient_id)
+                pdf_renderer(self.log_level, self.log_path).run(html_path, pdf_path, patient_id)
         elif self.args.subparser_name == constants.PDF:
-            unit = self._get_analysis_unit()
-            pdf = os.path.join(self.args.dir, "{0}.pdf".format(unit))
             html_path = self._get_html_path()
-            pdf_renderer(self.log_level, self.log_path).run(html_path, pdf, unit)
+            patient_id = self._get_patient_study_id(self.args.dir)
+            pdf_path = self._get_pdf_path(patient_id)
+            pdf_renderer(self.log_level, self.log_path).run(html_path, pdf_path, patient_id)
         elif self.args.subparser_name == constants.DRAFT:
             config = self.read_config(self.args.ini)
             cv.validate_minimal(config)
@@ -156,9 +175,9 @@ class main(logger):
             html_path = self._get_html_path()
             renderer = html_renderer(self.log_level, self.log_path)
             renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed, self._get_author())
-            unit = self._get_analysis_unit()
-            pdf = os.path.join(self.args.dir, "{0}.pdf".format(unit))
-            pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, unit)
+            patient_id = self._get_patient_study_id(self.args.dir)
+            pdf = self._get_pdf_path(patient_id)
+            pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, patient_id)
 
     def run_draft(self, input_config):
         """

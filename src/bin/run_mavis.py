@@ -22,7 +22,6 @@ def get_parser():
     parser.add_argument('-q', '--quiet', action='store_true', help='Logging for error messages only')
     parser.add_argument('-r', '--ready', action='store_true', help='Ready the working directory; find, link and filter inputs, and write Crowmell config')
     parser.add_argument('-s', '--study', metavar='ID', help='Study ID, eg. PASS01')
-    parser.add_argument('-u', '--unit', metavar='FILE', help='Analysis unit identifier; used if --execute is in effect. Optional; if not given, will be found from file provenance.')
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose logging')
     parser.add_argument('-w', '--work-dir', metavar='DIR', required=True, help='Working directory for input/output files')
     parser.add_argument('-x', '--execute', action='store_true', help='Launch Mavis job on Cromwell server')

@@ -125,24 +125,29 @@ class pdf_renderer(logger):
     # See https://github.com/wkhtmltopdf/wkhtmltopdf/issues/4506
     # An alternative solution would be changing the HTML generation to omit unnecessary Javascript
 
-    def run(self, html_path, pdf_path, analysis_unit=None, footer=True):
+    def run(self, html_path, pdf_path, footer_text=None, footer=True):
         """Render HTML to PDF"""
         # create options, which are arguments to wkhtmltopdf for footer generation
         # the 'quiet' option suppresses chatter to STDOUT
         self.logger.info('Writing PDF to {0}'.format(pdf_path))
         if footer:
-            self.logger.info("Including footer text for CGI clinical report")
-            if not analysis_unit:
-                self.logger.warning("No analysis unit specified; using placeholder for PDF footer")
-                analysis_unit = "ANALYSIS_UNIT_PLACEHOLDER"
-            options = {
-                'footer-right': '[page] of [topage]',
-                'footer-center': analysis_unit,
-                'quiet': '',
-                'disable-javascript': ''
-            }
+            if footer_text:
+                self.logger.info("Including footer text for CGI clinical report")
+                options = {
+                    'footer-right': '[page] of [topage]',
+                    'footer-center': footer_text,
+                    'quiet': '',
+                    'disable-javascript': ''
+                }
+            else:
+                self.logger.info("Including page numbers but no additional footer text")
+                options = {
+                    'footer-right': '[page] of [topage]',
+                    'quiet': '',
+                    'disable-javascript': ''
+                }
         else:
-            self.logger.info("Omitting footer text")
+            self.logger.info("Omitting PDF footer")
             options = {
                 'quiet': '',
                 'disable-javascript': ''

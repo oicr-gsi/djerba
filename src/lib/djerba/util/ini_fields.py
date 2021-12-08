@@ -6,7 +6,6 @@ SETTINGS = 'settings'
 DISCOVERED = 'discovered'
 
 # parameter names
-ANALYSIS_UNIT = 'analysis_unit'
 ARCHIVE_DIR = 'archive_dir'
 BED_PATH = 'bed_path'
 DATA_DIR = 'data_dir'
@@ -56,7 +55,6 @@ WHIZBAM_URL = 'whizbam_url'
 # schema to represent required structure for the INI file
 SCHEMA = {
     DISCOVERED: [
-        ANALYSIS_UNIT,
         DATA_DIR,
         ENSCON,
         ENTCON,

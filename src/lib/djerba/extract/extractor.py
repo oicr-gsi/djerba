@@ -119,7 +119,6 @@ class extractor(logger):
             self.run_r_script() # can omit the R script for testing
         self.write_clinical_data(self.get_description())
         self.write_genomic_summary()
-        self.write_analysis_unit()
         self.write_sequenza_meta()
         if json_path:
             self.write_json_summary(json_path)
@@ -130,15 +129,6 @@ class extractor(logger):
             self.config, self.report_dir, log_level=self.log_level, log_path=self.log_path
         )
         wrapper.run()
-
-    def write_analysis_unit(self):
-        """
-        Write the analysis unit in its own (small) file
-        Not needed for HTML generation, but used for the PDF report
-        """
-        out_path = os.path.join(self.report_dir, constants.ANALYSIS_UNIT_FILENAME)
-        with open(out_path, 'w') as out_file:
-            print(self.config[ini.DISCOVERED][ini.ANALYSIS_UNIT], file=out_file)
 
     def write_clinical_data(self, oncotree_info):
         """Write the data_clinical.txt file; based on legacy format from CGI-Tools"""
@@ -153,23 +143,23 @@ class extractor(logger):
             raise RuntimeError(msg) from err
         try:
             data = [
-                ['PATIENT_LIMS_ID', self.config[ini.INPUTS][ini.PATIENT] ],
-                ['PATIENT_STUDY_ID', self.config[ini.DISCOVERED][ini.PATIENT_ID] ],
-                ['TUMOUR_SAMPLE_ID', self.config[ini.DISCOVERED][ini.TUMOUR_ID] ],
-                ['BLOOD_SAMPLE_ID', self.config[ini.DISCOVERED][ini.NORMAL_ID] ],
-                ['REPORT_VERSION', self.config[ini.INPUTS][ini.REPORT_VERSION] ],
-                ['SAMPLE_TYPE', self.config[ini.INPUTS][ini.SAMPLE_TYPE] ],
-                ['CANCER_TYPE', oncotree_info[self.CANCER_TYPE] ],
-                ['CANCER_TYPE_DETAILED', self.config[ini.INPUTS][ini.ONCOTREE_CODE] ],
-                ['CANCER_TYPE_DESCRIPTION', oncotree_info[self.CANCER_TYPE_DESCRIPTION] ],
-                ['CLOSEST_TCGA', self.config[ini.INPUTS][ini.TCGA_CODE] ],
-                ['SAMPLE_ANATOMICAL_SITE', self.config[ini.INPUTS][ini.SAMPLE_ANATOMICAL_SITE]],
-                ['MEAN_COVERAGE', self.config[ini.INPUTS][ini.MEAN_COVERAGE] ],
-                ['PCT_V7_ABOVE_80X', self.config[ini.INPUTS][ini.PCT_V7_ABOVE_80X] ],
-                ['REQ_APPROVED_DATE', req_approved_date],
-                ['SEQUENZA_PURITY_FRACTION', purity],
-                ['SEQUENZA_PLOIDY', ploidy],
-                ['SEX', self.config[ini.INPUTS][ini.SEX] ]
+                [constants.PATIENT_LIMS_ID, self.config[ini.INPUTS][ini.PATIENT] ],
+                [constants.PATIENT_STUDY_ID, self.config[ini.DISCOVERED][ini.PATIENT_ID] ],
+                [constants.TUMOUR_SAMPLE_ID, self.config[ini.DISCOVERED][ini.TUMOUR_ID] ],
+                [constants.BLOOD_SAMPLE_ID, self.config[ini.DISCOVERED][ini.NORMAL_ID] ],
+                [constants.REPORT_VERSION, self.config[ini.INPUTS][ini.REPORT_VERSION] ],
+                [constants.SAMPLE_TYPE, self.config[ini.INPUTS][ini.SAMPLE_TYPE] ],
+                [constants.CANCER_TYPE, oncotree_info[self.CANCER_TYPE] ],
+                [constants.CANCER_TYPE_DETAILED, self.config[ini.INPUTS][ini.ONCOTREE_CODE] ],
+                [constants.CANCER_TYPE_DESCRIPTION, oncotree_info[self.CANCER_TYPE_DESCRIPTION] ],
+                [constants.CLOSEST_TCGA, self.config[ini.INPUTS][ini.TCGA_CODE] ],
+                [constants.SAMPLE_ANATOMICAL_SITE, self.config[ini.INPUTS][ini.SAMPLE_ANATOMICAL_SITE]],
+                [constants.MEAN_COVERAGE, self.config[ini.INPUTS][ini.MEAN_COVERAGE] ],
+                [constants.PCT_V7_ABOVE_80X, self.config[ini.INPUTS][ini.PCT_V7_ABOVE_80X] ],
+                [constants.REQ_APPROVED_DATE, req_approved_date],
+                [constants.SEQUENZA_PURITY_FRACTION, purity],
+                [constants.SEQUENZA_PLOIDY, ploidy],
+                [constants.SEX, self.config[ini.INPUTS][ini.SEX] ]
             ]
         except KeyError as err:
             msg = "Missing required clinical data value from config"
