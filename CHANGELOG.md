@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## Changed
+- GCGI-241 Remove the concept of an analysis unit; enables Djerba to work with V2 aliases in MISO
+
 ### Fixed
 - GCGI-244 Launch Mavis with hg38 instead of hg19
 
