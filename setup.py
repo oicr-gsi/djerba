@@ -64,14 +64,12 @@ setup(
             'R_stats/singleSample.r'
         ]
     },
-    # see https://stackoverflow.com/questions/32688688/how-to-write-setup-py-to-include-a-git-repository-as-a-dependency/54794506
     install_requires=[
         'configparse',
         'numpy',
         'pandas',
         'pdfkit',
         'scipy',
-        'ProductionTools @ git+ssh://bitbucket.oicr.on.ca/gsi/production-tools-python@v1.5.3'
     ],
     python_requires='>=3.9',
     author="Iain Bancarz",
