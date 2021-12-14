@@ -4,6 +4,7 @@
 
 ## Changed
 - GCGI-241 Remove the concept of an analysis unit; enables Djerba to work with V2 aliases in MISO
+- GCGI-247 Update the QC report shell script and improve dependency handling
 
 ### Fixed
 - GCGI-244 Launch Mavis with hg38 instead of hg19
