@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v0.0.12: 2021-12-14
 
 ## Changed
 - GCGI-241 Remove the concept of an analysis unit; enables Djerba to work with V2 aliases in MISO
