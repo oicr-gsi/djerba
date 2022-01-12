@@ -26,7 +26,7 @@ class r_script_wrapper(logger):
     ONCOGENIC = 136
 
     # 0-based index for GEP results file
-    GENE_ID = 0
+    GENE_ID = 1
     FPKM = 6
 
     # permitted MAF mutation types; from mutation_types.exonic in CGI-Tools
@@ -239,8 +239,11 @@ class r_script_wrapper(logger):
             for row in reader:
                 try:
                     fkpm[row[self.GENE_ID]] = row[self.FPKM]
-                except IndexError:
-                    print(row)
+                except IndexError as err:
+                    msg = "Incorrect number of columns in GEP row: '{0}'".format(row)+\
+                          "read from '{0}'".format(gep_path)
+                    self.logger.error(msg)
+                    raise RuntimeError(msg) from err
         # insert as the second column in the generic GEP file
         ref_path = self.gep_reference
         out_path = os.path.join(tmp_dir, 'gep.txt')
@@ -260,8 +263,8 @@ class r_script_wrapper(logger):
                     try:
                         row.insert(1, fkpm[gene_id])
                     except KeyError as err:
-                        msg = 'Cannot find gene ID {0} in '.format(gene_id) +\
-                            'gep results path {0}'.format(gep_path)
+                        msg = 'Reference gene ID {0} from {1} '.format(gene_id, ref_path) +\
+                            'not found in gep results path {0}'.format(gep_path)
                         raise KeyError(msg) from err
                 writer.writerow(row)
         return out_path
