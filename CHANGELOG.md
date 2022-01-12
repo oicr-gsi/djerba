@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.0.13: 2022-01-12
+
+### Fixed
+- GCGI-255 Correct index for gene ID in GEP input
+
 ## v0.0.12: 2021-12-14
 
 ## Changed
