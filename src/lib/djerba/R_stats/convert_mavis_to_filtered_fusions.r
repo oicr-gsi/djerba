@@ -20,10 +20,12 @@ preProcFus <- function(datafile, readfilt, entrfile){
  print("--- reading fusion data ---")
  data <- read.csv(datafile, sep="\t", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
  entr <- read.csv(entrfile, sep="\t", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
+ print("### finished reading fusion data ###")
 
  # reformat the filtering columns to split and take the max value within cell
  columns <- c("contig_remapped_reads", "flanking_pairs", "break1_split_reads", "break2_split_reads", "linking_split_reads")
  data <- split_column_take_max(data, columns)
+  print("### finished reformatting fusion columns ###")
 
  # add a column which pulls the correct read support columns
  data$read_support <- ifelse(data$call_method == "contig", data$contig_remapped_reads,
@@ -60,9 +62,20 @@ preProcFus <- function(datafile, readfilt, entrfile){
  data_dedup$RNA_support <- ifelse(grepl("arriba", data_dedup$tools), "yes", 
                               ifelse(grepl("star", data_dedup$tools), "yes", "no")
                                 )
+ 
+ if (nrow(data_dedup)==0) {
+   print("### Fusion data table is empty! ###")
+   df_cbio <- data.frame(matrix(ncol = 10, nrow = 0))
+   colnames(df_cbio) <- c("Hugo_Symbol", "Entrez_Gene_Id", "Center", "Tumor_Sample_Barcode", "Fusion", "DNA_support", "RNA_support", "Method", "Frame", "Fusion_Status")
+   df_cbio_new_delim <- df_cbio
+   #df_cbio_oncokb <- data.frame(c("Tumor_Sample_Barcode", "Fusion"))
+} else {
+
  data_dedup$Center <- "TGL"
  data_dedup$Frame <- "frameshift"
  data_dedup$Fusion_Status <- "unknown"
+
+ print("### ready to construct fusion output ###")
 
  # write out the nice header
  header <- c("Hugo_Symbol", "Entrez_Gene_Id", "Center", "Tumor_Sample_Barcode", "Fusion", "DNA_support", "RNA_support", "Method", "Frame", "Fusion_Status")
@@ -87,7 +100,7 @@ preProcFus <- function(datafile, readfilt, entrfile){
 # change to old-style fusion delimiter for compatibiltiy with FusionAnnotator.py and OncoKB
  df_cbio_new_delim <- df_cbio
  df_cbio$Fusion <- gsub("::", "-", df_cbio$Fusion)
-
+}
  # input for oncoKB annotator
  df_cbio_oncokb <- df_cbio[c("Tumor_Sample_Barcode", "Fusion")]
 

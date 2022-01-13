@@ -126,7 +126,8 @@ class extractor(logger):
 
     def run_r_script(self):
         wrapper = r_script_wrapper(
-            self.config, self.report_dir, log_level=self.log_level, log_path=self.log_path
+            ### TODO FIXME hack for testing
+            self.config, self.report_dir, tmp_dir='/u/ibancarz/tmp/djerba_20220113', log_level=self.log_level, log_path=self.log_path
         )
         wrapper.run()
 

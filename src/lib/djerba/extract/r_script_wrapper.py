@@ -101,14 +101,27 @@ class r_script_wrapper(logger):
         # TODO import the main() method of FusionAnnotator.py instead of running in subprocess
         in_path = os.path.join(self.report_dir, self.DATA_FUSIONS_ONCOKB)
         out_path = os.path.join(self.report_dir, self.DATA_FUSIONS_ONCOKB_ANNOTATED)
-        cmd = [
-            'FusionAnnotator.py',
-            '-i', in_path,
-            '-o', out_path,
-            '-c', info_path,
-            '-b', self.oncokb_token
-        ]
-        self._run_command(cmd, 'fusion annotator', redact_oncokb=True)
+        with open(in_path) as in_file:
+            total = len(in_file.readlines())
+        if total==1:
+            # input has only a header -- write the oncoKB annotated header
+            self.logger.info("Empty fusion input, writing empty oncoKB annotated file")
+            fields = ['Tumor_Sample_Barcode', 'Fusion', 'mutation_effect', 'oncogenic',
+                      'LEVEL_1', 'LEVEL_2', 'LEVEL_3A', 'LEVEL_3B', 'LEVEL_4',
+                      'LEVEL_R1', 'LEVEL_R2', 'LEVEL_R3', 'Highest_level']
+            with open(out_path, 'w') as out_file:
+                out_file.write("\t".join(fields)+"\n")
+        else:
+            msg = "Read {0} lines of fusion input, running Fusion annotator".format(total)
+            self.logger.debug(msg)
+            cmd = [
+                'FusionAnnotator.py',
+                '-i', in_path,
+                '-o', out_path,
+                '-c', info_path,
+                '-b', self.oncokb_token
+            ]
+            self._run_command(cmd, 'fusion annotator', redact_oncokb=True)
         return out_path
 
     def _annotate_maf(self, in_path, tmp_dir, info_path):

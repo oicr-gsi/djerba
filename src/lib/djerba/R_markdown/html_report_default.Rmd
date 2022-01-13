@@ -138,12 +138,14 @@ if (dim(ExprZ)[1] == 0) {
 
 # fusion data
 Fus <- read.csv(paste(folder, "data_fusions.txt", sep = "/"), sep = "\t", header = TRUE,
+  colClasses=c("character"),
   stringsAsFactors = FALSE) %>% select(Hugo_Symbol, Fusion, Frame) %>% arrange(Fusion) %>%
   remove_rownames()
 
 FUScount <- dim(Fus)[1]
 
 cbioFusOnco <- read.csv(paste(folder, "data_fusions_oncokb_annotated.txt", sep = "/"),
+  colClasses=c("character"),
   sep = "\t", header = TRUE, stringsAsFactors = FALSE, na.strings = "") %>% drop_na(oncogenic) %>%
   unique() %>% left_join(Fus) %>% left_join(cytoBand) %>% mutate(OncoKB = ifelse(is.na(Highest_level),
   oncogenic, Highest_level)) %>% mutate(Alteration = "Fusion")
