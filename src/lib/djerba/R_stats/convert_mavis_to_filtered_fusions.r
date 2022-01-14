@@ -20,12 +20,10 @@ preProcFus <- function(datafile, readfilt, entrfile){
  print("--- reading fusion data ---")
  data <- read.csv(datafile, sep="\t", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
  entr <- read.csv(entrfile, sep="\t", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
- print("### finished reading fusion data ###")
 
  # reformat the filtering columns to split and take the max value within cell
  columns <- c("contig_remapped_reads", "flanking_pairs", "break1_split_reads", "break2_split_reads", "linking_split_reads")
  data <- split_column_take_max(data, columns)
-  print("### finished reformatting fusion columns ###")
 
  # add a column which pulls the correct read support columns
  data$read_support <- ifelse(data$call_method == "contig", data$contig_remapped_reads,
@@ -62,45 +60,41 @@ preProcFus <- function(datafile, readfilt, entrfile){
  data_dedup$RNA_support <- ifelse(grepl("arriba", data_dedup$tools), "yes", 
                               ifelse(grepl("star", data_dedup$tools), "yes", "no")
                                 )
- 
+
  if (nrow(data_dedup)==0) {
-   print("### Fusion data table is empty! ###")
+   print("--- Fusion data table is empty! ---")
    df_cbio <- data.frame(matrix(ncol = 10, nrow = 0))
    colnames(df_cbio) <- c("Hugo_Symbol", "Entrez_Gene_Id", "Center", "Tumor_Sample_Barcode", "Fusion", "DNA_support", "RNA_support", "Method", "Frame", "Fusion_Status")
    df_cbio_new_delim <- df_cbio
-   #df_cbio_oncokb <- data.frame(c("Tumor_Sample_Barcode", "Fusion"))
-} else {
+ } else {
+   data_dedup$Center <- "TGL"
+   data_dedup$Frame <- "frameshift"
+   data_dedup$Fusion_Status <- "unknown"
 
- data_dedup$Center <- "TGL"
- data_dedup$Frame <- "frameshift"
- data_dedup$Fusion_Status <- "unknown"
+   # write out the nice header
+   header <- c("Hugo_Symbol", "Entrez_Gene_Id", "Center", "Tumor_Sample_Barcode", "Fusion", "DNA_support", "RNA_support", "Method", "Frame", "Fusion_Status")
 
- print("### ready to construct fusion output ###")
+   # get left gene data
+   columns_left <- c("gene1_aliases", "Entrez_Gene_Id.x", "Center", "Sample", "fusion_tuples", "DNA_support", "RNA_support", "tools", "Frame", "Fusion_Status")
+   data_left <- data_dedup[columns_left]
+   colnames(data_left) <- header
 
- # write out the nice header
- header <- c("Hugo_Symbol", "Entrez_Gene_Id", "Center", "Tumor_Sample_Barcode", "Fusion", "DNA_support", "RNA_support", "Method", "Frame", "Fusion_Status")
+   # get right gene data
+   columns_right <- c("gene2_aliases", "Entrez_Gene_Id.y", "Center", "Sample", "fusion_tuples", "DNA_support", "RNA_support", "tools", "Frame", "Fusion_Status")
+   data_right <- data_dedup[columns_right]
+   colnames(data_right) <- header
 
- # get left gene data
- columns_left <- c("gene1_aliases", "Entrez_Gene_Id.x", "Center", "Sample", "fusion_tuples", "DNA_support", "RNA_support", "tools", "Frame", "Fusion_Status")
- data_left <- data_dedup[columns_left]
- colnames(data_left) <- header
+   # append it all together
+   df_cbio <- rbind(data_left, data_right)
 
- # get right gene data
- columns_right <- c("gene2_aliases", "Entrez_Gene_Id.y", "Center", "Sample", "fusion_tuples", "DNA_support", "RNA_support", "tools", "Frame", "Fusion_Status")
- data_right <- data_dedup[columns_right]
- colnames(data_right) <- header
+   # remove rows where gene is not known (this still keeps the side of the gene which is known)
+   df_cbio <- df_cbio[complete.cases(df_cbio),]
+   df_cbio$Fusion <- gsub("None", "intragenic", df_cbio$Fusion)
 
- # append it all together
- df_cbio <- rbind(data_left, data_right)
-
- # remove rows where gene is not known (this still keeps the side of the gene which is known)
- df_cbio <- df_cbio[complete.cases(df_cbio),]
- df_cbio$Fusion <- gsub("None", "intragenic", df_cbio$Fusion)
-
-# change to old-style fusion delimiter for compatibiltiy with FusionAnnotator.py and OncoKB
- df_cbio_new_delim <- df_cbio
- df_cbio$Fusion <- gsub("::", "-", df_cbio$Fusion)
-}
+   # change to old-style fusion delimiter for compatibiltiy with FusionAnnotator.py and OncoKB
+   df_cbio_new_delim <- df_cbio
+   df_cbio$Fusion <- gsub("::", "-", df_cbio$Fusion)
+ }
  # input for oncoKB annotator
  df_cbio_oncokb <- df_cbio[c("Tumor_Sample_Barcode", "Fusion")]
 

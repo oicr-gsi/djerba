@@ -137,6 +137,7 @@ if (dim(ExprZ)[1] == 0) {
 }
 
 # fusion data
+# coerce data type to "character"; otherwise an empty file will cause a conflict
 Fus <- read.csv(paste(folder, "data_fusions.txt", sep = "/"), sep = "\t", header = TRUE,
   colClasses=c("character"),
   stringsAsFactors = FALSE) %>% select(Hugo_Symbol, Fusion, Frame) %>% arrange(Fusion) %>%
@@ -144,6 +145,7 @@ Fus <- read.csv(paste(folder, "data_fusions.txt", sep = "/"), sep = "\t", header
 
 FUScount <- dim(Fus)[1]
 
+# coerce data type to "character"; otherwise an empty file will cause a conflict
 cbioFusOnco <- read.csv(paste(folder, "data_fusions_oncokb_annotated.txt", sep = "/"),
   colClasses=c("character"),
   sep = "\t", header = TRUE, stringsAsFactors = FALSE, na.strings = "") %>% drop_na(oncogenic) %>%
