@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v0.0.14: 2022-01-14
+
+### Added
+- GCGI-256 Correctly process samples with empty fusion data after filtering
+
+### Fixed
+- GCGI-255 Fix in release v0.0.13 was incorrect; rectified in this release
+
 ## v0.0.13: 2022-01-12
 
 ### Fixed
