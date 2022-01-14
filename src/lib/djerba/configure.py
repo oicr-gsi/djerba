@@ -442,7 +442,7 @@ class provenance_reader(logger):
         return self._parse_default('delly', 'application/vcf-gz', 'somatic_filtered\.delly\.merged\.vcf\.gz$')
 
     def parse_gep_path(self):
-        return self._parse_default('rsem', 'application/octet-stream', '\.results$')
+        return self._parse_default('rsem', 'application/octet-stream', '\.genes\.results$')
 
     def parse_maf_path(self):
         suffix = 'filter\.deduped\.realigned\.recalibrated\.mutect2\.filtered\.maf\.gz$'
