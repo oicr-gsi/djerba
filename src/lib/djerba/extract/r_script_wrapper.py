@@ -26,7 +26,7 @@ class r_script_wrapper(logger):
     ONCOGENIC = 136
 
     # 0-based index for GEP results file
-    GENE_ID = 1
+    GENE_ID = 0
     FPKM = 6
 
     # permitted MAF mutation types; from mutation_types.exonic in CGI-Tools
@@ -252,6 +252,7 @@ class r_script_wrapper(logger):
         Apply preprocessing to a GEP file; write results to tmp_dir
         CGI-Tools constructs the GEP file from scratch, but only one column actually varies
         As a shortcut, we insert the first column into a ready-made file
+        TODO This is a legacy CGI-Tools method, is there a cleaner way to do it?
         TODO Should GEP_REFERENCE (list of past GEP results) be updated on a regular basis?
         """
         # read the gene id and FPKM metric from the GEP file for this report
@@ -287,7 +288,8 @@ class r_script_wrapper(logger):
                     except KeyError as err:
                         msg = 'Reference gene ID {0} from {1} '.format(gene_id, ref_path) +\
                             'not found in gep results path {0}'.format(gep_path)
-                        raise KeyError(msg) from err
+                        self.logger.warn(msg)
+                        row.insert(1, '0.0')
                 writer.writerow(row)
         return out_path
 
