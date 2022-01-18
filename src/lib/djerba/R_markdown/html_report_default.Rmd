@@ -503,7 +503,7 @@ ggplot(tcga_tmb_data, aes(tmb)) +
   {
     if (sample_tcga %in% external_tmb_data_type$CANCER.TYPE)
       geom_density(data = external_tmb_data_type, aes(color = "Cohort"), fill = "purple", alpha = 0.1)
-    else
+    else if (sample_tcga %in% tcga_tmb_data_type$CANCER.TYPE)
       geom_density(data = tcga_tmb_data_type, aes(color = "Cohort"), fill = "purple", alpha = 0.1)
   }
 
