@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.0.15: 2022-01-18
+
+### Fixed
+- GCGI-257 Fix for Rmarkdown error
+
 ## v0.0.14: 2022-01-14
 
 ### Added
