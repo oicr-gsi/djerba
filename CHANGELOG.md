@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.0.16: 2022-01-21
+
+### Fixed
+- GCGI-262 Fix for Mavis inputs
+
 ## v0.0.15: 2022-01-18
 
 ### Fixed
