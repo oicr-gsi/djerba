@@ -239,6 +239,7 @@ class provenance_reader(logger):
     ROOT_SAMPLE_NAME_ATTR = 'root_sample_name' # _ATTR to disambiguate from file provenance column
     GEO_EXTERNAL_NAME = 'geo_external_name'
     GEO_GROUP_ID = 'geo_group_id'
+    GEO_GROUP_ID_DESCRIPTION = 'geo_group_id_description'
     GEO_TISSUE_ORIGIN_ID = 'geo_tissue_origin'
     GEO_TISSUE_TYPE_ID = 'geo_tissue_type'
     GEO_TUBE_ID = 'geo_tube_id'
@@ -456,6 +457,16 @@ class provenance_reader(logger):
 
     def parse_starfusion_predictions_path(self):
         return self._parse_default('starFusion', 'application/octet-stream', 'star-fusion\.fusion_predictions\.tsv$')
+
+    def parse_wg_bam_path(self):
+        desc = self._get_unique_value(self.GEO_GROUP_ID_DESCRIPTION, check=True, reference=False)
+        suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bam$'.format(desc)
+        return self._parse_default('bamMergePreprocessing', 'application/bam', suffix)
+
+    def parse_wg_index_path(self):
+        desc = self._get_unique_value(self.GEO_GROUP_ID_DESCRIPTION, check=True, reference=False)
+        suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bai$'.format(desc)
+        return self._parse_default('bamMergePreprocessing', 'application/bam-index', suffix)
 
     def parse_wt_bam_path(self):
         unit = self._get_unique_value(self.ROOT_SAMPLE_NAME_ATTR, check=True, reference=False)

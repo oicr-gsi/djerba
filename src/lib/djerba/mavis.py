@@ -20,8 +20,11 @@ class mavis_runner(logger):
     TEMPLATE_NAME = 'mavis_config_template.json'
     INPUT_CONFIG = 'mavis_settings.ini'
     WAIT_SCRIPT_NAME = 'wait_for_mavis.py'
+    FILTERED_DELLY = 'delly.filtered.merged.pass.vcf.gz'
 
     # input file keys/indices
+    WG_BAM = 'wg_bam'
+    WG_INDEX = 'wg_index'
     WT_BAM = 'wt_bam'
     WT_INDEX = 'wt_index'
     STARFUSION = 'starfusion'
@@ -31,13 +34,16 @@ class mavis_runner(logger):
     DELLY_IDX = 1
     ARRIBA_IDX = 2
 
-    # mavis workflow config keys
+    # mavis workflow config keys and constants
     MAVIS_DONOR = 'mavis.donor'
     MAVIS_INPUT_BAMS = 'mavis.inputBAMs'
     MAVIS_BAM = 'bam'
     MAVIS_BAM_INDEX = 'bamIndex'
+    MAVIS_LIBRARY_DESIGN = 'libraryDesign'
     MAVIS_SV_DATA = 'mavis.svData'
     MAVIS_SV_FILE = 'svFile'
+    MAVIS_WG = 'WG'
+    MAVIS_WT = 'WT'
 
     # ini file params
     CONFIG_NAME_KEY = 'config_name'
@@ -151,6 +157,8 @@ class mavis_runner(logger):
         """Find Mavis inputs from file provenance"""
         reader = provenance_reader(self.provenance_path, self.args.study, self.args.donor, self.log_level, self.log_path)
         inputs = {
+            self.WG_BAM: reader.parse_wg_bam_path(), # bamMergePreprocessing
+            self.WG_INDEX: reader.parse_wg_index_path(), # bamMergePreprocessing
             self.WT_BAM: reader.parse_wt_bam_path(), # STAR
             self.WT_INDEX: reader.parse_wt_index_path(), # STAR
             self.STARFUSION: reader.parse_starfusion_predictions_path(), # starFusion
@@ -161,9 +169,9 @@ class mavis_runner(logger):
         self.logger.info("Mavis launch done")
 
     def link_and_copy_inputs(self, inputs):
-        """Link/copy inputs to the working directory"""
+        """Link/copy inputs to the working directory; filter and index delly input"""
         local = {}
-        for key in [self.WT_BAM, self.WT_INDEX]:
+        for key in [self.WG_BAM, self.WG_INDEX, self.WT_BAM, self.WT_INDEX]:
             self.logger.debug("Processing {0}: {1}".format(key, inputs[key]))
             dest = os.path.join(self.work_dir, os.path.basename(inputs[key]))
             try:
@@ -172,9 +180,21 @@ class mavis_runner(logger):
                 self.logger.warning("Not making link: {0}".format(err))
             local[key] = dest
         # linking sometimes fails on these files (for unknown reasons) so we copy instead
-        for key in [self.STARFUSION, self.ARRIBA, self.DELLY]:
+        for key in [self.STARFUSION, self.ARRIBA]:
             dest = os.path.join(self.work_dir, os.path.basename(inputs[key]))
             local[key] = copyfile(inputs[key], dest)
+        # copy the delly file and apply filters
+        dest = os.path.join(self.work_dir, os.path.basename(inputs[self.DELLY]))
+        unfiltered_delly = copyfile(inputs[self.DELLY], dest)
+        filtered_delly = os.path.join(self.work_dir, self.FILTERED_DELLY)
+        self.logger.debug("Filtering delly input")
+        filter_command = ["bcftools", "view", "-i", "\"%FILTER='PASS' & INFO/PE>10\"", unfiltered_delly, "-Oz", "-o", filtered_delly]
+        self.run_subprocess(filter_command)
+        self.logger.debug("Indexing filtered delly input")
+        index_command = ["tabix", "-p", "vcf", filtered_delly]
+        self.run_subprocess(index_command)
+        local[self.DELLY] = filtered_delly
+        self.logger.info("Input files in {0} are ready".format(self.work_dir))
         return local
 
     def main(self):
@@ -199,6 +219,7 @@ class mavis_runner(logger):
         return action
 
     def run_subprocess(self, command):
+        """Run command as a subprocess; input should be a list of strings"""
         self.logger.info("Running subprocess command: {0}".format(command))
         self.logger.debug("Command string: "+" ".join(command))
         result = subprocess.run(command, capture_output=True, encoding=constants.TEXT_ENCODING)
@@ -218,8 +239,17 @@ class mavis_runner(logger):
             config = json.loads(in_file.read())
         # complete the data structure and write as JSON to work_dir
         config[self.MAVIS_DONOR] = self.args.donor
-        config[self.MAVIS_INPUT_BAMS][0][self.MAVIS_BAM] = inputs[self.WT_BAM]
-        config[self.MAVIS_INPUT_BAMS][0][self.MAVIS_BAM_INDEX] = inputs[self.WT_INDEX]
+        wg_bam = {
+            self.MAVIS_BAM: inputs[self.WG_BAM],
+            self.MAVIS_BAM_INDEX: inputs[self.WG_INDEX],
+            self.MAVIS_LIBRARY_DESIGN: self.MAVIS_WG
+        }
+        wt_bam = {
+            self.MAVIS_BAM: inputs[self.WT_BAM],
+            self.MAVIS_BAM_INDEX: inputs[self.WT_INDEX],
+            self.MAVIS_LIBRARY_DESIGN: self.MAVIS_WT
+        }
+        config[self.MAVIS_INPUT_BAMS] = [wg_bam, wt_bam]
         config[self.MAVIS_SV_DATA][self.STARFUSION_IDX][self.MAVIS_SV_FILE] = inputs[self.STARFUSION]
         config[self.MAVIS_SV_DATA][self.DELLY_IDX][self.MAVIS_SV_FILE] = inputs[self.DELLY]
         config[self.MAVIS_SV_DATA][self.ARRIBA_IDX][self.MAVIS_SV_FILE] = inputs[self.ARRIBA]
