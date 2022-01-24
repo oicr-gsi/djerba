@@ -190,7 +190,8 @@ class mavis_runner(logger):
         unfiltered_delly = copyfile(inputs[self.DELLY], dest)
         filtered_delly = os.path.join(self.work_dir, self.FILTERED_DELLY)
         self.logger.debug("Filtering delly input")
-        filter_command = ["bcftools", "view", "-i", "\"%FILTER='PASS' & INFO/PE>10\"", unfiltered_delly, "-Oz", "-o", filtered_delly]
+        # quotes are not needed around the %FILTER... string because subprocess does not use a shell
+        filter_command = ["bcftools", "view", "-i", "%FILTER='PASS' & INFO/PE>10", unfiltered_delly, "-Oz", "-o", filtered_delly]
         self.run_subprocess(filter_command)
         self.logger.debug("Indexing filtered delly input")
         index_command = ["tabix", "-p", "vcf", filtered_delly]
