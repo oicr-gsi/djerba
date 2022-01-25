@@ -6,7 +6,7 @@ Setup script for Djerba
 
 from setuptools import setup, find_packages
 
-package_version = '0.0.17c'
+package_version = '0.0.17d'
 package_root = 'src/lib'
 
 with open("README.md", "r") as fh:
@@ -44,6 +44,7 @@ setup(
             'data/gencode_v33_hg38_genes.bed',
             'data/genomic_summary.txt',
             'data/mavis_config_template.json',
+            'data/mavis_legacy_config_template.json',
             'data/mavis_settings.ini',
             'data/mutation_types.exonic',
             'data/mutation_types.nonsynonymous',
