@@ -13,31 +13,13 @@
     "mavis.generateConfigScript.modules": "mavis/2.2.6 mavis-config/1.2",
     "mavis.generateConfigScript.timeout": 40,
     "mavis.inputBAMs": [
-        {
-            "bam": "PLACEHOLDER",
-            "bamIndex": "PLACEHOLDER",
-            "libraryDesign": "WT"
-        }
+      "PLACEHOLDER"
     ],
     "mavis.pairing.modules": "mavis/2.2.6 mavis-config/1.2 hg38-mavis/2.2.6 hg38/p12",
     "mavis.setup.modules": "mavis/2.2.6 mavis-config/1.2 hg38-mavis/2.2.6 hg38/p12",
     "mavis.summary.modules": "mavis/2.2.6 mavis-config/1.2 hg38-mavis/2.2.6 hg38/p12",
     "mavis.svData": [
-        {
-            "libraryDesign": "WT",
-            "svFile": "PLACEHOLDER",
-            "workflowName": "StarFusion"
-        },
-	{
-	    "libraryDesign": "WG",
-            "svFile": "PLACEHOLDER",
-            "workflowName": "delly"
-        },
-        {
-            "libraryDesign": "WT",
-            "svFile": "PLACEHOLDER",
-            "workflowName": "arriba"
-        }
+      "PLACEHOLDER"
     ],
     "mavis.validate.modules": "mavis/2.2.6 mavis-config/1.2 hg38-mavis/2.2.6 hg38/p12",
     "mavis.zipResults.modules": "mavis/2.2.6 mavis-config/1.2 hg38-mavis/2.2.6 hg38/p12"

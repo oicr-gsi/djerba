@@ -18,6 +18,7 @@ class mavis_runner(logger):
 
     CROMWELL_OPTIONS = 'cromwell_options.json'
     TEMPLATE_NAME = 'mavis_config_template.json'
+    LEGACY_TEMPLATE_NAME = 'mavis_legacy_config_template.json'
     INPUT_CONFIG = 'mavis_settings.ini'
     WAIT_SCRIPT_NAME = 'wait_for_mavis.py'
     FILTERED_DELLY = 'delly.filtered.merged.pass.vcf.gz'
@@ -27,12 +28,9 @@ class mavis_runner(logger):
     WG_INDEX = 'wg_index'
     WT_BAM = 'wt_bam'
     WT_INDEX = 'wt_index'
-    STARFUSION = 'starfusion'
+    STARFUSION = 'StarFusion'
     DELLY = 'delly'
     ARRIBA = 'arriba'
-    STARFUSION_IDX = 0
-    DELLY_IDX = 1
-    ARRIBA_IDX = 2
 
     # mavis workflow config keys and constants
     MAVIS_DONOR = 'mavis.donor'
@@ -44,12 +42,14 @@ class mavis_runner(logger):
     MAVIS_SV_FILE = 'svFile'
     MAVIS_WG = 'WG'
     MAVIS_WT = 'WT'
+    MAVIS_WORKFLOW_NAME = 'workflowName'
 
     # ini file params
     CONFIG_NAME_KEY = 'config_name'
     CROMWELL_HOST_URL_KEY = 'cromwell_host_url'
     CROMWELL_SCRATCH_DIR_KEY = 'cromwell_scratch_dir'
     EMAIL_KEY = 'email'
+    LEGACY_WDL_KEY = 'legacy_wdl'
     PROVENANCE_KEY = 'provenance'
     SETTINGS_KEY = 'settings'
     WDL_KEY = 'wdl'
@@ -63,6 +63,7 @@ class mavis_runner(logger):
             path_validator(self.log_level).validate_output_file(self.log_path)
         self.logger = self.get_logger(self.log_level, __name__, self.log_path)
         self.data_dir = os.path.join(os.path.dirname(__file__), constants.DATA_DIR_NAME)
+        self.legacy = self.args.legacy
         self.wait_script = which(self.WAIT_SCRIPT_NAME)
         if not self.wait_script:
             msg = "Unable to find {0} on the PATH".format(self.WAIT_SCRIPT_NAME)
@@ -103,9 +104,39 @@ class mavis_runner(logger):
         self.cromwell_scratch_dir = settings.get(self.CROMWELL_SCRATCH_DIR_KEY)
         self.email_recipients = settings.get(self.EMAIL_KEY)
         self.provenance_path = settings.get(self.PROVENANCE_KEY)
-        self.wdl_path = settings.get(self.WDL_KEY)
+        if self.legacy:
+            self.wdl_path = settings.get(self.LEGACY_WDL_KEY)
+        else:
+            self.wdl_path = settings.get(self.WDL_KEY)
+        self.logger.debug("WDL path: {0}".format(self.wdl_path))
         for input_path in [self.provenance_path, self.wdl_path]:
             validator.validate_input_file(input_path)
+
+    def check_config_version(self, config_json):
+        modern_key = 'mavis.config.dgvAnnotations'
+        legacy_key = 'mavis.runMavis.dvgAnnotations'
+        with open(config_json) as config_file:
+            config = json.loads(config_file.read())
+        err = None
+        if legacy_key in config:
+            if modern_key in config:
+                err = "Conflicting legacy/non-legacy keys in Mavis config '{0}' ".format(config_json)
+            else:
+                self.logger.info("Legacy CGI-Tools Mavis config detected")
+                if not self.legacy:
+                    err = "Cannot launch non-legacy WDL with legacy config '{0}'; ".format(config_json)
+                    err += "check arguments to run_mavis.py"
+        elif modern_key in config:
+            self.logger.info("Modern Mavis config (>=2.0.1) detected")
+            if self.legacy:
+                err = "Cannot launch legacy WDL with non-legacy config '{0}'; ".format(config_json)
+                err += "check arguments to run_mavis.py"
+        else:
+            err = "Cannot detect Mavis config version in '{0}'; ".format(config_json)
+            err += "indicator keys not found"
+        if err:
+            self.logger.error(err)
+            raise RuntimeError(err)
 
     def execute(self, config):
         """Execute the Mavis workflow on a Cromwell server"""
@@ -215,6 +246,7 @@ class mavis_runner(logger):
             config_json = os.path.join(self.work_dir, self.config_name)
             path_validator().validate_input_file(config_json)
         if self.args.execute:
+            self.check_config_version(config_json)
             self.logger.info("Launching Mavis WDL: "+self.wdl_path)
             self.execute(config_json)
             action += 2
@@ -237,7 +269,15 @@ class mavis_runner(logger):
         return result
 
     def write_config(self, inputs):
-        in_path = os.path.join(self.data_dir, self.TEMPLATE_NAME)
+        """
+        Write JSON config for the WDL workflow
+        If --legacy is in effect, format for the old CGI-Tools WDL
+        Otherwise, format for current version of the GSI Mavis WDL (>= 2.0.1)
+        """
+        if self.legacy:
+            in_path = os.path.join(self.data_dir, self.LEGACY_TEMPLATE_NAME)
+        else:
+            in_path = os.path.join(self.data_dir, self.TEMPLATE_NAME)
         with open(in_path) as in_file:
             config = json.loads(in_file.read())
         # complete the data structure and write as JSON to work_dir
@@ -253,9 +293,22 @@ class mavis_runner(logger):
             self.MAVIS_LIBRARY_DESIGN: self.MAVIS_WT
         }
         config[self.MAVIS_INPUT_BAMS] = [wg_bam, wt_bam]
-        config[self.MAVIS_SV_DATA][self.STARFUSION_IDX][self.MAVIS_SV_FILE] = inputs[self.STARFUSION]
-        config[self.MAVIS_SV_DATA][self.DELLY_IDX][self.MAVIS_SV_FILE] = inputs[self.DELLY]
-        config[self.MAVIS_SV_DATA][self.ARRIBA_IDX][self.MAVIS_SV_FILE] = inputs[self.ARRIBA]
+        arriba_sv = {
+            self.MAVIS_WORKFLOW_NAME: self.ARRIBA,
+            self.MAVIS_LIBRARY_DESIGN: self.MAVIS_WT,
+            self.MAVIS_SV_FILE: inputs[self.ARRIBA]
+        }
+        starfusion_sv = {
+            self.MAVIS_WORKFLOW_NAME: self.STARFUSION,
+            self.MAVIS_LIBRARY_DESIGN: self.MAVIS_WT,
+            self.MAVIS_SV_FILE: inputs[self.STARFUSION]
+        }
+        delly_sv = {
+            self.MAVIS_WORKFLOW_NAME: self.DELLY,
+            self.MAVIS_LIBRARY_DESIGN: self.MAVIS_WG,
+            self.MAVIS_SV_FILE: inputs[self.DELLY]
+        }
+        config[self.MAVIS_SV_DATA] = [arriba_sv, starfusion_sv, delly_sv]
         out_path = os.path.join(self.work_dir, self.config_name)
         with open(out_path, 'w') as out_file:
             out_file.write(json.dumps(config, indent=4, sort_keys=True))

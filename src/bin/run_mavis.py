@@ -18,6 +18,7 @@ def get_parser():
     parser.add_argument('-c', '--config', metavar='FILE', help='INI config file with additional settings. Optional.')
     parser.add_argument('-d', '--debug', action='store_true', help='More verbose logging')
     parser.add_argument('-D', '--donor', metavar='ID', help='Donor ID, eg. PANX_1273')
+    parser.add_argument('-L', '--legacy', action='store_true', help='Run legacy CGI-Tools WDL for Mavis, instead of the current version')
     parser.add_argument('-l', '--log-path', help='Output file for log messages; defaults to STDERR')
     parser.add_argument('-q', '--quiet', action='store_true', help='Logging for error messages only')
     parser.add_argument('-r', '--ready', action='store_true', help='Ready the working directory; find, link and filter inputs, and write Crowmell config. Cannot combine with --execute.')

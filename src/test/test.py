@@ -192,6 +192,7 @@ class TestMavis(TestBase):
             self.config = None
             self.dry_run = False
             self.execute = False
+            self.legacy = False
             self.ready = True
             self.work_dir = work_dir
             self.donor = 'PANX_1249'
@@ -210,8 +211,17 @@ class TestMavis(TestBase):
 
     def test_ready(self):
         out_dir = self.tmp_dir
-        provenance = os.path.join(self.sup_dir, 'pass01_panx_provenance.original.tsv.gz')
         mock_args = self.mock_mavis_args(out_dir)
+        self.run_test(mock_args, out_dir)
+
+    def test_ready_legacy(self):
+        out_dir = self.tmp_dir
+        mock_args = self.mock_mavis_args(out_dir)
+        mock_args.legacy = True
+        self.run_test(mock_args, out_dir)
+
+    def run_test(self, mock_args, out_dir):
+        provenance = os.path.join(self.sup_dir, 'pass01_panx_provenance.original.tsv.gz')
         runner = mavis_runner(mock_args)
         runner.provenance_path = provenance
         action = runner.main()
