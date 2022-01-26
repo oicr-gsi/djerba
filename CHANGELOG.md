@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v0.0.17: 2022-01-26
+
+### Added
+- GCGI-264 Add --legacy option to run CGI-Tools legacy Mavis
+
+### Fixed
+- GCGI-262 Additional fixes for Mavis inputs
+- Add req_approved_date to config.ini template
+
 ## v0.0.16: 2022-01-21
 
 ### Fixed
