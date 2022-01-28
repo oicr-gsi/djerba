@@ -24,7 +24,7 @@ class html_renderer(logger):
     FOOTER_TEMPLATE_80X = 'footer-80x.html'
     DEFAULT_RMD = 'html_report_default.Rmd'
     FAILED_RMD = 'html_report_failed.Rmd'
-
+    WGS_ONLY_RMD = 'html_report_wgs_only.Rmd'
     
     # constants to construct fusion remapping
     DATA_FUSION_NEW = 'data_fusions_new_delimiter.txt'
@@ -48,7 +48,7 @@ class html_renderer(logger):
         # first item of each list is the header, which can be ignored
         return {old[i]:new[i] for i in range(1, len(old))}
 
-    def run(self, report_dir, out_path, target_coverage, failed=False, cgi_author=None):
+    def run(self, report_dir, out_path, target_coverage, failed=False, cgi_author=None, wgs_only=False):
         """Read the reporting directory, and use an Rmarkdown script to write HTML"""
         # TODO replace the Rmarkdown; separate out the computation and HTML templating
         cgi_author = cgi_author if cgi_author!=None else 'CGI_PLACEHOLDER'
@@ -71,6 +71,8 @@ class html_renderer(logger):
                 copy(os.path.join(self.r_script_dir, filename), tmp)
             if failed:
                 markdown_script = os.path.join(tmp, self.FAILED_RMD)
+            elif wgs_only:
+                markdown_script = os.path.join(tmp, self.WGS_ONLY_RMD)
             else:
                 markdown_script = os.path.join(tmp, self.DEFAULT_RMD)
             # no need for double quotes around the '-e' argument; subprocess does not use a shell
