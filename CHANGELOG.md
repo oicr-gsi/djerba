@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.1.0: 2022-01-28
+
+No code changes from v0.0.17; version incremented for first production release
+
 ## v0.0.17: 2022-01-26
 
 ### Added
