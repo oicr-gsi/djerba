@@ -135,7 +135,7 @@ class main(logger):
         elif self.args.subparser_name == constants.HTML:
             html_path = self._get_html_path()
             hr = html_renderer(self.log_level, self.log_path)
-            hr.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed, self._get_author())
+            hr.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed, self._get_author(), self.args.wgs_only)
             if self.args.pdf:
                 patient_id = self._get_patient_study_id(self.args.dir)
                 pdf_path = self._get_pdf_path(patient_id)
@@ -174,7 +174,7 @@ class main(logger):
             extractor(full_config, report_dir, self.log_level, self.log_path).run(json_path)
             html_path = self._get_html_path()
             renderer = html_renderer(self.log_level, self.log_path)
-            renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed, self._get_author())
+            renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed, self._get_author(), self.args.wgs_only)
             patient_id = self._get_patient_study_id(self.args.dir)
             pdf = self._get_pdf_path(patient_id)
             pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, patient_id)
@@ -202,7 +202,7 @@ class main(logger):
             extractor(full_config, report_dir, self.log_level, self.log_path).run(json_path)
             html_path = self._get_html_path()
             renderer = html_renderer(self.log_level, self.log_path)
-            renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed, self._get_author())
+            renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed, self._get_author(), self.args.wgs_only)
 
     def run_setup(self):
         """Set up an empty working directory for a CGI report"""
@@ -262,4 +262,8 @@ class main(logger):
             # shouldn't happen, but handle this case for completeness
             raise ValueError("Unknown subparser: "+args.subparser_name)
         self.logger.info("Command-line path validation finished.")
-    
+        # warning for inconsistent arguments
+        if args.wgs_only and args.failed:
+            msg = 'Both --failed and --wgs-only options specified; but '+\
+                  'failed report format is identical for WGS and WGS+WTS'
+            self.logger.warn(msg)

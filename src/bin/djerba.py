@@ -38,6 +38,7 @@ def get_parser():
     render_parser.add_argument('-H', '--html', metavar='PATH', help='Path for HTML output; optional, defaults to ${PATIENT_STUDY_ID}.html in the input directory')
     render_parser.add_argument('-t', '--target-coverage', metavar='COVER', type=int, choices=[40, 80], default=40, help='Target coverage depth for report footer')
     render_parser.add_argument('--pdf', action='store_true', help='Write PDF to the input directory')
+    render_parser.add_argument('-w', '--wgs-only', action='store_true', help='Produce a WGS-only report')
     publish_parser = subparsers.add_parser(constants.PDF, help='read Djerba HTML output and write PDF')
     publish_parser.add_argument('-H', '--html', metavar='PATH', help='Path for HTML input; optional')
     publish_parser.add_argument('-D', '--dir', metavar='DIR', required=True, help='Directory for PDF output, and for default source of HTML and patient study ID')
@@ -50,6 +51,7 @@ def get_parser():
     draft_parser.add_argument('-j', '--json', metavar='PATH', help='Output path for JSON summary')
     draft_parser.add_argument('-H', '--html', metavar='PATH', help='Path for HTML output; optional, defaults to ${PATIENT_STUDY_ID}.html in the input directory')
     draft_parser.add_argument('-t', '--target-coverage', metavar='COVER', type=int, choices=[40, 80], default=40, help='Target coverage depth for report footer')
+    draft_parser.add_argument('-w', '--wgs-only', action='store_true', help='Produce a WGS-only report')
     draft_parser.add_argument('--no-archive', action='store_true', help='Do not archive the fully specified INI config file')
     all_parser = subparsers.add_parser(constants.ALL, help='run all Djerba steps and output PDF')
     all_parser.add_argument('-a', '--author', metavar='NAME', help='Name of CGI author for report footer; optional')
@@ -60,6 +62,7 @@ def get_parser():
     all_parser.add_argument('-j', '--json', metavar='PATH', help='Output path for JSON summary')
     all_parser.add_argument('-H', '--html', metavar='PATH', help='Path for HTML output; optional, if not given HTML is written to a temporary directory and discarded')
     all_parser.add_argument('-t', '--target-coverage', metavar='COVER', type=int, choices=[40, 80], default=40, help='Target coverage depth for report footer')
+    all_parser.add_argument('-w', '--wgs-only', action='store_true', help='Produce a WGS-only report')
     all_parser.add_argument('--no-archive', action='store_true', help='Do not archive the fully specified INI config file')
     return parser
 

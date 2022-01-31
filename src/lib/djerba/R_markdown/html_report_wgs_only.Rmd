@@ -143,8 +143,8 @@ sample_tcga <- tolower(ifelse(clinicalData$CLOSEST_TCGA == "COAD" | clinicalData
 
   #calculate tmb percentile against external dataset or closest tcga
   sample_pct_type <- ifelse(sample_tcga %in% external_tmb_data_type$CANCER.TYPE, ecdf(external_tmb_data_type$tmb)(sampleTMB),
-    ifelse(sample_tcga %in% tcga_tmb_data$CANCER.TYPE, ecdf(tcga_tmb_data$tmb)(sampleTMB),
-      NA))
+                            ifelse(sample_tcga %in% tcga_tmb_data$CANCER.TYPE, ecdf(tcga_tmb_data_type$tmb)(sampleTMB),
+                                   NA))
 
   #Extract name of cohort
   Cohort <- ifelse(sample_tcga %in% external_tmb_data_type$CANCER.TYPE, unique(external_tmb_data_type$Source),
@@ -199,7 +199,7 @@ if (dim(cbioCNV)[1] == 0) {
 CNV_statement <- length(unique(cbioCNV$Hugo_Symbol))
 
 # join and create treatment and definitions
-defTable <- rbindlist(list(out1, CNV, cbioFusAnno), fill = TRUE) %>%
+defTable <- rbindlist(list(out1, CNV), fill = TRUE) %>%
   select(Gene, Chromosome) %>%
   left_join(oncoKBsummaries) %>%
   unique() %>%
@@ -209,8 +209,8 @@ defTable <- rbindlist(list(out1, CNV, cbioFusAnno), fill = TRUE) %>%
 
 defTable <- defTable[order(Gene), ]
 
-Tx <- rbindlist(list(cbioMAFTx, cbioCNVTx, cbioFusTx), fill = TRUE) %>%
-  select(-c(Highest_level, Chromosome, mutation_effect)) %>%
+Tx <- rbindlist(list(cbioMAFTx, cbioCNVTx), fill = TRUE) %>%
+  select(-c(Highest_level, Chromosome)) %>%
   rename(`Gene(s)` = Hugo_Symbol) %>%
   unite(`Treatment(s)`, LEVEL_1:LEVEL_R3, na.rm = TRUE) %>%
   mutate(Alteration = paste0("[", Alteration, "](", "https://www.oncokb.org/gene/",

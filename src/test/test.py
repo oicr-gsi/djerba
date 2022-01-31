@@ -6,8 +6,10 @@ import hashlib
 import json
 import logging
 import os
+import re
 import subprocess
 import tempfile
+import time
 import unittest
 from string import Template
 
@@ -245,6 +247,29 @@ class TestMavis(TestBase):
 
 class TestRender(TestBase):
 
+    def check_report(self, report_path, expected_md5):
+        # substitute out any date strings and check md5sum of the report body
+        with open(report_path) as report_file:
+            contents = report_file.readlines()
+        # crudely parse out the HTML body, omitting <img> tags
+        # could use an XML parser instead, but this way is simpler
+        body_lines = []
+        in_body = False
+        for line in contents:
+            if re.search('<body>', line):
+                in_body = True
+            elif re.search('</body>', line):
+                break
+            elif in_body and not re.search('<img src=', line):
+                body_lines.append(line)
+        body = ''.join(body_lines)
+        date1 = time.strftime("%Y/%m/%d") # 2022/01/28
+        date2 = time.strftime("%d %B, %Y") # 28 January, 2022; appears in failure report
+        body.replace(date1, 'yyyy/mm/dd')
+        body.replace(date2, '00 Smarch, 0000')
+        md5 = hashlib.md5(body.encode(encoding=constants.TEXT_ENCODING)).hexdigest()
+        self.assertEqual(md5, expected_md5)
+
     def test_html(self):
         outDir = self.tmp_dir
         outPath = os.path.join(outDir, 'djerba_test.html')
@@ -252,9 +277,23 @@ class TestRender(TestBase):
         html_renderer(log_level=logging.ERROR).run(reportDir, outPath, target_coverage=40)
         # TODO check file contents; need to omit the report date etc.
         self.assertTrue(os.path.exists(outPath))
+        self.check_report(outPath, '4cf9c439f943fad299683d6337ea5730')
         failPath = os.path.join(outDir, 'djerba_fail_test.html')
         html_renderer(log_level=logging.ERROR).run(reportDir, failPath, target_coverage=40, failed=True)
         self.assertTrue(os.path.exists(failPath))
+        self.check_report(failPath, '2302ccad76c4104efd2cb78c987ff8e4')
+        wgsOnlyPath = os.path.join(outDir, 'djerba_wgs_only_test.html')
+        html_renderer(log_level=logging.ERROR).run(reportDir, wgsOnlyPath, target_coverage=40, wgs_only=True)
+        self.assertTrue(os.path.exists(wgsOnlyPath))
+        self.check_report(wgsOnlyPath, '26a2d7249dfa87272414de64adc33069')
+        depth80XPath = os.path.join(outDir, 'djerba_80x_test.html')
+        html_renderer(log_level=logging.ERROR).run(reportDir, depth80XPath, target_coverage=80)
+        self.assertTrue(os.path.exists(depth80XPath))
+        self.check_report(depth80XPath, '5edd50b64082152c49206010bda1b1b2')
+        wgsOnlyDepth80XPath = os.path.join(outDir, 'djerba_80x_wgs_only_test.html')
+        html_renderer(log_level=logging.ERROR).run(reportDir, wgsOnlyDepth80XPath, target_coverage=80, wgs_only=True)
+        self.assertTrue(os.path.exists(wgsOnlyDepth80XPath))
+        self.check_report(wgsOnlyDepth80XPath, '4c8659d10d9ed08d8ecab461a3bbeea5')
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')

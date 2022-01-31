@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+### Added
+- GCGI-240 Add --wgs-only option for HTML reports
+
 ## v0.1.0: 2022-01-28
 
 No code changes from v0.0.17; version incremented for first production release
