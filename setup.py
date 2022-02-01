@@ -6,7 +6,7 @@ Setup script for Djerba
 
 from setuptools import setup, find_packages
 
-package_version = '0.2.0a'
+package_version = '0.2.0c'
 package_root = 'src/lib'
 
 with open("README.md", "r") as fh:
@@ -56,6 +56,7 @@ setup(
             'R_markdown/header.html',
             'R_markdown/html_report_default.Rmd',
             'R_markdown/html_report_failed.Rmd',
+            'R_markdown/html_report_wgs_only.Rmd',
             'R_markdown/OICR_Logo_RGB_ENGLISH.png',
             'R_stats/calc_mut_sigs.r',
             'R_stats/convert_mavis_to_filtered_fusions.r',
