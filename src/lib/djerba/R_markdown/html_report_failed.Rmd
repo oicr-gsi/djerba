@@ -207,16 +207,16 @@ td, th {
 </table>
 <table width="100%">
   <tr>
-    <td width="50%"><strong>Hospital:</strong> HOSPTIAL NAME AND HOSPITAL ADDRESS</td>
-    <td width="50%"><strong>Requisitioner Email:</strong> NAME@DOMAIN.COM</td>
+    <td width="63%"><strong>Hospital:</strong> HOSPTIAL NAME AND HOSPITAL ADDRESS</td>
+    <td width="37%"><strong>Requisitioner Email:</strong> NAME@DOMAIN.COM</td>
   </tr>
   <tr>
-    <td width="50%"><strong>Primary cancer:</strong> `r clinicalData$CANCER_TYPE_DESCRIPTION`</td>
-    <td width="50%"><strong>Site of biopsy/surgery:</strong> `r clinicalData$SAMPLE_ANATOMICAL_SITE`</td>
+    <td width="63%"><strong>Primary cancer:</strong> `r clinicalData$CANCER_TYPE_DESCRIPTION`</td>
+    <td width="37%"><strong>Site of biopsy/surgery:</strong> `r clinicalData$SAMPLE_ANATOMICAL_SITE`</td>
   </tr>
   <tr>
-    <td width="50%"><strong>Tumour Sample ID:</strong> `r clinicalData$TUMOUR_SAMPLE_ID`</td>
-    <td width="50%"><strong>Blood Sample ID:</strong> `r clinicalData$BLOOD_SAMPLE_ID`</td>
+    <td width="63%"><strong>Tumour Sample ID:</strong> `r clinicalData$TUMOUR_SAMPLE_ID`</td>
+    <td width="37%"><strong>Blood Sample ID:</strong> `r clinicalData$BLOOD_SAMPLE_ID`</td>
   </tr>
 </table>
 <div id="example1">
