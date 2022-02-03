@@ -169,7 +169,7 @@ td, th {
 <html>
 
 <div id="example3">
-  <h3>QUALITY FAILURE REPORT</h3>
+  <h3 style="color:red;">QUALITY FAILURE REPORT</h3>
 </div>
 
 <div id="example2">
