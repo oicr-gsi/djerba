@@ -8,16 +8,23 @@ from djerba.util.logger import logger
 class config_validator(logger):
     """Check that INI parameters are valid. Input is a ConfigParser object, eg. from an INI file."""
 
-    def __init__(self, log_level=logging.WARNING, log_path=None):
+    def __init__(self, wgs_only, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
+        self.wgs_only = wgs_only
+        if wgs_only:
+            self.logger.info("Validating config for WGS-only report")
+            self.schema = ini.SCHEMA_WGS_ONLY
+        else:
+            self.logger.info("Validating config for WGS+WTS report")
+            self.schema = ini.SCHEMA_DEFAULT
 
     def find_extras(self, config):
         """Find any config arguments unknown to Djerba"""
         unexpected = []
         for title in config.sections():
-            if ini.SCHEMA.get(title):
+            if self.schema.get(title):
                 for parameter in config[title]:
-                    if parameter not in ini.SCHEMA[title]:
+                    if parameter not in self.schema[title]:
                         msg = "Unexpected config parameter found: {0}:{1}".format(title, parameter)
                         self.logger.warning(msg)
             else:
@@ -31,7 +38,7 @@ class config_validator(logger):
                 msg = "[{0}] section not found in config".format(title)
                 self.logger.error(msg)
                 raise DjerbaConfigError(msg)
-            for field in ini.SCHEMA[title]:
+            for field in self.schema[title]:
                 if not config[title].get(field):
                     msg = "[{0}] field '{1}' not found in config".format(title, field)
                     self.logger.error(msg)

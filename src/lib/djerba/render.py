@@ -31,9 +31,14 @@ class html_renderer(logger):
     DATA_FUSION_OLD = 'data_fusions.txt'
     FUSION_INDEX = 4
 
-    def __init__(self, log_level=logging.WARNING, log_path=None):
+    def __init__(self, wgs_only, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.r_script_dir = os.path.join(os.path.dirname(__file__), self.R_MARKDOWN_DIRNAME)
+        self.wgs_only = wgs_only
+        if wgs_only:
+            self.logger.info("Rendering HTML for WGS-only report")
+        else:
+            self.logger.info("Rendering HTML for WGS+WTS report")
 
     def _read_fusion_remapping(self, report_dir):
         """Construct a dictionary from the 'Fusion' column in old and new formats"""
@@ -48,7 +53,7 @@ class html_renderer(logger):
         # first item of each list is the header, which can be ignored
         return {old[i]:new[i] for i in range(1, len(old))}
 
-    def run(self, report_dir, out_path, target_coverage, failed=False, cgi_author=None, wgs_only=False):
+    def run(self, report_dir, out_path, target_coverage, failed=False, cgi_author=None):
         """Read the reporting directory, and use an Rmarkdown script to write HTML"""
         # TODO replace the Rmarkdown; separate out the computation and HTML templating
         cgi_author = cgi_author if cgi_author!=None else 'CGI_PLACEHOLDER'
@@ -71,7 +76,7 @@ class html_renderer(logger):
                 copy(os.path.join(self.r_script_dir, filename), tmp)
             if failed:
                 markdown_script = os.path.join(tmp, self.FAILED_RMD)
-            elif wgs_only:
+            elif self.wgs_only:
                 markdown_script = os.path.join(tmp, self.WGS_ONLY_RMD)
             else:
                 markdown_script = os.path.join(tmp, self.DEFAULT_RMD)

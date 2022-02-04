@@ -72,11 +72,12 @@ class r_script_wrapper(logger):
         'LEVEL_R1', 'LEVEL_R2', 'LEVEL_R3', 'Highest_level'
     ]
 
-    def __init__(self, config, report_dir, tmp_dir=None,
+    def __init__(self, config, report_dir, wgs_only, tmp_dir=None,
                  log_level=logging.WARNING, log_path=None):
         self.config = config
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.r_script_dir = os.path.join(os.path.dirname(__file__), '..', 'R_stats')
+        self.wgs_only = wgs_only
         self.supplied_tmp_dir = tmp_dir # may be None
         self.report_dir = report_dir
         self.tumour_id = config[ini.DISCOVERED][ini.TUMOUR_ID]
@@ -389,9 +390,6 @@ class r_script_wrapper(logger):
         else:
             tmp_dir = self.supplied_tmp_dir
         oncokb_info = self.write_oncokb_info(tmp_dir)
-        gep_path = self.preprocess_gep(self.config[ini.DISCOVERED][ini.GEP_FILE], tmp_dir)
-        fus_path = self.preprocess_fus(self.config[ini.DISCOVERED][ini.MAVIS_FILE], tmp_dir)
-        maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE], tmp_dir, oncokb_info)
         seg_path = self.preprocess_seg(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir)
         cmd = [
             'Rscript', os.path.join(self.r_script_dir, 'singleSample.r'),
@@ -399,10 +397,7 @@ class r_script_wrapper(logger):
             '--studyid', self.config[ini.INPUTS][ini.STUDY_ID],
             '--tumourid', self.tumour_id,
             '--normalid', self.config[ini.DISCOVERED][ini.NORMAL_ID],
-            '--maffile', maf_path,
             '--segfile', seg_path,
-            '--gepfile', gep_path,
-            '--fusfile', fus_path,
             '--minfusionreads', self.min_fusion_reads,
             '--enscon', self.config[ini.DISCOVERED][ini.ENSCON],
             '--entcon', self.config[ini.DISCOVERED][ini.ENTCON],
@@ -418,6 +413,15 @@ class r_script_wrapper(logger):
             '--hmzd', self.config[ini.DISCOVERED][ini.LOG_R_HMZD],
             '--outdir', self.report_dir
         ]
+        if not self.wgs_only:
+            gep_path = self.preprocess_gep(self.config[ini.DISCOVERED][ini.GEP_FILE], tmp_dir)
+            fus_path = self.preprocess_fus(self.config[ini.DISCOVERED][ini.MAVIS_FILE], tmp_dir)
+            maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE], tmp_dir, oncokb_info)
+            cmd.extend([
+                '--gepfile', gep_path,
+                '--fusfile', fus_path,
+                '--maffile', maf_path,
+            ])
         result = self._run_command(cmd, "main R script")
         self.postprocess(oncokb_info)
         if self.supplied_tmp_dir == None:
@@ -425,12 +429,16 @@ class r_script_wrapper(logger):
         return result
 
     def postprocess(self, oncokb_info):
-        """Apply postprocessing to the Rscript output directory"""
+        """
+        Apply postprocessing to the Rscript output directory:
+        - Annotate CNA and (if any) fusion data
+        - Remove unnecessary files, for consistency with CGI-Tools
+        """
         self._annotate_cna(oncokb_info)
-        self._annotate_fusion(oncokb_info)
-        # remove unnecessary files, for consistency with CGI-Tools
         os.remove(os.path.join(self.report_dir, self.DATA_CNA_ONCOKB_GENES))
-        os.remove(os.path.join(self.report_dir, self.DATA_FUSIONS_ONCOKB))
+        if not self.wgs_only:
+            self._annotate_fusion(oncokb_info)
+            os.remove(os.path.join(self.report_dir, self.DATA_FUSIONS_ONCOKB))
 
     def write_oncokb_info(self, info_dir):
         """Write a file of oncoKB data for use by annotation scripts"""

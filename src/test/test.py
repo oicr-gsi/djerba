@@ -60,7 +60,7 @@ class TestBase(unittest.TestCase):
         self.rScriptDir = os.path.realpath(os.path.join(test_dir, '../lib/djerba/R/'))
         self.lib_data = os.path.realpath(os.path.join(test_dir, '../lib/djerba/data')) # installed data files from src/lib
         self.default_ini = os.path.realpath(os.path.join(self.lib_data, 'defaults.ini'))
-        [self.config_user, self.config_full] = self.write_config_files(self.tmp_dir)
+        [self.config_user, self.config_user_wgs_only, self.config_full, self.config_full_wgs_only] = self.write_config_files(self.tmp_dir)
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -74,7 +74,7 @@ class TestBase(unittest.TestCase):
             "LIB_DATA": self.lib_data
         }
         out_paths = []
-        for name in ['config_user.ini', 'config_full.ini']:
+        for name in ['config_user.ini', 'config_user_wgs_only.ini', 'config_full.ini', 'config_full_wgs_only.ini']:
             template_path = os.path.join(self.data_dir, name)
             out_path = os.path.join(output_dir, name)
             with open(template_path) as in_file, open(out_path, 'w') as out_file:
@@ -96,12 +96,12 @@ class TestArchive(TestBase):
 
 class TestConfigure(TestBase):
 
-    def test_configurer(self):
+    def run_config_test(self, user_config, wgs_only, expected_lines):
         config = configparser.ConfigParser()
         config.read(self.default_ini)
-        config.read(self.config_user)
+        config.read(user_config)
         config['settings']['provenance'] = os.path.join(self.sup_dir, 'pass01_panx_provenance.original.tsv.gz')
-        test_configurer = configurer(config)
+        test_configurer = configurer(config, wgs_only)
         out_dir = self.tmp_dir
         out_path = os.path.join(out_dir, 'config_test_output.ini')
         test_configurer.run(out_path, archive=False)
@@ -109,7 +109,14 @@ class TestConfigure(TestBase):
         self.assertTrue(os.path.exists(out_path))
         with open(out_path) as out_file:
             lines = len(out_file.readlines())
-        self.assertEqual(lines, 51) # unlike archive, configParser puts a blank line at the end of the file
+        self.assertEqual(lines, expected_lines) # unlike archive, configParser puts a blank line at the end of the file
+
+    def test_default(self):
+        self.run_config_test(self.config_user, False, 51)
+
+    def test_wgs_only(self):
+        self.run_config_test(self.config_user_wgs_only, True, 48)
+
 
 class TestCutoffFinder(TestBase):
 
@@ -127,24 +134,34 @@ class TestCutoffFinder(TestBase):
 
 class TestExtractor(TestBase):
 
-    def test_extractor(self):
+    # this test does not check the R script
+    # so outputs for WGS-only and WGS+WTS are identical
+
+    def run_extractor_test(self, user_config, wgs_only):
         config = configparser.ConfigParser()
         config.read(self.default_ini)
-        config.read(self.config_full)
+        config.read(user_config)
         out_dir = self.tmp_dir
         clinical_data_path = os.path.join(out_dir, 'data_clinical.txt')
         summary_path = os.path.join(out_dir, 'summary.json')
-        test_extractor = extractor(config, out_dir, log_level=logging.ERROR)
+        test_extractor = extractor(config, out_dir, wgs_only, log_level=logging.ERROR)
         # do not test R script or JSON here; done respectively by TestWrapper and TestReport
+        test_extractor.run(json_path=None, r_script=False)
         expected_md5 = {
             'data_clinical.txt': '02003366977d66578c097295f12f4638',
             'genomic_summary.txt': 'c84eec523dbc81f4fc7b08860ab1a47f'
         }
-        test_extractor.run(json_path=None, r_script=False)
         for filename in expected_md5.keys():
             output_path = os.path.join(out_dir, filename)
             self.assertTrue(os.path.exists(output_path))
         self.assertEqual(self.getMD5(output_path), expected_md5[filename])
+
+    def test_extractor(self):
+        self.run_extractor_test(self.config_full, False)
+
+    def test_extractor_wgs_only(self):
+        self.run_extractor_test(self.config_full_wgs_only, True)
+
 
 class TestMain(TestBase):
 
@@ -165,6 +182,7 @@ class TestMain(TestBase):
             self.pdf = None
             self.subparser_name = constants.ALL
             self.no_archive = True
+            self.wgs_only = False
             # logging
             self.log_path = None
             self.debug = False
@@ -274,26 +292,26 @@ class TestRender(TestBase):
         outDir = self.tmp_dir
         outPath = os.path.join(outDir, 'djerba_test.html')
         reportDir = os.path.join(self.sup_dir, 'report_example')
-        html_renderer(log_level=logging.ERROR).run(reportDir, outPath, target_coverage=40)
+        html_renderer(wgs_only=False, log_level=logging.ERROR).run(reportDir, outPath, target_coverage=40)
         # TODO check file contents; need to omit the report date etc.
         self.assertTrue(os.path.exists(outPath))
-        self.check_report(outPath, '4cf9c439f943fad299683d6337ea5730')
+        self.check_report(outPath, '7a7a4a69fa7ec199fd7d944f742a6416')
         failPath = os.path.join(outDir, 'djerba_fail_test.html')
-        html_renderer(log_level=logging.ERROR).run(reportDir, failPath, target_coverage=40, failed=True)
+        html_renderer(wgs_only=False, log_level=logging.ERROR).run(reportDir, failPath, target_coverage=40, failed=True)
         self.assertTrue(os.path.exists(failPath))
-        self.check_report(failPath, '2302ccad76c4104efd2cb78c987ff8e4')
+        self.check_report(failPath, '922022cb6e81c81bb49ee47b2f80c919')
         wgsOnlyPath = os.path.join(outDir, 'djerba_wgs_only_test.html')
-        html_renderer(log_level=logging.ERROR).run(reportDir, wgsOnlyPath, target_coverage=40, wgs_only=True)
+        html_renderer(wgs_only=True, log_level=logging.ERROR).run(reportDir, wgsOnlyPath, target_coverage=40)
         self.assertTrue(os.path.exists(wgsOnlyPath))
-        self.check_report(wgsOnlyPath, '26a2d7249dfa87272414de64adc33069')
+        self.check_report(wgsOnlyPath, 'eb2805829e524d6c837f7b7c60ff90ff')
         depth80XPath = os.path.join(outDir, 'djerba_80x_test.html')
-        html_renderer(log_level=logging.ERROR).run(reportDir, depth80XPath, target_coverage=80)
+        html_renderer(wgs_only=True, log_level=logging.ERROR).run(reportDir, depth80XPath, target_coverage=80)
         self.assertTrue(os.path.exists(depth80XPath))
-        self.check_report(depth80XPath, '5edd50b64082152c49206010bda1b1b2')
+        self.check_report(depth80XPath, '9e0cc2e7e2ff6bdc5a1d785da1e1735d')
         wgsOnlyDepth80XPath = os.path.join(outDir, 'djerba_80x_wgs_only_test.html')
-        html_renderer(log_level=logging.ERROR).run(reportDir, wgsOnlyDepth80XPath, target_coverage=80, wgs_only=True)
+        html_renderer(wgs_only=True, log_level=logging.ERROR).run(reportDir, wgsOnlyDepth80XPath, target_coverage=80)
         self.assertTrue(os.path.exists(wgsOnlyDepth80XPath))
-        self.check_report(wgsOnlyDepth80XPath, '4c8659d10d9ed08d8ecab461a3bbeea5')
+        self.check_report(wgsOnlyDepth80XPath, '9e0cc2e7e2ff6bdc5a1d785da1e1735d')
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
@@ -474,6 +492,7 @@ class TestSetup(TestBase):
             self.base = base
             self.name = name
             self.subparser_name = constants.SETUP
+            self.wgs_only = False
             # logging
             self.log_path = None
             self.debug = False
@@ -498,23 +517,32 @@ class TestValidator(TestBase):
         config_user.read(self.config_user)
         config_full = configparser.ConfigParser()
         config_full.read(self.config_full)
-        validator = config_validator(log_level=logging.ERROR)
+        validator = config_validator(wgs_only=False, log_level=logging.ERROR)
         self.assertTrue(validator.validate_minimal(config_user))
         self.assertTrue(validator.validate_full(config_full))
         # minimal config will fail the validate_full check
-        validator_critical = config_validator(log_level=logging.CRITICAL)
+        validator_critical = config_validator(wgs_only=False, log_level=logging.CRITICAL)
         with self.assertRaises(DjerbaConfigError):
             self.assertTrue(validator_critical.validate_full(config_user))
 
 class TestWrapper(TestBase):
 
-    def test(self):
+    def test_default(self):
         config = configparser.ConfigParser()
         config.read(self.config_full)
         out_dir = self.tmp_dir
-        test_wrapper = r_script_wrapper(config, report_dir=out_dir)
+        test_wrapper = r_script_wrapper(config, report_dir=out_dir, wgs_only=False)
         result = test_wrapper.run()
         self.assertEqual(0, result.returncode)
+
+    def test_wgs_only(self):
+        config = configparser.ConfigParser()
+        config.read(self.config_full_wgs_only)
+        out_dir = self.tmp_dir
+        test_wrapper = r_script_wrapper(config, report_dir=out_dir, wgs_only=True)
+        result = test_wrapper.run()
+        self.assertEqual(0, result.returncode)
+
 
 if __name__ == '__main__':
     unittest.main()
