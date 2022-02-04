@@ -5,6 +5,11 @@
 ### Added
 - GCGI-240 Add --wgs-only option for HTML reports
 
+### Changed
+- GCGI-266: Update failed report markdown to incorporate recent changes from CGI-Tools
+- GCGI-271: Failed report formatting change
+- GCGI-272: Update target coverage explanation in footers
+
 ## v0.1.0: 2022-01-28
 
 No code changes from v0.0.17; version incremented for first production release
