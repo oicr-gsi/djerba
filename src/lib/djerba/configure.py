@@ -462,10 +462,24 @@ class provenance_reader(logger):
         suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bam$'.format(desc)
         return self._parse_default('bamMergePreprocessing', 'application/bam', suffix)
 
+    def parse_wg_bam_ref_path(self):
+        # find the reference (normal) BAM
+        desc = self._get_unique_value(self.GEO_TUBE_ID, check=True, reference=True)
+        suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bam$'.format(desc)
+        return self._parse_default('bamMergePreprocessing', 'application/bam', suffix)
+
     def parse_wg_index_path(self):
         desc = self._get_unique_value(self.GEO_TUBE_ID, check=True, reference=False)
         suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bai$'.format(desc)
         return self._parse_default('bamMergePreprocessing', 'application/bam-index', suffix)
+
+    def parse_wg_index_ref_path(self):
+        # find the reference (normal) BAM index
+        desc = self._get_unique_value(self.GEO_TUBE_ID, check=True, reference=True)
+        suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bai$'.format(desc)
+        return self._parse_default('bamMergePreprocessing', 'application/bam-index', suffix)
+
+    ### WT assay produces only 1 bam file; the reference argument has no effect here
 
     def parse_wt_bam_path(self):
         unit = self._get_unique_value(self.ROOT_SAMPLE_NAME_ATTR, check=True, reference=False)
