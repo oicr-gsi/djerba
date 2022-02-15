@@ -10,6 +10,9 @@
 - GCGI-271: Failed report formatting change
 - GCGI-272: Update target coverage explanation in footers
 
+### Changed
+- Updated to use Python Tools module v12 for Geneticist Review Report
+
 ## v0.1.0: 2022-01-28
 
 No code changes from v0.0.17; version incremented for first production release
