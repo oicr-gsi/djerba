@@ -15,11 +15,12 @@ fi
 REQUISITION=$1
 
 # Constants
-PYTHON_TOOLS_VER=10
+PYTHON_TOOLS_VER=12
 DB_CONFIG=/.mounts/labs/gsi/secrets/cap_reports_prod_db_config_ro.ini
 MISO_URL=https://miso.oicr.on.ca
 DASHI_URL=https://dashi.oicr.on.ca
 PINERY_URL=http://pinery.gsi.oicr.on.ca
+SAMPURU_ETL=/scratch2/groups/gsi/production/sampuru-etl
 QCETL_CACHE=/scratch2/groups/gsi/production/qcetl
 
 # We unload the current Python module (if any) and load production-tools-python
@@ -33,7 +34,7 @@ module unload djerba oncokb-annotator python # this always has returncode 0
 module load production-tools-python/${PYTHON_TOOLS_VER}
 
 cap-geneticist-review-report -c ${DB_CONFIG} -m ${MISO_URL} -d ${DASHI_URL} \
-  -e ${QCETL_CACHE} -p ${PINERY_URL} -r ${REQUISITION} \
+  -e ${QCETL_CACHE} -s ${SAMPURU_ETL} -p ${PINERY_URL} -r ${REQUISITION} \
   -o geneticist_review_${REQUISITION}.html
 
 # convert to PDF
