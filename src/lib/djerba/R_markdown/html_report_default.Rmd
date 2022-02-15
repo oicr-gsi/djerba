@@ -492,20 +492,19 @@ if (dim(Other)[1] != 0) {
 ```{r, figures-side, fig.show="hold", out.width="50%", fig.height=3, echo=FALSE, message=FALSE, warning=FALSE}
 
 ggplot(tcga_tmb_data, aes(tmb)) +
-  geom_density(aes(color = "All TCGA"), fill = "grey", alpha = 0.1) + theme_classic() +
+  geom_density(aes(fill = "All TCGA"), alpha = 0.5) + theme_classic() +
   scale_x_continuous(expand = c(0, 0), limit = c(0, max(sampleTMB, 25))) +
   scale_y_continuous(expand = c(0, 0)) +
   geom_vline(xintercept = sampleTMB, size = 1) +
   xlab(" coding mutations per Mb") +
   ylab("density") +
   theme(text = element_text(size = 15), legend.position = c(1, 0.8), plot.margin = unit(c(2, 3, 0, 2), "lines")) +
-  scale_color_manual(name = "Cohort", breaks = c("All TCGA", "Cohort"), values = c(`All TCGA` = "black", `Cohort` = "#65bc45")) +
   {
     if (sample_tcga %in% external_tmb_data_type$CANCER.TYPE)
-      geom_density(data = external_tmb_data_type, aes(color = "Cohort"), fill = "purple", alpha = 0.1)
+      geom_density(data = external_tmb_data_type, aes(fill = "Cohort"), alpha = 0.5)
     else if (sample_tcga %in% tcga_tmb_data_type$CANCER.TYPE)
-      geom_density(data = tcga_tmb_data_type, aes(color = "Cohort"), fill = "purple", alpha = 0.1)
-  }
+      geom_density(data = tcga_tmb_data_type, aes(fill = "Cohort"), alpha = 0.5)
+  } + scale_fill_discrete(name = "TMB Cohort")
 
 ggplot(MAF) + geom_density(aes(x = tumour_vaf), fill = "grey", alpha = 0.5) + geom_rug(aes(x = tumour_vaf,
   y = 0), position = position_jitter(height = 0)) + xlab("Variant Allele Frequency") +
