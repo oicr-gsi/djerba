@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Added
-- GCGI-240 Add --wgs-only option for HTML reports
+- GCGI-250 Add --wgs-only option for HTML reports
 
 ### Changed
 - GCGI-266: Update failed report markdown to incorporate recent changes from CGI-Tools
