@@ -1,6 +1,7 @@
 """List inputs to a Djerba clinical report"""
 
 import json
+import os
 import sys
 from configparser import ConfigParser
 from djerba.configure import provenance_reader
@@ -17,7 +18,7 @@ class lister(logger):
     MAVIS_BAM_INDEX = 'bamIndex'
     
     def __init__(self, args):
-        self.log_level = self.get_log_level(debug=False, verbose=args.verbose, quiet=False)
+        self.log_level = self.get_log_level(args.debug, args.verbose, quiet=False)
         self.log_path = args.log_path
         if self.log_path:
             # we are verifying the log path, so don't write output there yet
@@ -61,43 +62,56 @@ class lister(logger):
 
     def read_provenance_inputs(self):
         """Read input descriptions/paths from file provenance"""
-        paths = []
+        inputs = []
         self.logger.info("Reading WG inputs from file provenance")
-        paths.append(['variantEffectPredictor', self.provenance_reader.parse_maf_path()])
-        paths.append(['sequenza', self.provenance_reader.parse_sequenza_path()])
-        paths.append(['WG_tumour_bam', self.provenance_reader.parse_wg_bam_path()])
-        paths.append(['WG_tumour_bam-index', self.provenance_reader.parse_wg_index_path()])
-        paths.append(['WG_reference_bam', self.provenance_reader.parse_wg_bam_ref_path()])
-        paths.append(['WG_reference_bam-index', self.provenance_reader.parse_wg_index_ref_path()])
+        inputs.append(['variantEffectPredictor', self.provenance_reader.parse_maf_path()])
+        inputs.append(['sequenza', self.provenance_reader.parse_sequenza_path()])
+        inputs.append(['WG_tumour_bam', self.provenance_reader.parse_wg_bam_path()])
+        inputs.append(['WG_tumour_bam-index', self.provenance_reader.parse_wg_index_path()])
+        inputs.append(['WG_reference_bam', self.provenance_reader.parse_wg_bam_ref_path()])
+        inputs.append(['WG_reference_bam-index', self.provenance_reader.parse_wg_index_ref_path()])
         if self.wgs_only:
             self.logger.info("WG-only mode; omitting WT inputs from file provenance")
         else:
             self.logger.info("Reading WT inputs from file provenance")
-            paths.append(['rsem', self.provenance_reader.parse_gep_path()])
-            paths.append(['WT_bam', self.provenance_reader.parse_wt_bam_path()])
-            paths.append(['WT_bam-index', self.provenance_reader.parse_wt_index_path()])
-            paths.append(['starfusion', self.provenance_reader.parse_starfusion_predictions_path()])
-            paths.append(['delly', self.provenance_reader.parse_delly_path()])
-            paths.append(['arriba', self.provenance_reader.parse_arriba_path()])
+            inputs.append(['rsem', self.provenance_reader.parse_gep_path()])
+            inputs.append(['WT_bam', self.provenance_reader.parse_wt_bam_path()])
+            inputs.append(['WT_bam-index', self.provenance_reader.parse_wt_index_path()])
+            inputs.append(['starfusion', self.provenance_reader.parse_starfusion_predictions_path()])
+            inputs.append(['delly', self.provenance_reader.parse_delly_path()])
+            inputs.append(['arriba', self.provenance_reader.parse_arriba_path()])
         self.logger.info("Finished getting inputs from file provenance")
-        return paths
+        return inputs
 
     def run(self):
         """Mavis results path from config.ini, everything else from file provenance"""
-        paths = []
+        inputs = []
+        self.logger.info("Discovering input paths")
         if self.ini_path:
             self.logger.info("Reading Mavis input")
-            paths.append(self.read_ini_mavis())
+            inputs.append(self.read_ini_mavis())
         else:
             self.logger.info("INI path not supplied, omitting Mavis input")
-        paths.extend(self.read_provenance_inputs())
-        self.logger.info("Inputs read; writing output")
+        inputs.extend(self.read_provenance_inputs())
+        self.logger.info("Checking input paths are readable")
+        bad_paths = False
+        for pair in inputs:
+            path = pair[1]
+            if not os.path.exists(path):
+                self.logger.warn("{0} input path '{1}' does not exist".format(pair[0], pair[1]))
+                bad_paths = True
+            elif not os.access(path, os.R_OK):
+                self.logger.warn("{0} input path '{1}' is not readable".format(pair[0], pair[1]))
+                bad_paths = True
+        self.logger.info("Writing output")
         if self.out_path:
             with open(self.out_path, 'w') as out_file:
-                for pair in paths:
+                for pair in inputs:
                     print("\t".join([str(x) for x in pair]), file=out_file)
             self.logger.info("Finished; output written to {0}".format(self.out_path))
         else:
-            for pair in paths:
+            for pair in inputs:
                 print("\t".join([str(x) for x in pair]), file=sys.stdout)
             self.logger.info("Finished; output written to STDOUT")
+        if bad_paths:
+            self.logger.warning("One or more inputs do not exist, or are not readable!")
