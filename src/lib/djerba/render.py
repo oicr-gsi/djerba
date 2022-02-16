@@ -105,14 +105,20 @@ class html_renderer(logger):
         """Postprocessing for the HTML report"""
         # Hacked solution to modify the Rmarkdown output; TODO replace with an improved HTML template
         # replaces '-' with '::' as a fusion separator
-        self.logger.debug("Postprocessing the HTML report")
-        fusions = self._read_fusion_remapping(report_dir)
-        with open(in_path) as in_file, open(out_path, 'w') as out_file:
-            report = in_file.read()
-            for fusion_id in fusions.keys():
-                report = report.replace(fusion_id, fusions[fusion_id])
-            out_file.write(report)
-        self.logger.debug("Finished postprocessing {0} to {1}".format(in_path, out_path))
+        if self.wgs_only:
+            self.logger.debug("WGS-only mode; omitting fusion postprocessing")
+            self.logger.debug("Copying report from {0} to {1}".format(in_path, out_path))
+            copy(in_path, out_path)
+        else:
+            self.logger.debug("Postprocessing fusion entries in the HTML report")
+            self.logger.debug("Reading report from {0}, writing to {1}".format(in_path, out_path))
+            fusions = self._read_fusion_remapping(report_dir)
+            with open(in_path) as in_file, open(out_path, 'w') as out_file:
+                report = in_file.read()
+                for fusion_id in fusions.keys():
+                    report = report.replace(fusion_id, fusions[fusion_id])
+                out_file.write(report)
+            self.logger.debug("Finished postprocessing {0} to {1}".format(in_path, out_path))
 
     def write_footer(self, out_dir, target_coverage, cgi_author):
         """Write the HTML footer; customized for assay, coverage, author, and date"""

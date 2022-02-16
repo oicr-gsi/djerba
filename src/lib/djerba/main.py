@@ -262,9 +262,3 @@ class main(logger):
             # shouldn't happen, but handle this case for completeness
             raise ValueError("Unknown subparser: "+args.subparser_name)
         self.logger.info("Command-line path validation finished.")
-        # warning for inconsistent arguments
-        if self.args.subparser_name in [constants.HTML, constants.DRAFT, constants.ALL] and \
-           args.wgs_only and args.failed:
-            msg = 'Both --failed and --wgs-only options specified; but '+\
-                  'failed report format is identical for WGS and WGS+WTS'
-            self.logger.warn(msg)

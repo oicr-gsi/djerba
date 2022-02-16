@@ -390,6 +390,7 @@ class r_script_wrapper(logger):
         else:
             tmp_dir = self.supplied_tmp_dir
         oncokb_info = self.write_oncokb_info(tmp_dir)
+        maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE], tmp_dir, oncokb_info)
         seg_path = self.preprocess_seg(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir)
         cmd = [
             'Rscript', os.path.join(self.r_script_dir, 'singleSample.r'),
@@ -397,6 +398,7 @@ class r_script_wrapper(logger):
             '--studyid', self.config[ini.INPUTS][ini.STUDY_ID],
             '--tumourid', self.tumour_id,
             '--normalid', self.config[ini.DISCOVERED][ini.NORMAL_ID],
+            '--maffile', maf_path,
             '--segfile', seg_path,
             '--minfusionreads', self.min_fusion_reads,
             '--enscon', self.config[ini.DISCOVERED][ini.ENSCON],
@@ -416,11 +418,9 @@ class r_script_wrapper(logger):
         if not self.wgs_only:
             gep_path = self.preprocess_gep(self.config[ini.DISCOVERED][ini.GEP_FILE], tmp_dir)
             fus_path = self.preprocess_fus(self.config[ini.DISCOVERED][ini.MAVIS_FILE], tmp_dir)
-            maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE], tmp_dir, oncokb_info)
             cmd.extend([
                 '--gepfile', gep_path,
                 '--fusfile', fus_path,
-                '--maffile', maf_path,
             ])
         result = self._run_command(cmd, "main R script")
         self.postprocess(oncokb_info)

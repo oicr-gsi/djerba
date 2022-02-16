@@ -75,10 +75,10 @@ class configurer(logger):
     def discover_primary(self):
         updates = {}
         updates[ini.SEQUENZA_FILE] = self.reader.parse_sequenza_path()
+        updates[ini.MAF_FILE] = self.reader.parse_maf_path()
         if not self.wgs_only:
             updates[ini.MAVIS_FILE] = self.reader.parse_mavis_path()
             updates[ini.GEP_FILE] = self.reader.parse_gep_path()
-            updates[ini.MAF_FILE] = self.reader.parse_maf_path()
         updates.update(self.reader.find_identifiers())
         updates.update(self.find_data_files())
         return updates
