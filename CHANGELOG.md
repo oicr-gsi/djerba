@@ -7,9 +7,10 @@
 - GCGI-269 Script `list_inputs.py` to list report input paths
 
 ### Changed
-- GCGI-266: Update failed report markdown to incorporate recent changes from CGI-Tools
-- GCGI-271: Failed report formatting change
-- GCGI-272: Update target coverage explanation in footers
+- GCGI-265 Omit processing of unnecessary inputs for failed reports
+- GCGI-266 Update failed report markdown to incorporate recent changes from CGI-Tools
+- GCGI-271 Failed report formatting change
+- GCGI-272 Update target coverage explanation in footers
 - Update color handling for plotting in Rmarkdown
 - Updated to use Python Tools module v12 for Geneticist Review Report
 

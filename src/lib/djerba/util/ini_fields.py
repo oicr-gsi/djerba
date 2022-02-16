@@ -158,3 +158,47 @@ SCHEMA_WGS_ONLY = {
         WHIZBAM_URL
     ]
 }
+
+SCHEMA_FAILED = {
+    DISCOVERED: [
+        DATA_DIR,
+        ENSCON,
+        ENTCON,
+        GENE_BED,
+        GENE_LIST,
+        GENOMIC_SUMMARY,
+        MUTATION_NONSYN,
+        NORMAL_ID,
+        ONCO_LIST,
+        ONCOTREE_DATA,
+        PATIENT_ID,
+        PLOIDY,
+        PURITY,
+        TMBCOMP,
+        TUMOUR_ID
+    ],
+    INPUTS: [
+        MEAN_COVERAGE,
+        ONCOTREE_CODE,
+        PATIENT,
+        PCT_V7_ABOVE_80X,
+        REPORT_VERSION,
+        REQ_APPROVED_DATE,
+        SAMPLE_ANATOMICAL_SITE,
+        SAMPLE_TYPE,
+        SEQUENZA_REVIEWER_1,
+        SEQUENZA_REVIEWER_2,
+        SEX,
+        STUDY_ID,
+        TCGA_CODE
+    ],
+    SETTINGS: [
+        ARCHIVE_DIR,
+        BED_PATH,
+        GEP_REFERENCE,
+        MIN_FUSION_READS,
+        PROVENANCE,
+        TCGA_DATA,
+        WHIZBAM_URL
+    ]
+}

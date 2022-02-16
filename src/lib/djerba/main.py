@@ -119,7 +119,7 @@ class main(logger):
 
     def run(self):
         """Main method to run Djerba"""
-        cv = config_validator(self.args.wgs_only, self.log_level, self.log_path)
+        cv = config_validator(self.args.wgs_only, self.args.failed, self.log_level, self.log_path)
         self.logger.info("Running Djerba in mode: {0}".format(self.args.subparser_name))
         if self.args.subparser_name == constants.SETUP:
             self.run_setup()
@@ -127,15 +127,15 @@ class main(logger):
             config = self.read_config(self.args.ini)
             cv.validate_minimal(config)
             archive = not self.args.no_archive # True if archiving is in effect
-            configurer(config, self.args.wgs_only, self.log_level, self.log_path).run(self.args.out, archive)
+            configurer(config, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(self.args.out, archive)
         elif self.args.subparser_name == constants.EXTRACT:
             config = self.read_config(self.args.ini)
             cv.validate_full(config)
-            extractor(config, self.args.dir, self.args.wgs_only, self.log_level, self.log_path).run(self.args.json)
+            extractor(config, self.args.dir, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(self.args.json)
         elif self.args.subparser_name == constants.HTML:
             html_path = self._get_html_path()
-            hr = html_renderer(self.args.wgs_only, self.log_level, self.log_path)
-            hr.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed, self._get_author())
+            hr = html_renderer(self.args.wgs_only, self.args.failed, self.log_level, self.log_path)
+            hr.run(self.args.dir, html_path, self.args.target_coverage, self._get_author())
             if self.args.pdf:
                 patient_id = self._get_patient_study_id(self.args.dir)
                 pdf_path = self._get_pdf_path(patient_id)
@@ -166,15 +166,15 @@ class main(logger):
             json_path = os.path.realpath(self.args.json) if self.args.json else None
             report_dir = os.path.realpath(self.args.dir)
             archive = not self.args.no_archive # True if archiving is in effect
-            configurer(input_config, self.args.wgs_only, self.log_level, self.log_path).run(ini_path_full, archive)
+            configurer(input_config, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(ini_path_full, archive)
             full_config = configparser.ConfigParser()
             full_config.read(ini_path_full)
             # auto-generated full_config should be OK, but run the validator as a sanity check
-            config_validator(self.args.wgs_only, self.log_level, self.log_path).validate_full(full_config)
-            extractor(full_config, report_dir, self.args.wgs_only, self.log_level, self.log_path).run(json_path)
+            config_validator(self.args.wgs_only, self.args.failed, self.log_level, self.log_path).validate_full(full_config)
+            extractor(full_config, report_dir, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(json_path)
             html_path = self._get_html_path()
-            renderer = html_renderer(self.args.wgs_only, self.log_level, self.log_path)
-            renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed, self._get_author())
+            renderer = html_renderer(self.args.wgs_only, self.args.failed, self.log_level, self.log_path)
+            renderer.run(self.args.dir, html_path, self.args.target_coverage, self._get_author())
             patient_id = self._get_patient_study_id(self.args.dir)
             pdf = self._get_pdf_path(patient_id)
             pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, patient_id)
@@ -194,15 +194,15 @@ class main(logger):
                 self.logger.error(msg)
                 raise ValueError(msg)
             archive = not self.args.no_archive # True if archiving is in effect
-            configurer(input_config, self.args.wgs_only, self.log_level, self.log_path).run(ini_path_full, archive)
+            configurer(input_config, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(ini_path_full, archive)
             full_config = configparser.ConfigParser()
             full_config.read(ini_path_full)
             # auto-generated full_config should be OK, but run the validator as a sanity check
-            config_validator(self.args.wgs_only, self.log_level, self.log_path).validate_full(full_config)
-            extractor(full_config, report_dir, self.args.wgs_only, self.log_level, self.log_path).run(json_path)
+            config_validator(self.args.wgs_only, self.args.failed, self.log_level, self.log_path).validate_full(full_config)
+            extractor(full_config, report_dir, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(json_path)
             html_path = self._get_html_path()
-            renderer = html_renderer(self.args.wgs_only, self.log_level, self.log_path)
-            renderer.run(self.args.dir, html_path, self.args.target_coverage, self.args.failed, self._get_author())
+            renderer = html_renderer(self.args.wgs_only, self.args.failed, self.log_level, self.log_path)
+            renderer.run(self.args.dir, html_path, self.args.target_coverage, self._get_author())
 
     def run_setup(self):
         """Set up an empty working directory for a CGI report"""

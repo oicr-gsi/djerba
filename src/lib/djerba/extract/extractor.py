@@ -27,19 +27,25 @@ class extractor(logger):
     CANCER_TYPE = 'cancer_type'
     CANCER_TYPE_DESCRIPTION = 'cancer_description'
 
-    def __init__(self, config, report_dir, wgs_only, log_level=logging.WARNING, log_path=None):
+    def __init__(self, config, report_dir, wgs_only, failed, log_level=logging.WARNING, log_path=None):
         self.config = config
         self.wgs_only = wgs_only
+        self.failed = failed
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
-        if self.wgs_only:
+        if self.failed:
+            self.logger.info("Extracting Djerba data for failed report")
+        elif self.wgs_only:
             self.logger.info("Extracting Djerba data for WGS-only report")
         else:
             self.logger.info("Extracting Djerba data for WGS+WTS report")
         self.report_dir = report_dir
         self.data_dir = os.path.join(os.path.dirname(__file__), '..', constants.DATA_DIR_NAME)
-        self._check_sequenza_params()
+        if self.failed:
+            self.logger.debug("Failed report mode; omitting check on sequenza params")
+        else:
+            self._check_sequenza_params()
 
     def _check_sequenza_params(self):
         """Check that configured purity/ploidy are consistent with Sequenza results; warn if not"""
@@ -120,13 +126,17 @@ class extractor(logger):
     def run(self, json_path=None, r_script=True):
         """Run extraction and write output"""
         self.logger.info("Djerba extract step started")
-        if r_script:
-            self.run_r_script() # can omit the R script for testing
+        if self.failed:
+            self.logger.info("Failed report mode, writing clinical data and genomic summary only")
+        else:
+            self.logger.info("Extracting metrics to report directory")
+            if r_script:
+                self.run_r_script() # can omit the R script for testing
+            self.write_sequenza_meta()
+            if json_path:
+                self.write_json_summary(json_path)
         self.write_clinical_data(self.get_description())
         self.write_genomic_summary()
-        self.write_sequenza_meta()
-        if json_path:
-            self.write_json_summary(json_path)
         self.logger.info("Djerba extract step finished; extracted metrics written to {0}".format(self.report_dir))
 
     def run_r_script(self):

@@ -42,10 +42,11 @@ class html_renderer(logger):
     DATA_FUSION_OLD = 'data_fusions.txt'
     FUSION_INDEX = 4
 
-    def __init__(self, wgs_only, log_level=logging.WARNING, log_path=None):
+    def __init__(self, wgs_only, failed, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.r_script_dir = os.path.join(os.path.dirname(__file__), self.R_MARKDOWN_DIRNAME)
         self.wgs_only = wgs_only
+        self.failed = failed
         if wgs_only:
             self.logger.info("Rendering HTML for WGS-only report")
         else:
@@ -64,7 +65,7 @@ class html_renderer(logger):
         # first item of each list is the header, which can be ignored
         return {old[i]:new[i] for i in range(1, len(old))}
 
-    def run(self, report_dir, out_path, target_coverage, failed=False, cgi_author=None):
+    def run(self, report_dir, out_path, target_coverage, cgi_author=None):
         """Read the reporting directory, and use an Rmarkdown script to write HTML"""
         # TODO replace the Rmarkdown; separate out the computation and HTML templating
         cgi_author = cgi_author if cgi_author!=None else 'CGI_PLACEHOLDER'
@@ -74,7 +75,7 @@ class html_renderer(logger):
             tmp_out_path = os.path.join(tmp, 'djerba.html')
             for filename in os.listdir(self.r_script_dir):
                 copy(os.path.join(self.r_script_dir, filename), tmp)
-            if failed:
+            if self.failed:
                 markdown_script = os.path.join(tmp, self.FAILED_RMD)
             elif self.wgs_only:
                 markdown_script = os.path.join(tmp, self.WGS_ONLY_RMD)
@@ -105,8 +106,8 @@ class html_renderer(logger):
         """Postprocessing for the HTML report"""
         # Hacked solution to modify the Rmarkdown output; TODO replace with an improved HTML template
         # replaces '-' with '::' as a fusion separator
-        if self.wgs_only:
-            self.logger.debug("WGS-only mode; omitting fusion postprocessing")
+        if self.wgs_only or self.failed:
+            self.logger.debug("Report is in WGS-only and/or failed mode; omitting fusion postprocessing")
             self.logger.debug("Copying report from {0} to {1}".format(in_path, out_path))
             copy(in_path, out_path)
         else:

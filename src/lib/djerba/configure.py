@@ -36,9 +36,10 @@ class configurer(logger):
 
     # TODO validate that discovered config paths are readable
 
-    def __init__(self, config, wgs_only, log_level=logging.WARNING, log_path=None):
+    def __init__(self, config, wgs_only, failed, log_level=logging.WARNING, log_path=None):
         self.config = config
         self.wgs_only = wgs_only
+        self.failed = failed
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
@@ -53,7 +54,7 @@ class configurer(logger):
 
     def find_data_files(self):
         data_files = {}
-        if self.config[ini.DISCOVERED].get(ini.DATA_DIR):
+        if self.config.has_option(ini.DISCOVERED, ini.DATA_DIR):
             data_dir = self.config[ini.DISCOVERED][ini.DATA_DIR]
         else:
             data_dir = os.path.join(os.path.dirname(__file__), constants.DATA_DIR_NAME)
@@ -74,11 +75,15 @@ class configurer(logger):
 
     def discover_primary(self):
         updates = {}
-        updates[ini.SEQUENZA_FILE] = self.reader.parse_sequenza_path()
-        updates[ini.MAF_FILE] = self.reader.parse_maf_path()
-        if not self.wgs_only:
-            updates[ini.MAVIS_FILE] = self.reader.parse_mavis_path()
-            updates[ini.GEP_FILE] = self.reader.parse_gep_path()
+        if self.failed:
+            self.logger.info("Failed report mode, omitting workflow output discovery")
+        else:
+            self.logger.info("Searching provenance for workflow output files")
+            updates[ini.SEQUENZA_FILE] = self.reader.parse_sequenza_path()
+            updates[ini.MAF_FILE] = self.reader.parse_maf_path()
+            if not self.wgs_only:
+                updates[ini.MAVIS_FILE] = self.reader.parse_mavis_path()
+                updates[ini.GEP_FILE] = self.reader.parse_gep_path()
         updates.update(self.reader.find_identifiers())
         updates.update(self.find_data_files())
         return updates
@@ -90,8 +95,8 @@ class configurer(logger):
         solution = self.config.get(ini.DISCOVERED, ini.SEQUENZA_SOLUTION, fallback=None)
         # get_default_gamma_id() returns (gamma, solution)
         if gamma == None:
-            gamma = reader.get_default_gamma_id()[0]
-            self.logger.info("Automatically generated Sequenza gamma: {0}".format(gamma))
+                gamma = reader.get_default_gamma_id()[0]
+                self.logger.info("Automatically generated Sequenza gamma: {0}".format(gamma))
         else:
             self.logger.info("User-supplied Sequenza gamma: {0}".format(gamma))
         if solution == None:
@@ -116,10 +121,19 @@ class configurer(logger):
         self.logger.info("Djerba config started")
         # first pass -- update basic parameters
         self.update_primary()
-        # second pass -- update Sequenza params using base values
-        self.update_secondary()
-        # third pass -- logR cutoffs using the updated purity
-        self.update_tertiary()
+        if self.failed:
+            self.logger.info("Failed report mode; omitting sequenza/logR config updates")
+            if not (self.config.has_option(ini.DISCOVERED, ini.PURITY) \
+                    and self.config.has_option(ini.DISCOVERED, ini.PLOIDY)):
+                msg = "Purity/ploidy not found; must be entered manually for failed reports"
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+        else:
+            self.logger.info("Applying sequenza/logR config updates")
+            # second pass -- update Sequenza params using base values
+            self.update_secondary()
+            # third pass -- logR cutoffs using the updated purity
+            self.update_tertiary()
         with open(out_path, 'w') as out_file:
             self.config.write(out_file)
         if archive:

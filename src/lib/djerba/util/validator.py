@@ -8,14 +8,18 @@ from djerba.util.logger import logger
 class config_validator(logger):
     """Check that INI parameters are valid. Input is a ConfigParser object, eg. from an INI file."""
 
-    def __init__(self, wgs_only, log_level=logging.WARNING, log_path=None):
+    def __init__(self, wgs_only, failed, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.wgs_only = wgs_only
-        if wgs_only:
+        self.failed = failed
+        if failed:
+            self.logger.info("Validating config for failed report; requirements are the same for WGS-only and WGTS")
+            self.schema = ini.SCHEMA_FAILED
+        elif wgs_only:
             self.logger.info("Validating config for WGS-only report")
             self.schema = ini.SCHEMA_WGS_ONLY
         else:
-            self.logger.info("Validating config for WGS+WTS report")
+            self.logger.info("Validating config for WGTS report")
             self.schema = ini.SCHEMA_DEFAULT
 
     def find_extras(self, config):
