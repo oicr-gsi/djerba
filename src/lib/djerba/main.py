@@ -23,7 +23,7 @@ class main(logger):
     AUTHORS = {
         'afortuna': 'Alex Fortuna',
         'ibancarz': 'Iain Bancarz',
-        'valamuri': 'Vivek Alamuri' # co-op student, autumn 2021
+        'fbeaudry': 'Felix Beaudry'
     }
     CONFIG_NAME = 'config.ini'
     INI_DEFAULT_NAME = 'defaults.ini'
