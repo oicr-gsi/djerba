@@ -36,7 +36,7 @@ Run any script with `--help` for more information.
 
 ### `djerba.py`
 
-This is the main script to run Djerba and generate reports.
+This is the main script to run Djerba and generate reports. It has several modes, to handle the different stages of the reporting process.
 
 Logging options are specified before the mode name, eg. `djerba.py --verbose --log-path djerba.log all ...`
 
@@ -64,6 +64,10 @@ By default, the fully-specified INI file produced by `configure`, `draft`, or `a
 
 Convenience script for simple HTML to PDF conversion. Does not add the page footer used in Djerba reports.
 
+### `list_inputs.py`
+
+Script to list the input files for a Djerba report, eg. for export to a collaborator. The script reads the Mavis path (if any) from a config.ini file; all other paths are discovered from file provenance, as if drafting a new Djerba report from scratch.
+
 ### `qc_report.sh`
 
 Bash script to generate a QC report, which accompanies the clinical report created by `djerba.py`.
@@ -89,6 +93,9 @@ The following OICR [Modulator](https://gitlab.oicr.on.ca/ResearchIT/modulator) e
 - `rmarkdown/0.1m`
 - `wkhtmltopdf/0.12.6`
 - `cromwell/45.1`
+- `bcftools/1.9`
+
+In addition, the `qc_report.sh` script will unload the Python module and load `production-tools-python`, as a workaround for Python version conflicts.
 
 Djerba has a `setup.py` script which will install its source code and Python dependencies. Production releases of Djerba will be installed as an environment modules in Modulator. Alternatively, install as described under `Installation`.
 
@@ -122,6 +129,7 @@ Djerba has a `setup.py` script which will install its source code and Python dep
 
 - Top-level python modules:
   - `configure.py`: Discover additional parameters for the user-supplied INI file
+  - `lister.py`: List input paths for the `list_inputs.py` script
   - `main.py`: Main module to run Djerba functions
   - `mavis.py`: Manually run the Mavis workflow
   - `render.py`: Render output to HTML or PDF
@@ -146,10 +154,10 @@ Djerba has a `setup.py` script which will install its source code and Python dep
 - **2019-01 to 2020-09**: The [cbioportal_tools](https://github.com/oicr-gsi/cbioportal_tools) project, also known as Janus, was a precursor to Djerba. This project was intended to produce reporting directories for [cBioPortal](https://cbioportal.org/).
 - **2020-09**: The Djerba repository is created to replace `cbioportal_tools`. Its scope includes CGI clinical reporting as well as cBioPortal. Development releases, up to and including 0.0.4, address both output formats.
 - **2021-05**: The scope of Djerba changes, to focus exclusively on CGI clinical reports and drop support for cBioPortal. Major overhaul and simplification of code, prior to release 0.0.5. Data processing for cBioPortal remains an option for the future.
-- **2021-10**: Production release of Djerba for CGI reports.
+- **2022-01**: Production release of Djerba for CGI reports.
 
 ## Copyright and License
 
-Copyright (C) 2020, 2021 by Genome Sequence Informatics, Ontario Institute for Cancer Research.
+Copyright (C) 2020, 2021, 2022 by Genome Sequence Informatics, Ontario Institute for Cancer Research.
 
 Licensed under the [GPL 3.0 license](https://www.gnu.org/licenses/gpl-3.0.en.html).
