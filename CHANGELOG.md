@@ -4,6 +4,7 @@
 
 ### Added
 - GCGI-250 Add --wgs-only option for HTML reports
+- GCGI-269 Script `list_inputs.py` to list report input paths
 
 ### Changed
 - GCGI-266: Update failed report markdown to incorporate recent changes from CGI-Tools
