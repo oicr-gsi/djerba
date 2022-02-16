@@ -19,9 +19,20 @@ from djerba.util.logger import logger
 class html_renderer(logger):
 
     R_MARKDOWN_DIRNAME = 'R_markdown'
+    # string template identifiers
     AFTER_BODY = 'DJERBA_RMD_AFTER_BODY'
-    FOOTER_TEMPLATE_40X = 'footer-40x.html'
-    FOOTER_TEMPLATE_80X = 'footer-80x.html'
+    ASSAY_DESCRIPTION = 'djerba_assay_description'
+    COVER_DESCRIPTION = 'djerba_coverage_description'
+    REPORT_AUTHOR = 'djerba_report_author'
+    REPORT_DATE = 'djerba_report_date'
+    # footer filenames
+    ASSAY_WGS_ONLY = 'assay_description_wgs_only.html'
+    ASSAY_WGTS = 'assay_description_wgts.html'
+    COVER_40X = 'coverage-40x.txt'
+    COVER_80X = 'coverage-80x.txt'
+    FOOTER_TEMPLATE = 'footer_template.html'
+    FOOTER = 'footer.html'
+    # markdown filenames
     DEFAULT_RMD = 'html_report_default.Rmd'
     FAILED_RMD = 'html_report_failed.Rmd'
     WGS_ONLY_RMD = 'html_report_wgs_only.Rmd'
@@ -31,9 +42,14 @@ class html_renderer(logger):
     DATA_FUSION_OLD = 'data_fusions.txt'
     FUSION_INDEX = 4
 
-    def __init__(self, log_level=logging.WARNING, log_path=None):
+    def __init__(self, wgs_only, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.r_script_dir = os.path.join(os.path.dirname(__file__), self.R_MARKDOWN_DIRNAME)
+        self.wgs_only = wgs_only
+        if wgs_only:
+            self.logger.info("Rendering HTML for WGS-only report")
+        else:
+            self.logger.info("Rendering HTML for WGS+WTS report")
 
     def _read_fusion_remapping(self, report_dir):
         """Construct a dictionary from the 'Fusion' column in old and new formats"""
@@ -48,30 +64,19 @@ class html_renderer(logger):
         # first item of each list is the header, which can be ignored
         return {old[i]:new[i] for i in range(1, len(old))}
 
-    def run(self, report_dir, out_path, target_coverage, failed=False, cgi_author=None, wgs_only=False):
+    def run(self, report_dir, out_path, target_coverage, failed=False, cgi_author=None):
         """Read the reporting directory, and use an Rmarkdown script to write HTML"""
         # TODO replace the Rmarkdown; separate out the computation and HTML templating
         cgi_author = cgi_author if cgi_author!=None else 'CGI_PLACEHOLDER'
-        if target_coverage==40:
-            template_path = os.path.join(self.r_script_dir, self.FOOTER_TEMPLATE_40X)
-        elif target_coverage==80:
-            template_path = os.path.join(self.r_script_dir, self.FOOTER_TEMPLATE_80X)
-        else:
-            msg = "Target coverage '{0}' is not supported for HTML output".format(target_coverage)
-            self.logger.error(msg)
-            raise ValueError(msg)
-        os.environ[self.AFTER_BODY] = template_path
-        self.logger.debug(
-            "Target coverage {0}, using footer template {1}".format(target_coverage, os.environ[self.AFTER_BODY])
-        )
         # copy files as a workaround; horribly, Rmarkdown insists on changing its working directory
         with tempfile.TemporaryDirectory(prefix='djerba_html_') as tmp:
+            os.environ[self.AFTER_BODY] = self.write_footer(tmp, target_coverage, cgi_author)
             tmp_out_path = os.path.join(tmp, 'djerba.html')
             for filename in os.listdir(self.r_script_dir):
                 copy(os.path.join(self.r_script_dir, filename), tmp)
             if failed:
                 markdown_script = os.path.join(tmp, self.FAILED_RMD)
-            elif wgs_only:
+            elif self.wgs_only:
                 markdown_script = os.path.join(tmp, self.WGS_ONLY_RMD)
             else:
                 markdown_script = os.path.join(tmp, self.DEFAULT_RMD)
@@ -92,23 +97,67 @@ class html_renderer(logger):
                 self.logger.error("Rmarkdown STDERR: "+result.stderr.decode(constants.TEXT_ENCODING))
                 raise
             self.logger.debug("Wrote HTML to {0}".format(tmp_out_path))
-            self.postprocess(tmp_out_path, out_path, report_dir, cgi_author)
+            self.postprocess(tmp_out_path, out_path, report_dir)
         self.logger.info("Djerba HTML rendering finished; wrote output to {0}".format(out_path))
         return result
 
-    def postprocess(self, in_path, out_path, report_dir, cgi_author):
+    def postprocess(self, in_path, out_path, report_dir):
         """Postprocessing for the HTML report"""
         # Hacked solution to modify the Rmarkdown output; TODO replace with an improved HTML template
-        self.logger.debug("Postprocessing the HTML report")
-        fusions = self._read_fusion_remapping(report_dir)
-        with open(in_path) as in_file, open(out_path, 'w') as out_file:
-            report = in_file.read()
-            report = report.replace('DJERBA_REPORT_AUTHOR', cgi_author)
-            report = report.replace('DJERBA_REPORT_DATE', time.strftime("%Y/%m/%d"))
-            for fusion_id in fusions.keys():
-                report = report.replace(fusion_id, fusions[fusion_id])
-            out_file.write(report)
-        self.logger.debug("Finished postprocessing {0} to {1}".format(in_path, out_path))
+        # replaces '-' with '::' as a fusion separator
+        if self.wgs_only:
+            self.logger.debug("WGS-only mode; omitting fusion postprocessing")
+            self.logger.debug("Copying report from {0} to {1}".format(in_path, out_path))
+            copy(in_path, out_path)
+        else:
+            self.logger.debug("Postprocessing fusion entries in the HTML report")
+            self.logger.debug("Reading report from {0}, writing to {1}".format(in_path, out_path))
+            fusions = self._read_fusion_remapping(report_dir)
+            with open(in_path) as in_file, open(out_path, 'w') as out_file:
+                report = in_file.read()
+                for fusion_id in fusions.keys():
+                    report = report.replace(fusion_id, fusions[fusion_id])
+                out_file.write(report)
+            self.logger.debug("Finished postprocessing {0} to {1}".format(in_path, out_path))
+
+    def write_footer(self, out_dir, target_coverage, cgi_author):
+        """Write the HTML footer; customized for assay, coverage, author, and date"""
+        self.logger.info("Constructing HTML footer")
+        if self.wgs_only:
+            assay_path = os.path.join(self.r_script_dir, self.ASSAY_WGS_ONLY)
+            self.logger.debug("WGS-only footer")
+        else:
+            assay_path = os.path.join(self.r_script_dir, self.ASSAY_WGTS)
+            self.logger.debug("WTGS footer")
+        if target_coverage==40:
+            cover_path = os.path.join(self.r_script_dir, self.COVER_40X)
+            self.logger.debug("40X coverage footer")
+        elif target_coverage==80:
+            cover_path = os.path.join(self.r_script_dir, self.COVER_80X)
+            self.logger.debug("80X coverage footer")
+        else:
+            msg = "Target coverage '{0}' is not supported for HTML output".format(target_coverage)
+            self.logger.error(msg)
+            raise ValueError(msg)
+        with open(assay_path) as assay_file:
+            assay_text = assay_file.read()
+        with open(cover_path) as cover_file:
+            cover_text = cover_file.read()
+        with open(os.path.join(self.r_script_dir, self.FOOTER_TEMPLATE)) as footer_template_file:
+            footer_template = Template(footer_template_file.read())
+        subs = {
+            self.ASSAY_DESCRIPTION: assay_text,
+            self.COVER_DESCRIPTION: cover_text,
+            self.REPORT_AUTHOR: cgi_author,
+            self.REPORT_DATE: time.strftime("%Y/%m/%d")
+        }
+        self.logger.debug("Applying footer template substitutions: {0}".format(subs))
+        footer = footer_template.substitute(subs)
+        out_path = os.path.join(out_dir, self.FOOTER)
+        with open(out_path, 'w') as out_file:
+            out_file.write(footer)
+        self.logger.info("Finished; wrote HTML footer to {0}".format(out_path))
+        return out_path
 
 class pdf_renderer(logger):
 

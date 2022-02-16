@@ -1,10 +1,4 @@
-&nbsp;
-<p><strong>Assay description</strong></p>
-<p>This test was developed and its performance characteristics determined by OICR Genomics. It has not been cleared or approved by the US Food and Drug Administration.</p>
-<p> This assay combines two comprehensive next generation sequencing assays: a DNA-based whole genome sequencing (WGS) assay and an RNA-based whole transcriptome sequencing (WTS) assay. WGS libraries are prepared using the KAPA Hyper Prep kit with DNA extracted from FFPE or fresh frozen tissue (for tumour samples) or buffy coat blood specimens (for matched normal blood samples). Paired-end sequencing is performed using the NovaSeq6000 technology. For whole genome sequencing, alignments are performed using bwa mem (0.7.12) against reference genome hg38 and processed according to GATK best practices and includes duplicate marking with Picard (2.21.2), indel realignment, and base recalibration with GATK (4.1.6.0). SNVs and INDELs are called using MuTect2 (GATK 4.1.1.0) and annotated with VariantEffectPredictor (92.0) followed by OncoKB. Copy number variations are called using Sequenza (2.1.2). Structural alterations are called using Delly (0.8.1) and post-processed using MAVIS (2.2.6).</p>
-<p>For whole transcriptome sequencing, reads are aligned using STAR (2.7.3a) and expressions quantified using RSEM (1.3.3). Fusions are called using STAR-Fusion (1.8.1) and Arriba (1.2.0), followed by post processing with MAVIS (2.2.6). Variant prioritization is based on OncoKB actionable tiers (described below). In addition, variants without an OncoKB actionable tier are reported if they are listed as oncogenic, likely oncogenic or predicted oncogenic. Based on a minimum tumour purity of 65%, the sensitivity for SNVs and INDELs is 97% and 76%, respectively. The sensitivity for CNVs and RNA fusions is 96% and 32%, respectively. </p>
-<p><strong>Genes tested</strong></p>
-<p>Although whole genome and transcriptome sequencing encompasses all genes in a specimen, this report is restricted to cancer genes as defined by OncoKB as of the date this report.</p>
+$djerba_assay_description
 <p><strong>Definitions</strong></p>
 <table>
  <tr>
@@ -46,7 +40,7 @@
 <p><strong>All TCGA Percentile: </strong>Percentile of TMB scores are plotted relative to <a href="https://gdc.cancer.gov/about-data/publications/pancanatlas">all TCGA samples</a></p>
 <p><strong>TCGA Cohort Percentile: </strong>Percentile of TMB scores are plotted relative to <a href="https://gdc.cancer.gov/about-data/publications/pancanatlas">closest TCGA sample cohort</a></p>
 <p><strong>Fraction Genome Altered (FGA): </strong>The fraction of copy number altered genome for a sample was calculated based on copy number segment data: it is the fraction of genome with log2 copy number larger than 0.2 versus genome with copy number profiled.</p>
-<p><strong>Coverage: </strong>Average number of bases covering each sequenced base. Target coverage is 40x for the tumour, and 30x for the normal.</p>
+<p><strong>Coverage: </strong>$djerba_coverage_description
 <p><strong>Estimated Cancer Cell Content (%): </strong>The inferred tumour purity as determined using Sequenza.</p>
 <p><strong>Estimated Ploidy: </strong>The inferred tumour ploidy as determined using Sequenza.</p>
 <p><strong>Callability: </strong>The percentage of bases above 30x in tumour sample. Callability above 75% is considered a pass.</p>
@@ -56,7 +50,7 @@
 <hr>
 <table width="100%">
   <tr>
-    <td width="33%">Report drafted by DJERBA_REPORT_AUTHOR on DJERBA_REPORT_DATE</td>
+    <td width="33%">Report drafted by $djerba_report_author on $djerba_report_date</td>
   </tr>
   <tr>
     <td width="33%"></td>

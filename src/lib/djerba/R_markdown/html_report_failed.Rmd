@@ -169,59 +169,59 @@ td, th {
 <html>
 
 <div id="example3">
-  <h3>QUALITY FAILURE REPORT</h3>
+  <h3 style="color:red;">QUALITY FAILURE REPORT</h3>
 </div>
 
 <div id="example2">
   <h3></h3>
 </div>
+<tr>
+<td>
+<strong>Assay: </strong>Whole genome and transcriptome sequencing (WGTS)-80X Tumour, 30X Normal (v1.0)
+</td>
+</tr>
+
+
 
 <table width="100%">
   <tr>
-    <td><strong>Assay: </strong>Tumour-normal whole genome and tumour transcriptome sequencing (WGTS, v1.0)</td>
+    <td width="35%"><strong>Date of Report:</strong> `r format(Sys.time(), '%Y/%m/%d')`</td>
+    <td width="28%"><strong>Requisition Approved:</strong> `r clinicalData$REQ_APPROVED_DATE`</td>
+    <td width="37%"><strong>Report ID:</strong> `r paste0(clinicalData$TUMOUR_SAMPLE_ID, "-v", clinicalData$REPORT_VERSION)`</td>
+  </tr>
+  <tr>
+    <td width="35%"><strong>Study:</strong> NAME OF STUDY</td>
+    <td width="28%"><strong>Patient Study ID:</strong> `r clinicalData$PATIENT_STUDY_ID`</td>
+    <td width="37%"><strong>Patient LIMS ID:</strong> `r clinicalData$PATIENT_LIMS_ID`</td>
+  </tr>
+  <tr>
+    <td width="35%"><strong>Name:</strong> LAST NAME, FIRST NAME</td>
+    <td width="28%"><strong>DOB:</strong> yyyy/mm/dd</td>
+    <td width="37%"><strong>Genetic Sex:</strong> `r clinicalData$SEX`</td>
+  </tr>
+  <tr>
+    <td width="35%"><strong>Physician:</strong> LAST, FIRST</td>
+    <td width="28%"><strong>Licence #:</strong> nnnnnnnn</td>
+    <td width="37%"><strong>Phone #:</strong> nnn-nnn-nnnn</td>
   </tr>
 </table>
 <table width="100%">
   <tr>
-    <td width="33%"><strong>Date of Report:</strong> `r format(Sys.time(), '%d %B, %Y')`</td>
-    <td width="33%"><strong>Requisition Approved:</strong> `r clinicalData$REQ_APPROVED_DATE`</td>
-    <td width="33%"><strong>Report Identifier:</strong> `r paste0(clinicalData$SAMPLE_ID, " (v", clinicalData$REPORT_VERSION, ")")`</td>
+    <td width="63%"><strong>Hospital:</strong> HOSPTIAL NAME AND HOSPITAL ADDRESS</td>
+    <td width="37%"><strong>Requisitioner Email:</strong> NAME@DOMAIN.COM</td>
   </tr>
   <tr>
-    <td width="33%"><strong>Study:</strong> PASS-01</td>
-    <td width="33%"><strong>Patient Study ID:</strong> `r clinicalData$SAMPLE_ID`</td>
-    <td width="33%"><strong>Assay ID:</strong> `r clinicalData$SAMPLE_ID`</td>
+    <td width="63%"><strong>Primary cancer:</strong> `r clinicalData$CANCER_TYPE_DESCRIPTION`</td>
+    <td width="37%"><strong>Site of biopsy/surgery:</strong> `r clinicalData$SAMPLE_ANATOMICAL_SITE`</td>
   </tr>
   <tr>
-    <td width="33%"><strong>Name:</strong> LAST NAME, FIRST NAME</td>
-    <td width="33%"><strong>DOB:</strong> yyyy/mm/dd</td>
-    <td width="33%"><strong>Genetic Sex:</strong> `r clinicalData$SEX`</td>
-  </tr>
-  <tr>
-    <td width="33%"><strong>Physician:</strong> LAST, FIRST</td>
-    <td width="33%"><strong>Licence #:</strong> nnnnnnnn</td>
-    <td width="33%"><strong>Phone #:</strong> nnn-nnn-nnnn</td>
+    <td width="63%"><strong>Tumour Sample ID:</strong> `r clinicalData$TUMOUR_SAMPLE_ID`</td>
+    <td width="37%"><strong>Blood Sample ID:</strong> `r clinicalData$BLOOD_SAMPLE_ID`</td>
   </tr>
 </table>
-<table width="100%">
-  <tr>
-    <td width="50%"><strong>Hospital:</strong> HOSPTIAL NAME AND HOSPITAL ADDRESS</td>
-    <td width="50%"><strong>Requisitioner Email:</strong> NAME@DOMAIN.COM</td>
-  </tr>
-  <tr>
-    <td width="50%"><strong>Primary cancer:</strong> `r clinicalData$CANCER_TYPE_DESCRIPTION`</td>
-    <td width="50%"><strong>Site of biopsy/surgery:</strong> `r clinicalData$SAMPLE_ANATOMICAL_SITE`</td>
-  </tr>
-  <tr>
-    <td width="50%"><strong>Tumour Sample ID:</strong> nnnnnnnn</td>
-    <td width="50%"><strong>Blood Sample ID:</strong> nnnnnnnn</td>
-  </tr>
-</table>
-
 <div id="example1">
   <h3>Sample Information & Quality</h3>
 </div>
-
 <table width="100%">
   <tr>
     <td width="33%"><strong>OncoTree code:</strong> `r clinicalData$CANCER_TYPE`</td>

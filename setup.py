@@ -6,7 +6,7 @@ Setup script for Djerba
 
 from setuptools import setup, find_packages
 
-package_version = '0.2.0c'
+package_version = '0.2.0d'
 package_root = 'src/lib'
 
 with open("README.md", "r") as fh:
@@ -52,8 +52,11 @@ setup(
             'data/targeted_genelist.txt',
             'data/tmbcomp-externaldata.txt',
             'data/tmbcomp-tcga.txt',
-            'R_markdown/footer-40x.html',
-            'R_markdown/footer-80x.html',
+	    'R_markdown/assay_description_wgs_only.html',
+	    'R_markdown/assay_description_wgts.html',
+	    'R_markdown/coverage-40x.txt',
+	    'R_markdown/coverage-80x.txt',
+	    'R_markdown/footer_template.html',
             'R_markdown/header.html',
             'R_markdown/html_report_default.Rmd',
             'R_markdown/html_report_failed.Rmd',

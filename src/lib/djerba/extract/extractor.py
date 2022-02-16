@@ -18,7 +18,7 @@ from djerba.util.logger import logger
 
 class extractor(logger):
     """
-    Extract the clinical report data from inptut configuration
+    Extract the clinical report data from input configuration
     To start with, mostly a wrapper for the legacy R script singleSample.r
     Output: Directory of .txt and .tsv files for downstream processing
     Later on, will replace R script functionality with Python, and output JSON
@@ -27,11 +27,16 @@ class extractor(logger):
     CANCER_TYPE = 'cancer_type'
     CANCER_TYPE_DESCRIPTION = 'cancer_description'
 
-    def __init__(self, config, report_dir, log_level=logging.WARNING, log_path=None):
+    def __init__(self, config, report_dir, wgs_only, log_level=logging.WARNING, log_path=None):
         self.config = config
-        self.logger = self.get_logger(log_level, __name__, log_path)
+        self.wgs_only = wgs_only
         self.log_level = log_level
         self.log_path = log_path
+        self.logger = self.get_logger(log_level, __name__, log_path)
+        if self.wgs_only:
+            self.logger.info("Extracting Djerba data for WGS-only report")
+        else:
+            self.logger.info("Extracting Djerba data for WGS+WTS report")
         self.report_dir = report_dir
         self.data_dir = os.path.join(os.path.dirname(__file__), '..', constants.DATA_DIR_NAME)
         self._check_sequenza_params()
@@ -126,7 +131,7 @@ class extractor(logger):
 
     def run_r_script(self):
         wrapper = r_script_wrapper(
-            self.config, self.report_dir, log_level=self.log_level, log_path=self.log_path
+            self.config, self.report_dir, self.wgs_only, log_level=self.log_level, log_path=self.log_path
         )
         wrapper.run()
 

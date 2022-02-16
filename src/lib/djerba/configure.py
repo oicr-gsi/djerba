@@ -36,11 +36,16 @@ class configurer(logger):
 
     # TODO validate that discovered config paths are readable
 
-    def __init__(self, config, log_level=logging.WARNING, log_path=None):
+    def __init__(self, config, wgs_only, log_level=logging.WARNING, log_path=None):
         self.config = config
+        self.wgs_only = wgs_only
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
+        if self.wgs_only:
+            self.logger.info("Configuring Djerba for WGS-only report")
+        else:
+            self.logger.info("Configuring Djerba for WGS+WTS report")
         provenance = self.config[ini.SETTINGS][ini.PROVENANCE]
         project = self.config[ini.INPUTS][ini.STUDY_ID]
         donor = self.config[ini.INPUTS][ini.PATIENT]
@@ -69,10 +74,11 @@ class configurer(logger):
 
     def discover_primary(self):
         updates = {}
-        updates[ini.GEP_FILE] = self.reader.parse_gep_path()
-        updates[ini.MAF_FILE] = self.reader.parse_maf_path()
-        updates[ini.MAVIS_FILE] = self.reader.parse_mavis_path()
         updates[ini.SEQUENZA_FILE] = self.reader.parse_sequenza_path()
+        updates[ini.MAF_FILE] = self.reader.parse_maf_path()
+        if not self.wgs_only:
+            updates[ini.MAVIS_FILE] = self.reader.parse_mavis_path()
+            updates[ini.GEP_FILE] = self.reader.parse_gep_path()
         updates.update(self.reader.find_identifiers())
         updates.update(self.find_data_files())
         return updates
@@ -132,6 +138,7 @@ class configurer(logger):
             # allows user to specify params which will not be overwritten by automated discovery
             if not self.config.has_option(ini.DISCOVERED, key):
                 if updates[key] == None:
+                    self.logger.debug('Error applying updates: {0}'.format(updates))
                     msg = "Failed to update parameter '{0}' in section [{1}]. ".format(key, ini.DISCOVERED)+\
                         "Djerba was unable to discover the parameter automatically, and "+\
                         "no user-supplied value was found. Run Djerba with --debug for more "+\

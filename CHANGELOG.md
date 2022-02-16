@@ -3,7 +3,14 @@
 ## Unreleased
 
 ### Added
-- GCGI-240 Add --wgs-only option for HTML reports
+- GCGI-250 Add --wgs-only option for HTML reports
+
+### Changed
+- GCGI-266: Update failed report markdown to incorporate recent changes from CGI-Tools
+- GCGI-271: Failed report formatting change
+- GCGI-272: Update target coverage explanation in footers
+- Update color handling for plotting in Rmarkdown
+- Updated to use Python Tools module v12 for Geneticist Review Report
 
 ## v0.1.0: 2022-01-28
 
