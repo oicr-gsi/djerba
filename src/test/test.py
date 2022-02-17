@@ -18,6 +18,7 @@ from djerba.configure import archiver, configurer, log_r_cutoff_finder
 from djerba.extract.extractor import extractor
 from djerba.extract.report_directory_parser import report_directory_parser
 from djerba.extract.r_script_wrapper import r_script_wrapper
+from djerba.lister import lister
 from djerba.main import main
 from djerba.mavis import mavis_runner
 from djerba.render import html_renderer, pdf_renderer
@@ -52,6 +53,7 @@ class TestBase(unittest.TestCase):
             raise RuntimeError('Need to specify environment variable {0}'.format(sup_dir_var))
         elif not os.path.isdir(self.sup_dir):
             raise OSError("Supplementary directory path '{0}' is not a directory".format(self.sup_dir))
+        self.provenance = os.path.join(self.sup_dir, 'pass01_panx_provenance.original.tsv.gz')
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
         self.bed_path = os.path.join(self.sup_dir, 'S31285117_Regions.bed')
@@ -114,7 +116,7 @@ class TestConfigure(TestBase):
         config = configparser.ConfigParser()
         config.read(self.default_ini)
         config.read(user_config)
-        config['settings']['provenance'] = os.path.join(self.sup_dir, 'pass01_panx_provenance.original.tsv.gz')
+        config['settings']['provenance'] = self.provenance
         test_configurer = configurer(config, wgs_only, failed)
         out_dir = self.tmp_dir
         out_path = os.path.join(out_dir, 'config_test_output.ini')
@@ -188,6 +190,35 @@ class TestExtractor(TestBase):
     def test_extractor_wgs_only_failed(self):
         self.run_extractor_test(self.config_full_wgs_only, True, True)
 
+class TestLister(TestBase):
+
+    class mock_args:
+        """Use instead of argparse to store params for testing"""
+
+        def __init__(self, ini_path, out_path, donor, project, provenance):
+            self.ini = ini_path
+            self.output = out_path
+            self.donor = donor
+            self.study = project
+            self.provenance = provenance
+            self.wgs_only = False
+            # logging
+            self.log_path = None
+            self.debug = False
+            self.verbose = False
+            self.quiet = True
+
+    def test_lister(self):
+        out_path = os.path.join(self.tmp_dir, 'inputs.txt')
+        args = self.mock_args(self.config_full, out_path, self.donor, self.project, self.provenance)
+        lister(args).run()
+        self.assertTrue(os.path.exists(out_path))
+        with open(out_path) as out_file:
+            output = out_file.read()
+        with open(os.path.join(self.sup_dir, 'input_list.txt')) as expected_file:
+            expected = expected_file.read()
+            expected = expected.replace('PLACEHOLDER', self.sup_dir)
+        self.assertEqual(output, expected)
 
 class TestMain(TestBase):
 
@@ -202,8 +233,6 @@ class TestMain(TestBase):
             self.html = html_path
             self.ini = ini_path
             self.target_coverage = 40
-            self.unit = None
-            self.unit_file = None
             self.json = None
             self.pdf = None
             self.subparser_name = constants.ALL
@@ -234,16 +263,15 @@ class TestMavis(TestBase):
 
     class mock_mavis_args:
 
-        def __init__(self, work_dir):
+        def __init__(self, work_dir, donor, study):
             self.config = None
             self.dry_run = False
             self.execute = False
             self.legacy = False
             self.ready = True
             self.work_dir = work_dir
-            self.donor = 'PANX_1249'
-            self.study = 'PASS01'
-            self.unit = 'test'
+            self.donor = donor
+            self.study = study
             # logging
             self.log_path = None
             self.debug = False
@@ -257,19 +285,18 @@ class TestMavis(TestBase):
 
     def test_ready(self):
         out_dir = self.tmp_dir
-        mock_args = self.mock_mavis_args(out_dir)
+        mock_args = self.mock_mavis_args(out_dir, self.donor, self.project)
         self.run_test(mock_args, out_dir)
 
     def test_ready_legacy(self):
         out_dir = self.tmp_dir
-        mock_args = self.mock_mavis_args(out_dir)
+        mock_args = self.mock_mavis_args(out_dir, self.donor, self.project)
         mock_args.legacy = True
         self.run_test(mock_args, out_dir)
 
     def run_test(self, mock_args, out_dir):
-        provenance = os.path.join(self.sup_dir, 'pass01_panx_provenance.original.tsv.gz')
         runner = mavis_runner(mock_args)
-        runner.provenance_path = provenance
+        runner.provenance_path = self.provenance
         action = runner.main()
         self.assertEqual(action, 1)
         filenames = [
@@ -285,7 +312,7 @@ class TestMavis(TestBase):
         # test execute in dry-run mode; live test is separate
         mock_args.set_to_execute_dry_run()
         runner = mavis_runner(mock_args)
-        runner.provenance_path = provenance
+        runner.provenance_path = self.provenance
         action = runner.main()
         self.assertEqual(action, 2)
 
@@ -409,13 +436,12 @@ class TestSequenzaReader(TestBase):
 
     def test_locator_script(self):
         """Test locator mode of the script"""
-        provenance = os.path.join(self.sup_dir, 'pass01_panx_provenance.original.tsv.gz')
         cmd = [
             "sequenza_explorer.py",
             "locate",
-            "--file-provenance", provenance,
-            "--donor", "PANX_1249",
-            "--project", "PASS01"
+            "--file-provenance", self.provenance,
+            "--donor", self.donor,
+            "--project", self.project
         ]
         result = self.run_command(cmd)
         expected_text = "/oicr/data/archive/seqware/seqware_analysis_12/hsqwprod/seqware-results/sequenza_2.1/21562306/PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip\n"
