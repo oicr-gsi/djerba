@@ -14,6 +14,9 @@
 - Update color handling for plotting in Rmarkdown
 - Updated to use Python Tools module v12 for Geneticist Review Report
 
+### Fixed
+- GCGI-289 Fix for fallback ID creation
+
 ## v0.1.0: 2022-01-28
 
 No code changes from v0.0.17; version incremented for first production release
