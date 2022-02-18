@@ -399,7 +399,7 @@ class provenance_reader(logger):
         else:
             msg = "Could not find {0} or {1}, constructing alternate ID".format(self.GEO_TUBE_ID, self.GEO_GROUP_ID)
             self.logger.warning(msg)
-            chosen_id = ref_constructed_id
+            chosen_id = constructed_id
         return chosen_id
 
     def _parse_default(self, workflow, metatype, pattern):
