@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v0.2.0: 2022-02-22
 
 ### Added
 - GCGI-250 Add --wgs-only option for HTML reports
