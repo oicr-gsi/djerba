@@ -5,6 +5,7 @@
 ### Added
 - GCGI-250 Add --wgs-only option for HTML reports
 - GCGI-269 Script `list_inputs.py` to list report input paths
+- GCGI-201 Documentation for OncoKB file updates
 
 ### Changed
 - GCGI-265 Omit processing of unnecessary inputs for failed reports
