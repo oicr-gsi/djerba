@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+### Fixed
+- GCGI-294 Correct handling of --failed option for all script modes
+
 ## v0.2.0: 2022-02-22
 
 ### Added

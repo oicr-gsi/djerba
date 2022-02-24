@@ -35,6 +35,10 @@ class main(logger):
         self.ini_defaults = os.path.join(source_dir, constants.DATA_DIR_NAME, self.INI_DEFAULT_NAME)
         self.ini_template = os.path.join(source_dir, constants.DATA_DIR_NAME, self.INI_TEMPLATE_NAME)
         self.args = args
+        if self.args.subparser_name in [constants.SETUP, constants.PDF]:
+            self.failed = False # --failed option not relevant for these modes
+        else:
+            self.failed = self.args.failed
         self.log_level = self.get_log_level(self.args.debug, self.args.verbose, self.args.quiet)
         self.log_path = self.args.log_path
         if self.log_path:
@@ -119,7 +123,8 @@ class main(logger):
 
     def run(self):
         """Main method to run Djerba"""
-        cv = config_validator(self.args.wgs_only, self.args.failed, self.log_level, self.log_path)
+        # don't use self.args.failed -- it is not defined for some subparsers
+        cv = config_validator(self.args.wgs_only, self.failed, self.log_level, self.log_path)
         self.logger.info("Running Djerba in mode: {0}".format(self.args.subparser_name))
         if self.args.subparser_name == constants.SETUP:
             self.run_setup()
