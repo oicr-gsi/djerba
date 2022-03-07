@@ -442,17 +442,20 @@ if (dim(Other)[1] != 0) {
 </div>
 <br>
 <table width="100%">
-  <tr>
-    <td width="55%"><strong>Tumour Mutation Burden:</strong> `r mutationCount` mutations. `r sampleTMB` coding mutations per Mb</td>
-    <td width="45%"><strong>Genome Altered (%):</strong> `r FGA * 100`</td>
-  </tr>
-  <tr>
-    <td width="55%"><strong>All TCGA Percentile:</strong> `r round(sample_pct, 3)`</td>
-    <td width="45%"><strong>Cohort Percentile:</strong> `r round(sample_pct_type, 3)`</td>
-  </tr>
-  <tr>
-    <td width="45%"><strong>Selected Cohort:</strong> `r Cohort`</td>
-  </tr>
+<tr>
+<td width="55%"><strong>Tumour Mutation Burden:</strong> `r mutationCount` mutations. `r sampleTMB` coding mutations per Mb</td>
+<td width="45%"><strong>Genome Altered (%):</strong> `r FGA * 100`</td>
+</tr>
+<tr>
+<td width="55%"><strong>Cancer-specific Percentile:</strong> `r round(sample_pct_type*100, 1)`</td>
+<td width="45%"><strong>Cancer-specific Cohort:</strong> `r Cohort`</td>
+</tr>
+<tr>
+<td width="55%"><strong>Pan-cancer Percentile:</strong> `r round(sample_pct*100, 1)`</td>
+<td width="45%"><strong>Pan-cancer cohort:</strong> TCGA Pan-Cancer Atlas 2018 (n=6,446)</td>
+</tr>
+<tr>
+</tr>
 </table>
 </html>
 

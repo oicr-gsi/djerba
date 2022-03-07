@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+### Changed
+- GCGI-311 Reformat the genomic landscape table
+
 ## v0.2.1: 2022-02-24
 
 ### Fixed

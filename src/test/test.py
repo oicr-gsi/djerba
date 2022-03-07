@@ -345,7 +345,7 @@ class TestRender(TestBase):
         html_renderer(wgs_only=False, failed=False, log_level=logging.ERROR).run(reportDir, outPath, target_coverage=40)
         # check file contents; need to omit the report date etc.
         self.assertTrue(os.path.exists(outPath))
-        self.check_report(outPath, 'f2b7a02f48e668b33f013358dc35e9db')
+        self.check_report(outPath, '530b6944eaf984774edd07ff444736f3')
         failPath = os.path.join(outDir, 'djerba_fail_test.html')
         html_renderer(wgs_only=False, failed=True, log_level=logging.ERROR).run(reportDir, failPath, target_coverage=40)
         self.assertTrue(os.path.exists(failPath))
@@ -357,15 +357,15 @@ class TestRender(TestBase):
         wgsOnlyPath = os.path.join(outDir, 'djerba_wgs_only_test.html')
         html_renderer(wgs_only=True, failed=False, log_level=logging.ERROR).run(reportDir, wgsOnlyPath, target_coverage=40)
         self.assertTrue(os.path.exists(wgsOnlyPath))
-        self.check_report(wgsOnlyPath, '37933404182a1cc3bd2436b645d5f273')
+        self.check_report(wgsOnlyPath, 'd920f96a0de475deebe152ab2ba595cd')
         depth80XPath = os.path.join(outDir, 'djerba_80x_test.html')
-        html_renderer(wgs_only=True, failed=False, log_level=logging.ERROR).run(reportDir, depth80XPath, target_coverage=80)
+        html_renderer(wgs_only=False, failed=False, log_level=logging.ERROR).run(reportDir, depth80XPath, target_coverage=80)
         self.assertTrue(os.path.exists(depth80XPath))
-        self.check_report(depth80XPath, '09e07d1c0d40194c792e7ca00f57f278')
+        self.check_report(depth80XPath, '07eb26984344bae0b872ea7503b77c58')
         wgsOnlyDepth80XPath = os.path.join(outDir, 'djerba_80x_wgs_only_test.html')
         html_renderer(wgs_only=True, failed=False, log_level=logging.ERROR).run(reportDir, wgsOnlyDepth80XPath, target_coverage=80)
         self.assertTrue(os.path.exists(wgsOnlyDepth80XPath))
-        self.check_report(wgsOnlyDepth80XPath, '09e07d1c0d40194c792e7ca00f57f278')
+        self.check_report(wgsOnlyDepth80XPath, '62d6ce61dada1879ac59f438222321a5')
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
