@@ -1,9 +1,10 @@
 # CHANGELOG
 
-## Unreleased
+## v0.2.2: 2022-03-09
 
 ### Changed
 - GCGI-311 Reformat the genomic landscape table
+- GCGI-312 Better placeholder text for Study ID and Oncotree Code
 
 ## v0.2.1: 2022-02-24
 
