@@ -346,7 +346,7 @@ Other <- subset(Tx, OncoKB %in% c("LEVEL_3A", "LEVEL_3B", "LEVEL_4", "LEVEL_R2")
 </div>
 <table width="100%">
   <tr>
-    <td><strong>Assay: </strong>Whole genome and transcriptome sequencing (WGTS)-40X Tumour, 30X Normal (v1.0)</td>
+    <td><strong>Assay: </strong><b>*** PLACEHOLDER ***</b></td>
   </tr>
 </table>
 <table width="100%">
@@ -356,7 +356,7 @@ Other <- subset(Tx, OncoKB %in% c("LEVEL_3A", "LEVEL_3B", "LEVEL_4", "LEVEL_R2")
     <td width="37%"><strong>Report ID:</strong> `r paste0(clinicalData$TUMOUR_SAMPLE_ID, "-v", clinicalData$REPORT_VERSION)`</td>
   </tr>
   <tr>
-    <td width="35%"><strong>Study:</strong> PASS-01</td>
+    <td width="35%"><strong>Study:</strong> <b>*** PLACEHOLDER ***</b></td>
     <td width="28%"><strong>Patient Study ID:</strong> `r clinicalData$PATIENT_STUDY_ID`</td>
     <td width="37%"><strong>Patient LIMS ID:</strong> `r clinicalData$PATIENT_LIMS_ID`</td>
   </tr>
@@ -390,7 +390,7 @@ Other <- subset(Tx, OncoKB %in% c("LEVEL_3A", "LEVEL_3B", "LEVEL_4", "LEVEL_R2")
 </div>
 <table width="100%">
   <tr>
-    <td width="33%"><strong>OncoTree code:</strong> `r clinicalData$CANCER_TYPE`</td>
+    <td width="33%"><strong>OncoTree code:</strong> <b>*** PLACEHOLDER ***</b></td> <!-- was clinicalData$CANCER_TYPE but that is incorrect -->
     <td width="33%"><strong>Callability (%):</strong> `r clinicalData$PCT_V7_ABOVE_80X`</td>
     <td width="33%"><strong>Coverage (mean):</strong> `r clinicalData$MEAN_COVERAGE`</td>
   </tr>

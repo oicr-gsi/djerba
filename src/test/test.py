@@ -339,33 +339,34 @@ class TestRender(TestBase):
         self.assertEqual(md5, expected_md5)
 
     def test_html(self):
-        outDir = self.tmp_dir
+        #outDir = self.tmp_dir
+        outDir = '/u/ibancarz/workspace/djerba/test_20220307_02'
         outPath = os.path.join(outDir, 'djerba_test.html')
         reportDir = os.path.join(self.sup_dir, 'report_example')
         html_renderer(wgs_only=False, failed=False, log_level=logging.ERROR).run(reportDir, outPath, target_coverage=40)
         # check file contents; need to omit the report date etc.
         self.assertTrue(os.path.exists(outPath))
-        self.check_report(outPath, '530b6944eaf984774edd07ff444736f3')
+        self.check_report(outPath, 'da3c4a868084586e5c95df6d6f428b09')
         failPath = os.path.join(outDir, 'djerba_fail_test.html')
         html_renderer(wgs_only=False, failed=True, log_level=logging.ERROR).run(reportDir, failPath, target_coverage=40)
         self.assertTrue(os.path.exists(failPath))
-        self.check_report(failPath, 'f4477ee34984d224aa8b879b380329c7')
+        self.check_report(failPath, 'ab9c15bac07cb9ce56d33b112e2644ce')
         failPath = os.path.join(outDir, 'djerba_fail_wgs_test.html')
         html_renderer(wgs_only=True, failed=True, log_level=logging.ERROR).run(reportDir, failPath, target_coverage=40)
         self.assertTrue(os.path.exists(failPath))
-        self.check_report(failPath, '5c1c16200f8590979cd4df8a44a820e7')
+        self.check_report(failPath, '67c088d38641f346def5ec5802e38bd4')
         wgsOnlyPath = os.path.join(outDir, 'djerba_wgs_only_test.html')
         html_renderer(wgs_only=True, failed=False, log_level=logging.ERROR).run(reportDir, wgsOnlyPath, target_coverage=40)
         self.assertTrue(os.path.exists(wgsOnlyPath))
-        self.check_report(wgsOnlyPath, 'd920f96a0de475deebe152ab2ba595cd')
+        self.check_report(wgsOnlyPath, '578db31612ca2e32a6d15fc90654e01b')
         depth80XPath = os.path.join(outDir, 'djerba_80x_test.html')
         html_renderer(wgs_only=False, failed=False, log_level=logging.ERROR).run(reportDir, depth80XPath, target_coverage=80)
         self.assertTrue(os.path.exists(depth80XPath))
-        self.check_report(depth80XPath, '07eb26984344bae0b872ea7503b77c58')
+        self.check_report(depth80XPath, 'ef4e734835270238df9ec321aa062d89')
         wgsOnlyDepth80XPath = os.path.join(outDir, 'djerba_80x_wgs_only_test.html')
         html_renderer(wgs_only=True, failed=False, log_level=logging.ERROR).run(reportDir, wgsOnlyDepth80XPath, target_coverage=80)
         self.assertTrue(os.path.exists(wgsOnlyDepth80XPath))
-        self.check_report(wgsOnlyDepth80XPath, '62d6ce61dada1879ac59f438222321a5')
+        self.check_report(wgsOnlyDepth80XPath, 'e01a6fbf2e6e8f7a9ad209b2c820defe')
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
