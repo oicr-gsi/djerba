@@ -297,6 +297,10 @@ class provenance_reader(logger):
             provenance_subset.add(columns)
         # parse the 'parent sample attributes' value and get a list of dictionaries
         self.attributes = [self._parse_row_attributes(row) for row in provenance_subset]
+        self.patient_id = self._id_patient()
+        self.tumour_id = self._id_tumour()
+        self.normal_id = self._id_normal()
+        self.root_sample_name = self._get_root_sample_name()
 
     def _filter_rows(self, index, value, rows=None):
         # find matching provenance rows from a list
@@ -325,11 +329,20 @@ class provenance_reader(logger):
         else:
             return sorted(rows, key=lambda row: row[index.LAST_MODIFIED], reverse=True)[0]
 
+    def _get_root_sample_name(self):
+        name = self._get_unique_value(self.ROOT_SAMPLE_NAME_ATTR, check=False)
+        if name==None:
+            msg = "Cannot find metadata value for '{0}'".format(self.ROOT_SAMPLE_NAME_ATTR)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        return name
+
     def _get_unique_value(self, key, check, reference=False):
         """
         Get unique value (if any) of key from self.attributes
         Attributes is a list of dictionaries, each corresponding to one or more provenance rows
         If check==True, check the tissue type ID to determine if the row refers to a reference (ie. normal)
+        If check==False, require a unique value across both tumour and normal (eg. to find the patient ID)
         Then:
         - If key is present, confirm that all members of the list have the same value
         - If key does not exist for any member, return None
@@ -359,20 +372,24 @@ class provenance_reader(logger):
             value = None
         return value
 
-    def _id_normal(self, patient_id):
+    def _id_normal(self):
         self.logger.debug("Finding normal ID")
-        normal_id = self._id_tumour_normal(patient_id, reference=True)
+        normal_id = self._id_tumour_normal(self.patient_id, reference=True)
         self.logger.debug("Found normal ID: {0}".format(normal_id))
         return normal_id
 
     def _id_patient(self):
         # parse the external name to get patient ID
         patient_id_raw = self._get_unique_value(self.GEO_EXTERNAL_NAME, check=False)
+        if patient_id_raw == None:
+            msg = "Cannot initialize file provenance reader: No value found for metadata field '{0}'".format(self.GEO_EXTERNAL_NAME)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
         return re.split(',', patient_id_raw).pop(0)
 
-    def _id_tumour(self, patient_id):
+    def _id_tumour(self):
         self.logger.debug("Finding tumour ID")
-        tumour_id = self._id_tumour_normal(patient_id, reference=False)
+        tumour_id = self._id_tumour_normal(self.patient_id, reference=False)
         self.logger.debug("Found tumour ID: {0}".format(tumour_id))
         return tumour_id
 
@@ -392,12 +409,13 @@ class provenance_reader(logger):
         self.logger.debug("ID candidates: {0}, {1}, {2}".format(tube_id, group_id, constructed_id))
         if tube_id:
             chosen_id = tube_id
+            self.logger.debug("Using {0} value for ID: {1}".format(self.GEO_TUBE_ID, tube_id))
         elif group_id:
-            msg = "Could not find {0}, using {1} for ID".format(self.GEO_TUBE_ID, self.GEO_GROUP_ID)
+            msg = "Could not find {0}, using {1} for ID: {2}".format(self.GEO_TUBE_ID, self.GEO_GROUP_ID, group_id)
             self.logger.warning(msg)
             chosen_id = group_id
         else:
-            msg = "Could not find {0} or {1}, constructing alternate ID".format(self.GEO_TUBE_ID, self.GEO_GROUP_ID)
+            msg = "Could not find {0} or {1}, constructing alternate ID: {2}".format(self.GEO_TUBE_ID, self.GEO_GROUP_ID, constructed_id)
             self.logger.warning(msg)
             chosen_id = constructed_id
         return chosen_id
@@ -440,18 +458,10 @@ class provenance_reader(logger):
         """
         Find the tumour/normal/patient identifiers from file provenance
         """
-        patient_id = self._id_patient()
-        if patient_id == None:
-            self.logger.debug("Cannot find tumour/normal IDs without patient ID; assigning null values")
-            tumour_id = None
-            normal_id = None
-        else:
-            tumour_id = self._id_tumour(patient_id)
-            normal_id = self._id_normal(patient_id)
         identifiers = {
-            ini.TUMOUR_ID: tumour_id,
-            ini.NORMAL_ID: normal_id,
-            ini.PATIENT_ID: patient_id
+            ini.TUMOUR_ID: self.tumour_id,
+            ini.NORMAL_ID: self.normal_id,
+            ini.PATIENT_ID: self.patient_id
         }
         self.logger.debug("Found identifiers: {0}".format(identifiers))
         return identifiers
@@ -479,39 +489,33 @@ class provenance_reader(logger):
         return self._parse_default('starFusion', 'application/octet-stream', 'star-fusion\.fusion_predictions\.tsv$')
 
     def parse_wg_bam_path(self):
-        desc = self._get_unique_value(self.GEO_TUBE_ID, check=True, reference=False)
-        suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bam$'.format(desc)
+        suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bam$'.format(self.tumour_id)
         return self._parse_default('bamMergePreprocessing', 'application/bam', suffix)
 
     def parse_wg_bam_ref_path(self):
         # find the reference (normal) BAM
-        desc = self._get_unique_value(self.GEO_TUBE_ID, check=True, reference=True)
-        suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bam$'.format(desc)
+        suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bam$'.format(self.normal_id)
         return self._parse_default('bamMergePreprocessing', 'application/bam', suffix)
 
     def parse_wg_index_path(self):
-        desc = self._get_unique_value(self.GEO_TUBE_ID, check=True, reference=False)
-        suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bai$'.format(desc)
+        suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bai$'.format(self.tumour_id)
         return self._parse_default('bamMergePreprocessing', 'application/bam-index', suffix)
 
     def parse_wg_index_ref_path(self):
         # find the reference (normal) BAM index
-        desc = self._get_unique_value(self.GEO_TUBE_ID, check=True, reference=True)
-        suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bai$'.format(desc)
+        suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bai$'.format(self.normal_id)
         return self._parse_default('bamMergePreprocessing', 'application/bam-index', suffix)
 
-    ### WT assay produces only 1 bam file; the reference argument has no effect here
+    ### WT assay produces only 1 bam file; no need to consider tumour vs. reference
 
     def parse_wt_bam_path(self):
-        unit = self._get_unique_value(self.ROOT_SAMPLE_NAME_ATTR, check=True, reference=False)
         # matches *Aligned.sortedByCoord.out.bam if *not* preceded by an index of the form ACGTACGT
-        suffix = '('+unit+'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bam$'
+        suffix = '('+self.root_sample_name+'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bam$'
         return self._parse_default('STAR', 'application/bam', suffix)
 
     def parse_wt_index_path(self):
-        unit = self._get_unique_value(self.ROOT_SAMPLE_NAME_ATTR, check=True, reference=False)
         # matches *Aligned.sortedByCoord.out.bam if *not* preceded by an index of the form ACGTACGT
-        suffix = '('+unit+'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bai$'
+        suffix = '('+self.root_sample_name+'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bai$'
         return self._parse_default('STAR', 'application/bam-index', suffix)
 
 class MissingConfigError(Exception):
