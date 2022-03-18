@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.2.3: 2022-03-18
+
+### Fixed
+- GCGI-323 Correctly handle missing `geo_tube_id` value
+
 ## v0.2.2: 2022-03-09
 
 ### Changed
