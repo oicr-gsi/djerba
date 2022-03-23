@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleaed
+
+### Fixed
+- GCGI-332 Remove read threshold filter from Mavis
+
 ## v0.2.3: 2022-03-18
 
 ### Fixed
