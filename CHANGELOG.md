@@ -1,8 +1,9 @@
 # CHANGELOG
 
-## Unreleaed
+## Unreleased
 
 ### Fixed
+- GCGI-331 Standardize on --study for script options
 - GCGI-332 Remove read threshold filter from Mavis
 
 ## v0.2.3: 2022-03-18

@@ -442,7 +442,7 @@ class TestSequenzaReader(TestBase):
             "locate",
             "--file-provenance", self.provenance,
             "--donor", self.donor,
-            "--project", self.project
+            "--study", self.project
         ]
         result = self.run_command(cmd)
         expected_text = "/oicr/data/archive/seqware/seqware_analysis_12/hsqwprod/seqware-results/sequenza_2.1/21562306/PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip\n"

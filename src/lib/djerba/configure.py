@@ -48,9 +48,9 @@ class configurer(logger):
         else:
             self.logger.info("Configuring Djerba for WGS+WTS report")
         provenance = self.config[ini.SETTINGS][ini.PROVENANCE]
-        project = self.config[ini.INPUTS][ini.STUDY_ID]
+        study = self.config[ini.INPUTS][ini.STUDY_ID]
         donor = self.config[ini.INPUTS][ini.PATIENT]
-        self.reader = provenance_reader(provenance, project, donor, log_level, log_path)
+        self.reader = provenance_reader(provenance, study, donor, log_level, log_path)
 
     def find_data_files(self):
         data_files = {}
@@ -264,22 +264,22 @@ class provenance_reader(logger):
     GEO_TISSUE_TYPE_ID = 'geo_tissue_type'
     GEO_TUBE_ID = 'geo_tube_id'
 
-    def __init__(self, provenance_path, project, donor, log_level=logging.WARNING, log_path=None):
-        # get provenance for the project and donor
+    def __init__(self, provenance_path, study, donor, log_level=logging.WARNING, log_path=None):
+        # get provenance for the study and donor
         # if this proves to be too slow, can preprocess the file using zgrep
         self.logger = self.get_logger(log_level, __name__, log_path)
-        self.logger.info("Reading provenance for project '%s' and donor '%s' " % (project, donor))
+        self.logger.info("Reading provenance for study '%s' and donor '%s' " % (study, donor))
         self.donor = donor
         self.provenance = []
         with gzip.open(provenance_path, 'rt') as infile:
             reader = csv.reader(infile, delimiter="\t")
             for row in reader:
-                if row[index.STUDY_TITLE] == project and \
+                if row[index.STUDY_TITLE] == study and \
                    row[index.ROOT_SAMPLE_NAME] == donor and \
                    row[index.SEQUENCER_RUN_PLATFORM_ID] != 'Illumina_MiSeq':
                     self.provenance.append(row)
         if len(self.provenance)==0:
-            msg = "No provenance records found for project '%s' and donor '%s' " % (project, donor) +\
+            msg = "No provenance records found for study '%s' and donor '%s' " % (study, donor) +\
                 "in '%s'" % provenance_path
             self.logger.error(msg)
             raise MissingProvenanceError(msg)
