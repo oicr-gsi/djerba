@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+### Fixed
+- GCGI-333 Bugfix for cancer type description
+
 ## v0.2.4: 2022-03-23
 
 ### Fixed

@@ -88,12 +88,13 @@ class extractor(logger):
         oncotree_code = self.config[ini.INPUTS][ini.ONCOTREE_CODE]
         self.logger.info("Finding OncoTree info for code {0}".format(oncotree_code))
         # parse the oncotree file
-        # if any of columns 1-7 contains the ONCOTREE_CODE (case-insensitive):
+        # match against uppercase ONCOTREE_CODE in parentheses, eg. '(ETT)', not 'ett'
+        # if any of columns 1-7 matches):
         # - column 1 has a CANCER_TYPE
         # - any column containing the ONCOTREE_CODE has a CANCER_TYPE_DESCRIPTION
-        # - keep all distinct values of CANCER_TYPE and CANCER_TYPE_DESCRIPTION
+        # - expect exactly one distinct value each, for CANCER_TYPE and CANCER_TYPE_DESCRIPTION
         # - remove the suffix, eg. 'Astroblastoma (ASTB)' -> 'Astroblastoma'
-        oncotree_regex = re.compile(oncotree_code, re.IGNORECASE)
+        oncotree_regex = re.compile('\({0}\)'.format(oncotree_code.upper()))
         ct = set() # set of distinct CANCER_TYPE strings
         ctd = set() # set of distinct CANCER_TYPE_DESCRIPTION strings
         with open(oncotree_path) as oncotree_file:
@@ -107,16 +108,21 @@ class extractor(logger):
                     if oncotree_regex.search(row[i]):
                         ct.add(self._remove_oncotree_suffix(row[0]))
                         ctd.add(self._remove_oncotree_suffix(row[i]))
-        ct_str = '; '.join(sorted(list(ct)))
-        ctd_str = '; '.join(sorted(list(ctd)))
-        if len(ct)==0:
-            self.logger.warning("Type not found in OncoTree for code {0}".format(oncotree_code))
+        placeholder = 'UNKNOWN'
+        if len(ct) != 1:
+            found = ct if len(ct)>1 else 'no entries'
+            msg = "Cannot find unique cancer type from OncoTree code {0}; found {1}; substituting {2}".format(oncotree_code, found, placeholder)
+            self.logger.warning(msg)
+            ct_str = placeholder
         else:
-            self.logger.info("Found {0} cancer type(s) in OncoTree: {1}".format(len(ct), ct_str))
-        if len(ctd)==0:
-            self.logger.warning("Description not found in OncoTree for code {0}".format(oncotree_code))
+            ct_str = ct.pop()
+        if len(ctd) != 1:
+            found = ctd if len(ctd)>1 else 'no entries'
+            msg = "Cannot find unique cancer description from OncoTree code {0}; found {1}; substituting {2}".format(oncotree_code, found, placeholder)
+            self.logger.warning(msg)
+            ctd_str = placeholder
         else:
-            self.logger.info("Found {0} cancer type description(s) in OncoTree: {1}".format(len(ctd), ctd_str))
+            ctd_str = ctd.pop()
         description = {
             self.CANCER_TYPE: ct_str,
             self.CANCER_TYPE_DESCRIPTION: ctd_str

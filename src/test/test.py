@@ -14,6 +14,7 @@ import unittest
 from string import Template
 
 import djerba.util.constants as constants
+import djerba.util.ini_fields as ini
 from djerba.configure import archiver, configurer, log_r_cutoff_finder
 from djerba.extract.extractor import extractor
 from djerba.extract.report_directory_parser import report_directory_parser
@@ -189,6 +190,27 @@ class TestExtractor(TestBase):
 
     def test_extractor_wgs_only_failed(self):
         self.run_extractor_test(self.config_full_wgs_only, True, True)
+
+    def test_cancer_type_description(self):
+        # test extraction of the cancer type description; see GCGI-333
+        config = configparser.ConfigParser()
+        config.read(self.default_ini)
+        config.read(self.config_full)
+        out_dir = self.tmp_dir
+        wgs_only = False
+        failed = False
+        test_extractor = extractor(config, out_dir, wgs_only, failed, log_level=logging.ERROR)
+        desc = test_extractor.get_description()
+        expected = [
+            {'cancer_type': 'Pancreas', 'cancer_description': 'Pancreatic Adenocarcinoma'},
+            {'cancer_type': 'Uterus', 'cancer_description': 'Epithelioid Trophoblastic Tumor'},
+            {'cancer_type': 'UNKNOWN', 'cancer_description': 'UNKNOWN'},
+        ]
+        self.assertEqual(test_extractor.get_description(), expected[0])
+        config[ini.INPUTS][ini.ONCOTREE_CODE] = 'ETT'
+        self.assertEqual(test_extractor.get_description(), expected[1])
+        config[ini.INPUTS][ini.ONCOTREE_CODE] = 'FOO'
+        self.assertEqual(test_extractor.get_description(), expected[2])
 
 class TestLister(TestBase):
 
