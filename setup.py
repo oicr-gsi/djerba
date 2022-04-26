@@ -61,21 +61,23 @@ setup(
             'R_markdown/html_report_default.Rmd',
             'R_markdown/html_report_failed.Rmd',
             'R_markdown/html_report_wgs_only.Rmd',
-            'R_markdown/OICR_Logo_RGB_ENGLISH.png',
             'R_stats/calc_mut_sigs.r',
             'R_stats/convert_mavis_to_filtered_fusions.r',
             'R_stats/convert_rsem_results_zscore.r',
             'R_stats/convert_seg_to_gene_singlesample.r',
             'R_stats/convert_vep92_to_filtered_cbio.r',
-            'R_stats/singleSample.r'
+            'R_stats/singleSample.r',
+            'template/OICR_Logo_RGB_ENGLISH.png',
         ]
     },
     install_requires=[
         'configparse',
+        'mako',
         'numpy',
         'pandas',
         'pdfkit',
         'scipy',
+        'statsmodels'
     ],
     python_requires='>=3.9',
     author="Iain Bancarz",
