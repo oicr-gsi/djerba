@@ -1,7 +1,7 @@
 <%
   from time import strftime
-  import constants
-  from djerba_mako.functions import renderer
+  import djerba.template.constants as constants
+  from djerba.template.json_to_html import html_builder
 %>
 
 <!DOCTYPE html>
@@ -35,19 +35,19 @@
   <tr><td><strong>Assay: </strong> ${patient_info.get(constants.ASSAY)}</td></tr>
 </table>
 <table width="100%">
-% for row in renderer().patient_table_rows_3_cols(patient_info):
+% for row in html_builder().patient_table_rows_3_cols(patient_info):
       ${row}
 % endfor
 </table>
 <table width="100%">
-% for row in renderer().patient_table_rows_2_cols(patient_info):
+% for row in html_builder().patient_table_rows_2_cols(patient_info):
       ${row}
 % endfor
 </table>
 
 <div style="height:36px"><h3 class="header1">Sample Information &amp; Quality</h3></div>
 <table width="100%" style="font-size:14px">
-% for row in renderer(purity_failure).sample_information_and_quality_rows(sample_info_and_quality):
+% for row in html_builder(purity_failure).sample_information_and_quality_rows(sample_info_and_quality):
       ${row}
 % endfor
 </table>

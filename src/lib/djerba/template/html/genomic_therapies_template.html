@@ -1,7 +1,7 @@
 <%
   from time import strftime
-  import constants
-  from djerba_mako.functions import renderer
+  import djerba.template.constants as constants
+  from djerba.template.json_to_html import html_builder
 %>
 
 <div style="height:36px"><h3 class="header3">FDA Approved and/or NCCN Recommended Biomarker:</h3></div>
@@ -9,9 +9,9 @@
 <!-- omit tables if no data present -->
 % if len(approved_biomarkers)>0:
 <table class="variants" width="100%">
-${renderer().therapies_header()}
+${html_builder().therapies_header()}
 <tbody>
-% for row in renderer().therapies_table_rows(approved_biomarkers):
+% for row in html_builder().therapies_table_rows(approved_biomarkers):
       ${row}
 % endfor
 </tbody>
@@ -21,9 +21,9 @@ ${renderer().therapies_header()}
 <p>Review identified <strong>${len(investigational_therapies)}</strong> mutation(s) in this category</p>
 % if len(investigational_therapies)>0:
 <table class="variants" width="100%">
-${renderer().therapies_header()}
+${html_builder().therapies_header()}
 <tbody>
-% for row in renderer().therapies_table_rows(investigational_therapies):
+% for row in html_builder().therapies_table_rows(investigational_therapies):
       ${row}
 % endfor
 </tbody>
