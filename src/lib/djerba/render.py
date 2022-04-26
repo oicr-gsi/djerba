@@ -18,6 +18,15 @@ from djerba.util.logger import logger
 
 class html_renderer(logger):
 
+    TEMPLATE_DIRNAME = 'template'
+
+    def __init__(self, wgs_only, failed, log_level=logging.WARNING, log_path=None):
+        self.logger = self.get_logger(log_level, __name__, log_path)
+        self.template_dir = os.path.join(os.path.dirname(__file__), self.TEMPLATE_DIRNAME)
+
+
+class html_renderer_rmarkdown(logger):
+
     R_MARKDOWN_DIRNAME = 'R_markdown'
     # string template identifiers
     AFTER_BODY = 'DJERBA_RMD_AFTER_BODY'
