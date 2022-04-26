@@ -97,7 +97,10 @@ class lister(logger):
         bad_paths = False
         for pair in inputs:
             path = pair[1]
-            if not os.path.exists(path):
+            if path==None:
+                self.logger.warn("{0} input path was not found".format(pair[0]))
+                bad_paths = True
+            elif not os.path.exists(path):
                 self.logger.warn("{0} input path '{1}' does not exist".format(pair[0], pair[1]))
                 bad_paths = True
             elif not os.access(path, os.R_OK):
