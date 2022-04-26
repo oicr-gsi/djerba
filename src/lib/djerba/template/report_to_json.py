@@ -3,7 +3,7 @@
 """Read a Djerba 'report' directory and generate JSON for the Mako template"""
 
 import base64
-import constants
+import constants # TODO rename, eg. to template_constants ?
 import csv
 import json
 import os
@@ -11,6 +11,7 @@ import re
 import subprocess # TODO can use Djerba's subprocess wrappers
 import sys # TODO replace with argparse
 import pandas as pd
+import djerba.util.constants as djerba_constants
 from statsmodels.distributions.empirical_distribution import ECDF
 
 class composer_base:
@@ -115,7 +116,9 @@ class clinical_report_json_composer(composer_base):
         self.clinical_data = self.read_clinical_data()
         self.closest_tcga_lc = self.clinical_data['CLOSEST_TCGA'].lower()
         self.closest_tcga_uc = self.clinical_data['CLOSEST_TCGA'].upper()
-        self.data_dir = os.environ['DJERBA_DATA_DIR'] # was '/home/iain/oicr/git/djerba/src/lib/djerba/data'
+        self.data_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], djerba_constants.DATA_DIR_NAME)
+        self.r_script_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], 'R_plots')
+        self.html_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], 'template', 'html')
         self.cytoband_map = self.read_cytoband_map()
         self.total_somatic_mutations = self.read_total_somatic_mutations()
         self.total_oncogenic_somatic_mutations = self.read_total_oncogenic_somatic_mutations()
@@ -323,7 +326,7 @@ class clinical_report_json_composer(composer_base):
         data = {}
         data[constants.ASSAY_TYPE] = self.assay_type
         data[constants.AUTHOR] = self.author
-        data[constants.OICR_LOGO] = 'OICR_Logo_RGB_ENGLISH.png' # TODO make more portable
+        data[constants.OICR_LOGO] = os.path.join(self.html_dir, 'OICR_Logo_RGB_ENGLISH.png')
         data[constants.PATIENT_INFO] = self.build_patient_info()
         data[constants.SAMPLE_INFO] = self.build_sample_info()
         data[constants.GENOMIC_SUMMARY] = self.read_genomic_summary()
@@ -566,7 +569,7 @@ class clinical_report_json_composer(composer_base):
     def write_tmb_plot(self, tmb, out_dir):
         out_path = os.path.join(out_dir, 'tmb.jpeg')
         args = [
-            './tmb_plot.R',
+            os.path.join(self.r_script_dir, 'tmb_plot.R'),
             '-c', self.closest_tcga_lc,
             '-o', out_path,
             '-t', str(tmb)
@@ -577,7 +580,7 @@ class clinical_report_json_composer(composer_base):
     def write_vaf_plot(self, out_dir):
         out_path = os.path.join(out_dir, 'vaf.jpeg')
         args = [
-            './vaf_plot.R',
+            os.path.join(self.r_script_dir, 'vaf_plot.R'),
             '-d', self.input_dir,
             '-o', out_path
         ]
@@ -737,6 +740,7 @@ class fusion:
     def get_inv_therapies(self):
         return self.inv_therapies
 
+# TODO replace main() method with a script in the Djerba bin/ directory
 
 def main():
     report_dir = sys.argv[1]
