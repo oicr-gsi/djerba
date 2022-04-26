@@ -1,0 +1,76 @@
+<%
+  from time import strftime
+  import constants
+  from djerba_mako.functions import renderer
+%>
+
+<div style="height:36px"><h3 class="header1">Genomic Landscape</h3></div>
+<table width="100%">
+% for row in renderer().genomic_landscape_table_rows(genomic_landscape_info):
+      ${row}
+% endfor
+</table>
+## image sources may be file paths (for testing) or base64 data blobs (for a self-contained document)
+<div>
+  <p><img style='width: 50%; object-fit: contain' src="${tmb_plot}"/><img style='width: 50%; object-fit: contain' src="${vaf_plot}"/></p>
+</div>
+<div style="height:36px">
+<h3 class="header1">Oncogenic Small Mutations and Indels</h3>
+</div>
+<p><strong>${small_mutations_and_indels.get(constants.TOTAL_VARIANTS)}</strong> somatic mutations were detected, of which <strong>${small_mutations_and_indels.get(constants.CLINICALLY_RELEVANT_VARIANTS)}</strong> corresponded to an oncogenic mutation, as defined by OncoKB.</p>
+% if small_mutations_and_indels.get(constants.CLINICALLY_RELEVANT_VARIANTS) > 0:
+<table class="variants" width="100%">
+${renderer().oncogenic_small_mutations_and_indels_header()}
+<tbody>
+% for row in renderer().oncogenic_small_mutations_and_indels_rows(small_mutations_and_indels):
+      ${row}
+% endfor
+</tbody>
+</table>
+% endif
+<div style="height:36px">
+<h3 class="header1">Oncogenic Somatic Copy Number Variation</h3>
+</div>
+<p><strong>${oncogenic_somatic_CNVs.get(constants.TOTAL_VARIANTS)}</strong> cancer genes were subject to copy number variation, of which <strong>${oncogenic_somatic_CNVs.get(constants.CLINICALLY_RELEVANT_VARIANTS)}</strong> corresponded to an oncogenic alteration, as defined by OncoKB.</p>
+% if oncogenic_somatic_CNVs.get(constants.CLINICALLY_RELEVANT_VARIANTS) > 0:
+<table class="variants" width="100%">
+${renderer().oncogenic_CNVs_header()}
+<tbody>
+% for row in renderer().oncogenic_CNVs_rows(oncogenic_somatic_CNVs):
+      ${row}
+% endfor
+</table>
+</tbody>
+</table>
+% endif
+% if assay_type == 'WGTS':
+<div style="height:36px">
+<h3 class="header1">Structural Variants and Fusions</h3>
+</div>
+<p><strong>${structural_variants_and_fusions.get(constants.TOTAL_VARIANTS)}</strong> cancer genes were subject to rearrangement, of which <strong>${structural_variants_and_fusions.get(constants.CLINICALLY_RELEVANT_VARIANTS)}</strong> corresponded to oncogenic fusions, as defined by OncoKB.</p>
+% if structural_variants_and_fusions.get(constants.CLINICALLY_RELEVANT_VARIANTS) > 0:
+<table class="variants" width="100%">
+${renderer().structural_variants_and_fusions_header()}
+<tbody>
+% for row in renderer().structural_variants_and_fusions_rows(structural_variants_and_fusions):
+      ${row}
+% endfor
+</tbody>
+</table>
+% endif
+% endif
+<div style="height:36px">
+<h3 class="header1">Supplementary Gene Information</h3>
+</div>
+% if len(supplementary_info) > 0:
+<table class="variants" width="100%">
+${renderer().supplementary_info_header()}
+<tbody>
+% for row in renderer().supplementary_info_rows(supplementary_info):
+      ${row}
+% endfor
+</tbody>
+</table>
+% else:
+<p style="font-size:14px">No relevant oncogenes were detected in OncoKB.</p>
+% endif
