@@ -16,7 +16,7 @@ opt <- parse_args(opt_parser)
 maf_path <- paste(opt$dir, 'data_mutations_extended.txt', sep='/')
 out_path <- opt$output
 
-data_dir  <- Sys.getenv(c("DJERBA_DATA_DIR"))
+data_dir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), 'data', sep='/')
 cytoBand <- read.csv((paste(data_dir, "cytoBand.txt", sep = "/")), sep = "\t", header = TRUE, stringsAsFactors = FALSE)
 
 MAF <- read.csv(maf_path, sep = "\t", header = TRUE, stringsAsFactors = FALSE) %>%
@@ -25,6 +25,7 @@ MAF <- read.csv(maf_path, sep = "\t", header = TRUE, stringsAsFactors = FALSE) %
     inner_join(cytoBand) %>%
     mutate(OncoKB = ifelse(is.na(Highest_level), oncogenic, Highest_level))
 
+options(bitmapType='cairo')
 jpeg(out_path, width=500, height=250)
 ggplot(MAF) + geom_density(aes(x = tumour_vaf), fill = "grey", alpha = 0.5) + geom_rug(aes(x = tumour_vaf,
   y = 0), position = position_jitter(height = 0)) + xlab("Variant Allele Frequency") + ylab("density") +

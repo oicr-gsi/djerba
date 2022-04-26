@@ -18,7 +18,7 @@ sampleTMB <- opt$tmb
 sample_tcga <- opt$code
 out_path <- opt$output
 
-data_dir  <- Sys.getenv(c("DJERBA_DATA_DIR"))
+data_dir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), 'data', sep='/')
 external_tmb_file <- paste(data_dir, 'tmbcomp-externaldata.txt', sep='/')
 external_tmb_data <- read.delim(external_tmb_file, header = TRUE, stringsAsFactors = F)
 tcga_tmb_file <- paste(data_dir, 'tmbcomp-tcga.txt', sep='/')
@@ -29,6 +29,7 @@ external_tmb_data_type <- external_tmb_data %>% filter(if (sample_tcga %in% exte
 #subset tcga data to cancer type
 tcga_tmb_data_type <- tcga_tmb_data %>% filter(if (sample_tcga %in% tcga_tmb_data$CANCER.TYPE) CANCER.TYPE == sample_tcga else NA)
 
+options(bitmapType='cairo')
 jpeg(out_path, width=500, height=250)
 ggplot(tcga_tmb_data, aes(tmb)) +
   geom_density(aes(fill = "All TCGA"), alpha = 0.5) + theme_classic() +
