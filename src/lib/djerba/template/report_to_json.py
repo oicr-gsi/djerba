@@ -48,6 +48,8 @@ class composer_base:
                 therapies.append(row_dict[level])
         if max_level:
             max_level = self.reformat_level_string(max_level)
+        # insert a space between comma and start of next word
+        therapies = [re.sub(r'(?<=[,])(?=[^\s])', r' ', t) for t in therapies]
         return (max_level, '; '.join(therapies))
 
     def parse_oncokb_level(self, row_dict):
@@ -91,6 +93,7 @@ class clinical_report_json_composer(composer_base):
     TMBCOMP_EXTERNAL = 'tmbcomp-externaldata.txt'
     TMBCOMP_TCGA = 'tmbcomp-tcga.txt'
     TUMOUR_VAF = 'tumour_vaf'
+    UNKNOWN = 'Unknown'
     VARIANT_CLASS = 'Variant_Classification'
     V7_TARGET_SIZE = 37.285536 # inherited from CGI-Tools
 
@@ -241,7 +244,8 @@ class clinical_report_json_composer(composer_base):
         rows = []
         oncogenic_fusion_genes = 0 # number of genes = 2x number of fusions
         for fusion in self.gene_pair_fusions:
-            if self.is_null_string(fusion.get_oncokb_level()):
+            oncokb_level = fusion.get_oncokb_level()
+            if oncokb_level == self.UNKNOWN or self.is_null_string(oncokb_level):
                 continue # skip non-oncogenic fusions
             oncogenic_fusion_genes += 2
             for gene in fusion.get_genes():
@@ -254,7 +258,7 @@ class clinical_report_json_composer(composer_base):
                     constants.FRAME: fusion.get_frame(),
                     constants.FUSION: fusion.get_fusion_id_new(),
                     constants.MUTATION_EFFECT: fusion.get_mutation_effect(),
-                    constants.ONCOKB: fusion.get_oncokb_level()
+                    constants.ONCOKB: oncokb_level
                 }
                 rows.append(row)
         data = {
@@ -323,6 +327,7 @@ class clinical_report_json_composer(composer_base):
         return rows
 
     def build_json(self, out_dir):
+        # build the main JSON data structure
         data = {}
         data[constants.ASSAY_TYPE] = self.assay_type
         data[constants.AUTHOR] = self.author
@@ -422,7 +427,9 @@ class clinical_report_json_composer(composer_base):
             for row in reader:
                 total += 1
                 level = self.parse_oncokb_level(row)
-                if level != self.NA:
+                if level == self.UNKNOWN or self.is_null_string(level):
+                    continue
+                else:
                     oncogenic += 1
                     gene = row[self.HUGO_SYMBOL_UPPER_CASE]
                     cytoband = self.cytoband_map[gene] # TODO warn on missing cytoband
@@ -478,7 +485,7 @@ class clinical_report_json_composer(composer_base):
                     first = False
                 else:
                     [gene, category] = [row[0], int(row[1])]
-                    copy_states[gene] = copy_state_conversion.get(category, 'Unknown')
+                    copy_states[gene] = copy_state_conversion.get(category, self.UNKNOWN)
         return copy_states
 
     def read_oncokb_gene_summaries(self):
