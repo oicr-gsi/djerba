@@ -69,7 +69,10 @@ class TestBase(unittest.TestCase):
             self.config_user_failed,
             self.config_user_wgs_only_failed,
             self.config_full,
-            self.config_full_wgs_only
+            self.config_full_wgs_only,
+            self.config_full_reduced_maf_1,
+            self.config_full_reduced_maf_2,
+            self.config_full_reduced_maf_wgs_only,
         ] = self.write_config_files(self.tmp_dir)
 
     def tearDown(self):
@@ -90,7 +93,10 @@ class TestBase(unittest.TestCase):
                 'config_user_failed.ini',
                 'config_user_wgs_only_failed.ini',
                 'config_full.ini',
-                'config_full_wgs_only.ini'
+                'config_full_wgs_only.ini',
+                'config_full_reduced_maf_1.ini',
+                'config_full_reduced_maf_2.ini',
+                'config_full_reduced_maf_wgs_only.ini'
         ]:
             template_path = os.path.join(self.data_dir, name)
             out_path = os.path.join(output_dir, name)
@@ -604,9 +610,17 @@ class TestValidator(TestBase):
 
 class TestWrapper(TestBase):
 
-    def test_default(self):
+    def test_old_maf(self):
         config = configparser.ConfigParser()
-        config.read(self.config_full)
+        config.read(self.config_full_reduced_maf_1)
+        out_dir = self.tmp_dir
+        test_wrapper = r_script_wrapper(config, report_dir=out_dir, wgs_only=False)
+        result = test_wrapper.run()
+        self.assertEqual(0, result.returncode)
+
+    def test_new_maf(self):
+        config = configparser.ConfigParser()
+        config.read(self.config_full_reduced_maf_2)
         out_dir = self.tmp_dir
         test_wrapper = r_script_wrapper(config, report_dir=out_dir, wgs_only=False)
         result = test_wrapper.run()
@@ -614,7 +628,7 @@ class TestWrapper(TestBase):
 
     def test_wgs_only(self):
         config = configparser.ConfigParser()
-        config.read(self.config_full_wgs_only)
+        config.read(self.config_full_reduced_maf_wgs_only)
         out_dir = self.tmp_dir
         test_wrapper = r_script_wrapper(config, report_dir=out_dir, wgs_only=True)
         result = test_wrapper.run()

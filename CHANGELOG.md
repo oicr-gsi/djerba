@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+## Fixed
+- GCGI-352 Correctly process new MAF column indices
+
 ## v0.2.5: 2022-03-28
 
 ### Fixed

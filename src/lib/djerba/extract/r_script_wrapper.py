@@ -16,14 +16,21 @@ from djerba.util.logger import logger
 
 class r_script_wrapper(logger):
 
-    # 0-based indices for important MAF columns
-    VARIANT_CLASSIFICATION = 8
-    TUMOUR_SAMPLE_BARCODE = 15
-    MATCHED_NORM_SAMPLE_BARCODE = 16
-    T_DEPTH = 39
-    T_ALT_COUNT = 41
-    GNOMAD_AF = 123
-    ONCOGENIC = 136
+    # headers of important MAF columns
+    VARIANT_CLASSIFICATION = 'Variant_Classification'
+    TUMOUR_SAMPLE_BARCODE = 'Tumor_Sample_Barcode'
+    MATCHED_NORM_SAMPLE_BARCODE = 'Matched_Norm_Sample_Barcode'
+    T_DEPTH = 't_depth'
+    T_ALT_COUNT = 't_alt_count'
+    GNOMAD_AF = 'gnomAD_AF'
+    MAF_KEYS = [
+        VARIANT_CLASSIFICATION,
+        TUMOUR_SAMPLE_BARCODE,
+        MATCHED_NORM_SAMPLE_BARCODE,
+        T_DEPTH,
+        T_ALT_COUNT,
+        GNOMAD_AF
+    ]
 
     # 0-based index for GEP results file
     GENE_ID = 0
@@ -87,7 +94,6 @@ class r_script_wrapper(logger):
         if not self.min_fusion_reads.isdigit():
             msg = "Min fusion reads '{}' is not a non-negative integer".format(min_fusion_reads)
             raise ValueError(msg)
-        self.exclusions = [re.compile(x) for x in self.FILTER_FLAGS_EXCLUDE]
         with open(os.environ[self.ONCOKB_TOKEN_VARIABLE]) as token_file:
             self.oncokb_token = token_file.read().strip()
 
@@ -166,25 +172,41 @@ class r_script_wrapper(logger):
                 break
         return val
 
-    def _maf_body_row_ok(self, row):
+    def _maf_body_row_ok(self, row, ix):
         """
         Should a MAF row be kept for output?
         Implements logic from functions.sh -> hard_filter_maf() in CGI-Tools
         Expected to filter out >99.9% of input reads
+        ix is a dictionary of column indices
         """
-        # TODO check only relevant column(s) against self.exclusions?
+        # TODO check only relevant column(s) against FILTER_FLAGS_EXCLUDE?
         ok = False
-        row_t_depth = int(row[self.T_DEPTH])
-        row_t_alt_count = float(row[self.T_ALT_COUNT]) if row[self.T_ALT_COUNT]!='' else 0.0
-        row_gnomad_af = float(row[self.GNOMAD_AF]) if row[self.GNOMAD_AF]!='' else 0.0
-        is_matched = row[self.MATCHED_NORM_SAMPLE_BARCODE] != 'unmatched'
+        row_t_depth = int(row[ix.get(self.T_DEPTH)])
+        alt_count_raw = row[ix.get(self.T_ALT_COUNT)]
+        gnomad_af_raw = row[ix.get(self.GNOMAD_AF)]
+        row_t_alt_count = float(alt_count_raw) if alt_count_raw!='' else 0.0
+        row_gnomad_af = float(gnomad_af_raw) if gnomad_af_raw!='' else 0.0
+        is_matched = row[ix.get(self.MATCHED_NORM_SAMPLE_BARCODE)] != 'unmatched'
         if row_t_depth >= 1 and \
            row_t_alt_count/row_t_depth >= self.MIN_VAF and \
            (is_matched or row_gnomad_af < self.MAX_UNMATCHED_GNOMAD_AF) and \
-           row[self.VARIANT_CLASSIFICATION] in self.MUTATION_TYPES_EXONIC and \
-           not any([any([x.search(z) for x in self.exclusions]) for z in row]):
+           row[ix.get(self.VARIANT_CLASSIFICATION)] in self.MUTATION_TYPES_EXONIC and \
+           not any([z in self.FILTER_FLAGS_EXCLUDE for z in row]):
             ok = True
         return ok
+
+    def _read_maf_indices(self, row):
+        indices = {}
+        for i in range(len(row)):
+            key = row[i]
+            if key in self.MAF_KEYS:
+                indices[key] = i
+        if set(indices.keys()) != set(self.MAF_KEYS):
+            msg = "Indices found in MAF header {0} ".format(indices.keys()) +\
+                  "do not match required keys {0}".format(self.MAF_KEYS)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        return indices
 
     def _run_command(self, cmd, description, redact_oncokb=False):
         """
@@ -332,6 +354,9 @@ class r_script_wrapper(logger):
         """Apply preprocessing and annotation to a MAF file; write results to tmp_dir"""
         tmp_path = os.path.join(tmp_dir, 'tmp_maf.tsv')
         self.logger.info("Preprocessing MAF input")
+        # find the relevant indices on-the-fly from MAF column headers
+        # use this instead of csv.DictReader to preserve the rows for output
+
         with \
              gzip.open(maf_path, 'rt', encoding=constants.TEXT_ENCODING) as in_file, \
              open(tmp_path, 'wt') as tmp_file:
@@ -349,12 +374,13 @@ class r_script_wrapper(logger):
                     else:
                         # write the column headers without change
                         writer.writerow(row)
+                        indices = self._read_maf_indices(row)
                         in_header = False
                 else:
                     total += 1
-                    if self._maf_body_row_ok(row):
+                    if self._maf_body_row_ok(row, indices):
                         # filter rows in the MAF body and update the tumour_id
-                        row[self.TUMOUR_SAMPLE_BARCODE] = self.tumour_id
+                        row[indices.get(self.TUMOUR_SAMPLE_BARCODE)] = self.tumour_id
                         writer.writerow(row)
                         kept += 1
         self.logger.info("Kept {0} of {1} MAF data rows".format(kept, total))
