@@ -67,7 +67,7 @@ class extractor(logger):
         else:
             self.logger.debug("Purity OK")
         if ploidy != configured_ploidy:
-            msg = "Sequenza results path={0}, gamma={1}, solution={2} ".format((path, gamma, solution))+\
+            msg = "Sequenza results path={0}, gamma={1}, solution={2} ".format(path, gamma, solution)+\
                 "implies purity={0}, ".format(purity)+\
                 "but INI configured purity is {0}; ".format(configured_purity)+\
                 "configured purity value will be used."

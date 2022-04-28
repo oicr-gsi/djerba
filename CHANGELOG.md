@@ -4,6 +4,7 @@
 
 ## Fixed
 - GCGI-352 Correctly process new MAF column indices
+- GCGI-353 Fix purity/ploidy message
 
 ## v0.2.5: 2022-03-28
 
