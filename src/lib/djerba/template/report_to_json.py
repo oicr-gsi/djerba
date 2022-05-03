@@ -3,18 +3,20 @@
 """Read a Djerba 'report' directory and generate JSON for the Mako template"""
 
 import base64
-import constants # TODO rename, eg. to template_constants ?
+import constants
 import csv
 import json
+import logging
 import os
 import re
 import subprocess # TODO can use Djerba's subprocess wrappers
-import sys # TODO replace with argparse
+import sys # TODO remove along with main() method
 import pandas as pd
 import djerba.util.constants as djerba_constants
+from djerba.util.logger import logger
 from statsmodels.distributions.empirical_distribution import ECDF
 
-class composer_base:
+class composer_base(logger):
     # base class with shared methods and constants
 
     FDA_APPROVED_LEVELS = ['LEVEL_1', 'LEVEL_2', 'LEVEL_R1']
@@ -108,7 +110,9 @@ class clinical_report_json_composer(composer_base):
         'Likely Oncogenic'
     ]
 
-    def __init__(self, input_dir, author, assay_type, coverage=80, failed=False, purity_failure=False):
+    def __init__(self, input_dir, author, assay_type, coverage=80, failed=False, purity_failure=False,
+                 log_level=logging.WARNING, log_path=None):
+        self.logger = self.get_logger(log_level, __name__, log_path)
         self.input_dir = input_dir
         self.all_reported_variants = set()
         self.assay_type = assay_type
@@ -125,7 +129,7 @@ class clinical_report_json_composer(composer_base):
         self.cytoband_map = self.read_cytoband_map()
         self.total_somatic_mutations = self.read_total_somatic_mutations()
         self.total_oncogenic_somatic_mutations = self.read_total_oncogenic_somatic_mutations()
-        fus_reader = fusion_reader(input_dir)
+        fus_reader = fusion_reader(input_dir, log_level=log_level, log_path=log_path)
         self.total_fusion_genes = fus_reader.get_total_fusion_genes()
         self.gene_pair_fusions = fus_reader.get_fusions()
 
@@ -215,7 +219,7 @@ class clinical_report_json_composer(composer_base):
         with open(os.path.join(self.input_dir, self.MUTATIONS_EXTENDED_ONCOGENIC)) as data_file:
             for input_row in csv.DictReader(data_file, delimiter="\t"):
                 gene = input_row[self.HUGO_SYMBOL_TITLE_CASE]
-                cytoband = self.cytoband_map[gene] # TODO warn on missing cytoband
+                cytoband = self.get_cytoband(gene)
                 self.all_reported_variants.add((gene, cytoband))
                 protein = input_row[self.HGVSP_SHORT]
                 row = {
@@ -249,7 +253,7 @@ class clinical_report_json_composer(composer_base):
                 continue # skip non-oncogenic fusions
             oncogenic_fusion_genes += 2
             for gene in fusion.get_genes():
-                cytoband = self.cytoband_map[gene] # TODO warn on missing cytoband
+                cytoband = self.get_cytoband(gene)
                 self.all_reported_variants.add((gene, cytoband))
                 row =  {
                     constants.GENE: gene,
@@ -349,8 +353,15 @@ class clinical_report_json_composer(composer_base):
         data[constants.FAILED] = self.failed
         data[constants.PURITY_FAILURE] = self.purity_failure
         data[constants.REPORT_DATE] = None
+        self.logger.info("Finished building clinical report data structure for JSON output")
         return data
 
+    def get_cytoband(self, gene_name):
+        cytoband = self.cytoband_map.get(gene_name)
+        if not cytoband:
+            cytoband = 'Unknown'
+            self.logger.warn("Unknown cytoband for gene '{0}'".format(gene_name))
+        return cytoband
 
     def image_to_json_string(self, image_path, image_type='jpeg'):
         # read a jpeg file into base64 with JSON prefix
@@ -432,7 +443,7 @@ class clinical_report_json_composer(composer_base):
                 else:
                     oncogenic += 1
                     gene = row[self.HUGO_SYMBOL_UPPER_CASE]
-                    cytoband = self.cytoband_map[gene] # TODO warn on missing cytoband
+                    cytoband = self.get_cytoband(gene)
                     self.all_reported_variants.add((gene, cytoband))
                     variant = {
                         constants.GENE: gene,
@@ -520,23 +531,36 @@ class clinical_report_json_composer(composer_base):
 
     def run(self, out_dir):
         # main method to generate and write JSON
+        # TODO finer control of output paths; may wish to write TMB/VAF plots to a tempdir
+        out_dir = os.path.realpath(out_dir)
+        self.logger.info("Building clinical report data with output to {0}".format(out_dir))
         data = self.build_json(out_dir)
-        self.write_human_readable(data, os.path.join(out_dir, 'djerba_report_human.json'))
-        self.write_machine_readable(data, os.path.join(out_dir, 'djerba_report_machine.json'))
+        human_path = os.path.join(out_dir, 'djerba_report_human.json')
+        machine_path = os.path.join(out_dir, 'djerba_report_machine.json')
+        self.write_human_readable(data, human_path)
+        self.logger.info("Wrote human-readable JSON output to {0}".format(human_path))
+        self.write_machine_readable(data, machine_path)
+        self.logger.info("Wrote machine-readable JSON output to {0}".format(machine_path))
+        self.logger.info("Finished.")
 
     def sort_by_oncokb_level(self, rows):
         # sort table rows from highest to lowest oncoKB level
         def oncokb_order(level):
-            # find numeric order for an oncokb level
-            # if level not found, return the highest order (last in sort)
-            # TODO warn if unknown level
-            order = 0
+            # find numeric sort order for an oncokb level; error if level is unknown
+            order = -1
             for output_level in self.ALL_ONCOKB_OUTPUT_LEVELS:
+                order += 1
                 if level == output_level:
                     break
-                order += 1
+            if order == -1:
+                raise RuntimeError("Unknown OncoKB level '{0}'".format(level))
             return order
-        return sorted(rows, key=lambda row: oncokb_order(row[constants.ONCOKB]))
+        try:
+            sorted_rows = sorted(rows, key=lambda row: oncokb_order(row[constants.ONCOKB]))
+        except RuntimeError as err:
+            self.logger.error("Error in OncoKB level sort: {0}".format(err))
+            raise
+        return sorted_rows
 
     def treatment_row(self, genes_arg, alteration, max_level, therapies):
         # genes argument may be a string, or an iterable of strings
@@ -582,6 +606,7 @@ class clinical_report_json_composer(composer_base):
             '-t', str(tmb)
         ]
         subprocess.run(args, check=True)
+        self.logger.info("Wrote TMB plot to {0}".format(out_path))
         return out_path
 
     def write_vaf_plot(self, out_dir):
@@ -592,6 +617,7 @@ class clinical_report_json_composer(composer_base):
             '-o', out_path
         ]
         subprocess.run(args, check=True)
+        self.logger.info("Wrote VAF plot to {0}".format(out_path))
         return out_path
 
 class fusion_reader(composer_base):
@@ -603,22 +629,33 @@ class fusion_reader(composer_base):
     FUSION_INDEX = 4
     HUGO_SYMBOL = 'Hugo_Symbol'
 
-    def __init__(self, input_dir):
+    def __init__(self, input_dir, log_level=logging.WARNING, log_path=None):
+        self.logger = self.get_logger(log_level, __name__, log_path)
         self.input_dir = input_dir
         self.old_to_new_delimiter = self.read_fusion_delimiter_map()
         fusion_data = self.read_fusion_data()
         annotations = self.read_annotation_data()
         if set(fusion_data.keys()) != set(annotations.keys()):
-            # TODO log this error
-            raise RuntimeError("Distinct fusion identifiers and annotations do not match")
-        self.fusions = []
+            msg = "Distinct fusion identifiers and annotations do not match"
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        [self.fusions, self.total_fusion_genes] = self._collate_row_data(fusion_data, annotations)
+
+    def _collate_row_data(self, fusion_data, annotations):
+        fusions = []
         fusion_genes = set()
+        self.logger.debug("Starting to collate fusion table data.")
+        intragenic = 0
         for fusion_id in fusion_data.keys():
             if len(fusion_data[fusion_id])==1:
                 # add intragenic fusions to the gene count, then skip
-                # TODO warn if 3 or more fusions with same name?
                 fusion_genes.add(fusion_data[fusion_id][0][self.HUGO_SYMBOL])
+                intragenic += 1
                 continue
+            elif len(fusion_data[fusion_id]) >= 3:
+                msg = "More than 2 fusions with the same name: {0}".format(fusion_id)
+                self.logger.error(msg)
+                raise RuntimeError(msg)
             gene1 = fusion_data[fusion_id][0][self.HUGO_SYMBOL]
             gene2 = fusion_data[fusion_id][1][self.HUGO_SYMBOL]
             fusion_genes.add(gene1)
@@ -631,7 +668,7 @@ class fusion_reader(composer_base):
             [fda_level, fda_therapies] = fda
             inv = self.parse_max_oncokb_level_and_therapies(ann, self.INVESTIGATIONAL_LEVELS)
             [inv_level, inv_therapies] = inv
-            self.fusions.append(
+            fusions.append(
                 fusion(
                     fusion_id,
                     self.old_to_new_delimiter[fusion_id],
@@ -646,7 +683,13 @@ class fusion_reader(composer_base):
                     inv_therapies
                 )
             )
-        self.total_fusion_genes = len(fusion_genes)
+        total = len(fusions)
+        total_fusion_genes = len(fusion_genes)
+        msg = "Finished collating fusion table data. "+\
+              "Found {0} fusion rows for {1} distinct genes; ".format(total, total_fusion_genes)+\
+              "excluded {0} intragenic rows.".format(intragenic)
+        self.logger.info(msg)
+        return [fusions, total_fusion_genes]
 
     def get_fusions(self):
         return self.fusions
@@ -754,7 +797,7 @@ def main():
     out_dir = sys.argv[2]
     author = "Emmett Brown"
     assay_type = 'WGTS'
-    clinical_report_json_composer(report_dir, author, assay_type).run(out_dir)
+    clinical_report_json_composer(report_dir, author, assay_type, log_level=logging.INFO).run(out_dir)
 
 if __name__ == '__main__':
     main()
