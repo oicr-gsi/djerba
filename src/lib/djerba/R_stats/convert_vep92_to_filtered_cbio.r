@@ -70,6 +70,10 @@ procVEP <- function(datafile){
                         "PASS",
                         df_anno$FILTER)
 
+ df_anno$FILTER <- gsub("^clustered_events;common_variant$",
+                        "PASS",
+                        df_anno$FILTER)
+
  df_anno$FILTER <- gsub("^common_variant$",
                         "PASS",
                         df_anno$FILTER)
