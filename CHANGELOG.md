@@ -5,6 +5,17 @@
 ### Added
 - GCGI-291 Replace Rmarkdown with Mako template
 
+## v0.2.7: 2022-05-03
+
+### Fixed
+- GCGI-354 Update MAF filter to retain `clustered_events;common_variant`
+
+## v0.2.6: 2022-04-28
+
+### Fixed
+- GCGI-352 Correctly process new MAF column indices
+- GCGI-353 Fix purity/ploidy message
+
 ## v0.2.5: 2022-03-28
 
 ### Fixed
