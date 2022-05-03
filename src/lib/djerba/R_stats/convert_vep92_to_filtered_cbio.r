@@ -83,16 +83,6 @@ procVEP <- function(datafile){
                         df_anno$FILTER,
                         fixed=TRUE)
 
- # some specific filter flags should be rescued if oncogenic (ie. EGFR had issues here)
- print("--- another small change to filters ---") 
- df_anno <- transform(df_anno,
-  FILTER = ifelse(oncogenic_binary == "YES" &
-                 (FILTER == "triallelic_site" | 
-                  FILTER == "clustered_events;triallelic_site" |
-                  FILTER == "clustered_events;homologous_mapping_event"),
-                  "PASS", df_anno$FILTER)
- )
-
  # Artifact Filter
  print("--- artifact filter ---") 
  df_anno <- transform(df_anno,
