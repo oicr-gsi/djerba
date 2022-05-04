@@ -17,7 +17,6 @@ import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 from djerba.configure import archiver, configurer, log_r_cutoff_finder
 from djerba.extract.extractor import extractor
-from djerba.extract.report_directory_parser import report_directory_parser
 from djerba.extract.r_script_wrapper import r_script_wrapper
 from djerba.lister import lister
 from djerba.main import main
@@ -174,7 +173,7 @@ class TestExtractor(TestBase):
         out_dir = '/u/ibancarz/workspace/djerba/test_20220504_01/report_example'
         clinical_data_path = os.path.join(out_dir, 'data_clinical.txt')
         test_extractor = extractor(config, out_dir, wgs_only, failed, log_level=logging.ERROR)
-        # do not test R script or JSON here; done respectively by TestWrapper and TestReport
+        # do not test R script here; see TestWrapper
         test_extractor.run(r_script=False)
         expected_md5 = {
             'data_clinical.txt': '02003366977d66578c097295f12f4638',
@@ -422,17 +421,6 @@ class TestRender(TestBase):
         # Compare file contents; timestamps will differ. TODO Make this more Pythonic.
         result = subprocess.run("cat {0} | grep -av CreationDate | md5sum | cut -f 1 -d ' '".format(pdf_path), shell=True, capture_output=True)
         self.assertEqual(str(result.stdout, encoding=constants.TEXT_ENCODING).strip(), '8213bfad2518570c26c9baef746b0b22')
-
-class TestReport(TestBase):
-
-    def test_parser(self):
-        report_dir = os.path.join(self.sup_dir, 'report_example')
-        parser = report_directory_parser(report_dir)
-        summary = parser.get_summary()
-        expected_path = os.path.join(self.sup_dir, 'expected_summary.json.gz')
-        with gzip.open(expected_path) as expected_file:
-            expected = json.loads(expected_file.read())
-        self.assertEqual(summary, expected)
 
 class TestSequenzaReader(TestBase):
 

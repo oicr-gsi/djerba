@@ -141,8 +141,10 @@ class extractor(logger):
         self.write_clinical_data(self.get_description())
         self.write_genomic_summary()
         self.logger.info("Building JSON summary")
+        # TODO modify composer to run correctly in failed mode (clinical data & genomic summary only)
         composer = clinical_report_json_composer(self.report_dir, self.author, self.assay_type)
         composer.run(self.report_dir)
+        # TODO change the JSON output directory?
         # TODO archive the JSON output
         self.logger.info("Djerba extract step finished; extracted metrics written to {0}".format(self.report_dir))
 
