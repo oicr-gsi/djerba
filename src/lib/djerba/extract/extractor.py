@@ -12,6 +12,7 @@ from shutil import copyfile
 from djerba.extract.report_to_json import clinical_report_json_composer
 from djerba.extract.r_script_wrapper import r_script_wrapper
 from djerba.sequenza import sequenza_reader
+import djerba.render.constants as render_constants
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 from djerba.util.logger import logger
@@ -19,17 +20,24 @@ from djerba.util.logger import logger
 class extractor(logger):
     """
     Extract the clinical report data from input configuration
-    To start with, mostly a wrapper for the legacy R script singleSample.r
-    Output: Directory of .txt and .tsv files for downstream processing
-    Later on, will replace R script functionality with Python, and output JSON
+    Includes a wrapper for the legacy R script singleSample.r
+    Output:
+    - "Report directory" of .txt and .tsv files
+    - JSON file derived from report directory, for archiving and HTML rendering
     """
 
     CANCER_TYPE = 'cancer_type'
     CANCER_TYPE_DESCRIPTION = 'cancer_description'
 
-    def __init__(self, config, report_dir, wgs_only, failed, log_level=logging.WARNING, log_path=None):
+    def __init__(self, config, report_dir, author, wgs_only, failed,
+                 log_level=logging.WARNING, log_path=None):
         self.config = config
+        self.author = author
         self.wgs_only = wgs_only
+        if self.wgs_only:
+            self.assay_type = render_constants.ASSAY_WGS
+        else:
+            self.assay_type = render_constants.ASSAY_WGTS
         self.failed = failed
         self.log_level = log_level
         self.log_path = log_path
@@ -46,8 +54,6 @@ class extractor(logger):
             self.logger.debug("Failed report mode; omitting check on sequenza params")
         else:
             self._check_sequenza_params()
-        self.author = 'PLACEHOLDER' # TODO fix this
-        self.assay_type = 'WGTS' # TODO make this configurable
 
     def _check_sequenza_params(self):
         """Check that configured purity/ploidy are consistent with Sequenza results; warn if not"""
@@ -142,9 +148,9 @@ class extractor(logger):
         self.write_genomic_summary()
         self.logger.info("Building JSON summary")
         # TODO modify composer to run correctly in failed mode (clinical data & genomic summary only)
+        # TODO FIXME input the coverage depth; was input to HTML rendering
         composer = clinical_report_json_composer(self.report_dir, self.author, self.assay_type)
-        composer.run(self.report_dir)
-        # TODO change the JSON output directory?
+        composer.run(self.report_dir) # write JSON output to the report directory
         # TODO archive the JSON output
         self.logger.info("Djerba extract step finished; extracted metrics written to {0}".format(self.report_dir))
 
