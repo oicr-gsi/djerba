@@ -136,11 +136,12 @@ class main(logger):
         elif self.args.subparser_name == constants.EXTRACT:
             config = self.read_config(self.args.ini)
             cv.validate_full(config)
-            extractor(config, self.args.dir, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(self.args.json)
+            extractor(config, self.args.dir, self._get_author(), self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run()
         elif self.args.subparser_name == constants.HTML:
+            args_path = os.path.join(self.args.dir, constants.REPORT_MACHINE_FILENAME)
             html_path = self._get_html_path()
-            hr = html_renderer(self.args.wgs_only, self.args.failed, self.log_level, self.log_path)
-            hr.run(self.args.dir, html_path, self.args.target_coverage, self._get_author())
+            hr = html_renderer(self.log_level, self.log_path)
+            hr.run(args_path, html_path)
             if self.args.pdf:
                 patient_id = self._get_patient_study_id(self.args.dir)
                 pdf_path = self._get_pdf_path(patient_id)

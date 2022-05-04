@@ -8,7 +8,7 @@ import sys
 
 sys.path.pop(0) # do not import from script directory
 
-from djerba.render import pdf_renderer
+from djerba.render.render import pdf_renderer
 from djerba.util.validator import path_validator
 
 def get_parser():

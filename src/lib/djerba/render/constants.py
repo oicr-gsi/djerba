@@ -18,7 +18,7 @@ VAF_PLOT = 'vaf_plot'
 FAILED = 'failed'
 PURITY_FAILURE = 'purity_failure'
 ASSAY_WGTS = 'WGTS'
-ASSAY_WTS = 'WTS'
+ASSAY_WGS = 'WGS'
 REPORT_DATE = 'report_date'
 
 # constants for the patient info table

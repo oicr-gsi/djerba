@@ -12,6 +12,8 @@ TMB_PER_MB_KEY = 'TMB_PER_MB'
 CLINICAL_DATA_FILENAME = 'data_clinical.txt'
 GENOMIC_SUMMARY_FILENAME = 'genomic_summary.txt'
 SEQUENZA_META_FILENAME = 'sequenza_meta.txt'
+REPORT_HUMAN_FILENAME = 'djerba_report_human.json'
+REPORT_MACHINE_FILENAME = 'djerba_report_machine.json'
 
 # Gene attributes to parse R script results
 COPY_STATE = 'Copy_State'

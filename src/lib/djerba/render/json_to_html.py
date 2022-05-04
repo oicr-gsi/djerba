@@ -1,6 +1,6 @@
 """collection of functions for rendering Djerba content in Mako"""
 
-import djerba.template.constants as constants
+import djerba.render.constants as constants
 import re
 import sys
 from time import strftime
