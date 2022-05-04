@@ -98,12 +98,9 @@ class extractor(logger):
         ct = set() # set of distinct CANCER_TYPE strings
         ctd = set() # set of distinct CANCER_TYPE_DESCRIPTION strings
         with open(oncotree_path) as oncotree_file:
+            oncotree_file.readline() # skip the header row
             reader = csv.reader(oncotree_file, delimiter="\t")
-            first = True
             for row in reader:
-                if first: # skip the header row
-                    first = False
-                    continue
                 for i in range(7):
                     if oncotree_regex.search(row[i]):
                         ct.add(self._remove_oncotree_suffix(row[0]))

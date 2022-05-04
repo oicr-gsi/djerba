@@ -4,14 +4,13 @@ import json
 import logging
 import os
 import re
-import subprocess
 from configparser import ConfigParser
-from subprocess import CalledProcessError
 from shutil import copyfile, which
 
 import djerba.util.constants as constants
 from djerba.configure import provenance_reader
 from djerba.util.logger import logger
+from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.validator import path_validator
 
 class mavis_runner(logger):
@@ -62,6 +61,7 @@ class mavis_runner(logger):
             # we are verifying the log path, so don't write output there yet
             path_validator(self.log_level).validate_output_file(self.log_path)
         self.logger = self.get_logger(self.log_level, __name__, self.log_path)
+        self.runner = subprocess_runner(self.log_level, self.log_path)
         self.data_dir = os.path.join(os.path.dirname(__file__), constants.DATA_DIR_NAME)
         self.legacy = self.args.legacy
         self.wait_script = which(self.WAIT_SCRIPT_NAME)
@@ -153,7 +153,7 @@ class mavis_runner(logger):
             self.logger.info("Dry-run mode, omitting command: {0}".format(run_command))
             cromwell_job_id = 'DRY-RUN'
         else:
-            result = self.run_subprocess(run_command)
+            result = self.runner.run(run_command, 'Mavis workflow on Cromwell server')
             # extract cromwell job ID from output
             cromwell_job_id = None
             words = result.stdout.split()
@@ -184,7 +184,7 @@ class mavis_runner(logger):
         if self.dry_run:
             self.logger.info("Dry-run mode, omitting command: {0}".format(wait_command))
         else:
-            result = self.run_subprocess(wait_command)
+            result = self.runner.run(wait_command, 'Mavis wait script')
 
     def find_inputs(self):
         """Find Mavis inputs from file provenance"""
@@ -220,13 +220,11 @@ class mavis_runner(logger):
         dest = os.path.join(self.work_dir, os.path.basename(inputs[self.DELLY]))
         unfiltered_delly = copyfile(inputs[self.DELLY], dest)
         filtered_delly = os.path.join(self.work_dir, self.FILTERED_DELLY)
-        self.logger.debug("Filtering delly input")
         # quotes are not needed around the %FILTER... string because subprocess does not use a shell
         filter_command = ["bcftools", "view", "-i", "%FILTER='PASS'", unfiltered_delly, "-Oz", "-o", filtered_delly]
-        self.run_subprocess(filter_command)
-        self.logger.debug("Indexing filtered delly input")
+        self.runner.run(filter_command, 'Delly input filter')
         index_command = ["tabix", "-p", "vcf", filtered_delly]
-        self.run_subprocess(index_command)
+        self.runner.run(index_command, 'index on filtered delly input')
         local[self.DELLY] = filtered_delly
         self.logger.info("Input files in {0} are ready".format(self.work_dir))
         return local
@@ -252,21 +250,6 @@ class mavis_runner(logger):
             action += 2
         self.logger.info("Finished.")
         return action
-
-    def run_subprocess(self, command):
-        """Run command as a subprocess; input should be a list of strings"""
-        self.logger.info("Running subprocess command: {0}".format(command))
-        self.logger.debug("Command string: "+" ".join(command))
-        result = subprocess.run(command, capture_output=True, encoding=constants.TEXT_ENCODING)
-        self.logger.debug("STDOUT: '{0}'".format(result.stdout))
-        self.logger.debug("STDERR: '{0}'".format(result.stderr))
-        try:
-            result.check_returncode()
-        except CalledProcessError as err:
-            self.logger.error("Subprocess command failed: {0}".format(err))
-            raise
-        self.logger.info("Subprocess command done.")
-        return result
 
     def write_config(self, inputs):
         """

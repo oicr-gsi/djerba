@@ -1,5 +1,6 @@
 """Base class with method to run a subprocess"""
 
+import logging
 import subprocess
 from collections import Iterable
 from djerba.util.logger import logger
@@ -10,7 +11,8 @@ class subprocess_runner(logger):
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
 
-    def run_subprocess(self, command, description='subprocess', redact=[]):
+    def run(self, command, description='subprocess', redact=[]):
+        msg = None
         if isinstance(command, str) or not isinstance(command, Iterable):
             msg = "Command must be a non-string iterable: Received {0}".format(command)
             self.logger.error(msg)
@@ -30,7 +32,7 @@ class subprocess_runner(logger):
         stderr = result.stderr.decode(constants.TEXT_ENCODING)
         try:
             result.check_returncode()
-        except CalledProcessError as err:
+        except subprocess.CalledProcessError as err:
             self.logger.error("Failed to run {0}: {1}".format(description, err))
             self.logger.error("{0} STDOUT: '{1}'".format(description, stdout))
             self.logger.error("{0} STDERR: '{1}'".format(description, stderr))

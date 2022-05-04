@@ -9,11 +9,11 @@ import json
 import logging
 import os
 import re
-import subprocess # TODO can use Djerba's subprocess wrappers
 import sys # TODO remove along with main() method
 import pandas as pd
 import djerba.util.constants as djerba_constants
 from djerba.util.logger import logger
+from djerba.util.subprocess_runner import subprocess_runner
 from statsmodels.distributions.empirical_distribution import ECDF
 
 class composer_base(logger):
@@ -112,6 +112,8 @@ class clinical_report_json_composer(composer_base):
 
     def __init__(self, input_dir, author, assay_type, coverage=80, failed=False, purity_failure=False,
                  log_level=logging.WARNING, log_path=None):
+        self.log_level = log_level
+        self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.input_dir = input_dir
         self.all_reported_variants = set()
@@ -605,7 +607,7 @@ class clinical_report_json_composer(composer_base):
             '-o', out_path,
             '-t', str(tmb)
         ]
-        subprocess.run(args, check=True)
+        subprocess_runner(self.log_level, self.log_path).run(args)
         self.logger.info("Wrote TMB plot to {0}".format(out_path))
         return out_path
 
@@ -616,7 +618,7 @@ class clinical_report_json_composer(composer_base):
             '-d', self.input_dir,
             '-o', out_path
         ]
-        subprocess.run(args, check=True)
+        subprocess_runner(self.log_level, self.log_path).run(args)
         self.logger.info("Wrote VAF plot to {0}".format(out_path))
         return out_path
 

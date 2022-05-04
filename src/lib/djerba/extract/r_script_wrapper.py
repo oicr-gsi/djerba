@@ -5,14 +5,13 @@ import gzip
 import logging
 import os
 import re
-import subprocess
 import tempfile
 import zipfile
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
-from subprocess import CalledProcessError
 from djerba.sequenza import sequenza_reader
 from djerba.util.logger import logger
+from djerba.util.subprocess_runner import subprocess_runner
 
 class r_script_wrapper(logger):
 
@@ -83,6 +82,7 @@ class r_script_wrapper(logger):
                  log_level=logging.WARNING, log_path=None):
         self.config = config
         self.logger = self.get_logger(log_level, __name__, log_path)
+        self.runner = subprocess_runner(log_level, log_path)
         self.r_script_dir = os.path.join(os.path.dirname(__file__), '..', 'R_stats')
         self.wgs_only = wgs_only
         self.supplied_tmp_dir = tmp_dir # may be None
@@ -108,7 +108,7 @@ class r_script_wrapper(logger):
             '-c', info_path,
             '-b', self.oncokb_token
         ]
-        self._run_command(cmd, 'CNA annotator', redact_oncokb=True)
+        self._run_annotator_script(cmd, 'CNA annotator')
         return out_path
 
     def _annotate_fusion(self, info_path):
@@ -137,7 +137,7 @@ class r_script_wrapper(logger):
                 '-c', info_path,
                 '-b', self.oncokb_token
             ]
-            self._run_command(cmd, 'fusion annotator', redact_oncokb=True)
+            self._run_annotator_script(cmd, 'fusion annotator')
         return out_path
 
     def _annotate_maf(self, in_path, tmp_dir, info_path):
@@ -150,7 +150,7 @@ class r_script_wrapper(logger):
             '-c', info_path,
             '-b', self.oncokb_token
         ]
-        self._run_command(cmd, 'MAF annotator', redact_oncokb=True)
+        self._run_annotator_script(cmd, 'MAF annotator')
         return out_path
 
     def _get_config_field(self, name):
@@ -208,32 +208,9 @@ class r_script_wrapper(logger):
             raise RuntimeError(msg)
         return indices
 
-    def _run_command(self, cmd, description, redact_oncokb=False):
-        """
-        Run a command as a subprocess and log the result.
-        If redact_oncokb==True, redact the oncokb access token from logging.
-        """
-        cmd_redacted = cmd.copy()
-        if redact_oncokb:
-            for i in range(len(cmd_redacted)):
-                if cmd_redacted[i] == '-b':
-                    cmd_redacted[i+1] = '***ONCOKB_TOKEN_REDACTED***'
-                    break
-        self.logger.info("Running {0}: '{1}'".format(description, ' '.join(cmd_redacted)))
-        result = subprocess.run(cmd, capture_output=True)
-        stdout = result.stdout.decode(constants.TEXT_ENCODING)
-        stderr = result.stderr.decode(constants.TEXT_ENCODING)
-        try:
-            result.check_returncode()
-        except CalledProcessError as err:
-            self.logger.error("Failed to run {0}: {1}".format(description, err))
-            self.logger.error("{0} STDOUT: '{1}'".format(description, stdout))
-            self.logger.error("{0} STDERR: '{1}'".format(description, stderr))
-            raise
-        self.logger.info("Successfully ran {0}".format(description))
-        self.logger.debug("{0} STDOUT: '{1}'".format(description, stdout))
-        self.logger.debug("{0} STDERR: '{1}'".format(description, stderr))
-        return result
+    def _run_annotator_script(self, command, description):
+        """Redact the OncoKB token (-b argument) from logging"""
+        self.runner.run(command, description, ['-b',])
 
     def _write_clinical_data(self):
         headers = [
@@ -356,7 +333,6 @@ class r_script_wrapper(logger):
         self.logger.info("Preprocessing MAF input")
         # find the relevant indices on-the-fly from MAF column headers
         # use this instead of csv.DictReader to preserve the rows for output
-
         with \
              gzip.open(maf_path, 'rt', encoding=constants.TEXT_ENCODING) as in_file, \
              open(tmp_path, 'wt') as tmp_file:
@@ -448,7 +424,7 @@ class r_script_wrapper(logger):
                 '--gepfile', gep_path,
                 '--fusfile', fus_path,
             ])
-        result = self._run_command(cmd, "main R script")
+        result = self.runner.run(cmd, "main R script")
         self.postprocess(oncokb_info)
         if self.supplied_tmp_dir == None:
             tmp.cleanup()
