@@ -11,8 +11,8 @@ from shutil import copyfile
 import djerba.util.constants as constants
 from djerba.configure import configurer
 from djerba.extract.extractor import extractor
-from djerba.render import html_renderer
-from djerba.render import pdf_renderer
+from djerba.render.render import html_renderer
+from djerba.render.render import pdf_renderer
 from djerba.util.logger import logger
 from djerba.util.validator import config_validator, path_validator
 

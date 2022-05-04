@@ -9,8 +9,8 @@ import re
 import time
 from shutil import copyfile
 
+from djerba.extract.report_to_json import clinical_report_json_composer
 from djerba.extract.r_script_wrapper import r_script_wrapper
-from djerba.extract.report_directory_parser import report_directory_parser
 from djerba.sequenza import sequenza_reader
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
@@ -46,6 +46,8 @@ class extractor(logger):
             self.logger.debug("Failed report mode; omitting check on sequenza params")
         else:
             self._check_sequenza_params()
+        self.author = 'PLACEHOLDER' # TODO fix this
+        self.assay_type = 'WGTS' # TODO make this configurable
 
     def _check_sequenza_params(self):
         """Check that configured purity/ploidy are consistent with Sequenza results; warn if not"""
@@ -126,7 +128,7 @@ class extractor(logger):
         }
         return description
 
-    def run(self, json_path=None, r_script=True):
+    def run(self, r_script=True):
         """Run extraction and write output"""
         self.logger.info("Djerba extract step started")
         if self.failed:
@@ -136,10 +138,12 @@ class extractor(logger):
             if r_script:
                 self.run_r_script() # can omit the R script for testing
             self.write_sequenza_meta()
-            if json_path:
-                self.write_json_summary(json_path)
         self.write_clinical_data(self.get_description())
         self.write_genomic_summary()
+        self.logger.info("Building JSON summary")
+        composer = clinical_report_json_composer(self.report_dir, self.author, self.assay_type)
+        composer.run(self.report_dir)
+        # TODO archive the JSON output
         self.logger.info("Djerba extract step finished; extracted metrics written to {0}".format(self.report_dir))
 
     def run_r_script(self):
@@ -222,10 +226,6 @@ class extractor(logger):
         with open(out_path, 'w') as out_file:
             print("\t".join(keys), file=out_file)
             print("\t".join([str(meta[k]) for k in keys]), file=out_file)
-
-    def write_json_summary(self, out_path):
-        """Write a JSON summary of extracted data"""
-        report_directory_parser(self.report_dir).write_json(out_path)
 
 class maf_extractor:
 

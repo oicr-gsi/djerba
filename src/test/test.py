@@ -22,7 +22,7 @@ from djerba.extract.r_script_wrapper import r_script_wrapper
 from djerba.lister import lister
 from djerba.main import main
 from djerba.mavis import mavis_runner
-from djerba.render import html_renderer, pdf_renderer
+from djerba.render.render import html_renderer, pdf_renderer
 from djerba.sequenza import sequenza_reader, SequenzaError
 from djerba.util.validator import config_validator, DjerbaConfigError
 
@@ -170,16 +170,18 @@ class TestExtractor(TestBase):
         config = configparser.ConfigParser()
         config.read(self.default_ini)
         config.read(user_config)
-        out_dir = self.tmp_dir
+        #out_dir = self.tmp_dir
+        out_dir = '/u/ibancarz/workspace/djerba/test_20220504_01/report_example'
         clinical_data_path = os.path.join(out_dir, 'data_clinical.txt')
-        summary_path = os.path.join(out_dir, 'summary.json')
         test_extractor = extractor(config, out_dir, wgs_only, failed, log_level=logging.ERROR)
         # do not test R script or JSON here; done respectively by TestWrapper and TestReport
-        test_extractor.run(json_path=None, r_script=False)
+        test_extractor.run(r_script=False)
         expected_md5 = {
             'data_clinical.txt': '02003366977d66578c097295f12f4638',
-            'genomic_summary.txt': 'c84eec523dbc81f4fc7b08860ab1a47f'
+            'genomic_summary.txt': 'c84eec523dbc81f4fc7b08860ab1a47f',
+            'djerba_report_human.json': '7a51767419e456fb82ada1d35255f0f0',
         }
+        # not checking machine JSON for now -- JPEG/PNG contents not deterministic
         for filename in expected_md5.keys():
             output_path = os.path.join(out_dir, filename)
             self.assertTrue(os.path.exists(output_path))

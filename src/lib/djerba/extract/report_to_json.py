@@ -3,7 +3,6 @@
 """Read a Djerba 'report' directory and generate JSON for the Mako template"""
 
 import base64
-import constants
 import csv
 import json
 import logging
@@ -11,6 +10,7 @@ import os
 import re
 import sys # TODO remove along with main() method
 import pandas as pd
+import djerba.render.constants as constants
 import djerba.util.constants as djerba_constants
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
@@ -127,7 +127,7 @@ class clinical_report_json_composer(composer_base):
         self.closest_tcga_uc = self.clinical_data['CLOSEST_TCGA'].upper()
         self.data_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], djerba_constants.DATA_DIR_NAME)
         self.r_script_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], 'R_plots')
-        self.html_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], 'template', 'html')
+        self.html_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], 'render', 'html')
         self.cytoband_map = self.read_cytoband_map()
         self.total_somatic_mutations = self.read_total_somatic_mutations()
         self.total_oncogenic_somatic_mutations = self.read_total_oncogenic_somatic_mutations()
@@ -638,7 +638,9 @@ class fusion_reader(composer_base):
         fusion_data = self.read_fusion_data()
         annotations = self.read_annotation_data()
         if set(fusion_data.keys()) != set(annotations.keys()):
-            msg = "Distinct fusion identifiers and annotations do not match"
+            msg = "Distinct fusion identifiers and annotations do not match. "+\
+                  "Fusion data: {0}; ".format(sorted(list(set(fusion_data.keys()))))+\
+                  "Annotations: {0}".format(sorted(list(set(annotations.keys()))))
             self.logger.error(msg)
             raise RuntimeError(msg)
         [self.fusions, self.total_fusion_genes] = self._collate_row_data(fusion_data, annotations)
@@ -712,7 +714,8 @@ class fusion_reader(composer_base):
         data_by_fusion = {}
         with open(os.path.join(self.input_dir, self.DATA_FUSIONS_OLD)) as data_file:
             for row in csv.DictReader(data_file, delimiter="\t"):
-                fusion_id = row['Fusion']
+                # make fusion ID consistent with format in annotated file
+                fusion_id = re.sub('None', 'intragenic', row['Fusion'])
                 if fusion_id in data_by_fusion:
                     data_by_fusion[fusion_id].append(row)
                 else:
