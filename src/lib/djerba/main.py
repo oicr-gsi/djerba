@@ -169,7 +169,6 @@ class main(logger):
         """Run all Djerba operations in sequence"""
         with tempfile.TemporaryDirectory(prefix='djerba_all_') as tmp:
             ini_path_full = self.args.ini_out if self.args.ini_out else os.path.join(tmp, 'djerba_config_full.ini')
-            json_path = os.path.realpath(self.args.json) if self.args.json else None
             report_dir = os.path.realpath(self.args.dir)
             archive = not self.args.no_archive # True if archiving is in effect
             configurer(input_config, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(ini_path_full, archive)
@@ -177,10 +176,10 @@ class main(logger):
             full_config.read(ini_path_full)
             # auto-generated full_config should be OK, but run the validator as a sanity check
             config_validator(self.args.wgs_only, self.args.failed, self.log_level, self.log_path).validate_full(full_config)
-            extractor(full_config, report_dir, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(json_path)
+            extractor(full_config, report_dir, self._get_author(), self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run()
             html_path = self._get_html_path()
-            renderer = html_renderer(self.args.wgs_only, self.args.failed, self.log_level, self.log_path)
-            renderer.run(self.args.dir, html_path, self.args.target_coverage, self._get_author())
+            renderer = html_renderer(self.log_level, self.log_path)
+            renderer.run(os.path.join(self.args.dir, constants.REPORT_MACHINE_FILENAME), html_path)
             patient_id = self._get_patient_study_id(self.args.dir)
             pdf = self._get_pdf_path(patient_id)
             pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, patient_id)
@@ -192,7 +191,6 @@ class main(logger):
         """
         with tempfile.TemporaryDirectory(prefix='djerba_draft_') as tmp:
             ini_path_full = self.args.ini_out if self.args.ini_out else os.path.join(tmp, 'djerba_config_full.ini')
-            json_path = os.path.realpath(self.args.json) if self.args.json else None
             if self.args.dir:
                 report_dir = os.path.realpath(self.args.dir)
             else:
@@ -205,10 +203,10 @@ class main(logger):
             full_config.read(ini_path_full)
             # auto-generated full_config should be OK, but run the validator as a sanity check
             config_validator(self.args.wgs_only, self.args.failed, self.log_level, self.log_path).validate_full(full_config)
-            extractor(full_config, report_dir, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(json_path)
+            extractor(full_config, report_dir, self._get_author(), self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run()
             html_path = self._get_html_path()
-            renderer = html_renderer(self.args.wgs_only, self.args.failed, self.log_level, self.log_path)
-            renderer.run(self.args.dir, html_path, self.args.target_coverage, self._get_author())
+            renderer = html_renderer(self.log_level, self.log_path)
+            renderer.run(os.path.join(self.args.dir, constants.REPORT_MACHINE_FILENAME), html_path)
 
     def run_setup(self):
         """Set up an empty working directory for a CGI report"""
@@ -235,8 +233,6 @@ class main(logger):
         elif args.subparser_name == constants.EXTRACT:
             v.validate_input_file(args.ini)
             v.validate_output_dir(args.dir)
-            if args.json:
-                v.validate_output_file(args.json)
         elif args.subparser_name == constants.HTML:
             v.validate_input_dir(args.dir)
             if args.html:
@@ -252,16 +248,12 @@ class main(logger):
                 v.validate_output_file(args.html)
             if args.ini_out:
                 v.validate_output_file(args.ini_out)
-            if args.json:
-                v.validate_output_file(args.json)
         elif args.subparser_name == constants.ALL:
             v.validate_input_file(args.ini)
             if args.ini_out:
                 v.validate_output_file(args.ini_out)
             if args.dir:
                 v.validate_output_dir(args.dir)
-            if args.json:
-                v.validate_output_file(args.json)
             if args.html:
                 v.validate_output_file(args.html)
         else:
