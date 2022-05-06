@@ -198,12 +198,16 @@ class TestExtractor(TestBase):
         'djerba_report_machine.json'
     ]
 
-    #out_dir = self.tmp_dir
-    # TODO setup test directory with expected output from the R script
-    # TODO setup a similar 'failed' test directory with summary and clinical data only
-    # TODO paths in djerba_report_human.json may vary; omit from test
-    #out_dir = '/u/ibancarz/workspace/djerba/test_20220504_01/report_example'
-    
+    def check_json(self, found_path, expected_path):
+        with open(found_path) as in_file:
+            data_found = json.loads(in_file.read())
+        with open(expected_path) as in_file:
+            data_expected = json.loads(in_file.read())
+        for key in ['oicr_logo', 'tmb_plot', 'vaf_plot']:
+            del data_found[key]
+            del data_expected[key]
+        self.assertEqual(data_found, data_expected)
+
     def check_outputs_md5(self, out_dir, outputs):
         for filename in outputs.keys():
             output_path = os.path.join(out_dir, filename)
@@ -247,14 +251,13 @@ class TestExtractor(TestBase):
         self.check_outputs_md5(out_dir, self.get_static_passed())
         for name in self.VARYING_OUTPUT:
             self.assertTrue(os.path.exists(os.path.join(out_dir, name)), name+' exists')
-        with open(os.path.join(out_dir, 'djerba_report_human.json')) as in_file:
-            data_human = json.loads(in_file.read())
-        with open(os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report_human.json')) as in_file:
-            data_expected = json.loads(in_file.read())
-        for key in ['oicr_logo', 'tmb_plot', 'vaf_plot']:
-            del data_human[key]
-            del data_expected[key]
-        self.assertEqual(data_human, data_expected)
+        ref_dir = os.path.join(self.sup_dir, 'report_json', 'WGTS')
+        found_human = os.path.join(out_dir, 'djerba_report_human.json')
+        expected_human = os.path.join(ref_dir, 'djerba_report_human.json')
+        self.check_json(found_human, expected_human)
+        found_machine = os.path.join(out_dir, 'djerba_report_machine.json')
+        expected_machine = os.path.join(ref_dir, 'djerba_report_machine.json')
+        self.check_json(found_machine, expected_machine)
 
     def test_wgs_only_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGS_only')
@@ -266,14 +269,13 @@ class TestExtractor(TestBase):
         self.check_outputs_md5(out_dir, self.get_static_passed())
         for name in self.VARYING_OUTPUT:
             self.assertTrue(os.path.exists(os.path.join(out_dir, name)))
-        with open(os.path.join(out_dir, 'djerba_report_human.json')) as in_file:
-            data_human = json.loads(in_file.read())
-        with open(os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report_human.json')) as in_file:
-            data_expected = json.loads(in_file.read())
-        for key in ['oicr_logo', 'tmb_plot', 'vaf_plot']:
-            del data_human[key]
-            del data_expected[key]
-        self.assertEqual(data_human, data_expected)
+        ref_dir = os.path.join(self.sup_dir, 'report_json', 'WGS_only')
+        found_human = os.path.join(out_dir, 'djerba_report_human.json')
+        expected_human = os.path.join(ref_dir, 'djerba_report_human.json')
+        self.check_json(found_human, expected_human)
+        found_machine = os.path.join(out_dir, 'djerba_report_machine.json')
+        expected_machine = os.path.join(ref_dir, 'djerba_report_machine.json')
+        self.check_json(found_machine, expected_machine)
 
     def test_cancer_type_description(self):
         # test extraction of the cancer type description; see GCGI-333
