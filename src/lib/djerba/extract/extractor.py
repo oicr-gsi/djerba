@@ -29,7 +29,7 @@ class extractor(logger):
     CANCER_TYPE = 'cancer_type'
     CANCER_TYPE_DESCRIPTION = 'cancer_description'
 
-    def __init__(self, config, report_dir, author, wgs_only, failed,
+    def __init__(self, config, report_dir, author, wgs_only, failed, depth,
                  log_level=logging.WARNING, log_path=None):
         self.config = config
         self.author = author
@@ -39,6 +39,7 @@ class extractor(logger):
         else:
             self.assay_type = render_constants.ASSAY_WGTS
         self.failed = failed
+        self.depth = depth
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
@@ -148,8 +149,7 @@ class extractor(logger):
         self.write_genomic_summary()
         self.logger.info("Building JSON summary")
         # TODO modify composer to run correctly in failed mode (clinical data & genomic summary only)
-        # TODO FIXME input the coverage depth; was input to HTML rendering
-        composer = clinical_report_json_composer(self.report_dir, self.author, self.assay_type)
+        composer = clinical_report_json_composer(self.report_dir, self.author, self.assay_type, self.depth, self.failed)
         composer.run(self.report_dir) # write JSON output to the report directory
         # TODO archive the JSON output
         self.logger.info("Djerba extract step finished; extracted metrics written to {0}".format(self.report_dir))
