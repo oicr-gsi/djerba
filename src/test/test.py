@@ -449,10 +449,10 @@ class TestRender(TestBase):
 
     def test_html(self):
         # TODO input JSON with other fail/assay/coverage options and check HTML output
-        args_path = os.path.join(self.sup_dir, 'djerba_report_machine.json')
+        args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report_machine.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test.html')
         html_renderer().run(args_path, out_path)
-        self.check_report(out_path, '849e317ff79603f29d533a22c7e9e29a')
+        self.check_report(out_path, '75d4ccdc1d5d13b8dd74a60c948d59f0')
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
