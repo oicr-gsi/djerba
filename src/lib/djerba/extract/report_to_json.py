@@ -129,11 +129,17 @@ class clinical_report_json_composer(composer_base):
         self.r_script_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], 'R_plots')
         self.html_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], 'data', 'html')
         self.cytoband_map = self.read_cytoband_map()
-        self.total_somatic_mutations = self.read_total_somatic_mutations()
-        self.total_oncogenic_somatic_mutations = self.read_total_oncogenic_somatic_mutations()
-        fus_reader = fusion_reader(input_dir, log_level=log_level, log_path=log_path)
-        self.total_fusion_genes = fus_reader.get_total_fusion_genes()
-        self.gene_pair_fusions = fus_reader.get_fusions()
+        if self.failed:
+            self.total_somatic_mutations = None
+            self.total_oncogenic_somatic_mutations = None
+            self.total_fusion_genes = None
+            self.gene_pair_fusions = None
+        else:
+            self.total_somatic_mutations = self.read_total_somatic_mutations()
+            self.total_oncogenic_somatic_mutations = self.read_total_oncogenic_somatic_mutations()
+            fus_reader = fusion_reader(input_dir, log_level=log_level, log_path=log_path)
+            self.total_fusion_genes = fus_reader.get_total_fusion_genes()
+            self.gene_pair_fusions = fus_reader.get_fusions()
 
     def build_alteration_url(self, gene, alteration, cancer_code):
         return '/'.join([self.ONCOKB_URL_BASE, gene, alteration, cancer_code])
@@ -346,10 +352,6 @@ class clinical_report_json_composer(composer_base):
         data[constants.SAMPLE_INFO] = self.build_sample_info()
         data[constants.GENOMIC_SUMMARY] = self.read_genomic_summary()
         data[constants.COVERAGE_THRESHOLDS] = self.build_coverage_thresholds()
-        data[constants.GENOMIC_LANDSCAPE_INFO] = self.build_genomic_landscape_info()
-        tmb = data[constants.GENOMIC_LANDSCAPE_INFO][constants.TMB_PER_MB]
-        data[constants.TMB_PLOT] = self.write_tmb_plot(tmb, out_dir)
-        data[constants.VAF_PLOT] = self.write_vaf_plot(out_dir)
         data[constants.FAILED] = self.failed
         data[constants.PURITY_FAILURE] = self.purity_failure
         data[constants.REPORT_DATE] = None
@@ -357,6 +359,10 @@ class clinical_report_json_composer(composer_base):
             # additional data for non-failed reports
             data[constants.APPROVED_BIOMARKERS] = self.build_fda_approved_info()
             data[constants.INVESTIGATIONAL_THERAPIES] = self.build_investigational_therapy_info()
+            data[constants.GENOMIC_LANDSCAPE_INFO] = self.build_genomic_landscape_info()
+            tmb = data[constants.GENOMIC_LANDSCAPE_INFO][constants.TMB_PER_MB]
+            data[constants.TMB_PLOT] = self.write_tmb_plot(tmb, out_dir)
+            data[constants.VAF_PLOT] = self.write_vaf_plot(out_dir)
             data[constants.SMALL_MUTATIONS_AND_INDELS] = self.build_small_mutations_and_indels()
             data[constants.TOP_ONCOGENIC_SOMATIC_CNVS] = self.build_copy_number_variation()
             data[constants.STRUCTURAL_VARIANTS_AND_FUSIONS] = self.build_svs_and_fusions()
@@ -592,16 +598,18 @@ class clinical_report_json_composer(composer_base):
     def write_human_readable(self, data, out_path):
         # write pretty-printed JSON with file paths
         data[constants.OICR_LOGO] = os.path.abspath(data[constants.OICR_LOGO])
-        data[constants.TMB_PLOT] = os.path.abspath(data[constants.TMB_PLOT])
-        data[constants.VAF_PLOT] = os.path.abspath(data[constants.VAF_PLOT])
+        if not self.failed:
+            data[constants.TMB_PLOT] = os.path.abspath(data[constants.TMB_PLOT])
+            data[constants.VAF_PLOT] = os.path.abspath(data[constants.VAF_PLOT])
         with open(out_path, 'w') as out_file:
              print(json.dumps(data, sort_keys=True, indent=4), file=out_file)
 
     def write_machine_readable(self, data, out_path):
         # read in JPEGs as base-64 blobs to make a self-contained document
         data[constants.OICR_LOGO] = self.image_to_json_string(data[constants.OICR_LOGO], 'png')
-        data[constants.TMB_PLOT] = self.image_to_json_string(data[constants.TMB_PLOT])
-        data[constants.VAF_PLOT] = self.image_to_json_string(data[constants.VAF_PLOT])
+        if not self.failed:
+            data[constants.TMB_PLOT] = self.image_to_json_string(data[constants.TMB_PLOT])
+            data[constants.VAF_PLOT] = self.image_to_json_string(data[constants.VAF_PLOT])
         with open(out_path, 'w') as out_file:
              print(json.dumps(data), file=out_file)
 

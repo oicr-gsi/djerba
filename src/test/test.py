@@ -11,6 +11,7 @@ import subprocess
 import tempfile
 import time
 import unittest
+from shutil import copyfile
 from string import Template
 
 import djerba.util.constants as constants
@@ -163,11 +164,14 @@ class TestCutoffFinder(TestBase):
 class TestExtractor(TestBase):
 
     # this test does not check the R script
-    # so outputs for WGS-only and WGS+WTS are identical
+    # instead, copy in expected R script outputs as needed
+    # Extractor without R script has two basic operations:
+    # - write clinical data & genomic summary
+    # - collate report directory contents and write JSON
 
     AUTHOR = 'Test Author'
     
-    def run_extractor_test(self, user_config, wgs_only, failed, depth):
+    def run_extractor_test(self, user_config, out_dir, wgs_only, failed, depth):
         config = configparser.ConfigParser()
         config.read(self.default_ini)
         config.read(user_config)
@@ -175,7 +179,7 @@ class TestExtractor(TestBase):
         # TODO setup test directory with expected output from the R script
         # TODO setup a similar 'failed' test directory with summary and clinical data only
         # TODO paths in djerba_report_human.json may vary; omit from test
-        out_dir = '/u/ibancarz/workspace/djerba/test_20220504_01/report_example'
+        #out_dir = '/u/ibancarz/workspace/djerba/test_20220504_01/report_example'
         clinical_data_path = os.path.join(out_dir, 'data_clinical.txt')
         test_extractor = extractor(config, out_dir, self.AUTHOR, wgs_only, failed, depth, log_level=logging.ERROR)
         # do not test R script here; see TestWrapper
@@ -183,7 +187,7 @@ class TestExtractor(TestBase):
         expected_md5 = {
             'data_clinical.txt': '02003366977d66578c097295f12f4638',
             'genomic_summary.txt': 'c84eec523dbc81f4fc7b08860ab1a47f',
-            'djerba_report_human.json': 'fd5c17c713a24bba553e9c3a41096b34',
+            #'djerba_report_human.json': 'fd5c17c713a24bba553e9c3a41096b34',
         }
         # not checking machine JSON for now -- JPEG/PNG contents not deterministic
         for filename in expected_md5.keys():
@@ -191,8 +195,11 @@ class TestExtractor(TestBase):
             self.assertTrue(os.path.exists(output_path))
         self.assertEqual(self.getMD5(output_path), expected_md5[filename])
 
-    def test_extractor(self):
-        self.run_extractor_test(self.config_full, False, False, 80)
+    def test_extractor_minimal(self):
+        # test extractor without the R script output; requires failed mode
+        out_dir = os.path.join(self.tmp_dir, 'minimal')
+        os.mkdir(out_dir)
+        self.run_extractor_test(self.config_full, out_dir, False, True, 80)
 
     @unittest.skip("Input/output data not yet configured")
     def test_extractor_failed(self):
