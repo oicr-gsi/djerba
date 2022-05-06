@@ -117,6 +117,11 @@ class clinical_report_json_composer(composer_base):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.input_dir = input_dir
         self.all_reported_variants = set()
+        permitted = [constants.ASSAY_WGS, constants.ASSAY_WGTS]
+        if not assay_type in permitted:
+            msg = "Assay type {0} not in permitted assays {1}".format(assay_type, permitted)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
         self.assay_type = assay_type
         self.author = author
         self.coverage = coverage
@@ -137,9 +142,13 @@ class clinical_report_json_composer(composer_base):
         else:
             self.total_somatic_mutations = self.read_total_somatic_mutations()
             self.total_oncogenic_somatic_mutations = self.read_total_oncogenic_somatic_mutations()
-            fus_reader = fusion_reader(input_dir, log_level=log_level, log_path=log_path)
-            self.total_fusion_genes = fus_reader.get_total_fusion_genes()
-            self.gene_pair_fusions = fus_reader.get_fusions()
+            if assay_type == constants.ASSAY_WGTS:
+                fus_reader = fusion_reader(input_dir, log_level=log_level, log_path=log_path)
+                self.total_fusion_genes = fus_reader.get_total_fusion_genes()
+                self.gene_pair_fusions = fus_reader.get_fusions()
+            else:
+                self.total_fusion_genes = None
+                self.gene_pair_fusions = None
 
     def build_alteration_url(self, gene, alteration, cancer_code):
         return '/'.join([self.ONCOKB_URL_BASE, gene, alteration, cancer_code])
@@ -324,17 +333,18 @@ class clinical_report_json_composer(composer_base):
                 [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
                 if max_level:
                     rows.append(self.treatment_row(gene, alteration, max_level, therapies))
-        for fusion in self.gene_pair_fusions:
-            genes = fusion.get_genes()
-            alteration = constants.FUSION
-            if level == self.FDA_APPROVED:
-                max_level = fusion.get_fda_level()
-                therapies = fusion.get_fda_therapies()
-            else:
-                max_level = fusion.get_inv_level()
-                therapies = fusion.get_inv_therapies()
-            if max_level:
-                rows.append(self.treatment_row(genes, alteration, max_level, therapies))
+        if self.gene_pair_fusions: # omit for WGS-only reports
+            for fusion in self.gene_pair_fusions:
+                genes = fusion.get_genes()
+                alteration = constants.FUSION
+                if level == self.FDA_APPROVED:
+                    max_level = fusion.get_fda_level()
+                    therapies = fusion.get_fda_therapies()
+                else:
+                    max_level = fusion.get_inv_level()
+                    therapies = fusion.get_inv_therapies()
+                if max_level:
+                    rows.append(self.treatment_row(genes, alteration, max_level, therapies))
         rows = self.sort_by_oncokb_level(rows)
         return rows
 
@@ -365,7 +375,10 @@ class clinical_report_json_composer(composer_base):
             data[constants.VAF_PLOT] = self.write_vaf_plot(out_dir)
             data[constants.SMALL_MUTATIONS_AND_INDELS] = self.build_small_mutations_and_indels()
             data[constants.TOP_ONCOGENIC_SOMATIC_CNVS] = self.build_copy_number_variation()
-            data[constants.STRUCTURAL_VARIANTS_AND_FUSIONS] = self.build_svs_and_fusions()
+            if self.assay_type == constants.ASSAY_WGTS:
+                data[constants.STRUCTURAL_VARIANTS_AND_FUSIONS] = self.build_svs_and_fusions()
+            else:
+                data[constants.STRUCTURAL_VARIANTS_AND_FUSIONS] = None
             data[constants.SUPPLEMENTARY_INFO] = self.build_supplementary_info()
         self.logger.info("Finished building clinical report data structure for JSON output")
         return data
