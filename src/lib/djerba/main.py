@@ -71,13 +71,26 @@ class main(logger):
             patient_id = self._get_patient_study_id(self.args.dir)
             html_path = os.path.join(self.args.dir, '{0}_djerba_report.html'.format(patient_id))
         else:
-            # shouldn't happen, but include this for completeness
             msg = "Must specify --html or --dir to find HTML output path"
             self.logger.error(msg)
             raise RuntimeError(msg)
         html_path = os.path.realpath(html_path) # needed to correctly render links
         self.logger.debug("Found HTML path {0}".format(html_path))
         return html_path
+
+    def _get_json_path(self):
+        # get JSON input path from args
+        if self.args.json:
+            json_path = os.path.realpath(self.args.json)
+        elif self.args.dir:
+            json_path = os.path.join(self.args.dir, constants.REPORT_MACHINE_FILENAME)
+        else:
+            msg = "Must specify --json or --dir to find JSON input path"
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        json_path = os.path.realpath(json_path)
+        self.logger.debug("Found JSON path {0}".format(json_path))
+        return json_path
 
     def _get_patient_study_id(self, input_dir):
         """Read patient LIMS ID from data_clinical.txt file, for constructing filenames"""
@@ -138,10 +151,10 @@ class main(logger):
             cv.validate_full(config)
             extractor(config, self.args.dir, self._get_author(), self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run()
         elif self.args.subparser_name == constants.HTML:
-            args_path = os.path.join(self.args.dir, constants.REPORT_MACHINE_FILENAME)
+            json_path = self._get_json_path()
             html_path = self._get_html_path()
             hr = html_renderer(self.log_level, self.log_path)
-            hr.run(args_path, html_path)
+            hr.run(json_path, html_path)
             if self.args.pdf:
                 patient_id = self._get_patient_study_id(self.args.dir)
                 pdf_path = self._get_pdf_path(patient_id)
@@ -234,7 +247,10 @@ class main(logger):
             v.validate_input_file(args.ini)
             v.validate_output_dir(args.dir)
         elif args.subparser_name == constants.HTML:
-            v.validate_input_dir(args.dir)
+            if args.dir:
+                v.validate_input_dir(args.dir)
+            if args.json:
+                v.validate_input_file(args.json)
             if args.html:
                 v.validate_output_file(args.html)
         elif args.subparser_name == constants.PDF:
