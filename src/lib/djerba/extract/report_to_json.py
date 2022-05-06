@@ -245,7 +245,7 @@ class clinical_report_json_composer(composer_base):
         }
         return data
 
-    def build_structural_variants_and_fusions(self):
+    def build_svs_and_fusions(self):
         # table has 2 rows for each oncogenic fusion
         rows = []
         oncogenic_fusion_genes = 0 # number of genes = 2x number of fusions
@@ -335,6 +335,10 @@ class clinical_report_json_composer(composer_base):
     def build_json(self, out_dir):
         # build the main JSON data structure
         data = {}
+        if self.failed:
+            self.logger.info("Building JSON for report with FAILED QC")
+        else:
+            self.logger.info("Building JSON for report with PASSED QC")
         data[constants.ASSAY_TYPE] = self.assay_type
         data[constants.AUTHOR] = self.author
         data[constants.OICR_LOGO] = os.path.join(self.html_dir, 'OICR_Logo_RGB_ENGLISH.png')
@@ -346,15 +350,17 @@ class clinical_report_json_composer(composer_base):
         tmb = data[constants.GENOMIC_LANDSCAPE_INFO][constants.TMB_PER_MB]
         data[constants.TMB_PLOT] = self.write_tmb_plot(tmb, out_dir)
         data[constants.VAF_PLOT] = self.write_vaf_plot(out_dir)
-        data[constants.APPROVED_BIOMARKERS] = self.build_fda_approved_info()
-        data[constants.INVESTIGATIONAL_THERAPIES] = self.build_investigational_therapy_info()
-        data[constants.SMALL_MUTATIONS_AND_INDELS] = self.build_small_mutations_and_indels()
-        data[constants.TOP_ONCOGENIC_SOMATIC_CNVS] = self.build_copy_number_variation()
-        data[constants.STRUCTURAL_VARIANTS_AND_FUSIONS] = self.build_structural_variants_and_fusions()
-        data[constants.SUPPLEMENTARY_INFO] = self.build_supplementary_info()
         data[constants.FAILED] = self.failed
         data[constants.PURITY_FAILURE] = self.purity_failure
         data[constants.REPORT_DATE] = None
+        if not self.failed:
+            # additional data for non-failed reports
+            data[constants.APPROVED_BIOMARKERS] = self.build_fda_approved_info()
+            data[constants.INVESTIGATIONAL_THERAPIES] = self.build_investigational_therapy_info()
+            data[constants.SMALL_MUTATIONS_AND_INDELS] = self.build_small_mutations_and_indels()
+            data[constants.TOP_ONCOGENIC_SOMATIC_CNVS] = self.build_copy_number_variation()
+            data[constants.STRUCTURAL_VARIANTS_AND_FUSIONS] = self.build_svs_and_fusions()
+            data[constants.SUPPLEMENTARY_INFO] = self.build_supplementary_info()
         self.logger.info("Finished building clinical report data structure for JSON output")
         return data
 
