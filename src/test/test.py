@@ -167,7 +167,7 @@ class TestExtractor(TestBase):
 
     AUTHOR = 'Test Author'
     
-    def run_extractor_test(self, user_config, wgs_only, failed):
+    def run_extractor_test(self, user_config, wgs_only, failed, depth):
         config = configparser.ConfigParser()
         config.read(self.default_ini)
         config.read(user_config)
@@ -177,7 +177,7 @@ class TestExtractor(TestBase):
         # TODO paths in djerba_report_human.json may vary; omit from test
         out_dir = '/u/ibancarz/workspace/djerba/test_20220504_01/report_example'
         clinical_data_path = os.path.join(out_dir, 'data_clinical.txt')
-        test_extractor = extractor(config, out_dir, self.AUTHOR, wgs_only, failed, log_level=logging.ERROR)
+        test_extractor = extractor(config, out_dir, self.AUTHOR, wgs_only, failed, depth, log_level=logging.ERROR)
         # do not test R script here; see TestWrapper
         test_extractor.run(r_script=False)
         expected_md5 = {
@@ -192,7 +192,7 @@ class TestExtractor(TestBase):
         self.assertEqual(self.getMD5(output_path), expected_md5[filename])
 
     def test_extractor(self):
-        self.run_extractor_test(self.config_full, False, False)
+        self.run_extractor_test(self.config_full, False, False, 80)
 
     @unittest.skip("Input/output data not yet configured")
     def test_extractor_failed(self):
@@ -214,7 +214,8 @@ class TestExtractor(TestBase):
         out_dir = self.tmp_dir
         wgs_only = False
         failed = False
-        test_extractor = extractor(config, out_dir, self.AUTHOR, wgs_only, failed, log_level=logging.ERROR)
+        depth = 80
+        test_extractor = extractor(config, out_dir, self.AUTHOR, wgs_only, failed, depth, log_level=logging.ERROR)
         desc = test_extractor.get_description()
         expected = [
             {'cancer_type': 'Pancreas', 'cancer_description': 'Pancreatic Adenocarcinoma'},

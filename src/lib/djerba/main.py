@@ -149,7 +149,7 @@ class main(logger):
         elif self.args.subparser_name == constants.EXTRACT:
             config = self.read_config(self.args.ini)
             cv.validate_full(config)
-            extractor(config, self.args.dir, self._get_author(), self.args.wgs_only, self.args.target_coverage, self.args.failed, self.log_level, self.log_path).run()
+            extractor(config, self.args.dir, self._get_author(), self.args.wgs_only, self.args.target_coverage, self.args.failed, self.args.target_coverage, self.log_level, self.log_path).run()
         elif self.args.subparser_name == constants.HTML:
             json_path = self._get_json_path()
             html_path = self._get_html_path()
@@ -189,7 +189,7 @@ class main(logger):
             full_config.read(ini_path_full)
             # auto-generated full_config should be OK, but run the validator as a sanity check
             config_validator(self.args.wgs_only, self.args.failed, self.log_level, self.log_path).validate_full(full_config)
-            extractor(full_config, report_dir, self._get_author(), self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run()
+            extractor(full_config, report_dir, self._get_author(), self.args.wgs_only, self.args.failed, self.args.target_coverage, self.log_level, self.log_path).run()
             html_path = self._get_html_path()
             renderer = html_renderer(self.log_level, self.log_path)
             renderer.run(os.path.join(self.args.dir, constants.REPORT_MACHINE_FILENAME), html_path)
@@ -216,7 +216,7 @@ class main(logger):
             full_config.read(ini_path_full)
             # auto-generated full_config should be OK, but run the validator as a sanity check
             config_validator(self.args.wgs_only, self.args.failed, self.log_level, self.log_path).validate_full(full_config)
-            extractor(full_config, report_dir, self._get_author(), self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run()
+            extractor(full_config, report_dir, self._get_author(), self.args.wgs_only, self.args.failed, self.args.target_coverage, self.log_level, self.log_path).run()
             html_path = self._get_html_path()
             renderer = html_renderer(self.log_level, self.log_path)
             renderer.run(os.path.join(self.args.dir, constants.REPORT_MACHINE_FILENAME), html_path)
