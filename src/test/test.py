@@ -11,7 +11,7 @@ import subprocess
 import tempfile
 import time
 import unittest
-from shutil import copyfile
+from shutil import copy
 from string import Template
 
 import djerba.util.constants as constants
@@ -170,48 +170,138 @@ class TestExtractor(TestBase):
     # - collate report directory contents and write JSON
 
     AUTHOR = 'Test Author'
+
+    STATIC_FAILED = {
+        'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
+        'genomic_summary.txt': 'c84eec523dbc81f4fc7b08860ab1a47f',
+        'djerba_report_human.json': 'fab48391caef7b897a65f3351ce51880',
+        'djerba_report_machine.json': 'c65a0a1927d845d4279ec988b196d5a9'
+    }
+    STATIC_WGTS = {
+        'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
+        'data_CNA_oncoKBgenes_nonDiploid_annotated.txt': '3a8f85576bd10a74783066713831f6a9',
+        'data_CNA_oncoKBgenes_nonDiploid.txt': '6261264cb42924f2c8ef2e10352ff1cc',
+        'data_CNA.txt': '3d7176d3f61527ec0bebe21dd18b5adc',
+        'data_expression_percentile_comparison.txt': '1472f746a6549e93834e4cedafa7b757',
+        'data_expression_percentile_tcga.txt': '8f60100624bd09ef65b971d66dd2ee9a',
+        'data_expression_zscores_comparison.txt': 'a64132977241a65bb0f1cd710ff8937a',
+        'data_expression_zscores_tcga.txt': '62638a6daec99803999b23519f54794a',
+        'data_fusions_new_delimiter.txt': '6ca6f45270917de916ecda8241c9fe21',
+        'data_fusions_oncokb_annotated.txt': '51d091b36d7a381f714e9557573e5104',
+        'data_fusions.txt': '9e09744df7e1812e0f5d8b36b50d983f',
+        'data_log2CNA.txt': '85395bf7b32b15629afd34c416a1bb17',
+        'data_mutations_extended_oncogenic.txt': 'f1f7647246bdc412006699c33b312ffa',
+        'data_mutations_extended.txt': 'ad8c5071685a3914b4ccbf6ef4080672',
+        'data_segments.txt': '13bfa801b864e6a9901ecb29646436ab',
+        'genomic_summary.txt': 'c84eec523dbc81f4fc7b08860ab1a47f',
+        'sequenza_meta.txt': 'af61207df24b8b8ae6472675cbe88029',
+    }
+    STATIC_WGS_ONLY = {
+        'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
+        'data_CNA_oncoKBgenes_nonDiploid_annotated.txt': '3a8f85576bd10a74783066713831f6a9',
+        'data_CNA_oncoKBgenes_nonDiploid.txt': '6261264cb42924f2c8ef2e10352ff1cc',
+        'data_CNA.txt': '3d7176d3f61527ec0bebe21dd18b5adc',
+        'data_expression_percentile_comparison.txt': '1472f746a6549e93834e4cedafa7b757',
+        'data_expression_percentile_tcga.txt': '8f60100624bd09ef65b971d66dd2ee9a',
+        'data_expression_zscores_comparison.txt': 'a64132977241a65bb0f1cd710ff8937a',
+        'data_expression_zscores_tcga.txt': '62638a6daec99803999b23519f54794a',
+        'data_log2CNA.txt': '85395bf7b32b15629afd34c416a1bb17',
+        'data_mutations_extended_oncogenic.txt': 'f1f7647246bdc412006699c33b312ffa',
+        'data_mutations_extended.txt': 'ad8c5071685a3914b4ccbf6ef4080672',
+        'data_segments.txt': '13bfa801b864e6a9901ecb29646436ab',
+        'genomic_summary.txt': 'c84eec523dbc81f4fc7b08860ab1a47f',
+        'sequenza_meta.txt': 'af61207df24b8b8ae6472675cbe88029',
+    }
+    VARYING_OUTPUT = [
+        'tmb.jpeg',
+        'vaf.jpeg',
+        'djerba_report_human.json',
+        'djerba_report_machine.json'
+    ]
+
+    #out_dir = self.tmp_dir
+    # TODO setup test directory with expected output from the R script
+    # TODO setup a similar 'failed' test directory with summary and clinical data only
+    # TODO paths in djerba_report_human.json may vary; omit from test
+    #out_dir = '/u/ibancarz/workspace/djerba/test_20220504_01/report_example'
     
-    def run_extractor_test(self, user_config, out_dir, wgs_only, failed, depth):
+    def check_outputs_md5(self, out_dir, outputs):
+        for filename in outputs.keys():
+            output_path = os.path.join(out_dir, filename)
+            self.assertTrue(os.path.exists(output_path), filename+' exists')
+            self.assertEqual(self.getMD5(output_path), outputs[filename])
+
+    def run_extractor(self, user_config, out_dir, wgs_only, failed, depth):
         config = configparser.ConfigParser()
         config.read(self.default_ini)
         config.read(user_config)
-        #out_dir = self.tmp_dir
-        # TODO setup test directory with expected output from the R script
-        # TODO setup a similar 'failed' test directory with summary and clinical data only
-        # TODO paths in djerba_report_human.json may vary; omit from test
-        #out_dir = '/u/ibancarz/workspace/djerba/test_20220504_01/report_example'
-        clinical_data_path = os.path.join(out_dir, 'data_clinical.txt')
         test_extractor = extractor(config, out_dir, self.AUTHOR, wgs_only, failed, depth, log_level=logging.ERROR)
         # do not test R script here; see TestWrapper
         test_extractor.run(r_script=False)
-        expected_md5 = {
-            'data_clinical.txt': '02003366977d66578c097295f12f4638',
-            'genomic_summary.txt': 'c84eec523dbc81f4fc7b08860ab1a47f',
-            #'djerba_report_human.json': 'fd5c17c713a24bba553e9c3a41096b34',
-        }
-        # not checking machine JSON for now -- JPEG/PNG contents not deterministic
-        for filename in expected_md5.keys():
-            output_path = os.path.join(out_dir, filename)
-            self.assertTrue(os.path.exists(output_path))
-        self.assertEqual(self.getMD5(output_path), expected_md5[filename])
 
-    def test_extractor_minimal(self):
-        # test extractor without the R script output; requires failed mode
-        out_dir = os.path.join(self.tmp_dir, 'minimal')
-        os.mkdir(out_dir)
-        self.run_extractor_test(self.config_full, out_dir, False, True, 80)
+    def test_failed_mode(self):
+        # test failed mode; does not require R script output
+        #out_dir = os.path.join(self.tmp_dir, 'failed')
+        #os.mkdir(out_dir)
+        out_dir = '/u/ibancarz/workspace/djerba/test_20220506_01/failed'
+        self.run_extractor(self.config_full, out_dir, False, True, 80)
+        self.check_outputs_md5(out_dir, self.STATIC_FAILED)
 
-    @unittest.skip("Input/output data not yet configured")
-    def test_extractor_failed(self):
-        self.run_extractor_test(self.config_full, False, True)
+    def test_wgts_mode(self):
+        #out_dir = os.path.join(self.tmp_dir, 'WGTS')
+        #os.mkdir(out_dir)
+        out_dir = '/u/ibancarz/workspace/djerba/test_20220506_01/WGTS'
+        rscript_outputs = [
+            'data_CNA_oncoKBgenes_nonDiploid_annotated.txt',
+            'data_CNA_oncoKBgenes_nonDiploid.txt',
+            'data_CNA.txt',
+            'data_expression_percentile_comparison.txt',
+            'data_expression_percentile_tcga.txt',
+            'data_expression_zscores_comparison.txt',
+            'data_expression_zscores_tcga.txt',
+            'data_fusions_new_delimiter.txt',
+            'data_fusions_oncokb_annotated.txt',
+            'data_fusions.txt',
+            'data_log2CNA.txt',
+            'data_mutations_extended_oncogenic.txt',
+            'data_mutations_extended.txt',
+            'data_segments.txt',
+            'sequenza_meta.txt',
+        ]
+        for file_name in rscript_outputs:
+            file_path = os.path.join(self.sup_dir, 'report_example', file_name)
+            copy(file_path, out_dir)
+        self.run_extractor(self.config_full, out_dir, False, False, 80)
+        self.check_outputs_md5(out_dir, self.STATIC_WGS_ONLY)
+        for name in self.VARYING_OUTPUT:
+            self.assertTrue(os.path.exists(os.path.join(out_dir, name)), name+' exists')
+        # TODO check JSON content
 
-    @unittest.skip("Input/output data not yet configured")
-    def test_extractor_wgs_only(self):
-        self.run_extractor_test(self.config_full_wgs_only, True, False)
-
-    @unittest.skip("Input/output data not yet configured")
-    def test_extractor_wgs_only_failed(self):
-        self.run_extractor_test(self.config_full_wgs_only, True, True)
+    def test_wgs_only_mode(self):
+        #out_dir = os.path.join(self.tmp_dir, 'WGS_only')
+        #os.mkdir(out_dir)
+        out_dir = '/u/ibancarz/workspace/djerba/test_20220506_01/WGS_only'
+        rscript_outputs = [
+            'data_CNA_oncoKBgenes_nonDiploid_annotated.txt',
+            'data_CNA_oncoKBgenes_nonDiploid.txt',
+            'data_CNA.txt',
+            'data_expression_percentile_comparison.txt',
+            'data_expression_percentile_tcga.txt',
+            'data_expression_zscores_comparison.txt',
+            'data_expression_zscores_tcga.txt',
+            'data_log2CNA.txt',
+            'data_mutations_extended_oncogenic.txt',
+            'data_mutations_extended.txt',
+            'data_segments.txt',
+            'sequenza_meta.txt',
+        ]
+        for file_name in rscript_outputs:
+            file_path = os.path.join(self.sup_dir, 'report_example', file_name)
+            copy(file_path, out_dir)
+        self.run_extractor(self.config_full, out_dir, True, False, 80)
+        self.check_outputs_md5(out_dir, self.STATIC_WGS_ONLY)
+        for name in self.VARYING_OUTPUT:
+            self.assertTrue(os.path.exists(os.path.join(out_dir, name)))
 
     def test_cancer_type_description(self):
         # test extraction of the cancer type description; see GCGI-333
