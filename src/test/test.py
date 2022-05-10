@@ -16,7 +16,7 @@ from string import Template
 
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
-from djerba.configure import archiver, configurer, log_r_cutoff_finder
+from djerba.configure import configurer, log_r_cutoff_finder
 from djerba.extract.extractor import extractor
 from djerba.extract.r_script_wrapper import r_script_wrapper
 from djerba.lister import lister
@@ -108,6 +108,7 @@ class TestBase(unittest.TestCase):
 
 class TestArchive(TestBase):
 
+    @unittest.skip('Archiving to be changed from INI to JSON')
     def test_archive(self):
         out_dir = self.tmp_dir
         archive_path = archiver(self.config_full).run(out_dir)
@@ -127,7 +128,7 @@ class TestConfigure(TestBase):
         test_configurer = configurer(config, wgs_only, failed)
         out_dir = self.tmp_dir
         out_path = os.path.join(out_dir, 'config_test_output.ini')
-        test_configurer.run(out_path, archive=False)
+        test_configurer.run(out_path)
         # TODO check contents of output path; need to account for supplementary data location
         self.assertTrue(os.path.exists(out_path))
         with open(out_path) as out_file:
@@ -452,7 +453,7 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report_machine.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test.html')
         html_renderer().run(args_path, out_path)
-        self.check_report(out_path, '75d4ccdc1d5d13b8dd74a60c948d59f0')
+        self.check_report(out_path, '6669d543e17680ef7df7eb7d9d0452cf')
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')

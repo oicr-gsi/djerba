@@ -144,8 +144,7 @@ class main(logger):
         elif self.args.subparser_name == constants.CONFIGURE:
             config = self.read_config(self.args.ini)
             cv.validate_minimal(config)
-            archive = not self.args.no_archive # True if archiving is in effect
-            configurer(config, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(self.args.out, archive)
+            configurer(config, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(self.args.out)
         elif self.args.subparser_name == constants.EXTRACT:
             config = self.read_config(self.args.ini)
             cv.validate_full(config)
@@ -183,8 +182,7 @@ class main(logger):
         with tempfile.TemporaryDirectory(prefix='djerba_all_') as tmp:
             ini_path_full = self.args.ini_out if self.args.ini_out else os.path.join(tmp, 'djerba_config_full.ini')
             report_dir = os.path.realpath(self.args.dir)
-            archive = not self.args.no_archive # True if archiving is in effect
-            configurer(input_config, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(ini_path_full, archive)
+            configurer(input_config, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(ini_path_full)
             full_config = configparser.ConfigParser()
             full_config.read(ini_path_full)
             # auto-generated full_config should be OK, but run the validator as a sanity check
@@ -210,8 +208,7 @@ class main(logger):
                 msg = "Report directory path is required in {0} mode".format(constants.DRAFT)
                 self.logger.error(msg)
                 raise ValueError(msg)
-            archive = not self.args.no_archive # True if archiving is in effect
-            configurer(input_config, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(ini_path_full, archive)
+            configurer(input_config, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(ini_path_full)
             full_config = configparser.ConfigParser()
             full_config.read(ini_path_full)
             # auto-generated full_config should be OK, but run the validator as a sanity check
