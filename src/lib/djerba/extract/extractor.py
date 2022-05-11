@@ -1,6 +1,5 @@
 """Extract and pre-process data, so it can be read into a clinical report JSON document"""
 
-import base64
 import csv
 import json
 import logging
@@ -16,6 +15,7 @@ from djerba.sequenza import sequenza_reader
 import djerba.render.constants as render_constants
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
+from djerba.util.image_to_base64 import convert_jpeg, convert_png
 from djerba.util.logger import logger
 
 class extractor(logger):
@@ -150,15 +150,6 @@ class extractor(logger):
         }
         return description
 
-    def image_to_json_string(self, image_path, image_type='jpeg'):
-        # read a jpeg file into base64 with JSON prefix
-        if image_type not in ['jpg', 'jpeg', 'png']:
-            raise RuntimeError("Unsupported image type: {0}".format(image_type))
-        with open(image_path, 'rb') as image_file:
-            image = base64.b64encode(image_file.read())
-        image_json = 'data:image/{0};base64,{1}'.format(image_type, image.decode('utf-8'))
-        return image_json
-
     def run(self, r_script=True):
         """Run extraction and write output"""
         self.logger.info("Djerba extract step started")
@@ -274,10 +265,10 @@ class extractor(logger):
         human_path = os.path.join(self.report_dir, constants.REPORT_HUMAN_FILENAME)
         self._write_main_json(human_path, report_data, config_data, pretty=True)
         # machine-readable; replace image paths with base-64 blobs for a self-contained document
-        report_data[logo_key] = self.image_to_json_string(report_data[logo_key], 'png')
+        report_data[logo_key] = convert_png(report_data[logo_key])
         if not self.failed:
-            report_data[tmb_key] = self.image_to_json_string(report_data[tmb_key])
-            report_data[vaf_key] = self.image_to_json_string(report_data[vaf_key])
+            report_data[tmb_key] = convert_jpeg(report_data[tmb_key])
+            report_data[vaf_key] = convert_jpeg(report_data[vaf_key])
         machine_path = os.path.join(self.report_dir, constants.REPORT_MACHINE_FILENAME)
         self._write_main_json(machine_path, report_data, config_data, pretty=False)
 

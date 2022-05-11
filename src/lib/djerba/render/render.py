@@ -10,11 +10,15 @@ from mako.template import Template
 from mako.lookup import TemplateLookup
 
 import djerba.util.constants as constants
+import djerba.util.ini_fields as ini
+from djerba.render.archiver import archiver
 from djerba.util.logger import logger
 
 class html_renderer(logger):
 
     def __init__(self, log_level=logging.WARNING, log_path=None):
+        self.log_level = log_level
+        self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
         html_dir = os.path.realpath(os.path.join(
             os.path.dirname(__file__),
@@ -27,12 +31,34 @@ class html_renderer(logger):
         report_lookup = TemplateLookup(directories=[html_dir,], strict_undefined=True)
         self.template = report_lookup.get_template("clinical_report_template.html")
 
-    def run(self, args_path, out_path):
-        # TODO add a method to run from a Python object instead of a JSON path?
-        with open(args_path) as args_file:
-            args = json.loads(args_file.read()).get(constants.REPORT)
+    def run(self, in_path, out_path, archive=True):
+        with open(in_path) as in_file:
+            data = json.loads(in_file.read())
+            args = data.get(constants.REPORT)
+            config = data.get(constants.SUPPLEMENTARY).get(constants.CONFIG)
         with open(out_path, 'w') as out_file:
             print(self.template.render(**args), file=out_file)
+        if archive:
+            self.logger.info("Finding archive parameters for {0}".format(out_path))
+            try:
+                archive_dir = config[ini.SETTINGS][ini.ARCHIVE_DIR]
+            except KeyError:
+                self.logger.warn("Archive directory not found in config")
+                archive_dir = None
+            try:
+                patient_id = config[ini.DISCOVERED][ini.PATIENT_ID]
+            except KeyError:
+                patient_id = 'Unknown'
+                msg = "Patient ID not found in config, falling back to '{0}'".format(patient_id)
+                self.logger.warn(msg)
+            if archive_dir:
+                archive_args = [out_path, archive_dir, patient_id]
+                archiver(self.log_level, self.log_path).run(**archive_args)
+                self.logger.info("Archived {0} to {1} with ID '{2}'".format(**archive_args))
+            else:
+                self.logger.warn("No archive directory; omitting archiving")
+        else:
+            self.logger.info("Archive operation not requested; omitting archiving")
 
 
 class pdf_renderer(logger):
