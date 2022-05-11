@@ -30,7 +30,7 @@ class html_renderer(logger):
     def run(self, args_path, out_path):
         # TODO add a method to run from a Python object instead of a JSON path?
         with open(args_path) as args_file:
-            args = json.loads(args_file.read())
+            args = json.loads(args_file.read()).get(constants.REPORT)
         with open(out_path, 'w') as out_file:
             print(self.template.render(**args), file=out_file)
 

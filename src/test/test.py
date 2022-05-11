@@ -458,7 +458,7 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report_machine.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test.html')
         html_renderer().run(args_path, out_path)
-        self.check_report(out_path, '6669d543e17680ef7df7eb7d9d0452cf')
+        self.check_report(out_path, 'c2c948627ef9ec4d72c77eb5e624e1b7')
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
