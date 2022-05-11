@@ -348,41 +348,6 @@ class clinical_report_json_composer(composer_base):
         rows = self.sort_by_oncokb_level(rows)
         return rows
 
-    def build_json(self, out_dir):
-        # build the main JSON data structure
-        data = {}
-        if self.failed:
-            self.logger.info("Building JSON for report with FAILED QC")
-        else:
-            self.logger.info("Building JSON for report with PASSED QC")
-        data[constants.ASSAY_TYPE] = self.assay_type
-        data[constants.AUTHOR] = self.author
-        data[constants.OICR_LOGO] = os.path.join(self.html_dir, 'OICR_Logo_RGB_ENGLISH.png')
-        data[constants.PATIENT_INFO] = self.build_patient_info()
-        data[constants.SAMPLE_INFO] = self.build_sample_info()
-        data[constants.GENOMIC_SUMMARY] = self.read_genomic_summary()
-        data[constants.COVERAGE_THRESHOLDS] = self.build_coverage_thresholds()
-        data[constants.FAILED] = self.failed
-        data[constants.PURITY_FAILURE] = self.purity_failure
-        data[constants.REPORT_DATE] = None
-        if not self.failed:
-            # additional data for non-failed reports
-            data[constants.APPROVED_BIOMARKERS] = self.build_fda_approved_info()
-            data[constants.INVESTIGATIONAL_THERAPIES] = self.build_investigational_therapy_info()
-            data[constants.GENOMIC_LANDSCAPE_INFO] = self.build_genomic_landscape_info()
-            tmb = data[constants.GENOMIC_LANDSCAPE_INFO][constants.TMB_PER_MB]
-            data[constants.TMB_PLOT] = self.write_tmb_plot(tmb, out_dir)
-            data[constants.VAF_PLOT] = self.write_vaf_plot(out_dir)
-            data[constants.SMALL_MUTATIONS_AND_INDELS] = self.build_small_mutations_and_indels()
-            data[constants.TOP_ONCOGENIC_SOMATIC_CNVS] = self.build_copy_number_variation()
-            if self.assay_type == constants.ASSAY_WGTS:
-                data[constants.STRUCTURAL_VARIANTS_AND_FUSIONS] = self.build_svs_and_fusions()
-            else:
-                data[constants.STRUCTURAL_VARIANTS_AND_FUSIONS] = None
-            data[constants.SUPPLEMENTARY_INFO] = self.build_supplementary_info()
-        self.logger.info("Finished building clinical report data structure for JSON output")
-        return data
-
     def get_cytoband(self, gene_name):
         cytoband = self.cytoband_map.get(gene_name)
         if not cytoband:
@@ -556,19 +521,43 @@ class clinical_report_json_composer(composer_base):
             variant_count = len(var_file.readlines()) - 1 # lines in file, minus header line
         return variant_count
 
-    def run(self, out_dir):
-        # main method to generate and write JSON
-        # TODO finer control of output paths; may wish to write TMB/VAF plots to a tempdir
-        out_dir = os.path.realpath(out_dir)
-        self.logger.info("Building clinical report data with output to {0}".format(out_dir))
-        data = self.build_json(out_dir)
-        human_path = os.path.join(out_dir, djerba_constants.REPORT_HUMAN_FILENAME)
-        machine_path = os.path.join(out_dir, djerba_constants.REPORT_MACHINE_FILENAME)
-        self.write_human_readable(data, human_path)
-        self.logger.info("Wrote human-readable JSON output to {0}".format(human_path))
-        self.write_machine_readable(data, machine_path)
-        self.logger.info("Wrote machine-readable JSON output to {0}".format(machine_path))
-        self.logger.info("Finished.")
+    def run(self):
+        """Main method to generate JSON from a report directory"""
+        # for now, this writes plots to the input report directory and returns paths in JSON
+        # if needed, could write plots to a tempdir and return base64 blobs in JSON
+        self.logger.info("Building clinical report data")
+        data = {}
+        if self.failed:
+            self.logger.info("Building JSON for report with FAILED QC")
+        else:
+            self.logger.info("Building JSON for report with PASSED QC")
+        data[constants.ASSAY_TYPE] = self.assay_type
+        data[constants.AUTHOR] = self.author
+        data[constants.OICR_LOGO] = os.path.join(self.html_dir, 'OICR_Logo_RGB_ENGLISH.png')
+        data[constants.PATIENT_INFO] = self.build_patient_info()
+        data[constants.SAMPLE_INFO] = self.build_sample_info()
+        data[constants.GENOMIC_SUMMARY] = self.read_genomic_summary()
+        data[constants.COVERAGE_THRESHOLDS] = self.build_coverage_thresholds()
+        data[constants.FAILED] = self.failed
+        data[constants.PURITY_FAILURE] = self.purity_failure
+        data[constants.REPORT_DATE] = None
+        if not self.failed:
+            # additional data for non-failed reports
+            data[constants.APPROVED_BIOMARKERS] = self.build_fda_approved_info()
+            data[constants.INVESTIGATIONAL_THERAPIES] = self.build_investigational_therapy_info()
+            data[constants.GENOMIC_LANDSCAPE_INFO] = self.build_genomic_landscape_info()
+            tmb = data[constants.GENOMIC_LANDSCAPE_INFO][constants.TMB_PER_MB]
+            data[constants.TMB_PLOT] = self.write_tmb_plot(tmb, self.input_dir)
+            data[constants.VAF_PLOT] = self.write_vaf_plot(self.input_dir)
+            data[constants.SMALL_MUTATIONS_AND_INDELS] = self.build_small_mutations_and_indels()
+            data[constants.TOP_ONCOGENIC_SOMATIC_CNVS] = self.build_copy_number_variation()
+            if self.assay_type == constants.ASSAY_WGTS:
+                data[constants.STRUCTURAL_VARIANTS_AND_FUSIONS] = self.build_svs_and_fusions()
+            else:
+                data[constants.STRUCTURAL_VARIANTS_AND_FUSIONS] = None
+            data[constants.SUPPLEMENTARY_GENE_INFO] = self.build_supplementary_info()
+        self.logger.info("Finished building clinical report data for JSON output")
+        return data
 
     def sort_by_oncokb_level(self, rows):
         # sort table rows from highest to lowest oncoKB level
@@ -607,24 +596,6 @@ class clinical_report_json_composer(composer_base):
             constants.TREATMENT: therapies
         }
         return row
-
-    def write_human_readable(self, data, out_path):
-        # write pretty-printed JSON with file paths
-        data[constants.OICR_LOGO] = os.path.abspath(data[constants.OICR_LOGO])
-        if not self.failed:
-            data[constants.TMB_PLOT] = os.path.abspath(data[constants.TMB_PLOT])
-            data[constants.VAF_PLOT] = os.path.abspath(data[constants.VAF_PLOT])
-        with open(out_path, 'w') as out_file:
-             print(json.dumps(data, sort_keys=True, indent=4), file=out_file)
-
-    def write_machine_readable(self, data, out_path):
-        # read in JPEGs as base-64 blobs to make a self-contained document
-        data[constants.OICR_LOGO] = self.image_to_json_string(data[constants.OICR_LOGO], 'png')
-        if not self.failed:
-            data[constants.TMB_PLOT] = self.image_to_json_string(data[constants.TMB_PLOT])
-            data[constants.VAF_PLOT] = self.image_to_json_string(data[constants.VAF_PLOT])
-        with open(out_path, 'w') as out_file:
-             print(json.dumps(data), file=out_file)
 
     def write_tmb_plot(self, tmb, out_dir):
         out_path = os.path.join(out_dir, 'tmb.jpeg')

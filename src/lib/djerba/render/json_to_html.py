@@ -183,7 +183,7 @@ class html_builder:
             rows.append(self.table_row(cells))
         return rows
 
-    def supplementary_info_header(self):
+    def supplementary_gene_info_header(self):
         names = [
             constants.GENE,
             constants.CHROMOSOME,
@@ -191,10 +191,13 @@ class html_builder:
         ]
         return self.table_header(names)
 
-    def supplementary_info_rows(self, row_fields):
+    def supplementary_gene_info_rows(self, row_fields):
         rows = []
         for row in row_fields:
             # italicize the gene name where it appears in the summary
+            # name must be:
+            # - preceded by a space or start-of-string
+            # - followed by a space or listed punctuation
             summary = re.sub('(^| ){0}[,.;: ]'.format(row[constants.GENE]),
                              lambda m: '<i>{0}</i>'.format(m[0]),
                              row[constants.SUMMARY])

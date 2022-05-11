@@ -1,5 +1,6 @@
 """Extract and pre-process data, so it can be read into a clinical report JSON document"""
 
+import base64
 import csv
 import json
 import logging
@@ -88,6 +89,20 @@ class extractor(logger):
         """Remove a suffix of the form ' (PAAD)' or ' (AMLCBFBMYH11)' from an oncotree entry"""
         return re.sub(' \(\w+\)$', '', entry)
 
+    def _write_main_json(self, out_path, report_data, config_data, pretty=True):
+        """Write the main JSON file"""
+        data = {
+            constants.REPORT: report_data,
+            constants.SUPPLEMENTARY: {
+                constants.CONFIG: config_data
+            }
+        }
+        with open(out_path, 'w') as out_file:
+            if pretty:
+                print(json.dumps(data, sort_keys=True, indent=4), file=out_file)
+            else:
+                print(json.dumps(data), file=out_file)
+
     def get_description(self):
         """
         Get cancer type and description from the oncotree file and code
@@ -135,6 +150,15 @@ class extractor(logger):
         }
         return description
 
+    def image_to_json_string(self, image_path, image_type='jpeg'):
+        # read a jpeg file into base64 with JSON prefix
+        if image_type not in ['jpg', 'jpeg', 'png']:
+            raise RuntimeError("Unsupported image type: {0}".format(image_type))
+        with open(image_path, 'rb') as image_file:
+            image = base64.b64encode(image_file.read())
+        image_json = 'data:image/{0};base64,{1}'.format(image_type, image.decode('utf-8'))
+        return image_json
+
     def run(self, r_script=True):
         """Run extraction and write output"""
         self.logger.info("Djerba extract step started")
@@ -147,10 +171,14 @@ class extractor(logger):
             self.write_sequenza_meta()
         self.write_clinical_data(self.get_description())
         self.write_genomic_summary()
-        self.logger.info("Building JSON summary")
-        # TODO modify composer to run correctly in failed mode (clinical data & genomic summary only)
-        composer = clinical_report_json_composer(self.report_dir, self.author, self.assay_type, self.depth, self.failed)
-        composer.run(self.report_dir) # write JSON output to the report directory
+        report_data = clinical_report_json_composer(
+            self.report_dir,
+            self.author,
+            self.assay_type,
+            self.depth,
+            self.failed
+        ).run()
+        self.write_json(report_data)
         # TODO archive the JSON output
         self.logger.info("Djerba extract step finished; extracted metrics written to {0}".format(self.report_dir))
 
@@ -216,6 +244,42 @@ class extractor(logger):
         input_path = self.config[ini.DISCOVERED][ini.GENOMIC_SUMMARY]
         output_path = os.path.join(self.report_dir, constants.GENOMIC_SUMMARY_FILENAME)
         copyfile(input_path, output_path)
+
+    def write_json(self, report_data):
+        """
+        Write the main JSON file:
+        - with 'report' and 'supplementary' sections
+        - in human and machine formats
+        """
+        # convert the ConfigParser INI to a dictionary for output
+        config_data = {}
+        for section in self.config.sections():
+            config_data[section] = {}
+            for key, val in self.config.items(section):
+
+                if re.match('^-*[0-9]+\.[0-9]+$', val):
+                    val = float(val)
+                elif re.match('^-*[0-9]+$', val):
+                    val = int(val)
+                config_data[section][key] = val
+        # shorter key names
+        tmb_key = render_constants.TMB_PLOT
+        vaf_key = render_constants.VAF_PLOT
+        logo_key = render_constants.OICR_LOGO
+        # human-readable; pretty-printed with absolute image paths
+        report_data[logo_key] = os.path.abspath(report_data[logo_key])
+        if not self.failed:
+            report_data[tmb_key] = os.path.abspath(report_data[tmb_key])
+            report_data[vaf_key] = os.path.abspath(report_data[vaf_key])
+        human_path = os.path.join(self.report_dir, constants.REPORT_HUMAN_FILENAME)
+        self._write_main_json(human_path, report_data, config_data, pretty=True)
+        # machine-readable; replace image paths with base-64 blobs for a self-contained document
+        report_data[logo_key] = self.image_to_json_string(report_data[logo_key], 'png')
+        if not self.failed:
+            report_data[tmb_key] = self.image_to_json_string(report_data[tmb_key])
+            report_data[vaf_key] = self.image_to_json_string(report_data[vaf_key])
+        machine_path = os.path.join(self.report_dir, constants.REPORT_MACHINE_FILENAME)
+        self._write_main_json(machine_path, report_data, config_data, pretty=False)
 
     def write_sequenza_meta(self):
         """

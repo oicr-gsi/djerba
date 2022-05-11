@@ -51,3 +51,8 @@ ALL = 'all'
 
 # for running Mavis
 MAVIS_SUBDIR_NAME = 'mavis'
+
+# high-level elements of main JSON
+REPORT = 'report'
+SUPPLEMENTARY = 'supplementary'
+CONFIG = 'config'

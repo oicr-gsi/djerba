@@ -62,11 +62,11 @@ ${html_builder().structural_variants_and_fusions_header()}
 <div style="height:36px">
 <h3 class="header1">Supplementary Gene Information</h3>
 </div>
-% if len(supplementary_info) > 0:
+% if len(gene_info) > 0:
 <table class="variants" width="100%">
-${html_builder().supplementary_info_header()}
+${html_builder().supplementary_gene_info_header()}
 <tbody>
-% for row in html_builder().supplementary_info_rows(supplementary_info):
+% for row in html_builder().supplementary_gene_info_rows(gene_info):
       ${row}
 % endfor
 </tbody>

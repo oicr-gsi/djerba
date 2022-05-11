@@ -186,11 +186,12 @@ class TestExtractor(TestBase):
             'data_segments.txt',
             'sequenza_meta.txt',
     ]
-    STATIC_FAILED = {
+    # md5 sums of files in failed output
+    STATIC_MD5_FAILED = {
         'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
         'genomic_summary.txt': 'c84eec523dbc81f4fc7b08860ab1a47f',
-        'djerba_report_human.json': 'fab48391caef7b897a65f3351ce51880',
-        'djerba_report_machine.json': 'c65a0a1927d845d4279ec988b196d5a9'
+        'djerba_report_human.json': 'd91bfe2c02899a77bef1580281e11e9e',
+        'djerba_report_machine.json': 'b62ebedd48d62229d10a568ba424e4e7'
     }
     VARYING_OUTPUT = [
         'tmb.jpeg',
@@ -204,9 +205,13 @@ class TestExtractor(TestBase):
             data_found = json.loads(in_file.read())
         with open(expected_path) as in_file:
             data_expected = json.loads(in_file.read())
+        # plot paths/contents are not fixed
         for key in ['oicr_logo', 'tmb_plot', 'vaf_plot']:
-            del data_found[key]
-            del data_expected[key]
+            del data_found['report'][key]
+            del data_expected['report'][key]
+        # do not check supplementary data
+        del data_found['supplementary']
+        del data_expected['supplementary']
         self.assertEqual(data_found, data_expected)
 
     def check_outputs_md5(self, out_dir, outputs):
@@ -215,11 +220,11 @@ class TestExtractor(TestBase):
             self.assertTrue(os.path.exists(output_path), filename+' exists')
             self.assertEqual(self.getMD5(output_path), outputs[filename])
 
-    def get_static_passed(self):
-        static_passed = self.STATIC_FAILED.copy()
-        del static_passed['djerba_report_human.json']
-        del static_passed['djerba_report_machine.json']
-        return static_passed
+    def get_static_md5_passed(self):
+        static_md5_passed = self.STATIC_MD5_FAILED.copy()
+        del static_md5_passed['djerba_report_human.json']
+        del static_md5_passed['djerba_report_machine.json']
+        return static_md5_passed
 
     def run_extractor(self, user_config, out_dir, wgs_only, failed, depth):
         config = configparser.ConfigParser()
@@ -234,7 +239,7 @@ class TestExtractor(TestBase):
         out_dir = os.path.join(self.tmp_dir, 'failed')
         os.mkdir(out_dir)
         self.run_extractor(self.config_full, out_dir, False, True, 80)
-        self.check_outputs_md5(out_dir, self.STATIC_FAILED)
+        self.check_outputs_md5(out_dir, self.STATIC_MD5_FAILED)
 
     def test_wgts_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGTS')
@@ -249,7 +254,7 @@ class TestExtractor(TestBase):
             file_path = os.path.join(self.sup_dir, 'report_example', file_name)
             copy(file_path, out_dir)
         self.run_extractor(self.config_full, out_dir, False, False, 80)
-        self.check_outputs_md5(out_dir, self.get_static_passed())
+        self.check_outputs_md5(out_dir, self.get_static_md5_passed())
         for name in self.VARYING_OUTPUT:
             self.assertTrue(os.path.exists(os.path.join(out_dir, name)), name+' exists')
         ref_dir = os.path.join(self.sup_dir, 'report_json', 'WGTS')
@@ -267,7 +272,7 @@ class TestExtractor(TestBase):
             file_path = os.path.join(self.sup_dir, 'report_example', file_name)
             copy(file_path, out_dir)
         self.run_extractor(self.config_full, out_dir, True, False, 80)
-        self.check_outputs_md5(out_dir, self.get_static_passed())
+        self.check_outputs_md5(out_dir, self.get_static_md5_passed())
         for name in self.VARYING_OUTPUT:
             self.assertTrue(os.path.exists(os.path.join(out_dir, name)))
         ref_dir = os.path.join(self.sup_dir, 'report_json', 'WGS_only')
