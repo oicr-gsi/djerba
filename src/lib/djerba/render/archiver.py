@@ -7,7 +7,7 @@ import os
 
 import djerba.util.constants as constants
 import djerba.render.constants as render_constants
-from djerba.util.image_to_base64 import convert_jpeg
+from djerba.util.image_to_base64 import converter
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
 
@@ -16,34 +16,41 @@ class archiver(logger):
 
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
-
-    def convert(self, in_path):
-        if os.access(tmb_path, os.R_OK):
-            converted = convert_jpeg(in_path)
-            self.logger.debug("Converted plot {0} to base64 string".format(in_path))
-        else:
-            self.logger.debug("Cannot read {0}, omitting base64 conversion".format(in_path))
-            converted = None
-        return converted
+        self.converter = converter(log_level, log_path)
 
     def read_and_preprocess(self, data_path):
         # read the JSON and convert image paths to base64 blobs
+        self.logger.debug("Reading data path {0}".format(data_path))
         with open(data_path) as data_file:
-            self.data_string = data_file.read()
+            data_string = data_file.read()
         data = json.loads(data_string)
+        # shorter key names
         report = constants.REPORT
-        tmb_converted = self.convert(data[constants.REPORT][render_constants.TMB_PLOT])
-        if tmb_converted:
-            data[constants.REPORT][render_constants.TMB_PLOT] = tmb_converted
-        vaf_converted = self.convert(data[constants.REPORT][render_constants.VAF_PLOT])
-        if vaf_converted:
-            data[constants.REPORT][render_constants.VAF_PLOT] = vaf_converted
+        tmb_key = render_constants.TMB_PLOT
+        vaf_key = render_constants.VAF_PLOT
+        logo_key = render_constants.OICR_LOGO
+        # convert image paths (if any, they may already be base64)
+        if os.path.isfile(data[report][logo_key]):
+            data[report][logo_key] = self.converter.convert_png(data[report][logo_key])
+            self.logger.debug("Converted OICR logo to base64")
+        else:
+            self.logger.debug("OICR logo is not an existing path, omitting base64 conversion")
+        if os.path.isfile(data[report][tmb_key]):
+            data[report][tmb_key] = self.converter.convert_jpeg(data[report][tmb_key])
+            self.logger.debug("Converted TMB plot to base64")
+        else:
+            self.logger.debug("TMB plot is not an existing path, omitting base64 conversion")
+        if os.path.isfile(data[report][vaf_key]):
+            data[report][vaf_key] = self.converter.convert_jpeg(data[report][vaf_key])
+            self.logger.debug("Converted VAF plot to base64")
+        else:
+            self.logger.debug("VAF plot is not an existing path, omitting base64 conversion")
         return json.dumps(data)
 
     def run(self, data_path, archive_dir, patient_id):
         data_string = self.read_and_preprocess(data_path)
         m = hashlib.md5()
-        m.update(self.data_string.encode(constants.TEXT_ENCODING))
+        m.update(data_string.encode(constants.TEXT_ENCODING))
         md5sum = m.hexdigest()
         # construct the output path, creating directories if necessary
         path_validator().validate_output_dir(archive_dir)
@@ -54,13 +61,16 @@ class archiver(logger):
         out_dir_1 = os.path.join(out_dir_0, md5sum)
         out_path = None
         # if output was not previously written, write it now
-        if os.path.exists(out_dir_1):
-            msg = "Output directory {0} exists; ".format(out_dir_1)+\
-                  "an identical file has already been archived; not writing to archive"
-            self.logger.info(msg)
-        else:
+        if not os.path.exists(out_dir_1):
             os.mkdir(out_dir_1)
-            out_path = os.path.join(out_dir_1, "{0}.json".format(self.patient_id))
+        suffix = md5sum[0:8]
+        out_path = os.path.join(out_dir_1, "{0}_{1}.json".format(patient_id, suffix))
+        if os.path.exists(out_path):
+            msg = "Output path {0} exists; ".format(out_path)+\
+                  "an identical file has already been archived; not writing to archive"
+            self.logger.debug(msg)
+        else:
             with open(out_path, 'w') as out_file:
                 out_file.write(data_string)
-            msg = "Archived JSON to {0}".format(out_path)
+            self.logger.debug("Archived JSON to {0}".format(out_path))
+        return out_path

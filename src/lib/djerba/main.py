@@ -152,8 +152,8 @@ class main(logger):
         elif self.args.subparser_name == constants.HTML:
             json_path = self._get_json_path()
             html_path = self._get_html_path()
-            hr = html_renderer(self.log_level, self.log_path)
-            hr.run(json_path, html_path)
+            archive = not self.args.no_archive
+            html_renderer(self.log_level, self.log_path).run(json_path, html_path, archive)
             if self.args.pdf:
                 patient_id = self._get_patient_study_id(self.args.dir)
                 pdf_path = self._get_pdf_path(patient_id)
@@ -189,8 +189,9 @@ class main(logger):
             config_validator(self.args.wgs_only, self.args.failed, self.log_level, self.log_path).validate_full(full_config)
             extractor(full_config, report_dir, self._get_author(), self.args.wgs_only, self.args.failed, self.args.target_coverage, self.log_level, self.log_path).run()
             html_path = self._get_html_path()
-            renderer = html_renderer(self.log_level, self.log_path)
-            renderer.run(os.path.join(self.args.dir, constants.REPORT_MACHINE_FILENAME), html_path)
+            json_path = os.path.join(self.args.dir, constants.REPORT_MACHINE_FILENAME)
+            archive = not self.args.no_archive
+            html_renderer(self.log_level, self.log_path).run(json_path, html_path, archive)
             patient_id = self._get_patient_study_id(self.args.dir)
             pdf = self._get_pdf_path(patient_id)
             pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, patient_id)
@@ -215,8 +216,9 @@ class main(logger):
             config_validator(self.args.wgs_only, self.args.failed, self.log_level, self.log_path).validate_full(full_config)
             extractor(full_config, report_dir, self._get_author(), self.args.wgs_only, self.args.failed, self.args.target_coverage, self.log_level, self.log_path).run()
             html_path = self._get_html_path()
-            renderer = html_renderer(self.log_level, self.log_path)
-            renderer.run(os.path.join(self.args.dir, constants.REPORT_MACHINE_FILENAME), html_path)
+            json_path = os.path.join(self.args.dir, constants.REPORT_MACHINE_FILENAME)
+            archive = not self.args.no_archive
+            html_renderer(self.log_level, self.log_path).run(json_path, html_path, archive)
 
     def run_setup(self):
         """Set up an empty working directory for a CGI report"""

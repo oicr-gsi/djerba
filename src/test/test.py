@@ -22,6 +22,7 @@ from djerba.extract.r_script_wrapper import r_script_wrapper
 from djerba.lister import lister
 from djerba.main import main
 from djerba.mavis import mavis_runner
+from djerba.render.archiver import archiver
 from djerba.render.render import html_renderer, pdf_renderer
 from djerba.sequenza import sequenza_reader, SequenzaError
 from djerba.util.validator import config_validator, DjerbaConfigError
@@ -108,15 +109,17 @@ class TestBase(unittest.TestCase):
 
 class TestArchive(TestBase):
 
-    @unittest.skip('Archiving to be changed from INI to JSON')
     def test_archive(self):
         out_dir = self.tmp_dir
-        archive_path = archiver(self.config_full).run(out_dir)
-        # contents of file are dependent on local paths
+        json_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report_human.json')
+        archive_path = archiver().run(json_path, out_dir, 'test_ID')
         self.assertTrue(os.path.exists(archive_path))
+        # contents of file are dependent on local paths
         with open(archive_path) as archive_file:
-            lines = len(archive_file.readlines())
-        self.assertEqual(lines, 50)
+            data = json.loads(archive_file.read())
+        self.assertEqual(len(data['report']), 19)
+        self.assertEqual(len(data['supplementary']['config']), 3)
+
 
 class TestConfigure(TestBase):
 

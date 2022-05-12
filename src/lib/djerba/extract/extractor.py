@@ -15,7 +15,7 @@ from djerba.sequenza import sequenza_reader
 import djerba.render.constants as render_constants
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
-from djerba.util.image_to_base64 import convert_jpeg, convert_png
+from djerba.util.image_to_base64 import converter
 from djerba.util.logger import logger
 
 class extractor(logger):
@@ -44,6 +44,7 @@ class extractor(logger):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
+        self.converter = converter(log_level, log_path)
         if self.failed:
             self.logger.info("Extracting Djerba data for failed report")
         elif self.wgs_only:
@@ -265,10 +266,10 @@ class extractor(logger):
         human_path = os.path.join(self.report_dir, constants.REPORT_HUMAN_FILENAME)
         self._write_main_json(human_path, report_data, config_data, pretty=True)
         # machine-readable; replace image paths with base-64 blobs for a self-contained document
-        report_data[logo_key] = convert_png(report_data[logo_key])
+        report_data[logo_key] = self.converter.convert_png(report_data[logo_key])
         if not self.failed:
-            report_data[tmb_key] = convert_jpeg(report_data[tmb_key])
-            report_data[vaf_key] = convert_jpeg(report_data[vaf_key])
+            report_data[tmb_key] = self.converter.convert_jpeg(report_data[tmb_key])
+            report_data[vaf_key] = self.converter.convert_jpeg(report_data[vaf_key])
         machine_path = os.path.join(self.report_dir, constants.REPORT_MACHINE_FILENAME)
         self._write_main_json(machine_path, report_data, config_data, pretty=False)
 

@@ -52,13 +52,15 @@ class html_renderer(logger):
                 msg = "Patient ID not found in config, falling back to '{0}'".format(patient_id)
                 self.logger.warn(msg)
             if archive_dir:
-                archive_args = [out_path, archive_dir, patient_id]
-                archiver(self.log_level, self.log_path).run(**archive_args)
-                self.logger.info("Archived {0} to {1} with ID '{2}'".format(**archive_args))
+                archive_args = [in_path, archive_dir, patient_id]
+                self.logger.info("Archiving {0} to {1} with ID '{2}'".format(*archive_args))
+                archiver(self.log_level, self.log_path).run(*archive_args)
+                self.logger.debug("Archiving done")
             else:
                 self.logger.warn("No archive directory; omitting archiving")
         else:
             self.logger.info("Archive operation not requested; omitting archiving")
+        self.logger.info("Completed HTML rendering of {0} to {1}".format(in_path, out_path))
 
 
 class pdf_renderer(logger):
