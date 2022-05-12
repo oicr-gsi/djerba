@@ -3,6 +3,7 @@
 import djerba.render.constants as constants
 import re
 import sys
+from markdown import markdown
 from time import strftime
 
 class html_builder:
@@ -72,6 +73,9 @@ class html_builder:
             row_items.append('</tr>')
             rows.append("\n".join(row_items))
         return rows
+
+    def markdown_to_html(self, markdown_string):
+        return markdown(markdown_string)
 
     def oncogenic_CNVs_header(self):
         names = [

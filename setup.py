@@ -77,6 +77,7 @@ setup(
     install_requires=[
         'configparse',
         'mako',
+        'markdown',
         'numpy',
         'pandas',
         'pdfkit',

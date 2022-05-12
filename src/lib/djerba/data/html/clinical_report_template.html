@@ -62,13 +62,14 @@
 % if not failed:
 <%include file="genomic_therapies_template.html"/>
 % endif
+<br/>
 % if failed:
-<p style="border:3px; border-style:solid; border-color:#FF0000; padding: 1em;">
+<div style="border:3px; border-style:solid; border-color:#FF0000; padding: 1em;">
 % else:
-<p style="border:3px; border-style:solid; border-color:#000000; padding: 1em;">
+<div style="border:3px; border-style:solid; border-color:#000000; padding: 1em;">
 % endif
-${genomic_summary}
-</p>
+${html_builder().markdown_to_html(genomic_summary)}
+</div>
 ## Omit all genomic landscape and variant information for failed samples
 % if not failed:
 <%include file="genomic_details_template.html"/>
