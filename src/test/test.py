@@ -192,9 +192,9 @@ class TestExtractor(TestBase):
     # md5 sums of files in failed output
     STATIC_MD5_FAILED = {
         'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
-        'genomic_summary.txt': 'c84eec523dbc81f4fc7b08860ab1a47f',
-        'djerba_report_human.json': 'd91bfe2c02899a77bef1580281e11e9e',
-        'djerba_report_machine.json': 'b62ebedd48d62229d10a568ba424e4e7'
+        'genomic_summary.txt': '5a2f6e61fdf0f109ac3d1bcc4bb3ca71',
+        'djerba_report_human.json': 'e15d393fd3fdc9bd3b4a2f4a4325daa6',
+        'djerba_report_machine.json': '1694f56c46a59f77b97d2a3c33732ef8'
     }
     VARYING_OUTPUT = [
         'tmb.jpeg',
@@ -457,11 +457,19 @@ class TestRender(TestBase):
         self.assertEqual(md5, expected_md5)
 
     def test_html(self):
-        # TODO input JSON with other fail/assay/coverage options and check HTML output
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report_machine.json')
-        out_path = os.path.join(self.tmp_dir, 'djerba_test.html')
-        html_renderer().run(args_path, out_path)
-        self.check_report(out_path, 'c2c948627ef9ec4d72c77eb5e624e1b7')
+        out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
+        html_renderer().run(args_path, out_path, False)
+        self.check_report(out_path, '2cbef55abb1c87d3d692d292de953994')
+        args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report_machine.json')
+        out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
+        html_renderer().run(args_path, out_path, False)
+        self.check_report(out_path, 'a3ef5f60edd0040cac94716471c53530')
+        args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report_machine.json')
+        out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
+        html_renderer().run(args_path, out_path, False)
+        self.check_report(out_path, 'af2a63e6105a8786576e71185949c4b3')
+
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
