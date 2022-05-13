@@ -193,8 +193,8 @@ class TestExtractor(TestBase):
     STATIC_MD5_FAILED = {
         'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
         'genomic_summary.txt': '5a2f6e61fdf0f109ac3d1bcc4bb3ca71',
-        'djerba_report_human.json': 'ec5b5b79aa610564d854d7b12d32996a',
-        'djerba_report_machine.json': '6d11d35fa879cef4a5a145a8c66e7547'
+        'djerba_report_human.json': '5e9316149004eba5439fd00a88319f78',
+        'djerba_report_machine.json': 'bb9d1d7860365605a282bd8eb60d1afc'
     }
     VARYING_OUTPUT = [
         'tmb.jpeg',
@@ -241,14 +241,14 @@ class TestExtractor(TestBase):
         # test failed mode; does not require R script output
         out_dir = os.path.join(self.tmp_dir, 'failed')
         os.mkdir(out_dir)
-        out_dir = '/u/ibancarz/workspace/djerba/test_20220513_01/failed'
+        #out_dir = '/u/ibancarz/workspace/djerba/test_20220513_01/failed'
         self.run_extractor(self.config_full, out_dir, False, True, 80)
         self.check_outputs_md5(out_dir, self.STATIC_MD5_FAILED)
 
     def test_wgts_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGTS')
         os.mkdir(out_dir)
-        out_dir = '/u/ibancarz/workspace/djerba/test_20220513_01/wgts'
+        #out_dir = '/u/ibancarz/workspace/djerba/test_20220513_01/wgts'
         rscript_outputs = self.RSCRIPT_OUTPUTS_WGS_ONLY.copy()
         rscript_outputs.extend([
             'data_fusions_new_delimiter.txt',
@@ -273,7 +273,7 @@ class TestExtractor(TestBase):
     def test_wgs_only_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGS_only')
         os.mkdir(out_dir)
-        out_dir = '/u/ibancarz/workspace/djerba/test_20220513_01/wgs_only'
+        #out_dir = '/u/ibancarz/workspace/djerba/test_20220513_01/wgs_only'
         for file_name in self.RSCRIPT_OUTPUTS_WGS_ONLY:
             file_path = os.path.join(self.sup_dir, 'report_example', file_name)
             copy(file_path, out_dir)
