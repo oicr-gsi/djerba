@@ -170,9 +170,9 @@ class extractor(logger):
             xc.ASSAY_NAME: 'Frodo', # TODO populate from config
             xc.COVERAGE: self.depth,
             xc.FAILED: self.failed,
-            xc.ONCOTREE_CODE: 'Samwise', #self.config[ini.INPUTS][ini.ONCOTREE_CODE],
+            xc.ONCOTREE_CODE: self.config[ini.INPUTS][ini.ONCOTREE_CODE],
             xc.PURITY_FAILURE: False, # TODO populate from config
-            xc.STUDY: 'Gandalf' # self.config[ini.INPUTS][ini.STUDY]
+            xc.STUDY: self.config[ini.INPUTS][ini.STUDY_ID]
         }
         report_data = clinical_report_json_composer(
             self.report_dir,
