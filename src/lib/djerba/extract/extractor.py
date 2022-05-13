@@ -12,6 +12,7 @@ from shutil import copyfile
 from djerba.extract.report_to_json import clinical_report_json_composer
 from djerba.extract.r_script_wrapper import r_script_wrapper
 from djerba.sequenza import sequenza_reader
+import djerba.extract.constants as xc
 import djerba.render.constants as render_constants
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
@@ -163,15 +164,23 @@ class extractor(logger):
             self.write_sequenza_meta()
         self.write_clinical_data(self.get_description())
         self.write_genomic_summary()
+        params = {
+            xc.AUTHOR: self.author,
+            xc.ASSAY_TYPE: self.assay_type,
+            xc.ASSAY_NAME: None, # TODO populate from config
+            xc.COVERAGE: self.depth,
+            xc.FAILED: self.failed,
+            xc.ONCOTREE_CODE: None, #self.config[ini.INPUTS][ini.ONCOTREE_CODE],
+            xc.PURITY_FAILURE: None,
+            xc.STUDY: None # self.config[ini.INPUTS][ini.STUDY]
+        }
         report_data = clinical_report_json_composer(
             self.report_dir,
-            self.author,
-            self.assay_type,
-            self.depth,
-            self.failed
+            params,
+            self.log_level,
+            self.log_path
         ).run()
         self.write_json(report_data)
-        # TODO archive the JSON output
         self.logger.info("Djerba extract step finished; extracted metrics written to {0}".format(self.report_dir))
 
     def run_r_script(self):

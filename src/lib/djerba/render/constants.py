@@ -1,5 +1,6 @@
 # top-level variable names
 APPROVED_BIOMARKERS = 'approved_biomarkers'
+ASSAY_NAME = 'assay_name'
 ASSAY_TYPE = 'assay_type'
 AUTHOR = 'author'
 OICR_LOGO = 'oicr_logo'

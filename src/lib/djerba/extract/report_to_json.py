@@ -8,10 +8,10 @@ import json
 import logging
 import os
 import re
-import sys # TODO remove along with main() method
 import pandas as pd
-import djerba.render.constants as constants
-import djerba.util.constants as djerba_constants
+import djerba.extract.constants as xc
+import djerba.render.constants as rc
+import djerba.util.constants as dc
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
 from statsmodels.distributions.empirical_distribution import ECDF
@@ -90,7 +90,6 @@ class clinical_report_json_composer(composer_base):
     FDA_APPROVED = 'FDA_APPROVED'
     INVESTIGATIONAL = 'INVESTIGATIONAL'
     PAN_CANCER_COHORT = 'TCGA Pan-Cancer Atlas 2018 (n=6,446)'
-    PLACEHOLDER = "<strong style='color:red;'>*** PLACEHOLDER ***</strong>"
     TMB_HEADER = 'tmb' # for tmbcomp files
     TMBCOMP_EXTERNAL = 'tmbcomp-externaldata.txt'
     TMBCOMP_TCGA = 'tmbcomp-tcga.txt'
@@ -110,29 +109,25 @@ class clinical_report_json_composer(composer_base):
         'Likely Oncogenic'
     ]
 
-    def __init__(self, input_dir, author, assay_type, coverage=80, failed=False, purity_failure=False,
-                 log_level=logging.WARNING, log_path=None):
+    def __init__(self, input_dir, params, log_level=logging.WARNING, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
-        self.input_dir = input_dir
         self.all_reported_variants = set()
-        permitted = [constants.ASSAY_WGS, constants.ASSAY_WGTS]
-        if not assay_type in permitted:
+        self.input_dir = input_dir
+        self.params = params
+        permitted = [rc.ASSAY_WGS, rc.ASSAY_WGTS]
+        if not self.params.get(xc.ASSAY_TYPE) in permitted:
             msg = "Assay type {0} not in permitted assays {1}".format(assay_type, permitted)
             self.logger.error(msg)
             raise RuntimeError(msg)
-        self.assay_type = assay_type
-        self.author = author
-        self.coverage = coverage
-        self.failed = failed
-        self.purity_failure = purity_failure
+        self.failed = self.params.get(xc.FAILED)
         self.clinical_data = self.read_clinical_data()
-        self.closest_tcga_lc = self.clinical_data['CLOSEST_TCGA'].lower()
-        self.closest_tcga_uc = self.clinical_data['CLOSEST_TCGA'].upper()
-        self.data_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], djerba_constants.DATA_DIR_NAME)
+        self.closest_tcga_lc = self.clinical_data[dc.CLOSEST_TCGA].lower()
+        self.closest_tcga_uc = self.clinical_data[dc.CLOSEST_TCGA].upper()
+        self.data_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], dc.DATA_DIR_NAME)
         self.r_script_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], 'R_plots')
-        self.html_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], 'data', 'html')
+        self.html_dir = os.path.join(self.data_dir, 'html')
         self.cytoband_map = self.read_cytoband_map()
         if self.failed:
             self.total_somatic_mutations = None
@@ -142,7 +137,7 @@ class clinical_report_json_composer(composer_base):
         else:
             self.total_somatic_mutations = self.read_total_somatic_mutations()
             self.total_oncogenic_somatic_mutations = self.read_total_oncogenic_somatic_mutations()
-            if assay_type == constants.ASSAY_WGTS:
+            if self.params.get(xc.ASSAY_TYPE) == rc.ASSAY_WGTS:
                 fus_reader = fusion_reader(input_dir, log_level=log_level, log_path=log_path)
                 self.total_fusion_genes = fus_reader.get_total_fusion_genes()
                 self.gene_pair_fusions = fus_reader.get_fusions()
@@ -156,23 +151,24 @@ class clinical_report_json_composer(composer_base):
     def build_copy_number_variation(self):
         [oncogenic_cnv_total, cnv_total, oncogenic_variants] = self.read_cnv_data()
         data = {
-            constants.TOTAL_VARIANTS: cnv_total,
-            constants.CLINICALLY_RELEVANT_VARIANTS: oncogenic_cnv_total,
-            constants.BODY: self.sort_by_oncokb_level(oncogenic_variants)
+            rc.TOTAL_VARIANTS: cnv_total,
+            rc.CLINICALLY_RELEVANT_VARIANTS: oncogenic_cnv_total,
+            rc.BODY: self.sort_by_oncokb_level(oncogenic_variants)
         }
         return data
 
     def build_coverage_thresholds(self):
         coverage_thresholds = {
-            constants.NORMAL_MIN: 30,
-            constants.NORMAL_TARGET: 40
+            rc.NORMAL_MIN: 30,
+            rc.NORMAL_TARGET: 40
         }
-        if self.coverage == 40:
-            coverage_thresholds[constants.TUMOUR_MIN] = 40
-            coverage_thresholds[constants.TUMOUR_TARGET] = 50
-        elif self.coverage == 80:
-            coverage_thresholds[constants.TUMOUR_MIN] = 80
-            coverage_thresholds[constants.TUMOUR_TARGET] = 100
+        coverage = self.params.get(xc.COVERAGE)
+        if coverage == 40:
+            coverage_thresholds[rc.TUMOUR_MIN] = 40
+            coverage_thresholds[rc.TUMOUR_TARGET] = 50
+        elif coverage == 80:
+            coverage_thresholds[rc.TUMOUR_MIN] = 80
+            coverage_thresholds[rc.TUMOUR_TARGET] = 100
         else:
             raise RuntimeError("Unknown depth of coverage")
         return coverage_thresholds
@@ -187,46 +183,46 @@ class clinical_report_json_composer(composer_base):
         # need to calculate TMB and percentiles
         cohort = self.read_cohort()
         data = {}
-        data[constants.TMB_TOTAL] = self.total_somatic_mutations
+        data[rc.TMB_TOTAL] = self.total_somatic_mutations
         # TODO See GCGI-347 for possible updates to V7_TARGET_SIZE
-        data[constants.TMB_PER_MB] = round(self.total_somatic_mutations/self.V7_TARGET_SIZE, 2)
-        data[constants.PERCENT_GENOME_ALTERED] = int(round(self.read_fga()*100, 0))
-        csp = self.read_cancer_specific_percentile(data[constants.TMB_PER_MB], cohort, self.closest_tcga_lc)
-        data[constants.CANCER_SPECIFIC_PERCENTILE] = int(round(csp, 0))
-        data[constants.CANCER_SPECIFIC_COHORT] = cohort
-        pcp = self.read_pan_cancer_percentile(data[constants.TMB_PER_MB])
-        data[constants.PAN_CANCER_PERCENTILE] = int(round(pcp, 0))
-        data[constants.PAN_CANCER_COHORT] = self.PAN_CANCER_COHORT
+        data[rc.TMB_PER_MB] = round(self.total_somatic_mutations/self.V7_TARGET_SIZE, 2)
+        data[rc.PERCENT_GENOME_ALTERED] = int(round(self.read_fga()*100, 0))
+        csp = self.read_cancer_specific_percentile(data[rc.TMB_PER_MB], cohort, self.closest_tcga_lc)
+        data[rc.CANCER_SPECIFIC_PERCENTILE] = int(round(csp, 0))
+        data[rc.CANCER_SPECIFIC_COHORT] = cohort
+        pcp = self.read_pan_cancer_percentile(data[rc.TMB_PER_MB])
+        data[rc.PAN_CANCER_PERCENTILE] = int(round(pcp, 0))
+        data[rc.PAN_CANCER_COHORT] = self.PAN_CANCER_COHORT
         return data
 
     def build_investigational_therapy_info(self):
         return self.build_therapy_info(self.INVESTIGATIONAL)
 
     def build_patient_info(self):
-        # TODO import clinical data column names from Djerba constants module
+        # TODO import clinical data column names from Djerba constants
         data = {}
-        tumour_id = self.clinical_data['TUMOUR_SAMPLE_ID']
-        data[constants.ASSAY] = self.PLACEHOLDER
-        data[constants.BLOOD_SAMPLE_ID] = self.clinical_data['BLOOD_SAMPLE_ID']
-        data[constants.SEX] = self.clinical_data['SEX']
-        data[constants.PATIENT_LIMS_ID] = self.clinical_data['PATIENT_LIMS_ID']
-        data[constants.PATIENT_STUDY_ID] = self.clinical_data['PATIENT_STUDY_ID']
-        data[constants.PRIMARY_CANCER] = self.clinical_data['CANCER_TYPE_DESCRIPTION']
-        data[constants.REPORT_ID] = "{0}-v{1}".format(tumour_id, self.clinical_data['REPORT_VERSION'])
-        data[constants.REQ_APPROVED_DATE] = self.clinical_data['REQ_APPROVED_DATE']
-        data[constants.SITE_OF_BIOPSY_OR_SURGERY] = self.clinical_data['SAMPLE_ANATOMICAL_SITE']
-        data[constants.STUDY] = self.PLACEHOLDER
-        data[constants.TUMOUR_SAMPLE_ID] = tumour_id
+        tumour_id = self.clinical_data[dc.TUMOUR_SAMPLE_ID]
+        data[rc.ASSAY] = self.params.get(xc.ASSAY_NAME)
+        data[rc.BLOOD_SAMPLE_ID] = self.clinical_data[dc.BLOOD_SAMPLE_ID]
+        data[rc.SEX] = self.clinical_data[dc.SEX]
+        data[rc.PATIENT_LIMS_ID] = self.clinical_data[dc.PATIENT_LIMS_ID]
+        data[rc.PATIENT_STUDY_ID] = self.clinical_data[dc.PATIENT_STUDY_ID]
+        data[rc.PRIMARY_CANCER] = self.clinical_data[dc.CANCER_TYPE_DESCRIPTION]
+        data[rc.REPORT_ID] = "{0}-v{1}".format(tumour_id, self.clinical_data[dc.REPORT_VERSION])
+        data[rc.REQ_APPROVED_DATE] = self.clinical_data[dc.REQ_APPROVED_DATE]
+        data[rc.SITE_OF_BIOPSY_OR_SURGERY] = self.clinical_data[dc.SAMPLE_ANATOMICAL_SITE]
+        data[rc.STUDY] = self.params.get(xc.STUDY)
+        data[rc.TUMOUR_SAMPLE_ID] = tumour_id
         return data
 
     def build_sample_info(self):
         data = {}
-        data[constants.CALLABILITY_PERCENT] = float(self.clinical_data['PCT_V7_ABOVE_80X'])
-        data[constants.COVERAGE_MEAN] = float(self.clinical_data['MEAN_COVERAGE'])
-        data[constants.PLOIDY] = float(self.clinical_data['SEQUENZA_PLOIDY'])
-        data[constants.PURITY_PERCENT] = float(self.clinical_data['SEQUENZA_PURITY_FRACTION'])
-        data[constants.ONCOTREE_CODE] = self.PLACEHOLDER
-        data[constants.SAMPLE_TYPE] = self.clinical_data['SAMPLE_TYPE']
+        data[rc.CALLABILITY_PERCENT] = float(self.clinical_data[dc.PCT_V7_ABOVE_80X])
+        data[rc.COVERAGE_MEAN] = float(self.clinical_data[dc.MEAN_COVERAGE])
+        data[rc.PLOIDY] = float(self.clinical_data[dc.SEQUENZA_PLOIDY])
+        data[rc.PURITY_PERCENT] = float(self.clinical_data[dc.SEQUENZA_PURITY_FRACTION])
+        data[rc.ONCOTREE_CODE] = self.params.get(xc.ONCOTREE_CODE)
+        data[rc.SAMPLE_TYPE] = self.clinical_data[dc.SAMPLE_TYPE]
         return data
 
     def build_small_mutations_and_indels(self):
@@ -240,23 +236,23 @@ class clinical_report_json_composer(composer_base):
                 self.all_reported_variants.add((gene, cytoband))
                 protein = input_row[self.HGVSP_SHORT]
                 row = {
-                    constants.GENE: gene,
-                    constants.GENE_URL: self.build_gene_url(gene),
-                    constants.CHROMOSOME: cytoband,
-                    constants.PROTEIN: protein,
-                    constants.PROTEIN_URL: self.build_alteration_url(gene, protein, self.closest_tcga_uc),
-                    constants.MUTATION_TYPE: re.sub('_', ' ', input_row[self.VARIANT_CLASS]),
-                    constants.VAF_PERCENT: round(float(input_row[self.TUMOUR_VAF]), 2),
-                    constants.TUMOUR_DEPTH: int(input_row[constants.TUMOUR_DEPTH]),
-                    constants.TUMOUR_ALT_COUNT: int(input_row[constants.TUMOUR_ALT_COUNT]),
-                    constants.COPY_STATE: mutation_copy_states[gene],
-                    constants.ONCOKB: self.parse_oncokb_level(input_row)
+                    rc.GENE: gene,
+                    rc.GENE_URL: self.build_gene_url(gene),
+                    rc.CHROMOSOME: cytoband,
+                    rc.PROTEIN: protein,
+                    rc.PROTEIN_URL: self.build_alteration_url(gene, protein, self.closest_tcga_uc),
+                    rc.MUTATION_TYPE: re.sub('_', ' ', input_row[self.VARIANT_CLASS]),
+                    rc.VAF_PERCENT: round(float(input_row[self.TUMOUR_VAF]), 2),
+                    rc.TUMOUR_DEPTH: int(input_row[rc.TUMOUR_DEPTH]),
+                    rc.TUMOUR_ALT_COUNT: int(input_row[rc.TUMOUR_ALT_COUNT]),
+                    rc.COPY_STATE: mutation_copy_states[gene],
+                    rc.ONCOKB: self.parse_oncokb_level(input_row)
                 }
                 rows.append(row)
         data = {
-            constants.CLINICALLY_RELEVANT_VARIANTS: self.total_oncogenic_somatic_mutations,
-            constants.TOTAL_VARIANTS: self.total_somatic_mutations,
-            constants.BODY: self.sort_by_oncokb_level(rows)
+            rc.CLINICALLY_RELEVANT_VARIANTS: self.total_oncogenic_somatic_mutations,
+            rc.TOTAL_VARIANTS: self.total_somatic_mutations,
+            rc.BODY: self.sort_by_oncokb_level(rows)
         }
         return data
 
@@ -273,19 +269,19 @@ class clinical_report_json_composer(composer_base):
                 cytoband = self.get_cytoband(gene)
                 self.all_reported_variants.add((gene, cytoband))
                 row =  {
-                    constants.GENE: gene,
-                    constants.GENE_URL: self.build_gene_url(gene),
-                    constants.CHROMOSOME: cytoband,
-                    constants.FRAME: fusion.get_frame(),
-                    constants.FUSION: fusion.get_fusion_id_new(),
-                    constants.MUTATION_EFFECT: fusion.get_mutation_effect(),
-                    constants.ONCOKB: oncokb_level
+                    rc.GENE: gene,
+                    rc.GENE_URL: self.build_gene_url(gene),
+                    rc.CHROMOSOME: cytoband,
+                    rc.FRAME: fusion.get_frame(),
+                    rc.FUSION: fusion.get_fusion_id_new(),
+                    rc.MUTATION_EFFECT: fusion.get_mutation_effect(),
+                    rc.ONCOKB: oncokb_level
                 }
                 rows.append(row)
         data = {
-            constants.CLINICALLY_RELEVANT_VARIANTS: oncogenic_fusion_genes,
-            constants.TOTAL_VARIANTS: self.total_fusion_genes,
-            constants.BODY: self.sort_by_oncokb_level(rows)
+            rc.CLINICALLY_RELEVANT_VARIANTS: oncogenic_fusion_genes,
+            rc.TOTAL_VARIANTS: self.total_fusion_genes,
+            rc.BODY: self.sort_by_oncokb_level(rows)
         }
         return data
 
@@ -295,10 +291,10 @@ class clinical_report_json_composer(composer_base):
         rows = []
         for [gene, cytoband] in variants:
             row = {
-                constants.GENE: gene,
-                constants.GENE_URL: self.build_gene_url(gene),
-                constants.CHROMOSOME: cytoband,
-                constants.SUMMARY: gene_summaries.get(gene, 'OncoKB summary not available')
+                rc.GENE: gene,
+                rc.GENE_URL: self.build_gene_url(gene),
+                rc.CHROMOSOME: cytoband,
+                rc.SUMMARY: gene_summaries.get(gene, 'OncoKB summary not available')
             }
             rows.append(row)
         return rows
@@ -336,7 +332,7 @@ class clinical_report_json_composer(composer_base):
         if self.gene_pair_fusions: # omit for WGS-only reports
             for fusion in self.gene_pair_fusions:
                 genes = fusion.get_genes()
-                alteration = constants.FUSION
+                alteration = rc.FUSION
                 if level == self.FDA_APPROVED:
                     max_level = fusion.get_fda_level()
                     therapies = fusion.get_fda_therapies()
@@ -408,7 +404,7 @@ class clinical_report_json_composer(composer_base):
         return cohort
 
     def read_clinical_data(self):
-        input_path = os.path.join(self.input_dir, 'data_clinical.txt')
+        input_path = os.path.join(self.input_dir, dc.CLINICAL_DATA_FILENAME)
         with open(input_path) as input_file:
             reader = csv.reader(input_file, delimiter="\t")
             header = next(reader)
@@ -438,11 +434,11 @@ class clinical_report_json_composer(composer_base):
                     cytoband = self.get_cytoband(gene)
                     self.all_reported_variants.add((gene, cytoband))
                     variant = {
-                        constants.GENE: gene,
-                        constants.GENE_URL: self.build_gene_url(gene),
-                        constants.ALT: row[self.ALTERATION_UPPER_CASE],
-                        constants.CHROMOSOME: cytoband,
-                        constants.ONCOKB: level
+                        rc.GENE: gene,
+                        rc.GENE_URL: self.build_gene_url(gene),
+                        rc.ALT: row[self.ALTERATION_UPPER_CASE],
+                        rc.CHROMOSOME: cytoband,
+                        rc.ONCOKB: level
                     }
                     oncogenic_variants.append(variant)
         return [oncogenic, total, oncogenic_variants]
@@ -531,31 +527,32 @@ class clinical_report_json_composer(composer_base):
             self.logger.info("Building JSON for report with FAILED QC")
         else:
             self.logger.info("Building JSON for report with PASSED QC")
-        data[constants.ASSAY_TYPE] = self.assay_type
-        data[constants.AUTHOR] = self.author
-        data[constants.OICR_LOGO] = os.path.join(self.html_dir, 'OICR_Logo_RGB_ENGLISH.png')
-        data[constants.PATIENT_INFO] = self.build_patient_info()
-        data[constants.SAMPLE_INFO] = self.build_sample_info()
-        data[constants.GENOMIC_SUMMARY] = self.read_genomic_summary()
-        data[constants.COVERAGE_THRESHOLDS] = self.build_coverage_thresholds()
-        data[constants.FAILED] = self.failed
-        data[constants.PURITY_FAILURE] = self.purity_failure
-        data[constants.REPORT_DATE] = None
+        data[rc.ASSAY_NAME] = self.params.get(xc.ASSAY_NAME)
+        data[rc.ASSAY_TYPE] = self.params.get(xc.ASSAY_TYPE)
+        data[rc.AUTHOR] = self.params.get(xc.AUTHOR)
+        data[rc.OICR_LOGO] = os.path.join(self.html_dir, 'OICR_Logo_RGB_ENGLISH.png')
+        data[rc.PATIENT_INFO] = self.build_patient_info()
+        data[rc.SAMPLE_INFO] = self.build_sample_info()
+        data[rc.GENOMIC_SUMMARY] = self.read_genomic_summary()
+        data[rc.COVERAGE_THRESHOLDS] = self.build_coverage_thresholds()
+        data[rc.FAILED] = self.failed
+        data[rc.PURITY_FAILURE] = self.params.get(xc.PURITY_FAILURE)
+        data[rc.REPORT_DATE] = None
         if not self.failed:
             # additional data for non-failed reports
-            data[constants.APPROVED_BIOMARKERS] = self.build_fda_approved_info()
-            data[constants.INVESTIGATIONAL_THERAPIES] = self.build_investigational_therapy_info()
-            data[constants.GENOMIC_LANDSCAPE_INFO] = self.build_genomic_landscape_info()
-            tmb = data[constants.GENOMIC_LANDSCAPE_INFO][constants.TMB_PER_MB]
-            data[constants.TMB_PLOT] = self.write_tmb_plot(tmb, self.input_dir)
-            data[constants.VAF_PLOT] = self.write_vaf_plot(self.input_dir)
-            data[constants.SMALL_MUTATIONS_AND_INDELS] = self.build_small_mutations_and_indels()
-            data[constants.TOP_ONCOGENIC_SOMATIC_CNVS] = self.build_copy_number_variation()
-            if self.assay_type == constants.ASSAY_WGTS:
-                data[constants.STRUCTURAL_VARIANTS_AND_FUSIONS] = self.build_svs_and_fusions()
+            data[rc.APPROVED_BIOMARKERS] = self.build_fda_approved_info()
+            data[rc.INVESTIGATIONAL_THERAPIES] = self.build_investigational_therapy_info()
+            data[rc.GENOMIC_LANDSCAPE_INFO] = self.build_genomic_landscape_info()
+            tmb = data[rc.GENOMIC_LANDSCAPE_INFO][rc.TMB_PER_MB]
+            data[rc.TMB_PLOT] = self.write_tmb_plot(tmb, self.input_dir)
+            data[rc.VAF_PLOT] = self.write_vaf_plot(self.input_dir)
+            data[rc.SMALL_MUTATIONS_AND_INDELS] = self.build_small_mutations_and_indels()
+            data[rc.TOP_ONCOGENIC_SOMATIC_CNVS] = self.build_copy_number_variation()
+            if self.params.get(xc.ASSAY_TYPE) == rc.ASSAY_WGTS:
+                data[rc.STRUCTURAL_VARIANTS_AND_FUSIONS] = self.build_svs_and_fusions()
             else:
-                data[constants.STRUCTURAL_VARIANTS_AND_FUSIONS] = None
-            data[constants.SUPPLEMENTARY_GENE_INFO] = self.build_supplementary_info()
+                data[rc.STRUCTURAL_VARIANTS_AND_FUSIONS] = None
+            data[rc.SUPPLEMENTARY_GENE_INFO] = self.build_supplementary_info()
         self.logger.info("Finished building clinical report data for JSON output")
         return data
 
@@ -572,7 +569,7 @@ class clinical_report_json_composer(composer_base):
                 raise RuntimeError("Unknown OncoKB level '{0}'".format(level))
             return order
         try:
-            sorted_rows = sorted(rows, key=lambda row: oncokb_order(row[constants.ONCOKB]))
+            sorted_rows = sorted(rows, key=lambda row: oncokb_order(row[rc.ONCOKB]))
         except RuntimeError as err:
             self.logger.error("Error in OncoKB level sort: {0}".format(err))
             raise
@@ -584,16 +581,16 @@ class clinical_report_json_composer(composer_base):
             genes_and_urls = {genes_arg: self.build_gene_url(genes_arg)}
         else:
             genes_and_urls = {gene: self.build_gene_url(gene) for gene in genes_arg}
-        if alteration == constants.FUSION:
+        if alteration == rc.FUSION:
             alt_url = self.build_alteration_url('-'.join(genes_arg), alteration, self.closest_tcga_uc)
         else:
             alt_url = self.build_alteration_url(genes_arg, alteration, self.closest_tcga_uc)
         row = {
-            constants.GENES_AND_URLS: genes_and_urls,
-            constants.ALT: alteration,
-            constants.ALT_URL: alt_url,
-            constants.ONCOKB: max_level,
-            constants.TREATMENT: therapies
+            rc.GENES_AND_URLS: genes_and_urls,
+            rc.ALT: alteration,
+            rc.ALT_URL: alt_url,
+            rc.ONCOKB: max_level,
+            rc.TREATMENT: therapies
         }
         return row
 
