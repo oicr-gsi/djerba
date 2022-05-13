@@ -5,6 +5,11 @@
 ### Added
 - GCGI-291 Replace Rmarkdown with Mako template
 
+## v0.2.8: 2022-05-09
+
+### Changed
+- GCGI-359 Update VEP version number in report footers
+
 ## v0.2.7: 2022-05-03
 
 ### Fixed
