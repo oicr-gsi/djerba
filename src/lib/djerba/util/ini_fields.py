@@ -7,6 +7,7 @@ DISCOVERED = 'discovered'
 
 # parameter names
 ARCHIVE_DIR = 'archive_dir'
+ASSAY_NAME = 'assay_name'
 BED_PATH = 'bed_path'
 DATA_DIR = 'data_dir'
 ENSCON = 'enscon'
@@ -82,6 +83,7 @@ SCHEMA_DEFAULT = {
         TUMOUR_ID
     ],
     INPUTS: [
+        ASSAY_NAME,
         MEAN_COVERAGE,
         ONCOTREE_CODE,
         PATIENT,
@@ -134,6 +136,7 @@ SCHEMA_WGS_ONLY = {
         TUMOUR_ID
     ],
     INPUTS: [
+        ASSAY_NAME,
         MEAN_COVERAGE,
         ONCOTREE_CODE,
         PATIENT,
@@ -178,6 +181,7 @@ SCHEMA_FAILED = {
         TUMOUR_ID
     ],
     INPUTS: [
+        ASSAY_NAME,
         MEAN_COVERAGE,
         ONCOTREE_CODE,
         PATIENT,

@@ -139,16 +139,16 @@ class TestConfigure(TestBase):
         self.assertEqual(lines, expected_lines) # unlike archive, configParser puts a blank line at the end of the file
 
     def test_default(self):
-        self.run_config_test(self.config_user, False, False, 51)
+        self.run_config_test(self.config_user, False, False, 52)
 
     def test_default_fail(self):
-        self.run_config_test(self.config_user_failed, False, True, 41)
+        self.run_config_test(self.config_user_failed, False, True, 42)
 
     def test_wgs_only(self):
-        self.run_config_test(self.config_user_wgs_only, True, False, 49)
+        self.run_config_test(self.config_user_wgs_only, True, False, 50)
 
     def test_wgs_only_fail(self):
-        self.run_config_test(self.config_user_wgs_only_failed, True, True, 41)
+        self.run_config_test(self.config_user_wgs_only_failed, True, True, 42)
 
 
 class TestCutoffFinder(TestBase):
@@ -193,8 +193,8 @@ class TestExtractor(TestBase):
     STATIC_MD5_FAILED = {
         'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
         'genomic_summary.txt': '5a2f6e61fdf0f109ac3d1bcc4bb3ca71',
-        'djerba_report_human.json': '5e9316149004eba5439fd00a88319f78',
-        'djerba_report_machine.json': 'bb9d1d7860365605a282bd8eb60d1afc'
+        'djerba_report_human.json': '091d36856d7c03a469de95112c633db6',
+        'djerba_report_machine.json': 'ccd6f90d6b2b3d1feca502c00720b768'
     }
     VARYING_OUTPUT = [
         'tmb.jpeg',
