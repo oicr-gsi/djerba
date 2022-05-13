@@ -193,8 +193,8 @@ class TestExtractor(TestBase):
     STATIC_MD5_FAILED = {
         'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
         'genomic_summary.txt': '5a2f6e61fdf0f109ac3d1bcc4bb3ca71',
-        'djerba_report_human.json': '091d36856d7c03a469de95112c633db6',
-        'djerba_report_machine.json': 'ccd6f90d6b2b3d1feca502c00720b768'
+        'djerba_report_human.json': '452a378f9a2f8fd64c211917625a9d9d',
+        'djerba_report_machine.json': 'fb6be4e1142fe46d5995250d877f343a'
     }
     VARYING_OUTPUT = [
         'tmb.jpeg',
@@ -241,14 +241,12 @@ class TestExtractor(TestBase):
         # test failed mode; does not require R script output
         out_dir = os.path.join(self.tmp_dir, 'failed')
         os.mkdir(out_dir)
-        #out_dir = '/u/ibancarz/workspace/djerba/test_20220513_01/failed'
         self.run_extractor(self.config_full, out_dir, False, True, 80)
         self.check_outputs_md5(out_dir, self.STATIC_MD5_FAILED)
 
     def test_wgts_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGTS')
         os.mkdir(out_dir)
-        #out_dir = '/u/ibancarz/workspace/djerba/test_20220513_01/wgts'
         rscript_outputs = self.RSCRIPT_OUTPUTS_WGS_ONLY.copy()
         rscript_outputs.extend([
             'data_fusions_new_delimiter.txt',
@@ -273,7 +271,6 @@ class TestExtractor(TestBase):
     def test_wgs_only_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGS_only')
         os.mkdir(out_dir)
-        #out_dir = '/u/ibancarz/workspace/djerba/test_20220513_01/wgs_only'
         for file_name in self.RSCRIPT_OUTPUTS_WGS_ONLY:
             file_path = os.path.join(self.sup_dir, 'report_example', file_name)
             copy(file_path, out_dir)
@@ -463,15 +460,15 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report_machine.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '2cbef55abb1c87d3d692d292de953994')
+        self.check_report(out_path, '1af9d2defdfdce015db87ebbb743ad7d')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report_machine.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, 'a3ef5f60edd0040cac94716471c53530')
+        self.check_report(out_path, 'd766f07ccbfeada9680d4eeb6045ac59')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report_machine.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, 'af2a63e6105a8786576e71185949c4b3')
+        self.check_report(out_path, 'd7b26dda73ed130ab75692a5e09a49fc')
 
 
     def test_pdf(self):

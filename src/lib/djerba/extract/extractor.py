@@ -167,7 +167,7 @@ class extractor(logger):
         params = {
             xc.AUTHOR: self.author,
             xc.ASSAY_TYPE: self.assay_type,
-            xc.ASSAY_NAME: 'Frodo', # TODO populate from config
+            xc.ASSAY_NAME: self.config[ini.INPUTS][ini.ASSAY_NAME],
             xc.COVERAGE: self.depth,
             xc.FAILED: self.failed,
             xc.ONCOTREE_CODE: self.config[ini.INPUTS][ini.ONCOTREE_CODE],
