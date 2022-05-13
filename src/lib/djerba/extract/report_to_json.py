@@ -202,7 +202,7 @@ class clinical_report_json_composer(composer_base):
         # TODO import clinical data column names from Djerba constants
         data = {}
         tumour_id = self.clinical_data[dc.TUMOUR_SAMPLE_ID]
-        data[rc.ASSAY] = self.params.get(xc.ASSAY_NAME)
+        data[rc.ASSAY_NAME] = self.params.get(xc.ASSAY_NAME)
         data[rc.BLOOD_SAMPLE_ID] = self.clinical_data[dc.BLOOD_SAMPLE_ID]
         data[rc.SEX] = self.clinical_data[dc.SEX]
         data[rc.PATIENT_LIMS_ID] = self.clinical_data[dc.PATIENT_LIMS_ID]
@@ -221,7 +221,7 @@ class clinical_report_json_composer(composer_base):
         data[rc.COVERAGE_MEAN] = float(self.clinical_data[dc.MEAN_COVERAGE])
         data[rc.PLOIDY] = float(self.clinical_data[dc.SEQUENZA_PLOIDY])
         data[rc.PURITY_PERCENT] = float(self.clinical_data[dc.SEQUENZA_PURITY_FRACTION])
-        data[rc.ONCOTREE_CODE] = self.params.get(xc.ONCOTREE_CODE)
+        data[rc.ONCOTREE_CODE] = self.params.get(xc.ONCOTREE_CODE).upper()
         data[rc.SAMPLE_TYPE] = self.clinical_data[dc.SAMPLE_TYPE]
         return data
 
@@ -527,7 +527,6 @@ class clinical_report_json_composer(composer_base):
             self.logger.info("Building JSON for report with FAILED QC")
         else:
             self.logger.info("Building JSON for report with PASSED QC")
-        data[rc.ASSAY_NAME] = self.params.get(xc.ASSAY_NAME)
         data[rc.ASSAY_TYPE] = self.params.get(xc.ASSAY_TYPE)
         data[rc.AUTHOR] = self.params.get(xc.AUTHOR)
         data[rc.OICR_LOGO] = os.path.join(self.html_dir, 'OICR_Logo_RGB_ENGLISH.png')

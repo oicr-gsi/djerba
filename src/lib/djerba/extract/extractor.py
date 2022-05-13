@@ -167,12 +167,12 @@ class extractor(logger):
         params = {
             xc.AUTHOR: self.author,
             xc.ASSAY_TYPE: self.assay_type,
-            xc.ASSAY_NAME: None, # TODO populate from config
+            xc.ASSAY_NAME: 'Frodo', # TODO populate from config
             xc.COVERAGE: self.depth,
             xc.FAILED: self.failed,
-            xc.ONCOTREE_CODE: None, #self.config[ini.INPUTS][ini.ONCOTREE_CODE],
-            xc.PURITY_FAILURE: None,
-            xc.STUDY: None # self.config[ini.INPUTS][ini.STUDY]
+            xc.ONCOTREE_CODE: 'Samwise', #self.config[ini.INPUTS][ini.ONCOTREE_CODE],
+            xc.PURITY_FAILURE: False, # TODO populate from config
+            xc.STUDY: 'Gandalf' # self.config[ini.INPUTS][ini.STUDY]
         }
         report_data = clinical_report_json_composer(
             self.report_dir,

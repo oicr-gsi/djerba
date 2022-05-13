@@ -1,6 +1,6 @@
 # top-level variable names
 APPROVED_BIOMARKERS = 'approved_biomarkers'
-ASSAY_NAME = 'assay_name'
+#ASSAY_NAME is a patient info field as well as a top-level variable
 ASSAY_TYPE = 'assay_type'
 AUTHOR = 'author'
 OICR_LOGO = 'oicr_logo'
@@ -23,7 +23,7 @@ ASSAY_WGS = 'WGS'
 REPORT_DATE = 'report_date'
 
 # constants for the patient info table
-ASSAY = 'Assay'
+ASSAY_NAME = 'Assay'
 DATE_OF_REPORT = 'Date of Report'
 REQ_APPROVED_DATE = 'Requisition Approved'
 REPORT_ID = 'Report ID'
