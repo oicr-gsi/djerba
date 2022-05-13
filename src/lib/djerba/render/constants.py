@@ -1,6 +1,5 @@
 # top-level variable names
 APPROVED_BIOMARKERS = 'approved_biomarkers'
-#ASSAY_NAME is a patient info field as well as a top-level variable
 ASSAY_TYPE = 'assay_type'
 AUTHOR = 'author'
 OICR_LOGO = 'oicr_logo'

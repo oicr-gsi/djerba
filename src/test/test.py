@@ -368,13 +368,12 @@ class TestMain(TestBase):
         config_path = os.path.join(out_dir, 'config.ini')
         html_path = os.path.join(out_dir, 'report.html')
         work_dir = os.path.join(out_dir, 'report')
-        patient_id = '100-PM-013'
         if not os.path.exists(work_dir):
             os.mkdir(work_dir)
         args = self.mock_args(ini_path, config_path, html_path, work_dir)
         main(args).run()
         self.assertTrue(os.path.exists(html_path))
-        pdf_path = os.path.join(work_dir, '{0}_djerba_report.pdf'.format(patient_id))
+        pdf_path = os.path.join(work_dir, '100-PM-013_LCM5-v1_report.pdf')
         self.assertTrue(os.path.exists(pdf_path))
 
 class TestMavis(TestBase):
