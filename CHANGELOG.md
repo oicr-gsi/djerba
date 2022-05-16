@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.2.9: 2022-05-16
+
+### Fixed
+- GCGI-368: Apply colour update to WGS-only TMB plot
+
 ## v0.2.8: 2022-05-09
 
 ### Changed
