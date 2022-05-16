@@ -68,7 +68,7 @@ class main(logger):
     def _get_html_path(self, report_id=None):
         if self.args.html:
             html_path = self.args.html
-        elif report_id:
+        elif report_id and self.args.dir:
             html_path = os.path.join(self.args.dir, '{0}_report.html'.format(report_id))
         else:
             msg = "Must specify --html, or --dir and a report ID, to find HTML output path"
@@ -102,10 +102,10 @@ class main(logger):
     def _get_report_id_from_html(self, html_path):
         # simple but adequate method; report ID derived from HTML filename
         items0 = re.split('\.', os.path.basename(html_path))
-        items0.pop()
+        items0.pop() # remove the .html suffix
         name0 = '.'.join(items0)
         items1 = re.split('_', name0)
-        items1.pop() # lose the _report suffix
+        items1.pop() # remove the _report suffix
         report_id = '_'.join(items1)
         return report_id
 
@@ -114,27 +114,6 @@ class main(logger):
             data = json.loads(json_file.read())
             report_id = data[constants.REPORT][rc.PATIENT_INFO][rc.REPORT_ID]
         return report_id
-
-    def _read_clinical_data_fields(self, input_dir):
-        """Read the clinical data TSV into a dictionary"""
-        input_path = os.path.join(input_dir, constants.CLINICAL_DATA_FILENAME)
-        path_validator(self.log_level, self.log_path).validate_input_file(input_path)
-        with open(input_path) as input_file:
-            input_lines = input_file.readlines()
-        # first sanity check
-        if not (len(input_lines)==2 and re.match(constants.PATIENT_LIMS_ID, input_lines[0])):
-            msg = "Incorrect format in clinical data file at {0}".format(input_path)
-            self.logger.error(msg)
-            raise ValueError(msg)
-        head = re.split("\t", input_lines[0].strip())
-        body = re.split("\t", input_lines[1].strip())
-        # second sanity check
-        if len(head)!=len(body):
-            msg = "Mismatched header and body fields in {0}".format(input_path)
-            self.logger.error(msg)
-            raise ValueError(msg)
-        clinical_data = {head[i]:body[i] for i in range(len(head))}
-        return clinical_data
 
     def read_config(self, ini_path):
         """Read INI config from the given path"""
@@ -202,7 +181,7 @@ class main(logger):
             extractor(full_config, report_dir, self._get_author(), self.args.wgs_only, self.args.failed, self.args.target_coverage, self.log_level, self.log_path).run()
             json_path = os.path.join(self.args.dir, constants.REPORT_MACHINE_FILENAME)
             report_id = self._get_report_id_from_json(json_path)
-            html_path = self._get_html_path(json_path)
+            html_path = self._get_html_path(report_id)
             archive = not self.args.no_archive
             html_renderer(self.log_level, self.log_path).run(json_path, html_path, archive)
             pdf = self._get_pdf_path(report_id)
