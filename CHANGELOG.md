@@ -10,6 +10,7 @@
 - GCGI-312 Correctly populate Study and Oncotree in the report
 - GCGI-326 Standardize report filenames
 - GCGI-353 Support markdown in genomic summary
+- New `ASSAY_NAME` parameter in INI
 - Default HTML names and PDF names conform to convention
 - `subprocess_runner` class to run commands and log the results
 - Introduces a main JSON document, with all information needed to generate a report
