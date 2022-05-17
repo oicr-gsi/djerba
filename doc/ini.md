@@ -42,6 +42,7 @@ All required parameters go in the `[inputs]` section. The "Source" column lists 
 
 | Name                   | Source | Notes                                                    |
 |------------------------|----------|------------------------------------------------|
+| `assay_name`            | req | Full name of the assay, eg. "Whole genome sequencing (WGS) - 80X Tumour, 30X Normal (v1.0)"  |
 | `mean_coverage`            | Dashi | |
 | `oncotree_code`             | req       | [OncoTree](http://oncotree.mskcc.org/#/home) code (case-insensitive), eg. paad |
 | `patient`                | req       | Study name and patient number, eg. PANX_1249 |
