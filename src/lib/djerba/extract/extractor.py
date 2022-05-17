@@ -9,31 +9,43 @@ import re
 import time
 from shutil import copyfile
 
+from djerba.extract.report_to_json import clinical_report_json_composer
 from djerba.extract.r_script_wrapper import r_script_wrapper
-from djerba.extract.report_directory_parser import report_directory_parser
 from djerba.sequenza import sequenza_reader
+import djerba.extract.constants as xc
+import djerba.render.constants as render_constants
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
+from djerba.util.image_to_base64 import converter
 from djerba.util.logger import logger
 
 class extractor(logger):
     """
     Extract the clinical report data from input configuration
-    To start with, mostly a wrapper for the legacy R script singleSample.r
-    Output: Directory of .txt and .tsv files for downstream processing
-    Later on, will replace R script functionality with Python, and output JSON
+    Includes a wrapper for the legacy R script singleSample.r
+    Output:
+    - "Report directory" of .txt and .tsv files
+    - JSON file derived from report directory, for archiving and HTML rendering
     """
 
     CANCER_TYPE = 'cancer_type'
     CANCER_TYPE_DESCRIPTION = 'cancer_description'
 
-    def __init__(self, config, report_dir, wgs_only, failed, log_level=logging.WARNING, log_path=None):
+    def __init__(self, config, report_dir, author, wgs_only, failed, depth,
+                 log_level=logging.WARNING, log_path=None):
         self.config = config
+        self.author = author
         self.wgs_only = wgs_only
+        if self.wgs_only:
+            self.assay_type = render_constants.ASSAY_WGS
+        else:
+            self.assay_type = render_constants.ASSAY_WGTS
         self.failed = failed
+        self.depth = depth
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
+        self.converter = converter(log_level, log_path)
         if self.failed:
             self.logger.info("Extracting Djerba data for failed report")
         elif self.wgs_only:
@@ -79,6 +91,20 @@ class extractor(logger):
         """Remove a suffix of the form ' (PAAD)' or ' (AMLCBFBMYH11)' from an oncotree entry"""
         return re.sub(' \(\w+\)$', '', entry)
 
+    def _write_main_json(self, out_path, report_data, config_data, pretty=True):
+        """Write the main JSON file"""
+        data = {
+            constants.REPORT: report_data,
+            constants.SUPPLEMENTARY: {
+                constants.CONFIG: config_data
+            }
+        }
+        with open(out_path, 'w') as out_file:
+            if pretty:
+                print(json.dumps(data, sort_keys=True, indent=4), file=out_file)
+            else:
+                print(json.dumps(data), file=out_file)
+
     def get_description(self):
         """
         Get cancer type and description from the oncotree file and code
@@ -98,12 +124,9 @@ class extractor(logger):
         ct = set() # set of distinct CANCER_TYPE strings
         ctd = set() # set of distinct CANCER_TYPE_DESCRIPTION strings
         with open(oncotree_path) as oncotree_file:
+            oncotree_file.readline() # skip the header row
             reader = csv.reader(oncotree_file, delimiter="\t")
-            first = True
             for row in reader:
-                if first: # skip the header row
-                    first = False
-                    continue
                 for i in range(7):
                     if oncotree_regex.search(row[i]):
                         ct.add(self._remove_oncotree_suffix(row[0]))
@@ -129,7 +152,7 @@ class extractor(logger):
         }
         return description
 
-    def run(self, json_path=None, r_script=True):
+    def run(self, r_script=True):
         """Run extraction and write output"""
         self.logger.info("Djerba extract step started")
         if self.failed:
@@ -139,10 +162,25 @@ class extractor(logger):
             if r_script:
                 self.run_r_script() # can omit the R script for testing
             self.write_sequenza_meta()
-            if json_path:
-                self.write_json_summary(json_path)
         self.write_clinical_data(self.get_description())
         self.write_genomic_summary()
+        params = {
+            xc.AUTHOR: self.author,
+            xc.ASSAY_TYPE: self.assay_type,
+            xc.ASSAY_NAME: self.config[ini.INPUTS][ini.ASSAY_NAME],
+            xc.COVERAGE: self.depth,
+            xc.FAILED: self.failed,
+            xc.ONCOTREE_CODE: self.config[ini.INPUTS][ini.ONCOTREE_CODE],
+            xc.PURITY_FAILURE: False, # TODO populate from config
+            xc.STUDY: self.config[ini.INPUTS][ini.STUDY_ID]
+        }
+        report_data = clinical_report_json_composer(
+            self.report_dir,
+            params,
+            self.log_level,
+            self.log_path
+        ).run()
+        self.write_json(report_data)
         self.logger.info("Djerba extract step finished; extracted metrics written to {0}".format(self.report_dir))
 
     def run_r_script(self):
@@ -208,6 +246,42 @@ class extractor(logger):
         output_path = os.path.join(self.report_dir, constants.GENOMIC_SUMMARY_FILENAME)
         copyfile(input_path, output_path)
 
+    def write_json(self, report_data):
+        """
+        Write the main JSON file:
+        - with 'report' and 'supplementary' sections
+        - in human and machine formats
+        """
+        # convert the ConfigParser INI to a dictionary for output
+        config_data = {}
+        for section in self.config.sections():
+            config_data[section] = {}
+            for key, val in self.config.items(section):
+
+                if re.match('^-*[0-9]+\.[0-9]+$', val):
+                    val = float(val)
+                elif re.match('^-*[0-9]+$', val):
+                    val = int(val)
+                config_data[section][key] = val
+        # shorter key names
+        tmb_key = render_constants.TMB_PLOT
+        vaf_key = render_constants.VAF_PLOT
+        logo_key = render_constants.OICR_LOGO
+        # human-readable; pretty-printed with absolute image paths
+        report_data[logo_key] = os.path.abspath(report_data[logo_key])
+        if not self.failed:
+            report_data[tmb_key] = os.path.abspath(report_data[tmb_key])
+            report_data[vaf_key] = os.path.abspath(report_data[vaf_key])
+        human_path = os.path.join(self.report_dir, constants.REPORT_HUMAN_FILENAME)
+        self._write_main_json(human_path, report_data, config_data, pretty=True)
+        # machine-readable; replace image paths with base-64 blobs for a self-contained document
+        report_data[logo_key] = self.converter.convert_png(report_data[logo_key])
+        if not self.failed:
+            report_data[tmb_key] = self.converter.convert_jpeg(report_data[tmb_key])
+            report_data[vaf_key] = self.converter.convert_jpeg(report_data[vaf_key])
+        machine_path = os.path.join(self.report_dir, constants.REPORT_MACHINE_FILENAME)
+        self._write_main_json(machine_path, report_data, config_data, pretty=False)
+
     def write_sequenza_meta(self):
         """
         Write a sequenza_meta.txt file to the working directory with metadata fields
@@ -225,10 +299,6 @@ class extractor(logger):
         with open(out_path, 'w') as out_file:
             print("\t".join(keys), file=out_file)
             print("\t".join([str(meta[k]) for k in keys]), file=out_file)
-
-    def write_json_summary(self, out_path):
-        """Write a JSON summary of extracted data"""
-        report_directory_parser(self.report_dir).write_json(out_path)
 
 class maf_extractor:
 

@@ -1,1 +1,0 @@
-Mean number of bases covering each sequenced base. Minimum coverage threshold is 80x for the tumour (with a target of 100x); 30x for the normal (with a target of 40x).

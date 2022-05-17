@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## Unreleased
+
+### Added
+- GCGI-197 Assay title in QC table
+- GCGI-268 Make clinical and QC report filenames consistent
+- GCGI-270 Italicize gene names in Supplementary Gene Information
+- GCGI-291 Replace Rmarkdown with Mako template
+- GCGI-312 Correctly populate Study and Oncotree in the report
+- GCGI-326 Standardize report filenames
+- GCGI-353 Support markdown in genomic summary
+- New `ASSAY_NAME` parameter in INI
+- Default HTML names and PDF names conform to convention
+- `subprocess_runner` class to run commands and log the results
+- Introduces a main JSON document, with all information needed to generate a report
+
+### Fixed
+- GCGI-359 Update VEP version in footers
+
 ## v0.2.9: 2022-05-16
 
 ### Fixed

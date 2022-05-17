@@ -2,17 +2,19 @@
 
 import configparser
 import getpass
+import json
 import logging
 import os
 import re
 import tempfile
 from shutil import copyfile
 
+import djerba.render.constants as rc
 import djerba.util.constants as constants
 from djerba.configure import configurer
 from djerba.extract.extractor import extractor
-from djerba.render import html_renderer
-from djerba.render import pdf_renderer
+from djerba.render.render import html_renderer
+from djerba.render.render import pdf_renderer
 from djerba.util.logger import logger
 from djerba.util.validator import config_validator, path_validator
 
@@ -63,56 +65,55 @@ class main(logger):
             self.logger.warning(msg)
         return author
 
-    def _get_html_path(self):
-        # find HTML path after running extractor, so we can access the clinical data path if needed
+    def _get_html_path(self, report_id=None):
         if self.args.html:
             html_path = self.args.html
-        elif self.args.dir:
-            patient_id = self._get_patient_study_id(self.args.dir)
-            html_path = os.path.join(self.args.dir, '{0}_djerba_report.html'.format(patient_id))
+        elif report_id and self.args.dir:
+            html_path = os.path.join(self.args.dir, '{0}_report.html'.format(report_id))
         else:
-            # shouldn't happen, but include this for completeness
-            msg = "Must specify --html or --dir to find HTML output path"
+            msg = "Must specify --html, or --dir and a report ID, to find HTML output path"
             self.logger.error(msg)
             raise RuntimeError(msg)
         html_path = os.path.realpath(html_path) # needed to correctly render links
         self.logger.debug("Found HTML path {0}".format(html_path))
         return html_path
 
-    def _get_patient_study_id(self, input_dir):
-        """Read patient LIMS ID from data_clinical.txt file, for constructing filenames"""
-        clinical_data = self._read_clinical_data_fields(input_dir)
-        lims_id = clinical_data[constants.PATIENT_STUDY_ID]
-        self.logger.debug("Found patient study ID: {0}".format(lims_id))
-        return lims_id
+    def _get_json_path(self):
+        # get JSON input path from args
+        if self.args.json:
+            json_path = os.path.realpath(self.args.json)
+        elif self.args.dir:
+            json_path = os.path.join(self.args.dir, constants.REPORT_MACHINE_FILENAME)
+        else:
+            msg = "Must specify --json or --dir to find JSON input path"
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        json_path = os.path.realpath(json_path)
+        self.logger.debug("Found JSON path {0}".format(json_path))
+        return json_path
 
-    def _get_pdf_path(self, patient_id):
-        """Get PDF path for given patient ID string"""
-        pdf_path = os.path.join(self.args.dir, '{0}_djerba_report.pdf'.format(patient_id))
+    def _get_pdf_path(self, report_id):
+        """Get PDF path for given report ID string"""
+        pdf_path = os.path.join(self.args.dir, '{0}_report.pdf'.format(report_id))
         pdf_path = os.path.realpath(pdf_path)
         self.logger.debug("Found PDF path {0}".format(pdf_path))
         return pdf_path
 
-    def _read_clinical_data_fields(self, input_dir):
-        """Read the clinical data TSV into a dictionary"""
-        input_path = os.path.join(input_dir, constants.CLINICAL_DATA_FILENAME)
-        path_validator(self.log_level, self.log_path).validate_input_file(input_path)
-        with open(input_path) as input_file:
-            input_lines = input_file.readlines()
-        # first sanity check
-        if not (len(input_lines)==2 and re.match(constants.PATIENT_LIMS_ID, input_lines[0])):
-            msg = "Incorrect format in clinical data file at {0}".format(input_path)
-            self.logger.error(msg)
-            raise ValueError(msg)
-        head = re.split("\t", input_lines[0].strip())
-        body = re.split("\t", input_lines[1].strip())
-        # second sanity check
-        if len(head)!=len(body):
-            msg = "Mismatched header and body fields in {0}".format(input_path)
-            self.logger.error(msg)
-            raise ValueError(msg)
-        clinical_data = {head[i]:body[i] for i in range(len(head))}
-        return clinical_data
+    def _get_report_id_from_html(self, html_path):
+        # simple but adequate method; report ID derived from HTML filename
+        items0 = re.split('\.', os.path.basename(html_path))
+        items0.pop() # remove the .html suffix
+        name0 = '.'.join(items0)
+        items1 = re.split('_', name0)
+        items1.pop() # remove the _report suffix
+        report_id = '_'.join(items1)
+        return report_id
+
+    def _get_report_id_from_json(self, json_path):
+        with open(json_path) as json_file:
+            data = json.loads(json_file.read())
+            report_id = data[constants.REPORT][rc.PATIENT_INFO][rc.REPORT_ID]
+        return report_id
 
     def read_config(self, ini_path):
         """Read INI config from the given path"""
@@ -131,25 +132,28 @@ class main(logger):
         elif self.args.subparser_name == constants.CONFIGURE:
             config = self.read_config(self.args.ini)
             cv.validate_minimal(config)
-            archive = not self.args.no_archive # True if archiving is in effect
-            configurer(config, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(self.args.out, archive)
+            configurer(config, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(self.args.out)
         elif self.args.subparser_name == constants.EXTRACT:
             config = self.read_config(self.args.ini)
             cv.validate_full(config)
-            extractor(config, self.args.dir, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(self.args.json)
+            extractor(config, self.args.dir, self._get_author(), self.args.wgs_only, self.args.target_coverage, self.args.failed, self.args.target_coverage, self.log_level, self.log_path).run()
         elif self.args.subparser_name == constants.HTML:
-            html_path = self._get_html_path()
-            hr = html_renderer(self.args.wgs_only, self.args.failed, self.log_level, self.log_path)
-            hr.run(self.args.dir, html_path, self.args.target_coverage, self._get_author())
+            json_path = self._get_json_path()
+            report_id = self._get_report_id_from_json(json_path)
+            html_path = self._get_html_path(report_id)
+            archive = not self.args.no_archive
+            html_renderer(self.log_level, self.log_path).run(json_path, html_path, archive)
             if self.args.pdf:
-                patient_id = self._get_patient_study_id(self.args.dir)
-                pdf_path = self._get_pdf_path(patient_id)
-                pdf_renderer(self.log_level, self.log_path).run(html_path, pdf_path, patient_id)
+                pdf_path = self._get_pdf_path(report_id)
+                pdf_renderer(self.log_level, self.log_path).run(html_path, pdf_path, report_id)
         elif self.args.subparser_name == constants.PDF:
-            html_path = self._get_html_path()
-            patient_id = self._get_patient_study_id(self.args.dir)
-            pdf_path = self._get_pdf_path(patient_id)
-            pdf_renderer(self.log_level, self.log_path).run(html_path, pdf_path, patient_id)
+            html_path = self.args.html
+            if self.args.report_id:
+                report_id = self.args.report_id
+            else:
+                report_id = self._get_report_id_from_html(html_path)
+            pdf_path = self._get_pdf_path(report_id)
+            pdf_renderer(self.log_level, self.log_path).run(html_path, pdf_path, report_id)
         elif self.args.subparser_name == constants.DRAFT:
             config = self.read_config(self.args.ini)
             cv.validate_minimal(config)
@@ -168,21 +172,20 @@ class main(logger):
         """Run all Djerba operations in sequence"""
         with tempfile.TemporaryDirectory(prefix='djerba_all_') as tmp:
             ini_path_full = self.args.ini_out if self.args.ini_out else os.path.join(tmp, 'djerba_config_full.ini')
-            json_path = os.path.realpath(self.args.json) if self.args.json else None
             report_dir = os.path.realpath(self.args.dir)
-            archive = not self.args.no_archive # True if archiving is in effect
-            configurer(input_config, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(ini_path_full, archive)
+            configurer(input_config, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(ini_path_full)
             full_config = configparser.ConfigParser()
             full_config.read(ini_path_full)
             # auto-generated full_config should be OK, but run the validator as a sanity check
             config_validator(self.args.wgs_only, self.args.failed, self.log_level, self.log_path).validate_full(full_config)
-            extractor(full_config, report_dir, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(json_path)
-            html_path = self._get_html_path()
-            renderer = html_renderer(self.args.wgs_only, self.args.failed, self.log_level, self.log_path)
-            renderer.run(self.args.dir, html_path, self.args.target_coverage, self._get_author())
-            patient_id = self._get_patient_study_id(self.args.dir)
-            pdf = self._get_pdf_path(patient_id)
-            pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, patient_id)
+            extractor(full_config, report_dir, self._get_author(), self.args.wgs_only, self.args.failed, self.args.target_coverage, self.log_level, self.log_path).run()
+            json_path = os.path.join(self.args.dir, constants.REPORT_MACHINE_FILENAME)
+            report_id = self._get_report_id_from_json(json_path)
+            html_path = self._get_html_path(report_id)
+            archive = not self.args.no_archive
+            html_renderer(self.log_level, self.log_path).run(json_path, html_path, archive)
+            pdf = self._get_pdf_path(report_id)
+            pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, report_id)
 
     def run_draft(self, input_config):
         """
@@ -191,23 +194,22 @@ class main(logger):
         """
         with tempfile.TemporaryDirectory(prefix='djerba_draft_') as tmp:
             ini_path_full = self.args.ini_out if self.args.ini_out else os.path.join(tmp, 'djerba_config_full.ini')
-            json_path = os.path.realpath(self.args.json) if self.args.json else None
             if self.args.dir:
                 report_dir = os.path.realpath(self.args.dir)
             else:
                 msg = "Report directory path is required in {0} mode".format(constants.DRAFT)
                 self.logger.error(msg)
                 raise ValueError(msg)
-            archive = not self.args.no_archive # True if archiving is in effect
-            configurer(input_config, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(ini_path_full, archive)
+            configurer(input_config, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(ini_path_full)
             full_config = configparser.ConfigParser()
             full_config.read(ini_path_full)
             # auto-generated full_config should be OK, but run the validator as a sanity check
             config_validator(self.args.wgs_only, self.args.failed, self.log_level, self.log_path).validate_full(full_config)
-            extractor(full_config, report_dir, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(json_path)
-            html_path = self._get_html_path()
-            renderer = html_renderer(self.args.wgs_only, self.args.failed, self.log_level, self.log_path)
-            renderer.run(self.args.dir, html_path, self.args.target_coverage, self._get_author())
+            extractor(full_config, report_dir, self._get_author(), self.args.wgs_only, self.args.failed, self.args.target_coverage, self.log_level, self.log_path).run()
+            json_path = os.path.join(self.args.dir, constants.REPORT_MACHINE_FILENAME)
+            html_path = self._get_html_path(self._get_report_id_from_json(json_path))
+            archive = not self.args.no_archive
+            html_renderer(self.log_level, self.log_path).run(json_path, html_path, archive)
 
     def run_setup(self):
         """Set up an empty working directory for a CGI report"""
@@ -234,16 +236,16 @@ class main(logger):
         elif args.subparser_name == constants.EXTRACT:
             v.validate_input_file(args.ini)
             v.validate_output_dir(args.dir)
-            if args.json:
-                v.validate_output_file(args.json)
         elif args.subparser_name == constants.HTML:
-            v.validate_input_dir(args.dir)
+            if args.dir:
+                v.validate_input_dir(args.dir)
+            if args.json:
+                v.validate_input_file(args.json)
             if args.html:
                 v.validate_output_file(args.html)
         elif args.subparser_name == constants.PDF:
+            v.validate_input_file(args.html)
             v.validate_output_dir(args.dir)
-            if args.html:
-                v.validate_input_file(args.html)
         elif args.subparser_name == constants.DRAFT:
             v.validate_input_file(args.ini)
             v.validate_output_dir(args.dir)
@@ -251,16 +253,12 @@ class main(logger):
                 v.validate_output_file(args.html)
             if args.ini_out:
                 v.validate_output_file(args.ini_out)
-            if args.json:
-                v.validate_output_file(args.json)
         elif args.subparser_name == constants.ALL:
             v.validate_input_file(args.ini)
             if args.ini_out:
                 v.validate_output_file(args.ini_out)
             if args.dir:
                 v.validate_output_dir(args.dir)
-            if args.json:
-                v.validate_output_file(args.json)
             if args.html:
                 v.validate_output_file(args.html)
         else:

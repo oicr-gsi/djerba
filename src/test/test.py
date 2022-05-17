@@ -11,18 +11,19 @@ import subprocess
 import tempfile
 import time
 import unittest
+from shutil import copy
 from string import Template
 
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
-from djerba.configure import archiver, configurer, log_r_cutoff_finder
+from djerba.configure import configurer, log_r_cutoff_finder
 from djerba.extract.extractor import extractor
-from djerba.extract.report_directory_parser import report_directory_parser
 from djerba.extract.r_script_wrapper import r_script_wrapper
 from djerba.lister import lister
 from djerba.main import main
 from djerba.mavis import mavis_runner
-from djerba.render import html_renderer, pdf_renderer
+from djerba.render.archiver import archiver
+from djerba.render.render import html_renderer, pdf_renderer
 from djerba.sequenza import sequenza_reader, SequenzaError
 from djerba.util.validator import config_validator, DjerbaConfigError
 
@@ -110,12 +111,15 @@ class TestArchive(TestBase):
 
     def test_archive(self):
         out_dir = self.tmp_dir
-        archive_path = archiver(self.config_full).run(out_dir)
-        # contents of file are dependent on local paths
+        json_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report_human.json')
+        archive_path = archiver().run(json_path, out_dir, 'test_ID')
         self.assertTrue(os.path.exists(archive_path))
+        # contents of file are dependent on local paths
         with open(archive_path) as archive_file:
-            lines = len(archive_file.readlines())
-        self.assertEqual(lines, 50)
+            data = json.loads(archive_file.read())
+        self.assertEqual(len(data['report']), 19)
+        self.assertEqual(len(data['supplementary']['config']), 3)
+
 
 class TestConfigure(TestBase):
 
@@ -127,7 +131,7 @@ class TestConfigure(TestBase):
         test_configurer = configurer(config, wgs_only, failed)
         out_dir = self.tmp_dir
         out_path = os.path.join(out_dir, 'config_test_output.ini')
-        test_configurer.run(out_path, archive=False)
+        test_configurer.run(out_path)
         # TODO check contents of output path; need to account for supplementary data location
         self.assertTrue(os.path.exists(out_path))
         with open(out_path) as out_file:
@@ -135,16 +139,16 @@ class TestConfigure(TestBase):
         self.assertEqual(lines, expected_lines) # unlike archive, configParser puts a blank line at the end of the file
 
     def test_default(self):
-        self.run_config_test(self.config_user, False, False, 51)
+        self.run_config_test(self.config_user, False, False, 52)
 
     def test_default_fail(self):
-        self.run_config_test(self.config_user_failed, False, True, 41)
+        self.run_config_test(self.config_user_failed, False, True, 42)
 
     def test_wgs_only(self):
-        self.run_config_test(self.config_user_wgs_only, True, False, 49)
+        self.run_config_test(self.config_user_wgs_only, True, False, 50)
 
     def test_wgs_only_fail(self):
-        self.run_config_test(self.config_user_wgs_only_failed, True, True, 41)
+        self.run_config_test(self.config_user_wgs_only_failed, True, True, 42)
 
 
 class TestCutoffFinder(TestBase):
@@ -164,38 +168,123 @@ class TestCutoffFinder(TestBase):
 class TestExtractor(TestBase):
 
     # this test does not check the R script
-    # so outputs for WGS-only and WGS+WTS are identical
+    # instead, copy in expected R script outputs as needed
+    # Extractor without R script has two basic operations:
+    # - write clinical data & genomic summary
+    # - collate report directory contents and write JSON
 
-    def run_extractor_test(self, user_config, wgs_only, failed):
+    AUTHOR = 'Test Author'
+
+    RSCRIPT_OUTPUTS_WGS_ONLY = [
+            'data_CNA_oncoKBgenes_nonDiploid_annotated.txt',
+            'data_CNA_oncoKBgenes_nonDiploid.txt',
+            'data_CNA.txt',
+            'data_expression_percentile_comparison.txt',
+            'data_expression_percentile_tcga.txt',
+            'data_expression_zscores_comparison.txt',
+            'data_expression_zscores_tcga.txt',
+            'data_log2CNA.txt',
+            'data_mutations_extended_oncogenic.txt',
+            'data_mutations_extended.txt',
+            'data_segments.txt',
+            'sequenza_meta.txt',
+    ]
+    # md5 sums of files in failed output
+    STATIC_MD5_FAILED = {
+        'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
+        'genomic_summary.txt': '5a2f6e61fdf0f109ac3d1bcc4bb3ca71',
+        'djerba_report_human.json': '452a378f9a2f8fd64c211917625a9d9d',
+        'djerba_report_machine.json': 'fb6be4e1142fe46d5995250d877f343a'
+    }
+    VARYING_OUTPUT = [
+        'tmb.jpeg',
+        'vaf.jpeg',
+        'djerba_report_human.json',
+        'djerba_report_machine.json'
+    ]
+
+    def check_json(self, found_path, expected_path):
+        with open(found_path) as in_file:
+            data_found = json.loads(in_file.read())
+        with open(expected_path) as in_file:
+            data_expected = json.loads(in_file.read())
+        # plot paths/contents are not fixed
+        for key in ['oicr_logo', 'tmb_plot', 'vaf_plot']:
+            del data_found['report'][key]
+            del data_expected['report'][key]
+        # do not check supplementary data
+        del data_found['supplementary']
+        del data_expected['supplementary']
+        self.assertEqual(data_found, data_expected)
+
+    def check_outputs_md5(self, out_dir, outputs):
+        for filename in outputs.keys():
+            output_path = os.path.join(out_dir, filename)
+            self.assertTrue(os.path.exists(output_path), filename+' exists')
+            self.assertEqual(self.getMD5(output_path), outputs[filename])
+
+    def get_static_md5_passed(self):
+        static_md5_passed = self.STATIC_MD5_FAILED.copy()
+        del static_md5_passed['djerba_report_human.json']
+        del static_md5_passed['djerba_report_machine.json']
+        return static_md5_passed
+
+    def run_extractor(self, user_config, out_dir, wgs_only, failed, depth):
         config = configparser.ConfigParser()
         config.read(self.default_ini)
         config.read(user_config)
-        out_dir = self.tmp_dir
-        clinical_data_path = os.path.join(out_dir, 'data_clinical.txt')
-        summary_path = os.path.join(out_dir, 'summary.json')
-        test_extractor = extractor(config, out_dir, wgs_only, failed, log_level=logging.ERROR)
-        # do not test R script or JSON here; done respectively by TestWrapper and TestReport
-        test_extractor.run(json_path=None, r_script=False)
-        expected_md5 = {
-            'data_clinical.txt': '02003366977d66578c097295f12f4638',
-            'genomic_summary.txt': 'c84eec523dbc81f4fc7b08860ab1a47f'
-        }
-        for filename in expected_md5.keys():
-            output_path = os.path.join(out_dir, filename)
-            self.assertTrue(os.path.exists(output_path))
-        self.assertEqual(self.getMD5(output_path), expected_md5[filename])
+        test_extractor = extractor(config, out_dir, self.AUTHOR, wgs_only, failed, depth, log_level=logging.ERROR)
+        # do not test R script here; see TestWrapper
+        test_extractor.run(r_script=False)
 
-    def test_extractor(self):
-        self.run_extractor_test(self.config_full, False, False)
+    def test_failed_mode(self):
+        # test failed mode; does not require R script output
+        out_dir = os.path.join(self.tmp_dir, 'failed')
+        os.mkdir(out_dir)
+        self.run_extractor(self.config_full, out_dir, False, True, 80)
+        self.check_outputs_md5(out_dir, self.STATIC_MD5_FAILED)
 
-    def test_extractor_failed(self):
-        self.run_extractor_test(self.config_full, False, True)
+    def test_wgts_mode(self):
+        out_dir = os.path.join(self.tmp_dir, 'WGTS')
+        os.mkdir(out_dir)
+        rscript_outputs = self.RSCRIPT_OUTPUTS_WGS_ONLY.copy()
+        rscript_outputs.extend([
+            'data_fusions_new_delimiter.txt',
+            'data_fusions_oncokb_annotated.txt',
+            'data_fusions.txt'
+        ])
+        for file_name in rscript_outputs:
+            file_path = os.path.join(self.sup_dir, 'report_example', file_name)
+            copy(file_path, out_dir)
+        self.run_extractor(self.config_full, out_dir, False, False, 80)
+        self.check_outputs_md5(out_dir, self.get_static_md5_passed())
+        for name in self.VARYING_OUTPUT:
+            self.assertTrue(os.path.exists(os.path.join(out_dir, name)), name+' exists')
+        ref_dir = os.path.join(self.sup_dir, 'report_json', 'WGTS')
+        found_human = os.path.join(out_dir, 'djerba_report_human.json')
+        expected_human = os.path.join(ref_dir, 'djerba_report_human.json')
+        self.check_json(found_human, expected_human)
+        found_machine = os.path.join(out_dir, 'djerba_report_machine.json')
+        expected_machine = os.path.join(ref_dir, 'djerba_report_machine.json')
+        self.check_json(found_machine, expected_machine)
 
-    def test_extractor_wgs_only(self):
-        self.run_extractor_test(self.config_full_wgs_only, True, False)
-
-    def test_extractor_wgs_only_failed(self):
-        self.run_extractor_test(self.config_full_wgs_only, True, True)
+    def test_wgs_only_mode(self):
+        out_dir = os.path.join(self.tmp_dir, 'WGS_only')
+        os.mkdir(out_dir)
+        for file_name in self.RSCRIPT_OUTPUTS_WGS_ONLY:
+            file_path = os.path.join(self.sup_dir, 'report_example', file_name)
+            copy(file_path, out_dir)
+        self.run_extractor(self.config_full, out_dir, True, False, 80)
+        self.check_outputs_md5(out_dir, self.get_static_md5_passed())
+        for name in self.VARYING_OUTPUT:
+            self.assertTrue(os.path.exists(os.path.join(out_dir, name)))
+        ref_dir = os.path.join(self.sup_dir, 'report_json', 'WGS_only')
+        found_human = os.path.join(out_dir, 'djerba_report_human.json')
+        expected_human = os.path.join(ref_dir, 'djerba_report_human.json')
+        self.check_json(found_human, expected_human)
+        found_machine = os.path.join(out_dir, 'djerba_report_machine.json')
+        expected_machine = os.path.join(ref_dir, 'djerba_report_machine.json')
+        self.check_json(found_machine, expected_machine)
 
     def test_cancer_type_description(self):
         # test extraction of the cancer type description; see GCGI-333
@@ -205,7 +294,8 @@ class TestExtractor(TestBase):
         out_dir = self.tmp_dir
         wgs_only = False
         failed = False
-        test_extractor = extractor(config, out_dir, wgs_only, failed, log_level=logging.ERROR)
+        depth = 80
+        test_extractor = extractor(config, out_dir, self.AUTHOR, wgs_only, failed, depth, log_level=logging.ERROR)
         desc = test_extractor.get_description()
         expected = [
             {'cancer_type': 'Pancreas', 'cancer_description': 'Pancreatic Adenocarcinoma'},
@@ -278,13 +368,12 @@ class TestMain(TestBase):
         config_path = os.path.join(out_dir, 'config.ini')
         html_path = os.path.join(out_dir, 'report.html')
         work_dir = os.path.join(out_dir, 'report')
-        patient_id = '100-PM-013'
         if not os.path.exists(work_dir):
             os.mkdir(work_dir)
         args = self.mock_args(ini_path, config_path, html_path, work_dir)
         main(args).run()
         self.assertTrue(os.path.exists(html_path))
-        pdf_path = os.path.join(work_dir, '{0}_djerba_report.pdf'.format(patient_id))
+        pdf_path = os.path.join(work_dir, '100-PM-013_LCM5-v1_report.pdf')
         self.assertTrue(os.path.exists(pdf_path))
 
 class TestMavis(TestBase):
@@ -367,34 +456,19 @@ class TestRender(TestBase):
         self.assertEqual(md5, expected_md5)
 
     def test_html(self):
-        #outDir = self.tmp_dir
-        outDir = '/u/ibancarz/workspace/djerba/test_20220307_02'
-        outPath = os.path.join(outDir, 'djerba_test.html')
-        reportDir = os.path.join(self.sup_dir, 'report_example')
-        html_renderer(wgs_only=False, failed=False, log_level=logging.ERROR).run(reportDir, outPath, target_coverage=40)
-        # check file contents; need to omit the report date etc.
-        self.assertTrue(os.path.exists(outPath))
-        self.check_report(outPath, 'da3c4a868084586e5c95df6d6f428b09')
-        failPath = os.path.join(outDir, 'djerba_fail_test.html')
-        html_renderer(wgs_only=False, failed=True, log_level=logging.ERROR).run(reportDir, failPath, target_coverage=40)
-        self.assertTrue(os.path.exists(failPath))
-        self.check_report(failPath, 'ab9c15bac07cb9ce56d33b112e2644ce')
-        failPath = os.path.join(outDir, 'djerba_fail_wgs_test.html')
-        html_renderer(wgs_only=True, failed=True, log_level=logging.ERROR).run(reportDir, failPath, target_coverage=40)
-        self.assertTrue(os.path.exists(failPath))
-        self.check_report(failPath, '67c088d38641f346def5ec5802e38bd4')
-        wgsOnlyPath = os.path.join(outDir, 'djerba_wgs_only_test.html')
-        html_renderer(wgs_only=True, failed=False, log_level=logging.ERROR).run(reportDir, wgsOnlyPath, target_coverage=40)
-        self.assertTrue(os.path.exists(wgsOnlyPath))
-        self.check_report(wgsOnlyPath, '578db31612ca2e32a6d15fc90654e01b')
-        depth80XPath = os.path.join(outDir, 'djerba_80x_test.html')
-        html_renderer(wgs_only=False, failed=False, log_level=logging.ERROR).run(reportDir, depth80XPath, target_coverage=80)
-        self.assertTrue(os.path.exists(depth80XPath))
-        self.check_report(depth80XPath, 'ef4e734835270238df9ec321aa062d89')
-        wgsOnlyDepth80XPath = os.path.join(outDir, 'djerba_80x_wgs_only_test.html')
-        html_renderer(wgs_only=True, failed=False, log_level=logging.ERROR).run(reportDir, wgsOnlyDepth80XPath, target_coverage=80)
-        self.assertTrue(os.path.exists(wgsOnlyDepth80XPath))
-        self.check_report(wgsOnlyDepth80XPath, 'e01a6fbf2e6e8f7a9ad209b2c820defe')
+        args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report_machine.json')
+        out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
+        html_renderer().run(args_path, out_path, False)
+        self.check_report(out_path, '1af9d2defdfdce015db87ebbb743ad7d')
+        args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report_machine.json')
+        out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
+        html_renderer().run(args_path, out_path, False)
+        self.check_report(out_path, 'd766f07ccbfeada9680d4eeb6045ac59')
+        args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report_machine.json')
+        out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
+        html_renderer().run(args_path, out_path, False)
+        self.check_report(out_path, 'd7b26dda73ed130ab75692a5e09a49fc')
+
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
@@ -420,17 +494,6 @@ class TestRender(TestBase):
         # Compare file contents; timestamps will differ. TODO Make this more Pythonic.
         result = subprocess.run("cat {0} | grep -av CreationDate | md5sum | cut -f 1 -d ' '".format(pdf_path), shell=True, capture_output=True)
         self.assertEqual(str(result.stdout, encoding=constants.TEXT_ENCODING).strip(), '8213bfad2518570c26c9baef746b0b22')
-
-class TestReport(TestBase):
-
-    def test_parser(self):
-        report_dir = os.path.join(self.sup_dir, 'report_example')
-        parser = report_directory_parser(report_dir)
-        summary = parser.get_summary()
-        expected_path = os.path.join(self.sup_dir, 'expected_summary.json.gz')
-        with gzip.open(expected_path) as expected_file:
-            expected = json.loads(expected_file.read())
-        self.assertEqual(summary, expected)
 
 class TestSequenzaReader(TestBase):
 
