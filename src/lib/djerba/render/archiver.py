@@ -4,6 +4,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 
 import djerba.util.constants as constants
 import djerba.render.constants as render_constants
@@ -17,6 +18,7 @@ class archiver(logger):
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.converter = converter(log_level, log_path)
+        self.validator = path_validator(log_level, log_path)
 
     def read_and_preprocess(self, data_path):
         # read the JSON and convert image paths to base64 blobs
@@ -30,21 +32,12 @@ class archiver(logger):
         vaf_key = render_constants.VAF_PLOT
         logo_key = render_constants.OICR_LOGO
         # convert image paths (if any, they may already be base64)
-        if os.path.isfile(data[report][logo_key]):
+        if self.converter.is_convertible(data[report][logo_key], 'OICR logo'):
             data[report][logo_key] = self.converter.convert_png(data[report][logo_key])
-            self.logger.debug("Converted OICR logo to base64")
-        else:
-            self.logger.debug("OICR logo is not an existing path, omitting base64 conversion")
-        if os.path.isfile(data[report][tmb_key]):
+        if self.converter.is_convertible(data[report][tmb_key], 'TMB plot'):
             data[report][tmb_key] = self.converter.convert_jpeg(data[report][tmb_key])
-            self.logger.debug("Converted TMB plot to base64")
-        else:
-            self.logger.debug("TMB plot is not an existing path, omitting base64 conversion")
-        if os.path.isfile(data[report][vaf_key]):
+        if self.converter.is_convertible(data[report][vaf_key], 'VAF plot'):
             data[report][vaf_key] = self.converter.convert_jpeg(data[report][vaf_key])
-            self.logger.debug("Converted VAF plot to base64")
-        else:
-            self.logger.debug("VAF plot is not an existing path, omitting base64 conversion")
         return json.dumps(data)
 
     def run(self, data_path, archive_dir, patient_id):
@@ -53,7 +46,7 @@ class archiver(logger):
         m.update(data_string.encode(constants.TEXT_ENCODING))
         md5sum = m.hexdigest()
         # construct the output path, creating directories if necessary
-        path_validator().validate_output_dir(archive_dir)
+        self.validator.validate_output_dir(archive_dir)
         archive_dir = os.path.realpath(archive_dir)
         out_dir_0 = os.path.join(archive_dir, patient_id)
         if not os.path.exists(out_dir_0):
