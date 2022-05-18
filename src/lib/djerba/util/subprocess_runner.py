@@ -23,9 +23,9 @@ class subprocess_runner(logger):
             for i in range(len(command_redacted)):
                 if command_redacted[i] in redact:
                     command_redacted[i+1] = '***REDACTED***'
-            logged_command = ''.join(command_redacted)
+            logged_command = ' '.join(command_redacted)
         else:
-            logged_command = ''.join(command)
+            logged_command = ' '.join(command)
         self.logger.info("Running {0}: '{1}'".format(description, logged_command))        
         result = subprocess.run(command, capture_output=True)
         stdout = result.stdout.decode(constants.TEXT_ENCODING)
