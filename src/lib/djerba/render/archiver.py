@@ -27,17 +27,14 @@ class archiver(logger):
             data_string = data_file.read()
         data = json.loads(data_string)
         # shorter key names
-        report = constants.REPORT
-        tmb_key = render_constants.TMB_PLOT
-        vaf_key = render_constants.VAF_PLOT
-        logo_key = render_constants.OICR_LOGO
+        rep = constants.REPORT
+        tmb = render_constants.TMB_PLOT
+        vaf = render_constants.VAF_PLOT
+        logo = render_constants.OICR_LOGO
         # convert image paths (if any, they may already be base64)
-        if self.converter.is_convertible(data[report][logo_key], 'OICR logo'):
-            data[report][logo_key] = self.converter.convert_png(data[report][logo_key])
-        if self.converter.is_convertible(data[report][tmb_key], 'TMB plot'):
-            data[report][tmb_key] = self.converter.convert_jpeg(data[report][tmb_key])
-        if self.converter.is_convertible(data[report][vaf_key], 'VAF plot'):
-            data[report][vaf_key] = self.converter.convert_jpeg(data[report][vaf_key])
+        data[rep][logo] = self.converter.convert_png(data[rep][logo], 'OICR logo')
+        data[rep][tmb] = self.converter.convert_jpeg(data[rep][tmb], 'TMB plot')
+        data[rep][vaf] = self.converter.convert_jpeg(data[rep][vaf], 'VAF plot')
         return json.dumps(data)
 
     def run(self, data_path, archive_dir, patient_id):
