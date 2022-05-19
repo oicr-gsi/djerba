@@ -23,16 +23,23 @@ class composer_base(logger):
     NA = 'NA'
     ONCOGENIC = 'oncogenic'
 
-    def __init__(self):
+    def __init__(self, log_level=logging.WARNING, log_path=None):
         # list to determine sort order of oncokb level outputs
+        self.logger = self.get_logger(log_level, __name__, log_path)
         self.oncokb_levels = [self.reformat_level_string(level) for level in oncokb.ORDERED_LEVELS]
+        self.likely_oncogenic_sort_order = self.oncokb_sort_order(oncokb.LIKELY_ONCOGENIC)
 
     def is_null_string(self, value):
         if isinstance(value, str):
             return value in ['', self.NA]
         else:
             msg = "Invalid argument to is_null_string(): '{0}' of type '{1}'".format(value, type(value))
+            self.logger.error(msg)
             raise RuntimeError(msg)
+
+    def oncokb_filter(self, row):
+        """True if level passes filter, ie. if row should be kept"""
+        return self.oncokb_sort_order(row.get(rc.ONCOKB)) <= self.likely_oncogenic_sort_order
 
     def oncokb_sort_order(self, level):
         order = None
@@ -43,7 +50,8 @@ class composer_base(logger):
                 break
             i+=1
         if order == None:
-            raise OncokbSortError("Unknown OncoKB level '{0}'".format(level))
+            self.logger.warn("Unknown OncoKB level '{0}'; known levels are {1}".format(level, self.oncokb_levels))
+            order = len(self.oncokb_levels)+1 # unknown levels go last
         return order
 
     def parse_max_oncokb_level_and_therapies(self, row_dict, levels):
@@ -105,10 +113,9 @@ class clinical_report_json_composer(composer_base):
     V7_TARGET_SIZE = 37.285536 # inherited from CGI-Tools
 
     def __init__(self, input_dir, params, log_level=logging.WARNING, log_path=None):
-        super().__init__() # calls the parent constructor
+        super().__init__(log_level, log_path) # calls the parent constructor; creates logger
         self.log_level = log_level
         self.log_path = log_path
-        self.logger = self.get_logger(log_level, __name__, log_path)
         self.all_reported_variants = set()
         self.input_dir = input_dir
         self.params = params
@@ -145,11 +152,14 @@ class clinical_report_json_composer(composer_base):
         return '/'.join([self.ONCOKB_URL_BASE, gene, alteration, cancer_code])
 
     def build_copy_number_variation(self):
-        [oncogenic_cnv_total, cnv_total, oncogenic_variants] = self.read_cnv_data()
+        self.logger.debug("Building data for copy number variation table")
+        [oncogenic_cnv_total, cnv_total, rows] = self.read_cnv_data()
+        rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
+        for row in rows: self.all_reported_variants.add((row.get(rc.GENE), row.get(rc.CHROMOSOME)))
         data = {
             rc.TOTAL_VARIANTS: cnv_total,
             rc.CLINICALLY_RELEVANT_VARIANTS: oncogenic_cnv_total,
-            rc.BODY: self.sort_variant_rows(oncogenic_variants)
+            rc.BODY: rows
         }
         return data
 
@@ -223,13 +233,13 @@ class clinical_report_json_composer(composer_base):
 
     def build_small_mutations_and_indels(self):
         # read in small mutations; output rows for oncogenic mutations
+        self.logger.debug("Building data for small mutations and indels table")
         rows = []
         mutation_copy_states = self.read_mutation_copy_states()
         with open(os.path.join(self.input_dir, self.MUTATIONS_EXTENDED_ONCOGENIC)) as data_file:
             for input_row in csv.DictReader(data_file, delimiter="\t"):
                 gene = input_row[self.HUGO_SYMBOL_TITLE_CASE]
                 cytoband = self.get_cytoband(gene)
-                self.all_reported_variants.add((gene, cytoband))
                 protein = input_row[self.HGVSP_SHORT]
                 row = {
                     rc.GENE: gene,
@@ -245,25 +255,25 @@ class clinical_report_json_composer(composer_base):
                     rc.ONCOKB: self.parse_oncokb_level(input_row)
                 }
                 rows.append(row)
+        rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
+        for row in rows: self.all_reported_variants.add((row.get(rc.GENE), row.get(rc.CHROMOSOME)))
         data = {
             rc.CLINICALLY_RELEVANT_VARIANTS: self.total_oncogenic_somatic_mutations,
             rc.TOTAL_VARIANTS: self.total_somatic_mutations,
-            rc.BODY: self.sort_variant_rows(rows)
+            rc.BODY: rows
         }
         return data
 
     def build_svs_and_fusions(self):
         # table has 2 rows for each oncogenic fusion
+        self.logger.debug("Building data for structural variants and fusions table")
         rows = []
         oncogenic_fusion_genes = 0 # number of genes = 2x number of fusions
         for fusion in self.gene_pair_fusions:
             oncokb_level = fusion.get_oncokb_level()
-            if oncokb_level == self.UNKNOWN or self.is_null_string(oncokb_level):
-                continue # skip non-oncogenic fusions
             oncogenic_fusion_genes += 2
             for gene in fusion.get_genes():
                 cytoband = self.get_cytoband(gene)
-                self.all_reported_variants.add((gene, cytoband))
                 row =  {
                     rc.GENE: gene,
                     rc.GENE_URL: self.build_gene_url(gene),
@@ -274,14 +284,17 @@ class clinical_report_json_composer(composer_base):
                     rc.ONCOKB: oncokb_level
                 }
                 rows.append(row)
+        rows = list(filter(self.oncokb_filter, rows)) # sorting is done by fusion reader
+        for row in rows: self.all_reported_variants.add((row.get(rc.GENE), row.get(rc.CHROMOSOME)))
         data = {
             rc.CLINICALLY_RELEVANT_VARIANTS: oncogenic_fusion_genes,
             rc.TOTAL_VARIANTS: self.total_fusion_genes,
-            rc.BODY: rows # sorting is done by fusion reader
+            rc.BODY: rows
         }
         return data
 
     def build_supplementary_info(self):
+        self.logger.debug("Building data for supplementary gene information table")
         variants = sorted(list(self.all_reported_variants))
         gene_summaries = self.read_oncokb_gene_summaries()
         rows = []
@@ -304,6 +317,7 @@ class clinical_report_json_composer(composer_base):
         # - Alteration name, eg. HGVSp_Short value, with oncoKB link
         # - Treatment
         # - OncoKB level
+        self.logger.debug("Building therapy info for level: {0}".format(level))
         if level == self.FDA_APPROVED:
             levels = oncokb.FDA_APPROVED_LEVELS
         elif level == self.INVESTIGATIONAL:
@@ -337,7 +351,7 @@ class clinical_report_json_composer(composer_base):
                     therapies = fusion.get_inv_therapies()
                 if max_level:
                     rows.append(self.treatment_row(genes, alteration, max_level, therapies))
-        rows = self.sort_therapy_rows(rows)
+        rows = list(filter(self.oncokb_filter, self.sort_therapy_rows(rows)))
         return rows
 
     def get_cytoband(self, gene_name):
@@ -421,22 +435,17 @@ class clinical_report_json_composer(composer_base):
             reader = csv.DictReader(input_file, delimiter="\t")
             for row in reader:
                 total += 1
-                level = self.parse_oncokb_level(row)
-                if level == self.UNKNOWN or self.is_null_string(level):
-                    continue
-                else:
-                    oncogenic += 1
-                    gene = row[self.HUGO_SYMBOL_UPPER_CASE]
-                    cytoband = self.get_cytoband(gene)
-                    self.all_reported_variants.add((gene, cytoband))
-                    variant = {
-                        rc.GENE: gene,
-                        rc.GENE_URL: self.build_gene_url(gene),
-                        rc.ALT: row[self.ALTERATION_UPPER_CASE],
-                        rc.CHROMOSOME: cytoband,
-                        rc.ONCOKB: level
-                    }
-                    oncogenic_variants.append(variant)
+                oncogenic += 1
+                gene = row[self.HUGO_SYMBOL_UPPER_CASE]
+                cytoband = self.get_cytoband(gene)
+                variant = {
+                    rc.GENE: gene,
+                    rc.GENE_URL: self.build_gene_url(gene),
+                    rc.ALT: row[self.ALTERATION_UPPER_CASE],
+                    rc.CHROMOSOME: cytoband,
+                    rc.ONCOKB: self.parse_oncokb_level(row)
+                }
+                oncogenic_variants.append(variant)
         return [oncogenic, total, oncogenic_variants]
 
     def read_cytoband_map(self):
@@ -470,7 +479,7 @@ class clinical_report_json_composer(composer_base):
             1: "Gain",
             2: "Amplification",
             -1: "Shallow Deletion",
-            -2: "Deep Depetion"
+            -2: "Deep Deletion"
         }
         copy_states = {}
         with open(os.path.join(self.input_dir, 'data_CNA.txt')) as in_file:
@@ -551,15 +560,6 @@ class clinical_report_json_composer(composer_base):
         self.logger.info("Finished building clinical report data for JSON output")
         return data
 
-    def sort_by_oncokb_level(self, rows):
-        # sort therapy/variant rows by oncokb level
-        try:
-            rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row[rc.ONCOKB]))
-        except OncokbSortError as err:
-            self.logger.error("Error in OncoKB level sort: {0}".format(err))
-            raise
-        return rows
-
     def sort_therapy_rows(self, rows):
         # sort FDA/investigational therapy rows
         # extract a gene name from 'genes and urls' dictionary keys
@@ -567,13 +567,13 @@ class clinical_report_json_composer(composer_base):
             rows,
             key=lambda row: sorted(list(row.get(rc.GENES_AND_URLS).keys())).pop(0)
         )
-        rows = self.sort_by_oncokb_level(rows)
+        rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row[rc.ONCOKB]))
         return rows
 
     def sort_variant_rows(self, rows):
         # sort rows descending by oncokb level, then ascending by gene name
         rows = sorted(rows, key=lambda row: row[rc.GENE])
-        rows = self.sort_by_oncokb_level(rows)
+        rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row[rc.ONCOKB]))
         return rows
 
     def treatment_row(self, genes_arg, alteration, max_level, therapies):
@@ -628,8 +628,7 @@ class fusion_reader(composer_base):
     HUGO_SYMBOL = 'Hugo_Symbol'
 
     def __init__(self, input_dir, log_level=logging.WARNING, log_path=None):
-        super().__init__() # calls the parent constructor
-        self.logger = self.get_logger(log_level, __name__, log_path)
+        super().__init__(log_level, log_path) # calls the parent constructor; creates logger
         self.input_dir = input_dir
         self.old_to_new_delimiter = self.read_fusion_delimiter_map()
         fusion_data = self.read_fusion_data()
@@ -643,11 +642,7 @@ class fusion_reader(composer_base):
         [fusions, self.total_fusion_genes] = self._collate_row_data(fusion_data, annotations)
         # sort the fusions by oncokb level & fusion ID
         fusions = sorted(fusions, key=lambda f: f.get_fusion_id_new())
-        try:
-            self.fusions = sorted(fusions, key=lambda f: self.oncokb_sort_order(f.get_oncokb_level()))
-        except OncokbSortError as err:
-            self.logger.error("Error in OncoKB level sort: {0}".format(err))
-            raise
+        self.fusions = sorted(fusions, key=lambda f: self.oncokb_sort_order(f.get_oncokb_level()))
 
     def _collate_row_data(self, fusion_data, annotations):
         fusions = []
@@ -799,5 +794,3 @@ class fusion:
     def get_inv_therapies(self):
         return self.inv_therapies
 
-class OncokbSortError(Exception):
-    pass
