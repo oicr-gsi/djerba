@@ -9,6 +9,7 @@ import logging
 import os
 import re
 import pandas as pd
+import djerba.extract.oncokb_constants as oncokb
 import djerba.extract.constants as xc
 import djerba.render.constants as rc
 import djerba.util.constants as dc
@@ -19,19 +20,12 @@ from statsmodels.distributions.empirical_distribution import ECDF
 class composer_base(logger):
     # base class with shared methods and constants
 
-    FDA_APPROVED_LEVELS = ['LEVEL_1', 'LEVEL_2', 'LEVEL_R1']
-    INVESTIGATIONAL_LEVELS = ['LEVEL_3A', 'LEVEL_3B', 'LEVEL_4', 'LEVEL_R2']
     NA = 'NA'
     ONCOGENIC = 'oncogenic'
-    THERAPY_LEVELS = [
-        'LEVEL_1',
-        'LEVEL_2',
-        'LEVEL_3A',
-        'LEVEL_3B',
-        'LEVEL_4',
-        'LEVEL_R1',
-        'LEVEL_R2',
-    ]
+
+    def __init__(self):
+        # list to determine sort order of oncokb level outputs
+        self.oncokb_levels = [self.reformat_level_string(level) for level in oncokb.ORDERED_LEVELS]
 
     def is_null_string(self, value):
         if isinstance(value, str):
@@ -39,6 +33,18 @@ class composer_base(logger):
         else:
             msg = "Invalid argument to is_null_string(): '{0}' of type '{1}'".format(value, type(value))
             raise RuntimeError(msg)
+
+    def oncokb_sort_order(self, level):
+        order = None
+        i = 0
+        for output_level in self.oncokb_levels:
+            if level == output_level:
+                order = i
+                break
+            i+=1
+        if order == None:
+            raise OncokbSortError("Unknown OncoKB level '{0}'".format(level))
+        return order
 
     def parse_max_oncokb_level_and_therapies(self, row_dict, levels):
         # find maximum level (if any) from given levels list, and associated therapies
@@ -57,7 +63,7 @@ class composer_base(logger):
     def parse_oncokb_level(self, row_dict):
         # find oncokb level string: eg. "Level 1", "Likely Oncogenic", "None"
         max_level = None
-        for level in self.THERAPY_LEVELS:
+        for level in oncokb.THERAPY_LEVELS:
             if not self.is_null_string(row_dict[level]):
                 max_level = level
                 break
@@ -98,18 +104,8 @@ class clinical_report_json_composer(composer_base):
     VARIANT_CLASS = 'Variant_Classification'
     V7_TARGET_SIZE = 37.285536 # inherited from CGI-Tools
 
-    ALL_ONCOKB_OUTPUT_LEVELS = [
-        'Level 1',
-        'Level 2',
-        'Level 3A',
-        'Level 3B',
-        'Level 4',
-        'Level R1',
-        'Level R2',
-        'Likely Oncogenic'
-    ]
-
     def __init__(self, input_dir, params, log_level=logging.WARNING, log_path=None):
+        super().__init__() # calls the parent constructor
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
@@ -153,7 +149,7 @@ class clinical_report_json_composer(composer_base):
         data = {
             rc.TOTAL_VARIANTS: cnv_total,
             rc.CLINICALLY_RELEVANT_VARIANTS: oncogenic_cnv_total,
-            rc.BODY: self.sort_by_oncokb_level(oncogenic_variants)
+            rc.BODY: self.sort_variant_rows(oncogenic_variants)
         }
         return data
 
@@ -252,7 +248,7 @@ class clinical_report_json_composer(composer_base):
         data = {
             rc.CLINICALLY_RELEVANT_VARIANTS: self.total_oncogenic_somatic_mutations,
             rc.TOTAL_VARIANTS: self.total_somatic_mutations,
-            rc.BODY: self.sort_by_oncokb_level(rows)
+            rc.BODY: self.sort_variant_rows(rows)
         }
         return data
 
@@ -281,7 +277,7 @@ class clinical_report_json_composer(composer_base):
         data = {
             rc.CLINICALLY_RELEVANT_VARIANTS: oncogenic_fusion_genes,
             rc.TOTAL_VARIANTS: self.total_fusion_genes,
-            rc.BODY: self.sort_by_oncokb_level(rows)
+            rc.BODY: rows # sorting is done by fusion reader
         }
         return data
 
@@ -309,9 +305,9 @@ class clinical_report_json_composer(composer_base):
         # - Treatment
         # - OncoKB level
         if level == self.FDA_APPROVED:
-            levels = self.FDA_APPROVED_LEVELS
+            levels = oncokb.FDA_APPROVED_LEVELS
         elif level == self.INVESTIGATIONAL:
-            levels = self.INVESTIGATIONAL_LEVELS
+            levels = oncokb.INVESTIGATIONAL_LEVELS
         else:
             raise RuntimeError("Unknown therapy level: '{0}'".format(level))
         rows = []
@@ -341,7 +337,7 @@ class clinical_report_json_composer(composer_base):
                     therapies = fusion.get_inv_therapies()
                 if max_level:
                     rows.append(self.treatment_row(genes, alteration, max_level, therapies))
-        rows = self.sort_by_oncokb_level(rows)
+        rows = self.sort_therapy_rows(rows)
         return rows
 
     def get_cytoband(self, gene_name):
@@ -556,23 +552,29 @@ class clinical_report_json_composer(composer_base):
         return data
 
     def sort_by_oncokb_level(self, rows):
-        # sort table rows from highest to lowest oncoKB level
-        def oncokb_order(level):
-            # find numeric sort order for an oncokb level; error if level is unknown
-            order = -1
-            for output_level in self.ALL_ONCOKB_OUTPUT_LEVELS:
-                order += 1
-                if level == output_level:
-                    break
-            if order == -1:
-                raise RuntimeError("Unknown OncoKB level '{0}'".format(level))
-            return order
+        # sort therapy/variant rows by oncokb level
         try:
-            sorted_rows = sorted(rows, key=lambda row: oncokb_order(row[rc.ONCOKB]))
-        except RuntimeError as err:
+            rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row[rc.ONCOKB]))
+        except OncokbSortError as err:
             self.logger.error("Error in OncoKB level sort: {0}".format(err))
             raise
-        return sorted_rows
+        return rows
+
+    def sort_therapy_rows(self, rows):
+        # sort FDA/investigational therapy rows
+        # extract a gene name from 'genes and urls' dictionary keys
+        rows = sorted(
+            rows,
+            key=lambda row: sorted(list(row.get(rc.GENES_AND_URLS).keys())).pop(0)
+        )
+        rows = self.sort_by_oncokb_level(rows)
+        return rows
+
+    def sort_variant_rows(self, rows):
+        # sort rows descending by oncokb level, then ascending by gene name
+        rows = sorted(rows, key=lambda row: row[rc.GENE])
+        rows = self.sort_by_oncokb_level(rows)
+        return rows
 
     def treatment_row(self, genes_arg, alteration, max_level, therapies):
         # genes argument may be a string, or an iterable of strings
@@ -626,6 +628,7 @@ class fusion_reader(composer_base):
     HUGO_SYMBOL = 'Hugo_Symbol'
 
     def __init__(self, input_dir, log_level=logging.WARNING, log_path=None):
+        super().__init__() # calls the parent constructor
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.input_dir = input_dir
         self.old_to_new_delimiter = self.read_fusion_delimiter_map()
@@ -637,7 +640,14 @@ class fusion_reader(composer_base):
                   "Annotations: {0}".format(sorted(list(set(annotations.keys()))))
             self.logger.error(msg)
             raise RuntimeError(msg)
-        [self.fusions, self.total_fusion_genes] = self._collate_row_data(fusion_data, annotations)
+        [fusions, self.total_fusion_genes] = self._collate_row_data(fusion_data, annotations)
+        # sort the fusions by oncokb level & fusion ID
+        fusions = sorted(fusions, key=lambda f: f.get_fusion_id_new())
+        try:
+            self.fusions = sorted(fusions, key=lambda f: self.oncokb_sort_order(f.get_oncokb_level()))
+        except OncokbSortError as err:
+            self.logger.error("Error in OncoKB level sort: {0}".format(err))
+            raise
 
     def _collate_row_data(self, fusion_data, annotations):
         fusions = []
@@ -662,9 +672,9 @@ class fusion_reader(composer_base):
             ann = annotations[fusion_id]
             effect = ann['mutation_effect']
             oncokb_level = self.parse_oncokb_level(ann)
-            fda = self.parse_max_oncokb_level_and_therapies(ann, self.FDA_APPROVED_LEVELS)
+            fda = self.parse_max_oncokb_level_and_therapies(ann, oncokb.FDA_APPROVED_LEVELS)
             [fda_level, fda_therapies] = fda
-            inv = self.parse_max_oncokb_level_and_therapies(ann, self.INVESTIGATIONAL_LEVELS)
+            inv = self.parse_max_oncokb_level_and_therapies(ann, oncokb.INVESTIGATIONAL_LEVELS)
             [inv_level, inv_therapies] = inv
             fusions.append(
                 fusion(
@@ -789,14 +799,5 @@ class fusion:
     def get_inv_therapies(self):
         return self.inv_therapies
 
-# TODO replace main() method with a script in the Djerba bin/ directory
-
-def main():
-    report_dir = sys.argv[1]
-    out_dir = sys.argv[2]
-    author = "Emmett Brown"
-    assay_type = 'WGTS'
-    clinical_report_json_composer(report_dir, author, assay_type, log_level=logging.INFO).run(out_dir)
-
-if __name__ == '__main__':
-    main()
+class OncokbSortError(Exception):
+    pass
