@@ -136,12 +136,10 @@ class clinical_report_json_composer(composer_base):
         self.cytoband_map = self.read_cytoband_map()
         if self.failed:
             self.total_somatic_mutations = None
-            self.total_oncogenic_somatic_mutations = None
             self.total_fusion_genes = None
             self.gene_pair_fusions = None
         else:
             self.total_somatic_mutations = self.read_total_somatic_mutations()
-            self.total_oncogenic_somatic_mutations = self.read_total_oncogenic_somatic_mutations()
             if self.params.get(xc.ASSAY_TYPE) == rc.ASSAY_WGTS:
                 fus_reader = fusion_reader(input_dir, log_level=log_level, log_path=log_path)
                 self.total_fusion_genes = fus_reader.get_total_fusion_genes()
@@ -155,12 +153,26 @@ class clinical_report_json_composer(composer_base):
 
     def build_copy_number_variation(self):
         self.logger.debug("Building data for copy number variation table")
-        [oncogenic_cnv_total, cnv_total, rows] = self.read_cnv_data()
+        rows = []
+        with open(os.path.join(self.input_dir, self.CNA_ANNOTATED)) as input_file:
+            reader = csv.DictReader(input_file, delimiter="\t")
+            for row in reader:
+                gene = row[self.HUGO_SYMBOL_UPPER_CASE]
+                cytoband = self.get_cytoband(gene)
+                row = {
+                    rc.GENE: gene,
+                    rc.GENE_URL: self.build_gene_url(gene),
+                    rc.ALT: row[self.ALTERATION_UPPER_CASE],
+                    rc.CHROMOSOME: cytoband,
+                    rc.ONCOKB: self.parse_oncokb_level(row)
+                }
+                rows.append(row)
+        unfiltered_cnv_total = len(rows)
         rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
         for row in rows: self.all_reported_variants.add((row.get(rc.GENE), row.get(rc.CHROMOSOME)))
         data = {
-            rc.TOTAL_VARIANTS: cnv_total,
-            rc.CLINICALLY_RELEVANT_VARIANTS: oncogenic_cnv_total,
+            rc.TOTAL_VARIANTS: unfiltered_cnv_total,
+            rc.CLINICALLY_RELEVANT_VARIANTS: len(rows),
             rc.BODY: rows
         }
         return data
@@ -260,7 +272,7 @@ class clinical_report_json_composer(composer_base):
         rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
         for row in rows: self.all_reported_variants.add((row.get(rc.GENE), row.get(rc.CHROMOSOME)))
         data = {
-            rc.CLINICALLY_RELEVANT_VARIANTS: self.total_oncogenic_somatic_mutations,
+            rc.CLINICALLY_RELEVANT_VARIANTS: len(rows),
             rc.TOTAL_VARIANTS: self.total_somatic_mutations,
             rc.BODY: rows
         }
@@ -429,14 +441,11 @@ class clinical_report_json_composer(composer_base):
 
     def read_cnv_data(self):
         input_path = os.path.join(self.input_dir, 'data_CNA_oncoKBgenes_nonDiploid_annotated.txt')
-        oncogenic = 0
-        total = 0
-        oncogenic_variants = []
+        variants = []
         with open(input_path) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
             for row in reader:
                 total += 1
-                oncogenic += 1
                 gene = row[self.HUGO_SYMBOL_UPPER_CASE]
                 cytoband = self.get_cytoband(gene)
                 variant = {
@@ -446,8 +455,8 @@ class clinical_report_json_composer(composer_base):
                     rc.CHROMOSOME: cytoband,
                     rc.ONCOKB: self.parse_oncokb_level(row)
                 }
-                oncogenic_variants.append(variant)
-        return [oncogenic, total, oncogenic_variants]
+                variants.append(variant)
+        return variants
 
     def read_cytoband_map(self):
         input_path = os.path.join(self.data_dir, 'cytoBand.txt')
@@ -509,17 +518,8 @@ class clinical_report_json_composer(composer_base):
         percentile = ecdf(tmb)*100
         return percentile
 
-    def read_total_fusions(self):
-        return self.read_variant_count(self.DATA_FUSIONS_OLD)
-
-    def read_total_oncogenic_somatic_mutations(self):
-        return self.read_variant_count(self.MUTATIONS_EXTENDED_ONCOGENIC)
-
     def read_total_somatic_mutations(self):
-        return self.read_variant_count(self.MUTATIONS_EXTENDED)
-
-    def read_variant_count(self, filename):
-        with open(os.path.join(self.input_dir, filename)) as var_file:
+        with open(os.path.join(self.input_dir, self.MUTATIONS_EXTENDED)) as var_file:
             variant_count = len(var_file.readlines()) - 1 # lines in file, minus header line
         return variant_count
 
