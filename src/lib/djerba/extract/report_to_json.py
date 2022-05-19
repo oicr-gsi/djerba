@@ -50,7 +50,9 @@ class composer_base(logger):
                 break
             i+=1
         if order == None:
-            self.logger.warn("Unknown OncoKB level '{0}'; known levels are {1}".format(level, self.oncokb_levels))
+            self.logger.warning(
+                "Unknown OncoKB level '{0}'; known levels are {1}".format(level, self.oncokb_levels)
+            )
             order = len(self.oncokb_levels)+1 # unknown levels go last
         return order
 
@@ -268,10 +270,8 @@ class clinical_report_json_composer(composer_base):
         # table has 2 rows for each oncogenic fusion
         self.logger.debug("Building data for structural variants and fusions table")
         rows = []
-        oncogenic_fusion_genes = 0 # number of genes = 2x number of fusions
         for fusion in self.gene_pair_fusions:
             oncokb_level = fusion.get_oncokb_level()
-            oncogenic_fusion_genes += 2
             for gene in fusion.get_genes():
                 cytoband = self.get_cytoband(gene)
                 row =  {
@@ -286,8 +286,9 @@ class clinical_report_json_composer(composer_base):
                 rows.append(row)
         rows = list(filter(self.oncokb_filter, rows)) # sorting is done by fusion reader
         for row in rows: self.all_reported_variants.add((row.get(rc.GENE), row.get(rc.CHROMOSOME)))
+        distinct_oncogenic_genes = len(set([row.get(rc.gene) for row in rows]))
         data = {
-            rc.CLINICALLY_RELEVANT_VARIANTS: oncogenic_fusion_genes,
+            rc.CLINICALLY_RELEVANT_VARIANTS: distinct_oncogenic_genes,
             rc.TOTAL_VARIANTS: self.total_fusion_genes,
             rc.BODY: rows
         }
