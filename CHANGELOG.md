@@ -7,10 +7,12 @@
 - GCGI-268 Make clinical and QC report filenames consistent
 - GCGI-270 Italicize gene names in Supplementary Gene Information
 - GCGI-291 Replace Rmarkdown with Mako template
+- GCGI-292 Run in wgs-only and failed modes without Mavis input
 - GCGI-312 Correctly populate Study and Oncotree in the report
 - GCGI-326 Standardize report filenames
 - GCGI-353 Support markdown in genomic summary
-- New `ASSAY_NAME` parameter in INI
+- GCGI-365 Improved page breaks in PDF
+- GCGI-367 New `ASSAY_NAME` parameter in INI
 - Default HTML names and PDF names conform to convention
 - `subprocess_runner` class to run commands and log the results
 - Introduces a main JSON document, with all information needed to generate a report
