@@ -39,8 +39,10 @@ class main(logger):
         self.args = args
         if self.args.subparser_name in [constants.SETUP, constants.PDF]:
             self.failed = False # --failed option not relevant for these modes
+            self.wgs_only = False # similarly for wgs-only
         else:
             self.failed = self.args.failed
+            self.wgs_only = self.args.wgs_only
         self.log_level = self.get_log_level(self.args.debug, self.args.verbose, self.args.quiet)
         self.log_path = self.args.log_path
         if self.log_path:
@@ -124,19 +126,19 @@ class main(logger):
 
     def run(self):
         """Main method to run Djerba"""
-        # don't use self.args.failed -- it is not defined for some subparsers
-        cv = config_validator(self.args.wgs_only, self.failed, self.log_level, self.log_path)
+        # don't use self.args.failed or self.args.wgs_only -- not defined for some subparsers
+        cv = config_validator(self.wgs_only, self.failed, self.log_level, self.log_path)
         self.logger.info("Running Djerba in mode: {0}".format(self.args.subparser_name))
         if self.args.subparser_name == constants.SETUP:
             self.run_setup()
         elif self.args.subparser_name == constants.CONFIGURE:
             config = self.read_config(self.args.ini)
             cv.validate_minimal(config)
-            configurer(config, self.args.wgs_only, self.args.failed, self.log_level, self.log_path).run(self.args.out)
+            configurer(config, self.wgs_only, self.args.failed, self.log_level, self.log_path).run(self.args.out)
         elif self.args.subparser_name == constants.EXTRACT:
             config = self.read_config(self.args.ini)
             cv.validate_full(config)
-            extractor(config, self.args.dir, self._get_author(), self.args.wgs_only, self.args.target_coverage, self.args.failed, self.args.target_coverage, self.log_level, self.log_path).run()
+            extractor(config, self.args.dir, self._get_author(), self.wgs_only, self.args.target_coverage, self.args.failed, self.args.target_coverage, self.log_level, self.log_path).run()
         elif self.args.subparser_name == constants.HTML:
             json_path = self._get_json_path()
             report_id = self._get_report_id_from_json(json_path)
