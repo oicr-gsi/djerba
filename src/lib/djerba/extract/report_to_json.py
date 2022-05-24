@@ -132,7 +132,7 @@ class clinical_report_json_composer(composer_base):
         self.closest_tcga_uc = self.clinical_data[dc.CLOSEST_TCGA].upper()
         self.data_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], dc.DATA_DIR_NAME)
         self.r_script_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], 'R_plots')
-        self.html_dir = os.path.join(self.data_dir, 'html')
+        self.html_dir = os.path.join(os.path.dirname(__file__), '..', 'html')
         self.cytoband_map = self.read_cytoband_map()
         if self.failed:
             self.total_somatic_mutations = None

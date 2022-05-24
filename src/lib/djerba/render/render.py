@@ -24,7 +24,6 @@ class html_renderer(logger):
         html_dir = os.path.realpath(os.path.join(
             os.path.dirname(__file__),
             '..',
-            constants.DATA_DIR_NAME,
             'html'
         ))
         # strict_undefined=True provides an informative error for missing variables in JSON
