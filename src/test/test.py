@@ -193,8 +193,8 @@ class TestExtractor(TestBase):
     STATIC_MD5_FAILED = {
         'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
         'genomic_summary.txt': '5a2f6e61fdf0f109ac3d1bcc4bb3ca71',
-        'djerba_report_human.json': '452a378f9a2f8fd64c211917625a9d9d',
-        'djerba_report_machine.json': 'fb6be4e1142fe46d5995250d877f343a'
+        'djerba_report_human.json': '1e680ac80e7e39a5d842d3634e888977',
+        'djerba_report_machine.json': '9829c106e0cbd71eac2e8a41d1a1638e'
     }
     VARYING_OUTPUT = [
         'tmb.jpeg',
@@ -215,6 +215,7 @@ class TestExtractor(TestBase):
         # do not check supplementary data
         del data_found['supplementary']
         del data_expected['supplementary']
+        self.maxDiff = None
         self.assertEqual(data_found, data_expected)
 
     def check_outputs_md5(self, out_dir, outputs):
@@ -459,16 +460,15 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report_machine.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '1af9d2defdfdce015db87ebbb743ad7d')
+        self.check_report(out_path, '4978100e56c1fd6cb9057b25cd4d3417')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report_machine.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, 'd766f07ccbfeada9680d4eeb6045ac59')
+        self.check_report(out_path, 'ea6d5031afe7695c721b37a231e6f8a8')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report_machine.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, 'd7b26dda73ed130ab75692a5e09a49fc')
-
+        self.check_report(out_path, '2458deb2afa230d6886dbf82d49bef75')
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')

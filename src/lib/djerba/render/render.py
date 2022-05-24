@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import pdfkit
+import traceback
 from mako.template import Template
 from mako.lookup import TemplateLookup
 
@@ -23,7 +24,6 @@ class html_renderer(logger):
         html_dir = os.path.realpath(os.path.join(
             os.path.dirname(__file__),
             '..',
-            constants.DATA_DIR_NAME,
             'html'
         ))
         # strict_undefined=True provides an informative error for missing variables in JSON
@@ -37,7 +37,15 @@ class html_renderer(logger):
             args = data.get(constants.REPORT)
             config = data.get(constants.SUPPLEMENTARY).get(constants.CONFIG)
         with open(out_path, 'w') as out_file:
-            print(self.template.render(**args), file=out_file)
+            try:
+                html = self.template.render(**args)
+            except Exception as err:
+                msg = "Unexpected error of type {0} in Mako template rendering: {1}".format(type(err).__name__, err)
+                self.logger.error(msg)
+                trace = ''.join(traceback.format_tb(err.__traceback__))
+                self.logger.error('Traceback: {0}'.format(trace))
+                raise
+            print(html, file=out_file)
         if archive:
             self.logger.info("Finding archive parameters for {0}".format(out_path))
             try:
@@ -107,5 +115,12 @@ class pdf_renderer(logger):
                 'quiet': '',
                 'disable-javascript': ''
             }
-        pdfkit.from_file(html_path, pdf_path, options = options)
+        try:
+            pdfkit.from_file(html_path, pdf_path, options = options)
+        except Exception as err:
+            msg = "Unexpected error of type {0} in PDF rendering: {0}".format(type(err).__name__, err)
+            self.logger.error(msg)
+            trace = ''.join(traceback.format_tb(err.__traceback__))
+            self.logger.error('Traceback: {0}'.format(trace))
+            raise
         self.logger.info('Finished writing PDF')

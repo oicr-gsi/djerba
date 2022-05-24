@@ -275,10 +275,10 @@ class extractor(logger):
         human_path = os.path.join(self.report_dir, constants.REPORT_HUMAN_FILENAME)
         self._write_main_json(human_path, report_data, config_data, pretty=True)
         # machine-readable; replace image paths with base-64 blobs for a self-contained document
-        report_data[logo_key] = self.converter.convert_png(report_data[logo_key])
+        report_data[logo_key] = self.converter.convert_png(report_data[logo_key], 'OICR logo')
         if not self.failed:
-            report_data[tmb_key] = self.converter.convert_jpeg(report_data[tmb_key])
-            report_data[vaf_key] = self.converter.convert_jpeg(report_data[vaf_key])
+            report_data[tmb_key] = self.converter.convert_jpeg(report_data[tmb_key], 'TMB plot')
+            report_data[vaf_key] = self.converter.convert_jpeg(report_data[vaf_key], 'VAF plot')
         machine_path = os.path.join(self.report_dir, constants.REPORT_MACHINE_FILENAME)
         self._write_main_json(machine_path, report_data, config_data, pretty=False)
 
