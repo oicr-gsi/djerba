@@ -298,7 +298,7 @@ class clinical_report_json_composer(composer_base):
                 rows.append(row)
         rows = list(filter(self.oncokb_filter, rows)) # sorting is done by fusion reader
         for row in rows: self.all_reported_variants.add((row.get(rc.GENE), row.get(rc.CHROMOSOME)))
-        distinct_oncogenic_genes = len(set([row.get(rc.gene) for row in rows]))
+        distinct_oncogenic_genes = len(set([row.get(rc.GENE) for row in rows]))
         data = {
             rc.CLINICALLY_RELEVANT_VARIANTS: distinct_oncogenic_genes,
             rc.TOTAL_VARIANTS: self.total_fusion_genes,
