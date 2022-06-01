@@ -410,7 +410,7 @@ class r_script_wrapper(logger):
             '--oncolist', self.config[ini.DISCOVERED][ini.ONCO_LIST],
             '--tcgadata', self.config[ini.SETTINGS][ini.TCGA_DATA],
             '--whizbam_url', self.config[ini.SETTINGS][ini.WHIZBAM_URL],
-            '--tcgacode', self.config[ini.INPUTS][ini.TCGA_CODE],
+            '--tcgacode', self.config[ini.INPUTS][ini.TCGA_CODE].upper(),
             '--gain', self.config[ini.DISCOVERED][ini.LOG_R_GAIN],
             '--ampl', self.config[ini.DISCOVERED][ini.LOG_R_AMPL],
             '--htzd', self.config[ini.DISCOVERED][ini.LOG_R_HTZD],
