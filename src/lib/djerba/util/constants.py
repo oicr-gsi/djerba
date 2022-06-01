@@ -49,6 +49,10 @@ HTML = 'html'
 PDF = 'pdf'
 ALL = 'all'
 
+# mode names for benchmark.py
+# REPORT = 'report' # duplicate of top-level JSON section name; this is fine
+COMPARE = 'compare'
+
 # for running Mavis
 MAVIS_SUBDIR_NAME = 'mavis'
 

@@ -39,9 +39,7 @@ class benchmarker(logger):
         self.log_level = self.get_log_level(args.debug, args.verbose, args.quiet)
         self.log_path = args.log_path
         self.logger = self.get_logger(self.log_level, __name__, self.log_path)
-        self.input_dir = os.path.abspath(args.input_dir)
-        self.output_dir = os.path.abspath(args.output_dir)
-        self.dry_run = args.dry_run
+        self.args = args
         self.validator = path_validator(self.log_level, self.log_path)
         self.data_dir = os.path.join(os.environ.get('DJERBA_BASE_DIR'), constants.DATA_DIR_NAME)
         self.test_data = os.environ.get('DJERBA_TEST_DATA')
@@ -114,14 +112,33 @@ class benchmarker(logger):
         self.logger.info("GSICAPBENCH setup complete.")
 
     def run(self):
-        self.logger.info("Setting up working directories for GSICAPBENCH inputs from {0}".format(self.input_dir))
-        self.run_setup(self.input_dir, self.output_dir)
-        if self.dry_run:
-            self.logger.info("Dry-run mode; omitting report generation")
+        if self.args.subparser_name == constants.REPORT:
+            input_dir = os.path.abspath(self.args.input_dir)
+            output_dir = os.path.abspath(self.args.output_dir)
+            dry_run = self.args.dry_run
+            self.logger.info("Setting up working directories for GSICAPBENCH inputs from {0}".format(input_dir))
+            self.run_setup(input_dir, output_dir)
+            if dry_run:
+                self.logger.info("Dry-run mode; omitting report generation")
+            else:
+                self.logger.info("Writing GSICAPBENCH reports to {0}".format(output_dir))
+                self.run_reports(output_dir)
+            self.logger.info("Finished.")
+        elif self.args.subparser_name == constants.COMPARE:
+            dirs = self.args.report_dir
+            if len(dirs)!=2:
+                msg = "Incorrect number of reporting directories: Expected 2, found {0}. ".format(len(dirs))+\
+                      "Directories are supplied with -r/--report-dir on the command line."
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            else:
+                self.logger.info("Comparing directories {0} and {1}".format(dirs[0], dirs[1]))
+                self.logger.warning("Comparison mode not yet implemented!")
+                # TODO run the comparison; glob for files and use test assertions; print summary to STDOUT or file
         else:
-            self.logger.info("Writing GSICAPBENCH reports to {0}".format(self.output_dir))
-            self.run_reports(self.output_dir)
-        self.logger.info("Finished.")
+            msg = "Unknown subparser name {0}".format(self.args.subparser_name)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
 
 class main_draft_args():
     """Alternative to argument parser output from djerba.py, for launching main draft mode"""
