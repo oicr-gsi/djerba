@@ -16,6 +16,7 @@ setup(
     name='djerba',
     version=package_version,
     scripts=[
+        'src/bin/benchmark.py',
         'src/bin/djerba.py',
         'src/bin/html2pdf.py',
         'src/bin/list_inputs.py',

@@ -10,6 +10,7 @@
 - GCGI-292 Run in wgs-only and failed modes without Mavis input
 - GCGI-312 Correctly populate Study and Oncotree in the report
 - GCGI-326 Standardize report filenames
+- GCGI-328 Automated generation of benchmark reports
 - GCGI-353 Support markdown in genomic summary
 - GCGI-365 Improved page breaks in PDF
 - GCGI-367 New `ASSAY_NAME` parameter in INI

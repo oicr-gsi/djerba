@@ -9,7 +9,6 @@ Process the GSICAPBENCH samples for benchmarking/validation:
 import os
 import json
 import logging
-import sys # TODO remove after initial testing
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 
@@ -36,11 +35,14 @@ class benchmarker(logger):
     TEMPLATE = 'benchmark_config.ini'
     TEST_DATA = 'test_data' # identifier for test data directory
 
-    def __init__(self, log_level=logging.WARNING, log_path=None):
-        self.logger = self.get_logger(log_level, __name__, log_path)
-        self.log_level = log_level
-        self.log_path = log_path
-        self.validator = path_validator(log_level, log_path)
+    def __init__(self, args):
+        self.log_level = self.get_log_level(args.debug, args.verbose, args.quiet)
+        self.log_path = args.log_path
+        self.logger = self.get_logger(self.log_level, __name__, self.log_path)
+        self.input_dir = os.path.abspath(args.input_dir)
+        self.output_dir = os.path.abspath(args.output_dir)
+        self.dry_run = args.dry_run
+        self.validator = path_validator(self.log_level, self.log_path)
         self.data_dir = os.path.join(os.environ.get('DJERBA_BASE_DIR'), constants.DATA_DIR_NAME)
         self.test_data = os.environ.get('DJERBA_TEST_DATA')
         with open(os.path.join(self.data_dir, 'benchmark_params.json')) as in_file:
@@ -48,6 +50,7 @@ class benchmarker(logger):
 
     def glob_single(self, pattern):
         """Glob recursively for the given pattern; error if no results, notify if more than one"""
+        self.logger.debug("Recursive glob for files matching {0}".format(pattern))
         results = sorted(glob(pattern, recursive=True))
         if len(results)==0:
             msg = "No glob results for pattern '{0}'".format(pattern)
@@ -110,6 +113,16 @@ class benchmarker(logger):
             self.logger.debug("Finished creating working directory {0} for sample {1}".format(sample_dir, sample))
         self.logger.info("GSICAPBENCH setup complete.")
 
+    def run(self):
+        self.logger.info("Setting up working directories for GSICAPBENCH inputs from {0}".format(self.input_dir))
+        self.run_setup(self.input_dir, self.output_dir)
+        if self.dry_run:
+            self.logger.info("Dry-run mode; omitting report generation")
+        else:
+            self.logger.info("Writing GSICAPBENCH reports to {0}".format(self.output_dir))
+            self.run_reports(self.output_dir)
+        self.logger.info("Finished.")
+
 class main_draft_args():
     """Alternative to argument parser output from djerba.py, for launching main draft mode"""
 
@@ -132,8 +145,3 @@ class main_draft_args():
         self.no_archive = True
         self.target_coverage = 80
         self.wgs_only = False
-
-if __name__ == '__main__':
-    bench = benchmarker(log_level=logging.DEBUG)
-    bench.run_setup(sys.argv[1], sys.argv[2])
-    bench.run_reports(sys.argv[2])
