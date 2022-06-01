@@ -31,6 +31,8 @@ setup(
             'data/20200818-oncoKBcancerGeneList.tsv',
             'data/20201126-allCuratedGenes.tsv',
             'data/20201201-OncoTree.txt',
+            'data/benchmark_config.ini',
+            'data/benchmark_params.json',
             'data/civic/01-Jun-2020-GeneSummaries.tsv',
             'data/civic/01-Jun-2020-VariantGroupSummaries.tsv',
             'data/civic/01-Jun-2020-VariantSummaries.tsv',

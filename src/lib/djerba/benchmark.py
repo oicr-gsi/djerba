@@ -15,14 +15,15 @@ import djerba.util.ini_fields as ini
 
 from glob import glob
 from string import Template
+from djerba.main import main
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
 
 class benchmarker(logger):
 
+    CONFIG_FILE_NAME = 'config.ini'
     # TODO run Mavis as a pipeline workflow; for now, use fixed Mavis results
     MAVIS_DIR = '/.mounts/labs/CGI/validation_cap/djerba_cap_bench/mavis/work'
-
     SAMPLES = [
         "GSICAPBENCH_1219",
         "GSICAPBENCH_1232",
@@ -31,15 +32,17 @@ class benchmarker(logger):
         "GSICAPBENCH_1275",
         "GSICAPBENCH_1288"
     ]
+    REPORT_DIR_NAME = 'report'
     TEMPLATE = 'benchmark_config.ini'
     TEST_DATA = 'test_data' # identifier for test data directory
 
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
+        self.log_level = log_level
+        self.log_path = log_path
         self.validator = path_validator(log_level, log_path)
         self.data_dir = os.path.join(os.environ.get('DJERBA_BASE_DIR'), constants.DATA_DIR_NAME)
         self.test_data = os.environ.get('DJERBA_TEST_DATA')
-        # TODO read from data_dir as JSON
         with open(os.path.join(self.data_dir, 'benchmark_params.json')) as in_file:
             self.sample_params = json.loads(in_file.read())
 
@@ -78,24 +81,59 @@ class benchmarker(logger):
             inputs[sample][ini.GEP_FILE] = self.glob_single(pattern)
         return inputs
 
+    def run_reports(self, work_dir):
+        for sample in self.SAMPLES:
+            self.logger.info("Generating Djerba draft report for {0}".format(sample))
+            config_path = os.path.join(work_dir, sample, self.CONFIG_FILE_NAME)
+            report_dir = os.path.join(work_dir, sample, self.REPORT_DIR_NAME)
+            self.validator.validate_output_dir(report_dir)
+            args = main_draft_args(self.log_level, self.log_path, config_path, report_dir)
+            main(args).run()
+            self.logger.info("Finished generating Djerba draft report for {0}".format(sample))
+
     def run_setup(self, results_dir, work_dir):
         """For each sample, setup working directory and generate config.ini"""
         inputs = self.find_inputs(results_dir)
         self.validator.validate_output_dir(work_dir)
         template_path = os.path.join(self.data_dir, self.TEMPLATE)
         for sample in self.SAMPLES:
+            self.logger.debug("Creating working directory for sample {0}".format(sample))
             sample_dir = os.path.join(work_dir, sample)
             os.mkdir(sample_dir)
-            os.mkdir(os.path.join(sample_dir, 'report'))
+            os.mkdir(os.path.join(sample_dir, self.REPORT_DIR_NAME))
             with open(template_path) as template_file:
                 template_ini = Template(template_file.read())
             config = template_ini.substitute(inputs.get(sample))
-            out_path = os.path.join(sample_dir, 'config.ini')
+            out_path = os.path.join(sample_dir, self.CONFIG_FILE_NAME)
             with open(out_path, 'w') as out_file:
                 out_file.write(config)
-            self.logger.debug("Set up working directory {0} for sample {1}".format(sample_dir, sample))
+            self.logger.debug("Finished creating working directory {0} for sample {1}".format(sample_dir, sample))
         self.logger.info("GSICAPBENCH setup complete.")
 
-if __name__ == '__main__':
-    benchmarker(log_level=logging.DEBUG).run_setup(sys.argv[1], sys.argv[2])
+class main_draft_args():
+    """Alternative to argument parser output from djerba.py, for launching main draft mode"""
 
+    def __init__(self, log_level, log_path, ini_path, out_dir):
+        self.debug = False
+        self.quiet = False
+        self.verbose = False
+        if log_level == logging.DEBUG:
+            self.debug = True
+        elif log_level == logging.VERBOSE:
+            self.verbose = True
+        self.log_path = log_path
+        self.subparser_name = constants.DRAFT
+        self.author = 'Test Author'
+        self.failed = False
+        self.html = None
+        self.ini = ini_path
+        self.ini_out = None
+        self.dir = out_dir
+        self.no_archive = True
+        self.target_coverage = 80
+        self.wgs_only = False
+
+if __name__ == '__main__':
+    bench = benchmarker(log_level=logging.DEBUG)
+    bench.run_setup(sys.argv[1], sys.argv[2])
+    bench.run_reports(sys.argv[2])
