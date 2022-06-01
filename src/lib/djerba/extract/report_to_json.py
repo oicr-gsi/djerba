@@ -421,7 +421,7 @@ class clinical_report_json_composer(composer_base):
         if self.closest_tcga_lc == 'paad':
             cohort = self.COMPASS
         elif self.closest_tcga_lc in tcga_cancer_types:
-            cohort = closest_tcga_lc
+            cohort = self.closest_tcga_lc
         else:
             cohort = self.NA
         return cohort
