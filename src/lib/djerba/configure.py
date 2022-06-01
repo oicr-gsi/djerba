@@ -240,28 +240,33 @@ class provenance_reader(logger):
                    row[index.SEQUENCER_RUN_PLATFORM_ID] != 'Illumina_MiSeq':
                     self.provenance.append(row)
         if len(self.provenance)==0:
+            # continue with empty provenance results, eg. for GSICAPBENCH testing
             msg = "No provenance records found for study '%s' and donor '%s' " % (study, donor) +\
                 "in '%s'" % provenance_path
-            self.logger.error(msg)
-            raise MissingProvenanceError(msg)
+            self.logger.warning(msg)
+            self.attributes = []
+            self.patient_id = None
+            self.tumour_id = None
+            self.normal_id = None
+            self.root_sample_name = None
         else:
             self.logger.info("Found %d provenance records" % len(self.provenance))
-        # find relevant attributes from provenance
-        # start by finding unique combinations of name/attributes/LIMS_ID
-        provenance_subset = set()
-        for row in self.provenance:
-            columns = (
-                row[index.ROOT_SAMPLE_NAME],
-                row[index.PARENT_SAMPLE_ATTRIBUTES],
-                row[index.LIMS_ID]
-            )
-            provenance_subset.add(columns)
-        # parse the 'parent sample attributes' value and get a list of dictionaries
-        self.attributes = [self._parse_row_attributes(row) for row in provenance_subset]
-        self.patient_id = self._id_patient()
-        self.tumour_id = self._id_tumour()
-        self.normal_id = self._id_normal()
-        self.root_sample_name = self._get_root_sample_name()
+            # find relevant attributes from provenance
+            # start by finding unique combinations of name/attributes/LIMS_ID
+            provenance_subset = set()
+            for row in self.provenance:
+                columns = (
+                    row[index.ROOT_SAMPLE_NAME],
+                    row[index.PARENT_SAMPLE_ATTRIBUTES],
+                    row[index.LIMS_ID]
+                )
+                provenance_subset.add(columns)
+            # parse the 'parent sample attributes' value and get a list of dictionaries
+            self.attributes = [self._parse_row_attributes(row) for row in provenance_subset]
+            self.patient_id = self._id_patient()
+            self.tumour_id = self._id_tumour()
+            self.normal_id = self._id_normal()
+            self.root_sample_name = self._get_root_sample_name()
 
     def _filter_rows(self, index, value, rows=None):
         # find matching provenance rows from a list
