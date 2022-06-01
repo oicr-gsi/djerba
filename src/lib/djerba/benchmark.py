@@ -7,6 +7,7 @@ Process the GSICAPBENCH samples for benchmarking/validation:
 """
 
 import os
+import json
 import logging
 import sys # TODO remove after initial testing
 import djerba.util.constants as constants
@@ -24,30 +25,26 @@ class benchmarker(logger):
 
     SAMPLES = [
         "GSICAPBENCH_1219",
-        #"GSICAPBENCH_1232",
-        #"GSICAPBENCH_1233",
-        #"GSICAPBENCH_1273",
-        #"GSICAPBENCH_1275",
-        #"GSICAPBENCH_1288"
+        "GSICAPBENCH_1232",
+        "GSICAPBENCH_1233",
+        "GSICAPBENCH_1273",
+        "GSICAPBENCH_1275",
+        "GSICAPBENCH_1288"
     ]
     TEMPLATE = 'benchmark_config.ini'
+    TEST_DATA = 'test_data' # identifier for test data directory
 
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.validator = path_validator(log_level, log_path)
         self.data_dir = os.path.join(os.environ.get('DJERBA_BASE_DIR'), constants.DATA_DIR_NAME)
+        self.test_data = os.environ.get('DJERBA_TEST_DATA')
         # TODO read from data_dir as JSON
-        self.sample_params = {
-            "GSICAPBENCH_1219": {
-                ini.TUMOUR_ID: 'foo',
-                ini.NORMAL_ID: 'bar',
-                ini.PATIENT_ID: 'baz',
-                ini.SEX: 'Male'
-            }
-        }
+        with open(os.path.join(self.data_dir, 'benchmark_params.json')) as in_file:
+            self.sample_params = json.loads(in_file.read())
 
     def glob_single(self, pattern):
-        """Glob recursively for the given pattern; error if no results, warn if more than one"""
+        """Glob recursively for the given pattern; error if no results, notify if more than one"""
         results = sorted(glob(pattern, recursive=True))
         if len(results)==0:
             msg = "No glob results for pattern '{0}'".format(pattern)
@@ -56,7 +53,7 @@ class benchmarker(logger):
         elif len(results)>1:
             msg = "Multiple glob results for pattern '{0}': {1}".format(pattern, results)+\
                   " Using {0}".format(results[-1])
-            self.logger.warning(msg)
+            self.logger.info(msg)
         return results.pop()
 
     def find_inputs(self, results_dir):
@@ -65,10 +62,11 @@ class benchmarker(logger):
             inputs[sample] = {}
             inputs[sample][ini.PATIENT] = sample
             inputs[sample][ini.DATA_DIR] = self.data_dir
+            inputs[sample][self.TEST_DATA] = self.test_data
             for key in [ini.TUMOUR_ID, ini.NORMAL_ID, ini.PATIENT_ID, ini.SEX]:
                 inputs[sample][key] = self.sample_params[sample][key]
             pattern = '{0}/variantEffectPredictor_2.1.6/'.format(results_dir)+\
-                      '**/{0}_*mutect2.filtered.vep.vcf.gz'.format(sample)
+                      '**/{0}_*mutect2.filtered.maf.gz'.format(sample)
             inputs[sample][ini.MAF_FILE] = self.glob_single(pattern)
             pattern = '{0}/{1}/*summary.zip'.format(self.MAVIS_DIR, sample)
             inputs[sample][ini.MAVIS_FILE] = self.glob_single(pattern)
