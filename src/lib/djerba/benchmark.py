@@ -72,15 +72,15 @@ class benchmarker(logger):
             inputs[sample][self.TEST_DATA] = self.test_data
             for key in [ini.TUMOUR_ID, ini.NORMAL_ID, ini.PATIENT_ID, ini.SEX]:
                 inputs[sample][key] = self.sample_params[sample][key]
-            pattern = '{0}/variantEffectPredictor_2.1.6/'.format(results_dir)+\
+            pattern = '{0}/variantEffectPredictor_*/'.format(results_dir)+\
                       '**/{0}_*mutect2.filtered.maf.gz'.format(sample)
             inputs[sample][ini.MAF_FILE] = self.glob_single(pattern)
             pattern = '{0}/{1}/*summary.zip'.format(self.MAVIS_DIR, sample)
             inputs[sample][ini.MAVIS_FILE] = self.glob_single(pattern)
-            pattern = '{0}/sequenza_2.1/'.format(results_dir)+\
+            pattern = '{0}/sequenza_*/'.format(results_dir)+\
                       '**/{0}_*_results.zip'.format(sample)
             inputs[sample][ini.SEQUENZA_FILE] = self.glob_single(pattern)
-            pattern = '{0}/rsem_2.0/'.format(results_dir)+\
+            pattern = '{0}/rsem_*/'.format(results_dir)+\
                       '**/{0}_*.genes.results'.format(sample)
             inputs[sample][ini.GEP_FILE] = self.glob_single(pattern)
         return inputs
