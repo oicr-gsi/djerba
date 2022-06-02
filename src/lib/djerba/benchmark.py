@@ -1,14 +1,17 @@
 """
 Process the GSICAPBENCH samples for benchmarking/validation:
-- Detect new GSICAPBENCH runs
-- Generate config and make working directories)
-- (Run djerba.py with shell script to generate reports)
+- Detect new GSICAPBENCH runs (TODO)
+- Generate config and make working directories
+- Run main class to generate reports
 - Compare with previous runs
 """
 
-import os
 import json
 import logging
+import os
+import sys
+import unittest
+import djerba.render.constants as rc
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 
@@ -82,6 +85,45 @@ class benchmarker(logger):
             inputs[sample][ini.GEP_FILE] = self.glob_single(pattern)
         return inputs
 
+    def read_and_preprocess_report(self, report_path):
+        """
+        Read report from a JSON file
+        Replace variable elements (images, dates) with dummy values
+        """
+        with open(report_path) as report_file:
+            data = json.loads(report_file.read())
+        for key in [rc.OICR_LOGO, rc.TMB_PLOT, rc.VAF_PLOT, rc.REPORT_DATE]:
+            data[constants.REPORT][key] = 'redacted for benchmark comparison'
+        return data
+
+    def run_comparison(self, report_dirs):
+        reports = []
+        name = constants.REPORT_MACHINE_FILENAME
+        self.logger.debug("Comparing reports: {0}".format(report_dirs))
+        report_paths = []
+        for report_dir in report_dirs:
+            self.validator.validate_input_dir(report_dir)
+            report_path = self.glob_single('{0}/**/{1}'.format(report_dir, name))
+            report_paths.append(report_path)
+            report_data = self.read_and_preprocess_report(report_path)
+            reports.append(report_data)
+        self.logger.debug("Found report paths: {0}".format(report_paths))
+        if os.path.samefile(report_paths[0], report_paths[1]):
+            msg = "Report paths are the same file! {0}".format(report_paths)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        diff = ReportDiff(reports)
+        equivalent = diff.is_equivalent()
+        if equivalent:
+            self.logger.info("Reports are equivalent: {0}".format(report_paths))
+        else:
+            self.logger.warning("Reports are NOT equivalent: {0}".format(report_paths))
+            if self.log_level > logging.INFO:
+                self.logger.warning("Run with --debug or --verbose for full report diff")
+            else:
+                self.logger.info("Report diff:\n{0}".format(diff.get_diff()))
+        return equivalent
+
     def run_reports(self, work_dir):
         for sample in self.SAMPLES:
             self.logger.info("Generating Djerba draft report for {0}".format(sample))
@@ -113,6 +155,7 @@ class benchmarker(logger):
 
     def run(self):
         if self.args.subparser_name == constants.REPORT:
+            # TODO add a 'discover' flag to search for a new input_dir, and generate reports if found
             input_dir = os.path.abspath(self.args.input_dir)
             output_dir = os.path.abspath(self.args.output_dir)
             dry_run = self.args.dry_run
@@ -126,15 +169,17 @@ class benchmarker(logger):
             self.logger.info("Finished.")
         elif self.args.subparser_name == constants.COMPARE:
             dirs = self.args.report_dir
-            if len(dirs)!=2:
+            if len(dirs)==2:
+                self.logger.info("Comparing directories {0} and {1}".format(dirs[0], dirs[1]))
+                ok = self.run_comparison(dirs)
+                if not ok:
+                    self.logger.warning("Reports are not equivalent; exiting with code 1")
+                    sys.exit(1)
+            else:
                 msg = "Incorrect number of reporting directories: Expected 2, found {0}. ".format(len(dirs))+\
                       "Directories are supplied with -r/--report-dir on the command line."
                 self.logger.error(msg)
                 raise RuntimeError(msg)
-            else:
-                self.logger.info("Comparing directories {0} and {1}".format(dirs[0], dirs[1]))
-                self.logger.warning("Comparison mode not yet implemented!")
-                # TODO run the comparison; glob for files and use test assertions; print summary to STDOUT or file
         else:
             msg = "Unknown subparser name {0}".format(self.args.subparser_name)
             self.logger.error(msg)
@@ -162,3 +207,25 @@ class main_draft_args():
         self.no_archive = True
         self.target_coverage = 80
         self.wgs_only = False
+
+class ReportDiff(unittest.TestCase):
+    """Use a test assertion to diff two data structures"""
+
+    def __init__(self, data):
+        super().__init__()
+        if len(data)!=2:
+            raise RuntimeError("Expected 2 inputs, found {0}".format(len(data)))
+        self.maxDiff = None
+        try:
+            self.assertEqual(data[0], data[1])
+            self.diff=''
+            self.equivalent = True
+        except AssertionError as err:
+            self.diff = str(err)
+            self.equivalent = False
+
+    def get_diff(self):
+        return self.diff
+
+    def is_equivalent(self):
+        return self.equivalent
