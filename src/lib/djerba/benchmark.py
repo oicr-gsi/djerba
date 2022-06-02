@@ -50,39 +50,53 @@ class benchmarker(logger):
             self.sample_params = json.loads(in_file.read())
 
     def glob_single(self, pattern):
-        """Glob recursively for the given pattern; error if no results, notify if more than one"""
+        """Glob recursively for the given pattern; return a single results, or None"""
         self.logger.debug("Recursive glob for files matching {0}".format(pattern))
         results = sorted(glob(pattern, recursive=True))
         if len(results)==0:
-            msg = "No glob results for pattern '{0}'".format(pattern)
-            self.logger.error(msg)
-            raise RuntimeError(msg)
+            result = None
+            self.logger.debug("No glob results for pattern '{0}'".format(pattern))
+        elif len(results)==1:
+            result = results[0]
+            self.logger.debug("Found one glob result: {0}".format(result))
         elif len(results)>1:
+            result = results[-1]
             msg = "Multiple glob results for pattern '{0}': {1}".format(pattern, results)+\
-                  " Using {0}".format(results[-1])
-            self.logger.info(msg)
-        return results.pop()
+                  " Using {0}".format(result)
+            self.logger.debug(msg)
+        return result
 
     def find_inputs(self, results_dir):
+        # allow missing inputs for some samples, eg. for testing
+        # raise an error if no inputs found
         inputs = {}
         for sample in self.SAMPLES:
-            inputs[sample] = {}
-            inputs[sample][ini.PATIENT] = sample
-            inputs[sample][ini.DATA_DIR] = self.data_dir
-            inputs[sample][self.TEST_DATA] = self.test_data
+            sample_inputs = {}
+            sample_inputs[ini.PATIENT] = sample
+            sample_inputs[ini.DATA_DIR] = self.data_dir
+            sample_inputs[self.TEST_DATA] = self.test_data
             for key in [ini.TUMOUR_ID, ini.NORMAL_ID, ini.PATIENT_ID, ini.SEX]:
-                inputs[sample][key] = self.sample_params[sample][key]
+                sample_inputs[key] = self.sample_params[sample][key]
             pattern = '{0}/variantEffectPredictor_*/'.format(results_dir)+\
                       '**/{0}_*mutect2.filtered.maf.gz'.format(sample)
-            inputs[sample][ini.MAF_FILE] = self.glob_single(pattern)
+            sample_inputs[ini.MAF_FILE] = self.glob_single(pattern)
             pattern = '{0}/{1}/*summary.zip'.format(self.MAVIS_DIR, sample)
-            inputs[sample][ini.MAVIS_FILE] = self.glob_single(pattern)
+            sample_inputs[ini.MAVIS_FILE] = self.glob_single(pattern)
             pattern = '{0}/sequenza_*/'.format(results_dir)+\
                       '**/{0}_*_results.zip'.format(sample)
-            inputs[sample][ini.SEQUENZA_FILE] = self.glob_single(pattern)
+            sample_inputs[ini.SEQUENZA_FILE] = self.glob_single(pattern)
             pattern = '{0}/rsem_*/'.format(results_dir)+\
                       '**/{0}_*.genes.results'.format(sample)
-            inputs[sample][ini.GEP_FILE] = self.glob_single(pattern)
+            sample_inputs[ini.GEP_FILE] = self.glob_single(pattern)
+            if any([x==None for x in sample_inputs.values()]):
+                self.logger.info("Omitting sample {0}, no inputs found".format(sample))
+            else:
+                inputs[sample] = sample_inputs
+            if len(inputs)==0:
+                msg = "No benchmark inputs found in {0}".format(results_dir)+\
+                      "for any sample in {0}".format(self.SAMPLES)
+                self.logger.error(msg)
+                raise RuntimeError(msg)
         return inputs
 
     def read_and_preprocess_report(self, report_path):
@@ -124,8 +138,9 @@ class benchmarker(logger):
                 self.logger.info("Report diff:\n{0}".format(diff.get_diff()))
         return equivalent
 
-    def run_reports(self, work_dir):
-        for sample in self.SAMPLES:
+    def run_reports(self, input_samples, work_dir):
+        self.logger.info("Reporting for {0} samples: {1}".format(len(input_samples), input_samples))
+        for sample in input_samples:
             self.logger.info("Generating Djerba draft report for {0}".format(sample))
             config_path = os.path.join(work_dir, sample, self.CONFIG_FILE_NAME)
             report_dir = os.path.join(work_dir, sample, self.REPORT_DIR_NAME)
@@ -137,10 +152,11 @@ class benchmarker(logger):
     def run_setup(self, results_dir, work_dir):
         """For each sample, setup working directory and generate config.ini"""
         inputs = self.find_inputs(results_dir)
+        input_samples = sorted(inputs.keys())
         self.validator.validate_output_dir(work_dir)
         template_path = os.path.join(self.data_dir, self.TEMPLATE)
-        for sample in self.SAMPLES:
-            self.logger.debug("Creating working directory for sample {0}".format(sample))
+        for sample in input_samples:
+            self.logger.debug("Setting up working directory for sample {0}".format(sample))
             sample_dir = os.path.join(work_dir, sample)
             os.mkdir(sample_dir)
             os.mkdir(os.path.join(sample_dir, self.REPORT_DIR_NAME))
@@ -150,31 +166,33 @@ class benchmarker(logger):
             out_path = os.path.join(sample_dir, self.CONFIG_FILE_NAME)
             with open(out_path, 'w') as out_file:
                 out_file.write(config)
-            self.logger.debug("Finished creating working directory {0} for sample {1}".format(sample_dir, sample))
+            self.logger.info("Created working directory {0} for sample {1}".format(sample_dir, sample))
         self.logger.info("GSICAPBENCH setup complete.")
+        return input_samples
 
     def run(self):
+        run_ok = True
         if self.args.subparser_name == constants.REPORT:
             # TODO add a 'discover' flag to search for a new input_dir, and generate reports if found
             input_dir = os.path.abspath(self.args.input_dir)
             output_dir = os.path.abspath(self.args.output_dir)
             dry_run = self.args.dry_run
             self.logger.info("Setting up working directories for GSICAPBENCH inputs from {0}".format(input_dir))
-            self.run_setup(input_dir, output_dir)
+            input_samples = self.run_setup(input_dir, output_dir)
             if dry_run:
                 self.logger.info("Dry-run mode; omitting report generation")
             else:
                 self.logger.info("Writing GSICAPBENCH reports to {0}".format(output_dir))
-                self.run_reports(output_dir)
+                self.run_reports(input_samples, output_dir)
             self.logger.info("Finished.")
         elif self.args.subparser_name == constants.COMPARE:
             dirs = self.args.report_dir
             if len(dirs)==2:
                 self.logger.info("Comparing directories {0} and {1}".format(dirs[0], dirs[1]))
-                ok = self.run_comparison(dirs)
-                if not ok:
-                    self.logger.warning("Reports are not equivalent; exiting with code 1")
-                    sys.exit(1)
+                run_ok = self.run_comparison(dirs) # false if dirs are not equivalent
+                if not run_ok:
+                    msg = "Djerba reports are not equivalent! Script will exit with returncode 1."
+                    self.logger.warning(msg)
             else:
                 msg = "Incorrect number of reporting directories: Expected 2, found {0}. ".format(len(dirs))+\
                       "Directories are supplied with -r/--report-dir on the command line."
@@ -184,6 +202,7 @@ class benchmarker(logger):
             msg = "Unknown subparser name {0}".format(self.args.subparser_name)
             self.logger.error(msg)
             raise RuntimeError(msg)
+        return run_ok
 
 class main_draft_args():
     """Alternative to argument parser output from djerba.py, for launching main draft mode"""
@@ -194,7 +213,7 @@ class main_draft_args():
         self.verbose = False
         if log_level == logging.DEBUG:
             self.debug = True
-        elif log_level == logging.VERBOSE:
+        elif log_level == logging.INFO:
             self.verbose = True
         self.log_path = log_path
         self.subparser_name = constants.DRAFT
