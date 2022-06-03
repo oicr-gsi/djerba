@@ -64,7 +64,25 @@ Documentation of file format and required parameters: [ini.md](./doc/ini.md)
 
 Example INI file (with dummy value for the `mavis_file` parameter): [config_user.ini](./src/test/data/config_user.ini)
 
-By default, the fully-specified INI file produced by `configure`, `draft`, or `all` will be archived to a location specified in the `archive_dir` INI parameter. This can be cancelled with the `--no-archive` argument to `djerba.py`.
+### `benchmark.py`
+
+Automatically find inputs and generate reports for the GSICAPBENCH dataset. Logging options are the same as for `djerba.py`. The script has two modes.
+
+#### `report` mode
+
+Set up and (optionally) generate Djerba reports. Example usage:
+
+`benchmark.py report --input-dir ${SCRATCH}/GSICAPBENCHyymmdd/seqware-results/ --output-dir $MY_OUTPUT_DIR`
+
+#### `compare` mode
+
+Compare two Djerba report directories. Example usage:
+
+`benchmark.py compare --report-dir $REPORT_DIR_1 --report-dir $REPORT_DIR_2`
+
+Note that the `--report-dir` parameter must be specified exactly twice.
+
+The script in `compare` mode will exit with return code 1 if the reports are _NOT_ equivalent; and return code 0 otherwise.
 
 ### `html2pdf.py`
 
