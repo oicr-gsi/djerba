@@ -67,8 +67,6 @@ class benchmarker(logger):
         return result
 
     def find_inputs(self, results_dir):
-        # allow missing inputs for some samples, eg. for testing
-        # raise an error if no inputs found
         inputs = {}
         for sample in self.SAMPLES:
             sample_inputs = {}
@@ -77,23 +75,25 @@ class benchmarker(logger):
             sample_inputs[self.TEST_DATA] = self.test_data
             for key in [ini.TUMOUR_ID, ini.NORMAL_ID, ini.PATIENT_ID, ini.SEX]:
                 sample_inputs[key] = self.sample_params[sample][key]
-            pattern = '{0}/variantEffectPredictor_*/'.format(results_dir)+\
+            pattern = '{0}/**/variantEffectPredictor_*/'.format(results_dir)+\
                       '**/{0}_*mutect2.filtered.maf.gz'.format(sample)
             sample_inputs[ini.MAF_FILE] = self.glob_single(pattern)
-            pattern = '{0}/{1}/*summary.zip'.format(self.MAVIS_DIR, sample)
+            pattern = '{0}/**/{1}/*summary.zip'.format(self.MAVIS_DIR, sample)
             sample_inputs[ini.MAVIS_FILE] = self.glob_single(pattern)
-            pattern = '{0}/sequenza_*/'.format(results_dir)+\
+            pattern = '{0}/**/sequenza_*/'.format(results_dir)+\
                       '**/{0}_*_results.zip'.format(sample)
             sample_inputs[ini.SEQUENZA_FILE] = self.glob_single(pattern)
-            pattern = '{0}/rsem_*/'.format(results_dir)+\
+            pattern = '{0}/**/rsem_*/'.format(results_dir)+\
                       '**/{0}_*.genes.results'.format(sample)
             sample_inputs[ini.GEP_FILE] = self.glob_single(pattern)
             if any([x==None for x in sample_inputs.values()]):
+                # skip samples with missing inputs, eg. for testing
                 self.logger.info("Omitting sample {0}, no inputs found".format(sample))
             else:
                 inputs[sample] = sample_inputs
             if len(inputs)==0:
-                msg = "No benchmark inputs found in {0}".format(results_dir)+\
+                # require inputs for at least one sample
+                msg = "No benchmark inputs found in {0} ".format(results_dir)+\
                       "for any sample in {0}".format(self.SAMPLES)
                 self.logger.error(msg)
                 raise RuntimeError(msg)
@@ -184,13 +184,16 @@ class benchmarker(logger):
             else:
                 self.logger.info("Writing GSICAPBENCH reports to {0}".format(output_dir))
                 self.run_reports(input_samples, output_dir)
-            self.logger.info("Finished.")
+            self.logger.info("Finished '{0}' mode.".format(constants.REPORT))
         elif self.args.subparser_name == constants.COMPARE:
             dirs = self.args.report_dir
             if len(dirs)==2:
                 self.logger.info("Comparing directories {0} and {1}".format(dirs[0], dirs[1]))
                 run_ok = self.run_comparison(dirs) # false if dirs are not equivalent
-                if not run_ok:
+                if run_ok:
+                    msg = "Djerba reports are equivalent."
+                    self.logger.info(msg)
+                else:
                     msg = "Djerba reports are not equivalent! Script will exit with returncode 1."
                     self.logger.warning(msg)
             else:
