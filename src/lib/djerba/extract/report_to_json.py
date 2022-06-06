@@ -111,8 +111,10 @@ class clinical_report_json_composer(composer_base):
     TMBCOMP_TCGA = 'tmbcomp-tcga.txt'
     TUMOUR_VAF = 'tumour_vaf'
     UNKNOWN = 'Unknown'
-    VARIANT_CLASS = 'Variant_Classification'
+    VARIANT_CLASSIFICATION = 'Variant_Classification'
     V7_TARGET_SIZE = 37.285536 # inherited from CGI-Tools
+
+    EXCLUDED_VARIANT_CLASSIFICATIONS = ['Silent', 'Splice_Region']
 
     def __init__(self, input_dir, params, log_level=logging.WARNING, log_path=None):
         super().__init__(log_level, log_path) # calls the parent constructor; creates logger
@@ -261,7 +263,7 @@ class clinical_report_json_composer(composer_base):
                     rc.CHROMOSOME: cytoband,
                     rc.PROTEIN: protein,
                     rc.PROTEIN_URL: self.build_alteration_url(gene, protein, self.closest_tcga_uc),
-                    rc.MUTATION_TYPE: re.sub('_', ' ', input_row[self.VARIANT_CLASS]),
+                    rc.MUTATION_TYPE: re.sub('_', ' ', input_row[self.VARIANT_CLASSIFICATION]),
                     rc.VAF_PERCENT: round(float(input_row[self.TUMOUR_VAF]), 2),
                     rc.TUMOUR_DEPTH: int(input_row[rc.TUMOUR_DEPTH]),
                     rc.TUMOUR_ALT_COUNT: int(input_row[rc.TUMOUR_ALT_COUNT]),
@@ -519,9 +521,18 @@ class clinical_report_json_composer(composer_base):
         return percentile
 
     def read_total_somatic_mutations(self):
-        with open(os.path.join(self.input_dir, self.MUTATIONS_EXTENDED)) as var_file:
-            variant_count = len(var_file.readlines()) - 1 # lines in file, minus header line
-        return variant_count
+        total = 0
+        excluded = 0
+        with open(os.path.join(self.input_dir, self.MUTATIONS_EXTENDED)) as data_file:
+            for row in csv.DictReader(data_file, delimiter="\t"):
+                total += 1
+                if row.get(self.VARIANT_CLASSIFICATION) in self.EXCLUDED_VARIANT_CLASSIFICATIONS:
+                    excluded += 1
+        count = total - excluded
+        msg = "Found {} small mutations and indels; excluded {} of {}".format(count, excluded, total)+\
+              " based on variant classification"
+        self.logger.debug(msg)
+        return count
 
     def run(self):
         """Main method to generate JSON from a report directory"""
