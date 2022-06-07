@@ -20,6 +20,7 @@
 - GCGI-312 Correctly populate Study and Oncotree in the report
 - GCGI-359 Update VEP version in footers
 - GCGI-365 Improved page breaks in PDF
+- GCGI-374 Report purity as a percentage
 - GCGI-375 Filter small mutations & indels by variant classification
 
 ## v0.2.9: 2022-05-16

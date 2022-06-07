@@ -242,7 +242,7 @@ class clinical_report_json_composer(composer_base):
         data[rc.CALLABILITY_PERCENT] = float(self.clinical_data[dc.PCT_V7_ABOVE_80X])
         data[rc.COVERAGE_MEAN] = float(self.clinical_data[dc.MEAN_COVERAGE])
         data[rc.PLOIDY] = float(self.clinical_data[dc.SEQUENZA_PLOIDY])
-        data[rc.PURITY_PERCENT] = float(self.clinical_data[dc.SEQUENZA_PURITY_FRACTION])
+        data[rc.PURITY_PERCENT] = round(float(self.clinical_data[dc.SEQUENZA_PURITY_FRACTION])*100, 1)
         data[rc.ONCOTREE_CODE] = self.params.get(xc.ONCOTREE_CODE).upper()
         data[rc.SAMPLE_TYPE] = self.clinical_data[dc.SAMPLE_TYPE]
         return data
