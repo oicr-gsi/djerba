@@ -3,23 +3,24 @@
 ## Unreleased
 
 ### Added
+- Introduces a main JSON document, with all information needed to generate a report
 - GCGI-197 Assay title in QC table
-- GCGI-268 Make clinical and QC report filenames consistent
 - GCGI-270 Italicize gene names in Supplementary Gene Information
 - GCGI-291 Replace Rmarkdown with Mako template
 - GCGI-292 Run in wgs-only and failed modes without Mavis input
-- GCGI-312 Correctly populate Study and Oncotree in the report
 - GCGI-326 Standardize report filenames
 - GCGI-328 Automated generation of benchmark reports
 - GCGI-353 Support markdown in genomic summary
-- GCGI-365 Improved page breaks in PDF
 - GCGI-367 New `ASSAY_NAME` parameter in INI
 - Default HTML names and PDF names conform to convention
 - `subprocess_runner` class to run commands and log the results
-- Introduces a main JSON document, with all information needed to generate a report
 
 ### Fixed
+- GCGI-268 Make clinical and QC report filenames consistent
+- GCGI-312 Correctly populate Study and Oncotree in the report
 - GCGI-359 Update VEP version in footers
+- GCGI-365 Improved page breaks in PDF
+- GCGI-375 Filter small mutations & indels by variant classification
 
 ## v0.2.9: 2022-05-16
 

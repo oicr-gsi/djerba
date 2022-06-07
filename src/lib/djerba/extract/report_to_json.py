@@ -529,7 +529,7 @@ class clinical_report_json_composer(composer_base):
                 if row.get(self.VARIANT_CLASSIFICATION) in self.EXCLUDED_VARIANT_CLASSIFICATIONS:
                     excluded += 1
         count = total - excluded
-        msg = "Found {} small mutations and indels; excluded {} of {}".format(count, excluded, total)+\
+        msg = "Counted {} small mutations and indels; excluded {} of {}".format(count, excluded, total)+\
               " based on variant classification"
         self.logger.debug(msg)
         return count
