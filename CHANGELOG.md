@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v0.3.0: 2022-06-08
 
 ### Added
 - Introduces a main JSON document, with all information needed to generate a report
