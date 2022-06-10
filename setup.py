@@ -22,8 +22,7 @@ setup(
         'src/bin/list_inputs.py',
         'src/bin/qc_report.sh',
         'src/bin/sequenza_explorer.py',
-        'src/bin/run_mavis.py',
-        'src/bin/wait_for_mavis.py'
+        'src/bin/run_mavis.py'
     ],
     packages=find_packages(where=package_root),
     package_dir={'' : package_root},

@@ -27,9 +27,9 @@ class subprocess_runner(logger):
         else:
             logged_command = ' '.join(command)
         self.logger.info("Running {0}: '{1}'".format(description, logged_command))        
-        result = subprocess.run(command, capture_output=True)
-        stdout = result.stdout.decode(constants.TEXT_ENCODING)
-        stderr = result.stderr.decode(constants.TEXT_ENCODING)
+        result = subprocess.run(command, capture_output=True, encoding=constants.TEXT_ENCODING)
+        stdout = result.stdout
+        stderr = result.stderr
         try:
             result.check_returncode()
         except subprocess.CalledProcessError as err:

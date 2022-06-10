@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Fixed
+- GCGI-379: Mavis job ID fix; remove `wait_for_mavis.py`; decode stdout/stderr from subprocesses
 - GCGI-381: Permissions on executable scripts
 
 ## v0.3.0: 2022-06-08

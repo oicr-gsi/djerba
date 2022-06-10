@@ -237,8 +237,8 @@ class TestExtractor(TestBase):
     STATIC_MD5_FAILED = {
         'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
         'genomic_summary.txt': '5a2f6e61fdf0f109ac3d1bcc4bb3ca71',
-        'djerba_report_human.json': '1e680ac80e7e39a5d842d3634e888977',
-        'djerba_report_machine.json': '9829c106e0cbd71eac2e8a41d1a1638e'
+        'djerba_report_human.json': '4a90172ea02055a87c4c190ac8993979',
+        'djerba_report_machine.json': '8eca62a9ffd80310f8298161846d0912'
     }
     VARYING_OUTPUT = [
         'tmb.jpeg',

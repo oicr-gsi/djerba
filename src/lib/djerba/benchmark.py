@@ -45,7 +45,7 @@ class benchmarker(logger):
         self.args = args
         self.validator = path_validator(self.log_level, self.log_path)
         self.data_dir = os.path.join(os.environ.get('DJERBA_BASE_DIR'), constants.DATA_DIR_NAME)
-        self.test_data = os.environ.get('DJERBA_TEST_DATA')
+        self.test_data = os.environ.get('DJERBA_TEST_DATA') # use to find abbreviated provenance file
         with open(os.path.join(self.data_dir, 'benchmark_params.json')) as in_file:
             self.sample_params = json.loads(in_file.read())
 

@@ -21,6 +21,7 @@ class mavis_runner(logger):
     INPUT_CONFIG = 'mavis_settings.ini'
     WAIT_SCRIPT_NAME = 'wait_for_mavis.py'
     FILTERED_DELLY = 'delly.filtered.merged.pass.vcf.gz'
+    CROMWELL_ID_FILE = 'cromwell_job_id.txt'
 
     # input file keys/indices
     WG_BAM = 'wg_bam'
@@ -156,35 +157,20 @@ class mavis_runner(logger):
             result = self.runner.run(run_command, 'Mavis workflow on Cromwell server')
             # extract cromwell job ID from output
             cromwell_job_id = None
+            self.logger.debug('Finding Cromwell job ID from {0}'.format(result.stdout))
             words = result.stdout.split()
             for i in range(len(words)):
                 if words[i]=='Workflow' and words[i+2]=='submitted':
                     cromwell_job_id = words[i+1]
                     break
-            if cromwell_job_id == None:
-                msg = "Cannot find Cromwell job ID from STDOUT: {0}".format(result.stdout)
-                self.logger.error(msg)
-                raise RuntimeError(msg)
-        # use cromwell job ID to launch the wait/copy script
-        # truncate the job id to generate a name for the cluster job
-        wait_command = [
-            'qsub',
-            '-P', 'gsi',
-            '-l', 'h_vmem=1G',
-            '-o', os.path.join(self.work_dir, 'waitlog'),
-            '-e', os.path.join(self.work_dir, 'waitlog'),
-            '-N', 'mavis_wait_{}'.format(cromwell_job_id[0:8]),
-            self.wait_script,
-            '--id', cromwell_job_id,
-            '--source', self.cromwell_scratch_dir,
-            '--dest', self.work_dir,
-            '--email', self.email_recipients
-        ]
-        self.logger.info("Submitting wait job")
-        if self.dry_run:
-            self.logger.info("Dry-run mode, omitting command: {0}".format(wait_command))
-        else:
-            result = self.runner.run(wait_command, 'Mavis wait script')
+            with open(os.path.join(self.work_dir, self.CROMWELL_ID_FILE), 'w') as out_file:
+                if cromwell_job_id:
+                    self.logger.info("Found Cromwell job ID: {0}".format(cromwell_job_id))
+                    print(cromwell_job_id, file=out_file)
+                else:
+                    msg = "Cannot find Cromwell job ID from STDOUT: {0}".format(result.stdout)
+                    self.logger.warning(msg)
+                    out_file.write(result.stdout)
 
     def find_inputs(self):
         """Find Mavis inputs from file provenance"""
