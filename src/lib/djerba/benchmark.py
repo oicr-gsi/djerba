@@ -112,7 +112,7 @@ class benchmarker(logger):
 
     def run_comparison(self, report_dirs):
         reports = []
-        name = constants.REPORT_MACHINE_FILENAME
+        name = constants.REPORT_JSON_FILENAME
         self.logger.debug("Comparing reports: {0}".format(report_dirs))
         report_paths = []
         for report_dir in report_dirs:

@@ -85,7 +85,7 @@ class main(logger):
         if self.args.json:
             json_path = os.path.realpath(self.args.json)
         elif self.args.dir:
-            json_path = os.path.join(self.args.dir, constants.REPORT_MACHINE_FILENAME)
+            json_path = os.path.join(self.args.dir, constants.REPORT_JSON_FILENAME)
         else:
             msg = "Must specify --json or --dir to find JSON input path"
             self.logger.error(msg)
@@ -181,7 +181,7 @@ class main(logger):
             # auto-generated full_config should be OK, but run the validator as a sanity check
             config_validator(self.args.wgs_only, self.args.failed, self.log_level, self.log_path).validate_full(full_config)
             extractor(full_config, report_dir, self._get_author(), self.args.wgs_only, self.args.failed, self.args.target_coverage, self.log_level, self.log_path).run()
-            json_path = os.path.join(self.args.dir, constants.REPORT_MACHINE_FILENAME)
+            json_path = os.path.join(self.args.dir, constants.REPORT_JSON_FILENAME)
             report_id = self._get_report_id_from_json(json_path)
             html_path = self._get_html_path(report_id)
             archive = not self.args.no_archive
@@ -208,7 +208,7 @@ class main(logger):
             # auto-generated full_config should be OK, but run the validator as a sanity check
             config_validator(self.args.wgs_only, self.args.failed, self.log_level, self.log_path).validate_full(full_config)
             extractor(full_config, report_dir, self._get_author(), self.args.wgs_only, self.args.failed, self.args.target_coverage, self.log_level, self.log_path).run()
-            json_path = os.path.join(self.args.dir, constants.REPORT_MACHINE_FILENAME)
+            json_path = os.path.join(self.args.dir, constants.REPORT_JSON_FILENAME)
             html_path = self._get_html_path(self._get_report_id_from_json(json_path))
             archive = not self.args.no_archive
             html_renderer(self.log_level, self.log_path).run(json_path, html_path, archive)
