@@ -104,9 +104,13 @@ Standalone script to explore available solutions in Sequenza output. (If gamma i
 
 Script to manually run the Mavis workflow, via the Cromwell development server. This will be required on a temporary basis before Mavis is added to automated CAP workflows, and later for troubleshooting.
 
-### `wait_for_mavis.py`
+### `update_genomic_summary.py`
 
-Script to monitor the Mavis workflow launched by `run_mavis.py`. On successful completion, copies Mavis results to a given local directory.
+Script to update the `genomic_summary` field of the Djerba report JSON, by inserting the contents of a given text file.
+
+### `view_json.py`
+
+Script to view the Djerba report JSON in human-readable format, by adding spaces and redacting the base64-encoded images.
 
 ## Prerequisites
 

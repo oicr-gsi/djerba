@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- GCGI-380: Add convenience scripts to update/view JSON
+
 ### Fixed
 - GCGI-379: Mavis job ID fix; remove `wait_for_mavis.py`; decode stdout/stderr from subprocesses
 - GCGI-381: Permissions on executable scripts

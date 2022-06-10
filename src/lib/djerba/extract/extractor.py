@@ -91,20 +91,6 @@ class extractor(logger):
         """Remove a suffix of the form ' (PAAD)' or ' (AMLCBFBMYH11)' from an oncotree entry"""
         return re.sub(' \(\w+\)$', '', entry)
 
-    def _write_main_json(self, out_path, report_data, config_data, pretty=True):
-        """Write the main JSON file"""
-        data = {
-            constants.REPORT: report_data,
-            constants.SUPPLEMENTARY: {
-                constants.CONFIG: config_data
-            }
-        }
-        with open(out_path, 'w') as out_file:
-            if pretty:
-                print(json.dumps(data, sort_keys=True, indent=4), file=out_file)
-            else:
-                print(json.dumps(data), file=out_file)
-
     def get_description(self):
         """
         Get cancer type and description from the oncotree file and code
@@ -248,16 +234,13 @@ class extractor(logger):
 
     def write_json(self, report_data):
         """
-        Write the main JSON file:
-        - with 'report' and 'supplementary' sections
-        - in human and machine formats
+        Write the main JSON file with 'report' and 'supplementary' sections
         """
         # convert the ConfigParser INI to a dictionary for output
         config_data = {}
         for section in self.config.sections():
             config_data[section] = {}
             for key, val in self.config.items(section):
-
                 if re.match('^-*[0-9]+\.[0-9]+$', val):
                     val = float(val)
                 elif re.match('^-*[0-9]+$', val):
@@ -267,20 +250,21 @@ class extractor(logger):
         tmb_key = render_constants.TMB_PLOT
         vaf_key = render_constants.VAF_PLOT
         logo_key = render_constants.OICR_LOGO
-        # human-readable; pretty-printed with absolute image paths
-        report_data[logo_key] = os.path.abspath(report_data[logo_key])
-        if not self.failed:
-            report_data[tmb_key] = os.path.abspath(report_data[tmb_key])
-            report_data[vaf_key] = os.path.abspath(report_data[vaf_key])
-        human_path = os.path.join(self.report_dir, constants.REPORT_HUMAN_FILENAME)
-        self._write_main_json(human_path, report_data, config_data, pretty=True)
         # machine-readable; replace image paths with base-64 blobs for a self-contained document
         report_data[logo_key] = self.converter.convert_png(report_data[logo_key], 'OICR logo')
         if not self.failed:
             report_data[tmb_key] = self.converter.convert_jpeg(report_data[tmb_key], 'TMB plot')
             report_data[vaf_key] = self.converter.convert_jpeg(report_data[vaf_key], 'VAF plot')
-        machine_path = os.path.join(self.report_dir, constants.REPORT_MACHINE_FILENAME)
-        self._write_main_json(machine_path, report_data, config_data, pretty=False)
+        report_path = os.path.join(self.report_dir, constants.REPORT_JSON_FILENAME)
+        data = {
+            constants.REPORT: report_data,
+            constants.SUPPLEMENTARY: {
+                constants.CONFIG: config_data
+            }
+        }
+        with open(report_path, 'w') as out_file:
+            print(json.dumps(data), file=out_file)
+        self.logger.debug('Wrote JSON report to {0}'.format(report_path))
 
     def write_sequenza_meta(self):
         """

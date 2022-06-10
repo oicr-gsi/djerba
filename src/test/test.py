@@ -112,7 +112,7 @@ class TestArchive(TestBase):
 
     def test_archive(self):
         out_dir = self.tmp_dir
-        json_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report_human.json')
+        json_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         archive_path = archiver().run(json_path, out_dir, 'test_ID')
         self.assertTrue(os.path.exists(archive_path))
         # contents of file are dependent on local paths
@@ -237,14 +237,12 @@ class TestExtractor(TestBase):
     STATIC_MD5_FAILED = {
         'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
         'genomic_summary.txt': '5a2f6e61fdf0f109ac3d1bcc4bb3ca71',
-        'djerba_report_human.json': '4a90172ea02055a87c4c190ac8993979',
-        'djerba_report_machine.json': '8eca62a9ffd80310f8298161846d0912'
+        'djerba_report.json': '8eca62a9ffd80310f8298161846d0912'
     }
     VARYING_OUTPUT = [
         'tmb.jpeg',
         'vaf.jpeg',
-        'djerba_report_human.json',
-        'djerba_report_machine.json'
+        'djerba_report.json'
     ]
 
     def check_json(self, found_path, expected_path):
@@ -270,8 +268,7 @@ class TestExtractor(TestBase):
 
     def get_static_md5_passed(self):
         static_md5_passed = self.STATIC_MD5_FAILED.copy()
-        del static_md5_passed['djerba_report_human.json']
-        del static_md5_passed['djerba_report_machine.json']
+        del static_md5_passed['djerba_report.json']
         return static_md5_passed
 
     def run_extractor(self, user_config, out_dir, wgs_only, failed, depth):
@@ -306,12 +303,9 @@ class TestExtractor(TestBase):
         for name in self.VARYING_OUTPUT:
             self.assertTrue(os.path.exists(os.path.join(out_dir, name)), name+' exists')
         ref_dir = os.path.join(self.sup_dir, 'report_json', 'WGTS')
-        found_human = os.path.join(out_dir, 'djerba_report_human.json')
-        expected_human = os.path.join(ref_dir, 'djerba_report_human.json')
-        self.check_json(found_human, expected_human)
-        found_machine = os.path.join(out_dir, 'djerba_report_machine.json')
-        expected_machine = os.path.join(ref_dir, 'djerba_report_machine.json')
-        self.check_json(found_machine, expected_machine)
+        found = os.path.join(out_dir, 'djerba_report.json')
+        expected = os.path.join(ref_dir, 'djerba_report.json')
+        self.check_json(found, expected)
 
     def test_wgs_only_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGS_only')
@@ -324,12 +318,9 @@ class TestExtractor(TestBase):
         for name in self.VARYING_OUTPUT:
             self.assertTrue(os.path.exists(os.path.join(out_dir, name)))
         ref_dir = os.path.join(self.sup_dir, 'report_json', 'WGS_only')
-        found_human = os.path.join(out_dir, 'djerba_report_human.json')
-        expected_human = os.path.join(ref_dir, 'djerba_report_human.json')
-        self.check_json(found_human, expected_human)
-        found_machine = os.path.join(out_dir, 'djerba_report_machine.json')
-        expected_machine = os.path.join(ref_dir, 'djerba_report_machine.json')
-        self.check_json(found_machine, expected_machine)
+        found = os.path.join(out_dir, 'djerba_report.json')
+        expected = os.path.join(ref_dir, 'djerba_report.json')
+        self.check_json(found, expected)
 
     def test_cancer_type_description(self):
         # test extraction of the cancer type description; see GCGI-333
@@ -382,6 +373,45 @@ class TestLister(TestBase):
             expected = expected_file.read()
             expected = expected.replace('PLACEHOLDER', self.sup_dir)
         self.assertEqual(output, expected)
+
+class TestJsonScripts(TestBase):
+
+    def test_update(self):
+        update_text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do '+\
+                      'eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+        update_path = os.path.join(self.tmp_dir, 'lorem.txt')
+        with open(update_path, 'w') as out_file:
+            out_file.write(update_text)
+        input_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
+        output_path = os.path.join(self.tmp_dir, 'updated_djerba_report.json')
+        cmd = [
+            'update_genomic_summary.py',
+            '--in', input_path,
+            '--summary', update_path,
+            '--out', output_path
+        ]
+        self.run_command(cmd)
+        self.assertTrue(os.path.exists(output_path))
+        with open(output_path) as output_file:
+            data = json.loads(output_file.read())
+        self.assertEqual(data['report']['genomic_summary'], update_text)
+
+    def test_view(self):
+        input_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
+        output_path = os.path.join(self.tmp_dir, 'viewed_djerba_report.json')
+        cmd = [
+            'view_json.py',
+            '--in', input_path,
+            '--out', output_path
+        ]
+        self.run_command(cmd)
+        self.assertTrue(os.path.exists(output_path))
+        with open(output_path) as output_file:
+            data = json.loads(output_file.read())
+        for key in ['oicr_logo', 'tmb_plot', 'vaf_plot']:
+            self.assertEqual(data['report'][key], 'REDACTED')
+        # spot check on a non-redacted result
+        self.assertEqual(data['report']['oncogenic_somatic_CNVs']['Total variants'], 40)
 
 class TestMain(TestBase):
 
