@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+### Fixed
+- GCGI-381: Permissions on executable scripts
+
 ## v0.3.0: 2022-06-08
 
 ### Added
