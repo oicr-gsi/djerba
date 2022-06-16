@@ -264,7 +264,7 @@ class clinical_report_json_composer(composer_base):
                     rc.PROTEIN: protein,
                     rc.PROTEIN_URL: self.build_alteration_url(gene, protein, self.closest_tcga_uc),
                     rc.MUTATION_TYPE: re.sub('_', ' ', input_row[self.VARIANT_CLASSIFICATION]),
-                    rc.VAF_PERCENT: round(float(input_row[self.TUMOUR_VAF]), 2),
+                    rc.VAF_PERCENT: int(round(float(input_row[self.TUMOUR_VAF]), 2)*100),
                     rc.TUMOUR_DEPTH: int(input_row[rc.TUMOUR_DEPTH]),
                     rc.TUMOUR_ALT_COUNT: int(input_row[rc.TUMOUR_ALT_COUNT]),
                     rc.COPY_STATE: mutation_copy_states[gene],
