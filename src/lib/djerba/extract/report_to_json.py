@@ -210,7 +210,7 @@ class clinical_report_json_composer(composer_base):
         data[rc.TMB_PER_MB] = round(self.total_somatic_mutations/self.V7_TARGET_SIZE, 2)
         data[rc.PERCENT_GENOME_ALTERED] = int(round(self.read_fga()*100, 0))
         csp = self.read_cancer_specific_percentile(data[rc.TMB_PER_MB], cohort, self.closest_tcga_lc)
-        data[rc.CANCER_SPECIFIC_PERCENTILE] = int(round(csp, 0))
+        data[rc.CANCER_SPECIFIC_PERCENTILE] = csp
         data[rc.CANCER_SPECIFIC_COHORT] = cohort
         pcp = self.read_pan_cancer_percentile(data[rc.TMB_PER_MB])
         data[rc.PAN_CANCER_PERCENTILE] = int(round(pcp, 0))
@@ -403,7 +403,7 @@ class clinical_report_json_composer(composer_base):
                     if row[self.CANCER_TYPE_HEADER] == cancer_type:
                         tmb_array.append(float(row[self.TMB_HEADER]))
             ecdf = ECDF(tmb_array)
-            percentile = ecdf(tmb)*100
+            percentile = int(round(ecdf(tmb)*100, 0)) # return an integer percentile
         return percentile
 
     def read_cohort(self):
