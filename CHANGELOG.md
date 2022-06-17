@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v0.3.1: 2022-06-17
 
 ### Added
 - GCGI-380: Add convenience scripts to update/view JSON
