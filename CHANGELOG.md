@@ -5,6 +5,7 @@
 ### Fixed
 
 - GCGI-398: Sort variant tables by cytoband
+- GCGI-401: Remove obsolete script check
 
 ## v0.3.1: 2022-06-17
 

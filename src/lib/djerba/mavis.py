@@ -19,7 +19,6 @@ class mavis_runner(logger):
     TEMPLATE_NAME = 'mavis_config_template.json'
     LEGACY_TEMPLATE_NAME = 'mavis_legacy_config_template.json'
     INPUT_CONFIG = 'mavis_settings.ini'
-    WAIT_SCRIPT_NAME = 'wait_for_mavis.py'
     FILTERED_DELLY = 'delly.filtered.merged.pass.vcf.gz'
     CROMWELL_ID_FILE = 'cromwell_job_id.txt'
 
@@ -65,11 +64,6 @@ class mavis_runner(logger):
         self.runner = subprocess_runner(self.log_level, self.log_path)
         self.data_dir = os.path.join(os.path.dirname(__file__), constants.DATA_DIR_NAME)
         self.legacy = self.args.legacy
-        self.wait_script = which(self.WAIT_SCRIPT_NAME)
-        if not self.wait_script:
-            msg = "Unable to find {0} on the PATH".format(self.WAIT_SCRIPT_NAME)
-            self.logger.error(msg)
-            raise RuntimeError(msg)
         # validate the command-line arguments
         validator = path_validator(self.log_level, self.log_path)
         if (args.ready and args.execute):
