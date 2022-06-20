@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## Unreleased
+
+### Fixed
+
+- GCGI-398: Sort variant tables by cytoband
+
 ## v0.3.1: 2022-06-17
 
 ### Added

@@ -116,6 +116,22 @@ class clinical_report_json_composer(composer_base):
 
     EXCLUDED_VARIANT_CLASSIFICATIONS = ['Silent', 'Splice_Region']
 
+    UNCLASSIFIED_CYTOBANDS = [
+        "", # some genes have an empty string for cytoband
+        "mitochondria",
+        "not on reference assembly",
+        "reserved",
+        "unplaced",
+        "13cen",
+        "13cen, GRCh38 novel patch",
+        "2cen-q11",
+        "2cen-q13",
+        "c10_B",
+        "HSCHR6_MHC_COXp21.32",
+        "HSCHR6_MHC_COXp21.33",
+        "HSCHR6_MHC_COXp22.1"
+    ]
+
     def __init__(self, input_dir, params, log_level=logging.WARNING, log_path=None):
         super().__init__(log_level, log_path) # calls the parent constructor; creates logger
         self.log_level = log_level
@@ -170,6 +186,7 @@ class clinical_report_json_composer(composer_base):
                 }
                 rows.append(row)
         unfiltered_cnv_total = len(rows)
+        self.logger.debug("Sorting and filtering CNV rows")
         rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
         for row in rows: self.all_reported_variants.add((row.get(rc.GENE), row.get(rc.CHROMOSOME)))
         data = {
@@ -271,6 +288,7 @@ class clinical_report_json_composer(composer_base):
                     rc.ONCOKB: self.parse_oncokb_level(input_row)
                 }
                 rows.append(row)
+        self.logger.debug("Sorting and filtering small mutation and indel rows")
         rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
         for row in rows: self.all_reported_variants.add((row.get(rc.GENE), row.get(rc.CHROMOSOME)))
         data = {
@@ -368,6 +386,38 @@ class clinical_report_json_composer(composer_base):
                     rows.append(self.treatment_row(genes, alteration, max_level, therapies))
         rows = list(filter(self.oncokb_filter, self.sort_therapy_rows(rows)))
         return rows
+
+    def cytoband_sort_order(self, cb_input):
+        """Cytobands are (usually) of the form [integer][p or q][decimal]; also deal with edge cases"""
+        end = (999, 'z', 999999)
+        if cb_input in self.UNCLASSIFIED_CYTOBANDS:
+            msg = "Cytoband \"{0}\" is unclassified, moving to end of sort order".format(cb_input)
+            self.logger.debug(msg)
+            (chromosome, arm, band) = end
+        else:
+            try:
+                cb = re.split('\s+', cb_input).pop(0) # remove suffixes like 'alternate reference locus'
+                cb = re.split('-', cb).pop(0) # take the first part of eg. 2q22.2-q22.3
+                chromosome = re.split('[pq]', cb).pop(0)
+                if chromosome == 'X':
+                    chromosome = 23
+                elif chromosome == 'Y':
+                    chromosome = 24
+                else:
+                    chromosome = int(chromosome)
+                arm = 'a' # arm may be missing; default to beginning of sort order
+                band = 0 # band may be missing; default to beginning of sort order
+                if re.match('^([0-9]+|[XY])[pq]', cb):
+                    arm = re.split('[^pq]+', cb).pop(1)
+                if re.match('^([0-9]+|[XY])[pq][0-9]+\.*\d*$', cb):
+                    band = float(re.split('[^0-9\.]+', cb).pop(1))
+            except (IndexError, ValueError) as err:
+                # if error occurs in ordering, move to end of sort order
+                msg = "Cannot parse cytoband \"{0}\", for sorting; ".format(cb_input)+\
+                      "moving to end of sort order. {0}: \"{1}\"".format(type(err).__name__, err)
+                self.logger.warning(msg)
+                (chromosome, arm, band) = end
+        return (chromosome, arm, band)
 
     def get_cytoband(self, gene_name):
         cytoband = self.cytoband_map.get(gene_name)
@@ -583,8 +633,12 @@ class clinical_report_json_composer(composer_base):
         return rows
 
     def sort_variant_rows(self, rows):
-        # sort rows descending by oncokb level, then ascending by gene name
+        # sort rows oncokb level, then by cytoband, then by gene name
+        self.logger.debug("Sorting rows by gene name")
         rows = sorted(rows, key=lambda row: row[rc.GENE])
+        self.logger.debug("Sorting rows by cytoband")
+        rows = sorted(rows, key=lambda row: self.cytoband_sort_order(row[rc.CHROMOSOME]))
+        self.logger.debug("Sorting rows by oncokb level")
         rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row[rc.ONCOKB]))
         return rows
 
