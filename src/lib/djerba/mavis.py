@@ -215,6 +215,11 @@ class mavis_runner(logger):
         if self.args.ready:
             self.logger.info("Finding inputs in file provenance: "+self.provenance_path)
             inputs = self.find_inputs()
+            self.logger.debug("Found inputs: {0}".format(inputs))
+            if None in inputs.values():
+                msg = "Missing one or more required Mavis inputs: {0}".format(inputs)
+                self.logger.error(msg)
+                raise RuntimeError(msg)
             self.logger.info("Linking inputs to working directory: "+self.work_dir)
             local_inputs = self.link_and_copy_inputs(inputs)
             self.logger.info("Writing JSON Cromwell config")

@@ -6,6 +6,7 @@
 
 - GCGI-398: Sort variant tables by cytoband
 - GCGI-401: Remove obsolete script check
+- GCGI-402: Check for Mavis inputs
 
 ## v0.3.1: 2022-06-17
 
