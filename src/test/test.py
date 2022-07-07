@@ -126,9 +126,10 @@ class TestBenchmark(TestBase):
     class mock_args_compare:
         """Use instead of argparse to store params for testing"""
 
-        def __init__(self, report_dirs):
+        def __init__(self, report_dirs, compare_all=False):
             self.subparser_name = constants.COMPARE
             self.report_dir = report_dirs
+            self.compare_all = compare_all
             # logging
             self.log_path = None
             self.debug = False
@@ -164,6 +165,10 @@ class TestBenchmark(TestBase):
         self.assertTrue(benchmarker(compare_args_1).run())
         compare_args_2 = self.mock_args_compare([report_1a, report_2])
         self.assertFalse(benchmarker(compare_args_2).run())
+        compare_args_3 = self.mock_args_compare([report_1a, report_1b], compare_all=True)
+        self.assertTrue(benchmarker(compare_args_3).run())
+        compare_args_4 = self.mock_args_compare([report_1a, report_2], compare_all=True)
+        self.assertFalse(benchmarker(compare_args_4).run())
 
 class TestConfigure(TestBase):
 

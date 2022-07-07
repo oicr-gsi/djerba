@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## Unreleased
+
+### Fixed
+
+- GCGI-406: Do not compare supplementary data in benchmark script
+
 ## v0.3.2: 2022-06-21
 
 ### Fixed

@@ -111,22 +111,29 @@ class benchmarker(logger):
         return data
 
     def run_comparison(self, report_dirs):
-        reports = []
         name = constants.REPORT_JSON_FILENAME
-        self.logger.debug("Comparing reports: {0}".format(report_dirs))
+        data_to_compare = []
         report_paths = []
+        if self.args.compare_all:
+            self.logger.info("Comparing all document contents, including supplementary data")
+        else:
+            self.logger.info("Comparing report elements, excluding supplementary data")
+        self.logger.debug("Comparing reports: {0}".format(report_dirs))
         for report_dir in report_dirs:
             self.validator.validate_input_dir(report_dir)
             report_path = self.glob_single('{0}/**/{1}'.format(report_dir, name))
             report_paths.append(report_path)
-            report_data = self.read_and_preprocess_report(report_path)
-            reports.append(report_data)
+            data = self.read_and_preprocess_report(report_path)
+            if self.args.compare_all:
+                data_to_compare.append(data)
+            else:
+                data_to_compare.append(data.get(constants.REPORT))
         self.logger.debug("Found report paths: {0}".format(report_paths))
         if os.path.samefile(report_paths[0], report_paths[1]):
             msg = "Report paths are the same file! {0}".format(report_paths)
             self.logger.error(msg)
             raise RuntimeError(msg)
-        diff = ReportDiff(reports)
+        diff = ReportDiff(data_to_compare)
         equivalent = diff.is_equivalent()
         if equivalent:
             self.logger.info("Reports are equivalent: {0}".format(report_paths))
@@ -173,7 +180,6 @@ class benchmarker(logger):
     def run(self):
         run_ok = True
         if self.args.subparser_name == constants.REPORT:
-            # TODO add a 'discover' flag to search for a new input_dir, and generate reports if found
             input_dir = os.path.abspath(self.args.input_dir)
             output_dir = os.path.abspath(self.args.output_dir)
             dry_run = self.args.dry_run
