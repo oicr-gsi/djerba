@@ -73,9 +73,11 @@ class r_script_wrapper(logger):
 
     # fields for empty oncoKB annotated fusion file
     ONCOKB_FUSION_ANNOTATED_HEADERS = [
-        'Tumor_Sample_Barcode', 'Fusion', 'mutation_effect', 'oncogenic',
+        'Tumor_Sample_Barcode', 'Fusion', 'mutation_effect', 'ONCOGENIC',
         'LEVEL_1', 'LEVEL_2', 'LEVEL_3A', 'LEVEL_3B', 'LEVEL_4',
-        'LEVEL_R1', 'LEVEL_R2', 'LEVEL_R3', 'Highest_level'
+        'LEVEL_R1', 'LEVEL_R2', 'LEVEL_R3', 'HIGHEST_LEVEL', 'HIGHEST_SENSITIVE_LEVEL',
+        'HIGHEST_RESISTANCE_LEVEL'
+
     ]
 
     def __init__(self, config, report_dir, wgs_only, tmp_dir=None,
@@ -149,7 +151,7 @@ class r_script_wrapper(logger):
             '-i', in_path,
             '-o', out_path,
             '-c', info_path,
-            '-q' 'Genomic_Change',
+            '-q', 'Genomic_Change',
             '-b', self.oncokb_token
         ]
         self._run_annotator_script(cmd, 'MAF annotator')
