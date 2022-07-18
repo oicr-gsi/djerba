@@ -106,6 +106,7 @@ class r_script_wrapper(logger):
             '-i', in_path,
             '-o', out_path,
             '-c', info_path,
+            '-f', 'individual',
             '-b', self.oncokb_token
         ]
         self._run_annotator_script(cmd, 'CNA annotator')
@@ -148,6 +149,7 @@ class r_script_wrapper(logger):
             '-i', in_path,
             '-o', out_path,
             '-c', info_path,
+            '-q' 'Genomic_Change',
             '-b', self.oncokb_token
         ]
         self._run_annotator_script(cmd, 'MAF annotator')
