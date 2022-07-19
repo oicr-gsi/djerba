@@ -600,9 +600,9 @@ class clinical_report_json_composer(composer_base):
             self.logger.error(msg)
             raise RuntimeError(msg)
         data[rc.MSI] = self.extract_msi()
-        if data[rc.MSI] >= 5:
+        if data[rc.MSI] >= 5.0:
             data[rc.MSI_CALL] = "MSI-H"
-        elif data[rc.MSI] < 5 & data[rc.MSI] >= 3.5:
+        elif data[rc.MSI] < 5.0 & data[rc.MSI] >= 3.5:
             data[rc.MSI_CALL] = "INCONCLUSIVE"
         elif data[rc.MSI] < 3.5:
             data[rc.MSI_CALL] = "MSS"
@@ -614,9 +614,8 @@ class clinical_report_json_composer(composer_base):
         
     def extract_msi(self):
         with open(os.path.join(self.input_dir, self.MSI_FILE)) as data_file:
-            reader = csv.DictReader(data_file, delimiter="\t")
-            row2 = next(reader)
-            MSI = row2[3]
+            for row in csv.DictReader(data_file, delimiter="\t"):
+                MSI = float(row["MSI"])
         return MSI
 
     def run(self):

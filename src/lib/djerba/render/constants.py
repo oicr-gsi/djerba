@@ -107,3 +107,9 @@ NORMAL_MIN = 'Normal min'
 NORMAL_TARGET = 'Normal target'
 TUMOUR_MIN = 'Tumour min'
 TUMOUR_TARGET = 'Tumour target'
+
+# constants for other biomarkers
+TMB_CALL = 'TMB call'
+MSI = 'Microsatellite Instability'
+MSI_CALL = 'MSI call'
+OTHER_BIOMARKERS = 'Other Biomarkers'
