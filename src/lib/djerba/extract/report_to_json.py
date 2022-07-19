@@ -113,6 +113,7 @@ class clinical_report_json_composer(composer_base):
     UNKNOWN = 'Unknown'
     VARIANT_CLASSIFICATION = 'Variant_Classification'
     V7_TARGET_SIZE = 37.285536 # inherited from CGI-Tools
+    MSI_FILE = 'msi.txt'
 
     EXCLUDED_VARIANT_CLASSIFICATIONS = ['Silent', 'Splice_Region']
 
@@ -584,6 +585,40 @@ class clinical_report_json_composer(composer_base):
         self.logger.debug(msg)
         return count
 
+    def build_other_biomarkers(self):
+        #assemble other biomarkers: TMB > 10 muts/mb, and MSI
+        self.logger.info("Assembling Other Biomarkers")
+        data = {}
+        #is TMB > 10muts/mb? 
+        data[rc.TMB_PER_MB] = self.build_genomic_landscape_info()[rc.TMB_PER_MB]
+        if data[rc.TMB_PER_MB] >= 10:
+            data[rc.TMB_CALL] = "TMB-H"
+        elif data[rc.TMB_PER_MB] < 10:
+            data[rc.TMB_CALL] = "TMB-L"
+        else:
+            msg = "TMB not a number"
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        data[rc.MSI] = self.extract_msi()
+        if data[rc.MSI] >= 5:
+            data[rc.MSI_CALL] = "MSI-H"
+        elif data[rc.MSI] < 5 & data[rc.MSI] >= 3.5:
+            data[rc.MSI_CALL] = "INCONCLUSIVE"
+        elif data[rc.MSI] < 3.5:
+            data[rc.MSI_CALL] = "MSS"
+        else:
+            msg = "MSI not a number"
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        return(data)
+        
+    def extract_msi(self):
+        with open(os.path.join(self.input_dir, self.MSI_FILE)) as data_file:
+            reader = csv.DictReader(data_file, delimiter="\t")
+            row2 = next(reader)
+            MSI = row2[3]
+        return MSI
+
     def run(self):
         """Main method to generate JSON from a report directory"""
         # for now, this writes plots to the input report directory and returns paths in JSON
@@ -619,6 +654,7 @@ class clinical_report_json_composer(composer_base):
             else:
                 data[rc.STRUCTURAL_VARIANTS_AND_FUSIONS] = None
             data[rc.SUPPLEMENTARY_GENE_INFO] = self.build_supplementary_info()
+            data[rc.OTHER_BIOMARKERS] = self.build_other_biomarkers()
         self.logger.info("Finished building clinical report data for JSON output")
         return data
 
