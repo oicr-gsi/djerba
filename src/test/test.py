@@ -51,11 +51,17 @@ class TestBase(unittest.TestCase):
         self.data_dir = os.path.realpath(os.path.join(test_dir, 'data'))
         # specify all non-public data paths relative to self.sup_dir
         sup_dir_var = 'DJERBA_TEST_DATA'
+        bench_dir_var = 'DJERBA_GSICAPBENCH_DATA'
         self.sup_dir = os.environ.get(sup_dir_var)
+        self.bench_dir = os.environ.get(bench_dir_var)
         if not (self.sup_dir):
             raise RuntimeError('Need to specify environment variable {0}'.format(sup_dir_var))
         elif not os.path.isdir(self.sup_dir):
             raise OSError("Supplementary directory path '{0}' is not a directory".format(self.sup_dir))
+        if not (self.bench_dir):
+            raise RuntimeError('Need to specify environment variable {0}'.format(bench_dir_var))
+        elif not os.path.isdir(self.bench_dir):
+            raise OSError("GSICAPBENCH directory path '{0}' is not a directory".format(self.bench_dir))
         self.provenance = os.path.join(self.sup_dir, 'pass01_panx_provenance.original.tsv.gz')
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
@@ -152,7 +158,7 @@ class TestBenchmark(TestBase):
 
     def test_benchmark(self):
         out_dir = self.tmp_dir
-        input_dir = os.path.join(self.sup_dir, 'benchmark')
+        input_dir = os.path.join(self.bench_dir, 'benchmark')
         report_dir = os.path.join(out_dir, 'report')
         os.mkdir(report_dir)
         report_args = self.mock_args_report(input_dir, report_dir)
@@ -242,7 +248,7 @@ class TestExtractor(TestBase):
     STATIC_MD5_FAILED = {
         'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
         'genomic_summary.txt': '5a2f6e61fdf0f109ac3d1bcc4bb3ca71',
-        'djerba_report.json': '8eca62a9ffd80310f8298161846d0912'
+        'djerba_report.json': '7d1946d36258ee969c924676fcbe0f1d'
     }
     VARYING_OUTPUT = [
         'tmb.jpeg',
