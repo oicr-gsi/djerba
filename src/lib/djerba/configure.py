@@ -81,6 +81,7 @@ class configurer(logger):
             self.logger.info("Searching provenance for workflow output files")
             updates[ini.SEQUENZA_FILE] = self.reader.parse_sequenza_path()
             updates[ini.MAF_FILE] = self.reader.parse_maf_path()
+            updates[ini.MSI_FILE] = self.reader.parse_msi_path()
             if not self.wgs_only:
                 updates[ini.MAVIS_FILE] = self.reader.parse_mavis_path()
                 updates[ini.GEP_FILE] = self.reader.parse_gep_path()
@@ -447,6 +448,10 @@ class provenance_reader(logger):
 
     def parse_mavis_path(self):
         return self._parse_default('mavis', 'application/zip-report-bundle', '(mavis-output|summary)\.zip$')
+
+    def parse_msi_path(self):
+        suffix = 'filter\.deduped\.realigned\.recalibrated\.msi$'
+        return self._parse_default('msisensor', 'application/txt', suffix)
 
     def parse_sequenza_path(self):
         return self._parse_default('sequenza', 'application/zip-report-bundle', '_results\.zip$')
