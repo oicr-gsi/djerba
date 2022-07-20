@@ -12,7 +12,8 @@ class converter(logger):
     DEFAULT_DESC = 'image'
     JPEG = 'jpeg'
     PNG = 'png'
-    SUPPORTED = [JPEG, PNG]
+    SVG = 'svg+xml'
+    SUPPORTED = [JPEG, PNG, SVG]
 
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
@@ -41,6 +42,9 @@ class converter(logger):
 
     def convert_png(self, in_path, description=DEFAULT_DESC):
         return self.convert(in_path, self.PNG, description)
+
+    def convert_svg(self, in_path, description=DEFAULT_DESC):
+        return self.convert(in_path, self.SVG, description)
 
     def is_convertible(self, arg, description=DEFAULT_DESC):
         """Argument may be a path or already a base64 blob; check if it can be converted to base64"""

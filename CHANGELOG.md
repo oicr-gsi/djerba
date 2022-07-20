@@ -4,6 +4,7 @@
 
 ### Changed
 
+- GCGI-390: Change plot output from JPEG to SVG
 - GCGI-404: Restructure test data; update `test_env.sh`; move GSICAPBENCH tests to separate file
 
 ### Fixed

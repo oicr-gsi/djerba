@@ -33,8 +33,8 @@ class archiver(logger):
         logo = render_constants.OICR_LOGO
         # convert image paths (if any, they may already be base64)
         data[rep][logo] = self.converter.convert_png(data[rep][logo], 'OICR logo')
-        data[rep][tmb] = self.converter.convert_jpeg(data[rep][tmb], 'TMB plot')
-        data[rep][vaf] = self.converter.convert_jpeg(data[rep][vaf], 'VAF plot')
+        data[rep][tmb] = self.converter.convert_svg(data[rep][tmb], 'TMB plot')
+        data[rep][vaf] = self.converter.convert_svg(data[rep][vaf], 'VAF plot')
         return json.dumps(data)
 
     def run(self, data_path, archive_dir, patient_id):

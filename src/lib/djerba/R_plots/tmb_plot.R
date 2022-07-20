@@ -8,7 +8,7 @@ library(optparse)
 
 option_list = list(
     make_option(c("-c", "--code"), type="character", default=NULL, help="TCGA code", metavar="character"),
-    make_option(c("-o", "--output"), type="character", default=NULL, help="JPEG output path", metavar="character"),
+    make_option(c("-o", "--output"), type="character", default=NULL, help="SVG output path", metavar="character"),
     make_option(c("-t", "--tmb"), type="numeric", default=NULL, help="TMB per Mb", metavar="numeric")
 )
 # get options
@@ -30,7 +30,7 @@ external_tmb_data_type <- external_tmb_data %>% filter(if (sample_tcga %in% exte
 tcga_tmb_data_type <- tcga_tmb_data %>% filter(if (sample_tcga %in% tcga_tmb_data$CANCER.TYPE) CANCER.TYPE == sample_tcga else NA)
 
 options(bitmapType='cairo')
-jpeg(out_path, width=500, height=250)
+svg(out_path, width=8, height=4)
 ggplot(tcga_tmb_data, aes(tmb)) +
   geom_density(aes(fill = "All TCGA"), alpha = 0.5) + theme_classic() +
   scale_x_continuous(expand = c(0, 0), limit = c(0, max(sampleTMB, 25))) +
