@@ -129,11 +129,11 @@ Djerba has a `setup.py` script which will install its source code and Python dep
 
 ## Testing
 
-- The tests use `/.mounts/labs/CGI/software/djerba_test_checkout` to ensure consistent paths for certain data files.
-- Before running tests, ensure the checkouts of `djerba` and `djerba_test_data` in the above directory are up to date. (Making the tests more portable is a TODO item.)
-- Set the environment variable `DJERBA_TEST_DATA` to `/.mounts/labs/CGI/software/djerba_test_checkout/djerba_test_data/`.
-- Ensure all Modulator prerequisites are available
-- Run unit tests with `src/test/test.py`
+To run the unit tests, on a checkout of the Djerba repo in `$DJERBA_SOURCE_DIR`:
+- `cd $DJERBA_SOURCE_DIR`
+- `source src/test/test_env.sh`
+- `./src/test/test.py`
+- To additionally run the GSICAPBENCH tests: `./src/test/test_benchmark.py`
 
 ## Installation
 

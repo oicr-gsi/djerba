@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- GCGI-404: Restructure test data; update `test_env.sh`; move GSICAPBENCH tests to separate file
+
 ### Fixed
 
 - GCGI-406: Do not compare supplementary data in benchmark script
