@@ -86,7 +86,7 @@ COPY_STATE = 'Copy State'
 # constants for the genomic landscape table
 TMB_TOTAL = 'Tumour Mutation Burden'
 TMB_PER_MB = 'TMB per megabase'
-PERCENT_GENOME_ALTERED = 'Genome Altered (%)'
+PERCENT_GENOME_ALTERED = 'Percent Genome Altered'
 CANCER_SPECIFIC_PERCENTILE = 'Cancer-specific Percentile'
 CANCER_SPECIFIC_COHORT = 'Cancer-specific Cohort'
 PAN_CANCER_PERCENTILE = 'Pan-cancer Percentile'
