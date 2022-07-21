@@ -123,7 +123,7 @@ class TestArchive(TestBase):
         # contents of file are dependent on local paths
         with open(archive_path) as archive_file:
             data = json.loads(archive_file.read())
-        self.assertEqual(len(data['report']), 19)
+        self.assertEqual(len(data['report']), 20)
         self.assertEqual(len(data['supplementary']['config']), 3)
 
 class TestConfigure(TestBase):
@@ -198,7 +198,7 @@ class TestExtractor(TestBase):
     STATIC_MD5_FAILED = {
         'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
         'genomic_summary.txt': '5a2f6e61fdf0f109ac3d1bcc4bb3ca71',
-        'djerba_report.json': '7d1946d36258ee969c924676fcbe0f1d'
+        'djerba_report.json': 'c0202e4d8dd7bacd80f37658b9c09a88'
     }
     VARYING_OUTPUT = [
         'tmb.svg',
@@ -218,6 +218,8 @@ class TestExtractor(TestBase):
         # do not check supplementary data
         del data_found['supplementary']
         del data_expected['supplementary']
+        # replace djerba version with a placeholder
+        data_found['report']['djerba_version'] = 'PLACEHOLDER'
         self.maxDiff = None
         self.assertEqual(data_found, data_expected)
 
@@ -277,7 +279,7 @@ class TestExtractor(TestBase):
         self.run_extractor(self.config_full, out_dir, True, False, 80)
         self.check_outputs_md5(out_dir, self.get_static_md5_passed())
         for name in self.VARYING_OUTPUT:
-            self.assertTrue(os.path.exists(os.path.join(out_dir, name)), name+' exists')
+            self.assertTrue(os.path.exists(os.path.join(out_dir, name)))
         ref_dir = os.path.join(self.sup_dir, 'report_json', 'WGS_only')
         found = os.path.join(out_dir, 'djerba_report.json')
         expected = os.path.join(ref_dir, 'djerba_report.json')
@@ -495,15 +497,15 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '6eed39e0f315b3687a18a1a87e39c5b4')
+        self.check_report(out_path, 'b1927827966a710dd35d79624a2d5974')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '8977971426c0568783fab8b060d1351f')
+        self.check_report(out_path, '8f04976a32afe28bcacb13ad7b44674a')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '2458deb2afa230d6886dbf82d49bef75')
+        self.check_report(out_path, 'eec0196e171c66cae1de061d85bcb677')
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')

@@ -2,7 +2,6 @@
 
 import djerba.render.constants as constants
 import re
-import sys
 from markdown import markdown
 from time import strftime
 
@@ -45,6 +44,8 @@ class html_builder:
         flattened = [k for group in key_groups for k in group]
         values = {}
         for key in flattened:
+            # special cases
+            # strings such as "Unknown" are permissible for purity/ploidy/coverage/callability
             if key in constants.PATIENT_INFO_CONSTANT_FIELDS:
                 value = constants.PATIENT_INFO_CONSTANT_FIELDS.get(key)
             elif key == constants.DATE_OF_REPORT:
@@ -53,6 +54,11 @@ class html_builder:
                 tmb_total = args[constants.TMB_TOTAL]
                 tmb_per_mb = args[constants.TMB_PER_MB]
                 value = "{0} mutations. {1} coding mutations per Mb".format(tmb_total, tmb_per_mb)
+            elif key in [constants.PLOIDY, constants.COVERAGE_MEAN, constants.CALLABILITY_PERCENT] \
+                 and (isinstance(args[key], float) or isinstance(args[key], int)):
+                value = "{:0.1f}".format(args[key])
+            elif key == constants.PURITY_PERCENT and (isinstance(args[key], float) or isinstance(args[key], int)):
+                value = str(int(round(args[key], 0)))
             else:
                 value = args.get(key)
             values[key] = value

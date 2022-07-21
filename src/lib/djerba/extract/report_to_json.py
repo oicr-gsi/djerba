@@ -13,6 +13,7 @@ import djerba.extract.oncokb_constants as oncokb
 import djerba.extract.constants as xc
 import djerba.render.constants as rc
 import djerba.util.constants as dc
+from djerba import __version__
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
 from statsmodels.distributions.empirical_distribution import ECDF
@@ -595,6 +596,7 @@ class clinical_report_json_composer(composer_base):
         data[rc.FAILED] = self.failed
         data[rc.PURITY_FAILURE] = self.params.get(xc.PURITY_FAILURE)
         data[rc.REPORT_DATE] = None
+        data[rc.DJERBA_VERSION] = __version__
         if not self.failed:
             # additional data for non-failed reports
             data[rc.APPROVED_BIOMARKERS] = self.build_fda_approved_info()
