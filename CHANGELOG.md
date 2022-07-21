@@ -4,16 +4,17 @@
 
 ### Changed
 
+- GCGI-200: Record Djerba software version in report footer and log
 - GCGI-390: Change plot output from JPEG to SVG
 - GCGI-404: Restructure test data; update `test_env.sh`; move GSICAPBENCH tests to separate file
-- GCGI-417: Add missing gene names in allCuratedGenes.tsv
 
 ### Fixed
 
-- GCGI-399: Rename "Genome Altered (%)" to "Percent Genome Altered"
 - GCGI-387: Enforce decimal places in output for purity, ploidy, coverage, callability
+- GCGI-399: Rename "Genome Altered (%)" to "Percent Genome Altered"
 - GCGI-406: Do not compare supplementary data in benchmark script
 - GCGI-416: Do not allow 'None' in default tumour/normal IDs
+- GCGI-417: Add missing gene names in allCuratedGenes.tsv
 
 ## v0.3.2: 2022-06-21
 
