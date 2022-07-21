@@ -1,0 +1,7 @@
+oncokb_level	alterations	oncotree	drug	fda_level
+1	COADREAD	MSI-H	Ipilimumab+Nivolumab	2
+1	CMC	MSI-H	Ipilimumab+Nivolumab	2
+1	COADREAD	MSI-H	Nivolumab	2
+1	CMC	MSI-H	Nivolumab	2
+1	ALL	MSI-H	Pembrolizumab	2
+1	ALL	TMB-H	Pembrolizumab	2

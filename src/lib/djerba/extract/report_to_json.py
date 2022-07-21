@@ -385,6 +385,20 @@ class clinical_report_json_composer(composer_base):
                     therapies = fusion.get_inv_therapies()
                 if max_level:
                     rows.append(self.treatment_row(genes, alteration, max_level, therapies))
+        #OTHER FDA approved BIOMARKERS
+        if level == self.FDA_APPROVED:
+            other_biomarkers = self.build_other_biomarkers()
+            genes = 'NA (Biomarker)'
+            if other_biomarkers[rc.TMB_CALL] == 'TMB-H':
+                alteration = 'TMB-H'
+                max_level = self.reformat_level_string('LEVEL_1')
+                therapies = 'Pembrolizumab'
+                rows.append(self.treatment_row(genes, alteration, max_level, therapies))
+            if other_biomarkers[rc.MSI_CALL] == 'MSI-H':
+                alteration = 'MSI-H'
+                max_level = self.reformat_level_string('LEVEL_1')
+                therapies = 'Pembrolizumab'
+                rows.append(self.treatment_row(genes, alteration, max_level, therapies))
         rows = list(filter(self.oncokb_filter, self.sort_therapy_rows(rows)))
         return rows
 
@@ -587,7 +601,6 @@ class clinical_report_json_composer(composer_base):
 
     def build_other_biomarkers(self):
         #assemble other biomarkers: TMB > 10 muts/mb, and MSI
-        self.logger.info("Assembling Other Biomarkers")
         data = {}
         #is TMB > 10muts/mb? 
         data[rc.TMB_PER_MB] = self.build_genomic_landscape_info()[rc.TMB_PER_MB]
@@ -646,6 +659,7 @@ class clinical_report_json_composer(composer_base):
             tmb = data[rc.GENOMIC_LANDSCAPE_INFO][rc.TMB_PER_MB]
             data[rc.TMB_PLOT] = self.write_tmb_plot(tmb, self.input_dir)
             data[rc.VAF_PLOT] = self.write_vaf_plot(self.input_dir)
+            data[rc.MSI_PLOT] = self.write_msi_plot(self.input_dir)
             data[rc.SMALL_MUTATIONS_AND_INDELS] = self.build_small_mutations_and_indels()
             data[rc.TOP_ONCOGENIC_SOMATIC_CNVS] = self.build_copy_number_variation()
             if self.params.get(xc.ASSAY_TYPE) == rc.ASSAY_WGTS:
@@ -685,6 +699,14 @@ class clinical_report_json_composer(composer_base):
             genes_and_urls = {gene: self.build_gene_url(gene) for gene in genes_arg}
         if alteration == rc.FUSION:
             alt_url = self.build_alteration_url('-'.join(genes_arg), alteration, self.closest_tcga_uc)
+        if alteration == "TMB-H" or alteration == "MSI-H":
+            genes_and_urls = {
+                "NA (Biomarker)": "https://www.oncokb.org/gene/Other%20Biomarkers/"
+            }
+            if alteration == "TMB-H":
+                alt_url = "https://www.oncokb.org/gene/Other%20Biomarkers/TMB-H/",
+            if alteration == "MSI-H":
+                alt_url = "https://www.oncokb.org/gene/Other%20Biomarkers/Microsatellite%20Instability-High/",
         else:
             alt_url = self.build_alteration_url(genes_arg, alteration, self.closest_tcga_uc)
         row = {
@@ -717,6 +739,17 @@ class clinical_report_json_composer(composer_base):
         ]
         subprocess_runner(self.log_level, self.log_path).run(args)
         self.logger.info("Wrote VAF plot to {0}".format(out_path))
+        return out_path
+    
+    def write_msi_plot(self, out_dir):
+        out_path = os.path.join(out_dir, 'msi.jpeg')
+        args = [
+            os.path.join(self.r_script_dir, 'biomarkers_plot.R'),
+            '-d', self.input_dir,
+            '-o', out_path
+        ]
+        subprocess_runner(self.log_level, self.log_path).run(args)
+        self.logger.info("Wrote biomarkers plot to {0}".format(out_path))
         return out_path
 
 class fusion_reader(composer_base):

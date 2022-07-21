@@ -385,14 +385,14 @@ class r_script_wrapper(logger):
                 writer.writerow(row)
         return out_path
 
-    def preprocess_msi(self, msi_path, tmp_dir):
+    def preprocess_msi(self, msi_path, report_dir):
         """
         Copy and reconfigure msisensor output file
         Remove empty trailing lines
         Rename header/first line
         To-do: Add bootstrap analysis
         """
-        out_path = os.path.join(tmp_dir, 'msi.txt')
+        out_path = os.path.join(report_dir, 'msi.txt')
         with open(msi_path, 'rt') as msi_file, open(out_path, 'wt') as out_file:
             reader = csv.reader(msi_file, delimiter="\t")
             writer = csv.writer(out_file, delimiter="\t")
@@ -400,10 +400,10 @@ class r_script_wrapper(logger):
             for row in reader:
                 if in_header:
                     in_header = False
-                    row = "Total_Number_of_Sites\tNumber_of_Somatic_Sites\tMSI"
-                elif not row[0]:
-                    continue
-                writer.writerow(row)
+                    row[2] = "MSI"
+                    writer.writerow(row)
+                elif row:
+                    writer.writerow(row)
         return out_path
 
 
@@ -414,9 +414,9 @@ class r_script_wrapper(logger):
         else:
             tmp_dir = self.supplied_tmp_dir
         oncokb_info = self.write_oncokb_info(tmp_dir)
+        self.preprocess_msi(self.config[ini.DISCOVERED][ini.MSI_FILE], self.report_dir)
         maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE], tmp_dir, oncokb_info)
         seg_path = self.preprocess_seg(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir)
-        self.preprocess_msi(self.config[ini.DISCOVERED][ini.MSI_FILE], tmp_dir)
         cmd = [
             'Rscript', os.path.join(self.r_script_dir, 'singleSample.r'),
             '--basedir', self.r_script_dir,
