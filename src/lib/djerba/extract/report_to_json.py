@@ -628,7 +628,7 @@ class clinical_report_json_composer(composer_base):
     def extract_msi(self):
         with open(os.path.join(self.input_dir, self.MSI_FILE)) as data_file:
             for row in csv.DictReader(data_file, delimiter="\t"):
-                MSI = float(row["MSI"])
+                MSI = float(row[2])
         return MSI
 
     def run(self):

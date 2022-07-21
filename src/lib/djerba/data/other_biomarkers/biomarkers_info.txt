@@ -1,3 +1,0 @@
-Marker	URL	Summary
-TMB-H	https://www.oncokb.org/gene/Other%20Biomarkers/Tumor%20Mutational%20Burden-High	"An association between high Tumor Mutational Burden (TMB), defined as the number of somatic mutations per megabase (mut/Mb) of genome sequenced, and response to immune checkpoint inhibitors has been reported in several solid tumor types."
-MSI-H	https://www.oncokb.org/gene/Other%20Biomarkers/Microsatellite%20Instability-High "Genetic or epigenetic alterations resulting in loss of function of mismatch repair (MMR) genes can lead to a microsatellite instability-high (MSI-H)/mismatch repair deficient (MMR-D) phenotype."

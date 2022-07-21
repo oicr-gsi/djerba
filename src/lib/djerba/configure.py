@@ -450,7 +450,7 @@ class provenance_reader(logger):
         return self._parse_default('mavis', 'application/zip-report-bundle', '(mavis-output|summary)\.zip$')
 
     def parse_msi_path(self):
-        suffix = 'filter\.deduped\.realigned\.recalibrated\.msi$'
+        suffix = 'filter\.deduped\.realigned\.recalibrated\.msi\.booted$'
         return self._parse_default('msisensor', 'application/txt', suffix)
 
     def parse_sequenza_path(self):

@@ -7,6 +7,7 @@ import os
 import re
 import tempfile
 import zipfile
+import numpy
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 from djerba.sequenza import sequenza_reader
@@ -387,25 +388,19 @@ class r_script_wrapper(logger):
 
     def preprocess_msi(self, msi_path, report_dir):
         """
-        Copy and reconfigure msisensor output file
-        Remove empty trailing lines
-        Rename header/first line
-        To-do: Add bootstrap analysis
+        summarize msisensor file
         """
         out_path = os.path.join(report_dir, 'msi.txt')
-        with open(msi_path, 'rt') as msi_file, open(out_path, 'wt') as out_file:
-            reader = csv.reader(msi_file, delimiter="\t")
-            writer = csv.writer(out_file, delimiter="\t")
-            in_header = True
-            for row in reader:
-                if in_header:
-                    in_header = False
-                    row[2] = "MSI"
-                    writer.writerow(row)
-                elif row:
-                    writer.writerow(row)
+        msi_boots = []
+        with open(msi_path, 'r') as msi_file:
+            reader_file = csv.reader(msi_file, delimiter="\t")
+            for row in reader_file:
+                msi_boots.append(float(row[3]))
+        msi_perc = numpy.percentile(numpy.array(msi_boots), [0, 25, 50, 75, 100])
+        with open(out_path, 'w') as out_file:
+            for item in list(msi_perc):
+                out_file.write(str(str(item)+"\t"))
         return out_path
-
 
     def run(self):
         if self.supplied_tmp_dir == None:
@@ -452,7 +447,6 @@ class r_script_wrapper(logger):
         if self.supplied_tmp_dir == None:
             tmp.cleanup()
         return result
-
 
     def postprocess(self, oncokb_info):
         """
