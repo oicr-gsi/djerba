@@ -201,8 +201,8 @@ class TestExtractor(TestBase):
         'djerba_report.json': '7d1946d36258ee969c924676fcbe0f1d'
     }
     VARYING_OUTPUT = [
-        'tmb.jpeg',
-        'vaf.jpeg',
+        'tmb.svg',
+        'vaf.svg',
         'djerba_report.json'
     ]
 
@@ -277,7 +277,7 @@ class TestExtractor(TestBase):
         self.run_extractor(self.config_full, out_dir, True, False, 80)
         self.check_outputs_md5(out_dir, self.get_static_md5_passed())
         for name in self.VARYING_OUTPUT:
-            self.assertTrue(os.path.exists(os.path.join(out_dir, name)))
+            self.assertTrue(os.path.exists(os.path.join(out_dir, name)), name+' exists')
         ref_dir = os.path.join(self.sup_dir, 'report_json', 'WGS_only')
         found = os.path.join(out_dir, 'djerba_report.json')
         expected = os.path.join(ref_dir, 'djerba_report.json')

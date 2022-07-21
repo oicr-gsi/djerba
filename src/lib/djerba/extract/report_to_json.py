@@ -426,15 +426,6 @@ class clinical_report_json_composer(composer_base):
             self.logger.warn("Unknown cytoband for gene '{0}'".format(gene_name))
         return cytoband
 
-    def image_to_json_string(self, image_path, image_type='jpeg'):
-        # read a jpeg file into base64 with JSON prefix
-        if image_type not in ['jpg', 'jpeg', 'png']:
-            raise RuntimeError("Unsupported image type: {0}".format(image_type))
-        with open(image_path, 'rb') as image_file:
-            image = base64.b64encode(image_file.read())
-        image_json = 'data:image/{0};base64,{1}'.format(image_type, image.decode('utf-8'))
-        return image_json
-
     def read_cancer_specific_percentile(self, tmb, cohort, cancer_type):
         # Read percentile for given TMB/Mb and cohort
         # We use statsmodels to compute the ECDF
@@ -662,7 +653,7 @@ class clinical_report_json_composer(composer_base):
         return row
 
     def write_tmb_plot(self, tmb, out_dir):
-        out_path = os.path.join(out_dir, 'tmb.jpeg')
+        out_path = os.path.join(out_dir, 'tmb.svg')
         args = [
             os.path.join(self.r_script_dir, 'tmb_plot.R'),
             '-c', self.closest_tcga_lc,
@@ -674,7 +665,7 @@ class clinical_report_json_composer(composer_base):
         return out_path
 
     def write_vaf_plot(self, out_dir):
-        out_path = os.path.join(out_dir, 'vaf.jpeg')
+        out_path = os.path.join(out_dir, 'vaf.svg')
         args = [
             os.path.join(self.r_script_dir, 'vaf_plot.R'),
             '-d', self.input_dir,
