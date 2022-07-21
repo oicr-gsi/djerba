@@ -16,7 +16,6 @@ from string import Template
 
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
-from djerba.benchmark import benchmarker
 from djerba.configure import configurer, log_r_cutoff_finder
 from djerba.extract.extractor import extractor
 from djerba.extract.r_script_wrapper import r_script_wrapper
