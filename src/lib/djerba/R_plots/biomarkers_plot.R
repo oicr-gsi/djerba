@@ -1,32 +1,39 @@
+#! /usr/bin/env Rscript
+
+library(dplyr)
 library(ggplot2)
+library(optparse)
 
-args = commandArgs(trailingOnly=TRUE)
-directory <- args[1]
+option_list = list(
+  make_option(c("-d", "--dir"), type="character", default=NULL, help="Input report directory path", metavar="character"),
+  make_option(c("-o", "--output"), type="character", default=NULL, help="JPEG output path", metavar="character")
+)
 
-file <- paste0(directory,"msi.txt")
+# get options
+opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
+opt <- parse_args(opt_parser)
+msi_path <- paste(opt$dir, 'msi.txt', sep='/')
+out_path <- opt$output
 
 ##test##
 #setwd('/Volumes/')
 #file <- 'cgi/scratch/fbeaudry/msi_test/BTC_0013/BTC_0013_Lv_P_WG_HPB-199_LCM.filter.deduped.realigned.recalibrated.msi.booted'
 
-boot <- read.table(file)
+boot <- read.table(msi_path)
 
 names(boot) <- c("q0","q1","median","q3","q4")
 boot$Sample <- "Sample"
 
-jpeg(paste0("~/","msi.jpeg"), width = 500, height = 90,type="cairo") #
-#svg(paste0("~/","msi.svg"), width = 5, height = 1.5,type="cairo") 
 
-ggplot(msi_boot,
-       aes(x="Sample")) + 
- # geom_vline(xintercept = 3.5,color="grey",linetype="dotted")+
+options(bitmapType='cairo')
+jpeg(out_path, width=500, height=90)
 
-  #geom_point(aes(x=point), shape=4, size=6) + 
+ggplot(boot,aes(x="Sample")) + 
   geom_bar(aes(y=median,fill=ifelse(median < 5,'red','green')),stat ="identity") + 
   geom_errorbar(aes(ymin=q1, ymax=q3), width=0,size=2) +
   geom_errorbar(aes(ymin=q0, ymax=q4), width=0) +
   
-  geom_hline(yintercept = 5,color=ifelse(msi_boot$median < 5,'black','white'))+
+  geom_hline(yintercept = 5,color=ifelse(boot$median < 5,'black','white'))+
   guides(fill=FALSE)+
   theme_bw(base_size=15) + 
   labs(x="",title="MSS                                                                               MSI",y="unstable microsatellites (%)") + 
