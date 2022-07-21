@@ -2,6 +2,7 @@
 APPROVED_BIOMARKERS = 'approved_biomarkers'
 ASSAY_TYPE = 'assay_type'
 AUTHOR = 'author'
+DJERBA_VERSION = 'djerba_version'
 OICR_LOGO = 'oicr_logo'
 PATIENT_INFO = 'patient_info'
 SAMPLE_INFO = 'sample_info_and_quality'

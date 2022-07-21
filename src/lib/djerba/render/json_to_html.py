@@ -2,7 +2,6 @@
 
 import djerba.render.constants as constants
 import re
-import sys
 from markdown import markdown
 from time import strftime
 

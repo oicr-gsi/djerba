@@ -198,7 +198,7 @@ class TestExtractor(TestBase):
     STATIC_MD5_FAILED = {
         'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
         'genomic_summary.txt': '5a2f6e61fdf0f109ac3d1bcc4bb3ca71',
-        'djerba_report.json': '7d1946d36258ee969c924676fcbe0f1d'
+        'djerba_report.json': 'c0202e4d8dd7bacd80f37658b9c09a88'
     }
     VARYING_OUTPUT = [
         'tmb.svg',
@@ -218,6 +218,8 @@ class TestExtractor(TestBase):
         # do not check supplementary data
         del data_found['supplementary']
         del data_expected['supplementary']
+        # use a placeholder Djerba version
+        data_found['report']['djerba_version'] = 'PLACEHOLDER'
         self.maxDiff = None
         self.assertEqual(data_found, data_expected)
 
@@ -495,15 +497,15 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '6eed39e0f315b3687a18a1a87e39c5b4')
+        self.check_report(out_path, '680e13e4bedda55b5467554877a8ddab')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '8977971426c0568783fab8b060d1351f')
+        self.check_report(out_path, 'e48693fd8ab44302ec295eaf0e355d66')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '2458deb2afa230d6886dbf82d49bef75')
+        self.check_report(out_path, '2f489161ea326d079df2db2553a07479')
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
