@@ -51,11 +51,17 @@ class TestBase(unittest.TestCase):
         self.data_dir = os.path.realpath(os.path.join(test_dir, 'data'))
         # specify all non-public data paths relative to self.sup_dir
         sup_dir_var = 'DJERBA_TEST_DATA'
+        bench_dir_var = 'DJERBA_GSICAPBENCH_DATA'
         self.sup_dir = os.environ.get(sup_dir_var)
+        self.bench_dir = os.environ.get(bench_dir_var)
         if not (self.sup_dir):
             raise RuntimeError('Need to specify environment variable {0}'.format(sup_dir_var))
         elif not os.path.isdir(self.sup_dir):
             raise OSError("Supplementary directory path '{0}' is not a directory".format(self.sup_dir))
+        if not (self.bench_dir):
+            raise RuntimeError('Need to specify environment variable {0}'.format(bench_dir_var))
+        elif not os.path.isdir(self.bench_dir):
+            raise OSError("GSICAPBENCH directory path '{0}' is not a directory".format(self.bench_dir))
         self.provenance = os.path.join(self.sup_dir, 'pass01_panx_provenance.original.tsv.gz')
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
