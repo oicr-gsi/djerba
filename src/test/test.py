@@ -11,11 +11,12 @@ import subprocess
 import tempfile
 import time
 import unittest
-from shutil import copy
+from shutil import copy, copytree
 from string import Template
 
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
+from djerba.benchmark import benchmarker
 from djerba.configure import configurer, log_r_cutoff_finder
 from djerba.extract.extractor import extractor
 from djerba.extract.r_script_wrapper import r_script_wrapper
@@ -50,17 +51,11 @@ class TestBase(unittest.TestCase):
         self.data_dir = os.path.realpath(os.path.join(test_dir, 'data'))
         # specify all non-public data paths relative to self.sup_dir
         sup_dir_var = 'DJERBA_TEST_DATA'
-        bench_dir_var = 'DJERBA_GSICAPBENCH_DATA'
         self.sup_dir = os.environ.get(sup_dir_var)
-        self.bench_dir = os.environ.get(bench_dir_var)
         if not (self.sup_dir):
             raise RuntimeError('Need to specify environment variable {0}'.format(sup_dir_var))
         elif not os.path.isdir(self.sup_dir):
             raise OSError("Supplementary directory path '{0}' is not a directory".format(self.sup_dir))
-        if not (self.bench_dir):
-            raise RuntimeError('Need to specify environment variable {0}'.format(bench_dir_var))
-        elif not os.path.isdir(self.bench_dir):
-            raise OSError("GSICAPBENCH directory path '{0}' is not a directory".format(self.bench_dir))
         self.provenance = os.path.join(self.sup_dir, 'pass01_panx_provenance.original.tsv.gz')
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
@@ -125,6 +120,55 @@ class TestArchive(TestBase):
             data = json.loads(archive_file.read())
         self.assertEqual(len(data['report']), 19)
         self.assertEqual(len(data['supplementary']['config']), 3)
+
+class TestBenchmark(TestBase):
+
+    class mock_args_compare:
+        """Use instead of argparse to store params for testing"""
+
+        def __init__(self, report_dirs, compare_all=False):
+            self.subparser_name = constants.COMPARE
+            self.report_dir = report_dirs
+            self.compare_all = compare_all
+            # logging
+            self.log_path = None
+            self.debug = False
+            self.verbose = False
+            self.quiet = True
+
+    class mock_args_report:
+        """Use instead of argparse to store params for testing"""
+
+        def __init__(self, input_dir, output_dir):
+            self.subparser_name = constants.REPORT
+            self.input_dir = input_dir
+            self.output_dir = output_dir
+            self.dry_run = False
+            # logging
+            self.log_path = None
+            self.debug = False
+            self.verbose = False
+            self.quiet = True
+
+    def test_benchmark(self):
+        out_dir = self.tmp_dir
+        input_dir = os.path.join(self.sup_dir, 'benchmark')
+        report_dir = os.path.join(out_dir, 'report')
+        os.mkdir(report_dir)
+        report_args = self.mock_args_report(input_dir, report_dir)
+        self.assertTrue(benchmarker(report_args).run())
+        report_1a = os.path.join(report_dir, 'GSICAPBENCH_1219')
+        report_1b = os.path.join(report_dir, 'GSICAPBENCH_1219.copy')
+        copytree(report_1a, report_1b) # make a copy to test identical inputs
+        report_2 = os.path.join(report_dir, 'GSICAPBENCH_1232')
+        compare_args_1 = self.mock_args_compare([report_1a, report_1b])
+        self.assertTrue(benchmarker(compare_args_1).run())
+        compare_args_2 = self.mock_args_compare([report_1a, report_2])
+        self.assertFalse(benchmarker(compare_args_2).run())
+        compare_args_3 = self.mock_args_compare([report_1a, report_1b], compare_all=True)
+        self.assertTrue(benchmarker(compare_args_3).run())
+        compare_args_4 = self.mock_args_compare([report_1a, report_2], compare_all=True)
+        self.assertFalse(benchmarker(compare_args_4).run())
 
 class TestConfigure(TestBase):
 
@@ -198,11 +242,11 @@ class TestExtractor(TestBase):
     STATIC_MD5_FAILED = {
         'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
         'genomic_summary.txt': '5a2f6e61fdf0f109ac3d1bcc4bb3ca71',
-        'djerba_report.json': 'c0202e4d8dd7bacd80f37658b9c09a88'
+        'djerba_report.json': '8eca62a9ffd80310f8298161846d0912'
     }
     VARYING_OUTPUT = [
-        'tmb.svg',
-        'vaf.svg',
+        'tmb.jpeg',
+        'vaf.jpeg',
         'djerba_report.json'
     ]
 
@@ -218,8 +262,6 @@ class TestExtractor(TestBase):
         # do not check supplementary data
         del data_found['supplementary']
         del data_expected['supplementary']
-        # use a placeholder Djerba version
-        data_found['report']['djerba_version'] = 'PLACEHOLDER'
         self.maxDiff = None
         self.assertEqual(data_found, data_expected)
 
@@ -279,7 +321,7 @@ class TestExtractor(TestBase):
         self.run_extractor(self.config_full, out_dir, True, False, 80)
         self.check_outputs_md5(out_dir, self.get_static_md5_passed())
         for name in self.VARYING_OUTPUT:
-            self.assertTrue(os.path.exists(os.path.join(out_dir, name)), name+' exists')
+            self.assertTrue(os.path.exists(os.path.join(out_dir, name)))
         ref_dir = os.path.join(self.sup_dir, 'report_json', 'WGS_only')
         found = os.path.join(out_dir, 'djerba_report.json')
         expected = os.path.join(ref_dir, 'djerba_report.json')
@@ -497,15 +539,15 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '680e13e4bedda55b5467554877a8ddab')
+        self.check_report(out_path, 'eca9d84ba2afaeb43779dc87e5f20777')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, 'e48693fd8ab44302ec295eaf0e355d66')
+        self.check_report(out_path, 'd50769c3370a5fda5e56321432037d23')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '2f489161ea326d079df2db2553a07479')
+        self.check_report(out_path, 'eec0196e171c66cae1de061d85bcb677')
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
