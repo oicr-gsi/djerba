@@ -12,6 +12,7 @@
 - GCGI-399: Rename "Genome Altered (%)" to "Percent Genome Altered"
 - GCGI-387: Enforce decimal places in output for purity, ploidy, coverage, callability
 - GCGI-406: Do not compare supplementary data in benchmark script
+- GCGI-416: Do not allow 'None' in default tumour/normal IDs
 
 ## v0.3.2: 2022-06-21
 

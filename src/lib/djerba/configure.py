@@ -371,7 +371,10 @@ class provenance_reader(logger):
             tissue_type = 'R'
         else:
             tissue_type = self._get_unique_value(self.GEO_TISSUE_TYPE_ID, check=True, reference=False)
-        constructed_id = "{0}_{1}_{2}".format(patient_id, tissue_origin, tissue_type)
+        if patient_id and tissue_origin and tissue_type:
+            constructed_id = "{0}_{1}_{2}".format(patient_id, tissue_origin, tissue_type)
+        else:
+            constructed_id = None
         self.logger.debug("ID candidates: {0}, {1}, {2}".format(tube_id, group_id, constructed_id))
         if tube_id:
             chosen_id = tube_id
@@ -380,10 +383,14 @@ class provenance_reader(logger):
             msg = "Could not find {0}, using {1} for ID: {2}".format(self.GEO_TUBE_ID, self.GEO_GROUP_ID, group_id)
             self.logger.warning(msg)
             chosen_id = group_id
-        else:
+        elif constructed_id:
             msg = "Could not find {0} or {1}, constructing alternate ID: {2}".format(self.GEO_TUBE_ID, self.GEO_GROUP_ID, constructed_id)
             self.logger.warning(msg)
             chosen_id = constructed_id
+        else:
+            msg = "Unable to construct tumour/normal ID for patient ID '{0}'; specify manually in INI file".format(patient_id)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
         return chosen_id
 
     def _parse_default(self, workflow, metatype, pattern):
