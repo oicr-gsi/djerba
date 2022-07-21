@@ -1,7 +1,7 @@
 grch37Isoform	grch37RefSeq	grch38Isoform	grch38RefSeq	entrezGeneId	hugoSymbol	oncogene	highestSensitiveLevel	highestResistanceLevel	summary	tsg	highestResistancLevel
 ENST00000318560	NM_005157.4	ENST00000318560	NM_005157.4	25	ABL1	TRUE	1	R1	ABL1, a tyrosine kinase, is frequently altered by chromosomal translocations in leukemia.	FALSE	R1
 ENST00000502732	NM_007314.3	ENST00000502732	NM_007314.3	27	ABL2	TRUE			ABL2, a tyrosine kinase, is altered by chromosomal rearrangement in acute lymphoblastic leukemia.	FALSE	
-ENST00000321945	NM_139076.2	ENST00000321945	NM_139076.2	84142	ABRAXAS1	FALSE			[[gene]], a tumor suppressor and DNA repair protein, is recurrently altered by mutation and deletion in various cancer types.	TRUE	
+ENST00000321945	NM_139076.2	ENST00000321945	NM_139076.2	84142	ABRAXAS1	FALSE			ABRAXAS1, a tumor suppressor and DNA repair protein, is recurrently altered by mutation and deletion in various cancer types.	TRUE	
 ENST00000331925	NM_001199954.1	ENST00000573283	NM_001199954.1	71	ACTG1	FALSE			ACTG1, a cytoskeletal protein, is infrequently altered across various cancer types.	TRUE	
 ENST00000263640	NM_001111067.2	ENST00000263640	NM_001111067.2	90	ACVR1	TRUE			ACVR1, a receptor protein, is mutated in various cancer types including diffuse intrinsic pontine glioma (DIPG).	FALSE	
 ENST00000373204	NM_012199.2	ENST00000373204	NM_012199.2	26523	AGO1	TRUE			AGO1, an enzyme involved in RNA-mediated gene silencing, is overexpressed in various cancer types.	FALSE	
@@ -83,7 +83,7 @@ ENST00000227507	NM_053056.2	ENST00000227507	NM_053056.2	595	CCND1	TRUE			CCND1, 
 ENST00000261254	NM_001759.3	ENST00000261254	NM_001759.3	894	CCND2	TRUE			CCND2, a regulator of the cell cycle, is amplified in various cancer types.	FALSE	
 ENST00000372991	NM_001760.3	ENST00000372991	NM_001760.3	896	CCND3	TRUE			CCND3, a regulator of the cell cycle, is amplified in various cancer types.	FALSE	
 ENST00000262643	NM_001238.2	ENST00000262643	NM_001238.2	898	CCNE1	TRUE			CCNE1, a regulator of the cell cycle, is amplified in various cancer types.	FALSE	
-ENST00000576892	NM_152274.4	ENST00000576892	NM_152274.4	92002	CCNQ	FALSE			[[gene]], a cyclin-related gene, is altered by mutation and deletion in the germline of patients with STAR syndrome.	TRUE	
+ENST00000576892	NM_152274.4	ENST00000576892	NM_152274.4	92002	CCNQ	FALSE			CCNQ, a cyclin-related gene, is altered by mutation and deletion in the germline of patients with STAR syndrome.	TRUE	
 ENST00000381577	NM_014143.3	ENST00000381577	NM_014143.3	29126	CD274	TRUE			CD274 (also known as PD-L1) is an immune receptor ligand. Expression of PD-L1 may help predict response to immunotherapies targeted against PD-L1 and its receptor, PD-1.	FALSE	
 ENST00000318443	NM_001024736.1	ENST00000318443	NM_001024736.1	80381	CD276	TRUE			CD276, a cell surface protein involved in the immune response, is overexpressed in various cancer types.	FALSE	
 ENST00000324106	NM_006139.3	ENST00000324106	NM_006139.3	940	CD28	TRUE			CD28, a costimulatory receptor expressed by T cells, is infrequently altered in a diverse range of human cancers.	FALSE	
@@ -109,7 +109,7 @@ ENST00000328354	NM_007194.3	ENST00000404276	NM_007194.3	11200	CHEK2	FALSE	1		CHE
 ENST00000575354	NM_015125.3	ENST00000575354	NM_015125.3	23152	CIC	FALSE			CIC, a tumor suppressor and transcriptional repressor, is recurrently altered by mutation, deletion, and translocation, most frequently in oligodendrogliomas.	TRUE	
 ENST00000324288		ENST00000324288	NM_000246.3	4261	CIITA	FALSE			CIITA, a transcriptional coactivator in immune cells, is recurrently altered by deletion, mutation and chromosomal rearrangement in lymphomas.	TRUE	
 ENST00000338099	NM_001099642.1	ENST00000338099	NM_001099642.1	55783	CMTR2	FALSE			CMTR2, an RNA cap methyltransferase, is recurrently altered by mutation in non-small cell lung cancer.	TRUE	
-ENST00000367669	NM_022457.5	ENST00000367669	NM_022457.5	64326	COP1	TRUE			[[gene]] encodes an E3 ubiquitin-protein ligase involved in the c-Jun signaling pathway that affects apoptosis, cell cycle, and DNA repair. [[gene]] is commonly overexpressed in several cancer types, including gastric, human hepatocellular carcinoma, breast, and ovarian cancer and promotes cell proliferation, transformation, and tumor progression.	FALSE	
+ENST00000367669	NM_022457.5	ENST00000367669	NM_022457.5	64326	COP1	TRUE			COP1 encodes an E3 ubiquitin-protein ligase involved in the c-Jun signaling pathway that affects apoptosis, cell cycle, and DNA repair. COP1 is commonly overexpressed in several cancer types, including gastric, human hepatocellular carcinoma, breast, and ovarian cancer and promotes cell proliferation, transformation, and tumor progression.	FALSE	
 ENST00000231948	NM_016302.3	ENST00000231948	NM_016302.3	51185	CRBN	FALSE			CRBN, a ubiquitin ligase, is recurrently altered by mutation or downregulation in multiple myelomas.	TRUE	
 ENST00000432329	NM_134442.3	ENST00000432329	NM_134442.3	1385	CREB1	TRUE			CREB1, a transcription factor, is rarely altered by chromosomal rearrangements in soft tissue sarcomas.	FALSE	
 ENST00000262367	NM_004380.2	ENST00000262367	NM_004380.2	1387	CREBBP	FALSE			CREBBP, a tumor suppressor and transcriptional co-activator, is frequently inactivated in hematologic malignancies.	TRUE	
@@ -164,7 +164,7 @@ ENST00000323963	NM_001967.3	ENST00000323963	NM_001967.3	1974	EIF4A2	TRUE			EIF4A
 ENST00000280892	NM_001130678.1	ENST00000280892	NM_001130678.1	1977	EIF4E	TRUE			EIF4E, a translation initiation factor, is overexpressed in various cancer types.	FALSE	
 ENST00000359651	NM_004433.4	ENST00000359651	NM_004433.4	1999	ELF3	TRUE			ELF3, a transcriptional activator, is altered by mutation or amplification in various cancer types.	TRUE	
 ENST00000286523	NM_001043318.2	ENST00000286523	NM_001043318.2	91748	ELMSAN1	FALSE			ELMSAN1, a chromatin-associated protein that mediates histone deaceylation, is recurrently altered by mutation in a variety of cancers.	TRUE	
-ENST00000284811	NM_005648.3	ENST00000284811	NM_005648.3	6921	ELOC	FALSE			[[gene]] encodes a protein that is a component of the VHL ubiquitination complex. A hotspot mutation of [[gene]] is associated with a distinct subtype of renal cell carcinoma.	FALSE	
+ENST00000284811	NM_005648.3	ENST00000284811	NM_005648.3	6921	ELOC	FALSE			ELOC encodes a protein that is a component of the VHL ubiquitination complex. A hotspot mutation of ELOC is associated with a distinct subtype of renal cell carcinoma.	FALSE	
 ENST00000263253	NM_001429.3	ENST00000263253	NM_001429.3	2033	EP300	FALSE			EP300, a tumor suppressor and histone acetyltransferase, is inactivated in various cancer types.	TRUE	
 ENST00000389561	NM_015409.3	ENST00000389561	NM_015409.3	57634	EP400	FALSE			EP400, a chromatin remodeling protein, is infrequently altered by mutation in bladder cancer and lymphomas.	TRUE	
 ENST00000263734	NM_001430.4	ENST00000263734	NM_001430.4	2034	EPAS1	FALSE			EPAS1, a hypoxia-related transcription factor, is mutated or amplified in a small subset of human cancers.	FALSE	
@@ -242,24 +242,24 @@ ENST00000300177	NM_013372.6	ENST00000300177	NM_013372.6	26585	GREM1	TRUE			GREM1
 ENST00000330684	NM_001134407.1	ENST00000330684	NM_001134407.1	2903	GRIN2A	FALSE			GRIN2A, a subunit of the NMDA glutamate receptor, is recurrently altered by mutation in various cancer types, most frequently in melanoma.	TRUE	
 ENST00000316626	NM_002093.3	ENST00000316626	NM_002093.3	2932	GSK3B	TRUE			GSK3B, an intracellular kinase, is overexpressed in various cancer types including ovarian, colon and liver cancers.	FALSE	
 ENST00000324896	NM_032999.3	ENST00000573035	NM_032999.3	2969	GTF2I	TRUE			GTF2I, a transcription factor, is recurrently altered by mutation in thymic tumors and lymphomas.	FALSE	
-ENST00000343677	NM_005319.3	ENST00000343677	NM_005319.3	3006	H1-2	FALSE			[[gene]], a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
-ENST00000289316	NM_021063.3	ENST00000289316	NM_021063.3	3017	H2BC5	FALSE			The [[gene]] gene encodes a histone H2B variant.	FALSE	
-ENST00000366813	NM_002107.4	ENST00000366815	NM_002107.4	3020	H3-3A	TRUE			[[gene]], a histone variant, is recurrently altered by mutation in various pediatric cancers including pediatric glioblastoma.	FALSE	
-ENST00000254810	NM_005324.3	ENST00000254810	NM_005324.3	3021	H3-3B	FALSE			[[gene]], a histone variant, is recurrently altered by mutation in chondroblastomas.	FALSE	
-ENST00000366696	NM_003493.2	ENST00000366696	NM_003493.2	8290	H3-4	FALSE			[[gene]], a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
-ENST00000340398	NM_001013699.2	ENST00000340398	NM_001013699.2	440093	H3-5	FALSE			[[gene]], a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
-ENST00000357647	NM_003529.2	ENST00000356476	NM_003529.2	8350	H3C1	FALSE			The [[gene]] gene encodes H3.1, an H3 histone variant.	FALSE	
-ENST00000369163	NM_003536.2	ENST00000369163	NM_003536.2	8357	H3C10	FALSE			[[gene]], a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
-ENST00000328488	NM_003533.2	ENST00000616365	NM_003533.2	8354	H3C11	FALSE			[[gene]], a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
-ENST00000359303	NM_003535.2	ENST00000359303	NM_003535.2	8356	H3C12	FALSE			[[gene]], a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
-ENST00000331491	NM_001123375.2	ENST00000331491	NM_001123375.2	653604	H3C13	FALSE			[[gene]], a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
-ENST00000369158	NM_021059.2	ENST00000369158	NM_021059.2	126961	H3C14	FALSE			[[gene]], a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
-ENST00000244661	NM_003537.3	ENST00000621411	NM_003537.3	8358	H3C2	FALSE			The [[gene]] gene encodes H3.1, an H3 histone variant.	FALSE	
-ENST00000540144	NM_003531.2	ENST00000612966	NM_003531.2	8352	H3C3	FALSE			[[gene]], a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
-ENST00000356476	NM_003530.4	ENST00000356476	NM_003530.4	8351	H3C4	FALSE			[[gene]], a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
-ENST00000360408	NM_003532.2	ENST00000634733	NM_003532.2	8353	H3C6	FALSE			[[gene]], a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
-ENST00000446824	NM_021018.2	ENST00000618052	NM_021018.2	8968	H3C7	FALSE			[[gene]], a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
-ENST00000305910	NM_003534.2	ENST00000614378	NM_003534.2	8355	H3C8	FALSE			[[gene]], a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
+ENST00000343677	NM_005319.3	ENST00000343677	NM_005319.3	3006	H1-2	FALSE			H1-2, a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
+ENST00000289316	NM_021063.3	ENST00000289316	NM_021063.3	3017	H2BC5	FALSE			The H2BC5 gene encodes a histone H2B variant.	FALSE	
+ENST00000366813	NM_002107.4	ENST00000366815	NM_002107.4	3020	H3-3A	TRUE			H3-3A, a histone variant, is recurrently altered by mutation in various pediatric cancers including pediatric glioblastoma.	FALSE	
+ENST00000254810	NM_005324.3	ENST00000254810	NM_005324.3	3021	H3-3B	FALSE			H3-3B, a histone variant, is recurrently altered by mutation in chondroblastomas.	FALSE	
+ENST00000366696	NM_003493.2	ENST00000366696	NM_003493.2	8290	H3-4	FALSE			H3-4, a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
+ENST00000340398	NM_001013699.2	ENST00000340398	NM_001013699.2	440093	H3-5	FALSE			H3-5, a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
+ENST00000357647	NM_003529.2	ENST00000356476	NM_003529.2	8350	H3C1	FALSE			The H3C1 gene encodes H3.1, an H3 histone variant.	FALSE	
+ENST00000369163	NM_003536.2	ENST00000369163	NM_003536.2	8357	H3C10	FALSE			H3C10, a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
+ENST00000328488	NM_003533.2	ENST00000616365	NM_003533.2	8354	H3C11	FALSE			H3C11, a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
+ENST00000359303	NM_003535.2	ENST00000359303	NM_003535.2	8356	H3C12	FALSE			H3C12, a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
+ENST00000331491	NM_001123375.2	ENST00000331491	NM_001123375.2	653604	H3C13	FALSE			H3C13, a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
+ENST00000369158	NM_021059.2	ENST00000369158	NM_021059.2	126961	H3C14	FALSE			H3C14, a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
+ENST00000244661	NM_003537.3	ENST00000621411	NM_003537.3	8358	H3C2	FALSE			The H3C2 gene encodes H3.1, an H3 histone variant.	FALSE	
+ENST00000540144	NM_003531.2	ENST00000612966	NM_003531.2	8352	H3C3	FALSE			H3C3, a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
+ENST00000356476	NM_003530.4	ENST00000356476	NM_003530.4	8351	H3C4	FALSE			H3C4, a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
+ENST00000360408	NM_003532.2	ENST00000634733	NM_003532.2	8353	H3C6	FALSE			H3C6, a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
+ENST00000446824	NM_021018.2	ENST00000618052	NM_021018.2	8968	H3C7	FALSE			H3C7, a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
+ENST00000305910	NM_003534.2	ENST00000614378	NM_003534.2	8355	H3C8	FALSE			H3C8, a histone variant, is infrequently altered by mutation in various cancer types.	FALSE	
 ENST00000316450	NA	ENST00000369387		440926	H3F3AP4	FALSE			H3F3AP4, a histone variant pseudogene, is infrequently altered by amplification in various cancer types.	FALSE	
 ENST00000373548	NM_004964.2	ENST00000373548	NM_004964.2	3065	HDAC1	TRUE			HDAC1, a histone deacetylase, is infrequently altered by mutation in liposarcoma.	FALSE	
 ENST00000345617	NM_006037.3	ENST00000345617	NM_006037.3	9759	HDAC4	TRUE			HDAC4, a histone deacetylase, is infrequently altered by deletion and mutation in a diverse range of cancers.	TRUE	
@@ -331,7 +331,7 @@ ENST00000534358	NM_001197104.1	ENST00000534358	NM_001197104.1	4297	KMT2A	FALSE		
 ENST00000222270	NM_014727.1	ENST00000420124	NM_014727.3	9757	KMT2B	FALSE			KMT2B, a histone methyltransferase, is mutated at low frequencies in various cancer types.	TRUE	
 ENST00000262189	NM_170606.2	ENST00000262189	NM_170606.2	58508	KMT2C	FALSE			KMT2C, a tumor suppressor and histone methyltransferase, is altered in various solid and hematologic malignancies.	TRUE	
 ENST00000301067	NM_003482.3	ENST00000301067	NM_003482.3	8085	KMT2D	FALSE			KMT2D, a tumor suppressor and histone methyltransferase, is one of the most frequently mutated genes in cancer.	TRUE	
-ENST00000330479	NM_020382.3	ENST00000402868	NM_020382.7	387893	KMT5A	FALSE			[[gene]], a methyltransferase and transcriptional repressor, is mutated or amplified at low frequencies in various cancers.	FALSE	
+ENST00000330479	NM_020382.3	ENST00000402868	NM_020382.7	387893	KMT5A	FALSE			KMT5A, a methyltransferase and transcriptional repressor, is mutated or amplified at low frequencies in various cancers.	FALSE	
 ENST00000249776	NM_033286.3	ENST00000249776	NM_033286.3	90417	KNSTRN	FALSE			KNSTRN, a component of the mitotic spindle, is mutated in cutaneous squamous cell carcinoma.	FALSE	
 ENST00000311936	NM_004985	ENST00000311936	NM_004985	3845	KRAS	TRUE	1	R1	KRAS, a GTPase which functions as an upstream regulator of the MAPK and PI3K pathways, is frequently mutated in various cancer types including pancreatic, colorectal and lung cancers.	FALSE	R1
 ENST00000339824		ENST00000339824		283455	KSR2	TRUE			KSR2, a MAPK scaffolding protein, is infrequently altered in various cancer types.	FALSE	
@@ -380,7 +380,7 @@ ENST00000307729	NM_001195626.1	ENST00000307729	NM_001195626.1	8028	MLLT10	TRUE		
 ENST00000262244	NM_024761.4	ENST00000262244	NM_024761.4	79817	MOB3B	FALSE			MOB3B, a kinase activator likely involved in the Hippo signaling pathway, is recurrently deleted in mantle cell lymphomas.	TRUE	
 ENST00000361050	NM_001039396.1	ENST00000361050	NM_001039396.1	219972	MPEG1	FALSE			MPEG1, a pore forming protein involved in innate immunity, is infrequently altered in various cancer types.	FALSE	
 ENST00000372470	NM_005373.2	ENST00000372470	NM_005373.2	4352	MPL	TRUE			MPL, a transmembrane protein receptor, is frequently mutated in myeloproliferative neoplasms including essential thrombocytosis and myelofibrosis.	FALSE	
-ENST00000323929	NM_005591.3	ENST00000323929	NM_005591.3	4361	MRE11	FALSE			[[gene]] is a tumor suppressor involved in DNA repair. Germline mutations of [[gene]] are associated with ataxia-telangiectasia-like disorder and predispose to breast and ovarian cancers.	TRUE	
+ENST00000323929	NM_005591.3	ENST00000323929	NM_005591.3	4361	MRE11	FALSE			MRE11 is a tumor suppressor involved in DNA repair. Germline mutations of MRE11 are associated with ataxia-telangiectasia-like disorder and predispose to breast and ovarian cancers.	TRUE	
 ENST00000233146	NM_000251.2	ENST00000233146	NM_000251.2	4436	MSH2	FALSE			MSH2 is a tumor suppressor involved in DNA mismatch repair. Select mutations of MSH2 are associated with Lynch syndrome and can lead to genomic instability in tumors.	TRUE	
 ENST00000265081	NM_002439.4	ENST00000265081	NM_002439.4	4437	MSH3	FALSE			MSH3, a protein that participates in mismatch DNA repair pathway, is frequently lost in colorectal cancers.	TRUE	
 ENST00000234420	NM_000179.2	ENST00000234420	NM_000179.2	2956	MSH6	FALSE			MSH6 is a tumor suppressor involved in post-replication DNA mismatch repair. Select mutations of MSH6 are associated with Lynch syndrome and can lead to genomic instability via microsatellite instability in tumors.	TRUE	
@@ -392,7 +392,7 @@ ENST00000380172	NM_002451.3	ENST00000644715	NM_002451.3	4507	MTAP	FALSE			MTAP, 
 ENST00000361445	NM_004958.3	ENST00000361445	NM_004958.3	2475	MTOR	TRUE	3A		MTOR, an intracellular kinase that regulates cell growth and metabolism, is infrequently mutated in various cancer types.	FALSE	
 ENST00000372115	NM_001048171.1	ENST00000372115	NM_001048171.1	4595	MUTYH	FALSE			MUTYH is a tumor suppressor involved in DNA repair. Germline mutations of MUTYH are associated with MUTYH-associated Polyposis syndrome.	TRUE	
 ENST00000377970	NM_002467.4	ENST00000621592	NM_002467.4	4609	MYC	TRUE			MYC, a transcription factor, is altered by chromosomal rearrangement, amplification and overexpression in a variety of cancer types.	FALSE	
-ENST00000397332	NM_001033082.2	ENST00000397332	NM_001033082.2	4610	MYCL	TRUE			[[gene]], a transcription factor, is altered by overexpression and amplification in various cancer types including small cell lung cancer.	FALSE	
+ENST00000397332	NM_001033082.2	ENST00000397332	NM_001033082.2	4610	MYCL	TRUE			MYCL, a transcription factor, is altered by overexpression and amplification in various cancer types including small cell lung cancer.	FALSE	
 ENST00000281043	NM_005378.4	ENST00000281043	NM_005378.4	4613	MYCN	TRUE			MYCN, a transcription factor, is altered by amplification and overexpression in a variety of cancer types including in neuroblastoma.	FALSE	
 ENST00000396334	NM_002468.4	ENST00000396334	NM_002468.4	4615	MYD88	TRUE			MYD88, an adaptor protein, is frequently altered in hematologic malignancies including Waldenström's macroglobulinemia.	FALSE	
 ENST00000250003	NM_002478.4	ENST00000250003	NM_002478.4	4654	MYOD1	FALSE			MYOD1, a transcription factor involved in muscle differentiation, is recurrently altered by mutation in rhabdomyosarcoma.	FALSE	
@@ -419,7 +419,7 @@ ENST00000395097	NM_006981.3	ENST00000395097	NM_006981.3	8013	NR4A3	TRUE			NR4A3,
 ENST00000369535	NM_002524.4	ENST00000369535	NM_002524.4	4893	NRAS	TRUE	3A	R1	NRAS, a GTPase, is mutated in a diverse range of cancers, most frequently in melanoma and thyroid cancer.	FALSE	R1
 ENST00000405005	NM_013964.3	ENST00000405005	NM_013964.3	3084	NRG1	TRUE			NRG1, a ligand for ERBB receptor kinases, is recurrently altered by fusion in lung adenocarcinoma and pancreatic cancer.	FALSE	
 ENST00000439151	NM_022455.4	ENST00000439151	NM_022455.4	64324	NSD1	TRUE			NSD1 encodes a nuclear receptor that can both positively and negatively regulate transcription. Translocations involving NSD1 and the NUP98 gene are highly recurrent in pediatric acute myeloid leukemia.	TRUE	
-ENST00000317025	NM_023034.1	ENST00000317025	NM_023034.1	54904	NSD3	FALSE			[[gene]], a histone methyltransferase, is altered by amplification in various cancers.	FALSE	
+ENST00000317025	NM_023034.1	ENST00000317025	NM_023034.1	54904	NSD3	FALSE			NSD3, a histone methyltransferase, is altered by amplification in various cancers.	FALSE	
 ENST00000343289	NM_001134373.2	ENST00000343289	NM_001134373.2	22978	NT5C2	TRUE			NT5C2, a 5' nucleotidase, is frequently altered by mutation in relapsed hematopoietic malignancies.	FALSE	
 ENST00000219066	NM_002528.5	ENST00000219066	NM_002528.5	4913	NTHL1	FALSE			NTHL1, a DNA damage repair protein, is mutated in the germline of families with hereditary cancer syndromes.	TRUE	
 ENST00000524377	NM_002529.3	ENST00000524377	NM_002529.3	4914	NTRK1	TRUE	1	R2	NTRK1, a receptor tyrosine kinase, is altered by mutation or chromosomal rearrangement in various cancer types including lung and colorectal cancers.	FALSE	R2
@@ -484,7 +484,7 @@ ENST00000308677	NM_002730.3	ENST00000308677	NM_002730.3	5566	PRKACA	TRUE			PRKAC
 ENST00000358598	NM_212471.2	ENST00000358598	NM_212471.2	5573	PRKAR1A	FALSE			PRKAR1A encodes for a regulatory subunit of protein kinase A. Mutations are associated with Carney complex syndrome and adrenocortical tumors.	FALSE	
 ENST00000295797	NM_002740.5	ENST00000295797	NM_002740.5	5584	PRKCI	TRUE			PRKCI, a serine/threonine kinase, is frequently altered by amplification across various cancers.	FALSE	
 ENST00000331968	NM_002742.2	ENST00000331968	NM_002742.2	5587	PRKD1	FALSE			PRKD1, a serine/threonine kinase, is mutated in salivary gland carcinomas.	FALSE	
-ENST00000366898	NM_004562.2	ENST00000366898	NM_004562.2	5071	PRKN	FALSE			[[gene]] encodes a tumor suppressor invovled in tagging cellular proteins for degradation. [[gene]] is inactivated in various cancer types, and its dysfunction is associated with hereditary Parkinson's disease.	TRUE	
+ENST00000366898	NM_004562.2	ENST00000366898	NM_004562.2	5071	PRKN	FALSE			PRKN encodes a tumor suppressor invovled in tagging cellular proteins for degradation. PRKN is inactivated in various cancer types, and its dysfunction is associated with hereditary Parkinson's disease.	TRUE	
 ENST00000311737	NM_002769.4	ENST00000311737	NM_002769.4	5644	PRSS1	FALSE			PRSS1 encodes the digestive pro-enzyme trypsinogen, which is activated in the small intestine. Mutations in PRSS1 are associated with pancreatitis and increased risk of pancreatic cancer.	FALSE	
 ENST00000331920	NM_000264.3	ENST00000331920	NM_000264.3	5727	PTCH1	FALSE	3A		PTCH1, a tumor suppressor and inhibitor of the hedgehog pathway, is recurrently mutated in basal cell carcinoma.	TRUE	
 ENST00000371953	NM_000314.4	ENST00000371953	NM_000314.4	5728	PTEN	FALSE	4		PTEN, a lipid and protein phosphatase, is one of the most frequently mutated genes in cancer.	TRUE	
@@ -620,7 +620,7 @@ ENST00000543371	NM_001146274.1	ENST00000627217	NM_001146274.1	6934	TCF7L2	FALSE	
 ENST00000402399	NM_001098725.1	ENST00000402399	NM_001098725.1	8115	TCL1A	TRUE			TCL1A, a co-activator of the AKT signaling pathway, is frequently altered by chromosomal rearrangement in hematologic malignancies.	FALSE	
 ENST00000340722	NM_004918.3	ENST00000340722	NM_004918.3	9623	TCL1B	TRUE			TCL1B, a co-activator of the AKT signaling pathway, is commonly altered by chromosomal rearrangement in hematologic malignancies.	FALSE	
 ENST00000380036	NM_000459.3	ENST00000380036	NM_000459.3	7010	TEK	FALSE			TEK, a receptor tyrosine kinase involved in angiogenesis, is rarely mutated in cancers.	FALSE	
-ENST00000369448	NM_017709.3	ENST00000369448	NM_017709.3	54855	TENT5C	FALSE			[[gene]], a non-canonical poly(A) polymerase, is most frequently altered by mutation and deletion in multiple myelomas.	TRUE	
+ENST00000369448	NM_017709.3	ENST00000369448	NM_017709.3	54855	TENT5C	FALSE			TENT5C, a non-canonical poly(A) polymerase, is most frequently altered by mutation and deletion in multiple myelomas.	TRUE	
 ENST00000310581	NM_198253.2	ENST00000310581	NM_198253.2	7015	TERT	TRUE			TERT is an enzyme that functions to maintain telomere length and genomic stability. The TERT promoter is frequently mutated in various cancer types.	FALSE	
 ENST00000373644	NM_030625.2	ENST00000373644	NM_030625.2	80312	TET1	FALSE			TET1 encodes a tumor suppressor and DNA demethylase involved in the epigenetic regulation of gene expression. TET1 is infrequently mutated in solid tumors.	TRUE	
 ENST00000380013	NM_001127208.2	ENST00000380013	NM_001127208.2	54790	TET2	FALSE			TET2, a tumor suppressor and DNA demethylase, is frequently mutated in hematologic malignancies.	TRUE	
