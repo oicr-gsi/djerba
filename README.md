@@ -129,7 +129,8 @@ Djerba has a `setup.py` script which will install its source code and Python dep
 
 ## Testing
 
-To run the unit tests, on a checkout of the Djerba repo in `$DJERBA_SOURCE_DIR`:
+To run the unit tests on a checkout of the Djerba repo:
+- `export DJERBA_SOURCE_DIR=${PATH_TO_DJERBA_REPO}`
 - `cd $DJERBA_SOURCE_DIR`
 - `source src/test/test_env.sh`
 - `./src/test/test.py`
@@ -175,9 +176,11 @@ To run the unit tests, on a checkout of the Djerba repo in `$DJERBA_SOURCE_DIR`:
 ### Release Procedure
 
 - Update `CHANGELOG.md`
-- Increment the version number in `setup.py`
+- Increment the version number in `version.py`
 - Commit (or merge) to the master branch, and tag the release on Github
 - Update environment module configuration in [OICR Modulator](https://gitlab.oicr.on.ca/ResearchIT/modulator) to install the newly tagged release
+- Save an updated copy of GSICAPBENCH test data and update the symlink `/.mounts/labs/CGI/gsi/djerba_test/GSICAPBENCH_djerba_latest`, if necessary
+- Tag and release an updated version of [djerba_test_data_lfs](https://bitbucket.oicr.on.ca/gsi/djerba_test_data_lfs.git), if necessary
 
 ### Development History
 
