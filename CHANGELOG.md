@@ -7,6 +7,7 @@
 - GCGI-200: Record Djerba software version in report footer and log
 - GCGI-390: Change plot output from JPEG to SVG
 - GCGI-404: Restructure test data; update `test_env.sh`; move GSICAPBENCH tests to separate file
+- Updated to use Python Tools module v12 for Geneticist Review Report
 
 ### Fixed
 
