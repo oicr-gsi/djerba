@@ -6,7 +6,7 @@ Setup script for Djerba
 
 from setuptools import setup, find_packages
 
-with open('src/lib/djerba/version.py' as version_file):
+with open('src/lib/djerba/version.py') as version_file:
     exec(version_file.read()) # sets __version__
 package_root = 'src/lib'
 
