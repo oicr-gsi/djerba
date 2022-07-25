@@ -198,7 +198,7 @@ class TestExtractor(TestBase):
     STATIC_MD5_FAILED = {
         'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
         'genomic_summary.txt': '5a2f6e61fdf0f109ac3d1bcc4bb3ca71',
-        'djerba_report.json': 'c0202e4d8dd7bacd80f37658b9c09a88'
+        'djerba_report.json': '6f5967472716ae73cf5f698688c66054'
     }
     VARYING_OUTPUT = [
         'tmb.svg',
@@ -497,11 +497,11 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, 'b1927827966a710dd35d79624a2d5974')
+        self.check_report(out_path, '5fa64e2fd2aaaa7bdc6bfa4545a0df74')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '8f04976a32afe28bcacb13ad7b44674a')
+        self.check_report(out_path, '1ea646ec7720c2e8f667cfa0aa65106d')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
         html_renderer().run(args_path, out_path, False)
