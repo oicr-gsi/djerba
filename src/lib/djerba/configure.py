@@ -215,28 +215,34 @@ class log_r_cutoff_finder:
 class provenance_reader(logger):
 
     # internal dictionary keys
-    LIMS_ID_KEY = 'lims_id'
+    SAMPLE_NAME_KEY = 'sample_name'
 
     # parent sample attribute keys
-    ROOT_SAMPLE_NAME_ATTR = 'root_sample_name' # _ATTR to disambiguate from file provenance column
     GEO_EXTERNAL_NAME = 'geo_external_name'
     GEO_GROUP_ID = 'geo_group_id'
     GEO_TISSUE_ORIGIN_ID = 'geo_tissue_origin'
     GEO_TISSUE_TYPE_ID = 'geo_tissue_type'
     GEO_TUBE_ID = 'geo_tube_id'
 
-    def __init__(self, provenance_path, study, donor, log_level=logging.WARNING, log_path=None):
+    # TODO introduce a concept of 'sample name' (not just 'root sample name')
+    # allow user to specify sample names for WG/T, WG/N, WT
+    # use to disambiguate multiple samples from the same donor (eg. at different times)
+    # sanity checks on FPR results; if not OK, die with an informative error
+
+    def __init__(self, provenance_path, study, donor,
+                 wgn_sample=None, wgt_sample=None, wt_sample=None,
+                 log_level=logging.WARNING, log_path=None):
         # get provenance for the study and donor
         # if this proves to be too slow, can preprocess the file using zgrep
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.logger.info("Reading provenance for study '%s' and donor '%s' " % (study, donor))
-        self.donor = donor
+        self.root_sample_name = donor
         self.provenance = []
         with gzip.open(provenance_path, 'rt') as infile:
             reader = csv.reader(infile, delimiter="\t")
             for row in reader:
                 if row[index.STUDY_TITLE] == study and \
-                   row[index.ROOT_SAMPLE_NAME] == donor and \
+                   row[index.ROOT_SAMPLE_NAME] == self.root_sample_name and \
                    row[index.SEQUENCER_RUN_PLATFORM_ID] != 'Illumina_MiSeq':
                     self.provenance.append(row)
         if len(self.provenance)==0:
@@ -248,17 +254,15 @@ class provenance_reader(logger):
             self.patient_id = None
             self.tumour_id = None
             self.normal_id = None
-            self.root_sample_name = None
         else:
             self.logger.info("Found %d provenance records" % len(self.provenance))
             # find relevant attributes from provenance
-            # start by finding unique combinations of name/attributes/LIMS_ID
+            # start by finding sample_name/attributes and removing duplicates
             provenance_subset = set()
             for row in self.provenance:
                 columns = (
-                    row[index.ROOT_SAMPLE_NAME],
-                    row[index.PARENT_SAMPLE_ATTRIBUTES],
-                    row[index.LIMS_ID]
+                    row[index.SAMPLE_NAME],
+                    row[index.PARENT_SAMPLE_ATTRIBUTES]
                 )
                 provenance_subset.add(columns)
             # parse the 'parent sample attributes' value and get a list of dictionaries
@@ -266,7 +270,6 @@ class provenance_reader(logger):
             self.patient_id = self._id_patient()
             self.tumour_id = self._id_tumour()
             self.normal_id = self._id_normal()
-            self.root_sample_name = self._get_root_sample_name()
 
     def _filter_rows(self, index, value, rows=None):
         # find matching provenance rows from a list
@@ -295,14 +298,6 @@ class provenance_reader(logger):
         else:
             return sorted(rows, key=lambda row: row[index.LAST_MODIFIED], reverse=True)[0]
 
-    def _get_root_sample_name(self):
-        name = self._get_unique_value(self.ROOT_SAMPLE_NAME_ATTR, check=False)
-        if name==None:
-            msg = "Cannot find metadata value for '{0}'".format(self.ROOT_SAMPLE_NAME_ATTR)
-            self.logger.error(msg)
-            raise RuntimeError(msg)
-        return name
-
     def _get_unique_value(self, key, check, reference=False):
         """
         Get unique value (if any) of key from self.attributes
@@ -326,7 +321,7 @@ class provenance_reader(logger):
                 value_set.add(value)
             else:
                 self.logger.debug("No value found for {0} in {1}".format(key, row))
-        self.logger.debug("Candidate value set: {0}".format(value_set))
+        self.logger.debug("Candidate value set for key '{0}': {1}".format(key, value_set))
         if len(value_set)==0:
             self.logger.debug("No value found for {0}, reference = {1}".format(key, reference))
             value = None
@@ -411,12 +406,11 @@ class provenance_reader(logger):
 
     def _parse_row_attributes(self, row):
         """
-        Input is a triple of (name, attributes, lims_id) from a provenance row
+        Input is a (sample name, attributes) pair from a provenance row
         Parse the attributes string and return a dictionary
         """
         attrs = {}
-        attrs[self.ROOT_SAMPLE_NAME_ATTR] = row[0]
-        attrs[self.LIMS_ID_KEY] = row[2]
+        attrs[self.SAMPLE_NAME_KEY] = row[0]
         for entry in re.split(';', row[1]):
             pair = re.split('=', entry)
             if len(pair)!=2:
