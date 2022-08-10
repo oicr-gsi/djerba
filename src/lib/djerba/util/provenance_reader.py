@@ -13,9 +13,6 @@ class provenance_reader(logger):
 
     # internal dictionary keys
     SAMPLE_NAME_KEY = 'sample_name'
-    WG_N = 'whole_genome_normal'
-    WG_T = 'whole_genome_tumour'
-    WT_T = 'whole_transcriptome_tumour'
 
     # parent sample attribute keys
     GEO_EXTERNAL_NAME = 'geo_external_name'
@@ -61,6 +58,12 @@ class provenance_reader(logger):
     def __init__(self, provenance_path, study, donor, samples=None,
                  log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
+        # set some constants for convenience
+        self.wg_n = ini.SAMPLE_NAME_WG_N
+        self.wg_t = ini.SAMPLE_NAME_WG_T
+        self.wt_t = ini.SAMPLE_NAME_WT_T
+        self.sample_name_keys = [self.wg_n, self.wg_t, self.wt_t]
+        # read and parse file provenance
         self.logger.info("Reading provenance for study '%s' and donor '%s' " % (study, donor))
         self.root_sample_name = donor
         self.samples = samples # TODO check samples has correct keys and exactly 0 or 3 values; or convert to a custom class?
@@ -253,14 +256,14 @@ class provenance_reader(logger):
     def _validate_and_set_sample_names(self, sample_inputs):
         # find sample names in FPR and check against the inputs dictionary (if any)
         # Firstly, check provenance has exactly one sample for WG/N, WG/T and zero or one for WT/T
-        fpr_samples = {key: set() for key in [self.WG_N, self.WG_T, self.WT_T]}
+        fpr_samples = {key: set() for key in self.sample_name_keys}
         for row in self.attributes:
             if row.get(self.GEO_TISSUE_TYPE_ID)=='R':
-                fpr_samples[self.WG_N].add(row.get(self.SAMPLE_NAME_KEY))
+                fpr_samples[self.wg_n].add(row.get(self.SAMPLE_NAME_KEY))
             elif row.get(self.GEO_LIBRARY_SOURCE_TEMPLATE_TYPE)=='WG':
-                fpr_samples[self.WG_T].add(row.get(self.SAMPLE_NAME_KEY))
+                fpr_samples[self.wg_t].add(row.get(self.SAMPLE_NAME_KEY))
             else:
-                fpr_samples[self.WT_T].add(row.get(self.SAMPLE_NAME_KEY))
+                fpr_samples[self.wt_t].add(row.get(self.SAMPLE_NAME_KEY))
         unique_fpr_samples = {}
         for key in fpr_samples.keys():
             sample_names = fpr_samples.get(key)
@@ -289,7 +292,7 @@ class provenance_reader(logger):
         if sample_inputs==None:
             self.logger.info("No user-supplied sample names; omitting check against file provenance")
         else:
-            for key in [self.WG_N, self.WG_T, self.WT_T]:
+            for key in self.sample_name_keys:
                 # WT sample name in inputs may be None
                 if unique_fpr_samples[key] != sample_inputs[key]:
                     msg = "Conflict between {0} sample names: ".format(key)+\
@@ -299,9 +302,9 @@ class provenance_reader(logger):
                     raise ProvenanceConflictError(msg)
             self.logger.info("Consistency check between supplied and inferred sample names: OK")
         # Finally, set relevant instance variables
-        self.sample_name_wg_n = unique_fpr_samples.get(self.WG_N)
-        self.sample_name_wg_t = unique_fpr_samples.get(self.WG_T)
-        self.sample_name_wt_t = unique_fpr_samples.get(self.WT_T)
+        self.sample_name_wg_n = unique_fpr_samples.get(self.wg_n)
+        self.sample_name_wg_t = unique_fpr_samples.get(self.wg_t)
+        self.sample_name_wt_t = unique_fpr_samples.get(self.wt_t)
 
     def get_identifiers(self):
         """
