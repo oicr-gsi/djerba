@@ -13,13 +13,14 @@ class provenance_reader(logger):
 
     # internal dictionary keys
     SAMPLE_NAME_KEY = 'sample_name'
-    WG_N = 'WG_N'
-    WG_T = 'WG_T'
-    WT = 'WT'
+    WG_N = 'whole_genome_normal'
+    WG_T = 'whole_genome_tumour'
+    WT = 'whole_transcriptome_tumour'
 
     # parent sample attribute keys
     GEO_EXTERNAL_NAME = 'geo_external_name'
     GEO_GROUP_ID = 'geo_group_id'
+    GEO_LIBRARY_SOURCE_TEMPLATE_TYPE = 'geo_library_source_template_type'
     GEO_TISSUE_ORIGIN_ID = 'geo_tissue_origin'
     GEO_TISSUE_TYPE_ID = 'geo_tissue_type'
     GEO_TUBE_ID = 'geo_tube_id'
@@ -49,22 +50,30 @@ class provenance_reader(logger):
     # sanity checks on FPR results; if not OK, die with an informative error
 
     # optionally, specify a samples dictionary
+    # samples dictionary must list WGT, WGN sample names
+    # WTT name may be None (for WG-only reports)
+    # if dictionary given, cross check sample names against provenance for consistency
+    # otherwise, populate the sample names from provenance (and return to configurer for INI)
 
-    def __init__(self, provenance_path, study, donor, samples={},
+    # if conflicting sample names (eg. for different tumour/normal IDs), should fail as it cannot find a unique tumour ID
+    # give a more informative error message in this case?
+
+    def __init__(self, provenance_path, study, donor, samples=None,
                  log_level=logging.WARNING, log_path=None):
         # get provenance for the study and donor
         # if this proves to be too slow, can preprocess the file using zgrep
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.logger.info("Reading provenance for study '%s' and donor '%s' " % (study, donor))
         self.root_sample_name = donor
-        self.samples = samples
+        self.samples = samples # TODO check samples has correct keys and exactly 0 or 3 values; or convert to a custom class?
         self.provenance = []
+        # find provenance rows with the required study, root sample, and (if given) sample names
         with gzip.open(provenance_path, 'rt') as infile:
             reader = csv.reader(infile, delimiter="\t")
             for row in reader:
                 if row[index.STUDY_TITLE] == study and \
                    row[index.ROOT_SAMPLE_NAME] == self.root_sample_name and \
-                   (len(self.samples)==0 or row[index.SAMPLE_NAME] in self.samples) and \
+                   (samples==None or row[index.SAMPLE_NAME] in samples.values()) and \
                    row[index.SEQUENCER_RUN_PLATFORM_ID] != 'Illumina_MiSeq':
                     self.provenance.append(row)
         if len(self.provenance)==0:
@@ -78,17 +87,16 @@ class provenance_reader(logger):
             self.normal_id = None
         else:
             self.logger.info("Found %d provenance records" % len(self.provenance))
-            # find relevant attributes from provenance
-            # start by finding sample_name/attributes and removing duplicates
-            provenance_subset = set()
+            distinct_records = set()
             for row in self.provenance:
                 columns = (
                     row[index.SAMPLE_NAME],
                     row[index.PARENT_SAMPLE_ATTRIBUTES]
                 )
-                provenance_subset.add(columns)
+                distinct_records.add(columns)
             # parse the 'parent sample attributes' value and get a list of dictionaries
-            self.attributes = [self._parse_row_attributes(row) for row in provenance_subset]
+            self.attributes = [self._parse_row_attributes(row) for row in distinct_records]
+            self._validate_sample_names(samples)
             self.patient_id = self._id_patient()
             self.tumour_id = self._id_tumour()
             self.normal_id = self._id_normal()
@@ -243,6 +251,55 @@ class provenance_reader(logger):
         self.logger.debug("Found row attributes: {0}".format(attrs))
         return attrs
 
+    def _validate_sample_names(self, sample_inputs):
+        # find sample names in FPR and check against the inputs dictionary (if any)
+        # Firstly, check provenance has exactly one sample for WG/N, WG/T and zero or one for WT/T
+        fpr_samples = {key: set() for key in [self.WG_N, self.WG_T, self.WT_T]}
+        for row in self.attributes:
+            if row.get(self.GEO_TISSUE_TYPE_ID)=='R':
+                fpr_samples[self.WG_N].add(row.get(self.SAMPLE_NAME_KEY))
+            elif row.get(self.GEO_LIBRARY_SOURCE_TEMPLATE_TYPE)=='WG':
+                fpr_samples[self.WG_T].add(row.get(self.SAMPLE_NAME_KEY))
+            else:
+                fpr_samples[self.WT_T].add(row.get(self.SAMPLE_NAME_KEY))
+        unique_fpr_samples = {}
+        for key in fpr_samples.keys():
+            sample_names = fpr_samples.get(key)
+            if len(sample_names)==0:
+                msg = "No {0} sample name found in provenance".format(key)
+                if key==self.WT_T:
+                    self.logger.debug(msg)
+                    self.logger.debug("Requisition assumed to be whole-genome-only; proceeding")
+                    unique_fpr_samples[key] = None
+                else:
+                    self.logger.error(msg)
+                    self.logger.debug("{0} sample is required; exiting".format(key))
+                    raise MissingProvenanceError(msg)
+            elif len(sample_names)>1:
+                msg = "Multiple {0} sample names found in provenance; ".format(key)+\
+                      "candidates are {0}. ".format(sample_names)+\
+                      "Setting INI sample name parameters may exclude unwanted values."
+                self.logger.error(msg)
+                raise ProvenanceConflictError(msg)
+            else:
+                val = fpr_samples[key].pop()
+                self.logger.debug("Found {0} sample name from provenance: {1}".format(key, val))
+                unique_fpr_samples[key] = val
+        self.logger.info("Consistency check for sample names in file provenance: OK")
+        # Secondly, check against the input dictionary (if any)
+        if sample_inputs==None:
+            self.logger.info("No user-supplied sample names; omitting check against file provenance")
+        else:
+            for key in sample_inputs.keys():
+                # WT sample name in inputs may be None
+                if unique_fpr_samples[key] != sample_inputs[key]:
+                    msg = "Conflict between {0} sample names: ".format(key)+\
+                          "Supplied value = {0}; ".format(sample_inputs[key])+\
+                          "Value inferred from file provenance = {0}".format(unique_fpr_samples[key])
+                    self.logger.error(msg)
+                    raise ProvenanceConflictError(msg)
+            self.logger.info("Consistency check between supplied and inferred sample names: OK")
+
     def find_identifiers(self):
         """
         Find the tumour/normal/patient identifiers from file provenance
@@ -307,6 +364,8 @@ class provenance_reader(logger):
         suffix = '('+self.root_sample_name+'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bai$'
         return self._parse_default(self.WF_STAR, 'application/bam-index', suffix)
 
+class ProvenanceConflictError(Exception):
+    pass
 
 class MissingProvenanceError(Exception):
     pass
