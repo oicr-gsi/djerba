@@ -15,7 +15,7 @@ class provenance_reader(logger):
     SAMPLE_NAME_KEY = 'sample_name'
     WG_N = 'whole_genome_normal'
     WG_T = 'whole_genome_tumour'
-    WT = 'whole_transcriptome_tumour'
+    WT_T = 'whole_transcriptome_tumour'
 
     # parent sample attribute keys
     GEO_EXTERNAL_NAME = 'geo_external_name'
