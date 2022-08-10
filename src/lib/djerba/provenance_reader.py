@@ -13,6 +13,9 @@ class provenance_reader(logger):
 
     # internal dictionary keys
     SAMPLE_NAME_KEY = 'sample_name'
+    WG_N = 'WG_N'
+    WG_T = 'WG_T'
+    WT = 'WT'
 
     # parent sample attribute keys
     GEO_EXTERNAL_NAME = 'geo_external_name'
@@ -21,28 +24,47 @@ class provenance_reader(logger):
     GEO_TISSUE_TYPE_ID = 'geo_tissue_type'
     GEO_TUBE_ID = 'geo_tube_id'
 
+    # relevant workflow names
+    WF_ARRIBA = 'arriba'
+    WF_BMPP = 'bamMergePreprocessing'
+    WF_DELLY = 'delly'
+    WF_MAVIS = 'mavis'
+    WF_RSEM = 'rsem'
+    WF_SEQUENZA = 'sequenza'
+    WF_STAR = 'STAR'
+    WF_STARFUSION = 'starFusion'
+    WF_VEP = 'variantEffectPredictor'
+    REQUIRED_WORKFLOWS = [ # excludes mavis
+        WF_ARRIBA,
+        WF_BMPP,
+        WF_DELLY,
+        WF_RSEM,
+        WF_STAR,
+        WF_VEP
+    ]
+
     # TODO introduce a concept of 'sample name' (not just 'root sample name')
     # allow user to specify sample names for WG/T, WG/N, WT
     # use to disambiguate multiple samples from the same donor (eg. at different times)
     # sanity checks on FPR results; if not OK, die with an informative error
 
-    def __init__(self, provenance_path, study, donor,
-                 wgn_sample=None, wgt_sample=None, wt_sample=None,
+    # optionally, specify a samples dictionary
+
+    def __init__(self, provenance_path, study, donor, samples={},
                  log_level=logging.WARNING, log_path=None):
         # get provenance for the study and donor
         # if this proves to be too slow, can preprocess the file using zgrep
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.logger.info("Reading provenance for study '%s' and donor '%s' " % (study, donor))
         self.root_sample_name = donor
-        self.wgn_sample = wgn_sample
-        self.wgt_sample = wgt_sample
-        self.wt_sample = wt_sample
+        self.samples = samples
         self.provenance = []
         with gzip.open(provenance_path, 'rt') as infile:
             reader = csv.reader(infile, delimiter="\t")
             for row in reader:
                 if row[index.STUDY_TITLE] == study and \
                    row[index.ROOT_SAMPLE_NAME] == self.root_sample_name and \
+                   (len(self.samples)==0 or row[index.SAMPLE_NAME] in self.samples) and \
                    row[index.SEQUENCER_RUN_PLATFORM_ID] != 'Illumina_MiSeq':
                     self.provenance.append(row)
         if len(self.provenance)==0:
@@ -234,56 +256,56 @@ class provenance_reader(logger):
         return identifiers
 
     def parse_arriba_path(self):
-        return self._parse_default('arriba', 'application/octet-stream', '\.fusions\.tsv$')
+        return self._parse_default(self.WF_ARRIBA, 'application/octet-stream', '\.fusions\.tsv$')
 
     def parse_delly_path(self):
-        return self._parse_default('delly', 'application/vcf-gz', 'somatic_filtered\.delly\.merged\.vcf\.gz$')
+        return self._parse_default(self.WF_DELLY, 'application/vcf-gz', 'somatic_filtered\.delly\.merged\.vcf\.gz$')
 
     def parse_gep_path(self):
-        return self._parse_default('rsem', 'application/octet-stream', '\.genes\.results$')
+        return self._parse_default(self.WF_RSEM, 'application/octet-stream', '\.genes\.results$')
 
     def parse_maf_path(self):
         suffix = 'filter\.deduped\.realigned\.recalibrated\.mutect2\.filtered\.maf\.gz$'
-        return self._parse_default('variantEffectPredictor', 'application/txt-gz', suffix)
+        return self._parse_default(self.WF_VEP, 'application/txt-gz', suffix)
 
     def parse_mavis_path(self):
-        return self._parse_default('mavis', 'application/zip-report-bundle', '(mavis-output|summary)\.zip$')
+        return self._parse_default(self.WF_MAVIS, 'application/zip-report-bundle', '(mavis-output|summary)\.zip$')
 
     def parse_sequenza_path(self):
-        return self._parse_default('sequenza', 'application/zip-report-bundle', '_results\.zip$')
+        return self._parse_default(self.WF_SEQUENZA, 'application/zip-report-bundle', '_results\.zip$')
 
     def parse_starfusion_predictions_path(self):
-        return self._parse_default('starFusion', 'application/octet-stream', 'star-fusion\.fusion_predictions\.tsv$')
+        return self._parse_default(self.WF_STARFUSION, 'application/octet-stream', 'star-fusion\.fusion_predictions\.tsv$')
 
     def parse_wg_bam_path(self):
         suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bam$'.format(self.tumour_id)
-        return self._parse_default('bamMergePreprocessing', 'application/bam', suffix)
+        return self._parse_default(self.WF_BMPP, 'application/bam', suffix)
 
     def parse_wg_bam_ref_path(self):
         # find the reference (normal) BAM
         suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bam$'.format(self.normal_id)
-        return self._parse_default('bamMergePreprocessing', 'application/bam', suffix)
+        return self._parse_default(self.WF_BMPP, 'application/bam', suffix)
 
     def parse_wg_index_path(self):
         suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bai$'.format(self.tumour_id)
-        return self._parse_default('bamMergePreprocessing', 'application/bam-index', suffix)
+        return self._parse_default(self.WF_BMPP, 'application/bam-index', suffix)
 
     def parse_wg_index_ref_path(self):
         # find the reference (normal) BAM index
         suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bai$'.format(self.normal_id)
-        return self._parse_default('bamMergePreprocessing', 'application/bam-index', suffix)
+        return self._parse_default(self.WF_BMPP, 'application/bam-index', suffix)
 
     ### WT assay produces only 1 bam file; no need to consider tumour vs. reference
 
     def parse_wt_bam_path(self):
         # matches *Aligned.sortedByCoord.out.bam if *not* preceded by an index of the form ACGTACGT
         suffix = '('+self.root_sample_name+'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bam$'
-        return self._parse_default('STAR', 'application/bam', suffix)
+        return self._parse_default(self.WF_STAR, 'application/bam', suffix)
 
     def parse_wt_index_path(self):
         # matches *Aligned.sortedByCoord.out.bam if *not* preceded by an index of the form ACGTACGT
         suffix = '('+self.root_sample_name+'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bai$'
-        return self._parse_default('STAR', 'application/bam-index', suffix)
+        return self._parse_default(self.WF_STAR, 'application/bam-index', suffix)
 
 
 class MissingProvenanceError(Exception):

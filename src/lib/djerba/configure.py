@@ -45,7 +45,8 @@ class configurer(logger):
         provenance = self.config[ini.SETTINGS][ini.PROVENANCE]
         study = self.config[ini.INPUTS][ini.STUDY_ID]
         donor = self.config[ini.INPUTS][ini.PATIENT]
-        self.reader = provenance_reader(provenance, study, donor, log_level, log_path)
+        self.reader = provenance_reader(provenance, study, donor,
+                                        log_level=log_level, log_path=log_path)
 
     def find_data_files(self):
         data_files = {}
