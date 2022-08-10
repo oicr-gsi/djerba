@@ -44,7 +44,7 @@ class provenance_reader(logger):
         WF_VEP
     ]
 
-    # TODO introduce a concept of 'sample name' (not just 'root sample name')
+    # Includes a concept of 'sample name' (not just 'root sample name')
     # allow user to specify sample names for WG/T, WG/N, WT
     # use to disambiguate multiple samples from the same donor (eg. at different times)
     # sanity checks on FPR results; if not OK, die with an informative error
@@ -56,12 +56,10 @@ class provenance_reader(logger):
     # otherwise, populate the sample names from provenance (and return to configurer for INI)
 
     # if conflicting sample names (eg. for different tumour/normal IDs), should fail as it cannot find a unique tumour ID
-    # give a more informative error message in this case?
+    # give a more informative error message in this case
 
     def __init__(self, provenance_path, study, donor, samples=None,
                  log_level=logging.WARNING, log_path=None):
-        # get provenance for the study and donor
-        # if this proves to be too slow, can preprocess the file using zgrep
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.logger.info("Reading provenance for study '%s' and donor '%s' " % (study, donor))
         self.root_sample_name = donor
@@ -96,7 +94,7 @@ class provenance_reader(logger):
                 distinct_records.add(columns)
             # parse the 'parent sample attributes' value and get a list of dictionaries
             self.attributes = [self._parse_row_attributes(row) for row in distinct_records]
-            self._validate_sample_names(samples)
+            self._validate_and_set_sample_names(samples)
             self.patient_id = self._id_patient()
             self.tumour_id = self._id_tumour()
             self.normal_id = self._id_normal()
@@ -158,8 +156,8 @@ class provenance_reader(logger):
         elif len(value_set)==1:
             value = list(value_set).pop()
         else:
-            msg = "Value for '{0}' with reference={1} is not unique: Found {2}".format(key, reference, value_set)
-            self.logger.debug(msg)
+            msg = "Value for '{0}' with reference={1} is not unique: Found {2}. ".format(key, reference, value_set)
+            self.logger.warning(msg)
             value = None
         return value
 
@@ -213,7 +211,8 @@ class provenance_reader(logger):
             self.logger.warning(msg)
             chosen_id = constructed_id
         else:
-            msg = "Unable to construct tumour/normal ID for patient ID '{0}'; specify manually in INI file".format(patient_id)
+            msg = "Unable to construct tumour/normal ID for patient ID '{0}'; "+\
+                  "specifying sample names in INI file may resolve the issue.".format(patient_id)
             self.logger.error(msg)
             raise RuntimeError(msg)
         return chosen_id
@@ -251,7 +250,7 @@ class provenance_reader(logger):
         self.logger.debug("Found row attributes: {0}".format(attrs))
         return attrs
 
-    def _validate_sample_names(self, sample_inputs):
+    def _validate_and_set_sample_names(self, sample_inputs):
         # find sample names in FPR and check against the inputs dictionary (if any)
         # Firstly, check provenance has exactly one sample for WG/N, WG/T and zero or one for WT/T
         fpr_samples = {key: set() for key in [self.WG_N, self.WG_T, self.WT_T]}
@@ -290,7 +289,7 @@ class provenance_reader(logger):
         if sample_inputs==None:
             self.logger.info("No user-supplied sample names; omitting check against file provenance")
         else:
-            for key in sample_inputs.keys():
+            for key in [self.WG_N, self.WG_T, self.WT_T]:
                 # WT sample name in inputs may be None
                 if unique_fpr_samples[key] != sample_inputs[key]:
                     msg = "Conflict between {0} sample names: ".format(key)+\
@@ -299,18 +298,34 @@ class provenance_reader(logger):
                     self.logger.error(msg)
                     raise ProvenanceConflictError(msg)
             self.logger.info("Consistency check between supplied and inferred sample names: OK")
+        # Finally, set relevant instance variables
+        self.sample_name_wg_n = unique_fpr_samples.get(self.WG_N)
+        self.sample_name_wg_t = unique_fpr_samples.get(self.WG_T)
+        self.sample_name_wt_t = unique_fpr_samples.get(self.WT_T)
 
-    def find_identifiers(self):
+    def get_identifiers(self):
         """
-        Find the tumour/normal/patient identifiers from file provenance
+        Get the tumour/normal/patient identifiers, for configuration updates
         """
         identifiers = {
             ini.TUMOUR_ID: self.tumour_id,
             ini.NORMAL_ID: self.normal_id,
             ini.PATIENT_ID: self.patient_id
         }
-        self.logger.debug("Found identifiers: {0}".format(identifiers))
+        self.logger.debug("Got identifiers: {0}".format(identifiers))
         return identifiers
+
+    def get_sample_names(self):
+        """
+        Get the validated sample names, for configuration updates
+        """
+        names = {
+            ini.SAMPLE_NAME_WG_N: self.sample_name_wg_n,
+            ini.SAMPLE_NAME_WG_T: self.sample_name_wg_t,
+            ini.SAMPLE_NAME_WT_T: self.sample_name_wt_t
+        }
+        self.logger.debug("Got sample names: {0}".format(names))
+        return names
 
     def parse_arriba_path(self):
         return self._parse_default(self.WF_ARRIBA, 'application/octet-stream', '\.fusions\.tsv$')

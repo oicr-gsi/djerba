@@ -144,16 +144,16 @@ class TestConfigure(TestBase):
         self.assertEqual(lines, expected_lines) # unlike archive, configParser puts a blank line at the end of the file
 
     def test_default(self):
-        self.run_config_test(self.config_user, False, False, 52)
+        self.run_config_test(self.config_user, False, False, 55)
 
     def test_default_fail(self):
-        self.run_config_test(self.config_user_failed, False, True, 42)
+        self.run_config_test(self.config_user_failed, False, True, 45)
 
     def test_wgs_only(self):
-        self.run_config_test(self.config_user_wgs_only, True, False, 50)
+        self.run_config_test(self.config_user_wgs_only, True, False, 53)
 
     def test_wgs_only_fail(self):
-        self.run_config_test(self.config_user_wgs_only_failed, True, True, 42)
+        self.run_config_test(self.config_user_wgs_only_failed, True, True, 45)
 
 
 class TestCutoffFinder(TestBase):

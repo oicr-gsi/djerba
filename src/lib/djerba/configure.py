@@ -4,11 +4,11 @@ import logging
 import os
 from math import log2
 
-from djerba.provenance_reader import provenance_reader
 from djerba.sequenza import sequenza_reader, SequenzaError
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 from djerba.util.logger import logger
+from djerba.util.provenance_reader import provenance_reader
 from djerba.util.validator import path_validator
 
 class configurer(logger):
@@ -80,7 +80,8 @@ class configurer(logger):
             if not self.wgs_only:
                 updates[ini.MAVIS_FILE] = self.reader.parse_mavis_path()
                 updates[ini.GEP_FILE] = self.reader.parse_gep_path()
-        updates.update(self.reader.find_identifiers())
+        updates.update(self.reader.get_identifiers())
+        updates.update(self.reader.get_sample_names())
         updates.update(self.find_data_files())
         return updates
 
