@@ -19,7 +19,6 @@ class configurer(logger):
     """
 
     # data filenames
-    # mutationcode and filterflagexc are obsolete; included in r_script_wrapper.py
     ENSCON_NAME = 'ensemble_conversion_hg38.txt'
     ENTCON_NAME = 'entrez_conversion.txt'
     GENEBED_NAME = 'gencode_v33_hg38_genes.bed'
@@ -45,8 +44,30 @@ class configurer(logger):
         provenance = self.config[ini.SETTINGS][ini.PROVENANCE]
         study = self.config[ini.INPUTS][ini.STUDY_ID]
         donor = self.config[ini.INPUTS][ini.PATIENT]
-        self.reader = provenance_reader(provenance, study, donor,
+        samples = self._get_samples()
+        self.reader = provenance_reader(provenance, study, donor, samples,
                                         log_level=log_level, log_path=log_path)
+
+    def _get_samples(self):
+        """
+        Get sample name inputs for provenance reader
+        Either None, or a dictionary with WG T/N and (optionally) WT sample names
+        "Sample name" here is the sample_name column in file provenance (column 14, 1-indexed)
+        """
+        if self.config.has_option(ini.DISCOVERED, ini.SAMPLE_NAME_WG_N) and \
+           self.config.has_option(ini.DISCOVERED, ini.SAMPLE_NAME_WG_T):
+            samples = {
+                ini.SAMPLE_NAME_WG_N: self.config[ini.DISCOVERED][ini.SAMPLE_NAME_WG_N],
+                ini.SAMPLE_NAME_WG_T: self.config[ini.DISCOVERED][ini.SAMPLE_NAME_WG_T]
+            }
+            if self.config.has_option(ini.DISCOVERED, ini.SAMPLE_NAME_WT_T):
+                samples[ini.SAMPLE_NAME_WT_T] = self.config[ini.DISCOVERED][ini.SAMPLE_NAME_WT_T]
+            else:
+                samples[ini.SAMPLE_NAME_WT_T] = None
+        else:
+            samples = None
+        self.logger.debug("Found sample names from INI input: {0}".format(samples))
+        return samples
 
     def find_data_files(self):
         data_files = {}

@@ -32,13 +32,13 @@ class provenance_reader(logger):
     WF_STAR = 'STAR'
     WF_STARFUSION = 'starFusion'
     WF_VEP = 'variantEffectPredictor'
-    REQUIRED_WORKFLOWS = [ # excludes mavis
+    RELEVANT_WORKFLOWS = [ # excludes mavis
         WF_ARRIBA,
         WF_BMPP,
         WF_DELLY,
         WF_RSEM,
         WF_STAR,
-        WF_VEP
+        WF_VEP,
     ]
 
     # Includes a concept of 'sample name' (not just 'root sample name')
@@ -67,6 +67,7 @@ class provenance_reader(logger):
         self.logger.info("Reading provenance for study '%s' and donor '%s' " % (study, donor))
         self.root_sample_name = donor
         self.samples = samples # TODO check samples has correct keys and exactly 0 or 3 values; or convert to a custom class?
+        self.logger.info("User-specified sample names: {0}".format(self.samples))
         self.provenance = []
         # find provenance rows with the required study, root sample, and (if given) sample names
         with gzip.open(provenance_path, 'rt') as infile:
@@ -88,6 +89,7 @@ class provenance_reader(logger):
             self.normal_id = None
         else:
             self.logger.info("Found %d provenance records" % len(self.provenance))
+            self._check_workflows()
             distinct_records = set()
             for row in self.provenance:
                 columns = (
@@ -101,6 +103,29 @@ class provenance_reader(logger):
             self.patient_id = self._id_patient()
             self.tumour_id = self._id_tumour()
             self.normal_id = self._id_normal()
+
+    def _check_workflows(self):
+        # check that provenance has all recommended workflows; warn if not
+        # this only checks if output exists, *not* if it is correct
+        wf_to_check = [ # TODO add Mavis once it is automated
+            self.WF_ARRIBA,
+            self.WF_BMPP,
+            self.WF_DELLY,
+            self.WF_RSEM,
+            self.WF_STAR,
+            self.WF_VEP
+        ]
+        counts = {key: 0 for key in wf_to_check}
+        for row in self.provenance:
+            wf = row[index.WORKFLOW_NAME]
+            if wf in counts:
+                counts[wf] += 1
+        for wf in wf_to_check:
+            if counts[wf]==0:
+                self.logger.warning("No results in file provenance for workflow {0}".format(wf))
+            else:
+                msg = "Found {0} results in file provenance for workflow {1}".format(counts[wf], wf)
+                self.logger.debug(msg)
 
     def _filter_rows(self, index, value, rows=None):
         # find matching provenance rows from a list
@@ -214,8 +239,8 @@ class provenance_reader(logger):
             self.logger.warning(msg)
             chosen_id = constructed_id
         else:
-            msg = "Unable to construct tumour/normal ID for patient ID '{0}'; "+\
-                  "specifying sample names in INI file may resolve the issue.".format(patient_id)
+            msg = "Unable to construct tumour/normal ID for patient ID '{0}'; ".format(patient_id)+\
+                  "specifying sample names in INI file may resolve the issue."
             self.logger.error(msg)
             raise RuntimeError(msg)
         return chosen_id
@@ -268,8 +293,8 @@ class provenance_reader(logger):
         for key in fpr_samples.keys():
             sample_names = fpr_samples.get(key)
             if len(sample_names)==0:
-                msg = "No {0} sample name found in provenance".format(key)
-                if key==self.WT_T:
+                msg = "No {0} found in provenance".format(key)
+                if key==self.wt_t:
                     self.logger.debug(msg)
                     self.logger.debug("Requisition assumed to be whole-genome-only; proceeding")
                     unique_fpr_samples[key] = None
@@ -278,14 +303,14 @@ class provenance_reader(logger):
                     self.logger.debug("{0} sample is required; exiting".format(key))
                     raise MissingProvenanceError(msg)
             elif len(sample_names)>1:
-                msg = "Multiple {0} sample names found in provenance; ".format(key)+\
+                msg = "Multiple {0} values found in provenance; ".format(key)+\
                       "candidates are {0}. ".format(sample_names)+\
                       "Setting INI sample name parameters may exclude unwanted values."
                 self.logger.error(msg)
                 raise ProvenanceConflictError(msg)
             else:
                 val = fpr_samples[key].pop()
-                self.logger.debug("Found {0} sample name from provenance: {1}".format(key, val))
+                self.logger.debug("Found {0} from provenance: {1}".format(key, val))
                 unique_fpr_samples[key] = val
         self.logger.info("Consistency check for sample names in file provenance: OK")
         # Secondly, check against the input dictionary (if any)
