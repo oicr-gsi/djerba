@@ -32,14 +32,6 @@ class provenance_reader(logger):
     WF_STAR = 'STAR'
     WF_STARFUSION = 'starFusion'
     WF_VEP = 'variantEffectPredictor'
-    RELEVANT_WORKFLOWS = [ # excludes mavis
-        WF_ARRIBA,
-        WF_BMPP,
-        WF_DELLY,
-        WF_RSEM,
-        WF_STAR,
-        WF_VEP,
-    ]
 
     # Includes a concept of 'sample name' (not just 'root sample name')
     # allow user to specify sample names for WG/T, WG/N, WT
@@ -55,7 +47,7 @@ class provenance_reader(logger):
     # if conflicting sample names (eg. for different tumour/normal IDs), should fail as it cannot find a unique tumour ID
     # give a more informative error message in this case
 
-    def __init__(self, provenance_path, study, donor, samples=None,
+    def __init__(self, provenance_path, study, donor, samples,
                  log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
         # set some constants for convenience
@@ -66,8 +58,11 @@ class provenance_reader(logger):
         # read and parse file provenance
         self.logger.info("Reading provenance for study '%s' and donor '%s' " % (study, donor))
         self.root_sample_name = donor
-        self.samples = samples # TODO check samples has correct keys and exactly 0 or 3 values; or convert to a custom class?
-        self.logger.info("User-specified sample names: {0}".format(self.samples))
+        if not samples.is_valid():
+            msg = "User-supplied sample names are not valid: {0}. ".format(samples)+\
+                  "Requires {0} and {1} with optional {2}".format(self.wg_n, self.wg_t, self.wt_t)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
         self.provenance = []
         # find provenance rows with the required study, root sample, and (if given) sample names
         with gzip.open(provenance_path, 'rt') as infile:
@@ -75,7 +70,7 @@ class provenance_reader(logger):
             for row in reader:
                 if row[index.STUDY_TITLE] == study and \
                    row[index.ROOT_SAMPLE_NAME] == self.root_sample_name and \
-                   (samples==None or row[index.SAMPLE_NAME] in samples.values()) and \
+                   (samples.name_ok(row[index.SAMPLE_NAME])) and \
                    row[index.SEQUENCER_RUN_PLATFORM_ID] != 'Illumina_MiSeq':
                     self.provenance.append(row)
         if len(self.provenance)==0:
@@ -240,7 +235,7 @@ class provenance_reader(logger):
             chosen_id = constructed_id
         else:
             msg = "Unable to construct tumour/normal ID for patient ID '{0}'; ".format(patient_id)+\
-                  "specifying sample names in INI file may resolve the issue."
+                  "possible missing/incorrect sample name inputs."
             self.logger.error(msg)
             raise RuntimeError(msg)
         return chosen_id
@@ -281,55 +276,48 @@ class provenance_reader(logger):
     def _validate_and_set_sample_names(self, sample_inputs):
         # find sample names in FPR and check against the inputs dictionary (if any)
         # Firstly, check provenance has exactly one sample for WG/N, WG/T and zero or one for WT/T
-        fpr_samples = {key: set() for key in self.sample_name_keys}
+        fpr_samples = sample_name_container()
         for row in self.attributes:
-            if row.get(self.GEO_TISSUE_TYPE_ID)=='R':
-                fpr_samples[self.wg_n].add(row.get(self.SAMPLE_NAME_KEY))
-            elif row.get(self.GEO_LIBRARY_SOURCE_TEMPLATE_TYPE)=='WG':
-                fpr_samples[self.wg_t].add(row.get(self.SAMPLE_NAME_KEY))
-            else:
-                fpr_samples[self.wt_t].add(row.get(self.SAMPLE_NAME_KEY))
-        unique_fpr_samples = {}
-        for key in fpr_samples.keys():
-            sample_names = fpr_samples.get(key)
-            if len(sample_names)==0:
-                msg = "No {0} found in provenance".format(key)
-                if key==self.wt_t:
-                    self.logger.debug(msg)
-                    self.logger.debug("Requisition assumed to be whole-genome-only; proceeding")
-                    unique_fpr_samples[key] = None
+            try:
+                if row.get(self.GEO_TISSUE_TYPE_ID)=='R':
+                    fpr_samples.set_wg_n(row.get(self.SAMPLE_NAME_KEY))
+                elif row.get(self.GEO_LIBRARY_SOURCE_TEMPLATE_TYPE)=='WG':
+                    fpr_samples.set_wg_t(row.get(self.SAMPLE_NAME_KEY))
+                elif row.get(self.GEO_LIBRARY_SOURCE_TEMPLATE_TYPE)=='WT':
+                    fpr_samples.set_wt_t(row.get(self.SAMPLE_NAME_KEY))
                 else:
+                    msg = "Cannot resolve sample type from row attributes: {0}".format(row)
                     self.logger.error(msg)
-                    self.logger.debug("{0} sample is required; exiting".format(key))
-                    raise MissingProvenanceError(msg)
-            elif len(sample_names)>1:
-                msg = "Multiple {0} values found in provenance; ".format(key)+\
-                      "candidates are {0}. ".format(sample_names)+\
-                      "Setting INI sample name parameters may exclude unwanted values."
+                    raise RuntimeError(msg)
+            except SampleNameError as err:
+                msg = "Inconsistent sample names found in file provenance: {0}".format(err)
                 self.logger.error(msg)
-                raise ProvenanceConflictError(msg)
+                raise RuntimeError(msg) from err
+        if not fpr_samples.has_wg_names():
+            msg = "Samples found in file provenance are not sufficient to proceed; requires "+\
+                  "WG_N, WG_T, and optionally WT_T; found {0}. ".format(fpr_samples)
+            if sample_inputs.is_empty():
+                msg += "No restrictions on sample names specified in user input."
             else:
-                val = fpr_samples[key].pop()
-                self.logger.debug("Found {0} from provenance: {1}".format(key, val))
-                unique_fpr_samples[key] = val
+                msg += "Permitted sample names from user input: {0}".format(sample_inputs)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
         self.logger.info("Consistency check for sample names in file provenance: OK")
         # Secondly, check against the input dictionary (if any)
-        if sample_inputs==None:
-            self.logger.info("No user-supplied sample names; omitting check against file provenance")
-        else:
-            for key in self.sample_name_keys:
-                # WT sample name in inputs may be None
-                if unique_fpr_samples[key] != sample_inputs[key]:
-                    msg = "Conflict between {0} sample names: ".format(key)+\
-                          "Supplied value = {0}; ".format(sample_inputs[key])+\
-                          "Value inferred from file provenance = {0}".format(unique_fpr_samples[key])
-                    self.logger.error(msg)
-                    raise ProvenanceConflictError(msg)
+        if sample_inputs.is_empty():
+            self.logger.info("No user-supplied sample names; omitting check")
+        elif sample_inputs.is_equal(fpr_samples):
             self.logger.info("Consistency check between supplied and inferred sample names: OK")
+        else:
+            msg = "Conflicting sample names: {0} from file provenance, ".format(fpr_samples)+\
+                  "{1} from user input. ".format(sample_inputs)+\
+                  "If INI config has user-supplied sample names, check they are correct."
+            self.logger.error(msg)
+            raise RuntimeError(msg)
         # Finally, set relevant instance variables
-        self.sample_name_wg_n = unique_fpr_samples.get(self.wg_n)
-        self.sample_name_wg_t = unique_fpr_samples.get(self.wg_t)
-        self.sample_name_wt_t = unique_fpr_samples.get(self.wt_t)
+        self.sample_name_wg_n = fpr_samples.get(self.wg_n)
+        self.sample_name_wg_t = fpr_samples.get(self.wg_t)
+        self.sample_name_wt_t = fpr_samples.get(self.wt_t)
 
     def get_identifiers(self):
         """
@@ -407,7 +395,60 @@ class provenance_reader(logger):
         suffix = '('+self.root_sample_name+'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bai$'
         return self._parse_default(self.WF_STAR, 'application/bam-index', suffix)
 
-class ProvenanceConflictError(Exception):
+class sample_name_container:
+    """
+    Wrapper for a dictionary of sample names
+    Contains extra validation and convenience methods
+    """
+
+    def __init__(self):
+        self.samples = {
+            ini.SAMPLE_NAME_WG_N: None,
+            ini.SAMPLE_NAME_WG_T: None,
+            ini.SAMPLE_NAME_WT_T: None
+        }
+
+    def __str__(self):
+        return "{0}".format(self.samples)
+
+    def _set_value(self, key, value):
+        if self.samples[key]==None or self.samples[key]==value:
+            self.samples[key] = value
+        else:
+            msg = "Cannot overwrite existing {0} value {1} ".format(key, self.samples[key])+\
+                  "with new value {1}".format(value)
+            raise SampleNameError(msg)
+
+    def get(self, key):
+        return self.samples[key]
+
+    def is_equal(self, other):
+        return all([self.get(key)==other.get(key) for key in self.samples.keys()])
+
+    def is_empty(self):
+        return all([x==None for x in self.samples.values()])
+
+    def has_wg_names(self):
+        # a ready container has WG tumour and normal sample names; WT sample name is optional
+        return self.samples[ini.SAMPLE_NAME_WG_N]!=None and self.samples[ini.SAMPLE_NAME_WG_T]!=None
+
+    def is_valid(self):
+        # is the container in a valid state?
+        return self.is_empty() or self.has_wg_names()
+
+    def name_ok(self, name):
+        return self.is_empty() or name in self.samples.values()
+
+    def set_wg_n(self, value):
+        self._set_value(ini.SAMPLE_NAME_WG_N, value)
+
+    def set_wg_t(self, value):
+        self._set_value(ini.SAMPLE_NAME_WG_T, value)
+
+    def set_wt_t(self, value):
+        self._set_value(ini.SAMPLE_NAME_WT_T, value)
+
+class SampleNameError(Exception):
     pass
 
 class MissingProvenanceError(Exception):
