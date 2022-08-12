@@ -25,6 +25,7 @@ from djerba.mavis import mavis_runner
 from djerba.render.archiver import archiver
 from djerba.render.render import html_renderer, pdf_renderer
 from djerba.sequenza import sequenza_reader, SequenzaError
+from djerba.util.provenance_reader import InsufficientSampleNamesError, UnknownTumorNormalIDError
 from djerba.util.validator import config_validator, DjerbaConfigError
 
 class TestBase(unittest.TestCase):
@@ -62,6 +63,7 @@ class TestBase(unittest.TestCase):
         elif not os.path.isdir(self.bench_dir):
             raise OSError("GSICAPBENCH directory path '{0}' is not a directory".format(self.bench_dir))
         self.provenance = os.path.join(self.sup_dir, 'pass01_panx_provenance.original.tsv.gz')
+        self.provenance_vnwgts = os.path.join(self.sup_dir, 'provenance_VNWGTS_0329.tsv.gz')
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
         self.bed_path = os.path.join(self.sup_dir, 'S31285117_Regions.bed')
@@ -74,6 +76,9 @@ class TestBase(unittest.TestCase):
             self.config_user,
             self.config_user_wgs_only,
             self.config_user_failed,
+            self.config_user_vnwgts,
+            self.config_user_vnwgts_broken_1,
+            self.config_user_vnwgts_broken_2,
             self.config_user_wgs_only_failed,
             self.config_full,
             self.config_full_wgs_only,
@@ -98,6 +103,9 @@ class TestBase(unittest.TestCase):
                 'config_user.ini',
                 'config_user_wgs_only.ini',
                 'config_user_failed.ini',
+                'config_user_vnwgts.ini',
+                'config_user_vnwgts_broken_1.ini',
+                'config_user_vnwgts_broken_2.ini',
                 'config_user_wgs_only_failed.ini',
                 'config_full.ini',
                 'config_full_wgs_only.ini',
@@ -128,11 +136,11 @@ class TestArchive(TestBase):
 
 class TestConfigure(TestBase):
 
-    def run_config_test(self, user_config, wgs_only, failed, expected_lines):
+    def run_config_test(self, user_config, wgs_only, failed, expected_lines, provenance):
         config = configparser.ConfigParser()
         config.read(self.default_ini)
         config.read(user_config)
-        config['settings']['provenance'] = self.provenance
+        config['settings']['provenance'] = provenance
         test_configurer = configurer(config, wgs_only, failed)
         out_dir = self.tmp_dir
         out_path = os.path.join(out_dir, 'config_test_output.ini')
@@ -143,18 +151,38 @@ class TestConfigure(TestBase):
             lines = len(out_file.readlines())
         self.assertEqual(lines, expected_lines) # unlike archive, configParser puts a blank line at the end of the file
 
+    def run_config_broken(self, user_config, provenance):
+        # no assertions; run is intended to fail
+        config = configparser.ConfigParser()
+        config.read(self.default_ini)
+        config.read(user_config)
+        config['settings']['provenance'] = provenance
+        test_configurer = configurer(config, wgs_only=False, failed=False, log_level=logging.CRITICAL)
+        out_dir = self.tmp_dir
+        out_path = os.path.join(out_dir, 'config_test_output.ini')
+        test_configurer.run(out_path)
+
     def test_default(self):
-        self.run_config_test(self.config_user, False, False, 55)
+        self.run_config_test(self.config_user, False, False, 55, self.provenance)
 
     def test_default_fail(self):
-        self.run_config_test(self.config_user_failed, False, True, 45)
+        self.run_config_test(self.config_user_failed, False, True, 45, self.provenance)
 
     def test_wgs_only(self):
-        self.run_config_test(self.config_user_wgs_only, True, False, 53)
+        self.run_config_test(self.config_user_wgs_only, True, False, 53, self.provenance)
 
     def test_wgs_only_fail(self):
-        self.run_config_test(self.config_user_wgs_only_failed, True, True, 45)
+        self.run_config_test(self.config_user_wgs_only_failed, True, True, 45, self.provenance)
 
+    def test_vnwgts(self):
+        self.run_config_test(self.config_user_vnwgts, False, False, 55, self.provenance_vnwgts)
+
+    def test_vnwgts_broken(self):
+        # test failure modes of sample input
+        with self.assertRaises(InsufficientSampleNamesError):
+            self.run_config_broken(self.config_user_vnwgts_broken_1, self.provenance_vnwgts)
+        with self.assertRaises(UnknownTumorNormalIDError):
+            self.run_config_broken(self.config_user_vnwgts_broken_2, self.provenance_vnwgts)
 
 class TestCutoffFinder(TestBase):
 

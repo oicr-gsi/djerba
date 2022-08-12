@@ -237,7 +237,7 @@ class provenance_reader(logger):
             msg = "Unable to construct tumour/normal ID for patient ID '{0}'; ".format(patient_id)+\
                   "possible missing/incorrect sample name inputs."
             self.logger.error(msg)
-            raise RuntimeError(msg)
+            raise UnknownTumorNormalIDError(msg)
         return chosen_id
 
     def _parse_default(self, workflow, metatype, pattern):
@@ -288,8 +288,8 @@ class provenance_reader(logger):
                 else:
                     msg = "Cannot resolve sample type from row attributes: {0}".format(row)
                     self.logger.error(msg)
-                    raise RuntimeError(msg)
-            except SampleNameError as err:
+                    raise SampleUnknownTypeError(msg)
+            except SampleNameOverwriteError as err:
                 msg = "Inconsistent sample names found in file provenance: {0}".format(err)
                 self.logger.error(msg)
                 raise RuntimeError(msg) from err
@@ -301,7 +301,7 @@ class provenance_reader(logger):
             else:
                 msg += "Permitted sample names from user input: {0}".format(sample_inputs)
             self.logger.error(msg)
-            raise RuntimeError(msg)
+            raise InsufficientSampleNamesError(msg)
         self.logger.info("Consistency check for sample names in file provenance: OK")
         # Secondly, check against the input dictionary (if any)
         if sample_inputs.is_empty():
@@ -313,7 +313,7 @@ class provenance_reader(logger):
                   "{1} from user input. ".format(sample_inputs)+\
                   "If INI config has user-supplied sample names, check they are correct."
             self.logger.error(msg)
-            raise RuntimeError(msg)
+            raise SampleNameConflictError(msg)
         # Finally, set relevant instance variables
         self.sample_name_wg_n = fpr_samples.get(self.wg_n)
         self.sample_name_wg_t = fpr_samples.get(self.wg_t)
@@ -417,7 +417,7 @@ class sample_name_container:
         else:
             msg = "Cannot overwrite existing {0} value {1} ".format(key, self.samples[key])+\
                   "with new value {1}".format(value)
-            raise SampleNameError(msg)
+            raise SampleNameOverwriteError(msg)
 
     def get(self, key):
         return self.samples[key]
@@ -448,8 +448,20 @@ class sample_name_container:
     def set_wt_t(self, value):
         self._set_value(ini.SAMPLE_NAME_WT_T, value)
 
-class SampleNameError(Exception):
+class InsufficientSampleNamesError(Exception):
     pass
 
 class MissingProvenanceError(Exception):
+    pass
+
+class SampleNameConflictError(Exception):
+    pass
+
+class SampleNameOverwriteError(Exception):
+    pass
+
+class SampleUnknownTypeError(Exception):
+    pass
+
+class UnknownTumorNormalIDError(Exception):
     pass
