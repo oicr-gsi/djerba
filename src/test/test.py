@@ -427,6 +427,10 @@ class TestMavis(TestBase):
             self.work_dir = work_dir
             self.donor = donor
             self.study = study
+            # sample names
+            self.wgn = None
+            self.wgt = None
+            self.wtt = None
             # logging
             self.log_path = None
             self.debug = False

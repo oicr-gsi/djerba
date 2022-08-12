@@ -8,9 +8,9 @@ from configparser import ConfigParser
 from shutil import copyfile, which
 
 import djerba.util.constants as constants
-from djerba.configure import provenance_reader
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
+from djerba.util.provenance_reader import provenance_reader, sample_name_container
 from djerba.util.validator import path_validator
 
 class mavis_runner(logger):
@@ -162,7 +162,19 @@ class mavis_runner(logger):
 
     def find_inputs(self):
         """Find Mavis inputs from file provenance"""
-        reader = provenance_reader(self.provenance_path, self.args.study, self.args.donor, self.log_level, self.log_path)
+        samples = sample_name_container()
+        samples.set_wg_n(self.args.wgn)
+        samples.set_wg_t(self.args.wgt)
+        samples.set_wt_t(self.args.wtt)
+        if not samples.is_valid():
+            msg = "Sample names from CLI are not valid; requires WG/N, WG/T, and optionally WT/T; "+\
+                  " found {0}".format(samples)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        else:
+            self.logger.debug("Found sample names from CLI input: {0}".format(samples))
+        reader = provenance_reader(self.provenance_path, self.args.study, self.args.donor, samples,
+                                   self.log_level, self.log_path)
         inputs = {
             self.WG_BAM: reader.parse_wg_bam_path(), # bamMergePreprocessing
             self.WG_INDEX: reader.parse_wg_index_path(), # bamMergePreprocessing
