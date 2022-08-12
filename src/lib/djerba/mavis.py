@@ -66,13 +66,7 @@ class mavis_runner(logger):
         self.legacy = self.args.legacy
         # validate the command-line arguments
         validator = path_validator(self.log_level, self.log_path)
-        if (args.ready and args.execute):
-            msg = "Cannot specify both --ready and --execute: On the OICR cluster "+\
-                  "--ready requires a compute node to run bcftools, while "+\
-                  "--execute requires a head node with job submission privileges."
-            self.logger.error(msg)
-            raise ValueError(msg)
-        elif args.ready:
+        if args.ready:
             if not (args.donor and args.study):
                 msg = "--ready requires --donor and --study"
                 self.logger.error(msg)
