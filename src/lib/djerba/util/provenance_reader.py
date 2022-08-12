@@ -94,6 +94,8 @@ class provenance_reader(logger):
                 distinct_records.add(columns)
             # parse the 'parent sample attributes' value and get a list of dictionaries
             self.attributes = [self._parse_row_attributes(row) for row in distinct_records]
+            import json
+            self.logger.debug("Found attributes: {0}".format(json.dumps(self.attributes, indent=4, sort_keys=True)))
             self._validate_and_set_sample_names(samples)
             self.patient_id = self._id_patient()
             self.tumour_id = self._id_tumour()
@@ -348,7 +350,7 @@ class provenance_reader(logger):
         self.logger.debug("Got sample names: {0}".format(names))
         return names
 
-    # TODO check the sample name column in file provenance for all file types, not just starfusion
+    # TODO check the sample name column in file provenance for all file types
 
     def parse_arriba_path(self):
         suffix = '{0}\.fusions\.tsv$'.format(self.tumour_id)
@@ -370,8 +372,9 @@ class provenance_reader(logger):
         return self._parse_default(self.WF_MAVIS, 'application/zip-report-bundle', '(mavis-output|summary)\.zip$')
 
     def parse_sequenza_path(self):
-        suffix = '{0}_results\.zip$'.format(self.tumour_id)
-        return self._parse_default(self.WF_SEQUENZA, 'application/zip-report-bundle', suffix)
+        metatype = 'application/zip-report-bundle'
+        suffix = '_results\.zip$'
+        return self._parse_default(self.WF_SEQUENZA, metatype, suffix, self.sample_name_wg_t)
 
     def parse_starfusion_predictions_path(self):
         metatype = 'application/octet-stream'
