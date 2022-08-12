@@ -347,6 +347,10 @@ class TestLister(TestBase):
             self.study = project
             self.provenance = provenance
             self.wgs_only = False
+            # sample names
+            self.wgn = None
+            self.wgt = None
+            self.wtt = None
             # logging
             self.log_path = None
             self.debug = False

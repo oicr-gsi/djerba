@@ -4,7 +4,7 @@ import json
 import os
 import sys
 from configparser import ConfigParser
-from djerba.configure import provenance_reader
+from djerba.util.provenance_reader import provenance_reader, sample_name_container
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
 import djerba.util.ini_fields as ini
@@ -37,7 +37,9 @@ class lister(logger):
         if self.out_path:
             v.validate_output_file(self.out_path)
         self.logger.info("Preparing file provenance reader for study {0}, donor {1}".format(args.study, args.donor))
-        self.provenance_reader = provenance_reader(args.provenance, args.study, args.donor, self.log_level, self.log_path)
+        samples = sample_name_container()
+        samples.set_and_validate(args.wgn, args.wgt, args.wtt)
+        self.provenance_reader = provenance_reader(args.provenance, args.study, args.donor, samples, self.log_level, self.log_path)
         self.logger.info("File provenance reader is ready")
 
     def read_ini_mavis(self):
