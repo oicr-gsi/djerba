@@ -105,7 +105,7 @@ Recommended usage is:
 
 ### Sample name parameters
 
-Each requisition has exactly one _root sample name_, which is supplied in the `patient` INI parameter and corresponds to one or more _sample names_.
+Each donor has exactly one _root sample name_, which is supplied in the `patient` INI parameter and corresponds to one or more _sample names_.
 
 A Djerba report uses:
 - A whole genome normal (reference) sample
@@ -116,7 +116,7 @@ Each sample is identified by a distinct _sample name_.
 
 If Djerba is able to resolve the samples from file provenance without ambiguity, it will do so.
 
-If not, for instance because multiple samples have been taken from the same patient, the sample names must be specified using the various `sample_name_*` parameters in the INI.
+If not, for instance because multiple requisitions and samples correspond to the same patient, the sample names must be specified using the various `sample_name_*` parameters in the INI.
 
 If _any_ sample name parameters are specified, then they must _at least_ include the whole genome tumor and normal names, and _optionally_ the whole transcriptome name.
 
