@@ -439,6 +439,16 @@ class sample_name_container:
     def name_ok(self, name):
         return self.is_empty() or name in self.samples.values()
 
+    def set_and_validate(self, wg_n, wg_t, wt_t):
+        self.set_wg_n(wg_n)
+        self.set_wg_t(wg_t)
+        self.set_wt_t(wt_t)
+        if not self.is_valid():
+            msg = "Failed to configure container for sample names; "+\
+                  "requires WG/N, WG/T, and optionally WT/T; "+\
+                  "found {0}".format(self.samples)
+            raise InvalidConfigurationError(msg)
+
     def set_wg_n(self, value):
         self._set_value(ini.SAMPLE_NAME_WG_N, value)
 
@@ -449,6 +459,9 @@ class sample_name_container:
         self._set_value(ini.SAMPLE_NAME_WT_T, value)
 
 class InsufficientSampleNamesError(Exception):
+    pass
+
+class InvalidConfigurationError(Exception):
     pass
 
 class MissingProvenanceError(Exception):
