@@ -134,6 +134,9 @@ class provenance_reader(logger):
         if rows == None: rows = self.provenance
         return filter(lambda x: re.search(pattern, x[index.FILE_PATH]), rows)
 
+    def _filter_sample_name(self, sample_name, rows=None):
+        return self._filter_rows(index.SAMPLE_NAME, sample_name, rows)
+
     def _filter_workflow(self, workflow, rows=None):
         return self._filter_rows(index.WORKFLOW_NAME, workflow, rows)
 
@@ -240,12 +243,14 @@ class provenance_reader(logger):
             raise UnknownTumorNormalIDError(msg)
         return chosen_id
 
-    def _parse_default(self, workflow, metatype, pattern):
+    def _parse_default(self, workflow, metatype, pattern, sample_name=None):
         # get most recent file of given workflow, metatype, and file path pattern
         # self._filter_* functions return an iterator
         iterrows = self._filter_workflow(workflow)
         iterrows = self._filter_metatype(metatype, iterrows)
-        iterrows = self._filter_pattern(pattern, iterrows) # metatype usually suffices, but double-check
+        iterrows = self._filter_pattern(pattern, iterrows)
+        if sample_name:
+            iterrows = self._filter_sample_name(sample_name, iterrows)
         try:
             row = self._get_most_recent_row(iterrows)
             path = row[index.FILE_PATH]
@@ -343,27 +348,35 @@ class provenance_reader(logger):
         self.logger.debug("Got sample names: {0}".format(names))
         return names
 
+    # TODO check the sample name column in file provenance for all file types, not just starfusion
+
     def parse_arriba_path(self):
-        return self._parse_default(self.WF_ARRIBA, 'application/octet-stream', '\.fusions\.tsv$')
+        suffix = '{0}\.fusions\.tsv$'.format(self.tumour_id)
+        return self._parse_default(self.WF_ARRIBA, 'application/octet-stream', suffix)
 
     def parse_delly_path(self):
-        return self._parse_default(self.WF_DELLY, 'application/vcf-gz', 'somatic_filtered\.delly\.merged\.vcf\.gz$')
+        suffix = '{0}\.somatic_filtered\.delly\.merged\.vcf\.gz$'.format(self.tumour_id)
+        return self._parse_default(self.WF_DELLY, 'application/vcf-gz', suffix)
 
     def parse_gep_path(self):
-        return self._parse_default(self.WF_RSEM, 'application/octet-stream', '\.genes\.results$')
+        suffix = '{0}\.genes\.results$'.format(self.tumour_id)
+        return self._parse_default(self.WF_RSEM, 'application/octet-stream', suffix)
 
     def parse_maf_path(self):
-        suffix = 'filter\.deduped\.realigned\.recalibrated\.mutect2\.filtered\.maf\.gz$'
+        suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.mutect2\.filtered\.maf\.gz$'.format(self.tumour_id)
         return self._parse_default(self.WF_VEP, 'application/txt-gz', suffix)
 
     def parse_mavis_path(self):
         return self._parse_default(self.WF_MAVIS, 'application/zip-report-bundle', '(mavis-output|summary)\.zip$')
 
     def parse_sequenza_path(self):
-        return self._parse_default(self.WF_SEQUENZA, 'application/zip-report-bundle', '_results\.zip$')
+        suffix = '{0}_results\.zip$'.format(self.tumour_id)
+        return self._parse_default(self.WF_SEQUENZA, 'application/zip-report-bundle', suffix)
 
     def parse_starfusion_predictions_path(self):
-        return self._parse_default(self.WF_STARFUSION, 'application/octet-stream', 'star-fusion\.fusion_predictions\.tsv$')
+        metatype = 'application/octet-stream'
+        suffix = 'star-fusion\.fusion_predictions\.tsv$'
+        return self._parse_default(self.WF_STARFUSION, metatype, suffix, self.sample_name_wt_t)
 
     def parse_wg_bam_path(self):
         suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bam$'.format(self.tumour_id)
