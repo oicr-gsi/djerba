@@ -2,6 +2,7 @@
 
 ## Unreleased
 - GCGI-414: Support for multiple requisitions from one donor
+- Move Djerba version text into assay description section
 
 ## v0.3.3: 2022-07-25
 
