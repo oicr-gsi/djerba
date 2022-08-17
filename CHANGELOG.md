@@ -2,6 +2,7 @@
 
 ## Unreleased
 - GCGI-414: Support for multiple requisitions from one donor
+- GCGI-430: Update Mutect2 version to GATK 4.2.6.1
 - Move Djerba version text into assay description section
 
 ## v0.3.3: 2022-07-25
