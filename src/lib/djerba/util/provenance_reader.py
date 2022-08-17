@@ -243,14 +243,13 @@ class provenance_reader(logger):
             raise UnknownTumorNormalIDError(msg)
         return chosen_id
 
-    def _parse_default(self, workflow, metatype, pattern, sample_name=None):
-        # get most recent file of given workflow, metatype, and file path pattern
+    def _parse_default(self, workflow, metatype, pattern, sample_name):
+        # get most recent file of given workflow, metatype, file path pattern, and sample name
         # self._filter_* functions return an iterator
         iterrows = self._filter_workflow(workflow)
         iterrows = self._filter_metatype(metatype, iterrows)
         iterrows = self._filter_pattern(pattern, iterrows)
-        if sample_name:
-            iterrows = self._filter_sample_name(sample_name, iterrows)
+        iterrows = self._filter_sample_name(sample_name, iterrows)
         try:
             row = self._get_most_recent_row(iterrows)
             path = row[index.FILE_PATH]
@@ -351,23 +350,23 @@ class provenance_reader(logger):
     # TODO check the sample name column in file provenance for all file types
 
     def parse_arriba_path(self):
-        suffix = '{0}\.fusions\.tsv$'.format(self.tumour_id)
-        return self._parse_default(self.WF_ARRIBA, 'application/octet-stream', suffix)
+        suffix = '\.fusions\.tsv$'
+        return self._parse_default(self.WF_ARRIBA, 'application/octet-stream', suffix, self.sample_name_wt_t)
 
     def parse_delly_path(self):
-        suffix = '{0}_somatic\.somatic_filtered\.delly\.merged\.vcf\.gz$'.format(self.tumour_id)
-        return self._parse_default(self.WF_DELLY, 'application/vcf-gz', suffix)
+        suffix = '_somatic\.somatic_filtered\.delly\.merged\.vcf\.gz$'
+        return self._parse_default(self.WF_DELLY, 'application/vcf-gz', suffix, self.sample_name_wg_t)
 
     def parse_gep_path(self):
-        suffix = '{0}\.genes\.results$'.format(self.tumour_id)
-        return self._parse_default(self.WF_RSEM, 'application/octet-stream', suffix)
+        suffix = '\.genes\.results$'
+        return self._parse_default(self.WF_RSEM, 'application/octet-stream', suffix, self.sample_name_wt_t)
 
     def parse_maf_path(self):
-        suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.mutect2\.filtered\.maf\.gz$'.format(self.tumour_id)
-        return self._parse_default(self.WF_VEP, 'application/txt-gz', suffix)
+        suffix = '\.filter\.deduped\.realigned\.recalibrated\.mutect2\.filtered\.maf\.gz$'
+        return self._parse_default(self.WF_VEP, 'application/txt-gz', suffix, self.sample_name_wg_t)
 
     def parse_mavis_path(self):
-        return self._parse_default(self.WF_MAVIS, 'application/zip-report-bundle', '(mavis-output|summary)\.zip$')
+        return self._parse_default(self.WF_MAVIS, 'application/zip-report-bundle', '(mavis-output|summary)\.zip$', self.sample_name_wt_t)
 
     def parse_sequenza_path(self):
         metatype = 'application/zip-report-bundle'
@@ -380,34 +379,34 @@ class provenance_reader(logger):
         return self._parse_default(self.WF_STARFUSION, metatype, suffix, self.sample_name_wt_t)
 
     def parse_wg_bam_path(self):
-        suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bam$'.format(self.tumour_id)
-        return self._parse_default(self.WF_BMPP, 'application/bam', suffix)
+        suffix = '\.filter\.deduped\.realigned\.recalibrated\.bam$'
+        return self._parse_default(self.WF_BMPP, 'application/bam', suffix, self.sample_name_wg_t)
 
     def parse_wg_bam_ref_path(self):
         # find the reference (normal) BAM
-        suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bam$'.format(self.normal_id)
-        return self._parse_default(self.WF_BMPP, 'application/bam', suffix)
+        suffix = '\.filter\.deduped\.realigned\.recalibrated\.bam$'
+        return self._parse_default(self.WF_BMPP, 'application/bam', suffix, self.sample_name_wg_n)
 
     def parse_wg_index_path(self):
-        suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bai$'.format(self.tumour_id)
-        return self._parse_default(self.WF_BMPP, 'application/bam-index', suffix)
+        suffix = '\.filter\.deduped\.realigned\.recalibrated\.bai$'
+        return self._parse_default(self.WF_BMPP, 'application/bam-index', suffix, self.sample_name_wg_t)
 
     def parse_wg_index_ref_path(self):
         # find the reference (normal) BAM index
-        suffix = '{0}\.filter\.deduped\.realigned\.recalibrated\.bai$'.format(self.normal_id)
-        return self._parse_default(self.WF_BMPP, 'application/bam-index', suffix)
+        suffix = '\.filter\.deduped\.realigned\.recalibrated\.bai$'
+        return self._parse_default(self.WF_BMPP, 'application/bam-index', suffix, self.sample_name_wg_n)
 
     ### WT assay produces only 1 bam file; no need to consider tumour vs. reference
 
     def parse_wt_bam_path(self):
         # matches *Aligned.sortedByCoord.out.bam if *not* preceded by an index of the form ACGTACGT
         suffix = '('+self.root_sample_name+'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bam$'
-        return self._parse_default(self.WF_STAR, 'application/bam', suffix)
+        return self._parse_default(self.WF_STAR, 'application/bam', suffix, self.sample_name_wt_t)
 
     def parse_wt_index_path(self):
         # matches *Aligned.sortedByCoord.out.bam if *not* preceded by an index of the form ACGTACGT
         suffix = '('+self.root_sample_name+'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bai$'
-        return self._parse_default(self.WF_STAR, 'application/bam-index', suffix)
+        return self._parse_default(self.WF_STAR, 'application/bam-index', suffix, self.sample_name_wt_t)
 
 class sample_name_container:
     """
