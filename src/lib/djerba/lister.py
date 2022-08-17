@@ -100,13 +100,13 @@ class lister(logger):
         for pair in inputs:
             path = pair[1]
             if path==None:
-                self.logger.warn("{0} input path was not found".format(pair[0]))
+                self.logger.warning("{0} input path was not found".format(pair[0]))
                 bad_paths = True
             elif not os.path.exists(path):
-                self.logger.warn("{0} input path '{1}' does not exist".format(pair[0], pair[1]))
+                self.logger.warning("{0} input path '{1}' does not exist".format(pair[0], pair[1]))
                 bad_paths = True
             elif not os.access(path, os.R_OK):
-                self.logger.warn("{0} input path '{1}' is not readable".format(pair[0], pair[1]))
+                self.logger.warning("{0} input path '{1}' is not readable".format(pair[0], pair[1]))
                 bad_paths = True
         self.logger.info("Writing output")
         if self.out_path:
