@@ -94,8 +94,6 @@ class provenance_reader(logger):
                 distinct_records.add(columns)
             # parse the 'parent sample attributes' value and get a list of dictionaries
             self.attributes = [self._parse_row_attributes(row) for row in distinct_records]
-            import json
-            self.logger.debug("Found attributes: {0}".format(json.dumps(self.attributes, indent=4, sort_keys=True)))
             self._validate_and_set_sample_names(samples)
             self.patient_id = self._id_patient()
             self.tumour_id = self._id_tumour()
@@ -357,7 +355,7 @@ class provenance_reader(logger):
         return self._parse_default(self.WF_ARRIBA, 'application/octet-stream', suffix)
 
     def parse_delly_path(self):
-        suffix = '{0}\.somatic_filtered\.delly\.merged\.vcf\.gz$'.format(self.tumour_id)
+        suffix = '{0}_somatic\.somatic_filtered\.delly\.merged\.vcf\.gz$'.format(self.tumour_id)
         return self._parse_default(self.WF_DELLY, 'application/vcf-gz', suffix)
 
     def parse_gep_path(self):
