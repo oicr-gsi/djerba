@@ -8,9 +8,9 @@ from configparser import ConfigParser
 from shutil import copyfile, which
 
 import djerba.util.constants as constants
-from djerba.configure import provenance_reader
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
+from djerba.util.provenance_reader import provenance_reader, sample_name_container, InvalidConfigurationError
 from djerba.util.validator import path_validator
 
 class mavis_runner(logger):
@@ -66,13 +66,7 @@ class mavis_runner(logger):
         self.legacy = self.args.legacy
         # validate the command-line arguments
         validator = path_validator(self.log_level, self.log_path)
-        if (args.ready and args.execute):
-            msg = "Cannot specify both --ready and --execute: On the OICR cluster "+\
-                  "--ready requires a compute node to run bcftools, while "+\
-                  "--execute requires a head node with job submission privileges."
-            self.logger.error(msg)
-            raise ValueError(msg)
-        elif args.ready:
+        if args.ready:
             if not (args.donor and args.study):
                 msg = "--ready requires --donor and --study"
                 self.logger.error(msg)
@@ -168,7 +162,15 @@ class mavis_runner(logger):
 
     def find_inputs(self):
         """Find Mavis inputs from file provenance"""
-        reader = provenance_reader(self.provenance_path, self.args.study, self.args.donor, self.log_level, self.log_path)
+        samples = sample_name_container()
+        try:
+            samples.set_and_validate(self.args.wgn, self.args.wgt, self.args.wtt)
+        except InvalidConfigurationError as err:
+            self.logger.error("Invalid sample names: {0}".format(err))
+            raise
+        self.logger.debug("Found sample names from CLI input: {0}".format(samples))
+        reader = provenance_reader(self.provenance_path, self.args.study, self.args.donor, samples,
+                                   self.log_level, self.log_path)
         inputs = {
             self.WG_BAM: reader.parse_wg_bam_path(), # bamMergePreprocessing
             self.WG_INDEX: reader.parse_wg_index_path(), # bamMergePreprocessing

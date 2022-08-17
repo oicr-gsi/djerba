@@ -24,6 +24,9 @@ def get_parser():
     parser.add_argument('-s', '--study', metavar='STUDY', help='Study ID', required=True)
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose logging')
     parser.add_argument('-w', '--wgs-only', action='store_true', help='WGS-only mode; process only WGS inputs')
+    parser.add_argument('--wgn', metavar='SAMPLE', help='Whole genome normal sample name')
+    parser.add_argument('--wgt', metavar='SAMPLE', help='Whole genome tumour sample name')
+    parser.add_argument('--wtt', metavar='SAMPLE', help='Whole transcriptome sample name')
     return parser
 
 if __name__ == '__main__':

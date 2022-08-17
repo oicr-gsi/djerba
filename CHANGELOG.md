@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-414: Support for multiple requisitions from one donor
+
 ## v0.3.3: 2022-07-25
 
 ### Changed

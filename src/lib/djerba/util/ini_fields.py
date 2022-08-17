@@ -39,6 +39,9 @@ PURITY = 'purity'
 REPORT_VERSION = 'report_version'
 REQ_APPROVED_DATE = 'req_approved_date'
 SAMPLE_ANATOMICAL_SITE = 'sample_anatomical_site'
+SAMPLE_NAME_WG_N = 'sample_name_whole_genome_normal' # whole genome, normal
+SAMPLE_NAME_WG_T = 'sample_name_whole_genome_tumour' # whole genome, tumour
+SAMPLE_NAME_WT_T = 'sample_name_whole_transcriptome' # whole transcriptome, tumour
 SAMPLE_TYPE = 'sample_type'
 SEQUENZA_FILE = 'sequenza_file'
 SEQUENZA_GAMMA = 'sequenza_gamma'
@@ -76,6 +79,9 @@ SCHEMA_DEFAULT = {
         PATIENT_ID,
         PLOIDY,
         PURITY,
+        SAMPLE_NAME_WG_N,
+        SAMPLE_NAME_WG_T,
+        SAMPLE_NAME_WT_T,
         SEQUENZA_GAMMA,
         SEQUENZA_FILE,
         SEQUENZA_SOLUTION,
@@ -129,6 +135,8 @@ SCHEMA_WGS_ONLY = {
         PATIENT_ID,
         PLOIDY,
         PURITY,
+        SAMPLE_NAME_WG_N,
+        SAMPLE_NAME_WG_T,
         SEQUENZA_GAMMA,
         SEQUENZA_FILE,
         SEQUENZA_SOLUTION,

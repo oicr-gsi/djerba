@@ -39,7 +39,7 @@ class benchmarker(logger):
     TEST_DATA = 'test_data' # identifier for test data directory
 
     def __init__(self, args):
-        self.log_level = self.get_log_level(args.debug, args.verbose, args.quiet)
+        self.log_level = self.get_args_log_level(args)
         self.log_path = args.log_path
         self.logger = self.get_logger(self.log_level, __name__, self.log_path)
         self.args = args
@@ -224,6 +224,8 @@ class main_draft_args():
             self.debug = True
         elif log_level == logging.INFO:
             self.verbose = True
+        elif log_level == logging.ERROR:
+            self.quiet = True
         self.log_path = log_path
         self.subparser_name = constants.DRAFT
         self.author = 'Test Author'

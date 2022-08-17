@@ -45,7 +45,7 @@ All required parameters go in the `[inputs]` section. The "Source" column lists 
 | `assay_name`            | req | Full name of the assay, eg. "Whole genome sequencing (WGS) - 80X Tumour, 30X Normal (v1.0)"  |
 | `mean_coverage`            | Dashi | |
 | `oncotree_code`             | req       | [OncoTree](http://oncotree.mskcc.org/#/home) code (case-insensitive), eg. paad |
-| `patient`                | req       | Study name and patient number, eg. PANX_1249 |
+| `patient`                | req       | Study name and patient number, eg. PANX_1249; aka _root sample name_ |
 | `pct_v7_above_80x`            | Dashi | |
 | `report_version`            | user | |
 | `req_approved_date`            | req | Format must be `YYYY/MM/DD` |
@@ -103,6 +103,23 @@ Recommended usage is:
 - Allow Djerba to automatically discover `purity` and `ploidy`, to ensure they are consistent with Sequenza gamma and solution
 - logR cutoffs may be either manually configured or automatically discovered, as decided by the user
 
+### Sample name parameters
+
+Each donor has exactly one _root sample name_, which is supplied in the `patient` INI parameter and corresponds to one or more _sample names_.
+
+A Djerba report uses:
+- A whole genome normal (reference) sample
+- A whole genome tumour sample
+- Optionally, a whole transcriptome sample
+
+Each sample is identified by a distinct _sample name_.
+
+If Djerba is able to resolve the samples from file provenance without ambiguity, it will do so.
+
+If not, for instance because multiple requisitions and samples correspond to the same patient, the sample names must be specified using the various `sample_name_*` parameters in the INI.
+
+If _any_ sample name parameters are specified, then they must _at least_ include the whole genome tumor and normal names, and _optionally_ the whole transcriptome name.
+
 ### Table of optional parameters
 
 | Section        | Name          | Source | Notes                                          |
@@ -127,6 +144,9 @@ Recommended usage is:
 | `[discovered]` | `oncolist`    | `data_dir` | OncoKB listing file                    |
 | `[discovered]` | `oncotree_data`    | `data_dir` | [OncoTree](http://oncotree.mskcc.org/#/home) data file with cancer type and description                    |
 | `[discovered]` | `patientid` | File provenance | Patient ID, eg. 100-PM-013                                 |
+| `[discovered]` | `sample_name_whole_genome_normal` | File provenance | Whole genome normal sample name, eg. PANX_1288_Ly_R_PE_567_WG |
+| `[discovered]` | `sample_name_whole_genome_tumour` | File provenance | Whole genome tumour sample name, eg. PANX_1288_Pm_M_PE_558_WG |
+| `[discovered]` | `sample_name_whole_transcriptome` | File provenance | Whole genome tumour sample name, eg. PANX_1288_Pm_M_PE_314_WT |
 | `[discovered]` | `sequenza_file` | File provenance |Sequenza input file                                 |
 | `[discovered]` | `sequenza_gamma`     | Default computation       | Sequenza gamma parameter  |
 | `[discovered]` | `sequenza_solution`     | Default computation       | Sequenza solution identifier  |

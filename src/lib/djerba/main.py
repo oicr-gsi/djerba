@@ -44,7 +44,7 @@ class main(logger):
         else:
             self.failed = self.args.failed
             self.wgs_only = self.args.wgs_only
-        self.log_level = self.get_log_level(self.args.debug, self.args.verbose, self.args.quiet)
+        self.log_level = self.get_args_log_level(self.args)
         self.log_path = self.args.log_path
         if self.log_path:
             # we are verifying the log path, so don't write output there yet
