@@ -692,6 +692,10 @@ class fusion_reader(composer_base):
         self.old_to_new_delimiter = self.read_fusion_delimiter_map()
         fusion_data = self.read_fusion_data()
         annotations = self.read_annotation_data()
+        # delly results have been removed from fusion data; do the same for annotations
+        for key in [k for k in annotations.keys() if k not in fusion_data]:
+            del annotations[key]
+        # now check the key sets match
         if set(fusion_data.keys()) != set(annotations.keys()):
             msg = "Distinct fusion identifiers and annotations do not match. "+\
                   "Fusion data: {0}; ".format(sorted(list(set(fusion_data.keys()))))+\
@@ -771,13 +775,21 @@ class fusion_reader(composer_base):
         # data file has 1 or 2 lines per fusion (1 if it has an intragenic component, 2 otherwise)
         data_by_fusion = {}
         with open(os.path.join(self.input_dir, self.DATA_FUSIONS_OLD)) as data_file:
+            delly_count = 0
+            total = 0
             for row in csv.DictReader(data_file, delimiter="\t"):
-                # make fusion ID consistent with format in annotated file
-                fusion_id = re.sub('None', 'intragenic', row['Fusion'])
-                if fusion_id in data_by_fusion:
-                    data_by_fusion[fusion_id].append(row)
+                total += 1
+                if row['Method']=='delly':
+                    # omit delly structural variants (which are not fusions, and not yet validated)
+                    delly_count += 1
                 else:
-                    data_by_fusion[fusion_id] = [row,]
+                    # make fusion ID consistent with format in annotated file
+                    fusion_id = re.sub('None', 'intragenic', row['Fusion'])
+                    if fusion_id in data_by_fusion:
+                        data_by_fusion[fusion_id].append(row)
+                    else:
+                        data_by_fusion[fusion_id] = [row,]
+        self.logger.debug("Read {0} rows of fusion input; excluded {1} delly rows".format(total, delly_count))
         return data_by_fusion
 
     def read_fusion_delimiter_map(self):
