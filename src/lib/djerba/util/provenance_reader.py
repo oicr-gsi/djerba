@@ -78,10 +78,7 @@ class provenance_reader(logger):
             msg = "No provenance records found for study '%s' and donor '%s' " % (study, donor) +\
                 "in '%s'" % provenance_path
             self.logger.warning(msg)
-            self.attributes = []
-            self.patient_id = None
-            self.tumour_id = None
-            self.normal_id = None
+            self._set_empty_provenance()
         else:
             self.logger.info("Found %d provenance records" % len(self.provenance))
             self._check_workflows()
@@ -276,6 +273,15 @@ class provenance_reader(logger):
             attrs[pair[0]] = pair[1]
         self.logger.debug("Found row attributes: {0}".format(attrs))
         return attrs
+
+    def _set_empty_provenance(self):
+        self.attributes = []
+        self.patient_id = None
+        self.tumour_id = None
+        self.normal_id = None
+        self.sample_name_wg_n = None
+        self.sample_name_wg_t = None
+        self.sample_name_wt_t = None
 
     def _validate_and_set_sample_names(self, sample_inputs):
         # find sample names in FPR and check against the inputs dictionary (if any)
