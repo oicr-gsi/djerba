@@ -33,19 +33,19 @@ class provenance_reader(logger):
     WF_STARFUSION = 'starFusion'
     WF_VEP = 'variantEffectPredictor'
 
+    # placeholder
+    WT_SAMPLE_NAME_PLACEHOLDER = 'whole_transcriptome_placeholder'
+
     # Includes a concept of 'sample name' (not just 'root sample name')
     # allow user to specify sample names for WG/T, WG/N, WT
     # use to disambiguate multiple samples from the same donor (eg. at different times)
     # sanity checks on FPR results; if not OK, die with an informative error
 
-    # optionally, specify a samples dictionary
-    # samples dictionary must list WGT, WGN sample names
-    # WTT name may be None (for WG-only reports)
-    # if dictionary given, cross check sample names against provenance for consistency
+    # optionally, input a sample_name_container object
+    # if given, cross check input sample names against provenance for consistency
     # otherwise, populate the sample names from provenance (and return to configurer for INI)
 
     # if conflicting sample names (eg. for different tumour/normal IDs), should fail as it cannot find a unique tumour ID
-    # give a more informative error message in this case
 
     def __init__(self, provenance_path, study, donor, samples,
                  log_level=logging.WARNING, log_path=None):
@@ -275,6 +275,9 @@ class provenance_reader(logger):
         return attrs
 
     def _set_empty_provenance(self):
+        # special case for empty file provenance result
+        # - all reader attributes are null/empty
+        # - can proceed if and only if a fully-specified config is input
         self.attributes = []
         self.patient_id = None
         self.tumour_id = None
@@ -327,7 +330,9 @@ class provenance_reader(logger):
         # Finally, set relevant instance variables
         self.sample_name_wg_n = fpr_samples.get(self.wg_n)
         self.sample_name_wg_t = fpr_samples.get(self.wg_t)
-        self.sample_name_wt_t = fpr_samples.get(self.wt_t)
+        # WT sample name is optional for WG-only reports, but must be non-null
+        wt = fpr_samples.get(self.wt_t)
+        self.sample_name_wt_t = wt if wt else self.WT_SAMPLE_NAME_PLACEHOLDER
 
     def get_identifiers(self):
         """
@@ -352,8 +357,6 @@ class provenance_reader(logger):
         }
         self.logger.debug("Got sample names: {0}".format(names))
         return names
-
-    # TODO check the sample name column in file provenance for all file types
 
     def parse_arriba_path(self):
         suffix = '\.fusions\.tsv$'
