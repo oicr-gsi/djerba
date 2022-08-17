@@ -158,11 +158,13 @@ To run the unit tests on a checkout of the Djerba repo:
 #### Contents of Djerba package directory
 
 - Top-level python modules:
+  - `benchmark.py`: Check Djerba results on benchmark input data
   - `configure.py`: Discover additional parameters for the user-supplied INI file
   - `lister.py`: List input paths for the `list_inputs.py` script
   - `main.py`: Main module to run Djerba functions
   - `mavis.py`: Manually run the Mavis workflow
   - `sequenza.py`: Process output from the Sequenza tool
+  - `version.py`: Records the Djerba release version
 - Python subpackages:
   - `extract`: Extract metrics for INI parameters and write as JSON
   - `render`: Render output from JSON to HTML or PDF
