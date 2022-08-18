@@ -146,7 +146,7 @@ If _any_ sample name parameters are specified, then they must _at least_ include
 | `[discovered]` | `patientid` | File provenance | Patient ID, eg. 100-PM-013                                 |
 | `[discovered]` | `sample_name_whole_genome_normal` | File provenance | Whole genome normal sample name, eg. PANX_1288_Ly_R_PE_567_WG |
 | `[discovered]` | `sample_name_whole_genome_tumour` | File provenance | Whole genome tumour sample name, eg. PANX_1288_Pm_M_PE_558_WG |
-| `[discovered]` | `sample_name_whole_transcriptome` | File provenance | Whole genome tumour sample name, eg. PANX_1288_Pm_M_PE_314_WT |
+| `[discovered]` | `sample_name_whole_transcriptome` | File provenance | Whole transcriptome sample name, eg. PANX_1288_Pm_M_PE_314_WT |
 | `[discovered]` | `sequenza_file` | File provenance |Sequenza input file                                 |
 | `[discovered]` | `sequenza_gamma`     | Default computation       | Sequenza gamma parameter  |
 | `[discovered]` | `sequenza_solution`     | Default computation       | Sequenza solution identifier  |
