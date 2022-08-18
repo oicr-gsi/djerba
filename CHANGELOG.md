@@ -1,10 +1,19 @@
 # CHANGELOG
 
-## Unreleased
+## v0.3.4: 2022-08-18
+
+### Added
+
 - GCGI-414: Support for multiple requisitions from one donor
+
+### Changed
+
 - GCGI-430: Update Mutect2 version to GATK 4.2.6.1
-- GCGI-442: Remove delly results from JSON and HTML
 - Move Djerba version text into assay description section
+
+### Fixed
+
+- GCGI-442: Remove delly results from JSON and HTML
 
 ## v0.3.3: 2022-07-25
 
