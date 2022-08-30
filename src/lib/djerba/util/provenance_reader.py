@@ -363,7 +363,7 @@ class provenance_reader(logger):
         return self._parse_default(self.WF_ARRIBA, 'application/octet-stream', suffix, self.sample_name_wt_t)
 
     def parse_delly_path(self):
-        suffix = '_somatic\.somatic_filtered\.delly\.merged\.vcf\.gz$'
+        suffix = '\.somatic_filtered\.delly\.merged\.vcf\.gz$'
         return self._parse_default(self.WF_DELLY, 'application/vcf-gz', suffix, self.sample_name_wg_t)
 
     def parse_gep_path(self):

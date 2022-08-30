@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.3.5: 2022-08-30
+
+### Fixed
+
+- GCGI-449: Fix for `delly` regex in provenance reader
+
 ## v0.3.4: 2022-08-18
 
 ### Added
