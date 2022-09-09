@@ -15,6 +15,9 @@ import djerba.render.constants as rc
 import djerba.util.constants as dc
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
+from djerba.extract.r_script_wrapper import _annotate_maf
+from djerba.extract.r_script_wrapper import write_oncokb_info
+
 from statsmodels.distributions.empirical_distribution import ECDF
 
 class composer_base(logger):
@@ -385,20 +388,13 @@ class clinical_report_json_composer(composer_base):
                     therapies = fusion.get_inv_therapies()
                 if max_level:
                     rows.append(self.treatment_row(genes, alteration, max_level, therapies))
-        #OTHER FDA approved BIOMARKERS
-        if level == self.FDA_APPROVED:
-            other_biomarkers = self.build_other_biomarkers()
-            genes = 'NA (Biomarker)'
-            if other_biomarkers[rc.TMB_CALL] == 'TMB-H':
-                alteration = 'TMB-H'
-                max_level = self.reformat_level_string('LEVEL_1')
-                therapies = 'Pembrolizumab'
-                rows.append(self.treatment_row(genes, alteration, max_level, therapies))
-            if other_biomarkers[rc.MSI_CALL] == 'MSI-H':
-                alteration = 'MSI-H'
-                max_level = self.reformat_level_string('LEVEL_1')
-                therapies = 'Pembrolizumab'
-                rows.append(self.treatment_row(genes, alteration, max_level, therapies))
+        with open(os.path.join(self.input_dir, self.BIOMARKERS_ANNOTATED)) as data_file:
+            for row in csv.DictReader(data_file, delimiter="\t"):
+                gene = 'NA (Biomarker)'
+                alteration = row[self.ALTERATION_UPPER_CASE]
+                [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
+                if max_level:
+                    rows.append(self.treatment_row(gene, alteration, max_level, therapies))
         rows = list(filter(self.oncokb_filter, self.sort_therapy_rows(rows)))
         return rows
 
@@ -602,19 +598,26 @@ class clinical_report_json_composer(composer_base):
     def build_other_biomarkers(self):
         #assemble other biomarkers: TMB > 10 muts/mb, and MSI
         data = {}
+        #write header : HUGO_SYMBOL	SAMPLE_ID	ALTERATION
+        print("HUGO_SYMBOL\SAMPLE_ID\ALTERATION", file=info_file)
         #is TMB > 10muts/mb? 
         data[rc.TMB_PER_MB] = self.build_genomic_landscape_info()[rc.TMB_PER_MB]
         if data[rc.TMB_PER_MB] >= 10:
             data[rc.TMB_CALL] = "TMB-H"
+            #print Other Biomarkers	sample	TMB-H
+            print("Other Biomarkers\tONCOTREE_CODE\tTMB-H", file=info_file)
         elif data[rc.TMB_PER_MB] < 10:
             data[rc.TMB_CALL] = "TMB-L"
         else:
             msg = "TMB not a number"
             self.logger.error(msg)
             raise RuntimeError(msg)
+        #is MSI ?    
         data[rc.MSI] = self.extract_msi()
         if data[rc.MSI] >= 5.0:
             data[rc.MSI_CALL] = "MSI-H"
+             #print Other Biomarkers	sample01	MSI-H
+            print("Other Biomarkers\tONCOTREE_CODE\tMSI-H", file=info_file)
         elif data[rc.MSI] < 5.0 & data[rc.MSI] >= 3.5:
             data[rc.MSI_CALL] = "INCONCLUSIVE"
         elif data[rc.MSI] < 3.5:
@@ -623,6 +626,8 @@ class clinical_report_json_composer(composer_base):
             msg = "MSI not a number"
             self.logger.error(msg)
             raise RuntimeError(msg)
+        oncokb_info = write_oncokb_info(tmp_dir)
+        out_path = _annotate_maf(in_path, out_dir, oncokb_info_path)
         return(data)
         
     def extract_msi(self):
@@ -655,6 +660,7 @@ class clinical_report_json_composer(composer_base):
         data[rc.REPORT_DATE] = None
         if not self.failed:
             # additional data for non-failed reports
+            data[rc.OTHER_BIOMARKERS] = self.build_other_biomarkers()
             data[rc.APPROVED_BIOMARKERS] = self.build_fda_approved_info()
             data[rc.INVESTIGATIONAL_THERAPIES] = self.build_investigational_therapy_info()
             data[rc.GENOMIC_LANDSCAPE_INFO] = self.build_genomic_landscape_info()
@@ -669,7 +675,6 @@ class clinical_report_json_composer(composer_base):
             else:
                 data[rc.STRUCTURAL_VARIANTS_AND_FUSIONS] = None
             data[rc.SUPPLEMENTARY_GENE_INFO] = self.build_supplementary_info()
-            data[rc.OTHER_BIOMARKERS] = self.build_other_biomarkers()
         self.logger.info("Finished building clinical report data for JSON output")
         return data
 
