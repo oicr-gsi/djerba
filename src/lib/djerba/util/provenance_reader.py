@@ -405,6 +405,10 @@ class provenance_reader(logger):
         suffix = '\.filter\.deduped\.realigned\.recalibrated\.bai$'
         return self._parse_default(self.WF_BMPP, 'application/bam-index', suffix, self.sample_name_wg_n)
 
+    def parse_msi_path(self):
+        suffix = 'filter\.deduped\.realigned\.recalibrated\.msi\.booted$'
+        return self._parse_default('msisensor', 'application/txt', suffix, self.sample_name_wg_t)
+
     ### WT assay produces only 1 bam file; no need to consider tumour vs. reference
 
     def parse_wt_bam_path(self):

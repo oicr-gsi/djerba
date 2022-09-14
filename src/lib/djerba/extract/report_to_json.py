@@ -17,8 +17,6 @@ from djerba import __version__
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.extract.maf_annotater import maf_annotater
-
-
 from statsmodels.distributions.empirical_distribution import ECDF
 
 class composer_base(logger):
@@ -745,7 +743,7 @@ class clinical_report_json_composer(composer_base):
         return out_path
     
     def write_msi_plot(self, out_dir):
-        out_path = os.path.join(out_dir, 'msi.jpeg')
+        out_path = os.path.join(out_dir, 'msi.svg')
         args = [
             os.path.join(self.r_script_dir, 'biomarkers_plot.R'),
             '-d', self.input_dir,

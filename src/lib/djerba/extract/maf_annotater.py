@@ -2,7 +2,6 @@
 
 import os
 import logging
-
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.logger import logger
 
@@ -48,9 +47,3 @@ class maf_annotater():
         ]
         self.run_annotator_script(cmd, 'MAF annotator')
         return out_path
-
-
-
-
-
-

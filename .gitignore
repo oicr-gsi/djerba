@@ -4,4 +4,4 @@ djerba.egg-info
 build
 dist
 *.DS_Store
-src/lib/djerba/R_plots/.Rhistory
+*.Rhistory

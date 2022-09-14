@@ -6,7 +6,7 @@ library(optparse)
 
 option_list = list(
   make_option(c("-d", "--dir"), type="character", default=NULL, help="Input report directory path", metavar="character"),
-  make_option(c("-o", "--output"), type="character", default=NULL, help="JPEG output path", metavar="character")
+  make_option(c("-o", "--output"), type="character", default=NULL, help="svg output path", metavar="character")
 )
 
 # get options
@@ -26,7 +26,7 @@ boot$Sample <- "Sample"
 
 
 options(bitmapType='cairo')
-jpeg(out_path, width=500, height=90)
+svg(out_path, width = 5, height = 1.5)
 
 ggplot(boot,aes(x="Sample")) + 
   geom_bar(aes(y=median,fill=ifelse(median < 5,'red','green')),stat ="identity") + 

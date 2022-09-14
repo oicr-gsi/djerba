@@ -231,6 +231,5 @@ class log_r_cutoff_finder:
         else:
             return log2(x)
 
-
 class MissingConfigError(Exception):
     pass

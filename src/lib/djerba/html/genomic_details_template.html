@@ -12,7 +12,7 @@
       ${row}
 % endfor
 </table>
-## ends     keep-together
+## ends keep-together
 </div>
 ## image sources may be file paths (for testing) or base64 data blobs (for a self-contained document)
 <div>
@@ -33,7 +33,7 @@ ${html_builder().oncogenic_small_mutations_and_indels_header()}
 </tbody>
 </table>
 % endif
-## ends     keep-together
+## ends keep-together
 </div>
 <div class="keep-together">
 <div style="height:36px">
@@ -51,7 +51,7 @@ ${html_builder().oncogenic_CNVs_header()}
 </tbody>
 </table>
 % endif
-## ends     keep-together
+## ends keep-together
 </div>
 % if assay_type == 'WGTS':
 <div class="keep-together">
@@ -69,7 +69,7 @@ ${html_builder().structural_variants_and_fusions_header()}
 </tbody>
 </table>
 % endif
-## ends     keep-together
+## ends keep-together
 </div>
 % endif
 <div class="keep-together">
@@ -84,7 +84,7 @@ ${html_builder().structural_variants_and_fusions_header()}
 <tbody>
 <tr>
 <td width="50%"><strong>MSI-H</strong>: this sample likely has genetic or epigenetic alterations resulting in <strong>loss of function of mismatch repair (MMR) genes</strong>, which can lead to a microsatellite instability-high (MSI-H)/mismatch repair deficient (MMR-D) phenotype.</td>
-<td width="50%"><img style='width: 100%; object-fit: contain' src="${converter().convert_jpeg(msi_plot, 'MSI plot')}"/></td>
+<td width="50%"><img style='width: 100%; object-fit: contain' src="${converter().convert_svg(msi_plot, 'MSI plot')}"/></td>
 </tr>
 </tbody>
 </table>
@@ -105,6 +105,6 @@ ${html_builder().supplementary_gene_info_header()}
 </table>
 % else:
 <p style="font-size:14px">No relevant oncogenes were detected in OncoKB.</p>
-## ends     keep-together
+## ends keep-together
 </div>
 % endif
