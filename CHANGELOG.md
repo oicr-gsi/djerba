@@ -1,10 +1,42 @@
 # CHANGELOG
 
-## Unreleased
+## v0.3.5: 2022-08-30
 
 ### Fixed
 
+- GCGI-449: Fix for `delly` regex in provenance reader
+
+## v0.3.4: 2022-08-18
+
+### Added
+
+- GCGI-414: Support for multiple requisitions from one donor
+
+### Changed
+
+- GCGI-430: Update Mutect2 version to GATK 4.2.6.1
+- Move Djerba version text into assay description section
+
+### Fixed
+
+- GCGI-442: Remove delly results from JSON and HTML
+
+## v0.3.3: 2022-07-25
+
+### Changed
+
+- GCGI-200: Record Djerba software version in report footer and log
+- GCGI-390: Change plot output from JPEG to SVG
+- GCGI-404: Restructure test data; update `test_env.sh`; move GSICAPBENCH tests to separate file
+- Updated to use Python Tools module v12 for Geneticist Review Report
+
+### Fixed
+
+- GCGI-387: Enforce decimal places in output for purity, ploidy, coverage, callability
+- GCGI-399: Rename "Genome Altered (%)" to "Percent Genome Altered"
 - GCGI-406: Do not compare supplementary data in benchmark script
+- GCGI-416: Do not allow 'None' in default tumour/normal IDs
+- GCGI-417: Add missing gene names in allCuratedGenes.tsv
 
 ## v0.3.2: 2022-06-21
 

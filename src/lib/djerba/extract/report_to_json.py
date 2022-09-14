@@ -13,6 +13,7 @@ import djerba.extract.oncokb_constants as oncokb
 import djerba.extract.constants as xc
 import djerba.render.constants as rc
 import djerba.util.constants as dc
+from djerba import __version__
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.extract.maf_annotater import maf_annotater
@@ -438,15 +439,6 @@ class clinical_report_json_composer(composer_base):
             self.logger.warn("Unknown cytoband for gene '{0}'".format(gene_name))
         return cytoband
 
-    def image_to_json_string(self, image_path, image_type='jpeg'):
-        # read a jpeg file into base64 with JSON prefix
-        if image_type not in ['jpg', 'jpeg', 'png']:
-            raise RuntimeError("Unsupported image type: {0}".format(image_type))
-        with open(image_path, 'rb') as image_file:
-            image = base64.b64encode(image_file.read())
-        image_json = 'data:image/{0};base64,{1}'.format(image_type, image.decode('utf-8'))
-        return image_json
-
     def read_cancer_specific_percentile(self, tmb, cohort, cancer_type):
         # Read percentile for given TMB/Mb and cohort
         # We use statsmodels to compute the ECDF
@@ -661,6 +653,7 @@ class clinical_report_json_composer(composer_base):
         data[rc.FAILED] = self.failed
         data[rc.PURITY_FAILURE] = self.params.get(xc.PURITY_FAILURE)
         data[rc.REPORT_DATE] = None
+        data[rc.DJERBA_VERSION] = __version__
         if not self.failed:
             # additional data for non-failed reports
             data[rc.OTHER_BIOMARKERS] = self.build_other_biomarkers(self.input_dir,self.clinical_data[dc.TUMOUR_SAMPLE_ID])
@@ -729,7 +722,7 @@ class clinical_report_json_composer(composer_base):
         return row
 
     def write_tmb_plot(self, tmb, out_dir):
-        out_path = os.path.join(out_dir, 'tmb.jpeg')
+        out_path = os.path.join(out_dir, 'tmb.svg')
         args = [
             os.path.join(self.r_script_dir, 'tmb_plot.R'),
             '-c', self.closest_tcga_lc,
@@ -741,7 +734,7 @@ class clinical_report_json_composer(composer_base):
         return out_path
 
     def write_vaf_plot(self, out_dir):
-        out_path = os.path.join(out_dir, 'vaf.jpeg')
+        out_path = os.path.join(out_dir, 'vaf.svg')
         args = [
             os.path.join(self.r_script_dir, 'vaf_plot.R'),
             '-d', self.input_dir,
@@ -777,6 +770,10 @@ class fusion_reader(composer_base):
         self.old_to_new_delimiter = self.read_fusion_delimiter_map()
         fusion_data = self.read_fusion_data()
         annotations = self.read_annotation_data()
+        # delly results have been removed from fusion data; do the same for annotations
+        for key in [k for k in annotations.keys() if k not in fusion_data]:
+            del annotations[key]
+        # now check the key sets match
         if set(fusion_data.keys()) != set(annotations.keys()):
             msg = "Distinct fusion identifiers and annotations do not match. "+\
                   "Fusion data: {0}; ".format(sorted(list(set(fusion_data.keys()))))+\
@@ -856,13 +853,21 @@ class fusion_reader(composer_base):
         # data file has 1 or 2 lines per fusion (1 if it has an intragenic component, 2 otherwise)
         data_by_fusion = {}
         with open(os.path.join(self.input_dir, self.DATA_FUSIONS_OLD)) as data_file:
+            delly_count = 0
+            total = 0
             for row in csv.DictReader(data_file, delimiter="\t"):
-                # make fusion ID consistent with format in annotated file
-                fusion_id = re.sub('None', 'intragenic', row['Fusion'])
-                if fusion_id in data_by_fusion:
-                    data_by_fusion[fusion_id].append(row)
+                total += 1
+                if row['Method']=='delly':
+                    # omit delly structural variants (which are not fusions, and not yet validated)
+                    delly_count += 1
                 else:
-                    data_by_fusion[fusion_id] = [row,]
+                    # make fusion ID consistent with format in annotated file
+                    fusion_id = re.sub('None', 'intragenic', row['Fusion'])
+                    if fusion_id in data_by_fusion:
+                        data_by_fusion[fusion_id].append(row)
+                    else:
+                        data_by_fusion[fusion_id] = [row,]
+        self.logger.debug("Read {0} rows of fusion input; excluded {1} delly rows".format(total, delly_count))
         return data_by_fusion
 
     def read_fusion_delimiter_map(self):

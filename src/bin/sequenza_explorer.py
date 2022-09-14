@@ -8,9 +8,9 @@ import os
 import sys
 
 sys.path.pop(0) # do not import from script directory
-from djerba.configure import provenance_reader
 from djerba.sequenza import sequenza_reader
 from djerba.util.logger import logger
+from djerba.util.provenance_reader import provenance_reader, sample_name_container
 from djerba.util.validator import path_validator
 
 # script mode names
@@ -19,8 +19,10 @@ READ = 'read'
 
 def locate_sequenza_path(args):
     path_validator().validate_input_file(args.file_provenance)
+    samples = sample_name_container()
+    samples.set_and_validate(args.wgn, args.wgt, args.wtt)
     log_level = logger.get_args_log_level(args)
-    reader = provenance_reader(args.file_provenance, args.study, args.donor, log_level)
+    reader = provenance_reader(args.file_provenance, args.study, args.donor, samples, log_level)
     return reader.parse_sequenza_path()
 
 def get_parser():
@@ -31,6 +33,9 @@ def get_parser():
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose logging')
     parser.add_argument('-q', '--quiet', action='store_true', help='Logging for error messages only')
     parser.add_argument('-l', '--log-path', help='Output file for log messages; defaults to STDERR')
+    parser.add_argument('--wgn', metavar='SAMPLE', help='Whole genome normal sample name')
+    parser.add_argument('--wgt', metavar='SAMPLE', help='Whole genome tumour sample name')
+    parser.add_argument('--wtt', metavar='SAMPLE', help='Whole transcriptome sample name')
     subparsers = parser.add_subparsers(title='subcommands', help='sub-command help', dest='subparser_name')
     locate_parser = subparsers.add_parser(LOCATE, help='Locate Sequenza results in file provenance')
     locate_parser.add_argument('-D', '--donor', metavar='DONOR', required=True, help='Donor ID for file provenance search')

@@ -4,7 +4,7 @@ import json
 import os
 import sys
 from configparser import ConfigParser
-from djerba.configure import provenance_reader
+from djerba.util.provenance_reader import provenance_reader, sample_name_container
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
 import djerba.util.ini_fields as ini
@@ -37,7 +37,9 @@ class lister(logger):
         if self.out_path:
             v.validate_output_file(self.out_path)
         self.logger.info("Preparing file provenance reader for study {0}, donor {1}".format(args.study, args.donor))
-        self.provenance_reader = provenance_reader(args.provenance, args.study, args.donor, self.log_level, self.log_path)
+        samples = sample_name_container()
+        samples.set_and_validate(args.wgn, args.wgt, args.wtt)
+        self.provenance_reader = provenance_reader(args.provenance, args.study, args.donor, samples, self.log_level, self.log_path)
         self.logger.info("File provenance reader is ready")
 
     def read_ini_mavis(self):
@@ -98,13 +100,13 @@ class lister(logger):
         for pair in inputs:
             path = pair[1]
             if path==None:
-                self.logger.warn("{0} input path was not found".format(pair[0]))
+                self.logger.warning("{0} input path was not found".format(pair[0]))
                 bad_paths = True
             elif not os.path.exists(path):
-                self.logger.warn("{0} input path '{1}' does not exist".format(pair[0], pair[1]))
+                self.logger.warning("{0} input path '{1}' does not exist".format(pair[0], pair[1]))
                 bad_paths = True
             elif not os.access(path, os.R_OK):
-                self.logger.warn("{0} input path '{1}' is not readable".format(pair[0], pair[1]))
+                self.logger.warning("{0} input path '{1}' is not readable".format(pair[0], pair[1]))
                 bad_paths = True
         self.logger.info("Writing output")
         if self.out_path:

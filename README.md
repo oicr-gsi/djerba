@@ -129,11 +129,12 @@ Djerba has a `setup.py` script which will install its source code and Python dep
 
 ## Testing
 
-- The tests use `/.mounts/labs/CGI/software/djerba_test_checkout` to ensure consistent paths for certain data files.
-- Before running tests, ensure the checkouts of `djerba` and `djerba_test_data` in the above directory are up to date. (Making the tests more portable is a TODO item.)
-- Set the environment variable `DJERBA_TEST_DATA` to `/.mounts/labs/CGI/software/djerba_test_checkout/djerba_test_data/`.
-- Ensure all Modulator prerequisites are available
-- Run unit tests with `src/test/test.py`
+To run the unit tests on a checkout of the Djerba repo:
+- `export DJERBA_SOURCE_DIR=${PATH_TO_DJERBA_REPO}`
+- `cd $DJERBA_SOURCE_DIR`
+- `source src/test/test_env.sh`
+- `./src/test/test.py`
+- To additionally run the GSICAPBENCH tests: `./src/test/test_benchmark.py`
 
 ## Installation
 
@@ -157,11 +158,13 @@ Djerba has a `setup.py` script which will install its source code and Python dep
 #### Contents of Djerba package directory
 
 - Top-level python modules:
+  - `benchmark.py`: Check Djerba results on benchmark input data
   - `configure.py`: Discover additional parameters for the user-supplied INI file
   - `lister.py`: List input paths for the `list_inputs.py` script
   - `main.py`: Main module to run Djerba functions
   - `mavis.py`: Manually run the Mavis workflow
   - `sequenza.py`: Process output from the Sequenza tool
+  - `version.py`: Records the Djerba release version
 - Python subpackages:
   - `extract`: Extract metrics for INI parameters and write as JSON
   - `render`: Render output from JSON to HTML or PDF
@@ -175,9 +178,11 @@ Djerba has a `setup.py` script which will install its source code and Python dep
 ### Release Procedure
 
 - Update `CHANGELOG.md`
-- Increment the version number in `setup.py`
+- Increment the version number in `version.py`
 - Commit (or merge) to the master branch, and tag the release on Github
 - Update environment module configuration in [OICR Modulator](https://gitlab.oicr.on.ca/ResearchIT/modulator) to install the newly tagged release
+- Save an updated copy of GSICAPBENCH test data and update the symlink `/.mounts/labs/CGI/gsi/djerba_test/GSICAPBENCH_djerba_latest`, if necessary
+- Tag and release an updated version of [djerba_test_data_lfs](https://bitbucket.oicr.on.ca/gsi/djerba_test_data_lfs.git), if necessary
 
 ### Development History
 

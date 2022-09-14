@@ -11,6 +11,7 @@ from shutil import copyfile
 
 import djerba.render.constants as rc
 import djerba.util.constants as constants
+from djerba import __version__
 from djerba.configure import configurer
 from djerba.extract.extractor import extractor
 from djerba.render.render import html_renderer
@@ -43,12 +44,13 @@ class main(logger):
         else:
             self.failed = self.args.failed
             self.wgs_only = self.args.wgs_only
-        self.log_level = self.get_log_level(self.args.debug, self.args.verbose, self.args.quiet)
+        self.log_level = self.get_args_log_level(self.args)
         self.log_path = self.args.log_path
         if self.log_path:
             # we are verifying the log path, so don't write output there yet
             path_validator(self.log_level).validate_output_file(self.log_path)
         self.logger = self.get_logger(self.log_level, __name__, self.log_path)
+        self.logger.info("Running Djerba version {0}".format(__version__))
         self.validate_args(args) # checks subparser and args are valid
 
     def _get_author(self):
