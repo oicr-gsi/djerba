@@ -15,8 +15,8 @@ import djerba.render.constants as rc
 import djerba.util.constants as dc
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
-from djerba.extract.r_script_wrapper import _annotate_maf
-from djerba.extract.r_script_wrapper import write_oncokb_info
+from djerba.extract.maf_annotater import maf_annotater
+
 
 from statsmodels.distributions.empirical_distribution import ECDF
 
@@ -104,6 +104,7 @@ class clinical_report_json_composer(composer_base):
     MUTATIONS_EXTENDED_ONCOGENIC = 'data_mutations_extended_oncogenic.txt'
     MUTATIONS_EXTENDED = 'data_mutations_extended.txt'
     CNA_ANNOTATED = 'data_CNA_oncoKBgenes_nonDiploid_annotated.txt'
+    BIOMARKERS_ANNOTATED = 'annotated_maf_tmp.tsv'
     INTRAGENIC = 'intragenic'
     ONCOKB_URL_BASE = 'https://www.oncokb.org/gene'
     FDA_APPROVED = 'FDA_APPROVED'
@@ -595,39 +596,41 @@ class clinical_report_json_composer(composer_base):
         self.logger.debug(msg)
         return count
 
-    def build_other_biomarkers(self):
+    def build_other_biomarkers(self,input_dir,sample_ID):
         #assemble other biomarkers: TMB > 10 muts/mb, and MSI
         data = {}
-        #write header : HUGO_SYMBOL	SAMPLE_ID	ALTERATION
-        print("HUGO_SYMBOL\SAMPLE_ID\ALTERATION", file=info_file)
-        #is TMB > 10muts/mb? 
-        data[rc.TMB_PER_MB] = self.build_genomic_landscape_info()[rc.TMB_PER_MB]
-        if data[rc.TMB_PER_MB] >= 10:
-            data[rc.TMB_CALL] = "TMB-H"
-            #print Other Biomarkers	sample	TMB-H
-            print("Other Biomarkers\tONCOTREE_CODE\tTMB-H", file=info_file)
-        elif data[rc.TMB_PER_MB] < 10:
-            data[rc.TMB_CALL] = "TMB-L"
-        else:
-            msg = "TMB not a number"
-            self.logger.error(msg)
-            raise RuntimeError(msg)
-        #is MSI ?    
-        data[rc.MSI] = self.extract_msi()
-        if data[rc.MSI] >= 5.0:
-            data[rc.MSI_CALL] = "MSI-H"
-             #print Other Biomarkers	sample01	MSI-H
-            print("Other Biomarkers\tONCOTREE_CODE\tMSI-H", file=info_file)
-        elif data[rc.MSI] < 5.0 & data[rc.MSI] >= 3.5:
-            data[rc.MSI_CALL] = "INCONCLUSIVE"
-        elif data[rc.MSI] < 3.5:
-            data[rc.MSI_CALL] = "MSS"
-        else:
-            msg = "MSI not a number"
-            self.logger.error(msg)
-            raise RuntimeError(msg)
-        oncokb_info = write_oncokb_info(tmp_dir)
-        out_path = _annotate_maf(in_path, out_dir, oncokb_info_path)
+        #write header : HUGO_SYMBOL	SAMPLE_ID	ALTERATION, to info_file
+        other_biomarkers_path = os.path.join(input_dir,"other_biomarkers.maf")
+        with open(other_biomarkers_path, 'w') as alt_markers_file:
+            print("HUGO_SYMBOL\tSAMPLE_ID\tALTERATION", file=alt_markers_file)
+            #is TMB > 10muts/mb? 
+            data[rc.TMB_PER_MB] = self.build_genomic_landscape_info()[rc.TMB_PER_MB]
+            if data[rc.TMB_PER_MB] >= 10:
+                data[rc.TMB_CALL] = "TMB-H"
+                #print Other Biomarkers	sample	TMB-H
+                print("Other Biomarkers\t"+sample_ID+"\tTMB-H", file=alt_markers_file)
+            elif data[rc.TMB_PER_MB] < 10:
+                data[rc.TMB_CALL] = "TMB-L"
+            else:
+                msg = "TMB not a number"
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            #is MSI ?    
+            data[rc.MSI] = self.extract_msi()
+            if data[rc.MSI] >= 5.0:
+                data[rc.MSI_CALL] = "MSI-H"
+                #print Other Biomarkers	sample01	MSI-H
+                print("Other Biomarkers\t"+sample_ID+"\tMSI-H", file=alt_markers_file)
+            elif data[rc.MSI] < 5.0 & data[rc.MSI] >= 3.5:
+                data[rc.MSI_CALL] = "INCONCLUSIVE"
+            elif data[rc.MSI] < 3.5:
+                data[rc.MSI_CALL] = "MSS"
+            else:
+                msg = "MSI not a number"
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+        oncokb_info = maf_annotater().write_oncokb_info(input_dir, self.clinical_data[dc.TUMOUR_SAMPLE_ID], self.params.get(xc.ONCOTREE_CODE).upper())
+        out_path = maf_annotater().annotate_maf(other_biomarkers_path, input_dir, oncokb_info)
         return(data)
         
     def extract_msi(self):
@@ -660,7 +663,7 @@ class clinical_report_json_composer(composer_base):
         data[rc.REPORT_DATE] = None
         if not self.failed:
             # additional data for non-failed reports
-            data[rc.OTHER_BIOMARKERS] = self.build_other_biomarkers()
+            data[rc.OTHER_BIOMARKERS] = self.build_other_biomarkers(self.input_dir,self.clinical_data[dc.TUMOUR_SAMPLE_ID])
             data[rc.APPROVED_BIOMARKERS] = self.build_fda_approved_info()
             data[rc.INVESTIGATIONAL_THERAPIES] = self.build_investigational_therapy_info()
             data[rc.GENOMIC_LANDSCAPE_INFO] = self.build_genomic_landscape_info()

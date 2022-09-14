@@ -13,6 +13,7 @@ import djerba.util.ini_fields as ini
 from djerba.sequenza import sequenza_reader
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
+from djerba.extract.maf_annotater import maf_annotater
 
 class r_script_wrapper(logger):
 
@@ -95,8 +96,7 @@ class r_script_wrapper(logger):
         if not self.min_fusion_reads.isdigit():
             msg = "Min fusion reads '{}' is not a non-negative integer".format(min_fusion_reads)
             raise ValueError(msg)
-        with open(os.environ[self.ONCOKB_TOKEN_VARIABLE]) as token_file:
-            self.oncokb_token = token_file.read().strip()
+        self.oncokb_token = maf_annotater().get_oncoKB_token()
 
     def _annotate_cna(self, info_path):
         # TODO import the main() method of CnaAnnotator.py instead of running in subprocess
@@ -109,7 +109,7 @@ class r_script_wrapper(logger):
             '-c', info_path,
             '-b', self.oncokb_token
         ]
-        self._run_annotator_script(cmd, 'CNA annotator')
+        maf_annotater().run_annotator_script(cmd, 'CNA annotator')
         return out_path
 
     def _annotate_fusion(self, info_path):
@@ -138,20 +138,7 @@ class r_script_wrapper(logger):
                 '-c', info_path,
                 '-b', self.oncokb_token
             ]
-            self._run_annotator_script(cmd, 'fusion annotator')
-        return out_path
-
-    def _annotate_maf(self, in_path, tmp_dir, info_path):
-        # TODO import the main() method of MafAnnotator.py instead of running in subprocess
-        out_path = os.path.join(tmp_dir, "annotated_maf_tmp.tsv")
-        cmd = [
-            'MafAnnotator.py',
-            '-i', in_path,
-            '-o', out_path,
-            '-c', info_path,
-            '-b', self.oncokb_token
-        ]
-        self._run_annotator_script(cmd, 'MAF annotator')
+            maf_annotater().run_annotator_script(cmd, 'fusion annotator')
         return out_path
 
     def _get_config_field(self, name):
@@ -208,10 +195,6 @@ class r_script_wrapper(logger):
             self.logger.error(msg)
             raise RuntimeError(msg)
         return indices
-
-    def _run_annotator_script(self, command, description):
-        """Redact the OncoKB token (-b argument) from logging"""
-        self.runner.run(command, description, ['-b',])
 
     def _write_clinical_data(self):
         headers = [
@@ -362,7 +345,7 @@ class r_script_wrapper(logger):
                         kept += 1
         self.logger.info("Kept {0} of {1} MAF data rows".format(kept, total))
         # apply annotation to tempfile and return final output
-        out_path = self._annotate_maf(tmp_path, tmp_dir, oncokb_info_path)
+        out_path = maf_annotater().annotate_maf(tmp_path, tmp_dir, oncokb_info_path)
         return out_path
 
     def preprocess_seg(self, sequenza_path, tmp_dir):
@@ -408,7 +391,7 @@ class r_script_wrapper(logger):
             tmp_dir = tmp.name
         else:
             tmp_dir = self.supplied_tmp_dir
-        oncokb_info = self.write_oncokb_info(tmp_dir)
+        oncokb_info = maf_annotater().write_oncokb_info(tmp_dir, self.tumour_id, self.oncotree_code)
         self.preprocess_msi(self.config[ini.DISCOVERED][ini.MSI_FILE], self.report_dir)
         maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE], tmp_dir, oncokb_info)
         seg_path = self.preprocess_seg(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir)
@@ -459,12 +442,3 @@ class r_script_wrapper(logger):
         if not self.wgs_only:
             self._annotate_fusion(oncokb_info)
             os.remove(os.path.join(self.report_dir, self.DATA_FUSIONS_ONCOKB))
-
-    def write_oncokb_info(self, info_dir):
-        """Write a file of oncoKB data for use by annotation scripts"""
-        info_path = os.path.join(info_dir, self.ONCOKB_CLINICAL_INFO)
-        args = [self.tumour_id, self.oncotree_code]
-        with open(info_path, 'w') as info_file:
-            print("SAMPLE_ID\tONCOTREE_CODE", file=info_file)
-            print("{0}\t{1}".format(*args), file=info_file)
-        return info_path
