@@ -149,6 +149,7 @@ class extractor(logger):
                 self.run_r_script() # can omit the R script for testing
             self.write_sequenza_meta()
         self.write_clinical_data(self.get_description())
+        self.preprocess_msi(self.config[ini.DISCOVERED][ini.MSI_FILE], self.report_dir)
         self.write_genomic_summary()
         params = {
             xc.AUTHOR: self.author,
@@ -221,6 +222,22 @@ class extractor(logger):
         with open(out_path, 'w') as out_file:
             print(head, file=out_file)
             print(body, file=out_file)
+
+    def preprocess_msi(self, msi_path, report_dir):
+        """
+        summarize msisensor file
+        """
+        out_path = os.path.join(report_dir, 'msi.txt')
+        msi_boots = []
+        with open(msi_path, 'r') as msi_file:
+            reader_file = csv.reader(msi_file, delimiter="\t")
+            for row in reader_file:
+                msi_boots.append(float(row[3]))
+        msi_perc = numpy.percentile(numpy.array(msi_boots), [0, 25, 50, 75, 100])
+        with open(out_path, 'w') as out_file:
+            for item in list(msi_perc):
+                out_file.write(str(str(item)+"\t"))
+        return out_path
 
     def write_genomic_summary(self):
         """

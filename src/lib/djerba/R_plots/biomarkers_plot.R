@@ -15,10 +15,6 @@ opt <- parse_args(opt_parser)
 msi_path <- paste(opt$dir, 'msi.txt', sep='/')
 out_path <- opt$output
 
-##test##
-#setwd('/Volumes/')
-#file <- 'cgi/scratch/fbeaudry/msi_test/BTC_0013/BTC_0013_Lv_P_WG_HPB-199_LCM.filter.deduped.realigned.recalibrated.msi.booted'
-
 boot <- read.table(msi_path)
 
 names(boot) <- c("q0","q1","median","q3","q4")

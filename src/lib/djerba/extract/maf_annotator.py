@@ -5,7 +5,7 @@ import logging
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.logger import logger
 
-class maf_annotater():
+class maf_annotator(logger):
 
     ONCOKB_CLINICAL_INFO = 'oncokb_clinical_info.txt'
 
@@ -13,7 +13,7 @@ class maf_annotater():
     ONCOKB_TOKEN_VARIABLE = 'ONCOKB_TOKEN'
 
     def __init__(self, log_level=logging.WARNING, log_path=None):
-        self.logger = logger().get_logger(log_level, __name__, log_path)
+        self.logger = self.get_logger(log_level, __name__, log_path)
         self.runner = subprocess_runner(log_level, log_path)
 
     def run_annotator_script(self, command, description):

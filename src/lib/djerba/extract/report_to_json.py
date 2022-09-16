@@ -16,7 +16,7 @@ import djerba.util.constants as dc
 from djerba import __version__
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
-from djerba.extract.maf_annotater import maf_annotater
+from djerba.extract.maf_annotator import maf_annotator
 from statsmodels.distributions.empirical_distribution import ECDF
 
 class composer_base(logger):
@@ -589,7 +589,6 @@ class clinical_report_json_composer(composer_base):
     def build_other_biomarkers(self,input_dir,sample_ID):
         #assemble other biomarkers: TMB > 10 muts/mb, and MSI
         data = {}
-        #write header : HUGO_SYMBOL	SAMPLE_ID	ALTERATION, to info_file
         other_biomarkers_path = os.path.join(input_dir,"other_biomarkers.maf")
         with open(other_biomarkers_path, 'w') as alt_markers_file:
             print("HUGO_SYMBOL\tSAMPLE_ID\tALTERATION", file=alt_markers_file)
@@ -597,7 +596,6 @@ class clinical_report_json_composer(composer_base):
             data[rc.TMB_PER_MB] = self.build_genomic_landscape_info()[rc.TMB_PER_MB]
             if data[rc.TMB_PER_MB] >= 10:
                 data[rc.TMB_CALL] = "TMB-H"
-                #print Other Biomarkers	sample	TMB-H
                 print("Other Biomarkers\t"+sample_ID+"\tTMB-H", file=alt_markers_file)
             elif data[rc.TMB_PER_MB] < 10:
                 data[rc.TMB_CALL] = "TMB-L"
@@ -609,7 +607,6 @@ class clinical_report_json_composer(composer_base):
             data[rc.MSI] = self.extract_msi()
             if data[rc.MSI] >= 5.0:
                 data[rc.MSI_CALL] = "MSI-H"
-                #print Other Biomarkers	sample01	MSI-H
                 print("Other Biomarkers\t"+sample_ID+"\tMSI-H", file=alt_markers_file)
             elif data[rc.MSI] < 5.0 & data[rc.MSI] >= 3.5:
                 data[rc.MSI_CALL] = "INCONCLUSIVE"
@@ -619,8 +616,8 @@ class clinical_report_json_composer(composer_base):
                 msg = "MSI not a number"
                 self.logger.error(msg)
                 raise RuntimeError(msg)
-        oncokb_info = maf_annotater().write_oncokb_info(input_dir, self.clinical_data[dc.TUMOUR_SAMPLE_ID], self.params.get(xc.ONCOTREE_CODE).upper())
-        out_path = maf_annotater().annotate_maf(other_biomarkers_path, input_dir, oncokb_info)
+        oncokb_info = maf_annotator().write_oncokb_info(input_dir, self.clinical_data[dc.TUMOUR_SAMPLE_ID], self.params.get(xc.ONCOTREE_CODE).upper())
+        out_path = maf_annotator().annotate_maf(other_biomarkers_path, input_dir, oncokb_info)
         return(data)
         
     def extract_msi(self):

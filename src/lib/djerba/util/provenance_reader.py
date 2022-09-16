@@ -27,6 +27,7 @@ class provenance_reader(logger):
     WF_BMPP = 'bamMergePreprocessing'
     WF_DELLY = 'delly'
     WF_MAVIS = 'mavis'
+    WF_MSISENSOR = 'msisensor'
     WF_RSEM = 'rsem'
     WF_SEQUENZA = 'sequenza'
     WF_STAR = 'STAR'
@@ -407,7 +408,7 @@ class provenance_reader(logger):
 
     def parse_msi_path(self):
         suffix = 'filter\.deduped\.realigned\.recalibrated\.msi\.booted$'
-        return self._parse_default('msisensor', 'application/txt', suffix, self.sample_name_wg_t)
+        return self._parse_default(self.WF_MSISENSOR, 'application/txt', suffix, self.sample_name_wg_t)
 
     ### WT assay produces only 1 bam file; no need to consider tumour vs. reference
 

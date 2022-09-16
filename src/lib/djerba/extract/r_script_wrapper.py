@@ -13,7 +13,7 @@ import djerba.util.ini_fields as ini
 from djerba.sequenza import sequenza_reader
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
-from djerba.extract.maf_annotater import maf_annotater
+from djerba.extract.maf_annotator import maf_annotator
 
 class r_script_wrapper(logger):
 
@@ -96,7 +96,7 @@ class r_script_wrapper(logger):
         if not self.min_fusion_reads.isdigit():
             msg = "Min fusion reads '{}' is not a non-negative integer".format(min_fusion_reads)
             raise ValueError(msg)
-        self.oncokb_token = maf_annotater().get_oncoKB_token()
+        self.oncokb_token = maf_annotator().get_oncoKB_token()
 
     def _annotate_cna(self, info_path):
         # TODO import the main() method of CnaAnnotator.py instead of running in subprocess
@@ -109,7 +109,7 @@ class r_script_wrapper(logger):
             '-c', info_path,
             '-b', self.oncokb_token
         ]
-        maf_annotater().run_annotator_script(cmd, 'CNA annotator')
+        maf_annotator().run_annotator_script(cmd, 'CNA annotator')
         return out_path
 
     def _annotate_fusion(self, info_path):
@@ -138,7 +138,7 @@ class r_script_wrapper(logger):
                 '-c', info_path,
                 '-b', self.oncokb_token
             ]
-            maf_annotater().run_annotator_script(cmd, 'fusion annotator')
+            maf_annotator().run_annotator_script(cmd, 'fusion annotator')
         return out_path
 
     def _get_config_field(self, name):
@@ -345,7 +345,7 @@ class r_script_wrapper(logger):
                         kept += 1
         self.logger.info("Kept {0} of {1} MAF data rows".format(kept, total))
         # apply annotation to tempfile and return final output
-        out_path = maf_annotater().annotate_maf(tmp_path, tmp_dir, oncokb_info_path)
+        out_path = maf_annotator().annotate_maf(tmp_path, tmp_dir, oncokb_info_path)
         return out_path
 
     def preprocess_seg(self, sequenza_path, tmp_dir):
@@ -369,30 +369,13 @@ class r_script_wrapper(logger):
                 writer.writerow(row)
         return out_path
 
-    def preprocess_msi(self, msi_path, report_dir):
-        """
-        summarize msisensor file
-        """
-        out_path = os.path.join(report_dir, 'msi.txt')
-        msi_boots = []
-        with open(msi_path, 'r') as msi_file:
-            reader_file = csv.reader(msi_file, delimiter="\t")
-            for row in reader_file:
-                msi_boots.append(float(row[3]))
-        msi_perc = numpy.percentile(numpy.array(msi_boots), [0, 25, 50, 75, 100])
-        with open(out_path, 'w') as out_file:
-            for item in list(msi_perc):
-                out_file.write(str(str(item)+"\t"))
-        return out_path
-
     def run(self):
         if self.supplied_tmp_dir == None:
             tmp = tempfile.TemporaryDirectory(prefix="djerba_r_script_")
             tmp_dir = tmp.name
         else:
             tmp_dir = self.supplied_tmp_dir
-        oncokb_info = maf_annotater().write_oncokb_info(tmp_dir, self.tumour_id, self.oncotree_code)
-        self.preprocess_msi(self.config[ini.DISCOVERED][ini.MSI_FILE], self.report_dir)
+        oncokb_info = maf_annotator().write_oncokb_info(tmp_dir, self.tumour_id, self.oncotree_code)
         maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE], tmp_dir, oncokb_info)
         seg_path = self.preprocess_seg(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir)
         cmd = [
