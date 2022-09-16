@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+### Changed
+- GCGI-461: Refactor OncoKB annotation into a separate class
+
 ## v0.3.5: 2022-08-30
 
 ### Fixed
