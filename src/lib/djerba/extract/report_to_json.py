@@ -607,11 +607,14 @@ class clinical_report_json_composer(composer_base):
             data[rc.MSI] = self.extract_msi()
             if data[rc.MSI] >= 5.0:
                 data[rc.MSI_CALL] = "MSI-H"
+                data[rc.MSI_TEXT] = "This sample shows genomic evidence of high microsatellite instability (MSI-H), which is likely caused by <strong>genetic or epigenetic alterations to genes in the mismatch repair pathway</strong> such as _MLH-1_, _MSH-2_, and _MSH-6_."
                 print("Other Biomarkers\t"+sample_ID+"\tMSI-H", file=alt_markers_file)
             elif data[rc.MSI] < 5.0 & data[rc.MSI] >= 3.5:
                 data[rc.MSI_CALL] = "INCONCLUSIVE"
+                data[rc.MSI_TEXT] = "This sample shows inconclusive genomic evidence regarding microsatellite instability. Further testing is recommended."
             elif data[rc.MSI] < 3.5:
                 data[rc.MSI_CALL] = "MSS"
+                data[rc.MSI_TEXT] = "This sample shows genomic evidence of microsatellite stability (MSS)"
             else:
                 msg = "MSI not a number"
                 self.logger.error(msg)
