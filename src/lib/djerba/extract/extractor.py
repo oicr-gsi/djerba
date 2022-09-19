@@ -166,6 +166,7 @@ class extractor(logger):
             self.log_level,
             self.log_path
         ).run()
+        self.write_technical_notes()
         self.write_json(report_data)
         self.logger.info("Djerba extract step finished; extracted metrics written to {0}".format(self.report_dir))
 
@@ -230,6 +231,15 @@ class extractor(logger):
         """
         input_path = self.config[ini.DISCOVERED][ini.GENOMIC_SUMMARY]
         output_path = os.path.join(self.report_dir, constants.GENOMIC_SUMMARY_FILENAME)
+        copyfile(input_path, output_path)
+        
+    def write_technical_notes(self):
+        """
+        Copy a technical_notes.txt file to the working directory
+        File may have been manually configured; otherwise a default file is used
+        """
+        input_path = self.config[ini.DISCOVERED][ini.TECHNICAL_NOTES]
+        output_path = os.path.join(self.report_dir, constants.TECHNICAL_NOTES_FILENAME)
         copyfile(input_path, output_path)
 
     def write_json(self, report_data):
