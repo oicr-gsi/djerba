@@ -22,25 +22,30 @@ boot$Sample <- "Sample"
 
 
 options(bitmapType='cairo')
-svg(out_path, width = 5, height = 1.5)
+svg(out_path, width = 5, height = 1.2)
 
 ggplot(boot,aes(x="Sample")) + 
-  geom_bar(aes(y=median,fill=ifelse(median < 5,'red','green')),stat ="identity") + 
+  geom_bar(aes(y=median,fill=ifelse(median < 5,'red','green')),stat ="identity",alpha=0.5,color="black") + 
   geom_errorbar(aes(ymin=q1, ymax=q3), width=0,size=2) +
   geom_errorbar(aes(ymin=q0, ymax=q4), width=0) +
   
   geom_hline(yintercept = 5,color=ifelse(boot$median < 5,'black','white'))+
   guides(fill=FALSE)+
-  theme_bw(base_size=15) + 
-  labs(x="",title="MSS                                                                               MSI",y="unstable microsatellites (%)") + 
+  theme_classic() + 
+  labs(x="",y="unstable microsatellites (%)",title="") + 
   ylim(0,100) + guides(alpha="none")+
-  
+  coord_flip() +
   scale_color_manual(values=c("#65bc45","#000000","#0099ad")) +
-  theme(axis.text.y = element_text(angle = 90, vjust = 0.5, hjust=.5)) +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  theme(axis.title.y=element_blank(),
-    axis.text.y=element_blank(),
-    axis.ticks.y=element_blank())  + coord_flip()
+  theme(#axis.text.y = element_text(angle = 90, vjust = 0.5, hjust=.5),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        text = element_text(size = 10),
+        panel.grid = element_blank(), 
+        plot.margin = unit(c(10, 10, 10, 10), "points"),
+        line = element_blank()
+        ) 
+  
 
 dev.off()
 

@@ -7,7 +7,6 @@ import os
 import re
 import tempfile
 import zipfile
-import numpy
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 from djerba.sequenza import sequenza_reader

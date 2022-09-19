@@ -39,6 +39,17 @@ class html_builder:
         ]
         return self.key_value_table_rows(genomic_landscape_args, key_groups, widths)
 
+    def msi_table_rows(self, genomic_biomarker_args):
+        row_fields = genomic_biomarker_args[constants.BODY]
+        rows = []
+        for row in row_fields:
+            print(row[constants.ALT])
+            if row[constants.ALT] == "MSI":
+                rows.append("<strong>"+self._href(row[constants.ALT_URL], row[constants.METRIC_CALL])+"</strong><br>")
+                rows.append(row[constants.METRIC_TEXT])
+        print(rows)
+        return rows
+
     def key_value_table_rows(self, args, key_groups, widths):
         """Make a table to show key/value fields, with varying column widths"""
         flattened = [k for group in key_groups for k in group]

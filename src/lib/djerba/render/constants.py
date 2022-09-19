@@ -111,8 +111,7 @@ TUMOUR_MIN = 'Tumour min'
 TUMOUR_TARGET = 'Tumour target'
 
 # constants for other biomarkers
-TMB_CALL = 'TMB call'
-MSI = 'Microsatellite Instability'
-MSI_CALL = 'MSI call'
-MSI_TEXT = 'MSI text'
-OTHER_BIOMARKERS = 'other_biomarkers'
+METRIC_CALL = 'Genomic biomarker call'
+METRIC_VALUE = 'Genomic biomarker value'
+METRIC_TEXT = 'Genomic biomarker text'
+GENOMIC_BIOMARKERS = 'genomic_biomarkers'

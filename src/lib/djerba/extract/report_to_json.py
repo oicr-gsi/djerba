@@ -586,42 +586,67 @@ class clinical_report_json_composer(composer_base):
         self.logger.debug(msg)
         return count
 
-    def build_other_biomarkers(self,input_dir,sample_ID):
-        #assemble other biomarkers: TMB > 10 muts/mb, and MSI
-        data = {}
-        other_biomarkers_path = os.path.join(input_dir,"other_biomarkers.maf")
-        with open(other_biomarkers_path, 'w') as alt_markers_file:
-            print("HUGO_SYMBOL\tSAMPLE_ID\tALTERATION", file=alt_markers_file)
-            #is TMB > 10muts/mb? 
-            data[rc.TMB_PER_MB] = self.build_genomic_landscape_info()[rc.TMB_PER_MB]
-            if data[rc.TMB_PER_MB] >= 10:
-                data[rc.TMB_CALL] = "TMB-H"
-                print("Other Biomarkers\t"+sample_ID+"\tTMB-H", file=alt_markers_file)
-            elif data[rc.TMB_PER_MB] < 10:
-                data[rc.TMB_CALL] = "TMB-L"
+    def build_genomic_biomarkers(self,input_dir,sample_ID):
+        rows = []
+        genomic_biomarkers_path = os.path.join(input_dir,"genomic_biomarkers.maf")
+        with open(genomic_biomarkers_path, 'w') as genomic_biomarkers_file:
+            #print .maf header
+            print("HUGO_SYMBOL\tSAMPLE_ID\tALTERATION", file=genomic_biomarkers_file)
+            #Tumor Mutational Burden (TMB)
+            tmb = self.build_genomic_landscape_info()[rc.TMB_PER_MB]
+            if tmb >= 10:
+                metric_call = "TMB-H"
+                print("Other Biomarkers\t"+sample_ID+"\tTMB-H", file=genomic_biomarkers_file)
+            elif tmb < 10:
+                metric_call = "TMB-L"
             else:
                 msg = "TMB not a number"
                 self.logger.error(msg)
                 raise RuntimeError(msg)
-            #is MSI ?    
-            data[rc.MSI] = self.extract_msi()
-            if data[rc.MSI] >= 5.0:
-                data[rc.MSI_CALL] = "MSI-H"
-                data[rc.MSI_TEXT] = "This sample shows genomic evidence of high microsatellite instability (MSI-H), which is likely caused by <strong>genetic or epigenetic alterations to genes in the mismatch repair pathway</strong> such as _MLH-1_, _MSH-2_, and _MSH-6_."
-                print("Other Biomarkers\t"+sample_ID+"\tMSI-H", file=alt_markers_file)
-            elif data[rc.MSI] < 5.0 & data[rc.MSI] >= 3.5:
-                data[rc.MSI_CALL] = "INCONCLUSIVE"
-                data[rc.MSI_TEXT] = "This sample shows inconclusive genomic evidence regarding microsatellite instability. Further testing is recommended."
-            elif data[rc.MSI] < 3.5:
-                data[rc.MSI_CALL] = "MSS"
-                data[rc.MSI_TEXT] = "This sample shows genomic evidence of microsatellite stability (MSS)"
+            row = {
+                rc.ALT: "TMB",
+                rc.METRIC_VALUE: tmb,
+                rc.METRIC_CALL: metric_call
+            }
+            rows.append(row)
+            #Microsatelite Instability (MSI)
+            msi = self.extract_msi()
+            if msi >= 5.0:
+                metric_call = "MSI-H"
+                metric_text = "This sample shows genomic evidence of high microsatellite instability, which is likely caused by genetic or epigenetic alterations to genes in the mismatch repair pathway such as <em>MLH-1</em>, <em>MSH-2</em>, and <em>MSH-6</em>."
+                print("Other Biomarkers\t"+sample_ID+"\tMSI-H", file=genomic_biomarkers_file)
+            elif msi < 5.0 & msi >= 3.5:
+                metric_call = "INCONCLUSIVE"
+                metric_text = "This sample shows inconclusive genomic evidence regarding microsatellite instability. Further testing is recommended."
+            elif msi < 3.5:
+                metric_call = "MSS"
+                metric_text = "This sample shows genomic evidence of microsatellite stability (MSS)"
             else:
                 msg = "MSI not a number"
                 self.logger.error(msg)
                 raise RuntimeError(msg)
+            row = {
+                rc.ALT: "MSI",
+                rc.METRIC_VALUE: msi,
+                rc.METRIC_CALL: metric_call,
+                rc.METRIC_TEXT: metric_text,
+                rc.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/MSI-H"
+            }
+            rows.append(row)
         oncokb_info = maf_annotator().write_oncokb_info(input_dir, self.clinical_data[dc.TUMOUR_SAMPLE_ID], self.params.get(xc.ONCOTREE_CODE).upper())
-        out_path = maf_annotator().annotate_maf(other_biomarkers_path, input_dir, oncokb_info)
-        return(data)
+        out_path = maf_annotator().annotate_maf(genomic_biomarkers_path, input_dir, oncokb_info)
+        data = {
+            rc.CLINICALLY_RELEVANT_VARIANTS: len(rows),
+            rc.BODY: rows
+        }
+        return data
+
+
+
+          
+            
+            
+       
         
     def extract_msi(self):
         MSI = 0.0
@@ -654,7 +679,7 @@ class clinical_report_json_composer(composer_base):
         data[rc.DJERBA_VERSION] = __version__
         if not self.failed:
             # additional data for non-failed reports
-            data[rc.OTHER_BIOMARKERS] = self.build_other_biomarkers(self.input_dir,self.clinical_data[dc.TUMOUR_SAMPLE_ID])
+            data[rc.GENOMIC_BIOMARKERS] = self.build_genomic_biomarkers(self.input_dir,self.clinical_data[dc.TUMOUR_SAMPLE_ID])
             data[rc.APPROVED_BIOMARKERS] = self.build_fda_approved_info()
             data[rc.INVESTIGATIONAL_THERAPIES] = self.build_investigational_therapy_info()
             data[rc.GENOMIC_LANDSCAPE_INFO] = self.build_genomic_landscape_info()
