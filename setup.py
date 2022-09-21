@@ -49,6 +49,7 @@ setup(
             'data/filter_flags.exclude',
             'data/gencode_v33_hg38_genes.bed',
             'data/genomic_summary.txt',
+            'data/technical_notes.txt',
             'html/body_style.html',
             'html/clinical_report_template.html',
             'html/definitions_1.html',
