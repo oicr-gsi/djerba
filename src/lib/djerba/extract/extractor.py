@@ -150,6 +150,7 @@ class extractor(logger):
             self.write_sequenza_meta()
         self.write_clinical_data(self.get_description())
         self.write_genomic_summary()
+        self.write_technical_notes()
         params = {
             xc.AUTHOR: self.author,
             xc.ASSAY_TYPE: self.assay_type,
@@ -166,7 +167,6 @@ class extractor(logger):
             self.log_level,
             self.log_path
         ).run()
-        self.write_technical_notes()
         self.write_json(report_data)
         self.logger.info("Djerba extract step finished; extracted metrics written to {0}".format(self.report_dir))
 
