@@ -22,7 +22,7 @@ class composer_base(logger):
     # base class with shared methods and constants
 
     NA = 'NA'
-    ONCOGENIC = 'oncogenic'
+    ONCOGENIC = 'ONCOGENIC'
 
     def __init__(self, log_level=logging.WARNING, log_path=None):
         # list to determine sort order of oncokb level outputs
@@ -728,7 +728,7 @@ class fusion_reader(composer_base):
             fusion_genes.add(gene2)
             frame = fusion_data[fusion_id][0]['Frame']
             ann = annotations[fusion_id]
-            effect = ann['mutation_effect']
+            effect = ann['MUTATION_EFFECT']
             oncokb_level = self.parse_oncokb_level(ann)
             fda = self.parse_max_oncokb_level_and_therapies(ann, oncokb.FDA_APPROVED_LEVELS)
             [fda_level, fda_therapies] = fda
