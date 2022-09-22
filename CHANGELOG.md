@@ -5,6 +5,10 @@
 ### Changed
 - GCGI-461: Refactor OncoKB annotation into a separate class
 
+### Fixed
+
+- GCGI-480: Bugfix for `djerba.py` crash in `extract` mode
+
 ## v0.3.5: 2022-08-30
 
 ### Fixed
