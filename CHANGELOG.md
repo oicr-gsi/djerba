@@ -1,13 +1,15 @@
 # CHANGELOG
 
-## Unreleased
+## v0.3.6: 2022-09-22
 
 ### Changed
 - GCGI-461: Refactor OncoKB annotation into a separate class
+- GCGI-479: Update to use oncokb-annotator version 3.3.1
 
 ### Fixed
 
 - GCGI-480: Bugfix for `djerba.py` crash in `extract` mode
+- Fixes to `test_env.sh` script
 
 ## v0.3.5: 2022-08-30
 
