@@ -12,7 +12,7 @@ if [ -z "${DJERBA_SOURCE_DIR}" ]; then
 else
     module load djerba
     export PYTHONPATH=${DJERBA_SOURCE_DIR}/src/lib:$PYTHONPATH
-    export PATH=${DJERBA_SOURCE_DIR}/djerba/src/bin:$PATH
+    export PATH=${DJERBA_SOURCE_DIR}/src/bin:$PATH
     export DJERBA_TEST_DATA=/.mounts/labs/CGI/gsi/djerba_test/djerba_test_data_lfs
     export DJERBA_GSICAPBENCH_DATA=/.mounts/labs/CGI/gsi/djerba_test/GSICAPBENCH_djerba_latest
 fi
