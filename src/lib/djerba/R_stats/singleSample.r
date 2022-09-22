@@ -103,7 +103,7 @@ if (is.null(maffile)) {
     write.table(df_cbio_filt, file=paste0(outdir, "/data_mutations_extended.txt"), sep="\t", row.names=FALSE, quote=FALSE)
 
     # subset to oncokb annotated genes
-    df_cbio_filt_oncokb <- subset(df_cbio_filt, oncogenic == "Oncogenic" | oncogenic == "Likely Oncogenic")
+    df_cbio_filt_oncokb <- subset(df_cbio_filt, ONCOGENIC == "Oncogenic" | ONCOGENIC == "Likely Oncogenic")
     if ( dim(df_cbio_filt_oncokb)[[1]] == 0 ) {
       print("no oncogenic mutations, shooting a blank")
       write.table(df_cbio_filt_oncokb, file=paste0(outdir, "/data_mutations_extended_oncogenic.txt"), sep="\t", row.names=FALSE, quote=FALSE)
@@ -111,7 +111,7 @@ if (is.null(maffile)) {
 
       # write the oncogenic table
       write.table(df_cbio_filt_oncokb, file=paste0(outdir, "/data_mutations_extended_oncogenic.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-      
+
       # get snvs for dcsigs
       df_snv <- subset(df_cbio_filt, Variant_Type == "SNP" | Variant_Type == "DNP" | Variant_Type == "TNP")
       signdir <- paste0(outdir, "/sigs"); dir.create(signdir, showWarnings=FALSE)

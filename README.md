@@ -116,7 +116,7 @@ Script to view the Djerba report JSON in human-readable format, by adding spaces
 
 The following OICR [Modulator](https://gitlab.oicr.on.ca/ResearchIT/modulator) environment modules are required:
 - `python/3.9`
-- `oncokb-annotator/2.0`
+- `oncokb-annotator/3.3.0`
 - `cbioportal/0.1`
 - `rmarkdown/0.1m`
 - `wkhtmltopdf/0.12.6`

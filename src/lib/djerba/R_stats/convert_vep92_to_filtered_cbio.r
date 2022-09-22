@@ -10,7 +10,7 @@ addVAFtoMAF <- function(maf_df, alt_col, dep_col, vaf_header) {
  # ensure factors end up as numeric
  maf_df[[alt_col]] <- as.numeric(as.character(maf_df[[alt_col]]))
  maf_df[[dep_col]] <- as.numeric(as.character(maf_df[[dep_col]]))
- 
+
  # ensure position comes after alternate count field
  bspot                  <- which(names(maf_df)==alt_col)
  maf_df                 <- data.frame(maf_df[1:bspot], vaf_temp=maf_df[[alt_col]]/maf_df[[dep_col]], maf_df[(bspot+1):ncol(maf_df)], check.names=FALSE)
@@ -40,12 +40,12 @@ procVEP <- function(datafile){
  # clear memory (important when the mafs are huge - will maybe outgrow R if files are millions and millions of lines)
  df_anno <- data
  gc()
- 
+
  print("--- adding oncogenic binary column ---")
 
  # add oncogenic yes or no columns
  df_anno <- transform(df_anno,
-    oncogenic_binary = ifelse(oncogenic == "Oncogenic" | oncogenic == "Likely Oncogenic",
+    oncogenic_binary = ifelse(ONCOGENIC == "Oncogenic" | ONCOGENIC == "Likely Oncogenic",
                         "YES", "NO")
  )
 
@@ -84,7 +84,7 @@ procVEP <- function(datafile){
                         fixed=TRUE)
 
  # Artifact Filter
- print("--- artifact filter ---") 
+ print("--- artifact filter ---")
  df_anno <- transform(df_anno,
   TGL_FILTER_ARTIFACT = ifelse(FILTER == "PASS",
                       "PASS", "Artifact")
@@ -105,14 +105,14 @@ procVEP <- function(datafile){
  )
 
  # VAF Filter
- print("--- VAF filter ---") 
+ print("--- VAF filter ---")
  df_anno <- transform(df_anno,
   TGL_FILTER_VAF = ifelse(tumour_vaf >= 0.15 | (tumour_vaf < 0.15 & oncogenic_binary == "YES"),
                       "PASS", "low_VAF")
  )
 
  # Mark filters
- print("--- printing verdict ---") 
+ print("--- printing verdict ---")
  df_anno <- transform(df_anno,
   TGL_FILTER_VERDICT = ifelse(TGL_FILTER_ARTIFACT == "PASS" & TGL_FILTER_ExAC == "PASS" & TGL_FILTER_gnomAD == "PASS" & TGL_FILTER_VAF == "PASS",
                       "PASS",
@@ -130,7 +130,7 @@ construct_whizbam_links <- function(df, whizbam_url, studyid, tumourid, normalid
    #seqtype <- "GENOME"
    #genome <- "hg38"
    df$whizbam <- paste0(whizbam_url,
-                        "/igv?project1=", studyid, 
+                        "/igv?project1=", studyid,
                         "&library1=", tumourid,
                         "&file1=", tumourid, ".bam",
                         "&seqtype1=", seqtype,

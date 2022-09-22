@@ -23,7 +23,7 @@ MAF <- read.csv(maf_path, sep = "\t", header = TRUE, stringsAsFactors = FALSE) %
     filter(Variant_Classification != "Silent" & Variant_Classification != "Splice_Region") %>%
     select(-Chromosome) %>%
     inner_join(cytoBand) %>%
-    mutate(OncoKB = ifelse(is.na(Highest_level), oncogenic, Highest_level))
+    mutate(OncoKB = ifelse(is.na(HIGHEST_LEVEL), oncogenic, HIGHEST_LEVEL))
 
 options(bitmapType='cairo')
 svg(out_path, width=8, height=4)
