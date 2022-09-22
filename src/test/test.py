@@ -390,6 +390,26 @@ class TestJsonScripts(TestBase):
         with open(output_path) as output_file:
             data = json.loads(output_file.read())
         self.assertEqual(data['report']['genomic_summary'], update_text)
+        
+    def test_update_notes(self):
+        update_text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do '+\
+                      'eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+        update_path = os.path.join(self.tmp_dir, 'lorem.txt')
+        with open(update_path, 'w') as out_file:
+            out_file.write(update_text)
+        input_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
+        output_path = os.path.join(self.tmp_dir, 'updated_djerba_report.json')
+        cmd = [
+            'update_technical_notes.py',
+            '--in', input_path,
+            '--notes', update_path,
+            '--out', output_path
+        ]
+        self.run_command(cmd)
+        self.assertTrue(os.path.exists(output_path))
+        with open(output_path) as output_file:
+            data = json.loads(output_file.read())
+        self.assertEqual(data['report']['technical'], update_text)
 
     def test_view(self):
         input_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')

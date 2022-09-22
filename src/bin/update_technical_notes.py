@@ -16,7 +16,7 @@ def get_parser():
     )
     parser.add_argument('-i', '--in', dest='in_path', metavar='PATH', required=True, help='JSON input file, or - for STDIN')
     parser.add_argument('-o', '--out', metavar='PATH', required=True, help='JSON output file, or - for STDOUT')
-    parser.add_argument('-s', '--notes', metavar='PATH', required=True, help='Text file to insert as technical notes; required')
+    parser.add_argument('-n', '--notes', metavar='PATH', required=True, help='Text file to insert as technical notes; required')
     return parser
 
 def main(args):
