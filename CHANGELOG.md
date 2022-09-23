@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## Unreleased
+
+### Changed
+
+- Updated README and added a diagram of Djerba structure
+
 ## v0.3.6: 2022-09-22
 
 ### Changed
