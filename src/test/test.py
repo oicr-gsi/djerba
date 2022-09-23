@@ -410,7 +410,7 @@ class TestJsonScripts(TestBase):
         self.assertTrue(os.path.exists(output_path))
         with open(output_path) as output_file:
             data = json.loads(output_file.read())
-        self.assertEqual(data['report']['technical'], update_text)
+        self.assertEqual(data['report']['technical_notes'], update_text)
 
     def test_view(self):
         input_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')

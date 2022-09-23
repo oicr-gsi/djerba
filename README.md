@@ -28,7 +28,7 @@ The Djerba workflow for producing a clinical report is as follows:
 
 `djerba.py draft --ini ${INI_INPUT_PATH} --dir ${INTERMEDIATE_OUTPUT_DIRECTORY} --html ${HTML_OUTPUT_PATH}`
 
-#### Generate a final PDF report after updating genomic_summary.txt
+#### Generate a final PDF report after updating genomic_summary.txt and technical_notes.txt
 
 `djerba.py html --dir ${INTERMEDIATE_OUTPUT_DIRECTORY} --pdf
 
@@ -107,6 +107,10 @@ Script to manually run the Mavis workflow, via the Cromwell development server. 
 ### `update_genomic_summary.py`
 
 Script to update the `genomic_summary` field of the Djerba report JSON, by inserting the contents of a given text file.
+
+### `update_technical_notes.py`
+
+Script to update the `technical_notes` field of the Djerba report JSON, by inserting the contents of a given text file.
 
 ### `view_json.py`
 
