@@ -23,15 +23,27 @@ class provenance_reader(logger):
     GEO_TUBE_ID = 'geo_tube_id'
 
     # relevant workflow names
+    # temporarily changed to Vidarr versions; TODO allow either Niassa or Vidarr workflow
     WF_ARRIBA = 'arriba'
-    WF_BMPP = 'bamMergePreprocessing'
-    WF_DELLY = 'delly'
+    WF_BMPP = 'bamMergePreprocessing_by_tumor_group'
+    WF_DELLY = 'delly_matched_by_tumor_group'
     WF_MAVIS = 'mavis'
     WF_RSEM = 'rsem'
-    WF_SEQUENZA = 'sequenza'
-    WF_STAR = 'STAR'
-    WF_STARFUSION = 'starFusion'
-    WF_VEP = 'variantEffectPredictor'
+    WF_SEQUENZA = 'sequenza_by_tumor_group'
+    WF_STAR = 'star_call_ready'
+    WF_STARFUSION = 'starfusion'
+    WF_VEP = 'variantEffectPredictor_matched_by_tumor_group'
+
+    # old-style Niassa names
+    NIASSA_WF_ARRIBA = 'arriba'
+    NIASSA_WF_BMPP = 'bamMergePreprocessing'
+    NIASSA_WF_DELLY = 'delly'
+    NIASSA_WF_MAVIS = 'mavis'
+    NIASSA_WF_RSEM = 'rsem'
+    NIASSA_WF_SEQUENZA = 'sequenza'
+    NIASSA_WF_STAR = 'STAR'
+    NIASSA_WF_STARFUSION = 'starFusion'
+    NIASSA_WF_VEP = 'variantEffectPredictor'
 
     # placeholder
     WT_SAMPLE_NAME_PLACEHOLDER = 'whole_transcriptome_placeholder'
@@ -438,7 +450,7 @@ class sample_name_container:
             self.samples[key] = value
         else:
             msg = "Cannot overwrite existing {0} value {1} ".format(key, self.samples[key])+\
-                  "with new value {1}".format(value)
+                  "with new value {0}".format(value)
             raise SampleNameOverwriteError(msg)
 
     def get(self, key):
