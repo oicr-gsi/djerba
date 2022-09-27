@@ -115,7 +115,16 @@ class clinical_report_json_composer(composer_base):
     VARIANT_CLASSIFICATION = 'Variant_Classification'
     V7_TARGET_SIZE = 37.285536 # inherited from CGI-Tools
 
-    TMB_EXCLUDED = ['Silent', 'Splice_Region'] # variant classifications excluded from TMB count
+    # variant classifications excluded from TMB count
+    TMB_EXCLUDED = [
+        "3'Flank",
+        "3'UTR",
+        "5'Flank",
+        "5'UTR",
+        "Silent",
+        "Splice_Region",
+        "Targeted_Region",
+    ]
 
     UNCLASSIFIED_CYTOBANDS = [
         "", # some genes have an empty string for cytoband
