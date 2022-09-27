@@ -4,10 +4,12 @@
 
 ### Changed
 
+- GCGI-496 Expand list of permitted variant types in MAF
 - Updated README and added a diagram of Djerba structure
 
 ### Fixed
 - GCGI-494 Fix input column header in `vaf_plot.R`
+- GCGI-496 Fix FILTER column evaluation for MAF
 
 ## v0.3.6: 2022-09-22
 

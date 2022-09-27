@@ -20,6 +20,7 @@ class r_script_wrapper(logger):
     VARIANT_CLASSIFICATION = 'Variant_Classification'
     TUMOUR_SAMPLE_BARCODE = 'Tumor_Sample_Barcode'
     MATCHED_NORM_SAMPLE_BARCODE = 'Matched_Norm_Sample_Barcode'
+    FILTER = 'FILTER'
     T_DEPTH = 't_depth'
     T_ALT_COUNT = 't_alt_count'
     GNOMAD_AF = 'gnomAD_AF'
@@ -27,6 +28,7 @@ class r_script_wrapper(logger):
         VARIANT_CLASSIFICATION,
         TUMOUR_SAMPLE_BARCODE,
         MATCHED_NORM_SAMPLE_BARCODE,
+        FILTER,
         T_DEPTH,
         T_ALT_COUNT,
         GNOMAD_AF
@@ -36,18 +38,26 @@ class r_script_wrapper(logger):
     GENE_ID = 0
     FPKM = 6
 
-    # permitted MAF mutation types; from mutation_types.exonic in CGI-Tools
+    # Permitted MAF mutation types
+    # `Splice_Region` is *included* here, but *excluded* from the somatic mutation count used to compute TMB in report_to_json.py
+    # See also JIRA ticket GCGI-469
     MUTATION_TYPES_EXONIC = [
-        'Frame_Shift_Del',
-        'Frame_Shift_Ins',
-        'In_Frame_Del',
-        'In_Frame_Ins',
-        'Missense_Mutation',
-        'Nonsense_Mutation',
-        'Nonstop_Mutation',
-        'Silent',
-        'Splice_Site',
-        'Translation_Start_Site'
+        "3'Flank",
+        "3'UTR",
+        "5'Flank",
+        "5'UTR",
+        "Frame_Shift_Del",
+        "Frame_Shift_Ins",
+        "In_Frame_Del",
+        "In_Frame_Ins",
+        "Missense_Mutation",
+        "Nonsense_Mutation",
+        "Nonstop_Mutation",
+        "Silent",
+        "Splice_Region",
+        "Splice_Site",
+        "Targeted_Region",
+        "Translation_Start_Site"
     ]
 
     # disallowed MAF filter flags; from filter_flags.exclude in CGI-Tools
@@ -103,7 +113,6 @@ class r_script_wrapper(logger):
         Expected to filter out >99.9% of input reads
         ix is a dictionary of column indices
         """
-        # TODO check only relevant column(s) against FILTER_FLAGS_EXCLUDE?
         ok = False
         row_t_depth = int(row[ix.get(self.T_DEPTH)])
         alt_count_raw = row[ix.get(self.T_ALT_COUNT)]
@@ -111,11 +120,12 @@ class r_script_wrapper(logger):
         row_t_alt_count = float(alt_count_raw) if alt_count_raw!='' else 0.0
         row_gnomad_af = float(gnomad_af_raw) if gnomad_af_raw!='' else 0.0
         is_matched = row[ix.get(self.MATCHED_NORM_SAMPLE_BARCODE)] != 'unmatched'
+        filter_flags = re.split(';', row[ix.get(self.FILTER)])
         if row_t_depth >= 1 and \
            row_t_alt_count/row_t_depth >= self.MIN_VAF and \
            (is_matched or row_gnomad_af < self.MAX_UNMATCHED_GNOMAD_AF) and \
            row[ix.get(self.VARIANT_CLASSIFICATION)] in self.MUTATION_TYPES_EXONIC and \
-           not any([z in self.FILTER_FLAGS_EXCLUDE for z in row]):
+           not any([z in self.FILTER_FLAGS_EXCLUDE for z in filter_flags]):
             ok = True
         return ok
 
