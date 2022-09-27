@@ -6,6 +6,9 @@
 
 - Updated README and added a diagram of Djerba structure
 
+### Fixed
+- GCGI-494 Fix input column header in `vaf_plot.R`
+
 ## v0.3.6: 2022-09-22
 
 ### Changed
