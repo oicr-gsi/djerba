@@ -5,7 +5,7 @@
 
 # Example usage:
 # export DJERBA_SOURCE_DIR=$HOME/git/djerba
-# source $HOME/git/djerba/test/test_env.sh
+# source $HOME/git/djerba/src/test/test_env.sh
 
 if [ -z "${DJERBA_SOURCE_DIR}" ]; then
     echo "Must set environment variable DJERBA_SOURCE_DIR"

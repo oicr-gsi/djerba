@@ -115,7 +115,16 @@ class clinical_report_json_composer(composer_base):
     VARIANT_CLASSIFICATION = 'Variant_Classification'
     V7_TARGET_SIZE = 37.285536 # inherited from CGI-Tools
 
-    EXCLUDED_VARIANT_CLASSIFICATIONS = ['Silent', 'Splice_Region']
+    # variant classifications excluded from TMB count
+    TMB_EXCLUDED = [
+        "3'Flank",
+        "3'UTR",
+        "5'Flank",
+        "5'UTR",
+        "Silent",
+        "Splice_Region",
+        "Targeted_Region",
+    ]
 
     UNCLASSIFIED_CYTOBANDS = [
         "", # some genes have an empty string for cytoband
@@ -155,10 +164,11 @@ class clinical_report_json_composer(composer_base):
         self.cytoband_map = self.read_cytoband_map()
         if self.failed:
             self.total_somatic_mutations = None
+            self.tmb_count = None
             self.total_fusion_genes = None
             self.gene_pair_fusions = None
         else:
-            self.total_somatic_mutations = self.read_total_somatic_mutations()
+            [self.total_somatic_mutations, self.tmb_count] = self.read_somatic_mutation_totals()
             if self.params.get(xc.ASSAY_TYPE) == rc.ASSAY_WGTS:
                 fus_reader = fusion_reader(input_dir, log_level=log_level, log_path=log_path)
                 self.total_fusion_genes = fus_reader.get_total_fusion_genes()
@@ -223,9 +233,9 @@ class clinical_report_json_composer(composer_base):
         # need to calculate TMB and percentiles
         cohort = self.read_cohort()
         data = {}
-        data[rc.TMB_TOTAL] = self.total_somatic_mutations
+        data[rc.TMB_TOTAL] = self.tmb_count
         # TODO See GCGI-347 for possible updates to V7_TARGET_SIZE
-        data[rc.TMB_PER_MB] = round(self.total_somatic_mutations/self.V7_TARGET_SIZE, 2)
+        data[rc.TMB_PER_MB] = round(self.tmb_count/self.V7_TARGET_SIZE, 2)
         data[rc.PERCENT_GENOME_ALTERED] = int(round(self.read_fga()*100, 0))
         csp = self.read_cancer_specific_percentile(data[rc.TMB_PER_MB], cohort, self.closest_tcga_lc)
         data[rc.CANCER_SPECIFIC_PERCENTILE] = csp
@@ -562,19 +572,24 @@ class clinical_report_json_composer(composer_base):
         percentile = ecdf(tmb)*100
         return percentile
 
-    def read_total_somatic_mutations(self):
+    def read_somatic_mutation_totals(self):
+        # Count the somatic mutations
+        # Splice_Region is *excluded* for TMB, *included* in our mutation tables and counts
+        # Splice_Region mutations are of interest to us, but excluded from the standard TMB definition
+        # The TMB mutation count is (independently) implemented and used in vaf_plot.R
+        # See JIRA ticket GCGI-496
         total = 0
         excluded = 0
         with open(os.path.join(self.input_dir, self.MUTATIONS_EXTENDED)) as data_file:
             for row in csv.DictReader(data_file, delimiter="\t"):
                 total += 1
-                if row.get(self.VARIANT_CLASSIFICATION) in self.EXCLUDED_VARIANT_CLASSIFICATIONS:
+                if row.get(self.VARIANT_CLASSIFICATION) in self.TMB_EXCLUDED:
                     excluded += 1
-        count = total - excluded
-        msg = "Counted {} small mutations and indels; excluded {} of {}".format(count, excluded, total)+\
-              " based on variant classification"
+        tmb_count = total - excluded
+        msg = "Found {} small mutations and indels, of which {} are counted for TMB".format(total,
+                                                                                            tmb_count)
         self.logger.debug(msg)
-        return count
+        return [total, tmb_count]
 
     def run(self):
         """Main method to generate JSON from a report directory"""
