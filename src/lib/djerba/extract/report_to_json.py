@@ -285,7 +285,7 @@ class clinical_report_json_composer(composer_base):
                     rc.VAF_PERCENT: int(round(float(input_row[self.TUMOUR_VAF]), 2)*100),
                     rc.TUMOUR_DEPTH: int(input_row[rc.TUMOUR_DEPTH]),
                     rc.TUMOUR_ALT_COUNT: int(input_row[rc.TUMOUR_ALT_COUNT]),
-                    rc.COPY_STATE: mutation_copy_states[gene],
+                    rc.COPY_STATE: mutation_copy_states.get(gene, self.UNKNOWN),
                     rc.ONCOKB: self.parse_oncokb_level(input_row)
                 }
                 rows.append(row)
