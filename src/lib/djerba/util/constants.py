@@ -10,6 +10,8 @@ TMB_PER_MB_KEY = 'TMB_PER_MB'
 
 # file names
 CLINICAL_DATA_FILENAME = 'data_clinical.txt'
+DATA_CNA_ONCOKB_GENES = 'data_CNA_oncoKBgenes.txt'
+DATA_FUSIONS_ONCOKB = 'data_fusions_oncokb.txt'
 GENOMIC_SUMMARY_FILENAME = 'genomic_summary.txt'
 SEQUENZA_META_FILENAME = 'sequenza_meta.txt'
 REPORT_JSON_FILENAME = 'djerba_report.json'

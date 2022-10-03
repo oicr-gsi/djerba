@@ -9,6 +9,7 @@ import tempfile
 import zipfile
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
+from djerba.extract.oncokb_annotator import oncokb_annotator
 from djerba.sequenza import sequenza_reader
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
@@ -19,6 +20,7 @@ class r_script_wrapper(logger):
     VARIANT_CLASSIFICATION = 'Variant_Classification'
     TUMOUR_SAMPLE_BARCODE = 'Tumor_Sample_Barcode'
     MATCHED_NORM_SAMPLE_BARCODE = 'Matched_Norm_Sample_Barcode'
+    FILTER = 'FILTER'
     T_DEPTH = 't_depth'
     T_ALT_COUNT = 't_alt_count'
     GNOMAD_AF = 'gnomAD_AF'
@@ -26,6 +28,7 @@ class r_script_wrapper(logger):
         VARIANT_CLASSIFICATION,
         TUMOUR_SAMPLE_BARCODE,
         MATCHED_NORM_SAMPLE_BARCODE,
+        FILTER,
         T_DEPTH,
         T_ALT_COUNT,
         GNOMAD_AF
@@ -35,18 +38,26 @@ class r_script_wrapper(logger):
     GENE_ID = 0
     FPKM = 6
 
-    # permitted MAF mutation types; from mutation_types.exonic in CGI-Tools
+    # Permitted MAF mutation types
+    # `Splice_Region` is *included* here, but *excluded* from the somatic mutation count used to compute TMB in report_to_json.py
+    # See also JIRA ticket GCGI-469
     MUTATION_TYPES_EXONIC = [
-        'Frame_Shift_Del',
-        'Frame_Shift_Ins',
-        'In_Frame_Del',
-        'In_Frame_Ins',
-        'Missense_Mutation',
-        'Nonsense_Mutation',
-        'Nonstop_Mutation',
-        'Silent',
-        'Splice_Site',
-        'Translation_Start_Site'
+        "3'Flank",
+        "3'UTR",
+        "5'Flank",
+        "5'UTR",
+        "Frame_Shift_Del",
+        "Frame_Shift_Ins",
+        "In_Frame_Del",
+        "In_Frame_Ins",
+        "Missense_Mutation",
+        "Nonsense_Mutation",
+        "Nonstop_Mutation",
+        "Silent",
+        "Splice_Region",
+        "Splice_Site",
+        "Targeted_Region",
+        "Translation_Start_Site"
     ]
 
     # disallowed MAF filter flags; from filter_flags.exclude in CGI-Tools
@@ -58,25 +69,6 @@ class r_script_wrapper(logger):
     # MAF filter thresholds
     MIN_VAF = 0.1
     MAX_UNMATCHED_GNOMAD_AF = 0.001
-
-    # output filenames
-    ANNOTATED_MAF = 'annotated_maf.tsv'
-    DATA_CNA_ONCOKB_GENES = 'data_CNA_oncoKBgenes.txt'
-    DATA_CNA_ONCOKB_GENES_NON_DIPLOID = 'data_CNA_oncoKBgenes_nonDiploid.txt'
-    DATA_CNA_ONCOKB_GENES_NON_DIPLOID_ANNOTATED = 'data_CNA_oncoKBgenes_nonDiploid_annotated.txt'
-    DATA_FUSIONS_ONCOKB = 'data_fusions_oncokb.txt'
-    DATA_FUSIONS_ONCOKB_ANNOTATED = 'data_fusions_oncokb_annotated.txt'
-    ONCOKB_CLINICAL_INFO = 'oncokb_clinical_info.txt'
-
-    # environment variable for ONCOKB token path
-    ONCOKB_TOKEN_VARIABLE = 'ONCOKB_TOKEN'
-
-    # fields for empty oncoKB annotated fusion file
-    ONCOKB_FUSION_ANNOTATED_HEADERS = [
-        'Tumor_Sample_Barcode', 'Fusion', 'mutation_effect', 'oncogenic',
-        'LEVEL_1', 'LEVEL_2', 'LEVEL_3A', 'LEVEL_3B', 'LEVEL_4',
-        'LEVEL_R1', 'LEVEL_R2', 'LEVEL_R3', 'Highest_level'
-    ]
 
     def __init__(self, config, report_dir, wgs_only, tmp_dir=None,
                  log_level=logging.WARNING, log_path=None):
@@ -94,64 +86,6 @@ class r_script_wrapper(logger):
         if not self.min_fusion_reads.isdigit():
             msg = "Min fusion reads '{}' is not a non-negative integer".format(min_fusion_reads)
             raise ValueError(msg)
-        with open(os.environ[self.ONCOKB_TOKEN_VARIABLE]) as token_file:
-            self.oncokb_token = token_file.read().strip()
-
-    def _annotate_cna(self, info_path):
-        # TODO import the main() method of CnaAnnotator.py instead of running in subprocess
-        in_path = os.path.join(self.report_dir, self.DATA_CNA_ONCOKB_GENES_NON_DIPLOID)
-        out_path = os.path.join(self.report_dir, self.DATA_CNA_ONCOKB_GENES_NON_DIPLOID_ANNOTATED)
-        cmd = [
-            'CnaAnnotator.py',
-            '-i', in_path,
-            '-o', out_path,
-            '-c', info_path,
-            '-b', self.oncokb_token
-        ]
-        self._run_annotator_script(cmd, 'CNA annotator')
-        return out_path
-
-    def _annotate_fusion(self, info_path):
-        # TODO import the main() method of FusionAnnotator.py instead of running in subprocess
-        in_path = os.path.join(self.report_dir, self.DATA_FUSIONS_ONCOKB)
-        out_path = os.path.join(self.report_dir, self.DATA_FUSIONS_ONCOKB_ANNOTATED)
-        with open(in_path) as in_file:
-            total = len(in_file.readlines())
-        if total == 0:
-            # should never happen, but include for completeness
-            msg = "Fusion input {0} cannot be empty -- header is expected".format(in_path)
-            self.logger.error(msg)
-            raise RuntimeError(msg)
-        elif total==1:
-            # input has only a header -- write the oncoKB annotated header
-            self.logger.info("Empty fusion input, writing empty oncoKB annotated file")
-            with open(out_path, 'w') as out_file:
-                out_file.write("\t".join(self.ONCOKB_FUSION_ANNOTATED_HEADERS)+"\n")
-        else:
-            msg = "Read {0} lines of fusion input, running Fusion annotator".format(total)
-            self.logger.debug(msg)
-            cmd = [
-                'FusionAnnotator.py',
-                '-i', in_path,
-                '-o', out_path,
-                '-c', info_path,
-                '-b', self.oncokb_token
-            ]
-            self._run_annotator_script(cmd, 'fusion annotator')
-        return out_path
-
-    def _annotate_maf(self, in_path, tmp_dir, info_path):
-        # TODO import the main() method of MafAnnotator.py instead of running in subprocess
-        out_path = os.path.join(tmp_dir, "annotated_maf_tmp.tsv")
-        cmd = [
-            'MafAnnotator.py',
-            '-i', in_path,
-            '-o', out_path,
-            '-c', info_path,
-            '-b', self.oncokb_token
-        ]
-        self._run_annotator_script(cmd, 'MAF annotator')
-        return out_path
 
     def _get_config_field(self, name):
         """
@@ -179,7 +113,6 @@ class r_script_wrapper(logger):
         Expected to filter out >99.9% of input reads
         ix is a dictionary of column indices
         """
-        # TODO check only relevant column(s) against FILTER_FLAGS_EXCLUDE?
         ok = False
         row_t_depth = int(row[ix.get(self.T_DEPTH)])
         alt_count_raw = row[ix.get(self.T_ALT_COUNT)]
@@ -187,11 +120,12 @@ class r_script_wrapper(logger):
         row_t_alt_count = float(alt_count_raw) if alt_count_raw!='' else 0.0
         row_gnomad_af = float(gnomad_af_raw) if gnomad_af_raw!='' else 0.0
         is_matched = row[ix.get(self.MATCHED_NORM_SAMPLE_BARCODE)] != 'unmatched'
+        filter_flags = re.split(';', row[ix.get(self.FILTER)])
         if row_t_depth >= 1 and \
            row_t_alt_count/row_t_depth >= self.MIN_VAF and \
            (is_matched or row_gnomad_af < self.MAX_UNMATCHED_GNOMAD_AF) and \
            row[ix.get(self.VARIANT_CLASSIFICATION)] in self.MUTATION_TYPES_EXONIC and \
-           not any([z in self.FILTER_FLAGS_EXCLUDE for z in row]):
+           not any([z in self.FILTER_FLAGS_EXCLUDE for z in filter_flags]):
             ok = True
         return ok
 
@@ -207,10 +141,6 @@ class r_script_wrapper(logger):
             self.logger.error(msg)
             raise RuntimeError(msg)
         return indices
-
-    def _run_annotator_script(self, command, description):
-        """Redact the OncoKB token (-b argument) from logging"""
-        self.runner.run(command, description, ['-b',])
 
     def _write_clinical_data(self):
         headers = [
@@ -242,7 +172,7 @@ class r_script_wrapper(logger):
             if val == None:
                 val = 'NA'
             body.append(str(val))
-        out_path = os.path.join(self.report_dir, 'data_clinical.txt')
+        out_path = os.path.join(self.report_dir, constants.CLINICAL_DATA_FILENAME)
         with open(out_path, 'w') as out_file:
             print("\t".join(headers), out_file)
             print("\t".join(body), out_file)
@@ -327,7 +257,7 @@ class r_script_wrapper(logger):
                 writer.writerow(new_row)
         return out_path
 
-    def preprocess_maf(self, maf_path, tmp_dir, oncokb_info_path):
+    def preprocess_maf(self, maf_path, tmp_dir):
         """Apply preprocessing and annotation to a MAF file; write results to tmp_dir"""
         tmp_path = os.path.join(tmp_dir, 'tmp_maf.tsv')
         self.logger.info("Preprocessing MAF input")
@@ -361,7 +291,12 @@ class r_script_wrapper(logger):
                         kept += 1
         self.logger.info("Kept {0} of {1} MAF data rows".format(kept, total))
         # apply annotation to tempfile and return final output
-        out_path = self._annotate_maf(tmp_path, tmp_dir, oncokb_info_path)
+        out_path = oncokb_annotator(
+            self.tumour_id,
+            self.oncotree_code,
+            self.report_dir,
+            tmp_dir
+        ).annotate_maf(tmp_path)
         return out_path
 
     def preprocess_seg(self, sequenza_path, tmp_dir):
@@ -391,8 +326,7 @@ class r_script_wrapper(logger):
             tmp_dir = tmp.name
         else:
             tmp_dir = self.supplied_tmp_dir
-        oncokb_info = self.write_oncokb_info(tmp_dir)
-        maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE], tmp_dir, oncokb_info)
+        maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE], tmp_dir)
         seg_path = self.preprocess_seg(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir)
         cmd = [
             'Rscript', os.path.join(self.r_script_dir, 'singleSample.r'),
@@ -425,28 +359,20 @@ class r_script_wrapper(logger):
                 '--fusfile', fus_path,
             ])
         result = self.runner.run(cmd, "main R script")
-        self.postprocess(oncokb_info)
+        self.postprocess(tmp_dir)
         if self.supplied_tmp_dir == None:
             tmp.cleanup()
         return result
 
-    def postprocess(self, oncokb_info):
+    def postprocess(self, tmp_dir):
         """
         Apply postprocessing to the Rscript output directory:
         - Annotate CNA and (if any) fusion data
         - Remove unnecessary files, for consistency with CGI-Tools
         """
-        self._annotate_cna(oncokb_info)
-        os.remove(os.path.join(self.report_dir, self.DATA_CNA_ONCOKB_GENES))
+        annotator = oncokb_annotator(self.tumour_id, self.oncotree_code, self.report_dir, tmp_dir)
+        annotator.annotate_cna()
+        os.remove(os.path.join(self.report_dir, constants.DATA_CNA_ONCOKB_GENES))
         if not self.wgs_only:
-            self._annotate_fusion(oncokb_info)
-            os.remove(os.path.join(self.report_dir, self.DATA_FUSIONS_ONCOKB))
-
-    def write_oncokb_info(self, info_dir):
-        """Write a file of oncoKB data for use by annotation scripts"""
-        info_path = os.path.join(info_dir, self.ONCOKB_CLINICAL_INFO)
-        args = [self.tumour_id, self.oncotree_code]
-        with open(info_path, 'w') as info_file:
-            print("SAMPLE_ID\tONCOTREE_CODE", file=info_file)
-            print("{0}\t{1}".format(*args), file=info_file)
-        return info_path
+            annotator.annotate_fusion()
+            os.remove(os.path.join(self.report_dir, constants.DATA_FUSIONS_ONCOKB))

@@ -30,6 +30,7 @@ def get_parser():
     config_parser.add_argument('-o', '--out', metavar='PATH', required=True, help='Path for output of fully specified INI config file')
     config_parser.add_argument('-w', '--wgs-only', action='store_true', help='Configure a WGS-only report')
     extract_parser = subparsers.add_parser(constants.EXTRACT, help='extract metrics from configuration')
+    extract_parser.add_argument('-a', '--author', metavar='NAME', help='Name of CGI author for report footer; optional')
     extract_parser.add_argument('-f', '--failed', action='store_true', help='Produce report for a failed sample')
     extract_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with fully specified inputs')
     extract_parser.add_argument('-D', '--dir', metavar='DIR', required=True, help='Directory for output of metrics')
