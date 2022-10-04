@@ -40,7 +40,6 @@ class lister(logger):
         samples = sample_name_container()
         samples.set_and_validate(args.wgn, args.wgt, args.wtt)
         self.provenance_reader = provenance_reader(args.provenance, args.study, args.donor, samples, self.log_level, self.log_path)
-        print(args.provenance)
         self.logger.info("File provenance reader is ready")
 
     def read_ini_mavis(self):
