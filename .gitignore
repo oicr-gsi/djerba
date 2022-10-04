@@ -3,3 +3,6 @@
 djerba.egg-info
 build
 dist
+.project
+src/.DS_Store
+.pydevproject
