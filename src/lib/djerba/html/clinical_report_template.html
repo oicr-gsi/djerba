@@ -89,9 +89,6 @@ ${html_builder().markdown_to_html(genomic_summary)}
 % endif
 </div>
 <br/>
-% if failed:
-<div style="border:3px; border-style:solid; border-color:#FF0000; padding: 1em;">
-% else:
 <div style="border:3px; border-style:solid; border-color:#000000; padding: 1em;">
 % endif
 ${html_builder().markdown_to_html(technical_notes)}
