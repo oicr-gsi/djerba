@@ -141,7 +141,7 @@ class main(logger):
         elif self.args.subparser_name == constants.EXTRACT:
             config = self.read_config(self.args.ini)
             cv.validate_full(config)
-            extractor(config, self.args.dir, self._get_author(), self.wgs_only, self.args.target_coverage, self.args.failed, self.args.target_coverage, self.log_level, self.log_path).run()
+            extractor(config, self.args.dir, self._get_author(), self.wgs_only, self.args.failed, self.args.target_coverage, self.log_level, self.log_path).run()
         elif self.args.subparser_name == constants.HTML:
             json_path = self._get_json_path()
             report_id = self._get_report_id_from_json(json_path)

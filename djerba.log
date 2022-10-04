@@ -1,0 +1,58 @@
+2022-09-23_12:12:35 djerba.main INFO: Running Djerba version 0.3.5
+2022-09-23_12:12:35 djerba.main INFO: Validating paths in command-line arguments
+2022-09-23_12:12:35 djerba.main INFO: Command-line path validation finished.
+2022-09-23_12:12:35 djerba.util.validator INFO: Validating config for WGTS report
+2022-09-23_12:12:35 djerba.main INFO: Running Djerba in mode: html
+2022-09-23_12:12:35 djerba.render.render INFO: Finding archive parameters for /u/wytong/test/report_test/final.html
+2022-09-23_12:12:35 djerba.render.render INFO: Archiving /u/wytong/test/report_test/updated_djerba_report.json to /.mounts/labs/CGI/gsi/djerba_json_archive/devel with ID '100-PM-047'
+2022-09-23_12:12:35 djerba.render.render INFO: Completed HTML rendering of /u/wytong/test/report_test/updated_djerba_report.json to /u/wytong/test/report_test/final.html
+2022-09-23_12:13:34 djerba.main INFO: Running Djerba version 0.3.5
+2022-09-23_12:13:34 djerba.main INFO: Validating paths in command-line arguments
+2022-09-23_12:13:34 djerba.main INFO: Command-line path validation finished.
+2022-09-23_12:13:34 djerba.util.validator INFO: Validating config for WGTS report
+2022-09-23_12:13:34 djerba.main INFO: Running Djerba in mode: html
+2022-09-23_12:13:34 djerba.render.render INFO: Finding archive parameters for /u/wytong/test/report_test/final.html
+2022-09-23_12:13:34 djerba.render.render INFO: Archiving /u/wytong/test/report_test/updated_djerba_report.json to /.mounts/labs/CGI/gsi/djerba_json_archive/devel with ID '100-PM-047'
+2022-09-23_12:13:34 djerba.render.render INFO: Completed HTML rendering of /u/wytong/test/report_test/updated_djerba_report.json to /u/wytong/test/report_test/final.html
+2022-09-23_12:16:15 djerba.main INFO: Running Djerba version 0.3.5
+2022-09-23_12:16:15 djerba.main INFO: Validating paths in command-line arguments
+2022-09-23_12:16:15 djerba.main INFO: Command-line path validation finished.
+2022-09-23_12:16:15 djerba.util.validator INFO: Validating config for WGTS report
+2022-09-23_12:16:15 djerba.main INFO: Running Djerba in mode: html
+2022-09-23_12:16:15 djerba.render.render INFO: Finding archive parameters for /u/wytong/test/report_test/final.html
+2022-09-23_12:16:15 djerba.render.render INFO: Archiving /u/wytong/test/report_test/updated_djerba_report.json to /.mounts/labs/CGI/gsi/djerba_json_archive/devel with ID '100-PM-047'
+2022-09-23_12:16:15 djerba.render.render INFO: Completed HTML rendering of /u/wytong/test/report_test/updated_djerba_report.json to /u/wytong/test/report_test/final.html
+2022-09-23_12:16:43 djerba.main INFO: Running Djerba version 0.3.5
+2022-09-23_12:16:43 djerba.main INFO: Validating paths in command-line arguments
+2022-09-23_12:16:43 djerba.main INFO: Command-line path validation finished.
+2022-09-23_12:16:43 djerba.util.validator INFO: Validating config for WGTS report
+2022-09-23_12:16:43 djerba.main INFO: Running Djerba in mode: html
+2022-09-23_12:16:43 djerba.render.render INFO: Finding archive parameters for /u/wytong/test/report_test/final.html
+2022-09-23_12:16:43 djerba.render.render INFO: Archiving /u/wytong/test/report_test/updated_djerba_report.json to /.mounts/labs/CGI/gsi/djerba_json_archive/devel with ID '100-PM-047'
+2022-09-23_12:16:43 djerba.render.render INFO: Completed HTML rendering of /u/wytong/test/report_test/updated_djerba_report.json to /u/wytong/test/report_test/final.html
+2022-09-23_12:18:20 djerba.main INFO: Running Djerba version 0.3.5
+2022-09-23_12:18:20 djerba.main INFO: Validating paths in command-line arguments
+2022-09-23_12:18:20 djerba.main INFO: Command-line path validation finished.
+2022-09-23_12:18:20 djerba.util.validator INFO: Validating config for WGTS report
+2022-09-23_12:18:20 djerba.main INFO: Running Djerba in mode: html
+2022-09-23_12:18:20 djerba.render.render INFO: Finding archive parameters for /u/wytong/test/report_test/final.html
+2022-09-23_12:18:20 djerba.render.render INFO: Archiving /u/wytong/test/report_test/updated_djerba_report.json to /.mounts/labs/CGI/gsi/djerba_json_archive/devel with ID '100-PM-047'
+2022-09-23_12:18:20 djerba.render.render INFO: Completed HTML rendering of /u/wytong/test/report_test/updated_djerba_report.json to /u/wytong/test/report_test/final.html
+2022-09-23_12:23:14 djerba.main INFO: Running Djerba version 0.3.5
+2022-09-23_12:23:14 djerba.main INFO: Validating paths in command-line arguments
+2022-09-23_12:23:14 djerba.main INFO: Command-line path validation finished.
+2022-09-23_12:23:14 djerba.util.validator INFO: Validating config for WGTS report
+2022-09-23_12:23:14 djerba.main INFO: Running Djerba in mode: html
+2022-09-23_12:23:14 djerba.render.render INFO: Finding archive parameters for /u/wytong/test/report_test/final.html
+2022-09-23_12:23:14 djerba.render.render INFO: Archiving /u/wytong/test/report_test/updated_djerba_report.json to /.mounts/labs/CGI/gsi/djerba_json_archive/devel with ID '100-PM-047'
+2022-09-23_12:23:14 djerba.render.render INFO: Completed HTML rendering of /u/wytong/test/report_test/updated_djerba_report.json to /u/wytong/test/report_test/final.html
+2022-09-23_12:23:14 djerba.main INFO: Finished running Djerba in mode: html
+2022-09-23_12:26:14 djerba.main INFO: Running Djerba version 0.3.5
+2022-09-23_12:26:14 djerba.main INFO: Validating paths in command-line arguments
+2022-09-23_12:26:14 djerba.main INFO: Command-line path validation finished.
+2022-09-23_12:26:14 djerba.util.validator INFO: Validating config for WGTS report
+2022-09-23_12:26:14 djerba.main INFO: Running Djerba in mode: html
+2022-09-23_12:26:14 djerba.render.render INFO: Finding archive parameters for /u/wytong/test/report_test/final.html
+2022-09-23_12:26:14 djerba.render.render INFO: Archiving /u/wytong/test/report_test/updated_djerba_report.json to /.mounts/labs/CGI/gsi/djerba_json_archive/devel with ID '100-PM-047'
+2022-09-23_12:26:14 djerba.render.render INFO: Completed HTML rendering of /u/wytong/test/report_test/updated_djerba_report.json to /u/wytong/test/report_test/final.html
+2022-09-23_12:26:14 djerba.main INFO: Finished running Djerba in mode: html
