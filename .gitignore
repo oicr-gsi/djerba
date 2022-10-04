@@ -6,3 +6,4 @@ dist
 .project
 src/.DS_Store
 .pydevproject
+djerba.log
