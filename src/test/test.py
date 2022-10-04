@@ -63,6 +63,9 @@ class TestBase(unittest.TestCase):
         elif not os.path.isdir(self.bench_dir):
             raise OSError("GSICAPBENCH directory path '{0}' is not a directory".format(self.bench_dir))
         self.provenance = os.path.join(self.sup_dir, 'pass01_panx_provenance.original.tsv.gz')
+        
+        print("self.provenance: " + str(self.provenance))
+        
         self.provenance_vnwgts = os.path.join(self.sup_dir, 'provenance_VNWGTS_0329.tsv.gz')
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
