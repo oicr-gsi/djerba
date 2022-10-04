@@ -19,6 +19,7 @@ out_path <- opt$output
 data_dir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), 'data', sep='/')
 cytoBand <- read.csv((paste(data_dir, "cytoBand.txt", sep = "/")), sep = "\t", header = TRUE, stringsAsFactors = FALSE)
 
+# remove Silent and Splice_Region for consistency with the TMB count
 MAF <- read.csv(maf_path, sep = "\t", header = TRUE, stringsAsFactors = FALSE) %>%
     filter(Variant_Classification != "Silent" & Variant_Classification != "Splice_Region") %>%
     select(-Chromosome) %>%
