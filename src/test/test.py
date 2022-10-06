@@ -131,7 +131,7 @@ class TestArchive(TestBase):
         # contents of file are dependent on local paths
         with open(archive_path) as archive_file:
             data = json.loads(archive_file.read())
-        self.assertEqual(len(data['report']), 20)
+        self.assertEqual(len(data['report']), 21)
         self.assertEqual(len(data['supplementary']['config']), 3)
 
 class TestConfigure(TestBase):
@@ -226,8 +226,8 @@ class TestExtractor(TestBase):
     STATIC_MD5_FAILED = {
         'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
         'genomic_summary.txt': '5a2f6e61fdf0f109ac3d1bcc4bb3ca71',
-        'djerba_report.json': 'b114649420104ec7b1b2dd773cb9f44c',
-        'technical_notes.txt': '0a16c5e7689297232a5b0bd8a2855326'
+        'djerba_report.json': '80e05a8b0404c5c06fa5e01ca8aec061',
+        'technical_notes.txt': '7caedb48f3360f33937cb047579633fd'
     }
     VARYING_OUTPUT = [
         'tmb.svg',
@@ -554,7 +554,7 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '7d9a02918f392c07975ce6fbcf1c4072')
+        self.check_report(out_path, 'd923c7e76c1a705c68076348137ab6a0')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
