@@ -130,7 +130,7 @@ class pdf_renderer(logger):
         self.logger.info('Finished writing PDF')
 
 
-print(100)
-instance = database()
-answer = instance.upload()
-print(100)
+# print(100)
+# instance = database()
+# answer = instance.upload()
+# print(100)
