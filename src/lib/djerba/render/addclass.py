@@ -20,7 +20,7 @@ class Add:
     def AddFolder(self):
     	
         config = configparser.ConfigParser()
-        config.read("/.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/info.ini")              
+        config.read("/.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/info.ini")              
         folder = config["add"]["folder"]
         db = config["database"]["name"]
         base = config["database"]["base"]
@@ -109,7 +109,7 @@ class Add:
         #if len(passed) !=0: print('Total files added = {}'.format(added))
         print('Files Added: {}/{}'.format(added, added + len(failed)))
         
-        return (f'From Folder: {folder}')  #output when assign to variable then print it
+        return folder  #output when assign to variable then print it
 
 
 
