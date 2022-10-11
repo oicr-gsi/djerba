@@ -12,7 +12,9 @@ from mako.lookup import TemplateLookup
 
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
-from djerba.render.archiver import archiver
+#from djerba.render.archiver import archiver
+from database import database
+#
 from djerba.util.logger import logger
 
 class html_renderer(logger):
@@ -62,7 +64,9 @@ class html_renderer(logger):
             if archive_dir:
                 archive_args = [in_path, archive_dir, patient_id]
                 self.logger.info("Archiving {0} to {1} with ID '{2}'".format(*archive_args))
-                archiver(self.log_level, self.log_path).run(*archive_args)
+                #archiver(self.log_level, self.log_path).run(*archive_args)
+                instance = database()
+                answer = instance.upload()
                 self.logger.debug("Archiving done")
             else:
                 self.logger.warn("No archive directory; omitting archiving")
@@ -124,3 +128,9 @@ class pdf_renderer(logger):
             self.logger.error('Traceback: {0}'.format(trace))
             raise
         self.logger.info('Finished writing PDF')
+
+
+# print(100)
+# instance = database()
+# answer = instance.upload()
+# print(100)
