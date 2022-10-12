@@ -1,5 +1,5 @@
 
-preProcCNA <- function(segfile, genebed, gain, amp, htz, hmz, genelist, oncolist){
+preProcCNA <- function(segfile, genebed, gain, amp, htz, hmz, oncolist, genelist=NA){
 
  # test
  #segfile="/.mounts/labs/TGL/cap/OCTCAP/OCT-01-0118/OCT-01-0118-TS/report/seg.txt"
@@ -71,7 +71,7 @@ preProcCNA <- function(segfile, genebed, gain, amp, htz, hmz, genelist, oncolist
  df_cna_thresh_onco_nondiploid <- df_cna_thresh_onco[(df_cna_thresh_onco[,2] != 0), ]
 
  # subset if gene list given
- if (exists("genelist")) {
+ if (!is.na(genelist)) {
     keep_genes <- readLines(genelist)
     df_cna$Hugo_Symbol <- row.names(df_cna)
     df_cna <- df_cna[df_cna$Hugo_Symbol %in% keep_genes,]

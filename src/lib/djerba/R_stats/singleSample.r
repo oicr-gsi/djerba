@@ -128,7 +128,7 @@ if (is.null(maffile)) {
 
 ###################### CNA #####################
 print("Processing CNA data")
-CNAs <- preProcCNA(segfile, genebed, gain, ampl, htzd, hmzd, genelist, oncolist)
+CNAs <- preProcCNA(segfile, genebed, gain, ampl, htzd, hmzd, oncolist)
 
 print("writing seg file")
 # segs
