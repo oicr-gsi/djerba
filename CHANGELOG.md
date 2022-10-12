@@ -6,6 +6,7 @@
 
 - GCGI-496 Expand list of permitted variant types in MAF
 - Updated README and added a diagram of Djerba structure
+- Updated to use Python Tools module v15 for Geneticist Review Report
 
 ### Fixed
 - GCGI-494 Fix input column header in `vaf_plot.R`
