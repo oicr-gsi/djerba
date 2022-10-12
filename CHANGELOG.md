@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.3.9: 2022-10-12
+
+### Changed
+- GCGI-384 Fixed CNV vs Small mutation mismatch
+
 ## v0.3.8: 2022-10-12
 
 ### Changed
