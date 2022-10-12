@@ -43,11 +43,8 @@ class html_builder:
         row_fields = genomic_biomarker_args[constants.BODY]
         rows = []
         for row in row_fields:
-            print(row[constants.ALT])
-            if row[constants.ALT] == "MSI":
-                rows.append("<strong>"+self._href(row[constants.ALT_URL], row[constants.METRIC_CALL])+"</strong><br>")
-                rows.append(row[constants.METRIC_TEXT])
-        print(rows)
+            if row[constants.ALT] != "TMB":
+                rows.append("<strong>Microsatellite Status: </strong>"+row[constants.METRIC_CALL]+"<br>")
         return rows
 
     def key_value_table_rows(self, args, key_groups, widths):

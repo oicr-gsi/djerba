@@ -26,10 +26,25 @@ MAF <- read.csv(maf_path, sep = "\t", header = TRUE, stringsAsFactors = FALSE) %
     mutate(OncoKB = ifelse(is.na(Highest_level), oncogenic, Highest_level))
 
 options(bitmapType='cairo')
-svg(out_path, width=8, height=4)
-ggplot(MAF) + geom_density(aes(x = tumour_vaf), fill = "grey", alpha = 0.5) + geom_rug(aes(x = tumour_vaf,
-  y = 0), position = position_jitter(height = 0)) + xlab("Variant Allele Frequency") + ylab("density") +
-  theme_classic() + theme(text = element_text(size = 15)) + scale_x_continuous(expand = c(0,
-  0), limit = c(0, 1)) + scale_y_continuous(expand = c(0, 0)) + theme(plot.margin = unit(c(2,
-  3, 0, 2), "lines"))
+svg(out_path, width=8, height=2)
+
+ggplot(MAF) + 
+  geom_density(aes(x = tumour_vaf), fill = "grey", alpha = 0.5) + 
+  geom_point(aes(x = tumour_vaf,y = -0.5), position = position_jitter(height = 0)) + 
+  geom_hline(yintercept = -1,color="white") +
+  scale_x_continuous(expand = c(0,0), limit = c(0, 1)) + 
+ scale_y_continuous(expand = c(0, 0)) + 
+  xlab("Variant Allele Frequency") + #ylab("density") +
+  theme_classic() + 
+  guides(fill='none')+
+  theme(#axis.text.y = element_text(angle = 90, vjust = 0.5, hjust=.5),
+    axis.title.y=element_blank(),
+    axis.text.y=element_blank(),
+    axis.ticks.x=element_blank(),
+    text = element_text(size = 10),
+    panel.grid = element_blank(), 
+    plot.margin = unit(c(10, 10, 10, 10), "points"),
+    line = element_blank()
+  ) 
+
 dev.off()
