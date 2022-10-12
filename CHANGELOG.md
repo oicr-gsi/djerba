@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.3.8: 2022-10-12
+
+### Changed
+- GCGI-495 Support for Vidarr workflow names
+
 ## v0.3.7: 2022-09-29
 
 ### Changed

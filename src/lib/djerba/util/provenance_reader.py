@@ -23,15 +23,24 @@ class provenance_reader(logger):
     GEO_TUBE_ID = 'geo_tube_id'
 
     # relevant workflow names
+    # temporarily changed to Vidarr versions; TODO allow either Niassa or Vidarr workflow
     WF_ARRIBA = 'arriba'
-    WF_BMPP = 'bamMergePreprocessing'
-    WF_DELLY = 'delly'
+    WF_BMPP = 'bamMergePreprocessing_by_tumor_group'
+    WF_DELLY = 'delly_matched_by_tumor_group'
     WF_MAVIS = 'mavis'
     WF_RSEM = 'rsem'
-    WF_SEQUENZA = 'sequenza'
-    WF_STAR = 'STAR'
-    WF_STARFUSION = 'starFusion'
-    WF_VEP = 'variantEffectPredictor'
+    WF_SEQUENZA = 'sequenza_by_tumor_group'
+    WF_STAR = 'star_call_ready'
+    WF_STARFUSION = 'starfusion'
+    WF_VEP = 'variantEffectPredictor_matched_by_tumor_group'
+
+    # old-style Niassa names (where different)
+    NIASSA_WF_BMPP = 'bamMergePreprocessing'
+    NIASSA_WF_DELLY = 'delly'
+    NIASSA_WF_SEQUENZA = 'sequenza'
+    NIASSA_WF_STAR = 'STAR'
+    NIASSA_WF_STARFUSION = 'starFusion'
+    NIASSA_WF_VEP = 'variantEffectPredictor'
 
     # placeholder
     WT_SAMPLE_NAME_PLACEHOLDER = 'whole_transcriptome_placeholder'
@@ -97,27 +106,53 @@ class provenance_reader(logger):
             self.normal_id = self._id_normal()
 
     def _check_workflows(self):
-        # check that provenance has all recommended workflows; warn if not
+        # check that provenance has all recommended workflows (Niassa or Vidarr); warn if not
         # this only checks if output exists, *not* if it is correct
-        wf_to_check = [ # TODO add Mavis once it is automated
-            self.WF_ARRIBA,
-            self.WF_BMPP,
-            self.WF_DELLY,
-            self.WF_RSEM,
-            self.WF_STAR,
-            self.WF_VEP
+        wgs_to_check = [
+            [self.WF_BMPP, self.NIASSA_WF_BMPP],
+            [self.WF_SEQUENZA, self.NIASSA_WF_SEQUENZA],
+            [self.WF_VEP, self.NIASSA_WF_VEP]
         ]
-        counts = {key: 0 for key in wf_to_check}
+        wts_to_check = [ # TODO add Mavis once it is automated
+            [self.WF_ARRIBA],
+            [self.WF_DELLY, self.NIASSA_WF_DELLY],
+            [self.WF_RSEM],
+            [self.WF_STAR, self.NIASSA_WF_STAR],
+            [self.WF_STARFUSION, self.NIASSA_WF_STARFUSION]
+        ]
+        counts = {}
+        for group in [wgs_to_check, wts_to_check]:
+            for wf_list in group:
+                for wf in wf_list:
+                    counts[wf] = 0
         for row in self.provenance:
             wf = row[index.WORKFLOW_NAME]
             if wf in counts:
                 counts[wf] += 1
-        for wf in wf_to_check:
-            if counts[wf]==0:
-                self.logger.warning("No results in file provenance for workflow {0}".format(wf))
+        self.logger.debug("Beginning check on workflows in file provenance")
+        for wf_list in wgs_to_check:
+            total = sum([counts[x] for x in wf_list])
+            if total==0:
+                self.logger.warning("No file provenance records for workflows {0}".format(wf_list))
             else:
-                msg = "Found {0} results in file provenance for workflow {1}".format(counts[wf], wf)
+                msg = "Found {0} file provenance records for workflows {1}".format(total, wf_list)
                 self.logger.debug(msg)
+        wts_total = 0
+        for wf_list in wts_to_check:
+            # first pass -- are there any WTS inputs? None expected for WGS-only report.
+            wts_total += sum([counts[x] for x in wf_list])
+        if wts_total==0:
+            self.logger.debug("No WTS inputs found in file provenance, omitting WTS workflow check")
+        else:
+            # second pass -- check individual WTS workflows
+            for wf_list in wts_to_check:
+                total = sum([counts[x] for x in wf_list])
+                if sum([counts[x] for x in wf_list])==0:
+                    self.logger.warning("No file provenance records for workflows {0}".format(wf_list))
+                else:
+                    msg = "Found {0} file provenance records for workflows {1}".format(total, wf_list)
+                    self.logger.debug(msg)
+        self.logger.debug("Finished check on workflows in file provenance")
 
     def _filter_rows(self, index, value, rows=None):
         # find matching provenance rows from a list
@@ -240,7 +275,16 @@ class provenance_reader(logger):
             raise UnknownTumorNormalIDError(msg)
         return chosen_id
 
-    def _parse_default(self, workflow, metatype, pattern, sample_name):
+    def _parse_multiple_workflows(self, workflows, metatype, pattern, sample_name):
+        # Look for file with each workflow name in the list; if file is found, then stop
+        # TODO this is to handle Niassa->Vidarr name changes, can later be removed
+        for workflow in workflows:
+            path = self._parse_file_path(workflow, metatype, pattern, sample_name)
+            if path:
+                break
+        return path
+
+    def _parse_file_path(self, workflow, metatype, pattern, sample_name):
         # get most recent file of given workflow, metatype, file path pattern, and sample name
         # self._filter_* functions return an iterator
         iterrows = self._filter_workflow(workflow)
@@ -358,64 +402,92 @@ class provenance_reader(logger):
         self.logger.debug("Got sample names: {0}".format(names))
         return names
 
+    # Methods to parse file paths for particular workflows
+    # If workflow names differ, try Vidarr first, then Niassa
+
     def parse_arriba_path(self):
+        workflow = self.WF_ARRIBA
+        mt = 'application/octet-stream'
         suffix = '\.fusions\.tsv$'
-        return self._parse_default(self.WF_ARRIBA, 'application/octet-stream', suffix, self.sample_name_wt_t)
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
     def parse_delly_path(self):
+        workflows = [self.WF_DELLY, self.NIASSA_WF_DELLY]
+        mt = 'application/vcf-gz'
         suffix = '\.somatic_filtered\.delly\.merged\.vcf\.gz$'
-        return self._parse_default(self.WF_DELLY, 'application/vcf-gz', suffix, self.sample_name_wg_t)
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_gep_path(self):
+        workflow = self.WF_RSEM
+        mt = 'application/octet-stream'
         suffix = '\.genes\.results$'
-        return self._parse_default(self.WF_RSEM, 'application/octet-stream', suffix, self.sample_name_wt_t)
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
     def parse_maf_path(self):
+        workflows = [self.WF_VEP, self.NIASSA_WF_VEP]
+        mt = 'application/txt-gz'
         suffix = '\.filter\.deduped\.realigned\.recalibrated\.mutect2\.filtered\.maf\.gz$'
-        return self._parse_default(self.WF_VEP, 'application/txt-gz', suffix, self.sample_name_wg_t)
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_mavis_path(self):
-        return self._parse_default(self.WF_MAVIS, 'application/zip-report-bundle', '(mavis-output|summary)\.zip$', self.sample_name_wt_t)
+        workflow = self.WF_MAVIS
+        mt = 'application/zip-report-bundle'
+        suffix = '(mavis-output|summary)\.zip$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
     def parse_sequenza_path(self):
-        metatype = 'application/zip-report-bundle'
+        workflows = [self.WF_SEQUENZA, self.NIASSA_WF_SEQUENZA]
+        mt = 'application/zip-report-bundle'
         suffix = '_results\.zip$'
-        return self._parse_default(self.WF_SEQUENZA, metatype, suffix, self.sample_name_wg_t)
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_starfusion_predictions_path(self):
-        metatype = 'application/octet-stream'
+        workflows = [self.WF_STARFUSION, self.NIASSA_WF_STARFUSION]
+        mt = 'application/octet-stream'
         suffix = 'star-fusion\.fusion_predictions\.tsv$'
-        return self._parse_default(self.WF_STARFUSION, metatype, suffix, self.sample_name_wt_t)
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wt_t)
 
     def parse_wg_bam_path(self):
+        workflows = [self.WF_BMPP, self.NIASSA_WF_BMPP]
+        mt = 'application/bam'
         suffix = '\.filter\.deduped\.realigned\.recalibrated\.bam$'
-        return self._parse_default(self.WF_BMPP, 'application/bam', suffix, self.sample_name_wg_t)
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_wg_bam_ref_path(self):
         # find the reference (normal) BAM
+        workflows = [self.WF_BMPP, self.NIASSA_WF_BMPP]
+        mt = 'application/bam'
         suffix = '\.filter\.deduped\.realigned\.recalibrated\.bam$'
-        return self._parse_default(self.WF_BMPP, 'application/bam', suffix, self.sample_name_wg_n)
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_n)
 
     def parse_wg_index_path(self):
+        workflows = [self.WF_BMPP, self.NIASSA_WF_BMPP]
+        mt = 'application/bam-index'
         suffix = '\.filter\.deduped\.realigned\.recalibrated\.bai$'
-        return self._parse_default(self.WF_BMPP, 'application/bam-index', suffix, self.sample_name_wg_t)
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_wg_index_ref_path(self):
         # find the reference (normal) BAM index
+        workflows = [self.WF_BMPP, self.NIASSA_WF_BMPP]
+        mt = 'application/bam-index'
         suffix = '\.filter\.deduped\.realigned\.recalibrated\.bai$'
-        return self._parse_default(self.WF_BMPP, 'application/bam-index', suffix, self.sample_name_wg_n)
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_n)
 
     ### WT assay produces only 1 bam file; no need to consider tumour vs. reference
 
     def parse_wt_bam_path(self):
         # matches *Aligned.sortedByCoord.out.bam if *not* preceded by an index of the form ACGTACGT
+        workflows = [self.WF_STAR, self.NIASSA_WF_STAR]
+        mt = 'application/bam'
         suffix = '('+self.root_sample_name+'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bam$'
-        return self._parse_default(self.WF_STAR, 'application/bam', suffix, self.sample_name_wt_t)
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wt_t)
 
     def parse_wt_index_path(self):
         # matches *Aligned.sortedByCoord.out.bam if *not* preceded by an index of the form ACGTACGT
+        workflows = [self.WF_STAR, self.NIASSA_WF_STAR]
+        mt = 'application/bam-index'
         suffix = '('+self.root_sample_name+'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bai$'
-        return self._parse_default(self.WF_STAR, 'application/bam-index', suffix, self.sample_name_wt_t)
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wt_t)
 
 class sample_name_container:
     """
@@ -438,7 +510,7 @@ class sample_name_container:
             self.samples[key] = value
         else:
             msg = "Cannot overwrite existing {0} value {1} ".format(key, self.samples[key])+\
-                  "with new value {1}".format(value)
+                  "with new value {0}".format(value)
             raise SampleNameOverwriteError(msg)
 
     def get(self, key):
