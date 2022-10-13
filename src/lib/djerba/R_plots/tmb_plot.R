@@ -32,7 +32,7 @@ tcga_tmb_data_type <- tcga_tmb_data %>% filter(if (sample_tcga %in% tcga_tmb_dat
 
 options(bitmapType='cairo')
 
-svg(out_path, width=8, height=2)
+svg(out_path, width=8, height=4)
 ggplot(tcga_tmb_data, aes(tmb)) +
   geom_density(aes(fill = "All TCGA"), alpha = 0.5) + 
   scale_x_continuous(expand = c(0, 0), limit = c(0, max(sampleTMB, 25))) +
