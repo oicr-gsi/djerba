@@ -131,7 +131,7 @@ class TestArchive(TestBase):
         # contents of file are dependent on local paths
         with open(archive_path) as archive_file:
             data = json.loads(archive_file.read())
-        self.assertEqual(len(data['report']), 21)
+        self.assertEqual(len(data['report']), 20)
         self.assertEqual(len(data['supplementary']['config']), 3)
 
 class TestConfigure(TestBase):
@@ -226,7 +226,7 @@ class TestExtractor(TestBase):
     STATIC_MD5_FAILED = {
         'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
         'genomic_summary.txt': '5a2f6e61fdf0f109ac3d1bcc4bb3ca71',
-        'djerba_report.json': '80e05a8b0404c5c06fa5e01ca8aec061',
+        'djerba_report.json': '1604d753e05b4bdad125664c5cfe3679',
         'technical_notes.txt': '7caedb48f3360f33937cb047579633fd'
     }
     VARYING_OUTPUT = [
