@@ -6,9 +6,7 @@ library(optparse)
 
 option_list = list(
   make_option(c("-d", "--dir"), type="character", default=NULL, help="Input report directory path", metavar="character"),
-  #make_option(c("-o", "--output"), type="character", default=NULL, help="svg output path", metavar="character"),
   make_option(c("-m", "--msi"), type="character", default="TRUE", help="msi", metavar="character")
-
 )
 
 # get options

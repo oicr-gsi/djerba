@@ -4,17 +4,17 @@ Create reports from metadata and workflow output
 
 ## Introduction
 
-Djerba translates cancer bioinformatics workflow outputs and metadata into standard reporting formats.
-
-The current focus of Djerba is producing clinical reports, in the format developed by the Clinical Genome Informatics (CGI) group at [OICR](https://oicr.on.ca).
+Djerba translates cancer bioinformatics workflow outputs and metadata into clinical reports, in the format developed by the Clinical Genome Informatics (CGI) group at [OICR](https://oicr.on.ca).
 
 Djerba is named for an [island](https://en.wikipedia.org/wiki/Djerba) off the coast of North Africa. (The initial letter D is silent, so it is pronounced "jerba".)
 
-The Djerba workflow for producing a clinical report is as follows:
-- Input an INI config file
-- Extract metrics and write as a JSON document
-- Read the JSON document and write HTML using [Mako](https://www.makotemplates.org/) templates
-- Convert HTML to PDF
+Its workflow for producing a clinical report is as follows:
+- Manual input to a minimal INI config file. Input sources include the OICR requisition system, OICR QC (Dashi), and workflows for Mavis and Sequenza
+- `configure`: Populate a fully-specified INI config file, with defaults and automatically discovered parameters
+- `extract`: Use the parameters in the INI to extract variants and metrics, and write as a JSON document
+- `render`: Convert the JSON document to HTML, and HTML to PDF
+
+![Djerba structure](./doc/Djerba_structure.png)
 
 ## Quick start
 
@@ -116,7 +116,7 @@ Script to view the Djerba report JSON in human-readable format, by adding spaces
 
 The following OICR [Modulator](https://gitlab.oicr.on.ca/ResearchIT/modulator) environment modules are required:
 - `python/3.9`
-- `oncokb-annotator/2.0`
+- `oncokb-annotator/3.3.0`
 - `cbioportal/0.1`
 - `rmarkdown/0.1m`
 - `wkhtmltopdf/0.12.6`

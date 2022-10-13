@@ -15,13 +15,13 @@ fi
 REQUISITION=$1
 
 # Constants
-PYTHON_TOOLS_VER=14
+PYTHON_TOOLS_VER=15
 DB_CONFIG=/.mounts/labs/gsi/secrets/cap_reports_prod_db_config_ro.ini
 MISO_URL=https://miso.oicr.on.ca
 DASHI_URL=https://dashi.oicr.on.ca
 PINERY_URL=http://pinery.gsi.oicr.on.ca
 SAMPURU_ETL=/scratch2/groups/gsi/production/sampuru-etl
-QCETL_CACHE=/scratch2/groups/gsi/production/qcetl
+QCETL_CACHE=/scratch2/groups/gsi/production/qcetl_v1
 
 # We unload the current Python module (if any) and load production-tools-python
 # Resolves version conflict, eg. 3.9 for Djerba and 3.6 for production-tools-python

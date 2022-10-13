@@ -1,5 +1,39 @@
 # CHANGELOG
 
+## v0.3.9: 2022-10-12
+
+### Changed
+- GCGI-384 Fixed CNV vs Small mutation mismatch
+
+## v0.3.8: 2022-10-12
+
+### Changed
+- GCGI-495 Support for Vidarr workflow names
+- Updated to use Python Tools module v15 for Geneticist Review Report
+
+## v0.3.7: 2022-09-29
+
+### Changed
+
+- GCGI-496 Expand list of permitted variant types in MAF
+- Updated README and added a diagram of Djerba structure
+
+### Fixed
+- GCGI-494 Fix input column header in `vaf_plot.R`
+- GCGI-496 Fix FILTER column evaluation for MAF
+- Fixed typo in `test_env.sh`
+
+## v0.3.6: 2022-09-22
+
+### Changed
+- GCGI-461: Refactor OncoKB annotation into a separate class
+- GCGI-479: Update to use oncokb-annotator version 3.3.1
+
+### Fixed
+
+- GCGI-480: Bugfix for `djerba.py` crash in `extract` mode
+- Fixes to `test_env.sh` script
+
 ## v0.3.5: 2022-08-30
 
 ### Fixed

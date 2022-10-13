@@ -19,11 +19,12 @@ out_path <- opt$output
 data_dir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), 'data', sep='/')
 cytoBand <- read.csv((paste(data_dir, "cytoBand.txt", sep = "/")), sep = "\t", header = TRUE, stringsAsFactors = FALSE)
 
+# remove Silent and Splice_Region for consistency with the TMB count
 MAF <- read.csv(maf_path, sep = "\t", header = TRUE, stringsAsFactors = FALSE) %>%
     filter(Variant_Classification != "Silent" & Variant_Classification != "Splice_Region") %>%
     select(-Chromosome) %>%
     inner_join(cytoBand) %>%
-    mutate(OncoKB = ifelse(is.na(Highest_level), oncogenic, Highest_level))
+    mutate(OncoKB = ifelse(is.na(HIGHEST_LEVEL), ONCOGENIC, HIGHEST_LEVEL))
 
 options(bitmapType='cairo')
 svg(out_path, width=8, height=4)
