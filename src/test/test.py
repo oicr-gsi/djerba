@@ -273,8 +273,9 @@ class TestExtractor(TestBase):
         with open(os.path.join(out_dir, 'djerba_report.json')) as in_file:
             data_found = json.loads(in_file.read())
             data_found['report']['djerba_version'] = 'PLACEHOLDER'
+            del data_found['supplementary'] # do not test supplementary data
             data = json.dumps(data_found)
-            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), '8929cf5ba8dfbf4e404f285ae4fa1a44')
+            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), '69fdded42e503b6b712671034ed9f5e9')
 
     def test_wgts_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGTS')
