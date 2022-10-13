@@ -561,6 +561,10 @@ class TestRender(TestBase):
         self.check_report(out_path, 'be7b5a93f4643325ba6ba9e659b47770')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
+        
+        print("in path: " + str(args_path))
+        print("out path: " + str(out_path))
+        
         html_renderer().run(args_path, out_path, False)
         self.check_report(out_path, 'e3f60fe01b5dde1cc974e3317831c154')
 
