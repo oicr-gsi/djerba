@@ -34,37 +34,33 @@ options(bitmapType='cairo')
 
 svg(out_path, width=8, height=4)
 ggplot(tcga_tmb_data, aes(tmb)) +
+  
   geom_density(aes(fill = "All TCGA"), alpha = 0.5) + 
+  
   scale_x_continuous(expand = c(0, 0), limit = c(0, max(sampleTMB, 25))) +
   scale_y_continuous(expand = c(0, 0)) +
   
+  coord_cartesian(xlim = c(0, max(sampleTMB, 25)),
+                  clip = 'off') +
+  
   annotate(y = 0, yend=0.25, x=sampleTMB, xend=sampleTMB,geom="segment",linetype="solid",colour = "black") +
-  annotate(geom="text",x = sampleTMB,y=0,color="black",label="Sample TMB", hjust = 1.1, vjust = -6,size=3) +
+  annotate(geom="text",x = sampleTMB,y=0,color="black",label="Sample TMB", hjust = 0.5, vjust = -30) +
   
   annotate(y = 0, yend=0.25, x=10, xend=10,geom="segment",linetype="longdash",colour = "red") +
-  annotate(geom="text",x = 10,y=0,color="red",label="TMB-H", hjust = 1.1, vjust = -6,size=3) +
+  annotate(geom="text",x = 10,y=0,color="red",label="TMB-H", hjust = 0.3, vjust = -30) +
   
-  xlab(" coding mutations per Mb") +
+  xlab("Coding Mutations per Mb") +
   ylab("density") +
   {
     if (sample_tcga %in% external_tmb_data_type$CANCER.TYPE)
       geom_density(data = external_tmb_data_type, aes(fill = "Cohort"), alpha = 0.5)
     else if (sample_tcga %in% tcga_tmb_data_type$CANCER.TYPE)
       geom_density(data = tcga_tmb_data_type, aes(fill = "Cohort"), alpha = 0.5)
-  } + scale_fill_discrete(name = "TMB Cohort") +
-
-
-  theme_classic() +
+  } + scale_fill_discrete(name = "Cohort") +
   
-  theme(
-    legend.position = c(1, 0.8), 
-    plot.margin = unit(c(2, 3, 0, 2), "lines"),
-  axis.title.y=element_blank(),
-    axis.text.y=element_blank(),
-    axis.ticks.x=element_blank(),
-   text = element_text(size = 10),
-    panel.grid = element_blank(), 
-   line = element_blank()
-  ) 
+  theme_classic() + 
+  theme(text = element_text(size = 15),
+        legend.position = c(0.9, 0.9),
+        plot.margin = unit(c(2, 3, 0, 2), "lines"))
 
 dev.off()
