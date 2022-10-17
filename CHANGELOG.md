@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## v0.3.9: 2022-10-12
+
+### Changed
+- GCGI-384 Fixed CNV vs Small mutation mismatch
+
+## v0.3.8: 2022-10-12
+
+### Changed
+- GCGI-495 Support for Vidarr workflow names
+- Updated to use Python Tools module v15 for Geneticist Review Report
+
 ## v0.3.7: 2022-09-29
 
 ### Changed
