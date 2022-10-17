@@ -131,7 +131,7 @@ class TestArchive(TestBase):
         # contents of file are dependent on local paths
         with open(archive_path) as archive_file:
             data = json.loads(archive_file.read())
-        self.assertEqual(len(data['report']), 20)
+        self.assertEqual(len(data['report']), 21)
         self.assertEqual(len(data['supplementary']['config']), 3)
 
 class TestConfigure(TestBase):
@@ -276,7 +276,7 @@ class TestExtractor(TestBase):
             data_found['report']['djerba_version'] = 'PLACEHOLDER'
             del data_found['supplementary'] # do not test supplementary data
             data = json.dumps(data_found)
-            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), '69fdded42e503b6b712671034ed9f5e9')
+            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), 'ecfa4221aa3041c9cdf5acdc2079db3a')
 
     def test_wgts_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGTS')
@@ -554,7 +554,7 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, 'd923c7e76c1a705c68076348137ab6a0')
+        self.check_report(out_path, 'b6fb15ab8024a812e50170783d2a6993')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
