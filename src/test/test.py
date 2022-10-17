@@ -558,7 +558,7 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, 'b9c19e25c802213ef8c6ab6700c65159')
+        self.check_report(out_path, 'a85f28af0d7e936de60a389d108d8c4d')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
         html_renderer().run(args_path, out_path, False)
