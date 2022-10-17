@@ -131,7 +131,7 @@ class TestArchive(TestBase):
         # contents of file are dependent on local paths
         with open(archive_path) as archive_file:
             data = json.loads(archive_file.read())
-        self.assertEqual(len(data['report']), 20)
+        self.assertEqual(len(data['report']), 21)
         self.assertEqual(len(data['supplementary']['config']), 3)
 
 class TestConfigure(TestBase):
