@@ -8,6 +8,10 @@ import shutil #removes directory
 import os
 import pdfkit
 import traceback
+#
+import requests 
+from pathlib import Path
+#
 from mako.template import Template
 from mako.lookup import TemplateLookup
 
@@ -81,11 +85,62 @@ class html_renderer(logger):
                 db = Database()
                 if archive_dir.strip()[-1] != '/': archive_dir += '/'
                 folder = archive_dir+patient_id
-                db.Upload(folder)        
+                
+                #check for doc_id existance in db, increment report_version otherwise to allow upload
+                files = []
+                dirs = []
+                findjson = folder
+                for (findfolder, dir_names, file_names) in os.walk(findjson): 
+                    files.extend(file_names)
+                    dirs.extend(dir_names)
+                for i in range(len(files)):
+                    if files[i][-5:] == '.json': 
+                        json_doc = dirs[i]+'/'+files[i]
+                json_doc = folder+'/'+json_doc
+                f = open(json_doc)
+                data = json.load(f)
+                report_id = data["report"]["patient_info"]["Report ID"]
+                #find_doc = 'http://10.30.133.78:5984/_utils/#database/djerba_dev01/'+report_id  #need change url later
+                #existance = requests.head(find_doc)
+                print(report_id,data["supplementary"]["config"]["inputs"]["report_version"])
+                
+                v = report_id,data["supplementary"]["config"]["inputs"]["report_version"]
+                #if v[0] != -1 and v[1] == 1 :
+                if v[0] == -1 and v[1] > 1 : #print('increment version and upload')
+                    oldv = 'v'+str(data["supplementary"]["config"]["inputs"]["report_version"])
+                    data["supplementary"]["config"]["inputs"]["report_version"] += 1
+                    newv = 'v'+str(data["supplementary"]["config"]["inputs"]["report_version"]) 
+                    self.logger.info("update report_version")
+                    data["report"]["patient_info"]["Report ID"] = data["report"]["patient_info"]["Report ID"].replace(oldv,newv)
+                    self.logger.info("update Report ID")
+
+                    os.remove(json_doc)
+                    with open(json_doc, 'w') as f:
+                        json.dump(data, f)
+                    db.Upload(folder)
+                    if os.path.exists(folder): #delete archive folder that was just created
+                        shutil.rmtree(folder)
+                        print(f'Existing Path has been Removed: {folder}')
+                        self.logger.info(f'Removed Patient ID {patient_id} from archive dir: {archive_dir}')
+                    
+                    self.logger.info(f'prev version = {oldv}. uploaded new version = {newv}')
+                else:
+                    #if v1[0] != -1 and v1[1] == 1 : print ('v1')
+                    self.logger.info('upload first version to database')
+                    db.Upload(folder)
+                    if os.path.exists(folder): #delete archive folder that was just created
+                        shutil.rmtree(folder)
+                        print(f'Existing Path has been Removed: {folder}')
+                        self.logger.info(f'Removed Patient ID {patient_id} from archive dir: {archive_dir}')
+
+                
+                #print(folder)   
+                #db.Upload(folder)        
                 # if os.path.exists(folder): #delete archive folder that was just created
                 #     shutil.rmtree(folder)
                 #     print(f'Existing Path has been Removed: {folder}')
                 #     self.logger.info(f'Removed Patient ID {patient_id} from archive dir: {archive_dir}')
+
 
                 ##TO DO uploading to database, from input json (not written to any intermediate dir)
 
