@@ -60,6 +60,7 @@ class archiver(logger):
         if os.path.exists(out_path):
             msg = "Output path {0} exists; ".format(out_path)+\
                   "an identical file has already been archived; not writing to archive"
+            print(msg)
             self.logger.debug(msg)
         else:
             with open(out_path, 'w') as out_file:

@@ -1,11 +1,11 @@
 """Interface with a CouchDB instance for JSON report documents"""
 
 import logging
-#from djerba.util.logger import logger
-from logger import logger
+from djerba.util.logger import logger
+#from logger import logger
 
-#from djerba.render.addclasslog import Add 
-from addclasslog import Add
+from djerba.render.addclasslog import Add 
+#from addclasslog import Add
 
 class Database(logger):
 #class database():

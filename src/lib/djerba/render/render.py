@@ -4,6 +4,7 @@ Render Djerba results in HTML and PDF format
 
 import json
 import logging
+import shutil #removes directory
 import os
 import pdfkit
 import traceback
@@ -12,14 +13,14 @@ from mako.lookup import TemplateLookup
 
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
-#from djerba.render.archiver import archiver
-from archiver import archiver
+from djerba.render.archiver import archiver
+#from archiver import archiver
 #
-#from djerba.render.database import Database
-from database import Database
+from djerba.render.database import Database
+#from database import Database
 #
-#from djerba.util.logger import logger
-from logger import logger
+from djerba.util.logger import logger
+#from logger import logger
 
 class html_renderer(logger):
 
@@ -73,6 +74,21 @@ class html_renderer(logger):
                 self.logger.info("Archiving {0} to {1} with ID '{2}'".format(*archive_args))
                 #a = archiver()
                 archiver(self.log_level, self.log_path).run(*archive_args)
+
+                #print(f'Input Json: {in_path}', f'Archive Dir: {archive_dir}', f'Patient_ID (folder): {patient_id}')
+                #print()
+                ### uploading to database, from archive dir
+                db = Database()
+                if archive_dir.strip()[-1] != '/': archive_dir += '/'
+                folder = archive_dir+patient_id
+                db.Upload(folder)        
+                # if os.path.exists(folder): #delete archive folder that was just created
+                #     shutil.rmtree(folder)
+                #     print(f'Existing Path has been Removed: {folder}')
+                #     self.logger.info(f'Removed Patient ID {patient_id} from archive dir: {archive_dir}')
+
+                ##TO DO uploading to database, from input json (not written to any intermediate dir)
+
                 self.logger.debug("Archiving done")
             else:
                 self.logger.warn("No archive directory; omitting archiving")
@@ -80,21 +96,7 @@ class html_renderer(logger):
         else:
             self.logger.info("Archive operation not requested; omitting archiving")
         
-        print(f'Input Json: {in_path}', f'Archive Dir: {archive_dir}', f'Patient_ID (folder): {patient_id}')
-        print()
-        ### uploading to database, from archive dir
-        db = Database()
-        if archive_dir.strip()[-1] != '/': archive_dir += '/'
-        folder = archive_dir+patient_id
-        #print(folder, type(folder))
-        db.Upload(folder)
-
-        ##uploading to database, from input json (not written to any intermediate dir)
-        ## TO DO
-
         self.logger.info("Completed HTML rendering of {0} to {1}".format(in_path, out_path))
-
-        #insert database upload stuff here!!!
 
         self.logger.info('run method of html_renderer class FINISHED from render.py')
 
@@ -153,13 +155,13 @@ class pdf_renderer(logger):
         self.logger.info('Finished writing PDF')
 
 
-r = html_renderer()
 
-#html mode - input json document produced by extract, write html report, optionally write PDF report
-#requires input json and output html, otherwise specify directory which searches for these 
-injson = '/.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/lauren_djerba_report.json'
-outhtml = '/.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/lauren_djerba_report.html'
-r.run(injson,outhtml)
+##html mode - input json document produced by extract, write html report, optionally write PDF report
+##requires input json and output html, otherwise specify directory which searches for these 
+# r = html_renderer()
+# injson = '/.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/lauren_djerba_report.json'
+# outhtml = '/.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/lauren_djerba_report.html'
+# r.run(injson,outhtml)
 
 # db = Database()
 # upload = db.Upload()

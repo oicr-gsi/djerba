@@ -1,25 +1,49 @@
-2022-10-18_11:18:26 __main__ INFO: Initializing html_renderer object
-2022-10-18_11:18:26 __main__ INFO: run method of html_renderer class STARTING from render.py
-2022-10-18_11:18:26 __main__ INFO: Finding archive parameters for /.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/lauren_djerba_report.html
-2022-10-18_11:18:26 __main__ INFO: Archiving /.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/lauren_djerba_report.json to /.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/archive with ID 'success'
-2022-10-18_11:18:26 archiver INFO: Initializing archiver object from archiver.py
-2022-10-18_11:18:26 archiver INFO: run method from archiver class STARTED
-2022-10-18_11:18:26 archiver DEBUG: Reading data path /.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/lauren_djerba_report.json
-2022-10-18_11:18:26 djerba.util.image_to_base64 DEBUG: OICR logo is already encoded; invalid for base64 conversion
-2022-10-18_11:18:26 djerba.util.image_to_base64 DEBUG: Omitting base64 conversion; OICR logo input (truncated to 50 characters): data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAB+UA
-2022-10-18_11:18:26 djerba.util.image_to_base64 DEBUG: TMB plot is already encoded; invalid for base64 conversion
-2022-10-18_11:18:26 djerba.util.image_to_base64 DEBUG: Omitting base64 conversion; TMB plot input (truncated to 50 characters): data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4w
-2022-10-18_11:18:26 djerba.util.image_to_base64 DEBUG: VAF plot is already encoded; invalid for base64 conversion
-2022-10-18_11:18:26 djerba.util.image_to_base64 DEBUG: Omitting base64 conversion; VAF plot input (truncated to 50 characters): data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4w
-2022-10-18_11:18:26 archiver DEBUG: Archived JSON to /.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/archive/success/4275a92c052af051e8e72ab0c0bcb8e0/success_4275a92c.json
-2022-10-18_11:18:26 archiver INFO: run method from archiver class FINISHED
-2022-10-18_11:18:26 __main__ DEBUG: Archiving done
-2022-10-18_11:18:26 database INFO: Initializing Djerba database object
-2022-10-18_11:18:26 database INFO: Database class Upload method STARTING
-2022-10-18_11:18:26 addclasslog INFO: Initializing Add object from addclasslog.py
-2022-10-18_11:18:26 addclasslog INFO: AddFolder method STARTED from addclasslog.py
-2022-10-18_11:18:26 addclasslog INFO: Success uploading 100-PM-013_LCM5-v1 to djerba_dev01 database <status 201>
-2022-10-18_11:18:26 addclasslog INFO: AddFolder method FINISHED from addclasslog.py
-2022-10-18_11:18:26 database INFO: Database class Upload method FINISHED
-2022-10-18_11:18:26 __main__ INFO: Completed HTML rendering of /.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/lauren_djerba_report.json to /.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/lauren_djerba_report.html
-2022-10-18_11:18:26 __main__ INFO: run method of html_renderer class FINISHED from render.py
+2022-10-18_12:03:10 djerba.render.database INFO: Initializing Djerba database object
+2022-10-18_12:03:10 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-18_12:03:10 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-18_12:03:10 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-18_12:03:10 djerba.render.addclasslog ERROR: Error uploading 100-PM-013_LCM5-v1 to djerba_dev01 database for Document update conflict.
+2022-10-18_12:03:10 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-18_12:03:10 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-18_12:03:23 djerba.render.database INFO: Initializing Djerba database object
+2022-10-18_12:03:23 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-18_12:03:23 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-18_12:03:23 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-18_12:03:24 djerba.render.addclasslog ERROR: Error uploading 100-PM-013_LCM5-v1 to djerba_dev01 database for Document update conflict.
+2022-10-18_12:03:24 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-18_12:03:24 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-18_12:04:21 djerba.render.database INFO: Initializing Djerba database object
+2022-10-18_12:04:21 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-18_12:04:21 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-18_12:04:21 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-18_12:04:21 djerba.render.addclasslog ERROR: Error uploading 100-PM-013_LCM5-v1 to djerba_dev01 database for Document update conflict.
+2022-10-18_12:04:21 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-18_12:04:21 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-18_12:04:30 djerba.render.database INFO: Initializing Djerba database object
+2022-10-18_12:04:30 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-18_12:04:30 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-18_12:04:30 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-18_12:04:30 djerba.render.addclasslog ERROR: Error uploading 100-PM-013_LCM5-v1 to djerba_dev01 database for Document update conflict.
+2022-10-18_12:04:30 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-18_12:04:30 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-18_12:08:28 djerba.render.database INFO: Initializing Djerba database object
+2022-10-18_12:08:28 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-18_12:08:28 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-18_12:08:28 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-18_12:08:28 djerba.render.addclasslog ERROR: Error uploading 100-PM-013_LCM5-v1 to djerba_dev01 database for Document update conflict.
+2022-10-18_12:08:28 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-18_12:08:28 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-18_12:09:46 djerba.render.database INFO: Initializing Djerba database object
+2022-10-18_12:09:46 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-18_12:09:46 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-18_12:09:46 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-18_12:09:46 djerba.render.addclasslog ERROR: Error uploading 100-PM-013_LCM5-v1 to djerba_dev01 database for Document update conflict.
+2022-10-18_12:09:46 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-18_12:09:46 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-18_12:13:28 djerba.render.database INFO: Initializing Djerba database object
+2022-10-18_12:13:28 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-18_12:13:28 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-18_12:13:28 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-18_12:13:28 djerba.render.addclasslog ERROR: Error uploading 100-PM-013_LCM5-v1 to djerba_dev01 database for Document update conflict.
+2022-10-18_12:13:28 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-18_12:13:28 djerba.render.database INFO: Database class Upload method FINISHED
