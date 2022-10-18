@@ -1,29 +1,30 @@
 """Interface with a CouchDB instance for JSON report documents"""
 
 import logging
-import addclass 
+#from djerba.util.logger import logger
+from logger import logger
 
-from djerba.util.logger import logger
-from addclass import Add 
+#from djerba.render.addclasslog import Add 
+from addclasslog import Add
 
-class database(logger):
+class Database(logger):
 #class database():
     """Class to communicate with CouchDB via the API, eg. using HTTP GET/POST statements"""
 
-    def __init__(self, log_level=logging.WARNING, log_path=None):
+    def __init__(self, log_level=logging.DEBUG, log_path='/.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/test.log'):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.logger.info("Initializing Djerba database object")
     
-    #def __init__(self):
-    #    pass
-
-    def upload(self):
-        # placeholder; TODO add the uploading functionality
-
+    def Upload(self,folder):
+        self.logger.info('Database class Upload method STARTING')
         instance = Add()
-        folder_path = instance.AddFolder()
-        print(folder_path)
+        folder = folder
+        folder_path = instance.AddFolder(folder)
+        #print(folder_path)
+        #self.logger.info('printed to terminal for user the folder_path of upload')
+        self.logger.info('Database class Upload method FINISHED')
 
-# instance = database()
-# answer = instance.upload()
+
+# instance = Database()
+# answer = instance.Upload()
 

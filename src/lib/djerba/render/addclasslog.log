@@ -1,0 +1,6 @@
+2022-10-18_09:42:44 __main__ INFO: Add class initialized from addclasslog.py
+2022-10-18_09:42:44 __main__ INFO: AddFolder method STARTED from addclasslog.py
+2022-10-18_09:42:44 __main__ ERROR: Error uploading 100-PM-013_LCM5-v1 to djerba_dev01 database for Document update conflict.
+2022-10-18_09:42:44 __main__ ERROR: Error uploading 100-PM-013_LCM5-v1 to djerba_dev01 database for Document update conflict.
+2022-10-18_09:42:44 __main__ ERROR: Error uploading 100-PM-013_LCM5-v1 to djerba_dev01 database for Document update conflict.
+2022-10-18_09:42:44 __main__ INFO: AddFolder method FINISHED from addclasslog.py

@@ -1,0 +1,11 @@
+2022-10-18_09:49:28 __main__ INFO: Initializing Djerba database object
+2022-10-18_09:51:55 __main__ INFO: Initializing Djerba database object
+2022-10-18_09:51:55 __main__ INFO: Database class Upload method STARTING
+2022-10-18_09:51:55 addclasslog INFO: Add class initialized from addclasslog.py
+2022-10-18_09:51:55 addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-18_09:51:55 addclasslog ERROR: Error uploading 100-PM-013_LCM5-v1 to djerba_dev01 database for Document update conflict.
+2022-10-18_09:51:55 addclasslog ERROR: Error uploading 100-PM-013_LCM5-v1 to djerba_dev01 database for Document update conflict.
+2022-10-18_09:51:55 addclasslog ERROR: Error uploading 100-PM-013_LCM5-v1 to djerba_dev01 database for Document update conflict.
+2022-10-18_09:51:55 addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-18_09:51:55 __main__ INFO: printed to terminal for user the folder_path of upload
+2022-10-18_09:51:55 __main__ INFO: Database class Upload method FINISHED

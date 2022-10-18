@@ -13,13 +13,17 @@ from mako.lookup import TemplateLookup
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 #from djerba.render.archiver import archiver
-from database import database
+from archiver import archiver
 #
-from djerba.util.logger import logger
+#from djerba.render.database import Database
+from database import Database
+#
+#from djerba.util.logger import logger
+from logger import logger
 
 class html_renderer(logger):
 
-    def __init__(self, log_level=logging.WARNING, log_path=None):
+    def __init__(self, log_level=logging.DEBUG, log_path='/.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/test.log'):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
@@ -32,8 +36,11 @@ class html_renderer(logger):
         # see https://docs.makotemplates.org/en/latest/runtime.html#context-variables
         report_lookup = TemplateLookup(directories=[html_dir,], strict_undefined=True)
         self.template = report_lookup.get_template("clinical_report_template.html")
+        
+        self.logger.info('Initializing html_renderer object')
 
     def run(self, in_path, out_path, archive=True):
+        self.logger.info('run method of html_renderer class STARTING from render.py')
         with open(in_path) as in_file:
             data = json.loads(in_file.read())
             args = data.get(constants.REPORT)
@@ -64,16 +71,32 @@ class html_renderer(logger):
             if archive_dir:
                 archive_args = [in_path, archive_dir, patient_id]
                 self.logger.info("Archiving {0} to {1} with ID '{2}'".format(*archive_args))
-                #archiver(self.log_level, self.log_path).run(*archive_args)
-                instance = database()
-                answer = instance.upload()
+                #a = archiver()
+                archiver(self.log_level, self.log_path).run(*archive_args)
                 self.logger.debug("Archiving done")
             else:
                 self.logger.warn("No archive directory; omitting archiving")
+
         else:
             self.logger.info("Archive operation not requested; omitting archiving")
+        
+        print(f'Input Json: {in_path}', f'Archive Dir: {archive_dir}', f'Patient_ID (folder): {patient_id}')
+        print()
+        ### uploading to database, from archive dir
+        db = Database()
+        if archive_dir.strip()[-1] != '/': archive_dir += '/'
+        folder = archive_dir+patient_id
+        #print(folder, type(folder))
+        db.Upload(folder)
+
+        ##uploading to database, from input json (not written to any intermediate dir)
+        ## TO DO
+
         self.logger.info("Completed HTML rendering of {0} to {1}".format(in_path, out_path))
 
+        #insert database upload stuff here!!!
+
+        self.logger.info('run method of html_renderer class FINISHED from render.py')
 
 class pdf_renderer(logger):
 
@@ -130,7 +153,13 @@ class pdf_renderer(logger):
         self.logger.info('Finished writing PDF')
 
 
-# print(100)
-# instance = database()
-# answer = instance.upload()
-# print(100)
+r = html_renderer()
+
+#html mode - input json document produced by extract, write html report, optionally write PDF report
+#requires input json and output html, otherwise specify directory which searches for these 
+injson = '/.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/lauren_djerba_report.json'
+outhtml = '/.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/lauren_djerba_report.html'
+r.run(injson,outhtml)
+
+# db = Database()
+# upload = db.Upload()

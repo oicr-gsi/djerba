@@ -15,10 +15,11 @@ from djerba.util.validator import path_validator
 class archiver(logger):
     """Archive the report JSON to a directory, with hashing to avoid overwrites"""
 
-    def __init__(self, log_level=logging.WARNING, log_path=None):
+    def __init__(self, log_level=logging.DEBUG, log_path='/.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/test.log'):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.converter = converter(log_level, log_path)
         self.validator = path_validator(log_level, log_path)
+        self.logger.info('Initializing archiver object from archiver.py')
 
     def read_and_preprocess(self, data_path):
         # read the JSON and convert image paths to base64 blobs
@@ -38,6 +39,7 @@ class archiver(logger):
         return json.dumps(data)
 
     def run(self, data_path, archive_dir, patient_id):
+        self.logger.info('run method from archiver class STARTED')
         data_string = self.read_and_preprocess(data_path)
         m = hashlib.md5()
         m.update(data_string.encode(constants.TEXT_ENCODING))
@@ -63,4 +65,5 @@ class archiver(logger):
             with open(out_path, 'w') as out_file:
                 out_file.write(data_string)
             self.logger.debug("Archived JSON to {0}".format(out_path))
+        self.logger.info('run method from archiver class FINISHED')
         return out_path
