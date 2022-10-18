@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+### Fixed
+- GCGI-506 Increase test speed by using custom file provenance throughout
+
 ## v0.3.9: 2022-10-12
 
 ### Changed
