@@ -124,9 +124,9 @@ class Add(logger):
         #if len(failed) !=0: print('Total files failed = {}'.format(len(failed)))
         #if len(passed) !=0: print('Total files added = {}'.format(added))
         print('Files Added: {}/{}'.format(added, added + len(failed)))
-        print(folder)  #remove if only want return stored below...
+        print(folder) 
         self.logger.info('AddFolder method FINISHED from addclasslog.py')
-        return folder  #output when assign to variable then print it
+        return status  #output when assign to variable then print it
 
 # a = Add()
 # a.AddFolder()

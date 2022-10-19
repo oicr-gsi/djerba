@@ -19,10 +19,11 @@ class Database(logger):
         self.logger.info('Database class Upload method STARTING')
         instance = Add()
         folder = folder
-        folder_path = instance.AddFolder(folder)
-        #print(folder_path)
-        #self.logger.info('printed to terminal for user the folder_path of upload')
+        status = instance.AddFolder(folder)
+      
+        self.logger.info('printed to terminal for user the status of upload - assume 1 DOC!')
         self.logger.info('Database class Upload method FINISHED')
+        return status
 
 
 # instance = Database()
