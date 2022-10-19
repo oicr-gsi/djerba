@@ -52,6 +52,7 @@ SEX = 'sex'
 STUDY_ID = 'studyid'
 TCGA_CODE = 'tcgacode'
 TCGA_DATA = 'tcgadata'
+TECHNICAL_NOTES = 'technical_notes'
 TMBCOMP = 'tmbcomp'
 TUMOUR_ID = 'tumourid'
 WHIZBAM_URL = 'whizbam_url'
@@ -85,6 +86,7 @@ SCHEMA_DEFAULT = {
         SEQUENZA_GAMMA,
         SEQUENZA_FILE,
         SEQUENZA_SOLUTION,
+        TECHNICAL_NOTES,
         TMBCOMP,
         TUMOUR_ID
     ],
@@ -140,6 +142,7 @@ SCHEMA_WGS_ONLY = {
         SEQUENZA_GAMMA,
         SEQUENZA_FILE,
         SEQUENZA_SOLUTION,
+        TECHNICAL_NOTES,
         TMBCOMP,
         TUMOUR_ID
     ],
@@ -185,6 +188,7 @@ SCHEMA_FAILED = {
         PATIENT_ID,
         PLOIDY,
         PURITY,
+        TECHNICAL_NOTES,
         TMBCOMP,
         TUMOUR_ID
     ],
