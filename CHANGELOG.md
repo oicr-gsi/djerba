@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+### Added
+- GCGI-422 Add a 'technical notes' section to the report
+
 ## v0.3.9: 2022-10-12
 
 ### Changed
