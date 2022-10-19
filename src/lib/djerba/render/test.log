@@ -2081,3 +2081,14 @@
 2022-10-19_14:13:25 djerba.render.database INFO: Database class Upload method STARTING
 2022-10-19_14:13:25 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
 2022-10-19_14:13:25 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:39:48 djerba.render.archiver INFO: Initializing archiver object from archiver.py
+2022-10-19_14:39:48 djerba.render.archiver INFO: run method from archiver class STARTED
+2022-10-19_14:39:48 djerba.render.archiver DEBUG: Reading data path /.mounts/labs/CGI/gsi/djerba_test/djerba_test_data_lfs/report_json/WGTS/djerba_report.json
+2022-10-19_14:39:48 djerba.util.image_to_base64 DEBUG: OICR logo is already encoded; invalid for base64 conversion
+2022-10-19_14:39:48 djerba.util.image_to_base64 DEBUG: Omitting base64 conversion; OICR logo input (truncated to 50 characters): data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAB+UA
+2022-10-19_14:39:48 djerba.util.image_to_base64 DEBUG: TMB plot is already encoded; invalid for base64 conversion
+2022-10-19_14:39:48 djerba.util.image_to_base64 DEBUG: Omitting base64 conversion; TMB plot input (truncated to 50 characters): data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD
+2022-10-19_14:39:48 djerba.util.image_to_base64 DEBUG: VAF plot is already encoded; invalid for base64 conversion
+2022-10-19_14:39:48 djerba.util.image_to_base64 DEBUG: Omitting base64 conversion; VAF plot input (truncated to 50 characters): data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD
+2022-10-19_14:39:48 djerba.render.archiver DEBUG: Archived JSON to /var/oicr/tmp/83761164.1.all.q/djerba_nciwaj__/test_ID/986a994666478fc8c5b3549f8a84178b/test_ID_986a9946.json
+2022-10-19_14:39:48 djerba.render.archiver INFO: run method from archiver class FINISHED

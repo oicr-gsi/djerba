@@ -15,7 +15,7 @@ from djerba.util.validator import path_validator
 class archiver(logger):
     """Archive the report JSON to a directory, with hashing to avoid overwrites"""
 
-    def __init__(self, log_level=logging.DEBUG, log_path='/.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/test.log'):
+    def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.converter = converter(log_level, log_path)
         self.validator = path_validator(log_level, log_path)

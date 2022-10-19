@@ -1,12 +1,12 @@
 """ Searches for and uploads all json files within main and any sub folders """
 
 import logging 
-from djerba.util.logger import logger
-from datetime import datetime
 import configparser 
 import requests
 import json
 import os
+from datetime import datetime
+from djerba.util.logger import logger
 
 """ Input from info.ini includes ["database"]["name"] + ["database"]["base"] """
 
@@ -91,11 +91,11 @@ class Add(logger):
                         self.logger.debug('Error uploading %s to %s database for %s', upload["_id"], db, py_dict["reason"])
         
         '''FEEDBACK FOR DEBUGGING, COMMENT OUT LATER'''
-        # if len(passed) !=0:
+        #if len(passed) !=0:
         #     print('Sucessful upload to {} database :)'.format(db), 'Status Code <201>', sep='\n')
         #     print()
-        #     for file in passed:
-        #         print(file)
+            # for file in passed:
+            #     print(file)
         # if len(passed) !=0 and len(failed) !=0: print()    
         # if len(failed) !=0:
         #     print('Error in {} database!'.format(db), '\n')
@@ -104,9 +104,9 @@ class Add(logger):
         # print()    
         # #if len(failed) !=0: print('Total files failed = {}'.format(len(failed)))
         # #if len(passed) !=0: print('Total files added = {}'.format(added))
-        # print('Files Added: {}/{}'.format(added, added + len(failed)))
+        #print('Files Archived: {}/{}'.format(added, added + len(failed)))
         # print(folder)
-         
+        if len(passed) == 1: print('1 File Archived. {}'.format(passed[0]))
         self.logger.info('AddFolder method FINISHED from addclasslog.py')
         return status 
 

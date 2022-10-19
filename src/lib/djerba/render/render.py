@@ -21,7 +21,7 @@ from djerba.util.logger import logger
 
 class html_renderer(logger):
 
-    def __init__(self, log_level=logging.WARN, log_path=None):
+    def __init__(self, log_level=logging.WARNING, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
@@ -117,7 +117,6 @@ class html_renderer(logger):
                 self.logger.debug("Archiving done")
             else:
                 self.logger.warn("No archive directory; omitting archiving")
-
         else:
             self.logger.info("Archive operation not requested; omitting archiving")
         
