@@ -3,14 +3,6 @@ import logging
 from djerba.util.logger import logger
 #from logger import logger
 from datetime import datetime
-
-# time = datetime.now()
-# dt_log = time.strftime("%d%m%Y_%H%M")
-# log_path = '/.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/lauren/logpath/'
-# log_name = 'test' #+f'_{dt_log}'
-# logging.basicConfig(format='%(levelname)s:%(message)s', filename=log_path+log_name+'.log', encoding='utf-8', level=logging.DEBUG)
-# logging.info('addclasslog.py imported <first line>')
-
 import configparser 
 import requests
 import json

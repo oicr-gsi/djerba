@@ -78,14 +78,11 @@ class html_renderer(logger):
                 split = in_path.split("/")
                 split.pop()
                 split = "/".join(split)
-                archive_dir = split ###CHANGES DF ARCHIVE_DIR TO FOLDER SO NO INTERMEDIATE WRITE
+                archive_dir = split ###CHANGES DF ARCHIVE_DIR TO INPUT DIR, SO NO INTERMEDIATE WRITE IF DELETED AFTER BELOW
                 archive_args = [in_path, archive_dir, patient_id]
                 self.logger.info("Archiving {0} to {1} with ID '{2}'".format(*archive_args))
                 archiver(self.log_level, self.log_path).run(*archive_args)
 
-                #print(f'Input Json: {in_path}', f'Archive Dir: {archive_dir}', f'Patient_ID (folder): {patient_id}')
-                #print()
-                ### uploading to database, from archive dir - can change
                 db = Database()
                 if archive_dir.strip()[-1] != '/': archive_dir += '/'
                 folder = archive_dir+patient_id
@@ -112,7 +109,6 @@ class html_renderer(logger):
                     if status == 201:
                         self.logger.info('New version uploaded to db')
                         print(data["report"]["patient_info"]["Report ID"], data["supplementary"]["config"]["inputs"]["report_version"])  
-                        #html_update = data["report"]["patient_info"]["Report ID"], data["supplementary"]["config"]["inputs"]["report_version"]
                         newVersion = True
                     elif status == 409:
                         self.logger.error('Document update conflict')
@@ -129,24 +125,12 @@ class html_renderer(logger):
                             json.dump(data, f)
                         print(data["report"]["patient_info"]["Report ID"], data["supplementary"]["config"]["inputs"]["report_version"])
                         
-               
-                print(folder)
-                if os.path.exists(folder): #delete archive folder that was just created - MIGHT NOT WORK IF SET TO INPUT DIR
+                #print(folder)
+                if os.path.exists(folder): #delete temp archive folder that was just created
                     shutil.rmtree(folder)
                     print(f'Existing Path has been Removed: {folder}')
                     self.logger.info(f'Removed Patient ID {patient_id} from archive dir: {archive_dir}')
 
-                #db.Upload(folder)        
-                # if os.path.exists(folder): #delete archive folder that was just created
-                #     shutil.rmtree(folder)
-                #     print(f'Existing Path has been Removed: {folder}')
-                #     self.logger.info(f'Removed Patient ID {patient_id} from archive dir: {archive_dir}')
-
-
-                ##TO DO uploading to database, from input json (not written to any intermediate dir)
-                print()
-                # print(split)
-                # print(oldv)
                 for f in os.listdir(split):
                     filename = os.fsdecode(f)
                     #if filename.endswith(".html"):
@@ -158,7 +142,6 @@ class html_renderer(logger):
                         # print(filename, newname)
                         os.system(f"mv {split}/{filename} {split}/{newname}")
     
-                print()
                 self.logger.debug("Archiving done")
             else:
                 self.logger.warn("No archive directory; omitting archiving")
