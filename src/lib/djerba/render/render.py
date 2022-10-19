@@ -103,27 +103,53 @@ class html_renderer(logger):
                 #find_doc = 'http://10.30.133.78:5984/_utils/#database/djerba_dev01/'+report_id  #need change url later
                 #existance = requests.head(find_doc)
                 
+                #ADDS SUFFIX TO REPORT ID I.E. -db1 FOR VERSIONING IN DB
                 newVersion = False
+                data["_id"] = data["report"]["patient_info"]["Report ID"]+'-db1'
+                #data["report"]["patient_info"]["Report ID"] = data["report"]["patient_info"]["Report ID"]+'-db1'
+                self.logger.info('Add suffix for first dv version')
                 while newVersion == False:
+                    currdbid = data["_id"]
+                    print(currdbid)
+                    #data["_id"] = data["report"]["patient_info"]["Report ID"]+'-db1'
+                    #data["report"]["patient_info"]["Report ID"] = data["report"]["patient_info"]["Report ID"]+'-db1'
+                    os.remove(json_doc)
+                    with open(json_doc, 'w') as f:
+                        json.dump(data, f)
+                    
                     status = db.Upload(folder) #assumes 1 file so only 1 status code
+                    #print(data["report"]["patient_info"]["Report ID"], data["supplementary"]["config"]["inputs"]["report_version"])  
                     if status == 201:
-                        self.logger.info('New version uploaded to db')
-                        print(data["report"]["patient_info"]["Report ID"], data["supplementary"]["config"]["inputs"]["report_version"])  
+                        self.logger.info('Succesful upload to db')
+                        #print(data["report"]["patient_info"]["Report ID"], data["supplementary"]["config"]["inputs"]["report_version"])  
                         newVersion = True
                     elif status == 409:
                         self.logger.error('Document update conflict')
-                        oldv = 'v'+str(data["supplementary"]["config"]["inputs"]["report_version"])
-                        data["supplementary"]["config"]["inputs"]["report_version"] += 1
-                        newv = 'v'+str(data["supplementary"]["config"]["inputs"]["report_version"]) 
-                        self.logger.info("Increment report_version")
-                        oldid = data["report"]["patient_info"]["Report ID"] 
-                        data["report"]["patient_info"]["Report ID"] = data["report"]["patient_info"]["Report ID"].replace(oldv,newv)
-                        self.logger.info("Increment Report ID")
+                        #oldv = 'v'+str(data["supplementary"]["config"]["inputs"]["report_version"])
+                        #data["supplementary"]["config"]["inputs"]["report_version"] += 1
+                        #newv = 'v'+str(data["supplementary"]["config"]["inputs"]["report_version"]) 
+                        #self.logger.info("Incremented report_version") #NOT DO
+                        
+                        #temp = data["report"]["patient_info"]["Report ID"] 
+                        temp = data["_id"]
+                        print(temp)
+                        pre,suff = temp.split("db")
+                        suff = int(suff) + 1
+                        newdbid = str(suff)
+                        newdbid = pre+'db'+newdbid
+                        data["_id"] = newdbid
+                        print(data["_id"  ])
+                        
+                        #data["report"]["patient_info"]["Report ID"] = newdbid
+    
+                        #oldid = data["report"]["patient_info"]["Report ID"] 
+                        #data["report"]["patient_info"]["Report ID"] = data["report"]["patient_info"]["Report ID"].replace(oldv,newv)
+                        #self.logger.info("Increment Report ID")
 
-                        os.remove(json_doc)
-                        with open(json_doc, 'w') as f:
-                            json.dump(data, f)
-                        print(data["report"]["patient_info"]["Report ID"], data["supplementary"]["config"]["inputs"]["report_version"])
+                        # os.remove(json_doc)
+                        # with open(json_doc, 'w') as f:
+                        #     json.dump(data, f)
+                        # print(data["report"]["patient_info"]["Report ID"], data["supplementary"]["config"]["inputs"]["report_version"])
                         
                 #print(folder)
                 if os.path.exists(folder): #delete temp archive folder that was just created
@@ -131,16 +157,17 @@ class html_renderer(logger):
                     print(f'Existing Path has been Removed: {folder}')
                     self.logger.info(f'Removed Patient ID {patient_id} from archive dir: {archive_dir}')
 
-                for f in os.listdir(split):
-                    filename = os.fsdecode(f)
-                    #if filename.endswith(".html"):
-                    if filename == oldid+'_report.html':
-                        newname = filename.replace(oldv, newv)
-                        print('newname: ', newname)
-                        print('filename: ', filename)
-                        # newname = filename.replace(oldv, newv)
-                        # print(filename, newname)
-                        os.system(f"mv {split}/{filename} {split}/{newname}")
+                #RENAMES HTML - NOT NEEDED IF VERSIONING DOESN'T CHANGE
+                # for f in os.listdir(split):
+                #     filename = os.fsdecode(f)
+                #     #if filename.endswith(".html"):
+                #     if filename == oldid+'_report.html':
+                #         newname = filename.replace(oldv, newv)
+                #         print('newname: ', newname)
+                #         print('filename: ', filename)
+                #         # newname = filename.replace(oldv, newv)
+                #         # print(filename, newname)
+                #         os.system(f"mv {split}/{filename} {split}/{newname}")
     
                 self.logger.debug("Archiving done")
             else:
