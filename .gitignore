@@ -3,4 +3,8 @@
 djerba.egg-info
 build
 dist
+.project
+src/.DS_Store
+.pydevproject
+djerba.log
 src/lib/djerba/R_plots/.Rhistory

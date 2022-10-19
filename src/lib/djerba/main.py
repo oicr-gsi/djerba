@@ -26,7 +26,8 @@ class main(logger):
     AUTHORS = {
         'afortuna': 'Alex Fortuna',
         'ibancarz': 'Iain Bancarz',
-        'fbeaudry': 'Felix Beaudry'
+        'fbeaudry': 'Felix Beaudry',
+        'wytong': 'Wen Tong'
     }
     CONFIG_NAME = 'config.ini'
     INI_DEFAULT_NAME = 'defaults.ini'
