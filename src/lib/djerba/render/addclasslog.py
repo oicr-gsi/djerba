@@ -106,7 +106,8 @@ class Add(logger):
         # #if len(passed) !=0: print('Total files added = {}'.format(added))
         #print('Files Archived: {}/{}'.format(added, added + len(failed)))
         # print(folder)
-        if len(passed) == 1: print('1 File Archived. {}'.format(passed[0]))
+        
+        #if len(passed) == 1: print('1 File Archived. {}'.format(passed[0]))
         self.logger.info('AddFolder method FINISHED from addclasslog.py')
-        return status 
+        return status #only/first file
 
