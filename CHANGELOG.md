@@ -2,7 +2,10 @@
 
 ## Unreleased
 
-### Fixed
+### Added
+- GCGI-422 Add a 'technical notes' section to the report
+
+### Changed
 - GCGI-506 Increase test speed by using custom file provenance throughout
 
 ## v0.3.9: 2022-10-12

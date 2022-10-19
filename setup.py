@@ -25,6 +25,7 @@ setup(
         'src/bin/sequenza_explorer.py',
         'src/bin/run_mavis.py',
         'src/bin/update_genomic_summary.py',
+        'src/bin/update_technical_notes.py',
         'src/bin/view_json.py'
     ],
     packages=find_packages(where=package_root),
@@ -49,6 +50,7 @@ setup(
             'data/filter_flags.exclude',
             'data/gencode_v33_hg38_genes.bed',
             'data/genomic_summary.txt',
+            'data/technical_notes.txt',
             'html/body_style.html',
             'html/clinical_report_template.html',
             'html/definitions_1.html',
