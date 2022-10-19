@@ -1926,3 +1926,158 @@
 2022-10-19_13:25:10 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
 2022-10-19_13:25:10 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
 2022-10-19_13:25:10 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_13:32:07 djerba.render.database INFO: Initializing Djerba database object
+2022-10-19_13:32:07 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_13:32:07 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-19_13:32:07 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-19_13:32:08 djerba.render.addclasslog ERROR: Error uploading 100-PM-013_LCM5-v1-db1 to djerba_dev01 database for Document update conflict.
+2022-10-19_13:32:08 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-19_13:32:08 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_13:32:08 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_13:32:08 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_13:32:08 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-19_13:32:08 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-19_13:32:08 djerba.render.addclasslog ERROR: Error uploading 100-PM-013_LCM5-v1-db2 to djerba_dev01 database for Document update conflict.
+2022-10-19_13:32:08 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-19_13:32:08 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_13:32:08 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_13:32:08 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_13:32:08 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-19_13:32:08 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-19_13:32:08 djerba.render.addclasslog INFO: Success uploading 100-PM-013_LCM5-v1-db3 to djerba_dev01 database <status 201>
+2022-10-19_13:32:08 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-19_13:32:08 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_13:32:08 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_13:33:34 djerba.render.database INFO: Initializing Djerba database object
+2022-10-19_13:33:34 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_13:33:34 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-19_13:33:34 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-19_13:33:34 djerba.render.addclasslog ERROR: Error uploading 100-PM-013_LCM5-v1-db1 to djerba_dev01 database for Document update conflict.
+2022-10-19_13:33:34 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-19_13:33:34 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_13:33:34 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_13:33:34 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_13:33:34 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-19_13:33:34 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-19_13:33:34 djerba.render.addclasslog ERROR: Error uploading 100-PM-013_LCM5-v1-db2 to djerba_dev01 database for Document update conflict.
+2022-10-19_13:33:34 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-19_13:33:34 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_13:33:34 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_13:33:34 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_13:33:34 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-19_13:33:34 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-19_13:33:35 djerba.render.addclasslog ERROR: Error uploading 100-PM-013_LCM5-v1-db3 to djerba_dev01 database for Document update conflict.
+2022-10-19_13:33:35 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-19_13:33:35 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_13:33:35 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_13:33:35 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_13:33:35 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-19_13:33:35 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-19_13:33:35 djerba.render.addclasslog INFO: Success uploading 100-PM-013_LCM5-v1-db4 to djerba_dev01 database <status 201>
+2022-10-19_13:33:35 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-19_13:33:35 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_13:33:35 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_13:42:36 djerba.render.database INFO: Initializing Djerba database object
+2022-10-19_13:42:36 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_13:42:36 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-19_13:42:36 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-19_13:44:09 djerba.render.database INFO: Initializing Djerba database object
+2022-10-19_13:44:09 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_13:44:09 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-19_13:44:09 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-19_13:44:56 djerba.render.database INFO: Initializing Djerba database object
+2022-10-19_13:44:56 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_13:44:56 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-19_13:44:56 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-19_13:44:56 djerba.render.addclasslog ERROR: Error uploading 100-PM-013_LCM5-v1-db1 to djerba_dev01 database for Document update conflict.
+2022-10-19_13:44:56 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-19_13:44:56 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_13:44:56 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_13:44:56 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_13:44:56 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-19_13:44:56 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-19_13:44:56 djerba.render.addclasslog ERROR: Error uploading 100-PM-013_LCM5-v1-db2 to djerba_dev01 database for Document update conflict.
+2022-10-19_13:44:56 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-19_13:44:56 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_13:44:56 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_13:44:56 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_13:44:56 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-19_13:44:56 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-19_13:44:56 djerba.render.addclasslog ERROR: Error uploading 100-PM-013_LCM5-v1-db3 to djerba_dev01 database for Document update conflict.
+2022-10-19_13:44:56 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-19_13:44:56 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_13:44:56 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_13:44:56 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_13:44:56 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-19_13:44:56 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-19_13:44:56 djerba.render.addclasslog ERROR: Error uploading 100-PM-013_LCM5-v1-db4 to djerba_dev01 database for Document update conflict.
+2022-10-19_13:44:56 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-19_13:44:56 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_13:44:56 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_13:44:56 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_13:44:56 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
+2022-10-19_13:44:56 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
+2022-10-19_13:44:56 djerba.render.addclasslog INFO: Success uploading 100-PM-013_LCM5-v1-db5 to djerba_dev01 database <status 201>
+2022-10-19_13:44:56 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
+2022-10-19_13:44:56 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_13:44:56 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:10:15 djerba.render.database INFO: Initializing Djerba database object
+2022-10-19_14:10:15 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_14:10:15 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_14:10:15 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:10:15 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_14:10:15 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_14:10:15 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:10:15 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_14:10:16 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_14:10:16 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:10:16 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_14:10:16 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_14:10:16 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:10:16 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_14:10:16 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_14:10:16 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:10:16 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_14:10:16 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_14:10:16 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:11:44 djerba.render.database INFO: Initializing Djerba database object
+2022-10-19_14:11:44 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_14:11:44 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_14:11:44 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:11:44 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_14:11:44 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_14:11:44 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:11:44 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_14:11:44 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_14:11:44 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:11:44 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_14:11:45 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_14:11:45 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:11:45 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_14:11:45 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_14:11:45 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:11:45 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_14:11:45 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_14:11:45 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:13:24 djerba.render.database INFO: Initializing Djerba database object
+2022-10-19_14:13:24 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_14:13:24 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_14:13:24 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:13:24 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_14:13:24 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_14:13:24 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:13:24 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_14:13:24 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_14:13:24 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:13:24 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_14:13:25 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_14:13:25 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:13:25 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_14:13:25 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_14:13:25 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:13:25 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_14:13:25 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_14:13:25 djerba.render.database INFO: Database class Upload method FINISHED
+2022-10-19_14:13:25 djerba.render.database INFO: Database class Upload method STARTING
+2022-10-19_14:13:25 djerba.render.database INFO: printed to terminal for user the status of upload - assume 1 DOC!
+2022-10-19_14:13:25 djerba.render.database INFO: Database class Upload method FINISHED
