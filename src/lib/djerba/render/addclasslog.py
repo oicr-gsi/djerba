@@ -23,7 +23,7 @@ class Add(logger):
         self.logger.info('AddFolder method STARTED from addclasslog.py')
         folder = folder
         config = configparser.ConfigParser()
-        config.read("/.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/info.ini")              
+        config.read("/.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/couchdb.ini")              
         db = config["database"]["name"]
         base = config["database"]["base"]
         url = base + db

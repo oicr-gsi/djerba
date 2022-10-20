@@ -77,5 +77,3 @@ if __name__ == '__main__':
         parser.print_help(sys.stderr)
         sys.exit(1)
     main(parser.parse_args()).run()
-    
-
