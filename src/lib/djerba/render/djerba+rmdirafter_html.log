@@ -1,7 +1,0 @@
-2022-10-18_12:00:40 djerba.render.database INFO: Initializing Djerba database object
-2022-10-18_12:00:40 djerba.render.database INFO: Database class Upload method STARTING
-2022-10-18_12:00:40 djerba.render.addclasslog INFO: Initializing Add object from addclasslog.py
-2022-10-18_12:00:40 djerba.render.addclasslog INFO: AddFolder method STARTED from addclasslog.py
-2022-10-18_12:00:40 djerba.render.addclasslog INFO: Success uploading 100-PM-013_LCM5-v1 to djerba_dev01 database <status 201>
-2022-10-18_12:00:40 djerba.render.addclasslog INFO: AddFolder method FINISHED from addclasslog.py
-2022-10-18_12:00:40 djerba.render.database INFO: Database class Upload method FINISHED
