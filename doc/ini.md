@@ -132,6 +132,7 @@ If _any_ sample name parameters are specified, then they must _at least_ include
 | `[discovered]` | `genebed`    | `data_dir` | Interval file                    |
 | `[discovered]` | `genelist`    | `data_dir` | Gene list file                   |
 | `[discovered]` | `genomic_summary`    | `data_dir` | Genomic summary file                   |
+| `[discovered]` | `technical_notes`    | `data_dir` | Technical notes file                   |
 | `[discovered]` | `gepfile`    | File provenance | GEP input file from RSEM                    |
 | `[discovered]` | `hmzd` | Computed from `purity` | logR cutoff value |
 | `[discovered]` | `htzd` | Computed from `purity` | logR cutoff value |
