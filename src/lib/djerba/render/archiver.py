@@ -1,4 +1,4 @@
-"""Archive files to a given directory for later reference"""
+"""Archive files to couchDB for later reference"""
 
 import hashlib
 import json

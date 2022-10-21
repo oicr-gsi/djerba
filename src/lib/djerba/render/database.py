@@ -72,3 +72,4 @@ class Database(logger):
         self.logger.info('File Archived: {}'.format(upload["_id"]))
         self.logger.info('Database class Upload method FINISHED')
         return status
+
