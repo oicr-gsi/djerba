@@ -24,177 +24,51 @@ class Database(logger):
         return combined
 
     """ Upload json to db"""
-    def UploadFile(self,json):
-        print()
-        print('upload file reached')
-        print(json)
-        print()
-        return 
-        self.logger.info('Database class Upload method STARTING')
-        folder = folder
+    def UploadFile(self,json_path):
+        self.logger.info('UploadFile method from database.py STARTING')
         config = configparser.ConfigParser()
         config.read("/.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/couchdb.ini")              
         db = config["database"]["name"]
         base = config["database"]["base"]
         url = base + db
-        dbs = base + '_all_dbs'
         time = datetime.now()
         dt_couchDB = time.strftime("%d/%m/%Y %H:%M") #time of file creation to db
-        nextfolder = []
-        nextfolder.append(folder)
-        added = 0
-        passed = []
-        failed = []
-        failed_code =[]
-        failed_error = []
-        while(len(nextfolder) != 0):
-            currfolder = nextfolder[0]
-            dir_content = (os.listdir(currfolder))  
-            json_file = []
-            for i in dir_content:
-                n, ext = os.path.splitext(i)
-                if ext == '.json':
-                    type_json = (i, currfolder+'/'+i)
-                    json_file.append(type_json)
-                if ext == '':
-                    nextfolder.append(currfolder+'/'+i)
-            nextfolder.remove(nextfolder[0])
 
-            if len(json_file) > 0:
-                for file in json_file:
-                    file_name = file[0]
-                    file_path = file[1]
-                    with open('{}'.format(file_path), 'r') as report:
-                        data = json.load(report)
-                        extracted_id = data["report"]["patient_info"]["Report ID"]
-                        additional = {
-                            '_id': '{}'.format(extracted_id), #DF val auto gen
-                            'date_time': '{}'.format(dt_couchDB), 
-                        }
-                        upload = self.Merge(additional, data)
-                        headers = {'Content-Type': 'application/json'}
-                        submit = requests.post(url= url, headers= headers, json= upload)
-
-                    status = submit.status_code
-                    if status == 201:
-                        added += 1
-                        passed.append('Report ID: {}'.format(upload["_id"]))
-                        self.logger.debug('Success uploading %s to %s database <status 201>', upload["_id"], db)
-                    else:
-                        json_string = submit.content.decode('utf-8') #convert bytes object 
-                        py_dict = json.loads(json_string)
-                        failed.append('Report ID: {}'.format(upload["_id"]))
-                        failed_code.append('Status Code <{}>'.format(status))
-                        failed_error.append('{}. {}'.format(py_dict["error"], py_dict["reason"]))
-                        self.logger.debug('Error uploading %s to %s database for %s', upload["_id"], db, py_dict["reason"])
+        with open(json_path) as report:
+            data = json.load(report)
+            report_id = data["report"]["patient_info"]["Report ID"]
+            couch_info = {
+                '_id': '{}'.format(report_id), #DF val auto gen
+                'date_time': '{}'.format(dt_couchDB), 
+            }
+            upload = self.Merge(couch_info, data)
+            headers = {'Content-Type': 'application/json'}
+            submit = requests.post(url= url, headers= headers, json= upload)
         
-        '''FEEDBACK FOR DEBUGGING, COMMENT OUT LATER'''
-        #if len(passed) !=0:
-        #     print('Sucessful upload to {} database :)'.format(db), 'Status Code <201>', sep='\n')
-        #     print()
-            # for file in passed:
-            #     print(file)
-        # if len(passed) !=0 and len(failed) !=0: print()    
-        # if len(failed) !=0:
-        #     print('Error in {} database!'.format(db), '\n')
-        #     for i in range(len(failed)):
-        #         print(failed[i], failed_code[i], failed_error[i], sep='\n')
-        # print()    
-        # #if len(failed) !=0: print('Total files failed = {}'.format(len(failed)))
-        # #if len(passed) !=0: print('Total files added = {}'.format(added))
-        #print('Files Archived: {}/{}'.format(added, added + len(failed)))
-        # print(folder)
-        
-        if len(passed) == 1: 
-            #print('1 File Archived. {}'.format(passed[0]))
-            self.logger.debug('1 File Archived. {}'.format(passed[0]))
-
+        status = submit.status_code
+        uploaded = False
+        while uploaded == False:
+            if status == 201:
+                #print('Sucessful upload of Report ID: {} to {} database :)'.format(upload["_id"],db), 'Status Code <201>')
+                self.logger.debug('Success uploading %s to %s database <status 201>', upload["_id"], db)
+                uploaded = True 
+            elif status == 409:
+                json_string = submit.content.decode('utf-8') #convert bytes object 
+                py_dict = json.loads(json_string)
+                self.logger.debug(f'Error uploading {upload["_id"]} Status Code <409> {py_dict["error"]} {py_dict["reason"]}')
+                url_id = url + f'/{upload["_id"]}'
+                pull = requests.get(url_id)
+                pull = json.loads(pull.text)                
+                rev = {
+                    '_id': '{}'.format(report_id), #DF val auto gen
+                    '_rev': f'{pull["_rev"]}',
+                    'date_time': '{}'.format(dt_couchDB), 
+                }
+                upload = self.Merge(rev, data)
+                submit = requests.put(url=url_id, headers= headers, json=upload)   
+                status = submit.status_code         
+                        
+        print('File Archived: {}'.format(upload["_id"]))
+        self.logger.info('File Archived: {}'.format(upload["_id"]))
         self.logger.info('Database class Upload method FINISHED')
         return status
-
-
-    """ Searches for and uploads all json files within main and any sub folders """
-    def UploadFolder(self,folder):
-        self.logger.info('Database class Upload method STARTING')
-        folder = folder
-        config = configparser.ConfigParser()
-        config.read("/.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/couchdb.ini")              
-        db = config["database"]["name"]
-        base = config["database"]["base"]
-        url = base + db
-        dbs = base + '_all_dbs'
-        time = datetime.now()
-        dt_couchDB = time.strftime("%d/%m/%Y %H:%M") #time of file creation to db
-        nextfolder = []
-        nextfolder.append(folder)
-        added = 0
-        passed = []
-        failed = []
-        failed_code =[]
-        failed_error = []
-        while(len(nextfolder) != 0):
-            currfolder = nextfolder[0]
-            dir_content = (os.listdir(currfolder))  
-            json_file = []
-            for i in dir_content:
-                n, ext = os.path.splitext(i)
-                if ext == '.json':
-                    type_json = (i, currfolder+'/'+i)
-                    json_file.append(type_json)
-                if ext == '':
-                    nextfolder.append(currfolder+'/'+i)
-            nextfolder.remove(nextfolder[0])
-
-            if len(json_file) > 0:
-                for file in json_file:
-                    file_name = file[0]
-                    file_path = file[1]
-                    with open('{}'.format(file_path), 'r') as report:
-                        data = json.load(report)
-                        extracted_id = data["report"]["patient_info"]["Report ID"]
-                        additional = {
-                            '_id': '{}'.format(extracted_id), #DF val auto gen
-                            'date_time': '{}'.format(dt_couchDB), 
-                        }
-                        upload = self.Merge(additional, data)
-                        headers = {'Content-Type': 'application/json'}
-                        submit = requests.post(url= url, headers= headers, json= upload)
-
-                    status = submit.status_code
-                    if status == 201:
-                        added += 1
-                        passed.append('Report ID: {}'.format(upload["_id"]))
-                        self.logger.debug('Success uploading %s to %s database <status 201>', upload["_id"], db)
-                    else:
-                        json_string = submit.content.decode('utf-8') #convert bytes object 
-                        py_dict = json.loads(json_string)
-                        failed.append('Report ID: {}'.format(upload["_id"]))
-                        failed_code.append('Status Code <{}>'.format(status))
-                        failed_error.append('{}. {}'.format(py_dict["error"], py_dict["reason"]))
-                        self.logger.debug('Error uploading %s to %s database for %s', upload["_id"], db, py_dict["reason"])
-        
-        '''FEEDBACK FOR DEBUGGING, COMMENT OUT LATER'''
-        #if len(passed) !=0:
-        #     print('Sucessful upload to {} database :)'.format(db), 'Status Code <201>', sep='\n')
-        #     print()
-            # for file in passed:
-            #     print(file)
-        # if len(passed) !=0 and len(failed) !=0: print()    
-        # if len(failed) !=0:
-        #     print('Error in {} database!'.format(db), '\n')
-        #     for i in range(len(failed)):
-        #         print(failed[i], failed_code[i], failed_error[i], sep='\n')
-        # print()    
-        # #if len(failed) !=0: print('Total files failed = {}'.format(len(failed)))
-        # #if len(passed) !=0: print('Total files added = {}'.format(added))
-        #print('Files Archived: {}/{}'.format(added, added + len(failed)))
-        # print(folder)
-        
-        if len(passed) == 1: 
-            #print('1 File Archived. {}'.format(passed[0]))
-            self.logger.debug('1 File Archived. {}'.format(passed[0]))
-
-        self.logger.info('Database class Upload method FINISHED')
-        return status
-
-
