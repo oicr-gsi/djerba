@@ -6,7 +6,6 @@ SETTINGS = 'settings'
 DISCOVERED = 'discovered'
 
 # parameter names
-ARCHIVE_DIR = 'archive_dir'
 ASSAY_NAME = 'assay_name'
 BED_PATH = 'bed_path'
 DATA_DIR = 'data_dir'
@@ -107,7 +106,6 @@ SCHEMA_DEFAULT = {
         TCGA_CODE
     ],
     SETTINGS: [
-        ARCHIVE_DIR,
         BED_PATH,
         GEP_REFERENCE,
         MIN_FUSION_READS,
@@ -163,7 +161,6 @@ SCHEMA_WGS_ONLY = {
         TCGA_CODE
     ],
     SETTINGS: [
-        ARCHIVE_DIR,
         BED_PATH,
         GEP_REFERENCE,
         MIN_FUSION_READS,
@@ -209,7 +206,6 @@ SCHEMA_FAILED = {
         TCGA_CODE
     ],
     SETTINGS: [
-        ARCHIVE_DIR,
         BED_PATH,
         GEP_REFERENCE,
         MIN_FUSION_READS,

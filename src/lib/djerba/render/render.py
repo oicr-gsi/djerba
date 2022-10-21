@@ -42,22 +42,17 @@ class html_renderer(logger):
             data = json.loads(in_file.read())
             args = data.get(constants.REPORT)
             config = data.get(constants.SUPPLEMENTARY).get(constants.CONFIG)
-        '''
-        Update Oct 21: works with this section below commented out.
-        get error of 'technical_notes is not defined in file clinical_report_template_html related to mako template'
-        ask Iain, Felix, Wen on how this field should be incorporated into the report (which section/visual layout etc) if so
-        so that code can run again with this commented back in
-        '''
-        # with open(out_path, 'w') as out_file:
-        #     try:
-        #         html = self.template.render(**args)
-        #     except Exception as err:
-        #         msg = "Unexpected error of type {0} in Mako template rendering: {1}".format(type(err).__name__, err)
-        #         self.logger.error(msg)
-        #         trace = ''.join(traceback.format_tb(err.__traceback__))
-        #         self.logger.error('Traceback: {0}'.format(trace))
-        #         raise
-        #     print(html, file=out_file)
+
+        with open(out_path, 'w') as out_file:
+            try:
+                html = self.template.render(**args)
+            except Exception as err:
+                msg = "Unexpected error of type {0} in Mako template rendering: {1}".format(type(err).__name__, err)
+                self.logger.error(msg)
+                trace = ''.join(traceback.format_tb(err.__traceback__))
+                self.logger.error('Traceback: {0}'.format(trace))
+                raise
+            print(html, file=out_file)
 
         if archive:
             status = archiver(self.log_level, self.log_path).db(in_path) ##expected status == 201
