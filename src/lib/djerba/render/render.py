@@ -4,7 +4,6 @@ Render Djerba results in HTML and PDF format
 
 import json
 import logging
-import shutil 
 import os
 import pdfkit
 import traceback
@@ -17,7 +16,6 @@ from mako.lookup import TemplateLookup
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 from djerba.render.archiver import archiver
-from djerba.render.database import Database
 from djerba.util.logger import logger
 
 class html_renderer(logger):
@@ -61,74 +59,39 @@ class html_renderer(logger):
         #         raise
         #     print(html, file=out_file)
         if archive:
-            self.logger.info("Finding archive parameters for {0}".format(out_path))
-            try:
-                archive_dir = config[ini.SETTINGS][ini.ARCHIVE_DIR]
-            except KeyError:
-                self.logger.warn("Archive directory not found in config")
-                archive_dir = None
-            try:
-                patient_id = config[ini.DISCOVERED][ini.PATIENT_ID]
-            except KeyError:
-                patient_id = 'Unknown'
-                msg = "Patient ID not found in config, falling back to '{0}'".format(patient_id)
-                self.logger.warn(msg)
-            if archive_dir:
-                #Changes archive_dir to in_path, uncomment below to keep archive_dir specified in ini"""
-                split = in_path.split("/")
-                split.pop()
-                split = "/".join(split)
-                archive_dir = split 
-                archive_args = [in_path, archive_dir, patient_id]
-                self.logger.info("Archiving {0} to {1} with ID '{2}'".format(*archive_args))
-                archiver(self.log_level, self.log_path).run(*archive_args)
-                db = Database()
-                if archive_dir.strip()[-1] != '/': archive_dir += '/'
-                folder = archive_dir+patient_id
-                files = []
-                dirs = []
-                findjson = folder
-                for (findfolder, dir_names, file_names) in os.walk(findjson): 
-                    files.extend(file_names)
-                    dirs.extend(dir_names)
-                for i in range(len(files)):
-                    if files[i][-5:] == '.json': 
-                        json_doc = dirs[i]+'/'+files[i]
-                json_doc = folder+'/'+json_doc
-                f = open(json_doc)
-                data = json.load(f)
-                self.logger.info('Adds suffix for db versioning')
-                newVersion = False
-                data["_id"] = data["report"]["patient_info"]["Report ID"]+'-db1'
-                self.logger.info('Add suffix for first db version')
-                while newVersion == False:
-                    currdbid = data["_id"]
-                    os.remove(json_doc)
-                    with open(json_doc, 'w') as f: json.dump(data, f)
-                    status = db.Upload(folder) #assumes 1 file so only 1 status code
-                    if status == 201:
-                        self.logger.info('Succesful upload to db: {}'.format(data["_id"]))
-                        newVersion = True
-                    elif status == 409:
-                        self.logger.debug('Document update conflict')
-                        temp = data["_id"]
-                        pre,suff = temp.split("db")
-                        suff = int(suff) + 1
-                        newdbid = str(suff)
-                        newdbid = pre+'db'+newdbid
-                        data["_id"] = newdbid
-                if os.path.exists(folder): #delete temp archive folder that was just created
-                    shutil.rmtree(folder)
-                    self.logger.debug(f'Temp Path has been Removed: {folder}')
-                    self.logger.info(f'Removed Patient ID {patient_id} from archive dir: {archive_dir}')
-                self.logger.debug("Archiving done")
-            else:
-                self.logger.warn("No archive directory; omitting archiving")
+            archiver(self.log_level, self.log_path).db(in_path)
+            print('reached')
+            print()
+            self.logger.debug("Archiving done")
         else:
             self.logger.info("Archive operation not requested; omitting archiving")
-        
         self.logger.info("Completed HTML rendering of {0} to {1}".format(in_path, out_path))
-        self.logger.info('run method of html_renderer class FINISHED from render.py')
+        self.logger.info('db method of html_renderer class FINISHED from render.py')
+
+        # if archive:
+        #     self.logger.info("Finding archive parameters for {0}".format(out_path))
+        #     try:
+        #         archive_dir = config[ini.SETTINGS][ini.ARCHIVE_DIR]
+        #     except KeyError:
+        #         self.logger.warn("Archive directory not found in config")
+        #         archive_dir = None
+        #     try:
+        #         patient_id = config[ini.DISCOVERED][ini.PATIENT_ID]
+        #     except KeyError:
+        #         patient_id = 'Unknown'
+        #         msg = "Patient ID not found in config, falling back to '{0}'".format(patient_id)
+        #         self.logger.warn(msg)
+        #     if archive_dir:
+        #         archive_args = [in_path, archive_dir, patient_id]
+        #         self.logger.info("Archiving {0} to {1} with ID '{2}'".format(*archive_args))
+        #         archiver(self.log_level, self.log_path).run(*archive_args)
+        #         self.logger.debug("Archiving done")
+        #     else:
+        #         self.logger.warn("No archive directory; omitting archiving")
+        # else:
+        #     self.logger.info("Archive operation not requested; omitting archiving")
+        # self.logger.info("Completed HTML rendering of {0} to {1}".format(in_path, out_path))
+        # self.logger.info('run method of html_renderer class FINISHED from render.py')
 
 class pdf_renderer(logger):
 
