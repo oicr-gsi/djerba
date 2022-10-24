@@ -8,14 +8,15 @@ import requests
 import json
 import os
 
+import djerba.util.constants as constants
+import djerba.util.ini_fields as ini
 from datetime import datetime
 from djerba.util.logger import logger
-#from djerba.render.addclasslog import Add 
 
 class Database(logger):
     """Class to communicate with CouchDB via the API, eg. using HTTP GET/POST statements"""
 
-    def __init__(self, log_level=logging.WARN, log_path=None):
+    def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.logger.info("Initializing Djerba database object")
     
@@ -26,16 +27,20 @@ class Database(logger):
     """ Upload json to db"""
     def UploadFile(self,json_path):
         self.logger.info('UploadFile method from database.py STARTING')
-        config = configparser.ConfigParser()
-        config.read("/.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/djerba/src/lib/djerba/render/couchdb.ini")              
-        db = config["database"]["name"]
-        base = config["database"]["base"]
-        url = base + db
         time = datetime.now()
-        dt_couchDB = time.strftime("%d/%m/%Y %H:%M") #time of file creation to db
+        dt_couchDB = time.strftime("%d/%m/%Y %H:%M") 
 
         with open(json_path) as report:
             data = json.load(report)
+            config = data.get(constants.SUPPLEMENTARY).get(constants.CONFIG)
+            archive_base = config[ini.SETTINGS][ini.ARCHIVE_BASE]
+            archive_name = config[ini.SETTINGS][ini.ARCHIVE_NAME]           
+            db = config[ini.SETTINGS][ini.ARCHIVE_NAME]
+            base = config[ini.SETTINGS][ini.ARCHIVE_BASE]
+            if base[-1] != '/': 
+                base +='/'
+                self.logger.debug('Adding forward slash for url concatenation')
+            url = base + db
             report_id = data["report"]["patient_info"]["Report ID"]
             couch_info = {
                 '_id': '{}'.format(report_id), #DF val auto gen
@@ -49,7 +54,6 @@ class Database(logger):
         uploaded = False
         while uploaded == False:
             if status == 201:
-                #print('Sucessful upload of Report ID: {} to {} database :)'.format(upload["_id"],db), 'Status Code <201>')
                 self.logger.debug('Success uploading %s to %s database <status 201>', upload["_id"], db)
                 uploaded = True 
             elif status == 409:
@@ -60,7 +64,7 @@ class Database(logger):
                 pull = requests.get(url_id)
                 pull = json.loads(pull.text)                
                 rev = {
-                    '_id': '{}'.format(report_id), #DF val auto gen
+                    '_id': '{}'.format(report_id), 
                     '_rev': f'{pull["_rev"]}',
                     'date_time': '{}'.format(dt_couchDB), 
                 }

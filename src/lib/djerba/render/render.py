@@ -53,10 +53,9 @@ class html_renderer(logger):
                 self.logger.error('Traceback: {0}'.format(trace))
                 raise
             print(html, file=out_file)
-
         if archive:
-            status = archiver(self.log_level, self.log_path).db(in_path) ##expected status == 201
-            self.logger.debug("Archiving done")
+            status = archiver(self.log_level, self.log_path).db(in_path)
+            if status == 201: self.logger.debug("Archiving successful")
         else:
             self.logger.info("Archive operation not requested; omitting archiving")
         self.logger.info("Completed HTML rendering of {0} to {1}".format(in_path, out_path))

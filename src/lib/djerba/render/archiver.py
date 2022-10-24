@@ -12,7 +12,6 @@ import djerba.render.constants as render_constants
 from djerba.util.image_to_base64 import converter
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
-
 from djerba.render.database import Database 
 
 
