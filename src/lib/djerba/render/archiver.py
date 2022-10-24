@@ -44,6 +44,6 @@ class archiver(logger):
     def db(self, data_path):
         self.logger.info('run method from archiver class STARTING')
         data_string = self.read_and_preprocess(data_path)
-        status = Database().UploadFile(data_path) ###data_path is path to json file      
+        status = Database().UploadFile(data_path)       
         return status
 
