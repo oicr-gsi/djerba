@@ -59,10 +59,11 @@ class Database(logger):
             elif status == 409:
                 json_string = submit.content.decode('utf-8') #convert bytes object 
                 py_dict = json.loads(json_string)
-                self.logger.debug(f'Error uploading {upload["_id"]} Status Code <409> {py_dict["error"]} {py_dict["reason"]}')
-                url_id = url + f'/{upload["_id"]}'
+                self.logger.debug(f'Error uploading {report_id} Status Code <409> {py_dict["error"]} {py_dict["reason"]}')
+                url_id = url + f'/{report_id}'
                 pull = requests.get(url_id)
-                pull = json.loads(pull.text)                
+                pull = json.loads(pull.text)
+                print(pull["_rev"])
                 rev = {
                     '_id': '{}'.format(report_id), 
                     '_rev': f'{pull["_rev"]}',
@@ -71,7 +72,7 @@ class Database(logger):
                 upload = self.Merge(rev, data)
                 submit = requests.put(url=url_id, headers= headers, json=upload)   
                 status = submit.status_code         
-                        
+        
         print('File Archived: {}'.format(upload["_id"]))
         self.logger.info('File Archived: {}'.format(upload["_id"]))
         self.logger.info('Database class Upload method FINISHED')

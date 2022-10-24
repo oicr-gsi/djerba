@@ -54,7 +54,7 @@ class html_renderer(logger):
                 raise
             print(html, file=out_file)
         if archive:
-            status = archiver(self.log_level, self.log_path).db(in_path)
+            status = archiver(self.log_level, self.log_path).run(in_path)
             if status == 201: self.logger.debug("Archiving successful")
         else:
             self.logger.info("Archive operation not requested; omitting archiving")

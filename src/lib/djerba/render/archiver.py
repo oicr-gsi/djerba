@@ -41,7 +41,7 @@ class archiver(logger):
         data[rep][vaf] = self.converter.convert_svg(data[rep][vaf], 'VAF plot')
         return json.dumps(data)
 
-    def db(self, data_path):
+    def run(self, data_path):
         self.logger.info('run method from archiver class STARTING')
         data_string = self.read_and_preprocess(data_path)
         status = Database().UploadFile(data_path)       
