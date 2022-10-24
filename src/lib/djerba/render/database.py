@@ -24,7 +24,7 @@ class Database(logger):
         combined = {**dict1, **dict2}
         return combined
 
-    """ Upload json to db"""
+    """ Upload json to couchdb"""
     def UploadFile(self,json_path):
         self.logger.info('UploadFile method from database.py STARTING')
         time = datetime.now()
