@@ -43,7 +43,7 @@ class Database(logger):
             report_id = data["report"]["patient_info"]["Report ID"]
             couch_info = {
                 '_id': '{}'.format(report_id), #DF val auto gen
-                'date_time': '{}'.format(dt_couchDB), 
+                'last_updated': '{}'.format(dt_couchDB),
             }
             upload = self.Merge(couch_info, data)
             headers = {'Content-Type': 'application/json'}
@@ -67,7 +67,7 @@ class Database(logger):
                 rev = {
                     '_id': '{}'.format(report_id), 
                     '_rev': f'{pull["_rev"]}',
-                    'date_time': '{}'.format(dt_couchDB), 
+                    'last_updated': '{}'.format(dt_couchDB),
                 }
                 upload = self.Merge(rev, data)
                 submit = requests.put(url=url_id, headers= headers, json=upload)   
