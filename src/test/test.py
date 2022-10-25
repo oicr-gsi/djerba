@@ -142,7 +142,6 @@ class TestArchive(TestBase):
         self.assertEqual(get["_id"], get["report"]["patient_info"]["Report ID"])
         rm = requests.delete(archive_base+archive_name+report_id+'?rev='+get["_rev"])
         self.assertEqual(rm.status_code, 200)
-
         self.assertEqual(len(data['report']), 21)  
         self.assertEqual(len(data['supplementary']['config']), 3)
 
