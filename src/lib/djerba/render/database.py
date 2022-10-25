@@ -62,7 +62,8 @@ class Database(logger):
                 url_id = url + f'/{report_id}'
                 pull = requests.get(url_id)
                 pull = json.loads(pull.text)
-                print(f'rev: {pull["_rev"]}')
+                #print(f'rev: {pull["_rev"]}')
+                self.logger.info(f'_rev: {pull["_rev"]}')
                 rev = {
                     '_id': '{}'.format(report_id), 
                     '_rev': f'{pull["_rev"]}',
@@ -72,7 +73,7 @@ class Database(logger):
                 submit = requests.put(url=url_id, headers= headers, json=upload)   
                 status = submit.status_code         
         
-        print('File Archived: {}'.format(upload["_id"]))
+        #print('File Archived: {}'.format(upload["_id"]))
         self.logger.info('File Archived: {}'.format(upload["_id"]))
         return status
 
