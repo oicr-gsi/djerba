@@ -63,7 +63,7 @@ class Database(logger):
                 url_id = url + f'/{report_id}'
                 pull = requests.get(url_id)
                 pull = json.loads(pull.text)
-                print(f'rev: {pull["_rev"]})
+                print(f'rev: {pull["_rev"]}')
                 rev = {
                     '_id': '{}'.format(report_id), 
                     '_rev': f'{pull["_rev"]}',
