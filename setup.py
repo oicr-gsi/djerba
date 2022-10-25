@@ -60,7 +60,6 @@ setup(
             'html/header.html',
             'html/header_style.html',
             'html/OICR_Logo_RGB_ENGLISH.png',
-            'html/variants_table_style.html',
             'data/mavis_config_template.json',
             'data/mavis_legacy_config_template.json',
             'data/mavis_settings.ini',

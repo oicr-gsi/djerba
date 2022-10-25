@@ -31,13 +31,13 @@ REPORT_ID = 'Report ID'
 STUDY = 'Study'
 PATIENT_STUDY_ID = 'Patient Study ID'
 PATIENT_LIMS_ID = 'Patient LIMS ID'
-NAME = 'Name'
-DOB = 'DOB'
-SEX = 'Genetic Sex'
+NAME = 'Patient Name'
+DOB = 'Patient DOB'
+SEX = 'Patient Genetic Sex'
 PHYSICIAN = 'Physician'
-LICENCE_NUMBER = 'Licence #'
-PHONE_NUMBER = 'Phone #'
-HOSPITAL = 'Hospital'
+LICENCE_NUMBER = 'Physician Licence #'
+PHONE_NUMBER = 'Physician Phone #'
+HOSPITAL = 'Physician Hospital'
 REQUISITIONER_EMAIL = 'Requisitioner Email'
 PRIMARY_CANCER = 'Primary cancer'
 SITE_OF_BIOPSY_OR_SURGERY = 'Site of biopsy/surgery'
@@ -49,7 +49,7 @@ PATIENT_INFO_CONSTANT_FIELDS = {
     NAME: 'LAST NAME, FIRST NAME',
     LICENCE_NUMBER: 'nnnnnnnn',
     PHONE_NUMBER: 'nnn-nnn-nnnn',
-    HOSPITAL: 'HOSPTIAL NAME AND HOSPITAL ADDRESS',
+    HOSPITAL: 'HOSPTIAL NAME AND ADDRESS',
     REQUISITIONER_EMAIL: '<a href="mailto:NAME@DOMAIN.COM" class="email">NAME@DOMAIN.COM</a>'
 }
 
@@ -80,6 +80,7 @@ PROTEIN = 'Protein'
 PROTEIN_URL = 'Protein_URL'
 MUTATION_TYPE = 'Type'
 VAF_PERCENT = 'VAF (%)'
+VAF_NOPERCENT = 'VAF'
 TUMOUR_ALT_COUNT = 't_alt_count'
 TUMOUR_DEPTH = 't_depth'
 COPY_STATE = 'Copy State'

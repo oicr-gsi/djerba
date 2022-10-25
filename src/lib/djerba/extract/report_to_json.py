@@ -400,7 +400,7 @@ class clinical_report_json_composer(composer_base):
                     rows.append(self.treatment_row(genes, alteration, max_level, therapies))
         with open(os.path.join(self.input_dir, self.BIOMARKERS_ANNOTATED)) as data_file:
             for row in csv.DictReader(data_file, delimiter="\t"):
-                gene = 'NA (Biomarker)'
+                gene = 'Biomarker'
                 alteration = row[self.ALTERATION_UPPER_CASE]
                 [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
                 if max_level:
@@ -742,7 +742,7 @@ class clinical_report_json_composer(composer_base):
             alt_url = self.build_alteration_url('-'.join(genes_arg), alteration, self.closest_tcga_uc)
         if alteration == "TMB-H" or alteration == "MSI-H":
             genes_and_urls = {
-                "NA (Biomarker)": "https://www.oncokb.org/gene/Other%20Biomarkers/"
+                "Biomarker": "https://www.oncokb.org/gene/Other%20Biomarkers/"
             }
             if alteration == "TMB-H":
                 alt_url = "https://www.oncokb.org/gene/Other%20Biomarkers/TMB-H/",

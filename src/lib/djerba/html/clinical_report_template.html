@@ -8,106 +8,179 @@
 
 <html>
 <head>
-<meta charset="utf-8" />
-<%include file="header_style.html"/>
+  <meta charset="utf-8" />
+  <style type="text/css">
+    <%include file="style.css"/>
+  </style>
 </head>
+
 <body>
-<div class="container-fluid main-container">
-<div>
-  <img src="${oicr_logo}" width="140" height="96" style="float:left" />
+<div class="main-container">
+
   <%include file="header.html"/>
-</div>
-<div class="fluid-row" id="header">
-</div>
-<%include file="body_style.html"/>
 
-% if failed:
-<div>
-<h3 style="color:red;text-align:center;">QUALITY FAILURE REPORT</h3>
-</div>
-% endif
+  % if failed:
+    <h1>${patient_info.get(constants.PATIENT_STUDY_ID)} Accredited Assay Report - Quality Failure</h1>
+  % else:
+    <h1>${patient_info.get(constants.PATIENT_STUDY_ID)} Accredited Assay Report</h1>
+  % endif
+  
+  <!-- Case overview -->
+  <div class="section">
+    <div class="section-bar" >
+      <hr class="big-line">
+    </div>
 
-<!-- empty header to generate a separator -->
-<div id="header2">
-  <h3></h3>
-</div>
-<table width="100%">
-  <tr><td><strong>Assay: </strong> ${patient_info.get(constants.ASSAY_NAME)}</td></tr>
-</table>
-<table width="100%">
-% for row in html_builder().patient_table_rows_3_cols(patient_info):
-      ${row}
-% endfor
-</table>
-<table width="100%">
-% for row in html_builder().patient_table_rows_2_cols(patient_info):
-      ${row}
-% endfor
-</table>
+    <div class="section-title" >
+      <h2>Case Overview</h2>
+    </div>
 
-<div style="height:36px"><h3 class="header1">Sample Information &amp; Quality</h3></div>
-<table width="100%" style="font-size:14px">
-% for row in html_builder(purity_failure).sample_information_and_quality_rows(sample_info_and_quality):
-      ${row}
-% endfor
-</table>
+    <div class="section-content" >
 
-<%include file="variants_table_style.html"/>
-<div class="keep-together">
-% if failed:
-<div style="height:36px"><h3 class="header1">Summary of Quality Control Findings</h3></div>
-% else:
-<div style="height:36px"><h3 class="header1">Summary of Genomic Findings</h3></div>
-% endif
-## Omit summary of therapies for failed samples
-% if not failed:
-<%include file="genomic_therapies_template.html"/>
-% endif
-## ends keep-together
-</div>
-<br/>
-% if failed:
-<div style="border:3px; border-style:solid; border-color:#FF0000; padding: 1em;">
-% else:
-<div style="border:3px; border-style:solid; border-color:#000000; padding: 1em;">
-% endif
-${html_builder().markdown_to_html(genomic_summary)}
-</div>
-## Omit all genomic landscape and variant information for failed samples
-% if not failed:
-<%include file="genomic_details_template.html"/>
-% endif
-<div id="header2">
-<h3></h3>
-</div>
-% if assay_type == constants.ASSAY_WGTS:
-<%include file="description_wgts.html"/>
-% elif assay_type == constants.ASSAY_WGS:
-<%include file="description_wgs_only.html"/>
-% else:
-<% raise RuntimeError("Unknown assay type") %>
-% endif
-<%include file="definitions_1.html"/>
-<p><strong>Coverage: </strong>Mean number of bases covering each sequenced base. Minimum coverage threshold is ${coverage_thresholds.get(constants.TUMOUR_MIN)}x for the tumour (with a target of ${coverage_thresholds.get(constants.TUMOUR_TARGET)}x); ${coverage_thresholds.get(constants.NORMAL_MIN)}x for the normal (with a target of ${coverage_thresholds.get(constants.NORMAL_TARGET)}x).</p>
-<%include file="definitions_2.html"/>
-<%
-    if report_date:
-        date = report_date
-    else:
-        date = strftime('%Y/%m/%d')
-%>
+      <table class="info">
+        <tr>
+          <td colspan=1>Assay:</td>
+          <td colspan=3>${patient_info.get(constants.ASSAY_NAME)}</td>
+        </tr>
+      </table>
 
-<table width="100%">
-  <tr>
-    <td width="33%">Report drafted by ${author} on ${date}</td>
-  </tr>
-  <tr>
-    <td width="33%"></td>
-  </tr>
-  <tr>
-    <td width="33%">Report electronically signed out by Trevor Pugh, PhD, FACMG (ABMS #1027812) on yyyy/mm/dd</td>
-  </tr>
-</table>
+      <table class="info">
+        <tr>
+          <td colspan=2>Primary cancer:</td>
+          <td colspan=2>${patient_info.get(constants.PRIMARY_CANCER)}</td>
+        </tr>
+        <tr>
+          <td colspan=2>Site of biopsy/surgery:</td>
+          <td colspan=2>${patient_info.get(constants.SITE_OF_BIOPSY_OR_SURGERY)}</td>
+        </tr>
+      </table>
+
+      <!-- if assay not pre-validated -->
+      <table  class="info">
+      % for row in html_builder().patient_table_report_cols(patient_info):
+            ${row}
+      % endfor
+      </table>
+      <table  class="info">
+      % for row in html_builder().patient_table_id_cols(patient_info):
+            ${row}
+      % endfor
+      </table>
+
+
+    </div>
+  </div>
+
+  <!-- sample info -->
+  <div class="section">
+    <div class="section-bar"><hr class="big-line"  ></div>
+
+    <div class="section-title" >
+      <h2>Sample Information</h2>
+    </div>
+
+    <div class="section-content" >
+        <table class="info">
+        % for row in html_builder(purity_failure).sample_information_and_quality_rows(sample_info_and_quality):
+              ${row}
+        % endfor
+        </table>
+    </div>
+    
+  </div>
+
+  <!-- treatment -->
+  % if not failed:
+    <%include file="therapies_template.html"/>
+  % endif
+
+  <!-- results summary -->
+  <div class="section">
+    <div class="section-bar"><hr class="big-line"  ></div>
+
+    <div class="section-title" >
+      <h2>Results Summary</h2>
+    </div>
+
+    <div class="section-content" >
+      ${html_builder().markdown_to_html(genomic_summary)}
+    </div>
+  </div>
+
+  <!-- genomic landscape -->
+  % if not failed:
+    <%include file="genomic_details_template.html"/>
+  % endif
+
+  <!-- Supplementary -->
+  <hr class="header-big-line" style="width: 100%; " align="right" >
+  <h2>Supplementary </h2>
+
+  % if not failed:
+
+    <h3 >Gene Information</h3>
+
+    % if len(gene_info) > 0:
+          <table class="variants" width="100%">
+          ${html_builder().supplementary_gene_info_header()}
+          <tbody>
+          % for row in html_builder().supplementary_gene_info_rows(gene_info):
+                ${row}
+          % endfor
+          </tbody>
+          </table>
+    % else:
+          <p >No relevant oncogenes were detected in OncoKB.</p>
+
+    % endif
+
+  % endif
+
+  <hr class="lil-line" style="width: 100%; " align="right" >
+  <h3>Assay description</h3>
+
+  % if assay_type == constants.ASSAY_WGTS:
+    <%include file="templates_for_supp/description_wgts.html"/>
+  % elif assay_type == constants.ASSAY_WGS:
+    <%include file="templates_for_supp/description_wgs_only.html"/>
+  % else:
+    <% raise RuntimeError("Unknown assay type") %>
+  % endif
+
+  <%include file="templates_for_supp/definitions_1.html"/>
+  <%include file="templates_for_supp/definitions_2.html"/>
+  <!-- coverage uses variables -->
+  <p><strong>Coverage: </strong>Mean number of bases covering each sequenced base. Minimum coverage threshold is ${coverage_thresholds.get(constants.TUMOUR_MIN)}x for the tumour (with a target of ${coverage_thresholds.get(constants.TUMOUR_TARGET)}x); ${coverage_thresholds.get(constants.NORMAL_MIN)}x for the normal (with a target of ${coverage_thresholds.get(constants.NORMAL_TARGET)}x).</p>
+
+  <hr class="lil-line" style="width: 100%; " align="right" >
+
+  <h3>Report Sign offs</h3>
+
+  <%
+  if report_date:
+      date = report_date
+  else:
+      date = strftime('%Y/%m/%d')
+  %>
+
+  <table width="100%">
+    <tr>
+      <td width="33%">Report drafted by ${author} on ${date}</td>
+    </tr>
+    <tr>
+      <td width="33%"></td>
+    </tr>
+    <tr>
+      <td width="33%">Report electronically signed out by Trevor Pugh, PhD, FACMG (ABMS #1027812) on yyyy/mm/dd</td>
+    </tr>
+  </table>
+
+  <br>
+  <br>
+  <br>
+  <br>
+
+  <hr class="big-line" style="width: 100%; " align="right" >
 
 </div>
 </body>

@@ -30,21 +30,21 @@ class html_builder:
             td = '<td>{0}</td>'.format(content)
         return td
 
-    def genomic_landscape_table_rows(self, genomic_landscape_args):
-        widths = [55,45]
-        key_groups = [
-            [constants.TMB_TOTAL, constants.PERCENT_GENOME_ALTERED],
-            [constants.CANCER_SPECIFIC_PERCENTILE, constants.CANCER_SPECIFIC_COHORT],
-            [constants.PAN_CANCER_PERCENTILE, constants.PAN_CANCER_COHORT],
-        ]
-        return self.key_value_table_rows(genomic_landscape_args, key_groups, widths)
+    #def genomic_landscape_table_rows(self, genomic_landscape_args):
+    #    widths = [55,45]
+    #    key_groups = [
+    #        [constants.TMB_TOTAL, constants.PERCENT_GENOME_ALTERED],
+    #        [constants.CANCER_SPECIFIC_PERCENTILE, constants.CANCER_SPECIFIC_COHORT],
+    #        [constants.PAN_CANCER_PERCENTILE, constants.PAN_CANCER_COHORT],
+    #    ]
+    #    return self.key_value_table_rows(genomic_landscape_args, key_groups, widths)
 
-    def msi_table_rows(self, genomic_biomarker_args):
+    def msi_table_rows(self, genomic_biomarker_args, biomarker):
         row_fields = genomic_biomarker_args[constants.BODY]
         rows = []
         for row in row_fields:
-            if row[constants.ALT] != "TMB":
-                rows.append("<strong>Microsatellite Status: </strong>"+row[constants.METRIC_CALL]+"<br>")
+            if row[constants.ALT] == biomarker:
+                rows.append(row[constants.METRIC_CALL])
         return rows
 
     def key_value_table_rows(self, args, key_groups, widths):
@@ -79,10 +79,10 @@ class html_builder:
                 key = key_group[i]
                 value = values[key]
                 if key == constants.PURITY_PERCENT and self.purity_failure:
-                    template = '<td width="{0}%" style="color:red;"><strong>{1}:</strong> {2}</td>'
+                    template = '<td width="{0}%" style="color:red;">{1}:</td><td width="{2}%">{3}</td>'
                 else:
-                    template = '<td width="{0}%"><strong>{1}:</strong> {2}</td>'
-                cell = template.format(width, key, value)
+                    template = '<td width="{0}%">{1}:</td><td width="{2}%" >{3}</td>'
+                cell = template.format(width[0], key, width[1], value)
                 row_items.append(cell)
             row_items.append('</tr>')
             rows.append("\n".join(row_items))
@@ -119,7 +119,7 @@ class html_builder:
             constants.CHROMOSOME,
             constants.PROTEIN,
             constants.MUTATION_TYPE,
-            constants.VAF_PERCENT,
+            constants.VAF_NOPERCENT,
             constants.DEPTH,
             constants.COPY_STATE,
             constants.ONCOKB
@@ -144,32 +144,34 @@ class html_builder:
             rows.append(self.table_row(cells))
         return rows
     
-    def patient_table_rows_2_cols(self, patient_args):
+    def patient_table_report_cols(self, patient_args):
         """Get the patient info table: After initial header, before Sample Information & Quality"""
-        widths = [63, 37]
+        widths = [[25,25], [25,25]]
         key_groups = [
-            [constants.HOSPITAL, constants.REQUISITIONER_EMAIL],
-            [constants.PRIMARY_CANCER, constants.SITE_OF_BIOPSY_OR_SURGERY],
-            [constants.TUMOUR_SAMPLE_ID, constants.BLOOD_SAMPLE_ID],
+            [constants.REPORT_ID, constants.PATIENT_LIMS_ID],
+            [constants.REQ_APPROVED_DATE, constants.BLOOD_SAMPLE_ID],
+            [constants.DATE_OF_REPORT, constants.TUMOUR_SAMPLE_ID]
         ]
         return self.key_value_table_rows(patient_args, key_groups, widths)
     
-    def patient_table_rows_3_cols(self, patient_args):
+    def patient_table_id_cols(self, patient_args):
         """Get the patient info table: After initial header, before Sample Information & Quality"""
-        widths = [35, 28, 37]
+        widths = [[22,15],[22,44]]
         key_groups = [
-            [constants.DATE_OF_REPORT, constants.REQ_APPROVED_DATE, constants.REPORT_ID],
-            [constants.STUDY, constants.PATIENT_STUDY_ID, constants.PATIENT_LIMS_ID],
-            [constants.NAME, constants.DOB, constants.SEX],
-            [constants.PHYSICIAN, constants.LICENCE_NUMBER, constants.PHONE_NUMBER],
+            [constants.STUDY, constants.REQUISITIONER_EMAIL],
+            [constants.PATIENT_STUDY_ID, constants.NAME],
+            [constants.SEX, constants.DOB],
+            [constants.LICENCE_NUMBER, constants.PHYSICIAN],
+            [constants.PHONE_NUMBER, constants.HOSPITAL]
         ]
         return self.key_value_table_rows(patient_args, key_groups, widths)
 
     def sample_information_and_quality_rows(self, sample_args):
-        widths = [34, 33, 33]
+        widths = [[35,15], [20,15]]
         key_groups = [
-            [constants.ONCOTREE_CODE, constants.CALLABILITY_PERCENT, constants.COVERAGE_MEAN],
-            [constants.SAMPLE_TYPE, constants.PURITY_PERCENT, constants.PLOIDY],
+            [constants.SAMPLE_TYPE, constants.ONCOTREE_CODE],
+            [constants.CALLABILITY_PERCENT, constants.COVERAGE_MEAN],
+            [constants.PURITY_PERCENT, constants.PLOIDY]
         ]
         return self.key_value_table_rows(sample_args, key_groups, widths)
 
