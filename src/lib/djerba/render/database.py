@@ -1,7 +1,5 @@
 """Interface with a CouchDB instance for JSON report documents"""
 
-""" Input from couchdb.ini includes ["database"]["name"] + ["database"]["base"] """
-
 import logging 
 import configparser 
 import requests
@@ -53,7 +51,7 @@ class Database(logger):
         uploaded = False
         while uploaded == False:
             if status == 201:
-                self.logger.debug('Success uploading %s to %s database <status 201>', upload["_id"], db)
+                self.logger.info('Success uploading %s to %s database <status 201>', upload["_id"], db)
                 uploaded = True 
             elif status == 409:
                 json_string = submit.content.decode('utf-8') #convert bytes object 
@@ -62,7 +60,6 @@ class Database(logger):
                 url_id = url + f'/{report_id}'
                 pull = requests.get(url_id)
                 pull = json.loads(pull.text)
-                #print(f'rev: {pull["_rev"]}')
                 self.logger.info(f'_rev: {pull["_rev"]}')
                 rev = {
                     '_id': '{}'.format(report_id), 
@@ -72,8 +69,7 @@ class Database(logger):
                 upload = self.Merge(rev, data)
                 submit = requests.put(url=url_id, headers= headers, json=upload)   
                 status = submit.status_code         
-        
-        #print('File Archived: {}'.format(upload["_id"]))
+
         self.logger.info('File Archived: {}'.format(upload["_id"]))
         return status
 
