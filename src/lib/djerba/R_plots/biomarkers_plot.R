@@ -19,7 +19,7 @@ work_dir <- opt$dir
 if(msi_b == "TRUE"){
   msi_path <- paste(work_dir, 'msi.txt', sep='/')
   
-  boot <- read.table(msi_path)
+  boot <- read.table(msi_path,header=FALSE)
   
   names(boot) <- c("q0","q1","median","q3","q4")
   boot$Sample <- "Sample"
@@ -28,6 +28,7 @@ if(msi_b == "TRUE"){
   
   options(bitmapType='cairo')
   svg(msi_out_path, width = 8, height = 1.5)
+
   print(
     
   ggplot(boot,aes(x="Sample")) + 
@@ -36,7 +37,7 @@ if(msi_b == "TRUE"){
     geom_errorbar(aes(ymin=log(q0), ymax=log(q4)), width=0) +
     
     annotate(x = 0, xend=2, y=log(5), yend=log(5),geom="segment",linetype="longdash",colour = "red") +
-    annotate(geom="text",x = 0,y=log(5),color="black",label="MSI-H", hjust = -0.25, vjust = -6,size=3) +
+    annotate(geom="text",x = 0,y=log(5),color="black",label="MSI-H", hjust = -0.25, vjust = -5,size=3.5) +
     
     guides(fill=FALSE)+
     theme_classic() + 
@@ -50,10 +51,11 @@ if(msi_b == "TRUE"){
           axis.title.y=element_blank(),
           axis.text.y=element_blank(),
           axis.ticks.y=element_blank(),
-          text = element_text(size = 10),
+          text = element_text(size = 18),
           panel.grid = element_blank(), 
-          plot.margin = unit(c(10, 10, 10, 10), "points"),
-          line = element_blank()
+          plot.margin = unit(c(0, 1, 0, 1), "lines"),
+          line = element_blank(),
+          rect = element_rect(fill = "transparent")
           ) 
   )
   dev.off()

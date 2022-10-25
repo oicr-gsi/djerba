@@ -44,13 +44,13 @@ ggplot(tcga_tmb_data, aes(tmb)) +
                   clip = 'off') +
   
   annotate(y = 0, yend=0.25, x=sampleTMB, xend=sampleTMB,geom="segment",linetype="solid",colour = "black") +
-  annotate(geom="text",x = sampleTMB,y=0,color="black",label="Sample TMB", hjust = 0.5, vjust = -30) +
+  annotate(geom="text",x = sampleTMB,y=0,color="black",label="This tumour", hjust = 0.5, vjust = -28) +
   
   annotate(y = 0, yend=0.25, x=10, xend=10,geom="segment",linetype="longdash",colour = "red") +
-  annotate(geom="text",x = 10,y=0,color="red",label="TMB-H", hjust = 0.3, vjust = -30) +
+  annotate(geom="text",x = 10,y=0,color="red",label="TMB-H threshold", hjust = 0.3, vjust = -28) +
   
   xlab("Coding Mutations per Mb") +
-  ylab("density") +
+  ylab("% of samples") +
   {
     if (sample_tcga %in% external_tmb_data_type$CANCER.TYPE)
       geom_density(data = external_tmb_data_type, aes(fill = "Cohort"), alpha = 0.5)
@@ -59,8 +59,12 @@ ggplot(tcga_tmb_data, aes(tmb)) +
   } + scale_fill_discrete(name = "Cohort") +
   
   theme_classic() + 
-  theme(text = element_text(size = 15),
+  theme(text = element_text(size = 18),
         legend.position = c(0.9, 0.9),
-        plot.margin = unit(c(2, 3, 0, 2), "lines"))
+        plot.margin = unit(c(1, 1, 1, 1), "lines"),
+        panel.grid = element_blank(), 
+        line = element_blank(),
+        legend.background = element_rect(fill='transparent')
+  )
 
 dev.off()

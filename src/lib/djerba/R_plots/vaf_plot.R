@@ -27,14 +27,23 @@ MAF <- read.csv(maf_path, sep = "\t", header = TRUE, stringsAsFactors = FALSE) %
     mutate(OncoKB = ifelse(is.na(HIGHEST_LEVEL), ONCOGENIC, HIGHEST_LEVEL))
 
 options(bitmapType='cairo')
-svg(out_path, width=8, height=4)
+svg(out_path, width=7, height=1.5)
+
 ggplot(MAF) + 
-  geom_density(aes(x = tumour_vaf), fill = "grey", alpha = 0.5) + 
-  geom_rug(aes(x = tumour_vaf,y = 0), position = position_jitter(height = 0)) + 
-  xlab("Variant Allele Frequency") + ylab("density") +
-  theme_classic() + 
-  theme(text = element_text(size = 15)) + 
+  geom_density(aes(x = tumour_vaf), fill = "grey", alpha = 0.5,color="darkgrey") + 
+  geom_point(aes(x = tumour_vaf,y = 0), shape="|") + 
+  geom_hline(yintercept = -0.5,color="white") +
   scale_x_continuous(expand = c(0,0), limit = c(0, 1)) + 
-  scale_y_continuous(expand = c(0, 0)) + theme(plot.margin = unit(c(2, 3, 0, 2), "lines"))
+  scale_y_continuous(expand = c(0, 0)) + 
+  xlab("Variant Allele Frequency") +   ylab("% of mutations") +
+  theme_classic() + 
+  guides(fill='none')+
+  theme(
+    text = element_text(size = 10),
+    panel.grid = element_blank(), 
+    plot.margin = unit(c(10, 10, 10, 10), "points"),
+    line = element_blank()
+  ) 
 
 dev.off()
+
