@@ -22,7 +22,6 @@ class archiver(logger):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.converter = converter(log_level, log_path)
         self.validator = path_validator(log_level, log_path)
-        self.logger.info('Initializing archiver object from archiver.py')
 
     def read_and_preprocess(self, data_path):
         # read the JSON and convert image paths to base64 blobs
@@ -42,8 +41,8 @@ class archiver(logger):
         return json.dumps(data)
 
     def run(self, data_path):
-        self.logger.info('run method from archiver class STARTING')
         data_string = self.read_and_preprocess(data_path)
-        status = Database().UploadFile(data_path)       
+        status = Database().UploadFile(data_path)
+        self.logger.info(f'Upload status_code is: {status}')
         return status
 

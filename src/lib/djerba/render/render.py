@@ -34,8 +34,6 @@ class html_renderer(logger):
         report_lookup = TemplateLookup(directories=[html_dir,], strict_undefined=True)
         self.template = report_lookup.get_template("clinical_report_template.html")
         
-        self.logger.info('Initializing html_renderer object')
-
     def run(self, in_path, out_path, archive=True):
         self.logger.info('run method of html_renderer class STARTING from render.py')
         with open(in_path) as in_file:

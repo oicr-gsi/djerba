@@ -26,7 +26,6 @@ class Database(logger):
 
     """ Upload json to couchdb"""
     def UploadFile(self,json_path):
-        self.logger.info('UploadFile method from database.py STARTING')
         time = datetime.now()
         dt_couchDB = time.strftime("%d/%m/%Y %H:%M") 
 
@@ -75,6 +74,5 @@ class Database(logger):
         
         print('File Archived: {}'.format(upload["_id"]))
         self.logger.info('File Archived: {}'.format(upload["_id"]))
-        self.logger.info('Database class Upload method FINISHED')
         return status
 
