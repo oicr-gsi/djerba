@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v0.3.10: 2022-10-25
 
 ### Added
 - GCGI-422 Add a 'technical notes' section to the report; includes update to djerba_test_data_lfs
