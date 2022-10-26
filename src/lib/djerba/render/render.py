@@ -52,7 +52,7 @@ class html_renderer(logger):
         if archive:
             status, report_id = archiver(self.log_level, self.log_path).run(in_path)
             if status == 201: self.logger.info(f"Archiving successful: {report_id}")
-            else: self.logger.warning(f"Archiving unsuccessful: {report_id}")
+            else: self.logger.warning(f"Error! Archiving unsuccessful: {report_id}")
         else:
             self.logger.info("Archive operation not requested; omitting archiving")
         self.logger.info("Completed HTML rendering of {0} to {1}".format(in_path, out_path))
