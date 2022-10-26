@@ -13,7 +13,6 @@ from djerba.util.logger import logger
 from djerba.util.validator import path_validator
 from djerba.render.database import database
 
-
 class archiver(logger):
     """Archive the report JSON to a directory, with hashing to avoid overwrites"""
 
@@ -44,4 +43,3 @@ class archiver(logger):
         status, report_id = database().upload_file(data_path)
         self.logger.info(f'Upload status_code of {report_id} is: {status}')
         return status, report_id
-

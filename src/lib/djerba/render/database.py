@@ -72,4 +72,3 @@ class database(logger):
         if uploaded == False and attempt == 5: self.logger.warning('HTTP Request Timed Out')
         if status == 201: self.logger.info('File Archived: {}'.format(upload["_id"]))
         return status, report_id
-

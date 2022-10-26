@@ -111,5 +111,3 @@ class pdf_renderer(logger):
             self.logger.error('Traceback: {0}'.format(trace))
             raise
         self.logger.info('Finished writing PDF')
-
-
