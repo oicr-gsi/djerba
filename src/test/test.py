@@ -134,7 +134,7 @@ class TestArchive(TestBase):
             data = json.loads(json_file.read())
             report_id2 = data["report"]["patient_info"]["Report ID"]
             archive_url = data["supplementary"]["config"]["settings"]["archive_url"]
-            archive_name = data["supplementary"]["config"]["settings"]["archive_name"]  
+            archive_name = data["supplementary"]["config"]["settings"]["archive_name"]
         self.assertEqual(report_id, report_id2)
         url_id = posixpath.join(archive_url, archive_name, report_id)
         get = requests.get(url_id)
