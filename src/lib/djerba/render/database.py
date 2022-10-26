@@ -19,10 +19,6 @@ class database(logger):
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.logger.info("Initializing Djerba database object")
-    
-    def Merge(self,dict1,dict2):
-        combined = {**dict1, **dict2}
-        return combined
 
     """ Upload json to couchdb"""
     def upload_file(self, json_path):
@@ -40,7 +36,7 @@ class database(logger):
                 '_id': '{}'.format(report_id), #DF val auto gen
                 'last_updated': '{}'.format(dt_couchDB),
             }
-            upload = self.Merge(couch_info, data)
+            upload = {**couch_info, **data}
             headers = {'Content-Type': 'application/json'}
             submit = requests.post(url= url, headers= headers, json= upload)
         
@@ -64,7 +60,7 @@ class database(logger):
                     '_rev': f'{pull["_rev"]}',
                     'last_updated': '{}'.format(dt_couchDB),
                 }
-                upload = self.Merge(rev, data)
+                upload = {**rev, **data}
                 sleep(2)
                 submit = requests.put(url=url_id, headers= headers, json=upload)
                 status = submit.status_code
