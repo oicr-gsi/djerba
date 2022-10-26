@@ -15,7 +15,6 @@ import requests
 import posixpath
 from shutil import copy
 from string import Template
-from urllib.parse import urljoin
 
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
