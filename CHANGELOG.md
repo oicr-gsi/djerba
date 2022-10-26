@@ -1,12 +1,15 @@
 # CHANGELOG
 
-## Unreleased
+## v0.3.10: 2022-10-25
 
 ### Added
-- GCGI-422 Add a 'technical notes' section to the report
+- GCGI-422 Add a 'technical notes' section to the report; includes update to djerba_test_data_lfs
 
 ### Changed
 - GCGI-506 Increase test speed by using custom file provenance throughout
+
+### Fixed
+- GCGI-509 Correctly find MAF file in provenance
 
 ## v0.3.9: 2022-10-12
 
