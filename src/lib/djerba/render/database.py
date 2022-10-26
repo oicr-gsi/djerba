@@ -67,7 +67,7 @@ class database(logger):
                 attempt += 1
             else:
                 self.logger.warning(f'HTTP code: {status}')
-                attempt += 1
+                break
 
         if uploaded == False and attempt == 5: self.logger.warning('HTTP Request Timed Out')
         if status == 201: self.logger.info('File Archived: {}'.format(upload["_id"]))
