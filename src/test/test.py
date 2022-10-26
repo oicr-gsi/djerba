@@ -12,8 +12,10 @@ import tempfile
 import time
 import unittest
 import requests
+import posixpath
 from shutil import copy
 from string import Template
+from urllib.parse import urljoin
 
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
@@ -126,21 +128,21 @@ class TestArchive(TestBase):
 
     def test_archive(self):
         json_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
-        archive_status = archiver().run(json_path)
+        archive_status, report_id = archiver().run(json_path)
         self.assertEqual(archive_status, 201)
         with open(json_path) as json_file:
             data = json.loads(json_file.read())
-            report_id = data["report"]["patient_info"]["Report ID"]
-            archive_base = data["supplementary"]["config"]["settings"]["archive_base"]
-            archive_name = data["supplementary"]["config"]["settings"]["archive_name"]
-        if archive_base[-1] != '/': archive_base += '/'
-        if archive_name[-1] != '/': archive_name += '/'
-        get = requests.get(archive_base+archive_name+report_id)
+            report_id2 = data["report"]["patient_info"]["Report ID"]
+            archive_url = data["supplementary"]["config"]["settings"]["archive_url"]
+            archive_name = data["supplementary"]["config"]["settings"]["archive_name"]  
+        self.assertEqual(report_id, report_id2)
+        url_id = posixpath.join(archive_url, archive_name, report_id)
+        get = requests.get(url_id)
         self.assertEqual(get.status_code, 200)
         get = json.loads(get.text)
         self.assertEqual(report_id, get["report"]["patient_info"]["Report ID"])
         self.assertEqual(get["_id"], get["report"]["patient_info"]["Report ID"])
-        rm = requests.delete(archive_base+archive_name+report_id+'?rev='+get["_rev"])
+        rm = requests.delete(url_id+'?rev='+get["_rev"])
         self.assertEqual(rm.status_code, 200)
         self.assertEqual(len(data['report']), 21)  
         self.assertEqual(len(data['supplementary']['config']), 3)

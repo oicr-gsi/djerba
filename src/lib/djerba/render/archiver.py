@@ -3,7 +3,6 @@
 import hashlib
 import json
 import logging
-import shutil
 import os
 import re
 
@@ -12,7 +11,7 @@ import djerba.render.constants as render_constants
 from djerba.util.image_to_base64 import converter
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
-from djerba.render.database import Database 
+from djerba.render.database import database 
 
 
 class archiver(logger):
@@ -42,7 +41,7 @@ class archiver(logger):
 
     def run(self, data_path):
         data_string = self.read_and_preprocess(data_path)
-        status = Database().UploadFile(data_path)
-        self.logger.info(f'Upload status_code is: {status}')
-        return status
+        status, report_id = database().upload_file(data_path)
+        self.logger.info(f'Upload status_code of {report_id} is: {status}')
+        return status, report_id
 
