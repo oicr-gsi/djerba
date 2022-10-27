@@ -7,6 +7,7 @@ import logging
 import os
 import pdfkit
 import traceback
+
 from mako.template import Template
 from mako.lookup import TemplateLookup
 
@@ -32,10 +33,12 @@ class html_renderer(logger):
         self.template = report_lookup.get_template("clinical_report_template.html")
 
     def run(self, in_path, out_path, archive=True):
+        self.logger.info('run method of html_renderer class STARTING from render.py')
         with open(in_path) as in_file:
             data = json.loads(in_file.read())
             args = data.get(constants.REPORT)
             config = data.get(constants.SUPPLEMENTARY).get(constants.CONFIG)
+
         with open(out_path, 'w') as out_file:
             try:
                 html = self.template.render(**args)
@@ -47,29 +50,13 @@ class html_renderer(logger):
                 raise
             print(html, file=out_file)
         if archive:
-            self.logger.info("Finding archive parameters for {0}".format(out_path))
-            try:
-                archive_dir = config[ini.SETTINGS][ini.ARCHIVE_DIR]
-            except KeyError:
-                self.logger.warn("Archive directory not found in config")
-                archive_dir = None
-            try:
-                patient_id = config[ini.DISCOVERED][ini.PATIENT_ID]
-            except KeyError:
-                patient_id = 'Unknown'
-                msg = "Patient ID not found in config, falling back to '{0}'".format(patient_id)
-                self.logger.warn(msg)
-            if archive_dir:
-                archive_args = [in_path, archive_dir, patient_id]
-                self.logger.info("Archiving {0} to {1} with ID '{2}'".format(*archive_args))
-                archiver(self.log_level, self.log_path).run(*archive_args)
-                self.logger.debug("Archiving done")
-            else:
-                self.logger.warn("No archive directory; omitting archiving")
+            status, report_id = archiver(self.log_level, self.log_path).run(in_path)
+            if status == 201: self.logger.info(f"Archiving successful: {report_id}")
+            else: self.logger.warning(f"Error! Archiving unsuccessful: {report_id}")
         else:
             self.logger.info("Archive operation not requested; omitting archiving")
         self.logger.info("Completed HTML rendering of {0} to {1}".format(in_path, out_path))
-
+        self.logger.info('db method of html_renderer class FINISHED from render.py')
 
 class pdf_renderer(logger):
 
