@@ -1,5 +1,8 @@
 # CHANGELOG
 
+### Unreleased
+- GCGI-403: Update json archiving to couchDB, removed archive_dir storage on cluster   
+
 ## v0.3.10: 2022-10-25
 
 ### Added
