@@ -19,17 +19,6 @@
 <div>
 <p><img style='width: 50%; object-fit: contain' src="${converter().convert_svg(tmb_plot, 'TMB plot')}"/><img style='width: 50%; object-fit: contain' src="${converter().convert_svg(vaf_plot, 'VAF plot')}"/></p>
 
-<table width="100%">
-<tbody>
-<td width="25%">
-% for row in html_builder().msi_table_rows(genomic_biomarkers):
-${row}
-% endfor
-</td>
-<td width="75%"><img style='width: 100%; object-fit: contain' src="${converter().convert_svg(msi_plot, 'MSI plot')}"/></td>
-</tr>
-</tbody>
-</table>
 </div>
 </div>      
 <div class="keep-together">
