@@ -6,13 +6,39 @@ library(optparse)
 library(ggplot2)
 
 option_list = list(
-  make_option(c("-c", "--centromeres"), type="character", default='~/Documents/data/hg38_centromeres.txt', help="centromeres file", metavar="character"),
-  make_option(c("-s", "--segfile"), type="character", default=NULL, help="segments file", metavar="character")
+  make_option(c("-d", "--dir"), type="character", default=NULL, help="Input report directory path", metavar="character"),
+  make_option(c("-o", "--output"), type="character", default=NULL, help="SVG output path", metavar="character"),
+  
+  make_option(c("-c", "--centromeres"), type="character", default='hg38_centromeres.txt', help="centromeres file", metavar="character"),
+  make_option(c("-s", "--segfile"), type="character", default=NULL, help="segments file", metavar="character"),
+  make_option(c("-S", "--segfiletype"), type="character", default='sequenza', help="program that made the segments file, supported options are sequenza and purple", metavar="character")
 )
+
+opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
+opt <- parse_args(opt_parser)
+#segfile_path <- opt$segfile
+segfiletype <- opt$segfiletype
+centromeres_path <- opt$centromeres
+maf_path <- paste(opt$dir, 'data_mutations_extended.txt', sep='/')
+out_path <- opt$output
+
 
 #centromeres from USCS
 #http://genome.ucsc.edu/cgi-bin/hgTables?hgsid=1334321853_hiXsRQvWI9Djbr8IrSABHWafymIR&clade=mammal&org=Human&db=hg38&hgta_group=map&hgta_track=centromeres&hgta_table=0&hgta_regionType=genome&position=chrX%3A15%2C560%2C138-15%2C602%2C945&hgta_outputType=primaryTable&hgta_outFileName=
-centromeres <- read.table('~/Documents/data/hg38_centromeres.txt',header=T)
+#setwd('/Volumes/')
+#centromeres_path='~/Documents/data/hg38_centromeres.txt'
+
+#segfiletype='purple'
+#sample = "OCT_010707_Bn_M"
+#Dir = "cgi/scratch/fbeaudry/hartwig/purple/OCT_010707/500"
+#segs = read.table(file = paste0(Dir, "/", sample, ".purple.segment.tsv"), sep = "\t", header = T, comment.char = "!")
+
+#segfiletype='sequenza'
+#sample="BTC_0013_Lv_P"
+#Dir="cgi/scratch/fbeaudry/djerba_test/BTC_0013/gammas/400"
+#segs <- read.table(paste0(Dir, "/", sample, "_WG_HPB-199_LCM_segments.txt"), sep = "\t", header = T, comment.char = "!")
+
+centromeres <- read.table(centromeres_path,header=T)
 
 centromeres <- separate(centromeres,chrom,c("blank","chr"),"chr",fill="left",remove = FALSE)
 centromeres$Chr <- factor(c(centromeres$chr), levels = c(1:22,"X"))
@@ -28,40 +54,25 @@ centromeres_sub$CNt_high <- NA
 centromeres_sub$CNt <- NA
 centromeres_sub$cent <- 1
 
-#Segments file
-setwd('/Volumes/')
-
-#sample = "OCT_010707_Bn_M"
-#Dir = "cgi/scratch/fbeaudry/hartwig/purple/OCT_010707/500"
-#segs_purp = read.table(file = paste0(Dir, "/", sample, ".purple.segment.tsv"), sep = "\t", header = T, comment.char = "!")
-
-#sample="PANX_1385_Lv_M"
-#Dir="cgi/cap-djerba/PASS01/PANX_1385/gammas/500"
-#segs_seq <- read.table(paste0(Dir, "/", sample, "_WG_100-NH-017_LCM4_6_segments.txt"), sep = "\t", header = T, comment.char = "!")
-
-sample="BTC_0013_Lv_P"
-Dir="cgi/scratch/fbeaudry/djerba_test/BTC_0013/gammas/400"
-segs_seq <- read.table(paste0(Dir, "/", sample, "_WG_HPB-199_LCM_segments.txt"), sep = "\t", header = T, comment.char = "!")
-
-##
-#end.pos
 
 #####
 fittedSegmentsDF <- segs_seq
 
-## Bf = minorAllele_fz
-# end.pos = end
-# start.pos = start
-
-
-#fittedSegmentsDF$minorAllele_fz <- 1 - fittedSegmentsDF$tumorBAF
-##filter negatives ?
-
-fittedSegmentsDF$segment_size <- (fittedSegmentsDF$end.pos - fittedSegmentsDF$start.pos)/1000000
-fittedSegmentsDF$segment_class[ fittedSegmentsDF$segment_size >= 3 ] <- ">3Mb"
-fittedSegmentsDF$segment_class[ fittedSegmentsDF$segment_size < 3 ] <- "<3Mb"
-#fittedSegmentsDF$bafCountNA <- fittedSegmentsDF$bafCount
-#fittedSegmentsDF$bafCountNA[fittedSegmentsDF$bafCountNA == 0]<- NA
+if(segfiletype == 'purple'){
+  ## Bf = minorAllele_fz
+  # end.pos = end
+  # start.pos = start
+  #fittedSegmentsDF$minorAllele_fz <- 1 - fittedSegmentsDF$tumorBAF
+  ##filter negatives ?
+  #fittedSegmentsDF$bafCountNA <- fittedSegmentsDF$bafCount
+  #fittedSegmentsDF$bafCountNA[fittedSegmentsDF$bafCountNA == 0]<- NA
+} else if(segfiletype == 'sequenza'){ 
+  fittedSegmentsDF$segment_size <- (fittedSegmentsDF$end.pos - fittedSegmentsDF$start.pos)/1000000
+  fittedSegmentsDF$segment_class[ fittedSegmentsDF$segment_size >= 3 ] <- ">3Mb"
+  fittedSegmentsDF$segment_class[ fittedSegmentsDF$segment_size < 3 ] <- "<3Mb"
+} else {
+  print('unsupported segment file type/software')
+}
 
 fittedSegmentsDF$CNt_high[fittedSegmentsDF$CNt > 4] <- "high"
 
@@ -80,7 +91,7 @@ fittedSegmentsDF_sub <- separate(fittedSegmentsDF_sub,Chromosome,c("blank","chr"
 fittedSegmentsDF_sub$Chr <- factor(c(fittedSegmentsDF_sub$chr), levels = c(1:22,"X"))
 
 options(bitmapType='cairo')
-svg("cgi/scratch/fbeaudry/djerba_test/BTC_0013/CNV_allele_plot.svg", width = 8, height = 2)
+svg("cgi/scratch/fbeaudry/djerba_test/BTC_0013/seg_allele_plot.svg", width = 8, height = 2)
 print(
   
 ggplot(fittedSegmentsDF_sub) + 
@@ -116,7 +127,7 @@ ggplot(fittedSegmentsDF_sub) +
 )
 dev.off()
 
-svg("cgi/scratch/fbeaudry/CNV_plot.svg", width = 8, height = 1.5)
+svg("cgi/scratch/fbeaudry/seg_CNV_plot.svg", width = 8, height = 1.5)
 print(
   
 ggplot(fittedSegmentsDF_sub) + 

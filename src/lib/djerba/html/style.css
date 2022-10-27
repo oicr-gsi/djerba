@@ -33,20 +33,21 @@
 \*------------------------------------*/
 
     hr.header-big-line{
-    border-top: 4px solid #65bc45;
-    width: 100%;
+        border-top: 4px solid #65bc45;
+        width: 100%;
+        margin-top: 20px ;
     }
 
     hr.big-line{
-    border-top: 2px solid #65bc45;
-    width: 100%;
-    margin-right:0px 0px 0px 0px;
-    padding: 0px 0px 0px 0px;
+        border-top: 2px solid #65bc45;
+        width: 100%;
+        margin-right:0px 0px 0px 0px;
+        padding: 0px 0px 0px 0px;
     }
 
     hr.lil-line{
-    border-top: 1px solid #65bc45;
-    width: 100%;
+        border-top: 1px solid #65bc45;
+        width: 100%;
     }
 
 /*------------------------------------*\
@@ -94,10 +95,7 @@ h2 {
 /* sub-section header */
 h3 {
     font-size: 18px;
-    margin:2px;
-    padding:0;
-    
-}
+  }
 
 p {
     font-size: 14px;

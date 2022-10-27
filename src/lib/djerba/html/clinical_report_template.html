@@ -137,16 +137,22 @@
   % endif
 
   <hr class="lil-line" style="width: 100%; " align="right" >
+  
   <h3>Assay description</h3>
 
   % if assay_type == constants.ASSAY_WGTS:
-    <%include file="templates_for_supp/description_wgts.html"/>
+    <p> This assay combines two comprehensive next generation sequencing assays: a DNA-based whole genome sequencing (WGS) assay and an RNA-based whole transcriptome sequencing (WTS) assay.</p>
+    <%include file="templates_for_supp/description_wgs.html"/>
+    <%include file="templates_for_supp/description_wts.html"/>
   % elif assay_type == constants.ASSAY_WGS:
-    <%include file="templates_for_supp/description_wgs_only.html"/>
+    <p>This assay is a comprehensive next generation sequencing assay, specifically DNA-based whole genome sequencing (WGS). </p>
+    <%include file="templates_for_supp/description_wgs.html"/>
   % else:
     <% raise RuntimeError("Unknown assay type") %>
   % endif
+  <%include file="templates_for_supp/description_core.html"/>
 
+  <h3>Definitions</h3>
   <%include file="templates_for_supp/definitions_1.html"/>
   <%include file="templates_for_supp/definitions_2.html"/>
   <!-- coverage uses variables -->
