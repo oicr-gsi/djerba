@@ -15,7 +15,7 @@ fi
 REQUISITION=$1
 
 # Constants
-PYTHON_TOOLS_VER=15
+PYTHON_TOOLS_VER=16
 DB_CONFIG=/.mounts/labs/gsi/secrets/cap_reports_prod_db_config_ro.ini
 MISO_URL=https://miso.oicr.on.ca
 DASHI_URL=https://dashi.oicr.on.ca
