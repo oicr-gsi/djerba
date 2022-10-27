@@ -43,6 +43,14 @@ class provenance_reader(logger):
     NIASSA_WF_STARFUSION = 'starFusion'
     NIASSA_WF_VEP = 'variantEffectPredictor'
 
+    # metatype patterns
+    MT_OCTET_STREAM = 'application/octet-stream$'
+    MT_VCF_GZ = 'application/vcf-gz$'
+    MT_TXT_GZ = 'application/te?xt-gz$' # match text OR txt
+    MT_ZIP = 'application/zip-report-bundle$'
+    MT_BAM = 'application/bam$'
+    MT_BAM_INDEX = 'application/bam-index$'
+
     # placeholder
     WT_SAMPLE_NAME_PLACEHOLDER = 'whole_transcriptome_placeholder'
 
@@ -160,10 +168,11 @@ class provenance_reader(logger):
         if rows == None: rows = self.provenance
         return filter(lambda x: x[index]==value, rows)
 
-    def _filter_metatype(self, metatype, rows=None):
-        return self._filter_rows(index.FILE_META_TYPE, metatype, rows)
+    def _filter_metatype(self, pattern, rows=None):
+        if rows == None: rows = self.provenance
+        return filter(lambda x: re.search(pattern, x[index.FILE_META_TYPE]), rows)
 
-    def _filter_pattern(self, pattern, rows=None):
+    def _filter_file_path(self, pattern, rows=None):
         if rows == None: rows = self.provenance
         return filter(lambda x: re.search(pattern, x[index.FILE_PATH]), rows)
 
@@ -285,19 +294,19 @@ class provenance_reader(logger):
                 break
         return path
 
-    def _parse_file_path(self, workflow, metatype, pattern, sample_name):
+    def _parse_file_path(self, workflow, meta_pattern, file_pattern, sample_name):
         # get most recent file of given workflow, metatype, file path pattern, and sample name
         # self._filter_* functions return an iterator
         iterrows = self._filter_workflow(workflow)
-        iterrows = self._filter_metatype(metatype, iterrows)
-        iterrows = self._filter_pattern(pattern, iterrows)
+        iterrows = self._filter_metatype(meta_pattern, iterrows)
+        iterrows = self._filter_file_path(file_pattern, iterrows)
         iterrows = self._filter_sample_name(sample_name, iterrows)
         try:
             row = self._get_most_recent_row(iterrows)
             path = row[index.FILE_PATH]
         except MissingProvenanceError as err:
             msg = "No provenance records meet filter criteria: Workflow = {0}, ".format(workflow) +\
-                  "metatype = {0}, regex = {1}.".format(metatype, pattern)
+                  "metatype-regex = {0}, path-regex = {1}.".format(meta_pattern, file_pattern)
             self.logger.debug(msg)
             path = None
         return path
@@ -408,37 +417,37 @@ class provenance_reader(logger):
 
     def parse_arriba_path(self):
         workflow = self.WF_ARRIBA
-        mt = 'application/octet-stream'
+        mt = self.MT_OCTET_STREAM
         suffix = '\.fusions\.tsv$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
     def parse_delly_path(self):
         workflows = [self.WF_DELLY, self.NIASSA_WF_DELLY]
-        mt = 'application/vcf-gz'
+        mt = self.MT_VCF_GZ
         suffix = '\.somatic_filtered\.delly\.merged\.vcf\.gz$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_gep_path(self):
         workflow = self.WF_RSEM
-        mt = 'application/octet-stream'
+        mt = self.MT_OCTET_STREAM
         suffix = '\.genes\.results$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
     def parse_maf_path(self):
         workflows = [self.WF_VEP, self.NIASSA_WF_VEP]
-        mt = 'application/txt-gz'
+        mt = self.MT_TXT_GZ
         suffix = '\.filter\.deduped\.realigned\.recalibrated\.mutect2\.filtered\.maf\.gz$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_mavis_path(self):
         workflow = self.WF_MAVIS
-        mt = 'application/zip-report-bundle'
+        mt = self.MT_ZIP
         suffix = '(mavis-output|summary)\.zip$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
     def parse_sequenza_path(self):
         workflows = [self.WF_SEQUENZA, self.NIASSA_WF_SEQUENZA]
-        mt = 'application/zip-report-bundle'
+        mt = self.MT_ZIP
         suffix = '_results\.zip$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
@@ -450,33 +459,33 @@ class provenance_reader(logger):
 
     def parse_starfusion_predictions_path(self):
         workflows = [self.WF_STARFUSION, self.NIASSA_WF_STARFUSION]
-        mt = 'application/octet-stream'
+        mt = self.MT_OCTET_STREAM
         suffix = 'star-fusion\.fusion_predictions\.tsv$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wt_t)
 
     def parse_wg_bam_path(self):
         workflows = [self.WF_BMPP, self.NIASSA_WF_BMPP]
-        mt = 'application/bam'
+        mt = self.MT_BAM
         suffix = '\.filter\.deduped\.realigned\.recalibrated\.bam$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_wg_bam_ref_path(self):
         # find the reference (normal) BAM
         workflows = [self.WF_BMPP, self.NIASSA_WF_BMPP]
-        mt = 'application/bam'
+        mt = self.MT_BAM
         suffix = '\.filter\.deduped\.realigned\.recalibrated\.bam$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_n)
 
     def parse_wg_index_path(self):
         workflows = [self.WF_BMPP, self.NIASSA_WF_BMPP]
-        mt = 'application/bam-index'
+        mt = self.MT_BAM_INDEX
         suffix = '\.filter\.deduped\.realigned\.recalibrated\.bai$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_wg_index_ref_path(self):
         # find the reference (normal) BAM index
         workflows = [self.WF_BMPP, self.NIASSA_WF_BMPP]
-        mt = 'application/bam-index'
+        mt = self.MT_BAM_INDEX
         suffix = '\.filter\.deduped\.realigned\.recalibrated\.bai$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_n)
 
@@ -485,14 +494,14 @@ class provenance_reader(logger):
     def parse_wt_bam_path(self):
         # matches *Aligned.sortedByCoord.out.bam if *not* preceded by an index of the form ACGTACGT
         workflows = [self.WF_STAR, self.NIASSA_WF_STAR]
-        mt = 'application/bam'
+        mt = self.MT_BAM
         suffix = '('+self.root_sample_name+'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bam$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wt_t)
 
     def parse_wt_index_path(self):
         # matches *Aligned.sortedByCoord.out.bam if *not* preceded by an index of the form ACGTACGT
         workflows = [self.WF_STAR, self.NIASSA_WF_STAR]
-        mt = 'application/bam-index'
+        mt = self.MT_BAM_INDEX
         suffix = '('+self.root_sample_name+'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bai$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wt_t)
 
