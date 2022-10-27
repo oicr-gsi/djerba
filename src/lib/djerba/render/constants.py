@@ -22,6 +22,7 @@ PURITY_FAILURE = 'purity_failure'
 ASSAY_WGTS = 'WGTS'
 ASSAY_WGS = 'WGS'
 REPORT_DATE = 'report_date'
+TECHNICAL_NOTES = 'technical_notes'
 
 # constants for the patient info table
 ASSAY_NAME = 'Assay'

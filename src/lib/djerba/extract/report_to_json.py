@@ -545,6 +545,10 @@ class clinical_report_json_composer(composer_base):
     def read_genomic_summary(self):
         with open(os.path.join(self.input_dir, 'genomic_summary.txt')) as in_file:
             return in_file.read().strip()
+    
+    def read_technical_notes(self):
+        with open(os.path.join(self.input_dir, 'technical_notes.txt')) as in_file:
+            return in_file.read().strip()
 
     def read_mutation_copy_states(self):
         # convert copy state to human readable string; return mapping of gene -> copy state
@@ -687,6 +691,7 @@ class clinical_report_json_composer(composer_base):
         data[rc.PATIENT_INFO] = self.build_patient_info()
         data[rc.SAMPLE_INFO] = self.build_sample_info()
         data[rc.GENOMIC_SUMMARY] = self.read_genomic_summary()
+        data[rc.TECHNICAL_NOTES] = self.read_technical_notes()
         data[rc.COVERAGE_THRESHOLDS] = self.build_coverage_thresholds()
         data[rc.FAILED] = self.failed
         data[rc.PURITY_FAILURE] = self.params.get(xc.PURITY_FAILURE)
@@ -708,7 +713,7 @@ class clinical_report_json_composer(composer_base):
                 data[rc.STRUCTURAL_VARIANTS_AND_FUSIONS] = self.build_svs_and_fusions()
             else:
                 data[rc.STRUCTURAL_VARIANTS_AND_FUSIONS] = None
-            data[rc.SUPPLEMENTARY_GENE_INFO] = self.build_supplementary_info()
+            data[rc.SUPPLEMENTARY_GENE_INFO] = self.build_supplementary_info() 
         self.logger.info("Finished building clinical report data for JSON output")
         return data
 

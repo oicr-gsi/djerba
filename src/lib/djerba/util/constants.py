@@ -15,6 +15,7 @@ DATA_FUSIONS_ONCOKB = 'data_fusions_oncokb.txt'
 GENOMIC_SUMMARY_FILENAME = 'genomic_summary.txt'
 SEQUENZA_META_FILENAME = 'sequenza_meta.txt'
 REPORT_JSON_FILENAME = 'djerba_report.json'
+TECHNICAL_NOTES_FILENAME = 'technical_notes.txt'
 
 # Gene attributes to parse R script results
 COPY_STATE = 'Copy_State'

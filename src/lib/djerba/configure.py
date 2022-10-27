@@ -88,6 +88,7 @@ class configurer(logger):
         data_files[ini.MUTATION_NONSYN] = s.get(ini.MUTATION_NONSYN) if s.get(ini.MUTATION_NONSYN) else os.path.join(data_dir, self.MUTATION_NONSYN_NAME)
         data_files[ini.GENE_LIST] = s.get(ini.GENE_LIST) if s.get(ini.GENE_LIST) else os.path.join(data_dir, self.GENELIST_NAME)
         data_files[ini.TMBCOMP] = s.get(ini.TMBCOMP) if s.get(ini.TMBCOMP) else os.path.join(data_dir, self.TMBCOMP_NAME)
+        data_files[ini.TECHNICAL_NOTES] = s.get(ini.TECHNICAL_NOTES) if s.get(ini.TECHNICAL_NOTES) else os.path.join(data_dir, constants.TECHNICAL_NOTES_FILENAME)
         return data_files
 
     def discover_primary(self):

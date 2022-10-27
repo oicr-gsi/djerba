@@ -151,6 +151,7 @@ class extractor(logger):
         self.write_clinical_data(self.get_description())
         self.preprocess_msi(self.config[ini.DISCOVERED][ini.MSI_FILE], self.report_dir)
         self.write_genomic_summary()
+        self.write_technical_notes()
         params = {
             xc.AUTHOR: self.author,
             xc.ASSAY_TYPE: self.assay_type,
@@ -247,6 +248,15 @@ class extractor(logger):
         """
         input_path = self.config[ini.DISCOVERED][ini.GENOMIC_SUMMARY]
         output_path = os.path.join(self.report_dir, constants.GENOMIC_SUMMARY_FILENAME)
+        copyfile(input_path, output_path)
+        
+    def write_technical_notes(self):
+        """
+        Copy a technical_notes.txt file to the working directory
+        File may have been manually configured; otherwise a default file is used
+        """
+        input_path = self.config[ini.DISCOVERED][ini.TECHNICAL_NOTES]
+        output_path = os.path.join(self.report_dir, constants.TECHNICAL_NOTES_FILENAME)
         copyfile(input_path, output_path)
 
     def write_json(self, report_data):
