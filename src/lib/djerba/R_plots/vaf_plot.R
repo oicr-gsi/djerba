@@ -28,13 +28,9 @@ MAF <- read.csv(maf_path, sep = "\t", header = TRUE, stringsAsFactors = FALSE) %
 
 options(bitmapType='cairo')
 svg(out_path, width=8, height=4)
-ggplot(MAF) + 
-  geom_density(aes(x = tumour_vaf), fill = "grey", alpha = 0.5) + 
-  geom_rug(aes(x = tumour_vaf,y = 0), position = position_jitter(height = 0)) + 
-  xlab("Variant Allele Frequency") + ylab("density") +
-  theme_classic() + 
-  theme(text = element_text(size = 15)) + 
-  scale_x_continuous(expand = c(0,0), limit = c(0, 1)) + 
-  scale_y_continuous(expand = c(0, 0)) + theme(plot.margin = unit(c(2, 3, 0, 2), "lines"))
-
+ggplot(MAF) + geom_density(aes(x = tumour_vaf), fill = "grey", alpha = 0.5) + geom_rug(aes(x = tumour_vaf,
+  y = 0), position = position_jitter(height = 0)) + xlab("Variant Allele Frequency") + ylab("density") +
+  theme_classic() + theme(text = element_text(size = 15)) + scale_x_continuous(expand = c(0,
+  0), limit = c(0, 1)) + scale_y_continuous(expand = c(0, 0)) + theme(plot.margin = unit(c(2,
+  3, 0, 2), "lines"))
 dev.off()

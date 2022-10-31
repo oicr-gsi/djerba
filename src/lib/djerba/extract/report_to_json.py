@@ -658,14 +658,7 @@ class clinical_report_json_composer(composer_base):
             rc.CLINICALLY_RELEVANT_VARIANTS: len(rows),
             rc.BODY: rows
         }
-        return data
-
-
-
-          
-            
-            
-       
+        return data      
         
     def extract_msi(self):
         MSI = 0.0
