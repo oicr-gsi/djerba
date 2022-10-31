@@ -4,6 +4,7 @@
 
 ### Changed
 - GCGI-516 Change default file provenance report path to Vidarr
+- Updated to use Python Tools module v16 for Geneticist Review Report
 
 ## v0.3.10: 2022-10-25
 
