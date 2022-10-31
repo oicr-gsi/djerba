@@ -116,6 +116,8 @@ class clinical_report_json_composer(composer_base):
     UNKNOWN = 'Unknown'
     VARIANT_CLASSIFICATION = 'Variant_Classification'
     V7_TARGET_SIZE = 37.285536 # inherited from CGI-Tools
+    MSS_CUTOFF = 3.5
+    MSI_CUTOFF = 5.0
     MSI_FILE = 'msi.txt'
 
     # variant classifications excluded from TMB count
@@ -400,7 +402,7 @@ class clinical_report_json_composer(composer_base):
                     rows.append(self.treatment_row(genes, alteration, max_level, therapies))
         with open(os.path.join(self.input_dir, self.BIOMARKERS_ANNOTATED)) as data_file:
             for row in csv.DictReader(data_file, delimiter="\t"):
-                gene = 'NA (Biomarker)'
+                gene = 'Biomarker'
                 alteration = row[self.ALTERATION_UPPER_CASE]
                 [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
                 if max_level:
@@ -630,14 +632,14 @@ class clinical_report_json_composer(composer_base):
             rows.append(row)
             #Microsatelite Instability (MSI)
             msi = self.extract_msi()
-            if msi >= 5.0:
+            if msi >= self.MSI_CUTOFF:
                 metric_call = "MSI-H"
                 metric_text = "This sample shows genomic evidence of high microsatellite instability, which is likely caused by genetic or epigenetic alterations to genes in the mismatch repair pathway such as <em>MLH-1</em>, <em>MSH-2</em>, and <em>MSH-6</em>."
                 print("Other Biomarkers\t"+sample_ID+"\tMSI-H", file=genomic_biomarkers_file)
-            elif msi < 5.0 & msi >= 3.5:
+            elif msi < self.MSI_CUTOFF & msi >= self.MSS_CUTOFF:
                 metric_call = "INCONCLUSIVE"
                 metric_text = "This sample shows inconclusive genomic evidence regarding microsatellite instability. Further testing is recommended."
-            elif msi < 3.5:
+            elif msi < self.MSS_CUTOFF:
                 metric_call = "MSS"
                 metric_text = "This sample shows genomic evidence of microsatellite stability (MSS)"
             else:
@@ -740,7 +742,7 @@ class clinical_report_json_composer(composer_base):
             alt_url = self.build_alteration_url('-'.join(genes_arg), alteration, self.closest_tcga_uc)
         if alteration == "TMB-H" or alteration == "MSI-H":
             genes_and_urls = {
-                "NA (Biomarker)": "https://www.oncokb.org/gene/Other%20Biomarkers/"
+                "Biomarker": "https://www.oncokb.org/gene/Other%20Biomarkers/"
             }
             if alteration == "TMB-H":
                 alt_url = "https://www.oncokb.org/gene/Other%20Biomarkers/TMB-H/",
