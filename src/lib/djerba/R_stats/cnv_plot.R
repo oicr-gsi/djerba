@@ -8,7 +8,6 @@ library(ggplot2)
 option_list = list(
   make_option(c("-d", "--dir"), type="character", default=NULL, help="Input report directory path", metavar="character"),
   make_option(c("-o", "--output"), type="character", default=NULL, help="SVG output path", metavar="character"),
-  
   make_option(c("-c", "--centromeres"), type="character", default='hg38_centromeres.txt', help="centromeres file", metavar="character"),
   make_option(c("-s", "--segfile"), type="character", default=NULL, help="segments file", metavar="character"),
   make_option(c("-S", "--segfiletype"), type="character", default='sequenza', help="program that made the segments file, supported options are sequenza and purple", metavar="character")

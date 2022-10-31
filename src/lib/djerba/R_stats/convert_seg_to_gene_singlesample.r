@@ -94,3 +94,67 @@ preProcCNA <- function(segfile, genebed, gain, amp, htz, hmz, oncolist, genelist
  return(CNAs)
 
 }
+
+preProcLOH <- function(aratiofile, genebed, oncolist, genelist=NA, minCopiesForLOH=2){
+  
+  ##test
+  #genebed="djerba/src/lib/djerba/data/gencode_v33_hg38_genes.bed"
+  #oncolist="djerba/src/lib/djerba/data/20200818-oncoKBcancerGeneList.tsv"
+  #genelist="djerba/src/lib/djerba/data/targeted_genelist.txt"
+  
+  segments <- read.table(aratiofile,header = T)
+  
+  segments$chromosome <- gsub("chr", "", segments$chromosome)
+  segments$ARatio <- segments$A/segments$CNt
+  segments$sample <- "sample1"
+  segments <- segments[segments$CNt >= minCopiesForLOH,]
+  
+  segments_ARatio <- segments[,c("sample","chromosome","start.pos", "end.pos","N.ratio","ARatio")]
+  
+  names(segments_ARatio) <- c("ID", "chrom", "loc.start" , "loc.end", "num.mark" , "seg.mean")
+  
+  # read oncogenes
+  oncogenes <- read.delim(oncolist, header=TRUE, row.names=1)
+  
+  # get the gene info
+  print("getting gene info for LOH")
+  geneInfo <- read.delim(genebed, sep="\t", header=TRUE)
+  
+  cnseg_ARatio <- CNSeg(segments_ARatio)
+  rdByGene_ARatio <- getRS(cnseg_ARatio, by="gene", imput=FALSE, XY=FALSE, geneMap=geneInfo, what="min")
+  reducedseg_ARatio <- rs(rdByGene_ARatio)
+  
+  # some reformatting and return log2cna data
+  df_ARatio <- subset(reducedseg_ARatio[,c(5, 6:ncol(reducedseg_ARatio))], !duplicated(reducedseg_ARatio[,c(5, 6:ncol(reducedseg_ARatio))][,1]))
+  colnames(df_ARatio) <- c("Hugo_Symbol", colnames(df_ARatio)[2:ncol(df_ARatio)])
+  
+  # fix rownames of log2cna data
+  rownames(df_ARatio) <- df_ARatio$Hugo_Symbol
+  df_ARatio_onco <- df_ARatio[df_ARatio$Hugo_Symbol %in% rownames(oncogenes),]
+  
+  df_LOH <- df_ARatio[df_ARatio$sample1 == 0,]
+  
+  # subset of oncoKB genes
+  df_LOH_onco <- df_LOH[df_LOH$Hugo_Symbol %in% rownames(oncogenes),]
+  
+  # subset if gene list given
+  genelist <- unique(genelist)
+  
+  if (!is.na(genelist)) {
+    df_ARatio <- df_ARatio[df_ARatio$Hugo_Symbol %in% genelist,]
+    df_ARatio_onco <- df_ARatio_onco[df_ARatio_onco$Hugo_Symbol %in% genelist,]
+    
+    df_LOH <- df_LOH[df_LOH$Hugo_Symbol %in% genelist,]
+    df_LOH_onco <- df_LOH_onco[df_LOH_onco$Hugo_Symbol %in% genelist,]
+    
+  }
+  
+  
+  LOH=list()
+  LOH[[1]] <- df_ARatio
+  LOH[[2]] <- df_LOH
+  LOH[[3]] <- df_ARatio_onco
+  LOH[[4]] <- df_LOH_onco
+  return(LOH)
+  
+}

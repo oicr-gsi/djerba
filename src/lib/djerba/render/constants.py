@@ -84,6 +84,7 @@ VAF_NOPERCENT = 'VAF'
 TUMOUR_ALT_COUNT = 't_alt_count'
 TUMOUR_DEPTH = 't_depth'
 COPY_STATE = 'Copy State'
+LOH_STATE = 'LOH (ABratio)'
 
 # constants for the genomic landscape table
 TMB_TOTAL = 'Tumour Mutation Burden'

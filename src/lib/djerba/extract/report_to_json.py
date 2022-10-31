@@ -283,6 +283,7 @@ class clinical_report_json_composer(composer_base):
         self.logger.debug("Building data for small mutations and indels table")
         rows = []
         mutation_copy_states = self.read_mutation_copy_states()
+        mutation_LOH_states = self.read_mutation_LOH()
         with open(os.path.join(self.input_dir, self.MUTATIONS_EXTENDED_ONCOGENIC)) as data_file:
             for input_row in csv.DictReader(data_file, delimiter="\t"):
                 gene = input_row[self.HUGO_SYMBOL_TITLE_CASE]
@@ -299,6 +300,7 @@ class clinical_report_json_composer(composer_base):
                     rc.TUMOUR_DEPTH: int(input_row[rc.TUMOUR_DEPTH]),
                     rc.TUMOUR_ALT_COUNT: int(input_row[rc.TUMOUR_ALT_COUNT]),
                     rc.COPY_STATE: mutation_copy_states.get(gene, self.UNKNOWN),
+                    rc.LOH_STATE: mutation_LOH_states[gene],
                     rc.ONCOKB: self.parse_oncokb_level(input_row)
                 }
                 rows.append(row)
@@ -566,6 +568,23 @@ class clinical_report_json_composer(composer_base):
                     copy_states[gene] = copy_state_conversion.get(category, self.UNKNOWN)
         return copy_states
 
+    def read_mutation_LOH(self):
+        # convert A-allele ratio to LOH; return mapping of gene -> LOH
+        loh_states = {}
+        with open(os.path.join(self.input_dir, 'data_CNA_oncoKBgenes_ARatio.txt')) as in_file:
+            first = True
+            for row in csv.reader(in_file, delimiter="\t"):
+                if first:
+                    first = False
+                else:
+                    [gene, aratio] = [row[0], float(row[1])]
+                    if(aratio == 0):
+                        lohcall = "Yes"
+                    else:
+                        lohcall = "No"   
+                    loh_states[gene] = (lohcall+' ('+str(round(aratio,1))+')')
+        return loh_states
+
     def read_oncokb_gene_summaries(self):
         summaries = {}
         with open(os.path.join(self.data_dir, '20201126-allCuratedGenes.tsv')) as in_file:
@@ -655,13 +674,6 @@ class clinical_report_json_composer(composer_base):
             rc.BODY: rows
         }
         return data
-
-
-
-          
-            
-            
-       
         
     def extract_msi(self):
         MSI = 0.0
