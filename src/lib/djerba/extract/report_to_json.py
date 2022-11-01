@@ -16,7 +16,6 @@ import djerba.util.constants as dc
 from djerba import __version__
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
-from djerba.extract.maf_annotator import maf_annotator
 from statsmodels.distributions.empirical_distribution import ECDF
 
 class composer_base(logger):
@@ -116,8 +115,8 @@ class clinical_report_json_composer(composer_base):
     UNKNOWN = 'Unknown'
     VARIANT_CLASSIFICATION = 'Variant_Classification'
     V7_TARGET_SIZE = 37.285536 # inherited from CGI-Tools
-    MSS_CUTOFF = 3.5
-    MSI_CUTOFF = 5.0
+    MSS_CUTOFF = 5.0
+    MSI_CUTOFF = 10.0
     MSI_FILE = 'msi.txt'
 
     # variant classifications excluded from TMB count
@@ -654,8 +653,8 @@ class clinical_report_json_composer(composer_base):
                 rc.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/MSI-H"
             }
             rows.append(row)
-        oncokb_info = maf_annotator().write_oncokb_info(input_dir, self.clinical_data[dc.TUMOUR_SAMPLE_ID], self.params.get(xc.ONCOTREE_CODE).upper())
-        out_path = maf_annotator().annotate_maf(genomic_biomarkers_path, input_dir, oncokb_info)
+        oncokb_info = oncokb_annotator().write_oncokb_info(input_dir, self.clinical_data[dc.TUMOUR_SAMPLE_ID], self.params.get(xc.ONCOTREE_CODE).upper())
+        out_path = oncokb_annotator().annotate_maf(genomic_biomarkers_path, input_dir, oncokb_info)
         data = {
             rc.CLINICALLY_RELEVANT_VARIANTS: len(rows),
             rc.BODY: rows

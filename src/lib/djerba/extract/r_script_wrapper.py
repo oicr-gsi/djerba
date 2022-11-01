@@ -13,7 +13,6 @@ from djerba.extract.oncokb_annotator import oncokb_annotator
 from djerba.sequenza import sequenza_reader
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
-from djerba.extract.maf_annotator import maf_annotator
 
 class r_script_wrapper(logger):
 
@@ -298,7 +297,6 @@ class r_script_wrapper(logger):
             self.report_dir,
             tmp_dir
         ).annotate_maf(tmp_path)
-
         return out_path
 
     def preprocess_seg(self, sequenza_path, tmp_dir):
@@ -328,7 +326,6 @@ class r_script_wrapper(logger):
             tmp_dir = tmp.name
         else:
             tmp_dir = self.supplied_tmp_dir
-
         maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE], tmp_dir)
         seg_path = self.preprocess_seg(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir)
         cmd = [
