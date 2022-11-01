@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v0.3.11: 2022-11-01
 
 ### Changed
 - GCGI-516 Change default file provenance report path to Vidarr
