@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## v0.3.12: 2022-11-02
+
+- Now reporting MSI and TMB as biomarkers
+
+### Added
+  - biomarker R script for plotting MSI score (and future biomarkers)
+  - MSI file processing in extractor.py: calculate median score across bootstraps
+  - annotation of MSI-H and TMB-H by Oncokb
+
+### Changed
+  - Updated provenance_reader and configure.py to find msisensor files
+  - Updated TMB plotting script to show TMB-High cutoff
+
 ## v0.3.11: 2022-11-01
 
 ### Changed
