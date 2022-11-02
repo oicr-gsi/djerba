@@ -2,7 +2,7 @@
 
 ## v0.3.12: 2022-11-02
 
-- Now reporting MSI and TMB as biomarkers
+- Now reporting MSI and TMB (GCGI-392) as actionable biomarkers
 
 ### Added
   - biomarker R script for plotting MSI score (and future biomarkers)
