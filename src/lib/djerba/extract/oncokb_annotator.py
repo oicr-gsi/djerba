@@ -114,12 +114,3 @@ class oncokb_annotator(logger):
         ]
         self._run_annotator_script(cmd, 'MAF annotator')
         return out_path
-
-    def write_oncokb_info(self, info_dir, tumour_id, oncotree_code):
-        """Write a file of oncoKB data for use by annotation scripts"""
-        info_path = os.path.join(info_dir, self.ONCOKB_CLINICAL_INFO)
-        args = [tumour_id, oncotree_code]
-        with open(info_path, 'w') as info_file:
-            print("SAMPLE_ID\tONCOTREE_CODE", file=info_file)
-            print("{0}\t{1}".format(*args), file=info_file)
-        return info_path

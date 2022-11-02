@@ -16,6 +16,7 @@ import djerba.util.constants as dc
 from djerba import __version__
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
+from djerba.extract.oncokb_annotator import oncokb_annotator
 from statsmodels.distributions.empirical_distribution import ECDF
 
 class composer_base(logger):
@@ -653,8 +654,12 @@ class clinical_report_json_composer(composer_base):
                 rc.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/MSI-H"
             }
             rows.append(row)
-        oncokb_info = oncokb_annotator().write_oncokb_info(input_dir, self.clinical_data[dc.TUMOUR_SAMPLE_ID], self.params.get(xc.ONCOTREE_CODE).upper())
-        out_path = oncokb_annotator().annotate_maf(genomic_biomarkers_path, input_dir, oncokb_info)
+        out_path = oncokb_annotator(
+            self.clinical_data[dc.TUMOUR_SAMPLE_ID],
+            self.params.get(xc.ONCOTREE_CODE).upper(),
+            input_dir,
+            input_dir
+        ).annotate_maf(genomic_biomarkers_path)
         data = {
             rc.CLINICALLY_RELEVANT_VARIANTS: len(rows),
             rc.BODY: rows
