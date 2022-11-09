@@ -322,32 +322,19 @@ class r_script_wrapper(logger):
                 writer.writerow(row)
         return out_path
 
-    def preprocess_segmentsTXT(self, sequenza_path, tmp_dir):
+    def preprocess_segmentsTXT(self, sequenza_path, tmp_dir,report_dir):
         """
         Extract the segments.txt file from the .zip archive output by Sequenza
         write results to tmp_dir
         """
         gamma = self.config.getint(ini.DISCOVERED, ini.SEQUENZA_GAMMA)
         seg_path = sequenza_reader(sequenza_path).extract_segmentsTXT_file(tmp_dir, gamma)
-        out_path = os.path.join(tmp_dir, 'segments.txt')
+        out_path = os.path.join(report_dir, 'segments.txt')
         with open(seg_path, 'rt') as seg_file, open(out_path, 'wt') as out_file:
             reader = csv.reader(seg_file, delimiter="\t")
             writer = csv.writer(out_file, delimiter="\t")
             for row in reader:
                 writer.writerow(row)
-        return out_path
-
-    def write_cnv_plot(self, segmentsTXT_path):
-        out_path = os.path.join(report_dir, 'cnv.svg')
-        args = [
-            os.path.join(self.r_script_dir, 'cnv_plot.R'),
-            '--segfile', segmentsTXT_path,
-            '--segfiletype', 'sequenza',
-            '-c', 'os.path.join(self.r_script_dir, 'hg38_centromeres.txt')',
-            '-o', self.report_dir
-        ]
-        subprocess_runner(self.log_level, self.log_path).run(args)
-        self.logger.info("Wrote CNV plot to {0}".format(out_path))
         return out_path
 
     def run(self):
@@ -358,8 +345,7 @@ class r_script_wrapper(logger):
             tmp_dir = self.supplied_tmp_dir
         maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE], tmp_dir)
         seg_path = self.preprocess_seg(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir)
-        segmentsTXT_path = self.preprocess_segmentsTXT(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir)
-        self.write_cnv_plot(segmentsTXT_path,)
+        segmentsTXT_path = self.preprocess_segmentsTXT(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir, self.report_dir)
         cmd = [
             'Rscript', os.path.join(self.r_script_dir, 'singleSample.r'),
             '--basedir', self.r_script_dir,

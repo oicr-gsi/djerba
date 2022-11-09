@@ -1,4 +1,6 @@
 #! /usr/bin/env Rscript
+#centromeres from USCS
+#http://genome.ucsc.edu/cgi-bin/hgTables?hgsid=1334321853_hiXsRQvWI9Djbr8IrSABHWafymIR&clade=mammal&org=Human&db=hg38&hgta_group=map&hgta_track=centromeres&hgta_table=0&hgta_regionType=genome&position=chrX%3A15%2C560%2C138-15%2C602%2C945&hgta_outputType=primaryTable&hgta_outFileName=
 
 library(dplyr)
 library(tidyr)
@@ -6,36 +8,31 @@ library(optparse)
 library(ggplot2)
 
 option_list = list(
-  make_option(c("-d", "--dir"), type="character", default=NULL, help="Input report directory path", metavar="character"),
-  make_option(c("-o", "--output"), type="character", default=NULL, help="SVG output path", metavar="character"),
+  make_option(c("-d", "--dir"), type="character", default=NULL, help="report directory path", metavar="character"),
   make_option(c("-c", "--centromeres"), type="character", default='hg38_centromeres.txt', help="centromeres file", metavar="character"),
   make_option(c("-s", "--segfile"), type="character", default=NULL, help="segments file", metavar="character"),
-  make_option(c("-S", "--segfiletype"), type="character", default='sequenza', help="program that made the segments file, supported options are sequenza and purple", metavar="character")
+  make_option(c("-S", "--segfiletype"), type="character", default='sequenza', help="program that made the segments file, supported options are sequenza and purple", metavar="character"),
+  make_option(c("-C", "--highCN"), type="integer", default=4, help="high copy number, for plot labelling", metavar="character")
 )
 
 opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
 opt <- parse_args(opt_parser)
-#segfile_path <- opt$segfile
-segfiletype <- opt$segfiletype
-centromeres_path <- opt$centromeres
-maf_path <- paste(opt$dir, 'data_mutations_extended.txt', sep='/')
-out_path <- opt$output
 
+segfiletype       <- opt$segfiletype
+highCN            <- opt$highCN
+segfile_path      <- opt$segfile
+centromeres_path  <- opt$centromeres
+dir_path          <- opt$dir
 
-#centromeres from USCS
-#http://genome.ucsc.edu/cgi-bin/hgTables?hgsid=1334321853_hiXsRQvWI9Djbr8IrSABHWafymIR&clade=mammal&org=Human&db=hg38&hgta_group=map&hgta_track=centromeres&hgta_table=0&hgta_regionType=genome&position=chrX%3A15%2C560%2C138-15%2C602%2C945&hgta_outputType=primaryTable&hgta_outFileName=
+##test##
 #setwd('/Volumes/')
 #centromeres_path='~/Documents/data/hg38_centromeres.txt'
 
 #segfiletype='purple'
-#sample = "OCT_010707_Bn_M"
-#Dir = "cgi/scratch/fbeaudry/hartwig/purple/OCT_010707/500"
-#segs = read.table(file = paste0(Dir, "/", sample, ".purple.segment.tsv"), sep = "\t", header = T, comment.char = "!")
+#segfile_path = "cgi/scratch/fbeaudry/hartwig/purple/OCT_010707/500/OCT_010707_Bn_M.purple.segment.tsv"
 
 #segfiletype='sequenza'
-#sample="BTC_0013_Lv_P"
-#Dir="cgi/scratch/fbeaudry/djerba_test/BTC_0013/gammas/400"
-#segs <- read.table(paste0(Dir, "/", sample, "_WG_HPB-199_LCM_segments.txt"), sep = "\t", header = T, comment.char = "!")
+#segfile_path="cgi/scratch/fbeaudry/djerba_test/BTC_0013/gammas/400/BTC_0013_Lv_P_WG_HPB-199_LCM_segments.txt"
 
 centromeres <- read.table(centromeres_path,header=T)
 
@@ -45,7 +42,7 @@ centromeres <- centromeres %>% filter(!is.na(Chr))
 
 chrom_order <- unique(centromeres$chrom[order(centromeres$Chr)])
 
-centromeres_sub <- centromeres %>%   dplyr::select(chromStart,chromEnd,chrom)
+centromeres_sub <- centromeres %>% dplyr::select(chromStart,chromEnd,chrom)
 names(centromeres_sub) <- c("start.pos","end.pos","Chromosome")
 centromeres_sub$A <- NA
 centromeres_sub$B <- NA
@@ -53,33 +50,32 @@ centromeres_sub$CNt_high <- NA
 centromeres_sub$CNt <- NA
 centromeres_sub$cent <- 1
 
-
 #####
-fittedSegmentsDF <- segs_seq
+segs <- read.table(segfile_path, sep = "\t", header = T, comment.char = "!")
 
 if(segfiletype == 'purple'){
   ## Bf = minorAllele_fz
   # end.pos = end
   # start.pos = start
-  #fittedSegmentsDF$minorAllele_fz <- 1 - fittedSegmentsDF$tumorBAF
+  #segs$minorAllele_fz <- 1 - segs$tumorBAF
   ##filter negatives ?
-  #fittedSegmentsDF$bafCountNA <- fittedSegmentsDF$bafCount
-  #fittedSegmentsDF$bafCountNA[fittedSegmentsDF$bafCountNA == 0]<- NA
+  #segs$bafCountNA <- segs$bafCount
+  #segs$bafCountNA[segs$bafCountNA == 0]<- NA
+  print("PURPLE support is not yet enabled")
 } else if(segfiletype == 'sequenza'){ 
-  fittedSegmentsDF$segment_size <- (fittedSegmentsDF$end.pos - fittedSegmentsDF$start.pos)/1000000
-  fittedSegmentsDF$segment_class[ fittedSegmentsDF$segment_size >= 3 ] <- ">3Mb"
-  fittedSegmentsDF$segment_class[ fittedSegmentsDF$segment_size < 3 ] <- "<3Mb"
+  segs$segment_size <- (segs$end.pos - segs$start.pos)/1000000
 } else {
   print('unsupported segment file type/software')
 }
 
-fittedSegmentsDF$CNt_high[fittedSegmentsDF$CNt > 4] <- "high"
+segs$segment_class[ segs$segment_size >= 3 ] <- ">3Mb"
+segs$segment_class[ segs$segment_size < 3 ] <- "<3Mb"
+segs$CNt_high[segs$CNt > highCN] <- "high"
 
-fittedSegmentsDF$Chromosome <-  factor(fittedSegmentsDF$chromosome, levels= chrom_order, ordered = T)
+segs$Chromosome <-  factor(segs$chromosome, levels= chrom_order, ordered = T)
 
-fittedSegmentsDF_sub <- fittedSegmentsDF %>% dplyr::select(start.pos,end.pos,A,B,CNt,CNt_high,Chromosome)
+fittedSegmentsDF_sub <- segs %>% dplyr::select(start.pos,end.pos,A,B,CNt,CNt_high,Chromosome)
 fittedSegmentsDF_sub$cent <- NA
-
 
 fittedSegmentsDF_sub <- rbind.data.frame(fittedSegmentsDF_sub,centromeres_sub)
 
@@ -90,7 +86,7 @@ fittedSegmentsDF_sub <- separate(fittedSegmentsDF_sub,Chromosome,c("blank","chr"
 fittedSegmentsDF_sub$Chr <- factor(c(fittedSegmentsDF_sub$chr), levels = c(1:22,"X"))
 
 options(bitmapType='cairo')
-svg("cgi/scratch/fbeaudry/djerba_test/BTC_0013/seg_allele_plot.svg", width = 8, height = 2)
+svg(paste0(dir_path,"/seg_allele_plot.svg"), width = 8, height = 2)
 print(
   
 ggplot(fittedSegmentsDF_sub) + 
@@ -126,7 +122,7 @@ ggplot(fittedSegmentsDF_sub) +
 )
 dev.off()
 
-svg("cgi/scratch/fbeaudry/seg_CNV_plot.svg", width = 8, height = 1.5)
+svg(paste0(dir_path,"/seg_CNV_plot.svg"), width = 8, height = 1.5)
 print(
   
 ggplot(fittedSegmentsDF_sub) + 

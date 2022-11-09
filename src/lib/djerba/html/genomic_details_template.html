@@ -100,6 +100,8 @@
 
             <p><strong>${oncogenic_somatic_CNVs.get(constants.TOTAL_VARIANTS)}</strong> cancer genes were subject to copy number variation, of which <strong>${oncogenic_somatic_CNVs.get(constants.CLINICALLY_RELEVANT_VARIANTS)}</strong> corresponded to an oncogenic alteration, as defined by OncoKB.</p>
 
+            <img id='CNV' style='width: 100%; object-fit: contain' src="${converter().convert_svg(cnv_plot, 'CNV plot')}"/>
+
             % if oncogenic_somatic_CNVs.get(constants.CLINICALLY_RELEVANT_VARIANTS) > 0:
                   <table class="variants" width="100%">
                   ${html_builder().oncogenic_CNVs_header()}
