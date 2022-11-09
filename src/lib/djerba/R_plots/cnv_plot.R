@@ -9,7 +9,7 @@ library(ggplot2)
 
 option_list = list(
   make_option(c("-d", "--dir"), type="character", default=NULL, help="report directory path", metavar="character"),
-  make_option(c("-c", "--centromeres"), type="character", default='hg38_centromeres.txt', help="centromeres file", metavar="character"),
+ # make_option(c("-c", "--centromeres"), type="character", default='hg38_centromeres.txt', help="centromeres file", metavar="character"),
   make_option(c("-s", "--segfile"), type="character", default=NULL, help="segments file", metavar="character"),
   make_option(c("-S", "--segfiletype"), type="character", default='sequenza', help="program that made the segments file, supported options are sequenza and purple", metavar="character"),
   make_option(c("-C", "--highCN"), type="integer", default=4, help="high copy number, for plot labelling", metavar="character")
@@ -21,7 +21,7 @@ opt <- parse_args(opt_parser)
 segfiletype       <- opt$segfiletype
 highCN            <- opt$highCN
 segfile_path      <- opt$segfile
-centromeres_path  <- opt$centromeres
+#centromeres_path  <- opt$centromeres
 dir_path          <- opt$dir
 
 ##test##
@@ -33,6 +33,9 @@ dir_path          <- opt$dir
 
 #segfiletype='sequenza'
 #segfile_path="cgi/scratch/fbeaudry/djerba_test/BTC_0013/gammas/400/BTC_0013_Lv_P_WG_HPB-199_LCM_segments.txt"
+
+data_dir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), 'data', sep='/')
+centromeres_path <- paste(data_dir, 'hg38_centromeres.txt', sep='/')
 
 centromeres <- read.table(centromeres_path,header=T)
 

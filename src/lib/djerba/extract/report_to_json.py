@@ -711,10 +711,12 @@ class clinical_report_json_composer(composer_base):
             data[rc.INVESTIGATIONAL_THERAPIES] = self.build_investigational_therapy_info()
             data[rc.GENOMIC_LANDSCAPE_INFO] = self.build_genomic_landscape_info()
             tmb = data[rc.GENOMIC_LANDSCAPE_INFO][rc.TMB_PER_MB]
+            pga = data[rc.GENOMIC_LANDSCAPE_INFO][rc.PERCENT_GENOME_ALTERED]
             data[rc.TMB_PLOT] = self.write_tmb_plot(tmb, self.input_dir)
             data[rc.VAF_PLOT] = self.write_vaf_plot(self.input_dir)
             data[rc.MSI_PLOT] = self.write_msi_plot(self.input_dir)
             data[rc.CNV_PLOT] = self.write_cnv_plot(self.input_dir)
+            data[rc.PGA_PLOT] = self.write_pga_plot(pga, self.input_dir)
             data[rc.SMALL_MUTATIONS_AND_INDELS] = self.build_small_mutations_and_indels()
             data[rc.TOP_ONCOGENIC_SOMATIC_CNVS] = self.build_copy_number_variation()
             if self.params.get(xc.ASSAY_TYPE) == rc.ASSAY_WGTS:
@@ -811,12 +813,22 @@ class clinical_report_json_composer(composer_base):
                 os.path.join(self.r_script_dir, 'cnv_plot.R'),
                 '--segfile',  os.path.join(self.input_dir, 'segments.txt'),
                 '--segfiletype', 'sequenza',
-                '-c', os.path.join(self.r_script_dir, 'hg38_centromeres.txt'),
                 '-d',out_dir
             ]
             subprocess_runner(self.log_level, self.log_path).run(args)
             self.logger.info("Wrote CNV plot to {0}".format(out_path))
             return out_path
+
+    def write_pga_plot(self, pga, out_dir):
+        out_path = os.path.join(out_dir, 'pga.svg')
+        args = [
+            os.path.join(self.r_script_dir, 'pga_plot.R'),
+            '-o', out_path,
+            '-p', str(pga)
+        ]
+        subprocess_runner(self.log_level, self.log_path).run(args)
+        self.logger.info("Wrote PGA plot to {0}".format(out_path))
+        return out_path
 
 class fusion_reader(composer_base):
 
