@@ -400,13 +400,14 @@ class clinical_report_json_composer(composer_base):
                     therapies = fusion.get_inv_therapies()
                 if max_level:
                     rows.append(self.treatment_row(genes, alteration, max_level, therapies))
-        with open(os.path.join(self.input_dir, self.BIOMARKERS_ANNOTATED)) as data_file:
-            for row in csv.DictReader(data_file, delimiter="\t"):
-                gene = 'Biomarker'
-                alteration = row[self.ALTERATION_UPPER_CASE]
-                [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
-                if max_level:
-                    rows.append(self.treatment_row(gene, alteration, max_level, therapies))
+        if os.path.exists(os.path.join(self.input_dir, self.BIOMARKERS_ANNOTATED)):
+            with open(os.path.join(self.input_dir, self.BIOMARKERS_ANNOTATED)) as data_file:
+                for row in csv.DictReader(data_file, delimiter="\t"):
+                    gene = 'Biomarker'
+                    alteration = row[self.ALTERATION_UPPER_CASE]
+                    [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
+                    if max_level:
+                        rows.append(self.treatment_row(gene, alteration, max_level, therapies))
         rows = list(filter(self.oncokb_filter, self.sort_therapy_rows(rows)))
         return rows
 
@@ -636,7 +637,7 @@ class clinical_report_json_composer(composer_base):
                 metric_call = "MSI-H"
                 metric_text = "This sample shows genomic evidence of high microsatellite instability, which is likely caused by genetic or epigenetic alterations to genes in the mismatch repair pathway such as <em>MLH-1</em>, <em>MSH-2</em>, and <em>MSH-6</em>."
                 print("Other Biomarkers\t"+sample_ID+"\tMSI-H", file=genomic_biomarkers_file)
-            elif msi < self.MSI_CUTOFF & msi >= self.MSS_CUTOFF:
+            elif msi < self.MSI_CUTOFF and msi >= self.MSS_CUTOFF:
                 metric_call = "INCONCLUSIVE"
                 metric_text = "This sample shows inconclusive genomic evidence regarding microsatellite instability. Further testing is recommended."
             elif msi < self.MSS_CUTOFF:
