@@ -1,141 +1,155 @@
 
-/*------------------------------------*\
-#Whole page attributes
-\*------------------------------------*/
+    /*------------------------------------*\
+    #Whole page attributes
+    \*------------------------------------*/
 
     * {font-family: Arial !important;}
 
-    .main-container {
-    max-width:  8.5in;
-    min-width:  8.5in;
-    margin-left: auto;
-    margin-right: auto;
+    body {
+      max-width:  8.5in;
+      min-width:  8.5in;
+      margin-left: auto;
+      margin-right: auto;
     }
 
-
-/*------------------------------------*\
-#letterhead setup
-\*------------------------------------*/
-
-    .letterhead-column {
-    width: 30%;
-    float: right;
+    @media print {
+      div {
+        break-inside: avoid;
+      }
     }
 
-    .letterhead-text {
-    font-size: 10px;
-    line-height: 8px;  
-    text-align: right; 
+    p {
+      font-size: 14px;
+      line-height: 1.5
     }
 
-/*------------------------------------*\
-#section-delimiting lines
-\*------------------------------------*/
+    /* report header */
+    h1 {
+      font-size: 28px;
+      margin: 1.5px 1px 1px 1px;
+      padding: 0px 1px 1px 0px;
+    }
+
+    /* section header */
+    h2 {
+      font-size: 22px;
+      text-transform: uppercase;
+      font-weight: normal;
+      margin: 10px 0px 0px 0px;
+      padding: 10px 1px 1px 0px;
+    }
+
+    /* sub-section header */
+    h3 {
+      font-size: 18px;
+      margin:2px;
+      padding:0;
+      
+    }
+
+  /*------------------------------------*\
+  #section-delimiting lines
+  \*------------------------------------*/
 
     hr.header-big-line{
-        border-top: 4px solid #65bc45;
-        width: 100%;
-        margin-top: 20px ;
+      border-top: 4px solid #65bc45;
+      width: 100%;
     }
 
     hr.big-line{
-        border-top: 2px solid #65bc45;
-        width: 100%;
-        margin-right:0px 0px 0px 0px;
-        padding: 0px 0px 0px 0px;
+      border-top: 1px solid #65bc45;
+      width: 100%;
+    }
+    
+    hr.big-white-line{
+      border: none;
+      width: 80%;
+      margin-left: 20%;
     }
 
     hr.lil-line{
-        border-top: 1px solid #65bc45;
-        width: 100%;
+      border-top: 1px solid #65bc45;
+      width: 100%;
     }
 
-/*------------------------------------*\
-#section attributes
-\*------------------------------------*/
-
-.section {
-    display: grid;
-    grid-template-columns: 20% 80%;
-    grid-template-rows: 1rem 80% ;
-    page-break-inside: avoid;
-}
-
-    .section-title {
-    grid-column-start: 1;
-    grid-template-rows: 2;
+    .twocell {
+      page-break-inside: avoid;
+      vertical-align: top;
+      width: 8.5in
     }
 
-    .section-content {
-    grid-column-start: 2;
-    grid-template-rows: 2;
+    .oneoftwocell  {
+      page-break-inside: avoid;
+      float: left;
+      width: 1.75in;
     }
 
-    .section-bar {
-    grid-column-start: 2;
-    grid-template-rows: 1;
+    .twooftwocell  {
+      page-break-inside: avoid;
+      float: right;
+      width: 6.75in;
     }
 
-/* report header */
-h1 {
-    font-size: 28px;
-    margin: 1.5px 1px 1px 1px;
-    padding: 0px 1px 1px 0px;
-}
 
-/* section header */
-h2 {
-    font-size: 22px;
-    text-transform: uppercase;
-    font-weight: normal;
-    margin:0px 0px 0px 0px;
-    padding:1px 1px 1px 0px;
-}
+  /*------------------------------------*\
+  #section attributes
+  \*------------------------------------*/
 
-/* sub-section header */
-h3 {
-    font-size: 18px;
-  }
+  /* style for letterhead */
 
-p {
-    font-size: 14px;
-    line-height: 1.5
-    
-}
 
-table {
-    font-size: 14px;
-    text-align: left;
-    padding: 10px 0px 0px 0px;
-}
+    .letterhead-column {
+      width: 30%;
+      float: right;
+    }
 
-/* style for tables of genomic variants */
+    .letterhead-text {
+      font-size: 10px;
+      line-height: 8px;  
+      text-align: right; 
+      padding: 30px 0px 0px 0px;
+    }
 
-/* no underline for links */
+    .letterhead-table td:nth-child(odd) {
+      font-weight: bold; 
+    }
+  
+  /* style for tables of genomic variants */
+
+    /* no underline for links */
+    .variants {
+      text-align: left;
+      font-size: 14px;
+    }
+
     .variants a {
-    text-decoration: none
+      text-decoration: none
     }
 
     /* variant table header */
     .variants th {
-    background-color: white;
-    padding: 8px
+      background-color: white;
+      padding: 8px
     }
 
     /* variant table column */
     .variants td {
-    padding: 8px
+      padding: 8px
     }
 
     /* variant table alt-row */
     .variants tr:nth-child(odd) {
-    background-color: #f2f2f2;
+      background-color: #f2f2f2;
     }
 
+    /* style for tables of other information */
+
     .info {
-    padding: 0px 0px 0px 0px;
+      font-size: 14px;
+      text-align: left;
+      padding: 0px 0px 0px 0px;
     }
 
     .info td:nth-child(odd) {
-    font-weight: bold;
+      font-weight: bold;
     }

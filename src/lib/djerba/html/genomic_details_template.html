@@ -6,14 +6,15 @@
 %>
 
 <!-- Genomic Landscape -->
-<div class="section">
-      <div class="section-bar"><hr class="big-line"  ></div>
-
-      <div class="section-title" >
+<hr class="big-white-line" >
+<div class="twocell">
+      <div class="oneoftwocell">
         <h2>Genomic Landscape</h2>
       </div>
 
-      <div class="section-content" >
+      <div class="twooftwocell" >
+            <hr class="big-line"  >
+      
             <p >Tumour Mutation Burden is <strong>${genomic_landscape_info.get(constants.TMB_TOTAL)}</strong> mutations (${genomic_landscape_info.get(constants.TMB_PER_MB)} coding mutations per Mb)
                    which corresponds to the <strong>${genomic_landscape_info.get(constants.PAN_CANCER_PERCENTILE)}</strong>th 
                   percentile of the pan-cancer cohort (${genomic_landscape_info.get(constants.PAN_CANCER_COHORT)}). The percent genome altered (PGA) is <strong>${genomic_landscape_info.get(constants.PERCENT_GENOME_ALTERED)}</strong>%. 
@@ -59,19 +60,17 @@
                     </tr>
                   </tbody>
             </table>
-    
-            ## 
       </div>
 </div>
     
-<div class="section">
-      <div class="section-bar" ><hr class="big-line" ></div>
-
-      <div class="section-title" >
+<hr class="big-white-line" >
+<div class="twocell">
+      <div class="oneoftwocell">
         <h2 >Small Mutations</h2>
       </div>
       
-      <div class="section-content" >
+      <div class="twooftwocell" >
+            <hr class="big-line"  >      
 
             <p><strong>${small_mutations_and_indels.get(constants.TOTAL_VARIANTS)}</strong> somatic mutations were detected, of which <strong>${small_mutations_and_indels.get(constants.CLINICALLY_RELEVANT_VARIANTS)}</strong> corresponded to an oncogenic mutation, as defined by OncoKB.</p>
 
@@ -91,15 +90,16 @@
       </div>
 </div>
 
-    <div class="section">
-      <div class="section-bar" ><hr class="big-line" ></div>
-
-      <div class="section-title" >
-        <h2 >Copy Number <br>Variation</h2>
+<!-- Copy Number Variants -->
+<hr class="big-white-line" >
+<div class="twocell">
+  <div class="oneoftwocell">
+        <h2 >Copy Number Variation</h2>
       </div>
 
-      <div class="section-content" >
-
+      <div class="twooftwocell" >
+            <hr class="big-line"  >
+            
             <p><strong>${oncogenic_somatic_CNVs.get(constants.TOTAL_VARIANTS)}</strong> cancer genes were subject to copy number variation, of which <strong>${oncogenic_somatic_CNVs.get(constants.CLINICALLY_RELEVANT_VARIANTS)}</strong> corresponded to an oncogenic alteration, as defined by OncoKB.</p>
 
             <img id='CNV' style='width: 100%; object-fit: contain' src="${converter().convert_svg(cnv_plot, 'CNV plot')}"/>
@@ -119,13 +119,14 @@
 </div>
 
 % if assay_type == 'WGTS':
-      <div class="section">
-            <div class="section-bar" ><hr class="big-line" ></div>
-            <div class="section-title" >
+      <hr class="big-white-line" >
+      <div class="twocell">
+            <div class="oneoftwocell">
                   <h2 >Fusions and <br> Structural Variants</h2>
             </div>
 
-            <div class="section-content">
+            <div class="twooftwocell">
+                  <hr class="big-line"  >
 
                   <p><strong>${structural_variants_and_fusions.get(constants.TOTAL_VARIANTS)}</strong> cancer genes were subject to rearrangement, of which <strong>${structural_variants_and_fusions.get(constants.CLINICALLY_RELEVANT_VARIANTS)}</strong> corresponded to oncogenic fusions, as defined by OncoKB.</p>
             

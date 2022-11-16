@@ -26,16 +26,15 @@
   % endif
   
   <!-- Case overview -->
-  <div class="section">
-    <div class="section-bar" >
-      <hr class="big-line">
-    </div>
+  <hr class="big-white-line" >
 
-    <div class="section-title" >
+  <div class="twocell">
+    <div class="oneoftwocell">
       <h2>Case Overview</h2>
     </div>
 
-    <div class="section-content" >
+    <div class="twooftwocell" >
+      <hr class="big-line" >  
 
       <table class="info">
         <tr>
@@ -72,14 +71,15 @@
   </div>
 
   <!-- sample info -->
-  <div class="section">
-    <div class="section-bar"><hr class="big-line"  ></div>
+  <hr class="big-white-line"  >
 
-    <div class="section-title" >
+  <div class="twocell">
+    <div class="oneoftwocell">
       <h2>Sample Information</h2>
     </div>
 
-    <div class="section-content" >
+    <div class="twooftwocell" >
+      <hr class="big-line"  >
         <table class="info">
         % for row in html_builder(purity_failure).sample_information_and_quality_rows(sample_info_and_quality):
               ${row}
@@ -95,14 +95,14 @@
   % endif
 
   <!-- results summary -->
-  <div class="section">
-    <div class="section-bar"><hr class="big-line"  ></div>
-
-    <div class="section-title" >
+  <hr class="big-white-line" >
+  <div class="twocell">
+    <div class="oneoftwocell">
       <h2>Results Summary</h2>
     </div>
 
-    <div class="section-content" >
+    <div class="twooftwocell" >
+      <hr class="big-line"  >
       ${html_builder().markdown_to_html(genomic_summary)}
     </div>
   </div>
@@ -113,7 +113,7 @@
   % endif
 
   <!-- Supplementary -->
-  <hr class="header-big-line" style="width: 100%; " align="right" >
+  <hr class="header-big-line" style="width: 100%;  align="right" >
   <h2>Supplementary </h2>
 
   % if not failed:
@@ -136,7 +136,7 @@
 
   % endif
 
-  <hr class="lil-line" style="width: 100%; " align="right" >
+  <hr class="header-big-line" style="width: 100%; "  >
   
   <h3>Assay description</h3>
 
@@ -158,7 +158,7 @@
   <!-- coverage uses variables -->
   <p><strong>Coverage: </strong>Mean number of bases covering each sequenced base. Minimum coverage threshold is ${coverage_thresholds.get(constants.TUMOUR_MIN)}x for the tumour (with a target of ${coverage_thresholds.get(constants.TUMOUR_TARGET)}x); ${coverage_thresholds.get(constants.NORMAL_MIN)}x for the normal (with a target of ${coverage_thresholds.get(constants.NORMAL_TARGET)}x).</p>
 
-  <hr class="lil-line" style="width: 100%; " align="right" >
+  <hr class="lil-line" style="width: 100%; "  >
 
   <h3>Report Sign offs</h3>
 
@@ -186,7 +186,7 @@
   <br>
   <br>
 
-  <hr class="big-line" style="width: 100%; " align="right" >
+  <hr class="big-line" style="width: 100%; "  >
 
 </div>
 </body>

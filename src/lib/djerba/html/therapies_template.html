@@ -4,15 +4,14 @@
   from djerba.render.json_to_html import html_builder
 %>
 
-<div class="section">
-      <div class="section-bar"><hr class="big-line" ></div>
-
-      <div class="section-title" >
+<hr class="big-white-line" >
+<div class="twocell">
+      <div class="oneoftwocell">
         <h2>Treatment Options</h2>
       </div>
 
-      <div class="section-content" >
-
+      <div class="twooftwocell" >
+            <hr class="big-line"  >
             <p>Review identified <strong>${len(approved_biomarkers)}</strong> mutation(s) FDA Approved and/or NCCN Recommended Biomarker and <strong>${len(investigational_therapies)}</strong> mutation(s) investigational therapies.</p>
 
             % if len(approved_biomarkers)>0:
