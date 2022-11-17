@@ -11,7 +11,6 @@ option_list = list(
     make_option(c("-o", "--output"), type="character", default=NULL, help="SVG output path", metavar="character"),
     make_option(c("-t", "--tmb"), type="numeric", default=NULL, help="TMB per Mb", metavar="numeric")
 )
-
 # get options
 opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
 opt <- parse_args(opt_parser)
@@ -31,24 +30,20 @@ external_tmb_data_type <- external_tmb_data %>% filter(if (sample_tcga %in% exte
 tcga_tmb_data_type <- tcga_tmb_data %>% filter(if (sample_tcga %in% tcga_tmb_data$CANCER.TYPE) CANCER.TYPE == sample_tcga else NA)
 
 options(bitmapType='cairo')
-
 svg(out_path, width=8, height=4)
 ggplot(tcga_tmb_data, aes(tmb)) +
-  
   geom_density(aes(fill = "All TCGA"), alpha = 0.5) + 
-  
   scale_x_continuous(expand = c(0, 0), limit = c(0, max(sampleTMB, 25))) +
   scale_y_continuous(expand = c(0, 0)) +
-  
   coord_cartesian(xlim = c(0, max(sampleTMB, 25)),
                   clip = 'off') +
-  
   annotate(y = 0, yend=0.25, x=sampleTMB, xend=sampleTMB,geom="segment",linetype="solid",colour = "black") +
   annotate(geom="text",x = sampleTMB,y=0,color="black",label="This tumour", hjust = 0.5, vjust = -28) +
   
   annotate(y = 0, yend=0.25, x=10, xend=10,geom="segment",linetype="longdash",colour = "red") +
   annotate(geom="text",x = 10,y=0,color="red",label="TMB-H threshold", hjust = 0.3, vjust = -28) +
   
+
   xlab("Coding Mutations per Mb") +
   ylab("% of samples") +
   {
@@ -57,7 +52,6 @@ ggplot(tcga_tmb_data, aes(tmb)) +
     else if (sample_tcga %in% tcga_tmb_data_type$CANCER.TYPE)
       geom_density(data = tcga_tmb_data_type, aes(fill = "Cohort"), alpha = 0.5)
   } + scale_fill_discrete(name = "Cohort") +
-  
   theme_classic() + 
   theme(text = element_text(size = 18),
         legend.position = c(0.9, 0.9),

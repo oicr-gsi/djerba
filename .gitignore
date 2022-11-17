@@ -5,3 +5,6 @@ build
 dist
 *.DS_Store
 *.Rhistory
+.project
+.pydevproject
+djerba.log

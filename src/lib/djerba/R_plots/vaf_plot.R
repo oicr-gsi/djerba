@@ -45,5 +45,6 @@ ggplot(MAF) +
     line = element_blank()
   ) 
 
+
 dev.off()
 

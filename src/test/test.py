@@ -131,7 +131,7 @@ class TestArchive(TestBase):
         # contents of file are dependent on local paths
         with open(archive_path) as archive_file:
             data = json.loads(archive_file.read())
-        self.assertEqual(len(data['report']), 20)
+        self.assertEqual(len(data['report']), 21)
         self.assertEqual(len(data['supplementary']['config']), 3)
 
 class TestConfigure(TestBase):
@@ -163,19 +163,19 @@ class TestConfigure(TestBase):
         test_configurer.run(out_path)
 
     def test_default(self):
-        self.run_config_test(self.config_user, False, False, 55, self.provenance)
+        self.run_config_test(self.config_user, False, False, 56, self.provenance)
 
     def test_default_fail(self):
-        self.run_config_test(self.config_user_failed, False, True, 45, self.provenance)
+        self.run_config_test(self.config_user_failed, False, True, 46, self.provenance)
 
     def test_wgs_only(self):
-        self.run_config_test(self.config_user_wgs_only, True, False, 53, self.provenance)
+        self.run_config_test(self.config_user_wgs_only, True, False, 54, self.provenance)
 
     def test_wgs_only_fail(self):
-        self.run_config_test(self.config_user_wgs_only_failed, True, True, 45, self.provenance)
+        self.run_config_test(self.config_user_wgs_only_failed, True, True, 46, self.provenance)
 
     def test_vnwgts(self):
-        self.run_config_test(self.config_user_vnwgts, False, False, 55, self.provenance_vnwgts)
+        self.run_config_test(self.config_user_vnwgts, False, False, 56, self.provenance_vnwgts)
 
     def test_vnwgts_broken(self):
         # test failure modes of sample input
@@ -226,6 +226,7 @@ class TestExtractor(TestBase):
     STATIC_MD5 = {
         'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
         'genomic_summary.txt': '5a2f6e61fdf0f109ac3d1bcc4bb3ca71',
+        'technical_notes.txt': '7caedb48f3360f33937cb047579633fd'
     }
     VARYING_OUTPUT = [
         'tmb.svg',
@@ -273,8 +274,9 @@ class TestExtractor(TestBase):
         with open(os.path.join(out_dir, 'djerba_report.json')) as in_file:
             data_found = json.loads(in_file.read())
             data_found['report']['djerba_version'] = 'PLACEHOLDER'
+            del data_found['supplementary'] # do not test supplementary data
             data = json.dumps(data_found)
-            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), '8929cf5ba8dfbf4e404f285ae4fa1a44')
+            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), 'ecfa4221aa3041c9cdf5acdc2079db3a')
 
     def test_wgts_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGTS')
@@ -389,6 +391,26 @@ class TestJsonScripts(TestBase):
         with open(output_path) as output_file:
             data = json.loads(output_file.read())
         self.assertEqual(data['report']['genomic_summary'], update_text)
+        
+    def test_update_notes(self):
+        update_text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do '+\
+                      'eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+        update_path = os.path.join(self.tmp_dir, 'lorem.txt')
+        with open(update_path, 'w') as out_file:
+            out_file.write(update_text)
+        input_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
+        output_path = os.path.join(self.tmp_dir, 'updated_djerba_report.json')
+        cmd = [
+            'update_technical_notes.py',
+            '--in', input_path,
+            '--notes', update_path,
+            '--out', output_path
+        ]
+        self.run_command(cmd)
+        self.assertTrue(os.path.exists(output_path))
+        with open(output_path) as output_file:
+            data = json.loads(output_file.read())
+        self.assertEqual(data['report']['technical_notes'], update_text)
 
     def test_view(self):
         input_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
@@ -532,15 +554,15 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '6d3de3927b5575550f94ce6dc093fb2a')
+        self.check_report(out_path, 'b6fb15ab8024a812e50170783d2a6993')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, 'c546fe49785fdceb609f7c2baf892949')
+        self.check_report(out_path, 'a85f28af0d7e936de60a389d108d8c4d')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, 'f421c403f90f8a7335c292519f9b7c69')
+        self.check_report(out_path, 'b9c19e25c802213ef8c6ab6700c65159')
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')

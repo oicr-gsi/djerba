@@ -37,7 +37,7 @@ if(msi_b == "TRUE"){
     
     annotate(x = 0, xend=2, y=5, yend=5,geom="segment",linetype="longdash",colour = "red") +
     annotate(geom="text",x = 0,y=5,color="black",label="MSI-H", hjust = -0.25, vjust = -5,size=3.5) +
-    
+
     guides(fill=FALSE)+
     theme_classic() + 
     labs(x="",y="unstable microsatellites (%)",title="") + 
@@ -56,7 +56,9 @@ if(msi_b == "TRUE"){
           line = element_blank(),
           panel.background = element_rect(fill = "transparent", colour = NA),
           plot.background = element_rect(fill="transparent",color=NA)
+
     ) 
+
   )
   dev.off()
   

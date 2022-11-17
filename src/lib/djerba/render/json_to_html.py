@@ -39,6 +39,7 @@ class html_builder:
     #    ]
     #    return self.key_value_table_rows(genomic_landscape_args, key_groups, widths)
 
+
     def msi_table_rows(self, genomic_biomarker_args, biomarker):
         row_fields = genomic_biomarker_args[constants.BODY]
         rows = []

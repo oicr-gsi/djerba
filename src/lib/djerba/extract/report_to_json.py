@@ -16,7 +16,7 @@ import djerba.util.constants as dc
 from djerba import __version__
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
-from djerba.extract.maf_annotator import maf_annotator
+from djerba.extract.oncokb_annotator import oncokb_annotator
 from statsmodels.distributions.empirical_distribution import ECDF
 
 class composer_base(logger):
@@ -116,6 +116,8 @@ class clinical_report_json_composer(composer_base):
     UNKNOWN = 'Unknown'
     VARIANT_CLASSIFICATION = 'Variant_Classification'
     V7_TARGET_SIZE = 37.285536 # inherited from CGI-Tools
+    MSS_CUTOFF = 5.0
+    MSI_CUTOFF = 10.0
     MSI_FILE = 'msi.txt'
 
     # variant classifications excluded from TMB count
@@ -400,13 +402,15 @@ class clinical_report_json_composer(composer_base):
                     therapies = fusion.get_inv_therapies()
                 if max_level:
                     rows.append(self.treatment_row(genes, alteration, max_level, therapies))
-        with open(os.path.join(self.input_dir, self.BIOMARKERS_ANNOTATED)) as data_file:
-            for row in csv.DictReader(data_file, delimiter="\t"):
-                gene = 'Biomarker'
-                alteration = row[self.ALTERATION_UPPER_CASE]
-                [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
-                if max_level:
-                    rows.append(self.treatment_row(gene, alteration, max_level, therapies))
+
+        if os.path.exists(os.path.join(self.input_dir, self.BIOMARKERS_ANNOTATED)):
+            with open(os.path.join(self.input_dir, self.BIOMARKERS_ANNOTATED)) as data_file:
+                for row in csv.DictReader(data_file, delimiter="\t"):
+                    gene = 'Biomarker'
+                    alteration = row[self.ALTERATION_UPPER_CASE]
+                    [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
+                    if max_level:
+                        rows.append(self.treatment_row(gene, alteration, max_level, therapies))
         rows = list(filter(self.oncokb_filter, self.sort_therapy_rows(rows)))
         return rows
 
@@ -547,6 +551,10 @@ class clinical_report_json_composer(composer_base):
     def read_genomic_summary(self):
         with open(os.path.join(self.input_dir, 'genomic_summary.txt')) as in_file:
             return in_file.read().strip()
+    
+    def read_technical_notes(self):
+        with open(os.path.join(self.input_dir, 'technical_notes.txt')) as in_file:
+            return in_file.read().strip()
 
     def read_mutation_copy_states(self):
         # convert copy state to human readable string; return mapping of gene -> copy state
@@ -645,14 +653,14 @@ class clinical_report_json_composer(composer_base):
             rows.append(row)
             #Microsatelite Instability (MSI)
             msi = self.extract_msi()
-            if msi >= 5.0:
+            if msi >= self.MSI_CUTOFF:
                 metric_call = "MSI-H"
                 metric_text = "This sample shows genomic evidence of high microsatellite instability, which is likely caused by genetic or epigenetic alterations to genes in the mismatch repair pathway such as <em>MLH-1</em>, <em>MSH-2</em>, and <em>MSH-6</em>."
                 print("Other Biomarkers\t"+sample_ID+"\tMSI-H", file=genomic_biomarkers_file)
-            elif msi < 5.0 & msi >= 3.5:
+            elif msi < self.MSI_CUTOFF and msi >= self.MSS_CUTOFF:
                 metric_call = "INCONCLUSIVE"
                 metric_text = "This sample shows inconclusive genomic evidence regarding microsatellite instability. Further testing is recommended."
-            elif msi < 3.5:
+            elif msi < self.MSS_CUTOFF:
                 metric_call = "MSS"
                 metric_text = "This sample shows genomic evidence of microsatellite stability (MSS)"
             else:
@@ -667,8 +675,12 @@ class clinical_report_json_composer(composer_base):
                 rc.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/MSI-H"
             }
             rows.append(row)
-        oncokb_info = maf_annotator().write_oncokb_info(input_dir, self.clinical_data[dc.TUMOUR_SAMPLE_ID], self.params.get(xc.ONCOTREE_CODE).upper())
-        out_path = maf_annotator().annotate_maf(genomic_biomarkers_path, input_dir, oncokb_info)
+        out_path = oncokb_annotator(
+            self.clinical_data[dc.TUMOUR_SAMPLE_ID],
+            self.params.get(xc.ONCOTREE_CODE).upper(),
+            input_dir,
+            input_dir
+        ).annotate_maf(genomic_biomarkers_path)
         data = {
             rc.CLINICALLY_RELEVANT_VARIANTS: len(rows),
             rc.BODY: rows
@@ -680,7 +692,13 @@ class clinical_report_json_composer(composer_base):
         with open(os.path.join(self.input_dir, self.MSI_FILE), 'r') as msi_file:
             reader_file = csv.reader(msi_file, delimiter="\t")
             for row in reader_file:
-                MSI = float(row[2])
+                try: 
+                    MSI = float(row[2])
+                except IndexError as err:
+                    msg = "Incorrect number of columns in msisensor row: '{0}'".format(row)+\
+                          "read from '{0}'".format(os.path.join(self.input_dir, self.MSI_FILE))
+                    self.logger.error(msg)
+                    raise RuntimeError(msg) from err
         return MSI
 
     def run(self):
@@ -699,6 +717,7 @@ class clinical_report_json_composer(composer_base):
         data[rc.PATIENT_INFO] = self.build_patient_info()
         data[rc.SAMPLE_INFO] = self.build_sample_info()
         data[rc.GENOMIC_SUMMARY] = self.read_genomic_summary()
+        data[rc.TECHNICAL_NOTES] = self.read_technical_notes()
         data[rc.COVERAGE_THRESHOLDS] = self.build_coverage_thresholds()
         data[rc.FAILED] = self.failed
         data[rc.PURITY_FAILURE] = self.params.get(xc.PURITY_FAILURE)
@@ -723,7 +742,7 @@ class clinical_report_json_composer(composer_base):
                 data[rc.STRUCTURAL_VARIANTS_AND_FUSIONS] = self.build_svs_and_fusions()
             else:
                 data[rc.STRUCTURAL_VARIANTS_AND_FUSIONS] = None
-            data[rc.SUPPLEMENTARY_GENE_INFO] = self.build_supplementary_info()
+            data[rc.SUPPLEMENTARY_GENE_INFO] = self.build_supplementary_info() 
         self.logger.info("Finished building clinical report data for JSON output")
         return data
 

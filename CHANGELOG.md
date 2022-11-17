@@ -1,5 +1,35 @@
 # CHANGELOG
 
+## v0.3.12: 2022-11-02
+
+- Now reporting MSI and TMB (GCGI-392) as actionable biomarkers
+
+### Added
+  - biomarker R script for plotting MSI score (and future biomarkers)
+  - MSI file processing in extractor.py: calculate median score across bootstraps
+  - annotation of MSI-H and TMB-H by Oncokb
+
+### Changed
+  - Updated provenance_reader and configure.py to find msisensor files
+  - Updated TMB plotting script to show TMB-High cutoff
+
+## v0.3.11: 2022-11-01
+
+### Changed
+- GCGI-516 Change default file provenance report path to Vidarr
+- Updated to use Python Tools module v16 for Geneticist Review Report
+
+## v0.3.10: 2022-10-25
+
+### Added
+- GCGI-422 Add a 'technical notes' section to the report; includes update to djerba_test_data_lfs
+
+### Changed
+- GCGI-506 Increase test speed by using custom file provenance throughout
+
+### Fixed
+- GCGI-509 Correctly find MAF file in provenance
+
 ## v0.3.9: 2022-10-12
 
 ### Changed

@@ -39,8 +39,8 @@ def get_parser():
     subparsers = parser.add_subparsers(title='subcommands', help='sub-command help', dest='subparser_name')
     locate_parser = subparsers.add_parser(LOCATE, help='Locate Sequenza results in file provenance')
     locate_parser.add_argument('-D', '--donor', metavar='DONOR', required=True, help='Donor ID for file provenance search')
-    locate_parser.add_argument('-f', '--file-provenance', metavar='PATH', default='/.mounts/labs/seqprodbio/private/backups/seqware_files_report_latest.tsv.gz',
-                               help='Path to file provenance report; defaults to latest production report')
+    locate_parser.add_argument('-f', '--file-provenance', metavar='PATH', default='/scratch2/groups/gsi/production/vidarr/vidarr_files_report_latest.tsv.gz',
+                               help='Path to file provenance report; defaults to latest Vidarr production report')
     locate_parser.add_argument('-S', '--study', metavar='STUDY', required=True, help='Study name for file provenance search')
     read_parser = subparsers.add_parser(READ, help='Read and summarize a Sequenza result .ZIP file')
     read_parser.add_argument('-i', '--in', metavar='PATH', required=True, dest='in_path', help='Path to .ZIP archive of Sequenza results')
