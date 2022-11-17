@@ -672,7 +672,13 @@ class clinical_report_json_composer(composer_base):
         with open(os.path.join(self.input_dir, self.MSI_FILE), 'r') as msi_file:
             reader_file = csv.reader(msi_file, delimiter="\t")
             for row in reader_file:
-                MSI = float(row[2])
+                try: 
+                    MSI = float(row[2])
+                except IndexError as err:
+                    msg = "Incorrect number of columns in msisensor row: '{0}'".format(row)+\
+                          "read from '{0}'".format(os.path.join(self.input_dir, self.MSI_FILE))
+                    self.logger.error(msg)
+                    raise RuntimeError(msg) from err
         return MSI
 
     def run(self):
