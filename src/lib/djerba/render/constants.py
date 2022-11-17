@@ -29,6 +29,7 @@ TECHNICAL_NOTES = 'technical_notes'
 # constants for the patient info table
 ASSAY_NAME = 'Assay'
 DATE_OF_REPORT = 'Date of Report'
+REQ_ID = 'Requisition ID'
 REQ_APPROVED_DATE = 'Requisition Approved'
 REPORT_ID = 'Report ID'
 STUDY = 'Study'
