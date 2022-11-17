@@ -204,6 +204,7 @@ class extractor(logger):
                 [constants.MEAN_COVERAGE, self.config[ini.INPUTS][ini.MEAN_COVERAGE] ],
                 [constants.PCT_V7_ABOVE_80X, self.config[ini.INPUTS][ini.PCT_V7_ABOVE_80X] ],
                 [constants.REQ_APPROVED_DATE, req_approved_date],
+                [constants.REQ_ID, self.config[ini.INPUTS][ini.REQ_ID]],
                 [constants.SEQUENZA_PURITY_FRACTION, purity],
                 [constants.SEQUENZA_PLOIDY, ploidy],
                 [constants.SEX, self.config[ini.INPUTS][ini.SEX] ]
