@@ -68,7 +68,7 @@ class Add():
 
     def AddFolder(self):
         config = configparser.ConfigParser()
-        config.read("/home/ltoy/Desktop/couch/addfolder.ini") ### change location             
+        config.read("/.mounts/labs/gsiprojects/gsi/gsiusers/ltoy/archive/addfolder.ini") ### change location             
         db = config["database"]["name"]
         base = config["database"]["url"]
         folder = config["add"]["folder"]
@@ -84,6 +84,7 @@ class Add():
             json_file = []
             for i in dir_content:
                 n, ext = os.path.splitext(i)
+                #if ext == '.json': #for folder=/.mounts/labs/CGI/gsi/djerba_json_archive/devel to archive_test db
                 if ext == '.json' and 'djerba_report' in n and currfolder.endswith('archive'):
                     type_json = (i, currfolder+'/'+i)
                     json_file.append(type_json)
@@ -111,7 +112,7 @@ class Add():
                     data = json.load(report)
                     if i == 0: version_id = key
                     else: version_id = key+f'-db{i+1}'
-                    print(version_id)
+                    #print(version_id)
                     time = datetime.now()
                     dt_couchDB = time.strftime("%d/%m/%Y %H:%M") #time of file creation to db
                     additional = {
@@ -147,6 +148,8 @@ class Add():
         #     for i in range(len(failed)):
         #         print(failed[i], failed_code[i], failed_error[i])
         
+        for f in passed: print(f)
+        print()
         print(f'Total jsons found: {total}.  Valid to upload: {len(toUpload)}/{total}.  Duplicate report id: {duplicate}')
         print()    
         print('Files Archived: {}/{}'.format(added, added + len(failed)))
