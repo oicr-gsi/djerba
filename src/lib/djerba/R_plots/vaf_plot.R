@@ -27,7 +27,7 @@ MAF <- read.csv(maf_path, sep = "\t", header = TRUE, stringsAsFactors = FALSE) %
     mutate(OncoKB = ifelse(is.na(HIGHEST_LEVEL), ONCOGENIC, HIGHEST_LEVEL))
 
 options(bitmapType='cairo')
-svg(out_path, width=7, height=1.5)
+svg(out_path, width=7, height=1)
 
 ggplot(MAF) + 
   geom_density(aes(x = tumour_vaf), fill = "grey", alpha = 0.5,color="darkgrey") + 

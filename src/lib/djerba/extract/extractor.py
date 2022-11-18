@@ -160,7 +160,8 @@ class extractor(logger):
             xc.FAILED: self.failed,
             xc.ONCOTREE_CODE: self.config[ini.INPUTS][ini.ONCOTREE_CODE],
             xc.PURITY_FAILURE: False, # TODO populate from config
-            xc.STUDY: self.config[ini.INPUTS][ini.STUDY_ID]
+            xc.STUDY: self.config[ini.INPUTS][ini.STUDY_ID],
+            xc.REQ_ID: self.config[ini.INPUTS][ini.REQ_ID]
         }
         report_data = clinical_report_json_composer(
             self.report_dir,
@@ -204,7 +205,6 @@ class extractor(logger):
                 [constants.MEAN_COVERAGE, self.config[ini.INPUTS][ini.MEAN_COVERAGE] ],
                 [constants.PCT_V7_ABOVE_80X, self.config[ini.INPUTS][ini.PCT_V7_ABOVE_80X] ],
                 [constants.REQ_APPROVED_DATE, req_approved_date],
-                [constants.REQ_ID, self.config[ini.INPUTS][ini.REQ_ID]],
                 [constants.SEQUENZA_PURITY_FRACTION, purity],
                 [constants.SEQUENZA_PLOIDY, ploidy],
                 [constants.SEX, self.config[ini.INPUTS][ini.SEX] ]

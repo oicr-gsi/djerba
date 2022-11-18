@@ -52,7 +52,7 @@ if(msi_b == "TRUE"){
           axis.ticks.y=element_blank(),
           text = element_text(size = 18),
           panel.grid = element_blank(), 
-          plot.margin = unit(c(0, 1, 0, 1), "points"),
+          plot.margin = unit(c(0, 0, 0, 0), "points"),
           line = element_blank(),
           panel.background = element_rect(fill = "transparent", colour = NA),
           plot.background = element_rect(fill="transparent",color=NA)

@@ -170,7 +170,7 @@ class html_builder:
     def sample_information_and_quality_rows(self, sample_args):
         widths = [[35,15], [20,15]]
         key_groups = [
-            [constants.SAMPLE_TYPE, constants.ONCOTREE_CODE],
+            [constants.ONCOTREE_CODE, constants.SAMPLE_TYPE],
             [constants.CALLABILITY_PERCENT, constants.COVERAGE_MEAN],
             [constants.PURITY_PERCENT, constants.PLOIDY]
         ]

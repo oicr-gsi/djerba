@@ -27,13 +27,14 @@ tcga_pga_data <- read.table(tcga_pga_file, header = TRUE, stringsAsFactors = F,s
 
 options(bitmapType='cairo')
 
-svg(out_path, width=8, height=4)
+svg(out_path, width=8, height=3)
 ggplot(tcga_pga_data, aes(x=PGA)) +
   geom_density(aes(fill = "All TCGA"), alpha = 0.5) + 
   scale_x_continuous(expand = c(0, 0), limit = c(0, max(samplePGA,  100))) +
  # scale_y_continuous(expand = c(0, 0)) +
   
-  annotate(y = 0, yend=0.03, x=samplePGA, xend=samplePGA,geom="segment",linetype="solid",colour = "black") +
+  geom_vline(xintercept = samplePGA,linetype="solid",colour = "black")+
+#  annotate(y = 0, yend=0.03, x=samplePGA, xend=samplePGA,geom="segment",linetype="solid",colour = "black") +
   annotate(geom="text",x = samplePGA,y=0,color="black",label="This tumour", hjust = 0.3, vjust = -25.3) +
 
 
@@ -46,7 +47,7 @@ ggplot(tcga_pga_data, aes(x=PGA)) +
  # } + scale_fill_discrete(name = "TMB Cohort") +
   
   theme_classic() + 
-  theme(text = element_text(size = 18),
+  theme(text = element_text(size = 25),
         legend.position = c(0.9, 0.9),
         plot.margin = unit(c(1, 1, 1, 1), "lines"),
         panel.grid = element_blank(), 

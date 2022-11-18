@@ -20,9 +20,9 @@
   <%include file="header.html"/>
 
   % if failed:
-    <h1>${patient_info.get(constants.PATIENT_STUDY_ID)} Accredited Assay Report - Quality Failure</h1>
+    <h1>${patient_info.get(constants.REQ_ID)} Accredited Assay Report - Quality Failure</h1>
   % else:
-    <h1>${patient_info.get(constants.PATIENT_STUDY_ID)} Accredited Assay Report</h1>
+    <h1>${patient_info.get(constants.REQ_ID)} Accredited Assay Report</h1>
   % endif
   
   <!-- Case overview -->
@@ -121,7 +121,7 @@
     <h3 >Gene Information</h3>
 
     % if len(gene_info) > 0:
-          <table class="variants" width="100%">
+          <table class="variants" width="100%" >
           ${html_builder().supplementary_gene_info_header()}
           <tbody>
           % for row in html_builder().supplementary_gene_info_rows(gene_info):

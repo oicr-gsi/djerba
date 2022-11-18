@@ -264,7 +264,7 @@ class clinical_report_json_composer(composer_base):
         data[rc.PATIENT_STUDY_ID] = self.clinical_data[dc.PATIENT_STUDY_ID]
         data[rc.PRIMARY_CANCER] = self.clinical_data[dc.CANCER_TYPE_DESCRIPTION]
         data[rc.REPORT_ID] = "{0}-v{1}".format(tumour_id, self.clinical_data[dc.REPORT_VERSION])
-        data[rc.REQ_ID] = self.clinical_data(dc.REQ_ID)
+        data[rc.REQ_ID] = self.params.get(xc.REQ_ID)
         data[rc.REQ_APPROVED_DATE] = self.clinical_data[dc.REQ_APPROVED_DATE]
         data[rc.SITE_OF_BIOPSY_OR_SURGERY] = self.clinical_data[dc.SAMPLE_ANATOMICAL_SITE]
         data[rc.STUDY] = self.params.get(xc.STUDY)
