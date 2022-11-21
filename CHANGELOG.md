@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v0.3.12: 2022-11-02
+## v0.3.12: 2022-11-21
 
 - New report template. Now reporting MSI and TMB (GCGI-392) as actionable biomarkers. LOH calculated but not reported. 
 
@@ -14,7 +14,7 @@
   - new 'centromeres.txt' file in data directory for position of centromeres in CNV plot
   - new 'pgacomp-tcga.txt' file in data directory for distribution of PGA across the TCGA cohort
   - requisition ID tracked and printed in report header
-  - new ini fileds: REQ_ID and MSI_FILE
+  - new config.ini fields: REQ_ID and MSI_FILE
 
 ### Changed
   - Updated 'provenance_reader' and 'configure.py' to find msisensor files and segment.txt files
@@ -23,11 +23,10 @@
   - Architecture of report template: 
     - integrated and moved all CSS to new 'style.css' file
     - moved definitions and descriptions to subdirectory called 'templates_for_supp'
-  - body of clinical report changed to a two-cell layout, with title on left and info on right, results in changes to several .html/mako file
+  - body of clinical report changed to a two-cell layout, with title on left and info on right, resulting in changes to several .html/mako file
   - changed table style in 'json_to_html.py' into two columns per sample information, with corresponding CSS that bolds the sample info title
   - split WGS and WTS assay descriptions into seperate description files, added WTS DNA extraction protocol info, added links to all software in description as well as to hg38
   - pdf footer prints title left
-
 
 ## v0.3.11: 2022-11-01
 
