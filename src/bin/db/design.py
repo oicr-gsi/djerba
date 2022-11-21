@@ -12,8 +12,8 @@ from pull import Pull
 #dbs = 'http://admin:cgi@127.0.0.1:5984/_all_dbs'
 
 class Design():
-     #def __init__(self, db='test', base='http://admin:cgi@127.0.0.1:5984/', level=logging.INFO, log_path=None, filename=__name__):
-     def __init__(self, db='djerba', base='http://admin:djerba123@10.30.133.78:5984/', level=logging.INFO, log_path=None, filename=__name__):
+     #def __init__(self, db='djerba_test', base='http://admin:djerba123@10.30.133.78:5984/', level=logging.WARNING, log_path=None, filename=__name__):
+     def __init__(self, db='test', base='http://admin:cgi@127.0.0.1:5984/', level=logging.WARNING, log_path=None, filename=__name__):
           self.db = db
           self.base = base
           self.url = join(self.base,self.db)          
@@ -32,7 +32,7 @@ class Design():
                logging.debug('Valid filter type. Display example and get user input')
                if filter_type == 's' or filter_type == 'single':
                     print(" <separate multiple views w comma>  <access nested dictionaries w forwardslash>", '\n',
-                         " i.e. report/assay_type, report/patient_info/Study, supplementary/config/discovered/ploidy", '\n')
+                         " i.e. report/patient_info/Study, supplementary/config/discovered/ploidy, report/failed", '\n')
                     query = input("Single Filter: ")
                     return query
                elif filter_type == 'd' or filter_type == 'double':         
@@ -42,7 +42,7 @@ class Design():
                     return query
                elif filter_type == 'm' or filter_type == 'multi':
                     print(" <separate filters with comma and multiple views w @> <access nested dictionaries w forwardslash>", '\n',
-                    " i.e. _id, report/failed, report/author @ report/assay_type, report/patient_info/Study, report/patient_info/Primary cancer, report/patient_info/Genetic Sex @ report/patient_info/Site of biopsy/surgery", '\n')
+                    " i.e. report/failed, report/author @ report/assay_type, report/patient_info/Study, report/patient_info/Primary cancer, report/patient_info/Genetic Sex @ report/patient_info/Site of biopsy/surgery", '\n')
                     query = input ('Filter Multiple: ')
                     return query
                elif filter_type == 'e' or filter_type == 'equal': ## TO DO
@@ -270,7 +270,7 @@ class Design():
           else: logging.error(status_str)
           
           Pull(self.db, self.base).Query(self.url, design_doc_name, viewsEq_name, out_args, eq_all, qtype='e', datatype=datatype)
-          # Pull(self.db, self.base).DeleteDesignDoc(design_doc_name)
+          #Pull(self.db, self.base).DeleteDesignDoc(design_doc_name)
           return
      
      def Multi(self, design_doc_name, query, out_args, eq_all):
@@ -391,7 +391,7 @@ class Design():
           else: logging.error(status_str)
           
           Pull(self.db, self.base).Query(self.url, design_doc_name, views2_name, out_args, eq_all, qtype='d')
-          Pull(self.db, self.base).DeleteDesignDoc(design_doc_name)
+          #Pull(self.db, self.base).DeleteDesignDoc(design_doc_name)
           return
 
      def Single(self, design_doc_name, query, out_args, eq_all): 
@@ -424,7 +424,7 @@ class Design():
           else: logging.error(status_str)
 
           Pull(self.db, self.base).Query(self.url, design_doc_name, search, out_args, eq_all, qtype ='s')
-          Pull(self.db, self.base).DeleteDesignDoc(design_doc_name)
+          #Pull(self.db, self.base).DeleteDesignDoc(design_doc_name)
           return
 
      def SetUp(self):
@@ -462,7 +462,7 @@ class Design():
           elif args.filter == 'equal' or args.filter == 'e': self.Equal(design_doc_name, query, out_args, eq_all)
           # elif args.filter == 'equals' or args.filter == 'es': self.Equals(design_doc_name, query, out_args, eq_all)
           
-          '''other'''
+          '''other functions in pull.py'''
           # try: data_base, total_doc, del_doc = Pull(self.db, self.base).DBStat()
           # except: logging.warning('database error')
           # try: doc, _id, _rev = Pull(self.db, self.base).DesignDoc(design_doc_name)
@@ -473,18 +473,3 @@ class Design():
 
 if __name__ == "__main__":
      Design().SetUp()
-
-'''
-#dictionary comprehension, more condensed   !!!
-design["views"] = { v: {"map": "function (doc) {\n  emit(doc._id, doc." + f"{v}" + ");\n}"} for v in views }
-
-     # import json
-     # file_name = 'djerba_report_machine.pretty'
-     # with open(f'/home/ltoy/Desktop/couch/{file_name}.json') as json_file:
-     #      data = json.load(json_file)    
-'''
-#s = "(_id,test) | (report/failed, true) | (report/author, Bob) , (report/author, Felix Beaudry) | (report/oncogenic_somatic_CNVs/Total variants, 35) "
-#s = " (_id,test)|(a,b)|(1/2,3/4/5), (a,a)|(b/b/b,B)|(c/c/c/c,D), (hello,hi)|(name,age),  (,)|(blah,a)|(i/x,one) |  ( a,b )"
-#views = [" (_id,test)|(a,b)|(1/2,3/4/5)", "(a,a)|(b/b/b,B)|(c/c/c/c,D)", "(hello,hi)|(name,age)" , " (,)|(blah,a)|(i/x,one) |  ( a,b )"]
-#views_numcheck = [ "(report/oncogenic_somatic_CNVs/Total variants,35)"]
-#views_strcheck = ["(_id,test)|(report/author,Bob)", "(report/author,Felix Beaudry)"]
