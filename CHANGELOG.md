@@ -2,16 +2,32 @@
 
 ## v0.3.12: 2022-11-02
 
-- Now reporting MSI and TMB (GCGI-392) as actionable biomarkers
+- New report template. Now reporting MSI and TMB (GCGI-392) as actionable biomarkers. LOH calculated but not reported. 
 
 ### Added
-  - biomarker R script for plotting MSI score (and future biomarkers)
+  - 'biomarkers_plot' R script for plotting MSI score (and future biomarkers)
+  - added 'cnv_plot.R' and 'pga_plot.R' for visualization of CNVs and PGA, respectively, in new report format
   - MSI file processing in extractor.py: calculate median score across bootstraps
   - annotation of MSI-H and TMB-H by Oncokb
+  - LOH reporting:
+    - new function 'preProcLOH' calculates LOH on the per gene basis from the segment.txt file
+  - new 'centromeres.txt' file in data directory for position of centromeres in CNV plot
+  - new 'pgacomp-tcga.txt' file in data directory for distribution of PGA across the TCGA cohort
+  - requisition ID tracked and printed in report header
+  - new ini fileds: REQ_ID and MSI_FILE
 
 ### Changed
-  - Updated provenance_reader and configure.py to find msisensor files
+  - Updated 'provenance_reader' and 'configure.py' to find msisensor files and segment.txt files
+  - 'vaf_plot.R' format adjusted and slimmed 
   - Updated TMB plotting script to show TMB-High cutoff
+  - Architecture of report template: 
+    - integrated and moved all CSS to new 'style.css' file
+    - moved definitions and descriptions to subdirectory called 'templates_for_supp'
+  - body of clinical report changed to a two-cell layout, with title on left and info on right, results in changes to several .html/mako file
+  - changed table style in 'json_to_html.py' into two columns per sample information, with corresponding CSS that bolds the sample info title
+  - split WGS and WTS assay descriptions into seperate description files, added WTS DNA extraction protocol info, added links to all software in description as well as to hg38
+  - pdf footer prints title left
+
 
 ## v0.3.11: 2022-11-01
 
