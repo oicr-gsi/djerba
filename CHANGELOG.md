@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## v0.3.12: 2022-11-23
+
+- Requires update to `djerba_test_data_lfs`
+
+### Added
+- GCGI-517 New 'requisition ID' INI parameter; use for report title
+
+### Fixed
+- GCGI-423 Include `-q` option for MAF annotation script
+- GCGI-608 Do not write 'technical notes' text box unless it has non-null content
+
 ## v0.3.11: 2022-11-01
 
 ### Changed
