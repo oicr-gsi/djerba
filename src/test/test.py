@@ -163,19 +163,19 @@ class TestConfigure(TestBase):
         test_configurer.run(out_path)
 
     def test_default(self):
-        self.run_config_test(self.config_user, False, False, 56, self.provenance)
+        self.run_config_test(self.config_user, False, False, 57, self.provenance)
 
     def test_default_fail(self):
-        self.run_config_test(self.config_user_failed, False, True, 46, self.provenance)
+        self.run_config_test(self.config_user_failed, False, True, 47, self.provenance)
 
     def test_wgs_only(self):
-        self.run_config_test(self.config_user_wgs_only, True, False, 54, self.provenance)
+        self.run_config_test(self.config_user_wgs_only, True, False, 55, self.provenance)
 
     def test_wgs_only_fail(self):
-        self.run_config_test(self.config_user_wgs_only_failed, True, True, 46, self.provenance)
+        self.run_config_test(self.config_user_wgs_only_failed, True, True, 47, self.provenance)
 
     def test_vnwgts(self):
-        self.run_config_test(self.config_user_vnwgts, False, False, 56, self.provenance_vnwgts)
+        self.run_config_test(self.config_user_vnwgts, False, False, 57, self.provenance_vnwgts)
 
     def test_vnwgts_broken(self):
         # test failure modes of sample input
@@ -276,7 +276,7 @@ class TestExtractor(TestBase):
             data_found['report']['djerba_version'] = 'PLACEHOLDER'
             del data_found['supplementary'] # do not test supplementary data
             data = json.dumps(data_found)
-            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), 'ecfa4221aa3041c9cdf5acdc2079db3a')
+            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), 'e83f704dc7583d7e83b3e78eec7c89ee')
 
     def test_wgts_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGTS')
