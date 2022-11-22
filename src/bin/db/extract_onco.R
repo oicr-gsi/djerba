@@ -50,11 +50,23 @@ id.key <- levels(factor(newdf$id))
 gene.key <- levels(fct_rev(fct_infreq(newdf$Gene)))
 report_number = length(table(newdf$id))
 onco_title = paste("Top", nrow(gene_subset), "Mutated Genes in", report_number, "Samples")
-o <- 
+#for percents on right hand side of y axis
+gene_subset$Percent <- NA
+total_mutations = sum(gene_subset$Freq)
+for (row in 1:nrow(gene_subset)){
+  frequency = gene_subset[row, "Freq"]
+  percent = (frequency/total_mutations * 100)
+  percent = format(round(percent, 1), nsmall=1)
+  percent = paste(percent,"%")
+  gene_subset[row, "Percent"] <- percent
+}
+percent.key <- gene_subset$Percent
+#o <- 
   ggplot(newdf) +
   geom_rect(aes(xmin=id.num, xmax=id.num+1, ymin=gene.num, ymax=gene.num+1,fill=Mutation),color="white")+
   scale_x_continuous(breaks=seq(1.5, length(id.key)+0.5,1), labels=id.key, expand=c(0,0))+
-  scale_y_continuous(breaks=seq(1.5, length(gene.key)+0.5,1), labels=gene.key, expand=c(0,0))+
+  scale_y_continuous(breaks=seq(1.5, length(gene.key)+0.5,1), labels=gene.key, expand=c(0,0),
+                     sec.axis = (sec_axis(trans=~., breaks=seq(1.5, length(gene.key)+0.5,1),labels=rev(percent.key))))+
   #labs(title = onco_title) + 
   theme(
     plot.title = element_text(size=8, hjust=0.5),
@@ -72,12 +84,12 @@ o <-
     legend.text=element_text(size=5, hjust=0),
     strip.text = element_text(size=3),
   )#+
-# facet_grid(.~Study, scales="free_x", space="free_x")  #onco_x.png
-#ggsave("/home/ltoy/Desktop/couch/extract/onco.png", o, width=5,height=5)
+ #facet_grid(.~Study, scales="free_x", space="free_x")  #onco_x.png
+ggsave("/home/ltoy/Desktop/couch/extract/onco_percent.png", o, width=5,height=5)
 #ggsave("/home/ltoy/Desktop/couch/extract/onco_x.png", o, width=6.5,height=5) 
 #ggsave("/home/ltoy/Desktop/couch/extract/onco_id.png", o, width=5,height=5) #id
 
-oncobar_freq <- 
+#oncobar_freq <- 
   ggplot(newdf)+
   geom_bar(aes(y=fct_rev(fct_infreq(Gene)), fill=Mutation))+
   labs(x="No. of Mutations")+
@@ -118,7 +130,8 @@ oncobar_tmb <-
   geom_bar(position='dodge', stat='identity', aes(group=Study))+
   theme_classic()+
   theme(
-    legend.position = "right",
+    legend.position = "top",
+   #legend.direction = "horizontal",
     axis.text.x = element_blank(),
     #axis.text.x = element_text(size=5, angle=90), #id
     axis.text.y=element_text(size=10),
@@ -129,9 +142,23 @@ oncobar_tmb <-
     legend.title = element_blank(),
     strip.text.x=element_blank()
   )+
+  guides(fill = guide_legend(nrow=1))+
   scale_y_continuous(breaks=c(0,175),  limits=c(0,175), expand=c(0,0))#+
  #facet_grid(.~Study, scales="free_x", space="free_x", switch="x")  #Study
 ggsave("/home/ltoy/Desktop/couch/extract/oncobar_tmb.png", oncobar_tmb, width=10,height=2.5) 
+
+#extrac onco v small percents
+field_percent = as.data.frame(table(newdf$Field))
+field_percent$Percent = NA
+for (row in 1:nrow(field_percent)){
+  value = (field_percent[row, "Freq"] / sum(field_percent$Freq) ) *100
+  field_percent[row, "Percent"] = format(round(value, 1), nsmall=1)
+}
+ggplot(field_percent, aes(x="", y=Percent, fill=Var1))+
+  geom_col()+
+  coord_polar(theta="y")+
+  geom_text(aes(label=paste(Var1,Percent, '%')), position=position_stack(vjust=0.5))+
+  scale_fill_brewer("Blues")
 
 #TO DO Formatting
 # comb<-
