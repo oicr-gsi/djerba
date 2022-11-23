@@ -37,6 +37,7 @@ PLOIDY = 'ploidy'
 PROVENANCE = 'provenance'
 PURITY = 'purity'
 REPORT_VERSION = 'report_version'
+REQ_ID = 'requisition_id'
 REQ_APPROVED_DATE = 'req_approved_date'
 SAMPLE_ANATOMICAL_SITE = 'sample_anatomical_site'
 SAMPLE_NAME_WG_N = 'sample_name_whole_genome_normal' # whole genome, normal
@@ -97,6 +98,7 @@ SCHEMA_DEFAULT = {
         PATIENT,
         PCT_V7_ABOVE_80X,
         REPORT_VERSION,
+        REQ_ID,
         REQ_APPROVED_DATE,
         SAMPLE_ANATOMICAL_SITE,
         SAMPLE_TYPE,
@@ -153,6 +155,7 @@ SCHEMA_WGS_ONLY = {
         PATIENT,
         PCT_V7_ABOVE_80X,
         REPORT_VERSION,
+        REQ_ID,
         REQ_APPROVED_DATE,
         SAMPLE_ANATOMICAL_SITE,
         SAMPLE_TYPE,
@@ -199,6 +202,7 @@ SCHEMA_FAILED = {
         PATIENT,
         PCT_V7_ABOVE_80X,
         REPORT_VERSION,
+        REQ_ID,
         REQ_APPROVED_DATE,
         SAMPLE_ANATOMICAL_SITE,
         SAMPLE_TYPE,

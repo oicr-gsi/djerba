@@ -46,6 +46,7 @@ All required parameters go in the `[inputs]` section. The "Source" column lists 
 | `mean_coverage`            | Dashi | |
 | `oncotree_code`             | req       | [OncoTree](http://oncotree.mskcc.org/#/home) code (case-insensitive), eg. paad |
 | `patient`                | req       | Study name and patient number, eg. PANX_1249; aka _root sample name_ |
+| `requisition_id`                | req       | Requisition id, eg. PASS01-UHN-001; |
 | `pct_v7_above_80x`            | Dashi | |
 | `report_version`            | user | |
 | `req_approved_date`            | req | Format must be `YYYY/MM/DD` |
