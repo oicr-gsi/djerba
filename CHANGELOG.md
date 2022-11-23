@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v0.3.12: 2022-11-21
+## unreleased
 
 - New report template. Now reporting MSI and TMB (GCGI-392) as actionable biomarkers. LOH calculated but not reported. 
 
@@ -27,6 +27,12 @@
   - changed table style in 'json_to_html.py' into two columns per sample information, with corresponding CSS that bolds the sample info title
   - split WGS and WTS assay descriptions into seperate description files, added WTS DNA extraction protocol info, added links to all software in description as well as to hg38
   - pdf footer prints title left
+  - GCGI-396: arial font as base64 in CSS file makes pdf renderable on the cluster
+  - GCGI-440, GCGI-593: TCGA replaced by oncotree in URL links
+  - GCGI-585: getting rid of div container around entire report made page-breaks controlable
+  - GCGI-586: allowing cluster pdf printing locks in page numbering
+  - GCGI-587: CLIA added to report header
+  - GCGI-588: hg38 patch added to footer
 
 ## v0.3.11: 2022-11-01
 

@@ -163,6 +163,7 @@ class clinical_report_json_composer(composer_base):
         self.clinical_data = self.read_clinical_data()
         self.closest_tcga_lc = self.clinical_data[dc.CLOSEST_TCGA].lower()
         self.closest_tcga_uc = self.clinical_data[dc.CLOSEST_TCGA].upper()
+        self.oncotree_uc = self.params.get(xc.ONCOTREE_CODE).upper()
         self.data_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], dc.DATA_DIR_NAME)
         self.r_script_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], 'R_plots')
         self.html_dir = os.path.join(os.path.dirname(__file__), '..', 'html')
@@ -297,7 +298,7 @@ class clinical_report_json_composer(composer_base):
                     rc.GENE_URL: self.build_gene_url(gene),
                     rc.CHROMOSOME: cytoband,
                     rc.PROTEIN: protein,
-                    rc.PROTEIN_URL: self.build_alteration_url(gene, protein, self.closest_tcga_uc),
+                    rc.PROTEIN_URL: self.build_alteration_url(gene, protein, self.oncotree_uc),
                     rc.MUTATION_TYPE: re.sub('_', ' ', input_row[self.VARIANT_CLASSIFICATION]),
                     rc.VAF_PERCENT: int(round(float(input_row[self.TUMOUR_VAF]), 2)*100),
                     rc.TUMOUR_DEPTH: int(input_row[rc.TUMOUR_DEPTH]),
@@ -412,6 +413,9 @@ class clinical_report_json_composer(composer_base):
                     [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
                     if max_level:
                         rows.append(self.treatment_row(gene, alteration, max_level, therapies))
+        else:
+            msg = "No other biomarkers file at \"{0}\", skipping other biomarkers".format(os.path.join(self.input_dir, self.BIOMARKERS_ANNOTATED))
+            self.logger.debug(msg)
         rows = list(filter(self.oncokb_filter, self.sort_therapy_rows(rows)))
         return rows
 
@@ -587,7 +591,7 @@ class clinical_report_json_composer(composer_base):
                     first = False
                 else:
                     [gene, aratio] = [row[0], float(row[1])]
-                    if(aratio == 0):
+                    if(aratio == 0.0):
                         lohcall = "Yes"
                     else:
                         lohcall = "No"   
@@ -635,47 +639,8 @@ class clinical_report_json_composer(composer_base):
         with open(genomic_biomarkers_path, 'w') as genomic_biomarkers_file:
             #print .maf header
             print("HUGO_SYMBOL\tSAMPLE_ID\tALTERATION", file=genomic_biomarkers_file)
-            #Tumor Mutational Burden (TMB)
-            tmb = self.build_genomic_landscape_info()[rc.TMB_PER_MB]
-            if tmb >= 10:
-                metric_call = "TMB-H"
-                print("Other Biomarkers\t"+sample_ID+"\tTMB-H", file=genomic_biomarkers_file)
-            elif tmb < 10:
-                metric_call = "TMB-L"
-            else:
-                msg = "TMB not a number"
-                self.logger.error(msg)
-                raise RuntimeError(msg)
-            row = {
-                rc.ALT: "TMB",
-                rc.METRIC_VALUE: tmb,
-                rc.METRIC_CALL: metric_call
-            }
-            rows.append(row)
-            #Microsatelite Instability (MSI)
-            msi = self.extract_msi()
-            if msi >= self.MSI_CUTOFF:
-                metric_call = "MSI-H"
-                metric_text = "This sample shows genomic evidence of high microsatellite instability, which is likely caused by genetic or epigenetic alterations to genes in the mismatch repair pathway such as <em>MLH-1</em>, <em>MSH-2</em>, and <em>MSH-6</em>."
-                print("Other Biomarkers\t"+sample_ID+"\tMSI-H", file=genomic_biomarkers_file)
-            elif msi < self.MSI_CUTOFF and msi >= self.MSS_CUTOFF:
-                metric_call = "INCONCLUSIVE"
-                metric_text = "This sample shows inconclusive genomic evidence regarding microsatellite instability. Further testing is recommended."
-            elif msi < self.MSS_CUTOFF:
-                metric_call = "MSS"
-                metric_text = "This sample shows genomic evidence of microsatellite stability (MSS)"
-            else:
-                msg = "MSI not a number"
-                self.logger.error(msg)
-                raise RuntimeError(msg)
-            row = {
-                rc.ALT: "MSI",
-                rc.METRIC_VALUE: msi,
-                rc.METRIC_CALL: metric_call,
-                rc.METRIC_TEXT: metric_text,
-                rc.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/MSI-H"
-            }
-            rows.append(row)
+            rows.append(self.call_TMB(sample_ID,genomic_biomarkers_file))
+            rows.append(self.call_MSI(sample_ID,genomic_biomarkers_file))
         out_path = oncokb_annotator(
             self.clinical_data[dc.TUMOUR_SAMPLE_ID],
             self.params.get(xc.ONCOTREE_CODE).upper(),
@@ -687,7 +652,52 @@ class clinical_report_json_composer(composer_base):
             rc.BODY: rows
         }
         return data
-        
+
+    def call_TMB(self,sample_ID,genomic_biomarkers_file):
+        #convert TMB number into Low or High call
+        tmb = self.build_genomic_landscape_info()[rc.TMB_PER_MB]
+        if tmb >= 10:
+            metric_call = "TMB-H"
+            print("Other Biomarkers\t"+sample_ID+"\tTMB-H", file=genomic_biomarkers_file)
+        elif tmb < 10:
+            metric_call = "TMB-L"
+        else:
+            msg = "TMB not a number"
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        row = {
+            rc.ALT: "TMB",
+            rc.METRIC_VALUE: tmb,
+            rc.METRIC_CALL: metric_call
+        }
+        return(row)
+
+    def call_MSI(self,sample_ID,genomic_biomarkers_file):
+        #convert MSI number into Low, inconclusive or High call
+        msi = self.extract_msi()
+        if msi >= self.MSI_CUTOFF:
+            metric_call = "MSI-H"
+            metric_text = "This sample shows genomic evidence of high microsatellite instability, which is likely caused by genetic or epigenetic alterations to genes in the mismatch repair pathway such as <em>MLH-1</em>, <em>MSH-2</em>, and <em>MSH-6</em>."
+            print("Other Biomarkers\t"+sample_ID+"\tMSI-H", file=genomic_biomarkers_file)
+        elif msi < self.MSI_CUTOFF and msi >= self.MSS_CUTOFF:
+            metric_call = "INCONCLUSIVE"
+            metric_text = "This sample shows inconclusive genomic evidence regarding microsatellite instability."
+        elif msi < self.MSS_CUTOFF:
+            metric_call = "MSS"
+            metric_text = "This sample shows genomic evidence of microsatellite stability (MSS)"
+        else:
+            msg = "MSI not a number"
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        row = {
+            rc.ALT: "MSI",
+            rc.METRIC_VALUE: msi,
+            rc.METRIC_CALL: metric_call,
+            rc.METRIC_TEXT: metric_text,
+            rc.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/MSI-H"
+        }
+        return(row)
+
     def extract_msi(self):
         MSI = 0.0
         with open(os.path.join(self.input_dir, self.MSI_FILE), 'r') as msi_file:
@@ -769,6 +779,7 @@ class clinical_report_json_composer(composer_base):
 
     def treatment_row(self, genes_arg, alteration, max_level, therapies):
         # genes argument may be a string, or an iterable of strings
+        core_biomarker_url = "https://www.oncokb.org/gene/Other%20Biomarkers"
         if isinstance(genes_arg, str):
             genes_and_urls = {genes_arg: self.build_gene_url(genes_arg)}
         else:
@@ -777,12 +788,12 @@ class clinical_report_json_composer(composer_base):
             alt_url = self.build_alteration_url('-'.join(genes_arg), alteration, self.closest_tcga_uc)
         if alteration == "TMB-H" or alteration == "MSI-H":
             genes_and_urls = {
-                "Biomarker": "https://www.oncokb.org/gene/Other%20Biomarkers/"
+                "Biomarker": core_biomarker_url
             }
             if alteration == "TMB-H":
-                alt_url = "https://www.oncokb.org/gene/Other%20Biomarkers/TMB-H/",
+                alt_url = '/'.join([core_biomarker_url,"TMB-H/"])
             if alteration == "MSI-H":
-                alt_url = "https://www.oncokb.org/gene/Other%20Biomarkers/Microsatellite%20Instability-High/",
+                alt_url = '/'.join([core_biomarker_url,"Microsatellite%20Instability-High/"])
         else:
             alt_url = self.build_alteration_url(genes_arg, alteration, self.closest_tcga_uc)
         row = {

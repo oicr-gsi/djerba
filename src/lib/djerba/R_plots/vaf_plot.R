@@ -26,15 +26,16 @@ MAF <- read.csv(maf_path, sep = "\t", header = TRUE, stringsAsFactors = FALSE) %
     inner_join(cytoBand) %>%
     mutate(OncoKB = ifelse(is.na(HIGHEST_LEVEL), ONCOGENIC, HIGHEST_LEVEL))
 
+MAF$tumour_vaf_perc <- MAF$tumour_vaf * 100
+
 options(bitmapType='cairo')
-svg(out_path, width=7, height=1)
+svg(out_path, width=7, height=1.5)
 
 ggplot(MAF) + 
-  geom_density(aes(x = tumour_vaf*100), fill = "grey", alpha = 0.5,color="darkgrey") + 
-  geom_point(aes(x = tumour_vaf*100,y = 0), shape="|") + 
+  geom_density(aes(x = tumour_vaf_perc), fill = "grey", alpha = 0.5,color="darkgrey") + 
+  geom_point(aes(x = tumour_vaf_perc,y = 0), shape="|") + 
   geom_hline(yintercept = -0.5,color="white") +
-  scale_x_continuous(expand = c(0,0), limit = c(0, 100)) + 
-  scale_y_continuous(expand = c(0, 0)) + 
+  scale_x_continuous( limit = c(0, 100)) + 
   xlab("Variant Allele Frequency (%)") +   ylab("% of mutations") +
   theme_classic() + 
   guides(fill='none')+

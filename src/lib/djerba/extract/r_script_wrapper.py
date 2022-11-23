@@ -320,13 +320,13 @@ class r_script_wrapper(logger):
                 writer.writerow(row)
         return out_path
 
-    def preprocess_segmentsTXT(self, sequenza_path, tmp_dir,report_dir):
+    def preprocess_Aratio(self, sequenza_path, tmp_dir,report_dir):
         """
         Extract the segments.txt file from the .zip archive output by Sequenza
         write results to tmp_dir
         """
         gamma = self.config.getint(ini.DISCOVERED, ini.SEQUENZA_GAMMA)
-        seg_path = sequenza_reader(sequenza_path).extract_segmentsTXT_file(tmp_dir, gamma)
+        seg_path = sequenza_reader(sequenza_path).extract_Aratio_file(tmp_dir, gamma)
         out_path = os.path.join(report_dir, 'segments.txt')
         with open(seg_path, 'rt') as seg_file, open(out_path, 'wt') as out_file:
             reader = csv.reader(seg_file, delimiter="\t")
@@ -343,7 +343,7 @@ class r_script_wrapper(logger):
             tmp_dir = self.supplied_tmp_dir
         maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE], tmp_dir)
         seg_path = self.preprocess_seg(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir)
-        segmentsTXT_path = self.preprocess_segmentsTXT(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir, self.report_dir)
+        Aratio_path = self.preprocess_Aratio(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir, self.report_dir)
         cmd = [
             'Rscript', os.path.join(self.r_script_dir, 'singleSample.r'),
             '--basedir', self.r_script_dir,
@@ -352,7 +352,7 @@ class r_script_wrapper(logger):
             '--normalid', self.config[ini.DISCOVERED][ini.NORMAL_ID],
             '--maffile', maf_path,
             '--segfile', seg_path,
-            '--aratiofile', segmentsTXT_path,
+            '--aratiofile', Aratio_path,
             '--minfusionreads', self.min_fusion_reads,
             '--enscon', self.config[ini.DISCOVERED][ini.ENSCON],
             '--entcon', self.config[ini.DISCOVERED][ini.ENTCON],
