@@ -30,12 +30,12 @@ options(bitmapType='cairo')
 svg(out_path, width=7, height=1)
 
 ggplot(MAF) + 
-  geom_density(aes(x = tumour_vaf), fill = "grey", alpha = 0.5,color="darkgrey") + 
-  geom_point(aes(x = tumour_vaf,y = 0), shape="|") + 
+  geom_density(aes(x = tumour_vaf*100), fill = "grey", alpha = 0.5,color="darkgrey") + 
+  geom_point(aes(x = tumour_vaf*100,y = 0), shape="|") + 
   geom_hline(yintercept = -0.5,color="white") +
-  scale_x_continuous(expand = c(0,0), limit = c(0, 1)) + 
+  scale_x_continuous(expand = c(0,0), limit = c(0, 100)) + 
   scale_y_continuous(expand = c(0, 0)) + 
-  xlab("Variant Allele Frequency") +   ylab("% of mutations") +
+  xlab("Variant Allele Frequency (%)") +   ylab("% of mutations") +
   theme_classic() + 
   guides(fill='none')+
   theme(
