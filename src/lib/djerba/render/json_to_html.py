@@ -30,16 +30,6 @@ class html_builder:
             td = '<td>{0}</td>'.format(content)
         return td
 
-    #def genomic_landscape_table_rows(self, genomic_landscape_args):
-    #    widths = [55,45]
-    #    key_groups = [
-    #        [constants.TMB_TOTAL, constants.PERCENT_GENOME_ALTERED],
-    #        [constants.CANCER_SPECIFIC_PERCENTILE, constants.CANCER_SPECIFIC_COHORT],
-    #        [constants.PAN_CANCER_PERCENTILE, constants.PAN_CANCER_COHORT],
-    #    ]
-    #    return self.key_value_table_rows(genomic_landscape_args, key_groups, widths)
-
-
     def msi_table_rows(self, genomic_biomarker_args, biomarker):
         row_fields = genomic_biomarker_args[constants.BODY]
         rows = []
@@ -150,17 +140,17 @@ class html_builder:
         widths = [[25,25], [25,25]]
         key_groups = [
             [constants.REPORT_ID, constants.PATIENT_LIMS_ID],
-            [constants.REQ_APPROVED_DATE, constants.BLOOD_SAMPLE_ID],
-            [constants.DATE_OF_REPORT, constants.TUMOUR_SAMPLE_ID]
+            [constants.BLOOD_SAMPLE_ID, constants.PATIENT_STUDY_ID],
+            [constants.TUMOUR_SAMPLE_ID , constants.STUDY]
         ]
         return self.key_value_table_rows(patient_args, key_groups, widths)
     
     def patient_table_id_cols(self, patient_args):
         """Get the patient info table: After initial header, before Sample Information & Quality"""
-        widths = [[22,15],[22,44]]
+        widths = [[25,15],[23,38]]
         key_groups = [
-            [constants.STUDY, constants.REQUISITIONER_EMAIL],
-            [constants.PATIENT_STUDY_ID, constants.NAME],
+            [constants.DATE_OF_REPORT , constants.REQUISITIONER_EMAIL],
+            [constants.REQ_APPROVED_DATE, constants.NAME],
             [constants.SEX, constants.DOB],
             [constants.LICENCE_NUMBER, constants.PHYSICIAN],
             [constants.PHONE_NUMBER, constants.HOSPITAL]

@@ -15,7 +15,6 @@
 </head>
 
 <body>
-<div class="main-container">
 
   <%include file="header.html"/>
 
@@ -136,8 +135,6 @@
 
   % endif
 
-  <hr class="header-big-line" style="width: 100%; "  >
-  
   <h3>Assay description</h3>
 
   % if assay_type == constants.ASSAY_WGTS:
@@ -150,7 +147,7 @@
   % else:
     <% raise RuntimeError("Unknown assay type") %>
   % endif
-  <%include file="templates_for_supp/description_core.html"/>
+    <%include file="templates_for_supp/description_core.html"/>
 
   <h3>Definitions</h3>
   <%include file="templates_for_supp/definitions_1.html"/>
@@ -188,6 +185,5 @@
 
   <hr class="big-line" style="width: 100%; "  >
 
-</div>
 </body>
 </html>

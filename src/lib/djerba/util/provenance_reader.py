@@ -46,7 +46,6 @@ class provenance_reader(logger):
     # metatype patterns
     MT_OCTET_STREAM = 'application/octet-stream$'
     MT_VCF_GZ = 'application/vcf-gz$'
-    MT_TXT = 'application/te?xt$' # match text OR txt
     MT_TXT_GZ = 'application/te?xt-gz$' # match text OR txt
     MT_ZIP = 'application/zip-report-bundle$'
     MT_BAM = 'application/bam$'
@@ -454,7 +453,7 @@ class provenance_reader(logger):
 
     def parse_msi_path(self):
         workflows = [self.WF_MSISENSOR]
-        mt = self.MT_TXT
+        mt = self.MT_OCTET_STREAM
         suffix = 'filter\.deduped\.realigned\.recalibrated\.msi\.booted$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
