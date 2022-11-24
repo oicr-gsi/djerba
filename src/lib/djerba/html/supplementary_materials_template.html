@@ -1,0 +1,67 @@
+<%
+  from time import strftime
+  import djerba.render.constants as constants
+  from djerba.render.json_to_html import html_builder
+%>
+
+  <hr class="header-big-line" style="width: 100%; align="right" >
+  <h2>Supplementary </h2>
+
+  % if not failed:
+    ${html_builder().make_sections_into_cells("<h3>Gene Information</h3>","supp")}
+
+    % if len(gene_info) > 0:
+          <table class="variants" width="100%" >
+          ${html_builder().supplementary_gene_info_header()}
+          <tbody>
+          % for row in html_builder().supplementary_gene_info_rows(gene_info):
+                ${row}
+          % endfor
+          </tbody>
+          </table>
+    % else:
+          <p >No relevant oncogenes were detected in OncoKB.</p>
+
+    % endif
+    <p><strong>Genes tested</strong>: Although whole genome sequencing encompasses all genes in a specimen, this report is restricted to cancer genes as defined by OncoKB as of the date this report.</p>
+
+    </div></div>
+  % endif
+
+  ${html_builder().make_sections_into_cells("<h3>OncoKB Definitions</h3>","supp")}
+
+    <%include file="templates_for_supp/definitions_oncokb.html"/>
+
+  </div></div>
+
+  ${html_builder().make_sections_into_cells("<h3>Definitions</h3>","supp")}
+
+    <%include file="templates_for_supp/definitions_metrics.html"/>
+    % if not failed:
+      <%include file="templates_for_supp/definitions_tests.html"/>
+    % endif
+
+  </div></div>
+
+  ${html_builder().make_sections_into_cells("<h3>Assay description</h3>","supp")}
+  <p>Assay results are collated into the report document by <a href="https://github.com/oicr-gsi/djerba">Djerba</a> (${djerba_version}) using pipeline v.1.0</p>
+
+    % if assay_type == constants.ASSAY_WGTS:
+      <p> This assay combines two comprehensive next generation sequencing assays: a DNA-based whole genome sequencing (WGS) assay and an RNA-based whole transcriptome sequencing (WTS) assay.</p>
+      <%include file="templates_for_supp/description_wgs.html"/>
+      <%include file="templates_for_supp/description_wts.html"/>
+    % elif assay_type == constants.ASSAY_WGS:
+      <p>This assay is a comprehensive next generation sequencing assay, specifically DNA-based whole genome sequencing (WGS). </p>
+      <%include file="templates_for_supp/description_wgs.html"/>
+    % else:
+      <% raise RuntimeError("Unknown assay type") %>
+    % endif
+
+  </div></div>
+
+  ${html_builder().make_sections_into_cells("<h3>Disclaimer</h3>","supp")}
+  <%include file="templates_for_supp/description_core.html"/>
+
+</div></div>
+  
+  <hr class="lil-line" style="width: 100%;"  >

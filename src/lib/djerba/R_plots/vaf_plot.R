@@ -34,7 +34,7 @@ svg(out_path, width=7, height=1.5)
 ggplot(MAF) + 
   geom_density(aes(x = tumour_vaf_perc), fill = "grey", alpha = 0.5,color="darkgrey") + 
   geom_point(aes(x = tumour_vaf_perc,y = 0), shape="|") + 
-  geom_hline(yintercept = -0.5,color="white") +
+#  geom_hline(yintercept = -0.5,color="white") +
   scale_x_continuous( limit = c(0, 100)) + 
   xlab("Variant Allele Frequency (%)") +   ylab("% of mutations") +
   theme_classic() + 

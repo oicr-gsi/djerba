@@ -79,6 +79,11 @@ class html_builder:
             rows.append("\n".join(row_items))
         return rows
 
+    def make_sections_into_cells(self,section_title,main_or_supp):
+        template = '<hr class="big-white-line" ><div class="twocell{0}"><div class="oneoftwocell{0}">{1}</div><div class="twooftwocell{0}" ><hr class="big-line" >'  
+        cell = template.format(main_or_supp,section_title)
+        return cell
+
     def markdown_to_html(self, markdown_string):
         return markdown(markdown_string)
 
@@ -197,7 +202,6 @@ class html_builder:
     def supplementary_gene_info_header(self):
         names = [
             constants.GENE,
-            constants.CHROMOSOME,
             constants.SUMMARY
         ]
         return self.table_header(names)
@@ -214,7 +218,6 @@ class html_builder:
                              row[constants.SUMMARY])
             cells = [
                 self._td(self._href(row[constants.GENE_URL], row[constants.GENE]), italic=True),
-                self._td(row[constants.CHROMOSOME]),
                 self._td(summary)
             ]
             rows.append(self.table_row(cells))
@@ -234,20 +237,26 @@ class html_builder:
         return ''.join(items)
 
     def therapies_header(self):
-        return self.table_header(['Gene(s)', 'Alteration', 'Treatment(s)', 'OncoKB'])
+        return self.table_header(['OncoKB', 'Treatment(s)','Gene(s)', 'Alteration' ])
 
     def therapies_table_rows(self, row_fields):
         rows = []
         for row in row_fields:
-            widths = iter([15, 15, 55, 15])
+            widths = iter([1, 59, 20, 20])
             # may have a pair of genes (fusions) or single gene (otherwise)
             gene_urls = row[constants.GENES_AND_URLS]
             gene_links = [self._href(gene_urls[gene], gene) for gene in sorted(list(gene_urls.keys()))]
             cells = [
+                self._td(self.process_oncokb_colours(row[constants.ONCOKB]), False, next(widths)),
+                self._td(row[constants.TREATMENT], False, next(widths)),
                 self._td(', '.join(gene_links), True, next(widths)),
                 self._td(self._href(row[constants.ALT_URL], row[constants.ALT]), False, next(widths)),
-                self._td(row[constants.TREATMENT], False, next(widths)),
-                self._td(row[constants.ONCOKB], False, next(widths)),
             ]
             rows.append(self.table_row(cells))
         return rows
+
+    def process_oncokb_colours(self,oncokb_level):
+        template = '<div  class="circle oncokb-level{0}">{0}</div>'  
+        split_oncokb = oncokb_level.split(" ",2)
+        oncokb_circle = template.format(split_oncokb[1])
+        return(oncokb_circle)

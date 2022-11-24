@@ -102,7 +102,7 @@ ggplot(fittedSegmentsDF_sub) +
   
   facet_grid(.~Chr,scales = "free",space="free", switch="both")+ 
 
-  guides(alpha='none',linetype='none') +
+  guides(shape='none',alpha='none',linetype='none') +
   labs(y="Copy Number") + 
   ylim(-0.11,4.11) +
   scale_shape_manual(values=c(17),labels=": CN>4",name="",na.translate = F) +
@@ -118,7 +118,7 @@ ggplot(fittedSegmentsDF_sub) +
         strip.background = element_blank(),
         text = element_text(size = 10),
         plot.margin = unit(c(2, 2, 2, 2), "points"),
-        legend.position="top",
+      #  legend.position="top",
         legend.text=element_text(size=12)
         ) 
 

@@ -25,15 +25,7 @@
   % endif
   
   <!-- Case overview -->
-  <hr class="big-white-line" >
-
-  <div class="twocell">
-    <div class="oneoftwocell">
-      <h2>Case Overview</h2>
-    </div>
-
-    <div class="twooftwocell" >
-      <hr class="big-line" >  
+  ${html_builder().make_sections_into_cells("<h2>Case Overview</h2>","main")}
 
       <table class="info">
         <tr>
@@ -65,28 +57,19 @@
       % endfor
       </table>
 
-
-    </div>
-  </div>
+  </div></div>
+  
 
   <!-- sample info -->
-  <hr class="big-white-line"  >
+  ${html_builder().make_sections_into_cells("<h2>Sample Information</h2>","main")}
 
-  <div class="twocell">
-    <div class="oneoftwocell">
-      <h2>Sample Information</h2>
-    </div>
-
-    <div class="twooftwocell" >
-      <hr class="big-line"  >
         <table class="info">
         % for row in html_builder(purity_failure).sample_information_and_quality_rows(sample_info_and_quality):
               ${row}
         % endfor
         </table>
-    </div>
-    
-  </div>
+
+  </div></div>
 
   <!-- treatment -->
   % if not failed:
@@ -94,17 +77,11 @@
   % endif
 
   <!-- results summary -->
-  <hr class="big-white-line" >
-  <div class="twocell">
-    <div class="oneoftwocell">
-      <h2>Results Summary</h2>
-    </div>
+  ${html_builder().make_sections_into_cells("<h2>Results Summary</h2>","main")}
 
-    <div class="twooftwocell" >
-      <hr class="big-line"  >
-      ${html_builder().markdown_to_html(genomic_summary)}
-    </div>
-  </div>
+    ${html_builder().markdown_to_html(genomic_summary)}
+
+  </div></div>
 
   <!-- genomic landscape -->
   % if not failed:
@@ -112,51 +89,9 @@
   % endif
 
   <!-- Supplementary -->
-  <hr class="header-big-line" style="width: 100%;  align="right" >
-  <h2>Supplementary </h2>
 
-  % if not failed:
-
-    <h3 >Gene Information</h3>
-
-    % if len(gene_info) > 0:
-          <table class="variants" width="100%" >
-          ${html_builder().supplementary_gene_info_header()}
-          <tbody>
-          % for row in html_builder().supplementary_gene_info_rows(gene_info):
-                ${row}
-          % endfor
-          </tbody>
-          </table>
-    % else:
-          <p >No relevant oncogenes were detected in OncoKB.</p>
-
-    % endif
-
-  % endif
-
-  <h3>Assay description</h3>
-
-  % if assay_type == constants.ASSAY_WGTS:
-    <p> This assay combines two comprehensive next generation sequencing assays: a DNA-based whole genome sequencing (WGS) assay and an RNA-based whole transcriptome sequencing (WTS) assay.</p>
-    <%include file="templates_for_supp/description_wgs.html"/>
-    <%include file="templates_for_supp/description_wts.html"/>
-  % elif assay_type == constants.ASSAY_WGS:
-    <p>This assay is a comprehensive next generation sequencing assay, specifically DNA-based whole genome sequencing (WGS). </p>
-    <%include file="templates_for_supp/description_wgs.html"/>
-  % else:
-    <% raise RuntimeError("Unknown assay type") %>
-  % endif
-    <%include file="templates_for_supp/description_core.html"/>
-
-  <h3>Definitions</h3>
-  <%include file="templates_for_supp/definitions_1.html"/>
-  <%include file="templates_for_supp/definitions_2.html"/>
-  <!-- coverage uses variables -->
-  <p><strong>Coverage: </strong>Mean number of bases covering each sequenced base. Minimum coverage threshold is ${coverage_thresholds.get(constants.TUMOUR_MIN)}x for the tumour (with a target of ${coverage_thresholds.get(constants.TUMOUR_TARGET)}x); ${coverage_thresholds.get(constants.NORMAL_MIN)}x for the normal (with a target of ${coverage_thresholds.get(constants.NORMAL_TARGET)}x).</p>
-
-  <hr class="lil-line" style="width: 100%; "  >
-
+  <%include file="supplementary_materials_template.html"/>
+  
   <h3>Report Sign offs</h3>
 
   <%
@@ -166,7 +101,7 @@
       date = strftime('%Y/%m/%d')
   %>
 
-  <table width="100%">
+  <table class="suppl" width="100%">
     <tr>
       <td width="33%">Report drafted by ${author} on ${date}</td>
     </tr>
