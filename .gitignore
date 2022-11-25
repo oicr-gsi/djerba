@@ -3,8 +3,8 @@
 djerba.egg-info
 build
 dist
-*.DS_Store
-*.Rhistory
 .project
 .pydevproject
 djerba.log
+*.DS_Store
+*.Rhistory

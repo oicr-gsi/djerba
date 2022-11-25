@@ -13,7 +13,7 @@
     - new function 'preProcLOH' calculates LOH on the per gene basis from the segment.txt file
   - new 'centromeres.txt' file in data directory for position of centromeres in CNV plot
   - new 'pgacomp-tcga.txt' file in data directory for distribution of PGA across the TCGA cohort
-  - requisition ID tracked and printed in report header
+  - requisition ID printed in report header and report_id
   - new config.ini fields: REQ_ID and MSI_FILE
 
 ### Changed
@@ -33,6 +33,18 @@
   - GCGI-586: allowing cluster pdf printing locks in page numbering
   - GCGI-587: CLIA added to report header
   - GCGI-588: hg38 patch added to footer
+
+## v0.3.12: 2022-11-23
+
+- Requires update to `djerba_test_data_lfs`
+
+### Added
+- GCGI-517 New 'requisition ID' INI parameter; use for report title
+
+### Fixed
+- GCGI-423 Include `-q` option for MAF annotation script
+- GCGI-608 Do not write 'technical notes' text box unless it has non-null content
+
 
 ## v0.3.11: 2022-11-01
 

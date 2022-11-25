@@ -59,6 +59,14 @@
 
   </div></div>
 
+  ## Slightly hacky method to omit technical notes with null content
+  % if not technical_notes.strip() == 'No technical notes supplied.':
+    ${html_builder().make_sections_into_cells("<h3>Technical Notes</h3>","supp")}
+    ${html_builder().markdown_to_html(technical_notes)}
+    </div></div>
+  % endif
+
+
   ${html_builder().make_sections_into_cells("<h3>Disclaimer</h3>","supp")}
   <%include file="templates_for_supp/disclaimer.html"/>
 
