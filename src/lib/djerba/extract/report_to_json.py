@@ -18,6 +18,7 @@ from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.extract.oncokb_annotator import oncokb_annotator
 from statsmodels.distributions.empirical_distribution import ECDF
+from djerba.util.image_to_base64 import converter
 
 class composer_base(logger):
     # base class with shared methods and constants
@@ -258,14 +259,15 @@ class clinical_report_json_composer(composer_base):
         # TODO import clinical data column names from Djerba constants
         data = {}
         tumour_id = self.clinical_data[dc.TUMOUR_SAMPLE_ID]
+        req_id = self.params.get(xc.REQ_ID)
         data[rc.ASSAY_NAME] = self.params.get(xc.ASSAY_NAME)
         data[rc.BLOOD_SAMPLE_ID] = self.clinical_data[dc.BLOOD_SAMPLE_ID]
         data[rc.SEX] = self.clinical_data[dc.SEX]
         data[rc.PATIENT_LIMS_ID] = self.clinical_data[dc.PATIENT_LIMS_ID]
         data[rc.PATIENT_STUDY_ID] = self.clinical_data[dc.PATIENT_STUDY_ID]
         data[rc.PRIMARY_CANCER] = self.clinical_data[dc.CANCER_TYPE_DESCRIPTION]
-        data[rc.REPORT_ID] = "{0}-v{1}".format(tumour_id, self.clinical_data[dc.REPORT_VERSION])
-        data[rc.REQ_ID] = self.params.get(xc.REQ_ID)
+        data[rc.REPORT_ID] = "{0}-v{1}".format(req_id, self.clinical_data[dc.REPORT_VERSION])
+        data[rc.REQ_ID] = req_id
         data[rc.REQ_APPROVED_DATE] = self.clinical_data[dc.REQ_APPROVED_DATE]
         data[rc.SITE_OF_BIOPSY_OR_SURGERY] = self.clinical_data[dc.SAMPLE_ANATOMICAL_SITE]
         data[rc.STUDY] = self.params.get(xc.STUDY)
@@ -658,9 +660,11 @@ class clinical_report_json_composer(composer_base):
         tmb = self.build_genomic_landscape_info()[rc.TMB_PER_MB]
         if tmb >= 10:
             metric_call = "TMB-H"
+            metric_text = "Tumour Mutational Burden High (TMB-H)"
             print("Other Biomarkers\t"+sample_ID+"\tTMB-H", file=genomic_biomarkers_file)
         elif tmb < 10:
             metric_call = "TMB-L"
+            metric_text = "Tumour Mutational Burden Low (TMB-L)"
         else:
             msg = "TMB not a number"
             self.logger.error(msg)
@@ -668,7 +672,9 @@ class clinical_report_json_composer(composer_base):
         row = {
             rc.ALT: "TMB",
             rc.METRIC_VALUE: tmb,
-            rc.METRIC_CALL: metric_call
+            rc.METRIC_CALL: metric_call,
+            rc.METRIC_TEXT: metric_text,
+            rc.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/TMB-H"
         }
         return(row)
 
@@ -677,24 +683,27 @@ class clinical_report_json_composer(composer_base):
         msi = self.extract_msi()
         if msi >= self.MSI_CUTOFF:
             metric_call = "MSI-H"
-            metric_text = "This sample shows genomic evidence of high microsatellite instability, which is likely caused by genetic or epigenetic alterations to genes in the mismatch repair pathway such as <em>MLH-1</em>, <em>MSH-2</em>, and <em>MSH-6</em>."
+            metric_text = "Microsatellite Instability High (MSI-H)"
             print("Other Biomarkers\t"+sample_ID+"\tMSI-H", file=genomic_biomarkers_file)
         elif msi < self.MSI_CUTOFF and msi >= self.MSS_CUTOFF:
             metric_call = "INCONCLUSIVE"
-            metric_text = "This sample shows inconclusive genomic evidence regarding microsatellite instability."
+            metric_text = "Inconclusive Microsatellite Instability status"
         elif msi < self.MSS_CUTOFF:
             metric_call = "MSS"
-            metric_text = "This sample shows genomic evidence of microsatellite stability (MSS)"
+            metric_text = "Microsatellite Stable (MSS)"
         else:
             msg = "MSI not a number"
             self.logger.error(msg)
             raise RuntimeError(msg)
+        msi_plot_location = self.write_biomarker_plot(self.input_dir,"msi")
+        msi_plot_base64 = converter().convert_svg(msi_plot_location, 'MSI plot')
         row = {
             rc.ALT: "MSI",
             rc.METRIC_VALUE: msi,
             rc.METRIC_CALL: metric_call,
             rc.METRIC_TEXT: metric_text,
-            rc.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/MSI-H"
+            rc.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/MSI-H",
+            rc.METRIC_PLOT: msi_plot_base64
         }
         return(row)
 
@@ -744,9 +753,8 @@ class clinical_report_json_composer(composer_base):
             pga = data[rc.GENOMIC_LANDSCAPE_INFO][rc.PERCENT_GENOME_ALTERED]
             data[rc.TMB_PLOT] = self.write_tmb_plot(tmb, self.input_dir)
             data[rc.VAF_PLOT] = self.write_vaf_plot(self.input_dir)
-            data[rc.MSI_PLOT] = self.write_msi_plot(self.input_dir)
-            data[rc.CNV_PLOT] = self.write_cnv_plot(self.input_dir)
-            data[rc.PGA_PLOT] = self.write_pga_plot(pga, self.input_dir)
+            data[rc.CNV_PLOT] = converter().convert_svg(self.write_cnv_plot(self.input_dir), 'CNV plot')
+            data[rc.PGA_PLOT] = converter().convert_svg(self.write_pga_plot(pga, self.input_dir), 'PGA plot')
             data[rc.SMALL_MUTATIONS_AND_INDELS] = self.build_small_mutations_and_indels()
             data[rc.TOP_ONCOGENIC_SOMATIC_CNVS] = self.build_copy_number_variation()
             if self.params.get(xc.ASSAY_TYPE) == rc.ASSAY_WGTS:
@@ -828,8 +836,8 @@ class clinical_report_json_composer(composer_base):
         self.logger.info("Wrote VAF plot to {0}".format(out_path))
         return out_path
     
-    def write_msi_plot(self, out_dir):
-        out_path = os.path.join(out_dir, 'msi.svg')
+    def write_biomarker_plot(self, out_dir,marker):
+        out_path = os.path.join(out_dir, marker+'.svg')
         args = [
             os.path.join(self.r_script_dir, 'biomarkers_plot.R'),
             '-d', self.input_dir

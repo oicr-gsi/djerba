@@ -4,6 +4,7 @@ import djerba.render.constants as constants
 import re
 from markdown import markdown
 from time import strftime
+from djerba.util.image_to_base64 import converter
 
 class html_builder:
 
@@ -30,13 +31,32 @@ class html_builder:
             td = '<td>{0}</td>'.format(content)
         return td
 
-    def msi_table_rows(self, genomic_biomarker_args, biomarker):
+    def biomarker_table_rows(self, genomic_biomarker_args):
         row_fields = genomic_biomarker_args[constants.BODY]
         rows = []
         for row in row_fields:
-            if row[constants.ALT] == biomarker:
-                rows.append(row[constants.METRIC_CALL])
+            if row[constants.ALT] == "TMB":
+                continue
+            else:
+                cells = [
+                    self._td(row[constants.ALT]),
+                    self._td(row[constants.METRIC_CALL]),
+                    self._td(self.assemble_biomarker_plot(row[constants.ALT],row[constants.METRIC_PLOT]))
+                ]
+                rows.append(self.table_row(cells))
         return rows
+
+    def assemble_biomarker_plot(self,biomarker,plot):
+        template='<img id="{0}" style="width: 100%; " src="{1}"'
+        cell = template.format(biomarker,plot)
+        return(cell)
+
+    def pull_biomarker_text(self, genomic_biomarker_args, biomarker):
+        row_fields = genomic_biomarker_args[constants.BODY]
+        for row in row_fields:
+            if row[constants.ALT] == biomarker:
+                metric_text = row[constants.METRIC_TEXT]
+        return metric_text
 
     def key_value_table_rows(self, args, key_groups, widths):
         """Make a table to show key/value fields, with varying column widths"""
