@@ -209,18 +209,20 @@ class TestExtractor(TestBase):
     AUTHOR = 'Test Author'
 
     RSCRIPT_OUTPUTS_WGS_ONLY = [
-            'data_CNA_oncoKBgenes_nonDiploid_annotated.txt',
-            'data_CNA_oncoKBgenes_nonDiploid.txt',
-            'data_CNA.txt',
-            'data_expression_percentile_comparison.txt',
-            'data_expression_percentile_tcga.txt',
-            'data_expression_zscores_comparison.txt',
-            'data_expression_zscores_tcga.txt',
-            'data_log2CNA.txt',
-            'data_mutations_extended_oncogenic.txt',
-            'data_mutations_extended.txt',
-            'data_segments.txt',
-            'sequenza_meta.txt',
+        'data_CNA_oncoKBgenes_ARatio.txt',
+        'data_CNA_oncoKBgenes_nonDiploid_annotated.txt',
+        'data_CNA_oncoKBgenes_nonDiploid.txt',
+        'data_CNA.txt',
+        'data_expression_percentile_comparison.txt',
+        'data_expression_percentile_tcga.txt',
+        'data_expression_zscores_comparison.txt',
+        'data_expression_zscores_tcga.txt',
+        'data_log2CNA.txt',
+        'data_mutations_extended_oncogenic.txt',
+        'data_mutations_extended.txt',
+        'data_segments.txt',
+        'segments.txt',
+        'sequenza_meta.txt',
     ]
     # md5 sums of files in failed output
     STATIC_MD5 = {
@@ -240,7 +242,7 @@ class TestExtractor(TestBase):
         with open(expected_path) as in_file:
             data_expected = json.loads(in_file.read())
         # plot paths/contents are not fixed
-        for key in ['oicr_logo', 'tmb_plot', 'vaf_plot']:
+        for key in ['oicr_logo', 'cnv_plot', 'pga_plot', 'tmb_plot', 'vaf_plot']:
             del data_found['report'][key]
             del data_expected['report'][key]
         # do not check supplementary data
@@ -276,7 +278,7 @@ class TestExtractor(TestBase):
             data_found['report']['djerba_version'] = 'PLACEHOLDER'
             del data_found['supplementary'] # do not test supplementary data
             data = json.dumps(data_found)
-            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), 'e83f704dc7583d7e83b3e78eec7c89ee')
+            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), '544535db32327ba5653d344b04530d51')
 
     def test_wgts_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGTS')
@@ -285,7 +287,7 @@ class TestExtractor(TestBase):
         rscript_outputs.extend([
             'data_fusions_new_delimiter.txt',
             'data_fusions_oncokb_annotated.txt',
-            'data_fusions.txt'
+            'data_fusions.txt',
         ])
         for file_name in rscript_outputs:
             file_path = os.path.join(self.sup_dir, 'report_example', file_name)
@@ -554,15 +556,15 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '01d8242b8350c7e5824722fdc52f34f6')
+        self.check_report(out_path, '1c90521c403593d0f48d0783d392df35')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, 'a22cc3a0649ee673071173a7f3059beb')
+        self.check_report(out_path, '988281cd8075fdfa51d4586c04cc5290')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '8d28291809e7e1a16083b93d477943f5')
+        self.check_report(out_path, '6abda4d9bd00e5dba562be25ad0ba2d1')
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
