@@ -41,12 +41,12 @@ ggplot(tcga_tmb_data, aes(tmb)) +
   geom_vline(xintercept = sampleTMB,linetype="solid",colour = "black")+
 
 #  annotate(y = 0, yend=0.25, x=sampleTMB, xend=sampleTMB,geom="segment",linetype="solid",colour = "black") +
-  annotate(geom="text",x = sampleTMB,y=0,color="black",label="This tumour", hjust = 0.5, vjust = -28) +
+  annotate(y=max(density(tcga_tmb_data$tmb)$y),geom="text",x = sampleTMB, color="black",label="This tumour", hjust = -0.02) +
   
     geom_vline(xintercept = 10,linetype="longdash",colour = "red") +
   
  # annotate(y = 0, yend=0.25, x=10, xend=10,geom="segment",linetype="longdash",colour = "red") +
-  annotate(geom="text",x = 10,y=0,color="red",label="TMB-H threshold", hjust = 0.3, vjust = -28) +
+  annotate(y=max(density(tcga_tmb_data$tmb)$y),geom="text",x = 10,color="red",label="TMB-H threshold", hjust =-0.02) +
   
 
   xlab("Coding Mutations per Mb") +
@@ -59,7 +59,7 @@ ggplot(tcga_tmb_data, aes(tmb)) +
   } + scale_fill_discrete(name = "Cohort") +
   theme_classic() + 
   theme(text = element_text(size = 25),
-        legend.position = c(0.9, 0.9),
+       # legend.position = c(0.9, 0.5),
         plot.margin = unit(c(1, 1, 1, 1), "lines"),
         panel.grid = element_blank(), 
         line = element_blank(),

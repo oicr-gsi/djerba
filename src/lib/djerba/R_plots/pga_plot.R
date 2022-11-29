@@ -35,7 +35,7 @@ ggplot(tcga_pga_data, aes(x=PGA)) +
   
   geom_vline(xintercept = samplePGA,linetype="solid",colour = "black")+
 #  annotate(y = 0, yend=0.03, x=samplePGA, xend=samplePGA,geom="segment",linetype="solid",colour = "black") +
-  annotate(geom="text",x = samplePGA,y=0,color="black",label="This tumour", hjust = 0.3, vjust = -25.3) +
+  annotate(y=max(density(tcga_pga_data$PGA)$y),geom="text",x = samplePGA,color="black",label="This tumour", hjust =-0.02) +
 
 
   labs(x="percent genome altered",fill="Cohort",y="% of samples") +
@@ -48,7 +48,7 @@ ggplot(tcga_pga_data, aes(x=PGA)) +
   
   theme_classic() + 
   theme(text = element_text(size = 25),
-        legend.position = c(0.9, 0.9),
+       # legend.position = c(0.9, 0.5),
         plot.margin = unit(c(1, 1, 1, 1), "lines"),
         panel.grid = element_blank(), 
         line = element_blank(),
