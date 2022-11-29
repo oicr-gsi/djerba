@@ -131,7 +131,7 @@ class TestArchive(TestBase):
         # contents of file are dependent on local paths
         with open(archive_path) as archive_file:
             data = json.loads(archive_file.read())
-        self.assertEqual(len(data['report']), 21)
+        self.assertEqual(len(data['report']), 24)
         self.assertEqual(len(data['supplementary']['config']), 3)
 
 class TestConfigure(TestBase):
@@ -464,7 +464,7 @@ class TestMain(TestBase):
         args = self.mock_args(ini_path, config_path, html_path, work_dir)
         main(args).run()
         self.assertTrue(os.path.exists(html_path))
-        pdf_path = os.path.join(work_dir, '100-PM-013_LCM5-v1_report.pdf')
+        pdf_path = os.path.join(work_dir, 'REQ01-v1_report.pdf')
         self.assertTrue(os.path.exists(pdf_path))
 
 class TestMavis(TestBase):
