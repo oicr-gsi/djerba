@@ -246,6 +246,10 @@ class TestExtractor(TestBase):
         for key in ['oicr_logo', 'cnv_plot', 'pga_plot', 'tmb_plot', 'vaf_plot']:
             del data_found['report'][key]
             del data_expected['report'][key]
+        for biomarker in range(0,len(data_found['report']['genomic_biomarkers']['Body'])):
+            del data_found['report']['genomic_biomarkers']['Body'][biomarker]['Genomic biomarker plot']
+        for biomarker in range(1,len(data_expected['report']['genomic_biomarkers']['Body'])):
+            del data_expected['report']['genomic_biomarkers']['Body'][biomarker]['Genomic biomarker plot']
         # do not check supplementary data
         del data_found['supplementary']
         del data_expected['supplementary']
@@ -279,7 +283,7 @@ class TestExtractor(TestBase):
             data_found['report']['djerba_version'] = 'PLACEHOLDER'
             del data_found['supplementary'] # do not test supplementary data
             data = json.dumps(data_found)
-            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), '544535db32327ba5653d344b04530d51')
+            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), '40477c129472e6f4ccc20f796f59b1c8')
 
     def test_wgts_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGTS')
@@ -557,11 +561,11 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, 'de736182132313cb61a9e101566c93dd')
+        self.check_report(out_path, '006a0495aa5ef0f270b9a2cef886011b')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '2fccfb4f112d3caa43b17885b8f65f81')
+        self.check_report(out_path, '7d750f5e3809e39db49036cf77d55a28')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
         html_renderer().run(args_path, out_path, False)

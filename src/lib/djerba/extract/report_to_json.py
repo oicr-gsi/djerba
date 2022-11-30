@@ -478,6 +478,7 @@ class clinical_report_json_composer(composer_base):
     def call_TMB(self,sample_ID,genomic_biomarkers_file):
         #convert TMB number into Low or High call
         tmb = self.build_genomic_landscape_info()[rc.TMB_PER_MB]
+        tmb_plot_placeholder = "see tmb_plot"
         if tmb >= 10:
             metric_call = "TMB-H"
             metric_text = "Tumour Mutational Burden High (TMB-H)"
@@ -494,7 +495,8 @@ class clinical_report_json_composer(composer_base):
             rc.METRIC_VALUE: tmb,
             rc.METRIC_CALL: metric_call,
             rc.METRIC_TEXT: metric_text,
-            rc.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/TMB-H"
+            rc.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/TMB-H",
+            rc.METRIC_PLOT: tmb_plot_placeholder
         }
         return(row)
 

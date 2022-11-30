@@ -9,7 +9,7 @@
   - QC report prints as '${requisition}_qc'
   - 'biomarkers_plot' R script for plotting MSI score (and future biomarkers)
   - added 'cnv_plot.R' and 'pga_plot.R' for visualization of CNVs and PGA, respectively, in new report format
- - new R function 'preProcLOH' calculates LOH on the per gene basis from the aratio_segment.txt file
+  - new R function 'preProcLOH' calculates LOH on the per gene basis from the aratio_segment.txt file
   - new 'centromeres.txt' file in data directory for position of centromeres in CNV plot
   - new 'pgacomp-tcga.txt' file in data directory for distribution of PGA across the TCGA cohort
   - MSI and 'aratio_segment.txt' file preprocessing in 'r_script_wrapper.py'
