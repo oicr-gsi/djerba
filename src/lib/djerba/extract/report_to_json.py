@@ -370,18 +370,21 @@ class clinical_report_json_composer(composer_base):
         return data
 
     def build_supplementary_info(self):
-        self.logger.debug("Building data for supplementary gene information table")
-        variants = sorted(list(self.all_reported_variants))
-        gene_summaries = self.read_oncokb_gene_summaries()
         rows = []
-        for [gene, cytoband] in variants:
-            row = {
-                rc.GENE: gene,
-                rc.GENE_URL: self.build_gene_url(gene),
-                rc.CHROMOSOME: cytoband,
-                rc.SUMMARY: gene_summaries.get(gene, 'OncoKB summary not available')
-            }
-            rows.append(row)
+        if self.failed:
+            self.logger.debug("Failed report, omitting construction of supplementary gene information table")
+        else:
+            self.logger.debug("Building data for supplementary gene information table")
+            variants = sorted(list(self.all_reported_variants))
+            gene_summaries = self.read_oncokb_gene_summaries()
+            for [gene, cytoband] in variants:
+                row = {
+                    rc.GENE: gene,
+                    rc.GENE_URL: self.build_gene_url(gene),
+                    rc.CHROMOSOME: cytoband,
+                    rc.SUMMARY: gene_summaries.get(gene, 'OncoKB summary not available')
+                }
+                rows.append(row)
         return rows
 
     def build_therapy_info(self, level):
@@ -744,6 +747,7 @@ class clinical_report_json_composer(composer_base):
         data[rc.PURITY_FAILURE] = self.params.get(xc.PURITY_FAILURE)
         data[rc.REPORT_DATE] = None
         data[rc.DJERBA_VERSION] = __version__
+        data[rc.SUPPLEMENTARY_GENE_INFO] = self.build_supplementary_info()
         if not self.failed:
             # additional data for non-failed reports
             data[rc.GENOMIC_BIOMARKERS] = self.build_genomic_biomarkers(self.input_dir,self.clinical_data[dc.TUMOUR_SAMPLE_ID])
@@ -762,7 +766,6 @@ class clinical_report_json_composer(composer_base):
                 data[rc.STRUCTURAL_VARIANTS_AND_FUSIONS] = self.build_svs_and_fusions()
             else:
                 data[rc.STRUCTURAL_VARIANTS_AND_FUSIONS] = None
-            data[rc.SUPPLEMENTARY_GENE_INFO] = self.build_supplementary_info() 
         self.logger.info("Finished building clinical report data for JSON output")
         return data
 
