@@ -177,6 +177,21 @@ class r_script_wrapper(logger):
             print("\t".join(headers), out_file)
             print("\t".join(body), out_file)
 
+    def preprocess_Aratio(self, sequenza_path, tmp_dir,report_dir):
+        """
+        Extract the segments.txt file from the .zip archive output by Sequenza
+        write results to tmp_dir
+        """
+        gamma = self.config.getint(ini.DISCOVERED, ini.SEQUENZA_GAMMA)
+        seg_path = sequenza_reader(sequenza_path).extract_Aratio_file(tmp_dir, gamma)
+        out_path = os.path.join(report_dir, 'segments.txt')
+        with open(seg_path, 'rt') as seg_file, open(out_path, 'wt') as out_file:
+            reader = csv.reader(seg_file, delimiter="\t")
+            writer = csv.writer(out_file, delimiter="\t")
+            for row in reader:
+                writer.writerow(row)
+        return out_path
+
     def preprocess_gep(self, gep_path, tmp_dir):
         """
         Apply preprocessing to a GEP file; write results to tmp_dir
@@ -299,6 +314,22 @@ class r_script_wrapper(logger):
         ).annotate_maf(tmp_path)
         return out_path
 
+    def preprocess_msi(self, msi_path, report_dir):
+        """
+        summarize msisensor file
+        """
+        out_path = os.path.join(report_dir, 'msi.txt')
+        msi_boots = []
+        with open(msi_path, 'r') as msi_file:
+            reader_file = csv.reader(msi_file, delimiter="\t")
+            for row in reader_file:
+                msi_boots.append(float(row[3]))
+        msi_perc = numpy.percentile(numpy.array(msi_boots), [0, 25, 50, 75, 100])
+        with open(out_path, 'w') as out_file:
+            for item in list(msi_perc):
+                out_file.write(str(str(item)+"\t"))
+        return out_path
+
     def preprocess_seg(self, sequenza_path, tmp_dir):
         """
         Extract the SEG file from the .zip archive output by Sequenza
@@ -320,27 +351,13 @@ class r_script_wrapper(logger):
                 writer.writerow(row)
         return out_path
 
-    def preprocess_Aratio(self, sequenza_path, tmp_dir,report_dir):
-        """
-        Extract the segments.txt file from the .zip archive output by Sequenza
-        write results to tmp_dir
-        """
-        gamma = self.config.getint(ini.DISCOVERED, ini.SEQUENZA_GAMMA)
-        seg_path = sequenza_reader(sequenza_path).extract_Aratio_file(tmp_dir, gamma)
-        out_path = os.path.join(report_dir, 'segments.txt')
-        with open(seg_path, 'rt') as seg_file, open(out_path, 'wt') as out_file:
-            reader = csv.reader(seg_file, delimiter="\t")
-            writer = csv.writer(out_file, delimiter="\t")
-            for row in reader:
-                writer.writerow(row)
-        return out_path
-
     def run(self):
         if self.supplied_tmp_dir == None:
             tmp = tempfile.TemporaryDirectory(prefix="djerba_r_script_")
             tmp_dir = tmp.name
         else:
             tmp_dir = self.supplied_tmp_dir
+        self.preprocess_msi(self.config[ini.DISCOVERED][ini.MSI_FILE], self.report_dir)
         maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE], tmp_dir)
         seg_path = self.preprocess_seg(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir)
         Aratio_path = self.preprocess_Aratio(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir, self.report_dir)
