@@ -1,31 +1,34 @@
 # CHANGELOG
 
-## unreleased
+## v0.4.0: 2022-11-31
 
-- New report template. Now reporting MSI and TMB (GCGI-392) as actionable biomarkers. LOH calculated but not reported. 
+- New report template. Now reporting TMB (GCGI-392) as actionable biomarkers. MSI and LOH calculated but not reported. 
 
 ### Added
+  - ammended report template added to prototypes
+  - QC report prints as '${requisition}_qc'
   - 'biomarkers_plot' R script for plotting MSI score (and future biomarkers)
   - added 'cnv_plot.R' and 'pga_plot.R' for visualization of CNVs and PGA, respectively, in new report format
-  - MSI file processing in extractor.py: calculate median score across bootstraps
-  - annotation of MSI-H and TMB-H by Oncokb
-  - LOH reporting:
-    - new function 'preProcLOH' calculates LOH on the per gene basis from the segment.txt file
+ - new R function 'preProcLOH' calculates LOH on the per gene basis from the aratio_segment.txt file
   - new 'centromeres.txt' file in data directory for position of centromeres in CNV plot
   - new 'pgacomp-tcga.txt' file in data directory for distribution of PGA across the TCGA cohort
-  - requisition ID printed in report header and report_id
-  - new config.ini fields: REQ_ID and MSI_FILE
+  - MSI and 'aratio_segment.txt' file preprocessing in 'r_script_wrapper.py'
+  - annotation of LOH, MSI-H and TMB-H by Oncokb in 'report_to_json'
+  - added colour to oncokb levels using process_oncokb_colours function in 'json_to_html' and corresponding CSS
 
 ### Changed
-  - Updated 'provenance_reader' and 'configure.py' to find msisensor files and segment.txt files
-  - 'vaf_plot.R' format adjusted and slimmed 
   - Updated TMB plotting script to show TMB-High cutoff
+  - 'vaf_plot.R' format adjusted and slimmed
+  - Updated  'configure.py' and 'provenance_reader' to find msisensor files and segment.txt files
   - Architecture of report template: 
     - integrated and moved all CSS to new 'style.css' file
     - moved definitions and descriptions to subdirectory called 'templates_for_supp'
-  - body of clinical report changed to a two-cell layout, with title on left and info on right, resulting in changes to several .html/mako file
+    - moved footer template to 'supplementary_materials_template.html'
+  - body of clinical report changed to a two-cell layout, with title on left and info on right, resulting in changes to several .html/mako file, and new function 'make_sections_into_cells' in 'json_to_html'
   - changed table style in 'json_to_html.py' into two columns per sample information, with corresponding CSS that bolds the sample info title
   - split WGS and WTS assay descriptions into seperate description files, added WTS DNA extraction protocol info, added links to all software in description as well as to hg38
+  - changed definitions_1 and definitions_2 to definitions_metrics and definitions_tests which are for sample QC metric descriptions and biomarkers respectively
+  - renamed 'genomic_therapies_template.html' to 'therapies_template.html' to avoid confusion with 'genomic_details_template.html'
   - pdf footer prints title left
   - GCGI-396: arial font as base64 in CSS file makes pdf renderable on the cluster
   - GCGI-440, GCGI-593: TCGA replaced by oncotree in URL links
