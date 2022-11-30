@@ -12,7 +12,6 @@ ${html_builder().make_sections_into_cells("<h2>Genomic Landscape</h2>","main")}
             which corresponds to the <strong>${genomic_landscape_info.get(constants.PAN_CANCER_PERCENTILE)}</strong>th 
             percentile of the pan-cancer cohort. The percent genome altered (PGA) is <strong>${genomic_landscape_info.get(constants.PERCENT_GENOME_ALTERED)}</strong>%. 
             The tumour status is <strong>${html_builder().pull_biomarker_text(genomic_biomarkers,"TMB")} </strong>. 
-            The microsatellite status is <strong>${html_builder().pull_biomarker_text(genomic_biomarkers,"MSI")} </strong>. 
             </p>
 
       <table><tr>
@@ -24,20 +23,6 @@ ${html_builder().make_sections_into_cells("<h2>Genomic Landscape</h2>","main")}
             </td>
       </tr></table>
 
-      <!-- other biomarkers table -->
-      <table class="variants" style="width:100%">
-            <thead>
-                  <th style=" width:10%">Biomarker</th>
-                  <th style=" width:10%">Call</th>
-                  <th style=" width:80%">Score & Confidence</th>
-            </thead>
-            <tbody>
-                  % for row in html_builder().biomarker_table_rows(genomic_biomarkers):
-                  ${row}
-                  % endfor 
-            </tbody>
-      </table>
-      
 </div></div>
 
 ${html_builder().make_sections_into_cells("<h2>Small Mutations</h2>","main")}
