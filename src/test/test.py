@@ -223,6 +223,7 @@ class TestExtractor(TestBase):
         'data_segments.txt',
         'aratio_segments.txt',
         'sequenza_meta.txt',
+        'msi.txt'
     ]
     # md5 sums of files in failed output
     STATIC_MD5 = {

@@ -725,11 +725,6 @@ class clinical_report_json_composer(composer_base):
         self.logger.debug(msg)
         return [total, tmb_count]
 
-
-
-    
-
-
     def run(self):
         """Main method to generate JSON from a report directory"""
         # for now, this writes plots to the input report directory and returns paths in JSON
@@ -822,6 +817,16 @@ class clinical_report_json_composer(composer_base):
         }
         return row
 
+    def write_biomarker_plot(self, out_dir,marker):
+        out_path = os.path.join(out_dir, marker+'.svg')
+        args = [
+            os.path.join(self.r_script_dir, 'biomarkers_plot.R'),
+            '-d', self.input_dir
+        ]
+        subprocess_runner(self.log_level, self.log_path).run(args)
+        self.logger.info("Wrote biomarkers plot to {0}".format(out_path))
+        return out_path
+
     def write_cnv_plot(self, out_dir):
             out_path = os.path.join(out_dir, 'seg_allele_plot.svg')
             args = [
@@ -868,16 +873,6 @@ class clinical_report_json_composer(composer_base):
         self.logger.info("Wrote VAF plot to {0}".format(out_path))
         return out_path
     
-    def write_biomarker_plot(self, out_dir,marker):
-        out_path = os.path.join(out_dir, marker+'.svg')
-        args = [
-            os.path.join(self.r_script_dir, 'biomarkers_plot.R'),
-            '-d', self.input_dir
-        ]
-        subprocess_runner(self.log_level, self.log_path).run(args)
-        self.logger.info("Wrote biomarkers plot to {0}".format(out_path))
-        return out_path
-
 
 class fusion_reader(composer_base):
 
