@@ -8,6 +8,7 @@ import re
 import tempfile
 import zipfile
 import numpy
+from shutil import copyfile
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 from djerba.extract.oncokb_annotator import oncokb_annotator
@@ -186,11 +187,7 @@ class r_script_wrapper(logger):
         gamma = self.config.getint(ini.DISCOVERED, ini.SEQUENZA_GAMMA)
         seg_path = sequenza_reader(sequenza_path).extract_Aratio_file(tmp_dir, gamma)
         out_path = os.path.join(report_dir, 'aratio_segments.txt')
-        with open(seg_path, 'rt') as seg_file, open(out_path, 'wt') as out_file:
-            reader = csv.reader(seg_file, delimiter="\t")
-            writer = csv.writer(out_file, delimiter="\t")
-            for row in reader:
-                writer.writerow(row)
+        copyfile(seg_path, out_path)
         return out_path
 
     def preprocess_gep(self, gep_path, tmp_dir):
