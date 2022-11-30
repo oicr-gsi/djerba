@@ -5,6 +5,7 @@
 library(dplyr)
 library(ggplot2)
 library(optparse)
+library(scales)
 
 option_list = list(
     make_option(c("-d", "--dir"), type="character", default=NULL, help="Input report directory path", metavar="character"),
@@ -36,6 +37,8 @@ ggplot(MAF) +
   geom_point(aes(x = tumour_vaf_perc,y = 0), shape="|") + 
 #  geom_hline(yintercept = -0.5,color="white") +
   scale_x_continuous( limit = c(0, 100)) + 
+  scale_y_continuous(expand = c(0, 0),labels = percent) +
+  
   xlab("Variant Allele Frequency (%)") +   ylab("% of mutations") +
   theme_classic() + 
   guides(fill='none')+

@@ -36,7 +36,7 @@ if(msi_b == "TRUE"){
     geom_errorbar(aes(ymin=q0, ymax=q4), width=0) +
     
     annotate(x = 0, xend=2, y=5, yend=5,geom="segment",linetype="longdash",colour = "red") +
-    annotate(geom="text",x = 0,y=5,color="black",label="MSI-H", hjust = -0.25, vjust = -5,size=3.5) +
+    annotate(geom="text",x = 0,y=5,color="red",label="MSI-H", hjust = -0.2, vjust = -3.3,size=5) +
 
     guides(fill=FALSE)+
     theme_classic() + 
@@ -46,13 +46,13 @@ if(msi_b == "TRUE"){
     coord_flip() +
 
     scale_color_manual(values=c("#65bc45","#000000","#0099ad")) +
-    theme(#axis.text.y = element_text(angle = 90, vjust = 0.5, hjust=.5),
+    theme(
           axis.title.y=element_blank(),
           axis.text.y=element_blank(),
           axis.ticks.y=element_blank(),
           text = element_text(size = 18),
           panel.grid = element_blank(), 
-          plot.margin = unit(c(0, 0, 0, 0), "points"),
+          plot.margin = unit(c(0, 12, 0, 4), "points"),
           line = element_blank(),
           panel.background = element_rect(fill = "transparent", colour = NA),
           plot.background = element_rect(fill="transparent",color=NA)

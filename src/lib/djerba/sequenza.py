@@ -26,7 +26,7 @@ class sequenza_reader(logger):
         self.purity = {}
         self.ploidy = {}
         self.seg_archive = {} # archive paths to .seg files
-        self.Aratio_archive = {} #archive paths to segments.txt
+        self.Aratio_archive = {} #archive paths to aratio_segments.txt
         tempdir = tempfile.TemporaryDirectory(prefix='djerba_sequenza_')
         tmp = tempdir.name
         # zip archives are large (~500 MB) -- only extract the files we need
@@ -45,7 +45,7 @@ class sequenza_reader(logger):
             gamma = gamma_id[0]
             if re.search('_segments\.txt$', name):
                 if gamma_id in self.segment_counts:
-                    msg = "Multiple _segments.txt for gamma_id {0}".format(gamma_id)
+                    msg = "Multiple aratio_segments.txt for gamma_id {0}".format(gamma_id)
                     self.logger.error(msg)
                     raise SequenzaError(msg)
                 self.segment_counts[gamma_id] = self._count_segments(zf.extract(name, tmp))
@@ -239,10 +239,10 @@ class sequenza_reader(logger):
 
     def extract_Aratio_file(self, dest_dir, gamma=None):
         """
-        Extract the segments.txt file; for the supplied gamma (if any), default gamma otherwise.
-        No Sequenza solution specified, as segments.txt file is shared between all solutions for given gamma
+        Extract the aratio_segments.txt file; for the supplied gamma (if any), default gamma otherwise.
+        No Sequenza solution specified, as aratio_segments.txt file is shared between all solutions for given gamma
         dest_dir is a directory path for the extracted file.
-        The segments.txt file is further processed downstream, before input to singleSample.R
+        The aratio_segments.txt file is further processed downstream, before input to singleSample.R
         """
         gamma_id = self._construct_gamma_id(gamma) # supplies defaults and checks validity of gamma
         zf = zipfile.ZipFile(self.zip_path)

@@ -221,7 +221,7 @@ class TestExtractor(TestBase):
         'data_mutations_extended_oncogenic.txt',
         'data_mutations_extended.txt',
         'data_segments.txt',
-        'segments.txt',
+        'aratio_segments.txt',
         'sequenza_meta.txt',
     ]
     # md5 sums of files in failed output

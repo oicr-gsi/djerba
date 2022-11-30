@@ -8,7 +8,6 @@ import pandas as pd
 import re
 import time
 from shutil import copyfile
-import numpy
 from djerba.extract.report_to_json import clinical_report_json_composer
 from djerba.extract.r_script_wrapper import r_script_wrapper
 from djerba.sequenza import sequenza_reader

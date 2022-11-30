@@ -850,7 +850,7 @@ class clinical_report_json_composer(composer_base):
             out_path = os.path.join(out_dir, 'seg_allele_plot.svg')
             args = [
                 os.path.join(self.r_script_dir, 'cnv_plot.R'),
-                '--segfile',  os.path.join(self.input_dir, 'segments.txt'),
+                '--segfile',  os.path.join(self.input_dir, 'aratio_segments.txt'),
                 '--segfiletype', 'sequenza',
                 '-d',out_dir
             ]

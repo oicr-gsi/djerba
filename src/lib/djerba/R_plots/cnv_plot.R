@@ -9,7 +9,6 @@ library(ggplot2)
 
 option_list = list(
   make_option(c("-d", "--dir"), type="character", default=NULL, help="report directory path", metavar="character"),
- # make_option(c("-c", "--centromeres"), type="character", default='hg38_centromeres.txt', help="centromeres file", metavar="character"),
   make_option(c("-s", "--segfile"), type="character", default=NULL, help="segments file", metavar="character"),
   make_option(c("-S", "--segfiletype"), type="character", default='sequenza', help="program that made the segments file, supported options are sequenza and purple", metavar="character"),
   make_option(c("-C", "--highCN"), type="integer", default=4, help="high copy number, for plot labelling", metavar="character")
@@ -21,19 +20,9 @@ opt <- parse_args(opt_parser)
 segfiletype       <- opt$segfiletype
 highCN            <- opt$highCN
 segfile_path      <- opt$segfile
-#centromeres_path  <- opt$centromeres
 dir_path          <- opt$dir
 
-##test##
-#setwd('/Volumes/')
-#centromeres_path='~/Documents/data/hg38_centromeres.txt'
-
-#segfiletype='purple'
-#segfile_path = "cgi/scratch/fbeaudry/hartwig/purple/OCT_010707/500/OCT_010707_Bn_M.purple.segment.tsv"
-
-#segfiletype='sequenza'
-#segfile_path="cgi/scratch/fbeaudry/djerba_test/BTC_0013/gammas/400/BTC_0013_Lv_P_WG_HPB-199_LCM_segments.txt"
-
+#take in centromere data and process
 data_dir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), 'data', sep='/')
 centromeres_path <- paste(data_dir, 'hg38_centromeres.txt', sep='/')
 
@@ -53,18 +42,20 @@ centromeres_sub$CNt_high <- NA
 centromeres_sub$CNt <- NA
 centromeres_sub$cent <- 1
 
-#####
+###take in segment file
 segs <- read.table(segfile_path, sep = "\t", header = T, comment.char = "!")
 
 if(segfiletype == 'purple'){
-  ## Bf = minorAllele_fz
+  print("PURPLE support is not yet enabled")
+  # Bf = minorAllele_fz
   # end.pos = end
   # start.pos = start
   #segs$minorAllele_fz <- 1 - segs$tumorBAF
+  
   ##filter negatives ?
   #segs$bafCountNA <- segs$bafCount
   #segs$bafCountNA[segs$bafCountNA == 0]<- NA
-  print("PURPLE support is not yet enabled")
+  
 } else if(segfiletype == 'sequenza'){ 
   segs$segment_size <- (segs$end.pos - segs$start.pos)/1000000
 } else {
@@ -108,7 +99,6 @@ ggplot(fittedSegmentsDF_sub) +
   scale_shape_manual(values=c(17),labels=": CN>4",name="",na.translate = F) +
   
   theme_bw() + 
-  # scale_y_continuous(limits = c(0, 8), breaks = seq(0, 8, by = 1)) +
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank(),
@@ -118,7 +108,6 @@ ggplot(fittedSegmentsDF_sub) +
         strip.background = element_blank(),
         text = element_text(size = 10),
         plot.margin = unit(c(2, 2, 2, 2), "points"),
-      #  legend.position="top",
         legend.text=element_text(size=12)
         ) 
 
@@ -133,7 +122,7 @@ ggplot(fittedSegmentsDF_sub) +
   
   geom_segment(aes(x=start.pos, xend=end.pos, y=CNt, yend=CNt),color="black",size=2, na.rm = TRUE) + 
 
-  geom_point(aes(x=start.pos,y=4.1,shape=CNt_high),size=2) +
+  geom_point(aes(x=start.pos,y=4.1,shape=CNt_high),size=1) +
   
   facet_grid(.~Chr,scales = "free",space="free", switch="both")+ 
   
@@ -143,7 +132,6 @@ ggplot(fittedSegmentsDF_sub) +
   scale_shape_manual(values=c(17)) +
   
   theme_bw() + 
-  # scale_y_continuous(limits = c(0, 8), breaks = seq(0, 8, by = 1)) +
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank(),

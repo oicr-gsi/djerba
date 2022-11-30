@@ -7,6 +7,7 @@ import os
 import re
 import tempfile
 import zipfile
+import numpy
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 from djerba.extract.oncokb_annotator import oncokb_annotator
@@ -179,12 +180,12 @@ class r_script_wrapper(logger):
 
     def preprocess_Aratio(self, sequenza_path, tmp_dir,report_dir):
         """
-        Extract the segments.txt file from the .zip archive output by Sequenza
+        Extract the aratio_segments.txt file from the .zip archive output by Sequenza
         write results to tmp_dir
         """
         gamma = self.config.getint(ini.DISCOVERED, ini.SEQUENZA_GAMMA)
         seg_path = sequenza_reader(sequenza_path).extract_Aratio_file(tmp_dir, gamma)
-        out_path = os.path.join(report_dir, 'segments.txt')
+        out_path = os.path.join(report_dir, 'aratio_segments.txt')
         with open(seg_path, 'rt') as seg_file, open(out_path, 'wt') as out_file:
             reader = csv.reader(seg_file, delimiter="\t")
             writer = csv.writer(out_file, delimiter="\t")
