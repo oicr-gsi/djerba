@@ -97,11 +97,6 @@ preProcCNA <- function(segfile, genebed, gain, amp, htz, hmz, oncolist, genelist
 
 preProcLOH <- function(aratiofile, genebed, oncolist, genelist=NA, minCopiesForLOH=2){
   
-  ##test
-  #genebed="djerba/src/lib/djerba/data/gencode_v33_hg38_genes.bed"
-  #oncolist="djerba/src/lib/djerba/data/20200818-oncoKBcancerGeneList.tsv"
-  #genelist="djerba/src/lib/djerba/data/targeted_genelist.txt"
-  
   segments <- read.table(aratiofile,header = T)
   
   segments$chromosome <- gsub("chr", "", segments$chromosome)

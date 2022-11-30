@@ -31,6 +31,12 @@ class html_builder:
             td = '<td>{0}</td>'.format(content)
         return td
 
+
+    def assemble_biomarker_plot(self,biomarker,plot):
+        template='<img id="{0}" style="width: 100%; " src="{1}"'
+        cell = template.format(biomarker,plot)
+        return(cell)
+
     def biomarker_table_rows(self, genomic_biomarker_args):
         row_fields = genomic_biomarker_args[constants.BODY]
         rows = []
@@ -45,18 +51,6 @@ class html_builder:
                 ]
                 rows.append(self.table_row(cells))
         return rows
-
-    def assemble_biomarker_plot(self,biomarker,plot):
-        template='<img id="{0}" style="width: 100%; " src="{1}"'
-        cell = template.format(biomarker,plot)
-        return(cell)
-
-    def pull_biomarker_text(self, genomic_biomarker_args, biomarker):
-        row_fields = genomic_biomarker_args[constants.BODY]
-        for row in row_fields:
-            if row[constants.ALT] == biomarker:
-                metric_text = row[constants.METRIC_TEXT]
-        return metric_text
 
     def key_value_table_rows(self, args, key_groups, widths):
         """Make a table to show key/value fields, with varying column widths"""
@@ -182,6 +176,19 @@ class html_builder:
         ]
         return self.key_value_table_rows(patient_args, key_groups, widths)
 
+    def process_oncokb_colours(self,oncokb_level):
+        template = '<div  class="circle oncokb-level{0}">{0}</div>'  
+        split_oncokb = oncokb_level.split(" ",2)
+        oncokb_circle = template.format(split_oncokb[1])
+        return(oncokb_circle)
+        
+    def pull_biomarker_text(self, genomic_biomarker_args, biomarker):
+        row_fields = genomic_biomarker_args[constants.BODY]
+        for row in row_fields:
+            if row[constants.ALT] == biomarker:
+                metric_text = row[constants.METRIC_TEXT]
+        return metric_text
+
     def sample_information_and_quality_rows(self, sample_args):
         widths = [[35,15], [20,15]]
         key_groups = [
@@ -275,8 +282,3 @@ class html_builder:
             rows.append(self.table_row(cells))
         return rows
 
-    def process_oncokb_colours(self,oncokb_level):
-        template = '<div  class="circle oncokb-level{0}">{0}</div>'  
-        split_oncokb = oncokb_level.split(" ",2)
-        oncokb_circle = template.format(split_oncokb[1])
-        return(oncokb_circle)

@@ -35,7 +35,7 @@ svg(out_path, width=7, height=1.5)
 ggplot(MAF) + 
   geom_density(aes(x = tumour_vaf_perc), fill = "grey", alpha = 0.5,color="darkgrey") + 
   geom_point(aes(x = tumour_vaf_perc,y = 0), shape="|") + 
-#  geom_hline(yintercept = -0.5,color="white") +
+
   scale_x_continuous( limit = c(0, 100)) + 
   scale_y_continuous(expand = c(0, 0),labels = percent) +
   
