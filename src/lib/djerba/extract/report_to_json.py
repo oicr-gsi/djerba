@@ -385,6 +385,7 @@ class clinical_report_json_composer(composer_base):
                     rc.SUMMARY: gene_summaries.get(gene, 'OncoKB summary not available')
                 }
                 rows.append(row)
+        self.logger.debug("Found {0} supplementary info rows".format(len(rows)))
         return rows
 
     def build_therapy_info(self, level):
@@ -747,7 +748,6 @@ class clinical_report_json_composer(composer_base):
         data[rc.PURITY_FAILURE] = self.params.get(xc.PURITY_FAILURE)
         data[rc.REPORT_DATE] = None
         data[rc.DJERBA_VERSION] = __version__
-        data[rc.SUPPLEMENTARY_GENE_INFO] = self.build_supplementary_info()
         if not self.failed:
             # additional data for non-failed reports
             data[rc.GENOMIC_BIOMARKERS] = self.build_genomic_biomarkers(self.input_dir,self.clinical_data[dc.TUMOUR_SAMPLE_ID])
@@ -766,6 +766,8 @@ class clinical_report_json_composer(composer_base):
                 data[rc.STRUCTURAL_VARIANTS_AND_FUSIONS] = self.build_svs_and_fusions()
             else:
                 data[rc.STRUCTURAL_VARIANTS_AND_FUSIONS] = None
+        # build supplementary gene info last; refers back to variants discovered (if any)
+        data[rc.SUPPLEMENTARY_GENE_INFO] = self.build_supplementary_info()
         self.logger.info("Finished building clinical report data for JSON output")
         return data
 
