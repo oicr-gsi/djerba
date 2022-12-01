@@ -5,9 +5,9 @@ library(forcats) # within tidyverse
 library(cowplot)
 
 #ONCOPLOT ####
-small_file = '/home/ltoy/Desktop/couch/extract/small_tmb_Study&Body&Tumour Mutation Burden_processed.csv'
+small_file = '/home/ltoy/Desktop/couch/extract/small_Study&Body&Tumour Mutation Burden_processed.csv'
 small <- fread(small_file, header=TRUE)
-onco_file = '/home/ltoy/Desktop/couch/extract/onco_tmb_Study&Body&Tumour Mutation Burden_processed.csv'
+onco_file = '/home/ltoy/Desktop/couch/extract/onco_Study&Body&Tumour Mutation Burden_processed.csv'
 onco <- fread(onco_file, header=TRUE)
 small$Field <- 'small_mutations_and_indels'
 onco$Field <- 'oncogenic_somatic_CNVs'
@@ -18,7 +18,7 @@ colnames(onco)[1]="id"
 combined <- rbind(small, onco)
 gene_order<-data.frame(table(combined$Gene))
 gene_order <- gene_order[order(-gene_order$Freq),]
-cutoff = 2
+cutoff = 3 ### change to make more/less Genes on y-axis - if want set number of Genes, then change code to count top n rows from top
 subset = sum(gene_order$Freq>cutoff)
 gene_subset <- gene_order[1:subset,]
 gene_list = as.character(gene_subset$Var1)
@@ -61,13 +61,13 @@ for (row in 1:nrow(gene_subset)){
   gene_subset[row, "Percent"] <- percent
 }
 percent.key <- gene_subset$Percent
-#o <- 
+o <- 
   ggplot(newdf) +
   geom_rect(aes(xmin=id.num, xmax=id.num+1, ymin=gene.num, ymax=gene.num+1,fill=Mutation),color="white")+
   scale_x_continuous(breaks=seq(1.5, length(id.key)+0.5,1), labels=id.key, expand=c(0,0))+
   scale_y_continuous(breaks=seq(1.5, length(gene.key)+0.5,1), labels=gene.key, expand=c(0,0),
                      sec.axis = (sec_axis(trans=~., breaks=seq(1.5, length(gene.key)+0.5,1),labels=rev(percent.key))))+
-  #labs(title = onco_title) + 
+  labs(title = onco_title) + 
   theme(
     plot.title = element_text(size=8, hjust=0.5),
     axis.title.x=element_blank(), axis.title.y=element_blank(),
@@ -82,10 +82,13 @@ percent.key <- gene_subset$Percent
     legend.box.margin = margin(t=-10, b=0, l=-50, r=0),
     legend.key.size= unit(2.5, 'mm'),
     legend.text=element_text(size=5, hjust=0),
-    strip.text = element_text(size=3),
-  )#+
+    strip.text = element_text(size=3)
+  )+
+  scale_fill_manual(values=c("saddlebrown","lightgoldenrod3", "forestgreen", "hotpink", "purple","cyan",
+                             "gold", "royalblue", "orange", "black", "firebrick1", "chartreuse"))+
+  guides(fill = guide_legend(nrow = 2))#+
  #facet_grid(.~Study, scales="free_x", space="free_x")  #onco_x.png
-ggsave("/home/ltoy/Desktop/couch/extract/onco_percent.png", o, width=5,height=5)
+ggsave("/home/ltoy/Desktop/couch/extract/onco_percent.png", o, width=7,height=5)
 #ggsave("/home/ltoy/Desktop/couch/extract/onco_x.png", o, width=6.5,height=5) 
 #ggsave("/home/ltoy/Desktop/couch/extract/onco_id.png", o, width=5,height=5) #id
 
@@ -104,8 +107,10 @@ ggsave("/home/ltoy/Desktop/couch/extract/onco_percent.png", o, width=5,height=5)
     axis.title.y=element_blank(),
     legend.position = "None"
   )+
-  scale_x_continuous(breaks=c(0,40), limits=c(0,40), expand=c(0,0), position="top")
-#ggsave("/home/ltoy/Desktop/couch/extract/onco_bar.png", oncobar_freq, width=2.5,height=5) 
+  scale_fill_manual(values=c("saddlebrown","lightgoldenrod3", "forestgreen", "hotpink", "purple","cyan",
+                               "gold", "royalblue", "orange", "black", "firebrick1", "chartreuse"))+
+  scale_x_continuous(breaks=c(0,70), limits=c(0,70), expand=c(0,0), position="top")
+ggsave("/home/ltoy/Desktop/couch/extract/onco_bar.png", oncobar_freq, width=2.5,height=5) 
 
 id.key.df <- as.data.frame(levels(factor(newdf$id)))
 id.key.df$TMB <-NA
@@ -115,6 +120,7 @@ colnames(id.key.df) <- c("id", "TMB", "Study", "Field")
 for (id in id.key){
   extract_row <- newdf[newdf$id == id,]
   extract_tmb = as.numeric(extract_row[1,"TMB"])
+  if (extract_tmb > 100) { extract_tmb = 100 }
   extract_study = as.character(extract_row[1,"Study"])
   extract_field = as.character(extract_row[1,"Field"])
   extract_add <- list(extract_tmb, extract_study, extract_field)
@@ -125,6 +131,7 @@ for (id in id.key){
     }
   }
 }
+
 oncobar_tmb <- 
   ggplot(id.key.df, aes(x=id, y=TMB, fill=Study))+
   geom_bar(position='dodge', stat='identity', aes(group=Study))+
@@ -143,10 +150,13 @@ oncobar_tmb <-
     strip.text.x=element_blank()
   )+
   guides(fill = guide_legend(nrow=1))+
-  scale_y_continuous(breaks=c(0,175),  limits=c(0,175), expand=c(0,0))#+
+  scale_fill_manual(values=c("PASS01"= "deepskyblue3", "CYPRESS"="indianred2", "HPB"="goldenrod", 
+                             "PANXWGTS"="cyan3",  "LBR"="chartreuse4", "VENUS"="darkorchid2"))+
+  scale_y_continuous(breaks=c(0,25,50,75,100),labels=c(0,25,50,75,'>100'), limits=c(0,100), expand=c(0,0))#+
  #facet_grid(.~Study, scales="free_x", space="free_x", switch="x")  #Study
 ggsave("/home/ltoy/Desktop/couch/extract/oncobar_tmb.png", oncobar_tmb, width=10,height=2.5) 
 
+######################################################################################
 #extrac onco v small percents
 field_percent = as.data.frame(table(newdf$Field))
 field_percent$Percent = NA
@@ -160,7 +170,7 @@ ggplot(field_percent, aes(x="", y=Percent, fill=Var1))+
   geom_text(aes(label=paste(Var1,Percent, '%')), position=position_stack(vjust=0.5))+
   scale_fill_brewer("Blues")
 
-#TO DO Formatting
+#TO DO Formatting for combing 3 plots to make oncoplot in cowplot, currently align axes externally
 # comb<-
 #   plot_grid(o, oncobar_freq, oncobar_tmb, nrow=1, scale=c(1,1,1)) 
 # ggsave("/home/ltoy/Desktop/couch/extract/comb.png", comb, width=10,height=5) 
