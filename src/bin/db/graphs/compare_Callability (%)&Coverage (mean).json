@@ -1,0 +1,392 @@
+[
+    {
+        "_id": "HPB-264_LCM3-v1",
+        "Callability (%)": 72.1,
+        "Coverage (mean)": 46
+    },
+    {
+        "_id": "DIVA-198-TUM-v1",
+        "Callability (%)": 73.2,
+        "Coverage (mean)": 81.7
+    },
+    {
+        "_id": "HPB-119_LCM-v1",
+        "Callability (%)": 76.3,
+        "Coverage (mean)": 47.2
+    },
+    {
+        "_id": "HPB-235_LCM1_2-v1",
+        "Callability (%)": 77.57,
+        "Coverage (mean)": 47.47
+    },
+    {
+        "_id": "VEN-246-TUM-v1",
+        "Callability (%)": 80.67,
+        "Coverage (mean)": 89.87
+    },
+    {
+        "_id": "100-PM-025_LCM6_DNA-v1",
+        "Callability (%)": 80.72,
+        "Coverage (mean)": 53.55
+    },
+    {
+        "_id": "VEN-131_Tumor-v1",
+        "Callability (%)": 81.1,
+        "Coverage (mean)": 86.97
+    },
+    {
+        "_id": "HPB-198_LCM2-v1",
+        "Callability (%)": 81.27,
+        "Coverage (mean)": 62.67
+    },
+    {
+        "_id": "100-PM-019_LCM3-v1",
+        "Callability (%)": 81.3,
+        "Coverage (mean)": 48.3
+    },
+    {
+        "_id": "100_JHU_004_LCM3_6-v1",
+        "Callability (%)": 81.8,
+        "Coverage (mean)": 52.9
+    },
+    {
+        "_id": "HPB-005_Lv_M-v1",
+        "Callability (%)": 82.4,
+        "Coverage (mean)": 45.7
+    },
+    {
+        "_id": "100-JHU-005_LCM4-v1",
+        "Callability (%)": 83.45,
+        "Coverage (mean)": 56.19
+    },
+    {
+        "_id": "100-JHU-003_LCM3-v1",
+        "Callability (%)": 84.03,
+        "Coverage (mean)": 55.11
+    },
+    {
+        "_id": "100-PM-018_LCM4-v1",
+        "Callability (%)": 84.6,
+        "Coverage (mean)": 57.4
+    },
+    {
+        "_id": "VEN-355-TUM-v1",
+        "Callability (%)": 84.74,
+        "Coverage (mean)": 84.65
+    },
+    {
+        "_id": "VEN-004-TUM-v1",
+        "Callability (%)": 85.66,
+        "Coverage (mean)": 83.85
+    },
+    {
+        "_id": "100-PM-017_LCM5-v1",
+        "Callability (%)": 86.51,
+        "Coverage (mean)": 76.34
+    },
+    {
+        "_id": "100-PM-031_LCM3-v1",
+        "Callability (%)": 86.77,
+        "Coverage (mean)": 83.54
+    },
+    {
+        "_id": "100-NH-012_LCM3_4-v1",
+        "Callability (%)": 86.773,
+        "Coverage (mean)": 87.23656
+    },
+    {
+        "_id": "VEN-359-v1",
+        "Callability (%)": 86.8,
+        "Coverage (mean)": 92.1
+    },
+    {
+        "_id": "100-PM-037_LCM3-v1",
+        "Callability (%)": 87,
+        "Coverage (mean)": 83.4
+    },
+    {
+        "_id": "DIVA-218-TUM-v1",
+        "Callability (%)": 87.01,
+        "Coverage (mean)": 90.8
+    },
+    {
+        "_id": "VEN-326-TUM-v1",
+        "Callability (%)": 87.34,
+        "Coverage (mean)": 84.06
+    },
+    {
+        "_id": "100_PM_024_LCM3_4-v1",
+        "Callability (%)": 87.44,
+        "Coverage (mean)": 72.36
+    },
+    {
+        "_id": "100-BCCA-003_LCM3-v1",
+        "Callability (%)": 87.45,
+        "Coverage (mean)": 88.28
+    },
+    {
+        "_id": "100-NH-001_LCM3_DNA-v1",
+        "Callability (%)": 87.5,
+        "Coverage (mean)": 82.59
+    },
+    {
+        "_id": "100-PM-027_LCM1_DNA-v1",
+        "Callability (%)": 87.5,
+        "Coverage (mean)": 82.59
+    },
+    {
+        "_id": "100-PM-023_1_5-v2",
+        "Callability (%)": 87.6,
+        "Coverage (mean)": 94.2
+    },
+    {
+        "_id": "100-PM-029_LCM6-v1",
+        "Callability (%)": 87.68,
+        "Coverage (mean)": 76.88
+    },
+    {
+        "_id": "100-PM-036_LCM3-v1",
+        "Callability (%)": 87.7,
+        "Coverage (mean)": 90.8
+    },
+    {
+        "_id": "100-NH-017_LCM4_6-v1",
+        "Callability (%)": 87.8,
+        "Coverage (mean)": 104.6
+    },
+    {
+        "_id": "100-NH-009_LCM4_6-v1",
+        "Callability (%)": 87.9,
+        "Coverage (mean)": 129.6
+    },
+    {
+        "_id": "100-NH-006_LCM3-v2",
+        "Callability (%)": 87.97,
+        "Coverage (mean)": 87.46
+    },
+    {
+        "_id": "HPB-005_Lv_P-v1",
+        "Callability (%)": 88,
+        "Coverage (mean)": 82.7
+    },
+    {
+        "_id": "100-PM-046_LCM4-v1",
+        "Callability (%)": 88.017,
+        "Coverage (mean)": 104.8109
+    },
+    {
+        "_id": "100-PM-021_LCM4-v1",
+        "Callability (%)": 88.1,
+        "Coverage (mean)": 85.5
+    },
+    {
+        "_id": "100-MSK-009_LCM4-v1",
+        "Callability (%)": 88.12,
+        "Coverage (mean)": 104.32
+    },
+    {
+        "_id": "100-NH-018_LCM3_6-v1",
+        "Callability (%)": 88.2,
+        "Coverage (mean)": 106.7
+    },
+    {
+        "_id": "CYP-004_LCM-v1",
+        "Callability (%)": 88.2,
+        "Coverage (mean)": 114.4
+    },
+    {
+        "_id": "100-MSK-012_LCM2-v1",
+        "Callability (%)": 88.3,
+        "Coverage (mean)": 115.38
+    },
+    {
+        "_id": "100-PM-026_LCM6_DNA-v1",
+        "Callability (%)": 88.3,
+        "Coverage (mean)": 83.61
+    },
+    {
+        "_id": "100-PM-043_LCM4-v1",
+        "Callability (%)": 88.3,
+        "Coverage (mean)": 126.4
+    },
+    {
+        "_id": "100-PM-048_LCM4-v1",
+        "Callability (%)": 88.3,
+        "Coverage (mean)": 93.5
+    },
+    {
+        "_id": "100-PM-049_LCM3-v1",
+        "Callability (%)": 88.3,
+        "Coverage (mean)": 104.1
+    },
+    {
+        "_id": "VEN-329_ARCH_A-v1",
+        "Callability (%)": 88.3,
+        "Coverage (mean)": 120.5
+    },
+    {
+        "_id": "100-PM-022_LCM2-v2",
+        "Callability (%)": 88.32,
+        "Coverage (mean)": 92.34
+    },
+    {
+        "_id": "100-PM-042_LCM1-v1",
+        "Callability (%)": 88.32,
+        "Coverage (mean)": 99.5
+    },
+    {
+        "_id": "HPB-170_LCM3-v1",
+        "Callability (%)": 88.4,
+        "Coverage (mean)": 95.8
+    },
+    {
+        "_id": "LBR-0008_LCM-v1",
+        "Callability (%)": 88.4,
+        "Coverage (mean)": 106.9
+    },
+    {
+        "_id": "LBR-0015_LCM-v1",
+        "Callability (%)": 88.4,
+        "Coverage (mean)": 99.27
+    },
+    {
+        "_id": "100-PM-047_LCM1_4-v1",
+        "Callability (%)": 88.402,
+        "Coverage (mean)": 145.879
+    },
+    {
+        "_id": "HPB-208_LCM-v1",
+        "Callability (%)": 88.43,
+        "Coverage (mean)": 107.1
+    },
+    {
+        "_id": "100-NH-008_LCM3-v1",
+        "Callability (%)": 88.5,
+        "Coverage (mean)": 102.8
+    },
+    {
+        "_id": "100-PM-033_LCM4-v1",
+        "Callability (%)": 88.5,
+        "Coverage (mean)": 90.19
+    },
+    {
+        "_id": "LBR-0012_LCM-v1",
+        "Callability (%)": 88.5,
+        "Coverage (mean)": 101.7
+    },
+    {
+        "_id": "LBR-0012_LCM-v1-db2",
+        "Callability (%)": 88.5,
+        "Coverage (mean)": 105.7
+    },
+    {
+        "_id": "VEN-329_ARCH_B-v1",
+        "Callability (%)": 88.5,
+        "Coverage (mean)": 105.8
+    },
+    {
+        "_id": "100-PM-039_LCM4-v1",
+        "Callability (%)": 88.54,
+        "Coverage (mean)": 113.64
+    },
+    {
+        "_id": "VEN-426-TUM-v1",
+        "Callability (%)": 88.56,
+        "Coverage (mean)": 89.25
+    },
+    {
+        "_id": "100-MSK-013_LCM4-v1",
+        "Callability (%)": 88.572,
+        "Coverage (mean)": 107.57
+    },
+    {
+        "_id": "100-MSK-005_LCM3-v1",
+        "Callability (%)": 88.7,
+        "Coverage (mean)": 118.2
+    },
+    {
+        "_id": "100-PM-035_LCM6-v1",
+        "Callability (%)": 88.7,
+        "Coverage (mean)": 107.6
+    },
+    {
+        "_id": "HPB-212_LCM1_3-v1",
+        "Callability (%)": 88.76,
+        "Coverage (mean)": 128.53
+    },
+    {
+        "_id": "100-NH-010_LCM4-v1",
+        "Callability (%)": 88.84,
+        "Coverage (mean)": 98.45
+    },
+    {
+        "_id": "100-PM-040_LCM3_6-v1",
+        "Callability (%)": 88.9,
+        "Coverage (mean)": 111.9
+    },
+    {
+        "_id": "100-PM-011_LCM1-v2",
+        "Callability (%)": 89,
+        "Coverage (mean)": 127
+    },
+    {
+        "_id": "CYP-002_LCM-v1",
+        "Callability (%)": 89.08,
+        "Coverage (mean)": 101.9
+    },
+    {
+        "_id": "100-PM-013_LCM5-v1",
+        "Callability (%)": 89.1,
+        "Coverage (mean)": 105
+    },
+    {
+        "_id": "HPB-195_FFPE-v1",
+        "Callability (%)": 89.11,
+        "Coverage (mean)": 103.59
+    },
+    {
+        "_id": "100-PM-041_LCM4-v1",
+        "Callability (%)": 89.3,
+        "Coverage (mean)": 123.8
+    },
+    {
+        "_id": "100-009-004_LCM6-v1",
+        "Callability (%)": 98.9,
+        "Coverage (mean)": 81.4
+    },
+    {
+        "_id": "100-PM-010_LCM2and5-v1",
+        "Callability (%)": 99.18,
+        "Coverage (mean)": 90.9
+    },
+    {
+        "_id": "100-009-006_LCM3-v1",
+        "Callability (%)": 99.35,
+        "Coverage (mean)": 103
+    },
+    {
+        "_id": "100-009-002_875956_FzTB_3_FzTS_1_LCM_1-v1",
+        "Callability (%)": 99.4,
+        "Coverage (mean)": 116.17
+    },
+    {
+        "_id": "100-009-01_876211_FzTB_4_FzTS_2_LCM_1-v1",
+        "Callability (%)": 99.4,
+        "Coverage (mean)": 94.05
+    },
+    {
+        "_id": "100-009-005_LCM3-v1",
+        "Callability (%)": 99.5,
+        "Coverage (mean)": 112
+    },
+    {
+        "_id": "100-JHU-001_LCM4and6-v1",
+        "Callability (%)": 99.5,
+        "Coverage (mean)": 108.1
+    },
+    {
+        "_id": "100-009-008_LCM2-v1",
+        "Callability (%)": 99.68,
+        "Coverage (mean)": 105
+    }
+]

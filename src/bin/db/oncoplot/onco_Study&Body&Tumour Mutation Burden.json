@@ -1,0 +1,3573 @@
+[
+    {
+        "_id": "100-009-002_875956_FzTB_3_FzTS_1_LCM_1-v1",
+        "Study": "PASS01",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "3q22.3",
+                "Gene": "PIK3CB",
+                "Gene_URL": "https://www.oncokb.org/gene/PIK3CB",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "3q26.32",
+                "Gene": "PIK3CA",
+                "Gene_URL": "https://www.oncokb.org/gene/PIK3CA",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "3q27.3",
+                "Gene": "BCL6",
+                "Gene_URL": "https://www.oncokb.org/gene/BCL6",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 48
+    },
+    {
+        "_id": "100-009-004_LCM6-v1",
+        "Study": "PASS01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.3",
+                "Gene": "AGO2",
+                "Gene_URL": "https://www.oncokb.org/gene/AGO2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p12.1",
+                "Gene": "KRAS",
+                "Gene_URL": "https://www.oncokb.org/gene/KRAS",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p13.33",
+                "Gene": "KDM5A",
+                "Gene_URL": "https://www.oncokb.org/gene/KDM5A",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "17p12",
+                "Gene": "MAP2K4",
+                "Gene_URL": "https://www.oncokb.org/gene/MAP2K4",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 29
+    },
+    {
+        "_id": "100-009-005_LCM3-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8p11.23",
+                "Gene": "FGFR1",
+                "Gene_URL": "https://www.oncokb.org/gene/FGFR1",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "5q35.2",
+                "Gene": "FGFR4",
+                "Gene_URL": "https://www.oncokb.org/gene/FGFR4",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "3q22.3",
+                "Gene": "PIK3CB",
+                "Gene_URL": "https://www.oncokb.org/gene/PIK3CB",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "3q26.32",
+                "Gene": "PIK3CA",
+                "Gene_URL": "https://www.oncokb.org/gene/PIK3CA",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "3q27.3",
+                "Gene": "BCL6",
+                "Gene_URL": "https://www.oncokb.org/gene/BCL6",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "6p21.33",
+                "Gene": "HLA-B",
+                "Gene_URL": "https://www.oncokb.org/gene/HLA-B",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18p11.21",
+                "Gene": "PTPN2",
+                "Gene_URL": "https://www.oncokb.org/gene/PTPN2",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 42
+    },
+    {
+        "_id": "100-009-006_LCM3-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p24.1",
+                "Gene": "TGFBR2",
+                "Gene_URL": "https://www.oncokb.org/gene/TGFBR2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "9p13.2",
+                "Gene": "PAX5",
+                "Gene_URL": "https://www.oncokb.org/gene/PAX5",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p12.1",
+                "Gene": "KRAS",
+                "Gene_URL": "https://www.oncokb.org/gene/KRAS",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "18p11.32",
+                "Gene": "YES1",
+                "Gene_URL": "https://www.oncokb.org/gene/YES1",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 79
+    },
+    {
+        "_id": "100-009-008_LCM2-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8p11.23",
+                "Gene": "FGFR1",
+                "Gene_URL": "https://www.oncokb.org/gene/FGFR1",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "19q12",
+                "Gene": "CCNE1",
+                "Gene_URL": "https://www.oncokb.org/gene/CCNE1",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12q15",
+                "Gene": "MDM2",
+                "Gene_URL": "https://www.oncokb.org/gene/MDM2",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.2",
+                "Gene": "SMAD4",
+                "Gene_URL": "https://www.oncokb.org/gene/SMAD4",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 42
+    },
+    {
+        "_id": "100-009-01_876211_FzTB_4_FzTS_2_LCM_1-v1",
+        "Study": "PASS01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8p11.23",
+                "Gene": "FGFR1",
+                "Gene_URL": "https://www.oncokb.org/gene/FGFR1",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.21",
+                "Gene": "MYC",
+                "Gene_URL": "https://www.oncokb.org/gene/MYC",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q22.3",
+                "Gene": "UBR5",
+                "Gene_URL": "https://www.oncokb.org/gene/UBR5",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.3",
+                "Gene": "AGO2",
+                "Gene_URL": "https://www.oncokb.org/gene/AGO2",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 39
+    },
+    {
+        "_id": "100-BCCA-003_LCM3-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.21",
+                "Gene": "MYC",
+                "Gene_URL": "https://www.oncokb.org/gene/MYC",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q22.3",
+                "Gene": "UBR5",
+                "Gene_URL": "https://www.oncokb.org/gene/UBR5",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.3",
+                "Gene": "AGO2",
+                "Gene_URL": "https://www.oncokb.org/gene/AGO2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "19p13.11",
+                "Gene": "PIK3R2",
+                "Gene_URL": "https://www.oncokb.org/gene/PIK3R2",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 94
+    },
+    {
+        "_id": "100-JHU-001_LCM4and6-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.21",
+                "Gene": "MYC",
+                "Gene_URL": "https://www.oncokb.org/gene/MYC",
+                "OncoKB": "Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 121
+    },
+    {
+        "_id": "100-JHU-003_LCM3-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "15q21.2",
+                "Gene": "CYP19A1",
+                "Gene_URL": "https://www.oncokb.org/gene/CYP19A1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "17q23.3",
+                "Gene": "PPM1D",
+                "Gene_URL": "https://www.oncokb.org/gene/PPM1D",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 60
+    },
+    {
+        "_id": "100-MSK-005_LCM3-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "19q12",
+                "Gene": "CCNE1",
+                "Gene_URL": "https://www.oncokb.org/gene/CCNE1",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p24.1-p23",
+                "Gene": "PTPRD",
+                "Gene_URL": "https://www.oncokb.org/gene/PTPRD",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p12.1",
+                "Gene": "KRAS",
+                "Gene_URL": "https://www.oncokb.org/gene/KRAS",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.2",
+                "Gene": "SMAD4",
+                "Gene_URL": "https://www.oncokb.org/gene/SMAD4",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 29
+    },
+    {
+        "_id": "100-MSK-009_LCM4-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7p21.2",
+                "Gene": "ETV1",
+                "Gene_URL": "https://www.oncokb.org/gene/ETV1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.21",
+                "Gene": "MYC",
+                "Gene_URL": "https://www.oncokb.org/gene/MYC",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7p22.1",
+                "Gene": "RAC1",
+                "Gene_URL": "https://www.oncokb.org/gene/RAC1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7p22.2",
+                "Gene": "CARD11",
+                "Gene_URL": "https://www.oncokb.org/gene/CARD11",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q22.3",
+                "Gene": "UBR5",
+                "Gene_URL": "https://www.oncokb.org/gene/UBR5",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.3",
+                "Gene": "AGO2",
+                "Gene_URL": "https://www.oncokb.org/gene/AGO2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.2",
+                "Gene": "SMAD4",
+                "Gene_URL": "https://www.oncokb.org/gene/SMAD4",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 35
+    },
+    {
+        "_id": "100-MSK-012_LCM2-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p24.1-p23",
+                "Gene": "PTPRD",
+                "Gene_URL": "https://www.oncokb.org/gene/PTPRD",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "11q13.5-q14.1",
+                "Gene": "PAK1",
+                "Gene_URL": "https://www.oncokb.org/gene/PAK1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "11q14.1",
+                "Gene": "GAB2",
+                "Gene_URL": "https://www.oncokb.org/gene/GAB2",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 71
+    },
+    {
+        "_id": "100-MSK-013_LCM4-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q21.2",
+                "Gene": "MCL1",
+                "Gene_URL": "https://www.oncokb.org/gene/MCL1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q23.1",
+                "Gene": "NTRK1",
+                "Gene_URL": "https://www.oncokb.org/gene/NTRK1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q23.3",
+                "Gene": "DDR2",
+                "Gene_URL": "https://www.oncokb.org/gene/DDR2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q32.1",
+                "Gene": "IKBKE",
+                "Gene_URL": "https://www.oncokb.org/gene/IKBKE",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "6p21.1",
+                "Gene": "CCND3",
+                "Gene_URL": "https://www.oncokb.org/gene/CCND3",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 48
+    },
+    {
+        "_id": "100-NH-001_LCM3_DNA-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.21",
+                "Gene": "MYC",
+                "Gene_URL": "https://www.oncokb.org/gene/MYC",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p24.1-p23",
+                "Gene": "PTPRD",
+                "Gene_URL": "https://www.oncokb.org/gene/PTPRD",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p12.1",
+                "Gene": "KRAS",
+                "Gene_URL": "https://www.oncokb.org/gene/KRAS",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.1",
+                "Gene": "SMAD2",
+                "Gene_URL": "https://www.oncokb.org/gene/SMAD2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.2",
+                "Gene": "SMAD4",
+                "Gene_URL": "https://www.oncokb.org/gene/SMAD4",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.32",
+                "Gene": "PMAIP1",
+                "Gene_URL": "https://www.oncokb.org/gene/PMAIP1",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 51
+    },
+    {
+        "_id": "100-NH-006_LCM3-v2",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "18p11.32",
+                "Gene": "YES1",
+                "Gene_URL": "https://www.oncokb.org/gene/YES1",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 30
+    },
+    {
+        "_id": "100-NH-008_LCM3-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "22q11.23",
+                "Gene": "SMARCB1",
+                "Gene_URL": "https://www.oncokb.org/gene/SMARCB1",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 28
+    },
+    {
+        "_id": "100-NH-009_LCM4_6-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "18p11.32",
+                "Gene": "YES1",
+                "Gene_URL": "https://www.oncokb.org/gene/YES1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.2",
+                "Gene": "SMAD4",
+                "Gene_URL": "https://www.oncokb.org/gene/SMAD4",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 75
+    },
+    {
+        "_id": "100-NH-010_LCM4-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "5q35.2",
+                "Gene": "FGFR4",
+                "Gene_URL": "https://www.oncokb.org/gene/FGFR4",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "20q11.21",
+                "Gene": "BCL2L1",
+                "Gene_URL": "https://www.oncokb.org/gene/BCL2L1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "20q11.21",
+                "Gene": "DNMT3B",
+                "Gene_URL": "https://www.oncokb.org/gene/DNMT3B",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "20q11.23",
+                "Gene": "SRC",
+                "Gene_URL": "https://www.oncokb.org/gene/SRC",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 21
+    },
+    {
+        "_id": "100-NH-012_LCM3_4-v1",
+        "Study": "PASS01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8p11.23",
+                "Gene": "FGFR1",
+                "Gene_URL": "https://www.oncokb.org/gene/FGFR1",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q21.2",
+                "Gene": "MCL1",
+                "Gene_URL": "https://www.oncokb.org/gene/MCL1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12q13.3",
+                "Gene": "GLI1",
+                "Gene_URL": "https://www.oncokb.org/gene/GLI1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12q14.1",
+                "Gene": "CDK4",
+                "Gene_URL": "https://www.oncokb.org/gene/CDK4",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q23.1",
+                "Gene": "NTRK1",
+                "Gene_URL": "https://www.oncokb.org/gene/NTRK1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q23.3",
+                "Gene": "DDR2",
+                "Gene_URL": "https://www.oncokb.org/gene/DDR2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "3q26.32",
+                "Gene": "PIK3CA",
+                "Gene_URL": "https://www.oncokb.org/gene/PIK3CA",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "8p21.1",
+                "Gene": "ESCO2",
+                "Gene_URL": "https://www.oncokb.org/gene/ESCO2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "8p21.2",
+                "Gene": "NKX3-1",
+                "Gene_URL": "https://www.oncokb.org/gene/NKX3-1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "8p21.2",
+                "Gene": "PPP2R2A",
+                "Gene_URL": "https://www.oncokb.org/gene/PPP2R2A",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "8p21.3",
+                "Gene": "ATP6V1B2",
+                "Gene_URL": "https://www.oncokb.org/gene/ATP6V1B2",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 56
+    },
+    {
+        "_id": "100-NH-017_LCM4_6-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8p11.23",
+                "Gene": "FGFR1",
+                "Gene_URL": "https://www.oncokb.org/gene/FGFR1",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p12.1",
+                "Gene": "KRAS",
+                "Gene_URL": "https://www.oncokb.org/gene/KRAS",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p13.33",
+                "Gene": "KDM5A",
+                "Gene_URL": "https://www.oncokb.org/gene/KDM5A",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "17p12",
+                "Gene": "MAP2K4",
+                "Gene_URL": "https://www.oncokb.org/gene/MAP2K4",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "19q13.2",
+                "Gene": "AKT2",
+                "Gene_URL": "https://www.oncokb.org/gene/AKT2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "19q13.2",
+                "Gene": "AXL",
+                "Gene_URL": "https://www.oncokb.org/gene/AXL",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 41
+    },
+    {
+        "_id": "100-NH-018_LCM3_6-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 28
+    },
+    {
+        "_id": "100-PM-010_LCM2and5-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q21.2",
+                "Gene": "MCL1",
+                "Gene_URL": "https://www.oncokb.org/gene/MCL1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q32.1",
+                "Gene": "MDM4",
+                "Gene_URL": "https://www.oncokb.org/gene/MDM4",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q43-q44",
+                "Gene": "AKT3",
+                "Gene_URL": "https://www.oncokb.org/gene/AKT3",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q23.1",
+                "Gene": "NTRK1",
+                "Gene_URL": "https://www.oncokb.org/gene/NTRK1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q23.3",
+                "Gene": "DDR2",
+                "Gene_URL": "https://www.oncokb.org/gene/DDR2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q32.1",
+                "Gene": "IKBKE",
+                "Gene_URL": "https://www.oncokb.org/gene/IKBKE",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.2",
+                "Gene": "SMAD4",
+                "Gene_URL": "https://www.oncokb.org/gene/SMAD4",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 57
+    },
+    {
+        "_id": "100-PM-011_LCM1-v2",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p21.31",
+                "Gene": "SETD2",
+                "Gene_URL": "https://www.oncokb.org/gene/SETD2",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p11.1",
+                "Gene": "EPHA3",
+                "Gene_URL": "https://www.oncokb.org/gene/EPHA3",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p13",
+                "Gene": "FOXP1",
+                "Gene_URL": "https://www.oncokb.org/gene/FOXP1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p13",
+                "Gene": "MITF",
+                "Gene_URL": "https://www.oncokb.org/gene/MITF",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p13",
+                "Gene": "RYBP",
+                "Gene_URL": "https://www.oncokb.org/gene/RYBP",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p13",
+                "Gene": "SHQ1",
+                "Gene_URL": "https://www.oncokb.org/gene/SHQ1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p21.1",
+                "Gene": "BAP1",
+                "Gene_URL": "https://www.oncokb.org/gene/BAP1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p21.1",
+                "Gene": "PBRM1",
+                "Gene_URL": "https://www.oncokb.org/gene/PBRM1",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 48
+    },
+    {
+        "_id": "100-PM-013_LCM5-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "3q22.3",
+                "Gene": "PIK3CB",
+                "Gene_URL": "https://www.oncokb.org/gene/PIK3CB",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "3q26.32",
+                "Gene": "PIK3CA",
+                "Gene_URL": "https://www.oncokb.org/gene/PIK3CA",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "3q27.3",
+                "Gene": "BCL6",
+                "Gene_URL": "https://www.oncokb.org/gene/BCL6",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p12.1",
+                "Gene": "KRAS",
+                "Gene_URL": "https://www.oncokb.org/gene/KRAS",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 79
+    },
+    {
+        "_id": "100-PM-017_LCM5-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7p11.2",
+                "Gene": "EGFR",
+                "Gene_URL": "https://www.oncokb.org/gene/EGFR",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7p21.2",
+                "Gene": "ETV1",
+                "Gene_URL": "https://www.oncokb.org/gene/ETV1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7p22.1",
+                "Gene": "RAC1",
+                "Gene_URL": "https://www.oncokb.org/gene/RAC1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7p22.2",
+                "Gene": "CARD11",
+                "Gene_URL": "https://www.oncokb.org/gene/CARD11",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.1",
+                "Gene": "SMAD2",
+                "Gene_URL": "https://www.oncokb.org/gene/SMAD2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.2",
+                "Gene": "SMAD4",
+                "Gene_URL": "https://www.oncokb.org/gene/SMAD4",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.32",
+                "Gene": "PMAIP1",
+                "Gene_URL": "https://www.oncokb.org/gene/PMAIP1",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 52
+    },
+    {
+        "_id": "100-PM-018_LCM4-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "12q21.33",
+                "Gene": "BTG1",
+                "Gene_URL": "https://www.oncokb.org/gene/BTG1",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 27
+    },
+    {
+        "_id": "100-PM-019_LCM3-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7p11.2",
+                "Gene": "EGFR",
+                "Gene_URL": "https://www.oncokb.org/gene/EGFR",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7p21.2",
+                "Gene": "ETV1",
+                "Gene_URL": "https://www.oncokb.org/gene/ETV1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12q15",
+                "Gene": "MDM2",
+                "Gene_URL": "https://www.oncokb.org/gene/MDM2",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "6p21.1",
+                "Gene": "CCND3",
+                "Gene_URL": "https://www.oncokb.org/gene/CCND3",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7p22.1",
+                "Gene": "RAC1",
+                "Gene_URL": "https://www.oncokb.org/gene/RAC1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7p22.2",
+                "Gene": "CARD11",
+                "Gene_URL": "https://www.oncokb.org/gene/CARD11",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "17q23.3",
+                "Gene": "PPM1D",
+                "Gene_URL": "https://www.oncokb.org/gene/PPM1D",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 51
+    },
+    {
+        "_id": "100-PM-021_LCM4-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "17q12",
+                "Gene": "ERBB2",
+                "Gene_URL": "https://www.oncokb.org/gene/ERBB2",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.21",
+                "Gene": "MYC",
+                "Gene_URL": "https://www.oncokb.org/gene/MYC",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12q13.2",
+                "Gene": "ERBB3",
+                "Gene_URL": "https://www.oncokb.org/gene/ERBB3",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12q13.3",
+                "Gene": "GLI1",
+                "Gene_URL": "https://www.oncokb.org/gene/GLI1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12q14.1",
+                "Gene": "CDK4",
+                "Gene_URL": "https://www.oncokb.org/gene/CDK4",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q22.3",
+                "Gene": "UBR5",
+                "Gene_URL": "https://www.oncokb.org/gene/UBR5",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.3",
+                "Gene": "AGO2",
+                "Gene_URL": "https://www.oncokb.org/gene/AGO2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.2",
+                "Gene": "SMAD4",
+                "Gene_URL": "https://www.oncokb.org/gene/SMAD4",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 44
+    },
+    {
+        "_id": "100-PM-022_LCM2-v2",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "3p25.2",
+                "Gene": "RAF1",
+                "Gene_URL": "https://www.oncokb.org/gene/RAF1",
+                "OncoKB": "Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 44
+    },
+    {
+        "_id": "100-PM-023_1_5-v2",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p24.1-p23",
+                "Gene": "PTPRD",
+                "Gene_URL": "https://www.oncokb.org/gene/PTPRD",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p12.1",
+                "Gene": "KRAS",
+                "Gene_URL": "https://www.oncokb.org/gene/KRAS",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 45
+    },
+    {
+        "_id": "100-PM-025_LCM6_DNA-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8p11.23",
+                "Gene": "FGFR1",
+                "Gene_URL": "https://www.oncokb.org/gene/FGFR1",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 38
+    },
+    {
+        "_id": "100-PM-026_LCM6_DNA-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "10q23.31",
+                "Gene": "PTEN",
+                "Gene_URL": "https://www.oncokb.org/gene/PTEN",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "10q23.31",
+                "Gene": "FAS",
+                "Gene_URL": "https://www.oncokb.org/gene/FAS",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p12.1",
+                "Gene": "KRAS",
+                "Gene_URL": "https://www.oncokb.org/gene/KRAS",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 41
+    },
+    {
+        "_id": "100-PM-027_LCM1_DNA-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8p11.23",
+                "Gene": "FGFR1",
+                "Gene_URL": "https://www.oncokb.org/gene/FGFR1",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "17q12",
+                "Gene": "ERBB2",
+                "Gene_URL": "https://www.oncokb.org/gene/ERBB2",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.21",
+                "Gene": "MYC",
+                "Gene_URL": "https://www.oncokb.org/gene/MYC",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q22.3",
+                "Gene": "UBR5",
+                "Gene_URL": "https://www.oncokb.org/gene/UBR5",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.3",
+                "Gene": "AGO2",
+                "Gene_URL": "https://www.oncokb.org/gene/AGO2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "17p12",
+                "Gene": "MAP2K4",
+                "Gene_URL": "https://www.oncokb.org/gene/MAP2K4",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.2",
+                "Gene": "SMAD4",
+                "Gene_URL": "https://www.oncokb.org/gene/SMAD4",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 37
+    },
+    {
+        "_id": "100-PM-029_LCM6-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7q21.2",
+                "Gene": "CDK6",
+                "Gene_URL": "https://www.oncokb.org/gene/CDK6",
+                "OncoKB": "Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 47
+    },
+    {
+        "_id": "100-PM-031_LCM3-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "2p24.3",
+                "Gene": "MYCN",
+                "Gene_URL": "https://www.oncokb.org/gene/MYCN",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "5q35.2",
+                "Gene": "FGFR4",
+                "Gene_URL": "https://www.oncokb.org/gene/FGFR4",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7q21.2",
+                "Gene": "CDK6",
+                "Gene_URL": "https://www.oncokb.org/gene/CDK6",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p24.1-p23",
+                "Gene": "PTPRD",
+                "Gene_URL": "https://www.oncokb.org/gene/PTPRD",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "2p23.2-p23.1",
+                "Gene": "ALK",
+                "Gene_URL": "https://www.oncokb.org/gene/ALK",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "6p21.1",
+                "Gene": "CCND3",
+                "Gene_URL": "https://www.oncokb.org/gene/CCND3",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "6p21.1",
+                "Gene": "VEGFA",
+                "Gene_URL": "https://www.oncokb.org/gene/VEGFA",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "6p25.3",
+                "Gene": "DUSP22",
+                "Gene_URL": "https://www.oncokb.org/gene/DUSP22",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "10p14",
+                "Gene": "GATA3",
+                "Gene_URL": "https://www.oncokb.org/gene/GATA3",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p12.1",
+                "Gene": "KRAS",
+                "Gene_URL": "https://www.oncokb.org/gene/KRAS",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p13.33",
+                "Gene": "KDM5A",
+                "Gene_URL": "https://www.oncokb.org/gene/KDM5A",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.1",
+                "Gene": "SMAD2",
+                "Gene_URL": "https://www.oncokb.org/gene/SMAD2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.2",
+                "Gene": "SMAD4",
+                "Gene_URL": "https://www.oncokb.org/gene/SMAD4",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.32",
+                "Gene": "PMAIP1",
+                "Gene_URL": "https://www.oncokb.org/gene/PMAIP1",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 89
+    },
+    {
+        "_id": "100-PM-033_LCM4-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 88
+    },
+    {
+        "_id": "100-PM-035_LCM6-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q21.2",
+                "Gene": "MCL1",
+                "Gene_URL": "https://www.oncokb.org/gene/MCL1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q32.1",
+                "Gene": "MDM4",
+                "Gene_URL": "https://www.oncokb.org/gene/MDM4",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q43-q44",
+                "Gene": "AKT3",
+                "Gene_URL": "https://www.oncokb.org/gene/AKT3",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q23.1",
+                "Gene": "NTRK1",
+                "Gene_URL": "https://www.oncokb.org/gene/NTRK1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q23.3",
+                "Gene": "DDR2",
+                "Gene_URL": "https://www.oncokb.org/gene/DDR2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q32.1",
+                "Gene": "IKBKE",
+                "Gene_URL": "https://www.oncokb.org/gene/IKBKE",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19p13.3",
+                "Gene": "STK11",
+                "Gene_URL": "https://www.oncokb.org/gene/STK11",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 35
+    },
+    {
+        "_id": "100-PM-036_LCM3-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7q21.2",
+                "Gene": "CDK6",
+                "Gene_URL": "https://www.oncokb.org/gene/CDK6",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.2",
+                "Gene": "SMAD4",
+                "Gene_URL": "https://www.oncokb.org/gene/SMAD4",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 45
+    },
+    {
+        "_id": "100-PM-037_LCM3-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7q31",
+                "Gene": "MET",
+                "Gene_URL": "https://www.oncokb.org/gene/MET",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "11q22.3",
+                "Gene": "ATM",
+                "Gene_URL": "https://www.oncokb.org/gene/ATM",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "11q24.2",
+                "Gene": "CHEK1",
+                "Gene_URL": "https://www.oncokb.org/gene/CHEK1",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "19q12",
+                "Gene": "CCNE1",
+                "Gene_URL": "https://www.oncokb.org/gene/CCNE1",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.21",
+                "Gene": "MYC",
+                "Gene_URL": "https://www.oncokb.org/gene/MYC",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q22.3",
+                "Gene": "UBR5",
+                "Gene_URL": "https://www.oncokb.org/gene/UBR5",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.3",
+                "Gene": "AGO2",
+                "Gene_URL": "https://www.oncokb.org/gene/AGO2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p12.1",
+                "Gene": "KRAS",
+                "Gene_URL": "https://www.oncokb.org/gene/KRAS",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "19q13.2",
+                "Gene": "AKT2",
+                "Gene_URL": "https://www.oncokb.org/gene/AKT2",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 61
+    },
+    {
+        "_id": "100-PM-039_LCM4-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8p11.23",
+                "Gene": "FGFR1",
+                "Gene_URL": "https://www.oncokb.org/gene/FGFR1",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p12.1",
+                "Gene": "KRAS",
+                "Gene_URL": "https://www.oncokb.org/gene/KRAS",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p13.33",
+                "Gene": "KDM5A",
+                "Gene_URL": "https://www.oncokb.org/gene/KDM5A",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.2",
+                "Gene": "SMAD4",
+                "Gene_URL": "https://www.oncokb.org/gene/SMAD4",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 56
+    },
+    {
+        "_id": "100-PM-040_LCM3_6-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "19q12",
+                "Gene": "CCNE1",
+                "Gene_URL": "https://www.oncokb.org/gene/CCNE1",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p24.1-p23",
+                "Gene": "PTPRD",
+                "Gene_URL": "https://www.oncokb.org/gene/PTPRD",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p12.1",
+                "Gene": "KRAS",
+                "Gene_URL": "https://www.oncokb.org/gene/KRAS",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p13.33",
+                "Gene": "KDM5A",
+                "Gene_URL": "https://www.oncokb.org/gene/KDM5A",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 23
+    },
+    {
+        "_id": "100-PM-041_LCM4-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "5p13.1",
+                "Gene": "RICTOR",
+                "Gene_URL": "https://www.oncokb.org/gene/RICTOR",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "11q13.3",
+                "Gene": "CCND1",
+                "Gene_URL": "https://www.oncokb.org/gene/CCND1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "11q13.5-q14.1",
+                "Gene": "PAK1",
+                "Gene_URL": "https://www.oncokb.org/gene/PAK1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "5p15.33",
+                "Gene": "TERT",
+                "Gene_URL": "https://www.oncokb.org/gene/TERT",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "11q13.3",
+                "Gene": "FGF19",
+                "Gene_URL": "https://www.oncokb.org/gene/FGF19",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "11q14.1",
+                "Gene": "GAB2",
+                "Gene_URL": "https://www.oncokb.org/gene/GAB2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "18p11.32",
+                "Gene": "YES1",
+                "Gene_URL": "https://www.oncokb.org/gene/YES1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "19p13.11",
+                "Gene": "PIK3R2",
+                "Gene_URL": "https://www.oncokb.org/gene/PIK3R2",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 38
+    },
+    {
+        "_id": "100-PM-042_LCM1-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8p11.23",
+                "Gene": "FGFR1",
+                "Gene_URL": "https://www.oncokb.org/gene/FGFR1",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "17p12",
+                "Gene": "MAP2K4",
+                "Gene_URL": "https://www.oncokb.org/gene/MAP2K4",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 37
+    },
+    {
+        "_id": "100-PM-043_LCM4-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "19q12",
+                "Gene": "CCNE1",
+                "Gene_URL": "https://www.oncokb.org/gene/CCNE1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q21.2",
+                "Gene": "MCL1",
+                "Gene_URL": "https://www.oncokb.org/gene/MCL1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "19q13.2",
+                "Gene": "AKT2",
+                "Gene_URL": "https://www.oncokb.org/gene/AKT2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "19q13.2",
+                "Gene": "AXL",
+                "Gene_URL": "https://www.oncokb.org/gene/AXL",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "3q27.3",
+                "Gene": "BCL6",
+                "Gene_URL": "https://www.oncokb.org/gene/BCL6",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "3q26.32",
+                "Gene": "PIK3CA",
+                "Gene_URL": "https://www.oncokb.org/gene/PIK3CA",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19p13.3",
+                "Gene": "STK11",
+                "Gene_URL": "https://www.oncokb.org/gene/STK11",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 70
+    },
+    {
+        "_id": "100-PM-046_LCM4-v1",
+        "Study": "PASS01",
+        "Body": [
+            {
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Gene": "ETV1",
+                "Gene_URL": "https://www.oncokb.org/gene/ETV1",
+                "Alteration": "Amplification",
+                "Chromosome": "7p21.2",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Gene": "MYC",
+                "Gene_URL": "https://www.oncokb.org/gene/MYC",
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.21",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Gene": "RAC1",
+                "Gene_URL": "https://www.oncokb.org/gene/RAC1",
+                "Alteration": "Amplification",
+                "Chromosome": "7p22.1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Gene": "CARD11",
+                "Gene_URL": "https://www.oncokb.org/gene/CARD11",
+                "Alteration": "Amplification",
+                "Chromosome": "7p22.2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Gene": "TCF7L2",
+                "Gene_URL": "https://www.oncokb.org/gene/TCF7L2",
+                "Alteration": "Deletion",
+                "Chromosome": "10q25.2-q25.3",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Gene": "KRAS",
+                "Gene_URL": "https://www.oncokb.org/gene/KRAS",
+                "Alteration": "Amplification",
+                "Chromosome": "12p12.1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Gene": "KDM5A",
+                "Gene_URL": "https://www.oncokb.org/gene/KDM5A",
+                "Alteration": "Amplification",
+                "Chromosome": "12p13.33",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 40
+    },
+    {
+        "_id": "100-PM-047_LCM1_4-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p24.1",
+                "Gene": "TGFBR2",
+                "Gene_URL": "https://www.oncokb.org/gene/TGFBR2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 33
+    },
+    {
+        "_id": "100-PM-048_LCM4-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "6p25.3",
+                "Gene": "DUSP22",
+                "Gene_URL": "https://www.oncokb.org/gene/DUSP22",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "6q16.1",
+                "Gene": "EPHA7",
+                "Gene_URL": "https://www.oncokb.org/gene/EPHA7",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "6q22.1",
+                "Gene": "ROS1",
+                "Gene_URL": "https://www.oncokb.org/gene/ROS1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "6q25.3",
+                "Gene": "ARID1B",
+                "Gene_URL": "https://www.oncokb.org/gene/ARID1B",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "22q11.22",
+                "Gene": "MAPK1",
+                "Gene_URL": "https://www.oncokb.org/gene/MAPK1",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 43
+    },
+    {
+        "_id": "100-PM-049_LCM3-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.21",
+                "Gene": "MYC",
+                "Gene_URL": "https://www.oncokb.org/gene/MYC",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "20q13.2",
+                "Gene": "AURKA",
+                "Gene_URL": "https://www.oncokb.org/gene/AURKA",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "6p22.3",
+                "Gene": "JARID2",
+                "Gene_URL": "https://www.oncokb.org/gene/JARID2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "6p25.3",
+                "Gene": "DUSP22",
+                "Gene_URL": "https://www.oncokb.org/gene/DUSP22",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "20q11.21",
+                "Gene": "BCL2L1",
+                "Gene_URL": "https://www.oncokb.org/gene/BCL2L1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "20q11.21",
+                "Gene": "DNMT3B",
+                "Gene_URL": "https://www.oncokb.org/gene/DNMT3B",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "20q11.23",
+                "Gene": "SRC",
+                "Gene_URL": "https://www.oncokb.org/gene/SRC",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 59
+    },
+    {
+        "_id": "100_JHU_004_LCM3_6-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "17q12",
+                "Gene": "ERBB2",
+                "Gene_URL": "https://www.oncokb.org/gene/ERBB2",
+                "OncoKB": "Level 3B"
+            }
+        ],
+        "Tumour Mutation Burden": 49
+    },
+    {
+        "_id": "100_PM_024_LCM3_4-v1",
+        "Study": "PASS-01",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7q31",
+                "Gene": "MET",
+                "Gene_URL": "https://www.oncokb.org/gene/MET",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7p11.2",
+                "Gene": "EGFR",
+                "Gene_URL": "https://www.oncokb.org/gene/EGFR",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7p21.2",
+                "Gene": "ETV1",
+                "Gene_URL": "https://www.oncokb.org/gene/ETV1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7q21.2",
+                "Gene": "CDK6",
+                "Gene_URL": "https://www.oncokb.org/gene/CDK6",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7q34",
+                "Gene": "BRAF",
+                "Gene_URL": "https://www.oncokb.org/gene/BRAF",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7q36.1",
+                "Gene": "EZH2",
+                "Gene_URL": "https://www.oncokb.org/gene/EZH2",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7p22.1",
+                "Gene": "RAC1",
+                "Gene_URL": "https://www.oncokb.org/gene/RAC1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7p22.2",
+                "Gene": "CARD11",
+                "Gene_URL": "https://www.oncokb.org/gene/CARD11",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7q36.1",
+                "Gene": "RHEB",
+                "Gene_URL": "https://www.oncokb.org/gene/RHEB",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 42
+    },
+    {
+        "_id": "CYP-002_LCM-v1",
+        "Study": "CYPRESS",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "8p21.1",
+                "Gene": "ESCO2",
+                "Gene_URL": "https://www.oncokb.org/gene/ESCO2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "8p21.2",
+                "Gene": "NKX3-1",
+                "Gene_URL": "https://www.oncokb.org/gene/NKX3-1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "8p21.2",
+                "Gene": "PPP2R2A",
+                "Gene_URL": "https://www.oncokb.org/gene/PPP2R2A",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "8p21.3",
+                "Gene": "ATP6V1B2",
+                "Gene_URL": "https://www.oncokb.org/gene/ATP6V1B2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "10q23.31",
+                "Gene": "FAS",
+                "Gene_URL": "https://www.oncokb.org/gene/FAS",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "17q21.32",
+                "Gene": "HOXB13",
+                "Gene_URL": "https://www.oncokb.org/gene/HOXB13",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "17q21.33",
+                "Gene": "SPOP",
+                "Gene_URL": "https://www.oncokb.org/gene/SPOP",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "17q22",
+                "Gene": "RNF43",
+                "Gene_URL": "https://www.oncokb.org/gene/RNF43",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 169
+    },
+    {
+        "_id": "CYP-004_LCM-v1",
+        "Study": "CYP",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "17q12",
+                "Gene": "ERBB2",
+                "Gene_URL": "https://www.oncokb.org/gene/ERBB2",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q21.2",
+                "Gene": "MCL1",
+                "Gene_URL": "https://www.oncokb.org/gene/MCL1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7p11.2",
+                "Gene": "EGFR",
+                "Gene_URL": "https://www.oncokb.org/gene/EGFR",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "11q13.3",
+                "Gene": "CCND1",
+                "Gene_URL": "https://www.oncokb.org/gene/CCND1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q23.1",
+                "Gene": "NTRK1",
+                "Gene_URL": "https://www.oncokb.org/gene/NTRK1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q23.3",
+                "Gene": "DDR2",
+                "Gene_URL": "https://www.oncokb.org/gene/DDR2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "11q13.3",
+                "Gene": "FGF19",
+                "Gene_URL": "https://www.oncokb.org/gene/FGF19",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p12.1",
+                "Gene": "KRAS",
+                "Gene_URL": "https://www.oncokb.org/gene/KRAS",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p13.33",
+                "Gene": "KDM5A",
+                "Gene_URL": "https://www.oncokb.org/gene/KDM5A",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.2",
+                "Gene": "SMAD4",
+                "Gene_URL": "https://www.oncokb.org/gene/SMAD4",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 86
+    },
+    {
+        "_id": "HPB-005_Lv_P-v1",
+        "Study": "HPB",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8p11.23",
+                "Gene": "FGFR1",
+                "Gene_URL": "https://www.oncokb.org/gene/FGFR1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.21",
+                "Gene": "MYC",
+                "Gene_URL": "https://www.oncokb.org/gene/MYC",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q22.3",
+                "Gene": "UBR5",
+                "Gene_URL": "https://www.oncokb.org/gene/UBR5",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.3",
+                "Gene": "AGO2",
+                "Gene_URL": "https://www.oncokb.org/gene/AGO2",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 13
+    },
+    {
+        "_id": "HPB-119_LCM-v1",
+        "Study": "HPB",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "19q12",
+                "Gene": "CCNE1",
+                "Gene_URL": "https://www.oncokb.org/gene/CCNE1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "3q22.3",
+                "Gene": "PIK3CB",
+                "Gene_URL": "https://www.oncokb.org/gene/PIK3CB",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "3q26.32",
+                "Gene": "PIK3CA",
+                "Gene_URL": "https://www.oncokb.org/gene/PIK3CA",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "3q27.3",
+                "Gene": "BCL6",
+                "Gene_URL": "https://www.oncokb.org/gene/BCL6",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "12p12.1",
+                "Gene": "KRAS",
+                "Gene_URL": "https://www.oncokb.org/gene/KRAS",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "18p11.32",
+                "Gene": "YES1",
+                "Gene_URL": "https://www.oncokb.org/gene/YES1",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 62
+    },
+    {
+        "_id": "HPB-170_LCM3-v1",
+        "Study": "PANXWGTS",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8p11.23",
+                "Gene": "FGFR1",
+                "Gene_URL": "https://www.oncokb.org/gene/FGFR1",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q21.2",
+                "Gene": "MCL1",
+                "Gene_URL": "https://www.oncokb.org/gene/MCL1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q32.1",
+                "Gene": "MDM4",
+                "Gene_URL": "https://www.oncokb.org/gene/MDM4",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q43-q44",
+                "Gene": "AKT3",
+                "Gene_URL": "https://www.oncokb.org/gene/AKT3",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p21.31",
+                "Gene": "SETD2",
+                "Gene_URL": "https://www.oncokb.org/gene/SETD2",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "4q12",
+                "Gene": "KDR",
+                "Gene_URL": "https://www.oncokb.org/gene/KDR",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "4q12",
+                "Gene": "PDGFRA",
+                "Gene_URL": "https://www.oncokb.org/gene/PDGFRA",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p24.1-p23",
+                "Gene": "PTPRD",
+                "Gene_URL": "https://www.oncokb.org/gene/PTPRD",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "19q12",
+                "Gene": "CCNE1",
+                "Gene_URL": "https://www.oncokb.org/gene/CCNE1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q23.1",
+                "Gene": "NTRK1",
+                "Gene_URL": "https://www.oncokb.org/gene/NTRK1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q23.3",
+                "Gene": "DDR2",
+                "Gene_URL": "https://www.oncokb.org/gene/DDR2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q32.1",
+                "Gene": "IKBKE",
+                "Gene_URL": "https://www.oncokb.org/gene/IKBKE",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "1p36.11",
+                "Gene": "ARID1A",
+                "Gene_URL": "https://www.oncokb.org/gene/ARID1A",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "2q32.2",
+                "Gene": "PMS1",
+                "Gene_URL": "https://www.oncokb.org/gene/PMS1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p11.1",
+                "Gene": "EPHA3",
+                "Gene_URL": "https://www.oncokb.org/gene/EPHA3",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p13",
+                "Gene": "FOXP1",
+                "Gene_URL": "https://www.oncokb.org/gene/FOXP1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p13",
+                "Gene": "MITF",
+                "Gene_URL": "https://www.oncokb.org/gene/MITF",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p13",
+                "Gene": "RYBP",
+                "Gene_URL": "https://www.oncokb.org/gene/RYBP",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p13",
+                "Gene": "SHQ1",
+                "Gene_URL": "https://www.oncokb.org/gene/SHQ1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p21.1",
+                "Gene": "BAP1",
+                "Gene_URL": "https://www.oncokb.org/gene/BAP1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p21.1",
+                "Gene": "PBRM1",
+                "Gene_URL": "https://www.oncokb.org/gene/PBRM1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p22.2",
+                "Gene": "MLH1",
+                "Gene_URL": "https://www.oncokb.org/gene/MLH1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p24.1",
+                "Gene": "TGFBR2",
+                "Gene_URL": "https://www.oncokb.org/gene/TGFBR2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "4q12",
+                "Gene": "KIT",
+                "Gene_URL": "https://www.oncokb.org/gene/KIT",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "8p21.1",
+                "Gene": "ESCO2",
+                "Gene_URL": "https://www.oncokb.org/gene/ESCO2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "8p21.2",
+                "Gene": "NKX3-1",
+                "Gene_URL": "https://www.oncokb.org/gene/NKX3-1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "8p21.2",
+                "Gene": "PPP2R2A",
+                "Gene_URL": "https://www.oncokb.org/gene/PPP2R2A",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "8p21.3",
+                "Gene": "ATP6V1B2",
+                "Gene_URL": "https://www.oncokb.org/gene/ATP6V1B2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "19q13.2",
+                "Gene": "AXL",
+                "Gene_URL": "https://www.oncokb.org/gene/AXL",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "19q13.2",
+                "Gene": "AKT2",
+                "Gene_URL": "https://www.oncokb.org/gene/AKT2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19p13.2",
+                "Gene": "KEAP1",
+                "Gene_URL": "https://www.oncokb.org/gene/KEAP1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19p13.2",
+                "Gene": "SMARCA4",
+                "Gene_URL": "https://www.oncokb.org/gene/SMARCA4",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19p13.3",
+                "Gene": "PTPRS",
+                "Gene_URL": "https://www.oncokb.org/gene/PTPRS",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19p13.3",
+                "Gene": "ARID3A",
+                "Gene_URL": "https://www.oncokb.org/gene/ARID3A",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19p13.3",
+                "Gene": "STK11",
+                "Gene_URL": "https://www.oncokb.org/gene/STK11",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19p13.3",
+                "Gene": "TCF3",
+                "Gene_URL": "https://www.oncokb.org/gene/TCF3",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19p13.11",
+                "Gene": "KLF2",
+                "Gene_URL": "https://www.oncokb.org/gene/KLF2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19p13.11",
+                "Gene": "PIK3R2",
+                "Gene_URL": "https://www.oncokb.org/gene/PIK3R2",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 38
+    },
+    {
+        "_id": "HPB-198_LCM2-v1",
+        "Study": "PANXWGTS",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "6p21.1",
+                "Gene": "CCND3",
+                "Gene_URL": "https://www.oncokb.org/gene/CCND3",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "19q13.2",
+                "Gene": "AKT2",
+                "Gene_URL": "https://www.oncokb.org/gene/AKT2",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 66
+    },
+    {
+        "_id": "HPB-208_LCM-v1",
+        "Study": "HPB",
+        "Body": [],
+        "Tumour Mutation Burden": 77
+    },
+    {
+        "_id": "HPB-212_LCM1_3-v1",
+        "Study": "PANXWGTS",
+        "Body": [],
+        "Tumour Mutation Burden": 79
+    },
+    {
+        "_id": "HPB-235_LCM1_2-v1",
+        "Study": "HPB",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8p11.23",
+                "Gene": "FGFR1",
+                "Gene_URL": "https://www.oncokb.org/gene/FGFR1",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "5p13.1",
+                "Gene": "RICTOR",
+                "Gene_URL": "https://www.oncokb.org/gene/RICTOR",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p11.1",
+                "Gene": "EPHA3",
+                "Gene_URL": "https://www.oncokb.org/gene/EPHA3",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "5p15.33",
+                "Gene": "TERT",
+                "Gene_URL": "https://www.oncokb.org/gene/TERT",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "13q12.13",
+                "Gene": "CDK8",
+                "Gene_URL": "https://www.oncokb.org/gene/CDK8",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 32
+    },
+    {
+        "_id": "LBR-0008_LCM-v1",
+        "Study": "LBR",
+        "Body": [],
+        "Tumour Mutation Burden": 34
+    },
+    {
+        "_id": "LBR-0012_LCM-v1",
+        "Study": "LBR",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "Level 4"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "11q13.5-q14.1",
+                "Gene": "PAK1",
+                "Gene_URL": "https://www.oncokb.org/gene/PAK1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1p34.2",
+                "Gene": "MYCL",
+                "Gene_URL": "https://www.oncokb.org/gene/MYCL",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9q22.33",
+                "Gene": "TGFBR1",
+                "Gene_URL": "https://www.oncokb.org/gene/TGFBR1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "11q14.1",
+                "Gene": "GAB2",
+                "Gene_URL": "https://www.oncokb.org/gene/GAB2",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 45
+    },
+    {
+        "_id": "LBR-0012_LCM-v1-db2",
+        "Study": "LBR",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "2p24.3",
+                "Gene": "MYCN",
+                "Gene_URL": "https://www.oncokb.org/gene/MYCN",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "11q13.5-q14.1",
+                "Gene": "PAK1",
+                "Gene_URL": "https://www.oncokb.org/gene/PAK1",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "19q13.2",
+                "Gene": "AKT2",
+                "Gene_URL": "https://www.oncokb.org/gene/AKT2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "2p23.2-p23.1",
+                "Gene": "ALK",
+                "Gene_URL": "https://www.oncokb.org/gene/ALK",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "19q13.2",
+                "Gene": "AXL",
+                "Gene_URL": "https://www.oncokb.org/gene/AXL",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "6p21.1",
+                "Gene": "CCND3",
+                "Gene_URL": "https://www.oncokb.org/gene/CCND3",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "11q14.1",
+                "Gene": "GAB2",
+                "Gene_URL": "https://www.oncokb.org/gene/GAB2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1p34.2",
+                "Gene": "MYCL",
+                "Gene_URL": "https://www.oncokb.org/gene/MYCL",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9q22.33",
+                "Gene": "TGFBR1",
+                "Gene_URL": "https://www.oncokb.org/gene/TGFBR1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "6p21.1",
+                "Gene": "VEGFA",
+                "Gene_URL": "https://www.oncokb.org/gene/VEGFA",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 47
+    },
+    {
+        "_id": "LBR-0015_LCM-v1",
+        "Study": "LBR",
+        "Body": [],
+        "Tumour Mutation Burden": 23
+    },
+    {
+        "_id": "VEN-004-TUM-v1",
+        "Study": "VENUS",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "1p36.32",
+                "Gene": "TNFRSF14",
+                "Gene_URL": "https://www.oncokb.org/gene/TNFRSF14",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.1",
+                "Gene": "SMAD2",
+                "Gene_URL": "https://www.oncokb.org/gene/SMAD2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.2",
+                "Gene": "SMAD4",
+                "Gene_URL": "https://www.oncokb.org/gene/SMAD4",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "18q21.32",
+                "Gene": "PMAIP1",
+                "Gene_URL": "https://www.oncokb.org/gene/PMAIP1",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 142
+    },
+    {
+        "_id": "VEN-131_Tumor-v1",
+        "Study": "VENUS",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "22q11.23",
+                "Gene": "SMARCB1",
+                "Gene_URL": "https://www.oncokb.org/gene/SMARCB1",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "22q12.1",
+                "Gene": "CHEK2",
+                "Gene_URL": "https://www.oncokb.org/gene/CHEK2",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "16q22.1",
+                "Gene": "CBFB",
+                "Gene_URL": "https://www.oncokb.org/gene/CBFB",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "16q22.1",
+                "Gene": "CDH1",
+                "Gene_URL": "https://www.oncokb.org/gene/CDH1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "16q22.1",
+                "Gene": "CTCF",
+                "Gene_URL": "https://www.oncokb.org/gene/CTCF",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "16q22.2-q22.3",
+                "Gene": "ZFHX3",
+                "Gene_URL": "https://www.oncokb.org/gene/ZFHX3",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "16q24.1",
+                "Gene": "IRF8",
+                "Gene_URL": "https://www.oncokb.org/gene/IRF8",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "16q24.3",
+                "Gene": "ANKRD11",
+                "Gene_URL": "https://www.oncokb.org/gene/ANKRD11",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "16q24.3",
+                "Gene": "FANCA",
+                "Gene_URL": "https://www.oncokb.org/gene/FANCA",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "22q11.21",
+                "Gene": "LZTR1",
+                "Gene_URL": "https://www.oncokb.org/gene/LZTR1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "22q12.2",
+                "Gene": "NF2",
+                "Gene_URL": "https://www.oncokb.org/gene/NF2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "22q13.2",
+                "Gene": "EP300",
+                "Gene_URL": "https://www.oncokb.org/gene/EP300",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 79
+    },
+    {
+        "_id": "VEN-246-TUM-v1",
+        "Study": "VENUS",
+        "Body": [],
+        "Tumour Mutation Burden": 47
+    },
+    {
+        "_id": "VEN-329_ARCH_A-v1",
+        "Study": "VENUS",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9q34",
+                "Gene": "TSC1",
+                "Gene_URL": "https://www.oncokb.org/gene/TSC1",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "16p12.2",
+                "Gene": "PALB2",
+                "Gene_URL": "https://www.oncokb.org/gene/PALB2",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "16p13.3",
+                "Gene": "TSC2",
+                "Gene_URL": "https://www.oncokb.org/gene/TSC2",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19q13.32",
+                "Gene": "ERCC2",
+                "Gene_URL": "https://www.oncokb.org/gene/ERCC2",
+                "OncoKB": "Level 3B"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "5q35.2",
+                "Gene": "FGFR4",
+                "Gene_URL": "https://www.oncokb.org/gene/FGFR4",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "1p35.3",
+                "Gene": "SESN2",
+                "Gene_URL": "https://www.oncokb.org/gene/SESN2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "1p36.11",
+                "Gene": "ARID1A",
+                "Gene_URL": "https://www.oncokb.org/gene/ARID1A",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "1p36.13",
+                "Gene": "SDHB",
+                "Gene_URL": "https://www.oncokb.org/gene/SDHB",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "1p36.32",
+                "Gene": "TNFRSF14",
+                "Gene_URL": "https://www.oncokb.org/gene/TNFRSF14",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "5p15.33",
+                "Gene": "TERT",
+                "Gene_URL": "https://www.oncokb.org/gene/TERT",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9q34.3",
+                "Gene": "NOTCH1",
+                "Gene_URL": "https://www.oncokb.org/gene/NOTCH1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "16p13.12",
+                "Gene": "ERCC4",
+                "Gene_URL": "https://www.oncokb.org/gene/ERCC4",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "16p13.13",
+                "Gene": "CIITA",
+                "Gene_URL": "https://www.oncokb.org/gene/CIITA",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "16p13.13",
+                "Gene": "SOCS1",
+                "Gene_URL": "https://www.oncokb.org/gene/SOCS1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "16p13.2",
+                "Gene": "GRIN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/GRIN2A",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "16p13.3",
+                "Gene": "AXIN1",
+                "Gene_URL": "https://www.oncokb.org/gene/AXIN1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "16p13.3",
+                "Gene": "CREBBP",
+                "Gene_URL": "https://www.oncokb.org/gene/CREBBP",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "16p13.3",
+                "Gene": "NTHL1",
+                "Gene_URL": "https://www.oncokb.org/gene/NTHL1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "16p13.3",
+                "Gene": "SLX4",
+                "Gene_URL": "https://www.oncokb.org/gene/SLX4",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19p13.11",
+                "Gene": "KLF2",
+                "Gene_URL": "https://www.oncokb.org/gene/KLF2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19p13.11",
+                "Gene": "PIK3R2",
+                "Gene_URL": "https://www.oncokb.org/gene/PIK3R2",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19p13.2",
+                "Gene": "KEAP1",
+                "Gene_URL": "https://www.oncokb.org/gene/KEAP1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19p13.2",
+                "Gene": "SMARCA4",
+                "Gene_URL": "https://www.oncokb.org/gene/SMARCA4",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19p13.3",
+                "Gene": "ARID3A",
+                "Gene_URL": "https://www.oncokb.org/gene/ARID3A",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19p13.3",
+                "Gene": "PTPRS",
+                "Gene_URL": "https://www.oncokb.org/gene/PTPRS",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19p13.3",
+                "Gene": "STK11",
+                "Gene_URL": "https://www.oncokb.org/gene/STK11",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19p13.3",
+                "Gene": "TCF3",
+                "Gene_URL": "https://www.oncokb.org/gene/TCF3",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19q13.11",
+                "Gene": "CEBPA",
+                "Gene_URL": "https://www.oncokb.org/gene/CEBPA",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19q13.12",
+                "Gene": "KMT2B",
+                "Gene_URL": "https://www.oncokb.org/gene/KMT2B",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19q13.2",
+                "Gene": "CIC",
+                "Gene_URL": "https://www.oncokb.org/gene/CIC",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19q13.2",
+                "Gene": "ERF",
+                "Gene_URL": "https://www.oncokb.org/gene/ERF",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19q13.32",
+                "Gene": "BBC3",
+                "Gene_URL": "https://www.oncokb.org/gene/BBC3",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "19q13.41",
+                "Gene": "PPP2R1A",
+                "Gene_URL": "https://www.oncokb.org/gene/PPP2R1A",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "22q11.21",
+                "Gene": "LZTR1",
+                "Gene_URL": "https://www.oncokb.org/gene/LZTR1",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 20
+    },
+    {
+        "_id": "VEN-329_ARCH_B-v1",
+        "Study": "VENUS",
+        "Body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p21.31",
+                "Gene": "SETD2",
+                "Gene_URL": "https://www.oncokb.org/gene/SETD2",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "5q35.2",
+                "Gene": "FGFR4",
+                "Gene_URL": "https://www.oncokb.org/gene/FGFR4",
+                "OncoKB": "Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p21.1",
+                "Gene": "BAP1",
+                "Gene_URL": "https://www.oncokb.org/gene/BAP1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p21.1",
+                "Gene": "PBRM1",
+                "Gene_URL": "https://www.oncokb.org/gene/PBRM1",
+                "OncoKB": "Likely Oncogenic"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "5p15.33",
+                "Gene": "TERT",
+                "Gene_URL": "https://www.oncokb.org/gene/TERT",
+                "OncoKB": "Likely Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 21
+    },
+    {
+        "_id": "VEN-355-TUM-v1",
+        "Study": "VENUS",
+        "Body": [
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "8q24.21",
+                "Gene": "MYC",
+                "Gene_URL": "https://www.oncokb.org/gene/MYC",
+                "OncoKB": "Oncogenic"
+            }
+        ],
+        "Tumour Mutation Burden": 137
+    },
+    {
+        "_id": "VEN-426-TUM-v1",
+        "Study": "VENUS",
+        "Body": [],
+        "Tumour Mutation Burden": 11
+    }
+]
