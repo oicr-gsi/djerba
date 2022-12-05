@@ -75,89 +75,6 @@ class Design():
                return false_bool
           else: return  
 
-     #views = ["(_id,test)|(report/failed,true)|(report/author,Bob)", "(report/author,Felix Beaudry)|(report/oncogenic_somatic_CNVs/Total variants,35)"]
-     #views = ["(report/patient_info/Primary cancer, Pancreatic Adenocarcinoma) | (report/sample_info_and_quality/Coverage (mean), 100) | (report/purity_failure, false)"]
-     def Equals(self, design_doc_name, query, out_args, eq_all):  
-          design = {
-               "_id": "_design/{}".format(design_doc_name),
-               "views": {} ,
-               "note": "", #comment
-          }
-          viewsEqs_name = []
-          nkey = []
-          nval = []
-          nvaltype = []
-          for v in array:
-               temp_name = []
-               key = []
-               value = []
-               split = v.split("|")
-               rm = []
-               for s in split: 
-                    s = s.replace("(", "")
-                    s = s.replace(")", "")
-                    rm.append(s.strip())
-               for s in rm:
-                    temp = s.split(",")
-                    tempstr = temp[0]
-                    tempkey = tempstr.split("/")
-                    lastkey = tempkey[-1]
-                    key.append(temp[0].strip())
-                    value.append(temp[1].strip())
-                    temp_name.append(lastkey.strip())
-               joined = ""
-               for s in temp_name:
-                    if s != temp_name[-1]: joined += f"{s}/" 
-                    else: joined += f"{s}="
-               for s in value:
-                    if s != value[-1]: joined += f"{s}/" 
-                    else: joined += f"{s}"
-               viewsEqs_name.append(joined)
-               nkey.append(key)
-               nval.append(value)
-          for i in range(len(array)):
-               key = nkey[i]
-               val = nval[i]
-               for n in range(len(key)):
-                    temp = key[n]
-                    temp = temp.split("/")
-                    string = ""
-                    for t in temp: string += f"['{t}']" 
-                    key[n] = string
-               valtype = []
-               for v in val:
-                    if self.isNumber(v) == True:
-                         if v.count(".") == 1: num = float(v)
-                         else: num = int(v)
-                         valtype.append(num)
-                    elif type(self.isBool(v)) == bool:
-                         boolean = self.isBool(v)
-                         valtype.append(json.dumps(boolean))
-                    else:
-                         valtype.append(f"'{v.strip()}'")
-
-               nvaltype.append(valtype)
-          for i in range(len(array)):
-               key = nkey[i]
-               val = nvaltype[i]
-               design["views"][f"{viewsEqs_name[i]}"] = {
-                    "map": "function (doc) { if(" 
-               }
-               for j in range(len(key)):
-                    #print(key[j], val[j], type(val[j]))
-                    if j != len(key)-1: design["views"][f"{viewsEqs_name[i]}"]["map"] += f"doc{key[j]} == {val[j]} && "
-                    else: design["views"][f"{viewsEqs_name[i]}"]["map"] += f"doc{key[j]} == {val[j]}" + " ) { "
-               for j in range(len(key)):
-                    design["views"][f"{viewsEqs_name[i]}"]["map"] += f"emit(doc{key[j]}, doc{key[j]}=={val[j]});"
-               design["views"][f"{viewsEqs_name[i]}"]["map"] += "} }"
-     
-          headers = {'Content-Type': 'application/json'}
-          submit = requests.post(url=self.url, headers=headers, json=design)
-          status_str = str(submit)+str(submit.content)
-          if submit.status_code == 201: logging.info('<Response [201]> Upload Ok')
-          elif submit.status_code == 409: logging.warning('<Response [409]> Document Update Conflict')
-          else: logging.error(status_str)
-
      def Great(self, design_doc_name, query, out_args, eq_all): 
           #out_args = [args.cmdprint, args.outcsv, args.outjson, args.outdir]
           design = {
@@ -460,16 +377,15 @@ class Design():
           elif args.filter == 'equal' or args.filter == 'e': self.Equal(design_doc_name, query, out_args, eq_all)
           elif args.filter == 'less' or args.filter == 'l': self.Less(design_doc_name, query, out_args, eq_all)
           elif args.filter == 'great' or args.filter == 'g': self.Great(design_doc_name, query, out_args, eq_all)
-          # elif args.filter == 'equals' or args.filter == 'es': self.Equals(design_doc_name, query, out_args, eq_all)
-          
-          '''other functions in pull.py'''
-          # try: data_base, total_doc, del_doc = Pull(self.db, self.base).DBStat()
-          # except: logging.warning('database error')
-          # try: doc, _id, _rev = Pull(self.db, self.base).DesignDoc(design_doc_name)
-          # except: logging.warning('may not be created yet')
-          # del_bool = Pull(self.db, self.base).DeleteDesignDoc(design_doc_name)
-          # if del_bool == False: logging.warning('error w delete design doc')
           return
 
 if __name__ == "__main__":
      Design().SetUp()
+
+'''other functions in pull.py'''
+# try: data_base, total_doc, del_doc = Pull(self.db, self.base).DBStat()
+# except: logging.warning('database error')
+# try: doc, _id, _rev = Pull(self.db, self.base).DesignDoc(design_doc_name)
+# except: logging.warning('may not be created yet')
+# del_bool = Pull(self.db, self.base).DeleteDesignDoc(design_doc_name)
+# if del_bool == False: logging.warning('error w delete design doc')
