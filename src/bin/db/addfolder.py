@@ -80,8 +80,8 @@ class Add():
             json_file = []
             for i in dir_content:
                 n, ext = os.path.splitext(i)
-                #if ext == '.json': #for folder=/.mounts/labs/CGI/gsi/djerba_json_archive/devel 
-                if ext == '.json' and 'djerba_report' in n and currfolder.endswith('archive'): #for folder = /.mounts/labs/CGI/cap-djerba
+                #condition for upload - change accordingly (ie. below for folder  /.mounts/labs/CGI/cap-djerba) 
+                if ext == '.json' and 'djerba_report' in n and currfolder.endswith('archive'): 
                     type_json = (i, currfolder+'/'+i)
                     json_file.append(type_json)
                 if os.path.isdir(currfolder+'/'+i) == True:

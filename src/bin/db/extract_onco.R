@@ -6,7 +6,7 @@ library(cowplot)
 library(gtable)
 library(grid)
 
-#ONCOPLOT ####
+#ONCOPLOT MAIN ####
 small_file = '/home/ltoy/Desktop/couch/extract/oncoplot/small_Study&Body&Tumour Mutation Burden_processed.csv'
 small <- fread(small_file, header=TRUE)
 onco_file = '/home/ltoy/Desktop/couch/extract/oncoplot/onco_Study&Body&Tumour Mutation Burden_processed.csv'
@@ -20,11 +20,12 @@ colnames(onco)[1]="id"
 combined <- rbind(small, onco)
 gene_order<-data.frame(table(combined$Gene))
 gene_order <- gene_order[order(-gene_order$Freq),]
-cutoff = 3 ### change to make more/less Genes on y-axis - if want set number of Genes, then change code to count top n rows from top
+cutoff = 3 ### change to make more/less Genes on y-axis - if want set number of Genes, then change code to count top n rows from top of gene_order
 subset = sum(gene_order$Freq>cutoff)
 gene_subset <- gene_order[1:subset,]
 gene_list = as.character(gene_subset$Var1)
 
+#filter genes based on cutoff above, add to new df if in subset
 header <- c("id", "Gene", "Mutation", "Study", "Field", "TMB")
 newdf <- data.frame(matrix(NA, nrow=0, ncol=length(header)))
 colnames(newdf) <- header
@@ -46,13 +47,14 @@ for (row in 1:nrow(combined)){
   }
 }
 
+#processing for geom_rect arguments to align panel gridlines with oncoplot squares, also why didn't use geom_tile or geom_raster 
 id.num = as.numeric(as.factor(newdf$id))
 gene.num = as.numeric(as.factor(fct_rev(fct_infreq(newdf$Gene))))
 id.key <- levels(factor(newdf$id))
 gene.key <- levels(fct_rev(fct_infreq(newdf$Gene)))
 report_number = length(table(newdf$id))
 onco_title = paste("Top", nrow(gene_subset), "Mutated Genes in", report_number, "Samples")
-#for percents on right hand side of y axis
+#for percents on right hand side of y axis fof gene mutation frequency
 gene_subset$Percent <- NA
 total_mutations = sum(gene_subset$Freq)
 for (row in 1:nrow(gene_subset)){
@@ -86,7 +88,7 @@ o <-
     legend.key.size= unit(2.5, 'mm'),
     legend.text=element_text(size=5, hjust=0),
     strip.text = element_text(size=3)
-  )+
+  )+ 
   scale_fill_manual(values=c("saddlebrown","lightgoldenrod3", "forestgreen", "hotpink", "purple","cyan",
                              "gold", "royalblue", "orange", "black", "firebrick1", "chartreuse"))+
   guides(fill = guide_legend(nrow = 2))#+
@@ -95,6 +97,7 @@ o <-
 #ggsave("/home/ltoy/Desktop/couch/extract/onco_x.png", o, width=6.5,height=5) 
 #ggsave("/home/ltoy/Desktop/couch/extract/onco_id.png", o, width=5,height=5) #id
 
+#ONCOPLOT FREQ ####
 oncobar_freq <- 
   ggplot(newdf)+
   geom_bar(aes(y=fct_rev(fct_infreq(Gene)), fill=Mutation))+
@@ -115,15 +118,18 @@ oncobar_freq <-
   scale_x_continuous(breaks=c(0,70), limits=c(0,70), expand=c(0,0), position="top")
 #ggsave("/home/ltoy/Desktop/couch/extract/onco_bar.png", oncobar_freq, width=2.5,height=5) 
 
+#ONCOPLOT TMB ####
 id.key.df <- as.data.frame(levels(factor(newdf$id)))
 id.key.df$TMB <-NA
 id.key.df$Study <-NA
 id.key.df$Field <-NA
 colnames(id.key.df) <- c("id", "TMB", "Study", "Field")
+#processing to ensure order of x axis of TMB plot matches oncoplot main, as in newdf one sample could have many genes/mutations within but one TMB
 for (id in id.key){
   extract_row <- newdf[newdf$id == id,]
   extract_tmb = as.numeric(extract_row[1,"TMB"])
-  if (extract_tmb > 100) { extract_tmb = 100 }
+  #to make TMB graph less tall due to the fewer cases of larger numbers, if change remember to change axis parameters for graph too
+  if (extract_tmb > 100) { extract_tmb = 100 }  
   extract_study = as.character(extract_row[1,"Study"])
   extract_field = as.character(extract_row[1,"Field"])
   extract_add <- list(extract_tmb, extract_study, extract_field)
@@ -142,7 +148,7 @@ oncobar_tmb <-
   labs(title=onco_title)+
   theme(
     plot.title = element_text(size=10, hjust=0.5),
-    legend.position="none", # if combined separately below
+    legend.position="none", # for if combined separately below
     #legend.position = "top",
     axis.text.x = element_blank(),
     #axis.text.x = element_text(size=5, angle=90), #id
@@ -162,21 +168,8 @@ oncobar_tmb <-
  #facet_grid(.~Study, scales="free_x", space="free_x", switch="x")  #Study
 #ggsave("/home/ltoy/Desktop/couch/extract/oncobar_tmb.png", oncobar_tmb, width=10,height=2.5) 
 
+#COMBINE #### can also do externally not in R, may take same or less time
 ######################################################################################
-#extrac onco v small percents
-field_percent = as.data.frame(table(newdf$Field))
-field_percent$Percent = NA
-for (row in 1:nrow(field_percent)){
-  value = (field_percent[row, "Freq"] / sum(field_percent$Freq) ) *100
-  field_percent[row, "Percent"] = format(round(value, 1), nsmall=1)
-}
-ggplot(field_percent, aes(x="", y=Percent, fill=Var1))+
-  geom_col()+
-  coord_polar(theta="y")+
-  geom_text(aes(label=paste(Var1,Percent, '%')), position=position_stack(vjust=0.5))+
-  scale_fill_brewer("Blues")
-##########################################################################################
-
 top <- ggplotGrob(oncobar_tmb)
 main <- ggplotGrob(o)
 right <- ggplotGrob(oncobar_freq)
@@ -199,7 +192,21 @@ comb <-
   draw_plot(tmb_legend, x=0.17, y=0.4)
 ggsave("/home/ltoy/Desktop/couch/extract/comb.png", comb, width=15, height=10)
 
-###########################################################################################
+######################################################################################
+#extrac pie chart for oncogenic somatic CNVS v small mutation and indels (percent)
+field_percent = as.data.frame(table(newdf$Field))
+field_percent$Percent = NA
+for (row in 1:nrow(field_percent)){
+  value = (field_percent[row, "Freq"] / sum(field_percent$Freq) ) *100
+  field_percent[row, "Percent"] = format(round(value, 1), nsmall=1)
+}
+ggplot(field_percent, aes(x="", y=Percent, fill=Var1))+
+  geom_col()+
+  coord_polar(theta="y")+
+  geom_text(aes(label=paste(Var1,Percent, '%')), position=position_stack(vjust=0.5))+
+  scale_fill_brewer("Blues")
+
+# other unused notes 
 #   plot_grid(o, oncobar_freq, oncobar_tmb, nrow=1, scale=c(1,1,1)) 
 #   geom_raster(aes(x=id, y=fct_rev(fct_infreq(Gene)), fill=Mutation), hjust=0, vjust=0)+
 #   #geom_tile(aes(x=id, y=fct_rev(fct_infreq(Gene)), fill=Mutation), color="black")+ theme()
