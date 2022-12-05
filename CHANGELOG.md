@@ -3,6 +3,23 @@
 ### Unreleased
 - GCGI-403: Updated json archiving to couchDB, removed archive_dir storage on cluster   
 
+## v0.3.12: 2022-11-23
+
+- Requires update to `djerba_test_data_lfs`
+
+### Added
+- GCGI-517 New 'requisition ID' INI parameter; use for report title
+
+### Fixed
+- GCGI-423 Include `-q` option for MAF annotation script
+- GCGI-608 Do not write 'technical notes' text box unless it has non-null content
+
+## v0.3.11: 2022-11-01
+
+### Changed
+- GCGI-516 Change default file provenance report path to Vidarr
+- Updated to use Python Tools module v16 for Geneticist Review Report
+
 ## v0.3.10: 2022-10-25
 
 ### Added

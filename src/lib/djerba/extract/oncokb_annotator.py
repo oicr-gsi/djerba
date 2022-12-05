@@ -25,9 +25,10 @@ class oncokb_annotator(logger):
 
     # fields for empty oncoKB annotated fusion file
     ONCOKB_FUSION_ANNOTATED_HEADERS = [
-        'Tumor_Sample_Barcode', 'Fusion', 'mutation_effect', 'oncogenic',
+        'Tumor_Sample_Barcode', 'Fusion', 'mutation_effect', 'ONCOGENIC',
         'LEVEL_1', 'LEVEL_2', 'LEVEL_3A', 'LEVEL_3B', 'LEVEL_4',
-        'LEVEL_R1', 'LEVEL_R2', 'LEVEL_R3', 'Highest_level'
+        'LEVEL_R1', 'LEVEL_R2', 'LEVEL_R3', 'HIGHEST_LEVEL', 'HIGHEST_SENSITIVE_LEVEL',
+        'HIGHEST_RESISTANCE_LEVEL'
     ]
 
     def __init__(self, tumour_id, oncotree_code, report_dir, scratch_dir=None,
@@ -110,6 +111,7 @@ class oncokb_annotator(logger):
             '-i', in_path,
             '-o', out_path,
             '-c', self.info_path,
+            '-q', 'Genomic_Change',
             '-b', self.oncokb_token
         ]
         self._run_annotator_script(cmd, 'MAF annotator')

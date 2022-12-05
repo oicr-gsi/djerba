@@ -88,10 +88,14 @@ ${html_builder().markdown_to_html(genomic_summary)}
 <% raise RuntimeError("Unknown assay type") %>
 % endif
 </div>
+## Slightly hacky method to omit technical notes with null content
+% if not technical_notes.strip() == 'No technical notes supplied.':
 <br/>
 <div style="border:3px; border-style:solid; border-color:#000000; padding: 1em;">
 ${html_builder().markdown_to_html(technical_notes)}
 </div>
+% endif
+<br/>
 <%include file="definitions_1.html"/>
 <p><strong>Coverage: </strong>Mean number of bases covering each sequenced base. Minimum coverage threshold is ${coverage_thresholds.get(constants.TUMOUR_MIN)}x for the tumour (with a target of ${coverage_thresholds.get(constants.TUMOUR_TARGET)}x); ${coverage_thresholds.get(constants.NORMAL_MIN)}x for the normal (with a target of ${coverage_thresholds.get(constants.NORMAL_TARGET)}x).</p>
 <%include file="definitions_2.html"/>
