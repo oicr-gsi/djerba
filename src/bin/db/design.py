@@ -12,8 +12,8 @@ from pull import Pull
 #dbs = 'http://admin:cgi@127.0.0.1:5984/_all_dbs'
 
 class Design():
-     def __init__(self, db='djerba', base='http://admin:djerba123@10.30.133.78:5984/', level=logging.WARNING, log_path=None, filename=__name__):
-     #def __init__(self, db='test', base='http://admin:cgi@127.0.0.1:5984/', level=logging.WARNING, log_path=None, filename=__name__):
+     #def __init__(self, db='djerba', base='http://admin:djerba123@10.30.133.78:5984/', level=logging.WARNING, log_path=None, filename=__name__):
+     def __init__(self, db='test', base='http://admin:cgi@127.0.0.1:5984/', level=logging.WARNING, log_path=None, filename=__name__):
           self.db = db
           self.base = base
           self.url = join(self.base,self.db)          
@@ -27,63 +27,25 @@ class Design():
           logging.basicConfig(level=level, filename=file_path, format=f'%(asctime)s:%(filename)s:%(levelname)s: %(message)s', datefmt='%Y-%m-%d_%H:%M:%S')
           
      def Array(self, filter_type):
-          types = ['s','single','d','double','m','multi','e','equal','es','equals']
+          types = ['m','multi','e','equal', 'l', 'less', 'g', 'great']
           if filter_type in types: 
                logging.debug('Valid filter type. Display example and get user input')
-               if filter_type == 's' or filter_type == 'single':
-                    print(" <separate multiple views w comma>  <access nested dictionaries w forwardslash>", '\n',
-                         " i.e. report/patient_info/Study, supplementary/config/discovered/ploidy, report/failed", '\n')
-                    query = input("Single Filter: ")
-                    return query
-               elif filter_type == 'd' or filter_type == 'double':         
-                    print(" <separate multiple views w comma> <access nested dictionaries w forwardslash> <enter filters like tuple>", '\n',
-                    " i.e. (_id, report/failed), (report/assay_type, report/patient_info/Study), (report/patient_info/Primary cancer, report/patient_info/Genetic Sex)", '\n')
-                    query = input ('Double Filter: ')
-                    return query
-               elif filter_type == 'm' or filter_type == 'multi':
+               if filter_type == 'm' or filter_type == 'multi':
                     print(" <separate filters with comma and multiple views w @> <access nested dictionaries w forwardslash>", '\n',
                     " i.e. report/failed, report/author @ report/assay_type, report/patient_info/Study, report/patient_info/Primary cancer, report/patient_info/Genetic Sex @ report/patient_info/Site of biopsy/surgery", '\n')
                     query = input ('Filter Multiple: ')
                     return query
-               elif filter_type == 'e' or filter_type == 'equal': ## TO DO
+               elif filter_type == 'e' or filter_type == 'equal': 
                     print(" <separate multiple views w comma> <access nested dictionaries w forwardslash> <enter filters like tuple>", '\n',
                     " i.e. (report/failed, true), (report/author, Felix Beaudry), (report/oncogenic_somatic_CNVs/Total variants, 35), (report/patient_info/Site of biopsy/surgery, Liver)", '\n')
                     query = input('Equal: ')  
-                    return query          
-               elif filter_type == 'es' or filter_type == 'equals': ## TO DO
+                    return query
+               elif  filter_type == 'l' or filter_type == 'less' or filter_type == 'g' or filter_type == 'great':
                     print(" <separate multiple views w comma> <access nested dictionaries w forwardslash> <enter filters like tuple>", '\n',
-                         " i.e. (_id, test) | (report/failed, true) | (report/author, Bob), (report/author, Felix Beaudry)|(report/oncogenic_somatic_CNVs/Total variants, 35) ", '\n')
-                    query = input ('Equals: ')
-                    s = query.split("|")
-                    a = [""]
-                    index = 0
-                    view_num = 0
-                    while index < len(s):
-                         sep = s[index].count(",") 
-                         if sep == 1:
-                              a[view_num] = a[view_num] + s[index]
-                         else:
-                              temp = s[index].split(",")
-                              prev = ','.join(temp[:2])
-                              a[view_num] = a[view_num] + prev
-                              view_num += 1
-                              nex = ','.join(temp[2:])
-                              a.append(nex)
-                         index += 1
-                    no_space = []
-                    for i in a:
-                         i = i.strip()
-                         no_space.append(i)
-                    sep_view = []
-                    for i in no_space:
-                         i = i.replace(")", ")|")
-                         sep_view.append(i)
-                    array = []
-                    for i in sep_view:
-                         i = i.strip()
-                         i = i.rstrip(i[-1])
-                         array.append(i)
-                    return array
+                    " i.e. (report/oncogenic_somatic_CNVs/Total variants, 35)")
+                    if filter_type == 'l' or filter_type == 'less': query = input('Less: ')  
+                    if filter_type == 'g' or filter_type == 'great': query = input('Great: ')  
+                    return query
           else: 
                logging.error('Invalid filter type')
           return 
@@ -195,13 +157,147 @@ class Design():
           if submit.status_code == 201: logging.info('<Response [201]> Upload Ok')
           elif submit.status_code == 409: logging.warning('<Response [409]> Document Update Conflict')
           else: logging.error(status_str)
-     
+
+     def Great(self, design_doc_name, query, out_args, eq_all): 
+          #out_args = [args.cmdprint, args.outcsv, args.outjson, args.outdir]
+          design = {
+               "_id": "_design/{}".format(design_doc_name),
+               "views": {} ,
+               #"note": "", #comment
+          }
+          if 'Site of biopsy/surgery' in query:
+               query = query.replace('Site of biopsy/surgery', 'Site of biopsy+surgery')
+          if query.count(",") > 1: #multi-view
+               l = query.split(",")
+               l = [i.strip() for i in l]
+               grouped = [tuple(l[i:i+2]) for i in range(0, len(l), 2)]
+          else: #single-view
+               l = query.split(",")
+               l=[i.strip() for i in l]
+               grouped = [tuple(l)]
+          g = []
+          for i in grouped: 
+               one = i[0]
+               two = i[1]
+               one = one.replace("(","", 1)
+               rev = two[::-1]
+               rev = rev.replace(")", "", 1)
+               two = rev[::-1]
+               g.append((one,two))
+          viewsEq_name = []
+          for v in g:
+               first = v[0]
+               second = v[1]
+               first = first.split("/")
+               second = second.split("/")         
+               first = [i.strip() for i in first]
+               second = [i.strip() for i in second]
+               viewsEq_name.append(f'{first[-1]}>{second[-1]}')
+          for j in range(len(viewsEq_name)):
+               if 'Site of biopsy+surgery' in viewsEq_name[j]:
+                    viewsEq_name[j] = viewsEq_name[j].replace('Site of biopsy+surgery', 'Site of biopsy/surgery')
+          datatype = []
+          for i in range(len(g)):
+               one = g[i][0].split("/")
+               one = [i.strip() for i in one]
+               two = g[i][1].split("/")
+               two = [i.strip() for i in two]
+               string_one = "doc"
+               for j in one: string_one += f"['{j}']"
+               key = one[-1] 
+               if 'Site of biopsy+surgery' in string_one: string_one = string_one.replace('Site of biopsy+surgery', 'Site of biopsy/surgery')
+               if 'Site of biopsy+surgery' in key: key = key.replace('Site of biopsy+surgery', 'Site of biopsy/surgery')
+               if self.isNumber(two[0]) == True:
+                    design["views"][f"{viewsEq_name[i]}"] = {
+                         "map": "function (doc) {"+"{emit('bool'," + f"{string_one} > {two[0]});" + "emit(" + f"'{key}',{string_one}) "+";} }" #for number 
+                    }
+                    val = float(two[0])
+                    if two[0].count(".") == 0 and val%1 == 0.0: val = int(two[0])
+               datatype.append((key,val))
+          headers = {'Content-Type': 'application/json'}
+          submit = requests.post(url=self.url, headers=headers, json=design)
+          status_str = str(submit)+str(submit.content)
+          if submit.status_code == 201: logging.info('<Response [201]> Upload Ok')
+          elif submit.status_code == 409: logging.warning('<Response [409]> Document Update Conflict')
+          else: logging.error(status_str)
+          
+          Pull(self.db, self.base).Query(self.url, design_doc_name, viewsEq_name, out_args, eq_all, qtype='g', datatype=datatype)
+          #Pull(self.db, self.base).DeleteDesignDoc(design_doc_name)
+          return
+
+     def Less(self, design_doc_name, query, out_args, eq_all): 
+          #out_args = [args.cmdprint, args.outcsv, args.outjson, args.outdir]
+          design = {
+               "_id": "_design/{}".format(design_doc_name),
+               "views": {} ,
+               #"note": "", #comment
+          }
+          if 'Site of biopsy/surgery' in query:
+               query = query.replace('Site of biopsy/surgery', 'Site of biopsy+surgery')
+          if query.count(",") > 1: #multi-view
+               l = query.split(",")
+               l = [i.strip() for i in l]
+               grouped = [tuple(l[i:i+2]) for i in range(0, len(l), 2)]
+          else: #single-view
+               l = query.split(",")
+               l=[i.strip() for i in l]
+               grouped = [tuple(l)]
+          g = []
+          for i in grouped: 
+               one = i[0]
+               two = i[1]
+               one = one.replace("(","", 1)
+               rev = two[::-1]
+               rev = rev.replace(")", "", 1)
+               two = rev[::-1]
+               g.append((one,two))
+          viewsEq_name = []
+          for v in g:
+               first = v[0]
+               second = v[1]
+               first = first.split("/")
+               second = second.split("/")         
+               first = [i.strip() for i in first]
+               second = [i.strip() for i in second]
+               viewsEq_name.append(f'{first[-1]}<{second[-1]}')
+          for j in range(len(viewsEq_name)):
+               if 'Site of biopsy+surgery' in viewsEq_name[j]:
+                    viewsEq_name[j] = viewsEq_name[j].replace('Site of biopsy+surgery', 'Site of biopsy/surgery')
+          datatype = []
+          for i in range(len(g)):
+               one = g[i][0].split("/")
+               one = [i.strip() for i in one]
+               two = g[i][1].split("/")
+               two = [i.strip() for i in two]
+               string_one = "doc"
+               for j in one: string_one += f"['{j}']"
+               key = one[-1] 
+               if 'Site of biopsy+surgery' in string_one: string_one = string_one.replace('Site of biopsy+surgery', 'Site of biopsy/surgery')
+               if 'Site of biopsy+surgery' in key: key = key.replace('Site of biopsy+surgery', 'Site of biopsy/surgery')
+               if self.isNumber(two[0]) == True:
+                    design["views"][f"{viewsEq_name[i]}"] = {
+                         "map": "function (doc) {"+"{emit('bool'," + f"{string_one} < {two[0]});" + "emit(" + f"'{key}',{string_one}) "+";} }" #for number 
+                    }
+                    val = float(two[0])
+                    if two[0].count(".") == 0 and val%1 == 0.0: val = int(two[0])
+               datatype.append((key,val))
+          headers = {'Content-Type': 'application/json'}
+          submit = requests.post(url=self.url, headers=headers, json=design)
+          status_str = str(submit)+str(submit.content)
+          if submit.status_code == 201: logging.info('<Response [201]> Upload Ok')
+          elif submit.status_code == 409: logging.warning('<Response [409]> Document Update Conflict')
+          else: logging.error(status_str)
+          
+          Pull(self.db, self.base).Query(self.url, design_doc_name, viewsEq_name, out_args, eq_all, qtype='l', datatype=datatype)
+          #Pull(self.db, self.base).DeleteDesignDoc(design_doc_name)
+          return
+
      def Equal(self, design_doc_name, query, out_args, eq_all): 
           #out_args = [args.cmdprint, args.outcsv, args.outjson, args.outdir]
           design = {
                "_id": "_design/{}".format(design_doc_name),
                "views": {} ,
-               "note": "", #comment
+               #"note": "", #comment
           }
           if 'Site of biopsy/surgery' in query:
                query = query.replace('Site of biopsy/surgery', 'Site of biopsy+surgery')
@@ -278,7 +374,7 @@ class Design():
           design = {
                "_id": "_design/{}".format(design_doc_name),
                "views": {} ,
-               "note": "", #comment
+               #"note": "", #comment
           }    
           if 'Site of biopsy/surgery' in query:
                query = query.replace('Site of biopsy/surgery', 'Site of biopsy+surgery')
@@ -331,105 +427,9 @@ class Design():
           #Pull(self.db, self.base).DeleteDesignDoc(design_doc_name)
           return
 
-     def Double(self, design_doc_name, query, out_args, eq_all): 
-          #out_args = [args.cmdprint, args.outcsv, args.outjson, args.outdir]
-          design = {
-               "_id": "_design/{}".format(design_doc_name),
-               "views": {} ,
-               "note": "", #comment
-          }
-          if 'Site of biopsy/surgery' in query:
-               query = query.replace('Site of biopsy/surgery', 'Site of biopsy+surgery')
-          if query.count(",") > 1: #multi-view
-               l = query.split(",")
-               l = [i.strip() for i in l]
-               grouped = [tuple(l[i:i+2]) for i in range(0, len(l), 2)]
-          else: #single-view
-               l = query.split(",")
-               l=[i.strip() for i in l]
-               grouped = [tuple(l)]
-          g = []
-          for i in grouped: 
-               one = i[0]
-               two = i[1]
-               one = one.replace("(","", 1)
-               rev = two[::-1]
-               rev = rev.replace(")", "", 1)
-               two = rev[::-1]
-               g.append((one,two))
-          views2_name = []
-          for v in g:
-               first = v[0]
-               second = v[1]
-               first = first.split("/")
-               second = second.split("/")         
-               first = [i.strip() for i in first]
-               second = [i.strip() for i in second]
-               views2_name.append(f'{first[-1]}&{second[-1]}')
-          for j in range(len(views2_name)):
-               if 'Site of biopsy+surgery' in views2_name[j]:
-                    views2_name[j] = views2_name[j].replace('Site of biopsy+surgery', 'Site of biopsy/surgery')
-          for i in range(len(g)):
-               one = g[i][0].split("/")
-               one = [i.strip() for i in one]
-               two = g[i][1].split("/")
-               two = [i.strip() for i in two]
-               string_one = "doc"
-               for j in one: string_one += f"['{j}']"
-               string_two = "doc"
-               for j in two: string_two += f"['{j}']"
-               if 'Site of biopsy+surgery' in string_one: string_one = string_one.replace('Site of biopsy+surgery', 'Site of biopsy/surgery')
-               if 'Site of biopsy+surgery' in string_two: string_two = string_two.replace('Site of biopsy+surgery', 'Site of biopsy/surgery')
-               design["views"][f"{views2_name[i]}"] = {
-                    "map": 'function (doc) { emit(' + f'{string_one},{string_two})' + ';} '
-               } 
-          headers = {'Content-Type': 'application/json'}
-          submit = requests.post(url=self.url, headers=headers, json=design)
-          status_str = str(submit)+str(submit.content)
-          if submit.status_code == 201: logging.info('<Response [201]> Upload Ok')
-          elif submit.status_code == 409: logging.warning('<Response [409]> Document Update Conflict')
-          else: logging.error(status_str)
-          
-          Pull(self.db, self.base).Query(self.url, design_doc_name, views2_name, out_args, eq_all, qtype='d')
-          #Pull(self.db, self.base).DeleteDesignDoc(design_doc_name)
-          return
-
-     def Single(self, design_doc_name, query, out_args, eq_all): 
-          #out_args = [args.cmdprint, args.outcsv, args.outjson, args.outdir]
-          design = {
-               "_id": "_design/{}".format(design_doc_name),
-               "views": {} ,
-               "note": "", #comment
-          }
-          if 'Site of biopsy/surgery' in query:
-               query = query.replace('Site of biopsy/surgery', 'Site of biopsy+surgery')
-          arr = query.split(",")
-          arr = [i.strip() for i in arr] 
-          search = []
-          for v in arr:
-               split = v.split("/")
-               split = [i.strip() for i in split] 
-               string = "doc"
-               for i in split: 
-                    string += f"['{i}']"
-               if 'Site of biopsy+surgery' in split[-1]: split[-1] = split[-1].replace('Site of biopsy+surgery', 'Site of biopsy/surgery')
-               if 'Site of biopsy+surgery' in string: string = string.replace('Site of biopsy+surgery', 'Site of biopsy/surgery')
-               design["views"][f"{split[-1]}"] = {"map": "function (doc) {\n  emit "+f" ('{split[-1]}', {string}) "+" ;\n}"} 
-               search.append(split[-1])
-          headers = {'Content-Type': 'application/json'}
-          submit = requests.post(url=self.url, headers=headers, json=design)
-          status_str = str(submit)+str(submit.content)
-          if submit.status_code == 201: logging.info('<Response [201]> Upload Ok')
-          elif submit.status_code == 409: logging.warning('<Response [409]> Document Update Conflict')
-          else: logging.error(status_str)
-
-          Pull(self.db, self.base).Query(self.url, design_doc_name, search, out_args, eq_all, qtype ='s')
-          #Pull(self.db, self.base).DeleteDesignDoc(design_doc_name)
-          return
-
      def SetUp(self):
           parser = argparse.ArgumentParser()
-          parser.add_argument('filter', help='word or letter accepted: single(s), double(d), multi(m), equal(e), or equals(es)')#, type=str, action="store", dest="filter", required=True)
+          parser.add_argument('filter', help='word or letter accepted: multi(m), equal(e), less(l), great(g)')#, type=str, action="store", dest="filter", required=True)
           parser.add_argument("-n", "--name", help="design doc name, default is test", action="store", type=str, dest="name", default='test')
           parser.add_argument("-p", "--print", help="print to terminal", action="store_true", dest="cmdprint", default=False)
           parser.add_argument("-c", "--csv", help="save query as CSV", action="store_true", dest="outcsv", default=False)
@@ -457,9 +457,9 @@ class Design():
                if query != '': notblank = True
                timed_out += 1
           if args.filter == 'multi' or args.filter == 'm': self.Multi(design_doc_name, query, out_args, eq_all)
-          elif args.filter == 'single' or args.filter == 's': self.Single(design_doc_name, query, out_args, eq_all)
-          elif args.filter == 'double' or args.filter == 'd': self.Double(design_doc_name, query, out_args, eq_all)
           elif args.filter == 'equal' or args.filter == 'e': self.Equal(design_doc_name, query, out_args, eq_all)
+          elif args.filter == 'less' or args.filter == 'l': self.Less(design_doc_name, query, out_args, eq_all)
+          elif args.filter == 'great' or args.filter == 'g': self.Great(design_doc_name, query, out_args, eq_all)
           # elif args.filter == 'equals' or args.filter == 'es': self.Equals(design_doc_name, query, out_args, eq_all)
           
           '''other functions in pull.py'''

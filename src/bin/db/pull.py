@@ -83,36 +83,18 @@ class Pull():
             py_dict = json.loads(pull.text)
             number = py_dict["total_rows"]  
             files = py_dict["rows"] #array of jsons
-            if qtype == 's':
-                for f in files:
-                    f["_id"] = f.pop("id")
-                    f.pop("key")
-                    f[f"{view}"] = f.pop("value") 
-            if qtype == 'd': 
-                for f in files:
-                    first, second = view.split("&")
-                    f["_id"] = f.pop("id")
-                    f[f"{first}"] = f.pop("key")
-                    f[f"{second}"] = f.pop("value")
             if qtype == 'm':
                 files = self.MultiFilter(files, view)
                 number = len(files)
-            if qtype == 'e':
+            if qtype == 'e' or qtype == 'l' or qtype == 'g':
                 if datatype == None: logging.warning('datatype argument not passed')
                 else:
-                    # unprocessed data
-                    # for f in files:
-                    #     first, second = view.split("=")
-                    #     f["_id"] = f.pop("id")
-                    #     f[f"{first}"] = f.pop("key")
-                    #     f[f"{second}"] = f.pop("value")
-                    new_list, true_list, equal, number = self.EqualFilter(files, view, datatype[count])
+                    new_list, true_list, equal, number = self.Equal_Compare_Filter(qtype, files, view, datatype[count])
                     if eq_all == True: files = new_list
                     else: files = true_list
                     count += 1
-
             
-            if qtype == 'e': #to do es
+            if qtype == 'e' or qtype == 'l' or qtype== 'g': #to do es
                 if out_args[0] == True: self.TerminalPrint(search, number, files, view, equal)
             else:
                 if out_args[0] == True: self.TerminalPrint(search, number, files, view)
@@ -158,10 +140,12 @@ class Pull():
                     new_dict[key] = value
         return new_list
     
-    def EqualFilter(self, files, view, datatype_tuple):
+    def Equal_Compare_Filter(self, qtype, files, view, datatype_tuple):
         files = files
         view_equal = view
-        view, equal = view.split("=")   
+        if qtype == 'e': view, equal = view.split("=")   
+        elif qtype == 'l': view, equal = view.split("<")   
+        elif qtype == 'g': view, equal = view.split(">")
         new_list = []
         for file in files:
             curr_dict = file
@@ -198,7 +182,7 @@ class Pull():
             if check_dict[f"{view_equal}"] == True:
                 true_list.append(query)
                 equal += 1
-        number = len(files)
+        number = int(len(files)/2) #b/c query for key and bool comparison so document appears twice
         return new_list, true_list, equal, number
 
     def OutDir(self):
@@ -246,6 +230,8 @@ class Pull():
         out_name = out_name.replace(" ", "")
         out_name = out_name.replace("&", "") #added from design
         out_name = out_name.replace("=", "") #added from design
+        out_name = out_name.replace("<", "") #added from design
+        out_name = out_name.replace(">", "") #added from design
         out_name = out_name.replace("+", "") 
         #within keys
         out_name = out_name.replace(" ", "")
