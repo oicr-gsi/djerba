@@ -12,8 +12,8 @@ from pull import Pull
 #dbs = 'http://admin:cgi@127.0.0.1:5984/_all_dbs'
 
 class Design():
-     #def __init__(self, db='djerba_test', base='http://admin:djerba123@10.30.133.78:5984/', level=logging.WARNING, log_path=None, filename=__name__):
-     def __init__(self, db='test', base='http://admin:cgi@127.0.0.1:5984/', level=logging.WARNING, log_path=None, filename=__name__):
+     def __init__(self, db='djerba', base='http://admin:djerba123@10.30.133.78:5984/', level=logging.WARNING, log_path=None, filename=__name__):
+     #def __init__(self, db='test', base='http://admin:cgi@127.0.0.1:5984/', level=logging.WARNING, log_path=None, filename=__name__):
           self.db = db
           self.base = base
           self.url = join(self.base,self.db)          

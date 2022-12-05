@@ -214,7 +214,9 @@ class Pull():
     def OutJSON(self, design_doc_name, view, files, out_dir): #note contained within array
         if 'Site of biopsy/surgery' in view:
             view = view.replace('Site of biopsy/surgery','Site of biopsy+surgery')
-        out_name = f'{design_doc_name}_{view}'
+        out_name_doc = self.OutNameClean(design_doc_name)
+        out_name_view = self.OutNameClean(view)
+        out_name = f'{out_name_doc}_{out_name_view}'
         out_path = f'{posixpath.join(out_dir,out_name)}.json'
         json_str = json.dumps(files, indent= 4)
         with open(out_path, 'w') as outfile:
@@ -224,7 +226,9 @@ class Pull():
     def OutCSV(self, design_doc_name, view, files, out_dir):
         if 'Site of biopsy/surgery' in view:
             view = view.replace('Site of biopsy/surgery','Site of biopsy+surgery')
-        out_name = f'{design_doc_name}_{view}'
+        out_name_doc = self.OutNameClean(design_doc_name)
+        out_name_view = self.OutNameClean(view)
+        out_name = f'{out_name_doc}_{out_name_view}'
         out_path = f'{posixpath.join(out_dir, out_name)}.csv'
         csv_file = open(out_path, 'w')
         writer = csv.writer(csv_file)
@@ -237,6 +241,20 @@ class Pull():
             writer.writerow(line.values())
         csv_file.close()
         return out_path
+
+    def OutNameClean(self, out_name):
+        out_name = out_name.replace(" ", "")
+        out_name = out_name.replace("&", "") #added from design
+        out_name = out_name.replace("=", "") #added from design
+        out_name = out_name.replace("+", "") 
+        #within keys
+        out_name = out_name.replace(" ", "")
+        out_name = out_name.replace("_", "")
+        out_name = out_name.replace("(", "") 
+        out_name = out_name.replace(")", "") 
+        out_name = out_name.replace("/", "") 
+        out_name = out_name.replace("%", "") 
+        return out_name
 
     def TerminalPrint(self,search, number, files, view, equal=None):
         # print(f'Time of Query = {timestamp}')
