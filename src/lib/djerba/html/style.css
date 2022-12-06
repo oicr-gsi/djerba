@@ -118,10 +118,17 @@ hr.lil-line{
   float: right;
 }
 
-.letterhead-text {
+.letterhead-text-left {
   font-size: 10px;
-  line-height: 8px;  
-  text-align: right; 
+  line-height: 8px;
+  text-align: left;
+  padding: 30px 0px 0px 0px;
+}
+
+.letterhead-text-right {
+  font-size: 10px;
+  line-height: 8px;
+  text-align: right;
   padding: 30px 0px 0px 0px;
 }
 
