@@ -1,4 +1,20 @@
 {
+    "Aratio_locations": {
+        "50": "gammas/50/PANX_1249_Lv_M_WG_100-PM-013_LCM5_segments.txt",
+        "100": "gammas/100/sol2_0.59/PANX_1249_Lv_M_WG_100-PM-013_LCM5_segments.txt",
+        "200": "gammas/200/sol3_0.31/PANX_1249_Lv_M_WG_100-PM-013_LCM5_segments.txt",
+        "300": "gammas/300/PANX_1249_Lv_M_WG_100-PM-013_LCM5_segments.txt",
+        "400": "gammas/400/sol5_0.39/PANX_1249_Lv_M_WG_100-PM-013_LCM5_segments.txt",
+        "500": "gammas/500/sol4_0.39/PANX_1249_Lv_M_WG_100-PM-013_LCM5_segments.txt",
+        "600": "gammas/600/PANX_1249_Lv_M_WG_100-PM-013_LCM5_segments.txt",
+        "700": "gammas/700/PANX_1249_Lv_M_WG_100-PM-013_LCM5_segments.txt",
+        "800": "gammas/800/sol2_0.49/PANX_1249_Lv_M_WG_100-PM-013_LCM5_segments.txt",
+        "900": "gammas/900/sol2_0.49/PANX_1249_Lv_M_WG_100-PM-013_LCM5_segments.txt",
+        "1000": "gammas/1000/sol2_0.49/PANX_1249_Lv_M_WG_100-PM-013_LCM5_segments.txt",
+        "1250": "gammas/1250/sol2_0.49/PANX_1249_Lv_M_WG_100-PM-013_LCM5_segments.txt",
+        "1500": "gammas/1500/sol4_0.72/PANX_1249_Lv_M_WG_100-PM-013_LCM5_segments.txt",
+        "2000": "gammas/2000/sol5_0.72/PANX_1249_Lv_M_WG_100-PM-013_LCM5_segments.txt"
+    },
     "default_gamma": [
         400,
         "_primary_"

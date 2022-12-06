@@ -139,6 +139,7 @@ If _any_ sample name parameters are specified, then they must _at least_ include
 | `[discovered]` | `htzd` | Computed from `purity` | logR cutoff value |
 | `[discovered]` | `maf_file`    | File provenance | MAF input file from VariantEffectPredictor       |
 | `[discovered]` | `mavis_file`  | File provenance | Mavis input file                                 |
+| `[discovered]` | `msi_file`  | File provenance | msisensor input file        
 | `[discovered]` | `mutation_nonsyn`    | `data_dir` | Non-synonymous mutation list file             |
 | `[discovered]` | `normalid` | File provenance | Normal ID, eg. 100-PM-013_BC                |
 | `[discovered]` | `ploidy` | Read from `sequenza_file`, `sequenza_gamma`, `sequenza_solution` | Estimated tumour ploidy  |

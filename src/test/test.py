@@ -175,19 +175,19 @@ class TestConfigure(TestBase):
         test_configurer.run(out_path)
 
     def test_default(self):
-        self.run_config_test(self.config_user, False, False, 57, self.provenance)
+        self.run_config_test(self.config_user, False, False, 58, self.provenance)
+
 
     def test_default_fail(self):
         self.run_config_test(self.config_user_failed, False, True, 47, self.provenance)
 
     def test_wgs_only(self):
-        self.run_config_test(self.config_user_wgs_only, True, False, 55, self.provenance)
-
+        self.run_config_test(self.config_user_wgs_only, True, False, 56, self.provenance)
     def test_wgs_only_fail(self):
         self.run_config_test(self.config_user_wgs_only_failed, True, True, 47, self.provenance)
 
     def test_vnwgts(self):
-        self.run_config_test(self.config_user_vnwgts, False, False, 57, self.provenance_vnwgts)
+        self.run_config_test(self.config_user_vnwgts, False, False, 58, self.provenance_vnwgts)
 
     def test_vnwgts_broken(self):
         # test failure modes of sample input
@@ -221,18 +221,21 @@ class TestExtractor(TestBase):
     AUTHOR = 'Test Author'
 
     RSCRIPT_OUTPUTS_WGS_ONLY = [
-            'data_CNA_oncoKBgenes_nonDiploid_annotated.txt',
-            'data_CNA_oncoKBgenes_nonDiploid.txt',
-            'data_CNA.txt',
-            'data_expression_percentile_comparison.txt',
-            'data_expression_percentile_tcga.txt',
-            'data_expression_zscores_comparison.txt',
-            'data_expression_zscores_tcga.txt',
-            'data_log2CNA.txt',
-            'data_mutations_extended_oncogenic.txt',
-            'data_mutations_extended.txt',
-            'data_segments.txt',
-            'sequenza_meta.txt',
+        'data_CNA_oncoKBgenes_ARatio.txt',
+        'data_CNA_oncoKBgenes_nonDiploid_annotated.txt',
+        'data_CNA_oncoKBgenes_nonDiploid.txt',
+        'data_CNA.txt',
+        'data_expression_percentile_comparison.txt',
+        'data_expression_percentile_tcga.txt',
+        'data_expression_zscores_comparison.txt',
+        'data_expression_zscores_tcga.txt',
+        'data_log2CNA.txt',
+        'data_mutations_extended_oncogenic.txt',
+        'data_mutations_extended.txt',
+        'data_segments.txt',
+        'aratio_segments.txt',
+        'sequenza_meta.txt',
+        'msi.txt'
     ]
     # md5 sums of files in failed output
     STATIC_MD5 = {
@@ -252,9 +255,13 @@ class TestExtractor(TestBase):
         with open(expected_path) as in_file:
             data_expected = json.loads(in_file.read())
         # plot paths/contents are not fixed
-        for key in ['oicr_logo', 'tmb_plot', 'vaf_plot']:
+        for key in ['oicr_logo', 'cnv_plot', 'pga_plot', 'tmb_plot', 'vaf_plot']:
             del data_found['report'][key]
             del data_expected['report'][key]
+        for biomarker in range(0,len(data_found['report']['genomic_biomarkers']['Body'])):
+            del data_found['report']['genomic_biomarkers']['Body'][biomarker]['Genomic biomarker plot']
+        for biomarker in range(1,len(data_expected['report']['genomic_biomarkers']['Body'])):
+            del data_expected['report']['genomic_biomarkers']['Body'][biomarker]['Genomic biomarker plot']
         # do not check supplementary data
         del data_found['supplementary']
         del data_expected['supplementary']
@@ -288,7 +295,7 @@ class TestExtractor(TestBase):
             data_found['report']['djerba_version'] = 'PLACEHOLDER'
             del data_found['supplementary'] # do not test supplementary data
             data = json.dumps(data_found)
-            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), 'e83f704dc7583d7e83b3e78eec7c89ee')
+            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), 'f76c134dc342cb69766acc7c068b4828')
 
     def test_wgts_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGTS')
@@ -297,7 +304,7 @@ class TestExtractor(TestBase):
         rscript_outputs.extend([
             'data_fusions_new_delimiter.txt',
             'data_fusions_oncokb_annotated.txt',
-            'data_fusions.txt'
+            'data_fusions.txt',
         ])
         for file_name in rscript_outputs:
             file_path = os.path.join(self.sup_dir, 'report_example', file_name)
@@ -566,15 +573,15 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '01d8242b8350c7e5824722fdc52f34f6')
+        self.check_report(out_path, '4fd822907ad8f0c396fa1ffd7d0f9e79')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, 'a22cc3a0649ee673071173a7f3059beb')
+        self.check_report(out_path, '1fbbc5a1a952e84b6900752e59ba2ce2')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '8d28291809e7e1a16083b93d477943f5')
+        self.check_report(out_path, '1946773507c9d460cff62e97f3e612ed')
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
