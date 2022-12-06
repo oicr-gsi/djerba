@@ -1,8 +1,8 @@
 # CHANGELOG
 
-## v0.4.0: 2022-11-31
+## v0.3.13: 2022-12-06
 
-- New report template. Now reporting TMB (GCGI-392) as actionable biomarkers. MSI and LOH calculated but not reported. 
+- New report template. Now reporting TMB (GCGI-392) as actionable biomarkers. MSI and LOH calculated but not reported.
 
 ### Added
   - ammended report template added to prototypes
@@ -20,7 +20,7 @@
   - Updated TMB plotting script to show TMB-High cutoff
   - 'vaf_plot.R' format adjusted and slimmed
   - Updated  'configure.py' and 'provenance_reader' to find msisensor files and segment.txt files
-  - Architecture of report template: 
+  - Architecture of report template:
     - integrated and moved all CSS to new 'style.css' file
     - moved definitions and descriptions to subdirectory called 'templates_for_supp'
     - moved footer template to 'supplementary_materials_template.html'
