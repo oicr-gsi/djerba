@@ -86,6 +86,9 @@ class benchmarker(logger):
             pattern = '{0}/**/rsem_*/'.format(results_dir)+\
                       '**/{0}_*.genes.results'.format(sample)
             sample_inputs[ini.GEP_FILE] = self.glob_single(pattern)
+            pattern = '{0}/**/msisensor_*/'.format(results_dir)+\
+                      '**/{0}_*.realigned.recalibrated.msi.booted'.format(sample)
+            sample_inputs[ini.MSI_FILE] = self.glob_single(pattern)
             if any([x==None for x in sample_inputs.values()]):
                 # skip samples with missing inputs, eg. for testing
                 self.logger.info("Omitting sample {0}, no inputs found".format(sample))
@@ -104,10 +107,22 @@ class benchmarker(logger):
         Read report from a JSON file
         Replace variable elements (images, dates) with dummy values
         """
+        placeholder = 'redacted for benchmark comparison'
         with open(report_path) as report_file:
             data = json.loads(report_file.read())
-        for key in [rc.OICR_LOGO, rc.TMB_PLOT, rc.VAF_PLOT, rc.REPORT_DATE]:
-            data[constants.REPORT][key] = 'redacted for benchmark comparison'
+        for key in [
+                rc.OICR_LOGO,
+                rc.CNV_PLOT,
+                rc.PGA_PLOT,
+                rc.TMB_PLOT,
+                rc.VAF_PLOT,
+                rc.REPORT_DATE
+        ]:
+            data[constants.REPORT][key] = placeholder
+        for entry in data[constants.REPORT][rc.GENOMIC_BIOMARKERS][rc.BODY]:
+            # workaround for inconsistent biomarker entry formats
+            if entry[rc.ALTERATION] == rc.MSI:
+                entry[rc.METRIC_PLOT] = placeholder
         return data
 
     def run_comparison(self, report_dirs):

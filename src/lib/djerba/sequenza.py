@@ -26,6 +26,7 @@ class sequenza_reader(logger):
         self.purity = {}
         self.ploidy = {}
         self.seg_archive = {} # archive paths to .seg files
+        self.Aratio_archive = {} #archive paths to aratio_segments.txt
         tempdir = tempfile.TemporaryDirectory(prefix='djerba_sequenza_')
         tmp = tempdir.name
         # zip archives are large (~500 MB) -- only extract the files we need
@@ -44,10 +45,11 @@ class sequenza_reader(logger):
             gamma = gamma_id[0]
             if re.search('_segments\.txt$', name):
                 if gamma_id in self.segment_counts:
-                    msg = "Multiple _segments.txt for gamma_id {0}".format(gamma_id)
+                    msg = "Multiple aratio_segments.txt for gamma_id {0}".format(gamma_id)
                     self.logger.error(msg)
                     raise SequenzaError(msg)
                 self.segment_counts[gamma_id] = self._count_segments(zf.extract(name, tmp))
+                self.Aratio_archive[gamma] = name
             elif re.search('_alternative_solutions\.txt$', name) and self._is_primary(gamma_id):
                 # alternative_solutions.txt is identical for all solutions; only parse once for each gamma
                 self._update_purity_ploidy(gamma, zf.extract(name, tmp))
@@ -235,6 +237,18 @@ class sequenza_reader(logger):
         extracted = zf.extract(self.seg_archive[gamma_id[0]], dest_dir)
         return extracted
 
+    def extract_Aratio_file(self, dest_dir, gamma=None):
+        """
+        Extract the aratio_segments.txt file; for the supplied gamma (if any), default gamma otherwise.
+        No Sequenza solution specified, as aratio_segments.txt file is shared between all solutions for given gamma
+        dest_dir is a directory path for the extracted file.
+        The aratio_segments.txt file is further processed downstream, before input to singleSample.R
+        """
+        gamma_id = self._construct_gamma_id(gamma) # supplies defaults and checks validity of gamma
+        zf = zipfile.ZipFile(self.zip_path)
+        extracted = zf.extract(self.Aratio_archive[gamma_id[0]], dest_dir)
+        return extracted
+
     def get_default_gamma_id(self):
         return self.default_gamma_id
 
@@ -288,7 +302,8 @@ class sequenza_reader(logger):
             "max_purity_gamma": self.max_purity_gamma_id,
             "purity": self._reformat_metrics(self.purity),
             "ploidy": self._reformat_metrics(self.ploidy),
-            "seg_locations": self.seg_archive
+            "seg_locations": self.seg_archive,
+            "Aratio_locations": self.Aratio_archive
         }
         with open(out_path, 'w') as out_file:
             print(json.dumps(params, sort_keys=True, indent=4), file=out_file)

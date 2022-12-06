@@ -4,6 +4,7 @@ import djerba.render.constants as constants
 import re
 from markdown import markdown
 from time import strftime
+from djerba.util.image_to_base64 import converter
 
 class html_builder:
 
@@ -30,14 +31,26 @@ class html_builder:
             td = '<td>{0}</td>'.format(content)
         return td
 
-    def genomic_landscape_table_rows(self, genomic_landscape_args):
-        widths = [55,45]
-        key_groups = [
-            [constants.TMB_TOTAL, constants.PERCENT_GENOME_ALTERED],
-            [constants.CANCER_SPECIFIC_PERCENTILE, constants.CANCER_SPECIFIC_COHORT],
-            [constants.PAN_CANCER_PERCENTILE, constants.PAN_CANCER_COHORT],
-        ]
-        return self.key_value_table_rows(genomic_landscape_args, key_groups, widths)
+
+    def assemble_biomarker_plot(self,biomarker,plot):
+        template='<img id="{0}" style="width: 100%; " src="{1}"'
+        cell = template.format(biomarker,plot)
+        return(cell)
+
+    def biomarker_table_rows(self, genomic_biomarker_args):
+        row_fields = genomic_biomarker_args[constants.BODY]
+        rows = []
+        for row in row_fields:
+            if row[constants.ALT] == "TMB":
+                continue
+            else:
+                cells = [
+                    self._td(row[constants.ALT]),
+                    self._td(row[constants.METRIC_CALL]),
+                    self._td(self.assemble_biomarker_plot(row[constants.ALT],row[constants.METRIC_PLOT]))
+                ]
+                rows.append(self.table_row(cells))
+        return rows
 
     def key_value_table_rows(self, args, key_groups, widths):
         """Make a table to show key/value fields, with varying column widths"""
@@ -71,14 +84,19 @@ class html_builder:
                 key = key_group[i]
                 value = values[key]
                 if key == constants.PURITY_PERCENT and self.purity_failure:
-                    template = '<td width="{0}%" style="color:red;"><strong>{1}:</strong> {2}</td>'
+                    template = '<td width="{0}%" style="color:red;">{1}:</td><td width="{2}%">{3}</td>'
                 else:
-                    template = '<td width="{0}%"><strong>{1}:</strong> {2}</td>'
-                cell = template.format(width, key, value)
+                    template = '<td width="{0}%">{1}:</td><td width="{2}%" >{3}</td>'
+                cell = template.format(width[0], key, width[1], value)
                 row_items.append(cell)
             row_items.append('</tr>')
             rows.append("\n".join(row_items))
         return rows
+
+    def make_sections_into_cells(self,section_title,main_or_supp):
+        template = '<hr class="big-white-line" ><div class="twocell{0}"><div class="oneoftwocell{0}">{1}</div><div class="twooftwocell{0}" ><hr class="big-line" >'  
+        cell = template.format(main_or_supp,section_title)
+        return cell
 
     def markdown_to_html(self, markdown_string):
         return markdown(markdown_string)
@@ -111,7 +129,7 @@ class html_builder:
             constants.CHROMOSOME,
             constants.PROTEIN,
             constants.MUTATION_TYPE,
-            constants.VAF_PERCENT,
+            constants.VAF_NOPERCENT,
             constants.DEPTH,
             constants.COPY_STATE,
             constants.ONCOKB
@@ -136,32 +154,47 @@ class html_builder:
             rows.append(self.table_row(cells))
         return rows
     
-    def patient_table_rows_2_cols(self, patient_args):
+    def patient_table_report_cols(self, patient_args):
         """Get the patient info table: After initial header, before Sample Information & Quality"""
-        widths = [63, 37]
+        widths = [[25,25], [25,25]]
         key_groups = [
-            [constants.HOSPITAL, constants.REQUISITIONER_EMAIL],
-            [constants.PRIMARY_CANCER, constants.SITE_OF_BIOPSY_OR_SURGERY],
-            [constants.TUMOUR_SAMPLE_ID, constants.BLOOD_SAMPLE_ID],
+            [constants.REPORT_ID, constants.PATIENT_LIMS_ID],
+            [constants.BLOOD_SAMPLE_ID, constants.PATIENT_STUDY_ID],
+            [constants.TUMOUR_SAMPLE_ID , constants.STUDY]
         ]
         return self.key_value_table_rows(patient_args, key_groups, widths)
     
-    def patient_table_rows_3_cols(self, patient_args):
+    def patient_table_id_cols(self, patient_args):
         """Get the patient info table: After initial header, before Sample Information & Quality"""
-        widths = [35, 28, 37]
+        widths = [[25,15],[23,38]]
         key_groups = [
-            [constants.DATE_OF_REPORT, constants.REQ_APPROVED_DATE, constants.REPORT_ID],
-            [constants.STUDY, constants.PATIENT_STUDY_ID, constants.PATIENT_LIMS_ID],
-            [constants.NAME, constants.DOB, constants.SEX],
-            [constants.PHYSICIAN, constants.LICENCE_NUMBER, constants.PHONE_NUMBER],
+            [constants.DATE_OF_REPORT , constants.REQUISITIONER_EMAIL],
+            [constants.REQ_APPROVED_DATE, constants.NAME],
+            [constants.SEX, constants.DOB],
+            [constants.LICENCE_NUMBER, constants.PHYSICIAN],
+            [constants.PHONE_NUMBER, constants.HOSPITAL]
         ]
         return self.key_value_table_rows(patient_args, key_groups, widths)
 
+    def process_oncokb_colours(self,oncokb_level):
+        template = '<div  class="circle oncokb-level{0}">{0}</div>'  
+        split_oncokb = oncokb_level.split(" ",2)
+        oncokb_circle = template.format(split_oncokb[1])
+        return(oncokb_circle)
+        
+    def pull_biomarker_text(self, genomic_biomarker_args, biomarker):
+        row_fields = genomic_biomarker_args[constants.BODY]
+        for row in row_fields:
+            if row[constants.ALT] == biomarker:
+                metric_text = row[constants.METRIC_TEXT]
+        return metric_text
+
     def sample_information_and_quality_rows(self, sample_args):
-        widths = [34, 33, 33]
+        widths = [[35,15], [20,15]]
         key_groups = [
-            [constants.ONCOTREE_CODE, constants.CALLABILITY_PERCENT, constants.COVERAGE_MEAN],
-            [constants.SAMPLE_TYPE, constants.PURITY_PERCENT, constants.PLOIDY],
+            [constants.ONCOTREE_CODE, constants.SAMPLE_TYPE],
+            [constants.CALLABILITY_PERCENT, constants.COVERAGE_MEAN],
+            [constants.PURITY_PERCENT, constants.PLOIDY]
         ]
         return self.key_value_table_rows(sample_args, key_groups, widths)
 
@@ -196,7 +229,6 @@ class html_builder:
     def supplementary_gene_info_header(self):
         names = [
             constants.GENE,
-            constants.CHROMOSOME,
             constants.SUMMARY
         ]
         return self.table_header(names)
@@ -213,7 +245,6 @@ class html_builder:
                              row[constants.SUMMARY])
             cells = [
                 self._td(self._href(row[constants.GENE_URL], row[constants.GENE]), italic=True),
-                self._td(row[constants.CHROMOSOME]),
                 self._td(summary)
             ]
             rows.append(self.table_row(cells))
@@ -233,20 +264,21 @@ class html_builder:
         return ''.join(items)
 
     def therapies_header(self):
-        return self.table_header(['Gene(s)', 'Alteration', 'Treatment(s)', 'OncoKB'])
+        return self.table_header(['OncoKB', 'Treatment(s)','Gene(s)', 'Alteration' ])
 
     def therapies_table_rows(self, row_fields):
         rows = []
         for row in row_fields:
-            widths = iter([15, 15, 55, 15])
+            widths = iter([1, 59, 20, 20])
             # may have a pair of genes (fusions) or single gene (otherwise)
             gene_urls = row[constants.GENES_AND_URLS]
             gene_links = [self._href(gene_urls[gene], gene) for gene in sorted(list(gene_urls.keys()))]
             cells = [
+                self._td(self.process_oncokb_colours(row[constants.ONCOKB]), False, next(widths)),
+                self._td(row[constants.TREATMENT], False, next(widths)),
                 self._td(', '.join(gene_links), True, next(widths)),
                 self._td(self._href(row[constants.ALT_URL], row[constants.ALT]), False, next(widths)),
-                self._td(row[constants.TREATMENT], False, next(widths)),
-                self._td(row[constants.ONCOKB], False, next(widths)),
             ]
             rows.append(self.table_row(cells))
         return rows
+

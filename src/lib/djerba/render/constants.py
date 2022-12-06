@@ -16,6 +16,8 @@ SUPPLEMENTARY_GENE_INFO = 'gene_info'
 STRUCTURAL_VARIANTS_AND_FUSIONS = 'structural_variants_and_fusions'
 TMB_PLOT = 'tmb_plot'
 VAF_PLOT = 'vaf_plot'
+CNV_PLOT = 'cnv_plot'
+PGA_PLOT = 'pga_plot'
 FAILED = 'failed'
 PURITY_FAILURE = 'purity_failure'
 ASSAY_WGTS = 'WGTS'
@@ -26,19 +28,19 @@ TECHNICAL_NOTES = 'technical_notes'
 # constants for the patient info table
 ASSAY_NAME = 'Assay'
 DATE_OF_REPORT = 'Date of Report'
+REQ_ID = 'Requisition ID'
 REQ_APPROVED_DATE = 'Requisition Approved'
 REPORT_ID = 'Report ID'
 STUDY = 'Study'
 PATIENT_STUDY_ID = 'Patient Study ID'
 PATIENT_LIMS_ID = 'Patient LIMS ID'
-NAME = 'Name'
-DOB = 'DOB'
-SEX = 'Genetic Sex'
+NAME = 'Patient Name'
+DOB = 'Patient DOB'
+SEX = 'Patient Genetic Sex'
 PHYSICIAN = 'Physician'
-LICENCE_NUMBER = 'Licence #'
-PHONE_NUMBER = 'Phone #'
-HOSPITAL = 'Hospital'
-REQ_ID = 'Requisition ID'
+LICENCE_NUMBER = 'Physician Licence #'
+PHONE_NUMBER = 'Physician Phone #'
+HOSPITAL = 'Physician Hospital'
 REQUISITIONER_EMAIL = 'Requisitioner Email'
 PRIMARY_CANCER = 'Primary cancer'
 SITE_OF_BIOPSY_OR_SURGERY = 'Site of biopsy/surgery'
@@ -50,7 +52,7 @@ PATIENT_INFO_CONSTANT_FIELDS = {
     NAME: 'LAST NAME, FIRST NAME',
     LICENCE_NUMBER: 'nnnnnnnn',
     PHONE_NUMBER: 'nnn-nnn-nnnn',
-    HOSPITAL: 'HOSPTIAL NAME AND HOSPITAL ADDRESS',
+    HOSPITAL: 'HOSPITAL NAME AND ADDRESS',
     REQUISITIONER_EMAIL: '<a href="mailto:NAME@DOMAIN.COM" class="email">NAME@DOMAIN.COM</a>'
 }
 
@@ -81,9 +83,11 @@ PROTEIN = 'Protein'
 PROTEIN_URL = 'Protein_URL'
 MUTATION_TYPE = 'Type'
 VAF_PERCENT = 'VAF (%)'
+VAF_NOPERCENT = 'VAF'
 TUMOUR_ALT_COUNT = 't_alt_count'
 TUMOUR_DEPTH = 't_depth'
 COPY_STATE = 'Copy State'
+LOH_STATE = 'LOH (ABratio)'
 
 # constants for the genomic landscape table
 TMB_TOTAL = 'Tumour Mutation Burden'
@@ -110,3 +114,12 @@ NORMAL_MIN = 'Normal min'
 NORMAL_TARGET = 'Normal target'
 TUMOUR_MIN = 'Tumour min'
 TUMOUR_TARGET = 'Tumour target'
+
+# constants for other biomarkers
+MSI = "MSI"
+TMB = "TMB"
+METRIC_CALL = 'Genomic biomarker call'
+METRIC_VALUE = 'Genomic biomarker value'
+METRIC_TEXT = 'Genomic biomarker text'
+METRIC_PLOT = 'Genomic biomarker plot'
+GENOMIC_BIOMARKERS = 'genomic_biomarkers'

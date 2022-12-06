@@ -98,7 +98,7 @@ class pdf_renderer(logger):
                 self.logger.info("Including footer text for CGI clinical report")
                 options = {
                     'footer-right': '[page] of [topage]',
-                    'footer-center': footer_text,
+                    'footer-left': footer_text,
                     'quiet': '',
                     'disable-javascript': ''
                 }

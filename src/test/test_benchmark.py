@@ -46,7 +46,7 @@ class TestBenchmark(TestBase):
         report_1a = os.path.join(report_dir, 'GSICAPBENCH_1219')
         report_1b = os.path.join(report_dir, 'GSICAPBENCH_1219.copy')
         copytree(report_1a, report_1b) # make a copy to test identical inputs
-        report_2 = os.path.join(report_dir, 'GSICAPBENCH_1232')
+        report_2 = os.path.join(report_dir, 'GSICAPBENCH_1273')
         compare_args_1 = self.mock_args_compare([report_1a, report_1b])
         self.assertTrue(benchmarker(compare_args_1).run())
         compare_args_2 = self.mock_args_compare([report_1a, report_2])

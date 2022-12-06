@@ -35,7 +35,7 @@ module load production-tools-python/${PYTHON_TOOLS_VER}
 
 cap-geneticist-review-report -c ${DB_CONFIG} -m ${MISO_URL} -d ${DASHI_URL} \
   -e ${QCETL_CACHE} -s ${SAMPURU_ETL} -p ${PINERY_URL} -r ${REQUISITION} \
-  -o geneticist_review_${REQUISITION}.html
+  -o ${REQUISITION}_qc.html
 
 # convert to PDF
-wkhtmltopdf geneticist_review_${REQUISITION}.html geneticist_review_${REQUISITION}.pdf
+wkhtmltopdf ${REQUISITION}_qc.html ${REQUISITION}_qc.pdf
