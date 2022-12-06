@@ -9,6 +9,7 @@ library(BSgenome.Hsapiens.UCSC.hg38)
 # maffile, gepfile, fusfile may be omitted in WGS-only reports
 option_list = list(
   make_option(c("-a", "--basedir"), type="character", default=NULL, help="cBioWrap base directory", metavar="character"),
+  make_option(c("-A", "--aratiofile"), type="character", default=NULL, help="A allele ratio file", metavar="character"),
   make_option(c("-b", "--maffile"), type="character", default=NULL, help="concatenated maf file", metavar="character"),
   make_option(c("-c", "--segfile"), type="character", default=NULL, help="concatenated seg file", metavar="character"),
   make_option(c("-d", "--fusfile"), type="character", default=NULL, help="concatenated fus file", metavar="character"),
@@ -41,6 +42,7 @@ opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE);
 opt <- parse_args(opt_parser);
 
 # set better variable names
+aratiofile <- opt$aratiofile
 basedir <- opt$basedir
 maffile <- opt$maffile
 segfile <- opt$segfile
@@ -121,8 +123,13 @@ if (is.null(maffile)) {
       write.table(df_weights, file=paste0(signdir, "/weights.txt"), sep="\t", quote=FALSE, row.names=TRUE, col.names=NA)
 
     }
-
-   }
+    
+    ##process LOH
+    print("Processing LOH data")
+    LOH <- preProcLOH(aratiofile=aratiofile, genebed=genebed, oncolist=oncolist, genelist=df_cbio_filt$Hugo_Symbol)
+    write.table(LOH[[1]],file=paste0(outdir, "/data_CNA_oncoKBgenes_ARatio.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+   
+  }
 
  }
 

@@ -1,0 +1,16 @@
+<%
+  from time import strftime
+  import djerba.render.constants as constants
+  from djerba.render.json_to_html import html_builder
+%>
+
+<p><strong>Tumor Mutation Burden (TMB): </strong> The number of somatic, coding, non-synonymous base substitutions and short insertions and deletions (indels) per megabase of tumour genome Percentiles for tumour mutation burden (TMB) are plotted and reported against the corresponding TCGA tumour type.
+
+<br><strong>Fraction Genome Altered (FGA): </strong>The fraction of copy number altered genome for a sample was calculated based on copy number segment data: it is the fraction of genome with log2 copy number larger than 0.2 versus genome with copy number profiled.
+
+<br><strong>Microsatellite stability score (MSI)</strong> represents the percentage of the genome's short repeat sections showing insertions or deletions in the tumour. Tumours with a score greater than 5.0 are considered microsatellite unstable (MSI). This metric can be considered as a good marker for instability in microsatellite repeat regions, which is often caused by genetic or epigenetic alterations to genes in the mismatch repair pathway such as MLH1, MSH2, and MSH6.
+
+<p><strong>Cohort: </strong>If available, the name of an external dataset used to calculate TMB percentile .
+
+<br><strong>All TCGA Percentile: </strong>Percentile of TMB scores are plotted relative to <a href="https://gdc.cancer.gov/about-data/publications/pancanatlas">all TCGA samples</a> (${genomic_landscape_info.get(constants.PAN_CANCER_COHORT)}).
+<br><strong>TCGA Cohort Percentile: </strong>Percentile of TMB scores are plotted relative to <a href="https://gdc.cancer.gov/about-data/publications/pancanatlas">closest TCGA sample cohort</a>

@@ -16,7 +16,9 @@ import djerba.util.constants as dc
 from djerba import __version__
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
+from djerba.extract.oncokb_annotator import oncokb_annotator
 from statsmodels.distributions.empirical_distribution import ECDF
+from djerba.util.image_to_base64 import converter
 
 class composer_base(logger):
     # base class with shared methods and constants
@@ -99,9 +101,13 @@ class clinical_report_json_composer(composer_base):
     HUGO_SYMBOL_TITLE_CASE = 'Hugo_Symbol'
     HUGO_SYMBOL_UPPER_CASE = 'HUGO_SYMBOL'
     MINIMUM_MAGNITUDE_SEG_MEAN = 0.2
+    MSS_CUTOFF = 5.0
+    MSI_CUTOFF = 10.0
+    MSI_FILE = 'msi.txt'
     MUTATIONS_EXTENDED_ONCOGENIC = 'data_mutations_extended_oncogenic.txt'
     MUTATIONS_EXTENDED = 'data_mutations_extended.txt'
     CNA_ANNOTATED = 'data_CNA_oncoKBgenes_nonDiploid_annotated.txt'
+    BIOMARKERS_ANNOTATED = 'annotated_maf_tmp.tsv'
     INTRAGENIC = 'intragenic'
     ONCOKB_URL_BASE = 'https://www.oncokb.org/gene'
     FDA_APPROVED = 'FDA_APPROVED'
@@ -114,6 +120,7 @@ class clinical_report_json_composer(composer_base):
     UNKNOWN = 'Unknown'
     VARIANT_CLASSIFICATION = 'Variant_Classification'
     V7_TARGET_SIZE = 37.285536 # inherited from CGI-Tools
+
 
     # variant classifications excluded from TMB count
     TMB_EXCLUDED = [
@@ -158,6 +165,7 @@ class clinical_report_json_composer(composer_base):
         self.clinical_data = self.read_clinical_data()
         self.closest_tcga_lc = self.clinical_data[dc.CLOSEST_TCGA].lower()
         self.closest_tcga_uc = self.clinical_data[dc.CLOSEST_TCGA].upper()
+        self.oncotree_uc = self.params.get(xc.ONCOTREE_CODE).upper()
         self.data_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], dc.DATA_DIR_NAME)
         self.r_script_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], 'R_plots')
         self.html_dir = os.path.join(os.path.dirname(__file__), '..', 'html')
@@ -229,6 +237,26 @@ class clinical_report_json_composer(composer_base):
     def build_gene_url(self, gene):
         return '/'.join([self.ONCOKB_URL_BASE, gene])
 
+    def build_genomic_biomarkers(self,input_dir,sample_ID):
+        rows = []
+        genomic_biomarkers_path = os.path.join(input_dir,"genomic_biomarkers.maf")
+        with open(genomic_biomarkers_path, 'w') as genomic_biomarkers_file:
+            #print .maf header
+            print("HUGO_SYMBOL\tSAMPLE_ID\tALTERATION", file=genomic_biomarkers_file)
+            rows.append(self.call_TMB(sample_ID,genomic_biomarkers_file))
+            rows.append(self.call_MSI(sample_ID,genomic_biomarkers_file))
+        out_path = oncokb_annotator(
+            self.clinical_data[dc.TUMOUR_SAMPLE_ID],
+            self.params.get(xc.ONCOTREE_CODE).upper(),
+            input_dir,
+            input_dir
+        ).annotate_maf(genomic_biomarkers_path)
+        data = {
+            rc.CLINICALLY_RELEVANT_VARIANTS: len(rows),
+            rc.BODY: rows
+        }
+        return data
+
     def build_genomic_landscape_info(self):
         # need to calculate TMB and percentiles
         cohort = self.read_cohort()
@@ -252,6 +280,7 @@ class clinical_report_json_composer(composer_base):
         # TODO import clinical data column names from Djerba constants
         data = {}
         tumour_id = self.clinical_data[dc.TUMOUR_SAMPLE_ID]
+        req_id = self.params.get(xc.REQ_ID)
         data[rc.ASSAY_NAME] = self.params.get(xc.ASSAY_NAME)
         data[rc.BLOOD_SAMPLE_ID] = self.clinical_data[dc.BLOOD_SAMPLE_ID]
         data[rc.SEX] = self.clinical_data[dc.SEX]
@@ -259,7 +288,7 @@ class clinical_report_json_composer(composer_base):
         data[rc.PATIENT_STUDY_ID] = self.clinical_data[dc.PATIENT_STUDY_ID]
         data[rc.PRIMARY_CANCER] = self.clinical_data[dc.CANCER_TYPE_DESCRIPTION]
         data[rc.REPORT_ID] = "{0}-v{1}".format(tumour_id, self.clinical_data[dc.REPORT_VERSION])
-        data[rc.REQ_ID] = self.params.get(xc.REQ_ID)
+        data[rc.REQ_ID] = req_id
         data[rc.REQ_APPROVED_DATE] = self.clinical_data[dc.REQ_APPROVED_DATE]
         data[rc.SITE_OF_BIOPSY_OR_SURGERY] = self.clinical_data[dc.SAMPLE_ANATOMICAL_SITE]
         data[rc.STUDY] = self.params.get(xc.STUDY)
@@ -281,6 +310,7 @@ class clinical_report_json_composer(composer_base):
         self.logger.debug("Building data for small mutations and indels table")
         rows = []
         mutation_copy_states = self.read_mutation_copy_states()
+        mutation_LOH_states = self.read_mutation_LOH()
         with open(os.path.join(self.input_dir, self.MUTATIONS_EXTENDED_ONCOGENIC)) as data_file:
             for input_row in csv.DictReader(data_file, delimiter="\t"):
                 gene = input_row[self.HUGO_SYMBOL_TITLE_CASE]
@@ -291,12 +321,13 @@ class clinical_report_json_composer(composer_base):
                     rc.GENE_URL: self.build_gene_url(gene),
                     rc.CHROMOSOME: cytoband,
                     rc.PROTEIN: protein,
-                    rc.PROTEIN_URL: self.build_alteration_url(gene, protein, self.closest_tcga_uc),
+                    rc.PROTEIN_URL: self.build_alteration_url(gene, protein, self.oncotree_uc),
                     rc.MUTATION_TYPE: re.sub('_', ' ', input_row[self.VARIANT_CLASSIFICATION]),
                     rc.VAF_PERCENT: int(round(float(input_row[self.TUMOUR_VAF]), 2)*100),
                     rc.TUMOUR_DEPTH: int(input_row[rc.TUMOUR_DEPTH]),
                     rc.TUMOUR_ALT_COUNT: int(input_row[rc.TUMOUR_ALT_COUNT]),
                     rc.COPY_STATE: mutation_copy_states.get(gene, self.UNKNOWN),
+                    rc.LOH_STATE: mutation_LOH_states[gene],
                     rc.ONCOKB: self.parse_oncokb_level(input_row)
                 }
                 rows.append(row)
@@ -339,18 +370,22 @@ class clinical_report_json_composer(composer_base):
         return data
 
     def build_supplementary_info(self):
-        self.logger.debug("Building data for supplementary gene information table")
-        variants = sorted(list(self.all_reported_variants))
-        gene_summaries = self.read_oncokb_gene_summaries()
         rows = []
-        for [gene, cytoband] in variants:
-            row = {
-                rc.GENE: gene,
-                rc.GENE_URL: self.build_gene_url(gene),
-                rc.CHROMOSOME: cytoband,
-                rc.SUMMARY: gene_summaries.get(gene, 'OncoKB summary not available')
-            }
-            rows.append(row)
+        if self.failed:
+            self.logger.debug("Failed report, omitting construction of supplementary gene information table")
+        else:
+            self.logger.debug("Building data for supplementary gene information table")
+            variants = sorted(list(self.all_reported_variants))
+            gene_summaries = self.read_oncokb_gene_summaries()
+            for [gene, cytoband] in variants:
+                row = {
+                    rc.GENE: gene,
+                    rc.GENE_URL: self.build_gene_url(gene),
+                    rc.CHROMOSOME: cytoband,
+                    rc.SUMMARY: gene_summaries.get(gene, 'OncoKB summary not available')
+                }
+                rows.append(row)
+        self.logger.debug("Found {0} supplementary info rows".format(len(rows)))
         return rows
 
     def build_therapy_info(self, level):
@@ -396,8 +431,74 @@ class clinical_report_json_composer(composer_base):
                     therapies = fusion.get_inv_therapies()
                 if max_level:
                     rows.append(self.treatment_row(genes, alteration, max_level, therapies))
+
+        if os.path.exists(os.path.join(self.input_dir, self.BIOMARKERS_ANNOTATED)):
+            with open(os.path.join(self.input_dir, self.BIOMARKERS_ANNOTATED)) as data_file:
+                for row in csv.DictReader(data_file, delimiter="\t"):
+                    gene = 'Biomarker'
+                    alteration = row[self.ALTERATION_UPPER_CASE]
+                    [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
+                    if max_level:
+                        rows.append(self.treatment_row(gene, alteration, max_level, therapies))
+        else:
+            msg = "No other biomarkers file at \"{0}\", skipping other biomarkers".format(os.path.join(self.input_dir, self.BIOMARKERS_ANNOTATED))
+            self.logger.debug(msg)
         rows = list(filter(self.oncokb_filter, self.sort_therapy_rows(rows)))
         return rows
+
+    def call_MSI(self,sample_ID,genomic_biomarkers_file):
+        #convert MSI number into Low, inconclusive or High call
+        msi = self.extract_msi()
+        if msi >= self.MSI_CUTOFF:
+            metric_call = "MSI-H"
+            metric_text = "Microsatellite Instability High (MSI-H)"
+            print("Other Biomarkers\t"+sample_ID+"\tMSI-H", file=genomic_biomarkers_file)
+        elif msi < self.MSI_CUTOFF and msi >= self.MSS_CUTOFF:
+            metric_call = "INCONCLUSIVE"
+            metric_text = "Inconclusive Microsatellite Instability status"
+        elif msi < self.MSS_CUTOFF:
+            metric_call = "MSS"
+            metric_text = "Microsatellite Stable (MSS)"
+        else:
+            msg = "MSI not a number"
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        msi_plot_location = self.write_biomarker_plot(self.input_dir,"msi")
+        msi_plot_base64 = converter().convert_svg(msi_plot_location, 'MSI plot')
+        row = {
+            rc.ALT: rc.MSI,
+            rc.METRIC_VALUE: msi,
+            rc.METRIC_CALL: metric_call,
+            rc.METRIC_TEXT: metric_text,
+            rc.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/MSI-H",
+            rc.METRIC_PLOT: msi_plot_base64
+        }
+        return(row)
+
+    def call_TMB(self,sample_ID,genomic_biomarkers_file):
+        #convert TMB number into Low or High call
+        tmb = self.build_genomic_landscape_info()[rc.TMB_PER_MB]
+        tmb_plot_placeholder = "see tmb_plot"
+        if tmb >= 10:
+            metric_call = "TMB-H"
+            metric_text = "Tumour Mutational Burden High (TMB-H)"
+            print("Other Biomarkers\t"+sample_ID+"\tTMB-H", file=genomic_biomarkers_file)
+        elif tmb < 10:
+            metric_call = "TMB-L"
+            metric_text = "Tumour Mutational Burden Low (TMB-L)"
+        else:
+            msg = "TMB not a number"
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        row = {
+            rc.ALT: rc.TMB,
+            rc.METRIC_VALUE: tmb,
+            rc.METRIC_CALL: metric_call,
+            rc.METRIC_TEXT: metric_text,
+            rc.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/TMB-H",
+            rc.METRIC_PLOT: tmb_plot_placeholder
+        }
+        return(row)
 
     def cytoband_sort_order(self, cb_input):
         """Cytobands are (usually) of the form [integer][p or q][decimal]; also deal with edge cases"""
@@ -430,6 +531,20 @@ class clinical_report_json_composer(composer_base):
                 self.logger.warning(msg)
                 (chromosome, arm, band) = end
         return (chromosome, arm, band)
+
+    def extract_msi(self):
+        MSI = 0.0
+        with open(os.path.join(self.input_dir, self.MSI_FILE), 'r') as msi_file:
+            reader_file = csv.reader(msi_file, delimiter="\t")
+            for row in reader_file:
+                try: 
+                    MSI = float(row[2])
+                except IndexError as err:
+                    msg = "Incorrect number of columns in msisensor row: '{0}'".format(row)+\
+                          "read from '{0}'".format(os.path.join(self.input_dir, self.MSI_FILE))
+                    self.logger.error(msg)
+                    raise RuntimeError(msg) from err
+        return MSI
 
     def get_cytoband(self, gene_name):
         cytoband = self.cytoband_map.get(gene_name)
@@ -561,6 +676,23 @@ class clinical_report_json_composer(composer_base):
                     copy_states[gene] = copy_state_conversion.get(category, self.UNKNOWN)
         return copy_states
 
+    def read_mutation_LOH(self):
+        # convert A-allele ratio to LOH; return mapping of gene -> LOH
+        loh_states = {}
+        with open(os.path.join(self.input_dir, 'data_CNA_oncoKBgenes_ARatio.txt')) as in_file:
+            first = True
+            for row in csv.reader(in_file, delimiter="\t"):
+                if first:
+                    first = False
+                else:
+                    [gene, aratio] = [row[0], float(row[1])]
+                    if(aratio == 0.0):
+                        lohcall = "Yes"
+                    else:
+                        lohcall = "No"   
+                    loh_states[gene] = (lohcall+' ('+str(round(aratio,1))+')')
+        return loh_states
+
     def read_oncokb_gene_summaries(self):
         summaries = {}
         with open(os.path.join(self.data_dir, '20201126-allCuratedGenes.tsv')) as in_file:
@@ -620,19 +752,24 @@ class clinical_report_json_composer(composer_base):
         data[rc.DJERBA_VERSION] = __version__
         if not self.failed:
             # additional data for non-failed reports
+            data[rc.GENOMIC_BIOMARKERS] = self.build_genomic_biomarkers(self.input_dir,self.clinical_data[dc.TUMOUR_SAMPLE_ID])
             data[rc.APPROVED_BIOMARKERS] = self.build_fda_approved_info()
             data[rc.INVESTIGATIONAL_THERAPIES] = self.build_investigational_therapy_info()
             data[rc.GENOMIC_LANDSCAPE_INFO] = self.build_genomic_landscape_info()
             tmb = data[rc.GENOMIC_LANDSCAPE_INFO][rc.TMB_PER_MB]
+            pga = data[rc.GENOMIC_LANDSCAPE_INFO][rc.PERCENT_GENOME_ALTERED]
             data[rc.TMB_PLOT] = self.write_tmb_plot(tmb, self.input_dir)
             data[rc.VAF_PLOT] = self.write_vaf_plot(self.input_dir)
+            data[rc.CNV_PLOT] = converter().convert_svg(self.write_cnv_plot(self.input_dir), 'CNV plot')
+            data[rc.PGA_PLOT] = converter().convert_svg(self.write_pga_plot(pga, self.input_dir), 'PGA plot')
             data[rc.SMALL_MUTATIONS_AND_INDELS] = self.build_small_mutations_and_indels()
             data[rc.TOP_ONCOGENIC_SOMATIC_CNVS] = self.build_copy_number_variation()
             if self.params.get(xc.ASSAY_TYPE) == rc.ASSAY_WGTS:
                 data[rc.STRUCTURAL_VARIANTS_AND_FUSIONS] = self.build_svs_and_fusions()
             else:
                 data[rc.STRUCTURAL_VARIANTS_AND_FUSIONS] = None
-            data[rc.SUPPLEMENTARY_GENE_INFO] = self.build_supplementary_info() 
+        # build supplementary gene info last; refers back to variants discovered (if any)
+        data[rc.SUPPLEMENTARY_GENE_INFO] = self.build_supplementary_info()
         self.logger.info("Finished building clinical report data for JSON output")
         return data
 
@@ -658,12 +795,21 @@ class clinical_report_json_composer(composer_base):
 
     def treatment_row(self, genes_arg, alteration, max_level, therapies):
         # genes argument may be a string, or an iterable of strings
+        core_biomarker_url = "https://www.oncokb.org/gene/Other%20Biomarkers"
         if isinstance(genes_arg, str):
             genes_and_urls = {genes_arg: self.build_gene_url(genes_arg)}
         else:
             genes_and_urls = {gene: self.build_gene_url(gene) for gene in genes_arg}
         if alteration == rc.FUSION:
             alt_url = self.build_alteration_url('-'.join(genes_arg), alteration, self.closest_tcga_uc)
+        if alteration == "TMB-H" or alteration == "MSI-H":
+            genes_and_urls = {
+                "Biomarker": core_biomarker_url
+            }
+            if alteration == "TMB-H":
+                alt_url = '/'.join([core_biomarker_url,"TMB-H/"])
+            if alteration == "MSI-H":
+                alt_url = '/'.join([core_biomarker_url,"Microsatellite%20Instability-High/"])
         else:
             alt_url = self.build_alteration_url(genes_arg, alteration, self.closest_tcga_uc)
         row = {
@@ -674,6 +820,39 @@ class clinical_report_json_composer(composer_base):
             rc.TREATMENT: therapies
         }
         return row
+
+    def write_biomarker_plot(self, out_dir,marker):
+        out_path = os.path.join(out_dir, marker+'.svg')
+        args = [
+            os.path.join(self.r_script_dir, 'biomarkers_plot.R'),
+            '-d', self.input_dir
+        ]
+        subprocess_runner(self.log_level, self.log_path).run(args)
+        self.logger.info("Wrote biomarkers plot to {0}".format(out_path))
+        return out_path
+
+    def write_cnv_plot(self, out_dir):
+            out_path = os.path.join(out_dir, 'seg_allele_plot.svg')
+            args = [
+                os.path.join(self.r_script_dir, 'cnv_plot.R'),
+                '--segfile',  os.path.join(self.input_dir, 'aratio_segments.txt'),
+                '--segfiletype', 'sequenza',
+                '-d',out_dir
+            ]
+            subprocess_runner(self.log_level, self.log_path).run(args)
+            self.logger.info("Wrote CNV plot to {0}".format(out_path))
+            return out_path
+
+    def write_pga_plot(self, pga, out_dir):
+        out_path = os.path.join(out_dir, 'pga.svg')
+        args = [
+            os.path.join(self.r_script_dir, 'pga_plot.R'),
+            '-o', out_path,
+            '-p', str(pga)
+        ]
+        subprocess_runner(self.log_level, self.log_path).run(args)
+        self.logger.info("Wrote PGA plot to {0}".format(out_path))
+        return out_path
 
     def write_tmb_plot(self, tmb, out_dir):
         out_path = os.path.join(out_dir, 'tmb.svg')
@@ -697,6 +876,7 @@ class clinical_report_json_composer(composer_base):
         subprocess_runner(self.log_level, self.log_path).run(args)
         self.logger.info("Wrote VAF plot to {0}".format(out_path))
         return out_path
+    
 
 class fusion_reader(composer_base):
 

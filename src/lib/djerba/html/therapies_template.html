@@ -1,0 +1,35 @@
+<%
+  from time import strftime
+  import djerba.render.constants as constants
+  from djerba.render.json_to_html import html_builder
+%>
+
+${html_builder().make_sections_into_cells("<h2>Treatment Options</h2>","main")}
+
+      <p>Review identified <strong>${len(approved_biomarkers)}</strong> mutation(s) FDA Approved and/or NCCN Recommended Biomarker and <strong>${len(investigational_therapies)}</strong> mutation(s) investigational therapies.</p>
+
+      % if len(approved_biomarkers)>0:
+            <h3 class="header3">FDA Approved and/or NCCN Recommended Biomarker:</h3>
+            <table class="variants" width="100%">
+                  ${html_builder().therapies_header()}
+                  <tbody>
+                  % for row in html_builder().therapies_table_rows(approved_biomarkers):
+                        ${row}
+                  % endfor
+                  </tbody>
+            </table>
+      % endif
+
+      % if len(investigational_therapies)>0:
+            <h3 class="header3">Investigational Therapies:</h3>
+            <table class="variants" width="100%">
+            ${html_builder().therapies_header()}
+                  <tbody>
+                  % for row in html_builder().therapies_table_rows(investigational_therapies):
+                        ${row}
+                  % endfor
+                  </tbody>
+            </table>
+      % endif
+
+</div></div>

@@ -28,6 +28,7 @@ class provenance_reader(logger):
     WF_BMPP = 'bamMergePreprocessing_by_tumor_group'
     WF_DELLY = 'delly_matched_by_tumor_group'
     WF_MAVIS = 'mavis'
+    WF_MSISENSOR = 'msisensor'
     WF_RSEM = 'rsem'
     WF_SEQUENZA = 'sequenza_by_tumor_group'
     WF_STAR = 'star_call_ready'
@@ -448,6 +449,12 @@ class provenance_reader(logger):
         workflows = [self.WF_SEQUENZA, self.NIASSA_WF_SEQUENZA]
         mt = self.MT_ZIP
         suffix = '_results\.zip$'
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
+
+    def parse_msi_path(self):
+        workflows = [self.WF_MSISENSOR]
+        mt = self.MT_OCTET_STREAM
+        suffix = 'filter\.deduped\.realigned\.recalibrated\.msi\.booted$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_starfusion_predictions_path(self):
