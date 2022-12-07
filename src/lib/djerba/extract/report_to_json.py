@@ -485,7 +485,7 @@ class clinical_report_json_composer(composer_base):
             print("Other Biomarkers\t"+sample_ID+"\tTMB-H", file=genomic_biomarkers_file)
         elif tmb < 10:
             metric_call = "TMB-L"
-            metric_text = "Tumour Mutational Burden Low (TMB-L, < 10 coding mutations / Mb))"
+            metric_text = "Tumour Mutational Burden Low (TMB-L, < 10 coding mutations / Mb)"
         else:
             msg = "TMB not a number"
             self.logger.error(msg)

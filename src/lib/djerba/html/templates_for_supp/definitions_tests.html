@@ -11,4 +11,7 @@
 <p><strong>Cohort: </strong>If available, the name of an external dataset used to calculate TMB percentile. Percentiles for tumour mutation burden (TMB) are plotted and reported against the corresponding cohort(s).
 
 <br><strong>All TCGA Percentile: </strong>Percentile of TMB scores are plotted relative to <a href="https://gdc.cancer.gov/about-data/publications/pancanatlas">all TCGA samples</a> (${genomic_landscape_info.get(constants.PAN_CANCER_COHORT)}).
-<br><strong>TCGA Cohort Percentile: </strong>Percentile of TMB scores are plotted relative to <a href="https://gdc.cancer.gov/about-data/publications/pancanatlas">closest TCGA sample cohort</a>
+
+% if genomic_landscape_info.get(constants.CANCER_SPECIFIC_PERCENTILE) != "NA" :
+  <br><strong>TCGA Cohort Percentile: </strong>Percentile of TMB scores are plotted relative to <a href="https://gdc.cancer.gov/about-data/publications/pancanatlas">closest TCGA sample cohort</a> (${genomic_landscape_info.get(constants.CANCER_SPECIFIC_COHORT)})
+  % endif
