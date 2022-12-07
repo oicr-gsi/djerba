@@ -8,11 +8,11 @@
 <!-- Genomic Landscape -->
 ${html_builder().make_sections_into_cells("<h2>Genomic Landscape</h2>","main")}
       
-      <p >Tumour Mutation Burden (TMB) is <strong>${genomic_landscape_info.get(constants.TMB_PER_MB)}</strong> coding mutations per Mb (${genomic_landscape_info.get(constants.TMB_TOTAL)} mutations)
-            which corresponds to the <strong>${genomic_landscape_info.get(constants.PAN_CANCER_PERCENTILE)}</strong>th 
-            percentile of the pan-cancer cohort. The percent genome altered (PGA) is <strong>${genomic_landscape_info.get(constants.PERCENT_GENOME_ALTERED)}</strong>%. 
-            The tumour status is <strong>${html_builder().pull_biomarker_text(genomic_biomarkers,"TMB")} </strong>. 
-            </p>
+      <p >
+            Tumour Mutation Burden (TMB) was <strong>${genomic_landscape_info.get(constants.TMB_PER_MB)}</strong> coding mutations per Mb (${genomic_landscape_info.get(constants.TMB_TOTAL)} mutations)
+            which corresponded to the <strong>${html_builder().make_ordinal(${genomic_landscape_info.get(constants.PAN_CANCER_PERCENTILE)})}</strong> 
+            percentile of the pan-cancer cohort and classifies it as <strong>${html_builder().pull_biomarker_text(genomic_biomarkers,"TMB")} </strong>. 
+      </p>
 
       <table><tr>
             <td>
@@ -27,7 +27,11 @@ ${html_builder().make_sections_into_cells("<h2>Genomic Landscape</h2>","main")}
 
 ${html_builder().make_sections_into_cells("<h2>Small Mutations</h2>","main")}
    
-      <p><strong>${small_mutations_and_indels.get(constants.TOTAL_VARIANTS)}</strong> somatic mutation(s) were detected, of which <strong>${small_mutations_and_indels.get(constants.CLINICALLY_RELEVANT_VARIANTS)}</strong> corresponded to an oncogenic mutation, as defined by OncoKB.</p>
+      <p>
+            <strong>${html_builder().k_comma_format(${small_mutations_and_indels.get(constants.TOTAL_VARIANTS)})</strong> somatic mutation(s) were detected, 
+            of which <strong>${genomic_landscape_info.get(constants.TMB_TOTAL)}</strong> impacted a coding sequence,
+            and <strong>${small_mutations_and_indels.get(constants.CLINICALLY_RELEVANT_VARIANTS)}</strong> corresponded to an oncogenic mutation, as defined by OncoKB.
+      </p>
 
       <img id='VAF' style='width: 100%; object-fit: contain' src="${converter().convert_svg(vaf_plot, 'VAF plot')}"/>
       
@@ -48,7 +52,11 @@ ${html_builder().make_sections_into_cells("<h2>Small Mutations</h2>","main")}
 <!-- Copy Number Variants -->
 ${html_builder().make_sections_into_cells("<h2>Copy Number Variation</h2>","main")}
 
-      <p><strong>${oncogenic_somatic_CNVs.get(constants.TOTAL_VARIANTS)}</strong> cancer gene(s) were subject to copy number variation, of which <strong>${oncogenic_somatic_CNVs.get(constants.CLINICALLY_RELEVANT_VARIANTS)}</strong> corresponded to an oncogenic alteration, as defined by OncoKB. Amplifications greater than four shown as &#9650 in plot.</p>
+      <p>The percent genome altered (PGA) was <strong>${genomic_landscape_info.get(constants.PERCENT_GENOME_ALTERED)}</strong>%. 
+            <strong>${oncogenic_somatic_CNVs.get(constants.TOTAL_VARIANTS)}</strong> cancer gene(s) were subject to copy number variation, 
+            of which <strong>${oncogenic_somatic_CNVs.get(constants.CLINICALLY_RELEVANT_VARIANTS)}</strong> corresponded to an oncogenic alteration, as defined by OncoKB. 
+            Amplifications greater than four copies marked shown as &#9650 in plot below.
+      </p>
 
       <img id='CNV' style='width: 100%; object-fit: contain' src="${converter().convert_svg(cnv_plot, 'CNV plot')}"/>
 

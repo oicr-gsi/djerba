@@ -44,7 +44,6 @@
   </div></div>
 
   ${html_builder().make_sections_into_cells("<h3>Assay description</h3>","supp")}
-  <p>Assay results are collated into the report document by <a href="https://github.com/oicr-gsi/djerba">Djerba</a> (${djerba_version}) using pipeline v.1.0</p>
 
     % if assay_type == constants.ASSAY_WGTS:
       <p> This assay combines two comprehensive next generation sequencing assays: a DNA-based whole genome sequencing (WGS) assay and an RNA-based whole transcriptome sequencing (WTS) assay.</p>
@@ -57,6 +56,7 @@
       <% raise RuntimeError("Unknown assay type") %>
     % endif
 
+    <p>Assay results were collated into the report document by <a href="https://github.com/oicr-gsi/djerba">Djerba</a> (${djerba_version}) using pipeline v.1.0</p>
   </div></div>
 
   ## Slightly hacky method to omit technical notes with null content
