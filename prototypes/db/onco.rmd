@@ -1,12 +1,22 @@
-#install packages in console by > install.packages("<name>")
+---
+title: "extract_onco.R"
+author: "Lauren Toy Dec 2022"
+output: html_document
+---  
+***
+#### **Packages**
+```{r}
 library(ggplot2)
 library(data.table)
 library(forcats) # within tidyverse
-library(cowplot)
-library(gtable)
-library(grid)
+```  
+***
+#### **Oncoplot**
+* main plot using geom_rect so background panel gridlines align with coloured boxes
+* 2 input CSV's w/ Study, TMB, and Gene/Mutation(s) from small_mutations_and_indels and oncogenic_somatic_CNVs
+* these CSV's are the output of a multi query (design.py & pull.py)
 
-#ONCOPLOT ####
+```{r}
 small_file = '/home/ltoy/Desktop/couch/extract/oncoplot/small_Study&Body&Tumour Mutation Burden_processed.csv'
 small <- fread(small_file, header=TRUE)
 onco_file = '/home/ltoy/Desktop/couch/extract/oncoplot/onco_Study&Body&Tumour Mutation Burden_processed.csv'
@@ -20,7 +30,8 @@ colnames(onco)[1]="id"
 combined <- rbind(small, onco)
 gene_order<-data.frame(table(combined$Gene))
 gene_order <- gene_order[order(-gene_order$Freq),]
-cutoff = 3 ### change to make more/less Genes on y-axis - if want set number of Genes, then change code to count top n rows from top
+cutoff = 3 # varies # of genes on y-axis
+# Note: if want a set number, then change code to count top n rows from gene_order
 subset = sum(gene_order$Freq>cutoff)
 gene_subset <- gene_order[1:subset,]
 gene_list = as.character(gene_subset$Var1)
@@ -46,13 +57,15 @@ for (row in 1:nrow(combined)){
   }
 }
 
+#for geom_rect arguments of indexing border of each box
 id.num = as.numeric(as.factor(newdf$id))
 gene.num = as.numeric(as.factor(fct_rev(fct_infreq(newdf$Gene))))
 id.key <- levels(factor(newdf$id))
 gene.key <- levels(fct_rev(fct_infreq(newdf$Gene)))
 report_number = length(table(newdf$id))
 onco_title = paste("Top", nrow(gene_subset), "Mutated Genes in", report_number, "Samples")
-#for percents on right hand side of y axis
+
+#percents on right hand side of y axis
 gene_subset$Percent <- NA
 total_mutations = sum(gene_subset$Freq)
 for (row in 1:nrow(gene_subset)){
@@ -64,12 +77,13 @@ for (row in 1:nrow(gene_subset)){
 }
 percent.key <- gene_subset$Percent
 
-#o <- 
-  ggplot(newdf) +
+o <-
+ggplot(newdf) +
   geom_rect(aes(xmin=id.num, xmax=id.num+1, ymin=gene.num, ymax=gene.num+1,fill=Mutation),color="white")+
   scale_x_continuous(breaks=seq(1.5, length(id.key)+0.5,1), labels=id.key, expand=c(0,0))+
   scale_y_continuous(breaks=seq(1.5, length(gene.key)+0.5,1), labels=gene.key, expand=c(0,0),
-                     sec.axis = (sec_axis(trans=~., breaks=seq(1.5, length(gene.key)+0.5,1),labels=rev(percent.key))))+
+                     sec.axis = (sec_axis(trans=~.,breaks=seq(1.5, length(gene.key)+0.5,1),
+                                          labels=rev(percent.key))))+
   labs(title = onco_title) + 
   theme(
     plot.title=element_blank(), #blank if combine tmb and main below
@@ -84,21 +98,29 @@ percent.key <- gene_subset$Percent
     legend.position="bottom", 
     legend.title=element_blank(),
     legend.box.margin = margin(t=-10, b=0, l=-50, r=0),
-    legend.key.size= unit(2.5, 'mm'),
+    legend.key.size= unit(3, 'mm'),
     legend.text=element_text(size=5, hjust=0),
-    strip.text = element_text(size=3)
+    strip.text = element_text(size=3),
   )+
   scale_fill_manual(values=c("saddlebrown","lightgoldenrod3", "forestgreen", "hotpink", "purple","cyan",
                              "gold", "royalblue", "orange", "black", "firebrick1", "chartreuse"))+
-  guides(fill = guide_legend(nrow = 2))#+
-  #facet_grid(.~Study, scales="free_x", space="free_x")  #onco_x.png
-#ggsave("/home/ltoy/Desktop/couch/extract/onco_percent.png", o, width=7,height=5)
-#ggsave("/home/ltoy/Desktop/couch/extract/onco_study.png", o, width=10,height=6)
-#ggsave("/home/ltoy/Desktop/couch/extract/onco_x.png", o, width=6.5,height=5) 
-#ggsave("/home/ltoy/Desktop/couch/extract/onco_id.png", o, width=5,height=5) #id
+  guides(fill = guide_legend(nrow = 2))
+```
 
-#oncobar_freq <- 
-  ggplot(newdf)+
+```{r fig.align="center"}
+o + theme(aspect.ratio=1/1.5)
+```
+
+```{r fig.align="center", fig.dim=c(9,5)}
+o + facet_grid(.~Study, scales="free_x", space="free_x") # subset by Study in x dir
+```  
+
+***
+#### **Frequency**
+* right bar graph 
+```{r}
+freq <- 
+ggplot(newdf)+
   geom_bar(aes(y=fct_rev(fct_infreq(Gene)), fill=Mutation))+
   labs(x="No. of Mutations")+
   theme_classic()+
@@ -115,8 +137,17 @@ percent.key <- gene_subset$Percent
   scale_fill_manual(values=c("saddlebrown","lightgoldenrod3", "forestgreen", "hotpink", "purple","cyan",
                                "gold", "royalblue", "orange", "black", "firebrick1", "chartreuse"))+
   scale_x_continuous(breaks=c(0,70), limits=c(0,70), expand=c(0,0), position="top")
-#ggsave("/home/ltoy/Desktop/couch/extract/onco_bar.png", oncobar_freq, width=2.5,height=5) 
+```  
 
+```{r}
+freq
+```
+
+***
+#### **TMB**
+* top bar graph
+```{r}
+library(cowplot) #get_legend()
 id.key.df <- as.data.frame(levels(factor(newdf$id)))
 id.key.df$TMB <-NA
 id.key.df$Study <-NA
@@ -137,15 +168,15 @@ for (id in id.key){
   }
 }
 
-#oncobar_tmb <- 
-  ggplot(id.key.df, aes(x=id, y=TMB, fill=Study))+
+tmb <-
+ggplot(id.key.df, aes(x=id, y=TMB, fill=Study))+
   geom_bar(position='dodge', stat='identity', aes(group=Study))+
   theme_classic()+
   labs(title=onco_title)+
   theme(
-    plot.title = element_text(size=10, hjust=0.5),
-    legend.position="none", # if combined separately below
-    #legend.position = "top",
+    plot.title = element_blank(),
+    #legend.position="none", # if combined separately below
+    legend.position = "top",
     axis.text.x = element_blank(),
     #axis.text.x = element_text(size=5, angle=90), #id
     axis.text.y=element_text(size=7),
@@ -155,49 +186,52 @@ for (id in id.key){
     legend.key.size = unit(5, "mm"),
     legend.title = element_blank(),
     strip.text.x=element_blank(),
-   aspect.ratio=(2.5/10)
   )+
-  guides(fill = guide_legend(ncol=3))+
+  guides(fill = guide_legend(ncol=6))+
   scale_fill_manual(values=c("PASS01"= "deepskyblue3", "CYPRESS"="indianred2", "HPB"="goldenrod", 
                              "PANXWGTS"="cyan3",  "LBR"="chartreuse4", "VENUS"="darkorchid2"))+
-  scale_y_continuous(breaks=c(0,25,50,75,100),labels=c(0,25,50,75,'>100'), limits=c(0,100), expand=c(0,0))#+
- #facet_grid(.~Study, scales="free_x", space="free_x", switch="x")  #Study
-#ggsave("/home/ltoy/Desktop/couch/extract/oncobar_tmb.png", oncobar_tmb, width=10,height=2.5) 
+  scale_y_continuous(breaks=c(0,25,50,75,100),labels=c(0,25,50,75,'>100'), limits=c(0,100), expand=c(0,0))
 
-######################################################################################
-#extrac onco v small percents
-field_percent = as.data.frame(table(newdf$Field))
-field_percent$Percent = NA
-for (row in 1:nrow(field_percent)){
-  value = (field_percent[row, "Freq"] / sum(field_percent$Freq) ) *100
-  field_percent[row, "Percent"] = format(round(value, 1), nsmall=1)
-}
-oncovsmall <-
-ggplot(field_percent, aes(x="", y=Percent, fill=Var1))+
-  geom_col()+
-  coord_polar(theta="y")+
-  geom_text(aes(label=paste(Var1,Percent, '%')), position=position_stack(vjust=0.5))+
-  scale_fill_brewer("Blues")
-##########################################################################################
-# Combine ####
-top <- ggplotGrob(oncobar_tmb)
-main <- ggplotGrob(o)
-right <- ggplotGrob(oncobar_freq)
+legend <- get_legend(tmb) #saved as gtable
+```  
+
+```{r fig.align="center", fig.dim=c(9,3)}
+tmb + theme(legend.position="none")
+```
+
+```{r fig.align="center", fig.dim=c(10,2.75)}
+tmb + facet_grid(.~Study, scales="free_x", space="free_x", switch="x") # subset by Study in x dir
+```  
+
+***
+#### **Combine**
+Note: likely easier or same amount of time to do outside of R than method below as last step requires lots of adjusting 
+
+* Combine main oncoplot, frequency and tmb bar graph, and TMB legend
+```{r fig.align="center", warning=FALSE}
+library(cowplot)
+library(gtable)
+library(grid)
+
+o_ratio <- o +theme(aspect.ratio=1/1.5)
+tmb_nolegend <- tmb + theme(legend.key.size=unit(3,"mm"), legend.text=element_text(size=5), 
+                            aspect.ratio=2/10,
+                            plot.title=element_text(size=9, hjust=0.5),
+                            axis.ticks.length.y = unit(2, "mm"),
+                            axis.title.y=element_text(size=6))
+freq_resized <- freq + theme(axis.title.x = element_text(size=7), axis.ticks.length=unit(2, "mm"),
+                             axis.text.x = element_text(size=7))
+
+top <- ggplotGrob(tmb_nolegend)
+main <- ggplotGrob(o_ratio)
+right <- ggplotGrob(freq_resized)
 vert_comb <- rbind(top, main, size="first")
 vert_comb$widths <- unit.pmax(top$widths, main$widths)
-# grid.newpage()
-# grid.draw(vert_comb)
-#ggsave("/home/ltoy/Desktop/couch/extract/vert_comb.png", vert_comb, width=10,height=10) 
 
-#to extract legend, must go back and uncomment legend.position = "none" to get element from oncobar_tmb then run below
-#however, for the code above in vert_comb, oncobar_tmb has no legend!
-tmb_legend <- get_legend(oncobar_tmb) #returns a gtable
-# grid.newpage()
-# grid.draw(tmb_legend)
+ggdraw()+
+  draw_plot(right, x = 0.77, y=0.08675, width=0.21, height=0.663)+
+  draw_plot(vert_comb, x= -0.1, y=0.0) 
+```  
 
-comb <- 
-  ggdraw()+ #empty canvas
-  draw_plot(right, x = 0.56, y=0.0377, width=0.21, height=0.793)+
-  draw_plot(vert_comb, x=-0.2, y=0.0) #+
-  #draw_plot(tmb_legend, x=0.17, y=0.4)
-# ggsave("/home/ltoy/Desktop/couch/extract/comb.png", comb, width=15, height=10)
+* x, y, width, and height values are very sensitive and very specifically need to be adjusted
+* found aligning outside of R easier/faster (i.e. used figma and could make space between main and top bar graph less)
