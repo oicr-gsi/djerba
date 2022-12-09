@@ -169,11 +169,10 @@ class Add():
         if args.url == None: 
             db_args[1] = "http://admin:djerba123@10.30.133.78:5984/"
             logging.warning('no input db url, default to "http://admin:djerba123@10.30.133.78:5984/"')
-        if args.name != None or args.url != None:
-            check_db = requests.get(join(args.url,args.name))
-            if check_db.status_code != 200: 
-                logging.warning('error with database name and/or url')
-                return
+        check_db = requests.get(join(db_args[1],db_args[0]))
+        if check_db.status_code != 200: 
+            logging.warning(f'error with database name {db_args[0]} and/or url {db_args[1]}')
+            return
         self.AddFolder(folder, db_args, cmdprint)
         return
 
