@@ -1,6 +1,6 @@
 ## CouchDB Database 
 #### Lauren Toy | Fall 2022 Co-op  
-#### https://github.com/oicr-gsi/djerba/tree/master/prototypes/db *TO DO check link*
+##### https://github.com/oicr-gsi/djerba/tree/master/prototypes/db *TO DO check link after pushed*
 ##### Additional documentation and examples : https://wiki.oicr.on.ca/display/GSI/Database+Extraction 
 ***
 
@@ -13,10 +13,10 @@
 
 ***
 ## addfolder.py
-Searches for and upload djerba_report JSON's to CouchDB. For archiving old reports from cluster. 
+Searches for and upload djerba_report JSON's to CouchDB. Apply to folder on cluster for archiving old reports.
 
 ##### `python3 addfolder.py --help`
-Command Line Arguments | Required | Description
+Argument | Required | Description
 ---     | ---   | ---
 folder  | yes   | path of directory to search
 name    | no    | name of database (currently defaults to "djerba_test"), in future could choose to change this hard-coded default location
@@ -48,7 +48,7 @@ print   | no    | print table style format of query results to terminal
 csv     | no    | save query results as CSV 
 json    | no    | save query results as JSON
 all     | no    | show all files (true and false) for  filters (equal, less, great) not just those that match operand which is the default (true only)
-##### **can re-query/pull data from an already created/existing design document in database if filter type/name and query is the same (in this case the logging warning of `<Response [409]> Design Document Update Conflict.` is expected.
+##### **can query/pull data from an already created/existing design document in database if filter type/name and query is the same (in this case the logging warning of `<Response [409]> Design Document Update Conflict.` is expected.
 
 Mode  | Word | Letter | Description
 ---   | ---  | ---  | ---
@@ -57,7 +57,7 @@ filter| equal| e    | Specify key and value (string, bool, or number)
 filter| less | l    | Specify key and value (< number)
 filter| great| g    | Specify key and value (> number)
 status| stat | s    | Show database status, name/url and number of documents. Note: that the total includes any design documents etc. `python3 design.py stat`
-delete| del  | d    | Deletes a design document from database `python3 design.py del -n <name/of/document/to/delete>`
+delete| del  | d    | Deletes a design document from database `python3 design.py del -n <doc2delete>`
 
 ##### Example of multi filter with document named "test_multi" and terminal print
 ##### `python3 design.py multi -n test_multi -p`
