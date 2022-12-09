@@ -61,7 +61,7 @@ delete| del  | d    | Deletes a design document from database `python3 design.py
 
 ##### Example of multi filter with document named "test_multi" and terminal print
 ##### `python3 design.py multi -n test_multi -p`
-##### ^ additionally saving output to csv and json, no -d specified so defaults to an "extract" folder in the same location as `__main__` 
+##### Additionally saving output to csv and json, no -d specified so defaults to an "extract" folder in the same location as `__main__` 
 ##### `python3 design.py m -n test_multi -p -c -j`
 ##### Example of less operand filter that specifies output directory path for CSV file
 ##### `python3 design.py less -n test_less -c -d /path/to/output/directory`
@@ -109,7 +109,7 @@ json    | run for the 2 output JSONs from querying | csv
 Study, Body, TMB | extracts n number of gene and its mutation type from Body | Study, Gene, Mutation, TMB
 
 ***
-## R scripts
+## R Studio
 View R markdown (`.rmd`) files for more info.
 
 ### extract_plots.R
