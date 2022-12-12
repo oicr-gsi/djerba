@@ -1,7 +1,23 @@
 # CHANGELOG
 
-### Unreleased
-- GCGI-403: Updated json archiving to couchDB, removed archive_dir storage on cluster   
+## Unreleased
+
+- GCGI-403: CouchDB 
+
+### Added
+  - Standalone scripts within folder > protoypes/db
+  - addfolder.py: upload old reports from cluster
+  - design.py & pull.py: query CouchDB and save as CSB and/or JSON
+  - process.py: extact n number of gene/mutation from each sample
+  - plots.rmd & plots.html: scatter and bar graphs
+  - onco.rmd & onco.html: oncoplot from 3 graphs   
+
+### Changed
+  - location of JSON archive
+  - edited archiver.py and render.py
+  - replaced INI field archive_dir with archive_name ("djerba") and archive_url
+  - created database.py that uploads to CouchDB via HTTP request
+  - update test.py (archive_name is "djerba_test" for .ini's within test folder)
 
 ## v0.3.13: 2022-12-06
 
