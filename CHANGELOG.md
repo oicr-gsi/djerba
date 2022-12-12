@@ -5,7 +5,7 @@
 - GCGI-403: CouchDB 
 
 ### Added
-  - Standalone scripts within folder > protoypes/db
+  - standalone scripts within folder > protoypes/db
   - addfolder.py: upload old reports from cluster
   - design.py & pull.py: query CouchDB and save as CSB and/or JSON
   - process.py: extact n number of gene/mutation from each sample
