@@ -124,6 +124,28 @@ View R markdown (`.rmd`) files for more info.
 * bar graph of TMB for each sample
 
 ***
+### Dependencies
+* design.py & pull.py
+
+Package |Version |design.py |pull.py 
+---           | ---    |--- | --- 
+argparse      |        | Y  | N 
+**requests*** | 2.22.0 | Y  | Y 
+logging       |        | Y  | Y 
+json          |        | Y  | Y 
+os            |        | Y  | Y 
+datetime      |        | Y  | Y 
+posixpath     |        | Y  | Y 
+csv           |        | N  | Y 
+**pandas***   | 1.5.1  | N  | Y 
+**tabulate*** | 0.9.0  | N  | Y 
+
+*can install modules on cluster with `module load <package>` OR `module load <package/version>`  
+##### `module load requests` OR  `module load requests/2.28.1`
+##### `module load pandas` OR `module load pandas/1.4.2`
+##### `module load tabulate` OR `module load tabulate/0.9.0`
+
+
 
 
 
