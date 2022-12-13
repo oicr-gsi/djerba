@@ -1,5 +1,5 @@
 # CHANGELOG
-## Unreleased
+## v0.3.14: 2022-12-13
 
 - GCGI-642: minor changes to descriptive text in new format template
 
