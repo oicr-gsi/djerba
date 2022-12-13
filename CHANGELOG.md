@@ -5,7 +5,7 @@
 
 ### Added
   - function to make percentiles as ordinal ('3' becomes '3rd') and add commas to large numbers (1000 because 1,000)
-  - Arial was removed from CSS header because it wasn't necessary (and it was a HUGE chunk of base64)
+  - Arial was removed from CSS header because it wasn't necessary (and it was a HUGE chunk of base64); font configuration note added to README
   - oncokb levels are not printed in failed report supplementary
   - verb tense changed from present to past and INDEL changes to in/del
   - MSI description text was removed from supplementary (until MSI is validated)
