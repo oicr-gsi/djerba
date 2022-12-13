@@ -561,15 +561,15 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '4fd822907ad8f0c396fa1ffd7d0f9e79')
+        self.check_report(out_path, '4e0b62bdbc85ab39019e8606dd1916f6')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '1fbbc5a1a952e84b6900752e59ba2ce2')
+        self.check_report(out_path, 'faf1570192a693948c6fa19f582e0dcc')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '1946773507c9d460cff62e97f3e612ed')
+        self.check_report(out_path, '7484d8c6657bc054568206c80952db69')
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
@@ -594,7 +594,7 @@ class TestRender(TestBase):
         self.assertTrue(os.path.exists(pdf_path))
         # Compare file contents; timestamps will differ. TODO Make this more Pythonic.
         result = subprocess.run("cat {0} | grep -av CreationDate | md5sum | cut -f 1 -d ' '".format(pdf_path), shell=True, capture_output=True)
-        self.assertEqual(str(result.stdout, encoding=constants.TEXT_ENCODING).strip(), '8213bfad2518570c26c9baef746b0b22')
+        self.assertEqual(str(result.stdout, encoding=constants.TEXT_ENCODING).strip(), 'dea1aeef66e5c0d22242a7d38123ffbc')
 
 class TestSequenzaReader(TestBase):
 
