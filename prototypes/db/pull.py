@@ -9,7 +9,7 @@ from datetime import datetime
 from tabulate import tabulate
 
 class Pull():
-    ''' change location of database here with db and base, when called in design.py inherits values from there'''
+    ''' change location of database here with db and base, when called in design.py inherits values from there!!!'''
     def __init__(self, db='djerba', base='http://admin:djerba123@10.30.133.78:5984/', level=logging.INFO, log_path=None, filename=__name__):
     #def __init__(self, db='test', base='http://admin:cgi@127.0.0.1:5984/', level=logging.INFO, log_path=None, filename=__name__):
         self.db = db
@@ -224,7 +224,9 @@ class Pull():
         out_name = out_name.replace("+", "") 
         #within keys
         out_name = out_name.replace(" ", "")
-        out_name = out_name.replace("_", "")
+        #as this function is applied to each component of outname (design doc name and filter)
+        #there still is a underscore seperating these defined elsewhere in the final outfile name
+        out_name = out_name.replace("_", "") 
         out_name = out_name.replace("(", "") 
         out_name = out_name.replace(")", "") 
         out_name = out_name.replace("/", "") 

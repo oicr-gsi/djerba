@@ -7,8 +7,8 @@ from datetime import datetime
 from posixpath import join
 from pull import Pull
 
-#http://127.0.0.1:5984/_utils/#login - 000
-#http://10.30.133.78:5984/_utils/#login - djerba
+#http://10.30.133.78:5984/_utils/#login - djerba company secure instance (includes djerba and djerba_test databases)
+#http://127.0.0.1:5984/_utils/#login - 000 seperate instance for initial dev purposes and testing 
 
 class Design():
      ''' change location of database here with db and base'''
@@ -25,21 +25,6 @@ class Design():
                file_path += '.log'
           else: file_path = None
           logging.basicConfig(level=level, filename=file_path, format=f'%(asctime)s:%(filename)s:%(levelname)s: %(message)s', datefmt='%Y-%m-%d_%H:%M:%S')
-          
-     def CheckAndSwitchForwardSlashOrPlus(self, string_to_search, url=False):
-          '''for field in json such as Site in biopsy/surgery to account for conflicts with '/' in splitting query as
-          nested keys accessed by forward slash in query and also error w/ HTTP requests in url'''
-          if url == False:
-               if 'Site of biopsy/surgery' in string_to_search:
-                    string_to_search = string_to_search.replace('Site of biopsy/surgery', 'Site of biopsy+surgery')
-               elif 'Site of biopsy+surgery' in string_to_search:
-                    string_to_search = string_to_search.replace('Site of biopsy+surgery', 'Site of biopsy/surgery')
-          elif url == True:
-               if 'Site of biopsy/surgery' in string_to_search:
-                    string_to_search = string_to_search.replace('Site of biopsy/surgery', 'Site of biopsy%2Fsurgery')
-               elif 'Site of biopsy%2Fsurgery' in string_to_search: 
-                    string_to_search = string_to_search.replace('Site of biopsy%2Fsurgery', 'Site of biopsy/surgery')
-          return string_to_search
 
      def CheckCommandLineArgumentsAndGetQueryOrCompleteOtherModeRequest(self, args):
           '''validate user cmd line input'''
@@ -79,7 +64,7 @@ class Design():
 
      def Compare(self, qtype, design_doc_name, query, out_args, eq_all):
           '''main method for filters with operator, equal or less or great''' 
-          query = self.CheckAndSwitchForwardSlashOrPlus(query)
+          query = Pull().CheckAndSwitchForwardSlashOrPlus(query)
           tuple_list_of_key_and_value = self.ConvertQueryIntoListOfTuples(query)
           tuple_list_of_key_and_value = self.RemoveBracketsInQuery(tuple_list_of_key_and_value)
           viewsEq_name = self.GetViewName(qtype, tuple_list_of_key_and_value)
@@ -107,8 +92,8 @@ class Design():
                nested_key_string = "doc"
                for key in nested_key_list: nested_key_string += f"['{key}']"
                key = nested_key_list[-1] 
-               nested_key_string = self.CheckAndSwitchForwardSlashOrPlus(nested_key_string)
-               key = self.CheckAndSwitchForwardSlashOrPlus(key)
+               nested_key_string = Pull().CheckAndSwitchForwardSlashOrPlus(nested_key_string)
+               key = Pull().CheckAndSwitchForwardSlashOrPlus(key)
 
                if self.isNumber(val_str) == True and qtype == 'g': # > number 
                     design["views"][f"{viewsEq_name[i]}"] = {
@@ -166,8 +151,8 @@ class Design():
                nested_key_string = "doc"
                for key in nested_key_list: nested_key_string += f"['{key}']"
                key = nested_key_list[-1] 
-               nested_key_string = self.CheckAndSwitchForwardSlashOrPlus(nested_key_string)
-               key = self.CheckAndSwitchForwardSlashOrPlus(key)
+               nested_key_string = Pull().CheckAndSwitchForwardSlashOrPlus(nested_key_string)
+               key = Pull().CheckAndSwitchForwardSlashOrPlus(key)
 
                if self.isNumber(val_str) == True:
                     design["views"][f"{viewsEq_name[i]}"] = {
@@ -200,7 +185,7 @@ class Design():
                          nested_seperated = nested_key.split("/")
                          nested_seperated = [i.strip() for i in nested_seperated]
                          for j in range(len(nested_seperated)):
-                              nested_seperated[j] = self.CheckAndSwitchForwardSlashOrPlus(nested_seperated[j])
+                              nested_seperated[j] = Pull().CheckAndSwitchForwardSlashOrPlus(nested_seperated[j])
                          if nested_key == list_of_nested_keys[0]: name += f'{nested_seperated[-1]}'
                          else: name += f'&{nested_seperated[-1]}'
                     view_name.append(name)
@@ -215,7 +200,8 @@ class Design():
                     if qtype == 'l': view_name.append(f'{key[-1]}<{val}')
                     if qtype == 'g': view_name.append(f'{key[-1]}>{val}')
                     if qtype == 'e': view_name.append(f'{key[-1]}={val}')
-               for i in range(len(view_name)): view_name[i] = self.CheckAndSwitchForwardSlashOrPlus(view_name[i]) 
+               for i in range(len(view_name)): 
+                    view_name[i] = Pull().CheckAndSwitchForwardSlashOrPlus(view_name[i]) 
           return view_name
 
      def isBool(self, b):  
@@ -245,7 +231,7 @@ class Design():
 
      def Multi(self, qtype, design_doc_name, query, out_args, eq_all):
           '''main method for multi filter'''
-          query = self.CheckAndSwitchForwardSlashOrPlus(query)    
+          query = Pull().CheckAndSwitchForwardSlashOrPlus(query)    
           list_of_views = query.split("@") 
           list_of_views = [i.strip() for i in list_of_views]
           viewF_name = self.GetViewName(qtype, list_of_views)
@@ -269,9 +255,9 @@ class Design():
                     keys_seperated = nested_key.split("/")
                     keys_seperated = [j.strip() for j in keys_seperated]
                     individual = f"emit('{keys_seperated[-1]}',doc"
-                    individual = self.CheckAndSwitchForwardSlashOrPlus(individual)
+                    individual = Pull().CheckAndSwitchForwardSlashOrPlus(individual)
                     for key in keys_seperated: 
-                         key = self.CheckAndSwitchForwardSlashOrPlus(key)
+                         key = Pull().CheckAndSwitchForwardSlashOrPlus(key)
                          individual += f"['{key}']"
                     individual += ')'
                     combined += f'{individual};'
@@ -334,15 +320,15 @@ class Design():
                     query = input ('Filter Multiple: ')
                     return query
                elif filter_type == 'e' or filter_type == 'equal': 
-                    print("  <enter filters like tuple within brackets if multi-view> <access nested keys w forwardslash> <separate different views w comma> ", '\n',
-                    " i.e. report/failed, true ", '\n',
+                    print("  <enter filters like tuple within brackets> <access nested keys w forwardslash> <separate key/value and different views w comma> ", '\n',
+                    " i.e. (report/failed, true) ", '\n',
                     " i.e. (report/failed, true), (report/author, Felix Beaudry), (report/oncogenic_somatic_CNVs/Total variants, 35), (report/patient_info/Site of biopsy/surgery, Liver)", '\n')
                     query = input('Equal: ')  
                     return query
                elif  filter_type == 'l' or filter_type == 'less' or filter_type == 'g' or filter_type == 'great':
-                    print("<enter filters like tuple within brackets if multi-view> <access nested keys w forwardslash> <separate different views w comma> ", '\n',
-                    " i.e. report/oncogenic_somatic_CNVs/Total variants, 35 ", '\n',
-                    " i.e. (report/oncogenic_somatic_CNVs/Total variants, 35), (report/oncogenic_somatic_CNVs/Total variants, 35) , (report/sample_info_and_quality/Estimated Ploidy, 3.5)")
+                    print("<enter filters like tuple within brackets> <access nested keys w forwardslash> <separate key/value and different views w comma> ", '\n',
+                    " i.e. (report/oncogenic_somatic_CNVs/Total variants, 35) ", '\n',
+                    " i.e. (report/oncogenic_somatic_CNVs/Total variants, 35) , (report/sample_info_and_quality/Estimated Ploidy, 3.5)")
                     if filter_type == 'l' or filter_type == 'less': query = input('Less: ')  
                     if filter_type == 'g' or filter_type == 'great': query = input('Great: ')  
                     return query
