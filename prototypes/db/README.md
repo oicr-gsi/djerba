@@ -1,6 +1,6 @@
 ## CouchDB Database 
 #### Lauren Toy | Fall 2022 Co-op  
-##### https://github.com/oicr-gsi/djerba/tree/master/prototypes/db *TO DO check link after pushed*
+##### standalone scripts within prototypes > db folder
 ##### Additional documentation and examples : https://wiki.oicr.on.ca/display/GSI/Database+Extraction 
 ***
 
@@ -95,7 +95,7 @@ Additional processing for some plots in below R scripts after multi filter query
 2. process.py 
     * 4 command line arguments
     * see `python3 process.py --help`
-        * PROCESS: mode options are "small" or "onco" to account for different key name for gene mutation within small_mutations_and_indels ("Type") vs oncogenic_somatic_CNVs ("Alteration")
+        * PROCESS: (required) mode options are "small" or "onco" to account for different key name for gene mutation within small_mutations_and_indels ("Type") vs oncogenic_somatic_CNVs ("Alteration")
         * JSON: (required) path to json, wrap in quotes
         * DIR:  (optional) output directory, default is within extract dir in same location as `__main__`
         * NAME: (optional) output name for csv file default is input/json/name_processed.csv
@@ -110,7 +110,7 @@ Study, Body, TMB | extracts n number of gene and its mutation type from Body | S
 
 ***
 ## R Studio
-View R markdown (`.rmd`) files for more info.
+View R markdown (`.rmd`) and .html files for more info.
 
 ### extract_plots.R
 * Scatter plot for Callability (%) and Coverage (mean)
