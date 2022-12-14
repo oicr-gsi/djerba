@@ -1,5 +1,4 @@
 ## CouchDB Database 
-#### Lauren Toy | Fall 2022 Co-op  
 ##### standalone scripts within prototypes > db folder
 ##### Additional documentation and examples : https://wiki.oicr.on.ca/display/GSI/Database+Extraction 
 ***
@@ -145,7 +144,8 @@ csv           |        | N  | Y
 ##### `module load pandas` OR `module load pandas/1.4.2`
 ##### `module load tabulate` OR `module load tabulate/0.9.0`
 
-
+***
+#### Lauren Toy | Fall 2022 Co-op  
 
 
 
