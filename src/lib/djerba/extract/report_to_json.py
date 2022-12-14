@@ -481,11 +481,11 @@ class clinical_report_json_composer(composer_base):
         tmb_plot_placeholder = "see tmb_plot"
         if tmb >= 10:
             metric_call = "TMB-H"
-            metric_text = "Tumour Mutational Burden High (TMB-H)"
+            metric_text = "Tumour Mutational Burden High (TMB-H, &#8805 10 coding mutations / Mb)"
             print("Other Biomarkers\t"+sample_ID+"\tTMB-H", file=genomic_biomarkers_file)
         elif tmb < 10:
             metric_call = "TMB-L"
-            metric_text = "Tumour Mutational Burden Low (TMB-L)"
+            metric_text = "Tumour Mutational Burden Low (TMB-L, < 10 coding mutations / Mb)"
         else:
             msg = "TMB not a number"
             self.logger.error(msg)

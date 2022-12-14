@@ -52,6 +52,10 @@ class html_builder:
                 rows.append(self.table_row(cells))
         return rows
 
+    def k_comma_format(self,value):
+        value_formatted = f'{value:,}'
+        return(value_formatted)
+
     def key_value_table_rows(self, args, key_groups, widths):
         """Make a table to show key/value fields, with varying column widths"""
         flattened = [k for group in key_groups for k in group]
@@ -92,6 +96,22 @@ class html_builder:
             row_items.append('</tr>')
             rows.append("\n".join(row_items))
         return rows
+
+    def make_ordinal(self,n):
+        '''
+        Convert an integer into its ordinal representation::
+
+            make_ordinal(0)   => '0th'
+            make_ordinal(3)   => '3rd'
+            make_ordinal(122) => '122nd'
+            make_ordinal(213) => '213th'
+        '''
+        n = int(n)
+        if 11 <= (n % 100) <= 13:
+            suffix = 'th'
+        else:
+            suffix = ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]
+        return str(n) + suffix
 
     def make_sections_into_cells(self,section_title,main_or_supp):
         template = '<hr class="big-white-line" ><div class="twocell{0}"><div class="oneoftwocell{0}">{1}</div><div class="twooftwocell{0}" ><hr class="big-line" >'  

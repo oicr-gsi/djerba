@@ -131,6 +131,10 @@ In addition, the `qc_report.sh` script will unload the Python module and load `p
 
 Djerba has a `setup.py` script which will install its source code and Python dependencies. Production releases of Djerba will be installed as an environment modules in Modulator. Alternatively, install as described under `Installation`.
 
+### Fonts
+
+The Arial font is recommended for the best rendering of reports. In Ubuntu, TTF font files may be copied to `${XDG_DATA_HOME}/fonts`; or if `$XDG_DATA_HOME` is not set, to `$HOME/.local/share/fonts`. See [documentation for fonts-conf](https://manpages.ubuntu.com/manpages/focal/en/man5/fonts-conf.5.html) for further details.
+
 ## Testing
 
 To run the unit tests on a checkout of the Djerba repo:
