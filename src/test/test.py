@@ -128,7 +128,7 @@ class TestArchive(TestBase):
     def test_archive(self):
         json_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         archive_status, report_id = archiver().run(json_path)
-        self.assertEqual(archive_status, 201)
+        self.assertTrue(archive_status)
         with open(json_path) as json_file:
             data = json.loads(json_file.read())
             report_id2 = data["report"]["patient_info"]["Report ID"]
@@ -573,11 +573,11 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '4e0b62bdbc85ab39019e8606dd1916f6')
+        self.check_report(out_path, '403bfbd78bd7456d00da9ef4dadce7f2')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, 'faf1570192a693948c6fa19f582e0dcc')
+        self.check_report(out_path, '50bd2147fec1446e11b9d2a79b2b3dae')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
         html_renderer().run(args_path, out_path, False)
