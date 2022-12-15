@@ -11,6 +11,8 @@ import subprocess
 import tempfile
 import time
 import unittest
+import requests
+import posixpath
 from shutil import copy
 from string import Template
 
@@ -124,14 +126,24 @@ class TestBase(unittest.TestCase):
 class TestArchive(TestBase):
 
     def test_archive(self):
-        out_dir = self.tmp_dir
         json_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
-        archive_path = archiver().run(json_path, out_dir, 'test_ID')
-        self.assertTrue(os.path.exists(archive_path))
-        # contents of file are dependent on local paths
-        with open(archive_path) as archive_file:
-            data = json.loads(archive_file.read())
-        self.assertEqual(len(data['report']), 24)
+        archive_status, report_id = archiver().run(json_path)
+        self.assertTrue(archive_status)
+        with open(json_path) as json_file:
+            data = json.loads(json_file.read())
+            report_id2 = data["report"]["patient_info"]["Report ID"]
+            archive_url = data["supplementary"]["config"]["settings"]["archive_url"]
+            archive_name = data["supplementary"]["config"]["settings"]["archive_name"]
+        self.assertEqual(report_id, report_id2)
+        url_id = posixpath.join(archive_url, archive_name, report_id)
+        get = requests.get(url_id)
+        self.assertEqual(get.status_code, 200)
+        get = json.loads(get.text)
+        self.assertEqual(report_id, get["report"]["patient_info"]["Report ID"])
+        self.assertEqual(get["_id"], get["report"]["patient_info"]["Report ID"])
+        rm = requests.delete(url_id+'?rev='+get["_rev"])
+        self.assertEqual(rm.status_code, 200)
+        self.assertEqual(len(data['report']), 24)  
         self.assertEqual(len(data['supplementary']['config']), 3)
 
 class TestConfigure(TestBase):
@@ -163,19 +175,19 @@ class TestConfigure(TestBase):
         test_configurer.run(out_path)
 
     def test_default(self):
-        self.run_config_test(self.config_user, False, False, 58, self.provenance)
+        self.run_config_test(self.config_user, False, False, 59, self.provenance)
 
 
     def test_default_fail(self):
-        self.run_config_test(self.config_user_failed, False, True, 47, self.provenance)
+        self.run_config_test(self.config_user_failed, False, True, 48, self.provenance)
 
     def test_wgs_only(self):
-        self.run_config_test(self.config_user_wgs_only, True, False, 56, self.provenance)
+        self.run_config_test(self.config_user_wgs_only, True, False, 57, self.provenance)
     def test_wgs_only_fail(self):
-        self.run_config_test(self.config_user_wgs_only_failed, True, True, 47, self.provenance)
+        self.run_config_test(self.config_user_wgs_only_failed, True, True, 48, self.provenance)
 
     def test_vnwgts(self):
-        self.run_config_test(self.config_user_vnwgts, False, False, 58, self.provenance_vnwgts)
+        self.run_config_test(self.config_user_vnwgts, False, False, 59, self.provenance_vnwgts)
 
     def test_vnwgts_broken(self):
         # test failure modes of sample input
@@ -561,11 +573,11 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '4e0b62bdbc85ab39019e8606dd1916f6')
+        self.check_report(out_path, '403bfbd78bd7456d00da9ef4dadce7f2')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, 'faf1570192a693948c6fa19f582e0dcc')
+        self.check_report(out_path, '50bd2147fec1446e11b9d2a79b2b3dae')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
         html_renderer().run(args_path, out_path, False)
