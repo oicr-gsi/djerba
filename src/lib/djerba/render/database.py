@@ -20,26 +20,58 @@ class database(logger):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.logger.info("Initializing Djerba database object")
 
+    def get_info(self, report_data):
+        config = report_data.get(constants.SUPPLEMENTARY).get(constants.CONFIG)
+        base = config[ini.SETTINGS][ini.ARCHIVE_URL]
+        db = config[ini.SETTINGS][ini.ARCHIVE_NAME]
+        url = urljoin(base, db)
+        report_id = report_data["report"]["patient_info"]["Report ID"]
+        return report_id, base, db, url
+    
+    def date_time(self):
+        "added last_updated date and time"
+        time = datetime.now()
+        dt_couchDB = time.strftime("%d/%m/%Y %H:%M")
+        return dt_couchDB
+
+    def first_upload_json(self, report_id):
+        dt_couchDB = self.date_time()
+        couch_info = {
+            '_id': '{}'.format(report_id), #DF val auto gen
+            'last_updated': '{}'.format(dt_couchDB),
+        }
+        return couch_info
+
+    def combine_dictionaries(self, dict1, dict2):
+        upload = {**couch_info, **report_data}
+        return upload
+
     """ Upload json to couchdb"""
     def upload_file(self, json_path):
         time = datetime.now()
         dt_couchDB = time.strftime("%d/%m/%Y %H:%M")
 
         with open(json_path) as report:
-            data = json.load(report)
-            config = data.get(constants.SUPPLEMENTARY).get(constants.CONFIG)
-            base = config[ini.SETTINGS][ini.ARCHIVE_URL]
-            db = config[ini.SETTINGS][ini.ARCHIVE_NAME]
-            url = urljoin(base, db)
-            report_id = data["report"]["patient_info"]["Report ID"]
-            couch_info = {
-                '_id': '{}'.format(report_id), #DF val auto gen
-                'last_updated': '{}'.format(dt_couchDB),
-            }
-            upload = {**couch_info, **data}
-            headers = {'Content-Type': 'application/json'}
-            submit = requests.post(url= url, headers= headers, json= upload)
-        
+            report_data = json.load(report)
+            report.close()
+
+        report_id, base, db, url = self.get_info(report_data)
+        couch_info = self.first_upload_json(report_id)
+        upload = self.combine_dictionaries(couch_info, report_data)
+
+        print(upload)
+        return
+
+        attempt = 0
+        uploaded = False
+        while uploaded == False and attempt < 5:
+
+        #
+
+        headers = {'Content-Type': 'application/json'}
+        submit = requests.post(url= url, headers= headers, json=upload)
+            
+
         attempt = 0
         status = submit.status_code
         uploaded = False
