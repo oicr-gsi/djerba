@@ -40,6 +40,5 @@ class archiver(logger):
 
     def run(self, data_path):
         data_string = self.read_and_preprocess(data_path)
-        status, report_id = database().upload_file(data_path)
-        self.logger.info(f'Upload status_code of {report_id} is: {status}')
-        return status, report_id
+        uploaded, report_id = database().upload_file(data_path)
+        return uploaded, report_id

@@ -10,97 +10,105 @@ import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 from time import sleep
 from datetime import datetime
-from urllib.parse import urljoin
+from posixpath import join
 from djerba.util.logger import logger
 
 class database(logger):
     """Class to communicate with CouchDB via the API, eg. using HTTP GET/POST statements"""
 
-    def __init__(self, log_level=logging.WARNING, log_path=None):
+    def __init__(self, log_level=logging.DEBUG, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
-        self.logger.info("Initializing Djerba database object")
+        self.logger.debug("Initializing Djerba database object")
+
+    def combine_dictionaries(self, dict1, dict2):
+        comb = {**dict1, **dict2}
+        return comb
+
+    def create_document(self, report_id):
+        couch_info = {
+            '_id': '{}'.format(report_id), 
+            'last_updated': '{}'.format(self.date_time()),
+        }
+        return couch_info
+
+    def date_time(self):
+        "added last_updated date and time"
+        time = datetime.now()
+        last_updated = time.strftime("%d/%m/%Y %H:%M")
+        return last_updated
 
     def get_info(self, report_data):
         config = report_data.get(constants.SUPPLEMENTARY).get(constants.CONFIG)
         base = config[ini.SETTINGS][ini.ARCHIVE_URL]
         db = config[ini.SETTINGS][ini.ARCHIVE_NAME]
-        url = urljoin(base, db)
+        url = join(base, db)
         report_id = report_data["report"]["patient_info"]["Report ID"]
         return report_id, base, db, url
-    
-    def date_time(self):
-        "added last_updated date and time"
-        time = datetime.now()
-        dt_couchDB = time.strftime("%d/%m/%Y %H:%M")
-        return dt_couchDB
 
-    def first_upload_json(self, report_id):
-        dt_couchDB = self.date_time()
+    def get_revision_and_url(self, report_id, url):
+        url_id = join(url, report_id)
+        pull = requests.get(url_id)
+        if pull.status_code == 200:
+            self.logger.info('Successful HTTP Pull Request from %s', url_id)
+        else:
+            self.logger.debug('Error with HTTP Pull at %s! Status Code <%s>', url_id, pull.status_code)
+            return None, url_id
+        pull = json.loads(pull.text)
+        rev = pull["_rev"]
+        self.logger.info(f'Retrieved document _rev: {rev}')
+        return rev, url_id
+
+    def update_document(self, report_id, rev):
         couch_info = {
-            '_id': '{}'.format(report_id), #DF val auto gen
-            'last_updated': '{}'.format(dt_couchDB),
+            '_id': '{}'.format(report_id),
+            '_rev': '{}'.format(rev),
+            'last_updated': '{}'.format(self.date_time()),
         }
         return couch_info
 
-    def combine_dictionaries(self, dict1, dict2):
-        upload = {**couch_info, **report_data}
-        return upload
-
-    """ Upload json to couchdb"""
     def upload_file(self, json_path):
-        time = datetime.now()
-        dt_couchDB = time.strftime("%d/%m/%Y %H:%M")
-
+        """ Upload json to couchdb"""
         with open(json_path) as report:
             report_data = json.load(report)
             report.close()
 
         report_id, base, db, url = self.get_info(report_data)
-        couch_info = self.first_upload_json(report_id)
+        couch_info = self.create_document(report_id)
         upload = self.combine_dictionaries(couch_info, report_data)
-
-        print(upload)
-        return
-
-        attempt = 0
-        uploaded = False
-        while uploaded == False and attempt < 5:
-
-        #
-
         headers = {'Content-Type': 'application/json'}
-        submit = requests.post(url= url, headers= headers, json=upload)
-            
 
-        attempt = 0
-        status = submit.status_code
+        attempts = 0
+        http_post = True
         uploaded = False
-        while uploaded == False and attempt < 5:
-            if status == 201:
-                self.logger.info('Success uploading %s to %s database <status 201>', upload["_id"], db)
-                uploaded = True
-            elif status == 409:
-                json_string = submit.content.decode('utf-8') #convert bytes object 
-                py_dict = json.loads(json_string)
-                self.logger.debug(f'Error uploading {report_id} Status Code <409> {py_dict["error"]} {py_dict["reason"]}')
-                url_id = url + f'/{report_id}'
-                pull = requests.get(url_id)
-                pull = json.loads(pull.text)
-                self.logger.info(f'_rev: {pull["_rev"]}')
-                rev = {
-                    '_id': '{}'.format(report_id),
-                    '_rev': f'{pull["_rev"]}',
-                    'last_updated': '{}'.format(dt_couchDB),
-                }
-                upload = {**rev, **data}
-                sleep(2)
+        while uploaded == False and attempts <5:
+            if http_post == True: #create document
+                submit = requests.post(url= url, headers= headers, json=upload)
+                self.logger.debug('Creating document in database')
+            else: #update document
+                rev, url_id = self.get_revision_and_url(report_id, url)
+                if rev == None: self.logger.debug('Unable to get document _rev')
+                couch_info = self.update_document(report_id, rev)
+                upload = self.combine_dictionaries(couch_info, report_data)
                 submit = requests.put(url=url_id, headers= headers, json=upload)
-                status = submit.status_code
-                attempt += 1
-            else:
-                self.logger.warning(f'HTTP code: {status}')
-                break
+                self.logger.debug('Updating document in database')
+            status = submit.status_code
 
-        if uploaded == False and attempt == 5: self.logger.warning('HTTP Request Timed Out')
-        if status == 201: self.logger.info('File Archived: {}'.format(upload["_id"]))
-        return status, report_id
+            if status == 201: uploaded = True
+            elif status == 409:
+                http_post = False
+                self.logger.debug('Error! HTTP Status Code <%s> document update conflict, will retry with HTTP put', status)
+            else:
+                self.logger.warning('Error! Unknown HTTP Status Code <%s>, will retry', status)
+            sleep(2)
+            attempts +=1
+
+        if uploaded == True:
+            self.logger.info('Upload succesful to %s. File archived: %s', db, report_id)
+        else:
+            self.logger.warning('Upload of %s to %s database failed', report_id, db)
+        return uploaded, report_id
+
+
+
+    
+

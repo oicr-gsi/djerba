@@ -33,7 +33,6 @@ class html_renderer(logger):
         self.template = report_lookup.get_template("clinical_report_template.html")
 
     def run(self, in_path, out_path, archive=True):
-        self.logger.info('run method of html_renderer class STARTING from render.py')
         with open(in_path) as in_file:
             data = json.loads(in_file.read())
             args = data.get(constants.REPORT)
@@ -50,13 +49,12 @@ class html_renderer(logger):
                 raise
             print(html, file=out_file)
         if archive:
-            status, report_id = archiver(self.log_level, self.log_path).run(in_path)
-            if status == 201: self.logger.info(f"Archiving successful: {report_id}")
+            uploaded, report_id = archiver(self.log_level, self.log_path).run(in_path)
+            if uploaded == True: self.logger.info(f"Archiving successful: {report_id}")
             else: self.logger.warning(f"Error! Archiving unsuccessful: {report_id}")
         else:
             self.logger.info("Archive operation not requested; omitting archiving")
         self.logger.info("Completed HTML rendering of {0} to {1}".format(in_path, out_path))
-        self.logger.info('db method of html_renderer class FINISHED from render.py')
 
 class pdf_renderer(logger):
 
