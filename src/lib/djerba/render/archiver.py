@@ -17,6 +17,8 @@ class archiver(logger):
     """Archive the report JSON to a directory, with hashing to avoid overwrites"""
 
     def __init__(self, log_level=logging.WARNING, log_path=None):
+        self.log_level = log_level
+        self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.converter = converter(log_level, log_path)
         self.validator = path_validator(log_level, log_path)
@@ -40,5 +42,5 @@ class archiver(logger):
 
     def run(self, data_path):
         data_string = self.read_and_preprocess(data_path)
-        uploaded, report_id = database().upload_file(data_path)
+        uploaded, report_id = database(self.log_level, self.log_path).upload_file(data_path)
         return uploaded, report_id

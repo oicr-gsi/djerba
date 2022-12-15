@@ -16,7 +16,9 @@ from djerba.util.logger import logger
 class database(logger):
     """Class to communicate with CouchDB via the API, eg. using HTTP GET/POST statements"""
 
-    def __init__(self, log_level=logging.DEBUG, log_path=None):
+    def __init__(self, log_level=logging.WARNING, log_path=None):
+        self.log_level = log_level
+        self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.logger.debug("Initializing Djerba database object")
 
@@ -37,7 +39,7 @@ class database(logger):
         last_updated = time.strftime("%d/%m/%Y %H:%M")
         return last_updated
 
-    def get_info(self, report_data):
+    def get_upload_params(self, report_data):
         config = report_data.get(constants.SUPPLEMENTARY).get(constants.CONFIG)
         base = config[ini.SETTINGS][ini.ARCHIVE_URL]
         db = config[ini.SETTINGS][ini.ARCHIVE_NAME]
@@ -49,13 +51,13 @@ class database(logger):
         url_id = join(url, report_id)
         pull = requests.get(url_id)
         if pull.status_code == 200:
-            self.logger.info('Successful HTTP Pull Request from %s', url_id)
+            self.logger.debug('Successful HTTP Pull Request from %s', url_id)
         else:
             self.logger.debug('Error with HTTP Pull at %s! Status Code <%s>', url_id, pull.status_code)
             return None, url_id
         pull = json.loads(pull.text)
         rev = pull["_rev"]
-        self.logger.info(f'Retrieved document _rev: {rev}')
+        self.logger.debug(f'Retrieved document _rev: {rev}')
         return rev, url_id
 
     def update_document(self, report_id, rev):
@@ -72,7 +74,7 @@ class database(logger):
             report_data = json.load(report)
             report.close()
 
-        report_id, base, db, url = self.get_info(report_data)
+        report_id, base, db, url = self.get_upload_params(report_data)
         couch_info = self.create_document(report_id)
         upload = self.combine_dictionaries(couch_info, report_data)
         headers = {'Content-Type': 'application/json'}
@@ -96,7 +98,7 @@ class database(logger):
             if status == 201: uploaded = True
             elif status == 409:
                 http_post = False
-                self.logger.debug('Error! HTTP Status Code <%s> document update conflict, will retry with HTTP put', status)
+                self.logger.info('Document already exists, will retry with HTTP put request')
             else:
                 self.logger.warning('Error! Unknown HTTP Status Code <%s>, will retry', status)
             sleep(2)
