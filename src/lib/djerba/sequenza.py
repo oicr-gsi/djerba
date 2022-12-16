@@ -237,14 +237,14 @@ class sequenza_reader(logger):
         extracted = zf.extract(self.seg_archive[gamma_id[0]], dest_dir)
         return extracted
 
-    def extract_Aratio_file(self, dest_dir, gamma=None):
+    def extract_Aratio_file(self, dest_dir, gamma=None, solution=None):
         """
-        Extract the aratio_segments.txt file; for the supplied gamma (if any), default gamma otherwise.
-        No Sequenza solution specified, as aratio_segments.txt file is shared between all solutions for given gamma
+        Extract the aratio_segments.txt file; for the supplied gamma, default gamma otherwise.
+        solution must be specified, aratio_segments.txt file is unique to each solution for given gamma
         dest_dir is a directory path for the extracted file.
         The aratio_segments.txt file is further processed downstream, before input to singleSample.R
         """
-        gamma_id = self._construct_gamma_id(gamma) # supplies defaults and checks validity of gamma
+        gamma_id = self._construct_gamma_id(gamma, solution) # supplies defaults and checks validity of gamma
         zf = zipfile.ZipFile(self.zip_path)
         extracted = zf.extract(self.Aratio_archive[gamma_id[0]], dest_dir)
         return extracted

@@ -185,7 +185,8 @@ class r_script_wrapper(logger):
         write results to tmp_dir
         """
         gamma = self.config.getint(ini.DISCOVERED, ini.SEQUENZA_GAMMA)
-        seg_path = sequenza_reader(sequenza_path).extract_Aratio_file(tmp_dir, gamma)
+        solution = self.config.get(ini.DISCOVERED, ini.SEQUENZA_SOLUTION)
+        seg_path = sequenza_reader(sequenza_path).extract_Aratio_file(tmp_dir, gamma, solution)
         out_path = os.path.join(report_dir, 'aratio_segments.txt')
         copyfile(seg_path, out_path)
         return out_path
