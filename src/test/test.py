@@ -573,15 +573,15 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '403bfbd78bd7456d00da9ef4dadce7f2')
+        self.check_report(out_path, 'f1f618e22a07473f504191f80e009f79')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '50bd2147fec1446e11b9d2a79b2b3dae')
+        self.check_report(out_path, '8b95e32dab32893cc05b8e5b843a813e')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '7484d8c6657bc054568206c80952db69')
+        self.check_report(out_path, '070fe757b7449a20c70c4ed4e5a402fe')
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
@@ -613,7 +613,7 @@ class TestSequenzaReader(TestBase):
     def setUp(self):
         super().setUp()
         self.zip_path = os.path.join(self.sup_dir, 'PANX_1249_Lv_M_WG_100-PM-013_LCM5_results.zip')
-        self.expected_gamma_id = (400, constants.SEQUENZA_PRIMARY_SOLUTION)
+        self.expected_sol_id = (400, constants.SEQUENZA_PRIMARY_SOLUTION)
 
     def test_gamma_script(self):
         """Test the command-line script to find gamma"""
@@ -634,6 +634,7 @@ class TestSequenzaReader(TestBase):
             out_file.write(result.stdout)
         self.assertEqual(result.stdout, expected_text)
         expected_json = os.path.join(self.data_dir, 'expected_sequenza.json')
+        self.maxDiff = None
         with open(expected_json, 'rt') as exp_file, open(json_path, 'rt') as out_file:
             output = json.loads(out_file.read())
             expected = json.loads(exp_file.read())
@@ -714,7 +715,7 @@ class TestSequenzaReader(TestBase):
             (900, 'sol2_0.49'): 284
         }
         self.assertEqual(reader.get_segment_counts(), expected_segments)
-        self.assertEqual(reader.get_default_gamma_id(), self.expected_gamma_id)
+        self.assertEqual(reader.get_default_sol_id(), self.expected_sol_id)
         # test with alternate gamma
         self.assertEqual(reader.get_purity(gamma=50), 0.56)
         self.assertEqual(reader.get_ploidy(gamma=50), 3.2)
@@ -726,20 +727,20 @@ class TestSequenzaReader(TestBase):
 
     def test_seg_file(self):
         reader = sequenza_reader(self.zip_path, log_level=logging.CRITICAL)
-        seg_path = reader.extract_seg_file(self.tmp_dir)
+        seg_path = reader.extract_cn_seg_file(self.tmp_dir)
         self.assertEqual(
             seg_path,
             os.path.join(self.tmp_dir, 'gammas/400/PANX_1249_Lv_M_WG_100-PM-013_LCM5_Total_CN.seg')
         )
         self.assertEqual(self.getMD5(seg_path), '25b0e3c01fe77a28b24cff46081cfb1b')
-        seg_path = reader.extract_seg_file(self.tmp_dir, gamma=1000)
+        seg_path = reader.extract_cn_seg_file(self.tmp_dir, gamma=1000)
         self.assertEqual(
             seg_path,
             os.path.join(self.tmp_dir, 'gammas/1000/PANX_1249_Lv_M_WG_100-PM-013_LCM5_Total_CN.seg')
         )
         self.assertEqual(self.getMD5(seg_path), '5d433e47431029219b6922fba63a8fcf')
         with self.assertRaises(SequenzaError):
-            reader.extract_seg_file(self.tmp_dir, gamma=999999)
+            reader.extract_cn_seg_file(self.tmp_dir, gamma=999999)
 
 class TestSetup(TestBase):
 

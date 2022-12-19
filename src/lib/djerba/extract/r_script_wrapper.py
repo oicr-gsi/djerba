@@ -179,14 +179,14 @@ class r_script_wrapper(logger):
             print("\t".join(headers), out_file)
             print("\t".join(body), out_file)
 
-    def preprocess_Aratio(self, sequenza_path, tmp_dir,report_dir):
+    def preprocess_aratio(self, sequenza_path, tmp_dir, report_dir):
         """
-        Extract the aratio_segments.txt file from the .zip archive output by Sequenza
-        write results to tmp_dir
+        Extract the appropriate _segments.txt file from the .zip archive output by Sequenza
+        Copy the extracted file to report_dir
         """
         gamma = self.config.getint(ini.DISCOVERED, ini.SEQUENZA_GAMMA)
         solution = self.config.get(ini.DISCOVERED, ini.SEQUENZA_SOLUTION)
-        seg_path = sequenza_reader(sequenza_path).extract_Aratio_file(tmp_dir, gamma, solution)
+        seg_path = sequenza_reader(sequenza_path).extract_segments_text_file(tmp_dir, gamma, solution)
         out_path = os.path.join(report_dir, 'aratio_segments.txt')
         copyfile(seg_path, out_path)
         return out_path
@@ -336,7 +336,7 @@ class r_script_wrapper(logger):
         Replace entry in the first column with the tumour ID
         """
         gamma = self.config.getint(ini.DISCOVERED, ini.SEQUENZA_GAMMA)
-        seg_path = sequenza_reader(sequenza_path).extract_seg_file(tmp_dir, gamma)
+        seg_path = sequenza_reader(sequenza_path).extract_cn_seg_file(tmp_dir, gamma)
         out_path = os.path.join(tmp_dir, 'seg.txt')
         with open(seg_path, 'rt') as seg_file, open(out_path, 'wt') as out_file:
             reader = csv.reader(seg_file, delimiter="\t")
@@ -359,7 +359,7 @@ class r_script_wrapper(logger):
         self.preprocess_msi(self.config[ini.DISCOVERED][ini.MSI_FILE], self.report_dir)
         maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE], tmp_dir)
         seg_path = self.preprocess_seg(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir)
-        Aratio_path = self.preprocess_Aratio(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir, self.report_dir)
+        aratio_path = self.preprocess_aratio(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir, self.report_dir)
         cmd = [
             'Rscript', os.path.join(self.r_script_dir, 'singleSample.r'),
             '--basedir', self.r_script_dir,
@@ -368,7 +368,7 @@ class r_script_wrapper(logger):
             '--normalid', self.config[ini.DISCOVERED][ini.NORMAL_ID],
             '--maffile', maf_path,
             '--segfile', seg_path,
-            '--aratiofile', Aratio_path,
+            '--aratiofile', aratio_path,
             '--minfusionreads', self.min_fusion_reads,
             '--enscon', self.config[ini.DISCOVERED][ini.ENSCON],
             '--entcon', self.config[ini.DISCOVERED][ini.ENTCON],
