@@ -31,7 +31,7 @@ ${html_builder().make_sections_into_cells("<h2>Genomic Landscape</h2>","main")}
 ${html_builder().make_sections_into_cells("<h2>Small Mutations</h2>","main")}
    
       <p>
-            <strong>${html_builder().k_comma_format(small_mutations_and_indels.get(constants.TOTAL_VARIANTS))}</strong> exonic somatic mutation(s) were detected, 
+            <strong>${html_builder().k_comma_format(small_mutations_and_indels.get(constants.TOTAL_VARIANTS))}</strong> somatic mutation(s) were detected in exonic or splice regions, 
             of which <strong>${genomic_landscape_info.get(constants.TMB_TOTAL)}</strong> impacted a coding sequence,
             and <strong>${small_mutations_and_indels.get(constants.CLINICALLY_RELEVANT_VARIANTS)}</strong> corresponded to an oncogenic mutation, as defined by OncoKB.
       </p>
