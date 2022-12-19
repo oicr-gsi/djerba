@@ -22,9 +22,13 @@
 - GCGI-664 Sequenza file extraction bug
 
 ### Fixed
-   - Bug in which the `segments.txt` file for the wrong solution was extracted from the ZIP archive
-   - `segments.txt` extraction made aware of multiple solutions
-   - Renamed variables and added comments for greater clarity
+  - Bug in which the `segments.txt` file for the wrong solution was extracted from the ZIP archive
+  - `segments.txt` extraction made aware of multiple solutions
+  - Renamed variables and added comments for greater clarity
+
+- Other
+
+  - Minor formatting fixes in `genomic_details_template.html` and `json_to_html.py`
 
 ## v0.3.14: 2022-12-13
 
