@@ -210,7 +210,7 @@ class html_builder:
         return metric_text
 
     def sample_information_and_quality_rows(self, sample_args):
-        widths = [[35,15], [20,15]]
+        widths = [[30,5], [15,25]]
         key_groups = [
             [constants.ONCOTREE_CODE, constants.SAMPLE_TYPE],
             [constants.CALLABILITY_PERCENT, constants.COVERAGE_MEAN],
