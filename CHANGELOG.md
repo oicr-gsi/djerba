@@ -1,10 +1,10 @@
 # CHANGELOG
 
-## Unreleased
+## v0.3.15: 2022-12-20
 
-- GCGI-403: CouchDB
+### GCGI-403: CouchDB
 
-### Added
+#### Added
   - standalone scripts within folder > protoypes/db
   - addfolder.py: upload old reports from cluster
   - design.py & pull.py: query CouchDB and save as CSB and/or JSON
@@ -12,21 +12,21 @@
   - plots.rmd & plots.html: scatter and bar graphs
   - onco.rmd & onco.html: oncoplot from 3 graphs
 
-### Changed
+#### Changed
   - location of JSON archive
   - edited archiver.py and render.py
   - replaced INI field archive_dir with archive_name ("djerba") and archive_url
   - created database.py that uploads to CouchDB via HTTP request
   - update test.py (archive_name is "djerba_test" for .ini's within test folder)
 
-- GCGI-664 Sequenza file extraction bug
+### GCGI-664 Sequenza file extraction bug
 
-### Fixed
+#### Fixed
   - Bug in which the `segments.txt` file for the wrong solution was extracted from the ZIP archive
   - `segments.txt` extraction made aware of multiple solutions
   - Renamed variables and added comments for greater clarity
 
-- Other
+### Other
 
   - Minor formatting fixes in `genomic_details_template.html` and `json_to_html.py`
 
