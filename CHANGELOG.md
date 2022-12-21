@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v0.3.16: 2022-12-21
+
+### Fixed
+- GCGI-665 Bugfix; stops OncoKB link generation from crashing on fusions
+- Use OncoTree code, not TCGA code, to make OncoKB links
+- Clean up `msi.txt` output to remove trailing tab character
+
 ## v0.3.15: 2022-12-20
 
 ### GCGI-403: CouchDB

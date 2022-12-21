@@ -164,7 +164,6 @@ class clinical_report_json_composer(composer_base):
         self.failed = self.params.get(xc.FAILED)
         self.clinical_data = self.read_clinical_data()
         self.closest_tcga_lc = self.clinical_data[dc.CLOSEST_TCGA].lower()
-        self.closest_tcga_uc = self.clinical_data[dc.CLOSEST_TCGA].upper()
         self.oncotree_uc = self.params.get(xc.ONCOTREE_CODE).upper()
         self.data_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], dc.DATA_DIR_NAME)
         self.r_script_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], 'R_plots')
@@ -186,6 +185,7 @@ class clinical_report_json_composer(composer_base):
                 self.gene_pair_fusions = None
 
     def build_alteration_url(self, gene, alteration, cancer_code):
+        self.logger.debug('Constructing alteration URL from inputs: {0}'.format([self.ONCOKB_URL_BASE, gene, alteration, cancer_code]))
         return '/'.join([self.ONCOKB_URL_BASE, gene, alteration, cancer_code])
 
     def build_copy_number_variation(self):
@@ -801,8 +801,8 @@ class clinical_report_json_composer(composer_base):
         else:
             genes_and_urls = {gene: self.build_gene_url(gene) for gene in genes_arg}
         if alteration == rc.FUSION:
-            alt_url = self.build_alteration_url('-'.join(genes_arg), alteration, self.closest_tcga_uc)
-        if alteration == "TMB-H" or alteration == "MSI-H":
+            alt_url = self.build_alteration_url('-'.join(genes_arg), alteration, self.oncotree_uc)
+        elif alteration == "TMB-H" or alteration == "MSI-H":
             genes_and_urls = {
                 "Biomarker": core_biomarker_url
             }
@@ -811,7 +811,7 @@ class clinical_report_json_composer(composer_base):
             if alteration == "MSI-H":
                 alt_url = '/'.join([core_biomarker_url,"Microsatellite%20Instability-High/"])
         else:
-            alt_url = self.build_alteration_url(genes_arg, alteration, self.closest_tcga_uc)
+            alt_url = self.build_alteration_url(genes_arg, alteration, self.oncotree_uc)
         row = {
             rc.GENES_AND_URLS: genes_and_urls,
             rc.ALT: alteration,
