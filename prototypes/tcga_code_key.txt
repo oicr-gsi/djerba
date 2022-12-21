@@ -20,4 +20,4 @@ luad	Lung Adenocarcinoma	Lung	562	LUAD
 lusc	Lung Squamous Cell Carcinoma	Lung	469	LUSC
 meso	Mesothelioma	Peritoneum,Pleura	82	PEMESO,PLMESO
 ov	Ovarian Serous Cystadenocarcinoma	Ovary	409	SOC
-TCGA_ALL_TUMOR	all tumours	all tissues	6446	TCGA_ALL_TUMOR
+TCGA_ALL_TUMOR	TCGA	NA	6446	TCGA_ALL_TUMOR
