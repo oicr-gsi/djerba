@@ -1,0 +1,23 @@
+project_id	project_name	primary_site	cohort_size	oncotree
+acc	Adrenocortical Carcinoma	Adrenal Gland	91	ACC
+blca	Bladder Urothelial Carcinoma	Bladder/Urinary Tract	409	BLCA
+brca	Breast Invasive Carcinoma	Breast	1009	BRCA
+cesc	Cervical Squamous Cell Carcinoma and Endocervical Adenocarcinoma	Cervix,Uterus	281	CESC,ECAD
+chol	Cholangiocarcinoma	Biliary Tract,Liver	36 CHOL,HCCIHCH
+coadread	Colon Adenocarcinoma	Bowel	528	COADREAD
+coadread	Rectum Adenocarcinoma	Bowel	528	COADREAD
+dlbc	Neoplasm Diffuse Large B-cell Lymphoma	Lymphoid	37	MBN
+esca	Esophageal Carcinoma	Esophagus/Stomach	182	ESCA
+gbm	Glioblastoma Multiforme	Brain	87	GBM
+hnsc	Head and Neck Squamous Cell Carcinoma	Head and Neck	502	HNSC
+kich	Kidney Chromophobe	Kidney	65	RCC
+kirc	Kidney Renal Clear Cell Carcinoma	Kidney	356	CCSK
+kirp	Kidney Renal Papillary Cell Carcinoma	Kidney	274	RCC
+laml	Acute Myeloid Leukemia	Myeloid	199	AML
+lgg	Lower Grade Glioma	Brain	510	ENCG
+lihc	Hepatocellular Carcinoma	Biliary Tract,Liver	358	HCC,HCCIHCH
+luad	Lung Adenocarcinoma	Lung	562	LUAD
+lusc	Lung Squamous Cell Carcinoma	Lung	469	LUSC
+meso	Mesothelioma	Peritoneum,Pleura	82	PEMESO,PLMESO
+ov	Ovarian Serous Cystadenocarcinoma	Ovary	409	SOC
+TCGA_ALL_TUMOR	all tumours	all tissues	6446	TCGA_ALL_TUMOR
