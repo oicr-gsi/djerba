@@ -65,7 +65,7 @@ class provenance_reader(logger):
 
     # if conflicting sample names (eg. for different tumour/normal IDs), should fail as it cannot find a unique tumour ID
 
-    def __init__(self, provenance_path, study, donor, samples,
+    def __init__(self, provenance_path, project, donor, samples,
                  log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
         # set some constants for convenience
@@ -74,7 +74,7 @@ class provenance_reader(logger):
         self.wt_t = ini.SAMPLE_NAME_WT_T
         self.sample_name_keys = [self.wg_n, self.wg_t, self.wt_t]
         # read and parse file provenance
-        self.logger.info("Reading provenance for study '%s' and donor '%s' " % (study, donor))
+        self.logger.info("Reading provenance for project '%s' and donor '%s' " % (project, donor))
         self.root_sample_name = donor
         if not samples.is_valid():
             msg = "User-supplied sample names are not valid: {0}. ".format(samples)+\
@@ -82,18 +82,18 @@ class provenance_reader(logger):
             self.logger.error(msg)
             raise RuntimeError(msg)
         self.provenance = []
-        # find provenance rows with the required study, root sample, and (if given) sample names
+        # find provenance rows with the required project, root sample, and (if given) sample names
         with gzip.open(provenance_path, 'rt') as infile:
             reader = csv.reader(infile, delimiter="\t")
             for row in reader:
-                if row[index.STUDY_TITLE] == study and \
+                if row[index.STUDY_TITLE] == project and \
                    row[index.ROOT_SAMPLE_NAME] == self.root_sample_name and \
                    (samples.name_ok(row[index.SAMPLE_NAME])) and \
                    row[index.SEQUENCER_RUN_PLATFORM_ID] != 'Illumina_MiSeq':
                     self.provenance.append(row)
         if len(self.provenance)==0:
             # continue with empty provenance results, eg. for GSICAPBENCH testing
-            msg = "No provenance records found for study '%s' and donor '%s' " % (study, donor) +\
+            msg = "No provenance records found for project '%s' and donor '%s' " % (project, donor) +\
                 "in '%s'" % provenance_path
             self.logger.warning(msg)
             self._set_empty_provenance()

@@ -176,11 +176,11 @@ class html_builder:
     
     def patient_table_report_cols(self, patient_args):
         """Get the patient info table: After initial header, before Sample Information & Quality"""
-        widths = [[25,25], [25,25]]
+        widths = [[17,20], [19,35]]
         key_groups = [
-            [constants.REPORT_ID, constants.PATIENT_LIMS_ID],
-            [constants.BLOOD_SAMPLE_ID, constants.PATIENT_STUDY_ID],
-            [constants.TUMOUR_SAMPLE_ID , constants.STUDY]
+            [constants.PATIENT_LIMS_ID, constants.TUMOUR_SAMPLE_ID],
+            [constants.PATIENT_STUDY_ID, constants.BLOOD_SAMPLE_ID],
+            [constants.STUDY , constants.REPORT_ID]
         ]
         return self.key_value_table_rows(patient_args, key_groups, widths)
     

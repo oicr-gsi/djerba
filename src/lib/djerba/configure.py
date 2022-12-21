@@ -42,9 +42,9 @@ class configurer(logger):
         else:
             self.logger.info("Configuring Djerba for WGS+WTS report")
         provenance = self.config[ini.SETTINGS][ini.PROVENANCE]
-        study = self.config[ini.INPUTS][ini.STUDY_ID]
+        project = self.config[ini.INPUTS][ini.PROJECT_ID]
         donor = self.config[ini.INPUTS][ini.PATIENT]
-        self.reader = provenance_reader(provenance, study, donor, self._get_samples(),
+        self.reader = provenance_reader(provenance, project, donor, self._get_samples(),
                                         log_level=log_level, log_path=log_path)
 
     def _get_samples(self):
