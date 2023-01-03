@@ -362,7 +362,7 @@ class r_script_wrapper(logger):
         cmd = [
             'Rscript', os.path.join(self.r_script_dir, 'singleSample.r'),
             '--basedir', self.r_script_dir,
-            '--studyid', self.config[ini.INPUTS][ini.STUDY_ID],
+            '--studyid', self.config[ini.INPUTS][ini.PROJECT_ID],
             '--tumourid', self.tumour_id,
             '--normalid', self.config[ini.DISCOVERED][ini.NORMAL_ID],
             '--maffile', maf_path,

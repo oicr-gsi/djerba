@@ -143,7 +143,7 @@ class TestArchive(TestBase):
         self.assertEqual(get["_id"], get["report"]["patient_info"]["Report ID"])
         rm = requests.delete(url_id+'?rev='+get["_rev"])
         self.assertEqual(rm.status_code, 200)
-        self.assertEqual(len(data['report']), 24)  
+        self.assertEqual(len(data['report']), 25)  
         self.assertEqual(len(data['supplementary']['config']), 3)
 
 class TestConfigure(TestBase):
@@ -175,19 +175,19 @@ class TestConfigure(TestBase):
         test_configurer.run(out_path)
 
     def test_default(self):
-        self.run_config_test(self.config_user, False, False, 59, self.provenance)
+        self.run_config_test(self.config_user, False, False, 62, self.provenance)
 
 
     def test_default_fail(self):
-        self.run_config_test(self.config_user_failed, False, True, 48, self.provenance)
+        self.run_config_test(self.config_user_failed, False, True, 51, self.provenance)
 
     def test_wgs_only(self):
-        self.run_config_test(self.config_user_wgs_only, True, False, 57, self.provenance)
+        self.run_config_test(self.config_user_wgs_only, True, False, 60, self.provenance)
     def test_wgs_only_fail(self):
-        self.run_config_test(self.config_user_wgs_only_failed, True, True, 48, self.provenance)
+        self.run_config_test(self.config_user_wgs_only_failed, True, True, 51, self.provenance)
 
     def test_vnwgts(self):
-        self.run_config_test(self.config_user_vnwgts, False, False, 59, self.provenance_vnwgts)
+        self.run_config_test(self.config_user_vnwgts, False, False, 62, self.provenance_vnwgts)
 
     def test_vnwgts_broken(self):
         # test failure modes of sample input
@@ -295,7 +295,7 @@ class TestExtractor(TestBase):
             data_found['report']['djerba_version'] = 'PLACEHOLDER'
             del data_found['supplementary'] # do not test supplementary data
             data = json.dumps(data_found)
-            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), 'f76c134dc342cb69766acc7c068b4828')
+            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), 'cf37d5c24f8e684ea79f6f8bc40e0f63')
 
     def test_wgts_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGTS')
@@ -573,15 +573,15 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '91780923b4ea63becc4e567d1f922bcb')
+        self.check_report(out_path, '8de77666d80285f14dd8c60247eb9961')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '8a60ac643f6bf62c035f10a4e871c0c2')
+        self.check_report(out_path, '60ffc7c64c33a33b5845890ff93e99d5')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '070fe757b7449a20c70c4ed4e5a402fe')
+        self.check_report(out_path, 'acdf6c2989b0396a446893dd8a4d2bf9')
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
@@ -606,7 +606,7 @@ class TestRender(TestBase):
         self.assertTrue(os.path.exists(pdf_path))
         # Compare file contents; timestamps will differ. TODO Make this more Pythonic.
         result = subprocess.run("cat {0} | grep -av CreationDate | md5sum | cut -f 1 -d ' '".format(pdf_path), shell=True, capture_output=True)
-        self.assertEqual(str(result.stdout, encoding=constants.TEXT_ENCODING).strip(), 'dea1aeef66e5c0d22242a7d38123ffbc')
+        self.assertEqual(str(result.stdout, encoding=constants.TEXT_ENCODING).strip(), '37a53835a4cb9fd1107e734ef941972c')
 
 class TestSequenzaReader(TestBase):
 

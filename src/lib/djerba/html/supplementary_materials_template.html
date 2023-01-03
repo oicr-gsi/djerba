@@ -56,7 +56,7 @@
       <% raise RuntimeError("Unknown assay type") %>
     % endif
 
-    <p>Assay results were collated into the report document by <a href="https://github.com/oicr-gsi/djerba">Djerba</a> (${djerba_version}) using pipeline v.1.0</p>
+    <p>Assay results were collated into the report document by <a href="https://github.com/oicr-gsi/djerba">Djerba</a> (${djerba_version}) using pipeline v.${pipeline_version}.</p>
   </div></div>
 
   ## Slightly hacky method to omit technical notes with null content

@@ -19,6 +19,7 @@ from djerba.util.subprocess_runner import subprocess_runner
 from djerba.extract.oncokb_annotator import oncokb_annotator
 from statsmodels.distributions.empirical_distribution import ECDF
 from djerba.util.image_to_base64 import converter
+import djerba.util.ini_fields as ini
 
 class composer_base(logger):
     # base class with shared methods and constants
@@ -149,8 +150,9 @@ class clinical_report_json_composer(composer_base):
         "HSCHR6_MHC_COXp22.1"
     ]
 
-    def __init__(self, input_dir, params, log_level=logging.WARNING, log_path=None):
+    def __init__(self, config, input_dir, params, log_level=logging.WARNING, log_path=None):
         super().__init__(log_level, log_path) # calls the parent constructor; creates logger
+        self.config = config
         self.log_level = log_level
         self.log_path = log_path
         self.all_reported_variants = set()
@@ -183,6 +185,27 @@ class clinical_report_json_composer(composer_base):
             else:
                 self.total_fusion_genes = None
                 self.gene_pair_fusions = None
+
+    def build_assay_name(self):
+        ##WGS v WGTS
+        assay_type = self.params.get(xc.ASSAY_TYPE)
+        if assay_type == rc.ASSAY_WGS:
+            assay_type_name = "Whole genome sequencing (WGS)-"
+        elif assay_type == rc.ASSAY_WGTS:
+            assay_type_name = "Whole genome and transcriptome sequencing (WGTS)-"
+        ##target
+        coverage = self.params.get(xc.COVERAGE)
+        if coverage == 40:
+            assay_coverage_name = "40X Tumour, 30X Normal "
+        elif coverage == 80:
+            assay_coverage_name = "80X Tumour, 30X Normal "
+        else:
+            raise RuntimeError("Unknown depth of coverage")
+        ##assay version
+        assay_version = self.config[ini.SETTINGS][ini.ASSAY_VERSION]
+        assay_version_name = "(v"+assay_version+")"
+        assay_name = assay_type_name + assay_coverage_name + assay_version_name
+        return(assay_name)
 
     def build_alteration_url(self, gene, alteration, cancer_code):
         self.logger.debug('Constructing alteration URL from inputs: {0}'.format([self.ONCOKB_URL_BASE, gene, alteration, cancer_code]))
@@ -280,18 +303,18 @@ class clinical_report_json_composer(composer_base):
         # TODO import clinical data column names from Djerba constants
         data = {}
         tumour_id = self.clinical_data[dc.TUMOUR_SAMPLE_ID]
-        req_id = self.params.get(xc.REQ_ID)
-        data[rc.ASSAY_NAME] = self.params.get(xc.ASSAY_NAME)
+        data[rc.ASSAY_NAME] = self.build_assay_name()
         data[rc.BLOOD_SAMPLE_ID] = self.clinical_data[dc.BLOOD_SAMPLE_ID]
         data[rc.SEX] = self.clinical_data[dc.SEX]
         data[rc.PATIENT_LIMS_ID] = self.clinical_data[dc.PATIENT_LIMS_ID]
         data[rc.PATIENT_STUDY_ID] = self.clinical_data[dc.PATIENT_STUDY_ID]
         data[rc.PRIMARY_CANCER] = self.clinical_data[dc.CANCER_TYPE_DESCRIPTION]
         data[rc.REPORT_ID] = "{0}-v{1}".format(tumour_id, self.clinical_data[dc.REPORT_VERSION])
-        data[rc.REQ_ID] = req_id
+        data[rc.REQ_ID] = self.config[ini.INPUTS][ini.REQ_ID]
         data[rc.REQ_APPROVED_DATE] = self.clinical_data[dc.REQ_APPROVED_DATE]
         data[rc.SITE_OF_BIOPSY_OR_SURGERY] = self.clinical_data[dc.SAMPLE_ANATOMICAL_SITE]
-        data[rc.STUDY] = self.params.get(xc.STUDY)
+        data[rc.STUDY] = self.config[ini.INPUTS][ini.STUDY_ID]
+        data[rc.PROJECT] = self.params.get(xc.PROJECT)
         data[rc.TUMOUR_SAMPLE_ID] = tumour_id
         return data
 
@@ -750,6 +773,7 @@ class clinical_report_json_composer(composer_base):
         data[rc.PURITY_FAILURE] = self.params.get(xc.PURITY_FAILURE)
         data[rc.REPORT_DATE] = None
         data[rc.DJERBA_VERSION] = __version__
+        data[rc.PIPELINE_VERSION] = self.config[ini.SETTINGS][ini.PIPELINE_VERSION]
         if not self.failed:
             # additional data for non-failed reports
             data[rc.GENOMIC_BIOMARKERS] = self.build_genomic_biomarkers(self.input_dir,self.clinical_data[dc.TUMOUR_SAMPLE_ID])

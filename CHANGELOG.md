@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v0.3.17: 2023-01-03
+
+### Changed
+GCGI-400: the config.ini parameter studyid now reflects the name of the study to be displayed in the report's case information section. a new parameter called projectid is used to reflect the project id as used by provenance (ie to find files)
+GCGI-451: assay version added to .ini settings, and assay name is assembled from assay version and -w and -t command line flags
+GCGI-612: pipeline version added to .ini settings, and printed in report supplementary
+
 ## v0.3.16: 2022-12-21
 
 ### Fixed

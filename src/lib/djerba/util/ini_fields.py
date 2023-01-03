@@ -6,9 +6,9 @@ SETTINGS = 'settings'
 DISCOVERED = 'discovered'
 
 # parameter names
+ASSAY_VERSION = 'assay_version'
 ARCHIVE_NAME = 'archive_name'
 ARCHIVE_URL = 'archive_url'
-ASSAY_NAME = 'assay_name'
 BED_PATH = 'bed_path'
 DATA_DIR = 'data_dir'
 ENSCON = 'enscon'
@@ -35,7 +35,9 @@ ONCOTREE_CODE = 'oncotree_code' # was CANCER_TYPE_DETAILED
 PATIENT = 'patient'
 PATIENT_ID = 'patientid'
 PCT_V7_ABOVE_80X = 'pct_v7_above_80x'
+PIPELINE_VERSION = 'pipeline_version'
 PLOIDY = 'ploidy'
+PROJECT_ID = 'projectid'
 PROVENANCE = 'provenance'
 PURITY = 'purity'
 REPORT_VERSION = 'report_version'
@@ -95,11 +97,11 @@ SCHEMA_DEFAULT = {
         TUMOUR_ID
     ],
     INPUTS: [
-        ASSAY_NAME,
         MEAN_COVERAGE,
         ONCOTREE_CODE,
         PATIENT,
         PCT_V7_ABOVE_80X,
+        PROJECT_ID,
         REPORT_VERSION,
         REQ_ID,
         REQ_APPROVED_DATE,
@@ -112,11 +114,13 @@ SCHEMA_DEFAULT = {
         TCGA_CODE
     ],
     SETTINGS: [
+        ASSAY_VERSION,
         ARCHIVE_NAME,
         ARCHIVE_URL,
         BED_PATH,
         GEP_REFERENCE,
         MIN_FUSION_READS,
+        PIPELINE_VERSION,
         PROVENANCE,
         TCGA_DATA,
         WHIZBAM_URL
@@ -154,10 +158,10 @@ SCHEMA_WGS_ONLY = {
         TUMOUR_ID
     ],
     INPUTS: [
-        ASSAY_NAME,
         MEAN_COVERAGE,
         ONCOTREE_CODE,
         PATIENT,
+        PROJECT_ID,
         PCT_V7_ABOVE_80X,
         REPORT_VERSION,
         REQ_ID,
@@ -171,11 +175,13 @@ SCHEMA_WGS_ONLY = {
         TCGA_CODE
     ],
     SETTINGS: [
+        ASSAY_VERSION,
         ARCHIVE_NAME,
         ARCHIVE_URL,
         BED_PATH,
         GEP_REFERENCE,
         MIN_FUSION_READS,
+        PIPELINE_VERSION,
         PROVENANCE,
         TCGA_DATA,
         WHIZBAM_URL
@@ -202,11 +208,11 @@ SCHEMA_FAILED = {
         TUMOUR_ID
     ],
     INPUTS: [
-        ASSAY_NAME,
         MEAN_COVERAGE,
         ONCOTREE_CODE,
         PATIENT,
         PCT_V7_ABOVE_80X,
+        PROJECT_ID,
         REPORT_VERSION,
         REQ_ID,
         REQ_APPROVED_DATE,
@@ -219,11 +225,13 @@ SCHEMA_FAILED = {
         TCGA_CODE
     ],
     SETTINGS: [
+        ASSAY_VERSION,
         ARCHIVE_NAME,
         ARCHIVE_URL,
         BED_PATH,
         GEP_REFERENCE,
         MIN_FUSION_READS,
+        PIPELINE_VERSION,
         PROVENANCE,
         TCGA_DATA,
         WHIZBAM_URL
