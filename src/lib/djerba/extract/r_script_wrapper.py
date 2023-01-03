@@ -325,8 +325,7 @@ class r_script_wrapper(logger):
                 msi_boots.append(float(row[3]))
         msi_perc = numpy.percentile(numpy.array(msi_boots), [0, 25, 50, 75, 100])
         with open(out_path, 'w') as out_file:
-            for item in list(msi_perc):
-                out_file.write(str(str(item)+"\t"))
+            print("\t".join([str(item) for item in list(msi_perc)]), file=out_file)
         return out_path
 
     def preprocess_seg(self, sequenza_path, tmp_dir):

@@ -7,6 +7,13 @@ GCGI-400: the config.ini parameter studyid now reflects the name of the study to
 GCGI-451: assay version added to .ini settings, and assay name is assembled from assay version and -w and -t command line flags
 GCGI-612: pipeline version added to .ini settings, and printed in report supplementary
 
+## v0.3.16: 2022-12-21
+
+### Fixed
+- GCGI-665 Bugfix; stops OncoKB link generation from crashing on fusions
+- Use OncoTree code, not TCGA code, to make OncoKB links
+- Clean up `msi.txt` output to remove trailing tab character
+
 ## v0.3.15: 2022-12-20
 
 ### GCGI-403: CouchDB
