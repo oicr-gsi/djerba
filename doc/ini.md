@@ -42,11 +42,11 @@ All required parameters go in the `[inputs]` section. The "Source" column lists 
 
 | Name                   | Source | Notes                                                    |
 |------------------------|----------|------------------------------------------------|
-| `assay_name`            | req | Full name of the assay, eg. "Whole genome sequencing (WGS) - 80X Tumour, 30X Normal (v1.0)"  |
 | `mean_coverage`            | Dashi | |
 | `oncotree_code`             | req       | [OncoTree](http://oncotree.mskcc.org/#/home) code (case-insensitive), eg. paad |
 | `patient`                | req       | Study name and patient number, eg. PANX_1249; aka _root sample name_ |
 | `requisition_id`                | req       | Requisition id, eg. PASS01-UHN-001; |
+| `projectid`                | dimsum       | Project ID within Provenance, eg. PASS01 |
 | `pct_v7_above_80x`            | Dashi | |
 | `report_version`            | user | |
 | `req_approved_date`            | req | Format must be `YYYY/MM/DD` |
@@ -55,7 +55,7 @@ All required parameters go in the `[inputs]` section. The "Source" column lists 
 | `sequenza_reviewer_1` | user | Name of first reviewer for Sequenza parameters |
 | `sequenza_reviewer_2` | user | Name of second reviewer for Sequenza parameters |
 | `sex`            | req | Patient sex |
-| `studyid`                | req       | Study ID within requisition system, eg. PASS01 |
+| `studyid`                | req       | Study ID to be displayed in report, eg. PASS-01 |
 | `tcgacode`                | req    | [TCGA](https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga) code for the tumour, eg. PAAD |
 
 ## Optional INI parameters
@@ -155,10 +155,13 @@ If _any_ sample name parameters are specified, then they must _at least_ include
 | `[discovered]` | `sequenza_solution`     | Default computation       | Sequenza solution identifier  |
 | `[discovered]` | `tmbcomp` | `data_dir` | TCGA TMB file                                 |
 | `[discovered]` | `tumour_id` | File provenance | Tumour ID, eg. 100-PM-013_LCM5                |
-| `[settings]`   | `archive_dir` | defaults.ini | Directory for automatic archiving of INI files |
+| `[settings]`   | `archive_name` | defaults.ini | name of archive on couchDB |
+| `[settings]`   | `archive_url` | defaults.ini | url of archive on couchDB |
+| `[settings]`   | `assay_version` | defaults.ini | Current version number of the WGTS assay |
 | `[settings]`   | `bed_path` | defaults.ini |  |
 | `[settings]`   | `gep_reference` | defaults.ini |  |
 | `[settings]`   | `min_fusion_reads` | defaults.ini |  |
+| `[settings]`   | `pipeline_version` | defaults.ini | Current version number of the WGTS pipeline |
 | `[settings]`   | `provenance` | defaults.ini | Path to file provenance report  |
 | `[settings]`   | `tcga_data` | defaults.ini | Path to TCGA data directory  |
 | `[settings]`   | `whizbam_url` | defaults.ini | Base URL of OICR Whizbam site; used to construct links in report  |
@@ -174,8 +177,3 @@ The following Sequenza parameters are written to a file `sequenza_meta.txt` in t
 - `sequenza_reviewer_2`
 - `sequenza_solution`
 
-## Archiving
-
-By default, the fully-specified INI file produced by the `configure` step is archived to a directory given by the `archive_dir` INI parameter. This is intended as a record of what reports have been produced; it may be superseded at a later date, eg. by a database.
-
-The archive destination is: `$ARCHIVE_DIR/$PATIENT_STUDY_ID/$MD5_CHECKSUM/${PATIENT_STUDY_ID}.ini`, where `$MD5_CHECKSUM` is computed from the INI file. So, non-identical INI files will not be written to the same location. If Djerba produces an INI file which has already been archived, it will log a warning and leave the archived file untouched.
