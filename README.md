@@ -201,6 +201,6 @@ To run the unit tests on a checkout of the Djerba repo:
 
 ## Copyright and License
 
-Copyright (C) 2020, 2021, 2022 by Genome Sequence Informatics, Ontario Institute for Cancer Research.
+Copyright (C) 2020, 2021, 2022, 2023 by Genome Sequence Informatics, Ontario Institute for Cancer Research.
 
 Licensed under the [GPL 3.0 license](https://www.gnu.org/licenses/gpl-3.0.en.html).
