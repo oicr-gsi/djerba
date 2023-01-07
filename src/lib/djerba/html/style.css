@@ -17,7 +17,9 @@ body {
 
 p {
   font-size: 14px;
-  line-height: 1.5
+  line-height: 1.5;
+  margin: 0px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
 }
 
 sup {
@@ -36,8 +38,8 @@ h2 {
   font-size: 22px;
   text-transform: uppercase;
   font-weight: normal;
-  margin: 10px 0px 0px 0px;
-  padding: 10px 1px 10px 0px;
+  margin: 5px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
 }
 
 /* sub-section header */
@@ -58,12 +60,16 @@ hr.header-big-line{
 hr.big-line{
   border-top: 1px solid #65bc45;
   width: 100%;
+  margin: 5px 0px 5px 0px;
+  padding: 0px 0px 0px 0px;
 }
 
 hr.big-white-line{
   border: none;
   width: 80%;
   margin-left: 20%;
+  margin: 0px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
 }
 
 hr.lil-line{
