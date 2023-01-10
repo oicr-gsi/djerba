@@ -20,6 +20,8 @@ import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 from djerba.configure import configurer, log_r_cutoff_finder
 from djerba.extract.extractor import extractor
+from djerba.extract.oncokb.annotator import oncokb_annotator
+from djerba.extract.oncokb.cache import oncokb_cache, oncokb_cache_params
 from djerba.extract.r_script_wrapper import r_script_wrapper
 from djerba.lister import lister
 from djerba.main import main
@@ -35,6 +37,12 @@ class TestBase(unittest.TestCase):
     def getMD5(self, inputPath):
         md5 = hashlib.md5()
         with open(inputPath, 'rb') as f:
+            md5.update(f.read())
+        return md5.hexdigest()
+
+    def gunzip_and_getMD5(self, inputPath):
+        md5 = hashlib.md5()
+        with gzip.open(inputPath, 'rb') as f:
             md5.update(f.read())
         return md5.hexdigest()
 
@@ -177,12 +185,12 @@ class TestConfigure(TestBase):
     def test_default(self):
         self.run_config_test(self.config_user, False, False, 62, self.provenance)
 
-
     def test_default_fail(self):
         self.run_config_test(self.config_user_failed, False, True, 51, self.provenance)
 
     def test_wgs_only(self):
         self.run_config_test(self.config_user_wgs_only, True, False, 60, self.provenance)
+
     def test_wgs_only_fail(self):
         self.run_config_test(self.config_user_wgs_only_failed, True, True, 51, self.provenance)
 
@@ -280,7 +288,7 @@ class TestExtractor(TestBase):
         config = configparser.ConfigParser()
         config.read(self.default_ini)
         config.read(user_config)
-        test_extractor = extractor(config, out_dir, self.AUTHOR, wgs_only, failed, depth, log_level=logging.ERROR)
+        test_extractor = extractor(config, out_dir, self.AUTHOR, wgs_only, failed, depth, oncokb_cache_params(), log_level=logging.ERROR)
         # do not test R script here; see TestWrapper
         test_extractor.run(r_script=False)
 
@@ -342,7 +350,7 @@ class TestExtractor(TestBase):
         wgs_only = False
         failed = False
         depth = 80
-        test_extractor = extractor(config, out_dir, self.AUTHOR, wgs_only, failed, depth, log_level=logging.ERROR)
+        test_extractor = extractor(config, out_dir, self.AUTHOR, wgs_only, failed, depth, oncokb_cache_params(), log_level=logging.ERROR)
         desc = test_extractor.get_description()
         expected = [
             {'cancer_type': 'Pancreas', 'cancer_description': 'Pancreatic Adenocarcinoma'},
@@ -465,7 +473,12 @@ class TestMain(TestBase):
             self.pdf = None
             self.subparser_name = constants.ALL
             self.no_archive = True
+            self.no_cleanup = False
             self.wgs_only = False
+            # oncokb cache
+            self.cache_dir = None
+            self.apply_cache = True # Use cache for speed; test OncoKB usage elsewhere
+            self.update_cache = False
             # logging
             self.log_path = None
             self.debug = False
@@ -547,6 +560,101 @@ class TestMavis(TestBase):
         action = runner.main()
         self.assertEqual(action, 2)
 
+class TestOncokbAnnotator(TestBase):
+
+    # Test for online OncoKB annotation with reduced MAF input
+
+    def test_annotator(self):
+        input_dir = os.path.join(self.sup_dir, 'oncokb')
+        # out_dir = self.tmp_dir
+        out_dir = '/u/ibancarz/workspace/djerba/test_20230110_01'
+        annotator = oncokb_annotator('100-PM-047_LCM1_4', 'PAAD', out_dir)
+        cna = os.path.join(input_dir, 'data_CNA_oncoKBgenes_nonDiploid.txt')
+        fusion = os.path.join(input_dir, 'data_fusions_oncokb.txt')
+        maf = os.path.join(input_dir, 'raw_maf_100.tsv')
+        for input_file in [cna, fusion]:
+            copy(input_file, out_dir)
+        annotator.annotate_cna()
+        cna_out = os.path.join(out_dir, 'data_CNA_oncoKBgenes_nonDiploid_annotated.txt')
+        self.assertTrue(os.path.exists(cna_out))
+        self.assertEqual(self.getMD5(cna_out), 'da428449a3145cbf9a2f7f1bdf45786d')
+        annotator.annotate_fusion()
+        fusion_out = os.path.join(out_dir, 'data_fusions_oncokb_annotated.txt')
+        self.assertTrue(os.path.exists(fusion_out))
+        self.assertEqual(self.getMD5(fusion_out), '570b4ce1fe08e2323b1e84fcb5b2c58c')
+        annotator.annotate_maf(maf)
+        maf_out = os.path.join(out_dir, 'annotated_maf.tsv')
+        self.assertTrue(os.path.exists(maf_out))
+        self.assertEqual(self.getMD5(maf_out), '0d7178017054f9b60f48044b58d907e4')
+
+class TestOncokbCache(TestBase):
+
+    # test if we can do a round trip:
+    # - make cache from annotated file
+    # - annotate a raw file from the cache
+    # - check that cache-annotated and original annotated files are the same
+
+    def test_cna(self):
+        input_dir = os.path.join(self.sup_dir, 'oncokb')
+        annotated_cna = os.path.join(input_dir, 'data_CNA_oncoKBgenes_nonDiploid_annotated.txt')
+        raw_cna = os.path.join(input_dir, 'data_CNA_oncoKBgenes_nonDiploid.txt')
+        out_dir = self.tmp_dir
+        cache = oncokb_cache(out_dir)
+        cache_out_path = cache.write_cna_cache(annotated_cna)
+        self.assertTrue(os.path.exists(cache_out_path))
+        with open(cache_out_path) as cache_file:
+            cache_data = json.loads(cache_file.read())
+        expected = ["True", "True", "True", "Likely Loss-of-function", "25736321;27558455;25521327",
+                    "Likely Oncogenic", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+                    "", "", "", "", "", ""]
+        found = cache_data["TGFBR2"]["Deletion"]
+        self.assertEqual(expected, found)
+        cna_out_path = os.path.join(out_dir, 'annotated_cna.tsv')
+        oncokb_info = os.path.join(input_dir, 'oncokb_clinical_info.txt')
+        cache.annotate_cna(raw_cna, cna_out_path, oncokb_info)
+        self.assertTrue(os.path.exists(cna_out_path))
+        self.assertEqual(self.getMD5(cna_out_path), self.getMD5(annotated_cna))
+
+    def test_fusion(self):
+        input_dir = os.path.join(self.sup_dir, 'oncokb')
+        annotated_fusion = os.path.join(input_dir, 'data_fusions_oncokb_annotated.txt')
+        raw_fusion = os.path.join(input_dir, 'data_fusions_oncokb.txt')
+        out_dir = self.tmp_dir
+        cache = oncokb_cache(out_dir)
+        cache_out_path = cache.write_fusion_cache(annotated_fusion)
+        self.assertTrue(os.path.exists(cache_out_path))
+        with open(cache_out_path) as cache_file:
+            cache_data = json.loads(cache_file.read())
+        expected = ['True', 'True', 'False', 'Likely Loss-of-function', '21174539',
+                    'Likely Oncogenic', '', '', '', '', '', '', '', '', '', '', '', '', '',
+                    '', '', '', '', '', '', '', '']
+        found = cache_data['RUNX1-SHROOM2']
+        self.assertEqual(expected, found)
+        fusion_out_path = os.path.join(out_dir, 'annotated_fusion.tsv')
+        cache.annotate_fusion(raw_fusion, fusion_out_path)
+        self.assertTrue(os.path.exists(fusion_out_path))
+        self.assertEqual(self.getMD5(fusion_out_path), self.getMD5(annotated_fusion))
+
+    def test_maf(self):
+        input_dir = os.path.join(self.sup_dir, 'oncokb')
+        annotated_maf = os.path.join(input_dir, 'annotated_maf.tsv.gz')
+        raw_maf = os.path.join(input_dir, 'raw_maf.tsv.gz')
+        out_dir = self.tmp_dir
+        cache = oncokb_cache(out_dir)
+        cache_out_path = cache.write_maf_cache(annotated_maf)
+        self.assertTrue(os.path.exists(cache_out_path))
+        with open(cache_out_path) as cache_file:
+            cache_data = json.loads(cache_file.read())
+        expected = ["True", "True", "False", "Likely Loss-of-function",
+                    "22072542;22588899;21817013;24117486", "Likely Oncogenic", "", "", "", "",
+                    "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
+        found = cache_data.get('51f977c04bfb0e703a3b42bb451a782445f9b9f9362dbd38db5408d95553414b')
+        self.assertEqual(expected, found)
+        maf_out_path = os.path.join(out_dir, 'annotated_maf.tsv')
+        cache.annotate_maf(raw_maf, maf_out_path)
+        self.assertTrue(os.path.exists(maf_out_path))
+        self.assertEqual(self.getMD5(maf_out_path), self.gunzip_and_getMD5(annotated_maf))
+
 class TestRender(TestBase):
 
     def check_report(self, report_path, expected_md5):
@@ -606,7 +714,7 @@ class TestRender(TestBase):
         self.assertTrue(os.path.exists(pdf_path))
         # Compare file contents; timestamps will differ. TODO Make this more Pythonic.
         result = subprocess.run("cat {0} | grep -av CreationDate | md5sum | cut -f 1 -d ' '".format(pdf_path), shell=True, capture_output=True)
-        self.assertEqual(str(result.stdout, encoding=constants.TEXT_ENCODING).strip(), '37a53835a4cb9fd1107e734ef941972c')
+        self.assertEqual(str(result.stdout, encoding=constants.TEXT_ENCODING).strip(), 'dea1aeef66e5c0d22242a7d38123ffbc')
 
 class TestSequenzaReader(TestBase):
 
@@ -791,7 +899,7 @@ class TestWrapper(TestBase):
         config = configparser.ConfigParser()
         config.read(self.config_full_reduced_maf_1)
         out_dir = self.tmp_dir
-        test_wrapper = r_script_wrapper(config, report_dir=out_dir, wgs_only=False)
+        test_wrapper = r_script_wrapper(config, out_dir, False, oncokb_cache_params())
         result = test_wrapper.run()
         self.assertEqual(0, result.returncode)
 
@@ -799,7 +907,7 @@ class TestWrapper(TestBase):
         config = configparser.ConfigParser()
         config.read(self.config_full_reduced_maf_2)
         out_dir = self.tmp_dir
-        test_wrapper = r_script_wrapper(config, report_dir=out_dir, wgs_only=False)
+        test_wrapper = r_script_wrapper(config, out_dir, False, oncokb_cache_params())
         result = test_wrapper.run()
         self.assertEqual(0, result.returncode)
 
@@ -807,7 +915,7 @@ class TestWrapper(TestBase):
         config = configparser.ConfigParser()
         config.read(self.config_full_reduced_maf_wgs_only)
         out_dir = self.tmp_dir
-        test_wrapper = r_script_wrapper(config, report_dir=out_dir, wgs_only=True)
+        test_wrapper = r_script_wrapper(config, out_dir, True, oncokb_cache_params())
         result = test_wrapper.run()
         self.assertEqual(0, result.returncode)
 

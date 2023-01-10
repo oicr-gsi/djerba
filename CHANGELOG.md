@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## Unreleased
+
+- Requires update to `djerba_test_data_lfs`
+
+### Added
+- GCGI-462: Offline caching of OncoKB annotation; see [oncokb_cache.md](./doc/oncokb_cache.md).
+- `--apply-cache` and `--update-cache` options in `djerba.py`
+- New script `update_oncokb_cache.py` for convenience/demonstration purposes
+- Tests updated to use cached annotations
+- Separate test for online OncoKB annotation; reduced input set for greater speed
+- Modified tempdir setup in `extract` step; added `--no-cleanup` option to `djerba.py`
+
 ## v0.3.17: 2023-01-03
 
 ### Changed

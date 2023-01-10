@@ -8,10 +8,10 @@ import re
 import tempfile
 import zipfile
 import numpy
-from shutil import copyfile
+from shutil import copyfile, rmtree
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
-from djerba.extract.oncokb_annotator import oncokb_annotator
+from djerba.extract.oncokb.annotator import oncokb_annotator
 from djerba.sequenza import sequenza_reader
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
@@ -72,15 +72,32 @@ class r_script_wrapper(logger):
     MIN_VAF = 0.1
     MAX_UNMATCHED_GNOMAD_AF = 0.001
 
-    def __init__(self, config, report_dir, wgs_only, tmp_dir=None,
+    def __init__(self, config, report_dir, wgs_only, cache_params, cleanup=True,
                  log_level=logging.WARNING, log_path=None):
+        # cache_params is a djerba.extract.oncokb.cache.params object
         self.config = config
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.runner = subprocess_runner(log_level, log_path)
+        self.log_level = log_level
+        self.log_path = log_path
         self.r_script_dir = os.path.join(os.path.dirname(__file__), '..', 'R_stats')
         self.wgs_only = wgs_only
-        self.supplied_tmp_dir = tmp_dir # may be None
+        self.cache_params = cache_params
+        self.cleanup = cleanup
         self.report_dir = report_dir
+        # report_dir is already validated for output by main.py
+        # set up temp dir
+        self.tmp_dir = os.path.join(report_dir, 'tmp')
+        if os.path.isdir(self.tmp_dir):
+            self.logger.debug("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
+        elif os.path.exists(self.tmp_dir):
+            msg = "tmp dir path {0} exists but is not a directory".format(self.tmp_dir)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        else:
+            self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
+            os.mkdir(self.tmp_dir)
+        # setup other parameters
         self.tumour_id = config[ini.DISCOVERED][ini.TUMOUR_ID]
         self.oncotree_code = config[ini.INPUTS][ini.ONCOTREE_CODE]
         self.gep_reference = config[ini.SETTINGS][ini.GEP_REFERENCE]
@@ -179,19 +196,20 @@ class r_script_wrapper(logger):
             print("\t".join(headers), out_file)
             print("\t".join(body), out_file)
 
-    def preprocess_aratio(self, sequenza_path, tmp_dir, report_dir):
+    def preprocess_aratio(self, sequenza_path, report_dir):
         """
         Extract the appropriate _segments.txt file from the .zip archive output by Sequenza
         Copy the extracted file to report_dir
         """
         gamma = self.config.getint(ini.DISCOVERED, ini.SEQUENZA_GAMMA)
         solution = self.config.get(ini.DISCOVERED, ini.SEQUENZA_SOLUTION)
-        seg_path = sequenza_reader(sequenza_path).extract_segments_text_file(tmp_dir, gamma, solution)
+        reader = sequenza_reader(sequenza_path)
+        seg_path = reader.extract_segments_text_file(self.tmp_dir, gamma, solution)
         out_path = os.path.join(report_dir, 'aratio_segments.txt')
         copyfile(seg_path, out_path)
         return out_path
 
-    def preprocess_gep(self, gep_path, tmp_dir):
+    def preprocess_gep(self, gep_path):
         """
         Apply preprocessing to a GEP file; write results to tmp_dir
         CGI-Tools constructs the GEP file from scratch, but only one column actually varies
@@ -213,7 +231,7 @@ class r_script_wrapper(logger):
                     raise RuntimeError(msg) from err
         # insert as the second column in the generic GEP file
         ref_path = self.gep_reference
-        out_path = os.path.join(tmp_dir, 'gep.txt')
+        out_path = os.path.join(self.tmp_dir, 'gep.txt')
         with \
              gzip.open(ref_path, 'rt', encoding=constants.TEXT_ENCODING) as in_file, \
              open(out_path, 'wt') as out_file:
@@ -237,7 +255,7 @@ class r_script_wrapper(logger):
                 writer.writerow(row)
         return out_path
 
-    def preprocess_fus(self, mavis_path, tmp_dir):
+    def preprocess_fus(self, mavis_path):
         """
         Extract the FUS file from the .zip archive output by Mavis
         Apply preprocessing and write results to tmp_dir
@@ -254,9 +272,9 @@ class r_script_wrapper(logger):
         elif len(matched) > 1:
             msg = "Found more than one Mavis summary .tab file in "+mavis_path
             raise RuntimeError(msg)
-        fus_path = zf.extract(matched[0], tmp_dir)
+        fus_path = zf.extract(matched[0], self.tmp_dir)
         # prepend column to the extracted summary path
-        out_path = os.path.join(tmp_dir, 'fus.txt')
+        out_path = os.path.join(self.tmp_dir, 'fus.txt')
         with open(fus_path, 'rt') as fus_file, open(out_path, 'wt') as out_file:
             reader = csv.reader(fus_file, delimiter="\t")
             writer = csv.writer(out_file, delimiter="\t")
@@ -271,9 +289,9 @@ class r_script_wrapper(logger):
                 writer.writerow(new_row)
         return out_path
 
-    def preprocess_maf(self, maf_path, tmp_dir):
+    def preprocess_maf(self, maf_path):
         """Apply preprocessing and annotation to a MAF file; write results to tmp_dir"""
-        tmp_path = os.path.join(tmp_dir, 'tmp_maf.tsv')
+        tmp_path = os.path.join(self.tmp_dir, 'tmp_maf.tsv')
         self.logger.info("Preprocessing MAF input")
         # find the relevant indices on-the-fly from MAF column headers
         # use this instead of csv.DictReader to preserve the rows for output
@@ -309,7 +327,10 @@ class r_script_wrapper(logger):
             self.tumour_id,
             self.oncotree_code,
             self.report_dir,
-            tmp_dir
+            self.tmp_dir,
+            self.cache_params,
+            self.log_level,
+            self.log_path
         ).annotate_maf(tmp_path)
         return out_path
 
@@ -328,15 +349,15 @@ class r_script_wrapper(logger):
             print("\t".join([str(item) for item in list(msi_perc)]), file=out_file)
         return out_path
 
-    def preprocess_seg(self, sequenza_path, tmp_dir):
+    def preprocess_seg(self, sequenza_path):
         """
         Extract the SEG file from the .zip archive output by Sequenza
         Apply preprocessing and write results to tmp_dir
         Replace entry in the first column with the tumour ID
         """
         gamma = self.config.getint(ini.DISCOVERED, ini.SEQUENZA_GAMMA)
-        seg_path = sequenza_reader(sequenza_path).extract_cn_seg_file(tmp_dir, gamma)
-        out_path = os.path.join(tmp_dir, 'seg.txt')
+        seg_path = sequenza_reader(sequenza_path).extract_cn_seg_file(self.tmp_dir, gamma)
+        out_path = os.path.join(self.tmp_dir, 'seg.txt')
         with open(seg_path, 'rt') as seg_file, open(out_path, 'wt') as out_file:
             reader = csv.reader(seg_file, delimiter="\t")
             writer = csv.writer(out_file, delimiter="\t")
@@ -350,15 +371,10 @@ class r_script_wrapper(logger):
         return out_path
 
     def run(self):
-        if self.supplied_tmp_dir == None:
-            tmp = tempfile.TemporaryDirectory(prefix="djerba_r_script_")
-            tmp_dir = tmp.name
-        else:
-            tmp_dir = self.supplied_tmp_dir
         self.preprocess_msi(self.config[ini.DISCOVERED][ini.MSI_FILE], self.report_dir)
-        maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE], tmp_dir)
-        seg_path = self.preprocess_seg(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir)
-        aratio_path = self.preprocess_aratio(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], tmp_dir, self.report_dir)
+        maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE])
+        seg_path = self.preprocess_seg(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE])
+        aratio_path = self.preprocess_aratio(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], self.report_dir)
         cmd = [
             'Rscript', os.path.join(self.r_script_dir, 'singleSample.r'),
             '--basedir', self.r_script_dir,
@@ -384,27 +400,37 @@ class r_script_wrapper(logger):
             '--outdir', self.report_dir
         ]
         if not self.wgs_only:
-            gep_path = self.preprocess_gep(self.config[ini.DISCOVERED][ini.GEP_FILE], tmp_dir)
-            fus_path = self.preprocess_fus(self.config[ini.DISCOVERED][ini.MAVIS_FILE], tmp_dir)
+            gep_path = self.preprocess_gep(self.config[ini.DISCOVERED][ini.GEP_FILE])
+            fus_path = self.preprocess_fus(self.config[ini.DISCOVERED][ini.MAVIS_FILE])
             cmd.extend([
                 '--gepfile', gep_path,
                 '--fusfile', fus_path,
             ])
         result = self.runner.run(cmd, "main R script")
-        self.postprocess(tmp_dir)
-        if self.supplied_tmp_dir == None:
-            tmp.cleanup()
+        self.postprocess()
         return result
 
-    def postprocess(self, tmp_dir):
+    def postprocess(self):
         """
         Apply postprocessing to the Rscript output directory:
         - Annotate CNA and (if any) fusion data
-        - Remove unnecessary files, for consistency with CGI-Tools
+        - Remove unnecessary files written by the R script
+        - Remove the temporary directory if required
         """
-        annotator = oncokb_annotator(self.tumour_id, self.oncotree_code, self.report_dir, tmp_dir)
+        annotator = oncokb_annotator(
+            self.tumour_id,
+            self.oncotree_code,
+            self.report_dir,
+            self.tmp_dir,
+            self.cache_params,
+            self.log_level,
+            self.log_path
+        )
         annotator.annotate_cna()
-        os.remove(os.path.join(self.report_dir, constants.DATA_CNA_ONCOKB_GENES))
         if not self.wgs_only:
             annotator.annotate_fusion()
-            os.remove(os.path.join(self.report_dir, constants.DATA_FUSIONS_ONCOKB))
+        if self.cleanup:
+            rmtree(self.tmp_dir)
+            os.remove(os.path.join(self.report_dir, constants.DATA_CNA_ONCOKB_GENES))
+            if not self.wgs_only:
+                os.remove(os.path.join(self.report_dir, constants.DATA_FUSIONS_ONCOKB))

@@ -30,8 +30,8 @@ class extractor(logger):
     CANCER_TYPE = 'cancer_type'
     CANCER_TYPE_DESCRIPTION = 'cancer_description'
 
-    def __init__(self, config, report_dir, author, wgs_only, failed, depth,
-                 log_level=logging.WARNING, log_path=None):
+    def __init__(self, config, report_dir, author, wgs_only, failed, depth, cache_params,
+                 cleanup=True, log_level=logging.WARNING, log_path=None):
         self.config = config
         self.author = author
         self.wgs_only = wgs_only
@@ -41,9 +41,12 @@ class extractor(logger):
             self.assay_type = render_constants.ASSAY_WGTS
         self.failed = failed
         self.depth = depth
+        self.cache_params = cache_params
+        self.cleanup = cleanup
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
+        self.logger.debug("OncoKB cache params: {0}".format(self.cache_params))
         self.converter = converter(log_level, log_path)
         if self.failed:
             self.logger.info("Extracting Djerba data for failed report")
@@ -155,6 +158,7 @@ class extractor(logger):
             xc.ASSAY_TYPE: self.assay_type,
             xc.COVERAGE: self.depth,
             xc.FAILED: self.failed,
+            xc.ONCOKB_CACHE: self.cache_params,
             xc.ONCOTREE_CODE: self.config[ini.INPUTS][ini.ONCOTREE_CODE],
             xc.PURITY_FAILURE: False, # TODO populate from config
             xc.PROJECT: self.config[ini.INPUTS][ini.PROJECT_ID]
@@ -171,7 +175,8 @@ class extractor(logger):
 
     def run_r_script(self):
         wrapper = r_script_wrapper(
-            self.config, self.report_dir, self.wgs_only, log_level=self.log_level, log_path=self.log_path
+            self.config, self.report_dir, self.wgs_only, self.cache_params, self.cleanup,
+            log_level=self.log_level, log_path=self.log_path
         )
         wrapper.run()
 
