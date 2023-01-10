@@ -1,4 +1,18 @@
-# collection of constants to represent OncoKB levels
+# collection of constants for OncoKB processing
+
+### Djerba filenames ###
+
+ANNOTATED_MAF = 'annotated_maf.tsv'
+CACHE_CNA = 'cna_cache.json'
+CACHE_FUSION = 'fusion_cache.json'
+CACHE_MAF = 'maf_cache.json'
+DATA_CNA_ONCOKB_GENES_NON_DIPLOID = 'data_CNA_oncoKBgenes_nonDiploid.txt'
+DATA_CNA_ONCOKB_GENES_NON_DIPLOID_ANNOTATED = 'data_CNA_oncoKBgenes_nonDiploid_annotated.txt'
+DATA_FUSIONS_ONCOKB = 'data_fusions_oncokb.txt'
+DATA_FUSIONS_ONCOKB_ANNOTATED = 'data_fusions_oncokb_annotated.txt'
+ONCOKB_CLINICAL_INFO = 'oncokb_clinical_info.txt'
+
+### OncoKB levels ###
 
 LEVEL_1 = 'LEVEL_1'
 LEVEL_2 = 'LEVEL_2'

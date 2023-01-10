@@ -250,6 +250,9 @@ class main_draft_args():
         self.ini_out = None
         self.dir = out_dir
         self.no_archive = True
+        self.no_cleanup = True
+        self.apply_cache = True
+        self.update_cache = False
         self.target_coverage = 80
         self.wgs_only = False
 

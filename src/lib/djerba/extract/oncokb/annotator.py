@@ -5,20 +5,14 @@
 
 import os
 import logging
+import djerba.extract.oncokb.constants as oncokb_constants
 import djerba.util.constants as constants
+from djerba.extract.oncokb.cache import oncokb_cache, oncokb_cache_params
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.validator import path_validator
 
 class oncokb_annotator(logger):
-
-    # output filenames
-    ANNOTATED_MAF = 'annotated_maf.tsv'
-    DATA_CNA_ONCOKB_GENES_NON_DIPLOID = 'data_CNA_oncoKBgenes_nonDiploid.txt'
-    DATA_CNA_ONCOKB_GENES_NON_DIPLOID_ANNOTATED = 'data_CNA_oncoKBgenes_nonDiploid_annotated.txt'
-    DATA_FUSIONS_ONCOKB = 'data_fusions_oncokb.txt'
-    DATA_FUSIONS_ONCOKB_ANNOTATED = 'data_fusions_oncokb_annotated.txt'
-    ONCOKB_CLINICAL_INFO = 'oncokb_clinical_info.txt'
 
     # environment variable for ONCOKB token path
     ONCOKB_TOKEN_VARIABLE = 'ONCOKB_TOKEN'
@@ -32,9 +26,12 @@ class oncokb_annotator(logger):
     ]
 
     def __init__(self, tumour_id, oncotree_code, report_dir, scratch_dir=None,
-                 log_level=logging.WARNING, log_path=None):
+                 cache_params=None, log_level=logging.WARNING, log_path=None):
         # report_dir is for input and (persistent) output; must contain appropriate input files
         # if given, scratch_dir is for working files not needed for final output
+        # cache_params is a djerba.extract.oncokb.cache.params object
+        self.log_level = log_level
+        self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.validator = path_validator(log_level, log_path)
         self.report_dir = report_dir
@@ -46,7 +43,7 @@ class oncokb_annotator(logger):
             self.scratch_dir = self.report_dir
         self.runner = subprocess_runner(log_level, log_path)
         # Write sample name and oncotree code to a file, for use by annotation scripts
-        self.info_path = os.path.join(self.scratch_dir, self.ONCOKB_CLINICAL_INFO)
+        self.info_path = os.path.join(self.scratch_dir, oncokb_constants.ONCOKB_CLINICAL_INFO)
         args = [tumour_id, oncotree_code]
         with open(self.info_path, 'w') as info_file:
             print("SAMPLE_ID\tONCOTREE_CODE", file=info_file)
@@ -54,32 +51,52 @@ class oncokb_annotator(logger):
         # Read the oncokb access token
         with open(os.environ[self.ONCOKB_TOKEN_VARIABLE]) as token_file:
             self.oncokb_token = token_file.read().strip()
+        # Check cache params and configure caching (if any)
+        if cache_params==None:
+            self.logger.debug("No OncoKB cache parameters supplied; cache operations omitted")
+            cache_params = oncokb_cache_params() # default values
+        else:
+            self.logger.debug("Using supplied OncoKB cache parameters: {}".format(cache_params))
+        cache_dir = cache_params.get_cache_dir()
+        if cache_dir:
+            self.cache = oncokb_cache(cache_dir, oncotree_code, log_level, log_path)
+        else:
+            self.cache = None
+        self.apply_cache = cache_params.get_apply_cache()
+        self.update_cache = cache_params.get_update_cache()
 
     def _run_annotator_script(self, command, description):
         """Redact the OncoKB token (-b argument) from logging"""
         self.runner.run(command, description, ['-b',])
         
     def annotate_cna(self):
-        in_path = os.path.join(self.report_dir, self.DATA_CNA_ONCOKB_GENES_NON_DIPLOID)
+        in_path = os.path.join(self.report_dir, oncokb_constants.DATA_CNA_ONCOKB_GENES_NON_DIPLOID)
         self.validator.validate_input_file(in_path)
-        out_path = os.path.join(self.report_dir, self.DATA_CNA_ONCOKB_GENES_NON_DIPLOID_ANNOTATED)
-        cmd = [
-            'CnaAnnotator.py',
-            '-i', in_path,
-            '-o', out_path,
-            '-c', self.info_path,
-            '-b', self.oncokb_token
-        ]
-        self._run_annotator_script(cmd, 'CNA annotator')
+        out_path = os.path.join(self.report_dir, oncokb_constants.DATA_CNA_ONCOKB_GENES_NON_DIPLOID_ANNOTATED)
+        if self.apply_cache:
+            self.cache.annotate_cna(in_path, out_path, self.info_path)
+        else:
+            cmd = [
+                'CnaAnnotator.py',
+                '-i', in_path,
+                '-o', out_path,
+                '-c', self.info_path,
+                '-b', self.oncokb_token
+            ]
+            self._run_annotator_script(cmd, 'CNA annotator')
+            if self.update_cache:
+                self.cache.write_cna_cache(out_path)
         return out_path
 
     def annotate_fusion(self):
         in_path = os.path.join(self.report_dir, constants.DATA_FUSIONS_ONCOKB)
         self.validator.validate_input_file(in_path)
-        out_path = os.path.join(self.report_dir, self.DATA_FUSIONS_ONCOKB_ANNOTATED)
+        out_path = os.path.join(self.report_dir, oncokb_constants.DATA_FUSIONS_ONCOKB_ANNOTATED)
         with open(in_path) as in_file:
             total = len(in_file.readlines())
-        if total == 0:
+        if self.apply_cache:
+            self.cache.annotate_fusion(in_path, out_path)
+        elif total == 0:
             # should never happen, but include for completeness
             msg = "Fusion input {0} cannot be empty -- header is expected".format(in_path)
             self.logger.error(msg)
@@ -100,19 +117,26 @@ class oncokb_annotator(logger):
                 '-b', self.oncokb_token
             ]
             self._run_annotator_script(cmd, 'fusion annotator')
+            if self.update_cache:
+                self.cache.write_fusion_cache(out_path)
         return out_path
 
     def annotate_maf(self, in_path):
         # unlike the CNA and Fusion methods, MAF annotation takes an input path argument
         self.validator.validate_input_file(in_path)
-        out_path = os.path.join(self.scratch_dir, self.ANNOTATED_MAF)
-        cmd = [
-            'MafAnnotator.py',
-            '-i', in_path,
-            '-o', out_path,
-            '-c', self.info_path,
-            '-q', 'Genomic_Change',
-            '-b', self.oncokb_token
-        ]
-        self._run_annotator_script(cmd, 'MAF annotator')
+        out_path = os.path.join(self.scratch_dir, oncokb_constants.ANNOTATED_MAF)
+        if self.apply_cache:
+            self.cache.annotate_maf(in_path, out_path)
+        else:
+            cmd = [
+                'MafAnnotator.py',
+                '-i', in_path,
+                '-o', out_path,
+                '-c', self.info_path,
+                '-q', 'Genomic_Change',
+                '-b', self.oncokb_token
+            ]
+            self._run_annotator_script(cmd, 'MAF annotator')
+            if self.update_cache:
+                self.cache.write_maf_cache(out_path)
         return out_path
