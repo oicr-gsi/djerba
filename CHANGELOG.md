@@ -1,16 +1,22 @@
 # CHANGELOG
 
-## Unreleased
+## v0.3.18: 2023-01-11
 
 - Requires update to `djerba_test_data_lfs`
 
-### Added
-- GCGI-462: Offline caching of OncoKB annotation; see [oncokb_cache.md](./doc/oncokb_cache.md).
+### GCGI-462: OncoKB annotation cache
+
+- Documented in [oncokb_cache.md](./doc/oncokb_cache.md).
 - `--apply-cache` and `--update-cache` options in `djerba.py`
 - New script `update_oncokb_cache.py` for convenience/demonstration purposes
 - Tests updated to use cached annotations
 - Separate test for online OncoKB annotation; reduced input set for greater speed
 - Modified tempdir setup in `extract` step; added `--no-cleanup` option to `djerba.py`
+
+### GCGI-677: Update benchmark tests for Vidarr
+
+- Update input glob for compatibility with Vidarr
+- Updated test input data in `/.mounts/labs/CGI/gsi/djerba_test/`
 
 ## v0.3.17: 2023-01-03
 

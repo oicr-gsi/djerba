@@ -112,6 +112,10 @@ Script to manually run the Mavis workflow, via the Cromwell development server. 
 
 Script to update the `genomic_summary` field of the Djerba report JSON, by inserting the contents of a given text file.
 
+### `update_oncokb_cache.py`
+
+Script to update an OncoKB cache directory. See [OncoKB cache documentation](./doc/oncokb_cache.md).
+
 ### `update_technical_notes.py`
 
 Script to update the `technical_notes` field of the Djerba report JSON, by inserting the contents of a given text file.
