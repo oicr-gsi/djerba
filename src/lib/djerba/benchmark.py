@@ -75,19 +75,15 @@ class benchmarker(logger):
             sample_inputs[self.TEST_DATA] = self.test_data
             for key in [ini.TUMOUR_ID, ini.NORMAL_ID, ini.PATIENT_ID, ini.SEX]:
                 sample_inputs[key] = self.sample_params[sample][key]
-            pattern = '{0}/**/variantEffectPredictor_*/'.format(results_dir)+\
-                      '**/{0}_*mutect2.filtered.maf.gz'.format(sample)
+            pattern = '{0}/**/{1}_*mutect2.filtered.maf.gz'.format(results_dir, sample)
             sample_inputs[ini.MAF_FILE] = self.glob_single(pattern)
             pattern = '{0}/**/{1}/*summary.zip'.format(self.MAVIS_DIR, sample)
             sample_inputs[ini.MAVIS_FILE] = self.glob_single(pattern)
-            pattern = '{0}/**/sequenza_*/'.format(results_dir)+\
-                      '**/{0}_*_results.zip'.format(sample)
+            pattern = '{0}/**/{1}_*_results.zip'.format(results_dir, sample)
             sample_inputs[ini.SEQUENZA_FILE] = self.glob_single(pattern)
-            pattern = '{0}/**/rsem_*/'.format(results_dir)+\
-                      '**/{0}_*.genes.results'.format(sample)
+            pattern = '{0}/**/{1}_*.genes.results'.format(results_dir, sample)
             sample_inputs[ini.GEP_FILE] = self.glob_single(pattern)
-            pattern = '{0}/**/msisensor_*/'.format(results_dir)+\
-                      '**/{0}_*.realigned.recalibrated.msi.booted'.format(sample)
+            pattern = '{0}/**/{1}_*.realigned.recalibrated.msi.booted'.format(results_dir, sample)
             sample_inputs[ini.MSI_FILE] = self.glob_single(pattern)
             if any([x==None for x in sample_inputs.values()]):
                 # skip samples with missing inputs, eg. for testing
