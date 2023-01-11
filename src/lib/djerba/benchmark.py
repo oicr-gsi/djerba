@@ -26,6 +26,8 @@ class benchmarker(logger):
     CONFIG_FILE_NAME = 'config.ini'
     # TODO run Mavis as a pipeline workflow; for now, use fixed Mavis results
     MAVIS_DIR = '/.mounts/labs/CGI/validation_cap/djerba_cap_bench/mavis/work'
+    # TODO set random seed in MSI workflow for consistent outputs
+    MSI_DIR = '/.mounts/labs/CGI/validation_cap/djerba_cap_bench/msi/work'
     SAMPLES = [
         "GSICAPBENCH_1219",
         "GSICAPBENCH_1232",
@@ -83,7 +85,7 @@ class benchmarker(logger):
             sample_inputs[ini.SEQUENZA_FILE] = self.glob_single(pattern)
             pattern = '{0}/**/{1}_*.genes.results'.format(results_dir, sample)
             sample_inputs[ini.GEP_FILE] = self.glob_single(pattern)
-            pattern = '{0}/**/{1}_*.realigned.recalibrated.msi.booted'.format(results_dir, sample)
+            pattern = '{0}/**/{1}_*.realigned.recalibrated.msi.booted'.format(self.MSI_DIR, sample)
             sample_inputs[ini.MSI_FILE] = self.glob_single(pattern)
             if any([x==None for x in sample_inputs.values()]):
                 # skip samples with missing inputs, eg. for testing
