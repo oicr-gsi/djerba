@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v0.3.18: 2023-01-11
 
 - Requires update to `djerba_test_data_lfs`
 
