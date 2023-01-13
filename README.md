@@ -64,6 +64,10 @@ Documentation of file format and required parameters: [ini.md](./doc/ini.md)
 
 Example INI file (with dummy value for the `mavis_file` parameter): [config_user.ini](./src/test/data/config_user.ini)
 
+#### OncoKB cache
+
+Djerba can cache OncoKB annotation for offline use. Caching is turned off by default; it is primarily intended for running tests quickly and without accessing the internet. For further details, see [OncoKB cache documentation](./doc/oncokb_cache.md)
+
 ### `benchmark.py`
 
 Automatically find inputs and generate reports for the GSICAPBENCH dataset. Logging options are the same as for `djerba.py`. The script has two modes.
@@ -107,6 +111,10 @@ Script to manually run the Mavis workflow, via the Cromwell development server. 
 ### `update_genomic_summary.py`
 
 Script to update the `genomic_summary` field of the Djerba report JSON, by inserting the contents of a given text file.
+
+### `update_oncokb_cache.py`
+
+Script to update an OncoKB cache directory. See [OncoKB cache documentation](./doc/oncokb_cache.md).
 
 ### `update_technical_notes.py`
 

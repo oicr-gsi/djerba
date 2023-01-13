@@ -11,9 +11,11 @@ from shutil import copyfile
 
 import djerba.render.constants as rc
 import djerba.util.constants as constants
+import djerba.util.ini_fields as ini
 from djerba import __version__
 from djerba.configure import configurer
 from djerba.extract.extractor import extractor
+from djerba.extract.oncokb.cache import oncokb_cache_params
 from djerba.render.render import html_renderer
 from djerba.render.render import pdf_renderer
 from djerba.util.logger import logger
@@ -27,7 +29,6 @@ class main(logger):
         'afortuna': 'Alex Fortuna',
         'ibancarz': 'Iain Bancarz',
         'fbeaudry': 'Felix Beaudry',
-        'wytong': 'Wen Tong'
     }
     CONFIG_NAME = 'config.ini'
     INI_DEFAULT_NAME = 'defaults.ini'
@@ -53,6 +54,18 @@ class main(logger):
         self.logger = self.get_logger(self.log_level, __name__, self.log_path)
         self.logger.info("Running Djerba version {0}".format(__version__))
         self.validate_args(args) # checks subparser and args are valid
+
+    def _build_cache_params(self, config):
+        """Build oncoKB cache parameters for the extractor"""
+        params = oncokb_cache_params(
+            config.get(ini.SETTINGS, ini.ONCOKB_CACHE),
+            self.args.apply_cache,
+            self.args.update_cache,
+            log_level=self.log_level,
+            log_path=self.log_path
+        )
+        self.logger.debug("OncoKB cache params: {0}".format(params))
+        return params
 
     def _get_author(self):
         """Find the author name. If not in args, try to find from the username; otherwise use default"""
@@ -141,7 +154,8 @@ class main(logger):
         elif self.args.subparser_name == constants.EXTRACT:
             config = self.read_config(self.args.ini)
             cv.validate_full(config)
-            extractor(config, self.args.dir, self._get_author(), self.wgs_only, self.args.failed, self.args.target_coverage, self.log_level, self.log_path).run()
+            cleanup = not self.args.no_cleanup
+            extractor(config, self.args.dir, self._get_author(), self.wgs_only, self.args.failed, self.args.target_coverage, self._build_cache_params(config), cleanup, self.log_level, self.log_path).run()
         elif self.args.subparser_name == constants.HTML:
             json_path = self._get_json_path()
             report_id = self._get_report_id_from_json(json_path)
@@ -183,7 +197,9 @@ class main(logger):
             full_config.read(ini_path_full)
             # auto-generated full_config should be OK, but run the validator as a sanity check
             config_validator(self.args.wgs_only, self.args.failed, self.log_level, self.log_path).validate_full(full_config)
-            extractor(full_config, report_dir, self._get_author(), self.args.wgs_only, self.args.failed, self.args.target_coverage, self.log_level, self.log_path).run()
+            cache_params = self._build_cache_params(full_config)
+            cleanup = not self.args.no_cleanup
+            extractor(full_config, report_dir, self._get_author(), self.args.wgs_only, self.args.failed, self.args.target_coverage, cache_params, cleanup, self.log_level, self.log_path).run()
             json_path = os.path.join(self.args.dir, constants.REPORT_JSON_FILENAME)
             report_id = self._get_report_id_from_json(json_path)
             html_path = self._get_html_path(report_id)
@@ -210,7 +226,9 @@ class main(logger):
             full_config.read(ini_path_full)
             # auto-generated full_config should be OK, but run the validator as a sanity check
             config_validator(self.args.wgs_only, self.args.failed, self.log_level, self.log_path).validate_full(full_config)
-            extractor(full_config, report_dir, self._get_author(), self.args.wgs_only, self.args.failed, self.args.target_coverage, self.log_level, self.log_path).run()
+            cache_params = self._build_cache_params(full_config)
+            cleanup = not self.args.no_cleanup
+            extractor(full_config, report_dir, self._get_author(), self.args.wgs_only, self.args.failed, self.args.target_coverage, cache_params, cleanup, self.log_level, self.log_path).run()
             json_path = os.path.join(self.args.dir, constants.REPORT_JSON_FILENAME)
             html_path = self._get_html_path(self._get_report_id_from_json(json_path))
             archive = not self.args.no_archive

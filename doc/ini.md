@@ -161,6 +161,7 @@ If _any_ sample name parameters are specified, then they must _at least_ include
 | `[settings]`   | `bed_path` | defaults.ini |  |
 | `[settings]`   | `gep_reference` | defaults.ini |  |
 | `[settings]`   | `min_fusion_reads` | defaults.ini |  |
+| `[settings]`   | `oncokb_cache` | defaults.ini | Directory for OncoKB annotation cache |
 | `[settings]`   | `pipeline_version` | defaults.ini | Current version number of the WGTS pipeline |
 | `[settings]`   | `provenance` | defaults.ini | Path to file provenance report  |
 | `[settings]`   | `tcga_data` | defaults.ini | Path to TCGA data directory  |

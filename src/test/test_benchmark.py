@@ -38,7 +38,8 @@ class TestBenchmark(TestBase):
 
     def test_benchmark(self):
         out_dir = self.tmp_dir
-        input_dir = os.path.join(self.bench_dir, 'benchmark')
+        # note that the input directory only contains data for samples 1219 and 1273
+        input_dir = self.bench_dir
         report_dir = os.path.join(out_dir, 'report')
         os.mkdir(report_dir)
         report_args = self.mock_args_report(input_dir, report_dir)

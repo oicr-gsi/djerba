@@ -9,14 +9,14 @@ import logging
 import os
 import re
 import pandas as pd
-import djerba.extract.oncokb_constants as oncokb
+import djerba.extract.oncokb.constants as oncokb
 import djerba.extract.constants as xc
 import djerba.render.constants as rc
 import djerba.util.constants as dc
 from djerba import __version__
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
-from djerba.extract.oncokb_annotator import oncokb_annotator
+from djerba.extract.oncokb.annotator import oncokb_annotator
 from statsmodels.distributions.empirical_distribution import ECDF
 from djerba.util.image_to_base64 import converter
 import djerba.util.ini_fields as ini
@@ -272,7 +272,10 @@ class clinical_report_json_composer(composer_base):
             self.clinical_data[dc.TUMOUR_SAMPLE_ID],
             self.params.get(xc.ONCOTREE_CODE).upper(),
             input_dir,
-            input_dir
+            input_dir,
+            self.params.get(xc.ONCOKB_CACHE),
+            self.log_level,
+            self.log_path
         ).annotate_maf(genomic_biomarkers_path)
         data = {
             rc.CLINICALLY_RELEVANT_VARIANTS: len(rows),

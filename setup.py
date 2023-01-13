@@ -25,6 +25,7 @@ setup(
         'src/bin/sequenza_explorer.py',
         'src/bin/run_mavis.py',
         'src/bin/update_genomic_summary.py',
+        'src/bin/update_oncokb_cache.py',
         'src/bin/update_technical_notes.py',
         'src/bin/view_json.py'
     ],

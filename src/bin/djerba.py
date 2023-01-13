@@ -36,6 +36,10 @@ def get_parser():
     extract_parser.add_argument('-D', '--dir', metavar='DIR', required=True, help='Directory for output of metrics')
     extract_parser.add_argument('-t', '--target-coverage', metavar='COVER', type=int, choices=[40, 80], default=40, help='Target coverage depth for report footer')
     extract_parser.add_argument('-w', '--wgs-only', action='store_true', help='Extract metrics for a WGS-only report')
+    extract_parser.add_argument('--no-cleanup', action='store_true', help='Do not clean up temporary report files')
+    extract_cache_group = extract_parser.add_mutually_exclusive_group()
+    extract_cache_group.add_argument('--apply-cache', action='store_true', help='Apply the offline oncoKB cache to do annotation; no contact with external oncoKB server')
+    extract_cache_group.add_argument('--update-cache', action='store_true', help='Use annotation results from external oncoKB server to update the offline cache')
     render_parser = subparsers.add_parser(constants.HTML, help='read metrics directory and write HTML')
     render_parser.add_argument('-a', '--author', metavar='NAME', help='Name of CGI author for report footer; optional')
     render_parser.add_argument('-f', '--failed', action='store_true', help='Produce report for a failed sample')
@@ -59,6 +63,10 @@ def get_parser():
     draft_parser.add_argument('-t', '--target-coverage', metavar='COVER', type=int, choices=[40, 80], default=40, help='Target coverage depth for report footer')
     draft_parser.add_argument('-w', '--wgs-only', action='store_true', help='Produce a WGS-only report')
     draft_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
+    draft_parser.add_argument('--no-cleanup', action='store_true', help='Do not clean up temporary report files')
+    draft_cache_group = draft_parser.add_mutually_exclusive_group()
+    draft_cache_group.add_argument('--apply-cache', action='store_true', help='Apply the offline oncoKB cache to do annotation; no contact with external oncoKB server')
+    draft_cache_group.add_argument('--update-cache', action='store_true', help='Use annotation results from external oncoKB server to update the offline cache')
     all_parser = subparsers.add_parser(constants.ALL, help='run all Djerba steps and output PDF')
     all_parser.add_argument('-a', '--author', metavar='NAME', help='Name of CGI author for report footer; optional')
     all_parser.add_argument('-D', '--dir', metavar='DIR', help='Directory for output of metrics')
@@ -69,6 +77,10 @@ def get_parser():
     all_parser.add_argument('-t', '--target-coverage', metavar='COVER', type=int, choices=[40, 80], default=40, help='Target coverage depth for report footer')
     all_parser.add_argument('-w', '--wgs-only', action='store_true', help='Produce a WGS-only report')
     all_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
+    all_parser.add_argument('--no-cleanup', action='store_true', help='Do not clean up temporary report files')
+    all_cache_group = all_parser.add_mutually_exclusive_group()
+    all_cache_group.add_argument('--apply-cache', action='store_true', help='Apply the offline oncoKB cache to do annotation; no contact with external oncoKB server')
+    all_cache_group.add_argument('--update-cache', action='store_true', help='Use annotation results from external oncoKB server to update the offline cache')
     return parser
 
 if __name__ == '__main__':

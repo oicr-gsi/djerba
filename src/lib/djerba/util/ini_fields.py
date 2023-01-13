@@ -30,6 +30,7 @@ MSI_FILE = 'msi_file'
 MUTATION_NONSYN = 'mutation_nonsyn'
 NORMAL_ID = 'normalid'
 ONCO_LIST = 'oncolist'
+ONCOKB_CACHE = 'oncokb_cache'
 ONCOTREE_DATA = 'oncotree_data'
 ONCOTREE_CODE = 'oncotree_code' # was CANCER_TYPE_DETAILED
 PATIENT = 'patient'
@@ -120,6 +121,7 @@ SCHEMA_DEFAULT = {
         BED_PATH,
         GEP_REFERENCE,
         MIN_FUSION_READS,
+        ONCOKB_CACHE,
         PIPELINE_VERSION,
         PROVENANCE,
         TCGA_DATA,
@@ -181,6 +183,7 @@ SCHEMA_WGS_ONLY = {
         BED_PATH,
         GEP_REFERENCE,
         MIN_FUSION_READS,
+        ONCOKB_CACHE,
         PIPELINE_VERSION,
         PROVENANCE,
         TCGA_DATA,
@@ -231,6 +234,7 @@ SCHEMA_FAILED = {
         BED_PATH,
         GEP_REFERENCE,
         MIN_FUSION_READS,
+        ONCOKB_CACHE,
         PIPELINE_VERSION,
         PROVENANCE,
         TCGA_DATA,
