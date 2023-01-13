@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.3.19: 2023-01-13
+
+### Fixed
+- Fixes to margins & padding in CSS
+- Removed hard-coded path in `test.py`
+
 ## v0.3.18: 2023-01-11
 
 - Requires update to `djerba_test_data_lfs`
