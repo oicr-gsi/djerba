@@ -566,8 +566,7 @@ class TestOncokbAnnotator(TestBase):
 
     def test_annotator(self):
         input_dir = os.path.join(self.sup_dir, 'oncokb')
-        # out_dir = self.tmp_dir
-        out_dir = '/u/ibancarz/workspace/djerba/test_20230110_01'
+        out_dir = self.tmp_dir
         annotator = oncokb_annotator('100-PM-047_LCM1_4', 'PAAD', out_dir)
         cna = os.path.join(input_dir, 'data_CNA_oncoKBgenes_nonDiploid.txt')
         fusion = os.path.join(input_dir, 'data_fusions_oncokb.txt')
