@@ -147,7 +147,8 @@ class clinical_report_json_composer(composer_base):
         "c10_B",
         "HSCHR6_MHC_COXp21.32",
         "HSCHR6_MHC_COXp21.33",
-        "HSCHR6_MHC_COXp22.1"
+        "HSCHR6_MHC_COXp22.1",
+        "Unknown"
     ]
 
     def __init__(self, config, input_dir, params, log_level=logging.WARNING, log_path=None):
@@ -170,6 +171,7 @@ class clinical_report_json_composer(composer_base):
         self.data_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], dc.DATA_DIR_NAME)
         self.r_script_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], 'R_plots')
         self.html_dir = os.path.join(os.path.dirname(__file__), '..', 'html')
+        self.cytoband_path = os.path.join(self.data_dir, 'cytoBand.txt')
         self.cytoband_map = self.read_cytoband_map()
         if self.failed:
             self.total_somatic_mutations = None
@@ -552,8 +554,9 @@ class clinical_report_json_composer(composer_base):
                     band = float(re.split('[^0-9\.]+', cb).pop(1))
             except (IndexError, ValueError) as err:
                 # if error occurs in ordering, move to end of sort order
-                msg = "Cannot parse cytoband \"{0}\", for sorting; ".format(cb_input)+\
-                      "moving to end of sort order. {0}: \"{1}\"".format(type(err).__name__, err)
+                msg = "Cannot parse cytoband \"{0}\" for sorting; ".format(cb_input)+\
+                      "moving to end of sort order. No further action is needed. "+\
+                      "Reason for parsing failure: {0}".format(err)
                 self.logger.warning(msg)
                 (chromosome, arm, band) = end
         return (chromosome, arm, band)
@@ -576,7 +579,8 @@ class clinical_report_json_composer(composer_base):
         cytoband = self.cytoband_map.get(gene_name)
         if not cytoband:
             cytoband = 'Unknown'
-            self.logger.warn("Unknown cytoband for gene '{0}'".format(gene_name))
+            msg = "Cytoband for gene '{0}' not found in {1}".format(gene_name, self.cytoband_path)
+            self.logger.info(msg)
         return cytoband
 
     def read_cancer_specific_percentile(self, tmb, cohort, cancer_type):
@@ -655,7 +659,7 @@ class clinical_report_json_composer(composer_base):
         return variants
 
     def read_cytoband_map(self):
-        input_path = os.path.join(self.data_dir, 'cytoBand.txt')
+        input_path = self.cytoband_path
         cytobands = {}
         with open(input_path) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
