@@ -680,15 +680,15 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '8de77666d80285f14dd8c60247eb9961')
+        self.check_report(out_path, '59fce6da87d90b5e4be7b72389e939b8')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '60ffc7c64c33a33b5845890ff93e99d5')
+        self.check_report(out_path, '5eb2a6d26057bed0fa41f0902184f385')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, 'acdf6c2989b0396a446893dd8a4d2bf9')
+        self.check_report(out_path, '5e8dd83694836b0a333cfc8028cff11b')
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')

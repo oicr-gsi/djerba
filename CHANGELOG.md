@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+### Added
+- GCGI-587: Added CLIA number 
+
 ## v0.3.19: 2023-01-13
 
 ### Fixed
