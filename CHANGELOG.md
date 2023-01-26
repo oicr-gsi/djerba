@@ -7,6 +7,7 @@
 
 ### Fixed
 - GCGI-698: Handle unknown cytoband without a misleading warning
+- GCGI-703: Fix genome reference name in footer
 
 ## v0.3.19: 2023-01-13
 
