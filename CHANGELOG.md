@@ -5,6 +5,11 @@
 ### Added
 - GCGI-587: Added CLIA number 
 - GCGI-652: Added description of Copy State changes in supplementary
+
+### Fixed
+- GCGI-698: Handle unknown cytoband without a misleading warning
+- GCGI-703: Fix genome reference name in footer
+- GCGI-675: Update default config ini parameters
 - GCGI-692: Updated the Genomic Summary template
 
 ## v0.3.19: 2023-01-13
