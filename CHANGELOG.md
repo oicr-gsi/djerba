@@ -4,6 +4,8 @@
 
 ### Added
 - GCGI-587: Added CLIA number 
+- GCGI-652: Added description of Copy State changes in supplementary
+- GCGI-692: Updated the Genomic Summary template
 
 ## v0.3.19: 2023-01-13
 

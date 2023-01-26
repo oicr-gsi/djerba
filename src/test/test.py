@@ -248,7 +248,7 @@ class TestExtractor(TestBase):
     # md5 sums of files in failed output
     STATIC_MD5 = {
         'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
-        'genomic_summary.txt': '5a2f6e61fdf0f109ac3d1bcc4bb3ca71',
+        'genomic_summary.txt': 'f53692a7bf5879bb6e5b4f26047d7297',
         'technical_notes.txt': '7caedb48f3360f33937cb047579633fd'
     }
     VARYING_OUTPUT = [
@@ -303,7 +303,7 @@ class TestExtractor(TestBase):
             data_found['report']['djerba_version'] = 'PLACEHOLDER'
             del data_found['supplementary'] # do not test supplementary data
             data = json.dumps(data_found)
-            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), 'cf37d5c24f8e684ea79f6f8bc40e0f63')
+            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), '37bace335089f94b92e69c44e9ba64dc')
 
     def test_wgts_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGTS')
@@ -680,15 +680,15 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '59fce6da87d90b5e4be7b72389e939b8')
+        self.check_report(out_path, '69e6789868cb91b32cb9317a4cbcfbff')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '5eb2a6d26057bed0fa41f0902184f385')
+        self.check_report(out_path, '0ab96f097a5859ebac14087f07fedc70')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '5e8dd83694836b0a333cfc8028cff11b')
+        self.check_report(out_path, 'a123400b857e0c1541b539333e9711ad')
 
     def test_pdf(self):
         in_path = os.path.join(self.sup_dir, 'djerba_test.html')
