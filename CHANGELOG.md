@@ -3,8 +3,13 @@
 ## Unreleased
 
 ### Added
-- GCGI-587: Added CLIA number 
+- GCGI-587: Added CLIA number
+
+### Fixed
+- GCGI-698: Handle unknown cytoband without a misleading warning
+- GCGI-703: Fix genome reference name in footer
 - GCGI-675: Update default config ini parameters
+
 ## v0.3.19: 2023-01-13
 
 ### Fixed
