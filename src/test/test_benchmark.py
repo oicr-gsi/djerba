@@ -30,8 +30,6 @@ class TestBenchmark(TestBase):
             self.input_dir = input_dir
             self.output_dir = output_dir
             self.dry_run = False
-            self.apply_cache = True
-            self.update_cache = False
             # logging
             self.log_path = None
             self.debug = False
