@@ -135,6 +135,7 @@ class benchmarker(logger):
         for report_dir in report_dirs:
             self.validator.validate_input_dir(report_dir)
             report_path = self.glob_single('{0}/**/{1}'.format(report_dir, name))
+            self.validator.validate_input_file(report_path)
             report_paths.append(report_path)
             data = self.read_and_preprocess_report(report_path)
             if self.args.compare_all:
@@ -165,7 +166,12 @@ class benchmarker(logger):
             config_path = os.path.join(work_dir, sample, self.CONFIG_FILE_NAME)
             report_dir = os.path.join(work_dir, sample, self.REPORT_DIR_NAME)
             self.validator.validate_output_dir(report_dir)
-            args = main_draft_args(self.log_level, self.log_path, config_path, report_dir)
+            args = main_draft_args(self.log_level,
+                                   self.log_path,
+                                   config_path,
+                                   report_dir,
+                                   self.args.apply_cache,
+                                   self.args.update_cache)
             main(args).run()
             self.logger.info("Finished generating Djerba draft report for {0}".format(sample))
 
@@ -229,7 +235,9 @@ class benchmarker(logger):
 class main_draft_args():
     """Alternative to argument parser output from djerba.py, for launching main draft mode"""
 
-    def __init__(self, log_level, log_path, ini_path, out_dir):
+    def __init__(self, log_level, log_path, ini_path, out_dir, apply_cache, update_cache):
+        if apply_cache and update_cache:
+            raise RuntimeError("Cannot do both apply-cache and update-cache!")
         self.debug = False
         self.quiet = False
         self.verbose = False
@@ -249,8 +257,8 @@ class main_draft_args():
         self.dir = out_dir
         self.no_archive = True
         self.no_cleanup = True
-        self.apply_cache = True
-        self.update_cache = False
+        self.apply_cache = apply_cache
+        self.update_cache = update_cache
         self.target_coverage = 80
         self.wgs_only = False
 
