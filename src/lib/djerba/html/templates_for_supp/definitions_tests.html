@@ -15,3 +15,12 @@
 % if genomic_landscape_info.get(constants.CANCER_SPECIFIC_PERCENTILE) != "NA" :
   <br><strong>TCGA Cohort Percentile: </strong>Percentile of TMB scores are plotted relative to <a href="https://gdc.cancer.gov/about-data/publications/pancanatlas">closest TCGA sample cohort</a> (${genomic_landscape_info.get(constants.CANCER_SPECIFIC_COHORT)})
   % endif
+
+<p><strong>Copy State:</strong> Copy state changes were called according to the log<sub>2</sub> coverage-ratio, which can be used to calculate an approximate minimum copy number for a diploid tumour with 100% cancer cell content. As the log<sub>2</sub> coverage-ratio thresholds scale with tumour purity, absolute copy number may be lower than predicted, in tumours with lower cancer cell content. Calls represent levels derived from copy-number analysis, are used for annotation by OncoKB, and indicate the copy-number level per gene, as follows: </p>
+
+  <table class="suppl" width="100%">
+    <tr><td>Deep Deletion</td><td>a deep loss, possibly a homozygous deletion</td></tr>
+    <tr><td>Shallow Deletion</td><td>a shallow loss, possibly a heterozygous deletion</td></tr>
+    <tr><td>Gain</td><td>a low-level gain (a few additional copies, often broad)</td></tr>
+    <tr><td>Amplification</td><td>a high-level amplification (more copies, often focal)</td></tr>
+  </table>
