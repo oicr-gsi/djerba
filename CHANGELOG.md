@@ -8,6 +8,7 @@
 
 ### Fixed
 - GCGI-698: Handle unknown cytoband without a misleading warning
+- GCGI-702: Add apply/update cache options to benchmark script
 - GCGI-703: Fix genome reference name in footer
 - GCGI-675: Update default config ini parameters
 - GCGI-692: Updated the Genomic Summary template
