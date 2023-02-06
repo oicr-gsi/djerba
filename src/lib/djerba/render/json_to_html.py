@@ -173,6 +173,28 @@ class html_builder:
             ]
             rows.append(self.table_row(cells))
         return rows
+
+    def oncogenic_small_mutations_and_indels_header_loh(self):
+        names = [
+            constants.GENE,
+            constants.CHROMOSOME,
+            constants.PROTEIN,
+            constants.LOH_STATE
+        ]
+        return self.table_header(names)
+
+    def oncogenic_small_mutations_and_indels_rows_loh(self, mutation_info):
+        row_fields = mutation_info[constants.BODY]
+        rows = []
+        for row in row_fields:
+            cells = [
+                self._td(self._href(row[constants.GENE_URL], row[constants.GENE]), italic=True),
+                self._td(row[constants.CHROMOSOME]),
+                self._td(self._href(row[constants.PROTEIN_URL], row[constants.PROTEIN])),
+                self._td(row[constants.LOH_STATE])
+            ]
+            rows.append(self.table_row(cells))
+        return rows
     
     def patient_table_report_cols(self, patient_args):
         """Get the patient info table: After initial header, before Sample Information & Quality"""

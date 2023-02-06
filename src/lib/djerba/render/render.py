@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import pdfkit
+from PyPDF2 import PdfMerger
 import traceback
 
 from mako.template import Template
@@ -30,9 +31,18 @@ class html_renderer(logger):
         # strict_undefined=True provides an informative error for missing variables in JSON
         # see https://docs.makotemplates.org/en/latest/runtime.html#context-variables
         report_lookup = TemplateLookup(directories=[html_dir,], strict_undefined=True)
-        self.template = report_lookup.get_template("clinical_report_template.html")
+        self.clinical_template = report_lookup.get_template("clinical_report_template.html")
+        self.research_template = report_lookup.get_template("research_report_template.html")
 
-    def run(self, in_path, out_path, archive=True):
+    def run(self, in_path, out_path, clinical_or_research="clinical", archive=True):
+        if(clinical_or_research == "clinical"):
+            self.template = self.clinical_template
+            out_path = out_path + ".clinical.html"
+        elif (clinical_or_research == "research"):
+            self.template = self.research_template
+            out_path = out_path + ".research.html"
+        else:
+            print('err')
         with open(in_path) as in_file:
             data = json.loads(in_file.read())
             args = data.get(constants.REPORT)
@@ -73,17 +83,33 @@ class pdf_renderer(logger):
     # See https://github.com/wkhtmltopdf/wkhtmltopdf/issues/4506
     # An alternative solution would be changing the HTML generation to omit unnecessary Javascript
 
-    def run(self, html_path, pdf_path, footer_text=None, footer=True):
+    def run(self, html_path, pdf_path, clinical_or_research="clinical", footer_text=None, footer=True):
         """Render HTML to PDF"""
         # create options, which are arguments to wkhtmltopdf for footer generation
         # the 'quiet' option suppresses chatter to STDOUT
+        if(clinical_or_research == "clinical"):
+            html_path = html_path + ".clinical.html"
+            pdf_path = pdf_path + ".clinical.pdf"
+        elif (clinical_or_research == "research"):
+            html_path = html_path + ".research.html"
+            pdf_path = pdf_path + ".research.pdf"
+        else:
+            print('err')
         self.logger.info('Writing PDF to {0}'.format(pdf_path))
         if footer:
-            if footer_text:
+            if footer_text and clinical_or_research == "clinical" :
                 self.logger.info("Including footer text for CGI clinical report")
                 options = {
                     'footer-right': '[page] of [topage]',
                     'footer-left': footer_text,
+                    'quiet': '',
+                    'disable-javascript': ''
+                }
+            elif footer_text and clinical_or_research == "research":
+                self.logger.info("Including footer text for CGI clinical report")
+                options = {
+                    'footer-right': '[page] of [topage]',
+                    'footer-left': "For Research-Use Only",
                     'quiet': '',
                     'disable-javascript': ''
                 }
@@ -109,3 +135,18 @@ class pdf_renderer(logger):
             self.logger.error('Traceback: {0}'.format(trace))
             raise
         self.logger.info('Finished writing PDF')
+
+    def merge_clinical_research(self, pdf_path):
+        clinical_pdf_path = pdf_path+".clinical.pdf"
+        research_pdf_path = pdf_path+".research.pdf"
+        merged_pdf_path = pdf_path+".report.pdf"
+        self.merge_pdfs(clinical_pdf_path,research_pdf_path,merged_pdf_path)
+
+    def merge_pdfs(self,pdf1,pdf2,output):
+        pdfs = [pdf1,pdf2]
+        merger = PdfMerger()
+        for pdf in pdfs:
+            merger.append(pdf)
+        merger.write(output+".report.pdf")
+        merger.close()
+

@@ -87,7 +87,7 @@ class main(logger):
         if self.args.html:
             html_path = self.args.html
         elif report_id and self.args.dir:
-            html_path = os.path.join(self.args.dir, '{0}_report.html'.format(report_id))
+            html_path = os.path.join(self.args.dir, '{0}'.format(report_id))
         else:
             msg = "Must specify --html, or --dir and a report ID, to find HTML output path"
             self.logger.error(msg)
@@ -112,7 +112,7 @@ class main(logger):
 
     def _get_pdf_path(self, report_id):
         """Get PDF path for given report ID string"""
-        pdf_path = os.path.join(self.args.dir, '{0}_report.pdf'.format(report_id))
+        pdf_path = os.path.join(self.args.dir, '{0}'.format(report_id))
         pdf_path = os.path.realpath(pdf_path)
         self.logger.debug("Found PDF path {0}".format(pdf_path))
         return pdf_path
@@ -161,10 +161,15 @@ class main(logger):
             report_id = self._get_report_id_from_json(json_path)
             html_path = self._get_html_path(report_id)
             archive = not self.args.no_archive
-            html_renderer(self.log_level, self.log_path).run(json_path, html_path, archive)
+            html_renderer(self.log_level, self.log_path).run(json_path, html_path, "clinical", archive)
+            html_renderer(self.log_level, self.log_path).run(json_path, html_path, "research", archive=False)
             if self.args.pdf:
                 pdf_path = self._get_pdf_path(report_id)
-                pdf_renderer(self.log_level, self.log_path).run(html_path, pdf_path, report_id)
+                pdf_renderer(self.log_level, self.log_path).run(html_path, pdf_path, "clinical", report_id)
+                pdf_renderer(self.log_level, self.log_path).run(html_path, pdf_path, "research", report_id)
+                pdf_renderer(self.log_level, self.log_path).merge_clinical_research(pdf_path)
+
+
         elif self.args.subparser_name == constants.PDF:
             html_path = self.args.html
             if self.args.report_id:
@@ -204,9 +209,12 @@ class main(logger):
             report_id = self._get_report_id_from_json(json_path)
             html_path = self._get_html_path(report_id)
             archive = not self.args.no_archive
-            html_renderer(self.log_level, self.log_path).run(json_path, html_path, archive)
+            html_renderer(self.log_level, self.log_path).run(json_path, html_path, "clinical", archive)
+            html_renderer(self.log_level, self.log_path).run(json_path, html_path, "research", archive=False)
             pdf = self._get_pdf_path(report_id)
-            pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, report_id)
+            pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, report_id, "clinical")
+            pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, report_id, "research")
+            pdf_renderer(self.log_level, self.log_path).merge_clinical_research(pdf)
 
     def run_draft(self, input_config):
         """
@@ -232,7 +240,8 @@ class main(logger):
             json_path = os.path.join(self.args.dir, constants.REPORT_JSON_FILENAME)
             html_path = self._get_html_path(self._get_report_id_from_json(json_path))
             archive = not self.args.no_archive
-            html_renderer(self.log_level, self.log_path).run(json_path, html_path, archive)
+            html_renderer(self.log_level, self.log_path).run(json_path, html_path, "clinical", archive)
+            html_renderer(self.log_level, self.log_path).run(json_path, html_path, "research", archive=False)
 
     def run_setup(self):
         """Set up an empty working directory for a CGI report"""
