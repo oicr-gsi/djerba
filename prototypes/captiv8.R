@@ -1,7 +1,7 @@
 library(data.table)
-library(tidyverse)
 library(cowplot)
 library(optparse)
+
 captiv8_colors <- c("#91bfdb", "#d73027", "#4575b4",  "#fc8d59","#e0f3f8", "#fee090")
 
 ##in take##
@@ -13,16 +13,13 @@ opt <- parse_args(opt_parser)
 
 input_path <- opt$input
 
-##test
-#setwd('/Volumes/cgi/cap-djerba/MOHCCNO/MOHCCNO_0002/report')
-#input_path <- 'MOHCCNO_0002.captiv8.txt'
-
 captiv8 <- fread(input_path)
 
-##replace no's to not app.##
+##Preprocess data for prettiness##
 captiv8$evidence[captiv8$evidence == "no" & (captiv8$marker == "Viral" | captiv8$marker == "SWISNF" )] <- "none\ndetected"
 captiv8$evidence[captiv8$evidence == "cms_evidence" & (captiv8$marker == "CMS"  )] <- "not\napplicable"
 
+##### PLOTTING ####
 bar_charts <- 
 plot_grid(
   ggplot(captiv8 %>% filter(marker == "CD8+"),aes(y=as.numeric(evidence),x=marker)) + 
@@ -122,8 +119,6 @@ ggplot(captiv8 %>% filter(marker == " Viral"),aes(y=as.numeric(evidence),x=marke
     axis.text=element_blank(),
     axis.ticks=element_blank(),
     plot.title = element_text(hjust = 0.5),
-    
-    #panel.background = element_rect(fill="transparent"),
     panel.background = element_rect(fill = captiv8_colors[6],colour = NA),
     legend.justification = c(0,0.5)
   ) + labs(title="Cancer-related\nviral integration")
@@ -144,8 +139,6 @@ ggplot(captiv8 %>% filter(marker == "SWISNF"),aes(y=as.numeric(evidence),x=marke
     axis.text=element_blank(),
     axis.ticks=element_blank(),
     plot.title = element_text(hjust = 0.5),
-    
-    #panel.background = element_rect(fill="transparent"),
     panel.background = element_rect(fill = captiv8_colors[4],colour = NA),
     legend.justification = c(0,0.5)
   )+ labs(title="loss-of-function\nSWISNF pathway\nmutation")
@@ -164,8 +157,6 @@ ggplot(captiv8 %>% filter(marker == "CMS"),aes(y=as.numeric(evidence),x=marker))
     axis.ticks=element_blank(),
     plot.title = element_text(hjust = 0.5),
     panel.background = element_rect(fill = captiv8_colors[2],colour = captiv8_colors[2]),
-    
-   # plot.background = element_rect(fill = captiv8_colors[2]),
     legend.justification = c(0,0.5))+ 
   labs(title="Molecular\nsubgroup of\ncolorectal cancer")
   
@@ -200,7 +191,6 @@ ggplot(captiv8 %>% filter(marker %in% c("CD8+" , "M1M2"    ,"SWISNF" , "TMB"   ,
     plot.title = element_text(hjust = 0.5)
   ) 
 
-#png("captiv8.png", width = 1145, height = 620)
 svg(paste0(input_path,".captiv8.svg"), width = 11, height = 6)
   print(
   plot_grid(captiv8_card,captiv8_el, align = 'hv',axis = 'tbrl', ncol = 2,rel_widths = c(3,.5))
