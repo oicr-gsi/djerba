@@ -10,10 +10,16 @@ class html_builder:
 
     TR_START = '<tr style="text-align:left;">'
     TR_END = '</tr>'
+    EXPR_COL_INDEX_SMALL_MUT = 6 # position of expression column (if any) in small mutations table
+    EXPR_COL_INDEX_CNV = 2 # position of expression column (if any) in cnv table
 
     def __init__(self, purity_failure=False):
         # if purity_failure = True, do custom formatting of purity value
         self.purity_failure = purity_failure
+        self.bar_maker = display_bar_maker(0,100)
+
+    def _expression_display(self, expr):
+        return self.bar_maker.get_bar_element(expr*100)
 
     def _href(self, url, text):
         return '<a href="{0}">{1}</a>'.format(url, text)
@@ -31,7 +37,34 @@ class html_builder:
             td = '<td>{0}</td>'.format(content)
         return td
 
-
+    def _td_oncokb(self, level):
+        # make a table cell with an OncoKB level symbol
+        # permitted levels must have a format defined in style.css
+        onc = 'Oncogenic'
+        l_onc = 'Likely Oncogenic'
+        p_onc = 'Predicted Oncogenic'
+        level = re.sub('Level ', '', level) # strip off 'Level ' prefix, if any
+        permitted_levels = ['1', '2', '3A', '3B', '4', 'R1', 'R2', onc, l_onc, p_onc]
+        if not level in permitted_levels:
+            msg = "Input '{0}' is not a permitted OncoKB level".format(level)
+            raise RuntimeError(msg)
+        if level in [onc, l_onc, p_onc]:
+            shape = 'square'
+        else:
+            shape = 'circle'
+        tooltip_text = level
+        if level == onc:
+            level = 'N1'
+        elif level == l_onc:
+            level = 'N2'
+        elif level == p_onc:
+            level = 'N3'
+        else:
+            tooltip_text = 'OncoKB level {0}'.format(level) # add 'OncoKB Level ' prefix for tooltip
+        span = '<span class="tooltiptext">{0}</span>'.format(tooltip_text)
+        div = '<div class="tooltip {0} oncokb-level{1}">{2}{3}</div>'.format(shape, level, level, span)
+        return self._td(div)
+   
     def assemble_biomarker_plot(self,biomarker,plot):
         template='<img id="{0}" style="width: 100%; " src="{1}"'
         cell = template.format(biomarker,plot)
@@ -121,13 +154,15 @@ class html_builder:
     def markdown_to_html(self, markdown_string):
         return markdown(markdown_string)
 
-    def oncogenic_CNVs_header(self):
+    def oncogenic_CNVs_header(self, mutation_info):
         names = [
             constants.GENE,
-            constants.CHROMOSOME,
+            'Chromosome',
             constants.ALTERATION,
             constants.ONCOKB
         ]
+        if mutation_info[constants.HAS_EXPRESSION_DATA]:
+            names.insert(self.EXPR_COL_INDEX_CNV, 'Expression<br/>Z-score')
         return self.table_header(names)
 
     def oncogenic_CNVs_rows(self, mutation_info):
@@ -138,12 +173,15 @@ class html_builder:
                 self._td(self._href(row[constants.GENE_URL], row[constants.GENE]), italic=True),
                 self._td(row[constants.CHROMOSOME]),
                 self._td(row[constants.ALTERATION]),
-                self._td(row[constants.ONCOKB]),
+                self._td_oncokb(row[constants.ONCOKB]),
             ]
+            if mutation_info[constants.HAS_EXPRESSION_DATA]:
+                metric = self._expression_display(row[constants.EXPRESSION_METRIC])
+                cells.insert(self.EXPR_COL_INDEX_CNV, self._td(metric))
             rows.append(self.table_row(cells))
         return rows
 
-    def oncogenic_small_mutations_and_indels_header(self):
+    def oncogenic_small_mutations_and_indels_header(self, mutation_info):
         names = [
             constants.GENE,
             constants.CHROMOSOME,
@@ -154,6 +192,8 @@ class html_builder:
             constants.COPY_STATE,
             constants.ONCOKB
         ]
+        if mutation_info[constants.HAS_EXPRESSION_DATA]:
+            names.insert(self.EXPR_COL_INDEX_SMALL_MUT, constants.EXPRESSION_METRIC)
         return self.table_header(names)
 
     def oncogenic_small_mutations_and_indels_rows(self, mutation_info):
@@ -169,8 +209,11 @@ class html_builder:
                 self._td(row[constants.VAF_PERCENT]),
                 self._td(depth),
                 self._td(row[constants.COPY_STATE]),
-                self._td(row[constants.ONCOKB])
+                self._td_oncokb(row[constants.ONCOKB])
             ]
+            if mutation_info[constants.HAS_EXPRESSION_DATA]:
+                metric = self._expression_display(row[constants.EXPRESSION_METRIC])
+                cells.insert(self.EXPR_COL_INDEX_SMALL_MUT, self._td(metric))
             rows.append(self.table_row(cells))
         return rows
     
@@ -302,3 +345,51 @@ class html_builder:
             rows.append(self.table_row(cells))
         return rows
 
+from string import Template # TODO move to top
+
+class display_bar_maker:
+
+    """
+    Make a SVG display with a coloured dot on a horizontal bar
+    Intended to represent a quantity in a table cell
+    """
+
+    BAR_OFFSET = 4  # offset of bar from left-hand border
+    BAR_LENGTH = 30 # length of display bar, in pixels
+
+    TEMPLATE = """<svg width="67" height="12"><text x="39" y="11" text-anchor="start" font-size="10">${expr}</text><g><line x1="${bar_start}" y1="8" x2="${bar_end}" y2="8" style="stroke: gray; stroke-width: 2px;"></line><circle cx="${pos}" cy="8" r="3" fill="${colour}"></circle></g></svg>"""
+
+    def __init__(self, min_val, max_val):
+        self.min_val = min_val
+        self.max_val = max_val
+        self.x_range = float(max_val - min_val)
+
+    def get_circle_colour(self, x):
+        if x < 0.2:
+            return 'blue'
+        elif x > 0.8:
+            return 'red'
+        else:
+            return 'gray'
+
+    def get_circle_position(self, x):
+        return x*self.BAR_LENGTH + self.BAR_OFFSET
+
+    def get_bar_element(self, x):
+        x = x / self.x_range
+        if x < 0 or x > 1:
+            raise ValueError("Input {0} out of range ({1}, {2})".format(x, self.min_val, self.max_val))
+        params = {
+            'expr': round(x*100), # TODO make more clear
+            'bar_start': self.BAR_OFFSET,
+            'bar_end': self.BAR_LENGTH+self.BAR_OFFSET,
+            'pos': self.get_circle_position(x),
+            'colour': self.get_circle_colour(x)
+        }
+        return Template(self.TEMPLATE).substitute(params)
+
+if __name__ == '__main__':
+    maker = display_bar_maker()
+    print(maker.display(0.1))
+    print(maker.display(0.5))
+    print(maker.display(0.9))

@@ -40,13 +40,17 @@ ${html_builder().make_sections_into_cells("<h2>SNVs and in/dels</h2>","main")}
       
       % if small_mutations_and_indels.get(constants.CLINICALLY_RELEVANT_VARIANTS) > 0:
             <table class="variants" width="100%">
-                  ${html_builder().oncogenic_small_mutations_and_indels_header()}
+                  ${html_builder().oncogenic_small_mutations_and_indels_header(small_mutations_and_indels)}
                   <tbody>
                   % for row in html_builder().oncogenic_small_mutations_and_indels_rows(small_mutations_and_indels):
                         ${row}
                   % endfor
                   </tbody>
             </table>
+	    <!-- TODO only display Z key if expression data present -->
+	    <table class="suppl" width="100%">
+              <tr><td><b>Chr.</b>: Chromosome and cytoband</td><td><b>Z</b>: Expression Z-score for gene mRNA</td></tr>
+	    </table>
       % endif
 
       
@@ -65,7 +69,7 @@ ${html_builder().make_sections_into_cells("<h2>Copy Number Variation</h2>","main
 
       % if oncogenic_somatic_CNVs.get(constants.CLINICALLY_RELEVANT_VARIANTS) > 0:
             <table class="variants" width="100%">
-            ${html_builder().oncogenic_CNVs_header()}
+            ${html_builder().oncogenic_CNVs_header(oncogenic_somatic_CNVs)}
             <tbody>
             % for row in html_builder().oncogenic_CNVs_rows(oncogenic_somatic_CNVs):
                   ${row}

@@ -95,9 +95,15 @@ class composer_base(logger):
 class clinical_report_json_composer(composer_base):
 
     ALTERATION_UPPER_CASE = 'ALTERATION'
+    ALL_CURATED_GENES = '20201126-allCuratedGenes.tsv'
     CANCER_TYPE_HEADER = 'CANCER.TYPE' # for tmbcomp files
     COMPASS = 'COMPASS'
+    CYTOBAND = 'cytoBand.txt'
+    DATA_SEGMENTS = 'data_segments.txt'
+    EXPR_PCT_COMP = 'data_expression_percentile_comparison.txt'
+    EXPR_ZSCORE_COMP = 'data_expression_zscores_comparison.txt'
     GENOME_SIZE = 3*10**9 # TODO use more accurate value when we release a new report format
+    GENOMIC_BIOMARKERS = 'genomic_biomarkers.maf'
     HGVSP_SHORT = 'HGVSp_Short'
     HUGO_SYMBOL_TITLE_CASE = 'Hugo_Symbol'
     HUGO_SYMBOL_UPPER_CASE = 'HUGO_SYMBOL'
@@ -108,6 +114,8 @@ class clinical_report_json_composer(composer_base):
     MUTATIONS_EXTENDED_ONCOGENIC = 'data_mutations_extended_oncogenic.txt'
     MUTATIONS_EXTENDED = 'data_mutations_extended.txt'
     CNA_ANNOTATED = 'data_CNA_oncoKBgenes_nonDiploid_annotated.txt'
+    CNA_ARATIO = 'data_CNA_oncoKBgenes_ARatio.txt'
+    CNA_SIMPLE = 'data_CNA.txt'
     BIOMARKERS_ANNOTATED = 'annotated_maf_tmp.tsv'
     INTRAGENIC = 'intragenic'
     ONCOKB_URL_BASE = 'https://www.oncokb.org/gene'
@@ -159,11 +167,14 @@ class clinical_report_json_composer(composer_base):
         self.all_reported_variants = set()
         self.input_dir = input_dir
         self.params = params
+        # evaluate the assay type
         permitted = [rc.ASSAY_WGS, rc.ASSAY_WGTS]
         if not self.params.get(xc.ASSAY_TYPE) in permitted:
             msg = "Assay type {0} not in permitted assays {1}".format(assay_type, permitted)
             self.logger.error(msg)
             raise RuntimeError(msg)
+        self.is_wgts = self.params.get(xc.ASSAY_TYPE) == rc.ASSAY_WGTS
+        # set other instance variables
         self.failed = self.params.get(xc.FAILED)
         self.clinical_data = self.read_clinical_data()
         self.closest_tcga_lc = self.clinical_data[dc.CLOSEST_TCGA].lower()
@@ -180,13 +191,21 @@ class clinical_report_json_composer(composer_base):
             self.gene_pair_fusions = None
         else:
             [self.total_somatic_mutations, self.tmb_count] = self.read_somatic_mutation_totals()
-            if self.params.get(xc.ASSAY_TYPE) == rc.ASSAY_WGTS:
+            if self.is_wgts:
                 fus_reader = fusion_reader(input_dir, log_level=log_level, log_path=log_path)
                 self.total_fusion_genes = fus_reader.get_total_fusion_genes()
                 self.gene_pair_fusions = fus_reader.get_fusions()
             else:
                 self.total_fusion_genes = None
                 self.gene_pair_fusions = None
+        # expression switch for testing; TODO simplify to a single mode for production
+        self.EXPRESSION_MODE = 1
+        if self.EXPRESSION_MODE == 0:
+            self.expr_input = self.EXPR_ZSCORE_COMP
+        elif self.EXPRESSION_MODE == 1:
+            self.expr_input = self.EXPR_PCT_COMP
+        else:
+            raise RuntimeError("Unknown expression mode: '{0}'".format(self.EXPRESSION_MODE))
 
     def build_assay_name(self):
         ##WGS v WGTS
@@ -216,12 +235,17 @@ class clinical_report_json_composer(composer_base):
     def build_copy_number_variation(self):
         self.logger.debug("Building data for copy number variation table")
         rows = []
+        if self.is_wgts:
+            mutation_expression = self.read_expression()
+        else:
+            mutation_expression = {}
         with open(os.path.join(self.input_dir, self.CNA_ANNOTATED)) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
             for row in reader:
                 gene = row[self.HUGO_SYMBOL_UPPER_CASE]
                 cytoband = self.get_cytoband(gene)
                 row = {
+                    rc.EXPRESSION_METRIC: mutation_expression.get(gene), # None for WGS assay
                     rc.GENE: gene,
                     rc.GENE_URL: self.build_gene_url(gene),
                     rc.ALT: row[self.ALTERATION_UPPER_CASE],
@@ -234,6 +258,7 @@ class clinical_report_json_composer(composer_base):
         rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
         for row in rows: self.all_reported_variants.add((row.get(rc.GENE), row.get(rc.CHROMOSOME)))
         data = {
+            rc.HAS_EXPRESSION_DATA: self.is_wgts,
             rc.TOTAL_VARIANTS: unfiltered_cnv_total,
             rc.CLINICALLY_RELEVANT_VARIANTS: len(rows),
             rc.BODY: rows
@@ -264,7 +289,7 @@ class clinical_report_json_composer(composer_base):
 
     def build_genomic_biomarkers(self,input_dir,sample_ID):
         rows = []
-        genomic_biomarkers_path = os.path.join(input_dir,"genomic_biomarkers.maf")
+        genomic_biomarkers_path = os.path.join(input_dir, self.GENOMIC_BIOMARKERS)
         with open(genomic_biomarkers_path, 'w') as genomic_biomarkers_file:
             #print .maf header
             print("HUGO_SYMBOL\tSAMPLE_ID\tALTERATION", file=genomic_biomarkers_file)
@@ -339,6 +364,10 @@ class clinical_report_json_composer(composer_base):
         rows = []
         mutation_copy_states = self.read_mutation_copy_states()
         mutation_LOH_states = self.read_mutation_LOH()
+        if self.is_wgts:
+            mutation_expression = self.read_expression()
+        else:
+            mutation_expression = {}
         with open(os.path.join(self.input_dir, self.MUTATIONS_EXTENDED_ONCOGENIC)) as data_file:
             for input_row in csv.DictReader(data_file, delimiter="\t"):
                 gene = input_row[self.HUGO_SYMBOL_TITLE_CASE]
@@ -351,6 +380,7 @@ class clinical_report_json_composer(composer_base):
                     rc.PROTEIN: protein,
                     rc.PROTEIN_URL: self.build_alteration_url(gene, protein, self.oncotree_uc),
                     rc.MUTATION_TYPE: re.sub('_', ' ', input_row[self.VARIANT_CLASSIFICATION]),
+                    rc.EXPRESSION_METRIC: mutation_expression.get(gene), # None for WGS assay
                     rc.VAF_PERCENT: int(round(float(input_row[self.TUMOUR_VAF]), 2)*100),
                     rc.TUMOUR_DEPTH: int(input_row[rc.TUMOUR_DEPTH]),
                     rc.TUMOUR_ALT_COUNT: int(input_row[rc.TUMOUR_ALT_COUNT]),
@@ -363,6 +393,7 @@ class clinical_report_json_composer(composer_base):
         rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
         for row in rows: self.all_reported_variants.add((row.get(rc.GENE), row.get(rc.CHROMOSOME)))
         data = {
+            rc.HAS_EXPRESSION_DATA: self.is_wgts,
             rc.CLINICALLY_RELEVANT_VARIANTS: len(rows),
             rc.TOTAL_VARIANTS: self.total_somatic_mutations,
             rc.BODY: rows
@@ -640,7 +671,7 @@ class clinical_report_json_composer(composer_base):
         return clinical_data
 
     def read_cnv_data(self):
-        input_path = os.path.join(self.input_dir, 'data_CNA_oncoKBgenes_nonDiploid_annotated.txt')
+        input_path = os.path.join(self.input_dir, self.CNA_ANNOTATED)
         variants = []
         with open(input_path) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
@@ -667,8 +698,27 @@ class clinical_report_json_composer(composer_base):
                 cytobands[row[self.HUGO_SYMBOL_TITLE_CASE]] = row['Chromosome']
         return cytobands
 
+    def read_expression(self):
+        # read the expression metric (may be zscore or percentage, depending on choice of input file)
+        input_path = os.path.join(self.input_dir, self.expr_input)
+        expr = {}
+        with open(input_path) as input_file:
+            for row in csv.reader(input_file, delimiter="\t"):
+                if row[0]=='Hugo_Symbol':
+                    continue
+                gene = row[0]
+                try:
+                    metric = float(row[1])
+                except ValueError as err:
+                    msg = 'Cannot convert expression value "{0}" to float, '.format(row[1])+\
+                          '; using 0 as fallback value: {0}'.format(err)
+                    self.logger.warning(msg)
+                    metric = 0.0
+                expr[gene] = metric
+        return expr
+
     def read_fga(self):
-        input_path = os.path.join(self.input_dir, 'data_segments.txt')
+        input_path = os.path.join(self.input_dir, self.DATA_SEGMENTS)
         total = 0
         with open(input_path) as input_file:
             for row in csv.DictReader(input_file, delimiter="\t"):
@@ -679,11 +729,11 @@ class clinical_report_json_composer(composer_base):
         return fga
 
     def read_genomic_summary(self):
-        with open(os.path.join(self.input_dir, 'genomic_summary.txt')) as in_file:
+        with open(os.path.join(self.input_dir, dc.GENOMIC_SUMMARY_FILENAME)) as in_file:
             return in_file.read().strip()
     
     def read_technical_notes(self):
-        with open(os.path.join(self.input_dir, 'technical_notes.txt')) as in_file:
+        with open(os.path.join(self.input_dir, dc.TECHNICAL_NOTES_FILENAME)) as in_file:
             return in_file.read().strip()
 
     def read_mutation_copy_states(self):
@@ -696,7 +746,7 @@ class clinical_report_json_composer(composer_base):
             -2: "Deep Deletion"
         }
         copy_states = {}
-        with open(os.path.join(self.input_dir, 'data_CNA.txt')) as in_file:
+        with open(os.path.join(self.input_dir, self.CNA_SIMPLE)) as in_file:
             first = True
             for row in csv.reader(in_file, delimiter="\t"):
                 if first:
@@ -709,7 +759,7 @@ class clinical_report_json_composer(composer_base):
     def read_mutation_LOH(self):
         # convert A-allele ratio to LOH; return mapping of gene -> LOH
         loh_states = {}
-        with open(os.path.join(self.input_dir, 'data_CNA_oncoKBgenes_ARatio.txt')) as in_file:
+        with open(os.path.join(self.input_dir, self.CNA_ARATIO)) as in_file:
             first = True
             for row in csv.reader(in_file, delimiter="\t"):
                 if first:
@@ -725,7 +775,7 @@ class clinical_report_json_composer(composer_base):
 
     def read_oncokb_gene_summaries(self):
         summaries = {}
-        with open(os.path.join(self.data_dir, '20201126-allCuratedGenes.tsv')) as in_file:
+        with open(os.path.join(self.data_dir, self.ALL_CURATED_GENES)) as in_file:
             for row in csv.DictReader(in_file, delimiter="\t"):
                 summaries[row['hugoSymbol']] = row['summary']
         return summaries
