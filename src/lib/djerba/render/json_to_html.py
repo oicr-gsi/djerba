@@ -52,17 +52,13 @@ class html_builder:
             shape = 'square'
         else:
             shape = 'circle'
-        tooltip_text = level
         if level == onc:
             level = 'N1'
         elif level == l_onc:
             level = 'N2'
         elif level == p_onc:
             level = 'N3'
-        else:
-            tooltip_text = 'OncoKB level {0}'.format(level) # add 'OncoKB Level ' prefix for tooltip
-        span = '<span class="tooltiptext">{0}</span>'.format(tooltip_text)
-        div = '<div class="tooltip {0} oncokb-level{1}">{2}{3}</div>'.format(shape, level, level, span)
+        div = '<div class="{0} oncokb-level{1}">{2}</div>'.format(shape, level, level)
         return self._td(div)
    
     def assemble_biomarker_plot(self,biomarker,plot):
@@ -162,7 +158,7 @@ class html_builder:
             constants.ONCOKB
         ]
         if mutation_info[constants.HAS_EXPRESSION_DATA]:
-            names.insert(self.EXPR_COL_INDEX_CNV, 'Expression<br/>Z-score')
+            names.insert(self.EXPR_COL_INDEX_CNV, 'Expression<br/>Percentile')
         return self.table_header(names)
 
     def oncogenic_CNVs_rows(self, mutation_info):
@@ -357,7 +353,7 @@ class display_bar_maker:
     BAR_OFFSET = 4  # offset of bar from left-hand border
     BAR_LENGTH = 30 # length of display bar, in pixels
 
-    TEMPLATE = """<svg width="67" height="12"><text x="39" y="11" text-anchor="start" font-size="10">${expr}</text><g><line x1="${bar_start}" y1="8" x2="${bar_end}" y2="8" style="stroke: gray; stroke-width: 2px;"></line><circle cx="${pos}" cy="8" r="3" fill="${colour}"></circle></g></svg>"""
+    TEMPLATE = """<svg width="67" height="12"><text x="39" y="11" text-anchor="start" font-size="12">${expr}</text><g><line x1="${bar_start}" y1="8" x2="${bar_end}" y2="8" style="stroke: gray; stroke-width: 2px;"></line><circle cx="${pos}" cy="8" r="3" fill="${colour}"></circle></g></svg>"""
 
     def __init__(self, min_val, max_val):
         self.min_val = min_val

@@ -47,9 +47,12 @@ ${html_builder().make_sections_into_cells("<h2>SNVs and in/dels</h2>","main")}
                   % endfor
                   </tbody>
             </table>
-	    <!-- TODO only display Z key if expression data present -->
 	    <table class="suppl" width="100%">
-              <tr><td><b>Chr.</b>: Chromosome and cytoband</td><td><b>Z</b>: Expression Z-score for gene mRNA</td></tr>
+              <tr>
+		<td><b>Chr.</b>: Chromosome and cytoband</td>
+		% if small_mutations_and_indels.get(constants.HAS_EXPRESSION_DATA):
+		<td><b>Expr. (%)</b>: Expression Percentile for gene mRNA</td></tr>
+	        % endif
 	    </table>
       % endif
 
