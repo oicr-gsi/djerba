@@ -16,6 +16,7 @@ input_path <- opt$input
 captiv8 <- fread(input_path)
 
 ##Preprocess data for prettiness##
+captiv8[captiv8 == "SWISNF"] <- "SWI/SNF"
 captiv8$evidence[captiv8$evidence == "no" & (captiv8$marker == "Viral" | captiv8$marker == "SWISNF" )] <- "none\ndetected"
 captiv8$evidence[captiv8$evidence == "cms_evidence" & (captiv8$marker == "CMS"  )] <- "not\napplicable"
 
