@@ -16,7 +16,7 @@
   % endif
 
 % if small_mutations_and_indels.get(constants.HAS_EXPRESSION_DATA) or oncogenic_somatic_CNVs.get(constants.HAS_EXPRESSION_DATA):
-  <br><strong>Expression Z-score: </strong>Z-score of the gene mRNA expression; a value greater than 2 is considered high, less than -2 is considered low.
+  <br><strong>Expression Percentile: </strong>Percentile of the gene mRNA expression, relative to the <a href="https://oicr.on.ca/ontario-wide-cancer-targeted-nucleic-acid-evaluation-2-0/">OCTANE study cohort</a>
 % endif
 
 <p><strong>Copy State:</strong> Copy state changes were called according to the log<sub>2</sub> coverage-ratio, which can be used to calculate an approximate minimum copy number for a diploid tumour with 100% cancer cell content. As the log<sub>2</sub> coverage-ratio thresholds scale with tumour purity, absolute copy number may be lower than predicted, in tumours with lower cancer cell content. Calls represent levels derived from copy-number analysis, are used for annotation by OncoKB, and indicate the copy-number level per gene, as follows: </p>

@@ -4,6 +4,7 @@ import djerba.render.constants as constants
 import re
 from markdown import markdown
 from time import strftime
+from string import Template
 from djerba.util.image_to_base64 import converter
 
 class html_builder:
@@ -19,7 +20,7 @@ class html_builder:
         self.bar_maker = display_bar_maker(0,100)
 
     def _expression_display(self, expr):
-        return self.bar_maker.get_bar_element(expr*100)
+        return self.bar_maker.get_bar_element(round(expr*100))
 
     def _href(self, url, text):
         return '<a href="{0}">{1}</a>'.format(url, text)
@@ -60,7 +61,7 @@ class html_builder:
             level = 'N3'
         div = '<div class="{0} oncokb-level{1}">{2}</div>'.format(shape, level, level)
         return self._td(div)
-   
+
     def assemble_biomarker_plot(self,biomarker,plot):
         template='<img id="{0}" style="width: 100%; " src="{1}"'
         cell = template.format(biomarker,plot)
@@ -153,12 +154,12 @@ class html_builder:
     def oncogenic_CNVs_header(self, mutation_info):
         names = [
             constants.GENE,
-            'Chromosome',
+            constants.CHROMOSOME,
             constants.ALTERATION,
             constants.ONCOKB
         ]
         if mutation_info[constants.HAS_EXPRESSION_DATA]:
-            names.insert(self.EXPR_COL_INDEX_CNV, 'Expression<br/>Percentile')
+            names.insert(self.EXPR_COL_INDEX_CNV, constants.EXPRESSION_METRIC)
         return self.table_header(names)
 
     def oncogenic_CNVs_rows(self, mutation_info):
@@ -180,7 +181,7 @@ class html_builder:
     def oncogenic_small_mutations_and_indels_header(self, mutation_info):
         names = [
             constants.GENE,
-            constants.CHROMOSOME,
+            'Chr.',
             constants.PROTEIN,
             constants.MUTATION_TYPE,
             constants.VAF_NOPERCENT,
@@ -189,7 +190,7 @@ class html_builder:
             constants.ONCOKB
         ]
         if mutation_info[constants.HAS_EXPRESSION_DATA]:
-            names.insert(self.EXPR_COL_INDEX_SMALL_MUT, constants.EXPRESSION_METRIC)
+            names.insert(self.EXPR_COL_INDEX_SMALL_MUT, 'Expr. (%)')
         return self.table_header(names)
 
     def oncogenic_small_mutations_and_indels_rows(self, mutation_info):
@@ -341,8 +342,6 @@ class html_builder:
             rows.append(self.table_row(cells))
         return rows
 
-from string import Template # TODO move to top
-
 class display_bar_maker:
 
     """
@@ -353,17 +352,25 @@ class display_bar_maker:
     BAR_OFFSET = 4  # offset of bar from left-hand border
     BAR_LENGTH = 30 # length of display bar, in pixels
 
-    TEMPLATE = """<svg width="67" height="12"><text x="39" y="11" text-anchor="start" font-size="12">${expr}</text><g><line x1="${bar_start}" y1="8" x2="${bar_end}" y2="8" style="stroke: gray; stroke-width: 2px;"></line><circle cx="${pos}" cy="8" r="3" fill="${colour}"></circle></g></svg>"""
+    TEMPLATE = '<svg width="67" height="12"><text x="39" y="11" text-anchor="start" '+\
+                'font-size="12">${value}</text><g><line x1="${bar_start}" '+\
+                'y1="8" x2="${bar_end}" y2="8" style="stroke: gray; '+\
+                'stroke-width: 2px;"></line><circle cx="${pos}" cy="8" r="3" '+\
+                'fill="${colour}"></circle></g></svg>'
 
-    def __init__(self, min_val, max_val):
+    def __init__(self, min_val, max_val, blue_max=0.2, red_min=0.8):
         self.min_val = min_val
         self.max_val = max_val
         self.x_range = float(max_val - min_val)
+        if self.x_range <= 0:
+            raise RuntimeError("Invalid range: min={0}, max={1}".format(min_val, max_val))
+        self.blue_max = blue_max
+        self.red_min = red_min
 
     def get_circle_colour(self, x):
-        if x < 0.2:
+        if x <= self.blue_max:
             return 'blue'
-        elif x > 0.8:
+        elif x >= self.red_min:
             return 'red'
         else:
             return 'gray'
@@ -372,20 +379,15 @@ class display_bar_maker:
         return x*self.BAR_LENGTH + self.BAR_OFFSET
 
     def get_bar_element(self, x):
+        x_raw = x
         x = x / self.x_range
         if x < 0 or x > 1:
             raise ValueError("Input {0} out of range ({1}, {2})".format(x, self.min_val, self.max_val))
         params = {
-            'expr': round(x*100), # TODO make more clear
+            'value': x_raw,
             'bar_start': self.BAR_OFFSET,
             'bar_end': self.BAR_LENGTH+self.BAR_OFFSET,
             'pos': self.get_circle_position(x),
             'colour': self.get_circle_colour(x)
         }
         return Template(self.TEMPLATE).substitute(params)
-
-if __name__ == '__main__':
-    maker = display_bar_maker()
-    print(maker.display(0.1))
-    print(maker.display(0.5))
-    print(maker.display(0.9))
