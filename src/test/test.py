@@ -268,7 +268,7 @@ class TestExtractor(TestBase):
             del data_expected['report'][key]
         for biomarker in range(0,len(data_found['report']['genomic_biomarkers']['Body'])):
             del data_found['report']['genomic_biomarkers']['Body'][biomarker]['Genomic biomarker plot']
-        for biomarker in range(1,len(data_expected['report']['genomic_biomarkers']['Body'])):
+        for biomarker in range(0,len(data_expected['report']['genomic_biomarkers']['Body'])):
             del data_expected['report']['genomic_biomarkers']['Body'][biomarker]['Genomic biomarker plot']
         # do not check supplementary data
         del data_found['supplementary']
@@ -680,11 +680,11 @@ class TestRender(TestBase):
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '74c544cb6ebf47797986a8775fdb2b56')
+        self.check_report(out_path, 'fe85d87f37ceaa178e00a3e21f3945ce')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
         html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, 'dd4e9e08ee1641b7bdec25ca5f1a7842')
+        self.check_report(out_path, '309b23484686ce4f82c650b6d50ceea9')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
         html_renderer().run(args_path, out_path, False)
