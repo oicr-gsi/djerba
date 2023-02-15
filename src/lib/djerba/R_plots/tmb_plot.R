@@ -39,6 +39,9 @@ if(length(tcga_tmb_data_type$tmb) > 0){
   tmp_max <- max(density(tcga_tmb_data_type$tmb)$y)
   label_location <- max(label_location,tmp_max)
 }
+vline_top <- label_location
+label_location <- label_location + 0.2
+label_x_offset <- 1
 
 options(bitmapType='cairo')
 svg(out_path, width=8, height=3)
@@ -49,11 +52,11 @@ ggplot(tcga_tmb_data, aes(tmb)) +
   coord_cartesian(xlim = c(0, max(sampleTMB, 25)),
                   clip = 'off') +
   
-  geom_vline(xintercept = sampleTMB,linetype="solid",colour = "black")+
-  geom_vline(xintercept = 10,linetype="longdash",colour = "red") +
+  geom_segment(x=sampleTMB, y=0, xend=sampleTMB, yend=vline_top, linetype="solid",colour = "black")+
+  geom_segment(x=10, y=0, xend=10, yend=vline_top, linetype="longdash",colour = "red") +
   
   annotate(y=label_location,geom="text",x = sampleTMB, color="black",label="This tumour", hjust = -0.02,size=5,vjust=2) +
-  annotate(y=label_location,geom="text",x = 10,color="red",label="TMB-H threshold", hjust =-0.02,size=5) +
+  annotate(y=label_location,geom="text",x = 10-label_x_offset,color="red",label="TMB-H threshold", hjust =-0.02,size=5,vjust=2) +
   
   xlab("Coding Mutations per Mb") +
   ylab("% of samples") +
