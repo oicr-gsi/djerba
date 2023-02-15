@@ -195,17 +195,12 @@ class clinical_report_json_composer(composer_base):
                 fus_reader = fusion_reader(input_dir, log_level=log_level, log_path=log_path)
                 self.total_fusion_genes = fus_reader.get_total_fusion_genes()
                 self.gene_pair_fusions = fus_reader.get_fusions()
+                self.expr_input = self.EXPR_PCT_COMP
             else:
                 self.total_fusion_genes = None
                 self.gene_pair_fusions = None
-        # expression switch for testing; TODO simplify to a single mode for production
-        self.EXPRESSION_MODE = 1
-        if self.EXPRESSION_MODE == 0:
-            self.expr_input = self.EXPR_ZSCORE_COMP
-        elif self.EXPRESSION_MODE == 1:
-            self.expr_input = self.EXPR_PCT_COMP
-        else:
-            raise RuntimeError("Unknown expression mode: '{0}'".format(self.EXPRESSION_MODE))
+                self.expr_input = None
+
 
     def build_assay_name(self):
         ##WGS v WGTS
