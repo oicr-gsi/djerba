@@ -198,6 +198,7 @@ hr.lil-line{
     color: white;
     text-align: center;
     line-height: 15px;
+    margin: auto;
   }
 
 .square {
@@ -207,6 +208,7 @@ hr.lil-line{
     color: white;
     text-align: center;
     line-height: 15px;
+    margin: auto;
   }
 
 .oncokb-level1 {background: #33a02c;}
