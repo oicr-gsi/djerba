@@ -11,7 +11,8 @@ body {
 
 @media print {
   div {
-    break-inside: avoid;
+      vertical-align: top;
+      page-break-inside: avoid;
   }
 }
 
@@ -202,9 +203,9 @@ hr.lil-line{
 .square {
     width: 15px;
     height: 15px;
-    padding: 5px;
+    padding: 5px 8px 5px 5px;
     color: white;
-    text-align: left;
+    text-align: center;
     line-height: 15px;
   }
 

@@ -13,6 +13,7 @@ class html_builder:
     TR_END = '</tr>'
     EXPR_COL_INDEX_SMALL_MUT = 6 # position of expression column (if any) in small mutations table
     EXPR_COL_INDEX_CNV = 2 # position of expression column (if any) in cnv table
+    EXPR_SHORT_NAME = 'Expr. (%)'
 
     def __init__(self, purity_failure=False):
         # if purity_failure = True, do custom formatting of purity value
@@ -143,11 +144,6 @@ class html_builder:
             suffix = ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]
         return str(n) + suffix
 
-    def make_sections_into_cells(self,section_title,main_or_supp):
-        template = '<hr class="big-white-line" ><div class="twocell{0}"><div class="oneoftwocell{0}">{1}</div><div class="twooftwocell{0}" ><hr class="big-line" >'  
-        cell = template.format(main_or_supp,section_title)
-        return cell
-
     def markdown_to_html(self, markdown_string):
         return markdown(markdown_string)
 
@@ -159,7 +155,7 @@ class html_builder:
             constants.ONCOKB
         ]
         if mutation_info[constants.HAS_EXPRESSION_DATA]:
-            names.insert(self.EXPR_COL_INDEX_CNV, constants.EXPRESSION_METRIC)
+            names.insert(self.EXPR_COL_INDEX_CNV, self.EXPR_SHORT_NAME)
         return self.table_header(names)
 
     def oncogenic_CNVs_rows(self, mutation_info):
@@ -190,7 +186,7 @@ class html_builder:
             constants.ONCOKB
         ]
         if mutation_info[constants.HAS_EXPRESSION_DATA]:
-            names.insert(self.EXPR_COL_INDEX_SMALL_MUT, 'Expr. (%)')
+            names.insert(self.EXPR_COL_INDEX_SMALL_MUT, self.EXPR_SHORT_NAME)
         return self.table_header(names)
 
     def oncogenic_small_mutations_and_indels_rows(self, mutation_info):
@@ -257,6 +253,21 @@ class html_builder:
             [constants.PURITY_PERCENT, constants.PLOIDY]
         ]
         return self.key_value_table_rows(sample_args, key_groups, widths)
+
+    def section_cells_begin(self, section_title, main_or_supp):
+        # begin a cell structure with title in left-hand cell, body in right-hand cell
+        permitted = ['main', 'supp']
+        if main_or_supp not in permitted:
+            msg = "Section type argument '{0}' not in {1}".format(main_or_supp, permitted)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        template = '<hr class="big-white-line" ><div class="twocell{0}"><div class="oneoftwocell{0}">{1}</div><div class="twooftwocell{0}" ><hr class="big-line" >'
+        cell = template.format(main_or_supp,section_title)
+        return cell
+
+    def section_cells_end(self):
+        # closes <div class="twocell... and <div class="twooftwocell...
+        return "</div></div>\n"
 
     def structural_variants_and_fusions_header(self):
         names = [
@@ -353,10 +364,13 @@ class display_bar_maker:
     BAR_LENGTH = 30 # length of display bar, in pixels
 
     TEMPLATE = '<svg width="67" height="12"><text x="39" y="11" text-anchor="start" '+\
-                'font-size="12">${value}</text><g><line x1="${bar_start}" '+\
+                'font-size="12" fill=${text_colour}>${value}</text><g><line x1="${bar_start}" '+\
                 'y1="8" x2="${bar_end}" y2="8" style="stroke: gray; '+\
                 'stroke-width: 2px;"></line><circle cx="${pos}" cy="8" r="3" '+\
-                'fill="${colour}"></circle></g></svg>'
+                'fill="${circle_colour}"></circle></g></svg>'
+
+    COLOUR_LOW = 'blue'
+    COLOUR_HIGH = 'red'
 
     def __init__(self, min_val, max_val, blue_max=0.2, red_min=0.8):
         self.min_val = min_val
@@ -369,11 +383,19 @@ class display_bar_maker:
 
     def get_circle_colour(self, x):
         if x <= self.blue_max:
-            return 'blue'
+            return self.COLOUR_LOW
         elif x >= self.red_min:
-            return 'red'
+            return self.COLOUR_HIGH
         else:
             return 'gray'
+
+    def get_text_colour(self, x):
+        if x <= self.blue_max:
+            return self.COLOUR_LOW
+        elif x >= self.red_min:
+            return self.COLOUR_HIGH
+        else:
+            return 'black'
 
     def get_circle_position(self, x):
         return x*self.BAR_LENGTH + self.BAR_OFFSET
@@ -388,6 +410,7 @@ class display_bar_maker:
             'bar_start': self.BAR_OFFSET,
             'bar_end': self.BAR_LENGTH+self.BAR_OFFSET,
             'pos': self.get_circle_position(x),
-            'colour': self.get_circle_colour(x)
+            'circle_colour': self.get_circle_colour(x),
+            'text_colour': self.get_text_colour(x)
         }
         return Template(self.TEMPLATE).substitute(params)
