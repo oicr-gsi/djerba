@@ -23,14 +23,18 @@ tcga_pga_data <- read.table(tcga_pga_file, header = TRUE, stringsAsFactors = F,s
 
 options(bitmapType='cairo')
 
+vline_top <- max(density(tcga_pga_data$PGA)$y)
+label_location <- vline_top * 1.25
+label_x_offset <- 5
+
 svg(out_path, width=8, height=3)
 ggplot(tcga_pga_data, aes(x=PGA)) +
   geom_density(aes(fill = "All TCGA"), alpha = 0.5) + 
   scale_x_continuous(expand = c(0, 0), limit = c(0, max(samplePGA,  100))) +
   scale_y_continuous(expand = c(0, 0),labels = percent) +
-  
-  geom_vline(xintercept = samplePGA,linetype="solid",colour = "black")+
-  annotate(y=max(density(tcga_pga_data$PGA)$y),geom="text",x = samplePGA,color="black",label="This tumour", hjust =-0.02,size=5,vjust=2) +
+
+  geom_segment(x=samplePGA, y=0, xend=samplePGA, yend=vline_top, linetype="solid",colour = "black")+
+  annotate(y=label_location,geom="text",x = samplePGA-label_x_offset,color="black",label="This tumour", hjust =-0.02,size=5,vjust=2) +
 
   labs(x="Percent Genome Altered",fill="Cohort",y="% of samples") +
 

@@ -48,7 +48,7 @@ class html_renderer(logger):
             args = data.get(constants.REPORT)
             config = data.get(constants.SUPPLEMENTARY).get(constants.CONFIG)
 
-        with open(out_path, 'w') as out_file:
+        with open(out_path, 'w', encoding=constants.TEXT_ENCODING) as out_file:
             try:
                 html = self.template.render(**args)
             except Exception as err:

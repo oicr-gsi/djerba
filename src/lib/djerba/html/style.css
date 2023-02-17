@@ -11,7 +11,8 @@ body {
 
 @media print {
   div {
-    break-inside: avoid;
+      vertical-align: top;
+      page-break-inside: avoid;
   }
 }
 
@@ -194,10 +195,20 @@ hr.lil-line{
     width: 15px;
     height: 15px;
     padding: 5px;
-    
     color: white;
     text-align: center;
     line-height: 15px;
+    margin: auto;
+  }
+
+.square {
+    width: 15px;
+    height: 15px;
+    padding: 5px 8px 5px 5px;
+    color: white;
+    text-align: center;
+    line-height: 15px;
+    margin: auto;
   }
 
 .oncokb-level1 {background: #33a02c;}
@@ -210,7 +221,13 @@ hr.lil-line{
 
 .oncokb-level4 {background: #424242;}
 
-.oncokb-levelR1 {background: #ee3425}
+.oncokb-levelR1 {background: #ee3425;}
 
 .oncokb-levelR2 {background: #f79a92;}
+
+.oncokb-levelN1 {background: #525252;}
+
+.oncokb-levelN2 {background: #808080;}
+
+.oncokb-levelN3 {background: #AEAEAE;}
 

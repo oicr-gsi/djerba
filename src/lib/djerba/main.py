@@ -212,8 +212,8 @@ class main(logger):
             html_renderer(self.log_level, self.log_path).run(json_path, html_path, "clinical", archive)
             html_renderer(self.log_level, self.log_path).run(json_path, html_path, "research", archive=False)
             pdf = self._get_pdf_path(report_id)
-            pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, report_id, "clinical")
-            pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, report_id, "research")
+            pdf_renderer(self.log_level, self.log_path).run(html_path, pdf, report_id, "clinical")
+            pdf_renderer(self.log_level, self.log_path).run(html_path, pdf, report_id, "research")
             pdf_renderer(self.log_level, self.log_path).merge_clinical_research(pdf)
 
     def run_draft(self, input_config):
