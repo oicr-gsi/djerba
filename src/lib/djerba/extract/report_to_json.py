@@ -103,7 +103,7 @@ class clinical_report_json_composer(composer_base):
     HUGO_SYMBOL_UPPER_CASE = 'HUGO_SYMBOL'
     MINIMUM_MAGNITUDE_SEG_MEAN = 0.2
     MSS_CUTOFF = 5.0
-    MSI_CUTOFF = 10.0
+    MSI_CUTOFF = 15.0
     MSI_FILE = 'msi.txt'
     MUTATIONS_EXTENDED_ONCOGENIC = 'data_mutations_extended_oncogenic.txt'
     MUTATIONS_EXTENDED = 'data_mutations_extended.txt'
