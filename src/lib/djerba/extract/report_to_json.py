@@ -100,8 +100,7 @@ class clinical_report_json_composer(composer_base):
     COMPASS = 'COMPASS'
     CYTOBAND = 'cytoBand.txt'
     DATA_SEGMENTS = 'data_segments.txt'
-    EXPR_PCT_COMP = 'data_expression_percentile_comparison.txt'
-    EXPR_ZSCORE_COMP = 'data_expression_zscores_comparison.txt'
+    EXPR_PCT_TCGA = 'data_expression_percentile_tcga.txt'
     GENOME_SIZE = 3*10**9 # TODO use more accurate value when we release a new report format
     GENOMIC_BIOMARKERS = 'genomic_biomarkers.maf'
     HGVSP_SHORT = 'HGVSp_Short'
@@ -195,7 +194,7 @@ class clinical_report_json_composer(composer_base):
                 fus_reader = fusion_reader(input_dir, log_level=log_level, log_path=log_path)
                 self.total_fusion_genes = fus_reader.get_total_fusion_genes()
                 self.gene_pair_fusions = fus_reader.get_fusions()
-                self.expr_input = self.EXPR_PCT_COMP
+                self.expr_input = self.EXPR_PCT_TCGA
             else:
                 self.total_fusion_genes = None
                 self.gene_pair_fusions = None
