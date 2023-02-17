@@ -200,4 +200,13 @@ svg(paste0(input_path,".captiv8.svg"), width = 11, height = 6)
   )
 dev.off()
 
+txt <- paste(readLines(paste0(input_path,".captiv8.svg")), collapse = "")
+b64txt <- paste0("data:image/svg+xml;base64,", base64enc::base64encode(charToRaw(txt)))
 
+write.table(
+  b64txt,
+  file = paste0(input_path,".captiv8.base64.txt"),
+  append = F, quote = FALSE, sep = "\t", 
+  eol = "\n", na = "NA",dec = ".", row.names = FALSE, 
+  col.names = FALSE
+)

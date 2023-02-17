@@ -1,5 +1,16 @@
 # CHANGELOG
 
+
+## Unreleased
+
+- Requires update to `djerba_test_data_lfs`
+
+### Added
+- Automatically generates research report from template
+- merges research and clinical reports
+- new merger function
+- MSI in clinical report
+
 ## v0.3.20: 2023-01-27
 
 ### Added
