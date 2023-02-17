@@ -139,14 +139,13 @@ class pdf_renderer(logger):
     def merge_clinical_research(self, pdf_path):
         clinical_pdf_path = pdf_path+".clinical.pdf"
         research_pdf_path = pdf_path+".research.pdf"
-        merged_pdf_path = pdf_path+".report.pdf"
-        self.merge_pdfs(clinical_pdf_path,research_pdf_path,merged_pdf_path)
+        self.merge_pdfs(clinical_pdf_path,research_pdf_path,pdf_path)
 
     def merge_pdfs(self,pdf1,pdf2,output):
         pdfs = [pdf1,pdf2]
         merger = PdfMerger()
         for pdf in pdfs:
             merger.append(pdf)
-        merger.write(output+".report.pdf")
+        merger.write(output+".merged.pdf")
         merger.close()
 

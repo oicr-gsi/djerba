@@ -11,10 +11,13 @@ ${html_builder().make_sections_into_cells("<h2>Genomic Landscape</h2>","main")}
       <p >
             Tumour Mutation Burden (TMB) was <strong>${genomic_landscape_info.get(constants.TMB_PER_MB)}</strong> coding mutations per Mb (${genomic_landscape_info.get(constants.TMB_TOTAL)} mutations)
             which corresponded to the ${html_builder().make_ordinal(genomic_landscape_info.get(constants.PAN_CANCER_PERCENTILE))} 
-            percentile of the pan-cancer cohort and classifies it as <strong>${html_builder().pull_biomarker_text(genomic_biomarkers,"TMB")}</strong>. 
+            percentile of the pan-cancer cohort and classifies it as <strong>${html_builder().pull_biomarker_text(genomic_biomarkers,"TMB")}</strong>.       
+
             % if genomic_landscape_info.get(constants.CANCER_SPECIFIC_PERCENTILE) != "NA" :
                   This TMB places the tumour in the <strong>${html_builder().make_ordinal(genomic_landscape_info.get(constants.CANCER_SPECIFIC_PERCENTILE))}</strong> percentile of the ${genomic_landscape_info.get(constants.CANCER_SPECIFIC_COHORT)} cohort.
             % endif
+
+            The microsatellite status is <strong>${html_builder().pull_biomarker_text(genomic_biomarkers,"MSI")} </strong>. 
       </p>
 
       <table><tr>
@@ -25,6 +28,21 @@ ${html_builder().make_sections_into_cells("<h2>Genomic Landscape</h2>","main")}
                   <img id='PGA' style='width: 100%; object-fit: contain' src="${converter().convert_svg(pga_plot, 'PGA plot')}"/>
             </td>
       </tr></table>
+
+
+      <!-- other biomarkers table -->
+      <table class="variants" style="width:100%">
+            <thead>
+                  <th style=" width:10%">Biomarker</th>
+                  <th style=" width:10%">Call</th>
+                  <th style=" width:80%">Score & Confidence</th>
+            </thead>
+            <tbody>
+                  % for row in html_builder().biomarker_table_rows(genomic_biomarkers):
+                  ${row}
+                  % endfor 
+            </tbody>
+      </table>
 
 </div></div>
 

@@ -18,61 +18,25 @@
   
   <h1>For Research-Use Only</h1>
 
-  ${html_builder().make_sections_into_cells("<h2>Genomic Biomarkers</h2>","main")}
+  ${html_builder().make_sections_into_cells("<h2>CAPTIV-8 Score</h2>","main")}
+        <p>With a CAPTIV-8 score of <strong>NA</strong>, this patient is <strong>ineligible</strong> for the study.</p>   
 
-      The microsatellite status is <strong>${html_builder().pull_biomarker_text(genomic_biomarkers,"MSI")} </strong>. 
-
-      <!-- other biomarkers table -->
-      <table class="variants" style="width:100%">
-            <thead>
-                  <th style=" width:10%">Biomarker</th>
-                  <th style=" width:10%">Call</th>
-                  <th style=" width:80%">Score & Confidence</th>
-            </thead>
-            <tbody>
-                  % for row in html_builder().biomarker_table_rows(genomic_biomarkers):
-                  ${row}
-                  % endfor 
-            </tbody>
-      </table>
-  </div></div>
-
-
-  % if small_mutations_and_indels.get(constants.CLINICALLY_RELEVANT_VARIANTS) > 0:
-  
-    ${html_builder().make_sections_into_cells("<h2>Small mutations</h2>","main")}
-
-      <table class="variants" width="100%">
-            ${html_builder().oncogenic_small_mutations_and_indels_header_loh()}
-            <tbody>
-            % for row in html_builder().oncogenic_small_mutations_and_indels_rows_loh(small_mutations_and_indels):
-                  ${row}
-            % endfor
-            </tbody>
-      </table>
-
-    </div></div>
-
-  % endif
+            <!-- <img id='captiv8' style='width: 100%; object-fit: contain' src="data:image/svg+xml;base64, [$INSERT CAPTIVE SVG IN BASE64$] "/>   -->
+   
+</div> </div>
+     
 
   <hr class="header-big-line" style="width: 100%; align="right" >
   <h2>Supplementary </h2>
 
   ${html_builder().make_sections_into_cells("<h3>Assay description</h3>","supp")}
-
-  <p>The <a href="https://svn.bcgsc.ca/bitbucket/users/etitmuss/repos/captiv-8/browse/">CAPTIV-8</a>
-  score is computed by combining the following attributes ;
-    presence of a cancer driving virus (VIRUSBreakend 2.13.2)
-    presence of loss of function SWISNF variants (MuTect2 GATK 4.2.6.1),
-    if sample is a lymph node biopsy or a colorectal cancer (Requisition system),
-    Genomic Tumour Mutation Burden (MuTect2 GATK 4.2.6.1),
-    Transcripts per million values (TPM) (RSEM 1.3.3)
-    Estimate of immune cell types (CIBERSORT immunedeconv 2.1.0)</p>
-
-<p><strong>Microsatellite stability score (MSI)</strong> represents the percentage of the genome's short repeats (microsatellites) with insertions or deletions in the tumour. Instability in microsatellite repeat regions is often caused by genetic or epigenetic alterations to genes in the mismatch repair (MMR) pathway (including <em>MLH1</em>, <em>MSH2</em>, and <em>MSH6</em>). Confidence intervals are based on 100 sets of 500 randomly sampled microsatellite sites.
-Microsatellite (MS) Instability status is called using <a href="https://www.sciencedirect.com/science/article/pii/S1672022920300218">msisensor-pro</a> (1.2.0) 
-    and a custom list of MS sites created by msisensor-pro for the current reference genome. 
-   Tumours with an MSI score greater than 10.0% are considered microsatellite unstable (MSI).
-  </p>
+  <p>The  <a href="https://svn.bcgsc.ca/bitbucket/users/etitmuss/repos/captiv-8/browse/">CAPTIV-8</a> score is computed by combining the following attributes: 
+    presence of a cancer-driving virus (VIRUSBreakend 2.13.2), 
+    loss of function mutations affecting the SWI/SNF complex (MuTect2 GATK 4.2.6.1), 
+    genome-wide Tumour Mutation Burden (MuTect2 GATK 4.2.6.1), 
+    gene expression value as measured in Transcripts per million (TPM, RSEM 1.3.3), 
+    and expression-inferred estimate of immune cell types (CIBERSORT immunedeconv 2.1.0). 
+    Additional points are included if sample is a lymph node biopsy or a colorectal cancer as indicated on the requisition form.
+</p>
 </body>
 </html>

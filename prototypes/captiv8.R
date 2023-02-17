@@ -1,6 +1,8 @@
 library(data.table)
 library(cowplot)
 library(optparse)
+library(ggplot2)
+library(dplyr)
 
 captiv8_colors <- c("#91bfdb", "#d73027", "#4575b4",  "#fc8d59","#e0f3f8", "#fee090")
 
@@ -17,7 +19,7 @@ captiv8 <- fread(input_path)
 
 ##Preprocess data for prettiness##
 captiv8[captiv8 == "SWISNF"] <- "SWI/SNF"
-captiv8$evidence[captiv8$evidence == "no" & (captiv8$marker == "Viral" | captiv8$marker == "SWISNF" )] <- "none\ndetected"
+captiv8$evidence[captiv8$evidence == "no" & (captiv8$marker == "Viral" | captiv8$marker == "SWI/SNF" )] <- "none\ndetected"
 captiv8$evidence[captiv8$evidence == "cms_evidence" & (captiv8$marker == "CMS"  )] <- "not\napplicable"
 
 ##### PLOTTING ####
@@ -124,10 +126,10 @@ ggplot(captiv8 %>% filter(marker == " Viral"),aes(y=as.numeric(evidence),x=marke
     legend.justification = c(0,0.5)
   ) + labs(title="Cancer-related\nviral integration")
 ,
-ggplot(captiv8 %>% filter(marker == "SWISNF"),aes(y=as.numeric(evidence),x=marker)) + 
+ggplot(captiv8 %>% filter(marker == "SWI/SNF"),aes(y=as.numeric(evidence),x=marker)) + 
   annotate("rect", xmin = -1, xmax = 1, ymin = -1, ymax = 1,fill="white") +
   
-   annotate(geom="text",y = 0,x=0,color="black",label=captiv8$evidence[captiv8$marker == "SWISNF"], size=7) +
+   annotate(geom="text",y = 0,x=0,color="black",label=captiv8$evidence[captiv8$marker == "SWI/SNF"], size=7) +
   
   ylim(-1,1)+
   theme_bw(base_size = 15)  +
@@ -142,7 +144,7 @@ ggplot(captiv8 %>% filter(marker == "SWISNF"),aes(y=as.numeric(evidence),x=marke
     plot.title = element_text(hjust = 0.5),
     panel.background = element_rect(fill = captiv8_colors[4],colour = NA),
     legend.justification = c(0,0.5)
-  )+ labs(title="loss-of-function\nSWISNF pathway\nmutation")
+  )+ labs(title="loss-of-function\nSWI/SNF pathway\nmutation")
 ,
 ggplot(captiv8 %>% filter(marker == "CMS"),aes(y=as.numeric(evidence),x=marker)) + 
   annotate("rect", xmin = -1, xmax = 1, ymin = -1, ymax = 1,fill="white") +
@@ -169,7 +171,7 @@ plot_grid(text_charts,bar_charts, ncol = 2, align = 'hv',axis = 'tbrl',rel_width
 
 
 captiv8_el <- 
-ggplot(captiv8 %>% filter(marker %in% c("CD8+" , "M1M2"    ,"SWISNF" , "TMB"   ,   "Viral",
+ggplot(captiv8 %>% filter(marker %in% c("CD8+" , "M1M2"    ,"SWI/SNF" , "TMB"   ,   "Viral",
                                          "CMS")),aes(x="CAPTIV-8score",y=as.numeric(score))) + 
   geom_bar(aes(fill=marker),stat ="identity") + 
 

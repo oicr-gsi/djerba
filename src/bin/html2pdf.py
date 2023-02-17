@@ -24,7 +24,7 @@ def main(args):
     v = path_validator()
     v.validate_input_file(args.html)
     v.validate_output_file(args.pdf)
-    pdf_renderer().run(os.path.abspath(args.html), os.path.abspath(args.pdf), clinical_or_research="clinical", footer=False)
+    pdf_renderer().run(os.path.abspath(args.html), os.path.abspath(args.pdf), footer=False)
 
 if __name__ == '__main__':
     parser = get_parser()
