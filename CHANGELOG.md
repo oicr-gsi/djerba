@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## Unreleased
+
+- Requires update to `djerba_test_data_lfs`
+
+### Added
+- GCGI-456: Add mRNA expression
+- N1/N2/N3 icons for Oncogenic/Likely Oncogenic/Predicted Oncogenic
+
+### Changed
+- GCGI-663: Center OncoKB icons in table column
+- GCGI-676: Use OncoKB icons in mutation sections
+- GCGI-722: Fix page breaks
+- GCGI-723: Extra line breaks in report footer
+
 ## v0.3.20: 2023-01-27
 
 ### Added
