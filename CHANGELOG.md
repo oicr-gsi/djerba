@@ -1,13 +1,14 @@
 # CHANGELOG
 
-## Unreleased 2.0
+## Unreleased
+
 ### Added
 - Automatically generates research report from template
 - merges research and clinical reports
 - new merger function
 - MSI in clinical report
 
-## Unreleased
+## v0.3.21: 2023-02-21
 
 - Requires update to `djerba_test_data_lfs`
 
@@ -20,6 +21,9 @@
 - GCGI-676: Use OncoKB icons in mutation sections
 - GCGI-722: Fix page breaks
 - GCGI-723: Extra line breaks in report footer
+
+### Fixed
+- GCGI-733: Bugfix for archiving crash on failed reports
 
 ## v0.3.20: 2023-01-27
 
