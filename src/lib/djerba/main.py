@@ -206,7 +206,7 @@ class main(logger):
             archive = not self.args.no_archive
             html_renderer(self.log_level, self.log_path).run(json_path, html_path, archive)
             pdf = self._get_pdf_path(report_id)
-            pdf_renderer(self.log_level, self.log_path).run(self.args.html, pdf, report_id)
+            pdf_renderer(self.log_level, self.log_path).run(html_path, pdf, report_id)
 
     def run_draft(self, input_config):
         """
