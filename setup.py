@@ -95,6 +95,7 @@ setup(
         'numpy',
         'pandas',
         'pdfkit',
+        'PyPDF2',
         'scipy',
         'statsmodels'
     ],
