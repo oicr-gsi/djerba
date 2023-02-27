@@ -63,6 +63,31 @@ TMBCOMP = 'tmbcomp'
 TUMOUR_ID = 'tumourid'
 WHIZBAM_URL = 'whizbam_url'
 
+# Shall I include software names and links as parameters?
+# Put temporarily here...
+BWAMEM_VERSION = 'bwamem_version'
+BWAMEM_LINK = 'bwamem_link'
+GATK_VERSION = 'GATK_version'
+GATK_LINK = 'GATK_link'
+MUTECT2_GATK_VERSION = 'MuTect2_GATK_version'
+MUTECT2_GATK_LINK = 'MuTect2_GATK_link'
+VARIANTEFFECTPREDICTOR_VERSION = 'VariantEffectPredictor_version'
+VARIANTEFFECTPREDICTOR_VERSION = 'VariantEffectPredictor_link'
+SEQUENZA_VERSION = 'Sequenza_version'
+SEQUENZA_LINK = 'Sequenza_link'
+STAR_VERSION = 'STAR_version'
+STAR_LINK = 'STAR_link'
+RSEM_VERSION = 'RSEM_version' 
+RSEM_LINK = 'RSEM_link'
+STARFUSION_VERSION = 'STARFusion_version'
+STARFUSION_LINK = 'STARFusion_link'
+ARRIBA_VERSION = 'Arriba_version'
+ARRIBA_LINK = 'Arriba_link'
+MAVIS_VERSION = 'MAVIS_version'
+MAVIS_LINK = 'MAVIS_link'
+DJERBA_VERSION = 'Djerba_version'
+DJERBA_LINK = 'Djerba_link'
+
 # schemas to represent required structure for the INI file
 SCHEMA_DEFAULT = {
     DISCOVERED: [
