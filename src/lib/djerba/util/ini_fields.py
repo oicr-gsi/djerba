@@ -76,8 +76,8 @@ MUTECT2_VERSION = 'MuTect2_version'
 MUTECT2_LINK = 'MuTect2_link'
 VARIANTEFFECTPREDICTOR_VERSION = 'VariantEffectPredictor_version'
 VARIANTEFFECTPREDICTOR_LINK = 'VariantEffectPredictor_link'
-MANE_VERSION = 'mane_version'
-MANE_LINK = 'mane_link'
+MANE_VERSION = 'MANE_version'
+MANE_LINK = 'MANE_link'
 SEQUENZA_VERSION = 'Sequenza_version'
 SEQUENZA_LINK = 'Sequenza_link'
 STAR_VERSION = 'STAR_version'
@@ -159,7 +159,7 @@ SCHEMA_DEFAULT = {
         TCGA_DATA,
         WHIZBAM_URL
     ],
-   VERSIONS: [
+    VERSIONS: [
         PICARD_VERSION,
         PICARD_LINK,
         REFERENCE_GENOME_VERSION,
