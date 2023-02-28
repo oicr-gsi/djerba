@@ -1,13 +1,13 @@
 <p>
     Whole Genome libraries were prepared using the KAPA Hyper Prep kit with DNA extracted from FFPE or fresh frozen tissue (for tumour samples) 
     or buffy coat blood specimens (for matched normal blood samples). Paired-end sequencing was performed using the Illumina NovaSeq6000 technology. 
-    Reads were aligned using <a href="https://bio-bwa.sourceforge.net/">bwa</a> mem (${versions.get(constants.BWAMEM_VERSION})) against
+    Reads were aligned using <a href="https://bio-bwa.sourceforge.net/">bwa</a> mem (${versions.get(constants.BWAMEM_VERSION)}) against
     reference genome <a href="https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.38/">GRCh38.p12</a> and processed according to GATK best practices, 
-    including duplicate marking with <a href="https://gatk.broadinstitute.org/hc/en-us/articles/360037052812-MarkDuplicates-Picard-">Picard</a> (${constants.PICARD_VERSION}), 
-    realignment around small insertions and deletions (in/dels), and base recalibration with <a href="https://gatk.broadinstitute.org/hc/en-us/sections/360008481611-4-1-6-0">GATK</a> (${constants.GATK_VERSION}). 
-    SNVs and in/dels were called using <a href="https://gatk.broadinstitute.org/hc/en-us/articles/5358911630107-Mutect2">MuTect2</a> (GATK ${constants.MUTECT2_VERSION}) 
-    and annotated with <a href="https://useast.ensembl.org/info/docs/tools/vep/index.html">VariantEffectPredictor</a> (${constants.VARIANTEFFECTPREDICTOR_VERSION}) using MANE  transcripts (MANE Clinical version 1.0 when available, <a href="https://www.ncbi.nlm.nih.gov/refseq/MANE/#Select">MANE Select</a> version 1.0 for all other transcripts).
+    including duplicate marking with <a href="https://gatk.broadinstitute.org/hc/en-us/articles/360037052812-MarkDuplicates-Picard-">Picard</a> (${versions.get(constants.PICARD_VERSION)}), 
+    realignment around small insertions and deletions (in/dels), and base recalibration with <a href="https://gatk.broadinstitute.org/hc/en-us/sections/360008481611-4-1-6-0">GATK</a> (${versions.get(constants.GATK_VERSION)}). 
+    SNVs and in/dels were called using <a href="https://gatk.broadinstitute.org/hc/en-us/articles/5358911630107-Mutect2">MuTect2</a> (GATK ${versions.get(constants.MUTECT2_VERSION)}) 
+    and annotated with <a href="https://useast.ensembl.org/info/docs/tools/vep/index.html">VariantEffectPredictor</a> (${versions.get(constants.VARIANTEFFECTPREDICTOR_VERSION)}) using MANE  transcripts (MANE Clinical version 1.0 when available, <a href="https://www.ncbi.nlm.nih.gov/refseq/MANE/#Select">MANE Select</a> version 1.0 for all other transcripts).
     Variants were further annotated for oncogenicity and actionability by <a href="https://api.oncokb.org/oncokb-annotator/gene-annotation">OncoKB</a>. 
     In cases where OncoKB does not use MANE Select, links in annotation use the corresponding alteration in OncoKB.
-    Copy number variations were called using <a href="https://doi.org/10.1093/annonc/mdu479">Sequenza</a> (${constants.SEQUENZA_VERSION}). 
+    Copy number variations were called using <a href="https://doi.org/10.1093/annonc/mdu479">Sequenza</a> (${versions.get(constants.SEQUENZA_VERSION)}). 
 </p>
