@@ -104,7 +104,7 @@ class pdf_renderer(logger):
         merger = PdfMerger()
         for pdf in pdfs:
             merger.append(pdf)
-        merger.write(output + ".merged.pdf")
+        merger.write(output)
         merger.close()
 
     def render(self, in_path, out_dir, out_file_prefix, out_file_suffix,
@@ -114,6 +114,10 @@ class pdf_renderer(logger):
         out_file_prefix is typically the report ID
         """
         out_path = os.path.realpath(os.path.join(out_dir, out_file_prefix + out_file_suffix))
+        self.render_path(in_path, out_path, footer_text, footer)
+        return out_path
+
+    def render_path(self, in_path, out_path, footer_text=None, footer=True):
         # create options, which are arguments to wkhtmltopdf for footer generation
         # the 'quiet' option suppresses chatter to STDOUT
         self.logger.info('Writing PDF to {0}'.format(out_path))
@@ -140,9 +144,9 @@ class pdf_renderer(logger):
                 'disable-javascript': ''
             }
         try:
-            pdfkit.from_file(html_path, pdf_path, options=options)
+            pdfkit.from_file(in_path, out_path, options=options)
         except Exception as err:
-            msg = "Unexpected error of type {0} in PDF rendering: {0}".format(type(err).__name__, err)
+            msg = "Unexpected error of type {0} in PDF rendering: {1}".format(type(err).__name__, err)
             self.logger.error(msg)
             trace = ''.join(traceback.format_tb(err.__traceback__))
             self.logger.error('Traceback: {0}'.format(trace))
@@ -156,6 +160,7 @@ class pdf_renderer(logger):
         self.logger.info("Merging clinical and research report PDFs")
         merged_pdf = os.path.join(out_dir, out_file_prefix + self.MERGED_SUFFIX)
         self.merge_pdfs(clinical_pdf, research_pdf, merged_pdf)
+        return merged_pdf
 
     def run_clinical(self, in_path, out_dir, out_file_prefix, footer_text):
         self.logger.info("Rendering PDF for clinical report")

@@ -276,8 +276,6 @@ class main(logger):
                 v.validate_input_dir(args.dir)
             if args.json:
                 v.validate_input_file(args.json)
-            if args.html:
-                v.validate_output_file(args.html)
         elif args.subparser_name == constants.PDF:
             v.validate_input_file(args.html)
             v.validate_output_dir(args.dir)
@@ -292,8 +290,6 @@ class main(logger):
                 v.validate_output_file(args.ini_out)
             if args.dir:
                 v.validate_output_dir(args.dir)
-            if args.html:
-                v.validate_output_file(args.html)
         else:
             # shouldn't happen, but handle this case for completeness
             raise ValueError("Unknown subparser: " + args.subparser_name)
