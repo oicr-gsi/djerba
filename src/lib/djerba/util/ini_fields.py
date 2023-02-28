@@ -63,14 +63,17 @@ TMBCOMP = 'tmbcomp'
 TUMOUR_ID = 'tumourid'
 WHIZBAM_URL = 'whizbam_url'
 
-# Shall I include software names and links as parameters?
-# Put temporarily here...
+# Parameters for versions of software and other
+PICARD_VERSION = 'picard_version'
+PICARD_LINK = 'picard_link'
+REFERENCE_GENOME_VERSION = 'reference_genome_version'
+REFERENCE_GENOME_LINK = 'reference_genome_link'
 BWAMEM_VERSION = 'bwamem_version'
 BWAMEM_LINK = 'bwamem_link'
 GATK_VERSION = 'GATK_version'
 GATK_LINK = 'GATK_link'
-MUTECT2_GATK_VERSION = 'MuTect2_GATK_version'
-MUTECT2_GATK_LINK = 'MuTect2_GATK_link'
+MUTECT2_VERSION = 'MuTect2_version'
+MUTECT2_LINK = 'MuTect2_link'
 VARIANTEFFECTPREDICTOR_VERSION = 'VariantEffectPredictor_version'
 VARIANTEFFECTPREDICTOR_VERSION = 'VariantEffectPredictor_link'
 SEQUENZA_VERSION = 'Sequenza_version'
@@ -86,7 +89,9 @@ ARRIBA_LINK = 'Arriba_link'
 MAVIS_VERSION = 'MAVIS_version'
 MAVIS_LINK = 'MAVIS_link'
 DJERBA_VERSION = 'Djerba_version'
+DJERBA_PIPELINE_VERSION = 'Djerba_pipeline_version'
 DJERBA_LINK = 'Djerba_link'
+
 
 # schemas to represent required structure for the INI file
 SCHEMA_DEFAULT = {
@@ -151,7 +156,35 @@ SCHEMA_DEFAULT = {
         PROVENANCE,
         TCGA_DATA,
         WHIZBAM_URL
-    ]
+    ],
+   VERSIONS: [
+        PICARD_VERSION,
+        PICARD_LINK,
+        REFERENCE_GENOME_VERSION,
+        REFERENCE_GENOME_LINK,
+        BWAMEM_VERSION,
+        BWAMEM_LINK, 
+        GATK_VERSION,
+        GATK_LINK,
+        MUTECT2_VERSION,
+        MUTECT2_LINK,
+        VARIANTEFFECTPREDICTOR_VERSION,
+        VARIANTEFFECTPREDICTOR_VERSION,
+        SEQUENZA_VERSION,
+        SEQUENZA_LINK,
+        STAR_VERSION,
+        STAR_LINK,
+        RSEM_VERSION, 
+        RSEM_LINK,
+        STARFUSION_VERSION,
+        STARFUSION_LINK,
+        ARRIBA_VERSION,
+        ARRIBA_LINK,
+        MAVIS_VERSION,
+        MAVIS_LINK,
+        DJERBA_VERSION,
+        DJERBA_LINK,
+   ]
 }
 
 SCHEMA_WGS_ONLY = {
@@ -213,7 +246,35 @@ SCHEMA_WGS_ONLY = {
         PROVENANCE,
         TCGA_DATA,
         WHIZBAM_URL
-    ]
+    ],
+    VERSIONS: [
+        PICARD_VERSION,
+        PICARD_LINK,
+        REFERENCE_GENOME_VERSION,
+        REFERENCE_GENOME_LINK,
+        BWAMEM_VERSION,
+        BWAMEM_LINK, 
+        GATK_VERSION,
+        GATK_LINK,
+        MUTECT2_VERSION,
+        MUTECT2_LINK,
+        VARIANTEFFECTPREDICTOR_VERSION,
+        VARIANTEFFECTPREDICTOR_VERSION,
+        SEQUENZA_VERSION,
+        SEQUENZA_LINK,
+        STAR_VERSION,
+        STAR_LINK,
+        RSEM_VERSION, 
+        RSEM_LINK,
+        STARFUSION_VERSION,
+        STARFUSION_LINK,
+        ARRIBA_VERSION,
+        ARRIBA_LINK,
+        MAVIS_VERSION,
+        MAVIS_LINK,
+        DJERBA_VERSION,
+        DJERBA_LINK,
+   ]
 }
 
 SCHEMA_FAILED = {
@@ -264,5 +325,33 @@ SCHEMA_FAILED = {
         PROVENANCE,
         TCGA_DATA,
         WHIZBAM_URL
-    ]
+    ],
+    VERSIONS: [
+        PICARD_VERSION,
+        PICARD_LINK,
+        REFERENCE_GENOME_VERSION,
+        REFERENCE_GENOME_LINK,
+        BWAMEM_VERSION,
+        BWAMEM_LINK, 
+        GATK_VERSION,
+        GATK_LINK,
+        MUTECT2_VERSION,
+        MUTECT2_LINK,
+        VARIANTEFFECTPREDICTOR_VERSION,
+        VARIANTEFFECTPREDICTOR_VERSION,
+        SEQUENZA_VERSION,
+        SEQUENZA_LINK,
+        STAR_VERSION,
+        STAR_LINK,
+        RSEM_VERSION, 
+        RSEM_LINK,
+        STARFUSION_VERSION,
+        STARFUSION_LINK,
+        ARRIBA_VERSION,
+        ARRIBA_LINK,
+        MAVIS_VERSION,
+        MAVIS_LINK,
+        DJERBA_VERSION,
+        DJERBA_LINK,
+   ]
 }
