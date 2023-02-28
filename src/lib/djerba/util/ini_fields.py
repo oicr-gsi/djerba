@@ -4,6 +4,7 @@
 INPUTS = 'inputs'
 SETTINGS = 'settings'
 DISCOVERED = 'discovered'
+VERSIONS = 'versions'
 
 # parameter names
 ASSAY_VERSION = 'assay_version'
