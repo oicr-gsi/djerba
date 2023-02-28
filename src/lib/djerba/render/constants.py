@@ -128,9 +128,7 @@ METRIC_TEXT = 'Genomic biomarker text'
 METRIC_PLOT = 'Genomic biomarker plot'
 GENOMIC_BIOMARKERS = 'genomic_biomarkers'
 
-# constants for versions
-
-# Parameters for versions of software and other
+# constants for the versions table
 PICARD_VERSION = 'picard_version'
 PICARD_LINK = 'picard_link'
 REFERENCE_GENOME_VERSION = 'reference_genome_version'
