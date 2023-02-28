@@ -54,7 +54,6 @@ setup(
             'data/technical_notes.txt',
             'data/hg38_centromeres.txt',
             'data/pgacomp-tcga.txt',
-            'data/versions.ini', # ADDED BY AQSA
             'html/clinical_report_template.html',
             'html/genomic_details_template.html',
             'html/header.html',
