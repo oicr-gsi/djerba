@@ -45,32 +45,16 @@
 
     % if assay_type == constants.ASSAY_WGTS:
       <p> This assay combines two comprehensive next generation sequencing assays: a DNA-based whole genome sequencing (WGS) assay and an RNA-based whole transcriptome sequencing (WTS) assay.</p>
-      <p>
-          Whole Genome libraries were prepared using the KAPA Hyper Prep kit with DNA extracted from FFPE or fresh frozen tissue (for tumour samples) 
-          or buffy coat blood specimens (for matched normal blood samples). Paired-end sequencing was performed using the Illumina NovaSeq6000 technology. 
-          Reads were aligned using <a href="https://bio-bwa.sourceforge.net/">bwa</a> mem (${constants.BWAMEM_VERSION}) against
-          reference genome <a href="https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.38/">GRCh38.p12</a> and processed according to GATK best practices, 
-          including duplicate marking with <a href="https://gatk.broadinstitute.org/hc/en-us/articles/360037052812-MarkDuplicates-Picard-">Picard</a> (${constants.PICARD_VERSION}), 
-          realignment around small insertions and deletions (in/dels), and base recalibration with <a href="https://gatk.broadinstitute.org/hc/en-us/sections/360008481611-4-1-6-0">GATK</a> (${constants.GATK_VERSION}). 
-          SNVs and in/dels were called using <a href="https://gatk.broadinstitute.org/hc/en-us/articles/5358911630107-Mutect2">MuTect2</a> (GATK ${constants.MUTECT2_VERSION}) 
-          and annotated with <a href="https://useast.ensembl.org/info/docs/tools/vep/index.html">VariantEffectPredictor</a> (${constants.VARIANTEFFECTPREDICTOR_VERSION}) using MANE  transcripts (MANE Clinical version 1.0 when available, <a href="https://www.ncbi.nlm.nih.gov/refseq/MANE/#Select">MANE Select</a> version 1.0 for all other transcripts).
-          Variants were further annotated for oncogenicity and actionability by <a href="https://api.oncokb.org/oncokb-annotator/gene-annotation">OncoKB</a>. 
-          In cases where OncoKB does not use MANE Select, links in annotation use the corresponding alteration in OncoKB.
-          Copy number variations were called using <a href="https://doi.org/10.1093/annonc/mdu479">Sequenza</a> (${constants.SEQUENZA_VERSION}). 
-      </p>
-
+      <%include file="templates_for_supp/description_wgs.html"/>
+      <%include file="templates_for_supp/description_wts.html"/>
     % elif assay_type == constants.ASSAY_WGS:
       <p>This assay is a comprehensive next generation sequencing assay, specifically DNA-based whole genome sequencing (WGS). </p>
-      <p>Whole Transcriptome libraries were prepared using the Illumina TruSeq Stranded Total RNA Library Prep Gold kit. Paired-end sequencing was performed using the Illumina NovaSeq6000 technology. Reads were aligned using <a href="https://github.com/alexdobin/STAR">STAR</a> (${constants.STAR_VERSION}) and gene expression levels quantified using <a href="https://github.com/deweylab/RSEM">RSEM</a> (${constants.RSEM_VERSION}). Fusions were called using <a href="https://github.com/STAR-Fusion/STAR-Fusion/wiki">STAR-Fusion</a> (${constants.STARFUSION_VERSION}) and <a href="https://github.com/suhrig/arriba">Arriba</a> (${constants.ARRIBA_VERSION}), followed by post processing with <a href="https://github.com/bcgsc/mavis">MAVIS</a> (${constants.MAVIS_VERSION}) and annotation using OncoKB. </p>
- 
-      ##<%include file="templates_for_supp/description_wgs.html"/>
+      <%include file="templates_for_supp/description_wgs.html"/>
     % else:
       <% raise RuntimeError("Unknown assay type") %>
     % endif
 
-    <p>Assay results were collated into the report document by <a href="https://github.com/oicr-gsi/djerba">Djerba</a> using pipeline v.${pipeline_version}.</p>
- 
-    ##<p>Assay results were collated into the report document by <a href="https://github.com/oicr-gsi/djerba">Djerba</a> (${constants.DJERBA_VERSION}) using pipeline v.${constants.DJERBA_PIPELINE_VERSION}.</p>
+    <p>Assay results were collated into the report document by <a href="https://github.com/oicr-gsi/djerba">Djerba</a> (${djerba_version}) using pipeline v.${pipeline_version}.</p>
 
   ${html_builder().section_cells_end()}
 
@@ -85,4 +69,3 @@
   <%include file="templates_for_supp/disclaimer.html"/>
 
   ${html_builder().section_cells_end()}
-  
