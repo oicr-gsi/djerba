@@ -209,7 +209,7 @@ class html_builder:
                 cells.insert(self.EXPR_COL_INDEX_SMALL_MUT, self._td(metric))
             rows.append(self.table_row(cells))
         return rows
-    
+
     def patient_table_report_cols(self, patient_args):
         """Get the patient info table: After initial header, before Sample Information & Quality"""
         widths = [[17,20], [19,35]]
