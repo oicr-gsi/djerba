@@ -371,7 +371,7 @@ class clinical_report_json_composer(composer_base):
         data[rc.MAVIS_VERSION] = self.config[ini.VERSIONS][ini.MAVIS_VERSION]
         data[rc.MAVIS_LINK] = self.config[ini.VERSIONS][ini.MAVIS_LINK]        
         data[rc.DJERBA_VERSION] = self.config[ini.VERSIONS][ini.DJERBA_VERSION]
-        data[rc.DJERBA_PIPELINE_VERSION] = self.config[ini.VERSIONS][ini.DJERBA_VERSION]
+        data[rc.DJERBA_PIPELINE_VERSION] = self.config[ini.VERSIONS][ini.DJERBA_PIPELINE_VERSION]
         data[rc.DJERBA_LINK] = self.config[ini.VERSIONS][ini.DJERBA_LINK]
         return data
      
