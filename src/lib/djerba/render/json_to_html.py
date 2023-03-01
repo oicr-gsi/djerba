@@ -21,7 +21,10 @@ class html_builder:
         self.bar_maker = display_bar_maker(0,100)
 
     def _expression_display(self, expr):
-        return self.bar_maker.get_bar_element(round(expr*100))
+        if expr==None:
+            return 'NA'
+        else:
+            return self.bar_maker.get_bar_element(round(expr*100))
 
     def _href(self, url, text):
         return '<a href="{0}">{1}</a>'.format(url, text)
