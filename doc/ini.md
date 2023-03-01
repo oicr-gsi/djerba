@@ -35,6 +35,7 @@ The INI file is divided into sections, with headers in square brackets.
 | `[inputs]`   | Required | Required parameters from the user                  |
 | `[settings]` | Optional | Parameters relating to the installation and operation of Djerba itself. Not expected to change often. |
 | `[discovered]` | Optional | Parameters automatically discovered by Djerba, by reading file provenance, parsing workflow outputs, etc. |
+| `[versions]` | Optional | Parameters relating to versions and links of software that Djerba uses. Not expected to change often. |
 
 ## Required INI parameters
 
@@ -166,6 +167,36 @@ If _any_ sample name parameters are specified, then they must _at least_ include
 | `[settings]`   | `provenance` | defaults.ini | Path to file provenance report  |
 | `[settings]`   | `tcga_data` | defaults.ini | Path to TCGA data directory  |
 | `[settings]`   | `whizbam_url` | defaults.ini | Base URL of OICR Whizbam site; used to construct links in report  |
+| `[settings]`   | `picard_version` | defaults.ini | Current version number of picard  |
+| `[settings]`   | `picard_link` | defaults.ini | Current link to picard  |
+| `[settings]`   | `reference_genome_version` | defaults.ini | Current version number of reference genome  |
+| `[settings]`   | `reference_genome_link` | defaults.ini | Current link to reference genome  |
+| `[settings]`   | `bwamem_version` | defaults.ini | Current version number of bwamem  |
+| `[settings]`   | `bwamem_link` | defaults.ini | Current link to bwamem |
+| `[settings]`   | `GATK_version` | defaults.ini | Current version number of GATK  |
+| `[settings]`   | `GATK_link` | defaults.ini | Current link to GATK  |
+| `[settings]`   | `MuTect2_version` | defaults.ini | Current version number of MuTect2  |
+| `[settings]`   | `MuTect2_link` | defaults.ini | Current link to MuTect2  |
+| `[settings]`   | `VariantEffectPredictor_version` | defaults.ini | Current version number of VariantEffectPredictor  |
+| `[settings]`   | `VariantEffectPredictor_link` | defaults.ini | Current link to VariantEffectPredictor  |
+| `[settings]`   | `MANE_version` | defaults.ini | Current version number of MANE  |
+| `[settings]`   | `MANE_link` | defaults.ini | Current link to MANE  |
+| `[settings]`   | `Sequenza_version` | defaults.ini | Current version number of Sequenza  |
+| `[settings]`   | `Sequenza_link` | defaults.ini | Current link to Sequenza  |
+| `[settings]`   | `STAR_version` | defaults.ini | Current version number of STAR  |
+| `[settings]`   | `STAR_link` | defaults.ini | Current link to STAR  |
+| `[settings]`   | `RSEM_version` | defaults.ini | Current version number of RSEM  |
+| `[settings]`   | `RSEM_link` | defaults.ini | Current link to RSEM  |
+| `[settings]`   | `STARFusion_version` | defaults.ini | Current version number of STARFusion  |
+| `[settings]`   | `STARFusion_link` | defaults.ini | Current link to STARFusion  |
+| `[settings]`   | `Arriba_version` | defaults.ini | Current version number of Arriba  |
+| `[settings]`   | `Arriba_link` | defaults.ini | Current link to Arriba  |
+| `[settings]`   | `MAVIS_version` | defaults.ini | Current version number of MAVIS  |
+| `[settings]`   | `MAVIS_link` | defaults.ini | Current link to MAVIS  |
+| `[settings]`   | `Djerba_version` | defaults.ini | Current version number of Djerba  |
+| `[settings]`   | `Djerba_pipeline_version` | defaults.ini | Current pipeline version number of Djerba  |
+| `[settings]`   | `Djerba_link` | defaults.ini | Current link to Djerba  |
+
 
 ### Sequenza metadata
 
