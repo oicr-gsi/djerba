@@ -91,10 +91,6 @@ ARRIBA_VERSION = 'Arriba_version'
 ARRIBA_LINK = 'Arriba_link'
 MAVIS_VERSION = 'MAVIS_version'
 MAVIS_LINK = 'MAVIS_link'
-DJERBA_VERSION = 'Djerba_version'
-DJERBA_PIPELINE_VERSION = 'Djerba_pipeline_version'
-DJERBA_LINK = 'Djerba_link'
-
 
 # schemas to represent required structure for the INI file
 SCHEMA_DEFAULT = {
@@ -186,9 +182,7 @@ SCHEMA_DEFAULT = {
         ARRIBA_VERSION,
         ARRIBA_LINK,
         MAVIS_VERSION,
-        MAVIS_LINK,
-        DJERBA_VERSION,
-        DJERBA_LINK,
+        MAVIS_LINK
    ]
 }
 
@@ -278,9 +272,7 @@ SCHEMA_WGS_ONLY = {
         ARRIBA_VERSION,
         ARRIBA_LINK,
         MAVIS_VERSION,
-        MAVIS_LINK,
-        DJERBA_VERSION,
-        DJERBA_LINK,
+        MAVIS_LINK
    ]
 }
 
@@ -359,8 +351,6 @@ SCHEMA_FAILED = {
         ARRIBA_VERSION,
         ARRIBA_LINK,
         MAVIS_VERSION,
-        MAVIS_LINK,
-        DJERBA_VERSION,
-        DJERBA_LINK,
+        MAVIS_LINK
    ]
 }
