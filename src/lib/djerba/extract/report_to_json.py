@@ -370,9 +370,6 @@ class clinical_report_json_composer(composer_base):
         data[rc.ARRIBA_LINK] = self.config[ini.VERSIONS][ini.ARRIBA_LINK]        
         data[rc.MAVIS_VERSION] = self.config[ini.VERSIONS][ini.MAVIS_VERSION]
         data[rc.MAVIS_LINK] = self.config[ini.VERSIONS][ini.MAVIS_LINK]        
-        data[rc.DJERBA_VERSION] = self.config[ini.VERSIONS][ini.DJERBA_VERSION]
-        data[rc.DJERBA_PIPELINE_VERSION] = self.config[ini.VERSIONS][ini.DJERBA_PIPELINE_VERSION]
-        data[rc.DJERBA_LINK] = self.config[ini.VERSIONS][ini.DJERBA_LINK]
         return data
      
     def build_sample_info(self):
@@ -856,7 +853,9 @@ class clinical_report_json_composer(composer_base):
         data[rc.FAILED] = self.failed
         data[rc.PURITY_FAILURE] = self.params.get(xc.PURITY_FAILURE)
         data[rc.REPORT_DATE] = None
-        data[rc.VERSIONS]  = self.build_versions() # Djerba version is now located in VERSIONS; to change, change it in defaults.ini
+        data[rc.VERSIONS]  = self.build_versions() # exludes djerba version, djerba pipeline version, and djerba link
+        data[rc.DJERBA_VERSION] = __version__
+        data[rc.PIPELINE_VERSION] = self.config[ini.SETTINGS][ini.PIPELINE_VERSION]
 
         if not self.failed:
             # additional data for non-failed reports
