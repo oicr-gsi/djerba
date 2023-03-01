@@ -183,19 +183,19 @@ class TestConfigure(TestBase):
         test_configurer.run(out_path)
 
     def test_default(self):
-        self.run_config_test(self.config_user, False, False, 62, self.provenance)
+        self.run_config_test(self.config_user, False, False, 90, self.provenance)
 
     def test_default_fail(self):
-        self.run_config_test(self.config_user_failed, False, True, 51, self.provenance)
+        self.run_config_test(self.config_user_failed, False, True, 79, self.provenance)
 
     def test_wgs_only(self):
-        self.run_config_test(self.config_user_wgs_only, True, False, 60, self.provenance)
+        self.run_config_test(self.config_user_wgs_only, True, False, 88, self.provenance)
 
     def test_wgs_only_fail(self):
-        self.run_config_test(self.config_user_wgs_only_failed, True, True, 51, self.provenance)
+        self.run_config_test(self.config_user_wgs_only_failed, True, True, 79, self.provenance)
 
     def test_vnwgts(self):
-        self.run_config_test(self.config_user_vnwgts, False, False, 62, self.provenance_vnwgts)
+        self.run_config_test(self.config_user_vnwgts, False, False, 90, self.provenance_vnwgts)
 
     def test_vnwgts_broken(self):
         # test failure modes of sample input
