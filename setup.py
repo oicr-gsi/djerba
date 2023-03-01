@@ -21,7 +21,7 @@ setup(
         'src/bin/djerba.py',
         'src/bin/html2pdf.py',
         'src/bin/list_inputs.py',
-        'src_bin/pdf_merger.py',
+        'src/bin/pdf_merger.py',
         'src/bin/qc_report.sh',
         'src/bin/run_mavis.py',
         'src/bin/sequenza_explorer.py',
