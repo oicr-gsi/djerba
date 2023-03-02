@@ -62,50 +62,6 @@ class config_validator(logger):
         self.logger.info("Successfully validated minimal Djerba config")
         return valid
 
-class config_plugin_validator(config_validator):
-    """Check that plugin INI parameters are valid"""
-
-    def __init__(self, core_schema, plugin_name, required, optional,
-                 log_level=logging.WARNING, log_path=None):
-        # core_schema = dictionary representation of config
-        # required = list of required fields for plugin
-        # optional = list of optional fields for plugin
-        self.logger = self.get_logger(log_level, __name__, log_path)
-        self.minimal_schema = core_schema.copy()
-        self.minimal_schema[plugin_name] = required
-        self.full_schema = core_schema.copy()
-        self.full_schema[plugin_name] = required+optional
-        self.schema = self.full_schema # for methods of parent class
-        self.plugin_name = plugin_name
-
-    def validate(self, config, schema):
-        for title in schema.keys():
-            # ConfigParser throws an error if the same title is specified more than once
-            if not title in config.sections():
-                msg = "[{0}] section not found in config".format(title)
-                self.logger.error(msg)
-                raise DjerbaConfigError(msg)
-            for field in schema[title]:
-                if not config[title].get(field):
-                    msg = "[{0}] field '{1}' not found in config".format(title, field)
-                    self.logger.error(msg)
-                    raise DjerbaConfigError(msg)
-        return True
-
-    def validate_full(self, config):
-        """Config has all parameters; valid input for extract step"""
-        valid = self.validate(config, self.full_schema)
-        self.find_extras(config)
-        self.logger.info("Full config for plugin {0} is valid".format(self.plugin_name))
-        return valid
-
-    def validate_minimal(self, config):
-        """Config has minimal required parameters; valid input for configure step"""
-        valid = self.validate(config, self.minimal_schema)
-        self.find_extras(config)
-        self.logger.info("Minimal config for plugin {0} is valid".format(self.plugin_name))
-        return valid
-
 class path_validator(logger):
 
     """Check that inputs are valid; if not, raise an error"""

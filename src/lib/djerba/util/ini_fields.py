@@ -64,45 +64,6 @@ TUMOUR_ID = 'tumourid'
 WHIZBAM_URL = 'whizbam_url'
 
 # schemas to represent required structure for the INI file
-# core schema for plugins
-# TODO move Sequenza reviewers from core schema into WGTS/WGS plugin settings?
-CORE = 'core'
-SCHEMA_CORE = {
-    CORE: [
-        MEAN_COVERAGE,
-        ONCOTREE_CODE,
-        PATIENT,
-        PCT_V7_ABOVE_80X,
-        PROJECT_ID,
-        REPORT_VERSION,
-        REQ_ID,
-        REQ_APPROVED_DATE,
-        SAMPLE_ANATOMICAL_SITE,
-        SAMPLE_TYPE,
-        SEQUENZA_REVIEWER_1,
-        SEQUENZA_REVIEWER_2,
-        SEX,
-        STUDY_ID,
-        TCGA_CODE
-    ],
-    SETTINGS: [
-        ASSAY_VERSION,
-        ARCHIVE_NAME,
-        ARCHIVE_URL,
-        BED_PATH,
-        GEP_REFERENCE,
-        MIN_FUSION_READS,
-        ONCOKB_CACHE,
-        PIPELINE_VERSION,
-        PROVENANCE,
-        TCGA_DATA,
-        WHIZBAM_URL
-    ]
-}
-
-# old-style schemas
-
-
 SCHEMA_DEFAULT = {
     DISCOVERED: [
         DATA_DIR,

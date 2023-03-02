@@ -1,8 +1,5 @@
 # CHANGELOG
 
-## Unreleased
-- GCGI-686: Simple demo of a plugin structure in `prototypes`
-
 ## v0.4.0: 2023-03-01
 
 - Requires update to `djerba_test_data_lfs`
