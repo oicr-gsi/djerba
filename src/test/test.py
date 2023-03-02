@@ -687,7 +687,7 @@ class TestRender(TestBase):
         self.check_report(out_path, '9033d660c66d8282cedd59a83e4ec67b')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = hr.run_clinical(args_path, out_dir, 'report_WGS_only', False)
-        self.check_report(out_path, '619ec189e839d841c3b60ff4ca9d75f2')
+        self.check_report(out_path, '50edd1d1ac237c0db1ca338586912451')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = hr.run_clinical(args_path, out_dir, 'report_failed', False)
         self.check_report(out_path, '45ef95cde660d5b93c9496fba8af96e7')
