@@ -81,6 +81,8 @@ MANE_VERSION = 'MANE_version'
 MANE_LINK = 'MANE_link'
 SEQUENZA_VERSION = 'Sequenza_version'
 SEQUENZA_LINK = 'Sequenza_link'
+MICROSATELLITE_VERSION = 'Microsatellite_version'
+MICROSATELLITE_LINK = 'Microsatellite_link'
 STAR_VERSION = 'STAR_version'
 STAR_LINK = 'STAR_link'
 RSEM_VERSION = 'RSEM_version' 
@@ -173,6 +175,8 @@ SCHEMA_DEFAULT = {
         MANE_LINK,
         SEQUENZA_VERSION,
         SEQUENZA_LINK,
+        MICROSATELLITE_VERSION,
+        MICROSATELLITE_LINK,
         STAR_VERSION,
         STAR_LINK,
         RSEM_VERSION, 
@@ -263,6 +267,8 @@ SCHEMA_WGS_ONLY = {
         MANE_LINK,
         SEQUENZA_VERSION,
         SEQUENZA_LINK,
+        MICROSATELLITE_VERSION,
+        MICROSATELLITE_LINK,
         STAR_VERSION,
         STAR_LINK,
         RSEM_VERSION, 
@@ -342,6 +348,8 @@ SCHEMA_FAILED = {
         MANE_LINK,
         SEQUENZA_VERSION,
         SEQUENZA_LINK,
+        MICROSATELLITE_VERSION,
+        MICROSATELLITE_LINK,
         STAR_VERSION,
         STAR_LINK,
         RSEM_VERSION, 
