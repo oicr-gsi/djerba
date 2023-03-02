@@ -183,6 +183,8 @@ If _any_ sample name parameters are specified, then they must _at least_ include
 | `[versions]`   | `MANE_link` | defaults.ini | Current link to MANE  |
 | `[versions]`   | `Sequenza_version` | defaults.ini | Current version number of Sequenza  |
 | `[versions]`   | `Sequenza_link` | defaults.ini | Current link to Sequenza  |
+| `[versions]`   | `Microsatellite_version` | defaults.ini | Current version number of Microsatellite  |
+| `[versions]`   | `Microsatellite_link` | defaults.ini | Current link to Microsatellite  |
 | `[versions]`   | `STAR_version` | defaults.ini | Current version number of STAR  |
 | `[versions]`   | `STAR_link` | defaults.ini | Current link to STAR  |
 | `[versions]`   | `RSEM_version` | defaults.ini | Current version number of RSEM  |
