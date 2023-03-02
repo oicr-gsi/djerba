@@ -359,7 +359,9 @@ class clinical_report_json_composer(composer_base):
         data[rc.MANE_VERSION] = self.config[ini.VERSIONS][ini.MANE_VERSION]
         data[rc.MANE_LINK] = self.config[ini.VERSIONS][ini.MANE_LINK]       
         data[rc.SEQUENZA_VERSION] = self.config[ini.VERSIONS][ini.SEQUENZA_VERSION]
-        data[rc.SEQUENZA_LINK] = self.config[ini.VERSIONS][ini.SEQUENZA_LINK]        
+        data[rc.SEQUENZA_LINK] = self.config[ini.VERSIONS][ini.SEQUENZA_LINK]     
+        data[rc.MICROSATELLITE_VERSION] = self.cofig[ini.VERSIONS][ini.MICROSATELLITE_VERSION]
+        data[rc.MICROSATELLITE_LINK] = self.cofig[ini.VERSIONS][ini.MICROSATELLITE_LINK]
         data[rc.STAR_VERSION] = self.config[ini.VERSIONS][ini.STAR_VERSION]
         data[rc.STAR_LINK] = self.config[ini.VERSIONS][ini.STAR_LINK]        
         data[rc.RSEM_VERSION] = self.config[ini.VERSIONS][ini.RSEM_VERSION]
@@ -853,9 +855,9 @@ class clinical_report_json_composer(composer_base):
         data[rc.FAILED] = self.failed
         data[rc.PURITY_FAILURE] = self.params.get(xc.PURITY_FAILURE)
         data[rc.REPORT_DATE] = None
-        data[rc.VERSIONS]  = self.build_versions() # exludes djerba version, djerba pipeline version, and djerba link
         data[rc.DJERBA_VERSION] = __version__
         data[rc.PIPELINE_VERSION] = self.config[ini.SETTINGS][ini.PIPELINE_VERSION]
+        data[rc.VERSIONS]  = self.build_versions() 
 
         if not self.failed:
             # additional data for non-failed reports
