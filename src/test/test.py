@@ -303,7 +303,7 @@ class TestExtractor(TestBase):
             data_found['report']['djerba_version'] = 'PLACEHOLDER'
             del data_found['supplementary'] # do not test supplementary data
             data = json.dumps(data_found)
-            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), 'efc5045184da30579993905ef294a54e')
+            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), 'bac0e8843fd9f3790568961047db4230')
 
     def test_wgts_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGTS')
@@ -684,7 +684,7 @@ class TestRender(TestBase):
         out_path = os.path.join(out_dir, 'djerba_test_wgts.html')
         hr = html_renderer()
         out_path = hr.run_clinical(args_path, out_dir, 'report_WGTS', False)
-        self.check_report(out_path, '7bbd6aa845e13b09d69811dc53c70041')
+        self.check_report(out_path, '6ca2e3a04af4b51819ea8378ab0c8ca5')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = hr.run_clinical(args_path, out_dir, 'report_WGS_only', False)
         self.check_report(out_path, '390f73f51af642f9b595e4c12fe906fb')
