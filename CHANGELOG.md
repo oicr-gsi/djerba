@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## v0.4.0: 2023-03-01
+
+- Requires update to `djerba_test_data_lfs`
+
+### Added
+- Automatically generates research report from template
+- merges research and clinical reports
+- new merger function
+- MSI in clinical report
+
+### Fixed
+- Handle cases where expression percentile for a gene is not available
+
 ## v0.3.21: 2023-02-21
 
 - Requires update to `djerba_test_data_lfs`

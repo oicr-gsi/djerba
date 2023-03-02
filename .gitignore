@@ -5,6 +5,7 @@
 djerba.egg-info
 build
 dist
+.idea
 .project
 .pydevproject
 djerba.log

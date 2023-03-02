@@ -108,7 +108,7 @@ class clinical_report_json_composer(composer_base):
     HUGO_SYMBOL_UPPER_CASE = 'HUGO_SYMBOL'
     MINIMUM_MAGNITUDE_SEG_MEAN = 0.2
     MSS_CUTOFF = 5.0
-    MSI_CUTOFF = 10.0
+    MSI_CUTOFF = 15.0
     MSI_FILE = 'msi.txt'
     MUTATIONS_EXTENDED_ONCOGENIC = 'data_mutations_extended_oncogenic.txt'
     MUTATIONS_EXTENDED = 'data_mutations_extended.txt'
@@ -939,7 +939,7 @@ class clinical_report_json_composer(composer_base):
         return out_path
 
     def write_cnv_plot(self, out_dir):
-            out_path = os.path.join(out_dir, 'seg_allele_plot.svg')
+            out_path = os.path.join(out_dir, 'seg_CNV_plot.svg')
             args = [
                 os.path.join(self.r_script_dir, 'cnv_plot.R'),
                 '--segfile',  os.path.join(self.input_dir, 'aratio_segments.txt'),

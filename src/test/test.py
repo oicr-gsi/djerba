@@ -248,7 +248,7 @@ class TestExtractor(TestBase):
     # md5 sums of files in failed output
     STATIC_MD5 = {
         'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
-        'genomic_summary.txt': 'f53692a7bf5879bb6e5b4f26047d7297',
+        'genomic_summary.txt': 'cfd5d2f88e41cf22ef0308930bca8727',
         'technical_notes.txt': '7caedb48f3360f33937cb047579633fd'
     }
     VARYING_OUTPUT = [
@@ -303,7 +303,7 @@ class TestExtractor(TestBase):
             data_found['report']['djerba_version'] = 'PLACEHOLDER'
             del data_found['supplementary'] # do not test supplementary data
             data = json.dumps(data_found)
-            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), '37bace335089f94b92e69c44e9ba64dc')
+            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), 'efc5045184da30579993905ef294a54e')
 
     def test_wgts_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGTS')
@@ -461,12 +461,11 @@ class TestMain(TestBase):
     class mock_args:
         """Use instead of argparse to store params for testing"""
 
-        def __init__(self, ini_path, ini_out_path, html_path, work_dir):
+        def __init__(self, ini_path, ini_out_path, work_dir):
             self.ini_out = ini_out_path
             self.author = None
             self.dir = work_dir
             self.failed = False
-            self.html = html_path
             self.ini = ini_path
             self.target_coverage = 40
             self.json = None
@@ -489,13 +488,15 @@ class TestMain(TestBase):
         out_dir = self.tmp_dir
         ini_path = self.config_user
         config_path = os.path.join(out_dir, 'config.ini')
-        html_path = os.path.join(out_dir, 'report.html')
         work_dir = os.path.join(out_dir, 'report')
         if not os.path.exists(work_dir):
             os.mkdir(work_dir)
-        args = self.mock_args(ini_path, config_path, html_path, work_dir)
+        args = self.mock_args(ini_path, config_path, work_dir)
         main(args).run()
-        self.assertTrue(os.path.exists(html_path))
+        html_clinical = os.path.join(work_dir, '100-PM-013_LCM5-v1.clinical.html')
+        self.assertTrue(os.path.exists(html_clinical))
+        html_research = os.path.join(work_dir, '100-PM-013_LCM5-v1.research.html')
+        self.assertTrue(os.path.exists(html_research))
         pdf_path = os.path.join(work_dir, '100-PM-013_LCM5-v1_report.pdf')
         self.assertTrue(os.path.exists(pdf_path))
 
@@ -676,27 +677,50 @@ class TestRender(TestBase):
         md5 = hashlib.md5(body.encode(encoding=constants.TEXT_ENCODING)).hexdigest()
         self.assertEqual(md5, expected_md5)
 
-    def test_html(self):
+    def test_html_clinical(self):
+        out_dir = os.path.join(self.tmp_dir, 'html_clinical')
+        os.mkdir(out_dir)
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
-        out_path = os.path.join(self.tmp_dir, 'djerba_test_wgts.html')
-        html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, 'cd839d15b7b9fb6218811997c70e9a28')
+        out_path = os.path.join(out_dir, 'djerba_test_wgts.html')
+        hr = html_renderer()
+        out_path = hr.run_clinical(args_path, out_dir, 'report_WGTS', False)
+        self.check_report(out_path, '7bbd6aa845e13b09d69811dc53c70041')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
-        out_path = os.path.join(self.tmp_dir, 'djerba_test_wgs_only.html')
-        html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, '31166a33b4e3818c6431b96986f8a0a7')
+        out_path = hr.run_clinical(args_path, out_dir, 'report_WGS_only', False)
+        self.check_report(out_path, '390f73f51af642f9b595e4c12fe906fb')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
-        out_path = os.path.join(self.tmp_dir, 'djerba_test_failed.html')
-        html_renderer().run(args_path, out_path, False)
-        self.check_report(out_path, 'eca17184609ebf9f7a7264533c5c52e2')
+        out_path = hr.run_clinical(args_path, out_dir, 'report_failed', False)
+        self.check_report(out_path, '45ef95cde660d5b93c9496fba8af96e7')
+
+    def test_html_research(self):
+        out_dir = os.path.join(self.tmp_dir, 'html_research')
+        os.mkdir(out_dir)
+        research_md5 = 'f5c9d31b68cb33ed4f409ff075b7613f'  # identical for all 3 cases
+        args_path = os.path.join(self.sup_dir, 'report_json', 'WGTS', 'djerba_report.json')
+        out_path = os.path.join(out_dir, 'djerba_test_wgts.html')
+        hr = html_renderer()
+        out_path = hr.run_research(args_path, out_dir, 'report_WGTS', False)
+        self.check_report(out_path, research_md5)
+        args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
+        out_path = hr.run_research(args_path, out_dir, 'report_WGS_only', False)
+        self.check_report(out_path, research_md5)
+        args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
+        out_path = hr.run_research(args_path, out_dir, 'report_failed', False)
+        self.check_report(out_path, research_md5)
 
     def test_pdf(self):
-        in_path = os.path.join(self.sup_dir, 'djerba_test.html')
+        html_clinical = os.path.join(self.sup_dir, 'report_WGTS.clinical.html')
+        html_research = os.path.join(self.sup_dir, 'report_WGTS.research.html')
         out_dir = self.tmp_dir
-        out_path = os.path.join(out_dir, 'djerba_test.pdf')
         footer_text = 'PANX_1249_TEST'
         test_renderer = pdf_renderer()
-        test_renderer.run(in_path, out_path, footer_text)
+        out_path = test_renderer.run_all(
+            html_clinical,
+            html_research,
+            out_dir,
+            'djerba_test',
+            'PANX_1249_TEST'
+        )
         # TODO check file contents; need to omit the report date etc.
         self.assertTrue(os.path.exists(out_path))
 
