@@ -1,0 +1,19 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<head>
+<meta http-equiv="content-type" content="text/html"/>
+<title>Djerba modular report demonstration</title>
+</head>
+
+<body>
+
+<h1>${core['title']}</h1>
+
+% for html_path in plugin_html:
+  ${open(html_path).read()}
+% endfor
+
+</body>
+</html>
