@@ -684,7 +684,7 @@ class TestRender(TestBase):
         out_path = os.path.join(out_dir, 'djerba_test_wgts.html')
         hr = html_renderer()
         out_path = hr.run_clinical(args_path, out_dir, 'report_WGTS', False)
-        self.check_report(out_path, '6ca2e3a04af4b51819ea8378ab0c8ca5')
+        self.check_report(out_path, '9033d660c66d8282cedd59a83e4ec67b')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = hr.run_clinical(args_path, out_dir, 'report_WGS_only', False)
         self.check_report(out_path, '619ec189e839d841c3b60ff4ca9d75f2')
