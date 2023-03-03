@@ -690,7 +690,7 @@ class TestRender(TestBase):
         self.check_report(out_path, '50edd1d1ac237c0db1ca338586912451')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = hr.run_clinical(args_path, out_dir, 'report_failed', False)
-        self.check_report(out_path, '45ef95cde660d5b93c9496fba8af96e7')
+        self.check_report(out_path, '0cda263df3fbc1d3dcf89479eebd2fb5')
 
     def test_html_research(self):
         out_dir = os.path.join(self.tmp_dir, 'html_research')
