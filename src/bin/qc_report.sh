@@ -30,7 +30,7 @@ QCETL_CACHE=/scratch2/groups/gsi/production/qcetl_v1
 # 'ProductionTools @ git+ssh://bitbucket.oicr.on.ca/gsi/production-tools-python@v1.5.3'
 # But this was rejected as production-tools-python is large and time-consuming to build
 
-module unload djerba oncokb-annotator python # this always has returncode 0
+module unload djerba djerba-dbtools pypdf2 oncokb-annotator python # this always has returncode 0
 module load production-tools-python/${PYTHON_TOOLS_VER}
 
 cap-geneticist-review-report -c ${DB_CONFIG} -m ${MISO_URL} -d ${DASHI_URL} \
