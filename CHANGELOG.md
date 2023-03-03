@@ -12,6 +12,7 @@
 - merges research and clinical reports
 - new merger function
 - MSI in clinical report
+- versions for softwares and links are configurable
 
 ### Fixed
 - Handle cases where expression percentile for a gene is not available
