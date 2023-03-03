@@ -2,6 +2,7 @@
 
 ## Unreleased
 - GCGI-686: Simple demo of a plugin structure in `prototypes`
+- versions for softwares and links are configurable
 
 ## v0.4.0: 2023-03-01
 
