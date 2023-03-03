@@ -4,6 +4,7 @@
 INPUTS = 'inputs'
 SETTINGS = 'settings'
 DISCOVERED = 'discovered'
+VERSIONS = 'versions'
 
 # parameter names
 ASSAY_VERSION = 'assay_version'
@@ -62,6 +63,36 @@ TECHNICAL_NOTES = 'technical_notes'
 TMBCOMP = 'tmbcomp'
 TUMOUR_ID = 'tumourid'
 WHIZBAM_URL = 'whizbam_url'
+
+# Parameters for versions of software and other
+PICARD_VERSION = 'picard_version'
+PICARD_LINK = 'picard_link'
+REFERENCE_GENOME_VERSION = 'reference_genome_version'
+REFERENCE_GENOME_LINK = 'reference_genome_link'
+BWAMEM_VERSION = 'bwamem_version'
+BWAMEM_LINK = 'bwamem_link'
+GATK_VERSION = 'GATK_version'
+GATK_LINK = 'GATK_link'
+MUTECT2_VERSION = 'MuTect2_version'
+MUTECT2_LINK = 'MuTect2_link'
+VARIANTEFFECTPREDICTOR_VERSION = 'VariantEffectPredictor_version'
+VARIANTEFFECTPREDICTOR_LINK = 'VariantEffectPredictor_link'
+MANE_VERSION = 'MANE_version'
+MANE_LINK = 'MANE_link'
+SEQUENZA_VERSION = 'Sequenza_version'
+SEQUENZA_LINK = 'Sequenza_link'
+MICROSATELLITE_VERSION = 'Microsatellite_version'
+MICROSATELLITE_LINK = 'Microsatellite_link'
+STAR_VERSION = 'STAR_version'
+STAR_LINK = 'STAR_link'
+RSEM_VERSION = 'RSEM_version' 
+RSEM_LINK = 'RSEM_link'
+STARFUSION_VERSION = 'STARFusion_version'
+STARFUSION_LINK = 'STARFusion_link'
+ARRIBA_VERSION = 'Arriba_version'
+ARRIBA_LINK = 'Arriba_link'
+MAVIS_VERSION = 'MAVIS_version'
+MAVIS_LINK = 'MAVIS_link'
 
 # schemas to represent required structure for the INI file
 # core schema for plugins
@@ -165,7 +196,37 @@ SCHEMA_DEFAULT = {
         PROVENANCE,
         TCGA_DATA,
         WHIZBAM_URL
-    ]
+    ],
+    VERSIONS: [
+        PICARD_VERSION,
+        PICARD_LINK,
+        REFERENCE_GENOME_VERSION,
+        REFERENCE_GENOME_LINK,
+        BWAMEM_VERSION,
+        BWAMEM_LINK, 
+        GATK_VERSION,
+        GATK_LINK,
+        MUTECT2_VERSION,
+        MUTECT2_LINK,
+        VARIANTEFFECTPREDICTOR_VERSION,
+        VARIANTEFFECTPREDICTOR_LINK,
+        MANE_VERSION,
+        MANE_LINK,
+        SEQUENZA_VERSION,
+        SEQUENZA_LINK,
+        MICROSATELLITE_VERSION,
+        MICROSATELLITE_LINK,
+        STAR_VERSION,
+        STAR_LINK,
+        RSEM_VERSION, 
+        RSEM_LINK,
+        STARFUSION_VERSION,
+        STARFUSION_LINK,
+        ARRIBA_VERSION,
+        ARRIBA_LINK,
+        MAVIS_VERSION,
+        MAVIS_LINK
+   ]
 }
 
 SCHEMA_WGS_ONLY = {
@@ -227,7 +288,37 @@ SCHEMA_WGS_ONLY = {
         PROVENANCE,
         TCGA_DATA,
         WHIZBAM_URL
-    ]
+    ],
+    VERSIONS: [
+        PICARD_VERSION,
+        PICARD_LINK,
+        REFERENCE_GENOME_VERSION,
+        REFERENCE_GENOME_LINK,
+        BWAMEM_VERSION,
+        BWAMEM_LINK, 
+        GATK_VERSION,
+        GATK_LINK,
+        MUTECT2_VERSION,
+        MUTECT2_LINK,
+        VARIANTEFFECTPREDICTOR_VERSION,
+        VARIANTEFFECTPREDICTOR_LINK,
+        MANE_VERSION,
+        MANE_LINK,
+        SEQUENZA_VERSION,
+        SEQUENZA_LINK,
+        MICROSATELLITE_VERSION,
+        MICROSATELLITE_LINK,
+        STAR_VERSION,
+        STAR_LINK,
+        RSEM_VERSION, 
+        RSEM_LINK,
+        STARFUSION_VERSION,
+        STARFUSION_LINK,
+        ARRIBA_VERSION,
+        ARRIBA_LINK,
+        MAVIS_VERSION,
+        MAVIS_LINK
+   ]
 }
 
 SCHEMA_FAILED = {
@@ -278,5 +369,35 @@ SCHEMA_FAILED = {
         PROVENANCE,
         TCGA_DATA,
         WHIZBAM_URL
-    ]
+    ],
+    VERSIONS: [
+        PICARD_VERSION,
+        PICARD_LINK,
+        REFERENCE_GENOME_VERSION,
+        REFERENCE_GENOME_LINK,
+        BWAMEM_VERSION,
+        BWAMEM_LINK, 
+        GATK_VERSION,
+        GATK_LINK,
+        MUTECT2_VERSION,
+        MUTECT2_LINK,
+        VARIANTEFFECTPREDICTOR_VERSION,
+        VARIANTEFFECTPREDICTOR_LINK,
+        MANE_VERSION,
+        MANE_LINK,
+        SEQUENZA_VERSION,
+        SEQUENZA_LINK,
+        MICROSATELLITE_VERSION,
+        MICROSATELLITE_LINK,
+        STAR_VERSION,
+        STAR_LINK,
+        RSEM_VERSION, 
+        RSEM_LINK,
+        STARFUSION_VERSION,
+        STARFUSION_LINK,
+        ARRIBA_VERSION,
+        ARRIBA_LINK,
+        MAVIS_VERSION,
+        MAVIS_LINK
+   ]
 }

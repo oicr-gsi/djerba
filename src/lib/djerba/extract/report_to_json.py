@@ -341,7 +341,39 @@ class clinical_report_json_composer(composer_base):
         data[rc.PROJECT] = self.params.get(xc.PROJECT)
         data[rc.TUMOUR_SAMPLE_ID] = tumour_id
         return data
-
+    
+    def build_versions(self):
+        data = {}
+        data[rc.PICARD_VERSION] = self.config[ini.VERSIONS][ini.PICARD_VERSION]
+        data[rc.PICARD_LINK] = self.config[ini.VERSIONS][ini.PICARD_LINK]
+        data[rc.REFERENCE_GENOME_VERSION] = self.config[ini.VERSIONS][ini.REFERENCE_GENOME_VERSION]
+        data[rc.REFERENCE_GENOME_LINK] = self.config[ini.VERSIONS][ini.REFERENCE_GENOME_LINK]       
+        data[rc.BWAMEM_VERSION] = self.config[ini.VERSIONS][ini.BWAMEM_VERSION]
+        data[rc.BWAMEM_LINK] = self.config[ini.VERSIONS][ini.BWAMEM_LINK]
+        data[rc.GATK_VERSION] = self.config[ini.VERSIONS][ini.GATK_VERSION]
+        data[rc.GATK_LINK] = self.config[ini.VERSIONS][ini.GATK_LINK]
+        data[rc.MUTECT2_VERSION] = self.config[ini.VERSIONS][ini.MUTECT2_VERSION]
+        data[rc.MUTECT2_LINK] = self.config[ini.VERSIONS][ini.MUTECT2_LINK]
+        data[rc.VARIANTEFFECTPREDICTOR_VERSION] = self.config[ini.VERSIONS][ini.VARIANTEFFECTPREDICTOR_VERSION]
+        data[rc.VARIANTEFFECTPREDICTOR_LINK] = self.config[ini.VERSIONS][ini.VARIANTEFFECTPREDICTOR_LINK]       
+        data[rc.MANE_VERSION] = self.config[ini.VERSIONS][ini.MANE_VERSION]
+        data[rc.MANE_LINK] = self.config[ini.VERSIONS][ini.MANE_LINK]       
+        data[rc.SEQUENZA_VERSION] = self.config[ini.VERSIONS][ini.SEQUENZA_VERSION]
+        data[rc.SEQUENZA_LINK] = self.config[ini.VERSIONS][ini.SEQUENZA_LINK]     
+        data[rc.MICROSATELLITE_VERSION] = self.config[ini.VERSIONS][ini.MICROSATELLITE_VERSION]
+        data[rc.MICROSATELLITE_LINK] = self.config[ini.VERSIONS][ini.MICROSATELLITE_LINK]
+        data[rc.STAR_VERSION] = self.config[ini.VERSIONS][ini.STAR_VERSION]
+        data[rc.STAR_LINK] = self.config[ini.VERSIONS][ini.STAR_LINK]        
+        data[rc.RSEM_VERSION] = self.config[ini.VERSIONS][ini.RSEM_VERSION]
+        data[rc.RSEM_LINK] = self.config[ini.VERSIONS][ini.RSEM_LINK]        
+        data[rc.STARFUSION_VERSION] = self.config[ini.VERSIONS][ini.STARFUSION_VERSION]
+        data[rc.STARFUSION_LINK] = self.config[ini.VERSIONS][ini.STARFUSION_LINK]        
+        data[rc.ARRIBA_VERSION] = self.config[ini.VERSIONS][ini.ARRIBA_VERSION]
+        data[rc.ARRIBA_LINK] = self.config[ini.VERSIONS][ini.ARRIBA_LINK]        
+        data[rc.MAVIS_VERSION] = self.config[ini.VERSIONS][ini.MAVIS_VERSION]
+        data[rc.MAVIS_LINK] = self.config[ini.VERSIONS][ini.MAVIS_LINK]        
+        return data
+     
     def build_sample_info(self):
         data = {}
         data[rc.CALLABILITY_PERCENT] = float(self.clinical_data[dc.PCT_V7_ABOVE_80X])
@@ -825,6 +857,8 @@ class clinical_report_json_composer(composer_base):
         data[rc.REPORT_DATE] = None
         data[rc.DJERBA_VERSION] = __version__
         data[rc.PIPELINE_VERSION] = self.config[ini.SETTINGS][ini.PIPELINE_VERSION]
+        data[rc.VERSIONS]  = self.build_versions() 
+
         if not self.failed:
             # additional data for non-failed reports
             data[rc.GENOMIC_BIOMARKERS] = self.build_genomic_biomarkers(self.input_dir,self.clinical_data[dc.TUMOUR_SAMPLE_ID])

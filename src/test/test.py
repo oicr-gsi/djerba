@@ -151,8 +151,8 @@ class TestArchive(TestBase):
         self.assertEqual(get["_id"], get["report"]["patient_info"]["Report ID"])
         rm = requests.delete(url_id+'?rev='+get["_rev"])
         self.assertEqual(rm.status_code, 200)
-        self.assertEqual(len(data['report']), 25)  
-        self.assertEqual(len(data['supplementary']['config']), 3)
+        self.assertEqual(len(data['report']), 26)  
+        self.assertEqual(len(data['supplementary']['config']), 4)
 
 class TestConfigure(TestBase):
 
@@ -183,19 +183,19 @@ class TestConfigure(TestBase):
         test_configurer.run(out_path)
 
     def test_default(self):
-        self.run_config_test(self.config_user, False, False, 62, self.provenance)
+        self.run_config_test(self.config_user, False, False, 92, self.provenance)
 
     def test_default_fail(self):
-        self.run_config_test(self.config_user_failed, False, True, 51, self.provenance)
+        self.run_config_test(self.config_user_failed, False, True, 81, self.provenance)
 
     def test_wgs_only(self):
-        self.run_config_test(self.config_user_wgs_only, True, False, 60, self.provenance)
+        self.run_config_test(self.config_user_wgs_only, True, False, 90, self.provenance)
 
     def test_wgs_only_fail(self):
-        self.run_config_test(self.config_user_wgs_only_failed, True, True, 51, self.provenance)
+        self.run_config_test(self.config_user_wgs_only_failed, True, True, 81, self.provenance)
 
     def test_vnwgts(self):
-        self.run_config_test(self.config_user_vnwgts, False, False, 62, self.provenance_vnwgts)
+        self.run_config_test(self.config_user_vnwgts, False, False, 92, self.provenance_vnwgts)
 
     def test_vnwgts_broken(self):
         # test failure modes of sample input
@@ -303,7 +303,7 @@ class TestExtractor(TestBase):
             data_found['report']['djerba_version'] = 'PLACEHOLDER'
             del data_found['supplementary'] # do not test supplementary data
             data = json.dumps(data_found)
-            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), 'efc5045184da30579993905ef294a54e')
+            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), 'bac0e8843fd9f3790568961047db4230')
 
     def test_wgts_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGTS')
@@ -684,13 +684,13 @@ class TestRender(TestBase):
         out_path = os.path.join(out_dir, 'djerba_test_wgts.html')
         hr = html_renderer()
         out_path = hr.run_clinical(args_path, out_dir, 'report_WGTS', False)
-        self.check_report(out_path, '7bbd6aa845e13b09d69811dc53c70041')
+        self.check_report(out_path, '9033d660c66d8282cedd59a83e4ec67b')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = hr.run_clinical(args_path, out_dir, 'report_WGS_only', False)
-        self.check_report(out_path, '390f73f51af642f9b595e4c12fe906fb')
+        self.check_report(out_path, '50edd1d1ac237c0db1ca338586912451')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = hr.run_clinical(args_path, out_dir, 'report_failed', False)
-        self.check_report(out_path, '45ef95cde660d5b93c9496fba8af96e7')
+        self.check_report(out_path, '0cda263df3fbc1d3dcf89479eebd2fb5')
 
     def test_html_research(self):
         out_dir = os.path.join(self.tmp_dir, 'html_research')
