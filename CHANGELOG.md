@@ -2,6 +2,7 @@
 
 ## Unreleased
 - GCGI-686: Simple demo of a plugin structure in `prototypes`
+- versions for softwares and links are configurable
 
 ## v0.4.0: 2023-03-01
 
@@ -12,7 +13,6 @@
 - merges research and clinical reports
 - new merger function
 - MSI in clinical report
-- versions for softwares and links are configurable
 
 ### Fixed
 - Handle cases where expression percentile for a gene is not available
