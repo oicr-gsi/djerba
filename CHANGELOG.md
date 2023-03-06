@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.4.2: 2023-03-07
+
+### Fixed
+- Add `research_report_template.html` to installation in `setup.py`
+
 ## v0.4.1: 2023-03-06
 
 ### Added

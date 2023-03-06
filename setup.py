@@ -56,6 +56,7 @@ setup(
             'data/hg38_centromeres.txt',
             'data/pgacomp-tcga.txt',
             'html/clinical_report_template.html',
+            'html/research_report_template.html',
             'html/genomic_details_template.html',
             'html/header.html',
             'html/OICR_Logo_RGB_ENGLISH.png',
