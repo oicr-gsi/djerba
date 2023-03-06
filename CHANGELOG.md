@@ -1,8 +1,13 @@
 # CHANGELOG
 
 ## Unreleased
+
+### Added
 - GCGI-686: Simple demo of a plugin structure in `prototypes`
-- versions for softwares and links are configurable
+- GCGI-388: Versions for softwares and links are configurable
+
+### Fixed
+- GCGI-767: FPR check on sample type was too strict
 
 ## v0.4.0: 2023-03-01
 
