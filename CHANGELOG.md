@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v0.4.1: 2023-03-06
 
 ### Added
 - GCGI-686: Simple demo of a plugin structure in `prototypes`
