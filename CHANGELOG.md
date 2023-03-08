@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+### Fixed
+- GCGI-777: Stop `config.ini` validation from logging incorrect warnings
+
 ## v0.4.2: 2023-03-07
 
 ### Fixed
