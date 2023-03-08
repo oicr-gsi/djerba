@@ -27,7 +27,9 @@ class config_validator(logger):
         for title in config.sections():
             if self.schema.get(title):
                 for parameter in config[title]:
-                    if parameter not in self.schema[title]:
+                    # INI names are case-insensitive, so the comparison must be too
+                    p = parameter.casefold()
+                    if not any([p==q.casefold() for q in self.schema[title]]):
                         msg = "Unexpected config parameter found: {0}:{1}".format(title, parameter)
                         self.logger.warning(msg)
             else:
