@@ -2,6 +2,9 @@
 
 ## v0.4.3: 2023-03-10
 
+### Changed
+- Updated to use Python Tools module v17 for Geneticist Review Report
+
 ### Fixed
 - GCGI-777: Stop `config.ini` validation from logging incorrect warnings
 - GCGI-773: New limits to y-axis in CNV plot
