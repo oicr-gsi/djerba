@@ -84,6 +84,7 @@ fittedSegmentsDF_sub <- rbind.data.frame(
                         )
 
 ## Copy Number Plot
+y_highCN <- max(4,round(highCN,0))
 
 svg(paste0(dir_path,"/seg_CNV_plot.svg"), width = 8, height = 1.5)
   print(
@@ -93,7 +94,7 @@ svg(paste0(dir_path,"/seg_CNV_plot.svg"), width = 8, height = 1.5)
       geom_hline(yintercept = 2,color="lightgrey",linetype="dotted")+
       
       facet_grid(.~Chromosome,scales = "free",space="free", switch="both")+ 
-      geom_point(aes(x=start.pos,y=highCN+0.1,shape=CNt_high),size=1) +
+      geom_point(aes(x=start.pos,y=y_highCN+0.25,shape=CNt_high),size=1) +
       
       geom_segment(aes(x=start.pos, xend=end.pos, y=CNt, yend=CNt),color="black",size=2, na.rm = TRUE) + 
       
@@ -101,9 +102,9 @@ svg(paste0(dir_path,"/seg_CNV_plot.svg"), width = 8, height = 1.5)
       
       guides(shape='none',alpha='none',linetype='none') +
       labs(y="Copy Number") + 
-      ylim(-0.11,highCN+0.11) +
       scale_shape_manual(values=c(17)) +
       
+      scale_y_continuous(limits=c(-0.11,y_highCN+0.3),breaks=seq(0,y_highCN,by=2)) + 
       theme_bw() + 
       theme(
         axis.title.x=element_blank(),
