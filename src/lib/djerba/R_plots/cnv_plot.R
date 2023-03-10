@@ -70,7 +70,8 @@ if(segfiletype == 'purple'){
   print('unsupported segment file type/software')
 }
 
-highCN <- max(segs$CNt[ segs$segment_size >= 3 ] )
+#highCN <- max(segs$CNt[ segs$segment_size >= 3 ] )
+highCN <- 8
 segs$CNt_high[segs$CNt > highCN] <- "high"
 
 segs$Chromosome <-  factor(segs$chr, levels= chromosomes_incl, ordered = T)
@@ -84,7 +85,7 @@ fittedSegmentsDF_sub <- rbind.data.frame(
                         )
 
 ## Copy Number Plot
-y_highCN <- max(4,round(highCN,0))
+y_highCN <- highCN
 
 svg(paste0(dir_path,"/seg_CNV_plot.svg"), width = 8, height = 1.5)
   print(
