@@ -24,6 +24,8 @@ process_centromeres <- function(centromeres_path){
 data_dir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), 'data', sep='/')
 centromeres_path <- paste(data_dir, 'hg38_centromeres.txt', sep='/')
 
+highCN <- 6
+
 chromosomes_incl <- c(1:22,"X")
 options(bitmapType='cairo')
 
@@ -41,11 +43,6 @@ segfiletype       <- opt$segfiletype
 segfile_path      <- opt$segfile
 dir_path          <- opt$dir
 
-##test
-#segfile_path <- "/Volumes/cgi/scratch/fbeaudry/djerba_test/PANX_1394/report/aratio_segments.txt"
-#centromeres_path <- "/Volumes/cgi/scratch/fbeaudry/djerba/src/lib/djerba/data/hg38_centromeres.txt"
-
-
 ##process segment file
 segs <- read.table(segfile_path, sep = "\t", header = T, comment.char = "!")
 segs <- separate(segs,chromosome,c("blank","chr"),"chr",fill="left",remove = FALSE)
@@ -53,15 +50,7 @@ segs <- separate(segs,chromosome,c("blank","chr"),"chr",fill="left",remove = FAL
 if(segfiletype == 'purple'){
   
   print("PURPLE support is not yet enabled")
-  # Bf = minorAllele_fz
-  # end.pos = end
-  # start.pos = start
-  #segs$minorAllele_fz <- 1 - segs$tumorBAF
-  
-  ##filter negatives ?
-  #segs$bafCountNA <- segs$bafCount
-  #segs$bafCountNA[segs$bafCountNA == 0]<- NA
-  
+
 } else if(segfiletype == 'sequenza'){ 
   
   segs$segment_size <- (segs$end.pos - segs$start.pos)/1000000
@@ -70,7 +59,6 @@ if(segfiletype == 'purple'){
   print('unsupported segment file type/software')
 }
 
-highCN <- max(segs$CNt[ segs$segment_size >= 3 ] )
 segs$CNt_high[segs$CNt > highCN] <- "high"
 
 segs$Chromosome <-  factor(segs$chr, levels= chromosomes_incl, ordered = T)
@@ -84,6 +72,7 @@ fittedSegmentsDF_sub <- rbind.data.frame(
                         )
 
 ## Copy Number Plot
+y_highCN <- highCN
 
 svg(paste0(dir_path,"/seg_CNV_plot.svg"), width = 8, height = 1.5)
   print(
@@ -93,7 +82,7 @@ svg(paste0(dir_path,"/seg_CNV_plot.svg"), width = 8, height = 1.5)
       geom_hline(yintercept = 2,color="lightgrey",linetype="dotted")+
       
       facet_grid(.~Chromosome,scales = "free",space="free", switch="both")+ 
-      geom_point(aes(x=start.pos,y=highCN+0.1,shape=CNt_high),size=1) +
+      geom_point(aes(x=start.pos,y=y_highCN+0.35,shape=CNt_high),size=1) +
       
       geom_segment(aes(x=start.pos, xend=end.pos, y=CNt, yend=CNt),color="black",size=2, na.rm = TRUE) + 
       
@@ -101,9 +90,9 @@ svg(paste0(dir_path,"/seg_CNV_plot.svg"), width = 8, height = 1.5)
       
       guides(shape='none',alpha='none',linetype='none') +
       labs(y="Copy Number") + 
-      ylim(-0.11,highCN+0.11) +
       scale_shape_manual(values=c(17)) +
       
+      scale_y_continuous(limits=c(-0.11,y_highCN+0.4),breaks=seq(0,y_highCN,by=2)) + 
       theme_bw() + 
       theme(
         axis.title.x=element_blank(),
