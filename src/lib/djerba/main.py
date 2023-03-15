@@ -284,6 +284,7 @@ class main(logger):
             if args.json:
                 v.validate_input_file(args.json)
         elif args.subparser_name == constants.PDF:
+            v.validate_input_file(args.json)
             v.validate_output_dir(args.dir)
         elif args.subparser_name == constants.DRAFT:
             v.validate_input_file(args.ini)
