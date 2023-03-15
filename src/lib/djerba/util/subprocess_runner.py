@@ -2,7 +2,7 @@
 
 import logging
 import subprocess
-from collections import Iterable
+from collections.abc import Iterable
 from djerba.util.logger import logger
 import djerba.util.constants as constants
 

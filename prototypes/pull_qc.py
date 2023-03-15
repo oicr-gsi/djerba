@@ -3,8 +3,11 @@
 import argparse
 import json
 import urllib.request as request
-import gsiqcetl.column
-from gsiqcetl import QCETLCache
+try:
+    import gsiqcetl.column
+    from gsiqcetl import QCETLCache
+except ImportError:
+        raise ImportError('Error Importing QC-ETL, check python versions')
 
 class Requisition():
     
@@ -50,39 +53,57 @@ def collect_data(requisition_name: str, donor_name: str) -> ReportData:
     pinery_assay = pinery_get(f'/assay/{pinery_requisition["assay_id"]}')
     requisition = Requisition(pinery_requisition, pinery_assay)
     
-    print(requisition.assay)
-    fetch_informatics_etl_data(donor_name)
+    print("Assay: "+requisition.assay)
+    tissue = fetch_tissue_etl_data(donor_name)
+    print("Tissue of origin: "+tissue)
+    callability = fetch_callability_etl_data(donor_name)
+    print("Callability: "+str(callability))
+    coverage = fetch_coverage_etl_data(donor_name)
+    print("Coverage: "+str(coverage))
     return(requisition)
 
-def fetch_informatics_etl_data(donor):
+def fetch_tissue_etl_data(donor):
     callability = etl_cache.mutectcallability.mutectcallability
     columns = gsiqcetl.column.MutetctCallabilityColumn
     
     callability_select = [
-        columns.Donor, columns.TissueOrigin,
-        columns.TissueType, columns.GroupID,
-        columns.LibraryDesign, columns.Callability
+        columns.Donor, columns.TissueOrigin, 
+        columns.GroupID,  columns.Callability
+    ]
+    data = callability.loc[
+        (callability[columns.Donor] == donor),
+        callability_select]
+    tissue_origin = data.iloc[0][columns.TissueOrigin]
+    return(tissue_origin)
+
+def fetch_callability_etl_data(donor):
+    callability = etl_cache.mutectcallability.mutectcallability
+    columns = gsiqcetl.column.MutetctCallabilityColumn
+    
+    callability_select = [
+        columns.Donor, columns.TissueType, 
+        columns.GroupID,  columns.Callability
     ]
     data = callability.loc[
         (callability[columns.Donor] == donor),
         callability_select]
     callability_val = round(data.iloc[0][columns.Callability].item() * 100,1)
-    print(callability_val)
+    return(callability_val)
 
+def fetch_coverage_etl_data(donor):
     coverage = etl_cache.bamqc4merged.bamqc4merged
     cov_columns = gsiqcetl.column.BamQc4MergedColumn
     
     cov_select = [
-        cov_columns.Donor, cov_columns.TissueOrigin,
-        cov_columns.TissueType, cov_columns.GroupID,
-        cov_columns.LibraryDesign, cov_columns.CoverageDeduplicated
+        cov_columns.Donor, cov_columns.TissueType,
+        cov_columns.GroupID, cov_columns.CoverageDeduplicated
     ]
     data = coverage.loc[
-        (coverage[columns.Donor] == donor) &
-        (coverage[columns.TissueType] != "R"),
+        (coverage[cov_columns.Donor] == donor) &
+        (coverage[cov_columns.TissueType] != "R"),
         cov_select]
     cov_val = round(data.iloc[0][cov_columns.CoverageDeduplicated].item(),1)
-    print(cov_val)
+    return(cov_val)
 
 def pinery_get(relative_url: str) -> dict:
     if not relative_url.startswith('/'):
