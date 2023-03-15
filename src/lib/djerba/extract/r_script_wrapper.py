@@ -294,18 +294,29 @@ class r_script_wrapper(logger):
             
         # prepend column to the extracted summary path
         out_path = os.path.join(self.tmp_dir, 'fus.txt')
+        
+        # check if the file is empty or only contains a header; if so, return a warning
+        # if not, continue as normal
+        
         with open(fus_path, 'rt') as fus_file, open(out_path, 'wt') as out_file:
-            reader = csv.reader(fus_file, delimiter="\t")
-            writer = csv.writer(out_file, delimiter="\t")
-            in_header = True
-            for row in reader:
-                if in_header:
-                    value = 'Sample'
-                    in_header = False
-                else:
-                    value = self.tumour_id
-                new_row = [value] + row
-                writer.writerow(new_row)
+            num_lines = fus_path.readlines()
+            if len(num_lines) > 1:
+                fus_path.seek(0) # go back to the top of the file
+                reader = csv.reader(fus_file, delimiter="\t")
+                writer = csv.writer(out_file, delimiter="\t")
+                in_header = True
+                for row in reader:
+                    if in_header:
+                        value = 'Sample'
+                        in_header = False
+                    else:
+                        value = self.tumour_id
+                    new_row = [value] + row
+                    writer.writerow(new_row)
+            else:
+                msg = mavis_path+ " is empty or only contains a header"
+                self.logger.warning(msg)
+                
         return out_path
 
     def preprocess_maf(self, maf_path):
