@@ -16,6 +16,8 @@ GENOMIC_SUMMARY_FILENAME = 'genomic_summary.txt'
 SEQUENZA_META_FILENAME = 'sequenza_meta.txt'
 REPORT_JSON_FILENAME = 'djerba_report.json'
 TECHNICAL_NOTES_FILENAME = 'technical_notes.txt'
+CLINICAL_HTML_SUFFIX = '.clinical.html'
+RESEARCH_HTML_SUFFIX = '.research.html'
 
 # Gene attributes to parse R script results
 COPY_STATE = 'Copy_State'
