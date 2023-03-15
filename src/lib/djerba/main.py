@@ -81,6 +81,14 @@ class main(logger):
             msg = "Author name not known, falling back to '{0}'".format(author)
             self.logger.warning(msg)
         return author
+    
+    def _get_html_path(self,report_id,is_clinical):
+        if(is_clinical == True):       
+            out_file_suffix = constants.CLINICAL_HTML_SUFFIX
+        elif (is_clinical == False):
+            out_file_suffix = constants.RESEARCH_HTML_SUFFIX  
+        html_path = os.path.realpath(os.path.join(self.args.dir, report_id + out_file_suffix))
+        return html_path
 
     def _get_json_path(self):
         # get JSON input path from args
@@ -159,16 +167,15 @@ class main(logger):
                     report_id
                 )
         elif self.args.subparser_name == constants.PDF:
-            # for now, assume input is the clinical HTML path
-            # TODO should this make a merged PDF for clinical and research HTML?
-            html_path = self.args.html
-            if self.args.report_id:
-                report_id = self.args.report_id
-            else:
-                report_id = self._get_report_id_from_html(html_path)
-            pdf_renderer(self.log_level, self.log_path).run_clinical(
-                html_path,
-                self.args.dir,
+            dir_path = self.args.dir
+            json_path = self._get_json_path()
+            report_id = self._get_report_id_from_json(json_path)
+            html_clinical = self._get_html_path(report_id, True)
+            html_research = self._get_html_path(report_id, False)
+            pdf_renderer(self.log_level, self.log_path).run_all(
+                html_clinical,
+                html_research,
+                dir_path,
                 self._get_pdf_prefix(report_id),
                 report_id
             )
@@ -277,7 +284,7 @@ class main(logger):
             if args.json:
                 v.validate_input_file(args.json)
         elif args.subparser_name == constants.PDF:
-            v.validate_input_file(args.html)
+            v.validate_input_file(args.json)
             v.validate_output_dir(args.dir)
         elif args.subparser_name == constants.DRAFT:
             v.validate_input_file(args.ini)
