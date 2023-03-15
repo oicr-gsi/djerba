@@ -261,10 +261,14 @@ class r_script_wrapper(logger):
         Apply preprocessing and write results to tmp_dir
         Prepend a column with the tumour id
         """
-        # mavis_path is the path to either a ZIP file or a TAB file.
+        # mavis_path should be the path to either a ZIP file or a TAB file.
+        
         # In the ZIP file, the TAB file is labelled as mavis_summary_all*.tab
         # Without the ZIP file, the TAB file is labelled as *.mavis_summary.tab
         
+        # Get access to the .tab file (whether from zip or given as is) and assign it the variable fus_path
+        
+        # If the tab file is hidden inside a zip file:
         if "zip" in mavis_path:
             zf = zipfile.ZipFile(mavis_path)
             matched = []
@@ -279,12 +283,24 @@ class r_script_wrapper(logger):
                 raise RuntimeError(msg)
             fus_path = zf.extract(matched[0], self.tmp_dir)
             
+        # If the tab file is given as is:
         elif "tab" in mavis_path:
             fus_path = mavis_path
+          
+        # If the path is neither a tab file nor a zip file:
+        else:
+            msg = mavis_path+ " is neither a .zip file nor a .tab file"
+            raise RuntimeError(msg)
             
         # prepend column to the extracted summary path
         out_path = os.path.join(self.tmp_dir, 'fus.txt')
         with open(fus_path, 'rt') as fus_file, open(out_path, 'wt') as out_file:
+            
+            # If the file is empty or just includes a header, print a warning
+            if len(fus_file.readlines) <= 1:
+                msg = mavis_path+ " is empty or only includes a header"
+                self.logger.warning(msg)
+    
             reader = csv.reader(fus_file, delimiter="\t")
             writer = csv.writer(out_file, delimiter="\t")
             in_header = True
