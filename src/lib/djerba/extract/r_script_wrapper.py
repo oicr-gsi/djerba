@@ -295,12 +295,6 @@ class r_script_wrapper(logger):
         # prepend column to the extracted summary path
         out_path = os.path.join(self.tmp_dir, 'fus.txt')
         with open(fus_path, 'rt') as fus_file, open(out_path, 'wt') as out_file:
-            
-            # If the file is empty or just includes a header, print a warning
-            if len(fus_file.readlines) <= 1:
-                msg = mavis_path+ " is empty or only includes a header"
-                self.logger.warning(msg)
-    
             reader = csv.reader(fus_file, delimiter="\t")
             writer = csv.writer(out_file, delimiter="\t")
             in_header = True
