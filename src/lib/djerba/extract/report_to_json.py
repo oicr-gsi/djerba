@@ -104,6 +104,7 @@ class clinical_report_json_composer(composer_base):
     GENOME_SIZE = 3*10**9 # TODO use more accurate value when we release a new report format
     GENOMIC_BIOMARKERS = 'genomic_biomarkers.maf'
     HGVSP_SHORT = 'HGVSp_Short'
+    HGVSC = 'HGVSc'
     HUGO_SYMBOL_TITLE_CASE = 'Hugo_Symbol'
     HUGO_SYMBOL_UPPER_CASE = 'HUGO_SYMBOL'
     MINIMUM_MAGNITUDE_SEG_MEAN = 0.2
@@ -399,6 +400,8 @@ class clinical_report_json_composer(composer_base):
                 gene = input_row[self.HUGO_SYMBOL_TITLE_CASE]
                 cytoband = self.get_cytoband(gene)
                 protein = input_row[self.HGVSP_SHORT]
+                if 'Splice_Site' in self.VARIANT_CLASSIFICATION:
+                    protein = input_row[self.HGVSC]
                 row = {
                     rc.GENE: gene,
                     rc.GENE_URL: self.build_gene_url(gene),
