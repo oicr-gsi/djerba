@@ -458,7 +458,8 @@ class r_script_wrapper(logger):
         )
         annotator.annotate_cna()
         if not self.wgs_only:
-            annotator.annotate_fusion()
+            if os.path.isfile(constants.DATA_FUSIONS_ONCOKB):
+                annotator.annotate_fusion()
         if self.cleanup:
             rmtree(self.tmp_dir)
             os.remove(os.path.join(self.report_dir, constants.DATA_CNA_ONCOKB_GENES))
