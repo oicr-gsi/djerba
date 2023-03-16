@@ -4,6 +4,9 @@ import json
 import logging
 import urllib.request as request
 from djerba.util.logger import logger
+import djerba.util.ini_fields as ini
+import djerba.util.constants as constants
+
 try:
     import gsiqcetl.column
     from gsiqcetl import QCETLCache
@@ -21,15 +24,14 @@ class pull_qc(logger):
             self.assay_description: str = pinery_assay['description']
             self.assay_version: str = pinery_assay['version']
 
-    QCETL_CACHE = "/scratch2/groups/gsi/production/qcetl_v1"
-    PINERY_URL = "http://pinery.gsi.oicr.on.ca"
-
-    def __init__(self, log_level=logging.WARNING, log_path=None):
+    def __init__(self, config, log_level=logging.WARNING, log_path=None):
+        self.config = config
         self.logger = self.get_logger(log_level, __name__, log_path)
-
+        self.pinery_url = self.config[ini.SETTINGS][ini.PINERY_URL]
+        self.qcetl_cache = self.config[ini.SETTINGS][ini.QCETL_CACHE]
 
     def fetch_callability_etl_data(self,donor):
-        etl_cache = QCETLCache(self.QCETL_CACHE)
+        etl_cache = QCETLCache(self.qcetl_cache)
         callability = etl_cache.mutectcallability.mutectcallability
         columns = gsiqcetl.column.MutetctCallabilityColumn
         callability_select = [
@@ -45,7 +47,7 @@ class pull_qc(logger):
         return(callability_val)
 
     def fetch_coverage_etl_data(self,donor):
-        etl_cache = QCETLCache(self.QCETL_CACHE)
+        etl_cache = QCETLCache(self.qcetl_cache)
         coverage = etl_cache.bamqc4merged.bamqc4merged
         cov_columns = gsiqcetl.column.BamQc4MergedColumn
         cov_select = [
@@ -74,5 +76,5 @@ class pull_qc(logger):
     def pinery_get(self,relative_url: str) -> dict:
         if not relative_url.startswith('/'):
             raise RuntimeError('Invalid relative url')
-        return json.load(request.urlopen(f'{self.PINERY_URL}{relative_url}'))
+        return json.load(request.urlopen(f'{self.pinery_url}{relative_url}'))
     

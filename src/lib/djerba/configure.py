@@ -97,18 +97,18 @@ class configurer(logger):
     def discover_primary(self):
         updates = {}
         donor =  self.config[ini.INPUTS][ini.PATIENT]
-        coverage = pull_qc().fetch_coverage_etl_data(donor)
-        callability = pull_qc().fetch_callability_etl_data(donor)
+        coverage = pull_qc(self.config).fetch_coverage_etl_data(donor)
+        callability = pull_qc(self.config).fetch_callability_etl_data(donor)
         self.logger.info("QC-ETL Coverage: {0}, Callability: {1}".format(coverage, callability))
         updates[ini.MEAN_COVERAGE] = coverage
         updates[ini.PCT_V7_ABOVE_80X] = callability
         try:
-            pull_qc().fetch_pinery_assay(self.config[ini.INPUTS][ini.REQ_ID])
+            pull_qc(self.config).fetch_pinery_assay(self.config[ini.INPUTS][ini.REQ_ID])
         except HTTPError as e:
             msg = "HTTP Error {0}. Djerba couldn't find the requisition {1} in Pinery. Defaulting target coverage to .ini parameter.".format(e.code,self.config[ini.INPUTS][ini.REQ_ID])
             self.logger.warning(msg)
         else:
-            target_depth = pull_qc().fetch_pinery_assay(self.config[ini.INPUTS][ini.REQ_ID])
+            target_depth = pull_qc(self.config).fetch_pinery_assay(self.config[ini.INPUTS][ini.REQ_ID])
             self.logger.info("Pinery Target Coverage: {0}".format(target_depth))
             updates[ini.TARGET_COVERAGE] = target_depth 
             self.try_coverage(coverage,target_depth)

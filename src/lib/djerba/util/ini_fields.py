@@ -37,11 +37,13 @@ ONCOTREE_CODE = 'oncotree_code' # was CANCER_TYPE_DETAILED
 PATIENT = 'patient'
 PATIENT_ID = 'patientid'
 PCT_V7_ABOVE_80X = 'pct_v7_above_80x'
+PINERY_URL = 'pinery_url'
 PIPELINE_VERSION = 'pipeline_version'
 PLOIDY = 'ploidy'
 PROJECT_ID = 'projectid'
 PROVENANCE = 'provenance'
 PURITY = 'purity'
+QCETL_CACHE = 'qcetl_cache'
 REPORT_VERSION = 'report_version'
 REQ_ID = 'requisition_id'
 REQ_APPROVED_DATE = 'req_approved_date'
@@ -194,8 +196,10 @@ SCHEMA_DEFAULT = {
         GEP_REFERENCE,
         MIN_FUSION_READS,
         ONCOKB_CACHE,
+        PINERY_URL,
         PIPELINE_VERSION,
         PROVENANCE,
+        QCETL_CACHE,
         TCGA_DATA,
         WHIZBAM_URL
     ],
@@ -287,8 +291,10 @@ SCHEMA_WGS_ONLY = {
         GEP_REFERENCE,
         MIN_FUSION_READS,
         ONCOKB_CACHE,
+        PINERY_URL,
         PIPELINE_VERSION,
         PROVENANCE,
+        QCETL_CACHE,
         TCGA_DATA,
         WHIZBAM_URL
     ],
@@ -369,8 +375,10 @@ SCHEMA_FAILED = {
         GEP_REFERENCE,
         MIN_FUSION_READS,
         ONCOKB_CACHE,
+        PINERY_URL,
         PIPELINE_VERSION,
         PROVENANCE,
+        QCETL_CACHE,
         TCGA_DATA,
         WHIZBAM_URL
     ],
