@@ -149,8 +149,7 @@ class main(logger):
             config = self.read_config(self.args.ini)
             cv.validate_full(config)
             cleanup = not self.args.no_cleanup
-            extractor(config, self.args.dir, self._get_author(), self.wgs_only, self.args.failed,
-                      self.args.target_coverage, self._build_cache_params(config), cleanup, self.log_level,
+            extractor(config, self.args.dir, self._get_author(), self.wgs_only, self.args.failed, self._build_cache_params(config), cleanup, self.log_level,
                       self.log_path).run()
         elif self.args.subparser_name == constants.HTML:
             json_path = self._get_json_path()
@@ -208,7 +207,7 @@ class main(logger):
         cache_params = self._build_cache_params(full_config)
         cleanup = not self.args.no_cleanup
         extractor(full_config, report_dir, self._get_author(), self.args.wgs_only, self.args.failed,
-                  self.args.target_coverage, cache_params, cleanup, self.log_level, self.log_path).run()
+                  cache_params, cleanup, self.log_level, self.log_path).run()
         json_path = os.path.join(self.args.dir, constants.REPORT_JSON_FILENAME)
         report_id = self._get_report_id_from_json(json_path)
         archive = not self.args.no_archive
@@ -246,7 +245,7 @@ class main(logger):
             cache_params = self._build_cache_params(full_config)
             cleanup = not self.args.no_cleanup
             extractor(full_config, report_dir, self._get_author(), self.args.wgs_only, self.args.failed,
-                      self.args.target_coverage, cache_params, cleanup, self.log_level, self.log_path).run()
+                       cache_params, cleanup, self.log_level, self.log_path).run()
             json_path = os.path.join(self.args.dir, constants.REPORT_JSON_FILENAME)
             report_id = self._get_report_id_from_json(json_path)
             archive = not self.args.no_archive

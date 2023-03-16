@@ -64,8 +64,12 @@ class pull_qc(logger):
     def fetch_pinery_assay(self,requisition_name: str):
         pinery_requisition = self.pinery_get(f'/requisition?name={requisition_name}')
         pinery_assay = self.pinery_get(f'/assay/{pinery_requisition["assay_id"]}')
-        requisition = self.Requisition(pinery_requisition, pinery_assay)    
-        return(requisition.assay)
+        requisition = self.Requisition(pinery_requisition, pinery_assay)
+        if (requisition.assay == "WGTS - 80XT/30XN") | (requisition.assay == "WGS - 80XT/30XN") :
+            requisition_target = 80
+        else:
+            requisition_target = 40
+        return(requisition_target)
 
     def pinery_get(self,relative_url: str) -> dict:
         if not relative_url.startswith('/'):

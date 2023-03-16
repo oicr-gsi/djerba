@@ -17,6 +17,7 @@ import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 from djerba.util.image_to_base64 import converter
 from djerba.util.logger import logger
+from djerba.extract.pull_qc import pull_qc
 
 class extractor(logger):
     """
@@ -30,7 +31,7 @@ class extractor(logger):
     CANCER_TYPE = 'cancer_type'
     CANCER_TYPE_DESCRIPTION = 'cancer_description'
 
-    def __init__(self, config, report_dir, author, wgs_only, failed, depth, cache_params,
+    def __init__(self, config, report_dir, author, wgs_only, failed, cache_params,
                  cleanup=True, log_level=logging.WARNING, log_path=None):
         self.config = config
         self.author = author
@@ -40,7 +41,6 @@ class extractor(logger):
         else:
             self.assay_type = render_constants.ASSAY_WGTS
         self.failed = failed
-        self.depth = depth
         self.cache_params = cache_params
         self.cleanup = cleanup
         self.log_level = log_level
@@ -153,6 +153,8 @@ class extractor(logger):
         self.write_clinical_data(self.get_description())
         self.write_genomic_summary()
         self.write_technical_notes()
+        self.depth = pull_qc().fetch_pinery_assay(self.config[ini.INPUTS][ini.REQ_ID])
+        self.logger.info("Pinery Target Coverage: {0}X".format(self.depth))
         params = {
             xc.AUTHOR: self.author,
             xc.ASSAY_TYPE: self.assay_type,
