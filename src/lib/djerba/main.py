@@ -27,6 +27,7 @@ class main(logger):
         'afortuna': 'Alex Fortuna',
         'ibancarz': 'Iain Bancarz',
         'fbeaudry': 'Felix Beaudry',
+        'aalam': 'Aqsa Alam'
     }
     CONFIG_NAME = 'config.ini'
     INI_DEFAULT_NAME = 'defaults.ini'

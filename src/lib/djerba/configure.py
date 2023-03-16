@@ -10,6 +10,7 @@ import djerba.util.ini_fields as ini
 from djerba.util.logger import logger
 from djerba.util.provenance_reader import provenance_reader, sample_name_container
 from djerba.util.validator import path_validator
+from djerba.extract.pull_qc import pull_qc
 
 class configurer(logger):
     """
@@ -93,6 +94,12 @@ class configurer(logger):
 
     def discover_primary(self):
         updates = {}
+        donor =  self.config[ini.INPUTS][ini.PATIENT]
+        coverage = pull_qc().fetch_coverage_etl_data(donor)
+        callability = pull_qc().fetch_callability_etl_data(donor)
+        self.logger.info("QC-ETL coverage {0}, callability {1}".format(coverage, callability))
+        updates[ini.MEAN_COVERAGE] = coverage
+        updates[ini.PCT_V7_ABOVE_80X] = callability
         if self.failed:
             self.logger.info("Failed report mode, omitting workflow output discovery")
         else:

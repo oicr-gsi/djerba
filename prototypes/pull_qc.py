@@ -7,10 +7,9 @@ try:
     import gsiqcetl.column
     from gsiqcetl import QCETLCache
 except ImportError:
-        raise ImportError('Error Importing QC-ETL, check python versions')
+        raise ImportError('Error Importing QC-ETL, try checking python versions')
 
 class Requisition():
-    
     def __init__(self, pinery_requisition, pinery_assay):
         self.id: int = pinery_requisition['id']
         self.name: str = pinery_requisition['name']
@@ -54,27 +53,11 @@ def collect_data(requisition_name: str, donor_name: str) -> ReportData:
     requisition = Requisition(pinery_requisition, pinery_assay)
     
     print("Assay: "+requisition.assay)
-    tissue = fetch_tissue_etl_data(donor_name)
-    print("Tissue of origin: "+tissue)
     callability = fetch_callability_etl_data(donor_name)
     print("Callability: "+str(callability))
     coverage = fetch_coverage_etl_data(donor_name)
     print("Coverage: "+str(coverage))
     return(requisition)
-
-def fetch_tissue_etl_data(donor):
-    callability = etl_cache.mutectcallability.mutectcallability
-    columns = gsiqcetl.column.MutetctCallabilityColumn
-    
-    callability_select = [
-        columns.Donor, columns.TissueOrigin, 
-        columns.GroupID,  columns.Callability
-    ]
-    data = callability.loc[
-        (callability[columns.Donor] == donor),
-        callability_select]
-    tissue_origin = data.iloc[0][columns.TissueOrigin]
-    return(tissue_origin)
 
 def fetch_callability_etl_data(donor):
     callability = etl_cache.mutectcallability.mutectcallability
