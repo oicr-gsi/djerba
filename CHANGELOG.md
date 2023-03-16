@@ -4,6 +4,7 @@
 
 ### Changed
 - `djerba pdf` takes in dir/ and json and makes pdfs from htmls based on report_id in json ()
+- Proteins for splice sites changed to form p? (c.${POSITION}${MUTATION}) (ex. from "p.X2540_splice" to "p.? (c.458-1G>T)")
 - target coverage pulled from pinery
 - callability and coverage pulled from qc-etl
 - automatically make failed report if coverage below target
