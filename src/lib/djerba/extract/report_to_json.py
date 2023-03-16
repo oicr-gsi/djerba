@@ -401,7 +401,7 @@ class clinical_report_json_composer(composer_base):
                 cytoband = self.get_cytoband(gene)
                 protein = input_row[self.HGVSP_SHORT]
                 if 'splice' in protein:
-                    protein = input_row[self.HGVSC]
+                    protein = input_row[self.HGVSC] + ' (p.?)'
                 row = {
                     rc.GENE: gene,
                     rc.GENE_URL: self.build_gene_url(gene),
@@ -498,7 +498,7 @@ class clinical_report_json_composer(composer_base):
                 gene = row[self.HUGO_SYMBOL_TITLE_CASE]
                 alteration = row[self.HGVSP_SHORT]
                 if 'splice' in alteration:
-                    alteration = row[self.HGVSC]
+                    alteration = row[self.HGVSC] + ' (p.?)'
                 [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
                 if max_level:
                     rows.append(self.treatment_row(gene, alteration, max_level, therapies))
