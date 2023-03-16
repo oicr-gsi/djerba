@@ -4,6 +4,10 @@
 
 ### Changed
 - `djerba pdf` takes in dir/ and json and makes pdfs from htmls based on report_id in json ()
+- target coverage pulled from pinery
+- callability and coverage pulled from qc-etl
+- automatically make failed report if coverage below target
+- move to python 3.10.6
 
 ## v0.4.3: 2023-03-10
 
