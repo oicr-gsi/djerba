@@ -299,9 +299,9 @@ class r_script_wrapper(logger):
         # if not, continue as normal
         
         with open(fus_path, 'rt') as fus_file, open(out_path, 'wt') as out_file:
-            num_lines = fus_path.readlines()
+            num_lines = fus_file.readlines()
             if len(num_lines) > 1:
-                fus_path.seek(0) # go back to the top of the file
+                fus_file.seek(0) # go back to the top of the file
                 reader = csv.reader(fus_file, delimiter="\t")
                 writer = csv.writer(out_file, delimiter="\t")
                 in_header = True
