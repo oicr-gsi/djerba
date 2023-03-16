@@ -183,19 +183,19 @@ class TestConfigure(TestBase):
         test_configurer.run(out_path)
 
     def test_default(self):
-        self.run_config_test(self.config_user, False, False, 92, self.provenance)
+        self.run_config_test(self.config_user, False, False, 93, self.provenance)
 
     def test_default_fail(self):
-        self.run_config_test(self.config_user_failed, False, True, 81, self.provenance)
+        self.run_config_test(self.config_user_failed, False, True, 82, self.provenance)
 
     def test_wgs_only(self):
-        self.run_config_test(self.config_user_wgs_only, True, False, 90, self.provenance)
+        self.run_config_test(self.config_user_wgs_only, True, False, 91, self.provenance)
 
     def test_wgs_only_fail(self):
-        self.run_config_test(self.config_user_wgs_only_failed, True, True, 81, self.provenance)
+        self.run_config_test(self.config_user_wgs_only_failed, True, True, 82, self.provenance)
 
     def test_vnwgts(self):
-        self.run_config_test(self.config_user_vnwgts, False, False, 92, self.provenance_vnwgts)
+        self.run_config_test(self.config_user_vnwgts, False, False, 93, self.provenance_vnwgts)
 
     def test_vnwgts_broken(self):
         # test failure modes of sample input
@@ -284,11 +284,11 @@ class TestExtractor(TestBase):
             self.assertTrue(os.path.exists(output_path), filename+' exists')
             self.assertEqual(self.getMD5(output_path), outputs[filename])
 
-    def run_extractor(self, user_config, out_dir, wgs_only, failed, depth):
+    def run_extractor(self, user_config, out_dir, wgs_only, failed):
         config = configparser.ConfigParser()
         config.read(self.default_ini)
         config.read(user_config)
-        test_extractor = extractor(config, out_dir, self.AUTHOR, wgs_only, failed, depth, oncokb_cache_params(), log_level=logging.ERROR)
+        test_extractor = extractor(config, out_dir, self.AUTHOR, wgs_only, failed, oncokb_cache_params(), log_level=logging.ERROR)
         # do not test R script here; see TestWrapper
         test_extractor.run(r_script=False)
 
@@ -296,14 +296,14 @@ class TestExtractor(TestBase):
         # test failed mode; does not require R script output
         out_dir = os.path.join(self.tmp_dir, 'failed')
         os.mkdir(out_dir)
-        self.run_extractor(self.config_full, out_dir, False, True, 80)
+        self.run_extractor(self.config_full, out_dir, False, True)
         self.check_outputs_md5(out_dir, self.STATIC_MD5)
         with open(os.path.join(out_dir, 'djerba_report.json')) as in_file:
             data_found = json.loads(in_file.read())
             data_found['report']['djerba_version'] = 'PLACEHOLDER'
             del data_found['supplementary'] # do not test supplementary data
             data = json.dumps(data_found)
-            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), 'bac0e8843fd9f3790568961047db4230')
+            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), 'a57a2e586eedce19e993170922aca0ce')
 
     def test_wgts_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGTS')
@@ -317,7 +317,7 @@ class TestExtractor(TestBase):
         for file_name in rscript_outputs:
             file_path = os.path.join(self.sup_dir, 'report_example', file_name)
             copy(file_path, out_dir)
-        self.run_extractor(self.config_full, out_dir, False, False, 80)
+        self.run_extractor(self.config_full, out_dir, False, False)
         self.check_outputs_md5(out_dir, self.STATIC_MD5)
         for name in self.VARYING_OUTPUT:
             self.assertTrue(os.path.exists(os.path.join(out_dir, name)), name+' exists')
@@ -332,7 +332,7 @@ class TestExtractor(TestBase):
         for file_name in self.RSCRIPT_OUTPUTS_WGS_ONLY:
             file_path = os.path.join(self.sup_dir, 'report_example', file_name)
             copy(file_path, out_dir)
-        self.run_extractor(self.config_full, out_dir, True, False, 80)
+        self.run_extractor(self.config_full, out_dir, True, False)
         self.check_outputs_md5(out_dir, self.STATIC_MD5)
         for name in self.VARYING_OUTPUT:
             self.assertTrue(os.path.exists(os.path.join(out_dir, name)))
@@ -737,7 +737,7 @@ class TestRender(TestBase):
         self.assertTrue(os.path.exists(pdf_path))
         # Compare file contents; timestamps will differ. TODO Make this more Pythonic.
         result = subprocess.run("cat {0} | grep -av CreationDate | md5sum | cut -f 1 -d ' '".format(pdf_path), shell=True, capture_output=True)
-        self.assertEqual(str(result.stdout, encoding=constants.TEXT_ENCODING).strip(), 'dea1aeef66e5c0d22242a7d38123ffbc')
+        self.assertEqual(str(result.stdout, encoding=constants.TEXT_ENCODING).strip(), '37a53835a4cb9fd1107e734ef941972c')
 
 class TestSequenzaReader(TestBase):
 

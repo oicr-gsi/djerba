@@ -57,6 +57,7 @@ SEQUENZA_REVIEWER_2 = 'sequenza_reviewer_2'
 SEQUENZA_SOLUTION = 'sequenza_solution'
 SEX = 'sex'
 STUDY_ID = 'studyid'
+TARGET_COVERAGE = 'target_coverage'
 TCGA_CODE = 'tcgacode'
 TCGA_DATA = 'tcgadata'
 TECHNICAL_NOTES = 'technical_notes'
@@ -165,6 +166,7 @@ SCHEMA_DEFAULT = {
         SEQUENZA_GAMMA,
         SEQUENZA_FILE,
         SEQUENZA_SOLUTION,
+        TARGET_COVERAGE,
         TECHNICAL_NOTES,
         TMBCOMP,
         TUMOUR_ID
@@ -257,6 +259,7 @@ SCHEMA_WGS_ONLY = {
         SEQUENZA_GAMMA,
         SEQUENZA_FILE,
         SEQUENZA_SOLUTION,
+        TARGET_COVERAGE,
         TECHNICAL_NOTES,
         TMBCOMP,
         TUMOUR_ID
@@ -338,6 +341,7 @@ SCHEMA_FAILED = {
         PCT_V7_ABOVE_80X,
         PLOIDY,
         PURITY,
+        TARGET_COVERAGE,
         TECHNICAL_NOTES,
         TMBCOMP,
         TUMOUR_ID

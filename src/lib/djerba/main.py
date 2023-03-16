@@ -149,7 +149,8 @@ class main(logger):
             config = self.read_config(self.args.ini)
             cv.validate_full(config)
             cleanup = not self.args.no_cleanup
-            extractor(config, self.args.dir, self._get_author(), self.wgs_only, self.args.failed, self._build_cache_params(config), cleanup, self.log_level,
+            extractor(config, self.args.dir, self._get_author(), self.wgs_only, self.args.failed, 
+                      self._build_cache_params(config), cleanup, self.log_level,
                       self.log_path).run()
         elif self.args.subparser_name == constants.HTML:
             json_path = self._get_json_path()

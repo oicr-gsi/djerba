@@ -17,7 +17,6 @@ import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 from djerba.util.image_to_base64 import converter
 from djerba.util.logger import logger
-from djerba.extract.pull_qc import pull_qc
 
 class extractor(logger):
     """
@@ -153,12 +152,10 @@ class extractor(logger):
         self.write_clinical_data(self.get_description())
         self.write_genomic_summary()
         self.write_technical_notes()
-        self.depth = pull_qc().fetch_pinery_assay(self.config[ini.INPUTS][ini.REQ_ID])
-        self.logger.info("Pinery Target Coverage: {0}X".format(self.depth))
         params = {
             xc.AUTHOR: self.author,
             xc.ASSAY_TYPE: self.assay_type,
-            xc.COVERAGE: self.depth,
+            xc.COVERAGE: int(self.config[ini.DISCOVERED][ini.TARGET_COVERAGE]),
             xc.FAILED: self.failed,
             xc.ONCOKB_CACHE: self.cache_params,
             xc.ONCOTREE_CODE: self.config[ini.INPUTS][ini.ONCOTREE_CODE],

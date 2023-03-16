@@ -209,12 +209,13 @@ class clinical_report_json_composer(composer_base):
         elif assay_type == rc.ASSAY_WGTS:
             assay_type_name = "Whole genome and transcriptome sequencing (WGTS)-"
         ##target
-        coverage = self.params.get(xc.COVERAGE)
+        coverage = int(self.params.get(xc.COVERAGE))
         if coverage == 40:
             assay_coverage_name = "40X Tumour, 30X Normal "
         elif coverage == 80:
             assay_coverage_name = "80X Tumour, 30X Normal "
         else:
+            self.logger.info("Discovered Target Coverage: {0}".format(coverage))
             raise RuntimeError("Unknown depth of coverage")
         ##assay version
         assay_version = self.config[ini.SETTINGS][ini.ASSAY_VERSION]
@@ -264,7 +265,7 @@ class clinical_report_json_composer(composer_base):
             rc.NORMAL_MIN: 30,
             rc.NORMAL_TARGET: 40
         }
-        coverage = self.params.get(xc.COVERAGE)
+        coverage = int(self.params.get(xc.COVERAGE))
         if coverage == 40:
             coverage_thresholds[rc.TUMOUR_MIN] = 40
             coverage_thresholds[rc.TUMOUR_TARGET] = 50
@@ -272,6 +273,7 @@ class clinical_report_json_composer(composer_base):
             coverage_thresholds[rc.TUMOUR_MIN] = 80
             coverage_thresholds[rc.TUMOUR_TARGET] = 100
         else:
+            self.logger.info("Discovered Threshold Coverage: {0}".format(coverage))
             raise RuntimeError("Unknown depth of coverage")
         return coverage_thresholds
 
