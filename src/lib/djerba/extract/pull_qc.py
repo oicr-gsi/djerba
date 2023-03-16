@@ -30,7 +30,7 @@ class pull_qc(logger):
         self.pinery_url = self.config[ini.SETTINGS][ini.PINERY_URL]
         self.qcetl_cache = self.config[ini.SETTINGS][ini.QCETL_CACHE]
 
-    def fetch_callability_etl_data(self,donor):
+    def fetch_callability_etl_data(self,tumour_id):
         etl_cache = QCETLCache(self.qcetl_cache)
         callability = etl_cache.mutectcallability.mutectcallability
         columns = gsiqcetl.column.MutetctCallabilityColumn
@@ -38,15 +38,15 @@ class pull_qc(logger):
             columns.Donor, 
             columns.TissueType, 
             columns.GroupID,  
-            columns.Callability
+            columns.Callability,
         ]
         data = callability.loc[
-            (callability[columns.Donor] == donor),
+            (callability[columns.GroupID] == tumour_id),
             callability_select]
         callability_val = round(data.iloc[0][columns.Callability].item() * 100,1)
         return(callability_val)
 
-    def fetch_coverage_etl_data(self,donor):
+    def fetch_coverage_etl_data(self,tumour_id):
         etl_cache = QCETLCache(self.qcetl_cache)
         coverage = etl_cache.bamqc4merged.bamqc4merged
         cov_columns = gsiqcetl.column.BamQc4MergedColumn
@@ -57,8 +57,7 @@ class pull_qc(logger):
             cov_columns.CoverageDeduplicated
         ]
         data = coverage.loc[
-            (coverage[cov_columns.Donor] == donor) &
-            (coverage[cov_columns.TissueType] != "R"),
+            (coverage[cov_columns.GroupID] == tumour_id),
             cov_select]
         cov_val = round(data.iloc[0][cov_columns.CoverageDeduplicated].item(),1)
         return(cov_val)

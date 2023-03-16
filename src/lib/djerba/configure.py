@@ -96,9 +96,10 @@ class configurer(logger):
 
     def discover_primary(self):
         updates = {}
-        donor =  self.config[ini.INPUTS][ini.PATIENT]
-        coverage = pull_qc(self.config).fetch_coverage_etl_data(donor)
-        callability = pull_qc(self.config).fetch_callability_etl_data(donor)
+        updates.update(self.reader.get_identifiers())
+        tumour_id =  updates[ini.TUMOUR_ID]
+        coverage = pull_qc(self.config).fetch_coverage_etl_data(tumour_id)
+        callability = pull_qc(self.config).fetch_callability_etl_data(tumour_id)
         self.logger.info("QC-ETL Coverage: {0}, Callability: {1}".format(coverage, callability))
         updates[ini.MEAN_COVERAGE] = coverage
         updates[ini.PCT_V7_ABOVE_80X] = callability
@@ -122,7 +123,6 @@ class configurer(logger):
             if not self.wgs_only:
                 updates[ini.MAVIS_FILE] = self.reader.parse_mavis_path()
                 updates[ini.GEP_FILE] = self.reader.parse_gep_path()
-        updates.update(self.reader.get_identifiers())
         updates.update(self.reader.get_sample_names())
         updates.update(self.find_data_files())
         return updates
