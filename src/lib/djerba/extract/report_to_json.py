@@ -497,6 +497,8 @@ class clinical_report_json_composer(composer_base):
             for row in csv.DictReader(data_file, delimiter="\t"):
                 gene = row[self.HUGO_SYMBOL_TITLE_CASE]
                 alteration = row[self.HGVSP_SHORT]
+                if 'Splice_Site' in self.VARIANT_CLASSIFICATION:
+                    alteration = row[self.HGVSC]
                 [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
                 if max_level:
                     rows.append(self.treatment_row(gene, alteration, max_level, therapies))
