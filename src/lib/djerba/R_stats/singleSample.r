@@ -162,7 +162,9 @@ write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[5]]), CNAs[[5]], check.names
   file=paste0(outdir, "/data_CNA_oncoKBgenes_nonDiploid.txt"), sep="\t", row.names=FALSE, quote=FALSE)
 
 ###################### RNASEQ - Fusions #####################
-if (is.null(fusfile)) {
+# first, check if the .tab file is empty (0 lines) or only contains a header (1 line); if so, skip this section.
+num_lines <- readLines(fusfile, warn=FALSE)
+if (length(num_lines)<=1) {
    print("No fusion input, processing omitted")
 } else {
   print("Processing Fusion data")
