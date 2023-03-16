@@ -190,7 +190,7 @@ class clinical_report_json_composer(composer_base):
             self.gene_pair_fusions = None
         else:
             [self.total_somatic_mutations, self.tmb_count] = self.read_somatic_mutation_totals()
-            if self.is_wgts:
+            if self.is_wgts and os.path.isfile(dc.DATA_FUSIONS_ONCOKB):
                 fus_reader = fusion_reader(input_dir, log_level=log_level, log_path=log_path)
                 self.total_fusion_genes = fus_reader.get_total_fusion_genes()
                 self.gene_pair_fusions = fus_reader.get_fusions()
