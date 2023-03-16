@@ -464,4 +464,5 @@ class r_script_wrapper(logger):
             rmtree(self.tmp_dir)
             os.remove(os.path.join(self.report_dir, constants.DATA_CNA_ONCOKB_GENES))
             if not self.wgs_only:
-                os.remove(os.path.join(self.report_dir, constants.DATA_FUSIONS_ONCOKB))
+                if os.path.isfile(constants.DATA_FUSIONS_ONCOKB):
+                    os.remove(os.path.join(self.report_dir, constants.DATA_FUSIONS_ONCOKB))
