@@ -26,6 +26,8 @@ class pull_qc(logger):
 
     def __init__(self, config, log_level=logging.WARNING, log_path=None):
         self.config = config
+        self.log_level = log_level
+        self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.pinery_url = self.config[ini.SETTINGS][ini.PINERY_URL]
         self.qcetl_cache = self.config[ini.SETTINGS][ini.QCETL_CACHE]
