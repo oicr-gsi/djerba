@@ -72,6 +72,18 @@ class configurer(logger):
             self.logger.debug("Found sample names from INI input: {0}".format(samples))
         return samples
 
+    def _compare_coverage_to_target(self,coverage,target):
+        if target > coverage:
+            msg = "Target Depth {0}X is larger than Discovered Coverage {1}X. Changing to Failed mode.".format(target, coverage)
+            self.logger.warning(msg)
+            self.failed = True
+        elif target <= coverage:
+            msg = "Target Depth {0}X is within range of Discovered Coverage {1}X".format(target, coverage)
+            self.logger.info(msg)
+        else:
+            msg = "Target Depth {0}X is incompatible with Discovered Coverage {1}X".format(target, coverage)
+            raise RuntimeError(msg)
+
     def find_data_files(self):
         data_files = {}
         if self.config.has_option(ini.DISCOVERED, ini.DATA_DIR):
@@ -99,7 +111,6 @@ class configurer(logger):
         updates.update(self.reader.get_identifiers())
         tumour_id =  updates[ini.TUMOUR_ID]
         coverage = pull_qc(self.config).fetch_coverage_etl_data(tumour_id)
-
         callability = pull_qc(self.config).fetch_callability_etl_data(tumour_id)
         self.logger.info("QC-ETL Coverage: {0}, Callability: {1}".format(coverage, callability))
         updates[ini.MEAN_COVERAGE] = coverage
@@ -113,7 +124,7 @@ class configurer(logger):
             target_depth = pull_qc(self.config).fetch_pinery_assay(self.config[ini.INPUTS][ini.REQ_ID])
             self.logger.info("Pinery Target Coverage: {0}".format(target_depth))
             updates[ini.TARGET_COVERAGE] = target_depth 
-            self.compare_coverage_to_target(coverage,target_depth)
+            self._compare_coverage_to_target(coverage,target_depth)
         if self.failed:
             self.logger.info("Failed report mode, omitting workflow output discovery")
         else:
@@ -177,19 +188,6 @@ class configurer(logger):
         with open(out_path, 'w') as out_file:
             self.config.write(out_file)
         self.logger.info("Djerba config finished; wrote output to {0}".format(out_path))
-
-    def compare_coverage_to_target(self,coverage,target):
-        if target > coverage:
-            msg = "Target Depth {0}X is larger than Discovered Coverage {1}X. Changing to Failed mode.".format(target, coverage)
-            self.logger.warning(msg)
-            self.failed = True
-        elif target <= coverage:
-            msg = "Target Depth {0}X is within range of Discovered Coverage {1}X".format(target, coverage)
-            self.logger.info(msg)
-        else:
-            msg = "Target Depth {0}X is incompatible with Discovered Coverage {1}X".format(target, coverage)
-            self.logger.error(msg)
-
 
     def update(self, updates):
         """
