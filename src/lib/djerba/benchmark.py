@@ -259,7 +259,6 @@ class main_draft_args():
         self.no_cleanup = True
         self.apply_cache = apply_cache
         self.update_cache = update_cache
-        self.target_coverage = 80
         self.wgs_only = False
 
 class ReportDiff(unittest.TestCase):

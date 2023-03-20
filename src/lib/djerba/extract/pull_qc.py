@@ -43,8 +43,12 @@ class pull_qc(logger):
         data = callability.loc[
             (callability[columns.GroupID] == tumour_id),
             callability_select]
-        callability_val = round(data.iloc[0][columns.Callability].item() * 100,1)
-        return(callability_val)
+        if len(data) > 0:
+            callability_val = round(data.iloc[0][columns.Callability].item() * 100,1)
+            return(callability_val)
+        else:
+            msg = "Djerba couldn't find the callability associated with tumour_id {0} in QC-ETL. ".format(tumour_id)
+            raise RuntimeError(msg)
 
     def fetch_coverage_etl_data(self,tumour_id):
         etl_cache = QCETLCache(self.qcetl_cache)
@@ -59,8 +63,12 @@ class pull_qc(logger):
         data = coverage.loc[
             (coverage[cov_columns.GroupID] == tumour_id),
             cov_select]
-        cov_val = round(data.iloc[0][cov_columns.CoverageDeduplicated].item(),1)
-        return(cov_val)
+        if len(data) > 0:
+            coverage_value = round(data.iloc[0][cov_columns.CoverageDeduplicated].item(),1)
+            return(coverage_value)
+        else:
+            msg = "Djerba couldn't find the coverage associated with tumour_id {0} in QC-ETL. ".format(tumour_id)
+            raise RuntimeError(msg)
 
     def fetch_pinery_assay(self,requisition_name: str):
         pinery_requisition = self.pinery_get(f'/requisition?name={requisition_name}')
