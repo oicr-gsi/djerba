@@ -379,6 +379,7 @@ class r_script_wrapper(logger):
             'Rscript', os.path.join(self.r_script_dir, 'singleSample.r'),
             '--basedir', self.r_script_dir,
             '--studyid', self.config[ini.INPUTS][ini.PROJECT_ID],
+            '--cbiostudy', self.config[ini.DISCOVERED][ini.CBIO_STUDY_ID],
             '--tumourid', self.tumour_id,
             '--normalid', self.config[ini.DISCOVERED][ini.NORMAL_ID],
             '--maffile', maf_path,
