@@ -105,6 +105,7 @@ class r_script_wrapper(logger):
         if not self.min_fusion_reads.isdigit():
             msg = "Min fusion reads '{}' is not a non-negative integer".format(min_fusion_reads)
             raise ValueError(msg)
+        self.is_tab_empty = True
 
     def _get_config_field(self, name):
         """
@@ -255,6 +256,16 @@ class r_script_wrapper(logger):
                 writer.writerow(row)
         return out_path
 
+    def tab_file_is_empty(self, mavis_path):
+        """
+        Checks if .tab file provided is empty.
+        Returns False is not empty, returns True if empty.
+        """
+        with open(mavis_path, "rt") as file:
+            num_lines = file.readlines()
+            if len(num_lines) > 1:
+                self.is_tab_empty = False
+
     def preprocess_fus(self, mavis_path):
         """
         Extract the FUS file from the .zip archive output by Mavis
@@ -273,20 +284,28 @@ class r_script_wrapper(logger):
             msg = "Found more than one Mavis summary .tab file in "+mavis_path
             raise RuntimeError(msg)
         fus_path = zf.extract(matched[0], self.tmp_dir)
+        
         # prepend column to the extracted summary path
         out_path = os.path.join(self.tmp_dir, 'fus.txt')
+        
         with open(fus_path, 'rt') as fus_file, open(out_path, 'wt') as out_file:
-            reader = csv.reader(fus_file, delimiter="\t")
-            writer = csv.writer(out_file, delimiter="\t")
-            in_header = True
-            for row in reader:
-                if in_header:
-                    value = 'Sample'
-                    in_header = False
-                else:
-                    value = self.tumour_id
-                new_row = [value] + row
-                writer.writerow(new_row)
+            if self.is_tab_empty == False:
+                fus_file.seek(0) # go back to the top of the file...I don't think this is necessary, but just in case.
+                reader = csv.reader(fus_file, delimiter="\t")
+                writer = csv.writer(out_file, delimiter="\t")
+                in_header = True
+                for row in reader:
+                    if in_header:
+                        value = 'Sample'
+                        in_header = False
+                    else:
+                        value = self.tumour_id
+                    new_row = [value] + row
+                    writer.writerow(new_row)
+            else:
+                msg = mavis_path+ " is empty or only contains a header"
+                self.logger.info(msg)
+                
         return out_path
 
     def preprocess_maf(self, maf_path):
@@ -428,9 +447,11 @@ class r_script_wrapper(logger):
         )
         annotator.annotate_cna()
         if not self.wgs_only:
-            annotator.annotate_fusion()
+            if self.is_tab_empty == False:
+                annotator.annotate_fusion()
         if self.cleanup:
             rmtree(self.tmp_dir)
             os.remove(os.path.join(self.report_dir, constants.DATA_CNA_ONCOKB_GENES))
             if not self.wgs_only:
-                os.remove(os.path.join(self.report_dir, constants.DATA_FUSIONS_ONCOKB))
+                if os.path.exists(constants.DATA_FUSIONS_ONCOKB):
+                    os.remove(os.path.join(self.report_dir, constants.DATA_FUSIONS_ONCOKB))
