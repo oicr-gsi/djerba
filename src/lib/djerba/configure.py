@@ -110,11 +110,24 @@ class configurer(logger):
         updates = {}
         updates.update(self.reader.get_identifiers())
         tumour_id =  updates[ini.TUMOUR_ID]
-        coverage = pull_qc(self.config).fetch_coverage_etl_data(tumour_id)
-        callability = pull_qc(self.config).fetch_callability_etl_data(tumour_id)
-        self.logger.info("QC-ETL Coverage: {0}, Callability: {1}".format(coverage, callability))
-        updates[ini.MEAN_COVERAGE] = coverage
-        updates[ini.PCT_V7_ABOVE_80X] = callability
+        try:
+            coverage = pull_qc(self.config).fetch_coverage_etl_data(tumour_id)
+        except:
+            msg = "Djerba couldn't find the coverage associated with tumour_id {0} in QC-ETL. Defaulting target coverage to .ini parameter.".format(tumour_id)
+            self.logger.warning(msg)
+        else:
+            coverage = pull_qc(self.config).fetch_coverage_etl_data(tumour_id)
+            self.logger.info("QC-ETL Coverage: {0}".format(coverage))
+            updates[ini.MEAN_COVERAGE] = coverage
+        try:
+            callability = pull_qc(self.config).fetch_callability_etl_data(tumour_id)
+        except:
+            msg = "Djerba couldn't find the callability associated with tumour_id {0} in QC-ETL. Defaulting target coverage to .ini parameter.".format(tumour_id)
+            self.logger.warning(msg)
+        else:
+            callability = pull_qc(self.config).fetch_callability_etl_data(tumour_id)
+            self.logger.info("QC-ETL Callability: {0}".format(callability))
+            updates[ini.PCT_V7_ABOVE_80X] = callability
         try:
             pull_qc(self.config).fetch_pinery_assay(self.config[ini.INPUTS][ini.REQ_ID])
         except HTTPError as e:

@@ -68,7 +68,7 @@ class pull_qc(logger):
             return(coverage_value)
         else:
             msg = "Djerba couldn't find the coverage associated with tumour_id {0} in QC-ETL. ".format(tumour_id)
-            raise RuntimeError(msg)
+            
 
     def fetch_pinery_assay(self,requisition_name: str):
         pinery_requisition = self.pinery_get(f'/requisition?name={requisition_name}')
