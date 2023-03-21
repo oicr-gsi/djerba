@@ -272,19 +272,30 @@ class r_script_wrapper(logger):
         Apply preprocessing and write results to tmp_dir
         Prepend a column with the tumour id
         """
-        zf = zipfile.ZipFile(mavis_path)
-        matched = []
-        for name in zf.namelist():
-            if re.search('mavis_summary_all_.*\.tab$', name):
-                matched.append(name)
-        if len(matched) == 0:
-            msg = "Could not find Mavis summary .tab in "+mavis_path
+        # If the tab file is hidden inside a zip file:
+        if re.search("\.zip$", mavis_path):
+            zf = zipfile.ZipFile(mavis_path)
+            matched = []
+            for name in zf.namelist():
+                if re.search('mavis_summary_all_.*\.tab$', name):
+                    matched.append(name)
+            if len(matched) == 0:
+                msg = "Could not find Mavis summary .tab in "+mavis_path
+                raise RuntimeError(msg)
+            elif len(matched) > 1:
+                msg = "Found more than one Mavis summary .tab file in "+mavis_path
+                raise RuntimeError(msg)
+            fus_path = zf.extract(matched[0], self.tmp_dir)
+
+        # If the tab file is given as is:
+        elif re.search("\.tab$", mavis_path):
+            fus_path = mavis_path
+
+        # If the path is neither a tab file nor a zip file:
+        else:
+            msg = mavis_path+ " must be either a .zip file or a .tab file"
             raise RuntimeError(msg)
-        elif len(matched) > 1:
-            msg = "Found more than one Mavis summary .tab file in "+mavis_path
-            raise RuntimeError(msg)
-        fus_path = zf.extract(matched[0], self.tmp_dir)
-        
+            
         # prepend column to the extracted summary path
         out_path = os.path.join(self.tmp_dir, 'fus.txt')
         
