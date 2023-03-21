@@ -11,6 +11,7 @@
 - callability and coverage pulled from qc-etl
 - automatically make failed report if coverage below target
 - move to python 3.10.6
+- new parameter called cbio_study_id from shesmu for whizbam links
 
 ## v0.4.3: 2023-03-10
 
