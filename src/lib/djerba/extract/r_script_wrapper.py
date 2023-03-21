@@ -294,6 +294,9 @@ class r_script_wrapper(logger):
                 msg = "Found more than one Mavis summary .tab file in "+mavis_path
                 self.logger.error(msg)
                 raise RuntimeError(msg)
+            elif len(matched) > 1:
+                msg = "Found more than one Mavis summary .tab file in "+mavis_path
+                raise RuntimeError(msg)
             fus_path = zf.extract(matched[0], self.tmp_dir)
 
         # If the tab file is given as is:
