@@ -58,7 +58,7 @@ class TestSimpleReport(TestBase):
             data_expected = json.loads(json_file.read())
         self.assertEqual(data_found, data_expected)
         html = djerba_main.render(data_found)
-        self.assertEqual(self.getMD5_of_string(html), 'a417956576ac93a16756c9b73c2254eb')
+        self.assertEqual(self.getMD5_of_string(html), 'bc8017b0addfbf69d3d44e3a60c28ff4')
 
 if __name__ == '__main__':
     unittest.main()

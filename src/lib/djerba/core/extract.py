@@ -1,6 +1,8 @@
 """Class to extract core data elements from INI parameters"""
 
 import logging
+import os
+from djerba.util.image_to_base64 import converter
 from djerba.util.logger import logger
 
 class extractor(logger):
@@ -9,15 +11,22 @@ class extractor(logger):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
+        self.image_converter = converter(log_level, log_path)
 
     def run(self, config):
         # TODO validate config is complete
         # populate additional data fields
+        oicr_logo_path = os.path.join(
+            os.path.dirname(__file__),
+            'html',
+            'OICR_Logo_RGB_ENGLISH.png'
+        )
+        oicr_logo = self.image_converter.convert_png(oicr_logo_path, 'OICR logo')
         data = {
             'core': {
                 "assay_type": "WGTS",
                 "author": "Test Author",
-                "oicr_logo": 'OICR logo goes here',
+                "oicr_logo": oicr_logo,
                 "patient_info": {
                     "Assay": "Whole genome and transcriptome sequencing (WGTS)-80X Tumour, 30X Normal (v2.0)",
                     "Blood Sample ID": "PLACEHOLDER",
