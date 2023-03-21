@@ -1,0 +1,233 @@
+/* ---------------Whole page attributes---------------------     */
+
+* {font-family: Arial !important;}
+
+body {
+  max-width:  8.5in;
+  min-width:  8.5in;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media print {
+  div {
+      vertical-align: top;
+      page-break-inside: avoid;
+  }
+}
+
+p {
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
+}
+
+sup {
+    font-size: 8px;
+}
+
+/* report header */
+h1 {
+  font-size: 28px;
+  margin: 1.5px 1px 1px 1px;
+  padding: 0px 1px 0px 0px;
+}
+
+/* section header */
+h2 {
+  font-size: 22px;
+  text-transform: uppercase;
+  font-weight: normal;
+  margin: 5px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
+}
+
+/* sub-section header */
+h3 {
+  font-size: 18px;
+  margin:2px;
+  padding:0;
+  
+}
+
+/*----------------#section-delimiting lines--------------------*/
+
+hr.header-big-line{
+  border-top: 4px solid #65bc45;
+  width: 100%;
+}
+
+hr.big-line{
+  border-top: 1px solid #65bc45;
+  width: 100%;
+  margin: 5px 0px 5px 0px;
+  padding: 0px 0px 0px 0px;
+}
+
+hr.big-white-line{
+  border: none;
+  width: 80%;
+  margin-left: 20%;
+  margin: 0px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
+}
+
+hr.lil-line{
+  border-top: 1px solid #65bc45;
+  width: 100%;
+}
+
+.twocellmain {
+  page-break-inside: avoid;
+  vertical-align: top;
+  width: 8.5in
+}
+
+.oneoftwocellmain  {
+  page-break-inside: avoid;
+  float: left;
+  width: 1.75in;
+}
+
+.twooftwocellmain  {
+  page-break-inside: avoid;
+  float: right;
+  width: 6.75in;
+}
+
+.twocellsupp {
+  page-break-inside: avoid;
+  vertical-align: top;
+  width: 8.5in
+}
+
+.oneoftwocellsupp  {
+  page-break-inside: avoid;
+  float: left;
+  width: 1.25in;
+}
+
+.twooftwocellsupp  {
+  page-break-inside: avoid;
+  float: right;
+  width: 7.20in;
+}
+
+
+/*----------------#section attributes--------------------*/  
+
+/* style for letterhead */
+
+
+.letterhead-column {
+  width: 30%;
+  float: right;
+}
+
+.letterhead-text-left {
+  font-size: 10px;
+  line-height: 8px;
+  text-align: left;
+  padding: 30px 0px 0px 0px;
+}
+
+.letterhead-text-right {
+  font-size: 10px;
+  line-height: 8px;
+  text-align: right;
+  padding: 30px 0px 0px 0px;
+}
+
+.letterhead-table td:nth-child(odd) {
+  font-weight: bold; 
+}
+
+/* style for tables of genomic variants */
+
+/* no underline for links */
+.variants {
+  text-align: left;
+  font-size: 14px;
+}
+
+.variants a {
+  text-decoration: none
+}
+
+/* variant table header */
+.variants th {
+  background-color: white;
+  padding: 8px
+}
+
+/* variant table column */
+.variants td {
+  padding: 8px
+}
+
+/* variant table alt-row */
+.variants tr:nth-child(odd) {
+  background-color: #f2f2f2;
+}
+
+/* style for tables of other information */
+
+.info {
+  font-size: 14px;
+  text-align: left;
+  padding: 0px 0px 0px 0px;
+}
+
+.suppl {
+  font-size: 14px;
+  text-align: left;
+  padding: 0px 0px 0px 0px;
+  line-height: 20px;
+}
+
+.info td:nth-child(odd) {
+  font-weight: bold;
+}
+
+.circle {
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    padding: 5px;
+    color: white;
+    text-align: center;
+    line-height: 15px;
+    margin: auto;
+  }
+
+.square {
+    width: 15px;
+    height: 15px;
+    padding: 5px 8px 5px 5px;
+    color: white;
+    text-align: center;
+    line-height: 15px;
+    margin: auto;
+  }
+
+.oncokb-level1 {background: #33a02c;}
+
+.oncokb-level2 {background: #2078b4;}
+
+.oncokb-level3A {background: #984ea3}
+
+.oncokb-level3B {background: #984ea3;}
+
+.oncokb-level4 {background: #424242;}
+
+.oncokb-levelR1 {background: #ee3425;}
+
+.oncokb-levelR2 {background: #f79a92;}
+
+.oncokb-levelN1 {background: #525252;}
+
+.oncokb-levelN2 {background: #808080;}
+
+.oncokb-levelN3 {background: #AEAEAE;}
+

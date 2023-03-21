@@ -1,0 +1,77 @@
+{
+    "$id": "https://github.com/oicr-gsi/djerba/blob/GCGI-787_plugin-json-validation/src/lib/djerba/core/plugin_schema.json",
+    "type": "object",
+    "properties":
+    {
+	"plugin_name": {"type": "string" },
+	"definitions": {
+	    "type": "object",
+	    "patternProperties": {
+		".*": { "type": "string" }
+	    },
+	    "additionalProperties": false,
+	    "uniqueItems": true
+	},
+	"description": {
+	    "type": "object",
+	    "properties": {
+		"title": {"type": "string" },
+		"body": { "type": "string" }
+	    },
+	    "additionalProperties": false,
+	    "uniqueItems": true
+	},
+	"treatment_options": {
+	    "type": "array",
+	    "items": {
+		"type": "object",
+		"properties": {
+		    "Level": {"type": "string"},
+		    "Genes": {
+			"type": "array",
+			"items": {
+			    "type": "object",
+			    "properties": {
+				"name": { "type": "string" },
+				"url":  { "type": "string" }
+			    }
+			}
+		    },
+		    "Alterations": {
+			"type": "array",
+			"items": {
+			    "type": "object",
+			    "properties": {
+				"name": { "type": "string" },
+				"url":  { "type": "string" }
+			    }
+			}
+		    },
+		    "OncoKB": {
+			"type": "string"
+		    },
+		    "Treatment": {
+			"type": "string"
+		    }
+		}
+	    },
+	    "additionalProperties": false,
+	    "uniqueItems": true
+	},
+	"gene_information": {
+	    "type": "array",
+	    "items": {
+		"type": "object",
+		"properties": {
+		    "name": { "type": "string" },
+		    "url":  { "type": "string" },
+		    "summary":  { "type": "string" }
+		}
+	    }
+	},
+	"results": {}
+    },
+    "required": [
+	"plugin_name", "definitions", "description", "treatment_options", "gene_information", "results"
+    ]
+}

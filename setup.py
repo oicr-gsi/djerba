@@ -92,6 +92,7 @@ setup(
     },
     install_requires=[
         'configparse',
+        'jsonschema',
         'mako',
         'markdown',
         'numpy',
