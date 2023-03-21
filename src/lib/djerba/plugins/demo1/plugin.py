@@ -1,3 +1,5 @@
+"""Simple Djerba plugin for demonstration and testing: Example 1"""
+
 from djerba.plugins.base import plugin_base
 
 class main(plugin_base):
