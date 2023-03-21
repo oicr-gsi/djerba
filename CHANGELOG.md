@@ -7,6 +7,10 @@
 - Proteins for splice sites changed to form p? (c.${POSITION}${MUTATION}) (ex. from "p.X2540_splice" to "p.? (c.458-1G>T)")
 - Updated to support mavis data gives as .tab input (still supports .zip input)
 - Updated to prevent error when mavis .tab file is empty or only contains a header
+- target coverage pulled from pinery
+- callability and coverage pulled from qc-etl
+- automatically make failed report if coverage below target
+- move to python 3.10.6
 
 ## v0.4.3: 2023-03-10
 

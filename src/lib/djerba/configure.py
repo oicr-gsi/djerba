@@ -3,6 +3,8 @@
 import logging
 import os
 from math import log2
+import urllib.request as request
+from urllib.error import URLError, HTTPError
 
 from djerba.sequenza import sequenza_reader, SequenzaError
 import djerba.util.constants as constants
@@ -10,6 +12,7 @@ import djerba.util.ini_fields as ini
 from djerba.util.logger import logger
 from djerba.util.provenance_reader import provenance_reader, sample_name_container
 from djerba.util.validator import path_validator
+from djerba.extract.pull_qc import pull_qc
 
 class configurer(logger):
     """
@@ -69,6 +72,18 @@ class configurer(logger):
             self.logger.debug("Found sample names from INI input: {0}".format(samples))
         return samples
 
+    def _compare_coverage_to_target(self,coverage,target):
+        if target > coverage:
+            msg = "Target Depth {0}X is larger than Discovered Coverage {1}X. Changing to Failed mode.".format(target, coverage)
+            self.logger.warning(msg)
+            self.failed = True
+        elif target <= coverage:
+            msg = "Target Depth {0}X is within range of Discovered Coverage {1}X".format(target, coverage)
+            self.logger.info(msg)
+        else:
+            msg = "Target Depth {0}X is incompatible with Discovered Coverage {1}X".format(target, coverage)
+            raise RuntimeError(msg)
+
     def find_data_files(self):
         data_files = {}
         if self.config.has_option(ini.DISCOVERED, ini.DATA_DIR):
@@ -93,6 +108,36 @@ class configurer(logger):
 
     def discover_primary(self):
         updates = {}
+        updates.update(self.reader.get_identifiers())
+        tumour_id =  updates[ini.TUMOUR_ID]
+        try:
+            coverage = pull_qc(self.config).fetch_coverage_etl_data(tumour_id)
+        except:
+            msg = "Djerba couldn't find the coverage associated with tumour_id {0} in QC-ETL. Defaulting target coverage to .ini parameter.".format(tumour_id)
+            self.logger.warning(msg)
+        else:
+            coverage = pull_qc(self.config).fetch_coverage_etl_data(tumour_id)
+            self.logger.info("QC-ETL Coverage: {0}".format(coverage))
+            updates[ini.MEAN_COVERAGE] = coverage
+        try:
+            callability = pull_qc(self.config).fetch_callability_etl_data(tumour_id)
+        except:
+            msg = "Djerba couldn't find the callability associated with tumour_id {0} in QC-ETL. Defaulting target coverage to .ini parameter.".format(tumour_id)
+            self.logger.warning(msg)
+        else:
+            callability = pull_qc(self.config).fetch_callability_etl_data(tumour_id)
+            self.logger.info("QC-ETL Callability: {0}".format(callability))
+            updates[ini.PCT_V7_ABOVE_80X] = callability
+        try:
+            pull_qc(self.config).fetch_pinery_assay(self.config[ini.INPUTS][ini.REQ_ID])
+        except HTTPError as e:
+            msg = "HTTP Error {0}. Djerba couldn't find the requisition {1} in Pinery. Defaulting target coverage to .ini parameter.".format(e.code,self.config[ini.INPUTS][ini.REQ_ID])
+            self.logger.warning(msg)
+        else:
+            target_depth = pull_qc(self.config).fetch_pinery_assay(self.config[ini.INPUTS][ini.REQ_ID])
+            self.logger.info("Pinery Target Coverage: {0}".format(target_depth))
+            updates[ini.TARGET_COVERAGE] = target_depth 
+            self._compare_coverage_to_target(coverage,target_depth)
         if self.failed:
             self.logger.info("Failed report mode, omitting workflow output discovery")
         else:
@@ -103,7 +148,6 @@ class configurer(logger):
             if not self.wgs_only:
                 updates[ini.MAVIS_FILE] = self.reader.parse_mavis_path()
                 updates[ini.GEP_FILE] = self.reader.parse_gep_path()
-        updates.update(self.reader.get_identifiers())
         updates.update(self.reader.get_sample_names())
         updates.update(self.find_data_files())
         return updates

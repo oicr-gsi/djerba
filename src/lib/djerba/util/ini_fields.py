@@ -37,11 +37,13 @@ ONCOTREE_CODE = 'oncotree_code' # was CANCER_TYPE_DETAILED
 PATIENT = 'patient'
 PATIENT_ID = 'patientid'
 PCT_V7_ABOVE_80X = 'pct_v7_above_80x'
+PINERY_URL = 'pinery_url'
 PIPELINE_VERSION = 'pipeline_version'
 PLOIDY = 'ploidy'
 PROJECT_ID = 'projectid'
 PROVENANCE = 'provenance'
 PURITY = 'purity'
+QCETL_CACHE = 'qcetl_cache'
 REPORT_VERSION = 'report_version'
 REQ_ID = 'requisition_id'
 REQ_APPROVED_DATE = 'req_approved_date'
@@ -57,6 +59,7 @@ SEQUENZA_REVIEWER_2 = 'sequenza_reviewer_2'
 SEQUENZA_SOLUTION = 'sequenza_solution'
 SEX = 'sex'
 STUDY_ID = 'studyid'
+TARGET_COVERAGE = 'target_coverage'
 TCGA_CODE = 'tcgacode'
 TCGA_DATA = 'tcgadata'
 TECHNICAL_NOTES = 'technical_notes'
@@ -149,12 +152,14 @@ SCHEMA_DEFAULT = {
         GEP_FILE,
         MAF_FILE,
         MAVIS_FILE,
+        MEAN_COVERAGE,
         MSI_FILE,
         MUTATION_NONSYN,
         NORMAL_ID,
         ONCO_LIST,
         ONCOTREE_DATA,
         PATIENT_ID,
+        PCT_V7_ABOVE_80X,
         PLOIDY,
         PURITY,
         SAMPLE_NAME_WG_N,
@@ -163,15 +168,14 @@ SCHEMA_DEFAULT = {
         SEQUENZA_GAMMA,
         SEQUENZA_FILE,
         SEQUENZA_SOLUTION,
+        TARGET_COVERAGE,
         TECHNICAL_NOTES,
         TMBCOMP,
         TUMOUR_ID
     ],
     INPUTS: [
-        MEAN_COVERAGE,
         ONCOTREE_CODE,
         PATIENT,
-        PCT_V7_ABOVE_80X,
         PROJECT_ID,
         REPORT_VERSION,
         REQ_ID,
@@ -192,8 +196,10 @@ SCHEMA_DEFAULT = {
         GEP_REFERENCE,
         MIN_FUSION_READS,
         ONCOKB_CACHE,
+        PINERY_URL,
         PIPELINE_VERSION,
         PROVENANCE,
+        QCETL_CACHE,
         TCGA_DATA,
         WHIZBAM_URL
     ],
@@ -242,12 +248,14 @@ SCHEMA_WGS_ONLY = {
         GENE_LIST,
         GENOMIC_SUMMARY,
         MAF_FILE,
+        MEAN_COVERAGE,
         MSI_FILE,
         MUTATION_NONSYN,
         NORMAL_ID,
         ONCO_LIST,
         ONCOTREE_DATA,
         PATIENT_ID,
+        PCT_V7_ABOVE_80X,
         PLOIDY,
         PURITY,
         SAMPLE_NAME_WG_N,
@@ -255,16 +263,15 @@ SCHEMA_WGS_ONLY = {
         SEQUENZA_GAMMA,
         SEQUENZA_FILE,
         SEQUENZA_SOLUTION,
+        TARGET_COVERAGE,
         TECHNICAL_NOTES,
         TMBCOMP,
         TUMOUR_ID
     ],
     INPUTS: [
-        MEAN_COVERAGE,
         ONCOTREE_CODE,
         PATIENT,
         PROJECT_ID,
-        PCT_V7_ABOVE_80X,
         REPORT_VERSION,
         REQ_ID,
         REQ_APPROVED_DATE,
@@ -284,8 +291,10 @@ SCHEMA_WGS_ONLY = {
         GEP_REFERENCE,
         MIN_FUSION_READS,
         ONCOKB_CACHE,
+        PINERY_URL,
         PIPELINE_VERSION,
         PROVENANCE,
+        QCETL_CACHE,
         TCGA_DATA,
         WHIZBAM_URL
     ],
@@ -329,22 +338,23 @@ SCHEMA_FAILED = {
         GENE_BED,
         GENE_LIST,
         GENOMIC_SUMMARY,
+        MEAN_COVERAGE,
         MUTATION_NONSYN,
         NORMAL_ID,
         ONCO_LIST,
         ONCOTREE_DATA,
         PATIENT_ID,
+        PCT_V7_ABOVE_80X,
         PLOIDY,
         PURITY,
+        TARGET_COVERAGE,
         TECHNICAL_NOTES,
         TMBCOMP,
         TUMOUR_ID
     ],
     INPUTS: [
-        MEAN_COVERAGE,
         ONCOTREE_CODE,
         PATIENT,
-        PCT_V7_ABOVE_80X,
         PROJECT_ID,
         REPORT_VERSION,
         REQ_ID,
@@ -365,8 +375,10 @@ SCHEMA_FAILED = {
         GEP_REFERENCE,
         MIN_FUSION_READS,
         ONCOKB_CACHE,
+        PINERY_URL,
         PIPELINE_VERSION,
         PROVENANCE,
+        QCETL_CACHE,
         TCGA_DATA,
         WHIZBAM_URL
     ],
