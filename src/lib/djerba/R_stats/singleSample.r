@@ -163,7 +163,12 @@ write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[5]]), CNAs[[5]], check.names
 
 ###################### RNASEQ - Fusions #####################
 # first, check if the .tab file is empty (0 lines) or only contains a header (1 line); if so, skip this section.
-num_lines <- readLines(fusfile, warn=FALSE)
+if (is.null(fusfile)) {
+	num_lines = 0
+} else {
+	num_lines <- readLines(fusfile, warn=FALSE)
+}
+
 if (is.null(fusfile)) {
    print("No fusion input, processing omitted")
 } else if(length(num_lines)<=1) {

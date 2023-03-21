@@ -288,6 +288,9 @@ class r_script_wrapper(logger):
         # prepend column to the extracted summary path
         out_path = os.path.join(self.tmp_dir, 'fus.txt')
         
+        # Check if the .tab file is empty
+        self.tab_file_is_empty(fus_path) 
+
         with open(fus_path, 'rt') as fus_file, open(out_path, 'wt') as out_file:
             if self.is_tab_empty == False:
                 fus_file.seek(0) # go back to the top of the file...I don't think this is necessary, but just in case.

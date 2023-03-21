@@ -130,6 +130,9 @@ class clinical_report_json_composer(composer_base):
     VARIANT_CLASSIFICATION = 'Variant_Classification'
     V7_TARGET_SIZE = 37.285536 # inherited from CGI-Tools
 
+    # For checking the preence of fusion data
+    DATA_FUSIONS_OLD = 'data_fusions.txt'
+
 
     # variant classifications excluded from TMB count
     TMB_EXCLUDED = [
@@ -174,6 +177,7 @@ class clinical_report_json_composer(composer_base):
             self.logger.error(msg)
             raise RuntimeError(msg)
         self.is_wgts = self.params.get(xc.ASSAY_TYPE) == rc.ASSAY_WGTS
+        #self.fusion_data_exists = self.check_fusion_data
         # set other instance variables
         self.failed = self.params.get(xc.FAILED)
         self.clinical_data = self.read_clinical_data()
@@ -192,7 +196,7 @@ class clinical_report_json_composer(composer_base):
         else:
             [self.total_somatic_mutations, self.tmb_count] = self.read_somatic_mutation_totals()
             if self.is_wgts:
-                if os.path.exists(oncokb.DATA_FUSIONS_ONCOKB_ANNOTATED):
+                if self.check_fusion_data() == True:
                     fus_reader = fusion_reader(input_dir, log_level=log_level, log_path=log_path)
                     self.total_fusion_genes = fus_reader.get_total_fusion_genes()
                     self.gene_pair_fusions = fus_reader.get_fusions()
@@ -283,6 +287,12 @@ class clinical_report_json_composer(composer_base):
 
     def build_fda_approved_info(self):
         return self.build_therapy_info(self.FDA_APPROVED)
+    
+    def check_fusion_data(self):
+        if os.path.exists(os.path.join(self.input_dir, self.DATA_FUSIONS_OLD)):
+            return True
+        else:
+            return False
 
     def build_gene_url(self, gene):
         return '/'.join([self.ONCOKB_URL_BASE, gene])
