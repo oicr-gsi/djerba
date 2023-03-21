@@ -735,20 +735,19 @@ class TestRender(TestBase):
         ]
         result = self.run_command(cmd)
         self.assertTrue(os.path.exists(pdf_path))
-        # Compare file contents:
-        # - Filter out timestamps
-        # - Filter out unprintable non-null characters, see https://stackoverflow.com/a/9988534
-        # - (Null characters shouldn't occur, and filtering as above breaks Python subprocess)
+        # Compare file contents
+        # Filter out timestamps and creator
+        # Remove unprintable non-null characters, see https://stackoverflow.com/a/9988534
         commands = [
             "cat {0}".format(pdf_path),
-            "tr '[\001-\011\013-\037\177-\377]' '.'", # remove unprintables
             "grep -av CreationDate",
+            "tr '[\001-\011\013-\037\177-\377]' ''", # remove unprintables
             "md5sum",
             "cut -f 1 -d ' '"
         ]
         command = " | ".join(commands)
         result = subprocess.run(command, shell=True, capture_output=True)
-        self.assertEqual(str(result.stdout, encoding=constants.TEXT_ENCODING).strip(), '37a53835a4cb9fd1107e734ef941972c')
+        self.assertEqual(str(result.stdout, encoding=constants.TEXT_ENCODING).strip(), 'd41d8cd98f00b204e9800998ecf8427e')
 
 class TestSequenzaReader(TestBase):
 
