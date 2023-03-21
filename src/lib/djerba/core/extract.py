@@ -1,4 +1,9 @@
-"""Class to extract core data elements from INI parameters"""
+"""
+Class to extract core data elements from INI parameters
+
+This class populates the 'core' element of the report data structure only
+The 'plugins' element is left empty, to be populated by the respective plugin classes
+"""
 
 import logging
 import os

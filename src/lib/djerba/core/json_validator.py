@@ -18,6 +18,9 @@ class json_validator(logger):
         with open(self.schema_path, 'r') as schema_file:
             self.schema = json.loads(schema_file.read())
 
+    def validate_string(self, input_string):
+        return self.validate_data(json.loads(input_string))
+
     def validate_data(self, data):
         try:
             jsonschema.validate(data, self.schema)
