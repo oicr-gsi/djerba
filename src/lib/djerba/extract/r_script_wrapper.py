@@ -256,14 +256,14 @@ class r_script_wrapper(logger):
                 writer.writerow(row)
         return out_path
 
-    def tab_file_is_empty(self, mavis_path):
+    def set_tab_empty_status(self, mavis_path):
         """
         Checks if .tab file provided is empty.
-        Returns False is not empty, returns True if empty.
-        """
+        Sets the instance variable self.is_tab_empty to be False if not empty
+        """     
         with open(mavis_path, "rt") as file:
-            num_lines = file.readlines()
-            if len(num_lines) > 1:
+            num_lines = len(file.readlines())
+            if num_lines > 1:
                 self.is_tab_empty = False
 
     def preprocess_fus(self, mavis_path):
@@ -288,9 +288,11 @@ class r_script_wrapper(logger):
                     matched.append(name)
             if len(matched) == 0:
                 msg = "Could not find Mavis summary .tab in "+mavis_path
+                self.logger.error(msg)
                 raise RuntimeError(msg)
             elif len(matched) > 1:
                 msg = "Found more than one Mavis summary .tab file in "+mavis_path
+                self.logger.error(msg)
                 raise RuntimeError(msg)
             fus_path = zf.extract(matched[0], self.tmp_dir)
 
@@ -301,17 +303,17 @@ class r_script_wrapper(logger):
         # If the path is neither a tab file nor a zip file:
         else:
             msg = mavis_path+ " must be either a .zip file or a .tab file"
+            self.logger.error(msg)
             raise RuntimeError(msg)
             
         # prepend column to the extracted summary path
         out_path = os.path.join(self.tmp_dir, 'fus.txt')
         
         # Check if the .tab file is empty
-        self.tab_file_is_empty(fus_path) 
+        self.set_tab_empty_status(fus_path) 
 
         with open(fus_path, 'rt') as fus_file, open(out_path, 'wt') as out_file:
             if self.is_tab_empty == False:
-                fus_file.seek(0) # go back to the top of the file...I don't think this is necessary, but just in case.
                 reader = csv.reader(fus_file, delimiter="\t")
                 writer = csv.writer(out_file, delimiter="\t")
                 in_header = True
