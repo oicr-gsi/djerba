@@ -4,6 +4,10 @@ from djerba.plugins.base import plugin_base
 
 class main(plugin_base):
 
+    def configure(self, config_section):
+        config_section['demo2_param'] = '42'
+        return config_section
+
     def extract(self, config_section):
         data = {
             'plugin_name': 'demo2 plugin',
