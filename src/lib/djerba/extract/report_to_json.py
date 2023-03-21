@@ -195,7 +195,7 @@ class clinical_report_json_composer(composer_base):
         else:
             [self.total_somatic_mutations, self.tmb_count] = self.read_somatic_mutation_totals()
             if self.is_wgts:
-                if self.check_fusion_data() == True:
+                if self.has_fusion_data() == True:
                     fus_reader = fusion_reader(input_dir, log_level=log_level, log_path=log_path)
                     self.total_fusion_genes = fus_reader.get_total_fusion_genes()
                     self.gene_pair_fusions = fus_reader.get_fusions()
@@ -287,7 +287,7 @@ class clinical_report_json_composer(composer_base):
     def build_fda_approved_info(self):
         return self.build_therapy_info(self.FDA_APPROVED)
     
-    def check_fusion_data(self):
+    def has_fusion_data(self):
         if os.path.exists(os.path.join(self.input_dir, self.DATA_FUSIONS_OLD)):
             return True
         else:
