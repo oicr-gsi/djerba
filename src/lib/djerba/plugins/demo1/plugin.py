@@ -4,10 +4,10 @@ class main(plugin_base):
 
     def extract(self, config_section):
         data = {
-            'plugin_name': 'foo plugin',
+            'plugin_name': 'demo1 plugin',
             'definitions': {},
             'description': {
-                'title': 'Example plugin "foo"',
+                'title': 'Example plugin "demo1"',
                 'body': 'Demonstration plugin, writes placeholder text'
             },
             'treatment_options': [],
@@ -18,5 +18,5 @@ class main(plugin_base):
 
     def render(self, data):
         super().render(data)  # validate against schema
-        self.logger.info("Rendering foo not yet implemented!")
-        return "<h3>TODO foo plugin output goes here</h3>"
+        self.logger.info("Rendering demo1 not yet implemented!")
+        return "<h3>TODO demo1 plugin output goes here</h3>"
