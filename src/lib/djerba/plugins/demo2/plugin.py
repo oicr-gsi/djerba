@@ -4,16 +4,16 @@ class main(plugin_base):
 
     def extract(self, config_section):
         data = {
-            'plugin_name': 'bar plugin',
+            'plugin_name': 'demo2 plugin',
             'definitions': {},
             'description': {
-                'title': 'Example plugin "bar"',
+                'title': 'Example plugin "demo2"',
                 'body': 'Demonstration plugin to output a well-known constant'
             },
             'treatment_options': [],
             'gene_information': [],
             'results': {
-                'answer': config_section['bar_param']
+                'answer': config_section['demo2_param']
             }
         }
         return data

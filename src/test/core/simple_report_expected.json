@@ -1,0 +1,65 @@
+{
+    "core": {
+        "assay_type": "WGTS",
+        "author": "Test Author",
+        "djerba_version": "PLACEHOLDER",
+        "failed": false,
+        "genomic_summary": "Placeholder for testing",
+        "oicr_logo": "OICR logo goes here",
+        "patient_info": {
+            "Assay": "Whole genome and transcriptome sequencing (WGTS)-80X Tumour, 30X Normal (v2.0)",
+            "Blood Sample ID": "PLACEHOLDER",
+            "Patient Genetic Sex": "Male",
+            "Patient LIMS ID": "PLACEHOLDER",
+            "Patient Study ID": "PLACEHOLDER",
+            "Primary cancer": "Pancreatic Adenocarcinoma",
+            "Project": "PLACEHOLDER",
+            "Report ID": "PLACEHOLDER",
+            "Requisition Approved": "2021/01/01",
+            "Requisition ID": "REQ01",
+            "Site of biopsy/surgery": "PLACEHOLDER",
+            "Study": "PLACEHOLDER",
+            "Tumour Sample ID": "PLACEHOLDER"
+        },
+        "pipeline_version": "1.0",
+        "purity_failure": false,
+        "report_date": null,
+        "sample_info_and_quality": {
+            "Callability (%)": 90.0,
+            "Coverage (mean)": 120.0,
+            "Estimated Cancer Cell Content (%)": 90.0,
+            "Estimated Ploidy": 3.0,
+            "OncoTree code": "PAAD",
+            "Sample Type": "LCM"
+        },
+        "technical_notes": "No technical notes supplied."
+    },
+    "neo": "Neo was here",
+    "plugins": {
+        "demo1": {
+            "definitions": {},
+            "description": {
+                "body": "Demonstration plugin, writes placeholder text",
+                "title": "Example plugin \"demo1\""
+            },
+            "gene_information": [],
+            "plugin_name": "demo1 plugin",
+            "results": {},
+            "treatment_options": []
+        },
+        "demo2": {
+            "definitions": {},
+            "description": {
+                "body": "Demonstration plugin to output a well-known constant",
+                "title": "Example plugin \"demo2\""
+            },
+            "gene_information": [],
+            "plugin_name": "demo2 plugin",
+            "results": {
+                "answer": "42"
+            },
+            "treatment_options": []
+        }
+    },
+    "trinity": "Trinity was here first"
+}

@@ -18,5 +18,5 @@ class main(plugin_base):
 
     def render(self, data):
         super().render(data)  # validate against schema
-        self.logger.info("Rendering demo1 not yet implemented!")
+        self.logger.info("Rendering demo1")
         return "<h3>TODO demo1 plugin output goes here</h3>"

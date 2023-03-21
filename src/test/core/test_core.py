@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import hashlib
 import json
 import jsonschema
 import logging
@@ -7,8 +8,23 @@ import os
 import unittest
 
 from djerba.core.json_validator import json_validator
+from djerba.core.main import main
+import djerba.util.constants as constants
 
-class TestCore(unittest.TestCase):
+class TestBase(unittest.TestCase):
+
+    def getMD5(self, inputPath):
+        with open(inputPath, 'rb') as f:
+            md5sum = getMD5_of_string(f.read())
+        return md5sum
+
+    def getMD5_of_string(self, input_string):
+        md5 = hashlib.md5()
+        md5.update(input_string.encode(constants.TEXT_ENCODING))
+        return md5.hexdigest()
+
+
+class TestValidator(TestBase):
 
     EXAMPLE_DEFAULT = 'plugin_example.json'
     EXAMPLE_EMPTY = 'plugin_example_empty.json'
@@ -29,6 +45,20 @@ class TestCore(unittest.TestCase):
             input_data = json.loads(in_file.read())
         with self.assertRaises(jsonschema.exceptions.ValidationError):
             validator.validate_data(input_data)
+
+class TestSimpleReport(TestBase):
+
+    def test_report(self):
+        ini_path = os.path.join(os.path.dirname(__file__), 'test.ini')
+        json_path = os.path.join(os.path.dirname(__file__), 'simple_report_expected.json')
+        djerba_main = main(log_level=logging.WARNING)
+        config = djerba_main.configure(ini_path)
+        data_found = djerba_main.extract(config)
+        with open(json_path) as json_file:
+            data_expected = json.loads(json_file.read())
+        self.assertEqual(data_found, data_expected)
+        html = djerba_main.render(data_found)
+        self.assertEqual(self.getMD5_of_string(html), 'a417956576ac93a16756c9b73c2254eb')
 
 if __name__ == '__main__':
     unittest.main()
