@@ -94,6 +94,8 @@ class TestBase(unittest.TestCase):
             self.config_full_wgs_only,
             self.config_full_reduced_maf_1,
             self.config_full_reduced_maf_2,
+            self.config_full_reduced_maf_tab_1,
+            self.config_full_reduced_maf_tab_2,
             self.config_full_reduced_maf_wgs_only,
         ] = self.write_config_files(self.tmp_dir)
 
@@ -121,6 +123,8 @@ class TestBase(unittest.TestCase):
                 'config_full_wgs_only.ini',
                 'config_full_reduced_maf_1.ini',
                 'config_full_reduced_maf_2.ini',
+                'config_full_reduced_maf_tab_1.ini',
+                'config_full_reduced_maf_tab_2.ini',
                 'config_full_reduced_maf_wgs_only.ini'
         ]:
             template_path = os.path.join(self.data_dir, name)
@@ -735,9 +739,19 @@ class TestRender(TestBase):
         ]
         result = self.run_command(cmd)
         self.assertTrue(os.path.exists(pdf_path))
-        # Compare file contents; timestamps will differ. TODO Make this more Pythonic.
-        result = subprocess.run("cat {0} | grep -av CreationDate | md5sum | cut -f 1 -d ' '".format(pdf_path), shell=True, capture_output=True)
-        self.assertEqual(str(result.stdout, encoding=constants.TEXT_ENCODING).strip(), '37a53835a4cb9fd1107e734ef941972c')
+        # Compare file contents
+        # Filter out timestamps and creator
+        # Remove unprintable non-null characters, see https://stackoverflow.com/a/9988534
+        commands = [
+            "cat {0}".format(pdf_path),
+            "grep -av CreationDate",
+            "tr '[\001-\011\013-\037\177-\377]' ''", # remove unprintables
+            "md5sum",
+            "cut -f 1 -d ' '"
+        ]
+        command = " | ".join(commands)
+        result = subprocess.run(command, shell=True, capture_output=True)
+        self.assertEqual(str(result.stdout, encoding=constants.TEXT_ENCODING).strip(), 'd41d8cd98f00b204e9800998ecf8427e')
 
 class TestSequenzaReader(TestBase):
 
@@ -925,10 +939,26 @@ class TestWrapper(TestBase):
         test_wrapper = r_script_wrapper(config, out_dir, False, oncokb_cache_params())
         result = test_wrapper.run()
         self.assertEqual(0, result.returncode)
+        
+    def test_old_maf_tab(self):
+        config = configparser.ConfigParser()
+        config.read(self.config_full_reduced_maf_tab_1)
+        out_dir = self.tmp_dir
+        test_wrapper = r_script_wrapper(config, out_dir, False, oncokb_cache_params())
+        result = test_wrapper.run()
+        self.assertEqual(0, result.returncode)
 
     def test_new_maf(self):
         config = configparser.ConfigParser()
         config.read(self.config_full_reduced_maf_2)
+        out_dir = self.tmp_dir
+        test_wrapper = r_script_wrapper(config, out_dir, False, oncokb_cache_params())
+        result = test_wrapper.run()
+        self.assertEqual(0, result.returncode)
+        
+    def test_new_maf_tab(self):
+        config = configparser.ConfigParser()
+        config.read(self.config_full_reduced_maf_tab_2)
         out_dir = self.tmp_dir
         test_wrapper = r_script_wrapper(config, out_dir, False, oncokb_cache_params())
         result = test_wrapper.run()
