@@ -94,6 +94,8 @@ class TestBase(unittest.TestCase):
             self.config_full_wgs_only,
             self.config_full_reduced_maf_1,
             self.config_full_reduced_maf_2,
+            self.config_full_reduced_maf_tab_1,
+            self.config_full_reduced_maf_tab_2,
             self.config_full_reduced_maf_wgs_only,
         ] = self.write_config_files(self.tmp_dir)
 
@@ -121,6 +123,8 @@ class TestBase(unittest.TestCase):
                 'config_full_wgs_only.ini',
                 'config_full_reduced_maf_1.ini',
                 'config_full_reduced_maf_2.ini',
+                'config_full_reduced_maf_tab_1.ini',
+                'config_full_reduced_maf_tab_2.ini',
                 'config_full_reduced_maf_wgs_only.ini'
         ]:
             template_path = os.path.join(self.data_dir, name)
@@ -925,10 +929,26 @@ class TestWrapper(TestBase):
         test_wrapper = r_script_wrapper(config, out_dir, False, oncokb_cache_params())
         result = test_wrapper.run()
         self.assertEqual(0, result.returncode)
+        
+    def test_old_maf_tab(self):
+        config = configparser.ConfigParser()
+        config.read(self.config_full_reduced_maf_tab_1)
+        out_dir = self.tmp_dir
+        test_wrapper = r_script_wrapper(config, out_dir, False, oncokb_cache_params())
+        result = test_wrapper.run()
+        self.assertEqual(0, result.returncode)
 
     def test_new_maf(self):
         config = configparser.ConfigParser()
         config.read(self.config_full_reduced_maf_2)
+        out_dir = self.tmp_dir
+        test_wrapper = r_script_wrapper(config, out_dir, False, oncokb_cache_params())
+        result = test_wrapper.run()
+        self.assertEqual(0, result.returncode)
+        
+    def test_new_maf_tab(self):
+        config = configparser.ConfigParser()
+        config.read(self.config_full_reduced_maf_tab_2)
         out_dir = self.tmp_dir
         test_wrapper = r_script_wrapper(config, out_dir, False, oncokb_cache_params())
         result = test_wrapper.run()

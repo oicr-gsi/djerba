@@ -50,6 +50,7 @@ class provenance_reader(logger):
     MT_ZIP = 'application/zip-report-bundle$'
     MT_BAM = 'application/bam$'
     MT_BAM_INDEX = 'application/bam-index$'
+    MT_TAB = 'application/tab$'
 
     # placeholder
     WT_SAMPLE_NAME_PLACEHOLDER = 'whole_transcriptome_placeholder'
@@ -127,7 +128,8 @@ class provenance_reader(logger):
             [self.WF_DELLY, self.NIASSA_WF_DELLY],
             [self.WF_RSEM],
             [self.WF_STAR, self.NIASSA_WF_STAR],
-            [self.WF_STARFUSION, self.NIASSA_WF_STARFUSION]
+            [self.WF_STARFUSION, self.NIASSA_WF_STARFUSION],
+            [self.WF_MAVIS]
         ]
         counts = {}
         for group in [wgs_to_check, wts_to_check]:
@@ -446,8 +448,8 @@ class provenance_reader(logger):
 
     def parse_mavis_path(self):
         workflow = self.WF_MAVIS
-        mt = self.MT_ZIP
-        suffix = '(mavis-output|summary)\.zip$'
+        mt = self.MT_TAB
+        suffix = '(mavis-output|summary)\.tab$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
     def parse_sequenza_path(self):
