@@ -130,7 +130,7 @@ class clinical_report_json_composer(composer_base):
     VARIANT_CLASSIFICATION = 'Variant_Classification'
     V7_TARGET_SIZE = 37.285536 # inherited from CGI-Tools
 
-    # For checking the preence of fusion data
+    # For checking the presence of fusion data
     DATA_FUSIONS_OLD = 'data_fusions.txt'
 
 
@@ -177,7 +177,6 @@ class clinical_report_json_composer(composer_base):
             self.logger.error(msg)
             raise RuntimeError(msg)
         self.is_wgts = self.params.get(xc.ASSAY_TYPE) == rc.ASSAY_WGTS
-        #self.fusion_data_exists = self.check_fusion_data
         # set other instance variables
         self.failed = self.params.get(xc.FAILED)
         self.clinical_data = self.read_clinical_data()
