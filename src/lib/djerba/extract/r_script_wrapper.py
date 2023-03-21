@@ -272,6 +272,13 @@ class r_script_wrapper(logger):
         Apply preprocessing and write results to tmp_dir
         Prepend a column with the tumour id
         """
+        # mavis_path should be the path to either a ZIP file or a TAB file.
+
+        # In the ZIP file, the TAB file is labelled as mavis_summary_all*.tab
+        # Without the ZIP file, the TAB file is labelled as *.mavis_summary.tab
+
+        # Get access to the .tab file (whether from zip or given as is) and assign it the variable fus_path
+
         # If the tab file is hidden inside a zip file:
         if re.search("\.zip$", mavis_path):
             zf = zipfile.ZipFile(mavis_path)
