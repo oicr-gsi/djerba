@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v0.4.4: 2023-03-22
 
 ### Changed
 - `djerba pdf` takes in dir/ and json and makes pdfs from htmls based on report_id in json ()
