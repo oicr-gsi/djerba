@@ -26,7 +26,7 @@
 	    "items": {
 		"type": "object",
 		"properties": {
-		    "Level": {"type": "string"},
+		    "Level": {"enum": ["FDA Approved", "Investigational"]},
 		    "Genes": {
 			"type": "array",
 			"items": {
