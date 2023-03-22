@@ -20,7 +20,9 @@ Plugin modules:
 """
 
 import importlib
+import inspect
 import logging
+from djerba.plugins.base import plugin_base
 from djerba.util.logger import logger
 
 class plugin_loader(logger):
@@ -37,4 +39,26 @@ class plugin_loader(logger):
             msg = "Cannot load plugin {0}: {1}".format(plugin_name, err)
             self.logger.error(msg)
             raise
+        # check for other errors
+        if not 'main' in dir(plugin):
+            msg = "Plugin {0} has no 'main' attribute".format(plugin_name)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        else:
+            self.logger.debug("'main' attribute of plugin {0} found".format(plugin_name))
+        if not inspect.isclass(plugin.main):
+            msg = "Plugin {0} main attribute is not a class".format(plugin_name)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        else:
+            self.logger.debug("'main' attribute of plugin {0} is a class".format(plugin_name))
+        if not issubclass(plugin.main, plugin_base):
+            msg = "Plugin {0} main attribute ".format(plugin_name)+\
+                  "is not a subclass of djerba.plugins.base"
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        else:
+            msg = "Plugin {0} main ".format(plugin_name)+\
+                  "is a subclass of djerba.plugins.base"
+            self.logger.debug(msg)
         return plugin.main(self.log_level, self.log_path)
