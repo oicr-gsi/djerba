@@ -96,8 +96,6 @@ class TestSimpleReport(TestBase):
             data_expected = json.loads(json_file.read())
         self.assertEqual(data_found, data_expected)
         html = djerba_main.render(data_found)
-        with open('/u/ibancarz/tmp/test_simple.html', 'w') as out_file:
-            out_file.write(html)
         self.assert_report_MD5(html, 'bd79f6eb19966e4b9c4688457b5caff2')
 
 if __name__ == '__main__':

@@ -37,22 +37,26 @@
     "neo": "Neo was here",
     "plugins": {
         "demo1": {
+            "clinical": true,
             "definitions": {},
             "description": {
                 "body": "Demonstration plugin, writes placeholder text",
                 "title": "Example plugin \"demo1\""
             },
+            "failed": false,
             "gene_information": [],
             "plugin_name": "demo1 plugin",
             "results": {},
             "treatment_options": []
         },
         "demo2": {
+            "clinical": true,
             "definitions": {},
             "description": {
                 "body": "Demonstration plugin to output a well-known constant",
                 "title": "Example plugin \"demo2\""
             },
+            "failed": false,
             "gene_information": [],
             "plugin_name": "demo2 plugin",
             "results": {

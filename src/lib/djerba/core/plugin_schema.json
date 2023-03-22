@@ -4,6 +4,8 @@
     "properties":
     {
 	"plugin_name": {"type": "string" },
+	"failed": {"type": "boolean"},
+	"clinical": {"type": "boolean"},
 	"definitions": {
 	    "type": "object",
 	    "patternProperties": {
@@ -72,6 +74,6 @@
 	"results": {}
     },
     "required": [
-	"plugin_name", "definitions", "description", "treatment_options", "gene_information", "results"
+	"plugin_name", "failed", "clinical", "definitions", "description", "treatment_options", "gene_information", "results"
     ]
 }

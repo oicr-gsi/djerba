@@ -11,6 +11,8 @@ class main(plugin_base):
     def extract(self, config_section):
         data = {
             'plugin_name': 'demo2 plugin',
+            'clinical': True,
+            'failed': False,
             'definitions': {},
             'description': {
                 'title': 'Example plugin "demo2"',
