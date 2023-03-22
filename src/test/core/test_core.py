@@ -5,6 +5,8 @@ import json
 import jsonschema
 import logging
 import os
+import re
+import time
 import unittest
 
 from djerba.core.json_validator import json_validator
@@ -65,6 +67,25 @@ class TestValidator(TestBase):
 
 class TestSimpleReport(TestBase):
 
+    def assert_report_MD5(self, report_string, expected_md5):
+        # based on check_report() from original djerba test.py
+        # substitute out any date strings and check md5sum of the report body
+        contents = re.split("\n", report_string)
+        # crudely parse out the HTML body, omitting <img> tags
+        # could use an XML parser instead, but this way is simpler
+        body_lines = []
+        in_body = False
+        for line in contents:
+            if re.search('<body>', line):
+                in_body = True
+            elif re.search('</body>', line):
+                break
+            elif in_body and not re.search('<img src=', line):
+                body_lines.append(line)
+        body = ''.join(body_lines)
+        body = body.replace(time.strftime("%Y/%m/%d"), '0000/00/31')
+        self.assertEqual(self.getMD5_of_string(body), expected_md5)
+
     def test_report(self):
         ini_path = os.path.join(os.path.dirname(__file__), 'test.ini')
         json_path = os.path.join(os.path.dirname(__file__), self.SIMPLE_REPORT_JSON)
@@ -75,7 +96,9 @@ class TestSimpleReport(TestBase):
             data_expected = json.loads(json_file.read())
         self.assertEqual(data_found, data_expected)
         html = djerba_main.render(data_found)
-        self.assertEqual(self.getMD5_of_string(html), 'bc8017b0addfbf69d3d44e3a60c28ff4')
+        with open('/u/ibancarz/tmp/test_simple.html', 'w') as out_file:
+            out_file.write(html)
+        self.assert_report_MD5(html, 'bd79f6eb19966e4b9c4688457b5caff2')
 
 if __name__ == '__main__':
     unittest.main()
