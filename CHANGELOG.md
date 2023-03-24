@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.4.5: 2023-03-24
+
+### Fixed
+- Add dependencies to `setup.py`, to resolve build error in Modulator
+
 ## v0.4.4: 2023-03-22
 
 ### Changed
