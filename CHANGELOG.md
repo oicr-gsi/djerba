@@ -7,6 +7,7 @@
 
 ### Changed
 - removed callability and coverage from config template
+- cleaned `configure.py` `discover_primary` function to increase readibility and efficiency
 
 ## v0.4.5: 2023-03-24
 

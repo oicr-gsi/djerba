@@ -26,8 +26,6 @@ class pull_qc(logger):
 
     def __init__(self, config, log_level=logging.WARNING, log_path=None):
         self.config = config
-        self.log_level = log_level
-        self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.pinery_url = self.config[ini.SETTINGS][ini.PINERY_URL]
         self.qcetl_cache = self.config[ini.SETTINGS][ini.QCETL_CACHE]
@@ -71,7 +69,6 @@ class pull_qc(logger):
         else:
             msg = "Djerba couldn't find the coverage associated with tumour_id {0} in QC-ETL. ".format(tumour_id)
             
-
     def fetch_pinery_assay(self,requisition_name: str):
         pinery_requisition = self.pinery_get(f'/requisition?name={requisition_name}')
         pinery_assay = self.pinery_get(f'/assay/{pinery_requisition["assay_id"]}')
