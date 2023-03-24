@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## Unreleased
+
+### Added
+- new parameter called cbio_study_id from shesmu for whizbam links
+
+### Changed
+- removed callability and coverage from config template
+
 ## v0.4.5: 2023-03-24
 
 ### Fixed
@@ -17,7 +25,6 @@
 - automatically make failed report if coverage below target
 - add `jsonschema` dependency in `setup.py`; not yet needed for production, but will be for plugin development
 - move to python 3.10.6
-- new parameter called cbio_study_id from shesmu for whizbam links
 
 ## v0.4.3: 2023-03-10
 
