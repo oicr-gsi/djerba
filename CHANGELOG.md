@@ -1,15 +1,21 @@
 # CHANGELOG
 
-## Unreleased
+## v0.4.5: 2023-03-24
+
+### Fixed
+- Add dependencies to `setup.py`, to resolve build error in Modulator
+
+## v0.4.4: 2023-03-22
 
 ### Changed
 - `djerba pdf` takes in dir/ and json and makes pdfs from htmls based on report_id in json ()
 - Proteins for splice sites changed to form p? (c.${POSITION}${MUTATION}) (ex. from "p.X2540_splice" to "p.? (c.458-1G>T)")
-- Updated to support mavis data gives as .tab input (still supports .zip input)
+- Updated to support mavis data given as .tab input (still supports .zip input)
 - Updated to prevent error when mavis .tab file is empty or only contains a header
 - target coverage pulled from pinery
 - callability and coverage pulled from qc-etl
 - automatically make failed report if coverage below target
+- add `jsonschema` dependency in `setup.py`; not yet needed for production, but will be for plugin development
 - move to python 3.10.6
 - new parameter called cbio_study_id from shesmu for whizbam links
 

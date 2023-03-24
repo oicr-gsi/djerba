@@ -92,14 +92,17 @@ setup(
     },
     install_requires=[
         'configparse',
+        'jsonschema',
         'mako',
         'markdown',
         'numpy',
         'pandas',
         'pdfkit',
         'PyPDF2',
+        'requests',
         'scipy',
-        'statsmodels'
+        'statsmodels',
+        'tabulate'
     ],
     python_requires='>=3.10.6',
     author="Iain Bancarz",
