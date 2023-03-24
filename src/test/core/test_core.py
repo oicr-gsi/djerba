@@ -127,6 +127,8 @@ class PluginTester(TestBase):
     - Implements *minimal* testing for a plugin; further testing is encouraged
     - Input an INI path with config for exactly one plugin
     - Check plugin runs correctly, and plugin JSON and (redacted) HTML are as expected
+    - Test input/output should resemble production data as closely as possible,
+      eg. data strucutres used in production should also appear in testing
     """
 
     def read_plugin_name(self, ini_path):

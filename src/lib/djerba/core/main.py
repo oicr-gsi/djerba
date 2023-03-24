@@ -70,6 +70,9 @@ class main(logger):
             self.path_validator.validate_output_file(html_path)
         [header, footer] = core_renderer(self.log_level, self.log_path).run(data)
         html_sections = [header]
+        # TODO control the order of plugin outputs
+        # TODO merge/dedup for multi-plugin outputs
+        # See 'shared element representation' in 'Report specs' google doc
         for plugin_name in data[self.PLUGINS]:
             plugin = self.plugin_loader.load(plugin_name)
             self.logger.debug("Loaded plugin {0} for rendering".format(plugin_name))
@@ -91,6 +94,8 @@ class main(logger):
     # - convert command-line args to appropriate inputs
     # - run configure/extract/render as required
     # - Do PDF conversion
+    def run(self, args):
+        pass
 
 import sys
 
