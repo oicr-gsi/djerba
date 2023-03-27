@@ -171,16 +171,15 @@ class configurer(logger):
         self.logger.info("Callability {0} and Coverage {1}".format(callability, coverage))
         updates[ini.PCT_V7_ABOVE_80X] = callability
         updates[ini.MEAN_COVERAGE] = coverage
-       #try:
-       #     target_coverage = pull_qc(self.config).fetch_pinery_assay(self.config[ini.INPUTS][ini.REQ_ID])
-       # except MissingPineryError or UnsupportedAssayError as e:
-       #     msg = "Error {0}. Djerba couldn't find the requisition {1} in Pinery. Defaulting target coverage to .ini parameter.".format(e.code,self.config[ini.INPUTS][ini.REQ_ID])
-       #     self.logger.warning(msg)
-       #     target_coverage = self.config[ini.DISCOVERED][ini.TARGET_COVERAGE]
-       ## self.logger.info("Target Coverage: {0}".format(updates[ini.TARGET_COVERAGE]))
-       # updates[ini.TARGET_COVERAGE] = target_coverage    
-       # self._compare_coverage_to_target(coverage,target_coverage)
-       # self._check_callability()
+        try:
+            target_coverage = pull_qc(self.config).fetch_pinery_assay(self.config[ini.INPUTS][ini.REQ_ID])
+        except MissingPineryError or UnsupportedAssayError as e:
+            msg = "Error {0}. Djerba couldn't find the requisition {1} in Pinery. Defaulting target coverage to .ini parameter.".format(e.code,self.config[ini.INPUTS][ini.REQ_ID])
+            self.logger.warning(msg)
+            target_coverage = self.config[ini.DISCOVERED][ini.TARGET_COVERAGE]
+        self.logger.info("Target Coverage: {0}".format(target_coverage))
+        updates[ini.TARGET_COVERAGE] = target_coverage    
+        self._compare_coverage_to_target(coverage,target_coverage)
         return updates
 
     def run(self, out_path):
