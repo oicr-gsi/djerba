@@ -4,6 +4,7 @@ import logging
 import os
 from math import log2
 import urllib.request as request
+from urllib.error import URLError, HTTPError
 import json
 
 from djerba.sequenza import sequenza_reader, SequenzaError
@@ -111,25 +112,33 @@ class configurer(logger):
         updates.update(self.reader.get_identifiers())
         tumour_id =  updates[ini.TUMOUR_ID]
         try:
-            updates[ini.MEAN_COVERAGE] = pull_qc(self.config).fetch_coverage_etl_data(tumour_id)
+            coverage = pull_qc(self.config).fetch_coverage_etl_data(tumour_id)
         except:
-            self.logger.warning("Djerba couldn't find the coverage associated with tumour_id {0} in QC-ETL. Defaulting target coverage to .ini parameter.".format(tumour_id))
-        else:
-            self.logger.info("QC-ETL Coverage: {0}".format(updates[ini.MEAN_COVERAGE]))
-        try:
-            updates[ini.PCT_V7_ABOVE_80X] = pull_qc(self.config).fetch_callability_etl_data(tumour_id)
-        except:
-            self.logger.warning("Djerba couldn't find the callability associated with tumour_id {0} in QC-ETL. Defaulting target coverage to .ini parameter.".format(tumour_id))
-        else:
-            self.logger.info("QC-ETL Callability: {0}".format(updates[ini.PCT_V7_ABOVE_80X]))
-        try:
-            updates[ini.TARGET_COVERAGE] = pull_qc(self.config).fetch_pinery_assay(self.config[ini.INPUTS][ini.REQ_ID])
-        except:
-            msg = "Djerba couldn't find the requisition {0} in Pinery. Defaulting target coverage to .ini parameter.".format(self.config[ini.INPUTS][ini.REQ_ID])
+            msg = "Djerba couldn't find the coverage associated with tumour_id {0} in QC-ETL. Defaulting target coverage to .ini parameter.".format(tumour_id)
             self.logger.warning(msg)
         else:
-            self.logger.info("Pinery Target Coverage: {0}".format(updates[ini.TARGET_COVERAGE]))
-            self._compare_coverage_to_target(updates[ini.MEAN_COVERAGE],updates[ini.TARGET_COVERAGE])
+            coverage = pull_qc(self.config).fetch_coverage_etl_data(tumour_id)
+            self.logger.info("QC-ETL Coverage: {0}".format(coverage))
+            updates[ini.MEAN_COVERAGE] = coverage
+        try:
+            callability = pull_qc(self.config).fetch_callability_etl_data(tumour_id)
+        except:
+            msg = "Djerba couldn't find the callability associated with tumour_id {0} in QC-ETL. Defaulting target coverage to .ini parameter.".format(tumour_id)
+            self.logger.warning(msg)
+        else:
+            callability = pull_qc(self.config).fetch_callability_etl_data(tumour_id)
+            self.logger.info("QC-ETL Callability: {0}".format(callability))
+            updates[ini.PCT_V7_ABOVE_80X] = callability
+        try:
+            pull_qc(self.config).fetch_pinery_assay(self.config[ini.INPUTS][ini.REQ_ID])
+        except HTTPError as e:
+            msg = "HTTP Error {0}. Djerba couldn't find the requisition {1} in Pinery. Defaulting target coverage to .ini parameter.".format(e.code,self.config[ini.INPUTS][ini.REQ_ID])
+            self.logger.warning(msg)
+        else:
+            target_depth = pull_qc(self.config).fetch_pinery_assay(self.config[ini.INPUTS][ini.REQ_ID])
+            self.logger.info("Pinery Target Coverage: {0}".format(target_depth))
+            updates[ini.TARGET_COVERAGE] = target_depth 
+            self._compare_coverage_to_target(coverage,target_depth)
         if self.failed:
             self.logger.info("Failed report mode, omitting workflow output discovery")
         else:
