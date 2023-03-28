@@ -302,7 +302,8 @@ class pull_qc(logger):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.pinery_url = self.config[ini.SETTINGS][ini.PINERY_URL]
         self.qcetl_cache = self.config[ini.SETTINGS][ini.QCETL_CACHE]
-        self.cbio_path = self.config[ini.SETTINGS][ini.CBIO_PROJECT_PATH] 
+        self.cbio_path = self.config[ini.SETTINGS][ini.CBIO_PROJECT_PATH]
+        path_validator(log_level, log_path).validate_input_file(self.cbio_path)
         self.etl_cache = QCETLCache(self.qcetl_cache)
 
     def fetch_callability_etl_data(self,tumour_id):
@@ -321,8 +322,6 @@ class pull_qc(logger):
             raise MissingQCETLError(msg)
         
     def fetch_cbio_name(self,project_id):
-        if not self.cbio_path.startswith('/'):
-            raise RuntimeError('Invalid relative url')
         with open(self.cbio_path) as in_file:
             data = json.loads(in_file.read())
         cbioportal_project_id = data['values'][project_id]['cbioportal_project']

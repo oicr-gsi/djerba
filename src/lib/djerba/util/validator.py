@@ -2,6 +2,7 @@
 
 import logging
 import os
+import re
 import djerba.util.ini_fields as ini
 from djerba.util.logger import logger
 
@@ -52,10 +53,15 @@ class config_validator(logger):
         # ConfigParser interprets 'foo=' as mapping foo to the empty string
         for section in config.sections():
             for field in config[section]:
-                if config[section][field]=='':
+                value = config[section][field]
+                if value=='':
                     msg = "[{0}] field '{1}' cannot be an empty string".format(section, field)
                     self.logger.error(msg)
                     raise DjerbaConfigError(msg)
+                elif re.search('^[\'"]', value) or re.search('[\'"]$', value):
+                    msg = "[{0}] field '{1}' value '{2}' ".format(section, field, value)+\
+                          "is a quoted string; may be unable to resolve as a path"
+                    self.logger.warning(msg)
         return True
 
     def validate_full(self, config):
