@@ -2,8 +2,14 @@
 
 ## Unreleased
 
+### Changed
+- Moved qc-etl and pinery metric pulls to `discover_secondary` so that `tumour_id` is set first
+- Removed callability and coverage from `config_template.ini`
+
 ### Fixed
 - Raise an error in INI config validation if any parameters are set to an empty string
+- Removed unloading of djerba module in `qc_report` because both now use same python version
+- More specific error messages when qc-etl and pinery pulls fail
 
 ## v0.4.5: 2023-03-24
 
