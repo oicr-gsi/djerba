@@ -11,3 +11,4 @@ dist
 djerba.log
 *.DS_Store
 *.Rhistory
+*.vscode

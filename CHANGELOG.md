@@ -6,8 +6,14 @@
 - new parameter called cbio_study_id from shesmu for whizbam links
 
 ### Changed
-- removed callability and coverage from config template
-- cleaned `configure.py` `discover_primary` function to increase readibility and efficiency
+- Moved qc-etl and pinery metric pulls to `discover_secondary` so that `tumour_id` is set first
+- Removed callability and coverage from `config_template.ini`
+- Warning message about MSI LLOD in report when purity less than 50%
+
+### Fixed
+- Raise an error in INI config validation if any parameters are set to an empty string
+- Removed unloading of djerba module in `qc_report` because both now use same python version
+- More specific error messages when qc-etl and pinery pulls fail
 
 ## v0.4.5: 2023-03-24
 
