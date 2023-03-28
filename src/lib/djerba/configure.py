@@ -129,7 +129,8 @@ class configurer(logger):
         try:
             updates[ini.CBIO_STUDY_ID] = pull_qc(self.config).fetch_cbio_name(self.config[ini.INPUTS][ini.PROJECT_ID])
         except KeyError:
-            msg = "couldn't find the project {0} in shesmu. cbioportal-study-id will default to project-id".format(self.config[ini.INPUTS][ini.PROJECT_ID])
+            msg = "Couldn't find the project {0} in shesmu. cbioportal-study-id will default to project-id".format(self.config[ini.INPUTS][ini.PROJECT_ID])
+            self.logger.warning(msg)
             updates[ini.CBIO_STUDY_ID] = self.config[ini.INPUTS][ini.PROJECT_ID]
         self.logger.info("cBioportal Project name set to {0}".format(updates[ini.CBIO_STUDY_ID]))
         return updates
@@ -365,7 +366,7 @@ class pull_qc(logger):
             msg = "Djerba couldn't find the assay associated with requisition {0} in Pinery. ".format(requisition_name)
             self.logger.debug(msg)
             raise MissingPineryError(msg)
-        
+
     def pinery_get(self,relative_url: str) -> dict:
         if not relative_url.startswith('/'):
             raise RuntimeError('Invalid relative url')
