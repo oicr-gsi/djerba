@@ -159,13 +159,13 @@ class configurer(logger):
         try:
             coverage = pull_qc(self.config).fetch_coverage_etl_data(tumour_id)
         except MissingQCETLError as e:
-            msg = "Error {0}. Djerba couldn't find the coverage associated with tumour_id {1} in QC-ETL. Defaulting target coverage to .ini parameter.".format(e.code,tumour_id)
+            msg = "Can't retrieve coverage associated with tumour_id {0} in QC-ETL. Will use manually configured INI parameter, if available: {1}".format(tumour_id, e)            
             self.logger.warning(msg)
             coverage =  self.config[ini.DISCOVERED][ini.MEAN_COVERAGE]
         try:
             callability = pull_qc(self.config).fetch_callability_etl_data(tumour_id)
         except MissingQCETLError as e:
-            msg = "Error {0}. Djerba couldn't find the callability associated with tumour_id {1} in QC-ETL. Defaulting target coverage to .ini parameter.".format(e.code,tumour_id)
+            msg = "Can't retrieve callability associated with tumour_id {0} in QC-ETL. Will use manually configured INI parameter, if available: {1}".format(tumour_id, e)
             self.logger.warning(msg)
             callability = self.config[ini.DISCOVERED][ini.PCT_V7_ABOVE_80X]
         self.logger.info("Callability {0} and Coverage {1}".format(callability, coverage))
@@ -174,7 +174,7 @@ class configurer(logger):
         try:
             target_coverage = pull_qc(self.config).fetch_pinery_assay(self.config[ini.INPUTS][ini.REQ_ID])
         except MissingPineryError or UnsupportedAssayError as e:
-            msg = "Error {0}. Djerba couldn't find the requisition {1} in Pinery. Defaulting target coverage to .ini parameter.".format(e.code,self.config[ini.INPUTS][ini.REQ_ID])
+            msg = "Can't retrieve target coverage associated with requisition {0} in Pinery. Will use manually configured INI parameter, if available: {1}".format(self.config[ini.INPUTS][ini.REQ_ID], e)
             self.logger.warning(msg)
             target_coverage = self.config[ini.DISCOVERED][ini.TARGET_COVERAGE]
         self.logger.info("Target Coverage: {0}".format(target_coverage))
