@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+### Fixed
+- Raise an error in INI config validation if any parameters are set to an empty string
+
 ## v0.4.5: 2023-03-24
 
 ### Fixed

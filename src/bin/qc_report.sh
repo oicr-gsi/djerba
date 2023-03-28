@@ -23,14 +23,6 @@ PINERY_URL=http://pinery.gsi.oicr.on.ca
 SAMPURU_ETL=/scratch2/groups/gsi/production/sampuru-etl
 QCETL_CACHE=/scratch2/groups/gsi/production/qcetl_v1
 
-# We unload the current Python module (if any) and load production-tools-python
-# Resolves version conflict, eg. 3.9 for Djerba and 3.6 for production-tools-python
-
-# NB: Could build production-tools-python in setup.py by adding this to install_requires in setup.py:
-# 'ProductionTools @ git+ssh://bitbucket.oicr.on.ca/gsi/production-tools-python@v1.5.3'
-# But this was rejected as production-tools-python is large and time-consuming to build
-
-module unload djerba djerba-dbtools pypdf2 oncokb-annotator python # this always has returncode 0
 module load production-tools-python/${PYTHON_TOOLS_VER}
 
 cap-geneticist-review-report -c ${DB_CONFIG} -m ${MISO_URL} -d ${DASHI_URL} \
