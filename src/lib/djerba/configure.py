@@ -127,19 +127,12 @@ class configurer(logger):
         updates.update(self.reader.get_sample_names())
         updates.update(self.find_data_files())
         try:
-            updates[ini.CBIO_STUDY_ID] = self.fetch_cbio_name(self.config[ini.INPUTS][ini.PROJECT_ID])
-        except:
+            updates[ini.CBIO_STUDY_ID] = pull_qc(self.config).fetch_cbio_name(self.config[ini.INPUTS][ini.PROJECT_ID])
+        except KeyError:
             msg = "couldn't find the project {0} in shesmu. cbioportal-study-id will default to project-id".format(self.config[ini.INPUTS][ini.PROJECT_ID])
             updates[ini.CBIO_STUDY_ID] = self.config[ini.INPUTS][ini.PROJECT_ID]
         self.logger.info("cBioportal Project name set to {0}".format(updates[ini.CBIO_STUDY_ID]))
         return updates
-
-    def fetch_cbio_name(self,project_id):
-        in_path = self.config[ini.SETTINGS][ini.CBIO_PROJECT_PATH] 
-        with open(in_path) as in_file:
-            data = json.loads(in_file.read())
-        cbioportal_project_id = data['values'][project_id]['cbioportal_project']
-        return(cbioportal_project_id)
 
     def discover_secondary(self):
         updates = {}
@@ -308,6 +301,7 @@ class pull_qc(logger):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.pinery_url = self.config[ini.SETTINGS][ini.PINERY_URL]
         self.qcetl_cache = self.config[ini.SETTINGS][ini.QCETL_CACHE]
+        self.cbio_path = self.config[ini.SETTINGS][ini.CBIO_PROJECT_PATH] 
         self.etl_cache = QCETLCache(self.qcetl_cache)
 
     def fetch_callability_etl_data(self,tumour_id):
@@ -324,6 +318,14 @@ class pull_qc(logger):
             msg = "Djerba couldn't find the callability associated with tumour_id {0} in QC-ETL. ".format(tumour_id)
             self.logger.debug(msg)
             raise MissingQCETLError(msg)
+        
+    def fetch_cbio_name(self,project_id):
+        if not self.cbio_path.startswith('/'):
+            raise RuntimeError('Invalid relative url')
+        with open(self.cbio_path) as in_file:
+            data = json.loads(in_file.read())
+        cbioportal_project_id = data['values'][project_id]['cbioportal_project']
+        return(cbioportal_project_id)
         
     def fetch_coverage_etl_data(self,tumour_id):
         cached_coverages = self.etl_cache.bamqc4merged.bamqc4merged
@@ -363,7 +365,7 @@ class pull_qc(logger):
             msg = "Djerba couldn't find the assay associated with requisition {0} in Pinery. ".format(requisition_name)
             self.logger.debug(msg)
             raise MissingPineryError(msg)
-
+        
     def pinery_get(self,relative_url: str) -> dict:
         if not relative_url.startswith('/'):
             raise RuntimeError('Invalid relative url')
