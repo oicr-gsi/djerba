@@ -1,13 +1,15 @@
 {
     "clinical": true,
-    "definitions": {},
-    "description": {
-        "body": "Demonstration plugin, writes placeholder text",
-        "title": "Example plugin \"demo1\""
-    },
     "failed": false,
-    "gene_information": [],
+    "merge_inputs": {
+        "definitions": {},
+        "description": {
+            "body": "Demonstration plugin, writes placeholder text",
+            "title": "Example plugin \"demo1\""
+        },
+        "gene_information": [],
+        "treatment_options": []
+    },
     "plugin_name": "demo1 plugin",
-    "results": {},
-    "treatment_options": []
+    "results": {}
 }

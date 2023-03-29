@@ -6,74 +6,10 @@
 	"plugin_name": {"type": "string" },
 	"failed": {"type": "boolean"},
 	"clinical": {"type": "boolean"},
-	"definitions": {
-	    "type": "object",
-	    "patternProperties": {
-		".*": { "type": "string" }
-	    },
-	    "additionalProperties": false,
-	    "uniqueItems": true
-	},
-	"description": {
-	    "type": "object",
-	    "properties": {
-		"title": {"type": "string" },
-		"body": { "type": "string" }
-	    },
-	    "additionalProperties": false,
-	    "uniqueItems": true
-	},
-	"treatment_options": {
-	    "type": "array",
-	    "items": {
-		"type": "object",
-		"properties": {
-		    "Level": {"enum": ["FDA Approved", "Investigational"]},
-		    "Genes": {
-			"type": "array",
-			"items": {
-			    "type": "object",
-			    "properties": {
-				"name": { "type": "string" },
-				"url":  { "type": "string" }
-			    }
-			}
-		    },
-		    "Alterations": {
-			"type": "array",
-			"items": {
-			    "type": "object",
-			    "properties": {
-				"name": { "type": "string" },
-				"url":  { "type": "string" }
-			    }
-			}
-		    },
-		    "OncoKB": {
-			"type": "string"
-		    },
-		    "Treatment": {
-			"type": "string"
-		    }
-		}
-	    },
-	    "additionalProperties": false,
-	    "uniqueItems": true
-	},
-	"gene_information": {
-	    "type": "array",
-	    "items": {
-		"type": "object",
-		"properties": {
-		    "name": { "type": "string" },
-		    "url":  { "type": "string" },
-		    "summary":  { "type": "string" }
-		}
-	    }
-	},
-	"results": {}
+	"merge_inputs": {"type": "object"},
+	"results": {"type": "object"}
     },
     "required": [
-	"plugin_name", "failed", "clinical", "definitions", "description", "treatment_options", "gene_information", "results"
+	"plugin_name", "failed", "clinical", "merge_inputs", "results"
     ]
 }

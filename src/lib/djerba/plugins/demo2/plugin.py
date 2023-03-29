@@ -13,13 +13,15 @@ class main(plugin_base):
             'plugin_name': 'demo2 plugin',
             'clinical': True,
             'failed': False,
-            'definitions': {},
-            'description': {
-                'title': 'Example plugin "demo2"',
-                'body': 'Demonstration plugin to output a well-known constant'
+            'merge_inputs': {
+                'definitions': {},
+                'description': {
+                    'title': 'Example plugin "demo1"',
+                    'body': 'Demonstration plugin, writes placeholder text'
+                },
+                'treatment_options': [],
+                'gene_information': []
             },
-            'treatment_options': [],
-            'gene_information': [],
             'results': {
                 'answer': config_section['demo2_param']
             }

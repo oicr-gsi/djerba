@@ -2,40 +2,42 @@
     "plugin_name": "cnv_detector",
     "clinical": true,
     "failed": false,
-    "definitions": {
-	"alpha": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-	"beta": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+    "merge_inputs": {
+	"definitions": {
+	    "alpha": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+	    "beta": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+	},
+	"description": {
+	    "title": "CNV Detector",
+	    "body": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+	},
+	"treatment_options": [
+            {
+		"Level": "Investigational",
+		"Genes": [
+		    {
+			"name": "KRAS",
+			"url": "https://www.oncokb.org/gene/KRAS"
+		    }
+		],
+		"Alterations": [
+		    {
+			"name": "p.G12S",
+			"url_foobar": "https://www.oncokb.org/gene/KRAS/p.G12S/PAAD"
+		    }
+		],
+		"OncoKB": "Level 4",
+		"Treatment": "Trametinib, Cobimetinib, Binimetinib"
+            }
+	],
+	"gene_information": [
+	    {
+		"name": "KRAS",
+		"url": "https://www.oncokb.org/gene/KRAS",
+		"summary": "KRAS, a GTPase which functions as an upstream regulator of the MAPK and PI3K pathways, is frequently mutated in various cancer types including pancreatic, colorectal and lung cancers."
+	    }
+	]
     },
-    "description": {
-	"title": "CNV Detector",
-	"body": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
-    },
-    "treatment_options": [
-        {
-	    "Level": "Investigational",
-            "Genes": [
-		{
-		    "name": "KRAS",
-		    "url": "https://www.oncokb.org/gene/KRAS"
-		}
-	    ],
-            "Alterations": [
-		{
-		    "name": "p.G12S",
-		    "url_foobar": "https://www.oncokb.org/gene/KRAS/p.G12S/PAAD"
-		}
-	    ],
-            "OncoKB": "Level 4",
-            "Treatment": "Trametinib, Cobimetinib, Binimetinib"
-        }
-    ],
-    "gene_information": [
-	{
-	    "name": "KRAS",
-	    "url": "https://www.oncokb.org/gene/KRAS",
-	    "summary": "KRAS, a GTPase which functions as an upstream regulator of the MAPK and PI3K pathways, is frequently mutated in various cancer types including pancreatic, colorectal and lung cancers."
-	}
-    ],
     "results": {
         "Total variants": 40,
         "Clinically relevant variants": 1,

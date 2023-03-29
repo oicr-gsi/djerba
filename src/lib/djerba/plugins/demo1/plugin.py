@@ -9,13 +9,15 @@ class main(plugin_base):
             'plugin_name': 'demo1 plugin',
             'clinical': True,
             'failed': False,
-            'definitions': {},
-            'description': {
-                'title': 'Example plugin "demo1"',
-                'body': 'Demonstration plugin, writes placeholder text'
+            'merge_inputs': {
+                'definitions': {},
+                'description': {
+                    'title': 'Example plugin "demo1"',
+                    'body': 'Demonstration plugin, writes placeholder text'
+                },
+                'treatment_options': [],
+                'gene_information': []
             },
-            'treatment_options': [],
-            'gene_information': [],
             'results': {},
         }
         return data

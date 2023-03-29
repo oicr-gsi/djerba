@@ -1,15 +1,17 @@
 {
     "clinical": true,
-    "definitions": {},
-    "description": {
-        "body": "Demonstration plugin to output a well-known constant",
-        "title": "Example plugin \"demo2\""
-    },
     "failed": false,
-    "gene_information": [],
+    "merge_inputs": {
+        "definitions": {},
+        "description": {
+            "body": "Demonstration plugin, writes placeholder text",
+            "title": "Example plugin \"demo1\""
+        },
+        "gene_information": [],
+        "treatment_options": []
+    },
     "plugin_name": "demo2 plugin",
     "results": {
         "answer": "42"
-    },
-    "treatment_options": []
+    }
 }
