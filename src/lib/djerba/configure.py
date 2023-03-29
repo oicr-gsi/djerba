@@ -4,6 +4,7 @@ import logging
 import os
 from math import log2
 import urllib.request as request
+from urllib.error import URLError, HTTPError
 import json
 
 from djerba.sequenza import sequenza_reader, SequenzaError
@@ -167,13 +168,13 @@ class configurer(logger):
         except MissingQCETLError as e:
             msg = "Can't retrieve coverage associated with tumour_id {0} in QC-ETL. Will use manually configured INI parameter, if available: {1}".format(tumour_id, e)            
             self.logger.warning(msg)
-            coverage =  self.config[ini.DISCOVERED][ini.MEAN_COVERAGE]
+            coverage =  float(self.config[ini.DISCOVERED][ini.MEAN_COVERAGE])
         try:
             callability = pull_qc(self.config).fetch_callability_etl_data(tumour_id)
         except MissingQCETLError as e:
             msg = "Can't retrieve callability associated with tumour_id {0} in QC-ETL. Will use manually configured INI parameter, if available: {1}".format(tumour_id, e)
             self.logger.warning(msg)
-            callability = self.config[ini.DISCOVERED][ini.PCT_V7_ABOVE_80X]
+            callability = float(self.config[ini.DISCOVERED][ini.PCT_V7_ABOVE_80X])
         self.logger.info("Callability {0} and Coverage {1}".format(callability, coverage))
         updates[ini.PCT_V7_ABOVE_80X] = callability
         updates[ini.MEAN_COVERAGE] = coverage
@@ -182,7 +183,7 @@ class configurer(logger):
         except MissingPineryError or UnsupportedAssayError as e:
             msg = "Can't retrieve target coverage associated with requisition {0} in Pinery. Will use manually configured INI parameter, if available: {1}".format(self.config[ini.INPUTS][ini.REQ_ID], e)
             self.logger.warning(msg)
-            target_coverage = self.config[ini.DISCOVERED][ini.TARGET_COVERAGE]
+            target_coverage = float(self.config[ini.DISCOVERED][ini.TARGET_COVERAGE])
         self.logger.info("Target Coverage: {0}".format(target_coverage))
         updates[ini.TARGET_COVERAGE] = target_coverage    
         self._compare_coverage_to_target(coverage,target_coverage)
@@ -343,7 +344,12 @@ class pull_qc(logger):
             raise MissingQCETLError(msg)
 
     def fetch_pinery_assay(self,requisition_name: str):
-        pinery_requisition = self.pinery_get(f'/requisition?name={requisition_name}')
+        try:
+            pinery_requisition = self.pinery_get(f'/requisition?name={requisition_name}')
+        except HTTPError:
+            msg = "Djerba couldn't find the assay associated with requisition {0} in Pinery. ".format(requisition_name)
+            self.logger.debug(msg)
+            raise MissingPineryError(msg)
         if len(pinery_requisition) > 0:
             try:
                 pinery_assay = self.pinery_get(f'/assay/{pinery_requisition["assay_id"]}')
