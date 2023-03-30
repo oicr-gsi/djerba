@@ -31,13 +31,9 @@ class plugin_base(logger, ABC):
         self.logger.debug(msg)
         data = {
             'plugin_name': 'abstract plugin',
-            'definitions': {},
-            'description': {
-                'title': 'Abstract plugin',
-                'body': 'Placeholder plugin data from abstract parent class'
-            },
-            'treatment_options': [],
-            'gene_information': [],
+            'clinical': True,
+            'failed': False,
+            'merge_inputs': {},
             'results': {},
         }
         return data
