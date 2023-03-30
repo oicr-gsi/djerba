@@ -209,6 +209,8 @@ class configurer(logger):
                 target_coverage = qc_retriever.fetch_pinery_assay(req_id)
             except (MissingPineryError, UnsupportedAssayError) as e:
                 msg = "Target coverage not supplied by user, and cannot be retrieved from Pinery for requisition ID {0}: {1}".format(req_id, e)
+                self.logger.error(msg)
+                raise
             self.logger.info("Using target coverage from Pinery: {0}".format(target_coverage))
             updates[ini.TARGET_COVERAGE] = target_coverage
         return updates
