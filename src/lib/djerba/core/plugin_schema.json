@@ -1,0 +1,15 @@
+{
+    "$id": "https://github.com/oicr-gsi/djerba/blob/GCGI-787_plugin-json-validation/src/lib/djerba/core/plugin_schema.json",
+    "type": "object",
+    "properties":
+    {
+	"plugin_name": {"type": "string" },
+	"failed": {"type": "boolean"},
+	"clinical": {"type": "boolean"},
+	"merge_inputs": {"type": "object"},
+	"results": {"type": "object"}
+    },
+    "required": [
+	"plugin_name", "failed", "clinical", "merge_inputs", "results"
+    ]
+}

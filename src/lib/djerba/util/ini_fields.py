@@ -100,6 +100,8 @@ MAVIS_LINK = 'MAVIS_link'
 # schemas to represent required structure for the INI file
 # core schema for plugins
 # TODO move Sequenza reviewers from core schema into WGTS/WGS plugin settings?
+
+# work in progress on INI constants for plugin structure
 CORE = 'core'
 SCHEMA_CORE = {
     CORE: [

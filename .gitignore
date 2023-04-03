@@ -5,6 +5,7 @@
 djerba.egg-info
 build
 dist
+.coverage
 .idea
 .project
 .pydevproject

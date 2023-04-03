@@ -73,7 +73,10 @@ class config_validator(logger):
         return valid
 
 class config_plugin_validator(config_validator):
-    """Check that plugin INI parameters are valid"""
+    """
+    Check that plugin INI parameters are valid
+    This is for the demo class in `prototypes` -- may be superseded later
+    """
 
     def __init__(self, core_schema, plugin_name, required, optional,
                  log_level=logging.WARNING, log_path=None):

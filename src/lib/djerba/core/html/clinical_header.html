@@ -1,0 +1,71 @@
+<%
+  import djerba.render.constants as constants
+  from djerba.render.json_to_html import html_builder
+%>
+
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style type="text/css">
+    <%include file="style.css"/>
+  </style>
+</head>
+
+<body>
+
+  <%include file="letterhead.html"/>
+
+  % if failed:
+    <h1>Clinical Research Report - Quality Failure</h1>
+  % else:
+    <h1>Clinical Research Report</h1>
+  % endif
+  
+  <!-- Case overview -->
+  ${html_builder().section_cells_begin("<h2>Case Overview</h2>","main")}
+
+      <table class="info">
+        <tr>
+          <td colspan=1>Assay:</td>
+          <td colspan=3>${patient_info.get(constants.ASSAY_NAME)}</td>
+        </tr>
+      </table>
+
+      <table class="info">
+        <tr>
+          <td colspan=2>Primary cancer:</td>
+          <td colspan=2>${patient_info.get(constants.PRIMARY_CANCER)}</td>
+        </tr>
+        <tr>
+          <td colspan=2>Site of biopsy/surgery:</td>
+          <td colspan=2>${patient_info.get(constants.SITE_OF_BIOPSY_OR_SURGERY)}</td>
+        </tr>
+      </table>
+
+      <!-- if assay not pre-validated -->
+      <table  class="info">
+      % for row in html_builder().patient_table_report_cols(patient_info):
+            ${row}
+      % endfor
+      </table>
+      <table  class="info">
+      % for row in html_builder().patient_table_id_cols(patient_info):
+            ${row}
+      % endfor
+      </table>
+
+  ${html_builder().section_cells_end()}
+  
+
+  <!-- sample info -->
+  ${html_builder().section_cells_begin("<h2>Sample Information</h2>","main")}
+
+        <table class="info">
+        % for row in html_builder(purity_failure).sample_information_and_quality_rows(sample_info_and_quality):
+              ${row}
+        % endfor
+        </table>
+
+  ${html_builder().section_cells_end()}
