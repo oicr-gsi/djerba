@@ -5,15 +5,17 @@ Cannot be used to create an object (abstract) but can be subclassed (base class)
 
 import logging
 from abc import ABC
+from djerba.core.json_validator import json_validator
 from djerba.util.logger import logger
 
 class merger_base(logger, ABC):
 
-    def __init__(self, log_level=logging.INFO, log_path=None):
+    def __init__(self, schema_path, log_level=logging.INFO, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.logger.debug("Using constructor of parent class")
+        self.json_validator = json_validator(schema_path)
 
     def render(self, inputs):
         """
@@ -23,5 +25,6 @@ class merger_base(logger, ABC):
         """
         msg = "Using method of parent class; checks inputs and returns empty string"
         self.logger.debug(msg)
-        self.json_validator.validate_data(data)
+        for item in inputs:
+            self.json_validator.validate_data(item)
         return ''

@@ -12,7 +12,7 @@ from djerba.core.configure import configurer as core_configurer
 from djerba.core.extract import extractor as core_extractor
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.render import renderer as core_renderer
-from djerba.core.plugin_loader import plugin_loader
+from djerba.core.loaders import plugin_loader
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
 
