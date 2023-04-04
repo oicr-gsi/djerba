@@ -5,9 +5,11 @@
 djerba.egg-info
 build
 dist
+.coverage
 .idea
 .project
 .pydevproject
 djerba.log
 *.DS_Store
 *.Rhistory
+*.vscode

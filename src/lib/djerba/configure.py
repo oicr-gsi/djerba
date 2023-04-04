@@ -3,6 +3,9 @@
 import logging
 import os
 from math import log2
+import urllib.request as request
+from urllib.error import URLError, HTTPError
+import json
 
 from djerba.sequenza import sequenza_reader, SequenzaError
 import djerba.util.constants as constants
@@ -10,6 +13,12 @@ import djerba.util.ini_fields as ini
 from djerba.util.logger import logger
 from djerba.util.provenance_reader import provenance_reader, sample_name_container
 from djerba.util.validator import path_validator
+
+try:
+    import gsiqcetl.column
+    from gsiqcetl import QCETLCache
+except ImportError:
+        raise ImportError('Error Importing QC-ETL, try checking python versions')
 
 class configurer(logger):
     """
@@ -69,6 +78,18 @@ class configurer(logger):
             self.logger.debug("Found sample names from INI input: {0}".format(samples))
         return samples
 
+    def _compare_coverage_to_target(self,coverage,target):
+        if target > coverage:
+            msg = "Target Depth {0}X is larger than Discovered Coverage {1}X. Changing to Failed mode.".format(target, coverage)
+            self.logger.warning(msg)
+            self.failed = True
+        elif target <= coverage:
+            msg = "Target Depth {0}X is within range of Discovered Coverage {1}X".format(target, coverage)
+            self.logger.info(msg)
+        else:
+            msg = "Target Depth {0}X is incompatible with Discovered Coverage {1}X".format(target, coverage)
+            raise RuntimeError(msg)
+
     def find_data_files(self):
         data_files = {}
         if self.config.has_option(ini.DISCOVERED, ini.DATA_DIR):
@@ -93,6 +114,7 @@ class configurer(logger):
 
     def discover_primary(self):
         updates = {}
+        updates.update(self.reader.get_identifiers())
         if self.failed:
             self.logger.info("Failed report mode, omitting workflow output discovery")
         else:
@@ -103,7 +125,6 @@ class configurer(logger):
             if not self.wgs_only:
                 updates[ini.MAVIS_FILE] = self.reader.parse_mavis_path()
                 updates[ini.GEP_FILE] = self.reader.parse_gep_path()
-        updates.update(self.reader.get_identifiers())
         updates.update(self.reader.get_sample_names())
         updates.update(self.find_data_files())
         return updates
@@ -134,6 +155,31 @@ class configurer(logger):
         updates[ini.SEQUENZA_SOLUTION] = solution
         updates[ini.PLOIDY] = ploidy
         updates[ini.PURITY] = purity
+        tumour_id =  self.config[ini.DISCOVERED][ini.TUMOUR_ID]
+        try:
+            coverage = pull_qc(self.config).fetch_coverage_etl_data(tumour_id)
+        except MissingQCETLError as e:
+            msg = "Can't retrieve coverage associated with tumour_id {0} in QC-ETL. Will use manually configured INI parameter, if available: {1}".format(tumour_id, e)            
+            self.logger.warning(msg)
+            coverage =  self.config[ini.DISCOVERED][ini.MEAN_COVERAGE]
+        try:
+            callability = pull_qc(self.config).fetch_callability_etl_data(tumour_id)
+        except MissingQCETLError as e:
+            msg = "Can't retrieve callability associated with tumour_id {0} in QC-ETL. Will use manually configured INI parameter, if available: {1}".format(tumour_id, e)
+            self.logger.warning(msg)
+            callability = self.config[ini.DISCOVERED][ini.PCT_V7_ABOVE_80X]
+        self.logger.info("Callability {0} and Coverage {1}".format(callability, coverage))
+        updates[ini.PCT_V7_ABOVE_80X] = callability
+        updates[ini.MEAN_COVERAGE] = coverage
+        try:
+            target_coverage = pull_qc(self.config).fetch_pinery_assay(self.config[ini.INPUTS][ini.REQ_ID])
+        except MissingPineryError or UnsupportedAssayError as e:
+            msg = "Can't retrieve target coverage associated with requisition {0} in Pinery. Will use manually configured INI parameter, if available: {1}".format(self.config[ini.INPUTS][ini.REQ_ID], e)
+            self.logger.warning(msg)
+            target_coverage = self.config[ini.DISCOVERED][ini.TARGET_COVERAGE]
+        self.logger.info("Target Coverage: {0}".format(target_coverage))
+        updates[ini.TARGET_COVERAGE] = target_coverage    
+        self._compare_coverage_to_target(coverage,target_coverage)
         return updates
 
     def run(self, out_path):
@@ -232,5 +278,93 @@ class log_r_cutoff_finder:
         else:
             return log2(x)
 
+class pull_qc(logger):
+
+    class Requisition():
+        def __init__(self, pinery_requisition, pinery_assay):
+            self.id: int = pinery_requisition['id']
+            self.name: str = pinery_requisition['name']
+            self.assay: str = pinery_assay['name']
+            self.assay_id: int = pinery_assay['id']
+            self.assay_description: str = pinery_assay['description']
+            self.assay_version: str = pinery_assay['version']
+
+    def __init__(self, config, log_level=logging.WARNING, log_path=None):
+        self.config = config
+        self.log_level = log_level
+        self.log_path = log_path
+        self.logger = self.get_logger(log_level, __name__, log_path)
+        self.pinery_url = self.config[ini.SETTINGS][ini.PINERY_URL]
+        self.qcetl_cache = self.config[ini.SETTINGS][ini.QCETL_CACHE]
+        self.etl_cache = QCETLCache(self.qcetl_cache)
+
+    def fetch_callability_etl_data(self,tumour_id):
+        cached_callabilities = self.etl_cache.mutectcallability.mutectcallability
+        columns_of_interest = gsiqcetl.column.MutetctCallabilityColumn
+        data = cached_callabilities.loc[
+            (cached_callabilities[columns_of_interest.GroupID] == tumour_id),
+            [columns_of_interest.GroupID, columns_of_interest.Callability]
+            ]
+        if len(data) > 0:
+            callability = round(data.iloc[0][columns_of_interest.Callability].item() * 100,1)
+            return(callability)
+        else:
+            msg = "Djerba couldn't find the callability associated with tumour_id {0} in QC-ETL. ".format(tumour_id)
+            self.logger.debug(msg)
+            raise MissingQCETLError(msg)
+        
+    def fetch_coverage_etl_data(self,tumour_id):
+        cached_coverages = self.etl_cache.bamqc4merged.bamqc4merged
+        columns_of_interest = gsiqcetl.column.BamQc4MergedColumn
+        data = cached_coverages.loc[
+            (cached_coverages[columns_of_interest.GroupID] == tumour_id),
+            [columns_of_interest.GroupID, columns_of_interest.CoverageDeduplicated]
+            ]
+        if len(data) > 0:
+            coverage_value = round(data.iloc[0][columns_of_interest.CoverageDeduplicated].item(),1)
+            return(coverage_value)
+        else:
+            msg = "Djerba couldn't find the coverage associated with tumour_id {0} in QC-ETL. ".format(tumour_id)
+            self.logger.debug(msg)
+            raise MissingQCETLError(msg)
+
+    def fetch_pinery_assay(self,requisition_name: str):
+        pinery_requisition = self.pinery_get(f'/requisition?name={requisition_name}')
+        if len(pinery_requisition) > 0:
+            try:
+                pinery_assay = self.pinery_get(f'/assay/{pinery_requisition["assay_id"]}')
+            except KeyError:
+                msg = "Djerba couldn't find an assay type associated with requisition {0} in Pinery. ".format(requisition_name)
+                self.logger.debug(msg)
+                raise UnsupportedAssayError(msg)
+            requisition = self.Requisition(pinery_requisition, pinery_assay)
+            if (requisition.assay == "WGTS - 80XT/30XN") | (requisition.assay == "WGS - 80XT/30XN") :
+                requisition_target = 80
+            elif (requisition.assay == "WGTS - 40XT/30XN") | (requisition.assay == "WGS - 40XT/30XN"):
+                requisition_target = 40
+            else:
+                msg = "The assay {0} associated with requisition {1} in Pinery is not clinically supported. ".format(requisition.assay,requisition_name)
+                self.logger.debug(msg)
+                raise UnsupportedAssayError(msg)
+            return(requisition_target)
+        else:
+            msg = "Djerba couldn't find the assay associated with requisition {0} in Pinery. ".format(requisition_name)
+            self.logger.debug(msg)
+            raise MissingPineryError(msg)
+
+    def pinery_get(self,relative_url: str) -> dict:
+        if not relative_url.startswith('/'):
+            raise RuntimeError('Invalid relative url')
+        return json.load(request.urlopen(f'{self.pinery_url}{relative_url}'))
+
 class MissingConfigError(Exception):
+    pass
+
+class MissingQCETLError(Exception):
+    pass 
+
+class MissingPineryError(Exception):
+    pass
+
+class UnsupportedAssayError(Exception):
     pass

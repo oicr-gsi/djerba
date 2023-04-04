@@ -99,10 +99,12 @@ setup(
         'pandas',
         'pdfkit',
         'PyPDF2',
+        'requests',
         'scipy',
-        'statsmodels'
+        'statsmodels',
+        'tabulate'
     ],
-    python_requires='>=3.9',
+    python_requires='>=3.10.6',
     author="Iain Bancarz",
     author_email="ibancarz [at] oicr [dot] on [dot] ca",
     description="Create reports from metadata and workflow output",

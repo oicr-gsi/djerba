@@ -130,6 +130,9 @@ class clinical_report_json_composer(composer_base):
     VARIANT_CLASSIFICATION = 'Variant_Classification'
     V7_TARGET_SIZE = 37.285536 # inherited from CGI-Tools
 
+    # For checking the presence of fusion data
+    DATA_FUSIONS_OLD = 'data_fusions.txt'
+
 
     # variant classifications excluded from TMB count
     TMB_EXCLUDED = [
@@ -192,10 +195,15 @@ class clinical_report_json_composer(composer_base):
         else:
             [self.total_somatic_mutations, self.tmb_count] = self.read_somatic_mutation_totals()
             if self.is_wgts:
-                fus_reader = fusion_reader(input_dir, log_level=log_level, log_path=log_path)
-                self.total_fusion_genes = fus_reader.get_total_fusion_genes()
-                self.gene_pair_fusions = fus_reader.get_fusions()
-                self.expr_input = self.EXPR_PCT_TCGA
+                if self.has_fusion_data() == True:
+                    fus_reader = fusion_reader(input_dir, log_level=log_level, log_path=log_path)
+                    self.total_fusion_genes = fus_reader.get_total_fusion_genes()
+                    self.gene_pair_fusions = fus_reader.get_fusions()
+                    self.expr_input = self.EXPR_PCT_TCGA
+                else:
+                    self.total_fusion_genes = None
+                    self.gene_pair_fusions = None
+                    self.expr_input = self.EXPR_PCT_TCGA    
             else:
                 self.total_fusion_genes = None
                 self.gene_pair_fusions = None
@@ -210,12 +218,13 @@ class clinical_report_json_composer(composer_base):
         elif assay_type == rc.ASSAY_WGTS:
             assay_type_name = "Whole genome and transcriptome sequencing (WGTS)-"
         ##target
-        coverage = self.params.get(xc.COVERAGE)
+        coverage = int(self.params.get(xc.COVERAGE))
         if coverage == 40:
             assay_coverage_name = "40X Tumour, 30X Normal "
         elif coverage == 80:
             assay_coverage_name = "80X Tumour, 30X Normal "
         else:
+            self.logger.info("Discovered Target Coverage: {0}".format(coverage))
             raise RuntimeError("Unknown depth of coverage")
         ##assay version
         assay_version = self.config[ini.SETTINGS][ini.ASSAY_VERSION]
@@ -265,7 +274,7 @@ class clinical_report_json_composer(composer_base):
             rc.NORMAL_MIN: 30,
             rc.NORMAL_TARGET: 40
         }
-        coverage = self.params.get(xc.COVERAGE)
+        coverage = int(self.params.get(xc.COVERAGE))
         if coverage == 40:
             coverage_thresholds[rc.TUMOUR_MIN] = 40
             coverage_thresholds[rc.TUMOUR_TARGET] = 50
@@ -273,11 +282,18 @@ class clinical_report_json_composer(composer_base):
             coverage_thresholds[rc.TUMOUR_MIN] = 80
             coverage_thresholds[rc.TUMOUR_TARGET] = 100
         else:
+            self.logger.info("Discovered Threshold Coverage: {0}".format(coverage))
             raise RuntimeError("Unknown depth of coverage")
         return coverage_thresholds
 
     def build_fda_approved_info(self):
         return self.build_therapy_info(self.FDA_APPROVED)
+    
+    def has_fusion_data(self):
+        if os.path.exists(os.path.join(self.input_dir, self.DATA_FUSIONS_OLD)):
+            return True
+        else:
+            return False
 
     def build_gene_url(self, gene):
         return '/'.join([self.ONCOKB_URL_BASE, gene])
@@ -432,29 +448,38 @@ class clinical_report_json_composer(composer_base):
     def build_svs_and_fusions(self):
         # table has 2 rows for each oncogenic fusion
         self.logger.debug("Building data for structural variants and fusions table")
-        rows = []
-        for fusion in self.gene_pair_fusions:
-            oncokb_level = fusion.get_oncokb_level()
-            for gene in fusion.get_genes():
-                cytoband = self.get_cytoband(gene)
-                row =  {
-                    rc.GENE: gene,
-                    rc.GENE_URL: self.build_gene_url(gene),
-                    rc.CHROMOSOME: cytoband,
-                    rc.FRAME: fusion.get_frame(),
-                    rc.FUSION: fusion.get_fusion_id_new(),
-                    rc.MUTATION_EFFECT: fusion.get_mutation_effect(),
-                    rc.ONCOKB: oncokb_level
-                }
-                rows.append(row)
-        rows = list(filter(self.oncokb_filter, rows)) # sorting is done by fusion reader
-        for row in rows: self.all_reported_variants.add((row.get(rc.GENE), row.get(rc.CHROMOSOME)))
-        distinct_oncogenic_genes = len(set([row.get(rc.GENE) for row in rows]))
-        data = {
-            rc.CLINICALLY_RELEVANT_VARIANTS: distinct_oncogenic_genes,
-            rc.TOTAL_VARIANTS: self.total_fusion_genes,
-            rc.BODY: rows
-        }
+        if self.gene_pair_fusions is not None:
+            # table has 2 rows for each oncogenic fusion
+            rows = []
+            for fusion in self.gene_pair_fusions:
+                oncokb_level = fusion.get_oncokb_level()
+                for gene in fusion.get_genes():
+                    cytoband = self.get_cytoband(gene)
+                    row =  {
+                        rc.GENE: gene,
+                        rc.GENE_URL: self.build_gene_url(gene),
+                        rc.CHROMOSOME: cytoband,
+                        rc.FRAME: fusion.get_frame(),
+                        rc.FUSION: fusion.get_fusion_id_new(),
+                        rc.MUTATION_EFFECT: fusion.get_mutation_effect(),
+                        rc.ONCOKB: oncokb_level
+                    }
+                    rows.append(row)
+            rows = list(filter(self.oncokb_filter, rows)) # sorting is done by fusion reader
+            for row in rows: self.all_reported_variants.add((row.get(rc.GENE), row.get(rc.CHROMOSOME)))
+            distinct_oncogenic_genes = len(set([row.get(rc.GENE) for row in rows]))
+            data = {
+                rc.CLINICALLY_RELEVANT_VARIANTS: distinct_oncogenic_genes,
+                rc.TOTAL_VARIANTS: self.total_fusion_genes,
+                rc.BODY: rows
+            }
+            
+        else:
+            data = {
+            rc.CLINICALLY_RELEVANT_VARIANTS: 0,
+            rc.TOTAL_VARIANTS: 0,
+            rc.BODY: []
+            }
         return data
 
     def build_supplementary_info(self):

@@ -38,14 +38,22 @@ class config_validator(logger):
 
     def validate(self, config, section_titles):
         """Validate for the given list of section titles"""
-        for title in section_titles:
-            if not title in config.sections():
-                msg = "[{0}] section not found in config".format(title)
+        for section in section_titles:
+            if not section in config.sections():
+                msg = "[{0}] section not found in config".format(section)
                 self.logger.error(msg)
                 raise DjerbaConfigError(msg)
-            for field in self.schema[title]:
-                if not config[title].get(field):
-                    msg = "[{0}] field '{1}' not found in config".format(title, field)
+            for field in self.schema[section]:
+                if not config[section].get(field):
+                    msg = "[{0}] field '{1}' not found in config".format(section, field)
+                    self.logger.error(msg)
+                    raise DjerbaConfigError(msg)
+        # check all fields in config are non-empty
+        # ConfigParser interprets 'foo=' as mapping foo to the empty string
+        for section in config.sections():
+            for field in config[section]:
+                if config[section][field]=='':
+                    msg = "[{0}] field '{1}' cannot be an empty string".format(section, field)
                     self.logger.error(msg)
                     raise DjerbaConfigError(msg)
         return True
