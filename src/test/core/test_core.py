@@ -11,7 +11,7 @@ import unittest
 import djerba.util.ini_fields as ini
 
 from configparser import ConfigParser
-from djerba.core.json_validator import json_validator
+from djerba.core.json_validator import plugin_json_validator
 from djerba.core.main import main
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.validator import path_validator
@@ -97,7 +97,7 @@ class TestValidator(TestBase):
         return result.returncode
 
     def test_plugin(self):
-        validator = json_validator(log_level=logging.WARNING)
+        validator = plugin_json_validator(log_level=logging.WARNING)
         for filename in [self.EXAMPLE_DEFAULT, self.EXAMPLE_EMPTY]:
             in_path = os.path.join(self.test_source_dir, filename)
             with open(in_path) as in_file:
@@ -105,7 +105,7 @@ class TestValidator(TestBase):
             self.assertTrue(validator.validate_data(input_data))
 
     def test_plugin_broken(self):
-        validator = json_validator(log_level=logging.CRITICAL)
+        validator = plugin_json_validator(log_level=logging.CRITICAL)
         in_path = os.path.join(self.test_source_dir, self.EXAMPLE_BROKEN)
         with open(in_path) as in_file:
             input_data = json.loads(in_file.read())
@@ -157,7 +157,7 @@ class PluginTester(TestBase):
         with open(expected_json_path) as json_file:
             plugin_data_expected = json.loads(json_file.read())
         plugin_data_found = data_found['plugins'][plugin_name]
-        validator = json_validator(log_level=logging.WARNING)
+        validator = plugin_json_validator(log_level=logging.WARNING)
         self.assertTrue(validator.validate_data(plugin_data_found))
         self.assertEqual(plugin_data_found, plugin_data_expected)
         html = djerba_main.render(data_found)

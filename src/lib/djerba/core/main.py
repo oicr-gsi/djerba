@@ -10,7 +10,7 @@ import json
 import djerba.util.ini_fields as ini
 from djerba.core.configure import configurer as core_configurer
 from djerba.core.extract import extractor as core_extractor
-from djerba.core.json_validator import json_validator
+from djerba.core.json_validator import plugin_json_validator
 from djerba.core.render import renderer as core_renderer
 from djerba.core.plugin_loader import plugin_loader
 from djerba.util.logger import logger
@@ -24,7 +24,7 @@ class main(logger):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
-        self.json_validator = json_validator(self.log_level, self.log_path)
+        self.json_validator = plugin_json_validator(self.log_level, self.log_path)
         self.path_validator = path_validator(self.log_level, self.log_path)
         self.plugin_loader = plugin_loader(self.log_level, self.log_path)
 

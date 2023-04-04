@@ -5,7 +5,7 @@ Cannot be used to create an object (abstract) but can be subclassed (base class)
 
 import logging
 from abc import ABC
-from djerba.core.json_validator import json_validator
+from djerba.core.json_validator import plugin_json_validator
 from djerba.util.logger import logger
 
 class plugin_base(logger, ABC):
@@ -14,7 +14,7 @@ class plugin_base(logger, ABC):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
-        self.json_validator = json_validator(log_level, log_path)
+        self.json_validator = plugin_json_validator(log_level, log_path)
         self.logger.debug("Using constructor of parent class")
 
     def configure(self, config_section):
