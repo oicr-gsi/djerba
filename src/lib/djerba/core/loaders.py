@@ -17,51 +17,79 @@ Plugin modules:
 - configure *must* input an ConfigParser section, output a ConfigParser section
 - extract *must* input a ConfigParser section; output data satisfying the plugin schema
 - render *must* input data matching the plugin schema, output a string
+
+Merger modules are similar, but:
+- *Must* have a module `merger.py` with a class `main`
+- Only need a `render` method
 """
 
 import importlib
 import inspect
 import logging
+from abc import ABC
 from djerba.plugins.base import plugin_base
 from djerba.util.logger import logger
 
-class plugin_loader(logger):
+class loader_base(logger, ABC):
+
+    PERMITTED_TYPES = ['plugin', 'merger']
 
     def __init__(self, log_level=logging.INFO, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
 
-    def load(self, plugin_name):
+    def load(self, module_type, name):
+        args = [module_type, name]
+        if module_type not in self.PERMITTED_TYPES:
+            msg = "Module type {0} not in permitted list {1}".format(
+                module_type,
+                self.PERMITTED_TYPES
+            )
+            self.logger.error(msg)
+            raise DjerbaLoadError(msg)
         try:
-            plugin = importlib.import_module('djerba.plugins.{0}.plugin'.format(plugin_name))
+            full_name = 'djerba.{0}s.{1}.{0}'.format(*args)
+            module = importlib.import_module(full_name)
         except ModuleNotFoundError as err:
-            msg = "Cannot load plugin {0}: {1}".format(plugin_name, err)
+            msg = "Cannot load {0} {1}: {2}".format(*args, err)
             self.logger.error(msg)
-            raise PluginLoadError from err
+            raise DjerbaLoadError from err
         # check for other errors
-        if not 'main' in dir(plugin):
-            msg = "Plugin {0} has no 'main' attribute".format(plugin_name)
+        if not 'main' in dir(module):
+            msg = "{0} {1} has no 'main' attribute".format(*args)
             self.logger.error(msg)
-            raise PluginLoadError(msg)
+            raise DjerbaLoadError(msg)
         else:
-            self.logger.debug("'main' attribute of plugin {0} found".format(plugin_name))
-        if not inspect.isclass(plugin.main):
-            msg = "Plugin {0} main attribute is not a class".format(plugin_name)
-            self.logger.error(msg)
-            raise PluginLoadError(msg)
-        else:
-            self.logger.debug("'main' attribute of plugin {0} is a class".format(plugin_name))
-        if not issubclass(plugin.main, plugin_base):
-            msg = "Plugin {0} main attribute ".format(plugin_name)+\
-                  "is not a subclass of djerba.plugins.base"
-            self.logger.error(msg)
-            raise PluginLoadError(msg)
-        else:
-            msg = "Plugin {0} main ".format(plugin_name)+\
-                  "is a subclass of djerba.plugins.base"
+            msg = "'main' attribute of {0} {1} found".format(*args))
             self.logger.debug(msg)
-        return plugin.main(self.log_level, self.log_path)
+        if not inspect.isclass(plugin.main):
+            msg = "{0} {1} main attribute is not a class".format(*args)
+            self.logger.error(msg)
+            raise DjerbaLoadError(msg)
+        else:
+            "'main' attribute of {0} {1} is a class".format(*args))
+            self.logger.debug()
+        if not issubclass(module.main, plugin_base):
+            msg = "{0} {1} main attribute ".format(*args)+\
+                  "is not a subclass of djerba.{0}s.base".format(module_type)
+            self.logger.error(msg)
+            raise DjerbaLoadError(msg)
+        else:
+            msg = "{0} {1} main ".format(*args)+\
+                  "is a subclass of djerba.{0}s.base".format(module_type)
+            self.logger.debug(msg)
+        return module.main(self.log_level, self.log_path)
 
-class PluginLoadError(Exception):
+class merger_loader(loader_base):
+
+    def load(self, merger_name):
+        return super().load('merger', merger_name)
+
+class plugin_loader(loader_base):
+
+    def load(self, plugin_name):
+        return super().load('plugin', plugin_name)
+
+class DjerbaLoadError(Exception):
     pass

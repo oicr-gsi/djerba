@@ -18,7 +18,9 @@ from djerba.util.validator import path_validator
 
 class main(logger):
 
-    PLUGINS = 'plugins' # TODO move to a constants file
+    # TODO move to a constants file
+    PLUGINS = 'plugins'
+    MERGERS = 'mergers'
     
     def __init__(self, log_level=logging.INFO, log_path=None):
         self.log_level = log_level
@@ -69,16 +71,40 @@ class main(logger):
         if html_path:  # do this *before* taking the time to generate output
             self.path_validator.validate_output_file(html_path)
         [header, footer] = core_renderer(self.log_level, self.log_path).run(data)
-        html_sections = [header]
+        ordered_html = [header]
         # TODO control the order of plugin outputs
         # TODO merge/dedup for multi-plugin outputs
         # See 'shared element representation' in 'Report specs' google doc
+        unordered_html = {}
+        merger_names = set()
         for plugin_name in data[self.PLUGINS]:
+            plugin_data = data[self.PLUGINS][plugin_name]
             plugin = self.plugin_loader.load(plugin_name)
             self.logger.debug("Loaded plugin {0} for rendering".format(plugin_name))
-            html_sections.append(plugin.render(data[self.PLUGINS][plugin_name]))
-        html_sections.append(footer)
-        html = "\n".join(html_sections) 
+            unordered_html[plugin_name] = plugin.render(plugin_data)
+            for name in plugin_data[self.MERGE_INPUTS]:
+                merger_names.add(name)
+        for merger_name in merger_names:
+            if merger_name in unordered_html:
+                msg = "Plugin/merger name conflict"
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            merger = self.merger_loader.load(merger_name)
+            self.logger.debug("Loaded merger {0} for rendering".format(merger_name))
+            merger_inputs = []
+            for plugin_name in data[self.PLUGINS]:
+                plugin_data = data[self.PLUGINS][plugin_name]
+                if merger_name in plugin_data[self.MERGER_INPUTS]:
+                    merger_inputs.append(plugin_data[self.MERGER_INPUTS][merger_name])
+            unordered_html[merger_name] = merger.render(merger_inputs)
+        for name in data[self.COMPONENT_ORDER]: # merger/plugin list in core data
+            if name not in unordered_html:
+                msg = "Name {0} not found".format(name)
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            ordered_html.append(unordered_html[name])
+        ordered_html.append(footer)
+        html = "\n".join(ordered_html)
         if html_path:
             with open(html_path, 'w') as out_file:
                 out_file.write(html)
