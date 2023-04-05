@@ -1,5 +1,8 @@
 """Djerba merger for gene information"""
 
+import logging
+import os
+import re
 import djerba.render.constants as constants # TODO how do we handle constants in plugins?
 from djerba.mergers.base import merger_base
 
@@ -31,15 +34,19 @@ class main(merger_base):
                              row[constants.SUMMARY])
             cells = [
                 self.td(
-                    self.href(row[constants.GENE_URL], row[constants.GENE]), italic=True),
+                    self.href(row[constants.GENE_URL], row[constants.GENE]), italic=True
+                ),
                 self.td(summary)
             ]
-            rows.append(self.table_row(cells))
+            rows.append(self.tr(cells))
         return rows
         
     def render(self, inputs):
         self.validate_inputs(inputs)
         data = self.merge_and_sort(inputs, self.SORT_KEY)
-        html = [self.table_header(), self.table_rows(data)]
+        # TODO use CSS/Mako for appropriate template style
+        html = [self.TABLE_START, self.table_header()]
+        html.extend(self.table_rows(data))
+        html.append(self.TABLE_END)
         return "\n".join(html)
 

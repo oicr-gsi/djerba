@@ -72,12 +72,10 @@ class main(logger):
             self.path_validator.validate_output_file(html_path)
         [header, footer] = core_renderer(self.log_level, self.log_path).run(data)
         ordered_html = [header]
-        # TODO control the order of plugin outputs
-        # TODO merge/dedup for multi-plugin outputs
-        # See 'shared element representation' in 'Report specs' google doc
         unordered_html = {}
         merger_names = set()
         for plugin_name in data[self.PLUGINS]:
+            # render plugin HTML, and find which mergers it uses
             plugin_data = data[self.PLUGINS][plugin_name]
             plugin = self.plugin_loader.load(plugin_name)
             self.logger.debug("Loaded plugin {0} for rendering".format(plugin_name))
@@ -85,6 +83,7 @@ class main(logger):
             for name in plugin_data[self.MERGE_INPUTS]:
                 merger_names.add(name)
         for merger_name in merger_names:
+            # assemble inputs for each merger and run merge/dedup to get HTML
             if merger_name in unordered_html:
                 msg = "Plugin/merger name conflict"
                 self.logger.error(msg)
@@ -97,7 +96,8 @@ class main(logger):
                 if merger_name in plugin_data[self.MERGER_INPUTS]:
                     merger_inputs.append(plugin_data[self.MERGER_INPUTS][merger_name])
             unordered_html[merger_name] = merger.render(merger_inputs)
-        for name in data[self.COMPONENT_ORDER]: # merger/plugin list in core data
+        for name in data[self.COMPONENT_ORDER]:
+            # refer to merger/plugin list in core data and assemble outputs
             if name not in unordered_html:
                 msg = "Name {0} not found".format(name)
                 self.logger.error(msg)

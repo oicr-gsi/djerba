@@ -22,8 +22,18 @@ class merger_base(logger, html_builder, ABC):
         """
         Merge a list of inputs matching the schema, remove duplicates, sort by given key
         """
-        merged = list(set(inputs))
-        return sorted(merged, key = lambda x: x[sort_key])
+        # input is a list of lists, flatten into a single list
+        flattened = [x for sublist in inputs for x in sublist]
+        # get unique dictionaries from the list, see https://stackoverflow.com/a/11092590
+        try:
+            unique_items = list({v[sort_key]:v for v in flattened}.values())
+        except KeyError:
+            msg = "Sort key {0} is missing from at least one input ".format(sort_key)+\
+                  "to merger; run in debug mode to view inputs"
+            self.logger.error(msg)
+            self.logger.debug("Merger inputs: {0}".format(inputs))
+            raise
+        return sorted(unique_items, key = lambda x: x[sort_key])
 
     def render(self, inputs):
         """

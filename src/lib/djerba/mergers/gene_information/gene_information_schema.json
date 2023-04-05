@@ -4,10 +4,11 @@
     "items": {
 	"type": "object",
 	"properties": {
-            "Gene": {"type": "string" },
-            "Gene_URL": {"type": "string" },
-            "Chromosome": {"type": "string" },
-            "Summary": {"type": "string" }
+	    "Gene": {"type": "string" },
+	    "Gene_URL": {"type": "string" },
+	    "Chromosome": {"type": "string" },
+	    "Summary": {"type": "string" }
 	}
     }
 }
+

@@ -61,14 +61,14 @@ class loader_base(logger, ABC):
             self.logger.error(msg)
             raise DjerbaLoadError(msg)
         else:
-            msg = "'main' attribute of {0} {1} found".format(*args))
+            msg = "'main' attribute of {0} {1} found".format(*args)
             self.logger.debug(msg)
         if not inspect.isclass(plugin.main):
             msg = "{0} {1} main attribute is not a class".format(*args)
             self.logger.error(msg)
             raise DjerbaLoadError(msg)
         else:
-            "'main' attribute of {0} {1} is a class".format(*args))
+            "'main' attribute of {0} {1} is a class".format(*args)
             self.logger.debug()
         if not issubclass(module.main, plugin_base):
             msg = "{0} {1} main attribute ".format(*args)+\

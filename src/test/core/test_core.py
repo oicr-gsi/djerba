@@ -13,6 +13,7 @@ import djerba.util.ini_fields as ini
 from configparser import ConfigParser
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.main import main
+from djerba.mergers.gene_information.merger import main as gene_information_merger_main
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.validator import path_validator
 import djerba.util.constants as constants
@@ -68,6 +69,22 @@ class TestDemoPlugins(TestBase):
         expected_md5 = '9fe5004521a068f76e59705931fa7a8d'
         PluginTester().run(ini_path, json_path, expected_md5)
 
+
+class TestMerger(TestBase):
+
+    GENE_INFO_INPUTS = 'gene_information_inputs.json'
+
+    def test_gene_info(self):
+        json_path = os.path.join(self.test_source_dir, self.GENE_INFO_INPUTS)
+        with open(json_path) as json_file:
+            inputs = json.loads(json_file.read())
+        html = gene_information_merger_main().render(inputs)
+        with open('/u/ibancarz/tmp/merged.html', 'w') as out_file:
+            print('<html><body>', file=out_file)
+            print(html, file=out_file)
+            print('</body></html>', file=out_file)
+        md5_found = self.getMD5_of_string(html)
+        self.assertEqual(md5_found, 'd436df8d05a8af3cbdf71a15eb12f7ea')
 
 class TestSimpleReport(TestBase):
 

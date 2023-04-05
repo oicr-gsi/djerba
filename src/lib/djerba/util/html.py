@@ -6,16 +6,21 @@ import re
 
 class html_builder:
 
+    TABLE_START = '<table border=1>'
+    TABLE_END = '</table>'
+
     @staticmethod
-    def href(self, url, text):
+    def href(url, text):
         return '<a href="{0}">{1}</a>'.format(url, text)
-    
+
     @staticmethod
-    def td(self, content):
+    def td(content, italic=False):
+        if italic:
+            content = '<i>{0}</i>'.format(content)
         return '<td>{0}</td>'.format(content)
 
     @staticmethod
-    def thead(self, names):
+    def thead(names):
         items = ['<thead style="background-color:white">', '<tr>']
         for name in names:
             items.extend(['<th style="text-align:left;">', name, '</th>'])
@@ -23,7 +28,7 @@ class html_builder:
         return ''.join(items)
 
     @staticmethod
-    def tr(self, cells):
+    def tr(cells):
         items = ['<tr style="text-align:left;">', ]
         items.extend(cells)
         items.append('</tr>')
