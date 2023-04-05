@@ -40,7 +40,7 @@ class main(merger_base):
             ]
             rows.append(self.tr(cells))
         return rows
-        
+
     def render(self, inputs):
         self.validate_inputs(inputs)
         data = self.merge_and_sort(inputs, self.SORT_KEY)

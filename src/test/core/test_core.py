@@ -24,6 +24,7 @@ class TestBase(unittest.TestCase):
 
     def setUp(self):
         self.test_source_dir = os.path.realpath(os.path.dirname(__file__))
+        self.maxDiff = None
 
     def assert_report_MD5(self, report_string, expected_md5):
         # based on check_report() from original djerba test.py
@@ -60,13 +61,13 @@ class TestDemoPlugins(TestBase):
     def test_demo_1(self):
         ini_path = os.path.join(self.test_source_dir, 'demo_1.ini')
         json_path = os.path.join(self.test_source_dir, 'demo_1.json')
-        expected_md5 = 'a1e97dc05e8ca712e9f81378a0e2c15e'
+        expected_md5 = '6c65165b7a54e59334080a3b46b2c78b'
         PluginTester().run(ini_path, json_path, expected_md5)
 
     def test_demo_2(self):
         ini_path = os.path.join(self.test_source_dir, 'demo_2.ini')
         json_path = os.path.join(self.test_source_dir, 'demo_2.json')
-        expected_md5 = '9fe5004521a068f76e59705931fa7a8d'
+        expected_md5 = '24847a8739c68b7ead6b89552c89396d'
         PluginTester().run(ini_path, json_path, expected_md5)
 
 
@@ -79,10 +80,6 @@ class TestMerger(TestBase):
         with open(json_path) as json_file:
             inputs = json.loads(json_file.read())
         html = gene_information_merger_main().render(inputs)
-        with open('/u/ibancarz/tmp/merged.html', 'w') as out_file:
-            print('<html><body>', file=out_file)
-            print(html, file=out_file)
-            print('</body></html>', file=out_file)
         md5_found = self.getMD5_of_string(html)
         self.assertEqual(md5_found, 'd436df8d05a8af3cbdf71a15eb12f7ea')
 
@@ -98,7 +95,7 @@ class TestSimpleReport(TestBase):
             data_expected = json.loads(json_file.read())
         self.assertEqual(data_found, data_expected)
         html = djerba_main.render(data_found)
-        self.assert_report_MD5(html, 'bd79f6eb19966e4b9c4688457b5caff2')
+        self.assert_report_MD5(html, 'e9e3fcb19a194d6125369436eb353dbd')
 
 class TestValidator(TestBase):
 

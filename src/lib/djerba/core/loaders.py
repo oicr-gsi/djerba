@@ -28,11 +28,14 @@ import inspect
 import logging
 from abc import ABC
 from djerba.plugins.base import plugin_base
+from djerba.mergers.base import merger_base
 from djerba.util.logger import logger
 
 class loader_base(logger, ABC):
 
-    PERMITTED_TYPES = ['plugin', 'merger']
+
+    PLUGIN = 'plugin'
+    MERGER = 'merger'
 
     def __init__(self, log_level=logging.INFO, log_path=None):
         self.log_level = log_level
@@ -41,13 +44,18 @@ class loader_base(logger, ABC):
 
     def load(self, module_type, name):
         args = [module_type, name]
-        if module_type not in self.PERMITTED_TYPES:
+        permitted = [self.PLUGIN, self.MERGER]
+        if module_type not in permitted:
             msg = "Module type {0} not in permitted list {1}".format(
                 module_type,
-                self.PERMITTED_TYPES
+                permitted
             )
             self.logger.error(msg)
             raise DjerbaLoadError(msg)
+        elif module_type == self.PLUGIN:
+            base_class = plugin_base
+        else:
+            base_class = merger_base
         try:
             full_name = 'djerba.{0}s.{1}.{0}'.format(*args)
             module = importlib.import_module(full_name)
@@ -63,14 +71,14 @@ class loader_base(logger, ABC):
         else:
             msg = "'main' attribute of {0} {1} found".format(*args)
             self.logger.debug(msg)
-        if not inspect.isclass(plugin.main):
+        if not inspect.isclass(module.main):
             msg = "{0} {1} main attribute is not a class".format(*args)
             self.logger.error(msg)
             raise DjerbaLoadError(msg)
         else:
-            "'main' attribute of {0} {1} is a class".format(*args)
-            self.logger.debug()
-        if not issubclass(module.main, plugin_base):
+            msg = "'main' attribute of {0} {1} is a class".format(*args)
+            self.logger.debug(msg)
+        if not issubclass(module.main, base_class):
             msg = "{0} {1} main attribute ".format(*args)+\
                   "is not a subclass of djerba.{0}s.base".format(module_type)
             self.logger.error(msg)

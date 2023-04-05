@@ -10,12 +10,6 @@ class main(plugin_base):
             'clinical': True,
             'failed': False,
             'merge_inputs': {
-                'definitions': {},
-                'description': {
-                    'title': 'Example plugin "demo1"',
-                    'body': 'Demonstration plugin, writes placeholder text'
-                },
-                'treatment_options': [],
                 'gene_information': [
                     {
                         "Gene": "KRAS",
