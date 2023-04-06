@@ -8,7 +8,7 @@ import sys
 
 sys.path.pop(0) # do not import from script directory
 from djerba.util.logger import logger
-from djerba.core.json_validator import json_validator
+from djerba.core.json_validator import plugin_json_validator
 
 def get_parser():
     parser = argparse.ArgumentParser(
@@ -26,7 +26,7 @@ def main(args):
         sys.stderr.write('Input on STDIN must be non-empty!\n')
         parser.print_help(sys.stderr)
         sys.exit(2)
-    validator = json_validator(log_level=log_level, log_path=args.log_path)
+    validator = plugin_json_validator(log_level=log_level, log_path=args.log_path)
     valid = True
     try:
         validator.validate_string(sys.stdin.read())
