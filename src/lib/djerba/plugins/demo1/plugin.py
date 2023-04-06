@@ -10,13 +10,20 @@ class main(plugin_base):
             'clinical': True,
             'failed': False,
             'merge_inputs': {
-                'definitions': {},
-                'description': {
-                    'title': 'Example plugin "demo1"',
-                    'body': 'Demonstration plugin, writes placeholder text'
-                },
-                'treatment_options': [],
-                'gene_information': []
+                'gene_information': [
+                    {
+                        "Gene": "KRAS",
+                        "Gene_URL": "https://www.oncokb.org/gene/KRAS",
+                        "Chromosome": "12p12.1",
+                        "Summary": "KRAS, a GTPase which functions as an upstream regulator of the MAPK and PI3K pathways, is frequently mutated in various cancer types including pancreatic, colorectal and lung cancers."
+                    },
+                    {
+                        "Gene": "PIK3CA",
+                        "Gene_URL": "https://www.oncokb.org/gene/PIK3CA",
+                        "Chromosome": "3q26.32",
+                        "Summary": "PIK3CA, the catalytic subunit of PI3-kinase, is frequently mutated in a diverse range of cancers including breast, endometrial and cervical cancers."
+                    }
+                ]
             },
             'results': {},
         }

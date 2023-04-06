@@ -14,13 +14,20 @@ class main(plugin_base):
             'clinical': True,
             'failed': False,
             'merge_inputs': {
-                'definitions': {},
-                'description': {
-                    'title': 'Example plugin "demo1"',
-                    'body': 'Demonstration plugin, writes placeholder text'
-                },
-                'treatment_options': [],
-                'gene_information': []
+                'gene_information': [
+                    {
+                        "Gene": "PIK3CA",
+                        "Gene_URL": "https://www.oncokb.org/gene/PIK3CA",
+                        "Chromosome": "3q26.32",
+                        "Summary": "PIK3CA, the catalytic subunit of PI3-kinase, is frequently mutated in a diverse range of cancers including breast, endometrial and cervical cancers."
+                    },
+                    {
+                        "Gene": "PIK3CB",
+                        "Gene_URL": "https://www.oncokb.org/gene/PIK3CB",
+                        "Chromosome": "3q22.3",
+                        "Summary": "PIK3CB, a catalytic subunit of PI3-kinase, is altered by amplification or mutation in various cancer types."
+                    }
+                ]
             },
             'results': {
                 'answer': config_section['demo2_param']

@@ -10,23 +10,28 @@ import json
 import djerba.util.ini_fields as ini
 from djerba.core.configure import configurer as core_configurer
 from djerba.core.extract import extractor as core_extractor
-from djerba.core.json_validator import json_validator
+from djerba.core.json_validator import plugin_json_validator
 from djerba.core.render import renderer as core_renderer
-from djerba.core.plugin_loader import plugin_loader
+from djerba.core.loaders import plugin_loader, merger_loader
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
 
 class main(logger):
 
-    PLUGINS = 'plugins' # TODO move to a constants file
+    # TODO move to constants file(s)
+    COMPONENT_ORDER = 'component_order'
+    PLUGINS = 'plugins'
+    MERGERS = 'mergers'
+    MERGE_INPUTS = 'merge_inputs'
     
     def __init__(self, log_level=logging.INFO, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
-        self.json_validator = json_validator(self.log_level, self.log_path)
+        self.json_validator = plugin_json_validator(self.log_level, self.log_path)
         self.path_validator = path_validator(self.log_level, self.log_path)
         self.plugin_loader = plugin_loader(self.log_level, self.log_path)
+        self.merger_loader = merger_loader(self.log_level, self.log_path)
 
     def configure(self, config_path_in, config_path_out=None):
         if config_path_out:  # do this *before* taking the time to generate output
@@ -69,16 +74,45 @@ class main(logger):
         if html_path:  # do this *before* taking the time to generate output
             self.path_validator.validate_output_file(html_path)
         [header, footer] = core_renderer(self.log_level, self.log_path).run(data)
-        html_sections = [header]
-        # TODO control the order of plugin outputs
-        # TODO merge/dedup for multi-plugin outputs
-        # See 'shared element representation' in 'Report specs' google doc
+        ordered_html = [header]
+        unordered_html = {}
+        merger_names = set()
         for plugin_name in data[self.PLUGINS]:
+            # render plugin HTML, and find which mergers it uses
+            plugin_data = data[self.PLUGINS][plugin_name]
             plugin = self.plugin_loader.load(plugin_name)
             self.logger.debug("Loaded plugin {0} for rendering".format(plugin_name))
-            html_sections.append(plugin.render(data[self.PLUGINS][plugin_name]))
-        html_sections.append(footer)
-        html = "\n".join(html_sections) 
+            unordered_html[plugin_name] = plugin.render(plugin_data)
+            for name in plugin_data[self.MERGE_INPUTS]:
+                merger_names.add(name)
+        for merger_name in merger_names:
+            # assemble inputs for each merger and run merge/dedup to get HTML
+            if merger_name in unordered_html:
+                msg = "Plugin/merger name conflict"
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            merger_inputs = []
+            for plugin_name in data[self.PLUGINS]:
+                plugin_data = data[self.PLUGINS][plugin_name]
+                if merger_name in plugin_data[self.MERGE_INPUTS]:
+                    merger_inputs.append(plugin_data[self.MERGE_INPUTS][merger_name])
+            merger = self.merger_loader.load(merger_name)
+            self.logger.debug("Loaded merger {0} for rendering".format(merger_name))
+            unordered_html[merger_name] = merger.render(merger_inputs)
+        if len(data[ini.CORE][self.COMPONENT_ORDER])==0:
+            msg = "Component order is empty, falling back to default order"
+            self.logger.warning(msg)
+            ordered_html.extend(unordered_html.values())
+        else:
+            for name in data[ini.CORE][self.COMPONENT_ORDER]:
+                # refer to merger/plugin list in core data and assemble outputs
+                if name not in unordered_html:
+                    msg = "Name {0} not found".format(name)
+                    self.logger.error(msg)
+                    raise RuntimeError(msg)
+                ordered_html.append(unordered_html[name])
+        ordered_html.append(footer)
+        html = "\n".join(ordered_html)
         if html_path:
             with open(html_path, 'w') as out_file:
                 out_file.write(html)
