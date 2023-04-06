@@ -1,10 +1,18 @@
 # CHANGELOG
 
-## Unreleased
+## v0.4.6: 2023-04-06
+
+- With this release, we start a _feature freeze_ on the current Djerba application
+- Urgent bugfixes only, to allow us to focus on implementing Djerba v1.0.0
+
+### Added
+- new parameter called `cbio_study_id` from shesmu for whizbam links
 
 ### Changed
 - Moved qc-etl and pinery metric pulls to `discover_secondary` so that `tumour_id` is set first
+- Check for manually configured parameters before querying qc-etl or Pinery
 - Removed callability and coverage from `config_template.ini`
+- Warning message about MSI LLOD in report when purity less than 50%
 
 ### Fixed
 - Raise an error in INI config validation if any parameters are set to an empty string
