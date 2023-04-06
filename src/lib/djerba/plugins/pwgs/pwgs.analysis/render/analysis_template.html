@@ -1,0 +1,39 @@
+<%
+  from time import strftime
+  from djerba.pwgs.analysis.json_to_html import html_builder
+  import djerba.pwgs.analysis.constants as constants
+  from djerba.util.image_to_base64 import converter
+%>
+
+<!-- ctDNA Detection -->
+${html_builder().section_cells_begin("<h2>ctDNA Detection</h2>","main")}
+      
+      <p >
+            A <strong>${ctdna_info.get(constants.SIGNIFICANCE)} ${ctdna_info.get(constants.PVALUE)} </strong> number of variants of tumor origin 
+            have been detected in the plasma sample compared to the control cohort (N=${ctdna_info.get(constants.COHORT_N)}).
+      </p>
+
+            <table class="variants" style="width:100%">
+                  <thead>
+                        <th style=" width:10%">Detection</th>
+                        <th style=" width:10%">Estimated TF (%)</th>
+                        <th style=" width:80%">Sites Checked</th>
+                        <th style=" width:80%">Reads Checked</th>
+                        <th style=" width:80%">Sites Detected</th>
+                        <th style=" width:80%">Reads Detected</th>
+                  </thead>
+                  <tbody>
+                        <tr>
+                              <td>ctdna_info.get(constants.CTDNA_OUTCOME)</td>
+                              <td>ctdna_info.get(constants.TUMOUR_FRACTION)</td>
+                              <td>ctdna_info.get(constants.SITES_CHECKED)</td>
+                              <td>ctdna_info.get(constants.READS_CHECKED)</td>
+                              <td>ctdna_info.get(constants.SITES_DETECTED)</td>
+                              <td>ctdna_info.get(constants.READS_DETECTED)</td>
+                        </tr>
+                  </tbody>
+            </table>
+
+      <!-- <img id='ctDNA' style='width: 100%; object-fit: contain' src="${converter().convert_svg(detection_plot, 'DETECTION plot')}"/> -->
+
+${html_builder().section_cells_end()}

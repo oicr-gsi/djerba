@@ -1,0 +1,24 @@
+{
+    "data": {
+        "plugin_name": "pwgs.analysis",
+        "definitions": {},
+        "description": {
+            "title": "plasma whole genome sequencing analysis",
+            "body": "Data analysis for pwgs assay"
+        },
+        "treatment_options": [],
+        "gene_information": [],
+        "results": {
+            "outcome": true,
+            "significance_text": "significantly higher",
+            "TF": 0.89,
+            "sites_checked":  29950,
+            "reads_checked": 70612,
+            "sites_detected": 3000,
+            "reads_detected": 7201,
+            "p-value": 6e-6,
+            "detection_plot": "",
+            "hbc_n": 22,
+        },
+    }
+}
