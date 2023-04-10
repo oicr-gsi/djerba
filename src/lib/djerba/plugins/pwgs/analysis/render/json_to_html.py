@@ -4,7 +4,7 @@ import re
 from markdown import markdown
 from time import strftime
 from string import Template
-import djerba.pwgs.analysis.constants as constants
+import djerba.plugins.pwgs.constants as constants
 
 class html_builder:
 
