@@ -4,7 +4,7 @@
 
 import os
 import unittest
-from djerba.plugins.plugin_test_base import PluginTester
+from djerba.plugins.plugin_tester import PluginTester
 
 class TestDemo1(PluginTester):
 

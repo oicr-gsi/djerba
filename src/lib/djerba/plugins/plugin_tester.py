@@ -15,9 +15,8 @@ from djerba.core.json_validator import plugin_json_validator
 from djerba.core.main import main as core_main
 from djerba.mergers.gene_information.merger import main as gene_information_merger_main
 from djerba.util.subprocess_runner import subprocess_runner
-from djerba.util.trial import TestBase
+from djerba.util.testing.tools import TestBase
 from djerba.util.validator import path_validator
-
 
 class PluginTester(TestBase):
 
