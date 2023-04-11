@@ -19,7 +19,7 @@ class main(plugin_base):
 
     def extract(self, config_section):
         data = {
-            'plugin_name': 'VIRUSBreakend',
+            'plugin_name': 'virus_breakend',
             'clinical': True,
             'failed': False,
             'results': data_builder().build_virusbreakend()
