@@ -7,7 +7,7 @@ import os
 from djerba.plugins.base import plugin_base
 from mako.lookup import TemplateLookup
 import djerba.plugins.virus_breakend.constants as constants
-from djerba.plugins.virus_breakend.extract.report_to_json import data_builder 
+from djerba.plugins.virus_breakend.extract import data_builder 
 
 
 class main(plugin_base):
