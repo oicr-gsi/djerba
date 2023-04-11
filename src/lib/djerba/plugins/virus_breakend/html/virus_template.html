@@ -14,14 +14,14 @@ This file is the HTML code for the VIRUSBreakend section of the report.
 ${html_builder().section_cells_begin("<h2>VIRUSBreakend Information</h2>","main")}
       
       <p >
-            <strong>${structural_variants_and_fusions.get(constants.TOTAL_VARIANTS)}</strong> virus(es) were identified. 
+            <strong>${VIRUSBreakend.get(constants.TOTAL_VARIANTS)}</strong> virus(es) were identified. 
       </p>
 
       % if VIRUSBreakend.get(constants.TOTAL_VARIANTS) > 0:
             <table class="variants" width="100%">
             ${html_builder().virusbreakend_header()}
             <tbody>
-            % for row in html_builder().virusbreakend_rows(structural_variants_and_fusions):
+            % for row in html_builder().virusbreakend_rows(VIRUSBreakend):
                   ${row}
             % endfor
             </tbody>
