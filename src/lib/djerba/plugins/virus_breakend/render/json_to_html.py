@@ -11,6 +11,10 @@ import djerba.plugins.virus_breakend.constants as constants
 
 class html_builder:
   
+  TR_START = '<tr style="text-align:left;">'
+  TR_END = '</tr>'
+    
+  
   # ------------------- TABLE FORMAT FUNCTIONS -------------------
   
   def section_cells_begin(self, section_title, main_or_supp):
@@ -38,7 +42,44 @@ class html_builder:
     """
     return "</div></div>\n"
   
+  def _td(self, content, italic=False, width=None):
+    """
+    Makes a <td> table entry with optional attributes.
+    Taken from the original json_to_html.py from the non-plugin Djerba.
+    """
+    attrs = []
+    if italic:
+        attrs.append('style="font-style: italic;"')
+    if width:
+        attrs.append('width="{0}%"'.format(width))
+    if len(attrs) > 0:
+        td = '<td {0}>{1}</td>'.format(' '.join(attrs), content)
+    else:
+        td = '<td>{0}</td>'.format(content)
+    return td
+
   
+  def table_header(self, names):
+    """
+    Makes a table header (I think).
+    Taken from the original json_to_html.py from the non-plugin Djerba
+    """
+    items = ['<thead style="background-color:white">', '<tr>']
+    for name in names:
+        items.extend(['<th style="text-align:left;">', name, '</th>'])
+    items.extend(['</tr>', '</thead>'])
+    return ''.join(items)
+
+  def table_row(self, cells):
+    """
+    Makes a table row (I think).
+    Taken from the original json_to_html.py from the non-plugin Djerba
+    """
+    items = [self.TR_START, ]
+    items.extend(cells)
+    items.append(self.TR_END)
+    return ''.join(items)
+      
   # ----------------------- VIRUS FUNCTIONS ----------------------
   
   def virusbreakend_header(self):
@@ -55,7 +96,6 @@ class html_builder:
     ]
     return self.table_header(names)
 
-      
     def virusbreakend_rows(self, mutation_info):
       """
       Creates the rows for the VIRUSBreakend table.
