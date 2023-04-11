@@ -187,19 +187,19 @@ class TestConfigure(TestBase):
         test_configurer.run(out_path)
 
     def test_default(self):
-        self.run_config_test(self.config_user, False, False, 95, self.provenance)
+        self.run_config_test(self.config_user, False, False, 97, self.provenance)
 
     def test_default_fail(self):
-        self.run_config_test(self.config_user_failed, False, True, 81, self.provenance)
+        self.run_config_test(self.config_user_failed, False, True, 83, self.provenance)
 
     def test_wgs_only(self):
-        self.run_config_test(self.config_user_wgs_only, True, False, 93, self.provenance)
+        self.run_config_test(self.config_user_wgs_only, True, False, 95, self.provenance)
 
     def test_wgs_only_fail(self):
-        self.run_config_test(self.config_user_wgs_only_failed, True, True, 81, self.provenance)
+        self.run_config_test(self.config_user_wgs_only_failed, True, True, 83, self.provenance)
 
     def test_vnwgts(self):
-        self.run_config_test(self.config_user_vnwgts, False, False, 95, self.provenance_vnwgts)
+        self.run_config_test(self.config_user_vnwgts, False, False, 97, self.provenance_vnwgts)
 
     def test_vnwgts_broken(self):
         # test failure modes of sample input
@@ -688,10 +688,10 @@ class TestRender(TestBase):
         out_path = os.path.join(out_dir, 'djerba_test_wgts.html')
         hr = html_renderer()
         out_path = hr.run_clinical(args_path, out_dir, 'report_WGTS', False)
-        self.check_report(out_path, '9033d660c66d8282cedd59a83e4ec67b')
+        self.check_report(out_path, '8f52c1b6f7b7e833607f492ecb66274b')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = hr.run_clinical(args_path, out_dir, 'report_WGS_only', False)
-        self.check_report(out_path, '50edd1d1ac237c0db1ca338586912451')
+        self.check_report(out_path, 'e4ded6d0d4efcee6dafdb50bffff2438')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = hr.run_clinical(args_path, out_dir, 'report_failed', False)
         self.check_report(out_path, '0cda263df3fbc1d3dcf89479eebd2fb5')

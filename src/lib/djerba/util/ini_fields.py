@@ -11,6 +11,8 @@ ASSAY_VERSION = 'assay_version'
 ARCHIVE_NAME = 'archive_name'
 ARCHIVE_URL = 'archive_url'
 BED_PATH = 'bed_path'
+CBIO_STUDY_ID = 'cbio_study_id'
+CBIO_PROJECT_PATH = 'cbio_studies_path'
 DATA_DIR = 'data_dir'
 ENSCON = 'enscon'
 ENTCON = 'entcon'
@@ -141,6 +143,7 @@ SCHEMA_CORE = {
 
 SCHEMA_DEFAULT = {
     DISCOVERED: [
+        CBIO_STUDY_ID,
         DATA_DIR,
         ENSCON,
         ENTCON,
@@ -195,6 +198,7 @@ SCHEMA_DEFAULT = {
         ARCHIVE_NAME,
         ARCHIVE_URL,
         BED_PATH,
+        CBIO_PROJECT_PATH,
         GEP_REFERENCE,
         MIN_FUSION_READS,
         ONCOKB_CACHE,
@@ -239,6 +243,7 @@ SCHEMA_DEFAULT = {
 
 SCHEMA_WGS_ONLY = {
     DISCOVERED: [
+        CBIO_STUDY_ID,
         DATA_DIR,
         ENSCON,
         ENTCON,
@@ -290,6 +295,7 @@ SCHEMA_WGS_ONLY = {
         ARCHIVE_NAME,
         ARCHIVE_URL,
         BED_PATH,
+        CBIO_PROJECT_PATH,
         GEP_REFERENCE,
         MIN_FUSION_READS,
         ONCOKB_CACHE,
@@ -334,6 +340,7 @@ SCHEMA_WGS_ONLY = {
 
 SCHEMA_FAILED = {
     DISCOVERED: [
+        CBIO_STUDY_ID,
         DATA_DIR,
         ENSCON,
         ENTCON,
@@ -374,6 +381,7 @@ SCHEMA_FAILED = {
         ARCHIVE_NAME,
         ARCHIVE_URL,
         BED_PATH,
+        CBIO_PROJECT_PATH,
         GEP_REFERENCE,
         MIN_FUSION_READS,
         ONCOKB_CACHE,
