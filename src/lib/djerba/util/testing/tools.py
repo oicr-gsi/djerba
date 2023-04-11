@@ -40,15 +40,17 @@ class TestBase(unittest.TestCase):
         contents = re.split("\n", report_string)
         # crudely parse out the HTML body, omitting <img> tags
         # could use an XML parser instead, but this way is simpler
-        body_lines = []
-        in_body = False
+        redacted_lines = []
         for line in contents:
-            if re.search('<body>', line):
-                in_body = True
-            elif re.search('</body>', line):
-                break
-            elif in_body and not re.search('<img src=', line):
-                body_lines.append(line)
-        body = ''.join(body_lines)
-        body = body.replace(time.strftime("%Y/%m/%d"), '0000/00/31')
-        return body
+            if not re.search('<img src=', line) and not re.search('<script', line):
+                redacted_lines.append(line)
+        redacted = ''.join(redacted_lines)
+        redacted = redacted.replace(time.strftime("%Y/%m/%d"), '0000/00/31')
+        return redacted
+
+    def redact_json_data(self, data):
+        """
+        Placeholder method -- does nothing
+        Can be overridden in subclasses to preprocess JSON data before test comparison
+        """
+        return data

@@ -62,12 +62,12 @@ class PluginTester(TestBase):
         self.assertTrue(plugin_name)
         djerba_main = core_main(log_level=logging.WARNING)
         config = djerba_main.configure(ini_path)
-        data_found = djerba_main.extract(config)
+        data_found = self.redact_json_data(djerba_main.extract(config))
         with open(expected_json_path) as json_file:
             plugin_data_expected = json.loads(json_file.read())
         plugin_data_found = data_found['plugins'][plugin_name]
         validator = plugin_json_validator(log_level=logging.WARNING)
         self.assertTrue(validator.validate_data(plugin_data_found))
         self.assertEqual(plugin_data_found, plugin_data_expected)
-        html = djerba_main.render(data_found)
+        html = self.redact_html(djerba_main.render(data_found))
         self.assert_report_MD5(html, expected_md5)
