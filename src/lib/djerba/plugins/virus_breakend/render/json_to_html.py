@@ -95,22 +95,21 @@ class html_builder:
         constants.INTEGRATION
     ]
     return self.table_header(names)
-   
-   def virusbreakend_rows(self, mutation_info):
-     """
-     Creates the rows for the VIRUSBreakend table.
-     """
-     row_fields = mutation_info[constants.BODY]
-     rows = []
-     for row in row_fields:
-         cells = [
-             self._td(row[constants.GENUS]),
-             self._td(row[constants.SPECIES]),
-             self._td(row[constants.COVERAGE]),
-             self._td(row[constants.LENGTH]),
-             self._td(row[constants.MEANDEPTH]),
-             self._td(row[constants.INTEGRATION])
-         ]
-         rows.append(self.table_row(cells))
-     return rows
 
+  def virusbreakend_rows(self, mutation_info):
+    """
+    Creates the rows for the VIRUSBreakend table.
+    """
+    row_fields = mutation_info[constants.BODY]
+    rows = []
+    for row in row_fields:
+        cells = [
+            self._td(row[constants.GENUS]),
+            self._td(row[constants.SPECIES]),
+            self._td(row[constants.COVERAGE]),
+            self._td(row[constants.LENGTH]),
+            self._td(row[constants.MEANDEPTH]),
+            self._td(row[constants.INTEGRATION])
+        ]
+        rows.append(self.table_row(cells))
+    return rows
