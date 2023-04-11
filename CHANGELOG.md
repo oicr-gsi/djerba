@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v1.0.0-dev0.0.1: 2023-04-11
+
+- Pre-release for development of v1.1.0
+- This will be the first of several pre-releases to track core/plugin development
+- Git branch for pre-releases will be `GCGI-806_v1.0.0-dev`, not `master` GCGI-806_v1.0.0-dev
+
+### Added
+
+- Working prototypes of core/plugin functionality and testing
+
 ## v0.4.6: 2023-04-06
 
 - With this release, we start a _feature freeze_ on the current Djerba application
