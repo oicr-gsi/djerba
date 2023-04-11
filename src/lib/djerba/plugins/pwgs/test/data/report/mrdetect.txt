@@ -1,0 +1,2 @@
+sampleName	sample_coverage	median_vaf	sample_candidate_SNPs	sites_detected	mean_noise	detection_rate	tumour_fraction_estimate	tumour_fraction_adjusted	zscore	pvalue	dataset_detection_cutoff	false_positive_rate	cancer_detected
+sample-01	160	0.0285714285714286	20804	2683	2759.46693936325	0.00136446531573	-0.0000229305744634534	0	-0.229534024128359	0.590773060500315	2679.14804115666	0.00142784114039021	FALSE
