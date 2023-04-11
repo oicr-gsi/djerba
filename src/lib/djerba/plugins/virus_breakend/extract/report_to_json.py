@@ -22,15 +22,20 @@ class data_builder:
   LENGTH = 'endpos'
   MEANDEPTH = 'meandepth'
   INTEGRATION = 'integrations'
+
+  input_dir = "../plugins/virus_breakend/test/"
   
   def build_virusbreakend(self):
     """
     Reads in VIRUSBreakend file, outputs data as dictionary for json.
     """
     
-    self.logger.debug("Building data for VIRUSBreakend table")
-    virusbreakend_path = self.config[ini.DISCOVERED][ini.VIRUSBREAKEND_FILE] # <-------- UNSURE WHAT THIS IS SUPPOSED TO BE
+    
+    #virusbreakend_path = self.config[ini.DISCOVERED][ini.VIRUSBREAKEND_FILE] 
+    # for now, hard code it...
+    virusbreakend_path = "GSICAPBENCH_1273_Ly_R_WG_6007_152865.virusbreakend.vcf.summary.tsv"
     rows = []
+    #with open(virusbreakend_path) as datafile:
     with open(os.path.join(self.input_dir, virusbreakend_path)) as data_file:
         for input_row in csv.DictReader(data_file, delimiter="\t"):
             row = {
@@ -43,10 +48,9 @@ class data_builder:
             }
             rows.append(row)
             
-    self.logger.debug("Sorting and filtering VIRUSBreakend rows")
     num_viruses = len(rows)
     data = {
-        constants.TOTAL_VARIANTS: num_viruses
+        constants.TOTAL_VARIANTS: num_viruses,
         constants.BODY: rows
     }
     return data 
