@@ -23,6 +23,7 @@ class main(plugin_base):
           'plugin_name': 'VIRUSBreakend',
           'clinical': True,
           'failed': False,
+          'merge_inputs': {},
           'results': data_builder().build_virusbreakend()
       }
       return data
@@ -31,7 +32,6 @@ class main(plugin_base):
       args = data
       html_dir = os.path.realpath(os.path.join(
           os.path.dirname(__file__),
-          '..',
           'html'
       ))
       report_lookup = TemplateLookup(directories=[html_dir, ], strict_undefined=True)
