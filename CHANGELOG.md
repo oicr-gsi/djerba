@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+### Fixed
+- GCGI-810: Do not exit prematurely when finding benchmark inputs
+
 ## v0.4.6: 2023-04-06
 
 - With this release, we start a _feature freeze_ on the current Djerba application
