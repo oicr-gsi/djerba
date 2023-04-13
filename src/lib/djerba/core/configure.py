@@ -12,6 +12,5 @@ class configurer(logger):
 
     def run(self, config):
         # TODO validate config fields and (if possible) populate any not specified
-        config['neo'] = 'Neo was here'
-        config['trinity'] = 'Trinity was here first'
+        config['comment'] = 'Djerba 1.0 under development'
         return config
