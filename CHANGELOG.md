@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v0.4.7: 2023-04-13
 
 ### Added
 - GCGI-823: New script `src/test/run_gsicapbench.sh` to generate and compare benchmark reports before a release
