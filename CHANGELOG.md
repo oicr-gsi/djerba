@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+### Added
+- New script `src/test/run_gsicapbench.sh` to generate and compare benchmark reports before a release
+
 ## v0.4.6: 2023-04-06
 
 - With this release, we start a _feature freeze_ on the current Djerba application
