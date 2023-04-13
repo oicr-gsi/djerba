@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- GCGI-823: New script `src/test/run_gsicapbench.sh` to generate and compare benchmark reports before a release
+
 ### Fixed
 - GCGI-810: Do not exit prematurely when finding benchmark inputs
 
