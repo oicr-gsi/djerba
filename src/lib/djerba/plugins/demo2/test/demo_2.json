@@ -19,6 +19,7 @@
     },
     "plugin_name": "demo2 plugin",
     "results": {
-        "answer": "42"
+        "answer": "42",
+	"question": "What do you get if you multiply six by nine?"
     }
 }

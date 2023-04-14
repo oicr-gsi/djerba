@@ -1,11 +1,13 @@
 #! /usr/bin/env python3
 
 import hashlib
+import io
 import json
 import jsonschema
 import logging
 import os
 import re
+import tempfile
 import time
 import unittest
 import djerba.util.ini_fields as ini
@@ -13,6 +15,7 @@ import djerba.util.ini_fields as ini
 from configparser import ConfigParser
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.main import main
+from djerba.core.workspace import workspace
 from djerba.mergers.gene_information.merger import main as gene_information_merger_main
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.testing.tools import TestBase
@@ -21,10 +24,11 @@ import djerba.util.constants as constants
 
 class TestCore(TestBase):
 
+    LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
 
     def setUp(self):
-        super().setUp()
+        super().setUp() # includes tmp_dir
         self.test_source_dir = os.path.realpath(os.path.dirname(__file__))
     
 class TestMerger(TestCore):
@@ -44,14 +48,14 @@ class TestSimpleReport(TestCore):
     def test_report(self):
         ini_path = os.path.join(self.test_source_dir, 'test.ini')
         json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
-        djerba_main = main(log_level=logging.WARNING)
+        djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
         config = djerba_main.configure(ini_path)
         data_found = djerba_main.extract(config)
         with open(json_path) as json_file:
             data_expected = json.loads(json_file.read())
         self.assertEqual(data_found, data_expected)
         html = djerba_main.render(data_found)
-        self.assert_report_MD5(html, '094f5e6f896f9c9eaa740223530298ba')
+        self.assert_report_MD5(html, '10f7ac3e76cc2f47f3c4f9fa4af119dd')
 
 class TestValidator(TestCore):
 
@@ -88,6 +92,30 @@ class TestValidator(TestCore):
         # complete report JSON doesn't (and shouldn't) satisfy the plugin schema
         bad_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
         self.assertEqual(self.run_script(bad_path), 3)
+
+class TestWorkspace(TestCore):
+
+    def test(self):
+        with open(os.path.join(self.test_source_dir, self.LOREM_FILENAME)) as in_file:
+            lorem = in_file.read()
+        ws = workspace(self.tmp_dir)
+        ws_silent = workspace(self.tmp_dir, log_level=logging.CRITICAL)
+        # test if we can write a file
+        ws.write_string(self.LOREM_FILENAME, lorem)
+        self.assertTrue(os.path.exists(os.path.join(self.tmp_dir, self.LOREM_FILENAME)))
+        # test if we can read the file
+        ws_lorem = ws.read_string(self.LOREM_FILENAME)
+        self.assertEqual(ws_lorem, lorem)
+        # test if reading a nonexistent file breaks
+        with self.assertRaises(OSError):
+            ws_silent.read_string('/dummy/file/path')
+        # test if we can open the file
+        with ws.open_file('lorem.txt') as demo_file:
+            self.assertTrue(isinstance(demo_file, io.TextIOBase))
+        # test if opening a nonexistent file breaks
+        with self.assertRaises(OSError):
+            ws_silent.open_file('/dummy/file/path')
+
 
 if __name__ == '__main__':
     unittest.main()

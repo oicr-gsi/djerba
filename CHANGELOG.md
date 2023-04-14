@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased DEV
+
+- GCGI-827: Workspace class with tests. Represents a shared directory to read/write files, similar to the "report" directory in classic Djerba.
+
 ## v0.4.7: 2023-04-13
 
 ### Added
