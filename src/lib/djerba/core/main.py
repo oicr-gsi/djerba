@@ -302,14 +302,3 @@ class ArgumentNameError(Exception):
 
 class ComponentNameError(Exception):
     pass
-
-import sys
-
-if __name__ == '__main__':
-    djerba_main = main(sys.argv[3], logging.DEBUG)
-    config = djerba_main.configure(sys.argv[1])
-    data = djerba_main.extract(config)
-    with open(sys.argv[2], 'w') as out_file:
-        out_file.write(json.dumps(data, indent=4, sort_keys=True))
-    html = djerba_main.render(data)
-    print(html)
