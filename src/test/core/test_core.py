@@ -99,15 +99,23 @@ class TestWorkspace(TestCore):
         with open(os.path.join(self.test_source_dir, self.LOREM_FILENAME)) as in_file:
             lorem = in_file.read()
         ws = workspace(self.tmp_dir)
+        ws_silent = workspace(self.tmp_dir, log_level=logging.CRITICAL)
         # test if we can write a file
         ws.write_string(self.LOREM_FILENAME, lorem)
         self.assertTrue(os.path.exists(os.path.join(self.tmp_dir, self.LOREM_FILENAME)))
         # test if we can read the file
         ws_lorem = ws.read_string(self.LOREM_FILENAME)
         self.assertEqual(ws_lorem, lorem)
+        # test if reading a nonexistent file breaks
+        with self.assertRaises(OSError):
+            ws_silent.read_string('/dummy/file/path')
         # test if we can open the file
         with ws.open_file('lorem.txt') as demo_file:
             self.assertTrue(isinstance(demo_file, io.TextIOBase))
+        # test if opening a nonexistent file breaks
+        with self.assertRaises(OSError):
+            ws_silent.open_file('/dummy/file/path')
+
 
 if __name__ == '__main__':
     unittest.main()
