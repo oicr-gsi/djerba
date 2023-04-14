@@ -15,7 +15,7 @@ from djerba.core.json_validator import plugin_json_validator
 from djerba.core.main import main
 from djerba.mergers.gene_information.merger import main as gene_information_merger_main
 from djerba.util.subprocess_runner import subprocess_runner
-from djerba.util.trial import TestBase
+from djerba.util.testing.tools import TestBase
 from djerba.util.validator import path_validator
 import djerba.util.constants as constants
 
@@ -51,7 +51,7 @@ class TestSimpleReport(TestCore):
             data_expected = json.loads(json_file.read())
         self.assertEqual(data_found, data_expected)
         html = djerba_main.render(data_found)
-        self.assert_report_MD5(html, 'e9e3fcb19a194d6125369436eb353dbd')
+        self.assert_report_MD5(html, '094f5e6f896f9c9eaa740223530298ba')
 
 class TestValidator(TestCore):
 
