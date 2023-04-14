@@ -153,7 +153,7 @@ class ComponentNameError(Exception):
 import sys
 
 if __name__ == '__main__':
-    djerba_main = main(logging.DEBUG)
+    djerba_main = main(sys.argv[3], logging.DEBUG)
     config = djerba_main.configure(sys.argv[1])
     data = djerba_main.extract(config)
     with open(sys.argv[2], 'w') as out_file:

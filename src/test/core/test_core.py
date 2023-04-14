@@ -55,7 +55,7 @@ class TestSimpleReport(TestCore):
             data_expected = json.loads(json_file.read())
         self.assertEqual(data_found, data_expected)
         html = djerba_main.render(data_found)
-        self.assert_report_MD5(html, '094f5e6f896f9c9eaa740223530298ba')
+        self.assert_report_MD5(html, '10f7ac3e76cc2f47f3c4f9fa4af119dd')
 
 class TestValidator(TestCore):
 

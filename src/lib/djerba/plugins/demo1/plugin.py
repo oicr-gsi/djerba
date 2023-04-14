@@ -27,6 +27,8 @@ class main(plugin_base):
             },
             'results': {},
         }
+        question = 'What do you get if you multiply six by nine?'
+        self.workspace.write_string('question.txt', question)
         return data
 
     def render(self, data):
