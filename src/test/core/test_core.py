@@ -28,13 +28,8 @@ class TestCore(TestBase):
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
 
     def setUp(self):
-        super().setUp()
+        super().setUp() # includes tmp_dir
         self.test_source_dir = os.path.realpath(os.path.dirname(__file__))
-        self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
-        self.tmp_dir = self.tmp.name
-
-    def tearDown(self):
-        self.tmp.cleanup()
     
 class TestMerger(TestCore):
 
@@ -53,7 +48,7 @@ class TestSimpleReport(TestCore):
     def test_report(self):
         ini_path = os.path.join(self.test_source_dir, 'test.ini')
         json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
-        djerba_main = main(log_level=logging.WARNING)
+        djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
         config = djerba_main.configure(ini_path)
         data_found = djerba_main.extract(config)
         with open(json_path) as json_file:

@@ -13,6 +13,7 @@ from djerba.core.extract import extractor as core_extractor
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.render import renderer as core_renderer
 from djerba.core.loaders import plugin_loader, merger_loader
+from djerba.core.workspace import workspace
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
 
@@ -24,12 +25,13 @@ class main(logger):
     MERGERS = 'mergers'
     MERGE_INPUTS = 'merge_inputs'
     
-    def __init__(self, log_level=logging.INFO, log_path=None):
+    def __init__(self, work_dir, log_level=logging.INFO, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.json_validator = plugin_json_validator(self.log_level, self.log_path)
         self.path_validator = path_validator(self.log_level, self.log_path)
+        self.workspace = workspace(work_dir, self.log_level, self.log_path)
         self.plugin_loader = plugin_loader(self.log_level, self.log_path)
         self.merger_loader = merger_loader(self.log_level, self.log_path)
 
@@ -78,7 +80,7 @@ class main(logger):
                 config_out[section_name] = configurer.run(config_in[section_name])
                 self.logger.debug("Updated core configuration")
             else:
-                plugin_main = self.plugin_loader.load(section_name)
+                plugin_main = self.plugin_loader.load(section_name, self.workspace)
                 self.logger.debug("Loaded plugin {0} for configuration".format(section_name))
                 config_out[section_name] = plugin_main.configure(config_in[section_name])
         if config_path_out:
@@ -93,7 +95,7 @@ class main(logger):
         # data includes an empty 'plugins' object
         for section_name in config.sections():
             if section_name != ini.CORE:
-                plugin = self.plugin_loader.load(section_name)
+                plugin = self.plugin_loader.load(section_name, self.workspace)
                 self.logger.debug("Loaded plugin {0} for extraction".format(section_name))
                 plugin_data = plugin.extract(config[section_name])
                 self.json_validator.validate_data(plugin_data)
@@ -112,7 +114,7 @@ class main(logger):
         for plugin_name in data[self.PLUGINS]:
             # render plugin HTML, and find which mergers it uses
             plugin_data = data[self.PLUGINS][plugin_name]
-            plugin = self.plugin_loader.load(plugin_name)
+            plugin = self.plugin_loader.load(plugin_name, self.workspace)
             self.logger.debug("Loaded plugin {0} for rendering".format(plugin_name))
             body[plugin_name] = plugin.render(plugin_data)
             for name in plugin_data[self.MERGE_INPUTS]:
