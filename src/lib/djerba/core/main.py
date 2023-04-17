@@ -11,6 +11,7 @@ import os
 import djerba.util.ini_fields as ini
 import djerba.version as version
 from djerba.core.configure import configurer as core_configurer
+from djerba.core.database.archiver import archiver
 from djerba.core.extract import extractor as core_extractor
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.render import renderer as core_renderer
@@ -98,7 +99,7 @@ class main(logger):
         self.logger.info('Finished Djerba config step')
         return config_out
 
-    def extract(self, config, json_path=None):
+    def extract(self, config, json_path=None, archive=False):
         self.logger.info('Starting Djerba extract step')
         if json_path:  # do this *before* taking the time to generate output
             self.validator.validate_output_file(json_path)
@@ -114,6 +115,15 @@ class main(logger):
         if json_path:
             with open(json_path, 'w') as out_file:
                 out_file.write(json.dumps(data))
+        if archive:
+            self.logger.info('Archiving not yet implemented for djerba.core')
+            #uploaded, report_id = archiver(self.log_level, self.log_path).run(data)
+            #if uploaded:
+            #    self.logger.info(f"Archiving successful: {report_id}")
+            #else:
+            #    self.logger.warning(f"Error! Archiving unsuccessful: {report_id}")
+        else:
+            self.logger.info("Archive operation not requested; omitting archiving")
         self.logger.info('Finished Djerba extract step')
         return data
 
@@ -164,22 +174,21 @@ class main(logger):
             # get operational parameters
             work_dir = ap.get_work_dir()
             ini_path = ap.get_ini_path()
-            ini_path_out = ap.get_ini_out_path()
-            json_path = ap.get_json_path()
+            ini_path_out = ap.get_ini_out_path() # may be None
+            json_path = ap.get_json_path() # may be None
             html_path = ap.get_html_path()
             #pdf_path = ap.get_pdf()
-            # TODO define archive/cleanup switches for extract
-            # TODO apply/update cache switch for extract
-            #archive = ap.is_archive_enabled()
-            #cleanup = ap.is_cleanup_enabled()
+            # caching and cleanup are plugin-specific, should be configured in INI
+            # can also have a script to auto-populate INI files in 'setup' mode
+            archive = ap.is_archive_enabled()
             config = self.configure(ini_path, ini_path_out)
-            data = self.extract(config, json_path)
+            data = self.extract(config, json_path, archive)
             self.render(data, html_path)
             # TODO if pdf_path!=None, convert HTML->PDF
         else:
             # TODO add clauses for setup, configure, etc.
             # for now, raise an error
-            msg = "Mode '{0}' is not defined in Djerba core.main!".format(mode)
+            msg = "Mode '{0}' is not yet defined in Djerba core.main!".format(mode)
             self.logger.error(msg)
             raise RuntimeError(msg)
 
@@ -244,7 +253,7 @@ class arg_processor(logger):
         # default to None if work_dir is not in args
         # appropriate if eg. only running the 'render' step
         if hasattr(self.args, 'work_dir'):
-           value = self._get_arg('work_dir')
+            value = self._get_arg('work_dir')
         else:
             value = None
         return value
@@ -253,6 +262,7 @@ class arg_processor(logger):
         return not self._get_arg('no_archive')
 
     def is_cleanup_enabled(self):
+        # use to auto-populate INI in 'setup' mode
         return not self._get_arg('no_cleanup')
     
     def validate_args(self, args):

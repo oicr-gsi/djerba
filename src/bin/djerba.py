@@ -22,31 +22,34 @@ def get_parser():
     parser.add_argument('-l', '--log-path', help='Output file for log messages; defaults to STDERR')
     subparsers = parser.add_subparsers(title='subcommands', help='sub-command help', dest='subparser_name')
     setup_parser = subparsers.add_parser(constants.SETUP, help='set up a Djerba working directory')
-    # TODO output from setup should include a blank INI file, with parameters for a set of plugins (exactly which ones TBD)
+    # TODO output from setup should include an INI file to be completed by the user
+    # setup can have options for plugin-specific behaviour like oncokb caching and file cleanup
+    # see https://jira.oicr.on.ca/browse/GCGI-831
+    #setup_parser.add_argument('--no-cleanup', action='store_true', help='Do not clean up temporary report files')
+    #setup_cache_group = setup_parser.add_mutually_exclusive_group()
+    #setup_cache_group.add_argument('--apply-cache', action='store_true', help='Apply the offline oncoKB cache to do annotation; no contact with external oncoKB server')
+    #setup_cache_group.add_argument('--update-cache', action='store_true', help='Use annotation results from external oncoKB server to update the offline cache')
     setup_parser.add_argument('-b', '--base', metavar='DIR', required=True, help='base directory in which to create the working directory')
     setup_parser.add_argument('-n', '--name', metavar='NAME', required=True, help='name for working directory; typically the patient identifier')
     config_parser = subparsers.add_parser(constants.CONFIGURE, help='get configuration parameters')
     config_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with user inputs')
     config_parser.add_argument('-o', '--out', metavar='PATH', required=True, help='Path for output of fully specified INI config file')
     config_parser.add_argument('-w', '--work-dir', metavar='PATH', required=True, help='Path to plugin workspace directory')
-    # TODO want to read custom genomic summary, insert it into the JSON for archive to DB, and write the updated JSON to a local file
-    # Should this be done in 'extract' mode? and move archiving to extract step? ie. report is completed by 'extract', so why not archive it at the same time?
-    # Special 'update' operation to run the genomic-summary plugin *only* for greater speed, update JSON and archive to the DB -- could be part of 'render'
-    # then, add --json-out and --summary arguments to 'render'
-    # similar funcationality in 'all' and 'draft' modes
     extract_parser = subparsers.add_parser(constants.EXTRACT, help='extract metrics from configuration')
     extract_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with fully specified inputs')
     extract_parser.add_argument('-j', '--json', metavar='PATH', help='Path for JSON output; defaults to djerba_report.json in the plugin workspace')
     extract_parser.add_argument('-w', '--work-dir', metavar='PATH', required=True, help='Path to plugin workspace directory')
-    extract_parser.add_argument('--no-cleanup', action='store_true', help='Do not clean up temporary report files')
-    extract_cache_group = extract_parser.add_mutually_exclusive_group()
-    extract_cache_group.add_argument('--apply-cache', action='store_true', help='Apply the offline oncoKB cache to do annotation; no contact with external oncoKB server')
-    extract_cache_group.add_argument('--update-cache', action='store_true', help='Use annotation results from external oncoKB server to update the offline cache')
+    extract_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
+    # TODO --summary will run a 'mini-extract' step to update the genomic summary with the given file
+    # if --summary is in effect, --json-out writes updated JSON to a file, --no-archive cancels archiving
+    # see https://jira.oicr.on.ca/browse/GCGI-832
     render_parser = subparsers.add_parser(constants.HTML, help='read metrics directory and write HTML')
     render_parser.add_argument('-j', '--json', metavar='PATH', required=True, help='Path for JSON input')
+    #render_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
+    #render_parser.add_argument('-o', '--json-out', metavar='PATH', help='Path for JSON output with revised genomic summary (if any)')
+    #render_parser.add_argument('-s', '--summary', metavar='PATH', help='File with updated genomic summary text')
     render_parser.add_argument('-H', '--html', metavar='PATH', help='Path for HTML output')
     render_parser.add_argument('-P', '--pdf', metavar='PATH', help='Path for PDF output; optional')
-    render_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
     publish_parser = subparsers.add_parser(constants.PDF, help='read Djerba HTML output and write PDF')
     publish_parser.add_argument('-H', '--html', metavar='PATH', required=True, help='Path for HTML input')
     publish_parser.add_argument('-P', '--pdf', metavar='PATH', required=True, help='Path for PDF output')
@@ -58,10 +61,6 @@ def get_parser():
     report_parser.add_argument('-H', '--html', metavar='PATH', help='Path for HTML output; optional, defaults to auto-generated filename in plugin workspace')
     report_parser.add_argument('-P', '--pdf', metavar='PATH', help='Path for PDF output; optional, if not supplied, no PDF is generated')
     report_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
-    report_parser.add_argument('--no-cleanup', action='store_true', help='Do not clean up temporary report files')
-    report_cache_group = report_parser.add_mutually_exclusive_group()
-    report_cache_group.add_argument('--apply-cache', action='store_true', help='Apply the offline oncoKB cache to do annotation; no contact with external oncoKB server')
-    report_cache_group.add_argument('--update-cache', action='store_true', help='Use annotation results from external oncoKB server to update the offline cache')
     return parser
 
 if __name__ == '__main__':
