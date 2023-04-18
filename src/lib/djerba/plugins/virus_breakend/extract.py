@@ -23,7 +23,7 @@ class data_builder:
   MEANDEPTH = 'meandepth'
   INTEGRATION = 'integrations'
 
-  input_dir = "../plugins/virus_breakend/test/"
+  input_dir = "/u/aalam/git/djerba/src/lib/djerba/plugins/virus_breakend/test/"
   
   def build_virusbreakend(self):
     """
