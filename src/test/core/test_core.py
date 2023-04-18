@@ -143,7 +143,7 @@ class TestArgs(TestCore):
 class TestMainScript(TestCore):
     """Test the main djerba.py script"""
 
-    def test_configure(self):
+    def test_configure_cli(self):
         mode = 'configure'
         work_dir = self.tmp_dir
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
@@ -158,7 +158,7 @@ class TestMainScript(TestCore):
         self.assertEqual(result.returncode, 0)
         self.assertEqual(self.getMD5(out_path), self.SIMPLE_CONFIG_MD5)
 
-    def test_extract(self):
+    def test_extract_cli(self):
         mode = 'extract'
         work_dir = self.tmp_dir
         ini_path = os.path.join(self.test_source_dir, 'config_full.ini')
@@ -173,7 +173,7 @@ class TestMainScript(TestCore):
         self.assertEqual(result.returncode, 0)
         self.assertSimpleJSON(json_path)
 
-    def test_render(self):
+    def test_render_cli(self):
         mode = 'html'
         work_dir = self.tmp_dir
         json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
@@ -189,7 +189,7 @@ class TestMainScript(TestCore):
             html_string = html_file.read()
         self.assert_report_MD5(html_string, self.SIMPLE_REPORT_MD5)
 
-    def test_report(self):
+    def test_report_cli(self):
         mode = 'report'
         work_dir = self.tmp_dir
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
@@ -291,6 +291,15 @@ class TestWorkspace(TestCore):
         with self.assertRaises(OSError):
             ws_silent.open_file('/dummy/file/path')
 
+    def test_core_config(self):
+        ini_path = os.path.join(self.test_source_dir, 'config_full.ini')
+        cp = ConfigParser()
+        cp.read(ini_path)
+        ws = workspace(self.tmp_dir)
+        ws.write_core_config(cp['core'])
+        self.assertTrue(os.path.exists(os.path.join(self.tmp_dir, 'core_config.json')))
+        config = ws.read_core_config()
+        self.assertEqual(config['comment'], 'Djerba 1.0 under development')
 
 if __name__ == '__main__':
     unittest.main()
