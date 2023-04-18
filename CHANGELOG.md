@@ -1,10 +1,40 @@
 # CHANGELOG
 
-## Unreleased
+## Unreleased DEV
+
+- GCGI-827: Workspace class with tests. Represents a shared directory to read/write files, similar to the "report" directory in classic Djerba.
+
+## v0.4.7: 2023-04-13
+
+### Added
+- GCGI-823: New script `src/test/run_gsicapbench.sh` to generate and compare benchmark reports before a release
+
+### Fixed
+- GCGI-810: Do not exit prematurely when finding benchmark inputs
+
+## v1.0.0-dev0.0.1: 2023-04-11
+
+- Pre-release for development of v1.1.0
+- This will be the first of several pre-releases to track core/plugin development
+- Git branch for pre-releases will be `GCGI-806_v1.0.0-dev`, not `master` GCGI-806_v1.0.0-dev
+
+### Added
+
+- Working prototypes of core/plugin functionality and testing
+
+## v0.4.6: 2023-04-06
+
+- With this release, we start a _feature freeze_ on the current Djerba application
+- Urgent bugfixes only, to allow us to focus on implementing Djerba v1.0.0
+
+### Added
+- new parameter called `cbio_study_id` from shesmu for whizbam links
 
 ### Changed
 - Moved qc-etl and pinery metric pulls to `discover_secondary` so that `tumour_id` is set first
+- Check for manually configured parameters before querying qc-etl or Pinery
 - Removed callability and coverage from `config_template.ini`
+- Warning message about MSI LLOD in report when purity less than 50%
 
 ### Fixed
 - Raise an error in INI config validation if any parameters are set to an empty string

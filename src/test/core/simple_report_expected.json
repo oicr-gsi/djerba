@@ -1,4 +1,5 @@
 {
+    "comment": "Djerba 1.0 under development",
     "core": {
         "assay_type": "WGTS",
         "author": "Test Author",
@@ -35,7 +36,6 @@
         },
         "technical_notes": "No technical notes supplied."
     },
-    "neo": "Neo was here",
     "plugins": {
         "demo1": {
             "clinical": true,
@@ -80,9 +80,9 @@
             },
             "plugin_name": "demo2 plugin",
             "results": {
-                "answer": "42"
+                "answer": "42",
+		"question": "What do you get if you multiply six by nine?"
             }
         }
-    },
-    "trinity": "Trinity was here first"
+    }
 }

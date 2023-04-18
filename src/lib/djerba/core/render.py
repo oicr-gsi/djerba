@@ -45,14 +45,11 @@ class renderer(logger):
         return html
 
     def run(self, data):
-        # TODO make core header/footer and merge/dedup sections
-        # populate additional data fields
         header = self.render_header(data)
         footer_template = """
-        <h1>{0}</h1>
-        <h1>{1}</h1>
+        <div>{0}</div>
         </body>
         </html>
         """
-        footer = footer_template.format(data['neo'], data['trinity'])
+        footer = footer_template.format(data['comment'])
         return [header, footer]
