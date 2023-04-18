@@ -26,11 +26,24 @@ class TestCore(TestBase):
 
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
+    SIMPLE_REPORT_MD5 = '10f7ac3e76cc2f47f3c4f9fa4af119dd'
 
     def setUp(self):
         super().setUp() # includes tmp_dir
         self.test_source_dir = os.path.realpath(os.path.dirname(__file__))
 
+    def assertSimpleReport(self, json_path, html_path):
+        json_expected = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
+        with open(json_expected) as json_file:
+            data_expected = json.loads(json_file.read())
+        with open(json_path) as json_file:
+            data_found = json.loads(json_file.read())
+        self.assertEqual(data_found, data_expected)
+        with open(json_expected) as json_file:
+            data_expected = json.loads(json_file.read())
+        with open(html_path) as html_file:
+            html_string = html_file.read()
+        self.assert_report_MD5(html_string, self.SIMPLE_REPORT_MD5)
 
 class TestArgs(TestCore):
 
@@ -84,18 +97,28 @@ class TestArgs(TestCore):
         args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
         ap = arg_processor(args)
         main(work_dir, log_level=logging.WARNING).run(args)
-        json_expected = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
-        with open(json_expected) as json_file:
-            data_expected = json.loads(json_file.read())
-        with open(json_path) as json_file:
-            data_found = json.loads(json_file.read())
-        self.assertEqual(data_found, data_expected)
-        with open(json_expected) as json_file:
-            data_expected = json.loads(json_file.read())
-        with open(html) as html_file:
-            html_string = html_file.read()
-        self.assert_report_MD5(html_string, '10f7ac3e76cc2f47f3c4f9fa4af119dd')
+        self.assertSimpleReport(json_path, html)
 
+class TestMainScript(TestCore):
+    """Test the main djerba.py script"""
+
+    def test_report(self):
+        # TODO add similar tests for other script modes: configure, extract, etc.
+        mode = 'report'
+        work_dir = self.tmp_dir
+        ini_path = os.path.join(self.test_source_dir, 'test.ini')
+        json_path = os.path.join(self.tmp_dir, 'test.json')
+        html = os.path.join(self.tmp_dir, 'test.html')
+        cmd = [
+            'djerba.py', mode,
+            '--work-dir', work_dir,
+            '--ini', ini_path,
+            '--json', json_path,
+            '--html', html
+        ]
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        self.assertSimpleReport(json_path, html)
 
 class TestMerger(TestCore):
 
@@ -121,7 +144,7 @@ class TestSimpleReport(TestCore):
             data_expected = json.loads(json_file.read())
         self.assertEqual(data_found, data_expected)
         html = djerba_main.render(data_found)
-        self.assert_report_MD5(html, '10f7ac3e76cc2f47f3c4f9fa4af119dd')
+        self.assert_report_MD5(html, self.SIMPLE_REPORT_MD5)
 
 class TestValidator(TestCore):
 
