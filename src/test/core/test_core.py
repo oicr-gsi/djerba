@@ -14,7 +14,7 @@ import djerba.util.ini_fields as ini
 
 from configparser import ConfigParser
 from djerba.core.json_validator import plugin_json_validator
-from djerba.core.main import main
+from djerba.core.main import main, arg_processor
 from djerba.core.workspace import workspace
 from djerba.mergers.gene_information.merger import main as gene_information_merger_main
 from djerba.util.subprocess_runner import subprocess_runner
@@ -30,7 +30,73 @@ class TestCore(TestBase):
     def setUp(self):
         super().setUp() # includes tmp_dir
         self.test_source_dir = os.path.realpath(os.path.dirname(__file__))
-    
+
+
+class TestArgs(TestCore):
+
+    class mock_args:
+        """Use instead of argparse to store params for testing"""
+
+        def __init__(self, mode, work_dir, ini, ini_out, json, html, pdf):
+            self.subparser_name = mode
+            self.work_dir = work_dir
+            self.ini = ini
+            self.ini_out = ini_out
+            self.json = json
+            self.html = html
+            self.pdf = pdf
+            self.no_archive = True
+            # logging
+            self.log_path = None
+            self.debug = False
+            self.verbose = False
+            self.quiet = True
+
+    def test_processor(self):
+        mode = 'report'
+        work_dir = self.tmp_dir
+        ini_path = os.path.join(self.test_source_dir, 'test.ini')
+        out_path = os.path.join(self.tmp_dir, 'test_out.ini')
+        json = os.path.join(self.tmp_dir, 'test.json')
+        html = os.path.join(self.tmp_dir, 'test.html')
+        pdf = os.path.join(self.tmp_dir, 'test.pdf')
+        args = self.mock_args(mode, work_dir, ini_path, out_path, json, html, pdf)
+        ap = arg_processor(args)
+        self.assertEqual(ap.get_mode(), mode)
+        self.assertEqual(ap.get_ini_path(), ini_path)
+        self.assertEqual(ap.get_ini_out_path(), out_path)
+        self.assertEqual(ap.get_json_path(), json)
+        self.assertEqual(ap.get_html_path(), html)
+        self.assertEqual(ap.get_pdf_path(), pdf)
+        self.assertEqual(ap.get_log_level(), logging.ERROR)
+        self.assertEqual(ap.get_log_path(), None)
+
+    def test_run(self):
+        # run from args, with same inputs as TestSimpleReport
+        # TODO add similar tests for other script modes: configure, extract, etc.
+        mode = 'report'
+        work_dir = self.tmp_dir
+        ini_path = os.path.join(self.test_source_dir, 'test.ini')
+        out_path = None
+        json_path = os.path.join(self.tmp_dir, 'test.json')
+        html = os.path.join(self.tmp_dir, 'test.html')
+        pdf = None
+        args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
+        ap = arg_processor(args)
+        main(work_dir, log_level=logging.WARNING).run(args)
+        json_expected = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
+        with open(json_expected) as json_file:
+            data_expected = json.loads(json_file.read())
+        with open(json_path) as json_file:
+            data_found = json.loads(json_file.read())
+        self.assertEqual(data_found, data_expected)
+        with open(json_expected) as json_file:
+            data_expected = json.loads(json_file.read())
+        with open(html) as html_file:
+            html_string = html_file.read()
+        self.assert_report_MD5(html_string, '10f7ac3e76cc2f47f3c4f9fa4af119dd')
+
+
 class TestMerger(TestCore):
 
     GENE_INFO_INPUTS = 'gene_information_inputs.json'

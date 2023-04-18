@@ -80,7 +80,7 @@ class main(logger):
     def configure(self, config_path_in, config_path_out=None):
         self.logger.info('Starting Djerba config step')
         if config_path_out:  # do this *before* taking the time to generate output
-            self.validator.validate_output_file(config_path_out)
+            self.path_validator.validate_output_file(config_path_out)
         config_in = self.read_ini_path(config_path_in)
         # TODO first read defaults, then overwrite
         config_out = ConfigParser()
@@ -102,7 +102,7 @@ class main(logger):
     def extract(self, config, json_path=None, archive=False):
         self.logger.info('Starting Djerba extract step')
         if json_path:  # do this *before* taking the time to generate output
-            self.validator.validate_output_file(json_path)
+            self.path_validator.validate_output_file(json_path)
         data = core_extractor(self.log_level, self.log_path).run(config)
         # data includes an empty 'plugins' object
         for section_name in config.sections():
@@ -224,7 +224,7 @@ class arg_processor(logger):
 
     def get_json_path(self):
         return self._get_arg('json')
-    
+
     def get_log_level(self):
         return self.log_level
 
@@ -248,7 +248,7 @@ class arg_processor(logger):
 
     def get_pdf_path(self):
         return self._get_arg('pdf')
-    
+
     def get_work_dir(self):
         # default to None if work_dir is not in args
         # appropriate if eg. only running the 'render' step
@@ -264,7 +264,7 @@ class arg_processor(logger):
     def is_cleanup_enabled(self):
         # use to auto-populate INI in 'setup' mode
         return not self._get_arg('no_cleanup')
-    
+
     def validate_args(self, args):
         """
         Check we can read/write paths in command-line arguments
@@ -297,7 +297,7 @@ class arg_processor(logger):
             if args.ini_out:
                 v.validate_output_file(args.ini_out)
             if args.html:
-                v.validate_output_file(args.pdf)
+                v.validate_output_file(args.html)
             if args.json:
                 v.validate_output_file(args.json)
             if args.pdf:
