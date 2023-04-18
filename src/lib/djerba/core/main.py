@@ -88,6 +88,8 @@ class main(logger):
             if section_name == ini.CORE:
                 configurer = core_configurer(self.log_level, self.log_path)
                 config_out[section_name] = configurer.run(config_in[section_name])
+                # write core config for (possible) use by plugins
+                self.workspace.write_core_config(config_out[section_name])
                 self.logger.debug("Updated core configuration")
             else:
                 plugin_main = self.plugin_loader.load(section_name, self.workspace)

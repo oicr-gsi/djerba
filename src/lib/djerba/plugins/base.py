@@ -49,4 +49,3 @@ class plugin_base(logger, ABC):
         self.logger.debug(msg)
         self.json_validator.validate_data(data)
         return ''
-
