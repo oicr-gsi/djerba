@@ -4,6 +4,7 @@
 
 - GCGI-826: Update the main `djerba.py` script to run core/plugins, with tests. New `report` mode replaces `all` and `draft`. Supported modes: `configure`, `extract`, `html`, `report`. Other modes are TODO.
 - GCGI-827: Workspace class with tests. Represents a shared directory to read/write files, similar to the "report" directory in classic Djerba.
+- GCGI-838: Introducing "helper" modules, with an example which copies a subset of file provenance to the workspace.
 - GCGI-839: Methods to read/write core config in the workspace, so it can be used by plugins
 
 ## v0.4.7: 2023-04-13

@@ -8,6 +8,7 @@ from configparser import ConfigParser
 import json
 import logging
 import os
+import re
 import djerba.util.ini_fields as ini
 import djerba.version as version
 from djerba.core.configure import configurer as core_configurer
@@ -15,7 +16,7 @@ from djerba.core.database.archiver import archiver
 from djerba.core.extract import extractor as core_extractor
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.render import renderer as core_renderer
-from djerba.core.loaders import plugin_loader, merger_loader
+from djerba.core.loaders import plugin_loader, merger_loader, helper_loader
 from djerba.core.workspace import workspace
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
@@ -43,6 +44,10 @@ class main(logger):
             self.workspace = None # eg. no workspace needed for 'render' only
         self.plugin_loader = plugin_loader(self.log_level, self.log_path)
         self.merger_loader = merger_loader(self.log_level, self.log_path)
+        self.helper_loader = helper_loader(self.log_level, self.log_path)
+
+    def _is_helper_name(self, name):
+        return re.search('_helper$', name)
 
     def _order_html(self, header, body, footer, order):
         """
@@ -91,6 +96,10 @@ class main(logger):
                 # write core config for (possible) use by plugins
                 self.workspace.write_core_config(config_out[section_name])
                 self.logger.debug("Updated core configuration")
+            elif self._is_helper_name(section_name):
+                helper_main = self.helper_loader.load(section_name, self.workspace)
+                self.logger.debug("Loaded helper {0} for configuration".format(section_name))
+                config_out[section_name] = helper_main.configure(config_in[section_name])
             else:
                 plugin_main = self.plugin_loader.load(section_name, self.workspace)
                 self.logger.debug("Loaded plugin {0} for configuration".format(section_name))
@@ -108,7 +117,13 @@ class main(logger):
         data = core_extractor(self.log_level, self.log_path).run(config)
         # data includes an empty 'plugins' object
         for section_name in config.sections():
-            if section_name != ini.CORE:
+            if section_name == ini.CORE:
+                pass
+            elif self._is_helper_name(section_name):
+                helper = self.helper_loader.load(section_name, self.workspace)
+                self.logger.debug("Loaded helper {0} for extraction".format(section_name))
+                helper.extract(config[section_name])
+            else:
                 plugin = self.plugin_loader.load(section_name, self.workspace)
                 self.logger.debug("Loaded plugin {0} for extraction".format(section_name))
                 plugin_data = plugin.extract(config[section_name])
