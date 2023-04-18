@@ -1,0 +1,21 @@
+{
+    "clinical": true,
+    "failed": false,
+    "merge_inputs": {},
+    "plugin_name": "VIRUSBreakend",
+    "results": {
+        "Body": [
+            {
+                "Coverage": "56.5395",
+                "Genus": "Betacoronavirus",
+                "Integration": "0",
+                "Length": "29903",
+                "Mean depth": "2.01635",
+                "Species": "Severe acute respiratory syndrome coronavirus 2"
+            }
+        ],
+        "Total variants": 1
+    } 
+}
+
+
