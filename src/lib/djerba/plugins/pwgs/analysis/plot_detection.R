@@ -1,6 +1,5 @@
-##version 1.0
+#! /usr/bin/env Rscript
 
-####packages####
 library(optparse)
 library(ggplot2)
 
@@ -9,22 +8,15 @@ options(digits = 5)
 
 # get options
 option_list = list(
-  make_option(c("-s", "--sampleName"), type="character", default=NULL, help="sample Name", metavar="character"),
-  make_option(c("-r", "--results"), type="character", default=NULL, help="results file path", metavar="character"),
-  make_option(c("-p", "--pval"), type="numeric", default=3.2e-5, help="p-value cutoff", metavar="numeric"),
+  make_option(c("-r", "--hbc_results"), type="character", default=NULL, help="results file path", metavar="character"),
+  make_option(c("-p", "--pval"), type="numeric", default=3.15e-5, help="p-value cutoff", metavar="numeric")
 )
 
 opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
 opt <- parse_args(opt_parser)
 
-sampleName <- opt$sampleName
-results_path <- opt$results
+results_path <- opt$hbc_results
 pval_cutoff <- opt$pval
-
-##test
-results_path <- "/Volumes/cgi/scratch/fbeaudry/validation/plasmaWG/olive/OCT_011223_Ct_T_nn_1-11_LB23-01.HBCs.csv"
-sampleName <- "~/Documents/data/plasmaWG/OCT_011223.draft"
-pval_cutoff = 3.2e-5
 
 ## intake
 results <- read.csv(results_path,header=TRUE)
@@ -35,12 +27,11 @@ mean_detection <- mean(results$sites_detected[results$label == "CONTROLS"])
 
 results_cov <- results
 
-
 dataset_cutoff <- (qnorm(pval_cutoff,lower.tail = F) * sd(results_cov$sites_detected)) +  mean(results_cov$sites_detected)
 
 ##plot
 options(bitmapType='cairo')
-svg(paste0(sampleName,".pWGS.svg"), width = 5, height = 1.2)
+svg("pWGS.svg", width = 5, height = 1.2)
     
 ggplot(results_cov) + 
     geom_jitter(aes(x=0,y=sites_detected,color=label,size=label,shape=label),width = 0.01) +
@@ -74,4 +65,12 @@ ggplot(results_cov) +
   
 dev.off()
      
-
+txt <- paste(readLines(paste0("pWGS.svg")), collapse = "")
+b64txt <- paste0("data:image/svg+xml;base64,", base64enc::base64encode(charToRaw(txt)))
+write.table(
+  b64txt,
+  file = paste0("pWGS.base64.txt"),
+  append = F, quote = FALSE, sep = "\t", 
+  eol = "\n", na = "NA",dec = ".", row.names = FALSE, 
+  col.names = FALSE
+)

@@ -1,17 +1,24 @@
 """Djerba plugin for pwgs reporting"""
 import os
+import csv
+import logging
 
 from djerba.plugins.base import plugin_base
 from mako.lookup import TemplateLookup
 import djerba.plugins.pwgs.constants as constants
+from djerba.util.subprocess_runner import subprocess_runner
+from djerba.util.logger import logger
 
 class main(plugin_base):
-    TEMPLATE_NAME = 'analysis_template.html'
 
     def configure(self, config_section):
         return config_section
 
     def extract(self, config_section):
+        hbc_results = preprocess_files.preprocess_hbc(config_section[constants.HBC_FILE])
+        reads_detected = preprocess_files.preprocess_vaf(config_section[constants.VAF_FILE])
+        mrdetect_results = preprocess_files.preprocess_results(config_section[constants.RESULTS_FILE])
+        pwgs_base64 = preprocess_files.write_pwgs_plot(config_section[constants.HBC_FILE])       
         data = {
             'plugin_name': 'pwgs.analysis',
             'clinical': True,
@@ -20,15 +27,16 @@ class main(plugin_base):
                 'gene_information': []
             },
             'results': {
-                'outcome': bool(config_section['outcome']),
-                'significance_text': config_section['significance_text'],
-                'TF': float(config_section['TF']),
-                'sites_checked': int(config_section['sites_checked']),
-                'reads_checked': int(config_section['reads_checked']),
-                'sites_detected': int(config_section['sites_detected']),
-                'reads_detected': int(config_section['reads_detected']),
-                'p-value': float(config_section['p-value']),
-                'hbc_n': int(config_section['hbc_n'])
+                'outcome': mrdetect_results['outcome'],
+                'significance_text': mrdetect_results['significance_text'],
+                'TF': mrdetect_results['TF'],
+                'sites_checked': hbc_results['sites_checked'],
+                'reads_checked': hbc_results['reads_checked'],
+                'sites_detected': hbc_results['sites_detected'],
+                'reads_detected': reads_detected,
+                'p-value': mrdetect_results['pvalue'],
+                'hbc_n': hbc_results['hbc_n'],
+                'pwgs_base64': pwgs_base64
             }
         }
         return data
@@ -41,7 +49,7 @@ class main(plugin_base):
             'html'
         ))
         report_lookup = TemplateLookup(directories=[html_dir, ], strict_undefined=True)
-        mako_template = report_lookup.get_template(self.TEMPLATE_NAME)
+        mako_template = report_lookup.get_template(constants.TEMPLATE_NAME)
         try:
             html = mako_template.render(**args)
         except Exception as err:
@@ -49,3 +57,81 @@ class main(plugin_base):
             self.logger.error(msg)
             raise
         return html    
+
+class preprocess_files():
+
+    def preprocess_hbc(hbc_path):
+        """
+        summarize healthy blood controls (HBC) file
+        """
+        sites_checked = []
+        reads_checked = []
+        sites_detected = []
+        with open(hbc_path, 'r') as hbc_file:
+            reader_file = csv.reader(hbc_file, delimiter=",")
+            next(reader_file, None)
+            for row in reader_file:
+                try:
+                    sites_checked.append(row[2])
+                    reads_checked.append(row[3])
+                    sites_detected.append(row[4])
+                except IndexError as err:
+                    msg = "Incorrect number of columns in HBC row: '{0}'".format(row)+\
+                        "read from '{0}'".format(hbc_path)
+                    raise RuntimeError(msg) from err
+        hbc_n = len(sites_detected) - 3
+        hbc_dict = {'sites_checked': int(sites_checked[0]),
+                    'reads_checked': int(reads_checked[0]),
+                    'sites_detected': int(sites_detected[0]),
+                    'hbc_n': hbc_n}
+        return hbc_dict
+    
+    def preprocess_vaf(vaf_path):
+        """
+        summarize Variant Allele Frequency (VAF) file
+        """
+        reads_detected = 0
+        with open(vaf_path, 'r') as hbc_file:
+            reader_file = csv.reader(hbc_file, delimiter="\t")
+            next(reader_file, None)
+            for row in reader_file:
+                try: 
+                    reads_tmp = row[1]
+                    reads_detected = reads_detected + int(reads_tmp)
+                except IndexError as err:
+                    msg = "Incorrect number of columns in vaf row: '{0}' ".format(row)+\
+                          "read from '{0}'".format(vaf_path)
+                    raise RuntimeError(msg) from err
+        return reads_detected
+    
+    def preprocess_results(results_path):
+        """
+        pull data from results file
+        """
+        results_dict = {}
+        with open(results_path, 'r') as hbc_file:
+            reader_file = csv.reader(hbc_file, delimiter="\t")
+            next(reader_file, None)
+            for row in reader_file:
+                try:
+                    results_dict = {'TF': float(row[8]),
+                                    'pvalue': float(row[10]), 
+                                    'outcome': row[13]
+                                    }
+                except IndexError as err:
+                    msg = "Incorrect number of columns in vaf row: '{0}' ".format(row)+\
+                          "read from '{0}'".format(results_path)
+                    raise RuntimeError(msg) from err
+        if results_dict['pvalue'] > constants.DETECTION_ALPHA :
+            significance_text = "not significantly different"
+        elif results_dict['pvalue'] >= constants.DETECTION_ALPHA:
+            significance_text = "significantly larger"
+        results_dict['significance_text'] = significance_text
+        return results_dict
+    
+    def write_pwgs_plot(hbc_path):
+        args = [
+            os.path.join('/.mounts/labs/CGI/scratch/fbeaudry/reporting/djerba/src/lib/djerba/plugins/pwgs/analysis/','plot_detection.R'),
+            '-r', hbc_path
+        ]
+        subprocess_runner().run(args)
