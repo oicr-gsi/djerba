@@ -12,6 +12,7 @@ DETECTION_PLOT = 'detection_plot'
 RESULTS_FILE = 'results_file'
 HBC_FILE = 'hbc_file'
 VAF_FILE = 'vaf_file'
+PWGS_PLOT = 'pwgs_base64'
 
 # render constants
 TEMPLATE_NAME = 'analysis_template.html'

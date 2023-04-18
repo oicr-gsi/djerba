@@ -9,6 +9,7 @@ options(digits = 5)
 # get options
 option_list = list(
   make_option(c("-r", "--hbc_results"), type="character", default=NULL, help="results file path", metavar="character"),
+  make_option(c("-o", "--output_directory"), type="character", default="./", help="results file path", metavar="character"),
   make_option(c("-p", "--pval"), type="numeric", default=3.15e-5, help="p-value cutoff", metavar="numeric")
 )
 
@@ -16,6 +17,7 @@ opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
 opt <- parse_args(opt_parser)
 
 results_path <- opt$hbc_results
+output_directory <- opt$output_directory
 pval_cutoff <- opt$pval
 
 ## intake
@@ -31,7 +33,7 @@ dataset_cutoff <- (qnorm(pval_cutoff,lower.tail = F) * sd(results_cov$sites_dete
 
 ##plot
 options(bitmapType='cairo')
-svg("pWGS.svg", width = 5, height = 1.2)
+svg(paste0(output_directory,"pWGS.svg"), width = 5, height = 1.2)
     
 ggplot(results_cov) + 
     geom_jitter(aes(x=0,y=sites_detected,color=label,size=label,shape=label),width = 0.01) +
@@ -65,12 +67,8 @@ ggplot(results_cov) +
   
 dev.off()
      
-txt <- paste(readLines(paste0("pWGS.svg")), collapse = "")
+txt <- paste(readLines(paste0(output_directory,"pWGS.svg")), collapse = "")
 b64txt <- paste0("data:image/svg+xml;base64,", base64enc::base64encode(charToRaw(txt)))
-write.table(
-  b64txt,
-  file = paste0("pWGS.base64.txt"),
-  append = F, quote = FALSE, sep = "\t", 
-  eol = "\n", na = "NA",dec = ".", row.names = FALSE, 
-  col.names = FALSE
-)
+print(b64txt)
+
+

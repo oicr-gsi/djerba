@@ -14,7 +14,6 @@
         "sites_detected": 2683,
         "reads_detected": 11362,
         "p-value": 0.590773060500315,
-        "hbc_n": 22,
-        "pwgs_base64": "None"
+        "hbc_n": 24
     }
 }

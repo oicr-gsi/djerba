@@ -3,8 +3,8 @@ import os
 import csv
 import logging
 
-from djerba.plugins.base import plugin_base
 from mako.lookup import TemplateLookup
+from djerba.plugins.base import plugin_base
 import djerba.plugins.pwgs.constants as constants
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.logger import logger
@@ -18,7 +18,8 @@ class main(plugin_base):
         hbc_results = preprocess_files.preprocess_hbc(config_section[constants.HBC_FILE])
         reads_detected = preprocess_files.preprocess_vaf(config_section[constants.VAF_FILE])
         mrdetect_results = preprocess_files.preprocess_results(config_section[constants.RESULTS_FILE])
-        pwgs_base64 = preprocess_files.write_pwgs_plot(config_section[constants.HBC_FILE])       
+        pwgs_base64 = preprocess_files.write_pwgs_plot(config_section[constants.HBC_FILE])
+        self.logger.info("PWGS: Finished preprocessing files")       
         data = {
             'plugin_name': 'pwgs.analysis',
             'clinical': True,
@@ -79,7 +80,7 @@ class preprocess_files():
                     msg = "Incorrect number of columns in HBC row: '{0}'".format(row)+\
                         "read from '{0}'".format(hbc_path)
                     raise RuntimeError(msg) from err
-        hbc_n = len(sites_detected) - 3
+        hbc_n = len(sites_detected) - 1
         hbc_dict = {'sites_checked': int(sites_checked[0]),
                     'reads_checked': int(reads_checked[0]),
                     'sites_detected': int(sites_detected[0]),
@@ -129,9 +130,14 @@ class preprocess_files():
         results_dict['significance_text'] = significance_text
         return results_dict
     
-    def write_pwgs_plot(hbc_path):
+    def write_pwgs_plot(hbc_path, output_dir = None):
+        if output_dir == None:
+            output_dir = os.path.join('./')
         args = [
             os.path.join('/.mounts/labs/CGI/scratch/fbeaudry/reporting/djerba/src/lib/djerba/plugins/pwgs/analysis/','plot_detection.R'),
-            '-r', hbc_path
+            '--hbc_results', hbc_path,
+            '--output_directory', output_dir 
         ]
-        subprocess_runner().run(args)
+        pwgs_results = subprocess_runner().run(args)
+        os.remove(os.path.join(output_dir,'pWGS.svg'))
+        return(pwgs_results.stdout.split('"')[1])
