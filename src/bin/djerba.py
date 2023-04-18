@@ -33,7 +33,7 @@ def get_parser():
     setup_parser.add_argument('-n', '--name', metavar='NAME', required=True, help='name for working directory; typically the patient identifier')
     config_parser = subparsers.add_parser(constants.CONFIGURE, help='get configuration parameters')
     config_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with user inputs')
-    config_parser.add_argument('-o', '--out', metavar='PATH', required=True, help='Path for output of fully specified INI config file')
+    config_parser.add_argument('-o', '--ini-out', metavar='PATH', required=True, help='Path for output of fully specified INI config file')
     config_parser.add_argument('-w', '--work-dir', metavar='PATH', required=True, help='Path to plugin workspace directory')
     extract_parser = subparsers.add_parser(constants.EXTRACT, help='extract metrics from configuration')
     extract_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with fully specified inputs')

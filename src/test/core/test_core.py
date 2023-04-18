@@ -27,20 +27,22 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_MD5 = '10f7ac3e76cc2f47f3c4f9fa4af119dd'
+    SIMPLE_CONFIG_MD5 = '5d6b64f392254619ea556c4ec9d3307e'
 
     def setUp(self):
         super().setUp() # includes tmp_dir
         self.test_source_dir = os.path.realpath(os.path.dirname(__file__))
 
-    def assertSimpleReport(self, json_path, html_path):
+    def assertSimpleJSON(self, json_path):
         json_expected = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
         with open(json_expected) as json_file:
             data_expected = json.loads(json_file.read())
         with open(json_path) as json_file:
             data_found = json.loads(json_file.read())
         self.assertEqual(data_found, data_expected)
-        with open(json_expected) as json_file:
-            data_expected = json.loads(json_file.read())
+
+    def assertSimpleReport(self, json_path, html_path):
+        self.assertSimpleJSON(json_path)
         with open(html_path) as html_file:
             html_string = html_file.read()
         self.assert_report_MD5(html_string, self.SIMPLE_REPORT_MD5)
@@ -68,7 +70,7 @@ class TestArgs(TestCore):
     def test_processor(self):
         mode = 'report'
         work_dir = self.tmp_dir
-        ini_path = os.path.join(self.test_source_dir, 'test.ini')
+        ini_path = os.path.join(self.test_source_dir, 'config.ini')
         out_path = os.path.join(self.tmp_dir, 'test_out.ini')
         json = os.path.join(self.tmp_dir, 'test.json')
         html = os.path.join(self.tmp_dir, 'test.html')
@@ -84,29 +86,113 @@ class TestArgs(TestCore):
         self.assertEqual(ap.get_log_level(), logging.ERROR)
         self.assertEqual(ap.get_log_path(), None)
 
-    def test_run(self):
+    def test_configure(self):
         # run from args, with same inputs as TestSimpleReport
-        # TODO add similar tests for other script modes: configure, extract, etc.
+        mode = 'configure'
+        work_dir = self.tmp_dir
+        ini_path = os.path.join(self.test_source_dir, 'config.ini')
+        out_path = os.path.join(self.tmp_dir, 'config_out.ini')
+        json_path = None
+        html = None
+        pdf = None
+        args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
+        main(work_dir, log_level=logging.WARNING).run(args)
+        self.assertEqual(self.getMD5(out_path), self.SIMPLE_CONFIG_MD5)
+
+    def test_extract(self):
+        # run from args, with same inputs as TestSimpleReport
+        mode = 'extract'
+        work_dir = self.tmp_dir
+        ini_path = os.path.join(self.test_source_dir, 'config_full.ini')
+        out_path = None
+        json_path = os.path.join(self.tmp_dir, 'djerba.json')
+        html = None
+        pdf = None
+        args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
+        main(work_dir, log_level=logging.WARNING).run(args)
+        self.assertSimpleJSON(json_path)
+
+    def test_render(self):
+        # run from args, with same inputs as TestSimpleReport
+        mode = 'html'
+        work_dir = self.tmp_dir
+        ini_path = None
+        out_path = None
+        json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
+        html = os.path.join(self.tmp_dir, 'djerba.html')
+        pdf = None
+        args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
+        main(work_dir, log_level=logging.WARNING).run(args)
+        with open(html) as html_file:
+            html_string = html_file.read()
+        self.assert_report_MD5(html_string, self.SIMPLE_REPORT_MD5)
+
+    def test_report(self):
+        # run from args, with same inputs as TestSimpleReport
         mode = 'report'
         work_dir = self.tmp_dir
-        ini_path = os.path.join(self.test_source_dir, 'test.ini')
+        ini_path = os.path.join(self.test_source_dir, 'config.ini')
         out_path = None
         json_path = os.path.join(self.tmp_dir, 'test.json')
         html = os.path.join(self.tmp_dir, 'test.html')
         pdf = None
         args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
-        ap = arg_processor(args)
         main(work_dir, log_level=logging.WARNING).run(args)
         self.assertSimpleReport(json_path, html)
 
 class TestMainScript(TestCore):
     """Test the main djerba.py script"""
 
+    def test_configure(self):
+        mode = 'configure'
+        work_dir = self.tmp_dir
+        ini_path = os.path.join(self.test_source_dir, 'config.ini')
+        out_path = os.path.join(self.tmp_dir, 'config_out.ini')
+        cmd = [
+            'djerba.py', mode,
+            '--work-dir', work_dir,
+            '--ini', ini_path,
+            '--ini-out', out_path,
+        ]
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(self.getMD5(out_path), self.SIMPLE_CONFIG_MD5)
+
+    def test_extract(self):
+        mode = 'extract'
+        work_dir = self.tmp_dir
+        ini_path = os.path.join(self.test_source_dir, 'config_full.ini')
+        json_path = os.path.join(self.tmp_dir, 'test.json')
+        cmd = [
+            'djerba.py', mode,
+            '--work-dir', work_dir,
+            '--ini', ini_path,
+            '--json', json_path,
+        ]
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        self.assertSimpleJSON(json_path)
+
+    def test_render(self):
+        mode = 'html'
+        work_dir = self.tmp_dir
+        json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
+        html_path = os.path.join(self.tmp_dir, 'djerba.html')
+        cmd = [
+            'djerba.py', mode,
+            '--json', json_path,
+            '--html', html_path
+        ]
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        with open(html_path) as html_file:
+            html_string = html_file.read()
+        self.assert_report_MD5(html_string, self.SIMPLE_REPORT_MD5)
+
     def test_report(self):
-        # TODO add similar tests for other script modes: configure, extract, etc.
         mode = 'report'
         work_dir = self.tmp_dir
-        ini_path = os.path.join(self.test_source_dir, 'test.ini')
+        ini_path = os.path.join(self.test_source_dir, 'config.ini')
         json_path = os.path.join(self.tmp_dir, 'test.json')
         html = os.path.join(self.tmp_dir, 'test.html')
         cmd = [
@@ -135,7 +221,7 @@ class TestMerger(TestCore):
 class TestSimpleReport(TestCore):
 
     def test_report(self):
-        ini_path = os.path.join(self.test_source_dir, 'test.ini')
+        ini_path = os.path.join(self.test_source_dir, 'config.ini')
         json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
         djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
         config = djerba_main.configure(ini_path)

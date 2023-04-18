@@ -170,9 +170,25 @@ class main(logger):
         # path validation was done in command-line script
         ap = arg_processor(args, validate=False)
         mode = ap.get_mode()
-        if mode == constants.REPORT:
+        work_dir = ap.get_work_dir()
+        if mode == constants.CONFIGURE:
+            ini_path = ap.get_ini_path()
+            ini_path_out = ap.get_ini_out_path() # may be None
+            self.configure(ini_path, ini_path_out)
+        elif mode == constants.EXTRACT:
+            ini_path = ap.get_ini_path()
+            json_path = ap.get_json_path()
+            archive = ap.is_archive_enabled()
+            config = self.read_ini_path(ini_path)
+            self.extract(config, json_path, archive)
+        elif mode == constants.HTML:
+            json_path = ap.get_json_path()
+            html_path = ap.get_html_path()
+            with open(json_path) as json_file:
+                data = json.loads(json_file.read())
+            self.render(data, html_path)
+        elif mode == constants.REPORT:
             # get operational parameters
-            work_dir = ap.get_work_dir()
             ini_path = ap.get_ini_path()
             ini_path_out = ap.get_ini_out_path() # may be None
             json_path = ap.get_json_path() # may be None
@@ -186,7 +202,7 @@ class main(logger):
             self.render(data, html_path)
             # TODO if pdf_path!=None, convert HTML->PDF
         else:
-            # TODO add clauses for setup, configure, etc.
+            # TODO add clauses for setup, pdf, etc.
             # for now, raise an error
             msg = "Mode '{0}' is not yet defined in Djerba core.main!".format(mode)
             self.logger.error(msg)
@@ -194,6 +210,8 @@ class main(logger):
 
 class arg_processor(logger):
     # class to process command-line args for creating a main object
+
+    DEFAULT_JSON_FILENAME = 'djerba_report.json'
 
     def __init__(self, args, validate=True):
         self.args = args
@@ -223,7 +241,13 @@ class arg_processor(logger):
         return self._get_arg('ini_out')
 
     def get_json_path(self):
-        return self._get_arg('json')
+        json_arg = self._get_arg('json')
+        if json_arg:
+            json_path = json_arg
+        else:
+            work_dir = self.get_work_dir()
+            json_path = os.path.join(self.work_dir, self.DEFAULT_JSON_FILENAME)
+        return json_path
 
     def get_log_level(self):
         return self.log_level
@@ -276,7 +300,7 @@ class arg_processor(logger):
             v.validate_output_dir(args.base)
         elif args.subparser_name == constants.CONFIGURE:
             v.validate_input_file(args.ini)
-            v.validate_output_file(args.out)
+            v.validate_output_file(args.ini_out)
             v.validate_output_dir(args.work_dir)
         elif args.subparser_name == constants.EXTRACT:
             v.validate_input_file(args.ini)
