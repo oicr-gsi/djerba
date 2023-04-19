@@ -26,7 +26,7 @@ class plugin_base(logger, ABC):
 
     def extract(self, config_section):
         """
-        Input is is a config section from a ConfigParser object
+        Input is a config section from a ConfigParser object
         Output is a data structure satisfying the plugin schema
         """
         msg = "Using placeholder method of parent class; returns empty data structure"
@@ -49,4 +49,3 @@ class plugin_base(logger, ABC):
         self.logger.debug(msg)
         self.json_validator.validate_data(data)
         return ''
-

@@ -11,7 +11,7 @@ import djerba.render.constants as render_constants
 from djerba.util.image_to_base64 import converter
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
-from djerba.render.database import database
+from djerba.core.database.database import database
 
 class archiver(logger):
     """Archive the report JSON to a directory, with hashing to avoid overwrites"""
@@ -23,12 +23,7 @@ class archiver(logger):
         self.converter = converter(log_level, log_path)
         self.validator = path_validator(log_level, log_path)
 
-    def read_and_preprocess(self, data_path):
-        # read the JSON and convert image paths to base64 blobs
-        self.logger.debug("Reading data path {0}".format(data_path))
-        with open(data_path) as data_file:
-            data_string = data_file.read()
-        data = json.loads(data_string)
+    def preprocess_for_upload(self, data):
         # shorter key names
         failed = render_constants.FAILED
         rep = constants.REPORT
@@ -42,9 +37,9 @@ class archiver(logger):
         if not data[rep][failed]:
             for key in [tmb, vaf, cnv, pga]:
                 data[rep][tmb] = self.converter.convert_svg(data[rep][key], key)
-        return json.dumps(data)
+        return data
 
-    def run(self, data_path):
-        data_string = self.read_and_preprocess(data_path)
-        uploaded, report_id = database(self.log_level, self.log_path).upload_file(data_path)
+    def run(self, data):
+        data = self.preprocess_for_upload(data)
+        uploaded, report_id = database(self.log_level, self.log_path).upload_data(data)
         return uploaded, report_id

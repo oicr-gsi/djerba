@@ -72,3 +72,5 @@ class PluginTester(TestBase):
         self.assertEqual(plugin_data_found, plugin_data_expected)
         html = self.redact_html(djerba_main.render(data_found))
         self.assert_report_MD5(html, expected_md5)
+
+    # TODO add standalone tests for configure, extract, render steps

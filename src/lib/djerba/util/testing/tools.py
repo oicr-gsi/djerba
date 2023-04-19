@@ -2,6 +2,7 @@
 Test base class; called 'trial.py' to hide from automated unittest discovery
 """
 
+import gzip
 import hashlib
 import re
 import tempfile
@@ -27,9 +28,15 @@ class TestBase(unittest.TestCase):
         self.assertEqual(self.getMD5_of_string(body), expected_md5)
     
     def getMD5(self, inputPath):
-        with open(inputPath, 'rb') as f:
-            md5sum = getMD5_of_string(f.read())
+        with open(inputPath, 'r') as f:
+            md5sum = self.getMD5_of_string(f.read())
         return md5sum
+
+    def getMD5_of_gzip_path(self, inputPath):
+        # gzip compression is not deterministic -- need to uncompress first
+        md5 = hashlib.md5()
+        with gzip.open(inputPath, 'rt') as f:
+            return self.getMD5_of_string(f.read())
 
     def getMD5_of_string(self, input_string):
         md5 = hashlib.md5()
