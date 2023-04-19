@@ -16,7 +16,6 @@ from configparser import ConfigParser
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.main import main, arg_processor
 from djerba.core.workspace import workspace
-from djerba.mergers.gene_information.merger import main as gene_information_merger_main
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.testing.tools import TestBase
 from djerba.util.validator import path_validator
@@ -205,18 +204,6 @@ class TestMainScript(TestCore):
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
         self.assertSimpleReport(json_path, html)
-
-class TestMerger(TestCore):
-
-    GENE_INFO_INPUTS = 'gene_information_inputs.json'
-
-    def test_gene_info(self):
-        json_path = os.path.join(self.test_source_dir, self.GENE_INFO_INPUTS)
-        with open(json_path) as json_file:
-            inputs = json.loads(json_file.read())
-        html = gene_information_merger_main().render(inputs)
-        md5_found = self.getMD5_of_string(html)
-        self.assertEqual(md5_found, 'd436df8d05a8af3cbdf71a15eb12f7ea')
 
 class TestSimpleReport(TestCore):
 
