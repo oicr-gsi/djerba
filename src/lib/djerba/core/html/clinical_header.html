@@ -58,14 +58,3 @@
 
   ${html_builder().section_cells_end()}
   
-
-  <!-- sample info -->
-  ${html_builder().section_cells_begin("<h2>Sample Information</h2>","main")}
-
-        <table class="info">
-        % for row in html_builder(purity_failure).sample_information_and_quality_rows(sample_info_and_quality):
-              ${row}
-        % endfor
-        </table>
-
-  ${html_builder().section_cells_end()}
