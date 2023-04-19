@@ -263,7 +263,11 @@ class arg_processor(logger):
             json_path = json_arg
         else:
             work_dir = self.get_work_dir()
-            json_path = os.path.join(self.work_dir, self.DEFAULT_JSON_FILENAME)
+            if work_dir == None:
+                msg = "Cannot find default JSON path, work_dir undefined"
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            json_path = os.path.join(work_dir, self.DEFAULT_JSON_FILENAME)
         return json_path
 
     def get_log_level(self):
