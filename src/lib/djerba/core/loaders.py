@@ -21,6 +21,10 @@ Plugin modules:
 Merger modules are similar, but:
 - *Must* have a module `merger.py` with a class `main`
 - Only need a `render` method
+
+Helper modules are similar, but:
+- *Must* have a module `helper.py` with a class `main`
+- Only need `configure` and `extract` methods
 """
 
 import importlib
@@ -29,13 +33,14 @@ import logging
 from abc import ABC
 from djerba.plugins.base import plugin_base
 from djerba.mergers.base import merger_base
+from djerba.helpers.base import helper_base
 from djerba.util.logger import logger
 
 class loader_base(logger, ABC):
 
-
     PLUGIN = 'plugin'
     MERGER = 'merger'
+    HELPER = 'helper'
 
     def __init__(self, log_level=logging.INFO, log_path=None):
         self.log_level = log_level
@@ -44,7 +49,7 @@ class loader_base(logger, ABC):
 
     def import_module(self, module_type, name):
         args = [module_type, name]
-        permitted = [self.PLUGIN, self.MERGER]
+        permitted = [self.PLUGIN, self.MERGER, self.HELPER]
         if module_type not in permitted:
             msg = "Module type {0} not in permitted list {1}".format(
                 module_type,
@@ -87,6 +92,8 @@ class loader_base(logger, ABC):
             base_class = plugin_base
         elif module_type == self.MERGER:
             base_class = merger_base
+        elif module_type == self.HELPER:
+            base_class = helper_base
         else:
             msg = "Cannot validate unknown module type: {0}".format(module_type)
             self.logger.error(msg)
@@ -116,6 +123,14 @@ class plugin_loader(loader_base):
         # import, validate, and make an instance of a plugin with a workspace
         module = self.import_module(self.PLUGIN, module_name)
         self.validate_module(module, self.PLUGIN, module_name)
+        return module.main(workspace, self.log_level, self.log_path)
+
+class helper_loader(loader_base):
+
+    def load(self, module_name, workspace):
+        # import, validate, and make an instance of a helper with a workspace
+        module = self.import_module(self.HELPER, module_name)
+        self.validate_module(module, self.HELPER, module_name)
         return module.main(workspace, self.log_level, self.log_path)
 
 class DjerbaLoadError(Exception):

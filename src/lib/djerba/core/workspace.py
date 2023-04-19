@@ -6,6 +6,7 @@ Class to represent a directory for temporary data files:
 - Data needed long-term should be recorded in the report JSON file
 """
 
+import gzip
 import json
 import logging
 import os
@@ -24,6 +25,16 @@ class workspace(logger):
         self.validator = path_validator(self.log_level, self.log_path)
         self.validator.validate_output_dir(dir_path)
         self.dir_path = dir_path
+
+    def open_gzip_file(self, rel_path, write=False):
+        if write:
+            mode = 'wt'
+        else:
+            mode = 'rt'
+        in_path = os.path.join(self.dir_path, rel_path)
+        if not write:
+            self.validator.validate_input_file(in_path)
+        return gzip.open(in_path, mode)
 
     def open_file(self, rel_path):
         """Return a File object in read mode, eg. for use by csv.reader"""
