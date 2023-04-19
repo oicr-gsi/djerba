@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-"""Test of the demo1 plugin"""
+"""Test of the provenance helper"""
 
 import logging
 import os
