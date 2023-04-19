@@ -1,6 +1,10 @@
 # CHANGELOG
 
-## ## v1.0.0-dev0.0.2: 2023-04-19
+## v1.0.0-dev0.0.3: 2023-04-19
+
+- Bugfix for generating default JSON path in `core/main.py`
+
+## v1.0.0-dev0.0.2: 2023-04-19
 
 - GCGI-826: Update the main `djerba.py` script to run core/plugins, with tests. New `report` mode replaces `all` and `draft`. Supported modes: `configure`, `extract`, `html`, `report`. Other modes are TODO.
 - GCGI-827: Workspace class with tests. Represents a shared directory to read/write files, similar to the "report" directory in classic Djerba.
