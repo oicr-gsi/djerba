@@ -29,3 +29,7 @@ class html_builder:
     def section_cells_end(self):
         # closes <div class="twocell... and <div class="twooftwocell...
         return "</div></div>\n"
+
+    def k_comma_format(self,value):
+        value_formatted = f'{value:,}'
+        return(value_formatted)

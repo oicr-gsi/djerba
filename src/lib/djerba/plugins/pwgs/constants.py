@@ -1,6 +1,7 @@
 # ini constants
 CTDNA_OUTCOME = 'outcome'
-TUMOUR_FRACTION = 'TF'            
+TUMOUR_FRACTION_ZVIRAN = 'TFZ'            
+TUMOUR_FRACTION_READS = 'TFR'            
 SITES_CHECKED = 'sites_checked'
 READS_CHECKED = 'reads_checked'
 SITES_DETECTED = 'sites_detected'
@@ -15,8 +16,15 @@ VAF_FILE = 'vaf_file'
 PWGS_PLOT = 'pwgs_base64'
 
 # render constants
-TEMPLATE_NAME = 'analysis_template.html'
+ANALYSIS_TEMPLATE_NAME = 'analysis_template.html'
+SAMPLE_TEMPLATE_NAME = 'sample_template.html'
+
 RESULTS = 'results'
 
 #assay settings
 DETECTION_ALPHA = 3.15e-5
+
+# sample constants
+INSERT_SIZE = 'median_insert_size'
+COVERAGE = 'coverage'
+SNV_COUNT = 'primary_snv_count'

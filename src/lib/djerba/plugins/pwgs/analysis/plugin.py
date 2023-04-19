@@ -2,6 +2,7 @@
 import os
 import csv
 import logging
+from decimal import Decimal
 
 from mako.lookup import TemplateLookup
 from djerba.plugins.base import plugin_base
@@ -15,10 +16,10 @@ class main(plugin_base):
         return config_section
 
     def extract(self, config_section):
-        hbc_results = preprocess_files.preprocess_hbc(config_section[constants.HBC_FILE])
-        reads_detected = preprocess_files.preprocess_vaf(config_section[constants.VAF_FILE])
-        mrdetect_results = preprocess_files.preprocess_results(config_section[constants.RESULTS_FILE])
-        pwgs_base64 = preprocess_files.write_pwgs_plot(config_section[constants.HBC_FILE])
+        hbc_results = self.preprocess_hbc(config_section[constants.HBC_FILE])
+        reads_detected = self.preprocess_vaf(config_section[constants.VAF_FILE])
+        mrdetect_results = self.preprocess_results(config_section[constants.RESULTS_FILE])
+        pwgs_base64 = self.write_pwgs_plot(config_section[constants.HBC_FILE],config_section[constants.VAF_FILE])
         self.logger.info("PWGS: Finished preprocessing files")       
         data = {
             'plugin_name': 'pwgs.analysis',
@@ -30,7 +31,8 @@ class main(plugin_base):
             'results': {
                 'outcome': mrdetect_results['outcome'],
                 'significance_text': mrdetect_results['significance_text'],
-                'TF': mrdetect_results['TF'],
+                'TFZ': mrdetect_results['TF'],
+                'TFR': round(reads_detected / hbc_results['reads_checked']*100,4) ,
                 'sites_checked': hbc_results['sites_checked'],
                 'reads_checked': hbc_results['reads_checked'],
                 'sites_detected': hbc_results['sites_detected'],
@@ -50,7 +52,7 @@ class main(plugin_base):
             'html'
         ))
         report_lookup = TemplateLookup(directories=[html_dir, ], strict_undefined=True)
-        mako_template = report_lookup.get_template(constants.TEMPLATE_NAME)
+        mako_template = report_lookup.get_template(constants.ANALYSIS_TEMPLATE_NAME)
         try:
             html = mako_template.render(**args)
         except Exception as err:
@@ -59,9 +61,7 @@ class main(plugin_base):
             raise
         return html    
 
-class preprocess_files():
-
-    def preprocess_hbc(hbc_path):
+    def preprocess_hbc(self, hbc_path):
         """
         summarize healthy blood controls (HBC) file
         """
@@ -87,7 +87,7 @@ class preprocess_files():
                     'hbc_n': hbc_n}
         return hbc_dict
     
-    def preprocess_vaf(vaf_path):
+    def preprocess_vaf(self, vaf_path):
         """
         summarize Variant Allele Frequency (VAF) file
         """
@@ -105,7 +105,7 @@ class preprocess_files():
                     raise RuntimeError(msg) from err
         return reads_detected
     
-    def preprocess_results(results_path):
+    def preprocess_results(self, results_path):
         """
         pull data from results file
         """
@@ -115,27 +115,35 @@ class preprocess_files():
             next(reader_file, None)
             for row in reader_file:
                 try:
-                    results_dict = {'TF': float(row[8]),
-                                    'pvalue': float(row[10]), 
-                                    'outcome': row[13]
+                    results_dict = {
+                                    'TF': round(float(row[7])*100*2,4),
+                                    'pvalue':  float('%.3E' % Decimal(row[10]))
                                     }
                 except IndexError as err:
                     msg = "Incorrect number of columns in vaf row: '{0}' ".format(row)+\
                           "read from '{0}'".format(results_path)
                     raise RuntimeError(msg) from err
-        if results_dict['pvalue'] > constants.DETECTION_ALPHA :
-            significance_text = "not significantly different"
-        elif results_dict['pvalue'] >= constants.DETECTION_ALPHA:
+        if results_dict['pvalue'] > float(constants.DETECTION_ALPHA) :
+            significance_text = "not significantly larger"
+            results_dict['outcome'] = "NEGATIVE"
+            results_dict['TF'] = 0
+        elif results_dict['pvalue'] <= float(constants.DETECTION_ALPHA):
             significance_text = "significantly larger"
+            results_dict['outcome'] = "POSITIVE"
+        else:
+            msg = "results pvalue {0} incompatible with detection alpha {1}".format(results_dict['pvalue'], constants.DETECTION_ALPHA)
+            self.logger.error(msg)
+            raise RuntimeError
         results_dict['significance_text'] = significance_text
         return results_dict
     
-    def write_pwgs_plot(hbc_path, output_dir = None):
+    def write_pwgs_plot(self, hbc_path, vaf_file, output_dir = None):
         if output_dir == None:
             output_dir = os.path.join('./')
         args = [
             os.path.join('/.mounts/labs/CGI/scratch/fbeaudry/reporting/djerba/src/lib/djerba/plugins/pwgs/analysis/','plot_detection.R'),
             '--hbc_results', hbc_path,
+            '--vaf_results', vaf_file,
             '--output_directory', output_dir 
         ]
         pwgs_results = subprocess_runner().run(args)

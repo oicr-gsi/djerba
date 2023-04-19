@@ -6,14 +6,15 @@
         "gene_information": []
     },
     "results": {
-        "outcome": "FALSE",
-        "significance_text": "not significantly different",
-        "TF": 0.0,
-        "sites_checked":  19997,
-        "reads_checked": 1966338,
-        "sites_detected": 2683,
-        "reads_detected": 11362,
-        "p-value": 0.590773060500315,
+        "outcome": "POSITIVE",
+        "significance_text": "significantly larger",
+        "TFR": 0.157,
+        "TFZ": 0.0321, 
+        "sites_checked":  123616,
+        "reads_checked": 5886247,
+        "sites_detected": 2943,
+        "reads_detected": 9241,
+        "p-value": 1.903e-05,
         "hbc_n": 24
     }
 }

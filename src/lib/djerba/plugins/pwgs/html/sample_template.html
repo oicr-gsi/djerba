@@ -1,0 +1,21 @@
+<%
+  from time import strftime
+  from djerba.plugins.pwgs.analysis.render.json_to_html import html_builder
+  import djerba.plugins.pwgs.constants as constants
+%>
+
+${html_builder().section_cells_begin("<h2>SAMPLE INFORMATION</h2>","main")}
+
+      <table class="info">
+            <tr>
+                  <td width="30%">Median Insert Size (bp):</td><td width="5%" >${results.get(constants.INSERT_SIZE)}</td>
+                  <td width="15%">Coverage (mean):</td><td width="25%" >${results.get(constants.COVERAGE)}</td>
+            </tr>
+            <tr>
+                  <td width="30%">Estimated Cancer Cell Content (%):</td><td width="5%" >${results.get(constants.TUMOUR_FRACTION_READS)}</td>
+                  <td width="15%">Primary SNVs:</td><td width="25%" >${results.get(constants.SNV_COUNT)}</td>
+            </tr>
+      </table>
+
+${html_builder().section_cells_end()}
+<hr class="header-big-line" style=" width: 100%;  " >
