@@ -52,13 +52,10 @@ class PluginTester(TestBase):
                 raise RuntimeError(msg)
         return plugin_name
 
-    def run_basic_test(self, test_source_dir, params):
+    def run_basic_test_from_paths(self, ini_path, expected_json_path, expected_md5):
         """
-        Simple plugin test
+        Simple plugin test with choice of paths and md5
         """
-        ini_path = os.path.join(test_source_dir, params[self.INI])
-        expected_json_path = os.path.join(test_source_dir, params[self.JSON])
-        expected_md5 = params[self.MD5]
         plugin_name = self.read_plugin_name(ini_path)
         self.assertTrue(plugin_name)
         djerba_main = core_main(self.get_tmp_dir(), log_level=logging.WARNING)
@@ -72,5 +69,14 @@ class PluginTester(TestBase):
         self.assertEqual(plugin_data_found, plugin_data_expected)
         html = self.redact_html(djerba_main.render(data_found))
         self.assert_report_MD5(html, expected_md5)
+
+    def run_basic_test(self, test_source_dir, params):
+        """
+        Simplest possible plugin test; input files assumed to be in test source dir
+        """
+        ini_path = os.path.join(test_source_dir, params[self.INI])
+        expected_json_path = os.path.join(test_source_dir, params[self.JSON])
+        expected_md5 = params[self.MD5]
+        self.run_basic_test_from_paths(ini_path, expected_json_path, expected_md5)
 
     # TODO add standalone tests for configure, extract, render steps

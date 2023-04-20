@@ -12,8 +12,8 @@ from djerba.plugins.base import plugin_base
 
 class main(plugin_base, clinical_report_json_composer):
 
-    def __init__(self, log_level, log_path):
-        super().__init__(log_level, log_path)
+    def __init__(self, workspace, log_level, log_path):
+        super().__init__(workspace, log_level, log_path)
         self.data_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], dc.DATA_DIR_NAME)
         self.cytoband_path = os.path.join(self.data_dir, 'cytoBand.txt')
         self.cytoband_map = self.read_cytoband_map()
