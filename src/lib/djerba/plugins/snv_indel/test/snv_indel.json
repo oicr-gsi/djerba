@@ -1,0 +1,47 @@
+{
+    "clinical": true,
+    "failed": false,
+    "merge_inputs": {
+        "gene_information": []
+    },
+    "plugin_name": "SNVs and in/dels",
+    "results": {
+        "Body": [
+            {
+                "Chromosome": "12p12.1",
+                "Copy State": "Amplification",
+                "Expression Percentile": null,
+                "Gene": "KRAS",
+                "Gene_URL": "https://www.oncokb.org/gene/KRAS",
+                "LOH (ABratio)": "No (0.8)",
+                "OncoKB": "Level 4",
+                "Protein": "p.G12S",
+                "Protein_URL": "https://www.oncokb.org/gene/KRAS/p.G12S/PAAD",
+                "Type": "Missense Mutation",
+                "VAF (%)": 46,
+                "t_alt_count": 98,
+                "t_depth": 211
+            },
+            {
+                "Chromosome": "17p13.1",
+                "Copy State": "Shallow Deletion",
+                "Expression Percentile": null,
+                "Gene": "TP53",
+                "Gene_URL": "https://www.oncokb.org/gene/TP53",
+                "LOH (ABratio)": "Yes (0.0)",
+                "OncoKB": "Oncogenic",
+                "Protein": "p.R273H",
+                "Protein_URL": "https://www.oncokb.org/gene/TP53/p.R273H/PAAD",
+                "Type": "Missense Mutation",
+                "VAF (%)": 55,
+                "t_alt_count": 70,
+                "t_depth": 127
+            }
+        ],
+        "Clinically relevant variants": 2,
+        "Has expression data": false,
+	"Total variants": 500
+    }
+}
+
+
