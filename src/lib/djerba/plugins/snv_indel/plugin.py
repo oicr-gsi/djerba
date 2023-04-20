@@ -17,9 +17,10 @@ class main(plugin_base, clinical_report_json_composer):
         self.data_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], dc.DATA_DIR_NAME)
         self.cytoband_path = os.path.join(self.data_dir, 'cytoBand.txt')
         self.cytoband_map = self.read_cytoband_map()
-        self.oncokb_levels = [self.reformat_level_string(level) for level in oncokb.ORDERED_LEVELS]
+        self.oncokb_levels = [
+            self.reformat_level_string(level) for level in oncokb.ORDERED_LEVELS
+        ]
         self.likely_oncogenic_sort_order = self.oncokb_sort_order(oncokb.LIKELY_ONCOGENIC)
-
     
     def configure(self, config_section):
         return config_section
@@ -121,8 +122,9 @@ class main(plugin_base, clinical_report_json_composer):
     
     def render(self, data):
         super().render(data)  # validate against schema
-        output = ["<h3>SNV/indel output (work in progress)</h3>"]
-        output.append(hb.TABLE_START)
+        title = 'SNVs and in/dels'
+        output = [hb.report_section_start(title)]
+        output.append(hb.VARIANTS_TABLE_START)
         output.append(hb.thead(['Chromosome', 'Gene', 'Protein']))
         for variant in data['results']['Body']:
             row = [
@@ -132,5 +134,6 @@ class main(plugin_base, clinical_report_json_composer):
             ]
             output.append(hb.tr(row))
         output.append(hb.TABLE_END)
+        output.append(hb.report_section_end())
         return "\n".join(output)
     

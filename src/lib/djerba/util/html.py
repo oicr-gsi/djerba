@@ -8,10 +8,23 @@ class html_builder:
 
     TABLE_START = '<table border=1>'
     TABLE_END = '</table>'
+    VARIANTS_TABLE_START = '<table class="variants" width="100%">'
 
     @staticmethod
     def href(url, text):
         return '<a href="{0}">{1}</a>'.format(url, text)
+
+    @staticmethod
+    def report_section_start(title):
+        start = '<hr class="big-white-line" ><div class="twocellmain">'+\
+            '<div class="oneoftwocellmain">'+\
+            '<h2>{0}</h2></div>'.format(title)+\
+            '<div class="twooftwocellmain" ><hr class="big-line" >'
+        return start
+
+    @staticmethod
+    def report_section_end():
+        return '</div></div>'
 
     @staticmethod
     def td(content, italic=False):
