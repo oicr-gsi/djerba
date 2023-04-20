@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+### Fixed
+- GCGI-852: Correct file metatype for Mavis summary files
+
 ## v0.4.7: 2023-04-13
 
 ### Added

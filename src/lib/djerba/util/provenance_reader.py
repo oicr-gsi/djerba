@@ -50,7 +50,6 @@ class provenance_reader(logger):
     MT_ZIP = 'application/zip-report-bundle$'
     MT_BAM = 'application/bam$'
     MT_BAM_INDEX = 'application/bam-index$'
-    MT_TAB = 'application/tab$'
 
     # placeholder
     WT_SAMPLE_NAME_PLACEHOLDER = 'whole_transcriptome_placeholder'
@@ -448,8 +447,8 @@ class provenance_reader(logger):
 
     def parse_mavis_path(self):
         workflow = self.WF_MAVIS
-        mt = self.MT_TAB
-        suffix = '(mavis-output|summary)\.tab$'
+        mt = self.MT_OCTET_STREAM
+        suffix = 'mavis_summary\.tab$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
     def parse_sequenza_path(self):
