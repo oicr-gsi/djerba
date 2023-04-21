@@ -2,7 +2,7 @@
     "attributes": ["clinical"],
     "priority": 100,
     "merge_inputs": {
-        "gene_information": [
+        "gene_information_merger": [
             {
                 "Chromosome": "12p12.1",
                 "Gene": "KRAS",

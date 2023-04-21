@@ -2,7 +2,7 @@
     "attributes": ["clinical"],
     "priority": 200,
     "merge_inputs": {
-        "gene_information": [
+        "gene_information_merger": [
             {
                 "Chromosome": "3q26.32",
                 "Gene": "PIK3CA",
