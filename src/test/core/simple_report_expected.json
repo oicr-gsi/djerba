@@ -36,7 +36,7 @@
         },
         "technical_notes": "No technical notes supplied."
     },
-    "mergers": {"gene_information_merger": "100"},
+    "mergers": {"gene_information_merger": "300"},
     "plugins": {
         "demo1": {
 	    "attributes": ["clinical"],

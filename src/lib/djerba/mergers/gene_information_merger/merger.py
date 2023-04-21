@@ -14,7 +14,7 @@ class main(merger_base):
     def __init__(self, log_level=logging.WARNING, log_path=None):
         schema_path = os.path.join(os.path.dirname(__file__), self.SCHEMA_FILENAME)
         super().__init__(schema_path, log_level, log_path)
-        self.priority = 100
+        self.priority = 300
 
     def table_header(self):
         names = [
