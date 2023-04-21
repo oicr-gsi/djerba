@@ -3,7 +3,6 @@
     "core": {
         "assay_type": "WGTS",
         "author": "Test Author",
-        "component_order": {},
         "djerba_version": "PLACEHOLDER",
         "failed": false,
         "genomic_summary": "Placeholder for testing",

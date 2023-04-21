@@ -38,7 +38,6 @@ class extractor(core_base):
             'core': {
                 "assay_type": "WGTS",
                 "author": "Test Author",
-                "component_order": {},
                 "oicr_logo": oicr_logo,
                 "patient_info": {
                     "Assay": "Whole genome and transcriptome sequencing (WGTS)-80X Tumour, 30X Normal (v2.0)",

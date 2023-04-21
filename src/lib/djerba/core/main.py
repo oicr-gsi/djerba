@@ -26,7 +26,6 @@ import djerba.util.constants as constants
 class main(core_base):
 
     # TODO move to constants file(s)
-    COMPONENT_ORDER = 'component_order'
     PLUGINS = 'plugins'
     MERGERS = 'mergers'
     MERGE_INPUTS = 'merge_inputs'
