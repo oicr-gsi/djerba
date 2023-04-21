@@ -15,7 +15,7 @@ class main(plugin_base):
             'priority': 200,
             'attributes': ['clinical'],
             'merge_inputs': {
-                'gene_information': [
+                'gene_information_merger': [
                     {
                         "Gene": "PIK3CA",
                         "Gene_URL": "https://www.oncokb.org/gene/PIK3CA",

@@ -36,12 +36,13 @@
         },
         "technical_notes": "No technical notes supplied."
     },
+    "mergers": {"gene_information_merger": "100"},
     "plugins": {
         "demo1": {
 	    "attributes": ["clinical"],
 	    "priority": 100,
             "merge_inputs": {
-                "gene_information": [
+                "gene_information_merger": [
                     {
                         "Chromosome": "12p12.1",
                         "Gene": "KRAS",
@@ -63,7 +64,7 @@
 	    "attributes": ["clinical"],
 	    "priority": 200,
             "merge_inputs": {
-                "gene_information": [
+                "gene_information_merger": [
                     {
                         "Chromosome": "3q26.32",
                         "Gene": "PIK3CA",

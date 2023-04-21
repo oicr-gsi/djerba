@@ -10,7 +10,7 @@ from configparser import ConfigParser
 from djerba.core.loaders import helper_loader
 from djerba.core.workspace import workspace
 from djerba.util.testing.tools import TestBase
-from djerba.mergers.gene_information.merger import main as gene_information_merger_main
+from djerba.mergers.gene_information_merger.merger import main
 
 class TestGeneInformationMerger(TestBase):
 
@@ -21,7 +21,7 @@ class TestGeneInformationMerger(TestBase):
         json_path = os.path.join(test_source_dir, self.GENE_INFO_INPUTS)
         with open(json_path) as json_file:
             inputs = json.loads(json_file.read())
-        merger = gene_information_merger_main()
+        merger = main()
         self.assertEqual(merger.get_priority(), 100)
         merger.set_priority(500)
         self.assertEqual(merger.get_priority(), 500)

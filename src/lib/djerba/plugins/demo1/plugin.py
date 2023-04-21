@@ -10,7 +10,7 @@ class main(plugin_base):
             'priority': 100,
             'attributes': ['clinical'],
             'merge_inputs': {
-                'gene_information': [
+                'gene_information_merger': [
                     {
                         "Gene": "KRAS",
                         "Gene_URL": "https://www.oncokb.org/gene/KRAS",

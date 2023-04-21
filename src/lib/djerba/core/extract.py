@@ -7,16 +7,23 @@ The 'plugins' element is left empty, to be populated by the respective plugin cl
 
 import logging
 import os
+from djerba.core.base import base as core_base
 from djerba.util.image_to_base64 import converter
-from djerba.util.logger import logger
 
-class extractor(logger):
+class extractor(core_base):
 
     def __init__(self, log_level=logging.INFO, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.image_converter = converter(log_level, log_path)
+
+    def _get_merger_priorities(self, config):
+        mergers = {}
+        for section_name in config.sections():
+            if self._is_merger_name(section_name):
+                mergers[section_name] = config[section_name]['priority']
+        return mergers
 
     def run(self, config):
         # TODO validate config is complete
@@ -67,5 +74,6 @@ class extractor(logger):
             },
             'plugins': {},
         }
+        data['mergers'] = self._get_merger_priorities(config)
         data['comment'] = config['core']['comment']
         return data

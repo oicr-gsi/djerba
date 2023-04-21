@@ -19,6 +19,12 @@ class merger_base(logger, html_builder, ABC):
         self.json_validator = json_validator(schema_path, self.log_level, self.log_path)
         self.priority = 1000 # determines order of output for HTML
 
+    def configure(self, config_section):
+        # TODO FIXME want these to be integers
+        # input the config parser instead
+        config_section['priority'] = str(self.priority)
+        return config_section
+
     def get_priority(self):
         return self.priority
 
