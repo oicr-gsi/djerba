@@ -143,6 +143,7 @@ class main(core_base):
         [header, footer] = core_renderer(self.log_level, self.log_path).run(data)
         body = {} # strings to make up the body of the HTML document
         priorities = data[self.MERGERS].copy() # start with merger priorities; add plugins
+        self.logger.debug('Rendering plugin HTML')
         for plugin_name in data[self.PLUGINS]:
             # render plugin HTML, and find which mergers it uses
             plugin_data = data[self.PLUGINS][plugin_name]
@@ -150,9 +151,11 @@ class main(core_base):
             self.logger.debug("Loaded plugin {0} for rendering".format(plugin_name))
             body[plugin_name] = plugin.render(plugin_data)
             priorities[plugin_name] = plugin_data['priority']
+        self.logger.debug('Rendering plugin HTML')
         for merger_name in data[self.MERGERS]:
             merged_html = self._run_merger(merger_name, data)
             body[merger_name] = merged_html
+        self.logger.debug('Sorting HTML components by priority')
         ordered_body = self._order_components(body, priorities)
         ordered_html = [header,]
         ordered_html.extend(ordered_body)

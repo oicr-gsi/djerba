@@ -31,12 +31,12 @@ import importlib
 import inspect
 import logging
 from abc import ABC
+from djerba.core.base import base as core_base
 from djerba.plugins.base import plugin_base
 from djerba.mergers.base import merger_base
 from djerba.helpers.base import helper_base
-from djerba.util.logger import logger
 
-class loader_base(logger, ABC):
+class loader_base(core_base, ABC):
 
     PLUGIN = 'plugin'
     MERGER = 'merger'
@@ -78,36 +78,45 @@ class loader_base(logger, ABC):
             msg = "{0} {1} has no 'main' attribute".format(*args)
             self.logger.error(msg)
             raise DjerbaLoadError(msg)
-        else:
-            msg = "'main' attribute of {0} {1} found".format(*args)
-            self.logger.debug(msg)
         if not inspect.isclass(module.main):
             msg = "{0} {1} main attribute is not a class".format(*args)
             self.logger.error(msg)
             raise DjerbaLoadError(msg)
-        else:
-            msg = "'main' attribute of {0} {1} is a class".format(*args)
-            self.logger.debug(msg)
+        self.validate_module_type_and_name(module_type, module_name)
         if module_type == self.PLUGIN:
             base_class = plugin_base
         elif module_type == self.MERGER:
             base_class = merger_base
         elif module_type == self.HELPER:
             base_class = helper_base
-        else:
-            msg = "Cannot validate unknown module type: {0}".format(module_type)
-            self.logger.error(msg)
-            raise DjerbaLoadError(msg)
         if not issubclass(module.main, base_class):
             msg = "{0} {1} main attribute ".format(*args)+\
                   "is not a subclass of djerba.{0}s.base".format(module_type)
             self.logger.error(msg)
             raise DjerbaLoadError(msg)
-        else:
-            msg = "{0} {1} main ".format(*args)+\
-                  "is a subclass of djerba.{0}s.base".format(module_type)
-            self.logger.debug(msg)
         self.logger.debug("Module {0} of type {1} is OK".format(module_name, module_type))
+
+    def validate_module_type_and_name(self, module_type, module_name):
+        msg = None
+        if module_type == self.PLUGIN:
+            if self._is_helper_name(module_name):
+                msg = "Plugin name '{0}' ".format(module_name)+\
+                    "has the format of a helper name, cannot load"
+            elif self._is_merger_name(module_name):
+                msg = "Plugin name '{0}' ".format(module_name)+\
+                    "has the format of a merger name, cannot load"
+        elif module_type == self.MERGER:
+            if not self._is_merger_name(module_name):
+                msg = "'{0}' is not in merger name format, cannot load".format(module_name)
+        elif module_type == self.HELPER:
+            if not self._is_helper_name(module_name):
+                msg = "'{0}' is not in helper name format, cannot load".format(module_name)
+        else:
+            msg = "Cannot validate unknown module type: {0}".format(module_type)
+        if msg:
+            self.logger.error(msg)
+            raise DjerbaLoadError(msg)
+
 
 class merger_loader(loader_base):
 
