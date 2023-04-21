@@ -7,8 +7,8 @@ class main(plugin_base):
     def extract(self, config_section):
         data = {
             'plugin_name': 'demo1 plugin',
-            'clinical': True,
-            'failed': False,
+            'priority': 100,
+            'attributes': ['clinical'],
             'merge_inputs': {
                 'gene_information': [
                     {

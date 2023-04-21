@@ -1,6 +1,6 @@
 {
-    "clinical": true,
-    "failed": false,
+    "attributes": ["clinical"],
+    "priority": 200,
     "merge_inputs": {
         "gene_information": [
             {

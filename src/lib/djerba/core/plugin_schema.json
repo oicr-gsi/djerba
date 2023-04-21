@@ -4,12 +4,20 @@
     "properties":
     {
 	"plugin_name": {"type": "string" },
+	"priority": {"type": "integer" },
+	"attributes": {
+	    "type": "array",
+	    "items": {
+		"type": "string",
+		"enum": ["clinical", "supplementary", "failed"]
+	    }
+	},
 	"failed": {"type": "boolean"},
 	"clinical": {"type": "boolean"},
 	"merge_inputs": {"type": "object"},
 	"results": {"type": "object"}
     },
     "required": [
-	"plugin_name", "failed", "clinical", "merge_inputs", "results"
+	"plugin_name", "priority", "attributes", "merge_inputs", "results"
     ]
 }
