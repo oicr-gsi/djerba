@@ -21,7 +21,11 @@ class TestGeneInformationMerger(TestBase):
         json_path = os.path.join(test_source_dir, self.GENE_INFO_INPUTS)
         with open(json_path) as json_file:
             inputs = json.loads(json_file.read())
-        html = gene_information_merger_main().render(inputs)
+        merger = gene_information_merger_main()
+        self.assertEqual(merger.get_priority(), 100)
+        merger.set_priority(500)
+        self.assertEqual(merger.get_priority(), 500)
+        html = merger.render(inputs)
         md5_found = self.getMD5_of_string(html)
         self.assertEqual(md5_found, 'd436df8d05a8af3cbdf71a15eb12f7ea')
 

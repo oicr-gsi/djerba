@@ -17,6 +17,17 @@ class merger_base(logger, html_builder, ABC):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.logger.debug("Using constructor of parent class")
         self.json_validator = json_validator(schema_path, self.log_level, self.log_path)
+        self.priority = 1000 # determines order of output for HTML
+
+    def get_priority(self):
+        return self.priority
+
+    def set_priority(self, priority):
+        if not isinstance(priority, int):
+            msg = "Output priority '{0}' is not an integer".format(priority)
+            self.logger.error(msg)
+            raise ValueError(msg)
+        self.priority = priority
 
     def merge_and_sort(self, inputs, sort_key):
         """
