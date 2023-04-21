@@ -123,7 +123,8 @@ TUMOUR_TARGET = 'Tumour target'
 # constants for other biomarkers
 MSI = "MSI"
 TMB = "TMB"
-METRIC_CALL = 'Genomic biomarker call'
+METRIC_ACTIONABLE = 'Genomic alteration actionable'
+METRIC_ALTERATION = "Genomic biomarker alteration"
 METRIC_VALUE = 'Genomic biomarker value'
 METRIC_TEXT = 'Genomic biomarker text'
 METRIC_PLOT = 'Genomic biomarker plot'

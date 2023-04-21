@@ -121,10 +121,11 @@ class oncokb_annotator(logger):
                 self.cache.write_fusion_cache(out_path)
         return out_path
 
-    def annotate_maf(self, in_path):
+    def annotate_maf(self, in_path, out_path=None):
         # unlike the CNA and Fusion methods, MAF annotation takes an input path argument
+        if out_path == None:
+            out_path = os.path.join(self.scratch_dir, oncokb_constants.ANNOTATED_MAF)
         self.validator.validate_input_file(in_path)
-        out_path = os.path.join(self.scratch_dir, oncokb_constants.ANNOTATED_MAF)
         if self.apply_cache:
             self.cache.annotate_maf(in_path, out_path)
         else:
@@ -140,3 +141,21 @@ class oncokb_annotator(logger):
             if self.update_cache:
                 self.cache.write_maf_cache(out_path)
         return out_path
+    
+    def annotate_biomarkers_maf(self, in_path, out_path):
+        self.validator.validate_input_file(in_path)
+        if self.apply_cache:
+            self.cache.annotate_maf(in_path, out_path)
+        else:
+            cmd = [
+                'MafAnnotator.py',
+                '-i', in_path,
+                '-o', out_path,
+                '-c', self.info_path,
+                '-b', self.oncokb_token
+            ]
+            self._run_annotator_script(cmd, 'MAF annotator')
+            if self.update_cache:
+                self.cache.write_maf_cache(out_path)
+        return out_path
+
