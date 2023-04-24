@@ -209,8 +209,8 @@ class clinical_report_json_composer(composer_base):
                 self.gene_pair_fusions = None
                 self.expr_input = None
 
-    def assemble_MSI(self):
-        msi_value = self.extract_MSI()
+    def assemble_MSI(self, msi_file_path = None):
+        msi_value = self.extract_MSI(msi_file_path)
         msi_dict = self.call_MSI(msi_value)
         msi_plot_location = self.write_biomarker_plot(self.input_dir, "msi")
         msi_dict[rc.METRIC_PLOT] = converter().convert_svg(msi_plot_location, 'MSI plot')
@@ -304,10 +304,10 @@ class clinical_report_json_composer(composer_base):
     def build_gene_url(self, gene):
         return '/'.join([self.ONCOKB_URL_BASE, gene])
 
-    def build_genomic_biomarkers(self, input_dir, sample_ID):
+    def build_genomic_biomarkers(self, input_dir, sample_ID, tmb_value=None, msi_file_path = None):
         biomarkers = [
-            self.assemble_TMB(),
-            self.assemble_MSI()
+            self.assemble_TMB(tmb_value),
+            self.assemble_MSI(msi_file_path)
         ]
         self.logger.debug("Annotating Genomic Biomarkers")
         genomic_biomarkers_path = self.print_genome_biomarkers_maf(biomarkers, input_dir, sample_ID)
