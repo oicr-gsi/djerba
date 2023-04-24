@@ -295,7 +295,7 @@ class html_builder:
                 self._td(row[constants.FUSION]),
                 self._td(row[constants.FRAME]),
                 self._td(row[constants.MUTATION_EFFECT]),
-                self._td(row[constants.ONCOKB])
+                self._td_oncokb(row[constants.ONCOKB])
             ]
             rows.append(self.table_row(cells))
         return rows
