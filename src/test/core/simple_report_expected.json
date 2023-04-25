@@ -37,7 +37,7 @@
     },
     "mergers": {
 	"gene_information_merger": {
-	    "priority": "300",
+	    "priority": 300,
 	    "attributes": ["clinical", "supplementary"]
 	}
     },

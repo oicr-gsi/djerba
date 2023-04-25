@@ -23,11 +23,11 @@ class extractor(core_base):
         for section_name in config.sections():
             if self._is_merger_name(section_name):
                 merger_data = {}
-                merger_data['priority'] = config[section_name]['priority']
+                merger_data['priority'] = config.getint(section_name, 'priority')
                 attributes = []
                 for key in ['clinical', 'supplementary']:
                     if config.has_option(section_name, key) and \
-                       config[section_name][key]=='true': # TODO better Boolean
+                       config.getboolean(section_name, key):
                         attributes.append(key)
                 merger_data['attributes'] = attributes
                 mergers[section_name] = merger_data
