@@ -33,6 +33,8 @@ class renderer(logger):
         names = body.keys()
         # TODO FIXME when I/O is fixed in merger.base, int() cast won't be necessary
         ordered_names = sorted(names, key=lambda x: int(priorities[x]))
+        self.logger.debug('Priorities: {0}'.format(priorities))
+        self.logger.debug('Ordered component names: {0}'.format(ordered_names))
         ordered_body = [body[x] for x in ordered_names]
         return ordered_body
 

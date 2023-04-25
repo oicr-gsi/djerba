@@ -5,7 +5,8 @@ from djerba.plugins.base import plugin_base
 class main(plugin_base):
 
     def configure(self, config_section):
-        config_section['priority'] = '200'
+        if not 'priority' in config_section:
+            config_section['priority'] = '200'
         config_section['clinical'] = 'true'
         config_section['supplementary'] = 'false'
         config_section['demo2_param'] = '42'
