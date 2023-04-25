@@ -23,6 +23,8 @@ from djerba.extract.extractor import extractor
 from djerba.extract.oncokb.annotator import oncokb_annotator
 from djerba.extract.oncokb.cache import oncokb_cache, oncokb_cache_params
 from djerba.extract.r_script_wrapper import r_script_wrapper
+from djerba.extract.report_to_json import clinical_report_json_composer
+import djerba.extract.constants as xc
 from djerba.lister import lister
 from djerba.main import main
 from djerba.mavis import mavis_runner
@@ -366,6 +368,37 @@ class TestExtractor(TestBase):
         self.assertEqual(test_extractor.get_description(), expected[1])
         config[ini.INPUTS][ini.ONCOTREE_CODE] = 'FOO'
         self.assertEqual(test_extractor.get_description(), expected[2])
+
+    def test_genomic_biomarkers_annotation(self):
+        genomic_biomarkers_path = os.path.join(self.sup_dir, 'genomic_biomarkers.maf')
+        found_path = os.path.join(self.sup_dir, 'genomic_biomarkers_annotated.maf')
+        expected_path = os.path.join(self.tmp_dir, 'genomic_biomarkers_annotated.maf')
+        oncokb_annotator('sample-01', 'PAAD', self.tmp_dir).annotate_biomarkers_maf(genomic_biomarkers_path, expected_path)
+        with open(found_path) as in_file:
+            data_found = in_file.read()
+        with open(expected_path) as in_file:
+            data_expected = in_file.read()
+        self.maxDiff = None
+        self.assertEqual(data_found, data_expected)
+
+    def test_genomic_biomarkers_building(self):
+        params = {
+            xc.AUTHOR: "None",
+            xc.ASSAY_TYPE: "WGS",
+            xc.COVERAGE: 80,
+            xc.FAILED: False,
+            xc.ONCOKB_CACHE: oncokb_cache_params,
+            xc.ONCOTREE_CODE: "PAAD",
+            xc.PURITY_FAILURE: False, 
+            xc.PROJECT: "PASS01"
+        }
+        msi_file_path = os.path.join(self.sup_dir, 'PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.msi.booted')
+        input_path = os.path.join(self.sup_dir, 'report_example')
+        data_found = clinical_report_json_composer(self.config_full, input_path, params).build_genomic_biomarkers(self.tmp_dir, 'sample-01', tmb_value=12, msi_file_path = msi_file_path)
+        for biomarker in range(0,len(data_found['Body'])):
+            del data_found['Body'][biomarker]['Genomic biomarker plot']
+        data_expected = {'Clinically relevant variants': 2, 'Body': [{'Alteration': 'TMB', 'Alteration_URL': 'https://www.oncokb.org/gene/Other%20Biomarkers/TMB-H', 'Genomic biomarker value': 12, 'Genomic alteration actionable': True, 'Genomic biomarker alteration': 'TMB-H', 'Genomic biomarker text': 'Tumour Mutational Burden High (TMB-H, &#8805 10 coding mutations / Mb)'}, {'Alteration': 'MSI', 'Alteration_URL': 'https://www.oncokb.org/gene/Other%20Biomarkers/MSI-H', 'Genomic biomarker value': 117.0, 'Genomic alteration actionable': True, 'Genomic biomarker alteration': 'MSI-H', 'Genomic biomarker text': 'Microsatellite Instability High (MSI-H)'}]}
+        self.assertEqual(data_found, data_expected)
 
 class TestLister(TestBase):
 

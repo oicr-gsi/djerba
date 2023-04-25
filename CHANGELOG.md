@@ -1,8 +1,15 @@
 # CHANGELOG
 
-## Unreleased
+## v0.4.8: 2023-04-25
+
+### Changed
+- updated version of Arriba from 1.2.0 to 2.4.0
+- updated version of STAR from 2.7.3a to 2.7.10b 
+- updated pipeline version to 3.0
 
 ### Fixed
+- GCGI-862: fixed fusion oncokb levels (changed to symbols)
+- GCGI-853: fixed and cleaned annotation of genomic biomarkers
 - GCGI-852: Correct file metatype for Mavis summary files
 
 ## v0.4.7: 2023-04-13

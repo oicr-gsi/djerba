@@ -80,7 +80,7 @@ class html_builder:
             else:
                 cells = [
                     self._td(row[constants.ALT]),
-                    self._td(row[constants.METRIC_CALL]),
+                    self._td(row[constants.METRIC_ALTERATION]),
                     self._td(self.assemble_biomarker_plot(row[constants.ALT],row[constants.METRIC_PLOT]))
                 ]
                 rows.append(self.table_row(cells))
