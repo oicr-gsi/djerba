@@ -26,7 +26,8 @@ class extractor(core_base):
                 merger_data['priority'] = config[section_name]['priority']
                 attributes = []
                 for key in ['clinical', 'supplementary']:
-                    if config[section_name][key]:
+                    if config.has_option(section_name, key) and \
+                       config[section_name][key]=='true': # TODO better Boolean
                         attributes.append(key)
                 merger_data['attributes'] = attributes
                 mergers[section_name] = merger_data

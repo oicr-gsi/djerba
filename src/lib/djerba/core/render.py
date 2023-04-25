@@ -30,7 +30,7 @@ class renderer(logger):
         self.clinical_header_template = report_lookup.get_template(self.CLINICAL_HEADER_NAME)
 
     def _order_components(self, body, priorities):
-        names = priorities.keys()
+        names = body.keys()
         # TODO FIXME when I/O is fixed in merger.base, int() cast won't be necessary
         ordered_names = sorted(names, key=lambda x: int(priorities[x]))
         ordered_body = [body[x] for x in ordered_names]
@@ -71,7 +71,7 @@ class renderer(logger):
         sup_names = [x for x in body.keys() \
                      if 'clinical' in attributes[x] \
                      and 'supplementary' in attributes[x]]
-        sup_body = {x:body[x] for x in report_names}
+        sup_body = {x:body[x] for x in sup_names}
         all_html.extend(self._order_components(sup_body, priorities))
         footer = footer_template.format(data['comment'])
         all_html.append(footer)
