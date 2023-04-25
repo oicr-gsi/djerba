@@ -34,9 +34,9 @@ class main(plugin_base):
             },
             'results': {
                 'median_insert_size': qc_dict['insertSize'],
-                'tumour_fraction': config_section[constants.TUMOUR_FRACTION_READS],
+                'tumour_fraction': float(config_section[constants.TUMOUR_FRACTION_READS]),
                 'coverage': qc_dict['coverage'],
-                'primary_snv_count': config_section[constants.SNV_COUNT]
+                'primary_snv_count': float(config_section[constants.SNV_COUNT])
             }
         }
         return data

@@ -4,31 +4,45 @@
 
 import os
 import unittest
+import tempfile
+from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 import djerba.plugins.pwgs.analysis.plugin as analysis
 
-class TestPwgsPlugins(PluginTester):
+class TestPwgAnalysisPlugin(PluginTester):
+
+    def setUp(self):
+        self.path_validator = path_validator()
+        self.maxDiff = None
+        self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
+        self.tmp_dir = self.tmp.name
+        sup_dir_var = 'DJERBA_TEST_DATA'
+        self.sup_dir = os.environ.get(sup_dir_var)
 
     def testPwgsAnalysis(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
+        json_location = os.path.join(self.sup_dir ,"pwgs-plugin/report_json/pwgs.analysis.json")
         params = {
             self.INI: 'data/pwgs.analysis.ini',
-            self.JSON: '/.mounts/labs/CGI/scratch/fbeaudry/reporting/djerba_test_data_lfs/pwgs-plugin/report_json/pwgs.analysis.json',
-            self.MD5: 'd1f56cc16792eddfdde23be08c7e2518'
+            self.JSON: json_location,
+            self.MD5: '200f0f07c3e9dc2774d7ca8588fe0b1c'
         }
         self.run_basic_test(test_source_dir, params)
 
     def testPreprocessHbc(self):
-        hbc_result = analysis.main.preprocess_hbc(self,'/.mounts/labs/CGI/scratch/fbeaudry/reporting/djerba_test_data_lfs/pwgs-plugin/HBCs.csv')
+        hbc_expected_location = os.path.join(self.sup_dir ,"pwgs-plugin/HBCs.csv")
+        hbc_result = analysis.main.preprocess_hbc(self, hbc_expected_location)
         self.assertEqual(hbc_result['sites_checked'], 123616)
         self.assertEqual(hbc_result['hbc_n'], 24)
 
     def testPreprocessvaf(self):
-        reads_detected = analysis.main.preprocess_vaf(self,'/.mounts/labs/CGI/scratch/fbeaudry/reporting/djerba_test_data_lfs/pwgs-plugin/mrdetect.vaf.txt')
-        self.assertEqual(reads_detected, 9241)
+        vaf_expected_location = os.path.join(self.sup_dir ,"pwgs-plugin/mrdetect.vaf.txt")
+        reads_detected = analysis.main.preprocess_vaf(self,vaf_expected_location)
+        self.assertEqual(reads_detected, 57)
 
     def testPreprocessResults(self):
-        results = analysis.main.preprocess_results(self,'/.mounts/labs/CGI/scratch/fbeaudry/reporting/djerba_test_data_lfs/pwgs-plugin/mrdetect.txt')
+        results_expected_location = os.path.join(self.sup_dir ,"pwgs-plugin/mrdetect.txt")
+        results = analysis.main.preprocess_results(self,results_expected_location)
         self.assertEqual(results['TF'], 0.0321 )
         self.assertEqual(results['pvalue'], 1.903e-05)
         self.assertEqual(results['outcome'], 'POSITIVE')
@@ -39,6 +53,18 @@ class TestPwgsPlugins(PluginTester):
         for key in ['pwgs_base64']:
             del data['plugins']['pwgs.analysis']['results'][key]
         return data        
+
+class TestPwgSamplePlugin(PluginTester):
+
+    def testPwgsSample(self):
+        test_source_dir = os.path.realpath(os.path.dirname(__file__))
+        json_location = os.path.join(self.sup_dir ,"pwgs-plugin/report_json/pwgs.sample.json")
+        params = {
+            self.INI: 'data/pwgs.sample.ini',
+            self.JSON: json_location,
+            self.MD5: 'e81aa9cfc28030a3beed6ac6fac2ff2b'
+        }
+        self.run_basic_test(test_source_dir, params)
 
 if __name__ == '__main__':
     unittest.main()

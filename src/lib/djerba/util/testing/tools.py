@@ -8,6 +8,8 @@ import re
 import tempfile
 import time
 import unittest
+import os
+
 import djerba.util.constants as constants
 from djerba.util.validator import path_validator
 
@@ -19,6 +21,8 @@ class TestBase(unittest.TestCase):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
+        sup_dir_var = 'DJERBA_TEST_DATA'
+        self.sup_dir = os.environ.get(sup_dir_var)
 
     def tearDown(self):
         self.tmp.cleanup()

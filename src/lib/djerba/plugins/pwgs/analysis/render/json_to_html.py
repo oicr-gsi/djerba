@@ -7,13 +7,15 @@ from string import Template
 import djerba.plugins.pwgs.constants as constants
 
 class html_builder:
-
-    def pull_biomarker_text(self, row_variable):
-        row_fields = genomic_biomarker_args[constants.RESULTS]
-        for row in row_fields:
-            if row[constants.ALT] == biomarker:
-                metric_text = row[constants.METRIC_TEXT]
-        return metric_text
+    def k_comma_format(self,value):
+        value_formatted = f'{value:,}'
+        return(value_formatted)
+        
+    def replace_zero_with(self, tumour_fraction):
+        if tumour_fraction == 0:
+            return("Not Detected")
+        else:
+            return(tumour_fraction)
 
     def section_cells_begin(self, section_title, main_or_supp):
         # begin a cell structure with title in left-hand cell, body in right-hand cell
@@ -30,6 +32,3 @@ class html_builder:
         # closes <div class="twocell... and <div class="twooftwocell...
         return "</div></div>\n"
 
-    def k_comma_format(self,value):
-        value_formatted = f'{value:,}'
-        return(value_formatted)
