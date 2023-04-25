@@ -18,11 +18,18 @@ class extractor(core_base):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.image_converter = converter(log_level, log_path)
 
-    def _get_merger_priorities(self, config):
+    def _get_merger_data(self, config):
         mergers = {}
         for section_name in config.sections():
             if self._is_merger_name(section_name):
-                mergers[section_name] = config[section_name]['priority']
+                merger_data = {}
+                merger_data['priority'] = config[section_name]['priority']
+                attributes = []
+                for key in ['clinical', 'supplementary']:
+                    if config[section_name][key]:
+                        attributes.append(key)
+                merger_data['attributes'] = attributes
+                mergers[section_name] = merger_data
         return mergers
 
     def run(self, config):
@@ -73,6 +80,6 @@ class extractor(core_base):
             },
             'plugins': {},
         }
-        data['mergers'] = self._get_merger_priorities(config)
+        data['mergers'] = self._get_merger_data(config)
         data['comment'] = config['core']['comment']
         return data

@@ -133,22 +133,24 @@ class main(core_base):
         self.logger.info('Starting Djerba render step')
         if html_path:  # do this *before* taking the time to generate output
             self.path_validator.validate_output_file(html_path)
-        body = {} # strings to make up the body of the HTML document
-        priorities = data[self.MERGERS].copy() # start with merger priorities; add plugins
+        body = {} # HTML strings to make up the report body
+        priorities = {}
         attributes = {}
         self.logger.debug('Rendering plugin HTML')
         for plugin_name in data[self.PLUGINS]:
             # render plugin HTML, and find which mergers it uses
             plugin_data = data[self.PLUGINS][plugin_name]
             plugin = self.plugin_loader.load(plugin_name, self.workspace)
-            self.logger.debug("Loaded plugin {0} for rendering".format(plugin_name))
             body[plugin_name] = plugin.render(plugin_data)
+            self.logger.debug("Ran plugin '{0}' for rendering".format(plugin_name))
             priorities[plugin_name] = plugin_data['priority']
-        self.logger.debug('Rendering merger HTML')
-        for merger_name in data[self.MERGERS]:
-            merged_html = self._run_merger(merger_name, data)
-            body[merger_name] = merged_html
-        self.logger.debug('Sorting HTML components by priority')
+            attributes[plugin_name] = plugin_data['attributes']
+        for (merger_name, merger_config) in data[self.MERGERS].items():
+            body[merger_name] = self._run_merger(merger_name, data)
+            self.logger.debug("Ran merger '{0}' for rendering".format(merger_name))
+            priorities[merger_name] = merger_config['priority']
+            attributes[merger_name] = merger_config['attributes']
+        self.logger.debug("Assembling HTML document")
         renderer = core_renderer(self.log_level, self.log_path)
         html = renderer.run(body, priorities, attributes, data) # TODO remove data argument
         if html_path:

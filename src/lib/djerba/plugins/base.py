@@ -19,6 +19,13 @@ class plugin_base(logger, ABC):
         self.json_validator = plugin_json_validator(log_level, log_path)
         self.logger.debug("Using constructor of parent class")
 
+    def _get_attributes(self, config_section):
+        attributes = []
+        for key in ['clinical', 'supplementary']:
+            if config_section[key]=='true': # TODO FIXME better Boolean check
+                attributes.append(key)
+        return attributes
+
     def configure(self, config_section):
         """Input/output is a config section from a ConfigParser object"""
         self.logger.debug("Using method of parent class; returns unchanged config")

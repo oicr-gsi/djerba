@@ -4,11 +4,17 @@ from djerba.plugins.base import plugin_base
 
 class main(plugin_base):
 
+    def configure(self, config_section):
+        config_section['priority'] = '100'
+        config_section['clinical'] = 'true'
+        config_section['supplementary'] = 'false'
+        return config_section
+
     def extract(self, config_section):
         data = {
             'plugin_name': 'demo1 plugin',
-            'priority': 100,
-            'attributes': ['clinical'],
+            'priority': int(config_section['priority']),
+            'attributes': self._get_attributes(config_section),
             'merge_inputs': {
                 'gene_information_merger': [
                     {

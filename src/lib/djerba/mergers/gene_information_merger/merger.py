@@ -15,6 +15,7 @@ class main(merger_base):
         schema_path = os.path.join(os.path.dirname(__file__), self.SCHEMA_FILENAME)
         super().__init__(schema_path, log_level, log_path)
         self.priority = 300
+        self.attributes = ['clinical', 'supplemental']
 
     def table_header(self):
         names = [

@@ -58,9 +58,22 @@ class renderer(logger):
         </body>
         </html>
         """
+        # make 'clinical research report' and 'supplementary' sections
+        # populate with HTML from body, based on the attributes and sorted by priority
+        all_html = [header,]
+        all_html.append('<h1>Clinical Research Report</h1>') # TODO fix formatting
+        report_names = [x for x in body.keys() \
+                        if 'clinical' in attributes[x] \
+                        and 'supplementary' not in attributes[x]]
+        report_body = {x:body[x] for x in report_names}
+        all_html.extend(self._order_components(report_body, priorities))
+        all_html.append('<h1>Supplementary</h1>') # TODO fix formatting
+        sup_names = [x for x in body.keys() \
+                     if 'clinical' in attributes[x] \
+                     and 'supplementary' in attributes[x]]
+        sup_body = {x:body[x] for x in report_names}
+        all_html.extend(self._order_components(sup_body, priorities))
         footer = footer_template.format(data['comment'])
-        ordered_html = [header,]
-        ordered_html.extend(self._order_components(body, priorities))
-        ordered_html.append(footer)
-        html = "\n".join(ordered_html)
-        return html
+        all_html.append(footer)
+        html_string = "\n".join(all_html)
+        return html_string

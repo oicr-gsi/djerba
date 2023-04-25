@@ -18,19 +18,34 @@ class merger_base(logger, html_builder, ABC):
         self.logger.debug("Using constructor of parent class")
         self.json_validator = json_validator(schema_path, self.log_level, self.log_path)
         self.priority = 1000 # determines order of output for HTML
+        self.attributes = []
 
     def configure(self, config_section):
-        # TODO FIXME want these to be integers
-        # input the config parser instead
+        # TODO FIXME want these to be integers/booleans, not strings
         config_section['priority'] = str(self.priority)
+        for key in ['clinical', 'supplementary']:
+            if key in self.attributes:
+                config_section[key] = 'true'
+            else:
+                config_section[key] = 'false'
         return config_section
+
+    def get_attributes(self):
+        return self.attributes
+
+    def set_attributes(self, attributes):
+        if not isinstance(attributes, list):
+            msg = "Attributes value '{0}' is not a list".format(attributes)
+            self.logger.error(msg)
+            raise ValueError(msg)
+        self.attributes = attributes
 
     def get_priority(self):
         return self.priority
 
     def set_priority(self, priority):
         if not isinstance(priority, int):
-            msg = "Output priority '{0}' is not an integer".format(priority)
+            msg = "Priority value '{0}' is not an integer".format(priority)
             self.logger.error(msg)
             raise ValueError(msg)
         self.priority = priority

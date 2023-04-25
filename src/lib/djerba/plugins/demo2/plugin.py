@@ -5,6 +5,9 @@ from djerba.plugins.base import plugin_base
 class main(plugin_base):
 
     def configure(self, config_section):
+        config_section['priority'] = '200'
+        config_section['clinical'] = 'true'
+        config_section['supplementary'] = 'false'
         config_section['demo2_param'] = '42'
         config_section['question'] = 'question.txt'
         return config_section
@@ -12,7 +15,8 @@ class main(plugin_base):
     def extract(self, config_section):
         data = {
             'plugin_name': 'demo2 plugin',
-            'priority': 200,
+            'priority': int(config_section['priority']),
+            'attributes': self._get_attributes(config_section),
             'attributes': ['clinical'],
             'merge_inputs': {
                 'gene_information_merger': [

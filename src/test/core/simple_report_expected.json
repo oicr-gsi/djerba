@@ -35,7 +35,11 @@
         },
         "technical_notes": "No technical notes supplied."
     },
-    "mergers": {"gene_information_merger": "300"},
+    "mergers": {
+	"gene_information_merger": {
+	    "priority": "300",
+	    "attributes": ["clinical", "supplementary"]
+    },
     "plugins": {
         "demo1": {
 	    "attributes": ["clinical"],
