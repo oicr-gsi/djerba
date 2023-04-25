@@ -46,13 +46,6 @@ class main(core_base):
         self.merger_loader = merger_loader(self.log_level, self.log_path)
         self.helper_loader = helper_loader(self.log_level, self.log_path)
 
-    def _order_components(self, body, priorities):
-        names = priorities.keys()
-        # TODO FIXME when I/O is fixed in merger.base, int() cast won't be necessary
-        ordered_names = sorted(names, key=lambda x: int(priorities[x]))
-        ordered_body = [body[x] for x in ordered_names]
-        return ordered_body
-
     def _run_merger(self, merger_name, data):
         """Assemble inputs for the named merger and run merge/dedup to get HTML"""
         merger_inputs = []
@@ -140,9 +133,9 @@ class main(core_base):
         self.logger.info('Starting Djerba render step')
         if html_path:  # do this *before* taking the time to generate output
             self.path_validator.validate_output_file(html_path)
-        [header, footer] = core_renderer(self.log_level, self.log_path).run(data)
         body = {} # strings to make up the body of the HTML document
         priorities = data[self.MERGERS].copy() # start with merger priorities; add plugins
+        attributes = {}
         self.logger.debug('Rendering plugin HTML')
         for plugin_name in data[self.PLUGINS]:
             # render plugin HTML, and find which mergers it uses
@@ -151,16 +144,13 @@ class main(core_base):
             self.logger.debug("Loaded plugin {0} for rendering".format(plugin_name))
             body[plugin_name] = plugin.render(plugin_data)
             priorities[plugin_name] = plugin_data['priority']
-        self.logger.debug('Rendering plugin HTML')
+        self.logger.debug('Rendering merger HTML')
         for merger_name in data[self.MERGERS]:
             merged_html = self._run_merger(merger_name, data)
             body[merger_name] = merged_html
         self.logger.debug('Sorting HTML components by priority')
-        ordered_body = self._order_components(body, priorities)
-        ordered_html = [header,]
-        ordered_html.extend(ordered_body)
-        ordered_html.append(footer)
-        html = "\n".join(ordered_html)
+        renderer = core_renderer(self.log_level, self.log_path)
+        html = renderer.run(body, priorities, attributes, data) # TODO remove data argument
         if html_path:
             with open(html_path, 'w') as out_file:
                 out_file.write(html)

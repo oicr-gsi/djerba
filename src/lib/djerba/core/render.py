@@ -29,6 +29,13 @@ class renderer(logger):
         self.logger.debug("Loading clinical header Mako template")
         self.clinical_header_template = report_lookup.get_template(self.CLINICAL_HEADER_NAME)
 
+    def _order_components(self, body, priorities):
+        names = priorities.keys()
+        # TODO FIXME when I/O is fixed in merger.base, int() cast won't be necessary
+        ordered_names = sorted(names, key=lambda x: int(priorities[x]))
+        ordered_body = [body[x] for x in ordered_names]
+        return ordered_body
+
     def render_header(self, data):
         return self.render_from_template(self.clinical_header_template, data.get(ini.CORE))
 
@@ -44,7 +51,7 @@ class renderer(logger):
             raise
         return html
 
-    def run(self, data):
+    def run(self, body, priorities, attributes, data):
         header = self.render_header(data)
         footer_template = """
         <div>{0}</div>
@@ -52,4 +59,8 @@ class renderer(logger):
         </html>
         """
         footer = footer_template.format(data['comment'])
-        return [header, footer]
+        ordered_html = [header,]
+        ordered_html.extend(self._order_components(body, priorities))
+        ordered_html.append(footer)
+        html = "\n".join(ordered_html)
+        return html

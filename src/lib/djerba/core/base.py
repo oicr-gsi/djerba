@@ -5,7 +5,7 @@ import re
 from djerba.util.logger import logger
 
 class base(logger):
-    
+
     @staticmethod
     def _is_helper_name(name):
         return re.search('_helper$', name)
