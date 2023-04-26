@@ -7,6 +7,7 @@ import logging
 from abc import ABC
 from djerba.core.json_validator import plugin_json_validator
 from djerba.util.logger import logger
+import djerba.core.constants as core_constants
 
 class plugin_base(logger, ABC):
 
@@ -25,6 +26,14 @@ class plugin_base(logger, ABC):
             if config_section[key]=='true': # TODO FIXME better Boolean check
                 attributes.append(key)
         return attributes
+
+    def _get_priorities(self, config_section):
+        priorities = {
+            'configure': int(config_section[core_constants.CONFIGURE_PRIORITY]),
+            'extract': int(config_section[core_constants.EXTRACT_PRIORITY]),
+            'render': int(config_section[core_constants.RENDER_PRIORITY])
+        }
+        return priorities
 
     def configure(self, config_section):
         """Input/output is a config section from a ConfigParser object"""

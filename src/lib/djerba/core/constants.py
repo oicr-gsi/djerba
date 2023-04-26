@@ -1,0 +1,11 @@
+# shared constants for core classes
+ATTRIBUTES = 'attributes'
+CLINICAL = 'clinical'
+SUPPLEMENTARY = 'supplementary'
+CONFIGURE_PRIORITY = 'configure_priority'
+EXTRACT_PRIORITY = 'extract_priority'
+RENDER_PRIORITY = 'render_priority'
+PRIORITIES = 'priorities'
+CONFIGURE = 'configure'
+EXTRACT = 'extract'
+RENDER = 'render'

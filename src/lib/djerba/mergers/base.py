@@ -8,6 +8,7 @@ from abc import ABC
 from djerba.core.json_validator import json_validator
 from djerba.util.html import html_builder
 from djerba.util.logger import logger
+import djerba.core.constants as core_constants
 
 class merger_base(logger, html_builder, ABC):
 
@@ -22,8 +23,8 @@ class merger_base(logger, html_builder, ABC):
 
     def configure(self, config_section):
         # TODO FIXME want these to be integers/booleans, not strings
-        config_section['priority'] = str(self.priority)
-        for key in ['clinical', 'supplementary']:
+        config_section[core_constants.RENDER_PRIORITY] = str(self.priority)
+        for key in [core_constants.CLINICAL, core_constants.SUPPLEMENTARY]:
             if key in self.attributes:
                 config_section[key] = 'true'
             else:

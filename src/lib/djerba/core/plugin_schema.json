@@ -4,7 +4,14 @@
     "properties":
     {
 	"plugin_name": {"type": "string" },
-	"priority": {"type": "integer" },
+	"priorities": {
+	    "type": "object",
+	    "properties": {
+		"configure": {"type": "integer"},
+		"extract": {"type": "integer"},
+		"render": {"type": "integer"}
+	    }
+	},
 	"attributes": {
 	    "type": "array",
 	    "items": {
@@ -18,6 +25,6 @@
 	"results": {"type": "object"}
     },
     "required": [
-	"plugin_name", "priority", "attributes", "merge_inputs", "results"
+	"plugin_name", "priorities", "attributes", "merge_inputs", "results"
     ]
 }

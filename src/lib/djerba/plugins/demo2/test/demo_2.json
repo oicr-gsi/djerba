@@ -1,6 +1,6 @@
 {
     "attributes": ["clinical"],
-    "priority": 200,
+    "priorities": {"configure": 200, "extract": 200, "render": 200},
     "merge_inputs": {
         "gene_information_merger": [
             {

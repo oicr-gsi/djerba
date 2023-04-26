@@ -6,10 +6,10 @@ Includes merge/deduplicate for shared tables, eg. gene info
 import logging
 import os
 import traceback
+import djerba.core.constants as core_constants
 import djerba.util.ini_fields as ini
 from djerba.util.logger import logger
 from mako.lookup import TemplateLookup
-
 
 class renderer(logger):
 
@@ -65,14 +65,14 @@ class renderer(logger):
         all_html = [header,]
         all_html.append('<h1>Clinical Research Report</h1>') # TODO fix formatting
         report_names = [x for x in body.keys() \
-                        if 'clinical' in attributes[x] \
-                        and 'supplementary' not in attributes[x]]
+                        if core_constants.CLINICAL in attributes[x] \
+                        and core_constants.SUPPLEMENTARY not in attributes[x]]
         report_body = {x:body[x] for x in report_names}
         all_html.extend(self._order_components(report_body, priorities))
         all_html.append('<h1>Supplementary</h1>') # TODO fix formatting
         sup_names = [x for x in body.keys() \
-                     if 'clinical' in attributes[x] \
-                     and 'supplementary' in attributes[x]]
+                     if core_constants.CLINICAL in attributes[x] \
+                     and core_constants.SUPPLEMENTARY in attributes[x]]
         sup_body = {x:body[x] for x in sup_names}
         all_html.extend(self._order_components(sup_body, priorities))
         footer = footer_template.format(data['comment'])

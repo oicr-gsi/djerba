@@ -21,6 +21,7 @@ from djerba.core.loaders import plugin_loader, merger_loader, helper_loader
 from djerba.core.workspace import workspace
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
+import djerba.core.constants as core_constants
 import djerba.util.constants as constants
 
 class main(core_base):
@@ -45,6 +46,9 @@ class main(core_base):
         self.plugin_loader = plugin_loader(self.log_level, self.log_path)
         self.merger_loader = merger_loader(self.log_level, self.log_path)
         self.helper_loader = helper_loader(self.log_level, self.log_path)
+
+    def _get_render_priority(self, plugin_data):
+        return plugin_data[core_constants.PRIORITIES][core_constants.RENDER]
 
     def _run_merger(self, merger_name, data):
         """Assemble inputs for the named merger and run merge/dedup to get HTML"""
@@ -143,13 +147,13 @@ class main(core_base):
             plugin = self.plugin_loader.load(plugin_name, self.workspace)
             body[plugin_name] = plugin.render(plugin_data)
             self.logger.debug("Ran plugin '{0}' for rendering".format(plugin_name))
-            priorities[plugin_name] = plugin_data['priority']
-            attributes[plugin_name] = plugin_data['attributes']
+            priorities[plugin_name] = self._get_render_priority(plugin_data)
+            attributes[plugin_name] = plugin_data[core_constants.ATTRIBUTES]
         for (merger_name, merger_config) in data[self.MERGERS].items():
             body[merger_name] = self._run_merger(merger_name, data)
             self.logger.debug("Ran merger '{0}' for rendering".format(merger_name))
-            priorities[merger_name] = merger_config['priority']
-            attributes[merger_name] = merger_config['attributes']
+            priorities[merger_name] = merger_config[core_constants.RENDER_PRIORITY]
+            attributes[merger_name] = merger_config[core_constants.ATTRIBUTES]
         self.logger.debug("Assembling HTML document")
         renderer = core_renderer(self.log_level, self.log_path)
         html = renderer.run(body, priorities, attributes, data) # TODO remove data argument

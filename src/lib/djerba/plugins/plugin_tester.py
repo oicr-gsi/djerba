@@ -55,6 +55,7 @@ class PluginTester(TestBase):
         """
         Simple plugin test
         """
+        #self.tmp_dir='/home/ibancarz/workspace/djerba/test/20230426_02'
         ini_path = os.path.join(test_source_dir, params[self.INI])
         expected_json_path = os.path.join(test_source_dir, params[self.JSON])
         expected_md5 = params[self.MD5]

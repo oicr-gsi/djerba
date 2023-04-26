@@ -7,6 +7,7 @@ The 'plugins' element is left empty, to be populated by the respective plugin cl
 
 import logging
 import os
+import djerba.core.constants as core_constants
 from djerba.core.base import base as core_base
 from djerba.util.image_to_base64 import converter
 
@@ -23,13 +24,14 @@ class extractor(core_base):
         for section_name in config.sections():
             if self._is_merger_name(section_name):
                 merger_data = {}
-                merger_data['priority'] = config.getint(section_name, 'priority')
+                merger_data[core_constants.RENDER_PRIORITY] = \
+                    config.getint(section_name, core_constants.RENDER_PRIORITY)
                 attributes = []
-                for key in ['clinical', 'supplementary']:
+                for key in [core_constants.CLINICAL, core_constants.SUPPLEMENTARY]:
                     if config.has_option(section_name, key) and \
                        config.getboolean(section_name, key):
                         attributes.append(key)
-                merger_data['attributes'] = attributes
+                merger_data[core_constants.ATTRIBUTES] = attributes
                 mergers[section_name] = merger_data
         return mergers
 

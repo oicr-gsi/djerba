@@ -1,20 +1,27 @@
 """Simple Djerba plugin for demonstration and testing: Example 1"""
 
 from djerba.plugins.base import plugin_base
+import djerba.core.constants as core_constants
 
 class main(plugin_base):
 
     def configure(self, config_section):
-        if not 'priority' in config_section:
-            config_section['priority'] = '100'
-        config_section['clinical'] = 'true'
-        config_section['supplementary'] = 'false'
+        priority_keys = [
+            core_constants.CONFIGURE_PRIORITY,
+            core_constants.EXTRACT_PRIORITY,
+            core_constants.RENDER_PRIORITY
+        ]
+        for key in priority_keys:
+            if not key in config_section:
+                config_section[key] = '100'
+        config_section[core_constants.CLINICAL] = 'true'
+        config_section[core_constants.SUPPLEMENTARY] = 'false'
         return config_section
 
     def extract(self, config_section):
         data = {
             'plugin_name': 'demo1 plugin',
-            'priority': int(config_section['priority']),
+            'priorities': self._get_priorities(config_section),
             'attributes': self._get_attributes(config_section),
             'merge_inputs': {
                 'gene_information_merger': [

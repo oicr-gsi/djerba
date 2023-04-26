@@ -37,14 +37,14 @@
     },
     "mergers": {
 	"gene_information_merger": {
-	    "priority": 300,
+	    "render_priority": 300,
 	    "attributes": ["clinical", "supplementary"]
 	}
     },
     "plugins": {
         "demo1": {
 	    "attributes": ["clinical"],
-	    "priority": 100,
+	    "priorities": {"configure": 100, "extract": 100, "render": 100},
             "merge_inputs": {
                 "gene_information_merger": [
                     {
@@ -66,7 +66,7 @@
         },
         "demo2": {
 	    "attributes": ["clinical"],
-	    "priority": 200,
+	    "priorities": {"configure": 200, "extract": 200, "render": 200},
             "merge_inputs": {
                 "gene_information_merger": [
                     {
