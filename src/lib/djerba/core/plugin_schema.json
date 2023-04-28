@@ -19,8 +19,6 @@
 		"enum": ["clinical", "supplementary", "failed"]
 	    }
 	},
-	"failed": {"type": "boolean"},
-	"clinical": {"type": "boolean"},
 	"merge_inputs": {"type": "object"},
 	"results": {"type": "object"}
     },
