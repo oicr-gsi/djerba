@@ -4,6 +4,7 @@ Cannot be used to create an object (abstract) but can be subclassed (base class)
 """
 
 import logging
+import re
 from abc import ABC
 from djerba.core.json_validator import plugin_json_validator
 from djerba.util.logger import logger
@@ -26,6 +27,12 @@ class plugin_base(logger, ABC):
             if config_section[key]=='true': # TODO FIXME better Boolean check
                 attributes.append(key)
         return attributes
+
+    def _get_name(self, name_attr):
+        # TODO FIXME tidy this up and define variables for strings
+        terms = re.split('\.', name_attr)
+        keep = [x for x in terms if x not in ['djerba', 'plugins', 'plugin']]
+        return '.'.join(keep)
 
     def _get_priorities(self, config_section):
         priorities = {

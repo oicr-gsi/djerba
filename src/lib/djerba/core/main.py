@@ -103,22 +103,30 @@ class main(core_base):
         self.logger.info('Starting Djerba extract step')
         if json_path:  # do this *before* taking the time to generate output
             self.path_validator.validate_output_file(json_path)
-        data = core_extractor(self.log_level, self.log_path).run(config)
-        # data includes an empty 'plugins' object
+        components = {}
+        priorities = {}
         for section_name in config.sections():
             if section_name == ini.CORE or self._is_merger_name(section_name):
-                pass
+                continue
             elif self._is_helper_name(section_name):
-                helper = self.helper_loader.load(section_name, self.workspace)
-                self.logger.debug("Loaded helper {0} for extraction".format(section_name))
-                helper.extract(config[section_name])
+                component = self.helper_loader.load(section_name, self.workspace)
             else:
-                plugin = self.plugin_loader.load(section_name, self.workspace)
-                self.logger.debug("Loaded plugin {0} for extraction".format(section_name))
-                plugin_data = plugin.extract(config[section_name])
-                self.json_validator.validate_data(plugin_data)
-                data[self.PLUGINS][section_name] = plugin_data
+                component = self.plugin_loader.load(section_name, self.workspace)
+            components[section_name] = component
+            priorities[section_name] = \
+                config.getint(section_name, core_constants.EXTRACT_PRIORITY)
+        self.logger.debug('Generating core data structure')
+        data = core_extractor(self.log_level, self.log_path).run(config)
+        self.logger.debug('Running plugins and mergers in priority order')
+        for name in sorted(components.keys(), key=lambda x: priorities[x]):
+            self.logger.debug('Running component {0}'.format(name))
+            component_data = components[name].extract(config[name])
+            if not self._is_helper_name(name):
+                self.json_validator.validate_data(component_data)
+                data[self.PLUGINS][name] = component_data
+        self.logger.debug('Finished running components')
         if json_path:
+            self.logger.debug('Writing output to {0}'.format(json_path))
             with open(json_path, 'w') as out_file:
                 out_file.write(json.dumps(data))
         if archive:
