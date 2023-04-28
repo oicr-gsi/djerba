@@ -92,8 +92,10 @@ class main(core_base):
             components[section_name] = (component, priority)
         self.logger.debug('Configuring components in priority order')
         config_out = ConfigParser()
+        order = 0
         for name in sorted(components, key=lambda x: components[x][1]):
-            self.logger.debug('Configuring component {0}'.format(name))
+            order += 1
+            self.logger.debug('Configuring component {0} in order {1}'.format(name, order))
             config_tmp = components[name][0].configure(config_in)
             config_in[name] = config_tmp[name] # update config_in to support dependencies
             config_out[name] = config_tmp[name]
@@ -121,13 +123,15 @@ class main(core_base):
         self.logger.debug('Generating core data structure')
         data = core_extractor(self.log_level, self.log_path).run(config)
         self.logger.debug('Running extraction for plugins and mergers in priority order')
+        order = 0
         for name in sorted(components, key=lambda x: components[x][1]):
-            self.logger.debug('Running component {0}'.format(name))
+            order += 1
+            self.logger.debug('Extracting component {0} in order {1}'.format(name, order))
             component_data = components[name][0].extract(config)
             if not self._is_helper_name(name):
                 self.json_validator.validate_data(component_data)
                 data[self.PLUGINS][name] = component_data
-        self.logger.debug('Finished running components')
+        self.logger.debug('Finished running extraction')
         if json_path:
             self.logger.debug('Writing JSON output to {0}'.format(json_path))
             with open(json_path, 'w') as out_file:

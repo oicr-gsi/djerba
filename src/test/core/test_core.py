@@ -19,6 +19,7 @@ from djerba.core.workspace import workspace
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.testing.tools import TestBase
 from djerba.util.validator import path_validator
+import djerba.core.constants as core_constants
 import djerba.util.constants as constants
 
 class TestCore(TestBase):
@@ -205,6 +206,43 @@ class TestMainScript(TestCore):
         self.assertEqual(result.returncode, 0)
         self.assertSimpleReport(json_path, html)
 
+class TestPriority(TestCore):
+    """Test controlling the configure/extract/render order with priority levels"""
+
+    def test_configure_priority(self):
+        ini_path = os.path.join(self.test_source_dir, 'config.ini')
+        json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
+        djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
+        prefix = 'DEBUG:djerba.core.main:'
+        with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
+            config = djerba_main.configure(ini_path)
+        names_and_orders = [
+            ('core', 1),
+            ('demo1', 2),
+            ('demo2', 3),
+            ('gene_information_merger', 4)
+        ]
+        for (name, order) in names_and_orders:
+            msg = '{0}Configuring component {1} in order {2}'.format(prefix, name, order)
+            self.assertIn(msg, log_context.output)
+        # now give demo2 a higher priority than demo1
+        config.set('demo1', core_constants.CONFIGURE_PRIORITY, '300')
+        config.set('demo2', core_constants.CONFIGURE_PRIORITY, '200')
+        ini_path_2 = os.path.join(self.tmp_dir, 'config_modified.ini')
+        with open(ini_path_2, 'w') as out_file:
+            config.write(out_file)
+        with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
+            djerba_main.configure(ini_path_2)
+        names_and_orders = [
+            ('core', 1),
+            ('demo2', 2),
+            ('demo1', 3),
+            ('gene_information_merger', 4)
+        ]
+        for (name, order) in names_and_orders:
+            msg = '{0}Configuring component {1} in order {2}'.format(prefix, name, order)
+            self.assertIn(msg, log_context.output)            
+            
 class TestSimpleReport(TestCore):
 
     def test_report(self):
