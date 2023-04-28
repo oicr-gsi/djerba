@@ -2,6 +2,7 @@
 
 import csv
 import gzip
+import djerba.util.ini_fields as ini
 import djerba.util.provenance_index as index
 from djerba.helpers.base import helper_base
 
@@ -11,19 +12,18 @@ class main(helper_base):
     STUDY_TITLE = 'study_title'
     ROOT_SAMPLE_NAME = 'root_sample_name'
     PROVENANCE_OUTPUT = 'provenance_subset.tsv.gz'
-    
+    HELPER_NAME = 'provenance_helper'
+
     def configure(self, config):
-        core_config = self.workspace.read_core_config()
-        if not self.STUDY_TITLE in config:
-            config[self.STUDY_TITLE] = core_config[self.STUDY_TITLE]
-        if not self.ROOT_SAMPLE_NAME in config:
-            config[self.ROOT_SAMPLE_NAME] = core_config[self.ROOT_SAMPLE_NAME]
+        # No automated config
+        # - uses study title and root sample name from core config
+        # - provenance path must be configured manually (for now)
         return config
 
     def extract(self, config):
-        provenance_path = config[self.PROVENANCE_INPUT]
-        study = config[self.STUDY_TITLE]
-        sample = config[self.ROOT_SAMPLE_NAME]
+        provenance_path = config[self.HELPER_NAME][self.PROVENANCE_INPUT]
+        study = config[ini.CORE][self.STUDY_TITLE]
+        sample = config[ini.CORE][self.ROOT_SAMPLE_NAME]
         self.logger.info('Started reading file provenance from {0}'.format(provenance_path))
         total = 0
         with gzip.open(provenance_path, 'rt') as in_file, \

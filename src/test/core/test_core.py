@@ -258,6 +258,7 @@ class TestValidator(TestCore):
 class TestWorkspace(TestCore):
 
     def test(self):
+        gzip_filename = 'lorem.gz'
         with open(os.path.join(self.test_source_dir, self.LOREM_FILENAME)) as in_file:
             lorem = in_file.read()
         ws = workspace(self.tmp_dir)
@@ -277,16 +278,14 @@ class TestWorkspace(TestCore):
         # test if opening a nonexistent file breaks
         with self.assertRaises(OSError):
             ws_silent.open_file('/dummy/file/path')
+        # test gzip I/O
+        with ws.open_gzip_file(gzip_filename, write=True) as gzip_file:
+            gzip_file.write(lorem)
+        self.assertTrue(os.path.exists(os.path.join(self.tmp_dir, gzip_filename)))
+        with ws.open_gzip_file(gzip_filename) as gzip_file:
+            lorem_from_gzip = gzip_file.read()
+        self.assertEqual(lorem_from_gzip, lorem)
 
-    def test_core_config(self):
-        ini_path = os.path.join(self.test_source_dir, 'config_full.ini')
-        cp = ConfigParser()
-        cp.read(ini_path)
-        ws = workspace(self.tmp_dir)
-        ws.write_core_config(cp['core'])
-        self.assertTrue(os.path.exists(os.path.join(self.tmp_dir, 'core_config.json')))
-        config = ws.read_core_config()
-        self.assertEqual(config['comment'], 'Djerba 1.0 under development')
 
 if __name__ == '__main__':
     unittest.main()
