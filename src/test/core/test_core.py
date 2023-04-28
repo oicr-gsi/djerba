@@ -209,6 +209,17 @@ class TestMainScript(TestCore):
 class TestPriority(TestCore):
     """Test controlling the configure/extract/render order with priority levels"""
 
+    def find_line_position(self, doc, target):
+        # input is a 'document' (string of one or more lines)
+        # find position of first line containing given string, if any
+        # if not found, return 0
+        position = 0
+        for line in re.split('\n', doc):
+            position += 1
+            if target in line:
+                break
+        return position
+
     def test_configure_priority(self):
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
         djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
@@ -272,7 +283,28 @@ class TestPriority(TestCore):
         for (name, order) in names_and_orders:
             msg = template.format(prefix, name, order)
             self.assertIn(msg, log_context.output)
-        
+
+    def test_render_priority(self):
+        json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
+        djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
+        with open(json_path) as json_file:
+            data = json.loads(json_file.read())
+        html = djerba_main.render(data)
+        pos1 = self.find_line_position(html, 'demo1')
+        pos2 = self.find_line_position(html, 'The Question') # demo2 output
+        self.assertNotEqual(0, pos1)
+        self.assertNotEqual(0, pos2)
+        self.assertTrue(pos1 < pos2)
+        # now give demo2 a higher priority than demo1
+        data['plugins']['demo1']['priorities']['render'] = 200
+        data['plugins']['demo2']['priorities']['render'] = 100
+        html = djerba_main.render(data)
+        pos1 = self.find_line_position(html, 'demo1')
+        pos2 = self.find_line_position(html, 'The Question') # demo2 output
+        self.assertNotEqual(0, pos1)
+        self.assertNotEqual(0, pos2)
+        self.assertTrue(pos1 > pos2)
+
 
 class TestSimpleReport(TestCore):
 
