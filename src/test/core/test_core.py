@@ -211,19 +211,19 @@ class TestPriority(TestCore):
 
     def test_configure_priority(self):
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
-        json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
         djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
-        prefix = 'DEBUG:djerba.core.main:'
         with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
             config = djerba_main.configure(ini_path)
         names_and_orders = [
-            ('core', 1),
-            ('demo1', 2),
-            ('demo2', 3),
-            ('gene_information_merger', 4)
+            ['core', 1],
+            ['demo1', 2],
+            ['demo2', 3],
+            ['gene_information_merger', 4]
         ]
+        prefix = 'DEBUG:djerba.core.main:'
+        template = '{0}Configuring component {1} in order {2}'
         for (name, order) in names_and_orders:
-            msg = '{0}Configuring component {1} in order {2}'.format(prefix, name, order)
+            msg = template.format(prefix, name, order)
             self.assertIn(msg, log_context.output)
         # now give demo2 a higher priority than demo1
         config.set('demo1', core_constants.CONFIGURE_PRIORITY, '300')
@@ -234,15 +234,46 @@ class TestPriority(TestCore):
         with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
             djerba_main.configure(ini_path_2)
         names_and_orders = [
-            ('core', 1),
-            ('demo2', 2),
-            ('demo1', 3),
-            ('gene_information_merger', 4)
+            ['core', 1],
+            ['demo2', 2], # <---- changed order
+            ['demo1', 3],
+            ['gene_information_merger', 4]
         ]
         for (name, order) in names_and_orders:
-            msg = '{0}Configuring component {1} in order {2}'.format(prefix, name, order)
-            self.assertIn(msg, log_context.output)            
-            
+            msg = template.format(prefix, name, order)
+            self.assertIn(msg, log_context.output)
+
+    def test_extract_priority(self):
+        # core and merger do not have extract steps
+        ini_path = os.path.join(self.test_source_dir, 'config_full.ini')
+        djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
+        config = ConfigParser()
+        config.read(ini_path)
+        with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
+            djerba_main.extract(config)
+        names_and_orders = [
+            ['demo1', 1],
+            ['demo2', 2],
+        ]
+        prefix = 'DEBUG:djerba.core.main:'
+        template = '{0}Extracting component {1} in order {2}'
+        for (name, order) in names_and_orders:
+            msg = template.format(prefix, name, order)
+            self.assertIn(msg, log_context.output)
+        # now give demo2 a higher priority than demo1
+        config.set('demo1', core_constants.EXTRACT_PRIORITY, '300')
+        config.set('demo2', core_constants.EXTRACT_PRIORITY, '200')
+        with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
+            djerba_main.extract(config)
+        names_and_orders = [
+            ['demo2', 1], # <---- changed order
+            ['demo1', 2],
+        ]
+        for (name, order) in names_and_orders:
+            msg = template.format(prefix, name, order)
+            self.assertIn(msg, log_context.output)
+        
+
 class TestSimpleReport(TestCore):
 
     def test_report(self):
