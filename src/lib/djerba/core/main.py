@@ -73,27 +73,33 @@ class main(core_base):
             self.path_validator.validate_output_file(config_path_out)
         config_in = self.read_ini_path(config_path_in)
         # TODO first read defaults, then overwrite
-        config_out = ConfigParser()
+        components = {}
+        priorities = {}
+        self.logger.debug('Loading components and finding config priority levels')
         for section_name in config_in.sections():
             if section_name == ini.CORE:
-                configurer = core_configurer(self.log_level, self.log_path)
-                config_out[section_name] = configurer.run(config_in[section_name])
-                # write core config for (possible) use by plugins
-                self.workspace.write_core_config(config_out[section_name])
-                self.logger.debug("Updated core configuration")
+                component = core_configurer(self.log_level, self.log_path)
             elif self._is_helper_name(section_name):
-                helper_main = self.helper_loader.load(section_name, self.workspace)
-                self.logger.debug("Loaded helper {0} for configuration".format(section_name))
-                config_out[section_name] = helper_main.configure(config_in[section_name])
+                component = self.helper_loader.load(section_name, self.workspace)
             elif self._is_merger_name(section_name):
-                merger_main = self.merger_loader.load(section_name)
-                self.logger.debug("Loaded helper {0} for configuration".format(section_name))
-                config_out[section_name] = merger_main.configure(config_in[section_name])
+                component = self.merger_loader.load(section_name)
             else:
-                plugin_main = self.plugin_loader.load(section_name, self.workspace)
-                self.logger.debug("Loaded plugin {0} for configuration".format(section_name))
-                config_out[section_name] = plugin_main.configure(config_in[section_name])
+                component = self.plugin_loader.load(section_name, self.workspace)
+            if config_in.has_option(section_name, core_constants.CONFIGURE_PRIORITY):
+                priorities[section_name] = \
+                    config_in.getint(section_name, core_constants.CONFIGURE_PRIORITY)
+            else:
+                priorities[section_name] = component.get_default_config_priority()
+            components[section_name] = component
+        self.logger.debug('Configuring components in priority order')
+        config_out = ConfigParser()
+        for name in sorted(components.keys(), key=lambda x: priorities[x]):
+            self.logger.debug('Configuring component {0}'.format(name))
+            config_tmp = components[name].configure(config_in)
+            config_in[name] = config_tmp[name] # update config_in to support dependencies
+            config_out[name] = config_tmp[name]
         if config_path_out:
+            self.logger.debug('Writing INI output to {0}'.format(config_path_out))
             with open(config_path_out, 'w') as out_file:
                 config_out.write(out_file)
         self.logger.info('Finished Djerba config step')
@@ -117,7 +123,7 @@ class main(core_base):
                 config.getint(section_name, core_constants.EXTRACT_PRIORITY)
         self.logger.debug('Generating core data structure')
         data = core_extractor(self.log_level, self.log_path).run(config)
-        self.logger.debug('Running plugins and mergers in priority order')
+        self.logger.debug('Running extraction for plugins and mergers in priority order')
         for name in sorted(components.keys(), key=lambda x: priorities[x]):
             self.logger.debug('Running component {0}'.format(name))
             component_data = components[name].extract(config[name])
@@ -126,7 +132,7 @@ class main(core_base):
                 data[self.PLUGINS][name] = component_data
         self.logger.debug('Finished running components')
         if json_path:
-            self.logger.debug('Writing output to {0}'.format(json_path))
+            self.logger.debug('Writing JSON output to {0}'.format(json_path))
             with open(json_path, 'w') as out_file:
                 out_file.write(json.dumps(data))
         if archive:

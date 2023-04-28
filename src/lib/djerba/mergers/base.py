@@ -5,12 +5,12 @@ Cannot be used to create an object (abstract) but can be subclassed (base class)
 
 import logging
 from abc import ABC
+from djerba.core.component import component
 from djerba.core.json_validator import json_validator
 from djerba.util.html import html_builder
 from djerba.util.logger import logger
-import djerba.core.constants as core_constants
 
-class merger_base(logger, html_builder, ABC):
+class merger_base(component, html_builder, ABC):
 
     def __init__(self, schema_path, log_level=logging.INFO, log_path=None):
         self.log_level = log_level
@@ -21,15 +21,9 @@ class merger_base(logger, html_builder, ABC):
         self.priority = 1000 # determines order of output for HTML
         self.attributes = []
 
-    def configure(self, config_section):
-        # TODO FIXME want these to be integers/booleans, not strings
-        config_section[core_constants.RENDER_PRIORITY] = str(self.priority)
-        for key in [core_constants.CLINICAL, core_constants.SUPPLEMENTARY]:
-            if key in self.attributes:
-                config_section[key] = 'true'
-            else:
-                config_section[key] = 'false'
-        return config_section
+    def configure(self, config):
+        # placeholder; does nothing
+        return config
 
     def get_attributes(self):
         return self.attributes

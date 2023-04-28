@@ -6,11 +6,11 @@ Cannot be used to create an object (abstract) but can be subclassed (base class)
 import logging
 import re
 from abc import ABC
+from djerba.core.component import component
 from djerba.core.json_validator import plugin_json_validator
-from djerba.util.logger import logger
 import djerba.core.constants as core_constants
 
-class plugin_base(logger, ABC):
+class plugin_base(component, ABC):
 
     def __init__(self, workspace, log_level=logging.INFO, log_path=None):
         # workspace is an instance of djerba.core.workspace

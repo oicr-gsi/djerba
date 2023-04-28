@@ -5,7 +5,10 @@ import djerba.core.constants as core_constants
 
 class main(plugin_base):
 
-    def configure(self, config_section):
+    DEFAULT_CONFIG_PRIORITY = 200
+
+    def configure(self, config):
+        config_section = config['demo2']
         priority_keys = [
             core_constants.CONFIGURE_PRIORITY,
             core_constants.EXTRACT_PRIORITY,
@@ -17,7 +20,8 @@ class main(plugin_base):
         config_section[core_constants.CLINICAL] = 'true'
         config_section[core_constants.SUPPLEMENTARY] = 'false'
         config_section['question'] = 'question.txt'
-        return config_section
+        config['demo2'] = config_section
+        return config
 
     def extract(self, config_section):
         data = {
