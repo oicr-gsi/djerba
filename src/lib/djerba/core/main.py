@@ -129,6 +129,7 @@ class main(core_base):
             self.logger.debug('Extracting component {0} in order {1}'.format(name, order))
             component_data = components[name][0].extract(config)
             if not self._is_helper_name(name):
+                # only plugins, not helpers, write data in the JSON document
                 self.json_validator.validate_data(component_data)
                 data[self.PLUGINS][name] = component_data
         self.logger.debug('Finished running extraction')

@@ -303,7 +303,7 @@ class TestPriority(TestCore):
         pos2 = self.find_line_position(html, 'The Question') # demo2 output
         self.assertNotEqual(0, pos1)
         self.assertNotEqual(0, pos2)
-        self.assertTrue(pos1 > pos2)
+        self.assertTrue(pos1 > pos2) # <---- changed order
 
 
 class TestSimpleReport(TestCore):
