@@ -74,7 +74,6 @@ class main(core_base):
         config_in = self.read_ini_path(config_path_in)
         # TODO first read defaults, then overwrite
         components = {}
-        priorities = {}
         self.logger.debug('Loading components and finding config priority levels')
         for section_name in config_in.sections():
             if section_name == ini.CORE:
@@ -86,16 +85,16 @@ class main(core_base):
             else:
                 component = self.plugin_loader.load(section_name, self.workspace)
             if config_in.has_option(section_name, core_constants.CONFIGURE_PRIORITY):
-                priorities[section_name] = \
+                priority = \
                     config_in.getint(section_name, core_constants.CONFIGURE_PRIORITY)
             else:
-                priorities[section_name] = component.get_default_config_priority()
-            components[section_name] = component
+                priority = component.get_default_config_priority()
+            components[section_name] = (component, priority)
         self.logger.debug('Configuring components in priority order')
         config_out = ConfigParser()
-        for name in sorted(components.keys(), key=lambda x: priorities[x]):
+        for name in sorted(components, key=lambda x: components[x][1]):
             self.logger.debug('Configuring component {0}'.format(name))
-            config_tmp = components[name].configure(config_in)
+            config_tmp = components[name][0].configure(config_in)
             config_in[name] = config_tmp[name] # update config_in to support dependencies
             config_out[name] = config_tmp[name]
         if config_path_out:
@@ -110,7 +109,6 @@ class main(core_base):
         if json_path:  # do this *before* taking the time to generate output
             self.path_validator.validate_output_file(json_path)
         components = {}
-        priorities = {}
         for section_name in config.sections():
             if section_name == ini.CORE or self._is_merger_name(section_name):
                 continue
@@ -118,15 +116,14 @@ class main(core_base):
                 component = self.helper_loader.load(section_name, self.workspace)
             else:
                 component = self.plugin_loader.load(section_name, self.workspace)
-            components[section_name] = component
-            priorities[section_name] = \
-                config.getint(section_name, core_constants.EXTRACT_PRIORITY)
+            priority = config.getint(section_name, core_constants.EXTRACT_PRIORITY)
+            components[section_name] = (component, priority)
         self.logger.debug('Generating core data structure')
         data = core_extractor(self.log_level, self.log_path).run(config)
         self.logger.debug('Running extraction for plugins and mergers in priority order')
-        for name in sorted(components.keys(), key=lambda x: priorities[x]):
+        for name in sorted(components, key=lambda x: components[x][1]):
             self.logger.debug('Running component {0}'.format(name))
-            component_data = components[name].extract(config[name])
+            component_data = components[name][0].extract(config[name])
             if not self._is_helper_name(name):
                 self.json_validator.validate_data(component_data)
                 data[self.PLUGINS][name] = component_data
