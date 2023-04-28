@@ -123,7 +123,7 @@ class main(core_base):
         self.logger.debug('Running extraction for plugins and mergers in priority order')
         for name in sorted(components, key=lambda x: components[x][1]):
             self.logger.debug('Running component {0}'.format(name))
-            component_data = components[name][0].extract(config[name])
+            component_data = components[name][0].extract(config)
             if not self._is_helper_name(name):
                 self.json_validator.validate_data(component_data)
                 data[self.PLUGINS][name] = component_data

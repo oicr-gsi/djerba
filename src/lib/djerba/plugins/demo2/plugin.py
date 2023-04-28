@@ -6,9 +6,10 @@ import djerba.core.constants as core_constants
 class main(plugin_base):
 
     DEFAULT_CONFIG_PRIORITY = 200
+    PLUGIN_NAME = 'demo2'
 
     def configure(self, config):
-        config_section = config['demo2']
+        config_section = config[self.PLUGIN_NAME]
         priority_keys = [
             core_constants.CONFIGURE_PRIORITY,
             core_constants.EXTRACT_PRIORITY,
@@ -23,9 +24,10 @@ class main(plugin_base):
         config['demo2'] = config_section
         return config
 
-    def extract(self, config_section):
+    def extract(self, config):
+        config_section = config[self.PLUGIN_NAME]
         data = {
-            'plugin_name': 'demo2 plugin',
+            'plugin_name': self.PLUGIN_NAME+' plugin',
             'priorities': self._get_priorities(config_section),
             'attributes': self._get_attributes(config_section),
             'merge_inputs': {

@@ -47,9 +47,9 @@ class plugin_base(component, ABC):
         self.logger.debug("Using method of parent class; returns unchanged config")
         return config_section
 
-    def extract(self, config_section):
+    def extract(self, config):
         """
-        Input is a config section from a ConfigParser object
+        Input is a ConfigParser object
         Output is a data structure satisfying the plugin schema
         """
         msg = "Using placeholder method of parent class; returns empty data structure"
