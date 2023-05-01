@@ -9,18 +9,12 @@ from djerba.core.component import component
 
 class helper_base(component, ABC):
 
-    def __init__(self, workspace, log_level=logging.INFO, log_path=None):
+    def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
         # workspace is an instance of djerba.core.workspace
+        super().__init__(identifier, log_level, log_path)
         self.workspace = workspace
-        self.log_level = log_level
-        self.log_path = log_path
-        self.logger = self.get_logger(log_level, __name__, log_path)
-        self.logger.debug("Using constructor of parent class")
 
-    def configure(self, config_section):
-        """Input/output is a config section from a ConfigParser object"""
-        self.logger.debug("Using method of parent class; returns unchanged config")
-        return config_section
+    # configure() method is defined in parent class
 
     def extract(self, config_section):
         """

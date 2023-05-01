@@ -6,30 +6,25 @@ import djerba.core.constants as core_constants
 class main(plugin_base):
 
     DEFAULT_CONFIG_PRIORITY = 200
-    PLUGIN_NAME = 'demo2'
 
     def configure(self, config):
-        config_section = config[self.PLUGIN_NAME]
         priority_keys = [
             core_constants.CONFIGURE_PRIORITY,
             core_constants.EXTRACT_PRIORITY,
             core_constants.RENDER_PRIORITY
         ]
         for key in priority_keys:
-            if not key in config_section:
-                config_section[key] = '200'
-        config_section[core_constants.CLINICAL] = 'true'
-        config_section[core_constants.SUPPLEMENTARY] = 'false'
-        config_section['question'] = 'question.txt'
-        config['demo2'] = config_section
+            if not self.has_my_param(config, key):
+                config = self.set_my_param(config, key, self.DEFAULT_CONFIG_PRIORITY)
+        config = self.set_my_param(config, core_constants.CLINICAL, True)
+        config = self.set_my_param(config, core_constants.SUPPLEMENTARY, False)
         return config
 
     def extract(self, config):
-        config_section = config[self.PLUGIN_NAME]
         data = {
-            'plugin_name': self.PLUGIN_NAME+' plugin',
-            'priorities': self._get_priorities(config_section),
-            'attributes': self._get_attributes(config_section),
+            'plugin_name': self.identifier+' plugin',
+            'priorities': self.get_my_priorities(config),
+            'attributes': self.get_my_attributes(config),
             'merge_inputs': {
                 'gene_information_merger': [
                     {
@@ -47,8 +42,10 @@ class main(plugin_base):
                 ]
             },
             'results': {
-                'answer': config_section['demo2_param'],
-                'question': self.workspace.read_string(config_section['question'])
+                'answer': self.get_my_param_string(config, 'demo2_param'),
+                'question': self.workspace.read_string(
+                    self.get_my_param_string(config, 'question')
+                )
             }
         }
         return data

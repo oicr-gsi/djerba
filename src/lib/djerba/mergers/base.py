@@ -12,11 +12,12 @@ from djerba.util.logger import logger
 
 class merger_base(component, html_builder, ABC):
 
-    def __init__(self, schema_path, log_level=logging.INFO, log_path=None):
+    def __init__(self, schema_path, identifier, log_level=logging.INFO, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.logger.debug("Using constructor of parent class")
+        self.identifier = identifier
         self.json_validator = json_validator(schema_path, self.log_level, self.log_path)
         self.priority = 1000 # determines order of output for HTML
         self.attributes = []

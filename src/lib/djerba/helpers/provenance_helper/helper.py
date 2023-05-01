@@ -12,18 +12,15 @@ class main(helper_base):
     STUDY_TITLE = 'study_title'
     ROOT_SAMPLE_NAME = 'root_sample_name'
     PROVENANCE_OUTPUT = 'provenance_subset.tsv.gz'
-    HELPER_NAME = 'provenance_helper'
 
-    def configure(self, config):
-        # No automated config
-        # - uses study title and root sample name from core config
-        # - provenance path must be configured manually (for now)
-        return config
+    # No automated configuration; use placeholder method of parent class
+    # - uses study title and root sample name from core config
+    # - provenance path must be configured manually (for now)
 
     def extract(self, config):
-        provenance_path = config[self.HELPER_NAME][self.PROVENANCE_INPUT]
-        study = config[ini.CORE][self.STUDY_TITLE]
-        sample = config[ini.CORE][self.ROOT_SAMPLE_NAME]
+        provenance_path = self.get_my_param_string(self.PROVENANCE_INPUT)
+        study = self.get_core_config_string(self.STUDY_TITLE)
+        sample = self.get_core_config_string(self.ROOT_SAMPLE_NAME)
         self.logger.info('Started reading file provenance from {0}'.format(provenance_path))
         total = 0
         with gzip.open(provenance_path, 'rt') as in_file, \

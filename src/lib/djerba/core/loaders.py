@@ -124,7 +124,7 @@ class merger_loader(loader_base):
         # import, validate, and make an instance of a merger
         module = self.import_module(self.MERGER, module_name)
         self.validate_module(module, self.MERGER, module_name)
-        return module.main(self.log_level, self.log_path)
+        return module.main(module_name, self.log_level, self.log_path)
 
 class plugin_loader(loader_base):
 
@@ -132,7 +132,7 @@ class plugin_loader(loader_base):
         # import, validate, and make an instance of a plugin with a workspace
         module = self.import_module(self.PLUGIN, module_name)
         self.validate_module(module, self.PLUGIN, module_name)
-        return module.main(workspace, self.log_level, self.log_path)
+        return module.main(workspace, module_name, self.log_level, self.log_path)
 
 class helper_loader(loader_base):
 
@@ -140,7 +140,7 @@ class helper_loader(loader_base):
         # import, validate, and make an instance of a helper with a workspace
         module = self.import_module(self.HELPER, module_name)
         self.validate_module(module, self.HELPER, module_name)
-        return module.main(workspace, self.log_level, self.log_path)
+        return module.main(workspace, module_name, self.log_level, self.log_path)
 
 class DjerbaLoadError(Exception):
     pass

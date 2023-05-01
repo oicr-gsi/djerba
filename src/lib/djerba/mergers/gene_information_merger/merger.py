@@ -13,9 +13,9 @@ class main(merger_base):
     SCHEMA_FILENAME = 'gene_information_schema.json'
     SORT_KEY = 'Gene_URL'
 
-    def __init__(self, log_level=logging.WARNING, log_path=None):
+    def __init__(self, module_name, log_level=logging.WARNING, log_path=None):
         schema_path = os.path.join(os.path.dirname(__file__), self.SCHEMA_FILENAME)
-        super().__init__(schema_path, log_level, log_path)
+        super().__init__(schema_path, module_name, log_level, log_path)
         self.priority = 300 # TODO FIXME HTML output priority
         self.attributes = ['clinical', 'supplementary']
 
