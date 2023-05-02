@@ -18,6 +18,7 @@ class main(plugin_base):
                 config = self.set_my_param(config, key, self.DEFAULT_CONFIG_PRIORITY)
         config = self.set_my_param(config, core_constants.CLINICAL, True)
         config = self.set_my_param(config, core_constants.SUPPLEMENTARY, False)
+        config = self.set_my_param(config, 'question', 'question.txt')
         return config
 
     def extract(self, config):

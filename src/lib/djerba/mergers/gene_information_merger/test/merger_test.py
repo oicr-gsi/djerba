@@ -15,13 +15,14 @@ from djerba.mergers.gene_information_merger.merger import main
 class TestGeneInformationMerger(TestBase):
 
     GENE_INFO_INPUTS = 'gene_information_inputs.json'
+    MODULE_NAME = 'gene_information_merger'
 
     def test_gene_info(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         json_path = os.path.join(test_source_dir, self.GENE_INFO_INPUTS)
         with open(json_path) as json_file:
             inputs = json.loads(json_file.read())
-        merger = main()
+        merger = main(self.MODULE_NAME)
         self.assertEqual(merger.get_priority(), 300)
         merger.set_priority(500)
         self.assertEqual(merger.get_priority(), 500)
