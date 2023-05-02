@@ -56,6 +56,10 @@ class configurable(logger, ABC):
         config = self.apply_defaults(config)
         return config
 
+    def get_all_expected_ini(self):
+        # returns a set of all expected INI parameter names
+        return self.ini_required.union(set(self.ini_defaults.keys()))
+
     def get_default_config_priority(self):
         return self.DEFAULT_CONFIG_PRIORITY
 
@@ -89,6 +93,7 @@ class configurable(logger, ABC):
         """
         Find configure/extract/render priorities, if any
         extract and render are not defined for mergers and helpers, respectively
+        Used at extract step to convert INI settings into JSON
         """
         priorities = {}
         mapping = {
@@ -104,11 +109,24 @@ class configurable(logger, ABC):
     def has_my_param(self, config, param):
         return config.has_option(self.identifier, param)
 
+    def set_all_priorities(self, config, priority):
+        # convenience method; sets all defined priorities to the same value
+        all_params = self.get_all_expected_ini()
+        priority_keys = [
+            core_constants.CONFIGURE_PRIORITY,
+            core_constants.EXTRACT_PRIORITY,
+            core_constants.RENDER_PRIORITY
+        ]
+        for key in priority_keys:
+            if key in all_params:
+                config = self.set_my_param(config, key, priority)
+        return config
+
     def set_my_param(self, config, param, value):
         config.set(self.identifier, param, str(value))
         return config
 
-    ### start of add/set INI methods
+    ### start of add/set methods for expected params
     # optional parameters have defaults; required parameters do not
 
     def add_ini_required(self, key):
@@ -124,7 +142,7 @@ class configurable(logger, ABC):
     def set_ini_default(self, key, value):
         self.ini_defaults[key] = value
 
-    ### end of add/set INI methods
+    ### end of add/set expected INI methods
 
     def set_log_level(self, level):
         # use to change the log level set by the component loader, eg. for testing
@@ -145,7 +163,7 @@ class configurable(logger, ABC):
     def validate_full_config(self, config):
         """Check that all config keys (both required and optional) are present"""
         self.logger.info("Validating fully-specified config for component "+self.identifier)
-        all_keys = self.ini_required.union(set(self.ini_defaults.keys()))
+        all_keys = self.get_all_expected_ini()
         template = "{0} expected INI param(s) found for component {1}"
         self.logger.debug(template.format(len(all_keys), self.identifier))
         input_keys = config.options(self.identifier)

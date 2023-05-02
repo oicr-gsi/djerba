@@ -16,14 +16,7 @@ class main(plugin_base):
 
     def configure(self, config):
         config = self.apply_defaults(config)
-        priority_keys = [
-            core_constants.CONFIGURE_PRIORITY,
-            core_constants.EXTRACT_PRIORITY,
-            core_constants.RENDER_PRIORITY
-        ]
-        for key in priority_keys:
-            if not self.has_my_param(config, key):
-                config = self.set_my_param(config, key, self.DEFAULT_CONFIG_PRIORITY)
+        config = self.set_all_priorities(config, self.DEFAULT_CONFIG_PRIORITY)
         return config
 
     def extract(self, config):
