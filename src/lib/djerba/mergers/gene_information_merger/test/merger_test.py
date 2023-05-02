@@ -23,7 +23,7 @@ class TestGeneInformationMerger(TestBase):
         with open(json_path) as json_file:
             inputs = json.loads(json_file.read())
         merger = main(self.MODULE_NAME)
-        self.assertEqual(merger.get_priority(), 300)
+        self.assertEqual(merger.get_priority(), 1000)
         merger.set_priority(500)
         self.assertEqual(merger.get_priority(), 500)
         html = merger.render(inputs)

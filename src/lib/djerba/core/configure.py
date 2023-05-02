@@ -8,6 +8,7 @@ class configurer(configurable):
 
     def __init__(self, log_level=logging.INFO, log_path=None):
         super().__init__(ini.CORE, log_level, log_path)
+        self.set_ini_default('comment', 'comment goes here')
 
     def configure(self, config):
         # TODO validate config fields and (if possible) populate any not specified

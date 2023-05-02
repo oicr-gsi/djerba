@@ -10,8 +10,12 @@ class main(plugin_base):
 
     def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
         super().__init__(workspace, identifier, log_level, log_path)
+        self.add_ini_required('question')
+        self.set_ini_default(core_constants.CLINICAL, True)
+        self.set_ini_default(core_constants.SUPPLEMENTARY, False)
 
     def configure(self, config):
+        config = self.apply_defaults(config)
         priority_keys = [
             core_constants.CONFIGURE_PRIORITY,
             core_constants.EXTRACT_PRIORITY,
@@ -20,8 +24,6 @@ class main(plugin_base):
         for key in priority_keys:
             if not self.has_my_param(config, key):
                 config = self.set_my_param(config, key, self.DEFAULT_CONFIG_PRIORITY)
-        config = self.set_my_param(config, core_constants.CLINICAL, True)
-        config = self.set_my_param(config, core_constants.SUPPLEMENTARY, False)
         return config
 
     def extract(self, config):

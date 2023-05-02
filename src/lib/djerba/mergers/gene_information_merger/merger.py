@@ -16,15 +16,12 @@ class main(merger_base):
     def __init__(self, module_name, log_level=logging.WARNING, log_path=None):
         schema_path = os.path.join(os.path.dirname(__file__), self.SCHEMA_FILENAME)
         super().__init__(schema_path, module_name, log_level, log_path)
-        self.attributes = ['clinical', 'supplementary']
+        self.set_ini_default(core_constants.CLINICAL, True)
+        self.set_ini_default(core_constants.SUPPLEMENTARY, True)
 
     def configure(self, config):
-        name = 'gene_information_merger'
         config = self.apply_defaults(config)
         self.set_my_param(config, core_constants.RENDER_PRIORITY, self.RENDER_PRIORITY)
-        for key in [core_constants.CLINICAL, core_constants.SUPPLEMENTARY]:
-            has_attribute = key in self.attributes
-            self.set_my_param(config, key, has_attribute)
         return config
 
     def table_header(self):

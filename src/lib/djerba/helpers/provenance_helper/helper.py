@@ -22,10 +22,6 @@ class main(helper_base):
         super().__init__(workspace, identifier, log_level, log_path)
         self.add_ini_required(self.PROVENANCE_INPUT)
 
-    def configure(self, config):
-        self.validate_minimal_config(config)
-        return config
-
     def extract(self, config):
         self.validate_full_config(config)
         provenance_path = self.get_my_param_string(config, self.PROVENANCE_INPUT)

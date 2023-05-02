@@ -1,11 +1,19 @@
 """Simple Djerba plugin for demonstration and testing: Example 2"""
 
+import logging
 from djerba.plugins.base import plugin_base
 import djerba.core.constants as core_constants
 
 class main(plugin_base):
 
     DEFAULT_CONFIG_PRIORITY = 200
+
+    def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
+        super().__init__(workspace, identifier, log_level, log_path)
+        self.add_ini_required('demo2_param')
+        self.set_ini_default('question', 'question.txt')
+        self.set_ini_default(core_constants.CLINICAL, True)
+        self.set_ini_default(core_constants.SUPPLEMENTARY, False)
 
     def configure(self, config):
         priority_keys = [

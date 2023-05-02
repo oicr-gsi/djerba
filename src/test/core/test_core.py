@@ -29,7 +29,7 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_MD5 = '66bf99e6ebe64d89bef09184953fd630'
-    SIMPLE_CONFIG_MD5 = 'ec9ed33b74ba618fd5e8d72e73e94cbc'
+    SIMPLE_CONFIG_MD5 = '7868e3dd129bf375c843f10aa184b5b1'
 
     def setUp(self):
         super().setUp() # includes tmp_dir
@@ -160,12 +160,12 @@ class TestConfigValidation(TestCore):
     def test_simple(self):
         plugin = self.load_plugin()
         config = self.read_config(plugin)
-        # test a simple plugin with only configure/extract/render priority config
+        # test a simple plugin
         self.assertTrue(plugin.validate_minimal_config(config))
         with self.assertLogs('djerba.core.configurable', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
         msg = 'DEBUG:djerba.core.configurable:'+\
-            '3 expected INI param(s) found for component demo1'
+            '6 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
 
     def test_optional(self):
@@ -215,7 +215,7 @@ class TestConfigValidation(TestCore):
         with self.assertLogs('djerba.core.configurable', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
         msg = 'DEBUG:djerba.core.configurable:'+\
-            '4 expected INI param(s) found for component demo1'
+            '7 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
         # test setting all requirements
         plugin.set_all_ini_required(['foo', 'bar'])
