@@ -1,26 +1,43 @@
 """Djerba plugin for pwgs reporting"""
 import os
 import csv
-import logging
 from decimal import Decimal
+import csv
+import re
 
 from mako.lookup import TemplateLookup
 from djerba.plugins.base import plugin_base
 import djerba.plugins.pwgs.constants as constants
 from djerba.util.subprocess_runner import subprocess_runner
-from djerba.util.logger import logger
+import djerba.util.provenance_index as index
+from djerba.core.workspace import workspace
 
 class main(plugin_base):
 
+    RESULTS_SUFFIX = '\.mrdetect\.txt$'
+    VAF_SUFFIX = 'mrdetect.vaf.txt'
+    HBC_SUFFIX = 'HBCs.csv'
+    
     def configure(self, config_section):
         return config_section
 
     def extract(self, config_section):
-        hbc_results = self.preprocess_hbc(config_section[constants.HBC_FILE])
-        reads_detected = self.preprocess_vaf(config_section[constants.VAF_FILE])
-        mrdetect_results = self.preprocess_results(config_section[constants.RESULTS_FILE])
-        pwgs_base64 = self.write_pwgs_plot(config_section[constants.HBC_FILE],config_section[constants.VAF_FILE])
-        self.logger.info("PWGS: Finished preprocessing files")       
+        try:
+            self.provenance = self.subset_provenance()
+            results_file_path = self.parse_file_path(self.RESULTS_SUFFIX, self.provenance)
+            vaf_file_path = self.parse_file_path(self.VAF_SUFFIX, self.provenance)
+            hbc_file_path = self.parse_file_path(self.HBC_SUFFIX, self.provenance)
+            self.logger.info("PWGS ANALYSIS: Files pulled from Provenance")
+        except OSError:
+            results_file_path = config_section[constants.RESULTS_FILE]
+            vaf_file_path = config_section[constants.VAF_FILE]
+            hbc_file_path = config_section[constants.HBC_FILE]
+            self.logger.info("PWGS ANALYSIS: Files pulled from ini")
+        hbc_results = self.preprocess_hbc(hbc_file_path)
+        reads_detected = self.preprocess_vaf(vaf_file_path)
+        mrdetect_results = self.preprocess_results(results_file_path)
+        pwgs_base64 = self.write_pwgs_plot(hbc_file_path,vaf_file_path)
+        self.logger.info("PWGS ANALYSIS: Finished preprocessing files")       
         data = {
             'plugin_name': 'pwgs.analysis',
             'clinical': True,
@@ -149,3 +166,44 @@ class main(plugin_base):
         pwgs_results = subprocess_runner().run(args)
         os.remove(os.path.join(output_dir,'pWGS.svg'))
         return(pwgs_results.stdout.split('"')[1])
+    
+    def _get_most_recent_row(self, rows):
+        # if input is empty, raise an error
+        # otherwise, return the row with the most recent date field (last in lexical sort order)
+        # rows may be an iterator; if so, convert to a list
+        rows = list(rows)
+        if len(rows)==0:
+            msg = "Empty input to find most recent row; no rows meet filter criteria?"
+            self.logger.debug(msg)
+            raise MissingProvenanceError(msg)
+        else:
+            return sorted(rows, key=lambda row: row[index.LAST_MODIFIED], reverse=True)[0]
+        
+    def parse_file_path(self, file_pattern, provenance):
+        # get most recent file of given workflow, metatype, file path pattern, and sample name
+        # self._filter_* functions return an iterator
+        iterrows = self._filter_file_path(file_pattern, rows=provenance)
+        try:
+            row = self._get_most_recent_row(iterrows)
+            path = row[index.FILE_PATH]
+        except MissingProvenanceError as err:
+            msg = "No provenance records meet filter criteria: path-regex = {0}.".format(file_pattern)
+            self.logger.debug(msg)
+            path = None
+        return path
+    
+    def _filter_file_path(self, pattern, rows):
+        return filter(lambda x: re.search(pattern, x[index.FILE_PATH]), rows)
+    
+    def subset_provenance(self):
+        provenance = []
+        with self.workspace.open_gzip_file(constants.PROVENANCE_OUTPUT) as in_file:
+            reader = csv.reader(in_file, delimiter="\t")
+            for row in reader:
+                if row[index.WORKFLOW_NAME] == "mrdetect":
+                    provenance.append(row)
+        return(provenance)
+
+    
+class MissingProvenanceError(Exception):
+    pass

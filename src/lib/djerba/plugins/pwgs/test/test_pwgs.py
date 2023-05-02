@@ -8,6 +8,7 @@ import tempfile
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 import djerba.plugins.pwgs.analysis.plugin as analysis
+import djerba.plugins.pwgs.sample.plugin as sample
 
 class TestPwgAnalysisPlugin(PluginTester):
 
@@ -62,9 +63,14 @@ class TestPwgSamplePlugin(PluginTester):
         params = {
             self.INI: 'data/pwgs.sample.ini',
             self.JSON: json_location,
-            self.MD5: 'e81aa9cfc28030a3beed6ac6fac2ff2b'
+            self.MD5: '3bdcf2dbc5fef05a447de844a8b75519'
         }
         self.run_basic_test(test_source_dir, params)
+
+    def testPreprocessSNVcount(self):
+        snv_count_expected_location = os.path.join(self.sup_dir ,"pwgs-plugin/snv.txt")
+        snv_count = sample.main.preprocess_snv_count(self,snv_count_expected_location)
+        self.assertEqual(snv_count, 21000)
 
 if __name__ == '__main__':
     unittest.main()

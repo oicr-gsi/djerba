@@ -1,14 +1,12 @@
 """Djerba plugin for pwgs sample reporting"""
 import os
 import csv
-import logging
-from decimal import Decimal
 
 from mako.lookup import TemplateLookup
 from djerba.plugins.base import plugin_base
 import djerba.plugins.pwgs.constants as constants
-from djerba.util.subprocess_runner import subprocess_runner
-from djerba.util.logger import logger
+import djerba.plugins.pwgs.analysis.plugin as analysis
+from djerba.core.workspace import workspace
 
 try:
     import gsiqcetl.column
@@ -18,13 +16,21 @@ except ImportError:
 
 class main(plugin_base):
 
+    SNV_COUNT_SUFFIX = 'SNP.count.txt'
+
     def configure(self, config_section):
         return config_section
 
     def extract(self, config_section):
-        self.logger.info("PWGS: No extracting necessary")
         tumour_id = self.workspace.read_core_config()['tumour_id']
         qc_dict = self.fetch_coverage_etl_data(tumour_id)
+        try:
+            self.provenance = analysis.main(self.workspace).subset_provenance()
+            snv_count_path = analysis.main(self).parse_file_path(self.SNV_COUNT_SUFFIX, self.provenance)
+        except OSError:
+            snv_count_path = config_section[constants.SNV_COUNT_FILE]
+        snv_count = self.preprocess_snv_count(snv_count_path)
+        self.logger.info("PWGS SAMPLE: All data found")
         data = {
             'plugin_name': 'pwgs.sample',
             'clinical': True,
@@ -34,9 +40,8 @@ class main(plugin_base):
             },
             'results': {
                 'median_insert_size': qc_dict['insertSize'],
-                'tumour_fraction': float(config_section[constants.TUMOUR_FRACTION_READS]),
                 'coverage': qc_dict['coverage'],
-                'primary_snv_count': float(config_section[constants.SNV_COUNT])
+                'primary_snv_count': snv_count
             }
         }
         return data
@@ -75,6 +80,20 @@ class main(plugin_base):
             msg = "Djerba couldn't find the QC metrics associated with tumour_id {0} in QC-ETL. ".format(tumour_id)
             self.logger.debug(msg)
             raise MissingQCETLError(msg)
+        
+    def preprocess_snv_count(self, snv_count_path):
+        """
+        pull SNV count from file
+        """
+        with open(snv_count_path, 'r') as hbc_file:
+            reader_file = csv.reader(hbc_file, delimiter="\t")
+            for row in reader_file:
+                try: 
+                    snv_count = row[0]
+                except IndexError as err:
+                    msg = "Incorrect number of columns in SNV Count file: '{0}'".format(snv_count_path)
+                    raise RuntimeError(msg) from err
+        return int(snv_count)
     
 class MissingQCETLError(Exception):
     pass 

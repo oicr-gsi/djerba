@@ -27,4 +27,8 @@ DETECTION_ALPHA = 3.15e-5
 # sample constants
 INSERT_SIZE = 'median_insert_size'
 COVERAGE = 'coverage'
+SNV_COUNT_FILE = 'primary_snv_count_file'
 SNV_COUNT = 'primary_snv_count'
+
+# settings
+PROVENANCE_OUTPUT = 'provenance_subset.tsv.gz'
