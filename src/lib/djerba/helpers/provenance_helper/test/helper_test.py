@@ -17,7 +17,6 @@ class TestProvenanceHelper(TestBase):
     HELPER_NAME = 'provenance_helper'
     
     def test(self):
-        self.tmp_dir = '/home/ibancarz/workspace/djerba/test/20230428_02'
         data_dir = os.path.join(os.environ.get('DJERBA_TEST_DATA'), 'helpers', 'provenance')
         provenance_input = os.path.join(data_dir, 'provenance_input.tsv.gz')
         cp = ConfigParser()
