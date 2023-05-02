@@ -95,8 +95,11 @@ class main(core_base):
         order = 0
         for name in sorted(components, key=lambda x: components[x][1]):
             order += 1
+            component = components[name][0]
             self.logger.debug('Configuring component {0} in order {1}'.format(name, order))
-            config_tmp = components[name][0].configure(config_in)
+            component.validate_minimal_config(config_in)
+            config_tmp = component.configure(config_in)
+            component.validate_full_config(config_tmp)
             config_in[name] = config_tmp[name] # update config_in to support dependencies
             config_out[name] = config_tmp[name]
         if config_path_out:
@@ -126,7 +129,9 @@ class main(core_base):
         order = 0
         for name in sorted(components, key=lambda x: components[x][1]):
             order += 1
+            component = components[name][0]
             self.logger.debug('Extracting component {0} in order {1}'.format(name, order))
+            component.validate_full_config(config)
             component_data = components[name][0].extract(config)
             if not self._is_helper_name(name):
                 # only plugins, not helpers, write data in the JSON document

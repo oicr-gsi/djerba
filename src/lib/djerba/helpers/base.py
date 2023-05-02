@@ -5,9 +5,9 @@ Cannot be used to create an object (abstract) but can be subclassed (base class)
 
 import logging
 from abc import ABC
-from djerba.core.component import component
+from djerba.core.configurable import configurable
 
-class helper_base(component, ABC):
+class helper_base(configurable, ABC):
 
     def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
         # workspace is an instance of djerba.core.workspace

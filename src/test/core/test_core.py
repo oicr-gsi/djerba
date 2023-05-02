@@ -13,7 +13,9 @@ import unittest
 import djerba.util.ini_fields as ini
 
 from configparser import ConfigParser
+from djerba.core.configurable import DjerbaConfigError
 from djerba.core.json_validator import plugin_json_validator
+from djerba.core.loaders import plugin_loader
 from djerba.core.main import main, arg_processor
 from djerba.core.workspace import workspace
 from djerba.util.subprocess_runner import subprocess_runner
@@ -139,6 +141,95 @@ class TestArgs(TestCore):
         args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
         main(work_dir, log_level=logging.WARNING).run(args)
         self.assertSimpleReport(json_path, html)
+
+class TestConfigValidation(TestCore):
+    """Test the methods to validate required/optional INI params"""
+
+    def load_plugin(self):
+        loader = plugin_loader(log_level=logging.WARNING)
+        plugin = loader.load('demo1', workspace(self.tmp_dir))
+        return plugin
+
+    def read_config(self):
+        ini_path = os.path.join(self.test_source_dir, 'config_demo1.ini')
+        config = ConfigParser()
+        config.read(ini_path)
+        return config
+
+    def test_simple(self):
+        plugin = self.load_plugin()
+        config = self.read_config()
+        # test a simple plugin with empty config requirements/defaults
+        self.assertTrue(plugin.validate_minimal_config(config))
+        with self.assertLogs('djerba.core.configurable', level=logging.DEBUG) as log_context:
+            self.assertTrue(plugin.validate_full_config(config))
+        msg = 'DEBUG:djerba.core.configurable:'+\
+            '0 expected INI param(s) found for component demo1'
+        self.assertIn(msg, log_context.output)
+
+    def test_optional(self):
+        plugin = self.load_plugin()
+        config = self.read_config()
+        # add an optional INI parameter 'foo' with a default value
+        # existing config satistifes minimal requirements, but not full specification
+        plugin.set_ini_default('foo', 'snark')
+        self.assertTrue(plugin.validate_minimal_config(config))
+        plugin.set_log_level(logging.CRITICAL)
+        with self.assertRaises(DjerbaConfigError):
+            plugin.validate_full_config(config)
+        plugin.set_log_level(logging.WARNING)
+        config = plugin.apply_defaults(config)
+        self.assertEqual(config.get('demo1', 'foo'), 'snark')
+        # now apply a new config with a different value the 'foo' parameter
+        # configured value takes precedence over the default
+        config_2 = self.read_config()
+        config_2.set('demo1', 'foo', 'boojum')
+        config_2 = plugin.apply_defaults(config_2)
+        self.assertEqual(config_2.get('demo1', 'foo'), 'boojum')
+        # test setting all defaults
+        config_3 = self.read_config()
+        defaults = {
+            'baz': 'green',
+            'fiz': 'purple'
+        }
+        plugin.set_all_ini_defaults(defaults)
+        config_3 = plugin.apply_defaults(config_3)
+        self.assertEqual(config_3.get('demo1', 'baz'), 'green')
+        self.assertEqual(config_3.get('demo1', 'fiz'), 'purple')
+
+    def test_required(self):
+        plugin = self.load_plugin()
+        config = self.read_config()
+        # add a required INI parameter 'foo' which has not been configured
+        plugin.add_ini_required('foo')
+        plugin.set_log_level(logging.CRITICAL)
+        with self.assertRaises(DjerbaConfigError):
+            plugin.validate_minimal_config(config)
+        with self.assertRaises(DjerbaConfigError):
+            plugin.validate_full_config(config)
+        plugin.set_log_level(logging.WARNING)
+        # now give foo a config value
+        config.set('demo1', 'foo', 'snark')
+        self.assertTrue(plugin.validate_minimal_config(config))
+        with self.assertLogs('djerba.core.configurable', level=logging.DEBUG) as log_context:
+            self.assertTrue(plugin.validate_full_config(config))
+        msg = 'DEBUG:djerba.core.configurable:'+\
+            '1 expected INI param(s) found for component demo1'
+        self.assertIn(msg, log_context.output)
+        # test setting all requirements
+        plugin.set_all_ini_required(['foo', 'bar'])
+        plugin.set_log_level(logging.CRITICAL)
+        with self.assertRaises(DjerbaConfigError):
+            plugin.validate_minimal_config(config)
+        with self.assertRaises(DjerbaConfigError):
+            plugin.validate_full_config(config)
+        plugin.set_log_level(logging.CRITICAL)
+        config_new = self.read_config()
+        config_new.set('demo1', 'foo', 'boojum')
+        config_new.set('demo1', 'bar', 'jabberwock')
+        self.assertTrue(plugin.validate_minimal_config(config_new))
+        self.assertTrue(plugin.validate_full_config(config_new))
+
 
 class TestMainScript(TestCore):
     """Test the main djerba.py script"""
@@ -320,7 +411,7 @@ class TestSimpleReport(TestCore):
         html = djerba_main.render(data_found)
         self.assert_report_MD5(html, self.SIMPLE_REPORT_MD5)
 
-class TestValidator(TestCore):
+class TestJSONValidator(TestCore):
 
     EXAMPLE_DEFAULT = 'plugin_example.json'
     EXAMPLE_EMPTY = 'plugin_example_empty.json'

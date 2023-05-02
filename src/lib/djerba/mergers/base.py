@@ -5,19 +5,15 @@ Cannot be used to create an object (abstract) but can be subclassed (base class)
 
 import logging
 from abc import ABC
-from djerba.core.component import component
+from djerba.core.configurable import configurable
 from djerba.core.json_validator import json_validator
 from djerba.util.html import html_builder
 from djerba.util.logger import logger
 
-class merger_base(component, html_builder, ABC):
+class merger_base(configurable, html_builder, ABC):
 
     def __init__(self, schema_path, identifier, log_level=logging.INFO, log_path=None):
-        self.log_level = log_level
-        self.log_path = log_path
-        self.logger = self.get_logger(log_level, __name__, log_path)
-        self.logger.debug("Using constructor of parent class")
-        self.identifier = identifier
+        super().__init__(identifier, log_level, log_path)
         self.json_validator = json_validator(schema_path, self.log_level, self.log_path)
         self.priority = 1000 # determines order of output for HTML
         self.attributes = []

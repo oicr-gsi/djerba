@@ -10,7 +10,13 @@ from djerba.util.logger import logger
 import djerba.core.constants as core_constants
 import djerba.util.ini_fields as ini
 
-class component(logger, ABC):
+class configurable(logger, ABC):
+
+    """
+    Interface for Djerba objects configurable by INI
+    Includes the core configurer, and all plugin/helper/merger classes
+    Has methods to get/set/validate config parameters, requirements, and defaults
+    """
 
     DEFAULT_CONFIG_PRIORITY = 10000 # override in subclasses
     DJERBA_DATA_PUBLIC_VAR = 'DJERBA_DATA_PUBLIC'
@@ -26,7 +32,7 @@ class component(logger, ABC):
 
     def _log_unknown_config_warning(self, key, complete=True):
         mode = 'fully-specified' if complete else 'minimal'
-        template = "Unknown INI parameter '{0}' for {1} config of component {2}"
+        template = "Unknown INI parameter '{0}' in {1} config of component {2}"
         self.logger.warning(template.format(key, mode, self.identifier))
 
     def _raise_config_error(self, key, input_keys, complete=True):
@@ -41,7 +47,7 @@ class component(logger, ABC):
         """Apply default parameters to the given config, with template substitution"""
         for key in self.ini_defaults:
             if not config.has_option(self.identifier, key):
-                config.set(self.identifier, self.ini_defaults[key])
+                config.set(self.identifier, key, str(self.ini_defaults[key]))
         return config
 
     def configure(self, config):
@@ -102,9 +108,8 @@ class component(logger, ABC):
         config.set(self.identifier, param, str(value))
         return config
 
+    ### start of add/set INI methods
     # optional parameters have defaults; required parameters do not
-    # can discover optional default parameters at runtime
-    # defaults will be overwritten by manually specified parameters, if given
 
     def add_ini_required(self, key):
         self.ini_required.add(key)
@@ -112,13 +117,18 @@ class component(logger, ABC):
     def set_all_ini_defaults(self, mapping):
         self.ini_defaults = mapping
 
-    def set_all_ini_required(self, default_set):
-        self.ini_required = default_set
+    def set_all_ini_required(self, required):
+        # required may be any iterable, eg. a list or set
+        self.ini_required = set(required)
 
     def set_ini_default(self, key, value):
         self.ini_defaults[key] = value
 
-    # end of 'add/set INI' methods
+    ### end of add/set INI methods
+
+    def set_log_level(self, level):
+        # use to change the log level set by the component loader, eg. for testing
+        self.logger.setLevel(level)
 
     def validate_minimal_config(self, config):
         """Check for required/unknown config keys in minimal config"""
@@ -130,15 +140,14 @@ class component(logger, ABC):
         for key in input_keys:
             if key not in self.ini_required and key not in self.ini_defaults:
                 self._log_unknown_config_warning(key, complete=False)
+        return True
 
     def validate_full_config(self, config):
         """Check that all config keys (both required and optional) are present"""
         self.logger.info("Validating fully-specified config for component "+self.identifier)
         all_keys = self.ini_required.union(set(self.ini_defaults.keys()))
-        if len(all_keys)==0:
-            msg = "No expected INI params have been specified for "+\
-                "component {0}".format(self.identifier)
-            self.logger.debug(msg)
+        template = "{0} expected INI param(s) found for component {1}"
+        self.logger.debug(template.format(len(all_keys), self.identifier))
         input_keys = config.options(self.identifier)
         for key in all_keys:
             if key not in input_keys:
@@ -146,6 +155,7 @@ class component(logger, ABC):
         for key in input_keys:
             if key not in all_keys:
                 self._log_unknown_config_warning(key, complete=True)
+        return True
 
 class DjerbaConfigError(Exception):
     pass
