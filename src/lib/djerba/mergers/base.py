@@ -9,18 +9,20 @@ from djerba.core.configurable import configurable
 from djerba.core.json_validator import json_validator
 from djerba.util.html import html_builder
 from djerba.util.logger import logger
+import djerba.core.constants as core_constants
 
 class merger_base(configurable, html_builder, ABC):
 
     def __init__(self, schema_path, identifier, log_level=logging.INFO, log_path=None):
         super().__init__(identifier, log_level, log_path)
         self.json_validator = json_validator(schema_path, self.log_level, self.log_path)
-        self.priority = 1000 # determines order of output for HTML
+        defaults = {
+            core_constants.CONFIGURE_PRIORITY: self.DEFAULT_CONFIG_PRIORITY,
+            core_constants.RENDER_PRIORITY: self.DEFAULT_CONFIG_PRIORITY
+        }
+        self.set_all_ini_defaults(defaults)
+        self.priority = 1000 # determines order of output for HTML; TODO FIXME use INI instead
         self.attributes = []
-
-    def configure(self, config):
-        # placeholder; does nothing
-        return config
 
     def get_attributes(self):
         return self.attributes

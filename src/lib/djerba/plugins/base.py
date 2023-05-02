@@ -17,6 +17,12 @@ class plugin_base(configurable, ABC):
         super().__init__(identifier, log_level, log_path)
         self.workspace = workspace
         self.json_validator = plugin_json_validator(log_level, log_path)
+        defaults = {
+            core_constants.CONFIGURE_PRIORITY: self.DEFAULT_CONFIG_PRIORITY,
+            core_constants.EXTRACT_PRIORITY: self.DEFAULT_CONFIG_PRIORITY,
+            core_constants.RENDER_PRIORITY: self.DEFAULT_CONFIG_PRIORITY
+        }
+        self.set_all_ini_defaults(defaults)
 
     # configure() method is defined in parent class
 

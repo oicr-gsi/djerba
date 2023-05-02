@@ -52,8 +52,8 @@ class configurable(logger, ABC):
 
     def configure(self, config):
         """Input/output is a ConfigParser object"""
-        self.validate_config(config)
-        self.logger.debug("Using method of parent class; returns unchanged config")
+        self.logger.debug("Superclass configure method; only applies defaults (if any)")
+        config = self.apply_defaults(config)
         return config
 
     def get_default_config_priority(self):
