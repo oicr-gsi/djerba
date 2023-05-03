@@ -11,29 +11,29 @@ from mako.lookup import TemplateLookup
 import djerba.plugins.virus_breakend.constants as constants
 from djerba.plugins.virus_breakend.extract import data_builder 
 from djerba.core.workspace import workspace
-
+import djerba.util.provenance_index as index
 
 class main(plugin_base):
   
     TEMPLATE_NAME = 'virus_template.html'
-    VIRUS_SUFFIX = 'virusbreakend\.vcf\.summary\.tsv$'
+    VIRUS_SUFFIX = 'virusbreakend.vcf.summary.tsv$'
 
     def configure(self, config_section):
-      return config_section
-    
-    
-    def extract(self, config_section):
+      config_section["whats_funnier_than_24"] = "25"
       try:
         self.provenance = self.subset_provenance()
         virusbreakend_path = self.parse_file_path(self.VIRUS_SUFFIX, self.provenance)
         self.logger.info("VIRUSBREAKEND ANALYSIS: Files pulled from Provenance")
-        print("VIRUSBREAKEND ANALYSIS: Files pulled from Provenance")
+        config_section[constants.VIRUSBREAKEND_FILE] = virusbreakend_path
+        # TO DO: FIX THIS BECAUSE WILL NOT ENTER EXCEPT IF IT CAN'T FIND THE PATH, I.E. IT RETURNS AN EMPTY ARRAY AND NONE PATH
       except OSError:
-        virusbreakend_path = config_section[constants.RESULTS_FILE]
+        virusbreakend_path = config_section[constants.VIRUSBREAKEND_FILE]
         self.logger.info("VIRUSBREAKEND ANALYSIS: Files pulled from ini")
-        print("VIRUSBREAKEND ANALYSIS: Files pulled from ini")
-
-      
+      return config_section
+    
+    
+    def extract(self, config_section):
+         
       data = {
           'plugin_name': 'VIRUSBreakend',
           'clinical': True,
@@ -96,7 +96,7 @@ class main(plugin_base):
         with self.workspace.open_gzip_file(constants.PROVENANCE_OUTPUT) as in_file:
             reader = csv.reader(in_file, delimiter="\t")
             for row in reader:
-                if row[index.WORKFLOW_NAME] == "virusbreakend":
+                if "virus" in row[index.WORKFLOW_NAME]:
                     provenance.append(row)
         return(provenance)
 
