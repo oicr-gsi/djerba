@@ -133,10 +133,12 @@ class configurable(logger, ABC):
         self.ini_required.add(key)
 
     def set_all_ini_defaults(self, mapping):
+        # overwrites all existing defaults with the given mapping
         self.ini_defaults = mapping
 
     def set_all_ini_required(self, required):
-        # required may be any iterable, eg. a list or set
+        # overwrites all existing requirements with the given input
+        # input may be any iterable, eg. a list or set
         self.ini_required = set(required)
 
     def set_ini_default(self, key, value):

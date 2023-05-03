@@ -16,9 +16,8 @@ class main(plugin_base):
         self.set_ini_default(core_constants.SUPPLEMENTARY, False)
 
     def configure(self, config):
+        config = self.apply_defaults(config)
         config = self.set_all_priorities(config, self.DEFAULT_CONFIG_PRIORITY)
-        config = self.set_my_param(config, core_constants.CLINICAL, True)
-        config = self.set_my_param(config, core_constants.SUPPLEMENTARY, False)
         config = self.set_my_param(config, 'question', 'question.txt')
         return config
 
