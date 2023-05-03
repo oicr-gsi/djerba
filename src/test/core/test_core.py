@@ -265,19 +265,33 @@ class TestConfigValidation(TestCore):
 class TestIniGenerator(TestCore):
     """Test the INI generator"""
 
-    def test(self):
-        component_names = [
-            'demo1',
-            'demo2',
-            'provenance_helper',
-            'gene_information_merger'
-        ]
+    COMPONENT_NAMES = [
+        'demo1',
+        'demo2',
+        'provenance_helper',
+        'gene_information_merger'
+    ]
+
+    def test_class(self):
         generator = ini_generator()
         generated_ini_path = os.path.join(self.tmp_dir, 'generated.ini')
-        generator.write_config(component_names, generated_ini_path)
+        names = ['core']
+        names.extend(self.COMPONENT_NAMES)
+        generator.write_config(names, generated_ini_path)
         self.assertTrue(os.path.exists(generated_ini_path))
         expected_ini_path = os.path.join(self.test_source_dir, 'generated.ini')
         with open(generated_ini_path) as in_file_1, open(expected_ini_path) as in_file_2:
+            self.assertEqual(in_file_1.read(), in_file_2.read())
+
+    def test_script(self):
+        #out_path = os.path.join(self.tmp_dir, 'generated.ini')
+        out_path = os.path.join('/home/ibancarz/tmp', 'generated.ini')
+        cmd = ['generate_ini.py', '--out', out_path]
+        cmd.extend(self.COMPONENT_NAMES)
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        expected_ini_path = os.path.join(self.test_source_dir, 'generated.ini')
+        with open(out_path) as in_file_1, open(expected_ini_path) as in_file_2:
             self.assertEqual(in_file_1.read(), in_file_2.read())
 
 
