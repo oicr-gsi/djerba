@@ -15,6 +15,7 @@ import djerba.util.ini_fields as ini
 from configparser import ConfigParser
 
 from djerba.core.configurable import DjerbaConfigError
+from djerba.core.ini_generator import ini_generator
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.loaders import plugin_loader
 from djerba.core.main import main, arg_processor
@@ -260,6 +261,24 @@ class TestConfigValidation(TestCore):
         config_new.set('demo1', 'bar', 'jabberwock')
         self.assertTrue(plugin.validate_minimal_config(config_new))
         self.assertTrue(plugin.validate_full_config(config_new))
+
+class TestIniGenerator(TestCore):
+    """Test the INI generator"""
+
+    def test(self):
+        component_names = [
+            'demo1',
+            'demo2',
+            'provenance_helper',
+            'gene_information_merger'
+        ]
+        generator = ini_generator()
+        generated_ini_path = os.path.join(self.tmp_dir, 'generated.ini')
+        generator.write_config(component_names, generated_ini_path)
+        self.assertTrue(os.path.exists(generated_ini_path))
+        expected_ini_path = os.path.join(self.test_source_dir, 'generated.ini')
+        with open(generated_ini_path) as in_file_1, open(expected_ini_path) as in_file_2:
+            self.assertEqual(in_file_1.read(), in_file_2.read())
 
 
 class TestMainScript(TestCore):
