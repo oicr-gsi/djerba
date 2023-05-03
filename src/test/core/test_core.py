@@ -155,6 +155,20 @@ class TestArgs(TestCore):
         main(work_dir, log_level=logging.WARNING).run(args)
         self.assertSimpleReport(json_path, html)
 
+class TestConfigExpected(TestCore):
+    """Test generation of an expected config file"""
+
+    def test_plugin(self):
+        """Test config generation for a single plugin"""
+        plugin = self.load_demo1_plugin()
+        config = plugin.get_expected_config()
+        ini_path_found = os.path.join(self.tmp_dir, 'test.ini')
+        with open(ini_path_found, 'w') as out_file:
+            config.write(out_file)
+        ini_path_expected = os.path.join(self.test_source_dir, 'config_demo1_expected.ini')
+        with open(ini_path_found) as in_file_1, open(ini_path_expected) as in_file_2:
+            self.assertEqual(in_file_1.read(), in_file_2.read())
+
 class TestConfigTemplates(TestCore):
     """Test string template substitution in INI files"""
 

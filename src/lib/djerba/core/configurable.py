@@ -8,6 +8,7 @@ import logging
 import os
 import string
 from abc import ABC
+from configparser import ConfigParser
 from djerba.util.logger import logger
 import djerba.core.constants as core_constants
 import djerba.util.ini_fields as ini
@@ -88,6 +89,21 @@ class configurable(logger, ABC):
         # returns a set of all expected INI parameter names
         return self.ini_required.union(set(self.ini_defaults.keys()))
 
+    def get_expected_config(self):
+        """
+        Return a ConfigParser with all expected params
+        Params are set to their default values, if any; None otherwise
+        Template substitution is *not* done here
+        Can use to generate a config file for manual completion
+        """
+        config = ConfigParser()
+        config.add_section(self.identifier)
+        for option in sorted(list(self.ini_required)):
+            config.set(self.identifier, option, 'REQUIRED')
+        for option in sorted(list(self.ini_defaults.keys())):
+            config.set(self.identifier, option, str(self.ini_defaults[option]))
+        return config
+    
     ### start of methods to get values from environment variables
 
     def get_dir_from_env(self, var):
@@ -153,11 +169,6 @@ class configurable(logger, ABC):
             if config.has_option(self.identifier, key):
                 priorities[value] = config.getint(self.identifier, key)
         return priorities
-
-    def get_template_config(self):
-        # TODO generate a template ConfigParser with defaults
-        # can output as a file for manual editing
-        raise RuntimeError('template config not yet available!')
 
     def has_my_param(self, config, param):
         return config.has_option(self.identifier, param)
