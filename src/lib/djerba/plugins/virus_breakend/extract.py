@@ -25,7 +25,7 @@ class data_builder:
 
   input_dir = "/u/aalam/git/djerba/src/lib/djerba/plugins/virus_breakend/test/"
   
-  def build_virusbreakend(self):
+  def build_virusbreakend(self, virusbreakend_path):
     """
     Reads in VIRUSBreakend file, outputs data as dictionary for json.
     """
@@ -33,7 +33,7 @@ class data_builder:
     
     #virusbreakend_path = self.config[ini.DISCOVERED][ini.VIRUSBREAKEND_FILE] 
     # for now, hard code it...
-    virusbreakend_path = "GSICAPBENCH_1273_Ly_R_WG_6007_152865.virusbreakend.vcf.summary.tsv"
+    #virusbreakend_path = "GSICAPBENCH_1273_Ly_R_WG_6007_152865.virusbreakend.vcf.summary.tsv"
     rows = []
     #with open(virusbreakend_path) as datafile:
     with open(os.path.join(self.input_dir, virusbreakend_path)) as data_file:
