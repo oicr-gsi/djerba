@@ -67,6 +67,5 @@ class extractor(logger):
             },
             'plugins': {},
         }
-        for key in ['trinity', 'neo']:
-            data[key] = config['core'][key]
+        data['comment'] = config['core']['comment']
         return data

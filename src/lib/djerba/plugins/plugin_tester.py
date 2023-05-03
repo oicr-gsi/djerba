@@ -13,6 +13,7 @@ import djerba.util.ini_fields as ini
 from configparser import ConfigParser
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.main import main as core_main
+from djerba.core.workspace import workspace
 from djerba.mergers.gene_information.merger import main as gene_information_merger_main
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.testing.tools import TestBase
@@ -60,7 +61,7 @@ class PluginTester(TestBase):
         expected_md5 = params[self.MD5]
         plugin_name = self.read_plugin_name(ini_path)
         self.assertTrue(plugin_name)
-        djerba_main = core_main(log_level=logging.WARNING)
+        djerba_main = core_main(self.get_tmp_dir(), log_level=logging.WARNING)
         config = djerba_main.configure(ini_path)
         data_found = self.redact_json_data(djerba_main.extract(config))
         with open(expected_json_path) as json_file:
@@ -71,3 +72,5 @@ class PluginTester(TestBase):
         self.assertEqual(plugin_data_found, plugin_data_expected)
         html = self.redact_html(djerba_main.render(data_found))
         self.assert_report_MD5(html, expected_md5)
+
+    # TODO add standalone tests for configure, extract, render steps

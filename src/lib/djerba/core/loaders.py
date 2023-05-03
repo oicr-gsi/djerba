@@ -21,6 +21,10 @@ Plugin modules:
 Merger modules are similar, but:
 - *Must* have a module `merger.py` with a class `main`
 - Only need a `render` method
+
+Helper modules are similar, but:
+- *Must* have a module `helper.py` with a class `main`
+- Only need `configure` and `extract` methods
 """
 
 import importlib
@@ -29,22 +33,23 @@ import logging
 from abc import ABC
 from djerba.plugins.base import plugin_base
 from djerba.mergers.base import merger_base
+from djerba.helpers.base import helper_base
 from djerba.util.logger import logger
 
 class loader_base(logger, ABC):
 
-
     PLUGIN = 'plugin'
     MERGER = 'merger'
+    HELPER = 'helper'
 
     def __init__(self, log_level=logging.INFO, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
 
-    def load(self, module_type, name):
+    def import_module(self, module_type, name):
         args = [module_type, name]
-        permitted = [self.PLUGIN, self.MERGER]
+        permitted = [self.PLUGIN, self.MERGER, self.HELPER]
         if module_type not in permitted:
             msg = "Module type {0} not in permitted list {1}".format(
                 module_type,
@@ -52,10 +57,6 @@ class loader_base(logger, ABC):
             )
             self.logger.error(msg)
             raise DjerbaLoadError(msg)
-        elif module_type == self.PLUGIN:
-            base_class = plugin_base
-        else:
-            base_class = merger_base
         try:
             full_name = 'djerba.{0}s.{1}.{0}'.format(*args)
             module = importlib.import_module(full_name)
@@ -63,7 +64,16 @@ class loader_base(logger, ABC):
             msg = "Cannot load {0} {1}: {2}".format(*args, err)
             self.logger.error(msg)
             raise DjerbaLoadError from err
-        # check for other errors
+        return module
+
+    def load(self):
+        msg = "Attempting to call placeholder method of base loader class; "+\
+            "must be overridden in subclasses"
+        self.logger.error(msg)
+        raise DjerbaLoadError(msg)
+
+    def validate_module(self, module, module_type, module_name):
+        args = [module_type, module_name]
         if not 'main' in dir(module):
             msg = "{0} {1} has no 'main' attribute".format(*args)
             self.logger.error(msg)
@@ -78,6 +88,16 @@ class loader_base(logger, ABC):
         else:
             msg = "'main' attribute of {0} {1} is a class".format(*args)
             self.logger.debug(msg)
+        if module_type == self.PLUGIN:
+            base_class = plugin_base
+        elif module_type == self.MERGER:
+            base_class = merger_base
+        elif module_type == self.HELPER:
+            base_class = helper_base
+        else:
+            msg = "Cannot validate unknown module type: {0}".format(module_type)
+            self.logger.error(msg)
+            raise DjerbaLoadError(msg)
         if not issubclass(module.main, base_class):
             msg = "{0} {1} main attribute ".format(*args)+\
                   "is not a subclass of djerba.{0}s.base".format(module_type)
@@ -87,17 +107,31 @@ class loader_base(logger, ABC):
             msg = "{0} {1} main ".format(*args)+\
                   "is a subclass of djerba.{0}s.base".format(module_type)
             self.logger.debug(msg)
-        return module.main(self.log_level, self.log_path)
+        self.logger.debug("Module {0} of type {1} is OK".format(module_name, module_type))
 
 class merger_loader(loader_base):
 
-    def load(self, merger_name):
-        return super().load('merger', merger_name)
+    def load(self, module_name):
+        # import, validate, and make an instance of a merger
+        module = self.import_module(self.MERGER, module_name)
+        self.validate_module(module, self.MERGER, module_name)
+        return module.main(self.log_level, self.log_path)
 
 class plugin_loader(loader_base):
 
-    def load(self, plugin_name):
-        return super().load('plugin', plugin_name)
+    def load(self, module_name, workspace):
+        # import, validate, and make an instance of a plugin with a workspace
+        module = self.import_module(self.PLUGIN, module_name)
+        self.validate_module(module, self.PLUGIN, module_name)
+        return module.main(workspace, self.log_level, self.log_path)
+
+class helper_loader(loader_base):
+
+    def load(self, module_name, workspace):
+        # import, validate, and make an instance of a helper with a workspace
+        module = self.import_module(self.HELPER, module_name)
+        self.validate_module(module, self.HELPER, module_name)
+        return module.main(workspace, self.log_level, self.log_path)
 
 class DjerbaLoadError(Exception):
     pass

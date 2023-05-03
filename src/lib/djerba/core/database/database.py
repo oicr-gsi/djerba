@@ -68,7 +68,12 @@ class database(logger):
         }
         return couch_info
 
-    def upload_data(self, report_data):
+    def upload_file(self, json_path):
+        """ Upload json to couchdb"""
+        with open(json_path) as report:
+            report_data = json.load(report)
+            report.close()
+
         report_id, base, db, url = self.get_upload_params(report_data)
         couch_info = self.create_document(report_id)
         upload = self.combine_dictionaries(couch_info, report_data)
@@ -105,8 +110,7 @@ class database(logger):
             self.logger.warning('Upload of %s to %s database failed', report_id, db)
         return uploaded, report_id
 
-    def upload_path(self, json_path):
-        """ Upload json to couchdb"""
-        with open(json_path) as report:
-            report_data = json.load(report)
-        return self.upload_data(report_data)
+
+
+    
+

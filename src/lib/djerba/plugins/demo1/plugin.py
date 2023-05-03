@@ -27,9 +27,10 @@ class main(plugin_base):
             },
             'results': {},
         }
+        question = 'What do you get if you multiply six by nine?'
+        self.workspace.write_string('question.txt', question)
         return data
 
     def render(self, data):
         super().render(data)  # validate against schema
-        self.logger.info("Rendering demo1")
         return "<h3>TODO demo1 plugin output goes here</h3>"

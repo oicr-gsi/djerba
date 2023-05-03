@@ -6,6 +6,7 @@ class main(plugin_base):
 
     def configure(self, config_section):
         config_section['demo2_param'] = '42'
+        config_section['question'] = 'question.txt'
         return config_section
 
     def extract(self, config_section):
@@ -30,10 +31,15 @@ class main(plugin_base):
                 ]
             },
             'results': {
-                'answer': config_section['demo2_param']
+                'answer': config_section['demo2_param'],
+                'question': self.workspace.read_string(config_section['question'])
             }
         }
         return data
 
     def render(self, data):
-        return "<h1>The Answer is: {0}</h1>".format(data['results']['answer'])
+        output = [
+            "<h1>The Answer is: {0}</h1>".format(data['results']['answer']),
+            "<h1>The Question is: {0}</h1>".format(data['results']['question'])
+            ]
+        return "\n".join(output)

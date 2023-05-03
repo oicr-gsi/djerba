@@ -92,12 +92,12 @@ class benchmarker(logger):
                 self.logger.info("Omitting sample {0}, no inputs found".format(sample))
             else:
                 inputs[sample] = sample_inputs
-            if len(inputs)==0:
-                # require inputs for at least one sample
-                msg = "No benchmark inputs found in {0} ".format(results_dir)+\
-                      "for any sample in {0}".format(self.SAMPLES)
-                self.logger.error(msg)
-                raise RuntimeError(msg)
+        if len(inputs)==0:
+            # require inputs for at least one sample
+            msg = "No benchmark inputs found in {0} ".format(results_dir)+\
+                "for any sample in {0}".format(self.SAMPLES)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
         return inputs
 
     def read_and_preprocess_report(self, report_path):

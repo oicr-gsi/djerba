@@ -6,11 +6,12 @@ import argparse
 import sys
 
 sys.path.pop(0) # do not import from script directory
-from djerba.main import main
+from djerba.core.main import main, arg_processor
 import djerba.util.constants as constants
 
 def get_parser():
     """Construct the parser for command-line arguments"""
+    # --failed and --wgs-only options are no longer relevant, get these from INI config
     parser = argparse.ArgumentParser(
         description='Djerba: A tool for making bioinformatics clinical reports',
         epilog='Run any subcommand with -h/--help for additional information'
@@ -21,59 +22,45 @@ def get_parser():
     parser.add_argument('-l', '--log-path', help='Output file for log messages; defaults to STDERR')
     subparsers = parser.add_subparsers(title='subcommands', help='sub-command help', dest='subparser_name')
     setup_parser = subparsers.add_parser(constants.SETUP, help='set up a Djerba working directory')
+    # TODO output from setup should include an INI file to be completed by the user
+    # setup can have options for plugin-specific behaviour like oncokb caching and file cleanup
+    # see https://jira.oicr.on.ca/browse/GCGI-831
+    #setup_parser.add_argument('--no-cleanup', action='store_true', help='Do not clean up temporary report files')
+    #setup_cache_group = setup_parser.add_mutually_exclusive_group()
+    #setup_cache_group.add_argument('--apply-cache', action='store_true', help='Apply the offline oncoKB cache to do annotation; no contact with external oncoKB server')
+    #setup_cache_group.add_argument('--update-cache', action='store_true', help='Use annotation results from external oncoKB server to update the offline cache')
     setup_parser.add_argument('-b', '--base', metavar='DIR', required=True, help='base directory in which to create the working directory')
     setup_parser.add_argument('-n', '--name', metavar='NAME', required=True, help='name for working directory; typically the patient identifier')
-    setup_parser.add_argument('-w', '--wgs-only', action='store_true', help='setup for a WGS-only report')
     config_parser = subparsers.add_parser(constants.CONFIGURE, help='get configuration parameters')
-    config_parser.add_argument('-f', '--failed', action='store_true', help='Produce report for a failed sample')
     config_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with user inputs')
-    config_parser.add_argument('-o', '--out', metavar='PATH', required=True, help='Path for output of fully specified INI config file')
-    config_parser.add_argument('-w', '--wgs-only', action='store_true', help='Configure a WGS-only report')
+    config_parser.add_argument('-o', '--ini-out', metavar='PATH', required=True, help='Path for output of fully specified INI config file')
+    config_parser.add_argument('-w', '--work-dir', metavar='PATH', required=True, help='Path to plugin workspace directory')
     extract_parser = subparsers.add_parser(constants.EXTRACT, help='extract metrics from configuration')
-    extract_parser.add_argument('-a', '--author', metavar='NAME', help='Name of CGI author for report footer; optional')
-    extract_parser.add_argument('-f', '--failed', action='store_true', help='Produce report for a failed sample')
     extract_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with fully specified inputs')
-    extract_parser.add_argument('-D', '--dir', metavar='DIR', required=True, help='Directory for output of metrics')
-    extract_parser.add_argument('-w', '--wgs-only', action='store_true', help='Extract metrics for a WGS-only report')
-    extract_parser.add_argument('--no-cleanup', action='store_true', help='Do not clean up temporary report files')
-    extract_cache_group = extract_parser.add_mutually_exclusive_group()
-    extract_cache_group.add_argument('--apply-cache', action='store_true', help='Apply the offline oncoKB cache to do annotation; no contact with external oncoKB server')
-    extract_cache_group.add_argument('--update-cache', action='store_true', help='Use annotation results from external oncoKB server to update the offline cache')
+    extract_parser.add_argument('-j', '--json', metavar='PATH', help='Path for JSON output; defaults to djerba_report.json in the plugin workspace')
+    extract_parser.add_argument('-w', '--work-dir', metavar='PATH', required=True, help='Path to plugin workspace directory')
+    extract_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
+    # TODO --summary will run a 'mini-extract' step to update the genomic summary with the given file
+    # if --summary is in effect, --json-out writes updated JSON to a file, --no-archive cancels archiving
+    # see https://jira.oicr.on.ca/browse/GCGI-832
     render_parser = subparsers.add_parser(constants.HTML, help='read metrics directory and write HTML')
-    render_parser.add_argument('-a', '--author', metavar='NAME', help='Name of CGI author for report footer; optional')
-    render_parser.add_argument('-f', '--failed', action='store_true', help='Produce report for a failed sample')
-    render_parser.add_argument('-D', '--dir', metavar='DIR', help='Directory for input/output; required', required=True)
-    render_parser.add_argument('-j', '--json', metavar='PATH', help='Path for JSON input; optional, defaults to machine-readable file in the input directory')
-    render_parser.add_argument('--pdf', action='store_true', help='Write PDF to the input directory')
-    render_parser.add_argument('-w', '--wgs-only', action='store_true', help='Produce a WGS-only report')
-    render_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
+    render_parser.add_argument('-j', '--json', metavar='PATH', required=True, help='Path for JSON input')
+    #render_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
+    #render_parser.add_argument('-o', '--json-out', metavar='PATH', help='Path for JSON output with revised genomic summary (if any)')
+    #render_parser.add_argument('-s', '--summary', metavar='PATH', help='File with updated genomic summary text')
+    render_parser.add_argument('-H', '--html', metavar='PATH', help='Path for HTML output')
+    render_parser.add_argument('-P', '--pdf', metavar='PATH', help='Path for PDF output; optional')
     publish_parser = subparsers.add_parser(constants.PDF, help='read Djerba HTML output and write PDF')
-    publish_parser.add_argument('-D', '--dir', metavar='DIR', required=True, help='Directory for PDF output')
-    publish_parser.add_argument('-j', '--json', metavar='PATH', help='Path for JSON input; optional, defaults to machine-readable file in the input directory')
-    draft_parser = subparsers.add_parser(constants.DRAFT, help='run configure/extract/html steps; output HTML')
-    draft_parser.add_argument('-a', '--author', metavar='NAME', help='Name of CGI author for report footer; optional')
-    draft_parser.add_argument('-f', '--failed', action='store_true', help='Produce report for a failed sample')
-    draft_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with user inputs')
-    draft_parser.add_argument('-o', '--ini-out', metavar='PATH', help='Path for output of fully specified INI config file')
-    draft_parser.add_argument('-D', '--dir', metavar='DIR', required=True, help='Directory for output of metrics')
-    draft_parser.add_argument('-w', '--wgs-only', action='store_true', help='Produce a WGS-only report')
-    draft_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
-    draft_parser.add_argument('--no-cleanup', action='store_true', help='Do not clean up temporary report files')
-    draft_cache_group = draft_parser.add_mutually_exclusive_group()
-    draft_cache_group.add_argument('--apply-cache', action='store_true', help='Apply the offline oncoKB cache to do annotation; no contact with external oncoKB server')
-    draft_cache_group.add_argument('--update-cache', action='store_true', help='Use annotation results from external oncoKB server to update the offline cache')
-    all_parser = subparsers.add_parser(constants.ALL, help='run all Djerba steps and output PDF')
-    all_parser.add_argument('-a', '--author', metavar='NAME', help='Name of CGI author for report footer; optional')
-    all_parser.add_argument('-D', '--dir', metavar='DIR', help='Directory for output of metrics', required=True)
-    all_parser.add_argument('-f', '--failed', action='store_true', help='Produce report for a failed sample')
-    all_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with user inputs')
-    all_parser.add_argument('-o', '--ini-out', metavar='PATH', help='Path for output of fully specified INI config file')
-    all_parser.add_argument('-w', '--wgs-only', action='store_true', help='Produce a WGS-only report')
-    all_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
-    all_parser.add_argument('--no-cleanup', action='store_true', help='Do not clean up temporary report files')
-    all_cache_group = all_parser.add_mutually_exclusive_group()
-    all_cache_group.add_argument('--apply-cache', action='store_true', help='Apply the offline oncoKB cache to do annotation; no contact with external oncoKB server')
-    all_cache_group.add_argument('--update-cache', action='store_true', help='Use annotation results from external oncoKB server to update the offline cache')
+    publish_parser.add_argument('-H', '--html', metavar='PATH', required=True, help='Path for HTML input')
+    publish_parser.add_argument('-P', '--pdf', metavar='PATH', required=True, help='Path for PDF output')
+    report_parser = subparsers.add_parser(constants.REPORT, help='run configure/extract/html steps; output HTML; optionally output PDF')
+    report_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with user inputs')
+    report_parser.add_argument('-j', '--json', metavar='PATH', help='Path for JSON output; defaults to djerba_report.json in the plugin workspace')
+    report_parser.add_argument('-o', '--ini-out', metavar='PATH', help='Path for output of fully specified INI config file')
+    report_parser.add_argument('-w', '--work-dir', metavar='PATH', required=True, help='Path to plugin workspace directory')
+    report_parser.add_argument('-H', '--html', metavar='PATH', help='Path for HTML output; optional, defaults to auto-generated filename in plugin workspace')
+    report_parser.add_argument('-P', '--pdf', metavar='PATH', help='Path for PDF output; optional, if not supplied, no PDF is generated')
+    report_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
     return parser
 
 if __name__ == '__main__':
@@ -81,4 +68,6 @@ if __name__ == '__main__':
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         sys.exit(1)
-    main(parser.parse_args()).run()
+    args = parser.parse_args()
+    ap = arg_processor(args)
+    main(ap.get_work_dir(), ap.get_log_level(), ap.get_log_path()).run(args)

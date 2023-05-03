@@ -10,7 +10,9 @@ from djerba.util.logger import logger
 
 class plugin_base(logger, ABC):
 
-    def __init__(self, log_level=logging.INFO, log_path=None):
+    def __init__(self, workspace, log_level=logging.INFO, log_path=None):
+        # workspace is an instance of djerba.core.workspace
+        self.workspace = workspace
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
@@ -24,7 +26,7 @@ class plugin_base(logger, ABC):
 
     def extract(self, config_section):
         """
-        Input is is a config section from a ConfigParser object
+        Input is a config section from a ConfigParser object
         Output is a data structure satisfying the plugin schema
         """
         msg = "Using placeholder method of parent class; returns empty data structure"
@@ -47,4 +49,3 @@ class plugin_base(logger, ABC):
         self.logger.debug(msg)
         self.json_validator.validate_data(data)
         return ''
-

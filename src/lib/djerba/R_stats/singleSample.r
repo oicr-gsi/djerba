@@ -12,6 +12,7 @@ option_list = list(
   make_option(c("-A", "--aratiofile"), type="character", default=NULL, help="A allele ratio file", metavar="character"),
   make_option(c("-b", "--maffile"), type="character", default=NULL, help="concatenated maf file", metavar="character"),
   make_option(c("-c", "--segfile"), type="character", default=NULL, help="concatenated seg file", metavar="character"),
+  make_option(c("-C", "--cbiostudy"), type="character", default='None', help="cbioportal studyid", metavar="character"),
   make_option(c("-d", "--fusfile"), type="character", default=NULL, help="concatenated fus file", metavar="character"),
   make_option(c("-e", "--gepfile"), type="character", default=NULL, help="concatenated gep file", metavar="character"),
   make_option(c("-f", "--outdir"), type="character", default=NULL, help="output directory", metavar="character"),
@@ -70,6 +71,12 @@ normalid <- opt$normalid
 seqtype <- opt$seqtype
 genome <- opt$genome
 
+if(opt$cbiostudy == 'None'){
+  cbio_study <- opt$studyid
+}else{
+  cbio_study <- opt$cbiostudy
+}
+
 # print options to output
 print("Running singleSample with the following options:")
 print(opt)
@@ -91,7 +98,7 @@ if (is.null(maffile)) {
    df_cbio_anno <- procVEP(maffile)
 
    # add whizbam links
-   df_cbio_anno_whizbam <- construct_whizbam_links(df_cbio_anno, whizbam_url, studyid, tumourid, normalid, seqtype, genome)
+   df_cbio_anno_whizbam <- construct_whizbam_links(df_cbio_anno, whizbam_url, cbio_study, tumourid, normalid, seqtype, genome)
 
    # get pass
    df_cbio_filt <- subset(df_cbio_anno_whizbam, TGL_FILTER_VERDICT == "PASS")
