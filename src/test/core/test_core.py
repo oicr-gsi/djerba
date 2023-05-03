@@ -13,6 +13,7 @@ import unittest
 import djerba.util.ini_fields as ini
 
 from configparser import ConfigParser
+
 from djerba.core.configurable import DjerbaConfigError
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.loaders import plugin_loader
@@ -29,7 +30,7 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_MD5 = '66bf99e6ebe64d89bef09184953fd630'
-    SIMPLE_CONFIG_MD5 = '7868e3dd129bf375c843f10aa184b5b1'
+    SIMPLE_CONFIG_MD5 = 'c9130836e3ca5052383dc3e5b3844000'
 
     def setUp(self):
         super().setUp() # includes tmp_dir
@@ -48,6 +49,18 @@ class TestCore(TestBase):
         with open(html_path) as html_file:
             html_string = html_file.read()
         self.assert_report_MD5(html_string, self.SIMPLE_REPORT_MD5)
+
+    def load_demo1_plugin(self):
+        loader = plugin_loader(log_level=logging.WARNING)
+        plugin = loader.load('demo1', workspace(self.tmp_dir))
+        return plugin
+
+    def read_demo1_config(self, plugin):
+        ini_path = os.path.join(self.test_source_dir, 'config_demo1.ini')
+        config = ConfigParser()
+        config.read(ini_path)
+        config = plugin.apply_defaults(config)
+        return config
 
 class TestArgs(TestCore):
 
@@ -142,35 +155,38 @@ class TestArgs(TestCore):
         main(work_dir, log_level=logging.WARNING).run(args)
         self.assertSimpleReport(json_path, html)
 
+class TestConfigTemplates(TestCore):
+    """Test string template substitution in INI files"""
+
+    def test(self):
+        data_dir_orig = os.environ.get(core_constants.DJERBA_DATA_DIR_VAR)
+        os.environ[core_constants.DJERBA_DATA_DIR_VAR] = self.tmp_dir
+        config = ConfigParser()
+        config.read(os.path.join(self.test_source_dir, 'config_demo1.ini'))
+        plugin = self.load_demo1_plugin()
+        config = plugin.configure(config)
+        expected = '{0}/not/a/file.txt'.format(self.tmp_dir)
+        self.assertEqual(config.get('demo1', 'dummy_file'), expected)
+        if data_dir_orig != None:
+            os.environ[core_constants.DJERBA_DATA_DIR_VAR] = data_dir_orig
+
 class TestConfigValidation(TestCore):
     """Test the methods to validate required/optional INI params"""
 
-    def load_plugin(self):
-        loader = plugin_loader(log_level=logging.WARNING)
-        plugin = loader.load('demo1', workspace(self.tmp_dir))
-        return plugin
-
-    def read_config(self, plugin):
-        ini_path = os.path.join(self.test_source_dir, 'config_demo1.ini')
-        config = ConfigParser()
-        config.read(ini_path)
-        config = plugin.apply_defaults(config)
-        return config
-
     def test_simple(self):
-        plugin = self.load_plugin()
-        config = self.read_config(plugin)
+        plugin = self.load_demo1_plugin()
+        config = self.read_demo1_config(plugin)
         # test a simple plugin
         self.assertTrue(plugin.validate_minimal_config(config))
         with self.assertLogs('djerba.core.configurable', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
         msg = 'DEBUG:djerba.core.configurable:'+\
-            '6 expected INI param(s) found for component demo1'
+            '7 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
 
     def test_optional(self):
-        plugin = self.load_plugin()
-        config = self.read_config(plugin)
+        plugin = self.load_demo1_plugin()
+        config = self.read_demo1_config(plugin)
         # add an optional INI parameter 'foo' with a default value
         # existing config satistifes minimal requirements, but not full specification
         plugin.set_ini_default('foo', 'snark')
@@ -183,12 +199,12 @@ class TestConfigValidation(TestCore):
         self.assertEqual(config.get('demo1', 'foo'), 'snark')
         # now apply a new config with a different value the 'foo' parameter
         # configured value takes precedence over the default
-        config_2 = self.read_config(plugin)
+        config_2 = self.read_demo1_config(plugin)
         config_2.set('demo1', 'foo', 'boojum')
         config_2 = plugin.apply_defaults(config_2)
         self.assertEqual(config_2.get('demo1', 'foo'), 'boojum')
         # test setting all defaults
-        config_3 = self.read_config(plugin)
+        config_3 = self.read_demo1_config(plugin)
         defaults = {
             'baz': 'green',
             'fiz': 'purple'
@@ -199,8 +215,8 @@ class TestConfigValidation(TestCore):
         self.assertEqual(config_3.get('demo1', 'fiz'), 'purple')
 
     def test_required(self):
-        plugin = self.load_plugin()
-        config = self.read_config(plugin)
+        plugin = self.load_demo1_plugin()
+        config = self.read_demo1_config(plugin)
         # add a required INI parameter 'foo' which has not been configured
         plugin.add_ini_required('foo')
         plugin.set_log_level(logging.CRITICAL)
@@ -215,7 +231,7 @@ class TestConfigValidation(TestCore):
         with self.assertLogs('djerba.core.configurable', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
         msg = 'DEBUG:djerba.core.configurable:'+\
-            '7 expected INI param(s) found for component demo1'
+            '8 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
         # test setting all requirements
         plugin.set_all_ini_required(['foo', 'bar'])
@@ -225,7 +241,7 @@ class TestConfigValidation(TestCore):
         with self.assertRaises(DjerbaConfigError):
             plugin.validate_full_config(config)
         plugin.set_log_level(logging.CRITICAL)
-        config_new = self.read_config(plugin)
+        config_new = self.read_demo1_config(plugin)
         config_new.set('demo1', 'foo', 'boojum')
         config_new.set('demo1', 'bar', 'jabberwock')
         self.assertTrue(plugin.validate_minimal_config(config_new))

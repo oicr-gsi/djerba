@@ -1,3 +1,8 @@
+# environment variables
+DJERBA_DATA_DIR_VAR = 'DJERBA_DATA_DIR'
+DJERBA_PRIVATE_DIR_VAR = 'DJERBA_PRIVATE_DIR'
+DJERBA_TEST_DIR_VAR = 'DJERBA_TEST_DIR'
+
 # shared constants for core classes
 ATTRIBUTES = 'attributes'
 CLINICAL = 'clinical'

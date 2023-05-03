@@ -5,6 +5,8 @@ Defines several 'get_my_*' convenience methods to get component INI params
 """
 
 import logging
+import os
+import string
 from abc import ABC
 from djerba.util.logger import logger
 import djerba.core.constants as core_constants
@@ -14,13 +16,11 @@ class configurable(logger, ABC):
 
     """
     Interface for Djerba objects configurable by INI
-    Includes the core configurer, and all plugin/helper/merger classes
+    Subclasses include the core configurer, and all plugin/helper/merger classes
     Has methods to get/set/validate config parameters, requirements, and defaults
     """
 
     DEFAULT_CONFIG_PRIORITY = 10000 # override in subclasses
-    DJERBA_DATA_PUBLIC_VAR = 'DJERBA_DATA_PUBLIC'
-    DJERBA_DATA_PRIVATE_VAR = 'DJERBA_DATA_PRIVATE'
 
     def __init__(self, identifier, log_level=logging.INFO, log_path=None):
         self.identifier = identifier
@@ -48,6 +48,34 @@ class configurable(logger, ABC):
         for key in self.ini_defaults:
             if not config.has_option(self.identifier, key):
                 config.set(self.identifier, key, str(self.ini_defaults[key]))
+        config = self.apply_template_substitution(config)
+        return config
+
+    def apply_template_substitution(self, config, section=None):
+        """
+        Apply template substitution to the given config
+        Used automatically when applying defaults
+        Automatic usage will do template substution to all parameters, default or manual
+        Can also be called manually if needed
+        If section name is given, only apply to the named section; otherwise, all sections
+        Uses 'safe substitution' of templates, see:
+        https://docs.python.org/3/library/string.html#string.Template.safe_substitute
+        """
+        if section:
+            sections = [section, ]
+        else:
+            sections = config.sections()
+        var_names = [
+            core_constants.DJERBA_DATA_DIR_VAR,
+            core_constants.DJERBA_PRIVATE_DIR_VAR,
+            core_constants.DJERBA_TEST_DIR_VAR
+        ]
+        mapping = {var: os.environ.get(var) for var in var_names} # values may be None
+        for section in sections:
+            for option in config.options(section):
+                value = config.get(section, option)
+                value = string.Template(value).safe_substitute(mapping)
+                config.set(section, option, value)
         return config
 
     def configure(self, config):
@@ -59,6 +87,26 @@ class configurable(logger, ABC):
     def get_all_expected_ini(self):
         # returns a set of all expected INI parameter names
         return self.ini_required.union(set(self.ini_defaults.keys()))
+
+    ### start of methods to get values from environment variables
+
+    def get_dir_from_env(self, var):
+        dir_path = os.environ.get(var)
+        if dir_path == None:
+            msg = "Environment variable '{0}' is not configured".format(var)
+            self.logger.warning(msg)
+        return dir_path
+
+    def get_djerba_data_dir(self):
+        return self.get_dir_from_env(core_constants.DJERBA_DATA_DIR_VAR)
+
+    def get_djerba_private_dir(self):
+        return self.get_dir_from_env(core_constants.DJERBA_PRIVATE_DIR_VAR)
+
+    def get_djerba_test_dir(self):
+        return self.get_dir_from_env(core_constants.DJERBA_TEST_DIR_VAR)
+
+    ### end of methods to get values from environment variables
 
     def get_default_config_priority(self):
         return self.DEFAULT_CONFIG_PRIORITY
@@ -105,6 +153,11 @@ class configurable(logger, ABC):
             if config.has_option(self.identifier, key):
                 priorities[value] = config.getint(self.identifier, key)
         return priorities
+
+    def get_template_config(self):
+        # TODO generate a template ConfigParser with defaults
+        # can output as a file for manual editing
+        raise RuntimeError('template config not yet available!')
 
     def has_my_param(self, config, param):
         return config.has_option(self.identifier, param)

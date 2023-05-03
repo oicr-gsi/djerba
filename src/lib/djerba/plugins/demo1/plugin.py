@@ -13,6 +13,7 @@ class main(plugin_base):
         self.add_ini_required('question')
         self.set_ini_default(core_constants.CLINICAL, True)
         self.set_ini_default(core_constants.SUPPLEMENTARY, False)
+        self.set_ini_default('dummy_file', None)
 
     def configure(self, config):
         config = self.apply_defaults(config)
