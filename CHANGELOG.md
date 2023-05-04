@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased - dev
+## v1.0.0-dev0.0.4: 2023-05-04
 
 ### GCGI-850: Priority order for components
 - Control the order of configure/extract/render steps for all components
