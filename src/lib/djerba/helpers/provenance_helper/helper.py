@@ -13,6 +13,7 @@ class main(helper_base):
     STUDY_TITLE = 'study_title'
     ROOT_SAMPLE_NAME = 'root_sample_name'
     PROVENANCE_OUTPUT = 'provenance_subset.tsv.gz'
+    DEFAULT_CONFIG_PRIORITY = 50
 
     # No automated configuration; use placeholder method of parent class
     # - uses study title and root sample name from core config
