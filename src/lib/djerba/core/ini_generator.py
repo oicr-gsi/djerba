@@ -23,12 +23,14 @@ class ini_generator(core_base):
         self.helper_loader = helper_loader(self.log_level, self.log_path)
 
     def generate_config(self, component_names):
+        self.logger.info("Generating config for components: {0}".format(component_names))
         # create a throwaway workspace
         tmp = tempfile.TemporaryDirectory(prefix='djerba_ini_generator')
         tmp_workspace = workspace(tmp.name, self.log_level, self.log_path)
         # load components and find expected ini for each
         config = ConfigParser()
         for name in component_names:
+            self.logger.debug("Generating config for component: {0}".format(name))
             if name == ini.CORE:
                 component = core_configurer(self.log_level, self.log_path)
             elif self._is_helper_name(name):
@@ -43,6 +45,7 @@ class ini_generator(core_base):
                 value = component_config.get(name, option)
                 config.set(name, option, value)
         tmp.cleanup()
+        self.logger.info("Finished generating config.")
         return config
 
     def write_config(self, component_names, out_path):

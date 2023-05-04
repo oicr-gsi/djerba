@@ -2,9 +2,8 @@
 
 ## Unreleased - dev
 
-### Added
-
-- GCGI-850: Control the order of configure/extract/render steps for all components
+### GCGI-850: Priority order for components
+- Control the order of configure/extract/render steps for all components
 - A "component" is shorthand for a plugin, helper, or merger
 - Introduce _priority_; steps are run from lowest to highest priority number
 - Priority allows us to manage dependencies between components
@@ -14,6 +13,14 @@
 ### Change to API
 
 Configure and extract methods for a component take the entire ConfigParser object, not a section. This allows access to the config parameters of other components; as well as methods of ConfigParser, such as `set` and `getint`. While a component can _read_ any INI section during the configure step, it can only _write_ to its own named section of the INI.
+
+### GCGI-837: Toolbox for configuration in `configurable.py`
+
+Methods inherited by all components:
+- Required/default parameters and parameter validation
+- Get special directory paths from environment variables
+- Handle component priorities
+- Get/set/query INI params (other than priority levels)
 
 ## v1.0.0-dev0.0.3: 2023-04-19
 
