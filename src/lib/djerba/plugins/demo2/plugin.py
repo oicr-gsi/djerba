@@ -1,21 +1,33 @@
 """Simple Djerba plugin for demonstration and testing: Example 2"""
 
+import logging
 from djerba.plugins.base import plugin_base
+import djerba.core.constants as core_constants
 
 class main(plugin_base):
 
-    def configure(self, config_section):
-        config_section['demo2_param'] = '42'
-        config_section['question'] = 'question.txt'
-        return config_section
+    DEFAULT_CONFIG_PRIORITY = 200
 
-    def extract(self, config_section):
+    def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
+        super().__init__(workspace, identifier, log_level, log_path)
+        self.add_ini_required('demo2_param')
+        self.set_ini_default('question', 'question.txt')
+        self.set_ini_default(core_constants.CLINICAL, True)
+        self.set_ini_default(core_constants.SUPPLEMENTARY, False)
+
+    def configure(self, config):
+        config = self.apply_defaults(config)
+        config = self.set_all_priorities(config, self.DEFAULT_CONFIG_PRIORITY)
+        config = self.set_my_param(config, 'question', 'question.txt')
+        return config
+
+    def extract(self, config):
         data = {
-            'plugin_name': 'demo2 plugin',
-            'clinical': True,
-            'failed': False,
+            'plugin_name': self.identifier+' plugin',
+            'priorities': self.get_my_priorities(config),
+            'attributes': self.get_my_attributes(config),
             'merge_inputs': {
-                'gene_information': [
+                'gene_information_merger': [
                     {
                         "Gene": "PIK3CA",
                         "Gene_URL": "https://www.oncokb.org/gene/PIK3CA",
@@ -31,8 +43,10 @@ class main(plugin_base):
                 ]
             },
             'results': {
-                'answer': config_section['demo2_param'],
-                'question': self.workspace.read_string(config_section['question'])
+                'answer': self.get_my_param_string(config, 'demo2_param'),
+                'question': self.workspace.read_string(
+                    self.get_my_param_string(config, 'question')
+                )
             }
         }
         return data

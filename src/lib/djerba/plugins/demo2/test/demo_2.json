@@ -1,8 +1,8 @@
 {
-    "clinical": true,
-    "failed": false,
+    "attributes": ["clinical"],
+    "priorities": {"configure": 200, "extract": 200, "render": 200},
     "merge_inputs": {
-        "gene_information": [
+        "gene_information_merger": [
             {
                 "Chromosome": "3q26.32",
                 "Gene": "PIK3CA",
