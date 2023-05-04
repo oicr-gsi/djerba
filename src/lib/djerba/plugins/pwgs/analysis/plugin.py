@@ -23,6 +23,7 @@ class main(plugin_base):
 
     def extract(self, config_section):
         try:
+            """this exception is only for testing purposes so I can specify the file in the .ini"""
             self.provenance = self.subset_provenance()
             results_file_path = self.parse_file_path(self.RESULTS_SUFFIX, self.provenance)
             vaf_file_path = self.parse_file_path(self.VAF_SUFFIX, self.provenance)

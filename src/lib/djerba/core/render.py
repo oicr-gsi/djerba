@@ -45,11 +45,12 @@ class renderer(logger):
         return html
 
     def run(self, data):
+        """Ive removed the footer comments here
+          in favour of a footer plugin
+        may conflict with merger use-case"""
         header = self.render_header(data)
         footer_template = """
-        <div>{0}</div>
         </body>
         </html>
         """
-        footer = footer_template.format(data['comment'])
-        return [header, footer]
+        return [header, footer_template]

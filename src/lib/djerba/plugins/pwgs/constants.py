@@ -14,15 +14,17 @@ RESULTS_FILE = 'results_file'
 HBC_FILE = 'hbc_file'
 VAF_FILE = 'vaf_file'
 PWGS_PLOT = 'pwgs_base64'
+AUTHOR = 'author'
 
 # render constants
 ANALYSIS_TEMPLATE_NAME = 'analysis_template.html'
 SAMPLE_TEMPLATE_NAME = 'sample_template.html'
+FOOTER_TEMPLATE_NAME = 'footer_template.html'
 
 RESULTS = 'results'
 
 #assay settings
-DETECTION_ALPHA = 3.15e-5
+DETECTION_ALPHA = 3.29e-5
 
 # sample constants
 INSERT_SIZE = 'median_insert_size'
