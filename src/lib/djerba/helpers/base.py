@@ -5,7 +5,7 @@ Cannot be used to create an object (abstract) but can be subclassed (base class)
 
 import logging
 from abc import ABC
-from djerba.core.configurable import configurable
+from djerba.core.configure import configurable
 import djerba.core.constants as core_constants
 
 class helper_base(configurable, ABC):

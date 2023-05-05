@@ -14,7 +14,7 @@ import djerba.util.ini_fields as ini
 
 from configparser import ConfigParser
 
-from djerba.core.configurable import DjerbaConfigError
+from djerba.core.configure import DjerbaConfigError
 from djerba.core.ini_generator import ini_generator
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.loaders import plugin_loader
@@ -193,9 +193,9 @@ class TestConfigValidation(TestCore):
         config = self.read_demo1_config(plugin)
         # test a simple plugin
         self.assertTrue(plugin.validate_minimal_config(config))
-        with self.assertLogs('djerba.core.configurable', level=logging.DEBUG) as log_context:
+        with self.assertLogs('djerba.core.configure', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
-        msg = 'DEBUG:djerba.core.configurable:'+\
+        msg = 'DEBUG:djerba.core.configure:'+\
             '7 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
 
@@ -243,9 +243,9 @@ class TestConfigValidation(TestCore):
         # now give foo a config value
         config.set('demo1', 'foo', 'snark')
         self.assertTrue(plugin.validate_minimal_config(config))
-        with self.assertLogs('djerba.core.configurable', level=logging.DEBUG) as log_context:
+        with self.assertLogs('djerba.core.configure', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
-        msg = 'DEBUG:djerba.core.configurable:'+\
+        msg = 'DEBUG:djerba.core.configure:'+\
             '8 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
         # test setting all requirements
@@ -273,7 +273,7 @@ class TestIniGenerator(TestCore):
     ]
 
     def test_class(self):
-        generator = ini_generator()
+        generator = ini_generator(log_level=logging.WARNING)
         generated_ini_path = os.path.join(self.tmp_dir, 'generated.ini')
         names = ['core']
         names.extend(self.COMPONENT_NAMES)

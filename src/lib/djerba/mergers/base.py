@@ -6,7 +6,7 @@ Cannot be used to create an object (abstract) but can be subclassed (base class)
 import logging
 import os
 from abc import ABC
-from djerba.core.configurable import configurable
+from djerba.core.configure import configurable
 from djerba.core.json_validator import json_validator
 from djerba.util.html import html_builder
 from djerba.util.logger import logger
