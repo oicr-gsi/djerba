@@ -144,8 +144,8 @@ class path_validator(logger):
 
     def validate_input_dir(self, path):
         """Confirm an input directory exists and is readable"""
-        if not path:
-            error = "Input path '%s' is not a valid path value" % path
+        if not isinstance(path, str):
+            error = "Input path '%s' is not a string" % path
         elif not os.path.exists(path):
             error = "Input path %s does not exist" % path
         elif not os.path.isdir(path):

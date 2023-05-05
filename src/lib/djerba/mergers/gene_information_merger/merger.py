@@ -3,17 +3,26 @@
 import logging
 import os
 import re
+import djerba.core.constants as core_constants
 import djerba.render.constants as constants # TODO how do we handle constants in plugins?
 from djerba.mergers.base import merger_base
 
 class main(merger_base):
 
+    RENDER_PRIORITY = 300
     SCHEMA_FILENAME = 'gene_information_schema.json'
     SORT_KEY = 'Gene_URL'
 
-    def __init__(self, log_level=logging.WARNING, log_path=None):
+    def __init__(self, module_name, log_level=logging.WARNING, log_path=None):
         schema_path = os.path.join(os.path.dirname(__file__), self.SCHEMA_FILENAME)
-        super().__init__(schema_path, log_level, log_path)
+        super().__init__(schema_path, module_name, log_level, log_path)
+        self.set_ini_default(core_constants.CLINICAL, True)
+        self.set_ini_default(core_constants.SUPPLEMENTARY, True)
+
+    def configure(self, config):
+        config = self.apply_defaults(config)
+        self.set_my_param(config, core_constants.RENDER_PRIORITY, self.RENDER_PRIORITY)
+        return config
 
     def table_header(self):
         names = [

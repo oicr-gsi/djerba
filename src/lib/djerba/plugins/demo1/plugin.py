@@ -1,16 +1,32 @@
 """Simple Djerba plugin for demonstration and testing: Example 1"""
 
+import logging
 from djerba.plugins.base import plugin_base
+import djerba.core.constants as core_constants
 
 class main(plugin_base):
 
-    def extract(self, config_section):
+    DEFAULT_CONFIG_PRIORITY = 100
+
+    def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
+        super().__init__(workspace, identifier, log_level, log_path)
+        self.add_ini_required('question')
+        self.set_ini_default(core_constants.CLINICAL, True)
+        self.set_ini_default(core_constants.SUPPLEMENTARY, False)
+        self.set_ini_default('dummy_file', None)
+
+    def configure(self, config):
+        config = self.apply_defaults(config)
+        config = self.set_all_priorities(config, self.DEFAULT_CONFIG_PRIORITY)
+        return config
+
+    def extract(self, config):
         data = {
-            'plugin_name': 'demo1 plugin',
-            'clinical': True,
-            'failed': False,
+            'plugin_name': self.identifier+' plugin',
+            'priorities': self.get_my_priorities(config),
+            'attributes': self.get_my_attributes(config),
             'merge_inputs': {
-                'gene_information': [
+                'gene_information_merger': [
                     {
                         "Gene": "KRAS",
                         "Gene_URL": "https://www.oncokb.org/gene/KRAS",

@@ -2,6 +2,8 @@
 
 import csv
 import gzip
+import logging
+import djerba.util.ini_fields as ini
 import djerba.util.provenance_index as index
 from djerba.helpers.base import helper_base
 
@@ -11,19 +13,21 @@ class main(helper_base):
     STUDY_TITLE = 'study_title'
     ROOT_SAMPLE_NAME = 'root_sample_name'
     PROVENANCE_OUTPUT = 'provenance_subset.tsv.gz'
-    
-    def configure(self, config):
-        core_config = self.workspace.read_core_config()
-        if not self.STUDY_TITLE in config:
-            config[self.STUDY_TITLE] = core_config[self.STUDY_TITLE]
-        if not self.ROOT_SAMPLE_NAME in config:
-            config[self.ROOT_SAMPLE_NAME] = core_config[self.ROOT_SAMPLE_NAME]
-        return config
+    DEFAULT_CONFIG_PRIORITY = 50
+
+    # No automated configuration; use placeholder method of parent class
+    # - uses study title and root sample name from core config
+    # - provenance path must be configured manually (for now)
+
+    def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
+        super().__init__(workspace, identifier, log_level, log_path)
+        self.add_ini_required(self.PROVENANCE_INPUT)
 
     def extract(self, config):
-        provenance_path = config[self.PROVENANCE_INPUT]
-        study = config[self.STUDY_TITLE]
-        sample = config[self.ROOT_SAMPLE_NAME]
+        self.validate_full_config(config)
+        provenance_path = self.get_my_param_string(config, self.PROVENANCE_INPUT)
+        study = self.get_core_param_string(config, self.STUDY_TITLE)
+        sample = self.get_core_param_string(config, self.ROOT_SAMPLE_NAME)
         self.logger.info('Started reading file provenance from {0}'.format(provenance_path))
         total = 0
         with gzip.open(provenance_path, 'rt') as in_file, \

@@ -13,20 +13,25 @@ import unittest
 import djerba.util.ini_fields as ini
 
 from configparser import ConfigParser
+
+from djerba.core.configurable import DjerbaConfigError
+from djerba.core.ini_generator import ini_generator
 from djerba.core.json_validator import plugin_json_validator
+from djerba.core.loaders import plugin_loader
 from djerba.core.main import main, arg_processor
 from djerba.core.workspace import workspace
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.testing.tools import TestBase
 from djerba.util.validator import path_validator
+import djerba.core.constants as core_constants
 import djerba.util.constants as constants
 
 class TestCore(TestBase):
 
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
-    SIMPLE_REPORT_MD5 = '10f7ac3e76cc2f47f3c4f9fa4af119dd'
-    SIMPLE_CONFIG_MD5 = '5d6b64f392254619ea556c4ec9d3307e'
+    SIMPLE_REPORT_MD5 = '66bf99e6ebe64d89bef09184953fd630'
+    SIMPLE_CONFIG_MD5 = 'c9130836e3ca5052383dc3e5b3844000'
 
     def setUp(self):
         super().setUp() # includes tmp_dir
@@ -45,6 +50,18 @@ class TestCore(TestBase):
         with open(html_path) as html_file:
             html_string = html_file.read()
         self.assert_report_MD5(html_string, self.SIMPLE_REPORT_MD5)
+
+    def load_demo1_plugin(self):
+        loader = plugin_loader(log_level=logging.WARNING)
+        plugin = loader.load('demo1', workspace(self.tmp_dir))
+        return plugin
+
+    def read_demo1_config(self, plugin):
+        ini_path = os.path.join(self.test_source_dir, 'config_demo1.ini')
+        config = ConfigParser()
+        config.read(ini_path)
+        config = plugin.apply_defaults(config)
+        return config
 
 class TestArgs(TestCore):
 
@@ -139,6 +156,145 @@ class TestArgs(TestCore):
         main(work_dir, log_level=logging.WARNING).run(args)
         self.assertSimpleReport(json_path, html)
 
+class TestConfigExpected(TestCore):
+    """Test generation of an expected config file"""
+
+    def test_plugin(self):
+        """Test config generation for a single plugin"""
+        plugin = self.load_demo1_plugin()
+        config = plugin.get_expected_config()
+        ini_path_found = os.path.join(self.tmp_dir, 'test.ini')
+        with open(ini_path_found, 'w') as out_file:
+            config.write(out_file)
+        ini_path_expected = os.path.join(self.test_source_dir, 'config_demo1_expected.ini')
+        with open(ini_path_found) as in_file_1, open(ini_path_expected) as in_file_2:
+            self.assertEqual(in_file_1.read(), in_file_2.read())
+
+class TestConfigTemplates(TestCore):
+    """Test string template substitution in INI files"""
+
+    def test(self):
+        data_dir_orig = os.environ.get(core_constants.DJERBA_DATA_DIR_VAR)
+        os.environ[core_constants.DJERBA_DATA_DIR_VAR] = self.tmp_dir
+        config = ConfigParser()
+        config.read(os.path.join(self.test_source_dir, 'config_demo1.ini'))
+        plugin = self.load_demo1_plugin()
+        config = plugin.configure(config)
+        expected = '{0}/not/a/file.txt'.format(self.tmp_dir)
+        self.assertEqual(config.get('demo1', 'dummy_file'), expected)
+        if data_dir_orig != None:
+            os.environ[core_constants.DJERBA_DATA_DIR_VAR] = data_dir_orig
+
+class TestConfigValidation(TestCore):
+    """Test the methods to validate required/optional INI params"""
+
+    def test_simple(self):
+        plugin = self.load_demo1_plugin()
+        config = self.read_demo1_config(plugin)
+        # test a simple plugin
+        self.assertTrue(plugin.validate_minimal_config(config))
+        with self.assertLogs('djerba.core.configurable', level=logging.DEBUG) as log_context:
+            self.assertTrue(plugin.validate_full_config(config))
+        msg = 'DEBUG:djerba.core.configurable:'+\
+            '7 expected INI param(s) found for component demo1'
+        self.assertIn(msg, log_context.output)
+
+    def test_optional(self):
+        plugin = self.load_demo1_plugin()
+        config = self.read_demo1_config(plugin)
+        # add an optional INI parameter 'foo' with a default value
+        # existing config satistifes minimal requirements, but not full specification
+        plugin.set_ini_default('foo', 'snark')
+        self.assertTrue(plugin.validate_minimal_config(config))
+        plugin.set_log_level(logging.CRITICAL)
+        with self.assertRaises(DjerbaConfigError):
+            plugin.validate_full_config(config)
+        plugin.set_log_level(logging.WARNING)
+        config = plugin.apply_defaults(config)
+        self.assertEqual(config.get('demo1', 'foo'), 'snark')
+        # now apply a new config with a different value the 'foo' parameter
+        # configured value takes precedence over the default
+        config_2 = self.read_demo1_config(plugin)
+        config_2.set('demo1', 'foo', 'boojum')
+        config_2 = plugin.apply_defaults(config_2)
+        self.assertEqual(config_2.get('demo1', 'foo'), 'boojum')
+        # test setting all defaults
+        config_3 = self.read_demo1_config(plugin)
+        defaults = {
+            'baz': 'green',
+            'fiz': 'purple'
+        }
+        plugin.set_all_ini_defaults(defaults)
+        config_3 = plugin.apply_defaults(config_3)
+        self.assertEqual(config_3.get('demo1', 'baz'), 'green')
+        self.assertEqual(config_3.get('demo1', 'fiz'), 'purple')
+
+    def test_required(self):
+        plugin = self.load_demo1_plugin()
+        config = self.read_demo1_config(plugin)
+        # add a required INI parameter 'foo' which has not been configured
+        plugin.add_ini_required('foo')
+        plugin.set_log_level(logging.CRITICAL)
+        with self.assertRaises(DjerbaConfigError):
+            plugin.validate_minimal_config(config)
+        with self.assertRaises(DjerbaConfigError):
+            plugin.validate_full_config(config)
+        plugin.set_log_level(logging.WARNING)
+        # now give foo a config value
+        config.set('demo1', 'foo', 'snark')
+        self.assertTrue(plugin.validate_minimal_config(config))
+        with self.assertLogs('djerba.core.configurable', level=logging.DEBUG) as log_context:
+            self.assertTrue(plugin.validate_full_config(config))
+        msg = 'DEBUG:djerba.core.configurable:'+\
+            '8 expected INI param(s) found for component demo1'
+        self.assertIn(msg, log_context.output)
+        # test setting all requirements
+        plugin.set_all_ini_required(['foo', 'bar'])
+        plugin.set_log_level(logging.CRITICAL)
+        with self.assertRaises(DjerbaConfigError):
+            plugin.validate_minimal_config(config)
+        with self.assertRaises(DjerbaConfigError):
+            plugin.validate_full_config(config)
+        plugin.set_log_level(logging.CRITICAL)
+        config_new = self.read_demo1_config(plugin)
+        config_new.set('demo1', 'foo', 'boojum')
+        config_new.set('demo1', 'bar', 'jabberwock')
+        self.assertTrue(plugin.validate_minimal_config(config_new))
+        self.assertTrue(plugin.validate_full_config(config_new))
+
+class TestIniGenerator(TestCore):
+    """Test the INI generator"""
+
+    COMPONENT_NAMES = [
+        'demo1',
+        'demo2',
+        'provenance_helper',
+        'gene_information_merger'
+    ]
+
+    def test_class(self):
+        generator = ini_generator()
+        generated_ini_path = os.path.join(self.tmp_dir, 'generated.ini')
+        names = ['core']
+        names.extend(self.COMPONENT_NAMES)
+        generator.write_config(names, generated_ini_path)
+        self.assertTrue(os.path.exists(generated_ini_path))
+        expected_ini_path = os.path.join(self.test_source_dir, 'generated.ini')
+        with open(generated_ini_path) as in_file_1, open(expected_ini_path) as in_file_2:
+            self.assertEqual(in_file_1.read(), in_file_2.read())
+
+    def test_script(self):
+        #out_path = os.path.join(self.tmp_dir, 'generated.ini')
+        out_path = os.path.join('/home/ibancarz/tmp', 'generated.ini')
+        cmd = ['generate_ini.py', '--out', out_path]
+        cmd.extend(self.COMPONENT_NAMES)
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        expected_ini_path = os.path.join(self.test_source_dir, 'generated.ini')
+        with open(out_path) as in_file_1, open(expected_ini_path) as in_file_2:
+            self.assertEqual(in_file_1.read(), in_file_2.read())
+
+
 class TestMainScript(TestCore):
     """Test the main djerba.py script"""
 
@@ -205,6 +361,106 @@ class TestMainScript(TestCore):
         self.assertEqual(result.returncode, 0)
         self.assertSimpleReport(json_path, html)
 
+class TestPriority(TestCore):
+    """Test controlling the configure/extract/render order with priority levels"""
+
+    def find_line_position(self, doc, target):
+        # input is a 'document' (string of one or more lines)
+        # find position of first line containing given string, if any
+        # if not found, return 0
+        position = 0
+        for line in re.split('\n', doc):
+            position += 1
+            if target in line:
+                break
+        return position
+
+    def test_configure_priority(self):
+        ini_path = os.path.join(self.test_source_dir, 'config.ini')
+        djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
+        with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
+            config = djerba_main.configure(ini_path)
+        names_and_orders = [
+            ['core', 1],
+            ['demo1', 2],
+            ['demo2', 3],
+            ['gene_information_merger', 4]
+        ]
+        prefix = 'DEBUG:djerba.core.main:'
+        template = '{0}Configuring component {1} in order {2}'
+        for (name, order) in names_and_orders:
+            msg = template.format(prefix, name, order)
+            self.assertIn(msg, log_context.output)
+        # now give demo2 a higher priority than demo1
+        config.set('demo1', core_constants.CONFIGURE_PRIORITY, '300')
+        config.set('demo2', core_constants.CONFIGURE_PRIORITY, '200')
+        ini_path_2 = os.path.join(self.tmp_dir, 'config_modified.ini')
+        with open(ini_path_2, 'w') as out_file:
+            config.write(out_file)
+        with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
+            djerba_main.configure(ini_path_2)
+        names_and_orders = [
+            ['core', 1],
+            ['demo2', 2], # <---- changed order
+            ['demo1', 3],
+            ['gene_information_merger', 4]
+        ]
+        for (name, order) in names_and_orders:
+            msg = template.format(prefix, name, order)
+            self.assertIn(msg, log_context.output)
+
+    def test_extract_priority(self):
+        # core and merger do not have extract steps
+        ini_path = os.path.join(self.test_source_dir, 'config_full.ini')
+        djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
+        config = ConfigParser()
+        config.read(ini_path)
+        with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
+            djerba_main.extract(config)
+        names_and_orders = [
+            ['demo1', 1],
+            ['demo2', 2],
+        ]
+        prefix = 'DEBUG:djerba.core.main:'
+        template = '{0}Extracting component {1} in order {2}'
+        for (name, order) in names_and_orders:
+            msg = template.format(prefix, name, order)
+            self.assertIn(msg, log_context.output)
+        # now give demo2 a higher priority than demo1
+        config.set('demo1', core_constants.EXTRACT_PRIORITY, '300')
+        config.set('demo2', core_constants.EXTRACT_PRIORITY, '200')
+        with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
+            djerba_main.extract(config)
+        names_and_orders = [
+            ['demo2', 1], # <---- changed order
+            ['demo1', 2],
+        ]
+        for (name, order) in names_and_orders:
+            msg = template.format(prefix, name, order)
+            self.assertIn(msg, log_context.output)
+
+    def test_render_priority(self):
+        json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
+        djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
+        with open(json_path) as json_file:
+            data = json.loads(json_file.read())
+        html = djerba_main.render(data)
+        pos1 = self.find_line_position(html, 'demo1')
+        pos2 = self.find_line_position(html, 'The Question') # demo2 output
+        self.assertNotEqual(0, pos1)
+        self.assertNotEqual(0, pos2)
+        self.assertTrue(pos1 < pos2)
+        # now give demo2 a higher priority than demo1
+        data['plugins']['demo1']['priorities']['render'] = 200
+        data['plugins']['demo2']['priorities']['render'] = 100
+        html = djerba_main.render(data)
+        pos1 = self.find_line_position(html, 'demo1')
+        pos2 = self.find_line_position(html, 'The Question') # demo2 output
+        self.assertNotEqual(0, pos1)
+        self.assertNotEqual(0, pos2)
+        self.assertTrue(pos1 > pos2) # <---- changed order
+
+
 class TestSimpleReport(TestCore):
 
     def test_report(self):
@@ -219,7 +475,7 @@ class TestSimpleReport(TestCore):
         html = djerba_main.render(data_found)
         self.assert_report_MD5(html, self.SIMPLE_REPORT_MD5)
 
-class TestValidator(TestCore):
+class TestJSONValidator(TestCore):
 
     EXAMPLE_DEFAULT = 'plugin_example.json'
     EXAMPLE_EMPTY = 'plugin_example_empty.json'
@@ -258,6 +514,7 @@ class TestValidator(TestCore):
 class TestWorkspace(TestCore):
 
     def test(self):
+        gzip_filename = 'lorem.gz'
         with open(os.path.join(self.test_source_dir, self.LOREM_FILENAME)) as in_file:
             lorem = in_file.read()
         ws = workspace(self.tmp_dir)
@@ -277,16 +534,14 @@ class TestWorkspace(TestCore):
         # test if opening a nonexistent file breaks
         with self.assertRaises(OSError):
             ws_silent.open_file('/dummy/file/path')
+        # test gzip I/O
+        with ws.open_gzip_file(gzip_filename, write=True) as gzip_file:
+            gzip_file.write(lorem)
+        self.assertTrue(os.path.exists(os.path.join(self.tmp_dir, gzip_filename)))
+        with ws.open_gzip_file(gzip_filename) as gzip_file:
+            lorem_from_gzip = gzip_file.read()
+        self.assertEqual(lorem_from_gzip, lorem)
 
-    def test_core_config(self):
-        ini_path = os.path.join(self.test_source_dir, 'config_full.ini')
-        cp = ConfigParser()
-        cp.read(ini_path)
-        ws = workspace(self.tmp_dir)
-        ws.write_core_config(cp['core'])
-        self.assertTrue(os.path.exists(os.path.join(self.tmp_dir, 'core_config.json')))
-        config = ws.read_core_config()
-        self.assertEqual(config['comment'], 'Djerba 1.0 under development')
 
 if __name__ == '__main__':
     unittest.main()

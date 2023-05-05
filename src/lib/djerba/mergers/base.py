@@ -5,18 +5,44 @@ Cannot be used to create an object (abstract) but can be subclassed (base class)
 
 import logging
 from abc import ABC
+from djerba.core.configurable import configurable
 from djerba.core.json_validator import json_validator
 from djerba.util.html import html_builder
 from djerba.util.logger import logger
+import djerba.core.constants as core_constants
 
-class merger_base(logger, html_builder, ABC):
+class merger_base(configurable, html_builder, ABC):
 
-    def __init__(self, schema_path, log_level=logging.INFO, log_path=None):
-        self.log_level = log_level
-        self.log_path = log_path
-        self.logger = self.get_logger(log_level, __name__, log_path)
-        self.logger.debug("Using constructor of parent class")
+    def __init__(self, schema_path, identifier, log_level=logging.INFO, log_path=None):
+        super().__init__(identifier, log_level, log_path)
         self.json_validator = json_validator(schema_path, self.log_level, self.log_path)
+        defaults = {
+            core_constants.CONFIGURE_PRIORITY: self.DEFAULT_CONFIG_PRIORITY,
+            core_constants.RENDER_PRIORITY: self.DEFAULT_CONFIG_PRIORITY
+        }
+        self.set_all_ini_defaults(defaults)
+        self.priority = 1000 # determines order of output for HTML; TODO FIXME use INI instead
+        self.attributes = []
+
+    def get_attributes(self):
+        return self.attributes
+
+    def set_attributes(self, attributes):
+        if not isinstance(attributes, list):
+            msg = "Attributes value '{0}' is not a list".format(attributes)
+            self.logger.error(msg)
+            raise ValueError(msg)
+        self.attributes = attributes
+
+    def get_priority(self):
+        return self.priority
+
+    def set_priority(self, priority):
+        if not isinstance(priority, int):
+            msg = "Priority value '{0}' is not an integer".format(priority)
+            self.logger.error(msg)
+            raise ValueError(msg)
+        self.priority = priority
 
     def merge_and_sort(self, inputs, sort_key):
         """

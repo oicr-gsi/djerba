@@ -7,16 +7,33 @@ The 'plugins' element is left empty, to be populated by the respective plugin cl
 
 import logging
 import os
+import djerba.core.constants as core_constants
+from djerba.core.base import base as core_base
 from djerba.util.image_to_base64 import converter
-from djerba.util.logger import logger
 
-class extractor(logger):
+class extractor(core_base):
 
     def __init__(self, log_level=logging.INFO, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.image_converter = converter(log_level, log_path)
+
+    def _get_merger_data(self, config):
+        mergers = {}
+        for section_name in config.sections():
+            if self._is_merger_name(section_name):
+                merger_data = {}
+                merger_data[core_constants.RENDER_PRIORITY] = \
+                    config.getint(section_name, core_constants.RENDER_PRIORITY)
+                attributes = []
+                for key in [core_constants.CLINICAL, core_constants.SUPPLEMENTARY]:
+                    if config.has_option(section_name, key) and \
+                       config.getboolean(section_name, key):
+                        attributes.append(key)
+                merger_data[core_constants.ATTRIBUTES] = attributes
+                mergers[section_name] = merger_data
+        return mergers
 
     def run(self, config):
         # TODO validate config is complete
@@ -31,7 +48,6 @@ class extractor(logger):
             'core': {
                 "assay_type": "WGTS",
                 "author": "Test Author",
-                "component_order": {},
                 "oicr_logo": oicr_logo,
                 "patient_info": {
                     "Assay": "Whole genome and transcriptome sequencing (WGTS)-80X Tumour, 30X Normal (v2.0)",
@@ -67,5 +83,6 @@ class extractor(logger):
             },
             'plugins': {},
         }
+        data['mergers'] = self._get_merger_data(config)
         data['comment'] = config['core']['comment']
         return data

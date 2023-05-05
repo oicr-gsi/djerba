@@ -11,6 +11,7 @@ import os
 import re
 import djerba.util.ini_fields as ini
 import djerba.version as version
+from djerba.core.base import base as core_base
 from djerba.core.configure import configurer as core_configurer
 from djerba.core.database.archiver import archiver
 from djerba.core.extract import extractor as core_extractor
@@ -20,12 +21,12 @@ from djerba.core.loaders import plugin_loader, merger_loader, helper_loader
 from djerba.core.workspace import workspace
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
+import djerba.core.constants as core_constants
 import djerba.util.constants as constants
 
-class main(logger):
+class main(core_base):
 
     # TODO move to constants file(s)
-    COMPONENT_ORDER = 'component_order'
     PLUGINS = 'plugins'
     MERGERS = 'mergers'
     MERGE_INPUTS = 'merge_inputs'
@@ -46,38 +47,22 @@ class main(logger):
         self.merger_loader = merger_loader(self.log_level, self.log_path)
         self.helper_loader = helper_loader(self.log_level, self.log_path)
 
-    def _is_helper_name(self, name):
-        return re.search('_helper$', name)
-
-    def _order_html(self, header, body, footer, order):
-        """
-        'body' is a dictionary of strings for the body of the HTML document
-        'order' is a list of component names (must include all components in data)
-        """
-        ordered_html = [header, ]
-        if len(order)==0:
-            msg = "Component order is empty, falling back to default order"
-            self.logger.info(msg)
-            ordered_html.extend(body.values())
-        else:
-            for name in order:
-                # refer to merger/plugin list in core data and assemble outputs
-                if name not in body:
-                    msg = "Name {0} not found ".format(name)+\
-                        "in user-specified component order {0}".format(order)
-                    self.logger.error(msg)
-                    raise ComponentNameError(msg)
-                ordered_html.append(body[name])
-        ordered_html.append(footer)
-        return ordered_html
+    def _get_render_priority(self, plugin_data):
+        return plugin_data[core_constants.PRIORITIES][core_constants.RENDER]
 
     def _run_merger(self, merger_name, data):
         """Assemble inputs for the named merger and run merge/dedup to get HTML"""
         merger_inputs = []
+        total = 0
         for plugin_name in data[self.PLUGINS]:
             plugin_data = data[self.PLUGINS][plugin_name]
             if merger_name in plugin_data[self.MERGE_INPUTS]:
                 merger_inputs.append(plugin_data[self.MERGE_INPUTS][merger_name])
+                total += 1
+        if total == 0:
+            self.logger.warning("No inputs found for merger: {0}".format(merger_name))
+        else:
+            self.logger.debug("{0} inputs found for merger: {1}".format(total, merger_name))
         merger = self.merger_loader.load(merger_name)
         self.logger.debug("Loaded merger {0} for rendering".format(merger_name))
         return merger.render(merger_inputs)
@@ -88,23 +73,37 @@ class main(logger):
             self.path_validator.validate_output_file(config_path_out)
         config_in = self.read_ini_path(config_path_in)
         # TODO first read defaults, then overwrite
-        config_out = ConfigParser()
+        components = {}
+        self.logger.debug('Loading components and finding config priority levels')
         for section_name in config_in.sections():
             if section_name == ini.CORE:
-                configurer = core_configurer(self.log_level, self.log_path)
-                config_out[section_name] = configurer.run(config_in[section_name])
-                # write core config for (possible) use by plugins
-                self.workspace.write_core_config(config_out[section_name])
-                self.logger.debug("Updated core configuration")
+                component = core_configurer(self.log_level, self.log_path)
             elif self._is_helper_name(section_name):
-                helper_main = self.helper_loader.load(section_name, self.workspace)
-                self.logger.debug("Loaded helper {0} for configuration".format(section_name))
-                config_out[section_name] = helper_main.configure(config_in[section_name])
+                component = self.helper_loader.load(section_name, self.workspace)
+            elif self._is_merger_name(section_name):
+                component = self.merger_loader.load(section_name)
             else:
-                plugin_main = self.plugin_loader.load(section_name, self.workspace)
-                self.logger.debug("Loaded plugin {0} for configuration".format(section_name))
-                config_out[section_name] = plugin_main.configure(config_in[section_name])
+                component = self.plugin_loader.load(section_name, self.workspace)
+            if config_in.has_option(section_name, core_constants.CONFIGURE_PRIORITY):
+                priority = \
+                    config_in.getint(section_name, core_constants.CONFIGURE_PRIORITY)
+            else:
+                priority = component.get_default_config_priority()
+            components[section_name] = (component, priority)
+        self.logger.debug('Configuring components in priority order')
+        config_out = ConfigParser()
+        order = 0
+        for name in sorted(components, key=lambda x: components[x][1]):
+            order += 1
+            component = components[name][0]
+            self.logger.debug('Configuring component {0} in order {1}'.format(name, order))
+            component.validate_minimal_config(config_in)
+            config_tmp = component.configure(config_in)
+            component.validate_full_config(config_tmp)
+            config_in[name] = config_tmp[name] # update config_in to support dependencies
+            config_out[name] = config_tmp[name]
         if config_path_out:
+            self.logger.debug('Writing INI output to {0}'.format(config_path_out))
             with open(config_path_out, 'w') as out_file:
                 config_out.write(out_file)
         self.logger.info('Finished Djerba config step')
@@ -114,22 +113,33 @@ class main(logger):
         self.logger.info('Starting Djerba extract step')
         if json_path:  # do this *before* taking the time to generate output
             self.path_validator.validate_output_file(json_path)
-        data = core_extractor(self.log_level, self.log_path).run(config)
-        # data includes an empty 'plugins' object
+        components = {}
         for section_name in config.sections():
-            if section_name == ini.CORE:
-                pass
+            if section_name == ini.CORE or self._is_merger_name(section_name):
+                continue
             elif self._is_helper_name(section_name):
-                helper = self.helper_loader.load(section_name, self.workspace)
-                self.logger.debug("Loaded helper {0} for extraction".format(section_name))
-                helper.extract(config[section_name])
+                component = self.helper_loader.load(section_name, self.workspace)
             else:
-                plugin = self.plugin_loader.load(section_name, self.workspace)
-                self.logger.debug("Loaded plugin {0} for extraction".format(section_name))
-                plugin_data = plugin.extract(config[section_name])
-                self.json_validator.validate_data(plugin_data)
-                data[self.PLUGINS][section_name] = plugin_data
+                component = self.plugin_loader.load(section_name, self.workspace)
+            priority = config.getint(section_name, core_constants.EXTRACT_PRIORITY)
+            components[section_name] = (component, priority)
+        self.logger.debug('Generating core data structure')
+        data = core_extractor(self.log_level, self.log_path).run(config)
+        self.logger.debug('Running extraction for plugins and mergers in priority order')
+        order = 0
+        for name in sorted(components, key=lambda x: components[x][1]):
+            order += 1
+            component = components[name][0]
+            self.logger.debug('Extracting component {0} in order {1}'.format(name, order))
+            component.validate_full_config(config)
+            component_data = components[name][0].extract(config)
+            if not self._is_helper_name(name):
+                # only plugins, not helpers, write data in the JSON document
+                self.json_validator.validate_data(component_data)
+                data[self.PLUGINS][name] = component_data
+        self.logger.debug('Finished running extraction')
         if json_path:
+            self.logger.debug('Writing JSON output to {0}'.format(json_path))
             with open(json_path, 'w') as out_file:
                 out_file.write(json.dumps(data))
         if archive:
@@ -148,27 +158,26 @@ class main(logger):
         self.logger.info('Starting Djerba render step')
         if html_path:  # do this *before* taking the time to generate output
             self.path_validator.validate_output_file(html_path)
-        [header, footer] = core_renderer(self.log_level, self.log_path).run(data)
-        body = {} # strings to make up the body of the HTML document
-        merger_names = set()
+        body = {} # HTML strings to make up the report body
+        priorities = {}
+        attributes = {}
+        self.logger.debug('Rendering plugin HTML')
         for plugin_name in data[self.PLUGINS]:
             # render plugin HTML, and find which mergers it uses
             plugin_data = data[self.PLUGINS][plugin_name]
             plugin = self.plugin_loader.load(plugin_name, self.workspace)
-            self.logger.debug("Loaded plugin {0} for rendering".format(plugin_name))
             body[plugin_name] = plugin.render(plugin_data)
-            for name in plugin_data[self.MERGE_INPUTS]:
-                merger_names.add(name)
-        for merger_name in merger_names:
-            if merger_name in body:
-                msg = "Plugin/merger name conflict: {0}".format(name)
-                self.logger.error(msg)
-                raise ComponentNameError(msg)
-            merged_html = self._run_merger(merger_name, data)
-            body[merger_name] = merged_html
-        order = data[ini.CORE][self.COMPONENT_ORDER]
-        ordered_html = self._order_html(header, body, footer, order)
-        html = "\n".join(ordered_html)
+            self.logger.debug("Ran plugin '{0}' for rendering".format(plugin_name))
+            priorities[plugin_name] = self._get_render_priority(plugin_data)
+            attributes[plugin_name] = plugin_data[core_constants.ATTRIBUTES]
+        for (merger_name, merger_config) in data[self.MERGERS].items():
+            body[merger_name] = self._run_merger(merger_name, data)
+            self.logger.debug("Ran merger '{0}' for rendering".format(merger_name))
+            priorities[merger_name] = merger_config[core_constants.RENDER_PRIORITY]
+            attributes[merger_name] = merger_config[core_constants.ATTRIBUTES]
+        self.logger.debug("Assembling HTML document")
+        renderer = core_renderer(self.log_level, self.log_path)
+        html = renderer.run(body, priorities, attributes, data) # TODO remove data argument
         if html_path:
             with open(html_path, 'w') as out_file:
                 out_file.write(html)

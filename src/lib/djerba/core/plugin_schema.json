@@ -4,12 +4,25 @@
     "properties":
     {
 	"plugin_name": {"type": "string" },
-	"failed": {"type": "boolean"},
-	"clinical": {"type": "boolean"},
+	"priorities": {
+	    "type": "object",
+	    "properties": {
+		"configure": {"type": "integer"},
+		"extract": {"type": "integer"},
+		"render": {"type": "integer"}
+	    }
+	},
+	"attributes": {
+	    "type": "array",
+	    "items": {
+		"type": "string",
+		"enum": ["clinical", "supplementary", "failed"]
+	    }
+	},
 	"merge_inputs": {"type": "object"},
 	"results": {"type": "object"}
     },
     "required": [
-	"plugin_name", "failed", "clinical", "merge_inputs", "results"
+	"plugin_name", "priorities", "attributes", "merge_inputs", "results"
     ]
 }

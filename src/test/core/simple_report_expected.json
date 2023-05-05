@@ -3,7 +3,6 @@
     "core": {
         "assay_type": "WGTS",
         "author": "Test Author",
-        "component_order": {},
         "djerba_version": "PLACEHOLDER",
         "failed": false,
         "genomic_summary": "Placeholder for testing",
@@ -36,12 +35,18 @@
         },
         "technical_notes": "No technical notes supplied."
     },
+    "mergers": {
+	"gene_information_merger": {
+	    "render_priority": 300,
+	    "attributes": ["clinical", "supplementary"]
+	}
+    },
     "plugins": {
         "demo1": {
-            "clinical": true,
-            "failed": false,
+	    "attributes": ["clinical"],
+	    "priorities": {"configure": 100, "extract": 100, "render": 100},
             "merge_inputs": {
-                "gene_information": [
+                "gene_information_merger": [
                     {
                         "Chromosome": "12p12.1",
                         "Gene": "KRAS",
@@ -60,10 +65,10 @@
             "results": {}
         },
         "demo2": {
-            "clinical": true,
-            "failed": false,
+	    "attributes": ["clinical"],
+	    "priorities": {"configure": 200, "extract": 200, "render": 200},
             "merge_inputs": {
-                "gene_information": [
+                "gene_information_merger": [
                     {
                         "Chromosome": "3q26.32",
                         "Gene": "PIK3CA",

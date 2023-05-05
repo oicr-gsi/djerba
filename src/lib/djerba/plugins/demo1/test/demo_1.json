@@ -1,8 +1,8 @@
 {
-    "clinical": true,
-    "failed": false,
+    "attributes": ["clinical"],
+    "priorities": {"configure": 100, "extract": 100, "render": 100},
     "merge_inputs": {
-        "gene_information": [
+        "gene_information_merger": [
             {
                 "Chromosome": "12p12.1",
                 "Gene": "KRAS",
