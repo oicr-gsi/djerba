@@ -36,7 +36,6 @@ class main(helper_base):
             self.TCGA_CODE_KEY: 'NULL'
         }
         self.set_all_ini_defaults(defaults)
-        self.add_ini_required(self.TCGA_CODE_KEY)
 
     def configure(self, config):
         config = self.apply_defaults(config)
