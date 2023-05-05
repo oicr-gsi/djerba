@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## Unreleased - dev
+
+### GCGI-875: Simplify configurable interface
+- Initialize components with a single `**kwargs` variable, for ease of calling superclass
+- New `config_wrapper` class, with methods to read/edit the INI
+- Reorganize core config classes into a single `configure.py` file
+
 ## v1.0.0-dev0.0.4: 2023-05-04
 
 ### GCGI-850: Priority order for components
