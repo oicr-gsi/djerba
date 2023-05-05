@@ -29,11 +29,12 @@ class configurable(logger, ABC):
 
     DEFAULT_CONFIG_PRIORITY = 10000 # override in subclasses
 
-    def __init__(self, identifier, log_level=logging.INFO, log_path=None):
-        self.identifier = identifier
-        self.log_level = log_level
-        self.log_path = log_path
-        self.logger = self.get_logger(log_level, __name__, log_path)
+    def __init__(self, **kwargs):
+        self.identifier = kwargs[core_constants.IDENTIFIER]
+        self.module_dir = kwargs[core_constants.MODULE_DIR]
+        self.log_level = kwargs[core_constants.LOG_LEVEL]
+        self.log_path = kwargs[core_constants.LOG_PATH]
+        self.logger = self.get_logger(self.log_level, __name__, self.log_path)
         self.ini_required = set() # names of INI parameters the user must supply
         self.ini_defaults = {} # names and default values for other INI parameters
 
@@ -55,6 +56,9 @@ class configurable(logger, ABC):
         self.logger.debug("Superclass configure method; only applies defaults (if any)")
         config = self.apply_defaults(config)
         return config
+
+    def get_module_dir(self):
+        return self.module_dir
 
     def set_log_level(self, level):
         # use to change the log level set by the component loader, eg. for testing

@@ -19,8 +19,8 @@ class main(helper_base):
     # - uses study title and root sample name from core config
     # - provenance path must be configured manually (for now)
 
-    def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
-        super().__init__(workspace, identifier, log_level, log_path)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.add_ini_required(self.PROVENANCE_INPUT)
 
     def extract(self, config):

@@ -13,9 +13,8 @@ class main(merger_base):
     SCHEMA_FILENAME = 'gene_information_schema.json'
     SORT_KEY = 'Gene_URL'
 
-    def __init__(self, module_name, log_level=logging.WARNING, log_path=None):
-        schema_path = os.path.join(os.path.dirname(__file__), self.SCHEMA_FILENAME)
-        super().__init__(schema_path, module_name, log_level, log_path)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.set_ini_default(core_constants.CLINICAL, True)
         self.set_ini_default(core_constants.SUPPLEMENTARY, True)
 

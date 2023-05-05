@@ -361,6 +361,15 @@ class TestMainScript(TestCore):
         self.assertEqual(result.returncode, 0)
         self.assertSimpleReport(json_path, html)
 
+class TestModuleDir(TestCore):
+
+    def test(self):
+        plugin = self.load_demo1_plugin()
+        module_dir = plugin.get_module_dir()
+        self.assertTrue(os.path.exists(module_dir))
+        self.assertTrue(os.path.isdir(module_dir))
+        self.assertTrue(os.path.isfile(os.path.join(module_dir, 'plugin.py')))
+
 class TestPriority(TestCore):
     """Test controlling the configure/extract/render order with priority levels"""
 

@@ -8,8 +8,8 @@ class main(plugin_base):
 
     DEFAULT_CONFIG_PRIORITY = 100
 
-    def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
-        super().__init__(workspace, identifier, log_level, log_path)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.add_ini_required('question')
         self.set_ini_default(core_constants.CLINICAL, True)
         self.set_ini_default(core_constants.SUPPLEMENTARY, False)

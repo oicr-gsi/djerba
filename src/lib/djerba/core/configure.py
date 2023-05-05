@@ -6,8 +6,8 @@ from djerba.core.configurable import configurable
 
 class configurer(configurable):
 
-    def __init__(self, log_level=logging.INFO, log_path=None):
-        super().__init__(ini.CORE, log_level, log_path)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.set_ini_default('comment', 'comment goes here')
 
     def configure(self, config):

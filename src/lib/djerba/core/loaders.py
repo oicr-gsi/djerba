@@ -30,11 +30,14 @@ Helper modules are similar, but:
 import importlib
 import inspect
 import logging
+import os
 from abc import ABC
 from djerba.core.base import base as core_base
 from djerba.plugins.base import plugin_base
 from djerba.mergers.base import merger_base
 from djerba.helpers.base import helper_base
+import djerba.core.configure as core_configure
+import djerba.core.constants as core_constants
 
 class loader_base(core_base, ABC):
 
@@ -65,6 +68,17 @@ class loader_base(core_base, ABC):
             self.logger.error(msg)
             raise DjerbaLoadError from err
         return module
+
+    def get_common_args(self, module_name, module):
+        """Get the constructor args common to all component types"""
+        module_dir = os.path.abspath(os.path.dirname(module.__file__))
+        args = {
+            core_constants.IDENTIFIER: module_name,
+            core_constants.MODULE_DIR: module_dir,
+            core_constants.LOG_LEVEL: self.log_level,
+            core_constants.LOG_PATH: self.log_path
+        }
+        return args
 
     def load(self):
         msg = "Attempting to call placeholder method of base loader class; "+\
@@ -117,6 +131,14 @@ class loader_base(core_base, ABC):
             self.logger.error(msg)
             raise DjerbaLoadError(msg)
 
+class core_config_loader(loader_base):
+
+    # very simple, but we define a loader class for consistency with other components
+
+    def load(self):
+        # make an instance of the core configurer
+        args = self.get_common_args(core_constants.CORE, core_configure)
+        return core_configure.configurer(**args)
 
 class merger_loader(loader_base):
 
@@ -124,7 +146,8 @@ class merger_loader(loader_base):
         # import, validate, and make an instance of a merger
         module = self.import_module(self.MERGER, module_name)
         self.validate_module(module, self.MERGER, module_name)
-        return module.main(module_name, self.log_level, self.log_path)
+        args = self.get_common_args(module_name, module)
+        return module.main(**args)
 
 class plugin_loader(loader_base):
 
@@ -132,7 +155,9 @@ class plugin_loader(loader_base):
         # import, validate, and make an instance of a plugin with a workspace
         module = self.import_module(self.PLUGIN, module_name)
         self.validate_module(module, self.PLUGIN, module_name)
-        return module.main(workspace, module_name, self.log_level, self.log_path)
+        args = self.get_common_args(module_name, module)
+        args[core_constants.WORKSPACE] = workspace
+        return module.main(**args)
 
 class helper_loader(loader_base):
 
@@ -140,7 +165,10 @@ class helper_loader(loader_base):
         # import, validate, and make an instance of a helper with a workspace
         module = self.import_module(self.HELPER, module_name)
         self.validate_module(module, self.HELPER, module_name)
-        return module.main(workspace, module_name, self.log_level, self.log_path)
+        args = self.get_common_args(module_name, module)
+        args[core_constants.WORKSPACE] = workspace
+        return module.main(**args)
+
 
 class DjerbaLoadError(Exception):
     pass

@@ -4,6 +4,7 @@ Cannot be used to create an object (abstract) but can be subclassed (base class)
 """
 
 import logging
+import os
 from abc import ABC
 from djerba.core.configurable import configurable
 from djerba.core.json_validator import json_validator
@@ -13,8 +14,11 @@ import djerba.core.constants as core_constants
 
 class merger_base(configurable, html_builder, ABC):
 
-    def __init__(self, schema_path, identifier, log_level=logging.INFO, log_path=None):
-        super().__init__(identifier, log_level, log_path)
+    SCHEMA_NAME = 'merger_schema.json'
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        schema_path = os.path.join(self.module_dir, self.SCHEMA_NAME)
         self.json_validator = json_validator(schema_path, self.log_level, self.log_path)
         defaults = {
             core_constants.CONFIGURE_PRIORITY: self.DEFAULT_CONFIG_PRIORITY,

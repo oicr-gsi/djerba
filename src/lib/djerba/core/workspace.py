@@ -24,6 +24,13 @@ class workspace(logger):
         self.validator.validate_output_dir(dir_path)
         self.dir_path = dir_path
 
+    def abs_path(self, rel_path):
+        """Return the absolute path of a file in the workspace"""
+        return os.path.join(self.dir_path, rel_path)
+
+    def get_work_dir(self):
+        return self.dir_path
+
     def open_gzip_file(self, rel_path, write=False):
         if write:
             mode = 'wt'

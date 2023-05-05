@@ -10,7 +10,8 @@ from djerba.core.base import base as core_base
 from djerba.core.configure import configurer as core_configurer
 from djerba.core.workspace import workspace
 import djerba.util.ini_fields as ini
-from djerba.core.loaders import plugin_loader, merger_loader, helper_loader
+from djerba.core.loaders import \
+    plugin_loader, merger_loader, helper_loader, core_config_loader
 
 class ini_generator(core_base):
 
@@ -18,6 +19,7 @@ class ini_generator(core_base):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
+        self.core_config_loader = core_config_loader(self.log_level, self.log_path)
         self.plugin_loader = plugin_loader(self.log_level, self.log_path)
         self.merger_loader = merger_loader(self.log_level, self.log_path)
         self.helper_loader = helper_loader(self.log_level, self.log_path)
@@ -32,7 +34,7 @@ class ini_generator(core_base):
         for name in component_names:
             self.logger.debug("Generating config for component: {0}".format(name))
             if name == ini.CORE:
-                component = core_configurer(self.log_level, self.log_path)
+                component = self.core_config_loader.load()
             elif self._is_helper_name(name):
                 component = self.helper_loader.load(name, tmp_workspace)
             elif self._is_merger_name(name):
