@@ -5,15 +5,15 @@ Cannot be used to create an object (abstract) but can be subclassed (base class)
 
 import logging
 from abc import ABC
-from djerba.core.configurable import configurable
+from djerba.core.configure import configurable
 import djerba.core.constants as core_constants
 
 class helper_base(configurable, ABC):
 
-    def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
+    def __init__(self, **kwargs):
         # workspace is an instance of djerba.core.workspace
-        super().__init__(identifier, log_level, log_path)
-        self.workspace = workspace
+        super().__init__(**kwargs)
+        self.workspace = kwargs['workspace']
         defaults = {
             core_constants.CONFIGURE_PRIORITY: self.DEFAULT_CONFIG_PRIORITY,
             core_constants.EXTRACT_PRIORITY: self.DEFAULT_CONFIG_PRIORITY,
