@@ -20,8 +20,9 @@ class main(merger_base):
 
     def configure(self, config):
         config = self.apply_defaults(config)
-        self.set_my_param(config, core_constants.RENDER_PRIORITY, self.RENDER_PRIORITY)
-        return config
+        wrapper = self.get_config_wrapper(config)
+        wrapper.set_my_param(core_constants.RENDER_PRIORITY, self.RENDER_PRIORITY)
+        return wrapper.get_config()
 
     def table_header(self):
         names = [

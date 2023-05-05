@@ -17,14 +17,16 @@ class main(plugin_base):
 
     def configure(self, config):
         config = self.apply_defaults(config)
-        config = self.set_all_priorities(config, self.DEFAULT_CONFIG_PRIORITY)
-        return config
+        wrapper = self.get_config_wrapper(config)
+        wrapper.set_my_priorities(self.DEFAULT_CONFIG_PRIORITY)
+        return wrapper.get_config()
 
     def extract(self, config):
+        wrapper = self.get_config_wrapper(config)
         data = {
             'plugin_name': self.identifier+' plugin',
-            'priorities': self.get_my_priorities(config),
-            'attributes': self.get_my_attributes(config),
+            'priorities': wrapper.get_my_priorities(),
+            'attributes': wrapper.get_my_attributes(),
             'merge_inputs': {
                 'gene_information_merger': [
                     {
