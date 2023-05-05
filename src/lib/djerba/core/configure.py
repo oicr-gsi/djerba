@@ -298,7 +298,7 @@ class config_wrapper(logger):
             core_constants.DJERBA_PRIVATE_DIR_VAR,
             core_constants.DJERBA_TEST_DIR_VAR
         ]
-        mapping = {var: os.environ.get(var) for var in var_names} # values may be None
+        mapping = {var: self.get_dir_from_env(var) for var in var_names}
         for section in self.config.sections():
             for option in self.config.options(section):
                 value = self.config.get(section, option)

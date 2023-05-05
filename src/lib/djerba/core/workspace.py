@@ -41,11 +41,14 @@ class workspace(logger):
             self.validator.validate_input_file(in_path)
         return gzip.open(in_path, mode)
 
-    def open_file(self, rel_path):
-        """Return a File object in read mode, eg. for use by csv.reader"""
-        in_path = os.path.join(self.dir_path, rel_path)
-        self.validator.validate_input_file(in_path)
-        return open(in_path)
+    def open_file(self, rel_path, mode='r'):
+        """Return a File object, eg. for use by csv.reader or csv.writer"""
+        file_path = os.path.join(self.dir_path, rel_path)
+        if 'r' in mode:
+            self.validator.validate_input_file(file_path)
+        else:
+            self.validator.validate_output_file(file_path)
+        return open(file_path, mode)
 
     def read_json(self, rel_path):
         in_path = os.path.join(self.dir_path, rel_path)
