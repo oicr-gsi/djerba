@@ -23,7 +23,7 @@ class TestExpressionHelper(TestBase):
         cp.set(self.CORE, 'donor', 'PANX_1500')
         cp.add_section(self.HELPER_NAME)        
         loader = helper_loader(logging.WARNING)
-        test_dir = '/home/ibancarz/workspace/djerba/test/20230505_01' # TODO FIXME
+        test_dir = '/home/ibancarz/workspace/djerba/test/20230508_01' # TODO FIXME
         ws = workspace(test_dir)
         helper_main = loader.load(self.HELPER_NAME, ws)
         config = helper_main.configure(cp)
