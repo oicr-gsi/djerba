@@ -33,7 +33,7 @@ class main(helper_base):
             self.GEP_REFERENCE_KEY: '/home/ibancarz/workspace/djerba/test/20230505_02/gep_reference.txt.gz', # TODO FIXME
             self.RSEM_GENES_RESULTS_KEY: 'NULL',
             self.TCGA_DATA_KEY: '/.mounts/labs/CGI/gsi/tools/RODiC/data',
-            self.TCGA_CODE_KEY: 'NULL'
+            self.TCGA_CODE_KEY: 'PAAD' # TODO FIXME
         }
         self.set_all_ini_defaults(defaults)
 
@@ -48,7 +48,8 @@ class main(helper_base):
             wrapper.set_my_param(self.TCGA_CODE_KEY, project)
         samples = sample_name_container() # empty container; TODO sample names in INI
         reader = provenance_reader(fpr_path, project, donor, samples)
-        rsem_genes_results = reader.parse_gep_path()
+        if wrapper.get_my_string(self.RSEM_GENES_RESULTS_KEY) == 'NULL': # TODO implement is_null()
+            rsem_genes_results = reader.parse_gep_path()
         wrapper.set_my_param(self.RSEM_GENES_RESULTS_KEY, rsem_genes_results)
         return wrapper.get_config()
 
@@ -62,7 +63,7 @@ class main(helper_base):
         cmd = [
             'Rscript',
             os.path.join(self.get_module_dir(), 'find_expression.R'),
-            '--enscon ', wrapper.get_my_string(self.ENSCON_KEY),
+            '--enscon', wrapper.get_my_string(self.ENSCON_KEY),
             '--genelist', wrapper.get_my_string(self.GENE_LIST_KEY),
             '--gepfile', gep_abs_path,
             '--outdir', self.workspace.get_work_dir(),
@@ -70,7 +71,7 @@ class main(helper_base):
             '--tcgacode', wrapper.get_my_string(self.TCGA_CODE_KEY)
         ]
         self.logger.debug("Rscript command: "+" ".join(cmd))
-        #subprocess_runner(self.log_level, self.log_path).run(cmd)
+        subprocess_runner(self.log_level, self.log_path).run(cmd)
 
     def preprocess_gep(self, gep_path, gep_reference, tumour_id):
         """

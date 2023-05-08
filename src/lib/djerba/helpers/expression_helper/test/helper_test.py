@@ -28,6 +28,8 @@ class TestExpressionHelper(TestBase):
         helper_main = loader.load(self.HELPER_NAME, ws)
         config = helper_main.configure(cp)
         data_dir = os.environ.get('DJERBA_DATA_DIR')
+        if not data_dir:
+            raise RuntimeError('DJERBA_DATA_DIR environment variable is not configured')
         expected_enscon = os.path.join(data_dir, 'ensemble_conversion_hg38.txt')
         configured_enscon = config.get(self.HELPER_NAME, helper_main.ENSCON_KEY)
         self.assertEqual(configured_enscon, expected_enscon)
@@ -35,7 +37,7 @@ class TestExpressionHelper(TestBase):
         configured_gene_list = config.get(self.HELPER_NAME, helper_main.GENE_LIST_KEY)
         self.assertEqual(configured_gene_list, expected_gene_list)
         tcga_code = config.get(self.HELPER_NAME, helper_main.TCGA_CODE_KEY)
-        self.assertEqual(tcga_code, 'PASS01')
+        self.assertEqual(tcga_code, 'PAAD')
         rsem_path = config.get(self.HELPER_NAME, helper_main.RSEM_GENES_RESULTS_KEY)
         self.assertEqual(self.getMD5_of_string(rsem_path), 'b676a42e2637f6cef80929bc0f4367f8')
 
@@ -49,3 +51,13 @@ class TestExpressionHelper(TestBase):
         helper_main.extract(cp)
         gep_path = ws.abs_path('gep.txt')
         self.assertEqual(self.getMD5(gep_path), '56e3a38493f1dcb76e0d10343b92130c')
+        expected = {
+            'data_expression_percentile_comparison.txt': 'abe21376344160a8c4101f772bc484b9',
+            'data_expression_percentile_tcga.txt': '06fcbe6e2ef2be26e2f044c8fcb9948b',
+            'data_expression_zscores_comparison.txt': '5be91225fea2b7ed1fbdb59459d61346',
+            'data_expression_zscores_tcga.txt': '3f0fead97a729fd88fb7fdd69f2e305c'
+        }
+        for name in expected:
+            out_path = os.path.join(test_dir, name)
+            self.assertTrue(os.path.exists(out_path))
+            self.assertEqual(self.getMD5(out_path), expected[name])

@@ -5,10 +5,54 @@
 
 library(optparse)
 
-gepfile <- opt$gepfile
-outdir <- opt$outdir
-enscon <- opt$enscon
-genelist <- opt$genelist
+# functions originally from convert_rsem_results_zscore.r
+
+# preprocess function
+preProcRNA <- function(gepfile, enscon, genelist = NULL){
+
+ # testing:
+ #gepfile="T:/gsi/jtorchia/pipeline/data/OCTCAP/cbioportal/cBioWrap_20200204/output/gepdir/input.fpkm.txt"
+ #enscon="T:/gsi/jtorchia/git/cBioWrap/files/ensemble_conversion.txt"
+ #genelist="T:/gsi/jtorchia/git/cBioWrap/files/targeted_genelist.txt"
+
+ # read in data
+ gepData <- read.csv(gepfile, sep="\t", header=TRUE, check.names=FALSE)
+ ensConv <- read.csv(enscon, sep="\t", header=FALSE)
+
+ # rename columns
+ colnames(ensConv) <- c("gene_id", "Hugo_Symbol")
+
+ # merge in Hugo's, re-order columns, deduplicate
+ df <- merge(x=gepData, y=ensConv, by="gene_id", all.x=TRUE)
+ df <- subset(df[,c(ncol(df),2:(ncol(df)-1))], !duplicated(df[,c(ncol(df),2:(ncol(df)-1))][,1]))
+ df <- df[!is.na(df$Hugo_Symbol),]
+ row.names(df) <- df[,1]
+ df <- df[,-1]
+
+ # subset if gene list given
+ if (!is.null(genelist)) {
+	keep_genes <- readLines(genelist)
+	df <- df[row.names(df) %in% keep_genes,]
+ }
+
+ # return the data frame
+ return(df)
+}
+
+# simple zscore function
+compZ <- function(df) {
+
+ # scale row-wise
+ df_zscore <- t(scale(t(df)))
+
+ # NaN (when SD is 0) becomes 0
+ df_zscore[is.nan(df_zscore)] <- 0
+
+ # we want a dataframe
+ df_zscore <- data.frame(signif(df_zscore, digits=4), check.names=FALSE)
+
+ return(df_zscore)
+}
 
 option_list = list(
   make_option(c("-e", "--enscon"), type="character", default=NULL, help="ensemble conversion file", metavar="character"),
@@ -16,8 +60,7 @@ option_list = list(
   make_option(c("-l", "--genelist"), type="character", default=NULL, help="subset cnas and rnaseq to these", metavar="character"),
   make_option(c("-o", "--outdir"), type="character", default=NULL, help="output directory", metavar="character"),
   make_option(c("-t", "--tcgadata"), type="character", default=NULL, help="tcga datadir", metavar="character"),
-  make_option(c("-c", "--tcgacode"), type="character", default=NULL, help="tcga code", metavar="character"),
-
+  make_option(c("-c", "--tcgacode"), type="character", default=NULL, help="tcga code", metavar="character")
 )
 opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
 opt <- parse_args(opt_parser)
@@ -28,8 +71,7 @@ outdir <- opt$outdir
 tcgadata <- opt$tcgadata
 tcgacode <- opt$tcgacode
 
-
-if length(Filter(is.null, c(enscon, genelist, gepfile, outdir, tcgadata, tcgacode))) > 0 {
+if (is.null(enscon) | is.null(genelist) | is.null(gepfile) | is.null(outdir) | is.null(tcgadata) | is.null(tcgacode)) {
     print("ERROR: Missing inputs for find_expression.R")
     quit(status=1)
 } else {
