@@ -19,6 +19,7 @@ setup(
     scripts=[
         'src/bin/benchmark.py',
         'src/bin/djerba.py',
+        'src/bin/generate_ini.py',
         'src/bin/html2pdf.py',
         'src/bin/list_inputs.py',
         'src/bin/pdf_merger.py',

@@ -1,12 +1,17 @@
 """Djerba plugin for pwgs sample reporting"""
 import os
 import csv
+import logging
+import json
 
 from mako.lookup import TemplateLookup
 from djerba.plugins.base import plugin_base
 import djerba.plugins.pwgs.constants as constants
 import djerba.plugins.pwgs.analysis.plugin as analysis
 from djerba.core.workspace import workspace
+import djerba.core.constants as core_constants
+from djerba.core.workspace import workspace
+from djerba.util.subprocess_runner import subprocess_runner
 
 try:
     import gsiqcetl.column
@@ -17,26 +22,38 @@ except ImportError:
 class main(plugin_base):
 
     SNV_COUNT_SUFFIX = 'SNP.count.txt'
+    DEFAULT_CONFIG_PRIORITY = 100
 
-    def configure(self, config_section):
-        return config_section
+    def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
+        super().__init__(workspace, identifier, log_level, log_path)
+        #self.add_ini_required('primary_snv_count_file')
+        self.set_ini_default(core_constants.CLINICAL, True)
+        self.set_ini_default(core_constants.SUPPLEMENTARY, False)
 
-    def extract(self, config_section):
-        tumour_id = self.workspace.read_core_config()['tumour_id']
-        qc_dict = self.fetch_coverage_etl_data(tumour_id)
+    def configure(self, config):
+        config = self.apply_defaults(config)
+        config = self.set_all_priorities(config, self.DEFAULT_CONFIG_PRIORITY)
         try:
-            self.provenance = analysis.main(self.workspace).subset_provenance()
-            snv_count_path = analysis.main(self).parse_file_path(self.SNV_COUNT_SUFFIX, self.provenance)
+            self.provenance = analysis.main(self.workspace, self.identifier).subset_provenance()
+            config[self.identifier][constants.SNV_COUNT_FILE] = analysis.main(self, self.identifier).parse_file_path(self.SNV_COUNT_SUFFIX, self.provenance)
         except OSError:
-            snv_count_path = config_section[constants.SNV_COUNT_FILE]
-        snv_count = self.preprocess_snv_count(snv_count_path)
+            self.logger.info("PWGS SAMPLE: Files pulled from ini")
+        return config
+
+    def extract(self, config):
+        tumour_id = config['core']['tumour_id']
+        qc_dict = self.fetch_coverage_etl_data(tumour_id)
+        snv_count = self.preprocess_snv_count(config[self.identifier][constants.SNV_COUNT_FILE])
+        insert_size_dist_file = self.preprocess_bamqc(config[self.identifier][constants.BAMQC])
+        self.plot_insert_size(insert_size_dist_file, 
+                             output_dir = self.workspace.print_location())
+
         self.logger.info("PWGS SAMPLE: All data found")
         data = {
-            'plugin_name': 'pwgs.sample',
-            'clinical': True,
-            'failed': False,
+            'plugin_name': self.identifier+' plugin',
+            'priorities': self.get_my_priorities(config),
+            'attributes': self.get_my_attributes(config),
             'merge_inputs': {
-                'gene_information': []
             },
             'results': {
                 'median_insert_size': qc_dict['insertSize'],
@@ -94,6 +111,28 @@ class main(plugin_base):
                     msg = "Incorrect number of columns in SNV Count file: '{0}'".format(snv_count_path)
                     raise RuntimeError(msg) from err
         return int(snv_count)
-    
+
+    def preprocess_bamqc(self, bamqc_file):
+        output_dir = self.workspace.print_location()
+        with open(bamqc_file, 'r') as bamqc_results:
+            data = json.load(bamqc_results)
+        is_data = data['insert size histogram']
+        file_location = os.path.join(output_dir, 'insert_size_distribution.csv')
+        with open(file_location,'w') as out:
+            csv_out = csv.writer(out)
+            csv_out.writerow(['size','count'])
+            for i in is_data:
+                csv_out.writerow([i,is_data[i]])
+        return(file_location)
+
+    def plot_insert_size(self, is_path, output_dir ):
+        args = [
+            os.path.join(constants.RSCRIPTS_LOCATION,'IS.plot.R'),
+            '--insert_size_file', is_path,
+            '--output_directory', output_dir 
+        ]
+        subprocess_runner().run(args)
+
+
 class MissingQCETLError(Exception):
     pass 

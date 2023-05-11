@@ -1,0 +1,62 @@
+<%
+  from time import strftime
+  from djerba.plugins.pwgs.analysis.render.json_to_html import html_builder
+  import djerba.plugins.pwgs.constants as constants
+%>
+
+<hr class="header-big-line" style="width: 100%; ; margin: 400px 0px 0px 0px;" >
+<h2>Supplementary </h2>
+
+${html_builder().section_cells_begin("<h3>Definitions</h3>","supp")}
+
+<p>
+  <strong>Minimal Residual Disease (MRD): </strong> Minimal Residual Disease (MRD) is a marker for recurrence of the previously sampled tumour. Detection of minimal residual disease is not conclusively associated with prognostic information, treatment choices should be made on a case-by-case basis with the treating physician.
+  <br><strong>ctDNA: </strong> circulating tumour DNA (ctDNA) is the marker assessed in this assay.
+  <br><strong>Coverage: </strong>Mean number of bases covering each sequenced base. Minimum coverage threshold is 30x (with a target of 40x).
+  <br><strong>Reads checked / detected:</strong> the percentage of reads with primary tumours matches divided by total checked reads is an estimate of the fraction of DNA in the blood from tumour origin, assuming ctDNA is detected. This value is not an estimate of tumour fraction when ctDNA is not detected. 
+</p>
+
+${html_builder().section_cells_end()}
+
+${html_builder().section_cells_begin("<h3>Assay description</h3>","supp")}
+
+<p>This assay is a comprehensive next generation sequencing assay, specifically plasma whole genome sequencing (WGS). 
+  Plasma libraries are prepared using the KAPA Hyper Prep kit with DNA extracted from cfDNA. 
+  Paired-end sequencing is performed using the NovaSeq6000 technology. 
+  Alignments are performed using <a href="https://bio-bwa.sourceforge.net/">bwa</a> mem (0.7.12) against reference genome <a href="https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.39/">GRCh38.p13</a> and processed with <a href="https://gatk.broadinstitute.org/hc/en-us/articles/360037052812-MarkDuplicates-Picard-">Picard</a> (2.21.2), which includes duplicate marking. 
+  Final detection rate is produced by <a href="https://pubmed.ncbi.nlm.nih.gov/32483360/">MRDetect</a> (1.0).
+Assay results were collated into the report document by <a href="https://github.com/oicr-gsi/djerba">Djerba</a> (0.3.20) using pipeline v.1.0.</p>
+<br>
+<p><strong>Control Cohort: </strong>The control cohort is Healthy Blood Controls (HBCs) sequenced and processed at OICR using the same procedure as any tested plasma sample. </p>
+<br>
+<p>Based on a minimum coverage of 30X, the sensitivity is 93%. The limit of detection is 0.04% ctDNA.</p>
+
+${html_builder().section_cells_end()}
+
+${html_builder().section_cells_begin("<h3>Disclaimer</h3>","supp")}
+
+<p>Minimal Residual Disease testing by Plasma whole genome sequencing encompasses all genomic regions in a specimen. Gene annotation is not performed in this assay and variants are not classified (e.g. by pathogeneity). </p>
+<br>
+<p>This test was developed and its performance characteristics determined by OICR Genomics. It has not been cleared or approved by the US Food and Drug Administration.</p>
+<br>
+
+${html_builder().section_cells_end()}
+  
+<hr class="lil-line" style="width: 100%;"  >
+<h3>Report Sign offs</h3>
+
+  <table class="suppl" width="100%">
+    <tr>
+      <td width="33%">Report drafted by ${results.get(constants.AUTHOR)} on ${strftime('%Y/%m/%d')}</td>
+    </tr>
+    <tr>
+      <td width="33%">Report electronically signed out by Trevor Pugh, PhD, FACMG (ABMS #1027812) on yyyy/mm/dd</td>
+    </tr>
+  </table>
+
+  <br>
+  <br>
+  <br>
+  <br>
+
+  <hr class="big-line" style="width: 100%; "  >

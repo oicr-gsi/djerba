@@ -6,10 +6,10 @@ Includes merge/deduplicate for shared tables, eg. gene info
 import logging
 import os
 import traceback
+import djerba.core.constants as core_constants
 import djerba.util.ini_fields as ini
 from djerba.util.logger import logger
 from mako.lookup import TemplateLookup
-
 
 class renderer(logger):
 
@@ -29,6 +29,14 @@ class renderer(logger):
         self.logger.debug("Loading clinical header Mako template")
         self.clinical_header_template = report_lookup.get_template(self.CLINICAL_HEADER_NAME)
 
+    def _order_components(self, body, priorities):
+        names = body.keys()
+        ordered_names = sorted(names, key=lambda x: priorities[x])
+        self.logger.debug('Priorities: {0}'.format(priorities))
+        self.logger.debug('Ordered component names: {0}'.format(ordered_names))
+        ordered_body = [body[x] for x in ordered_names]
+        return ordered_body
+
     def render_header(self, data):
         return self.render_from_template(self.clinical_header_template, data.get(ini.CORE))
 
@@ -44,13 +52,30 @@ class renderer(logger):
             raise
         return html
 
-    def run(self, data):
-        """Ive removed the footer comments here
-          in favour of a footer plugin
-        may conflict with merger use-case"""
+    def run(self, body, priorities, attributes, data):
         header = self.render_header(data)
         footer_template = """
+        <div>{0}</div>
         </body>
         </html>
         """
-        return [header, footer_template]
+        # make 'clinical research report' and 'supplementary' sections
+        # populate with HTML from body, based on the attributes and sorted by priority
+        all_html = [header,]
+        all_html.append('<h1>Clinical Research Report</h1>') # TODO fix formatting
+        report_names = [x for x in body.keys() \
+                        if core_constants.CLINICAL in attributes[x] \
+                        and core_constants.SUPPLEMENTARY not in attributes[x]]
+        report_body = {x:body[x] for x in report_names}
+        all_html.extend(self._order_components(report_body, priorities))
+        all_html.append('<h1>Supplementary</h1>') # TODO fix formatting
+        sup_names = [x for x in body.keys() \
+                     if core_constants.CLINICAL in attributes[x] \
+                     and core_constants.SUPPLEMENTARY in attributes[x]]
+        sup_body = {x:body[x] for x in sup_names}
+        all_html.extend(self._order_components(sup_body, priorities))
+        footer = footer_template.format(data['comment'])
+        all_html.append(footer)
+        html_string = "\n".join(all_html)
+        return html_string
+

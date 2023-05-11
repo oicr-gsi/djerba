@@ -2,6 +2,7 @@
 
 library(optparse)
 library(ggplot2)
+
 '%ni%' <- function(x,y)!('%in%'(x,y))
 
 options(scipen=999)
@@ -24,10 +25,9 @@ output_directory <- opt$output_directory
 pval_cutoff <- opt$pval
 
 ##test
-results_path <- opt$hbc_results
-vaf_path <- opt$vaf_results
-output_directory <- opt$output_directory
-pval_cutoff <- opt$pval
+#results_path <- '/Volumes/cgi/scratch/fbeaudry/reporting/djerba_test_data_lfs/pwgs-plugin/HBCs.csv'
+#vaf_path <- '/Volumes/cgi/scratch/fbeaudry/reporting/djerba_test_data_lfs/pwgs-plugin/mrdetect.vaf.txt'
+#pval_cutoff <- 3.15e-5
 
 ## intake
 vaf <- read.table(vaf_path,header = T)
@@ -50,51 +50,54 @@ rep_length = round(log(sites_checked,10),0)
 my_breaks <- rep(1:9, rep_length) * (10^rep(0:(rep_length-1), each = 9))
 
 my_labels <- my_breaks
-my_labels[my_labels %ni%  10^(0:round(log(sites_checked,10),0))] <- ""
+my_labels[my_labels %ni% 10^(0:round(log(sites_checked,10),0))] <- ""
 
 my_breaks[length(my_breaks)] <- sites_checked
 my_labels[length(my_labels)] <- sites_checked
- 
+
+my_labels[14] <- "Sites Detected:" 
+
 ##plot
 options(bitmapType='cairo')
-svg(paste0(output_directory,"pWGS.svg"), width = 5, height = 1.2)
+svg(paste0(output_directory,"pWGS.svg"), width = 5, height = 1)
     
 ggplot(results_cov[results$label == "CONTROLS",]) + 
-    geom_jitter(aes(x=0,y=noise,color=label,shape=label),width = 0.01) +
+    geom_boxplot(aes(x=0,y=noise,color=label,shape=label),width = 0.05, outlier.shape = NA) +
     
-    geom_hline(yintercept = 0,alpha=0.25,color="white")  +
-   geom_hline(yintercept = sites_checked,alpha=0.25,color="white")  +
+    geom_hline(yintercept = 1,alpha=0.25,color="white")  +
+    geom_hline(yintercept = sites_checked,alpha=0.25,color="white")  +
   
-    annotate(x = -0.1, xend=0.1, y=dataset_cutoff, yend=dataset_cutoff,
-             geom="segment",linetype="dashed",
-             colour = "black") +
+    annotate( geom="segment", x = -0.1, xend=0.1, y=dataset_cutoff, yend=dataset_cutoff, colour = "gray") +
     
-    annotate(geom="text",y = dataset_cutoff,x=0,color="black",label="Detection Cutoff",  vjust = -4,size=2.5) +
-    annotate(geom="text",y = mean_detection,x=0,color="gray30",label="Controls", hjust = 0.5, vjust = 3,size=2.5) +
+    annotate(geom="text",y = dataset_cutoff,x=0,color="gray30",label="Detection Cutoff",  vjust = -4.5, size=2.5) +
+    annotate(geom="text",y = mean_detection, x=0,color="black",label="Control Cohort", hjust = 0.3, vjust = 3, size=2.5) +
     annotate(geom="text",y = results$sites_detected[1],x=0,color="red",label="This Sample",  vjust = -2.5,size=2.5) +
-  annotate(geom="point",y = results$sites_detected[1],x=0,color="red",shape=1, size=5) +
-  annotate(geom="point",y = results$sites_detected[1],x=0,color="red",shape=20, size=1.5) +
+   
+    annotate(geom="point",y = results$sites_detected[1],x=0,color="red",shape=1, size=5) +
+    annotate(geom="point",y = results$sites_detected[1],x=0,color="red",shape=20, size=1.5) +
   
-    labs(x="",y="Sites Detected",color="",title="",shape="",size="") +
+    labs(x="",y="",color="",title="",shape="",size="") +
     scale_color_manual( values= c( "gray30", "red") ) +
     scale_shape_manual(values=c(16,1)) +
     theme_classic() +
-    guides(shape=FALSE,size=FALSE,color=FALSE)+
+    guides(shape="none",size="none",color="none")+
     theme(
+      axis.line.y = element_blank(),
       panel.grid.major = element_blank(), 
       panel.grid.minor = element_blank(),
       text = element_text(size = 9),
       legend.title=element_blank(),
       plot.margin = unit(c(0, 0, 0, 0), "lines"),
-      axis.title.y=element_blank(),
+      axis.title=element_blank(),
       axis.text.y=element_blank(),
       axis.ticks.y=element_blank()
     ) + 
  scale_y_continuous(trans = "log10",
                     breaks = my_breaks,
-                    labels = my_labels
+                    labels = my_labels,
+                    limits = c(40, sites_checked)
                     ) +
-    coord_flip(clip = "off", xlim=c(-0.1,0.1)) 
+    coord_flip(clip = "off") 
   
 dev.off()
      

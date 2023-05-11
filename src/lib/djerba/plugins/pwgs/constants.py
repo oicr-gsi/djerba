@@ -15,11 +15,15 @@ HBC_FILE = 'hbc_file'
 VAF_FILE = 'vaf_file'
 PWGS_PLOT = 'pwgs_base64'
 AUTHOR = 'author'
+WGS_MUTATIONS = 'wgs_mutations'
+GROUP_ID = 'group_id'
+BAMQC = 'bamQC_results'
+RSCRIPTS_LOCATION = '/.mounts/labs/CGI/scratch/fbeaudry/reporting/djerba/src/lib/djerba/plugins/pwgs/Rscripts/'
 
 # render constants
 ANALYSIS_TEMPLATE_NAME = 'analysis_template.html'
 SAMPLE_TEMPLATE_NAME = 'sample_template.html'
-FOOTER_TEMPLATE_NAME = 'footer_template.html'
+SUPPLEMENT_TEMPLATE_NAME = 'supplement_template.html'
 
 RESULTS = 'results'
 

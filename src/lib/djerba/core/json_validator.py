@@ -24,12 +24,12 @@ class json_validator(logger):
             jsonschema.validate(data, self.schema)
         except jsonschema.exceptions.ValidationError as err:
             msg = "JSON input is invalid with respect to "+\
-                  "plugin schema {0}".format(self.schema_path)
+                  "schema {0}".format(self.schema_path)
             self.logger.error(msg)
             self.logger.error(err)
             raise
-        msg = "JSON plugin data is valid with respect to schema {0}".format(self.schema_path)
-        self.logger.info(msg)
+        msg = "JSON input is valid with respect to schema {0}".format(self.schema_path)
+        self.logger.debug(msg)
         return True
 
 class plugin_json_validator(json_validator):

@@ -2,8 +2,8 @@
 import os
 import csv
 from decimal import Decimal
-import csv
 import re
+import logging
 
 from mako.lookup import TemplateLookup
 from djerba.plugins.base import plugin_base
@@ -11,40 +11,48 @@ import djerba.plugins.pwgs.constants as constants
 from djerba.util.subprocess_runner import subprocess_runner
 import djerba.util.provenance_index as index
 from djerba.core.workspace import workspace
+import djerba.core.constants as core_constants
 
 class main(plugin_base):
 
     RESULTS_SUFFIX = '\.mrdetect\.txt$'
     VAF_SUFFIX = 'mrdetect.vaf.txt'
     HBC_SUFFIX = 'HBCs.csv'
-    
-    def configure(self, config_section):
-        return config_section
+    DEFAULT_CONFIG_PRIORITY = 100
 
-    def extract(self, config_section):
+    def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
+        super().__init__(workspace, identifier, log_level, log_path)
+        self.set_ini_default(core_constants.CLINICAL, True)
+        self.set_ini_default(core_constants.SUPPLEMENTARY, False)
+
+    def configure(self, config):
+        config = self.apply_defaults(config)
+        config = self.set_all_priorities(config, self.DEFAULT_CONFIG_PRIORITY)
         try:
             """this exception is only for testing purposes so I can specify the file in the .ini"""
             self.provenance = self.subset_provenance()
-            results_file_path = self.parse_file_path(self.RESULTS_SUFFIX, self.provenance)
-            vaf_file_path = self.parse_file_path(self.VAF_SUFFIX, self.provenance)
-            hbc_file_path = self.parse_file_path(self.HBC_SUFFIX, self.provenance)
+            config[self.identifier][constants.RESULTS_FILE] = self.parse_file_path(self.RESULTS_SUFFIX, self.provenance)
+            config[self.identifier][constants.VAF_FILE] = self.parse_file_path(self.VAF_SUFFIX, self.provenance)
+            config[self.identifier][constants.HBC_FILE] = self.parse_file_path(self.HBC_SUFFIX, self.provenance)
             self.logger.info("PWGS ANALYSIS: Files pulled from Provenance")
         except OSError:
-            results_file_path = config_section[constants.RESULTS_FILE]
-            vaf_file_path = config_section[constants.VAF_FILE]
-            hbc_file_path = config_section[constants.HBC_FILE]
             self.logger.info("PWGS ANALYSIS: Files pulled from ini")
-        hbc_results = self.preprocess_hbc(hbc_file_path)
-        reads_detected = self.preprocess_vaf(vaf_file_path)
-        mrdetect_results = self.preprocess_results(results_file_path)
-        pwgs_base64 = self.write_pwgs_plot(hbc_file_path,vaf_file_path)
+        return config
+
+    def extract(self, config):
+
+        hbc_results = self.preprocess_hbc(config[self.identifier][constants.HBC_FILE])
+        reads_detected = self.preprocess_vaf(config[self.identifier][constants.VAF_FILE])
+        mrdetect_results = self.preprocess_results(config[self.identifier][constants.RESULTS_FILE])
+        pwgs_base64 = self.write_pwgs_plot(config[self.identifier][constants.HBC_FILE], 
+                                           config[self.identifier][constants.VAF_FILE],
+                                           output_dir = self.workspace.print_location())
         self.logger.info("PWGS ANALYSIS: Finished preprocessing files")       
         data = {
-            'plugin_name': 'pwgs.analysis',
-            'clinical': True,
-            'failed': False,
+            'plugin_name': self.identifier+' plugin',
+            'priorities': self.get_my_priorities(config),
+            'attributes': self.get_my_attributes(config),
             'merge_inputs': {
-                'gene_information': []
             },
             'results': {
                 'outcome': mrdetect_results['outcome'],
@@ -60,6 +68,12 @@ class main(plugin_base):
                 'pwgs_base64': pwgs_base64
             }
         }
+        self.join_WGS_data(wgs_file = config[self.identifier][constants.WGS_MUTATIONS], 
+                           vaf_file = config[self.identifier][constants.VAF_FILE], 
+                           groupid = config[self.identifier][constants.GROUP_ID],
+                           output_dir = self.workspace.print_location())
+        self.workspace.write_json('hbc_results.json', hbc_results)
+        self.workspace.write_json('mrdetect_results.json', mrdetect_results)
         return data
 
     def render(self, data):
@@ -155,18 +169,25 @@ class main(plugin_base):
         results_dict['significance_text'] = significance_text
         return results_dict
     
-    def write_pwgs_plot(self, hbc_path, vaf_file, output_dir = None):
-        if output_dir == None:
-            output_dir = os.path.join('./')
+    def write_pwgs_plot(self, hbc_path, vaf_file, output_dir ):
         args = [
-            os.path.join('/.mounts/labs/CGI/scratch/fbeaudry/reporting/djerba/src/lib/djerba/plugins/pwgs/analysis/','plot_detection.R'),
+            os.path.join(constants.RSCRIPTS_LOCATION,'detection.plot.R'),
             '--hbc_results', hbc_path,
             '--vaf_results', vaf_file,
             '--output_directory', output_dir 
         ]
         pwgs_results = subprocess_runner().run(args)
-        os.remove(os.path.join(output_dir,'pWGS.svg'))
         return(pwgs_results.stdout.split('"')[1])
+    
+    def join_WGS_data(self, wgs_file, vaf_file, groupid, output_dir ):
+        args = [
+            os.path.join(constants.RSCRIPTS_LOCATION,'WGS.join.R'),
+            '--wgs_input', wgs_file,
+            '--vaf_results', vaf_file,
+            '--groupid', groupid,
+            '--output_directory', output_dir 
+        ]
+        subprocess_runner().run(args)
     
     def _get_most_recent_row(self, rows):
         # if input is empty, raise an error
