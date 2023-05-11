@@ -417,8 +417,8 @@ class clinical_report_json_composer(composer_base):
             for input_row in csv.DictReader(data_file, delimiter="\t"):
                 gene = input_row[self.HUGO_SYMBOL_TITLE_CASE]
                 cytoband = self.get_cytoband(gene)
-                protein = input_row[self.HGVSP_SHORT]
-                if 'splice' in protein:
+                protein = input_row[self.VARIANT_CLASSIFICATION]
+                if 'splice' in protein.lower():
                     protein = 'p.? (' + input_row[self.HGVSC] + ')'  
                 row = {
                     rc.GENE: gene,
@@ -523,8 +523,8 @@ class clinical_report_json_composer(composer_base):
         with open(os.path.join(self.input_dir, self.MUTATIONS_EXTENDED_ONCOGENIC)) as data_file:
             for row in csv.DictReader(data_file, delimiter="\t"):
                 gene = row[self.HUGO_SYMBOL_TITLE_CASE]
-                alteration = row[self.HGVSP_SHORT]
-                if 'splice' in alteration:
+                alteration = row[self.VARIANT_CLASSIFICATION]
+                if 'splice' in alteration.lower():
                     alteration = 'p.? (' + row[self.HGVSC] + ')'  
                 [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
                 if max_level:
