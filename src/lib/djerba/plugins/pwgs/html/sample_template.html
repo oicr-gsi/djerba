@@ -63,20 +63,23 @@ ${html_builder().section_cells_end()}
 
 
 <hr class="big-white-line" >
-<div class="twocellmain" style="height: 100px;"  >
+<div class="twocellmain" style="height: 80px;"  >
     <div class="oneoftwocellmain"  >
         <h2 >Summary</h2>
     </div>
-    <div class="twooftwocellmain"  style="height: 100px; padding: 10px; background-color:rgba(101,188,69,.5);  border: 3px solid #65bc45; border-radius: 12px" >
+    <div class="twooftwocellmain"  style="height: 80px; padding: 10px; background-color:rgba(101,188,69,.5);  border: 3px solid #65bc45; border-radius: 12px" >
         <hr class="big-line" style="margin-top: -30px;">
 
-<h3 style="margin-top: 45px;">Minimal Residual Disease: ${results.get(constants.CTDNA_OUTCOME)}</h3>
-<p >
-     Mutational sampling analysis finds the number of SNVs of tumour origin 
-     detected in the plasma is
-      <strong>${results.get(constants.SIGNIFICANCE)} </strong>  
-      than in the control cohort.
-</p>
+<h3 style="margin-top: 45px;">Minimal Residual Disease: ${results.get(constants.CTDNA_DETECTION)}</h3>
+<table class="info" >
+<tr>
+  <td>Mutational sampling analysis:</td>
+  <td>ctDNA ${results.get(constants.CTDNA_OUTCOME)}
+
+  </td>
+</tr>
+</table>
+
 
 ${html_builder().section_cells_end()}
 

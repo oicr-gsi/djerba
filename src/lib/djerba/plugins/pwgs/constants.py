@@ -19,6 +19,7 @@ WGS_MUTATIONS = 'wgs_mutations'
 GROUP_ID = 'group_id'
 BAMQC = 'bamQC_results'
 RSCRIPTS_LOCATION = '/.mounts/labs/CGI/scratch/fbeaudry/reporting/djerba/src/lib/djerba/plugins/pwgs/Rscripts/'
+CTDNA_DETECTION = 'ctdna_detection'
 
 # render constants
 ANALYSIS_TEMPLATE_NAME = 'analysis_template.html'

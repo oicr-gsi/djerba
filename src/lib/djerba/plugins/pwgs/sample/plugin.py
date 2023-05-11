@@ -22,6 +22,7 @@ except ImportError:
 class main(plugin_base):
 
     SNV_COUNT_SUFFIX = 'SNP.count.txt'
+    RESULTS_SUFFIX = '\.mrdetect\.txt$'
     DEFAULT_CONFIG_PRIORITY = 100
 
     def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
@@ -35,6 +36,7 @@ class main(plugin_base):
         config = self.set_all_priorities(config, self.DEFAULT_CONFIG_PRIORITY)
         try:
             self.provenance = analysis.main(self.workspace, self.identifier).subset_provenance()
+            config[self.identifier][constants.RESULTS_FILE] = analysis.main(self, self.identifier).parse_file_path(self.RESULTS_SUFFIX, self.provenance)
             config[self.identifier][constants.SNV_COUNT_FILE] = analysis.main(self, self.identifier).parse_file_path(self.SNV_COUNT_SUFFIX, self.provenance)
         except OSError:
             self.logger.info("PWGS SAMPLE: Files pulled from ini")
@@ -45,6 +47,14 @@ class main(plugin_base):
         qc_dict = self.fetch_coverage_etl_data(tumour_id)
         snv_count = self.preprocess_snv_count(config[self.identifier][constants.SNV_COUNT_FILE])
         insert_size_dist_file = self.preprocess_bamqc(config[self.identifier][constants.BAMQC])
+        mrdetect_results = analysis.main(self.workspace, self.identifier).preprocess_results(config[self.identifier][constants.RESULTS_FILE])
+        if mrdetect_results['outcome'] == "POSITIVE":
+            ctdna_detection = "Detected"
+        elif mrdetect_results['outcome'] == "NEGATIVE":
+            ctdna_detection = "Undetected"
+        else:
+            ctdna_detection = None
+            self.logger.info("PWGS SAMPLE: ctDNA inconclusive")
         self.plot_insert_size(insert_size_dist_file, 
                              output_dir = self.workspace.print_location())
 
@@ -56,9 +66,11 @@ class main(plugin_base):
             'merge_inputs': {
             },
             'results': {
+                'outcome': mrdetect_results['outcome'],
                 'median_insert_size': qc_dict['insertSize'],
                 'coverage': qc_dict['coverage'],
-                'primary_snv_count': snv_count
+                'primary_snv_count': snv_count,
+                'ctdna_detection': ctdna_detection
             }
         }
         return data
