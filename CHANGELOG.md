@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## Unreleased
+
+### Changed
+- GCGI-885: Changed 3mb to 3 Mb
+
+### Fixed
+- GCGI-885: Fixed splice site reporting 
+
 ## v0.4.8: 2023-04-25
 
 ### Changed
