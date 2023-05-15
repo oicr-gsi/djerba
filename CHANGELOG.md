@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Changed
-- GCGI-885: Changed 3mb to 3 Mb
+- GCGI-885: Changed "Small regions (&#60;3 Mb) with large copy number gains" to "Regions with large copy number gains (&#8805; 6 CN)"
 
 ### Fixed
 - GCGI-885: Fixed splice site reporting 
