@@ -3,7 +3,9 @@
 ## Unreleased
 
 ### Changed
-- GCGI-885: Changed 3mb to 3 Mb
+- GCGI-885: Removed "small regions" text from CNV description
+- GCGI-883: Added date to footer of pdf, as in ISO requirement
+- GCGI-865: replaced MSI LLOD text
 
 ### Fixed
 - GCGI-885: Fixed splice site reporting 
