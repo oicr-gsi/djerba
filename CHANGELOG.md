@@ -1,8 +1,10 @@
 # CHANGELOG
 
-## Unreleased
+## v0.4.9: 2023-05-15
 
 ### Changed
+- GCGI-883: Added date to footer of pdf, as in ISO requirement
+- GCGI-865: replaced MSI LLOD text
 - GCGI-885: Changed "Small regions (&#60;3 Mb) with large copy number gains" to "Regions with large copy number gains (&#8805; 6 CN)"
 
 ### Fixed
