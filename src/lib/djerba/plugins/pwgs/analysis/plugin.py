@@ -18,7 +18,7 @@ class main(plugin_base):
     RESULTS_SUFFIX = '\.mrdetect\.txt$'
     VAF_SUFFIX = 'mrdetect.vaf.txt'
     HBC_SUFFIX = 'HBCs.csv'
-    DEFAULT_CONFIG_PRIORITY = 100
+    DEFAULT_CONFIG_PRIORITY = 200
 
     def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
         super().__init__(workspace, identifier, log_level, log_path)
@@ -28,18 +28,18 @@ class main(plugin_base):
     def configure(self, config):
         config = self.apply_defaults(config)
         config = self.set_all_priorities(config, self.DEFAULT_CONFIG_PRIORITY)
+        return config
+
+    def extract(self, config):
         try:
             """this exception is only for testing purposes so I can specify the file in the .ini"""
-            self.provenance = self.subset_provenance()
+            self.provenance = self.subset_provenance("mrdetect")
             config[self.identifier][constants.RESULTS_FILE] = self.parse_file_path(self.RESULTS_SUFFIX, self.provenance)
             config[self.identifier][constants.VAF_FILE] = self.parse_file_path(self.VAF_SUFFIX, self.provenance)
             config[self.identifier][constants.HBC_FILE] = self.parse_file_path(self.HBC_SUFFIX, self.provenance)
             self.logger.info("PWGS ANALYSIS: Files pulled from Provenance")
         except OSError:
             self.logger.info("PWGS ANALYSIS: Files pulled from ini")
-        return config
-
-    def extract(self, config):
 
         hbc_results = self.preprocess_hbc(config[self.identifier][constants.HBC_FILE])
         reads_detected = self.preprocess_vaf(config[self.identifier][constants.VAF_FILE])
@@ -58,7 +58,7 @@ class main(plugin_base):
                 'outcome': mrdetect_results['outcome'],
                 'significance_text': mrdetect_results['significance_text'],
                 'TFZ': mrdetect_results['TF'],
-                'TFR': round(reads_detected / hbc_results['reads_checked']*100,4) ,
+                'TFR': float('%.1E' % Decimal( reads_detected / hbc_results['reads_checked'] ))*100 ,
                 'sites_checked': hbc_results['sites_checked'],
                 'reads_checked': hbc_results['reads_checked'],
                 'sites_detected': hbc_results['sites_detected'],
@@ -70,7 +70,7 @@ class main(plugin_base):
         }
         self.join_WGS_data(wgs_file = config[self.identifier][constants.WGS_MUTATIONS], 
                            vaf_file = config[self.identifier][constants.VAF_FILE], 
-                           groupid = config[self.identifier][constants.GROUP_ID],
+                           groupid = config['core'][constants.GROUP_ID],
                            output_dir = self.workspace.print_location())
         self.workspace.write_json('hbc_results.json', hbc_results)
         self.workspace.write_json('mrdetect_results.json', mrdetect_results)
@@ -148,7 +148,7 @@ class main(plugin_base):
             for row in reader_file:
                 try:
                     results_dict = {
-                                    'TF': round(float(row[7])*100*2,4),
+                                    'TF': float('%.1E' % Decimal(row[7]))*100,
                                     'pvalue':  float('%.3E' % Decimal(row[10]))
                                     }
                 except IndexError as err:
@@ -217,12 +217,12 @@ class main(plugin_base):
     def _filter_file_path(self, pattern, rows):
         return filter(lambda x: re.search(pattern, x[index.FILE_PATH]), rows)
     
-    def subset_provenance(self):
+    def subset_provenance(self, workflow):
         provenance = []
         with self.workspace.open_gzip_file(constants.PROVENANCE_OUTPUT) as in_file:
             reader = csv.reader(in_file, delimiter="\t")
             for row in reader:
-                if row[index.WORKFLOW_NAME] == "mrdetect":
+                if row[index.WORKFLOW_NAME] == workflow:
                     provenance.append(row)
         return(provenance)
 
