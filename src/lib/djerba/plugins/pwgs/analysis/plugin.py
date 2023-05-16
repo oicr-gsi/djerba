@@ -22,8 +22,20 @@ class main(plugin_base):
 
     def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
         super().__init__(workspace, identifier, log_level, log_path)
+        
+        # Setting default parameters
         self.set_ini_default(core_constants.CLINICAL, True)
         self.set_ini_default(core_constants.SUPPLEMENTARY, False)
+
+        # Setting required parameters
+        self.add_ini_required('wgs_mutations')
+        self.add_ini_required('group_id')
+
+        # Setting default parameters
+        """Note: these are found and then populated in the fully specified ini."""
+        self.set_ini_default('results_file', None)
+        self.set_ini_default('vaf_file', None)
+        self.set_ini_default('hbc_file', None)
 
     def configure(self, config):
         config = self.apply_defaults(config)

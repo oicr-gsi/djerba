@@ -84,5 +84,5 @@ class extractor(core_base):
             'plugins': {},
         }
         data['mergers'] = self._get_merger_data(config)
-        data['comment'] = config['core']['comment']
+        #data['comment'] = config['core']['comment']
         return data
