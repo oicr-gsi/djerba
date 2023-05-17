@@ -29,8 +29,7 @@ class main(plugin_base):
 
         # Setting required parameters
         self.add_ini_required('wgs_mutations')
-        self.add_ini_required('group_id')
-
+        
         # Setting default parameters
         """Note: these are found and then populated in the fully specified ini."""
         self.set_ini_default('results_file', None)

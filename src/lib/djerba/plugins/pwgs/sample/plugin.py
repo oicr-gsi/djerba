@@ -35,10 +35,11 @@ class main(plugin_base):
         self.set_ini_default(core_constants.SUPPLEMENTARY, False)
         
         # Setting required parameters
-        self.add_ini_required('bamqc_results')
+        self.add_ini_required('wgs_json')
         
         # Setting default parameters for plugin
         """ Note: these are found after full specification and are not required in the initial config."""
+        self.set_ini_default('bamqc_results', None)
         self.set_ini_default('results_file', None)
         self.set_ini_default('primary_snv_count_file', None)
 

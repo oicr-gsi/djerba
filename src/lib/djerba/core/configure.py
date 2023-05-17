@@ -11,9 +11,10 @@ class configurer(configurable):
         #self.set_ini_default('comment', 'comment goes here')
 
         # Setting required parameters
-        self.add_ini_required('tumour_id')
+        self.add_ini_required('group_id')
         self.add_ini_required('study_title')
         self.add_ini_required('root_sample_name')
+        self.add_ini_required('requisition_approved')
 
     def configure(self, config):
         # TODO validate config fields and (if possible) populate any not specified
