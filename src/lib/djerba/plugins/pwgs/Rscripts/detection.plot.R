@@ -59,7 +59,7 @@ my_labels[14] <- "Sites Detected:"
 
 ##plot
 options(bitmapType='cairo')
-svg(paste0(output_directory,"pWGS.svg"), width = 5, height = 1)
+svg(paste(output_directory,"pWGS.svg",sep="/"), width = 5, height = 1)
     
 ggplot(results_cov[results$label == "CONTROLS",]) + 
     geom_boxplot(aes(x=0,y=noise,color=label,shape=label),width = 0.05, outlier.shape = NA) +
@@ -101,7 +101,7 @@ ggplot(results_cov[results$label == "CONTROLS",]) +
   
 dev.off()
      
-txt <- paste(readLines(paste0(output_directory,"pWGS.svg")), collapse = "")
+txt <- paste(readLines(paste(output_directory,"pWGS.svg",sep="/")), collapse = "")
 b64txt <- paste0("data:image/svg+xml;base64,", base64enc::base64encode(charToRaw(txt)))
 print(b64txt)
 

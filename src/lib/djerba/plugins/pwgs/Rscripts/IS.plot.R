@@ -30,7 +30,7 @@ insert_size <- insert_size %>%
   summarise(insert_size=size,count=count,read_freq=(count/sum(count))*100)
 
 options(bitmapType='cairo')
-svg(paste0(output_directory,"insert_size_distribution.svg"), width = 7, height = 4)
+svg(paste(output_directory,"insert_size_distribution.svg",sep="/"), width = 7, height = 4)
 
 plot_grid(
 ggplot(insert_size,aes(x=insert_size)) + 

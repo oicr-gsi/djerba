@@ -22,14 +22,15 @@ except ImportError:
 class main(plugin_base):
 
     SNV_COUNT_SUFFIX = 'SNP.count.txt'
-    RESULTS_SUFFIX = '\.mrdetect\.txt$'
+    RESULTS_SUFFIX = '.mrdetect.txt'
+    BAMQC_SUFFIX = 'bamQC_results.json'
     DEFAULT_CONFIG_PRIORITY = 100
 
     def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
         super().__init__(workspace, identifier, log_level, log_path)
         #self.add_ini_required('primary_snv_count_file')
         
-        # Setting default parameters
+        # Setting default parametersn
         self.set_ini_default(core_constants.CLINICAL, True)
         self.set_ini_default(core_constants.SUPPLEMENTARY, False)
         
@@ -44,20 +45,28 @@ class main(plugin_base):
     def configure(self, config):
         config = self.apply_defaults(config)
         config = self.set_all_priorities(config, self.DEFAULT_CONFIG_PRIORITY)
-        try:
-            self.provenance = analysis.main(self.workspace, self.identifier).subset_provenance()
-            config[self.identifier][constants.RESULTS_FILE] = analysis.main(self, self.identifier).parse_file_path(self.RESULTS_SUFFIX, self.provenance)
-            config[self.identifier][constants.SNV_COUNT_FILE] = analysis.main(self, self.identifier).parse_file_path(self.SNV_COUNT_SUFFIX, self.provenance)
-        except OSError:
-            self.logger.info("PWGS SAMPLE: Files pulled from ini")
         return config
 
     def extract(self, config):
-        tumour_id = config['core']['tumour_id']
+        try:
+            self.provenance = analysis.main(self.workspace, self.identifier).subset_provenance("mrdetect")
+            snv_count_file = analysis.main(self, self.identifier).parse_file_path(self.SNV_COUNT_SUFFIX, self.provenance)
+            results_file = analysis.main(self, self.identifier).parse_file_path(self.RESULTS_SUFFIX, self.provenance)
+        except OSError:
+            snv_count_file = config[self.identifier][constants.SNV_COUNT_FILE]
+            results_file = config[self.identifier][constants.RESULTS_FILE]
+            self.logger.info("PWGS SAMPLE: Results file pulled from ini")
+        try:
+            self.provenance = analysis.main(self.workspace, self.identifier).subset_provenance("dnaSeqQC")
+            bamqc_file = analysis.main(self, self.identifier).parse_file_path(self.BAMQC_SUFFIX, self.provenance)
+        except OSError:
+            bamqc_file = config[self.identifier][constants.BAMQC]
+            self.logger.info("PWGS SAMPLE: BAMQC json pulled from ini")
+        tumour_id = config['core'][constants.GROUP_ID]
         qc_dict = self.fetch_coverage_etl_data(tumour_id)
-        snv_count = self.preprocess_snv_count(config[self.identifier][constants.SNV_COUNT_FILE])
-        insert_size_dist_file = self.preprocess_bamqc(config[self.identifier][constants.BAMQC])
-        mrdetect_results = analysis.main(self.workspace, self.identifier).preprocess_results(config[self.identifier][constants.RESULTS_FILE])
+        snv_count = self.preprocess_snv_count(snv_count_file)
+        insert_size_dist_file = self.preprocess_bamqc(bamqc_file)
+        mrdetect_results = analysis.main(self.workspace, self.identifier).preprocess_results(results_file)
         if mrdetect_results['outcome'] == "POSITIVE":
             ctdna_detection = "Detected"
         elif mrdetect_results['outcome'] == "NEGATIVE":
@@ -67,7 +76,7 @@ class main(plugin_base):
             self.logger.info("PWGS SAMPLE: ctDNA inconclusive")
         self.plot_insert_size(insert_size_dist_file, 
                              output_dir = self.workspace.print_location())
-
+        patient_data = self.preprocess_wgs_json(config[self.identifier][constants.WGS_JSON])
         self.logger.info("PWGS SAMPLE: All data found")
         data = {
             'plugin_name': self.identifier+' plugin',
@@ -76,6 +85,15 @@ class main(plugin_base):
             'merge_inputs': {
             },
             'results': {
+                'primary_cancer': patient_data['Primary cancer'],
+                'requisition_approved': config['core'][constants.REQ_APPROVED],
+                'donor': config['core']['root_sample_name'],
+                'group_id': config['core'][constants.GROUP_ID],
+                'pwgs_report_id': "_".join((config['core'][constants.GROUP_ID],"v1")),
+                'wgs_report_id': patient_data['Report ID'],
+                'Patient Study ID': patient_data[constants.PATIENT_ID],
+                'study_title': config['core'][constants.STUDY],
+                'assay': "plasma Whole Genome Sequencing (pWGS) - 30X (v1.0)",
                 'outcome': mrdetect_results['outcome'],
                 'median_insert_size': qc_dict['insertSize'],
                 'coverage': qc_dict['coverage'],
@@ -146,6 +164,12 @@ class main(plugin_base):
             for i in is_data:
                 csv_out.writerow([i,is_data[i]])
         return(file_location)
+    
+    def preprocess_wgs_json(self, wgs_json):
+        with open(wgs_json, 'r') as wgs_results:
+            data = json.load(wgs_results)
+        patient_data = data["report"]["patient_info"]
+        return(patient_data)
 
     def plot_insert_size(self, is_path, output_dir ):
         args = [

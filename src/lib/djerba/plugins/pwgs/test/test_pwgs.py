@@ -26,7 +26,7 @@ class TestPwgAnalysisPlugin(PluginTester):
         params = {
             self.INI: 'data/pwgs.analysis.ini',
             self.JSON: json_location,
-            self.MD5: '6d552facae9ad1094fed4ac865a84bdf'
+            self.MD5: '333d64ea1da427904a66c3a33daeeeb6'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -44,7 +44,7 @@ class TestPwgAnalysisPlugin(PluginTester):
     def testPreprocessResults(self):
         results_expected_location = os.path.join(self.sup_dir ,"pwgs-plugin/mrdetect.txt")
         results = analysis.main.preprocess_results(self, results_expected_location)
-        self.assertEqual(results['TF'], 0.0321 )
+        self.assertEqual(results['TF'], 0.016 )
         self.assertEqual(results['pvalue'], 1.903e-05)
         self.assertEqual(results['outcome'], 'POSITIVE')
         self.assertEqual(results['significance_text'], 'significantly larger')
@@ -63,7 +63,7 @@ class TestPwgSamplePlugin(PluginTester):
         params = {
             self.INI: 'data/pwgs.sample.ini',
             self.JSON: json_location,
-            self.MD5: '9cd84c973436def333d409d711ab8a7a'
+            self.MD5: 'dc77a74949a90fad09396a547ff7c93d'
         }
         self.run_basic_test(test_source_dir, params)
 

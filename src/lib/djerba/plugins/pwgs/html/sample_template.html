@@ -1,7 +1,9 @@
 <%
   from djerba.plugins.pwgs.analysis.render.json_to_html import html_builder
   import djerba.plugins.pwgs.constants as constants
+  from time import strftime
 %>
+<% date = strftime('%Y/%m/%d') %>
 
 ${html_builder().section_cells_begin("<h2>Patient & Physician</h2>","main")}
       
@@ -21,7 +23,10 @@ ${html_builder().section_cells_begin("<h2>Patient & Physician</h2>","main")}
       <td>Physician Phone #:</td><td>nnn-nnn-nnnn</td>
       <td>Physician Hospital:</td><td>HOSPITAL NAME AND ADDRESS</td>
     </tr>
-
+    <tr>
+      <td>Requisition Approved:</td><td>${results.get(constants.REQ_APPROVED)}</td>
+      <td>Requisitioner Email:</td><td><a href="mailto:NAME@DOMAIN.COM" class="email">NAME@DOMAIN.COM</a></td>
+    </tr>
   </table>
       
 ${html_builder().section_cells_end()}
@@ -29,33 +34,30 @@ ${html_builder().section_cells_end()}
 ${html_builder().section_cells_begin("<h2>Case Overview</h2>","main")}
 
   <table class="info">
-  <tr> <th style="width:25%"></th>  <th style="width:20%"></th>  <th style="width:25%"></th>  <th style="width:30%"></th> </tr>
-  <tr> <td colspan="1">Assay:</td>  <td colspan="3"> plasma Whole Genome Sequencing (pWGS) - 30X (v1.0) </td> </tr>    
+  <tr> <th style="width:20%"></th>  <th style="width:20%"></th>  <th style="width:20%"></th>  <th style="width:40%"></th> </tr>
+  <tr> <td colspan="1">Assay:</td>  <td colspan="3"> ${results.get(constants.ASSAY)} </td> </tr>    
 
     <tr>
-      <td>Site of biopsy/surgery:</td>  <td>Liquid Biopsy</td>
-      <td>Primary cancer:</td> <td>Pancreatic Adenocarcinoma</td>
+      <td>Site of biopsy:</td>  <td>Liquid Biopsy</td>
+      <td>Primary cancer:</td> <td>${results.get(constants.PRIMARY_CANCER)}</td>
     </tr>
     <tr>
       <td>Type of Specimen:</td> <td>Plasma</td>
-      <td>Date of Report:</td> <td>2023/05/05</td>
+      <td>Date of Report:</td> <td>${date}</td>
     </tr>
     <tr>
-      <td>Patient LIMS ID:</td><td>PLACEHOLDER</td>
-      <td>WGS Report ID:</td><td>PLACEHOLDER</td>
+      <td>Patient LIMS ID:</td><td>${results.get(constants.DONOR)}</td>
+      <td>WGS Report ID:</td><td>${results.get(constants.WGS_REPORT)}</td>
     </tr>
     <tr>
-      <td>Patient Study ID:</td><td>PLACEHOLDER</td>
-      <td>Blood Sample ID:</td><td>PLACEHOLDER</td>
+      <td>Patient Study ID:</td><td>${results.get(constants.PATIENT_ID)}</td>
+      <td>Plasma Sample ID:</td><td>${results.get(constants.GROUP_ID)}</td>
     </tr>
     <tr>
-      <td >Study:</td><td>PLACEHOLDER</td>
-      <td>pWGS Report ID:</td><td>PLACEHOLDER</td>
+      <td>Study:</td><td>${results.get(constants.STUDY)}</td>
+      <td>pWGS Report ID:</td><td>${results.get(constants.PWGS_REPORT)}</td>
     </tr>
-    <tr>
-      <td >Requisition Approved:</td><td>2023/01/01</td>
-      <td >Requisitioner Email:</td><td><a href="mailto:NAME@DOMAIN.COM" class="email">NAME@DOMAIN.COM</a></td>
-    </tr>
+
 
   </table>
 
@@ -101,7 +103,7 @@ ${html_builder().section_cells_begin("<h2>SAMPLE QC</h2>","main")}
       <td >Coverage (mean):</td>
       <td >${results.get(constants.COVERAGE)}</td>
       <td >Primary SNVs:</td>
-      <td >${results.get(constants.SNV_COUNT)}</td>
+      <td >${html_builder().k_comma_format(results.get(constants.SNV_COUNT))}</td>
     </tr>
   </table>
 
