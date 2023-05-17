@@ -5,6 +5,7 @@
 import os
 import unittest
 import tempfile
+
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 import djerba.plugins.pwgs.analysis.plugin as analysis
@@ -26,7 +27,7 @@ class TestPwgAnalysisPlugin(PluginTester):
         params = {
             self.INI: 'data/pwgs.analysis.ini',
             self.JSON: json_location,
-            self.MD5: '333d64ea1da427904a66c3a33daeeeb6'
+            self.MD5: '81284d021b26f00a913d82886afbb2bc'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -38,8 +39,8 @@ class TestPwgAnalysisPlugin(PluginTester):
 
     def testPreprocessvaf(self):
         vaf_expected_location = os.path.join(self.sup_dir ,"pwgs-plugin/mrdetect.vaf.txt")
-        reads_detected = analysis.main.preprocess_vaf(self, vaf_expected_location)
-        self.assertEqual(reads_detected, 18768)
+        vaf_results = analysis.main.preprocess_vaf(self, vaf_expected_location)
+        self.assertEqual(vaf_results['reads_detected'], 18768)
 
     def testPreprocessResults(self):
         results_expected_location = os.path.join(self.sup_dir ,"pwgs-plugin/mrdetect.txt")
@@ -63,7 +64,7 @@ class TestPwgSamplePlugin(PluginTester):
         params = {
             self.INI: 'data/pwgs.sample.ini',
             self.JSON: json_location,
-            self.MD5: 'dc77a74949a90fad09396a547ff7c93d'
+            self.MD5: '3d8917311e7e9b33b98713600b91b509'
         }
         self.run_basic_test(test_source_dir, params)
 

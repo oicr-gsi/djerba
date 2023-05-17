@@ -49,24 +49,11 @@ class main(plugin_base):
         return config
 
     def extract(self, config):
-        try:
-            self.provenance = analysis.main(self.workspace, self.identifier).subset_provenance("mrdetect")
-            snv_count_file = analysis.main(self, self.identifier).parse_file_path(self.SNV_COUNT_SUFFIX, self.provenance)
-            results_file = analysis.main(self, self.identifier).parse_file_path(self.RESULTS_SUFFIX, self.provenance)
-        except OSError:
-            snv_count_file = config[self.identifier][constants.SNV_COUNT_FILE]
-            results_file = config[self.identifier][constants.RESULTS_FILE]
-            self.logger.info("PWGS SAMPLE: Results file pulled from ini")
-        try:
-            self.provenance = analysis.main(self.workspace, self.identifier).subset_provenance("dnaSeqQC")
-            bamqc_file = analysis.main(self, self.identifier).parse_file_path(self.BAMQC_SUFFIX, self.provenance)
-        except OSError:
-            bamqc_file = config[self.identifier][constants.BAMQC]
-            self.logger.info("PWGS SAMPLE: BAMQC json pulled from ini")
         tumour_id = config['core'][constants.GROUP_ID]
         qc_dict = self.fetch_coverage_etl_data(tumour_id)
-        snv_count = self.preprocess_snv_count(snv_count_file)
-        insert_size_dist_file = self.preprocess_bamqc(bamqc_file)
+        insert_size_dist_file = self.preprocess_bamqc(config[self.identifier][constants.BAMQC])
+        snv_count = self.preprocess_snv_count(config[self.identifier][constants.SNV_COUNT_FILE])
+        results_file = config[self.identifier][constants.RESULTS_FILE]
         mrdetect_results = analysis.main(self.workspace, self.identifier).preprocess_results(results_file)
         if mrdetect_results['outcome'] == "POSITIVE":
             ctdna_detection = "Detected"
@@ -104,23 +91,6 @@ class main(plugin_base):
         }
         return data
 
-    def render(self, data):
-        args = data
-        html_dir = os.path.realpath(os.path.join(
-            os.path.dirname(__file__),
-            '..',
-            'html'
-        ))
-        report_lookup = TemplateLookup(directories=[html_dir, ], strict_undefined=True)
-        mako_template = report_lookup.get_template(constants.SAMPLE_TEMPLATE_NAME)
-        try:
-            html = mako_template.render(**args)
-        except Exception as err:
-            msg = "Unexpected error of type {0} in Mako template rendering: {1}".format(type(err).__name__, err)
-            self.logger.error(msg)
-            raise
-        return html    
-    
     def fetch_coverage_etl_data(self,tumour_id):
         self.qcetl_cache = "/scratch2/groups/gsi/production/qcetl_v1"
         self.etl_cache = QCETLCache(self.qcetl_cache)
@@ -138,22 +108,23 @@ class main(plugin_base):
             msg = "Djerba couldn't find the QC metrics associated with tumour_id {0} in QC-ETL. ".format(tumour_id)
             self.logger.debug(msg)
             raise MissingQCETLError(msg)
-        
-    def preprocess_snv_count(self, snv_count_path):
-        """
-        pull SNV count from file
-        """
-        with open(snv_count_path, 'r') as hbc_file:
-            reader_file = csv.reader(hbc_file, delimiter="\t")
-            for row in reader_file:
-                try: 
-                    snv_count = row[0]
-                except IndexError as err:
-                    msg = "Incorrect number of columns in SNV Count file: '{0}'".format(snv_count_path)
-                    raise RuntimeError(msg) from err
-        return int(snv_count)
 
+    def plot_insert_size(self, is_path, output_dir ):
+        args = [
+            os.path.join(constants.RSCRIPTS_LOCATION,'IS.plot.R'),
+            '--insert_size_file', is_path,
+            '--output_directory', output_dir 
+        ]
+        subprocess_runner().run(args)
+    
     def preprocess_bamqc(self, bamqc_file):
+        if bamqc_file == 'None':
+            provenance = analysis.main(self.workspace, self.identifier).subset_provenance("dnaSeqQC")
+            try:
+                bamqc_file = analysis.main(self, self.identifier).parse_file_path(self.BAMQC_SUFFIX, provenance)
+            except OSError as err:
+                msg = "File from workflow {0} with extension {1} was not found in Provenance subset file '{2}' not found".format("dnaSeqQC", self.BAMQC_SUFFIX,constants.PROVENANCE_OUTPUT)
+                raise RuntimeError(msg) from err
         output_dir = self.workspace.print_location()
         with open(bamqc_file, 'r') as bamqc_results:
             data = json.load(bamqc_results)
@@ -166,20 +137,49 @@ class main(plugin_base):
                 csv_out.writerow([i,is_data[i]])
         return(file_location)
     
+    def preprocess_snv_count(self, snv_count_path):
+        """
+        pull SNV count from file
+        """
+        if snv_count_path == 'None':
+            provenance = analysis.main(self.workspace, self.identifier).subset_provenance("mrdetect")
+            try:    
+                snv_count_path = analysis.main(self, self.identifier).parse_file_path(self.SNV_COUNT_SUFFIX, provenance)
+            except OSError as err:
+                msg = "File from workflow {0} with extension {1} was not found in Provenance subset file '{2}' not found".format("mrdetect", self.SNV_COUNT_SUFFIX, constants.PROVENANCE_OUTPUT)
+                raise RuntimeError(msg) from err
+        with open(snv_count_path, 'r') as hbc_file:
+            reader_file = csv.reader(hbc_file, delimiter="\t")
+            for row in reader_file:
+                try: 
+                    snv_count = row[0]
+                except IndexError as err:
+                    msg = "Incorrect number of columns in SNV Count file: '{0}'".format(snv_count_path)
+                    raise RuntimeError(msg) from err
+        return int(snv_count)
+    
     def preprocess_wgs_json(self, wgs_json):
         with open(wgs_json, 'r') as wgs_results:
             data = json.load(wgs_results)
         patient_data = data["report"]["patient_info"]
         return(patient_data)
 
-    def plot_insert_size(self, is_path, output_dir ):
-        args = [
-            os.path.join(constants.RSCRIPTS_LOCATION,'IS.plot.R'),
-            '--insert_size_file', is_path,
-            '--output_directory', output_dir 
-        ]
-        subprocess_runner().run(args)
-
+    def render(self, data):
+        args = data
+        html_dir = os.path.realpath(os.path.join(
+            os.path.dirname(__file__),
+            '..',
+            'html'
+        ))
+        report_lookup = TemplateLookup(directories=[html_dir, ], strict_undefined=True)
+        mako_template = report_lookup.get_template(constants.SAMPLE_TEMPLATE_NAME)
+        try:
+            html = mako_template.render(**args)
+        except Exception as err:
+            msg = "Unexpected error of type {0} in Mako template rendering: {1}".format(type(err).__name__, err)
+            self.logger.error(msg)
+            raise
+        return html    
 
 class MissingQCETLError(Exception):
     pass 
