@@ -28,8 +28,20 @@ class main(plugin_base):
 
     def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
         super().__init__(workspace, identifier, log_level, log_path)
+        #self.add_ini_required('primary_snv_count_file')
+        
+        # Setting default parametersn
         self.set_ini_default(core_constants.CLINICAL, True)
         self.set_ini_default(core_constants.SUPPLEMENTARY, False)
+        
+        # Setting required parameters
+        self.add_ini_required('wgs_json')
+        
+        # Setting default parameters for plugin
+        """ Note: these are found after full specification and are not required in the initial config."""
+        self.set_ini_default('bamqc_results', None)
+        self.set_ini_default('results_file', None)
+        self.set_ini_default('primary_snv_count_file', None)
 
     def configure(self, config):
         config = self.apply_defaults(config)

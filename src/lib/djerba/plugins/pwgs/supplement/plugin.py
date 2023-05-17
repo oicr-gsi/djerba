@@ -14,8 +14,13 @@ class main(plugin_base):
 
     def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
         super().__init__(workspace, identifier, log_level, log_path)
+        
+        # Setting default parameters
         self.set_ini_default(core_constants.CLINICAL, True)
         self.set_ini_default(core_constants.SUPPLEMENTARY, False)
+        
+        # Setting required parameters
+        self.add_ini_required('author')
 
     def configure(self, config):
         config = self.apply_defaults(config)
