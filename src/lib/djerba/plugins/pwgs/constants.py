@@ -48,5 +48,15 @@ ANALYSIS_TEMPLATE_NAME = 'analysis_template.html'
 SAMPLE_TEMPLATE_NAME = 'sample_template.html'
 SUPPLEMENT_TEMPLATE_NAME = 'supplement_template.html'
 
-
-
+# version constants
+BWAMEM_VERSION = '0.7.12'
+BWAMEM_LINK = 'https://bio-bwa.sourceforge.net/'
+REFERENCE_GENOME_VERSION = 'GRCh38.p13' 
+REFERENCE_GENOME_LINK = 'https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.39/'
+PICARD_VERSION = '2.21.2'
+PICARD_LINK = 'https://gatk.broadinstitute.org/hc/en-us/articles/360037052812-MarkDuplicates-Picard-'
+MRDETECT_VERSION = '1.0'
+MRDETECT_LINK = 'https://pubmed.ncbi.nlm.nih.gov/32483360/'
+DJERBA_VERSION = '0.3.20'
+DJERBA_LINK = 'https://github.com/oicr-gsi/djerba'
+DJERBA_PIPELINE_VERSION = 'v.1.0'
