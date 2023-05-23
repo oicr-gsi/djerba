@@ -10,18 +10,25 @@
 ${html_builder().section_cells_begin("<h3>Definitions</h3>","supp")}
 
 <p>
-  <br><strong>Coverage </strong>is the mean number of bases covering each sequenced base. Minimum coverage threshold is 30x (with a target of 40x).
-
-  <strong>circulating tumour DNA (ctDNA) </strong> refers to DNA that comes from cancerous cells and tumors and is found in the bloodstream. 
-
-  <br><strong>Minimal Residual Disease (MRD) </strong> is maintenance or recurrence of a tumour ?? below a state that is active ??. 
-  Detection of minimal residual disease is not conclusively associated with prognostic information, 
+  <br><strong>Minimal Residual Disease (MRD): </strong>malignant cells that remain in a patient who achieves remission
+  and that share genetics with the original tumour cells (<em>see</em> DOI: <a href="https://pubmed.ncbi.nlm.nih.gov/29376520/">10.1038/nrc.2017.125</a>). 
+  Detection of minimal residual disease is not conclusively associated with prognosis, 
   treatment choices should be made on a case-by-case basis with the treating physician.
-  
-  <br><strong>Detected:Checked Reads Ratio</strong> the percentage of reads with primary tumours matches divided by total checked reads
-   is an estimate of the fraction of DNA in the blood from tumour origin when ctDNA is detected. 
-   If ctDNA is not detected, it is an estimate of noise .
 
+  <br><strong>circulating tumour DNA (ctDNA): </strong>DNA that comes from dying cancerous cells and is found in the bloodstream. Here, a marker for MRD. 
+
+  <br><strong>Coverage: </strong>the mean number of bases covering each sequenced base. Minimum coverage threshold is 30x (with a target of 40x).
+
+  <br><strong>Insert Size: </strong>the length in base pairs of the DNA between adapters, affected by both biology and laboratory. 
+
+  <br><strong>Primary SNVs: </strong>the number of candidate single nucleotide variants from the primary tumour. 
+  If primary SNVs is too low (below 4,000), mutatoinal sampling analysis is unreliable.
+
+  <br><strong>Mutational Sampling Analysis: </strong>sampling and sequencing cell-free DNA in plasma 
+  to search for single nucleotide variants matching the primary tumour. 
+  
+  <br><strong>Detected-Checked Reads Ratio: </strong>the percentage of reads with primary tumour matches divided by the total checked reads covering candidate sites.
+  When ctDNA is detected, it may be an estimate of the fraction of ctDNA in the blood, but if ctDNA is not detected it is an estimate of sequencing artefact matches.
 </p>
 
 ${html_builder().section_cells_end()}
@@ -33,9 +40,11 @@ ${html_builder().section_cells_begin("<h3>Assay description</h3>","supp")}
   Paired-end sequencing was performed using the NovaSeq6000 technology. 
   Alignments were performed using <a href="https://bio-bwa.sourceforge.net/">bwa</a> mem (0.7.12) 
   against reference genome <a href="https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.39/">GRCh38.p13</a> 
-  and processed with <a href="https://gatk.broadinstitute.org/hc/en-us/articles/360037052812-MarkDuplicates-Picard-">Picard</a> (2.21.2), which includes duplicate marking. 
+  and processed with <a href="https://gatk.broadinstitute.org/hc/en-us/articles/360037052812-MarkDuplicates-Picard-">Picard</a> (2.21.2), 
+  which includes duplicate marking. 
   Reads were filtered for ctDNA likelihood and matches with primary tumour by <a href="https://pubmed.ncbi.nlm.nih.gov/32483360/">MRDetect</a> (1.0). 
-  The sample is compared against a control cohort of Healthy Blood Controls (HBCs) sequenced and processed at OICR using the same procedure as any tested plasma sample.
+  The sample is compared against a control cohort of Healthy Blood Controls (HBCs) sequenced 
+  and processed at OICR using the same procedure as any tested plasma sample.
   Assay results were collated into the report document by <a href="https://github.com/oicr-gsi/djerba">Djerba</a> (0.3.20) using pipeline v.1.0.
 </p>
 
