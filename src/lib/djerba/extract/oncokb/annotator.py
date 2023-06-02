@@ -147,6 +147,7 @@ class oncokb_annotator(logger):
         it can't use 'Genomic_Change'"""
         self.validator.validate_input_file(in_path)
         if self.apply_cache:
+            self.logger.debug("Applying cache for biomarker annotation")
             self.cache.annotate_maf(in_path, out_path)
         else:
             cmd = [
@@ -158,6 +159,7 @@ class oncokb_annotator(logger):
             ]
             self._run_annotator_script(cmd, 'MAF annotator')
             if self.update_cache:
+                self.logger.debug("Updating cache for biomarker annotation")
                 self.cache.write_maf_cache(out_path)
         return out_path
 
