@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## Unreleased
+
+### Changed
+- ACD -> ACDx
+- Added "-" between date and report name in footer
+
 ## v0.4.9: 2023-05-15
 
 ### Changed
