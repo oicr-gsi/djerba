@@ -128,7 +128,7 @@ class pdf_renderer(logger):
                 current_date = datetime.now()
                 options = {
                     'footer-right': '[page] of [topage]',
-                    'footer-left': '  '.join((current_date.strftime('%Y-%m-%d'), " - " + footer_text)),
+                    'footer-left': ' - '.join((current_date.strftime('%Y-%m-%d'), footer_text)),
                     'quiet': '',
                     'disable-javascript': ''
                 }
