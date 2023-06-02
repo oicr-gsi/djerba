@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+- ACD -> ACDx
+- Added "-" between date and report name in footer
+
 ### Fixed
 - GCGI-870: Fix for biomarker annotation cache; required for benchmark cron
 
