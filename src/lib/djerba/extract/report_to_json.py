@@ -309,14 +309,24 @@ class clinical_report_json_composer(composer_base):
             self.assemble_TMB(tmb_value),
             self.assemble_MSI(msi_file_path)
         ]
+        # write and annotate the biomarkers file in the report directory
+        # the file is used by the build_therapy_info() method
+        # ideally this should done earlier, not in report_to_json.py
+        # but OK for now, because this operation will be refactored into a plugin
         self.logger.debug("Annotating Genomic Biomarkers")
-        genomic_biomarkers_path = self.print_genome_biomarkers_maf(biomarkers, input_dir, sample_ID)
-        genomic_biomarkers_annotated = os.path.join(input_dir, self.GENOMIC_BIOMARKERS_ANNOTATED)
+        genomic_biomarkers_path = \
+            self.print_genome_biomarkers_maf(biomarkers, input_dir, sample_ID)
+        genomic_biomarkers_annotated = \
+            os.path.join(input_dir, self.GENOMIC_BIOMARKERS_ANNOTATED)
         oncokb_annotator(
             sample_ID,
             self.params.get(xc.ONCOTREE_CODE).upper(),
-            input_dir
+            input_dir,
+            cache_params = self.params.get(xc.ONCOKB_CACHE),
+            log_level=self.log_level,
+            log_path=self.log_path
         ).annotate_biomarkers_maf(genomic_biomarkers_path, genomic_biomarkers_annotated)
+        # return data for the biomarkers section of the output JSON
         data = {
             rc.CLINICALLY_RELEVANT_VARIANTS: len(biomarkers),
             rc.BODY: biomarkers
@@ -507,6 +517,11 @@ class clinical_report_json_composer(composer_base):
         # build the "FDA approved" and "investigational" therapies data
         # defined respectively as OncoKB levels 1/2/R1 and R2/3A/3B/4
         # OncoKB "LEVEL" columns contain treatment if there is one, 'NA' otherwise
+        # Input files:
+        # - One file each for mutations, CNVs, biomarkers
+        # - Must be annotated by OncoKB script
+        # - Must not be missing
+        # - May consist of headers only (no data rows)
         # Output columns:
         # - the gene name, with oncoKB link (or pair of names/links, for fusions)
         # - Alteration name, eg. HGVSp_Short value, with oncoKB link
@@ -536,6 +551,13 @@ class clinical_report_json_composer(composer_base):
                 [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
                 if max_level:
                     rows.append(self.treatment_row(gene, alteration, max_level, therapies))
+        with open(os.path.join(self.input_dir, self.GENOMIC_BIOMARKERS_ANNOTATED)) as data_file:
+            for row in csv.DictReader(data_file, delimiter="\t"):
+                gene = 'Biomarker'
+                alteration = row[self.ALTERATION_UPPER_CASE]
+                [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
+                if max_level:
+                    rows.append(self.treatment_row(gene, alteration, max_level, therapies))
         if self.gene_pair_fusions: # omit for WGS-only reports
             for fusion in self.gene_pair_fusions:
                 genes = fusion.get_genes()
@@ -548,18 +570,6 @@ class clinical_report_json_composer(composer_base):
                     therapies = fusion.get_inv_therapies()
                 if max_level:
                     rows.append(self.treatment_row(genes, alteration, max_level, therapies))
-
-        if os.path.exists(os.path.join(self.input_dir, self.GENOMIC_BIOMARKERS_ANNOTATED)):
-            with open(os.path.join(self.input_dir, self.GENOMIC_BIOMARKERS_ANNOTATED)) as data_file:
-                for row in csv.DictReader(data_file, delimiter="\t"):
-                    gene = 'Biomarker'
-                    alteration = row[self.ALTERATION_UPPER_CASE]
-                    [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
-                    if max_level:
-                        rows.append(self.treatment_row(gene, alteration, max_level, therapies))
-        else:
-            msg = "No other biomarkers file at \"{0}\", skipping other biomarkers".format(os.path.join(self.input_dir, self.BIOMARKERS_ANNOTATED))
-            self.logger.debug(msg)
         rows = list(filter(self.oncokb_filter, self.sort_therapy_rows(rows)))
         return rows
 
@@ -902,7 +912,8 @@ class clinical_report_json_composer(composer_base):
 
         if not self.failed:
             # additional data for non-failed reports
-            data[rc.GENOMIC_BIOMARKERS] = self.build_genomic_biomarkers(self.input_dir,self.clinical_data[dc.TUMOUR_SAMPLE_ID])
+            sample_id = self.clinical_data[dc.TUMOUR_SAMPLE_ID]
+            data[rc.GENOMIC_BIOMARKERS] = self.build_genomic_biomarkers(self.input_dir, sample_id)
             data[rc.APPROVED_BIOMARKERS] = self.build_fda_approved_info()
             data[rc.INVESTIGATIONAL_THERAPIES] = self.build_investigational_therapy_info()
             data[rc.GENOMIC_LANDSCAPE_INFO] = self.build_genomic_landscape_info()

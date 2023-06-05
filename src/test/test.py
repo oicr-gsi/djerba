@@ -387,7 +387,7 @@ class TestExtractor(TestBase):
             xc.ASSAY_TYPE: "WGS",
             xc.COVERAGE: 80,
             xc.FAILED: False,
-            xc.ONCOKB_CACHE: oncokb_cache_params,
+            xc.ONCOKB_CACHE: oncokb_cache_params(),
             xc.ONCOTREE_CODE: "PAAD",
             xc.PURITY_FAILURE: False, 
             xc.PROJECT: "PASS01"

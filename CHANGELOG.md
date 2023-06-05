@@ -6,6 +6,9 @@
 - ACD -> ACDx
 - Added "-" between date and report name in footer
 
+### Fixed
+- GCGI-870: Fix for biomarker annotation cache; required for benchmark cron
+
 ## v0.4.9: 2023-05-15
 
 ### Changed
@@ -14,13 +17,13 @@
 - GCGI-885: Changed "Small regions (&#60;3 Mb) with large copy number gains" to "Regions with large copy number gains (&#8805; 6 CN)"
 
 ### Fixed
-- GCGI-885: Fixed splice site reporting 
+- GCGI-885: Fixed splice site reporting
 
 ## v0.4.8: 2023-04-25
 
 ### Changed
 - updated version of Arriba from 1.2.0 to 2.4.0
-- updated version of STAR from 2.7.3a to 2.7.10b 
+- updated version of STAR from 2.7.3a to 2.7.10b
 - updated pipeline version to 3.0
 
 ### Fixed
