@@ -359,7 +359,6 @@ class ReportDiff(unittest.TestCase):
 
     def __init__(self, data):
         super().__init__()
-        self.data = data
         if len(data)!=2:
             raise RuntimeError("Expected 2 inputs, found {0}".format(len(data)))
         self.maxDiff = None
