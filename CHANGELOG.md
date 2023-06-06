@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v0.4.10: 2023-06-06
 
 ### Changed
 - ACD -> ACDx
