@@ -353,30 +353,6 @@ class report_equivalence_tester(logger):
                     alteration[rc.EXPRESSION_METRIC] = 0
         return data_copy
 
-    def compare_reports(self):
-        diff = ReportDiff(self.data)
-        self.diff_text = diff.get_diff()
-        if diff.is_identical():
-            self.logger.info("Equivalence TRUE: Reports are identical")
-            equivalent = True
-        elif self.expressions_are_equivalent(data):
-            # check for non-expression discrepancies
-            data_no_expr = self.remove_expression(data)
-            diff_no_expr = ReportDiff(data_no_expr)
-            equivalent = diff_no_expr.is_identical()
-            if equivalent:
-                msg = "Equivalence TRUE: Reports are not identical, "+\
-                      "but equivalent within expression tolerance"
-            else:
-                msg = "Equivalence FALSE: Expressions are within tolerance, "+\
-                      "but other report fields differ"
-            self.logger.info(msg)
-        else:
-            msg = "Equivalence FALSE: Expressions differ by greater than "+\
-                  "permitted tolerance; other values may also differ."
-            self.logger.info(msg)
-            equivalent = False
-        return equivalent
 
 class ReportDiff(unittest.TestCase):
     """Use a test assertion to diff two data structures"""
