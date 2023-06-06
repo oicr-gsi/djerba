@@ -5,6 +5,7 @@
 ### Changed
 - ACD -> ACDx
 - Added "-" between date and report name in footer
+- GCGI-806: Modify `benchmark.py` interface; remove `--compare-all` option; add `--delta` argument for permitted difference in expression levels
 
 ### Fixed
 - GCGI-870: Fix for biomarker annotation cache; required for benchmark cron
@@ -15,7 +16,6 @@
 - GCGI-883: Added date to footer of pdf, as in ISO requirement
 - GCGI-865: replaced MSI LLOD text
 - GCGI-885: Changed "Small regions (&#60;3 Mb) with large copy number gains" to "Regions with large copy number gains (&#8805; 6 CN)"
-
 ### Fixed
 - GCGI-885: Fixed splice site reporting
 
