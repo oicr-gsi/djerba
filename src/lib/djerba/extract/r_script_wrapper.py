@@ -44,10 +44,7 @@ class r_script_wrapper(logger):
     # `Splice_Region` is *included* here, but *excluded* from the somatic mutation count used to compute TMB in report_to_json.py
     # See also JIRA ticket GCGI-469
     MUTATION_TYPES_EXONIC = [
-        "3'Flank",
-        "3'UTR",
         "5'Flank",
-        "5'UTR",
         "Frame_Shift_Del",
         "Frame_Shift_Ins",
         "In_Frame_Del",
