@@ -1,4 +1,10 @@
 # CHANGELOG
+## Unreleased
+
+### Changed
+- Sample QC results moved to below summary 
+- Split some `Case Overview` section into a new `Patient and Physician` section
+- Removed tracking of patient's genetic sex
 
 ## v0.4.10: 2023-06-06
 

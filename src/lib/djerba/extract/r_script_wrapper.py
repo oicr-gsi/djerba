@@ -182,8 +182,7 @@ class r_script_wrapper(logger):
             ini.SEQUENZA_PURITY_FRACTION,
             ini.SEQUENZA_PLOIDY,
             ini.QC_STATUS,
-            ini.QC_COMMENT,
-            ini.SEX
+            ini.QC_COMMENT
         ]
         body = []
         for header in headers:
