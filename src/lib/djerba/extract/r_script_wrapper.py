@@ -478,7 +478,7 @@ class r_script_wrapper(logger):
             if self.is_tab_empty == False:
                 annotator.annotate_fusion()
         if self.cleanup:
-            #rmtree(self.tmp_dir)
+            rmtree(self.tmp_dir)
             os.remove(os.path.join(self.report_dir, constants.DATA_CNA_ONCOKB_GENES))
             if not self.wgs_only:
                 if os.path.exists(constants.DATA_FUSIONS_ONCOKB):
