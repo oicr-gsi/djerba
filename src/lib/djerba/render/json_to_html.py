@@ -215,12 +215,12 @@ class html_builder:
 
     def patient_table_report_cols(self, patient_args):
         """Get the patient info table: After initial header, before Sample Information & Quality"""
-        widths = [[22,15], [19,35]]
+        widths = [[24,13], [20,36]]
         key_groups = [
-            [constants.STUDY , constants.TUMOUR_SAMPLE_ID],
-            [constants.PATIENT_STUDY_ID, constants.BLOOD_SAMPLE_ID],
-            [constants.PATIENT_LIMS_ID, constants.REPORT_ID],
-            [constants.REQ_APPROVED_DATE, constants.DATE_OF_REPORT ]
+            [constants.STUDY, constants.PATIENT_STUDY_ID],
+            [constants.PATIENT_LIMS_ID, constants.TUMOUR_SAMPLE_ID],
+            [constants.REQ_APPROVED_DATE, constants.BLOOD_SAMPLE_ID],
+            [ constants.DATE_OF_REPORT, constants.REPORT_ID ]
         ]
         return self.key_value_table_rows(patient_args, key_groups, widths)
     
