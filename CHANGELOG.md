@@ -6,6 +6,8 @@
 - Sample QC results moved to below summary 
 - Split some `Case Overview` section into a new `Patient and Physician` section
 - Removed tracking of patient's genetic sex
+- GCGI-943: Overrode HGVSp for BRAF V640E to be represented as V600E
+- GCGI-942: Changed expected maf file extension from '.filter.deduped.realigned.recalibrated.mutect2.filtered.maf.gz' to '.mutect2.filtered.maf.gz'
 
 ## v0.4.10: 2023-06-06
 
