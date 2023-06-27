@@ -427,6 +427,8 @@ class clinical_report_json_composer(composer_base):
                 gene = input_row[self.HUGO_SYMBOL_TITLE_CASE]
                 cytoband = self.get_cytoband(gene)
                 protein = input_row[self.HGVSP_SHORT]
+                if gene == 'BRAF' and protein == 'p.V640E':
+                    protein = 'p.V600E'
                 if 'splice' in input_row[self.VARIANT_CLASSIFICATION].lower():
                     protein = 'p.? (' + input_row[self.HGVSC] + ')'  
                 row = {
