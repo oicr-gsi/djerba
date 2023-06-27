@@ -215,21 +215,21 @@ class html_builder:
 
     def patient_table_report_cols(self, patient_args):
         """Get the patient info table: After initial header, before Sample Information & Quality"""
-        widths = [[17,20], [19,35]]
+        widths = [[24,13], [20,36]]
         key_groups = [
+            [constants.STUDY, constants.PATIENT_STUDY_ID],
             [constants.PATIENT_LIMS_ID, constants.TUMOUR_SAMPLE_ID],
-            [constants.PATIENT_STUDY_ID, constants.BLOOD_SAMPLE_ID],
-            [constants.STUDY , constants.REPORT_ID]
+            [constants.REQ_APPROVED_DATE, constants.BLOOD_SAMPLE_ID],
+            [ constants.DATE_OF_REPORT, constants.REPORT_ID ]
         ]
         return self.key_value_table_rows(patient_args, key_groups, widths)
     
     def patient_table_id_cols(self, patient_args):
         """Get the patient info table: After initial header, before Sample Information & Quality"""
-        widths = [[25,15],[23,38]]
+        widths = [[22,21],[22,36]]
         key_groups = [
-            [constants.DATE_OF_REPORT , constants.REQUISITIONER_EMAIL],
-            [constants.REQ_APPROVED_DATE, constants.NAME],
-            [constants.SEX, constants.DOB],
+            [constants.NAME, constants.DOB],
+            [constants.SEX, constants.REQUISITIONER_EMAIL],
             [constants.LICENCE_NUMBER, constants.PHYSICIAN],
             [constants.PHONE_NUMBER, constants.HOSPITAL]
         ]

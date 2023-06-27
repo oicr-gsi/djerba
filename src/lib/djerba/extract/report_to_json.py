@@ -358,7 +358,6 @@ class clinical_report_json_composer(composer_base):
         tumour_id = self.clinical_data[dc.TUMOUR_SAMPLE_ID]
         data[rc.ASSAY_NAME] = self.build_assay_name()
         data[rc.BLOOD_SAMPLE_ID] = self.clinical_data[dc.BLOOD_SAMPLE_ID]
-        data[rc.SEX] = self.clinical_data[dc.SEX]
         data[rc.PATIENT_LIMS_ID] = self.clinical_data[dc.PATIENT_LIMS_ID]
         data[rc.PATIENT_STUDY_ID] = self.clinical_data[dc.PATIENT_STUDY_ID]
         data[rc.PRIMARY_CANCER] = self.clinical_data[dc.CANCER_TYPE_DESCRIPTION]

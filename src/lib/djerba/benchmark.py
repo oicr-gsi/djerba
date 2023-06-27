@@ -76,7 +76,7 @@ class benchmarker(logger):
             sample_inputs[ini.PATIENT] = sample
             sample_inputs[ini.DATA_DIR] = self.data_dir
             sample_inputs[self.TEST_DATA] = self.test_data
-            for key in [ini.TUMOUR_ID, ini.NORMAL_ID, ini.PATIENT_ID, ini.SEX]:
+            for key in [ini.TUMOUR_ID, ini.NORMAL_ID, ini.PATIENT_ID]:
                 sample_inputs[key] = self.sample_params[sample][key]
             pattern = '{0}/**/{1}_*mutect2.filtered.maf.gz'.format(results_dir, sample)
             sample_inputs[ini.MAF_FILE] = self.glob_single(pattern)

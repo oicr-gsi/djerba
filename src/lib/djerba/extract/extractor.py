@@ -207,8 +207,7 @@ class extractor(logger):
                 [constants.PCT_V7_ABOVE_80X, self.config[ini.DISCOVERED][ini.PCT_V7_ABOVE_80X] ],
                 [constants.REQ_APPROVED_DATE, req_approved_date],
                 [constants.SEQUENZA_PURITY_FRACTION, purity],
-                [constants.SEQUENZA_PLOIDY, ploidy],
-                [constants.SEX, self.config[ini.INPUTS][ini.SEX] ]
+                [constants.SEQUENZA_PLOIDY, ploidy]
             ]
         except KeyError as err:
             msg = "Missing required clinical data value from config"

@@ -189,19 +189,19 @@ class TestConfigure(TestBase):
         test_configurer.run(out_path)
 
     def test_default(self):
-        self.run_config_test(self.config_user, False, False, 97, self.provenance)
+        self.run_config_test(self.config_user, False, False, 96, self.provenance)
 
     def test_default_fail(self):
-        self.run_config_test(self.config_user_failed, False, True, 83, self.provenance)
+        self.run_config_test(self.config_user_failed, False, True, 82, self.provenance)
 
     def test_wgs_only(self):
-        self.run_config_test(self.config_user_wgs_only, True, False, 95, self.provenance)
+        self.run_config_test(self.config_user_wgs_only, True, False, 94, self.provenance)
 
     def test_wgs_only_fail(self):
-        self.run_config_test(self.config_user_wgs_only_failed, True, True, 83, self.provenance)
+        self.run_config_test(self.config_user_wgs_only_failed, True, True, 82, self.provenance)
 
     def test_vnwgts(self):
-        self.run_config_test(self.config_user_vnwgts, False, False, 97, self.provenance_vnwgts)
+        self.run_config_test(self.config_user_vnwgts, False, False, 96, self.provenance_vnwgts)
 
     def test_vnwgts_broken(self):
         # test failure modes of sample input
@@ -253,7 +253,7 @@ class TestExtractor(TestBase):
     ]
     # md5 sums of files in failed output
     STATIC_MD5 = {
-        'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
+        'data_clinical.txt': '9265aa2443b3b62838f97fb601383793',
         'genomic_summary.txt': 'cfd5d2f88e41cf22ef0308930bca8727',
         'technical_notes.txt': '7caedb48f3360f33937cb047579633fd'
     }
@@ -309,7 +309,7 @@ class TestExtractor(TestBase):
             data_found['report']['djerba_version'] = 'PLACEHOLDER'
             del data_found['supplementary'] # do not test supplementary data
             data = json.dumps(data_found)
-            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), 'c6ef878a0dcddbc793b5c8f20e64980f')
+            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), '3c1d1e04ee86bce8f9d06c97d3c899e5')
 
     def test_wgts_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGTS')
@@ -721,13 +721,13 @@ class TestRender(TestBase):
         out_path = os.path.join(out_dir, 'djerba_test_wgts.html')
         hr = html_renderer()
         out_path = hr.run_clinical(args_path, out_dir, 'report_WGTS', False)
-        self.check_report(out_path, 'c7f8bd03a843b90793dfbc9e21d21b46')
+        self.check_report(out_path, 'a7f4924819d3daf37c48dbded90bfb68')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = hr.run_clinical(args_path, out_dir, 'report_WGS_only', False)
-        self.check_report(out_path, '8ae87582d794b6f4aec68c90f9668c36')
+        self.check_report(out_path, '472108f50d05c6f4ff9f5afc975f0f79')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = hr.run_clinical(args_path, out_dir, 'report_failed', False)
-        self.check_report(out_path, '99368521634d5817555b13dff1fd537e')
+        self.check_report(out_path, 'c9bc6fd55024b5716cc8f1c7f24623f3')
 
     def test_html_research(self):
         out_dir = os.path.join(self.tmp_dir, 'html_research')

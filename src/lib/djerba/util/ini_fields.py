@@ -59,7 +59,6 @@ SEQUENZA_GAMMA = 'sequenza_gamma'
 SEQUENZA_REVIEWER_1 = 'sequenza_reviewer_1'
 SEQUENZA_REVIEWER_2 = 'sequenza_reviewer_2'
 SEQUENZA_SOLUTION = 'sequenza_solution'
-SEX = 'sex'
 STUDY_ID = 'studyid'
 TARGET_COVERAGE = 'target_coverage'
 TCGA_CODE = 'tcgacode'
@@ -117,7 +116,6 @@ SCHEMA_CORE = {
         SAMPLE_TYPE,
         SEQUENZA_REVIEWER_1,
         SEQUENZA_REVIEWER_2,
-        SEX,
         STUDY_ID,
         TCGA_CODE
     ],
@@ -187,7 +185,6 @@ SCHEMA_DEFAULT = {
         SAMPLE_TYPE,
         SEQUENZA_REVIEWER_1,
         SEQUENZA_REVIEWER_2,
-        SEX,
         STUDY_ID,
         TCGA_CODE
     ],
@@ -284,7 +281,6 @@ SCHEMA_WGS_ONLY = {
         SAMPLE_TYPE,
         SEQUENZA_REVIEWER_1,
         SEQUENZA_REVIEWER_2,
-        SEX,
         STUDY_ID,
         TCGA_CODE
     ],
@@ -370,7 +366,6 @@ SCHEMA_FAILED = {
         SAMPLE_TYPE,
         SEQUENZA_REVIEWER_1,
         SEQUENZA_REVIEWER_2,
-        SEX,
         STUDY_ID,
         TCGA_CODE
     ],
