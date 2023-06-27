@@ -442,7 +442,7 @@ class provenance_reader(logger):
     def parse_maf_path(self):
         workflows = [self.WF_VEP, self.NIASSA_WF_VEP]
         mt = self.MT_TXT_GZ
-        suffix = '\.filter\.deduped\.realigned\.recalibrated\.mutect2\.filtered\.maf\.gz$'
+        suffix = '\.mutect2\.filtered\.maf\.gz$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_mavis_path(self):
