@@ -2,6 +2,7 @@
 ## Unreleased
 
 ### Changed
+- GCGI-864: removed annotation of 5'UTR, 3'UTR, and 3'Flank. 5'Flank only annotated if TERT
 - Sample QC results moved to below summary 
 - Split some `Case Overview` section into a new `Patient and Physician` section
 - Removed tracking of patient's genetic sex
