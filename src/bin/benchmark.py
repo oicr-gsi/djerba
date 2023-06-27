@@ -20,12 +20,15 @@ def get_parser():
     parser.add_argument('-l', '--log-path', metavar='PATH', help='Output file for log messages; defaults to STDERR')
     subparsers = parser.add_subparsers(title='subcommands', help='sub-command help', dest='subparser_name')
     compare_parser = subparsers.add_parser(constants.COMPARE, help='Compare two sets of Djerba benchmark reports')
-    compare_parser.add_argument('-a', '--all', action='store_true', dest='compare_all', help='Compare all contents of JSON files. If not given, default is to compare report elements only, not supplementary.')
+    compare_parser.add_argument('-D', '--delta', metavar='NUM', type=float, default=0.1, help='Permitted difference in equivalent expression levels, must be between 0 and 1')
     compare_parser.add_argument('-r', '--report-dir', metavar='DIR', action='append', required=True, help='Directory of reports, as generated in \'report\' mode; must be supplied twice')
     report_parser = subparsers.add_parser(constants.REPORT, help='Set up and (optionally) generate Djerba reports')
     report_parser.add_argument('-i', '--input-dir', metavar='DIR', required=True, help='Directory to scan for workflow outputs, eg. ./GSICAPBENCHyymmdd/seqware-results/')
     report_parser.add_argument('-o', '--output-dir', metavar='DIR', required=True, help='Directory in which to generate reports')
     report_parser.add_argument('--dry-run', action='store_true', help='Set up output directories and write config files, but do not generate reports')
+    cache_group = report_parser.add_mutually_exclusive_group()
+    cache_group.add_argument('--apply-cache', action='store_true', help='Apply the offline oncoKB cache to do annotation; no contact with external oncoKB server')
+    cache_group.add_argument('--update-cache', action='store_true', help='Use annotation results from external oncoKB server to update the offline cache')
     return parser
 
 if __name__ == '__main__':

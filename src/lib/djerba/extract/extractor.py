@@ -30,7 +30,7 @@ class extractor(logger):
     CANCER_TYPE = 'cancer_type'
     CANCER_TYPE_DESCRIPTION = 'cancer_description'
 
-    def __init__(self, config, report_dir, author, wgs_only, failed, depth, cache_params,
+    def __init__(self, config, report_dir, author, wgs_only, failed, cache_params,
                  cleanup=True, log_level=logging.WARNING, log_path=None):
         self.config = config
         self.author = author
@@ -40,7 +40,6 @@ class extractor(logger):
         else:
             self.assay_type = render_constants.ASSAY_WGTS
         self.failed = failed
-        self.depth = depth
         self.cache_params = cache_params
         self.cleanup = cleanup
         self.log_level = log_level
@@ -156,7 +155,7 @@ class extractor(logger):
         params = {
             xc.AUTHOR: self.author,
             xc.ASSAY_TYPE: self.assay_type,
-            xc.COVERAGE: self.depth,
+            xc.COVERAGE: int(self.config[ini.DISCOVERED][ini.TARGET_COVERAGE]),
             xc.FAILED: self.failed,
             xc.ONCOKB_CACHE: self.cache_params,
             xc.ONCOTREE_CODE: self.config[ini.INPUTS][ini.ONCOTREE_CODE],
@@ -204,12 +203,11 @@ class extractor(logger):
                 [constants.CANCER_TYPE_DESCRIPTION, oncotree_info[self.CANCER_TYPE_DESCRIPTION] ],
                 [constants.CLOSEST_TCGA, self.config[ini.INPUTS][ini.TCGA_CODE] ],
                 [constants.SAMPLE_ANATOMICAL_SITE, self.config[ini.INPUTS][ini.SAMPLE_ANATOMICAL_SITE]],
-                [constants.MEAN_COVERAGE, self.config[ini.INPUTS][ini.MEAN_COVERAGE] ],
-                [constants.PCT_V7_ABOVE_80X, self.config[ini.INPUTS][ini.PCT_V7_ABOVE_80X] ],
+                [constants.MEAN_COVERAGE, self.config[ini.DISCOVERED][ini.MEAN_COVERAGE] ],
+                [constants.PCT_V7_ABOVE_80X, self.config[ini.DISCOVERED][ini.PCT_V7_ABOVE_80X] ],
                 [constants.REQ_APPROVED_DATE, req_approved_date],
                 [constants.SEQUENZA_PURITY_FRACTION, purity],
-                [constants.SEQUENZA_PLOIDY, ploidy],
-                [constants.SEX, self.config[ini.INPUTS][ini.SEX] ]
+                [constants.SEQUENZA_PLOIDY, ploidy]
             ]
         except KeyError as err:
             msg = "Missing required clinical data value from config"

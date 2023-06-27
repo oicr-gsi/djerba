@@ -3,19 +3,20 @@
 from test import TestBase
 import os
 import unittest
+from copy import deepcopy
 from shutil import copytree
 import djerba.util.constants as constants
-from djerba.benchmark import benchmarker
+from djerba.benchmark import benchmarker, report_equivalence_tester
 
-class TestBenchmark(TestBase):
+class TestReport(TestBase):
 
     class mock_args_compare:
         """Use instead of argparse to store params for testing"""
 
-        def __init__(self, report_dirs, compare_all=False):
+        def __init__(self, report_dirs):
             self.subparser_name = constants.COMPARE
             self.report_dir = report_dirs
-            self.compare_all = compare_all
+            self.delta = 0.1
             # logging
             self.log_path = None
             self.debug = False
@@ -30,6 +31,8 @@ class TestBenchmark(TestBase):
             self.input_dir = input_dir
             self.output_dir = output_dir
             self.dry_run = False
+            self.apply_cache = True
+            self.update_cache = False
             # logging
             self.log_path = None
             self.debug = False
@@ -52,11 +55,60 @@ class TestBenchmark(TestBase):
         self.assertTrue(benchmarker(compare_args_1).run())
         compare_args_2 = self.mock_args_compare([report_1a, report_2])
         self.assertFalse(benchmarker(compare_args_2).run())
-        compare_args_3 = self.mock_args_compare([report_1a, report_1b], compare_all=True)
-        self.assertTrue(benchmarker(compare_args_3).run())
-        compare_args_4 = self.mock_args_compare([report_1a, report_2], compare_all=True)
-        self.assertFalse(benchmarker(compare_args_4).run())
 
+class TestEquivalence(TestBase):
+
+    # simplified report structure with mock expression levels
+    EXAMPLE = {
+        "oncogenic_somatic_CNVs": {
+            "Body": [
+                {
+                    "Expression Percentile": 0.4,
+                    "Gene": "FGFR1",
+                },
+                {
+                    "Expression Percentile": 1.0,
+                    "Gene": "FGFR4",
+                }
+            ]
+        },
+        "small_mutations_and_indels": {
+            "Body": [
+                {
+                    "Expression Percentile": 0.5224,
+                    "Gene": "CDKN2A",
+                },
+                {
+                    "Expression Percentile": 0.9,
+                    "Gene": "KRAS",
+                }
+            ]
+        }
+    }
+
+    def test_equivalence(self):
+        tester1 = report_equivalence_tester([self.EXAMPLE, self.EXAMPLE], 0.1)
+        self.assertTrue(tester1.is_equivalent())
+        modified = deepcopy(self.EXAMPLE)
+        cnv = "oncogenic_somatic_CNVs"
+        expr = "Expression Percentile"
+        modified[cnv]["Body"][0][expr] = 0.7 # was 0.4
+        tester2 = report_equivalence_tester([self.EXAMPLE, modified], 0.1)
+        self.assertFalse(tester2.is_equivalent())
+        tester3 = report_equivalence_tester([self.EXAMPLE, modified], 0.5)
+        self.assertTrue(tester3.is_equivalent())
+        extra = {
+            "Expression Percentile": 0.9,
+            "Gene": "BRCA2"
+        }
+        with_extra_gene = deepcopy(modified)
+        with_extra_gene[cnv]["Body"].append(extra)
+        tester4 = report_equivalence_tester([self.EXAMPLE, with_extra_gene], 0.5)
+        self.assertFalse(tester4.is_equivalent())
+        with_extra_other = deepcopy(self.EXAMPLE)
+        with_extra_other["foo"] = "bar"
+        tester5 = report_equivalence_tester([self.EXAMPLE, with_extra_other], 0.5)
+        self.assertFalse(tester5.is_equivalent())
 
 if __name__ == '__main__':
     unittest.main()

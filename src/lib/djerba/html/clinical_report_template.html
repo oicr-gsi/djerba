@@ -24,9 +24,19 @@
     <h1>Clinical Research Report</h1>
   % endif
   
-  <!-- Case overview -->
-  ${html_builder().make_sections_into_cells("<h2>Case Overview</h2>","main")}
+  <!-- Patient & Physician -->
+  ${html_builder().section_cells_begin("<h2>Patient & Physician</h2>","main")}
 
+  <table  class="info">
+    % for row in html_builder().patient_table_id_cols(patient_info):
+          ${row}
+    % endfor
+    </table>
+
+  ${html_builder().section_cells_end()}
+
+  ${html_builder().section_cells_begin("<h2>Case Overview</h2>","main")}
+  
       <table class="info">
         <tr>
           <td colspan=1>Assay:</td>
@@ -45,31 +55,16 @@
         </tr>
       </table>
 
-      <!-- if assay not pre-validated -->
       <table  class="info">
-      % for row in html_builder().patient_table_report_cols(patient_info):
-            ${row}
-      % endfor
-      </table>
-      <table  class="info">
-      % for row in html_builder().patient_table_id_cols(patient_info):
-            ${row}
-      % endfor
-      </table>
-
-  </div></div>
-  
-
-  <!-- sample info -->
-  ${html_builder().make_sections_into_cells("<h2>Sample Information</h2>","main")}
-
-        <table class="info">
-        % for row in html_builder(purity_failure).sample_information_and_quality_rows(sample_info_and_quality):
+        % for row in html_builder().patient_table_report_cols(patient_info):
               ${row}
         % endfor
         </table>
 
-  </div></div>
+  ${html_builder().section_cells_end()}
+  
+
+
 
   <!-- treatment -->
   % if not failed:
@@ -77,12 +72,22 @@
   % endif
 
   <!-- results summary -->
-  ${html_builder().make_sections_into_cells("<h2>Results Summary</h2>","main")}
+  ${html_builder().section_cells_begin("<h2>Results Summary</h2>","main")}
 
     ${html_builder().markdown_to_html(genomic_summary)}
 
-  </div></div>
+  ${html_builder().section_cells_end()}
 
+    <!-- sample info -->
+    ${html_builder().section_cells_begin("<h2>Sample Information</h2>","main")}
+
+    <table class="info">
+    % for row in html_builder(purity_failure).sample_information_and_quality_rows(sample_info_and_quality):
+          ${row}
+    % endfor
+    </table>
+
+${html_builder().section_cells_end()}
   <!-- genomic landscape -->
   % if not failed:
     <%include file="genomic_details_template.html"/>
@@ -90,8 +95,12 @@
 
   <!-- Supplementary -->
   <%include file="supplementary_materials_template.html"/>
-  
-  <h3>Report Sign offs</h3>
+
+  <hr class="header-big-line" style="width:100%; align:right; page-break-before:always;">
+
+  <h2>Report Sign-offs</h2>
+
+  <hr class="lil-line" style="width:100%;">
 
   <%
   if report_date:
@@ -109,10 +118,14 @@
     </tr>
   </table>
 
-  <br>
-  <br>
-  <br>
-  <br>
+  <br/>
+  <br/>
+  <br/>
+  <br/>
+  <br/>
+  <br/>
+  <br/>
+  <br/>
 
   <hr class="big-line" style="width: 100%; "  >
 

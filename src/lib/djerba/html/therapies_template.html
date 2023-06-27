@@ -4,7 +4,7 @@
   from djerba.render.json_to_html import html_builder
 %>
 
-${html_builder().make_sections_into_cells("<h2>Treatment Options</h2>","main")}
+${html_builder().section_cells_begin("<h2>Treatment Options</h2>","main")}
 
       <p>Review identified <strong>${len(approved_biomarkers)}</strong> mutation(s) indicating an FDA Approved and/or NCCN Recommended Biomarker and <strong>${len(investigational_therapies)}</strong> mutation(s) indicating investigational therapies.</p>
 
@@ -32,4 +32,4 @@ ${html_builder().make_sections_into_cells("<h2>Treatment Options</h2>","main")}
             </table>
       % endif
 
-</div></div>
+${html_builder().section_cells_end()}

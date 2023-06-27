@@ -12,6 +12,7 @@ option_list = list(
   make_option(c("-A", "--aratiofile"), type="character", default=NULL, help="A allele ratio file", metavar="character"),
   make_option(c("-b", "--maffile"), type="character", default=NULL, help="concatenated maf file", metavar="character"),
   make_option(c("-c", "--segfile"), type="character", default=NULL, help="concatenated seg file", metavar="character"),
+  make_option(c("-C", "--cbiostudy"), type="character", default='None', help="cbioportal studyid", metavar="character"),
   make_option(c("-d", "--fusfile"), type="character", default=NULL, help="concatenated fus file", metavar="character"),
   make_option(c("-e", "--gepfile"), type="character", default=NULL, help="concatenated gep file", metavar="character"),
   make_option(c("-f", "--outdir"), type="character", default=NULL, help="output directory", metavar="character"),
@@ -70,6 +71,12 @@ normalid <- opt$normalid
 seqtype <- opt$seqtype
 genome <- opt$genome
 
+if(opt$cbiostudy == 'None'){
+  cbio_study <- opt$studyid
+}else{
+  cbio_study <- opt$cbiostudy
+}
+
 # print options to output
 print("Running singleSample with the following options:")
 print(opt)
@@ -91,7 +98,7 @@ if (is.null(maffile)) {
    df_cbio_anno <- procVEP(maffile)
 
    # add whizbam links
-   df_cbio_anno_whizbam <- construct_whizbam_links(df_cbio_anno, whizbam_url, studyid, tumourid, normalid, seqtype, genome)
+   df_cbio_anno_whizbam <- construct_whizbam_links(df_cbio_anno, whizbam_url, cbio_study, tumourid, normalid, seqtype, genome)
 
    # get pass
    df_cbio_filt <- subset(df_cbio_anno_whizbam, TGL_FILTER_VERDICT == "PASS")
@@ -162,8 +169,17 @@ write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[5]]), CNAs[[5]], check.names
   file=paste0(outdir, "/data_CNA_oncoKBgenes_nonDiploid.txt"), sep="\t", row.names=FALSE, quote=FALSE)
 
 ###################### RNASEQ - Fusions #####################
+# first, check if the .tab file is empty (0 lines) or only contains a header (1 line); if so, skip this section.
+if (is.null(fusfile)) {
+	num_lines = 0
+} else {
+	num_lines <- readLines(fusfile, warn=FALSE)
+}
+
 if (is.null(fusfile)) {
    print("No fusion input, processing omitted")
+} else if(length(num_lines)<=1) {
+  print("Fusion input is empty or only contains a header, processing omitted") 
 } else {
   print("Processing Fusion data")
 

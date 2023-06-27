@@ -127,7 +127,8 @@ class provenance_reader(logger):
             [self.WF_DELLY, self.NIASSA_WF_DELLY],
             [self.WF_RSEM],
             [self.WF_STAR, self.NIASSA_WF_STAR],
-            [self.WF_STARFUSION, self.NIASSA_WF_STARFUSION]
+            [self.WF_STARFUSION, self.NIASSA_WF_STARFUSION],
+            [self.WF_MAVIS]
         ]
         counts = {}
         for group in [wgs_to_check, wts_to_check]:
@@ -346,16 +347,21 @@ class provenance_reader(logger):
         fpr_samples = sample_name_container()
         for row in self.attributes:
             try:
+                name = row.get(self.SAMPLE_NAME_KEY)
                 if row.get(self.GEO_TISSUE_TYPE_ID)=='R':
-                    fpr_samples.set_wg_n(row.get(self.SAMPLE_NAME_KEY))
+                    fpr_samples.set_wg_n(name)
                 elif row.get(self.GEO_LIBRARY_SOURCE_TEMPLATE_TYPE)=='WG':
-                    fpr_samples.set_wg_t(row.get(self.SAMPLE_NAME_KEY))
+                    fpr_samples.set_wg_t(name)
                 elif row.get(self.GEO_LIBRARY_SOURCE_TEMPLATE_TYPE)=='WT':
-                    fpr_samples.set_wt_t(row.get(self.SAMPLE_NAME_KEY))
+                    fpr_samples.set_wt_t(name)
+                elif row.get(self.GEO_LIBRARY_SOURCE_TEMPLATE_TYPE)=='SW':
+                    msg = "Sample {0} is ".format(name)+\
+                          "shallow whole genome, will not be processed"
+                    self.logger.info(msg)
                 else:
-                    msg = "Cannot resolve sample type from row attributes: {0}".format(row)
-                    self.logger.error(msg)
-                    raise SampleUnknownTypeError(msg)
+                    msg = "Unknown sample type from row attributes: {0}".format(row)+\
+                          "; file will not be processed"
+                    self.logger.warning(msg)
             except SampleNameOverwriteError as err:
                 msg = "Inconsistent sample names found in file provenance: {0}".format(err)
                 self.logger.error(msg)
@@ -441,8 +447,8 @@ class provenance_reader(logger):
 
     def parse_mavis_path(self):
         workflow = self.WF_MAVIS
-        mt = self.MT_ZIP
-        suffix = '(mavis-output|summary)\.zip$'
+        mt = self.MT_OCTET_STREAM
+        suffix = 'mavis_summary\.tab$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
     def parse_sequenza_path(self):
@@ -581,9 +587,6 @@ class SampleNameConflictError(Exception):
     pass
 
 class SampleNameOverwriteError(Exception):
-    pass
-
-class SampleUnknownTypeError(Exception):
     pass
 
 class UnknownTumorNormalIDError(Exception):

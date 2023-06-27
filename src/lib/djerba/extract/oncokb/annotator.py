@@ -140,3 +140,26 @@ class oncokb_annotator(logger):
             if self.update_cache:
                 self.cache.write_maf_cache(out_path)
         return out_path
+    
+    def annotate_biomarkers_maf(self, in_path, out_path):
+        """although it uses the same MafAnnotator script, 
+        other biomarkers needs to be seperate because 
+        it can't use 'Genomic_Change'"""
+        self.validator.validate_input_file(in_path)
+        if self.apply_cache:
+            self.logger.debug("Applying cache for biomarker annotation")
+            self.cache.annotate_maf(in_path, out_path)
+        else:
+            cmd = [
+                'MafAnnotator.py',
+                '-i', in_path,
+                '-o', out_path,
+                '-c', self.info_path,
+                '-b', self.oncokb_token
+            ]
+            self._run_annotator_script(cmd, 'MAF annotator')
+            if self.update_cache:
+                self.logger.debug("Updating cache for biomarker annotation")
+                self.cache.write_maf_cache(out_path)
+        return out_path
+

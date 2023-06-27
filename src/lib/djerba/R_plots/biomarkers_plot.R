@@ -17,6 +17,9 @@ msi_b <- opt$msi
 work_dir <- opt$dir
 
 if(msi_b == "TRUE"){
+  cutoff_MSS = 5
+  cutoff_MSI = 15
+  
   msi_path <- paste(work_dir, 'msi.txt', sep='/')
   
   boot <- read.table(msi_path,header=FALSE)
@@ -35,9 +38,12 @@ if(msi_b == "TRUE"){
     geom_errorbar(aes(ymin=q1, ymax=q3), width=0,size=2) +
     geom_errorbar(aes(ymin=q0, ymax=q4), width=0) +
     
-    annotate(x = 0, xend=2, y=5, yend=5,geom="segment",linetype="longdash",colour = "red") +
-    annotate(geom="text",x = 0,y=5,color="red",label="MSI-H", hjust = -0.2, vjust = -3.3,size=5) +
+    annotate(x = 0, xend=2, y=cutoff_MSS, yend=cutoff_MSS,geom="segment",linetype="longdash",colour = "forestgreen") +
+    annotate(geom="text",x = 0,y=0,color="forestgreen",label="MSS", hjust = 0, vjust = -4.1,size=4) +
 
+    annotate(x = 0, xend=2, y=cutoff_MSI, yend=cutoff_MSI,geom="segment",linetype="longdash",colour = "red") +
+    annotate(geom="text",x = 0,y=cutoff_MSI,color="red",label="MSI", hjust = -0.2, vjust = -4.1,size=4) +
+    
     guides(fill=FALSE)+
     theme_classic() + 
     labs(x="",y="unstable microsatellites (%)",title="") + 

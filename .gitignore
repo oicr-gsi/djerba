@@ -1,10 +1,14 @@
 *.pyc
 *~
+*#
+.#*
 djerba.egg-info
 build
 dist
+.idea
 .project
 .pydevproject
 djerba.log
 *.DS_Store
 *.Rhistory
+*.vscode

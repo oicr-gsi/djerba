@@ -1,9 +1,153 @@
 # CHANGELOG
-
 ## Unreleased
 
+### Changed
+- GCGI-864: removed annotation of 5'UTR, 3'UTR, and 3'Flank. 5'Flank only annotated if TERT
+- Sample QC results moved to below summary 
+- Split some `Case Overview` section into a new `Patient and Physician` section
+- Removed tracking of patient's genetic sex
+
+## v0.4.10: 2023-06-06
+
+### Changed
+- ACD -> ACDx
+- Added "-" between date and report name in footer
+- GCGI-806: Modify `benchmark.py` interface; remove `--compare-all` option; add `--delta` argument for permitted difference in expression levels
+
+### Fixed
+- GCGI-870: Fix for biomarker annotation cache; required for benchmark cron
+
+## v0.4.9: 2023-05-15
+
+### Changed
+- GCGI-883: Added date to footer of pdf, as in ISO requirement
+- GCGI-865: replaced MSI LLOD text
+- GCGI-885: Changed "Small regions (&#60;3 Mb) with large copy number gains" to "Regions with large copy number gains (&#8805; 6 CN)"
+### Fixed
+- GCGI-885: Fixed splice site reporting
+
+## v0.4.8: 2023-04-25
+
+### Changed
+- updated version of Arriba from 1.2.0 to 2.4.0
+- updated version of STAR from 2.7.3a to 2.7.10b
+- updated pipeline version to 3.0
+
+### Fixed
+- GCGI-862: fixed fusion oncokb levels (changed to symbols)
+- GCGI-853: fixed and cleaned annotation of genomic biomarkers
+- GCGI-852: Correct file metatype for Mavis summary files
+
+## v0.4.7: 2023-04-13
+
 ### Added
-- GCGI-587: Added CLIA number 
+- GCGI-823: New script `src/test/run_gsicapbench.sh` to generate and compare benchmark reports before a release
+
+### Fixed
+- GCGI-810: Do not exit prematurely when finding benchmark inputs
+
+## v0.4.6: 2023-04-06
+
+- With this release, we start a _feature freeze_ on the current Djerba application
+- Urgent bugfixes only, to allow us to focus on implementing Djerba v1.0.0
+
+### Added
+- new parameter called `cbio_study_id` from shesmu for whizbam links
+
+### Changed
+- Moved qc-etl and pinery metric pulls to `discover_secondary` so that `tumour_id` is set first
+- Check for manually configured parameters before querying qc-etl or Pinery
+- Removed callability and coverage from `config_template.ini`
+- Warning message about MSI LLOD in report when purity less than 50%
+
+### Fixed
+- Raise an error in INI config validation if any parameters are set to an empty string
+- Removed unloading of djerba module in `qc_report` because both now use same python version
+- More specific error messages when qc-etl and pinery pulls fail
+
+## v0.4.5: 2023-03-24
+
+### Fixed
+- Add dependencies to `setup.py`, to resolve build error in Modulator
+
+## v0.4.4: 2023-03-22
+
+### Changed
+- `djerba pdf` takes in dir/ and json and makes pdfs from htmls based on report_id in json ()
+- Proteins for splice sites changed to form p? (c.${POSITION}${MUTATION}) (ex. from "p.X2540_splice" to "p.? (c.458-1G>T)")
+- Updated to support mavis data given as .tab input (still supports .zip input)
+- Updated to prevent error when mavis .tab file is empty or only contains a header
+- target coverage pulled from pinery
+- callability and coverage pulled from qc-etl
+- automatically make failed report if coverage below target
+- add `jsonschema` dependency in `setup.py`; not yet needed for production, but will be for plugin development
+- move to python 3.10.6
+
+## v0.4.3: 2023-03-10
+
+### Changed
+- Updated to use Python Tools module v17 for Geneticist Review Report
+
+### Fixed
+- GCGI-777: Stop `config.ini` validation from logging incorrect warnings
+- GCGI-773: New limits to y-axis in CNV plot
+
+## v0.4.2: 2023-03-07
+
+### Fixed
+- Add `research_report_template.html` to installation in `setup.py`
+
+## v0.4.1: 2023-03-06
+
+### Added
+- GCGI-686: Simple demo of a plugin structure in `prototypes`
+- GCGI-388: Versions for softwares and links are configurable
+
+### Fixed
+- GCGI-767: FPR check on sample type was too strict
+
+## v0.4.0: 2023-03-01
+
+- Requires update to `djerba_test_data_lfs`
+
+### Added
+- Automatically generates research report from template
+- merges research and clinical reports
+- new merger function
+- MSI in clinical report
+
+### Fixed
+- Handle cases where expression percentile for a gene is not available
+
+## v0.3.21: 2023-02-21
+
+- Requires update to `djerba_test_data_lfs`
+
+### Added
+- GCGI-456: Add mRNA expression
+- N1/N2/N3 icons for Oncogenic/Likely Oncogenic/Predicted Oncogenic
+
+### Changed
+- GCGI-663: Center OncoKB icons in table column
+- GCGI-676: Use OncoKB icons in mutation sections
+- GCGI-722: Fix page breaks
+- GCGI-723: Extra line breaks in report footer
+
+### Fixed
+- GCGI-733: Bugfix for archiving crash on failed reports
+
+## v0.3.20: 2023-01-27
+
+### Added
+- GCGI-587: Added CLIA number
+- GCGI-652: Added description of Copy State changes in supplementary
+
+### Fixed
+- GCGI-698: Handle unknown cytoband without a misleading warning
+- GCGI-702: Add apply/update cache options to benchmark script
+- GCGI-703: Fix genome reference name in footer
+- GCGI-675: Update default config ini parameters
+- GCGI-692: Updated the Genomic Summary template
 
 ## v0.3.19: 2023-01-13
 
