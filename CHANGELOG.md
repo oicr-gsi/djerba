@@ -6,6 +6,7 @@
 - Sample QC results moved to below summary 
 - Split some `Case Overview` section into a new `Patient and Physician` section
 - Removed tracking of patient's genetic sex
+- GCGI-943: Overrode HGVSp for BRAF V640E to be represented as V600E
 
 ## v0.4.10: 2023-06-06
 
