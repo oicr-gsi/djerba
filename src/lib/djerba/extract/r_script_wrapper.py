@@ -26,6 +26,7 @@ class r_script_wrapper(logger):
     T_DEPTH = 't_depth'
     T_ALT_COUNT = 't_alt_count'
     GNOMAD_AF = 'gnomAD_AF'
+    HUGO_SYMBOL = 'Hugo_Symbol'
     MAF_KEYS = [
         VARIANT_CLASSIFICATION,
         TUMOUR_SAMPLE_BARCODE,
@@ -33,7 +34,8 @@ class r_script_wrapper(logger):
         FILTER,
         T_DEPTH,
         T_ALT_COUNT,
-        GNOMAD_AF
+        GNOMAD_AF,
+        HUGO_SYMBOL
     ]
 
     # 0-based index for GEP results file
@@ -44,10 +46,7 @@ class r_script_wrapper(logger):
     # `Splice_Region` is *included* here, but *excluded* from the somatic mutation count used to compute TMB in report_to_json.py
     # See also JIRA ticket GCGI-469
     MUTATION_TYPES_EXONIC = [
-        "3'Flank",
-        "3'UTR",
         "5'Flank",
-        "5'UTR",
         "Frame_Shift_Del",
         "Frame_Shift_Ins",
         "In_Frame_Del",
@@ -147,6 +146,8 @@ class r_script_wrapper(logger):
            row[ix.get(self.VARIANT_CLASSIFICATION)] in self.MUTATION_TYPES_EXONIC and \
            not any([z in self.FILTER_FLAGS_EXCLUDE for z in filter_flags]):
             ok = True
+            if row[ix.get(self.VARIANT_CLASSIFICATION)] == "5'Flank" and row[ix.get(self.HUGO_SYMBOL)] != 'TERT':
+                ok = False
         return ok
 
     def _read_maf_indices(self, row):
