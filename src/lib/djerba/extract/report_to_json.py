@@ -540,6 +540,8 @@ class clinical_report_json_composer(composer_base):
             for row in csv.DictReader(data_file, delimiter="\t"):
                 gene = row[self.HUGO_SYMBOL_TITLE_CASE]
                 alteration = row[self.HGVSP_SHORT]
+                if gene == 'BRAF' and alteration == 'p.V640E':
+                    alteration = 'p.V600E'
                 if 'splice' in row[self.VARIANT_CLASSIFICATION].lower():
                     alteration = 'p.? (' + row[self.HGVSC] + ')'  
                 [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
