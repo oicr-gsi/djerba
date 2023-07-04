@@ -19,5 +19,6 @@
         "Clinically relevant variants": 0,
         "Body": [
         ]
-    }
+    },
+    "version": "1.0.0"
 }

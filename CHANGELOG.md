@@ -2,6 +2,10 @@
 
 ## Unreleased - dev
 
+### GCGI-946: Versioning for plugins
+- All plugins must output a "version" string in the JSON
+- Updated `plugin_schema.json`, demo plugins, and tests
+
 ### GCGI-875: Simplify configurable interface
 - Initialize components with a single `**kwargs` variable, for ease of calling superclass
 - New `config_wrapper` class, with methods to read/edit the INI

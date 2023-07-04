@@ -18,5 +18,6 @@
         ]
     },
     "plugin_name": "demo1 plugin",
-    "results": {}
+    "results": {},
+    "version": "1.0.0"
 }

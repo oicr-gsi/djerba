@@ -7,6 +7,7 @@ import djerba.core.constants as core_constants
 class main(plugin_base):
 
     DEFAULT_CONFIG_PRIORITY = 100
+    PLUGIN_VERSION = '1.0.0'
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -25,6 +26,7 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         data = {
             'plugin_name': self.identifier+' plugin',
+            'version': self.PLUGIN_VERSION,
             'priorities': wrapper.get_my_priorities(),
             'attributes': wrapper.get_my_attributes(),
             'merge_inputs': {
