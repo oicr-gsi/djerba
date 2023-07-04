@@ -20,8 +20,8 @@ class main(plugin_base):
     HBC_SUFFIX = 'HBCs.csv'
     DEFAULT_CONFIG_PRIORITY = 200
 
-    def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
-        super().__init__(workspace, identifier, log_level, log_path)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         
         # Setting default parameters
         self.set_ini_default(core_constants.CLINICAL, True)
@@ -38,10 +38,12 @@ class main(plugin_base):
 
     def configure(self, config):
         config = self.apply_defaults(config)
-        config = self.set_all_priorities(config, self.DEFAULT_CONFIG_PRIORITY)
+        wrapper = self.get_config_wrapper(config)
+        wrapper.set_my_priorities(self.DEFAULT_CONFIG_PRIORITY)
         return config
 
     def extract(self, config):
+        wrapper = self.get_config_wrapper(config)
         hbc_results = self.preprocess_hbc(config[self.identifier][constants.HBC_FILE])
         vaf_results = self.preprocess_vaf(config[self.identifier][constants.VAF_FILE])
         mrdetect_results = self.preprocess_results(config[self.identifier][constants.RESULTS_FILE])
@@ -51,8 +53,8 @@ class main(plugin_base):
         self.logger.info("PWGS ANALYSIS: Finished preprocessing files")       
         data = {
             'plugin_name': self.identifier+' plugin',
-            'priorities': self.get_my_priorities(config),
-            'attributes': self.get_my_attributes(config),
+            'priorities': wrapper.get_my_priorities(),
+            'attributes': wrapper.get_my_attributes(),
             'merge_inputs': {
             },
             'results': {
@@ -67,7 +69,8 @@ class main(plugin_base):
                 'p-value': mrdetect_results['pvalue'],
                 'hbc_n': hbc_results['hbc_n'],
                 'pwgs_base64': pwgs_base64
-            }
+            },
+            'version': "1.0"
         }
         self.join_WGS_data(wgs_file = config[self.identifier][constants.WGS_MUTATIONS], 
                            vaf_file = vaf_results['vaf_path'], 

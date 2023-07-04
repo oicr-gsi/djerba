@@ -62,7 +62,8 @@
                 ]
             },
             "plugin_name": "demo1 plugin",
-            "results": {}
+            "results": {},
+	    "version": "1.0.0"
         },
         "demo2": {
 	    "attributes": ["clinical"],
@@ -87,7 +88,8 @@
             "results": {
                 "answer": "42",
 		"question": "What do you get if you multiply six by nine?"
-            }
+            },
+	    "version": "1.0.0"
         }
     }
 }

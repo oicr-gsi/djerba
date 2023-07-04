@@ -20,9 +20,10 @@
 	    }
 	},
 	"merge_inputs": {"type": "object"},
-	"results": {"type": "object"}
+	"results": {"type": "object"},
+	"version": {"type": "string"}
     },
     "required": [
-	"plugin_name", "priorities", "attributes", "merge_inputs", "results"
+	"plugin_name", "priorities", "attributes", "merge_inputs", "results", "version"
     ]
 }

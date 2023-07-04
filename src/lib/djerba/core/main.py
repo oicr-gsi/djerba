@@ -17,7 +17,8 @@ from djerba.core.database.archiver import archiver
 from djerba.core.extract import extractor as core_extractor
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.render import renderer as core_renderer
-from djerba.core.loaders import plugin_loader, merger_loader, helper_loader
+from djerba.core.loaders import \
+    plugin_loader, merger_loader, helper_loader, core_config_loader
 from djerba.core.workspace import workspace
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
@@ -43,6 +44,7 @@ class main(core_base):
             self.workspace = workspace(work_dir, self.log_level, self.log_path)
         else:
             self.workspace = None # eg. no workspace needed for 'render' only
+        self.core_config_loader = core_config_loader(self.log_level, self.log_path)
         self.plugin_loader = plugin_loader(self.log_level, self.log_path)
         self.merger_loader = merger_loader(self.log_level, self.log_path)
         self.helper_loader = helper_loader(self.log_level, self.log_path)
@@ -77,7 +79,7 @@ class main(core_base):
         self.logger.debug('Loading components and finding config priority levels')
         for section_name in config_in.sections():
             if section_name == ini.CORE:
-                component = core_configurer(self.log_level, self.log_path)
+                component = self.core_config_loader.load()
             elif self._is_helper_name(section_name):
                 component = self.helper_loader.load(section_name, self.workspace)
             elif self._is_merger_name(section_name):

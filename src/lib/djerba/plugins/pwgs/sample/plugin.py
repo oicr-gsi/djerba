@@ -26,8 +26,8 @@ class main(plugin_base):
     BAMQC_SUFFIX = 'bamQC_results.json'
     DEFAULT_CONFIG_PRIORITY = 100
 
-    def __init__(self, workspace, identifier, log_level=logging.INFO, log_path=None):
-        super().__init__(workspace, identifier, log_level, log_path)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         #self.add_ini_required('primary_snv_count_file')
         
         # Setting default parametersn
@@ -45,16 +45,18 @@ class main(plugin_base):
 
     def configure(self, config):
         config = self.apply_defaults(config)
-        config = self.set_all_priorities(config, self.DEFAULT_CONFIG_PRIORITY)
+        wrapper = self.get_config_wrapper(config)
+        wrapper.set_my_priorities(self.DEFAULT_CONFIG_PRIORITY)
         return config
 
     def extract(self, config):
+        wrapper = self.get_config_wrapper(config)
         tumour_id = config['core'][constants.GROUP_ID]
         qc_dict = self.fetch_coverage_etl_data(tumour_id)
         insert_size_dist_file = self.preprocess_bamqc(config[self.identifier][constants.BAMQC])
         snv_count = self.preprocess_snv_count(config[self.identifier][constants.SNV_COUNT_FILE])
         results_file = config[self.identifier][constants.RESULTS_FILE]
-        mrdetect_results = analysis.main(self.workspace, self.identifier).preprocess_results(results_file)
+        mrdetect_results = analysis.main().preprocess_results(results_file)
         if mrdetect_results['outcome'] == "DETECTED":
             ctdna_detection = "Detected"
         elif mrdetect_results['outcome'] == "UNDETECTED":
@@ -68,8 +70,8 @@ class main(plugin_base):
         self.logger.info("PWGS SAMPLE: All data found")
         data = {
             'plugin_name': self.identifier+' plugin',
-            'priorities': self.get_my_priorities(config),
-            'attributes': self.get_my_attributes(config),
+            'priorities': wrapper.get_my_priorities(),
+            'attributes': wrapper.get_my_attributes(),
             'merge_inputs': {
             },
             'results': {
@@ -87,7 +89,8 @@ class main(plugin_base):
                 'coverage': qc_dict['coverage'],
                 'primary_snv_count': snv_count,
                 'ctdna_detection': ctdna_detection
-            }
+            },
+            'version': "1.0"
         }
         return data
 

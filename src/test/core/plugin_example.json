@@ -50,5 +50,6 @@
                 "OncoKB": "Likely Oncogenic"
             }
         ]
-    }
+    },
+    "version": "1.0.0"
 }

@@ -14,7 +14,7 @@ import djerba.util.ini_fields as ini
 
 from configparser import ConfigParser
 
-from djerba.core.configurable import DjerbaConfigError
+from djerba.core.configure import config_wrapper, DjerbaConfigError
 from djerba.core.ini_generator import ini_generator
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.loaders import plugin_loader
@@ -170,21 +170,6 @@ class TestConfigExpected(TestCore):
         with open(ini_path_found) as in_file_1, open(ini_path_expected) as in_file_2:
             self.assertEqual(in_file_1.read(), in_file_2.read())
 
-class TestConfigTemplates(TestCore):
-    """Test string template substitution in INI files"""
-
-    def test(self):
-        data_dir_orig = os.environ.get(core_constants.DJERBA_DATA_DIR_VAR)
-        os.environ[core_constants.DJERBA_DATA_DIR_VAR] = self.tmp_dir
-        config = ConfigParser()
-        config.read(os.path.join(self.test_source_dir, 'config_demo1.ini'))
-        plugin = self.load_demo1_plugin()
-        config = plugin.configure(config)
-        expected = '{0}/not/a/file.txt'.format(self.tmp_dir)
-        self.assertEqual(config.get('demo1', 'dummy_file'), expected)
-        if data_dir_orig != None:
-            os.environ[core_constants.DJERBA_DATA_DIR_VAR] = data_dir_orig
-
 class TestConfigValidation(TestCore):
     """Test the methods to validate required/optional INI params"""
 
@@ -193,9 +178,9 @@ class TestConfigValidation(TestCore):
         config = self.read_demo1_config(plugin)
         # test a simple plugin
         self.assertTrue(plugin.validate_minimal_config(config))
-        with self.assertLogs('djerba.core.configurable', level=logging.DEBUG) as log_context:
+        with self.assertLogs('djerba.core.configure', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
-        msg = 'DEBUG:djerba.core.configurable:'+\
+        msg = 'DEBUG:djerba.core.configure:'+\
             '7 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
 
@@ -243,9 +228,9 @@ class TestConfigValidation(TestCore):
         # now give foo a config value
         config.set('demo1', 'foo', 'snark')
         self.assertTrue(plugin.validate_minimal_config(config))
-        with self.assertLogs('djerba.core.configurable', level=logging.DEBUG) as log_context:
+        with self.assertLogs('djerba.core.configure', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
-        msg = 'DEBUG:djerba.core.configurable:'+\
+        msg = 'DEBUG:djerba.core.configure:'+\
             '8 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
         # test setting all requirements
@@ -262,6 +247,51 @@ class TestConfigValidation(TestCore):
         self.assertTrue(plugin.validate_minimal_config(config_new))
         self.assertTrue(plugin.validate_full_config(config_new))
 
+class TestConfigWrapper(TestCore):
+
+    def test_get_set_has(self):
+        cp = ConfigParser()
+        cp.read(os.path.join(self.test_source_dir, 'config_full.ini'))
+        cw = config_wrapper(cp, 'demo1')
+        self.assertEqual(cw.get_core_string('comment'), 'Djerba 1.0 under development')
+        self.assertTrue(cw.get_my_boolean('clinical'))
+        self.assertFalse(cw.get_my_boolean('supplementary'))
+        self.assertEqual(cw.get_my_int('configure_priority'), 100)
+        self.assertTrue(cw.has_my_param('question'))
+        self.assertFalse(cw.has_my_param('noodles'))
+        cw.set_my_param('lunch', 'sushi')
+        config_1 = cw.get_config()
+        self.assertTrue(config_1.get('demo1', 'lunch'), 'sushi')
+        cw.set_my_priorities(42)
+        for key in [
+            core_constants.CONFIGURE_PRIORITY,
+            core_constants.EXTRACT_PRIORITY,
+            core_constants.RENDER_PRIORITY
+        ]:
+            self.assertEqual(cw.get_my_int(key), 42)
+        self.assertTrue(cw.get_boolean('demo2', 'clinical'))
+        self.assertFalse(cw.get_boolean('demo2', 'supplementary'))
+        self.assertEqual(cw.get_int('demo2', 'configure_priority'), 200)
+        self.assertTrue(cw.has_param('demo2', 'demo2_param'))
+        self.assertFalse(cw.has_param('demo2', 'noodles'))
+        cw.set_param('demo2', 'dinner', 'pizza')
+        config_2 = cw.get_config()
+        self.assertTrue(config_2.get('demo2', 'dinner'), 'pizza')
+
+    def test_env_templates(self):
+        data_dir_orig = os.environ.get(core_constants.DJERBA_DATA_DIR_VAR)
+        os.environ[core_constants.DJERBA_DATA_DIR_VAR] = self.tmp_dir
+        config = ConfigParser()
+        config.read(os.path.join(self.test_source_dir, 'config_demo1.ini'))
+        wrapper = config_wrapper(config, 'demo1')
+        wrapper.apply_my_env_templates()
+        expected = '{0}/not/a/file.txt'.format(self.tmp_dir)
+        self.assertEqual(wrapper.get_my_string('dummy_file'), expected)
+        if data_dir_orig != None:
+            os.environ[core_constants.DJERBA_DATA_DIR_VAR] = data_dir_orig
+
+
+
 class TestIniGenerator(TestCore):
     """Test the INI generator"""
 
@@ -273,7 +303,7 @@ class TestIniGenerator(TestCore):
     ]
 
     def test_class(self):
-        generator = ini_generator()
+        generator = ini_generator(log_level=logging.WARNING)
         generated_ini_path = os.path.join(self.tmp_dir, 'generated.ini')
         names = ['core']
         names.extend(self.COMPONENT_NAMES)
@@ -360,6 +390,15 @@ class TestMainScript(TestCore):
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
         self.assertSimpleReport(json_path, html)
+
+class TestModuleDir(TestCore):
+
+    def test(self):
+        plugin = self.load_demo1_plugin()
+        module_dir = plugin.get_module_dir()
+        self.assertTrue(os.path.exists(module_dir))
+        self.assertTrue(os.path.isdir(module_dir))
+        self.assertTrue(os.path.isfile(os.path.join(module_dir, 'plugin.py')))
 
 class TestPriority(TestCore):
     """Test controlling the configure/extract/render order with priority levels"""
@@ -459,7 +498,6 @@ class TestPriority(TestCore):
         self.assertNotEqual(0, pos1)
         self.assertNotEqual(0, pos2)
         self.assertTrue(pos1 > pos2) # <---- changed order
-
 
 class TestSimpleReport(TestCore):
 

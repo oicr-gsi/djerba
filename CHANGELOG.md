@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## v1.0.0-dev0.0.5: 2023-07-04
+
+### GCGI-946: Versioning for plugins
+- All plugins must output a "version" string in the JSON
+- Updated `plugin_schema.json`, demo plugins, and tests
+
+### GCGI-875: Simplify configurable interface
+- Initialize components with a single `**kwargs` variable, for ease of calling superclass
+- New `config_wrapper` class, with methods to read/edit the INI
+- Reorganize core config classes into a single `configure.py` file
+
 ## v1.0.0-dev0.0.4: 2023-05-04
 
 ### GCGI-850: Priority order for components
