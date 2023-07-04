@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased - dev
+## v1.0.0-dev0.0.5: 2023-07-04
 
 ### GCGI-946: Versioning for plugins
 - All plugins must output a "version" string in the JSON
