@@ -176,11 +176,11 @@ class main(plugin_base):
                     raise RuntimeError(msg) from err
         if results_dict['pvalue'] > float(constants.DETECTION_ALPHA) :
             significance_text = "not significantly larger"
-            results_dict['outcome'] = "NEGATIVE"
+            results_dict['outcome'] = "UNDETECTED"
             results_dict['TF'] = 0
         elif results_dict['pvalue'] <= float(constants.DETECTION_ALPHA):
             significance_text = "significantly larger"
-            results_dict['outcome'] = "POSITIVE"
+            results_dict['outcome'] = "DETECTED"
         else:
             msg = "results pvalue {0} incompatible with detection alpha {1}".format(results_dict['pvalue'], constants.DETECTION_ALPHA)
             self.logger.error(msg)

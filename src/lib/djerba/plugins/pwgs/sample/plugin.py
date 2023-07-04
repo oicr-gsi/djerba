@@ -55,9 +55,9 @@ class main(plugin_base):
         snv_count = self.preprocess_snv_count(config[self.identifier][constants.SNV_COUNT_FILE])
         results_file = config[self.identifier][constants.RESULTS_FILE]
         mrdetect_results = analysis.main(self.workspace, self.identifier).preprocess_results(results_file)
-        if mrdetect_results['outcome'] == "POSITIVE":
+        if mrdetect_results['outcome'] == "DETECTED":
             ctdna_detection = "Detected"
-        elif mrdetect_results['outcome'] == "NEGATIVE":
+        elif mrdetect_results['outcome'] == "UNDETECTED":
             ctdna_detection = "Undetected"
         else:
             ctdna_detection = None

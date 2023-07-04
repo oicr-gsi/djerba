@@ -47,7 +47,7 @@ class TestPwgAnalysisPlugin(PluginTester):
         results = analysis.main.preprocess_results(self, results_expected_location)
         self.assertEqual(results['TF'], 0.016 )
         self.assertEqual(results['pvalue'], 1.903e-05)
-        self.assertEqual(results['outcome'], 'POSITIVE')
+        self.assertEqual(results['outcome'], 'DETECTED')
         self.assertEqual(results['significance_text'], 'significantly larger')
 
     def redact_json_data(self, data):
@@ -64,7 +64,7 @@ class TestPwgSamplePlugin(PluginTester):
         params = {
             self.INI: 'data/pwgs.sample.ini',
             self.JSON: json_location,
-            self.MD5: '3d8917311e7e9b33b98713600b91b509'
+            self.MD5: '2db1c4e3f1070faa16a88aa231dd7116'
         }
         self.run_basic_test(test_source_dir, params)
 
