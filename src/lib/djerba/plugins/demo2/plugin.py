@@ -6,21 +6,14 @@ import djerba.core.constants as core_constants
 
 class main(plugin_base):
 
-    DEFAULT_CONFIG_PRIORITY = 200
+    PRIORITY = 200
     PLUGIN_VERSION = '1.0.0'
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.add_ini_required('demo2_param')
-        self.set_ini_default('question', 'question.txt')
-        self.set_ini_default(core_constants.CLINICAL, True)
-        self.set_ini_default(core_constants.SUPPLEMENTARY, False)
+    # __init__ inherited from parent class
 
     def configure(self, config):
         config = self.apply_defaults(config)
-        wrapper = self.get_config_wrapper(config)
-        wrapper.set_my_priorities(self.DEFAULT_CONFIG_PRIORITY)
-        return wrapper.get_config()
+        return config
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
@@ -60,3 +53,11 @@ class main(plugin_base):
             "<h1>The Question is: {0}</h1>".format(data['results']['question'])
             ]
         return "\n".join(output)
+
+    def specify_params(self):
+        self.logger.debug("Specifying params for plugin demo2")
+        self.add_ini_required('demo2_param')
+        self.set_ini_default('question', 'question.txt')
+        self.set_ini_default(core_constants.CLINICAL, True)
+        self.set_ini_default(core_constants.SUPPLEMENTARY, False)
+        self.set_priority_defaults(self.PRIORITY)

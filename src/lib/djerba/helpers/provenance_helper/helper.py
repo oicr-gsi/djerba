@@ -13,15 +13,11 @@ class main(helper_base):
     STUDY_TITLE = 'study_title'
     ROOT_SAMPLE_NAME = 'root_sample_name'
     PROVENANCE_OUTPUT = 'provenance_subset.tsv.gz'
-    DEFAULT_CONFIG_PRIORITY = 50
+    PRIORITY = 50
 
     # No automated configuration; use placeholder method of parent class
     # - uses study title and root sample name from core config
     # - provenance path must be configured manually (for now)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.add_ini_required(self.PROVENANCE_INPUT)
 
     def extract(self, config):
         self.validate_full_config(config)
@@ -42,3 +38,8 @@ class main(helper_base):
                 if row[index.STUDY_TITLE] == study and row[index.ROOT_SAMPLE_NAME] == sample:
                     writer.writerow(row)
         self.logger.info('Finished reading file provenance from {0}'.format(provenance_path))
+
+    def specify_params(self):
+        self.logger.debug("Specifying params for provenance helper")
+        self.add_ini_required(self.PROVENANCE_INPUT)
+        self.set_priority_defaults(self.PRIORITY)

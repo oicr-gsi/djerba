@@ -92,6 +92,7 @@ class main(core_base):
             else:
                 priority = component.get_default_config_priority()
             components[section_name] = (component, priority)
+        self.logger.critical("{}".format(components))
         self.logger.debug('Configuring components in priority order')
         config_out = ConfigParser()
         order = 0
@@ -196,7 +197,7 @@ class main(core_base):
     def run(self, args):
         # run from command-line args
         # path validation was done in command-line script
-        ap = arg_processor(args, validate=False)
+        ap = arg_processor(args, self.logger, validate=False)
         mode = ap.get_mode()
         work_dir = ap.get_work_dir()
         if mode == constants.CONFIGURE:
@@ -241,14 +242,19 @@ class arg_processor(logger):
 
     DEFAULT_JSON_FILENAME = 'djerba_report.json'
 
-    def __init__(self, args, validate=True):
+    def __init__(self, args, logger=None, validate=True):
         self.args = args
-        self.log_level = self.get_args_log_level(self.args)
-        self.log_path = self.args.log_path
-        if self.log_path:
-            # we are verifying the log path, so don't write output there yet
-            path_validator(self.log_level).validate_output_file(self.log_path)
-        self.logger = self.get_logger(self.log_level, __name__, self.log_path)
+        if logger:
+            # do not call 'get_logger' if one has already been configured
+            # this way, we can preserve the level/path of an existing logger
+            self.logger = logger
+        else:
+            self.log_level = self.get_args_log_level(self.args)
+            self.log_path = self.args.log_path
+            if self.log_path:
+                # we are verifying the log path, so don't write output there yet
+                path_validator(self.log_level).validate_output_file(self.log_path)
+            self.logger = self.get_logger(self.log_level, __name__, self.log_path)
         if validate:
             self.validate_args(self.args)  # checks subparser and args are valid
         self.mode = self.args.subparser_name

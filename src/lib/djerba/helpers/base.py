@@ -10,15 +10,18 @@ import djerba.core.constants as core_constants
 
 class helper_base(configurable, ABC):
 
+    PRIORITY_KEYS = [
+        core_constants.CONFIGURE_PRIORITY,
+        core_constants.EXTRACT_PRIORITY
+    ]
+
     def __init__(self, **kwargs):
         # workspace is an instance of djerba.core.workspace
         super().__init__(**kwargs)
         self.workspace = kwargs['workspace']
-        defaults = {
-            core_constants.CONFIGURE_PRIORITY: self.DEFAULT_CONFIG_PRIORITY,
-            core_constants.EXTRACT_PRIORITY: self.DEFAULT_CONFIG_PRIORITY,
-        }
+        defaults = {k: self.DEFAULT_PRIORITY for k in self.PRIORITY_KEYS}
         self.set_all_ini_defaults(defaults)
+        self.specify_params()
 
     # configure() method is defined in parent class
 

@@ -31,7 +31,7 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_MD5 = '66bf99e6ebe64d89bef09184953fd630'
-    SIMPLE_CONFIG_MD5 = 'c9130836e3ca5052383dc3e5b3844000'
+    SIMPLE_CONFIG_MD5 = '4cad62f56a7c7b71818e8bd83323de1f'
 
     def setUp(self):
         super().setUp() # includes tmp_dir

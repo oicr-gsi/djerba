@@ -27,7 +27,8 @@ class configurable(logger, ABC):
     - Get/set/query INI params (other than priority levels)
     """
 
-    DEFAULT_CONFIG_PRIORITY = 10000 # override in subclasses
+    DEFAULT_PRIORITY = 10000 # override in subclasses
+    PRIORITY_KEYS = None # override in subclasses
 
     def __init__(self, **kwargs):
         self.identifier = kwargs[core_constants.IDENTIFIER]
@@ -36,12 +37,17 @@ class configurable(logger, ABC):
         self.log_path = kwargs[core_constants.LOG_PATH]
         self.logger = self.get_logger(self.log_level, __name__, self.log_path)
         self.ini_required = set() # names of INI parameters the user must supply
-        self.ini_defaults = {} # names and default values for other INI parameters
+        # names and default values for other INI parameters
+        # do not set priorities here -- not all priorities are defined for all components
+        self.ini_defaults = {}
 
     def _log_unknown_config_warning(self, key, complete=True):
         mode = 'fully-specified' if complete else 'minimal'
-        template = "Unknown INI parameter '{0}' in {1} config of component {2}"
-        self.logger.warning(template.format(key, mode, self.identifier))
+        template = "Unknown INI parameter '{0}' in {1} config of component {2}. "+\
+            "Required = {3}, Defaults = {4}"
+        self.logger.warning(template.format(
+            key, mode, self.identifier, self.ini_required, self.ini_defaults
+        ))
 
     def _raise_config_error(self, key, input_keys, complete=True):
         mode = 'fully-specified' if complete else 'minimal'
@@ -61,7 +67,7 @@ class configurable(logger, ABC):
         return config_wrapper(config, self.identifier, self.log_level, self.log_path)
 
     def get_default_config_priority(self):
-        return self.DEFAULT_CONFIG_PRIORITY
+        return self.DEFAULT_PRIORITY
 
     def get_module_dir(self):
         return self.module_dir
@@ -69,6 +75,9 @@ class configurable(logger, ABC):
     def set_log_level(self, level):
         # use to change the log level set by the component loader, eg. for testing
         self.logger.setLevel(level)
+
+    def specify_params(self):
+        self.logger.debug("specify_params() placeholder of parent class has no effect")
 
     #################################################################
     ### start of methods to handle required/default parameters
@@ -96,6 +105,7 @@ class configurable(logger, ABC):
         """
         config = ConfigParser()
         config.add_section(self.identifier)
+        self.specify_params()
         for option in sorted(list(self.ini_required)):
             config.set(self.identifier, option, 'REQUIRED')
         for option in sorted(list(self.ini_defaults.keys())):
@@ -113,6 +123,14 @@ class configurable(logger, ABC):
 
     def set_ini_default(self, key, value):
         self.ini_defaults[key] = value
+
+    def set_priority_defaults(self, priority):
+        # convenience method to set priority levels
+        # self.PRIORITY_KEYS defined in subclasses; depends if plugin, helper, or merger
+        for key in self.PRIORITY_KEYS:
+            self.ini_defaults[key] = priority
+
+    # TODO sanity checking on reserved params -- eg. priorities must be positive integers
 
     def validate_minimal_config(self, config):
         """Check for required/unknown config keys in minimal config"""
@@ -236,12 +254,7 @@ class config_wrapper(logger):
 
     def set_my_priorities(self, priority):
         # convenience method; sets all defined priorities to the same value
-        priority_keys = [
-            core_constants.CONFIGURE_PRIORITY,
-            core_constants.EXTRACT_PRIORITY,
-            core_constants.RENDER_PRIORITY
-        ]
-        for key in priority_keys:
+        for key in core_constants.PRIORITY_KEYS:
             if self.has_my_param(key):
                 self.set_my_param(key, priority)
 
