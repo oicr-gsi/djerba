@@ -34,19 +34,18 @@ class configurable(logger, ABC):
         self.log_path = kwargs[core_constants.LOG_PATH]
         self.logger = self.get_logger(self.log_level, __name__, self.log_path)
         self.ini_required = set() # names of INI parameters the user must supply
-        # names and default values for other INI parameters
-        # do not set priorities here -- not all priorities are defined for all components
-        self.ini_defaults = {}
+        self.ini_defaults = {} # names and default values for other INI parameters
 
-    def _log_unknown_config_warning(self, key, complete=True):
+    def _raise_unknown_config_error(self, key, complete=True):
         mode = 'fully-specified' if complete else 'minimal'
         template = "Unknown INI parameter '{0}' in {1} config of component {2}. "+\
             "Required = {3}, Defaults = {4}"
-        self.logger.warning(template.format(
-            key, mode, self.identifier, self.ini_required, self.ini_defaults
-        ))
+        params = (key, mode, self.identifier, self.ini_required, self.ini_defaults)
+        msg = template.format(params)
+        self.logger.error(msg)
+        raise DjerbaConfigError(msg)
 
-    def _raise_config_error(self, key, input_keys, complete=True):
+    def _raise_missing_config_error(self, key, input_keys, complete=True):
         mode = 'fully-specified' if complete else 'minimal'
         template = "Key '{0}' required for {1} config "+\
             "of component {2} was not found in inputs {3}"
@@ -126,10 +125,10 @@ class configurable(logger, ABC):
         input_keys = config.options(self.identifier)
         for key in self.ini_required:
             if key not in input_keys:
-                self._raise_config_error(key, input_keys, complete=False)
+                self._raise_missing_config_error(key, input_keys, complete=False)
         for key in input_keys:
             if key not in self.ini_required and key not in self.ini_defaults:
-                self._log_unknown_config_warning(key, complete=False)
+                self._raise_unknown_config_error(key, complete=False)
         self.validate_priorities(config)
         return True
 
@@ -142,10 +141,10 @@ class configurable(logger, ABC):
         input_keys = config.options(self.identifier)
         for key in all_keys:
             if key not in input_keys:
-                self._raise_config_error(key, input_keys, complete=True)
+                self._raise_missing_config_error(key, input_keys, complete=True)
         for key in input_keys:
             if key not in all_keys:
-                self._log_unknown_config_warning(key, complete=True)
+                self._raise_unknown_config_error(key, complete=True)
         self.validate_priorities(config)
         return True
 
