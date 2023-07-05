@@ -285,13 +285,13 @@ class TestConfigWrapper(TestCore):
         os.environ[core_constants.DJERBA_DATA_DIR_VAR] = self.tmp_dir
         config = ConfigParser()
         config.read(os.path.join(self.test_source_dir, 'config_demo1.ini'))
-        wrapper = config_wrapper(config, 'demo1')
+        # wrapper issues warnings for DJERBA_{PRIVATE|TEST}_DIR, but this is OK
+        wrapper = config_wrapper(config, 'demo1', log_level=logging.ERROR)
         wrapper.apply_my_env_templates()
         expected = '{0}/not/a/file.txt'.format(self.tmp_dir)
         self.assertEqual(wrapper.get_my_string('dummy_file'), expected)
         if data_dir_orig != None:
             os.environ[core_constants.DJERBA_DATA_DIR_VAR] = data_dir_orig
-
 
 
 class TestIniGenerator(TestCore):

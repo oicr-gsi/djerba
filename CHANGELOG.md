@@ -7,6 +7,9 @@
 - Using an INI parameter not defined in `specify_params` will cause an error
 - Refactor INI and priority handling to enable `specify_params`
 
+### Other
+- Strict substitution for environment variable templates; consistent with HOWTO on wiki
+
 ## v1.0.0-dev0.0.5: 2023-07-04
 
 ### GCGI-946: Versioning for plugins

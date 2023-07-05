@@ -84,7 +84,10 @@ class configurable(logger, ABC):
         self.ini_required.add(key)
 
     def apply_defaults(self, config):
-        """Apply default parameters to the given ConfigParser or config_wrapper"""
+        """
+        Apply default parameters to the given ConfigParser or config_wrapper
+        This method does not overwrite existing values
+        """
         for key in self.ini_defaults:
             if not config.has_option(self.identifier, key):
                 config.set(self.identifier, key, str(self.ini_defaults[key]))
@@ -327,8 +330,7 @@ class config_wrapper(logger):
 
         Apply template substitution using variables
         Replace strings like $DJERBA_DATA_DIR with value of corresponding env variable
-        Uses 'safe substitution' of templates, see:
-        https://docs.python.org/3/library/string.html#string.Template.safe_substitute
+        https://docs.python.org/3/library/string.html#string.Template.substitute
         """
         var_names = [
             core_constants.DJERBA_DATA_DIR_VAR,
@@ -339,7 +341,14 @@ class config_wrapper(logger):
         for section in self.config.sections():
             for option in self.config.options(section):
                 value = self.config.get(section, option)
-                value = string.Template(value).safe_substitute(mapping)
+                try:
+                    value = string.Template(value).substitute(mapping)
+                except KeyError as err:
+                    msg = "Failed to substitute environment variable in INI "+\
+                        "section {0}, option {1}, value {2}".format(section, option, value)+\
+                        ": {0}".format(err)
+                    self.logger.error(msg)
+                    raise DjerbaConfigError(msg) from err
                 self.config.set(section, option, value)
 
     def apply_my_env_templates(self):
