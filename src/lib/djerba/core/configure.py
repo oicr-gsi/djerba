@@ -7,7 +7,7 @@ Defines a wide range of methods for common configuration tasks
 import logging
 import os
 import string
-from abc import ABC
+from abc import ABC, abstractmethod
 from configparser import ConfigParser
 from djerba.util.logger import logger
 import djerba.core.constants as core_constants
@@ -26,9 +26,6 @@ class configurable(logger, ABC):
     - Handle component priorities
     - Get/set/query INI params (other than priority levels)
     """
-
-    DEFAULT_PRIORITY = 10000 # override in subclasses
-    PRIORITY_KEYS = None # override in subclasses
 
     def __init__(self, **kwargs):
         self.identifier = kwargs[core_constants.IDENTIFIER]
@@ -67,7 +64,8 @@ class configurable(logger, ABC):
         return config_wrapper(config, self.identifier, self.log_level, self.log_path)
 
     def get_default_config_priority(self):
-        return self.DEFAULT_PRIORITY
+        # configure priority is defined for all component types: plugin, helper, merger
+        return self.ini_defaults[core_constants.CONFIGURE_PRIORITY]
 
     def get_module_dir(self):
         return self.module_dir
@@ -76,8 +74,9 @@ class configurable(logger, ABC):
         # use to change the log level set by the component loader, eg. for testing
         self.logger.setLevel(level)
 
+    @abstractmethod
     def specify_params(self):
-        self.logger.debug("specify_params() placeholder of parent class has no effect")
+        self.logger.warning("Abstract specify_params not intended to be called")
 
     #################################################################
     ### start of methods to handle required/default parameters
@@ -112,25 +111,14 @@ class configurable(logger, ABC):
             config.set(self.identifier, option, str(self.ini_defaults[option]))
         return config
 
-    def set_all_ini_defaults(self, mapping):
-        # overwrites all existing defaults with the given mapping
-        self.ini_defaults = mapping
-
-    def set_all_ini_required(self, required):
-        # overwrites all existing requirements with the given input
-        # input may be any iterable, eg. a list or set
-        self.ini_required = set(required)
-
     def set_ini_default(self, key, value):
         self.ini_defaults[key] = value
 
+    @abstractmethod
     def set_priority_defaults(self, priority):
-        # convenience method to set priority levels
-        # self.PRIORITY_KEYS defined in subclasses; depends if plugin, helper, or merger
-        for key in self.PRIORITY_KEYS:
-            self.ini_defaults[key] = priority
-
-    # TODO sanity checking on reserved params -- eg. priorities must be positive integers
+        # convenience method to set all priority defaults to the given value
+        # which priorities are defined depends if plugin, helper, or merger
+        self.logger.warning("Abstract set_priority_defaults not intended to be called")
 
     def validate_minimal_config(self, config):
         """Check for required/unknown config keys in minimal config"""
@@ -142,6 +130,7 @@ class configurable(logger, ABC):
         for key in input_keys:
             if key not in self.ini_required and key not in self.ini_defaults:
                 self._log_unknown_config_warning(key, complete=False)
+        self.validate_priorities(config)
         return True
 
     def validate_full_config(self, config):
@@ -157,26 +146,62 @@ class configurable(logger, ABC):
         for key in input_keys:
             if key not in all_keys:
                 self._log_unknown_config_warning(key, complete=True)
+        self.validate_priorities(config)
         return True
+
+    def validate_priorities(self, config):
+        # check priorities are non-negative integers
+        # TODO sanity checking on other reserved params
+        priorities = [
+            core_constants.CONFIGURE_PRIORITY,
+            core_constants.EXTRACT_PRIORITY,
+            core_constants.RENDER_PRIORITY
+        ]
+        ok = True
+        for s in config.sections():
+            for p in priorities:
+                if config.has_option(s, p):
+                    try:
+                        v = config.getint(s, p)
+                    except ValueError:
+                        ok = False
+                    if v < 0:
+                        ok = False
+                if not ok:
+                    msg = "{0}:{1} must be a non-negative integer; got {2}".format(s, p, v)
+                    self.logger.error(msg)
+                    raise ValueError(msg)
 
     ### end of methods to handle required/default parameters
     ### start of methods to handle component priorities
-
 
 class configurer(configurable):
 
     """Class to do core configuration"""
 
+    PRIORITY = 0
+    PRIORITY_KEYS = [
+        core_constants.CONFIGURE_PRIORITY,
+        core_constants.EXTRACT_PRIORITY,
+        core_constants.RENDER_PRIORITY
+    ]
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.set_ini_default('comment', 'comment goes here')
+        self.specify_params()
 
     def configure(self, config):
+        config = self.apply_defaults(config)
         config.set(ini.CORE, 'comment', 'Djerba 1.0 under development')
         return config
 
-    def get_default_config_priority(self):
-        return 0
+    def set_priority_defaults(self, priority):
+        for key in self.PRIORITY_KEYS:
+            self.ini_defaults[key] = priority
+
+    def specify_params(self):
+        self.set_priority_defaults(self.PRIORITY)
+        self.set_ini_default('comment', 'comment goes here')
 
 
 class config_wrapper(logger):

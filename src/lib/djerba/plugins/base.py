@@ -23,8 +23,6 @@ class plugin_base(configurable, ABC):
         super().__init__(**kwargs)
         self.workspace = kwargs['workspace']
         self.json_validator = plugin_json_validator(self.log_level, self.log_path)
-        defaults = {k: self.DEFAULT_PRIORITY for k in self.PRIORITY_KEYS}
-        self.set_all_ini_defaults(defaults)
         self.specify_params()
 
     # configure() method is defined in parent class
@@ -54,3 +52,7 @@ class plugin_base(configurable, ABC):
         self.logger.debug(msg)
         self.json_validator.validate_data(data)
         return ''
+
+    def set_priority_defaults(self, priority):
+        for key in self.PRIORITY_KEYS:
+            self.ini_defaults[key] = priority
