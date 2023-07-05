@@ -100,7 +100,7 @@ class html_builder:
             if key in constants.PATIENT_INFO_CONSTANT_FIELDS:
                 value = constants.PATIENT_INFO_CONSTANT_FIELDS.get(key)
             elif key == constants.DATE_OF_REPORT:
-                value = strftime("%Y/%m/%d")
+                value = "yyyy/mm/dd"
             elif key == constants.TMB_TOTAL:
                 tmb_total = args[constants.TMB_TOTAL]
                 tmb_per_mb = args[constants.TMB_PER_MB]
