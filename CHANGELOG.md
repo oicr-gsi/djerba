@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## Unreleased
+
+### GCGI-955: `specify_params`
+- Each plugin must have a `specify_params` method to define required and optional INI parameters
+- Using an INI parameter not defined in `specify_params` will cause an error
+- Refactor INI and priority handling to enable `specify_params`
+
 ## v1.0.0-dev0.0.5: 2023-07-04
 
 ### GCGI-946: Versioning for plugins
