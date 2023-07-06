@@ -19,7 +19,7 @@ class merger_base(configurable, html_builder, ABC):
     PRIORITY_KEYS = [
         core_constants.CONFIGURE_PRIORITY,
         core_constants.RENDER_PRIORITY
-    ]
+    ] # extract priority is not defined for mergers
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

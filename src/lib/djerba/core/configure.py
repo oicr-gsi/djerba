@@ -85,7 +85,7 @@ class configurable(logger, ABC):
 
     def apply_defaults(self, config):
         """
-        Apply default parameters to the given ConfigParser or config_wrapper
+        Apply default parameters to the given ConfigParser
         This method does not overwrite existing values
         """
         for key in self.ini_defaults:
@@ -154,14 +154,9 @@ class configurable(logger, ABC):
     def validate_priorities(self, config):
         # check priorities are non-negative integers
         # TODO sanity checking on other reserved params
-        priorities = [
-            core_constants.CONFIGURE_PRIORITY,
-            core_constants.EXTRACT_PRIORITY,
-            core_constants.RENDER_PRIORITY
-        ]
         ok = True
         for s in config.sections():
-            for p in priorities:
+            for p in core_constants.PRIORITY_KEYS:
                 if config.has_option(s, p):
                     try:
                         v = config.getint(s, p)
@@ -182,11 +177,6 @@ class configurer(configurable):
     """Class to do core configuration"""
 
     PRIORITY = 0
-    PRIORITY_KEYS = [
-        core_constants.CONFIGURE_PRIORITY,
-        core_constants.EXTRACT_PRIORITY,
-        core_constants.RENDER_PRIORITY
-    ]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -198,7 +188,7 @@ class configurer(configurable):
         return config
 
     def set_priority_defaults(self, priority):
-        for key in self.PRIORITY_KEYS:
+        for key in core_constants.PRIORITY_KEYS:
             self.ini_defaults[key] = priority
 
     def specify_params(self):

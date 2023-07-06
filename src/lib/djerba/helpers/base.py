@@ -13,7 +13,7 @@ class helper_base(configurable, ABC):
     PRIORITY_KEYS = [
         core_constants.CONFIGURE_PRIORITY,
         core_constants.EXTRACT_PRIORITY
-    ]
+    ]   # render priority is not defined for helpers
 
     def __init__(self, **kwargs):
         # workspace is an instance of djerba.core.workspace

@@ -12,12 +12,6 @@ import djerba.core.constants as core_constants
 
 class plugin_base(configurable, ABC):
 
-    PRIORITY_KEYS = [
-        core_constants.CONFIGURE_PRIORITY,
-        core_constants.EXTRACT_PRIORITY,
-        core_constants.RENDER_PRIORITY
-    ]
-
     def __init__(self, **kwargs):
         # workspace is an instance of djerba.core.workspace
         super().__init__(**kwargs)
@@ -54,5 +48,5 @@ class plugin_base(configurable, ABC):
         return ''
 
     def set_priority_defaults(self, priority):
-        for key in self.PRIORITY_KEYS:
+        for key in core_constants.PRIORITY_KEYS:
             self.ini_defaults[key] = priority
