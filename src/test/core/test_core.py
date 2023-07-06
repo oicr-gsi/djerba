@@ -31,7 +31,7 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_MD5 = '66bf99e6ebe64d89bef09184953fd630'
-    SIMPLE_CONFIG_MD5 = 'c9130836e3ca5052383dc3e5b3844000'
+    SIMPLE_CONFIG_MD5 = 'ca2002dadf718da0c80a6222e5eb4546'
 
     def setUp(self):
         super().setUp() # includes tmp_dir
@@ -209,7 +209,8 @@ class TestConfigValidation(TestCore):
             'baz': 'green',
             'fiz': 'purple'
         }
-        plugin.set_all_ini_defaults(defaults)
+        for k,v in defaults.items():
+            plugin.set_ini_default(k, v)
         config_3 = plugin.apply_defaults(config_3)
         self.assertEqual(config_3.get('demo1', 'baz'), 'green')
         self.assertEqual(config_3.get('demo1', 'fiz'), 'purple')
@@ -234,7 +235,8 @@ class TestConfigValidation(TestCore):
             '8 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
         # test setting all requirements
-        plugin.set_all_ini_required(['foo', 'bar'])
+        for x in ['foo', 'bar']:
+            plugin.add_ini_required(x)
         plugin.set_log_level(logging.CRITICAL)
         with self.assertRaises(DjerbaConfigError):
             plugin.validate_minimal_config(config)
@@ -283,13 +285,13 @@ class TestConfigWrapper(TestCore):
         os.environ[core_constants.DJERBA_DATA_DIR_VAR] = self.tmp_dir
         config = ConfigParser()
         config.read(os.path.join(self.test_source_dir, 'config_demo1.ini'))
-        wrapper = config_wrapper(config, 'demo1')
+        # wrapper issues warnings for DJERBA_{PRIVATE|TEST}_DIR, but this is OK
+        wrapper = config_wrapper(config, 'demo1', log_level=logging.ERROR)
         wrapper.apply_my_env_templates()
         expected = '{0}/not/a/file.txt'.format(self.tmp_dir)
         self.assertEqual(wrapper.get_my_string('dummy_file'), expected)
         if data_dir_orig != None:
             os.environ[core_constants.DJERBA_DATA_DIR_VAR] = data_dir_orig
-
 
 
 class TestIniGenerator(TestCore):
@@ -419,16 +421,16 @@ class TestPriority(TestCore):
         djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
         with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
             config = djerba_main.configure(ini_path)
-        names_and_orders = [
-            ['core', 1],
-            ['demo1', 2],
-            ['demo2', 3],
-            ['gene_information_merger', 4]
+        priority_results = [
+            ['core', 0, 1],
+            ['demo1', 100, 2],
+            ['demo2', 200, 3],
+            ['gene_information_merger', 1000, 4]
         ]
-        prefix = 'DEBUG:djerba.core.main:'
-        template = '{0}Configuring component {1} in order {2}'
-        for (name, order) in names_and_orders:
-            msg = template.format(prefix, name, order)
+        prefix = 'DEBUG:djerba.core.main:Configuring'
+        template = '{0} {1}, priority {2}, order {3}'
+        for (name, priority, order) in priority_results:
+            msg = template.format(prefix, name, priority, order)
             self.assertIn(msg, log_context.output)
         # now give demo2 a higher priority than demo1
         config.set('demo1', core_constants.CONFIGURE_PRIORITY, '300')
@@ -438,14 +440,14 @@ class TestPriority(TestCore):
             config.write(out_file)
         with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
             djerba_main.configure(ini_path_2)
-        names_and_orders = [
-            ['core', 1],
-            ['demo2', 2], # <---- changed order
-            ['demo1', 3],
-            ['gene_information_merger', 4]
+        priority_results = [
+            ['core', 0, 1],
+            ['demo2', 200, 2], # <---- changed order
+            ['demo1', 300, 3],
+            ['gene_information_merger', 1000, 4]
         ]
-        for (name, order) in names_and_orders:
-            msg = template.format(prefix, name, order)
+        for (name, priority, order) in priority_results:
+            msg = template.format(prefix, name, priority, order)
             self.assertIn(msg, log_context.output)
 
     def test_extract_priority(self):

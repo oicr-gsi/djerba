@@ -12,6 +12,12 @@ SUPPLEMENTARY = 'supplementary'
 CONFIGURE_PRIORITY = 'configure_priority'
 EXTRACT_PRIORITY = 'extract_priority'
 RENDER_PRIORITY = 'render_priority'
+PRIORITY_KEYS = [
+    CONFIGURE_PRIORITY,
+    EXTRACT_PRIORITY,
+    RENDER_PRIORITY
+]
+
 PRIORITIES = 'priorities'
 CONFIGURE = 'configure'
 EXTRACT = 'extract'

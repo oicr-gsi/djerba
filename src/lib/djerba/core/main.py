@@ -22,7 +22,7 @@ from djerba.core.loaders import \
 from djerba.core.workspace import workspace
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
-import djerba.core.constants as core_constants
+import djerba.core.constants as cc
 import djerba.util.constants as constants
 
 class main(core_base):
@@ -31,7 +31,7 @@ class main(core_base):
     PLUGINS = 'plugins'
     MERGERS = 'mergers'
     MERGE_INPUTS = 'merge_inputs'
-    
+
     def __init__(self, work_dir=None, log_level=logging.INFO, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
@@ -50,7 +50,7 @@ class main(core_base):
         self.helper_loader = helper_loader(self.log_level, self.log_path)
 
     def _get_render_priority(self, plugin_data):
-        return plugin_data[core_constants.PRIORITIES][core_constants.RENDER]
+        return plugin_data[cc.PRIORITIES][cc.RENDER]
 
     def _run_merger(self, merger_name, data):
         """Assemble inputs for the named merger and run merge/dedup to get HTML"""
@@ -86,9 +86,10 @@ class main(core_base):
                 component = self.merger_loader.load(section_name)
             else:
                 component = self.plugin_loader.load(section_name, self.workspace)
-            if config_in.has_option(section_name, core_constants.CONFIGURE_PRIORITY):
-                priority = \
-                    config_in.getint(section_name, core_constants.CONFIGURE_PRIORITY)
+            # if input has a configure priority, use that
+            # otherwise, use default priority for the component
+            if config_in.has_option(section_name, cc.CONFIGURE_PRIORITY):
+                priority = config_in.getint(section_name, cc.CONFIGURE_PRIORITY)
             else:
                 priority = component.get_default_config_priority()
             components[section_name] = (component, priority)
@@ -97,8 +98,9 @@ class main(core_base):
         order = 0
         for name in sorted(components, key=lambda x: components[x][1]):
             order += 1
-            component = components[name][0]
-            self.logger.debug('Configuring component {0} in order {1}'.format(name, order))
+            [component, priority] = components[name]
+            msg = 'Configuring {0}, priority {1}, order {2}'.format(name, priority, order)
+            self.logger.debug(msg)
             component.validate_minimal_config(config_in)
             config_tmp = component.configure(config_in)
             component.validate_full_config(config_tmp)
@@ -123,7 +125,7 @@ class main(core_base):
                 component = self.helper_loader.load(section_name, self.workspace)
             else:
                 component = self.plugin_loader.load(section_name, self.workspace)
-            priority = config.getint(section_name, core_constants.EXTRACT_PRIORITY)
+            priority = config.getint(section_name, cc.EXTRACT_PRIORITY)
             components[section_name] = (component, priority)
         self.logger.debug('Generating core data structure')
         data = core_extractor(self.log_level, self.log_path).run(config)
@@ -171,12 +173,12 @@ class main(core_base):
             body[plugin_name] = plugin.render(plugin_data)
             self.logger.debug("Ran plugin '{0}' for rendering".format(plugin_name))
             priorities[plugin_name] = self._get_render_priority(plugin_data)
-            attributes[plugin_name] = plugin_data[core_constants.ATTRIBUTES]
+            attributes[plugin_name] = plugin_data[cc.ATTRIBUTES]
         for (merger_name, merger_config) in data[self.MERGERS].items():
             body[merger_name] = self._run_merger(merger_name, data)
             self.logger.debug("Ran merger '{0}' for rendering".format(merger_name))
-            priorities[merger_name] = merger_config[core_constants.RENDER_PRIORITY]
-            attributes[merger_name] = merger_config[core_constants.ATTRIBUTES]
+            priorities[merger_name] = merger_config[cc.RENDER_PRIORITY]
+            attributes[merger_name] = merger_config[cc.ATTRIBUTES]
         self.logger.debug("Assembling HTML document")
         renderer = core_renderer(self.log_level, self.log_path)
         html = renderer.run(body, priorities, attributes, data) # TODO remove data argument
@@ -196,7 +198,7 @@ class main(core_base):
     def run(self, args):
         # run from command-line args
         # path validation was done in command-line script
-        ap = arg_processor(args, validate=False)
+        ap = arg_processor(args, self.logger, validate=False)
         mode = ap.get_mode()
         work_dir = ap.get_work_dir()
         if mode == constants.CONFIGURE:
@@ -241,14 +243,19 @@ class arg_processor(logger):
 
     DEFAULT_JSON_FILENAME = 'djerba_report.json'
 
-    def __init__(self, args, validate=True):
+    def __init__(self, args, logger=None, validate=True):
         self.args = args
-        self.log_level = self.get_args_log_level(self.args)
-        self.log_path = self.args.log_path
-        if self.log_path:
-            # we are verifying the log path, so don't write output there yet
-            path_validator(self.log_level).validate_output_file(self.log_path)
-        self.logger = self.get_logger(self.log_level, __name__, self.log_path)
+        if logger:
+            # do not call 'get_logger' if one has already been configured
+            # this way, we can preserve the level/path of an existing logger
+            self.logger = logger
+        else:
+            self.log_level = self.get_args_log_level(self.args)
+            self.log_path = self.args.log_path
+            if self.log_path:
+                # we are verifying the log path, so don't write output there yet
+                path_validator(self.log_level).validate_output_file(self.log_path)
+            self.logger = self.get_logger(self.log_level, __name__, self.log_path)
         if validate:
             self.validate_args(self.args)  # checks subparser and args are valid
         self.mode = self.args.subparser_name
