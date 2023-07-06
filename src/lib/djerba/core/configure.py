@@ -66,6 +66,10 @@ class configurable(logger, ABC):
         # configure priority is defined for all component types: plugin, helper, merger
         return self.ini_defaults[core_constants.CONFIGURE_PRIORITY]
 
+    def get_default_dependencies(self):
+        # return default dependencies -- if any, None otherwise
+        return self.ini_defaults.get(core_constants.DEPENDS)
+
     def get_module_dir(self):
         return self.module_dir
 
@@ -137,6 +141,7 @@ class configurable(logger, ABC):
 
     def validate_full_config(self, config):
         """Check that all config keys (both required and optional) are present"""
+        # TODO check that all reserved keys are present
         self.logger.info("Validating fully-specified config for component "+self.identifier)
         all_keys = self.get_all_expected_ini()
         template = "{0} expected INI param(s) found for component {1}"

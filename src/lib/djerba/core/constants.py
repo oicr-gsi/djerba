@@ -7,6 +7,7 @@ DJERBA_TEST_DIR_VAR = 'DJERBA_TEST_DIR'
 
 # shared constants for core classes
 ATTRIBUTES = 'attributes'
+DEPENDS = 'depends'
 CLINICAL = 'clinical'
 SUPPLEMENTARY = 'supplementary'
 CONFIGURE_PRIORITY = 'configure_priority'
