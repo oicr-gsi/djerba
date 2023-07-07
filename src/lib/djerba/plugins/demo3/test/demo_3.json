@@ -1,0 +1,10 @@
+{
+    "attributes": ["clinical"],
+    "priorities": {"configure": 800, "extract": 800, "render": 800},
+    "merge_inputs": {},
+    "plugin_name": "demo3 plugin",
+    "results": {
+	"salutation": "Klaatu barada nikto."
+    },
+    "version": "1.0.0"
+}
