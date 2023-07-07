@@ -70,15 +70,16 @@ class main(core_base):
         return next(csv.reader([list_string]))
 
     def _resolve_configure_dependencies(self, config, components, ordered_names):
-        self._resolve_dependencies(cc.DEPENDS_CONFIGURE, config, components, ordered_names)
+        self._resolve_ini_deps(cc.DEPENDS_CONFIGURE, config, components, ordered_names)
 
     def _resolve_extract_dependencies(self, config, components, ordered_names):
-        self._resolve_dependencies(cc.DEPENDS_EXTRACT, config, components, ordered_names)
+        self._resolve_ini_deps(cc.DEPENDS_EXTRACT, config, components, ordered_names)
 
     def _resolve_render_dependencies(self, config, components, ordered_names):
+        # TODO FIXME this should use JSON, not INI, as input!
         self._resolve_dependencies(cc.DEPENDS_RENDER, config, components, ordered_names)
 
-    def _resolve_dependencies(self, depends_key, config, components, ordered_names):
+    def _resolve_ini_deps(self, depends_key, config, components, ordered_names):
         for name in ordered_names:
             if config.has_option(name, depends_key):
                 depends_str = config.get(name, depends_key)
@@ -101,12 +102,13 @@ class main(core_base):
                     template = 'Resolved {0} dependencies for component {1}'
                     self.logger.debug(template.format(len(depends), name))
                 else:
-                    template = 'Failed to resolve {0} of {1} dependencies for '+\
-                        'component {2}. One or more dependencies is missing or in the '+\
-                        'wrong order. Dependencies: {3} Priority order: {4}'
-                    msg = template.format(failed, len(depends), name, depends, ordered_names)
+                    template = 'Failed to resolve {0} of {1} dependencies in {2} for '+\
+                        'component {3}. One or more dependencies is missing or in the '+\
+                        'wrong order. Dependencies: {4} Priority order: {5}'
+                    args = [failed, len(depends), depends_key, name, depends, ordered_names]
+                    msg = template.format(*args)
                     self.logger.error(msg)
-                    raise DjerbaConfigError(msg)
+                    raise DjerbaDependencyError(msg)
             else:
                 self.logger.debug("No dependencies found for component {0}".format(name))
 
@@ -172,21 +174,24 @@ class main(core_base):
         if json_path:  # do this *before* taking the time to generate output
             self.path_validator.validate_output_file(json_path)
         components = {}
-        for section_name in config.sections():
-            if not (section_name == ini.CORE or self._is_merger_name(section_name)):
-                component = self._load_component(section_name)
-                priority = config.getint(section_name, cc.EXTRACT_PRIORITY)
-                components[section_name] = (component, priority)
+        priorities = {}
+        for section in config.sections():
+            if not (section == ini.CORE or self._is_merger_name(section)):
+                components[section] = self._load_component(section)
+                priorities[section] = config.getint(section, cc.EXTRACT_PRIORITY)
+        self.logger.debug('Configuring components in priority order')
+        ordered_names = sorted(priorities.keys(), key=lambda x: priorities[x])
+        self._resolve_extract_dependencies(config, components, ordered_names)
         self.logger.debug('Generating core data structure')
         data = core_extractor(self.log_level, self.log_path).run(config)
         self.logger.debug('Running extraction for plugins and mergers in priority order')
         order = 0
-        for name in sorted(components, key=lambda x: components[x][1]):
+        for name in ordered_names:
             order += 1
-            component = components[name][0]
+            component = components[name]
             self.logger.debug('Extracting component {0} in order {1}'.format(name, order))
             component.validate_full_config(config)
-            component_data = components[name][0].extract(config)
+            component_data = components[name].extract(config)
             if not self._is_helper_name(name):
                 # only plugins, not helpers, write data in the JSON document
                 self.json_validator.validate_data(component_data)
@@ -423,5 +428,5 @@ class arg_processor(logger):
 class ArgumentNameError(Exception):
     pass
 
-class ComponentNameError(Exception):
+class DjerbaDependencyError(Exception):
     pass
