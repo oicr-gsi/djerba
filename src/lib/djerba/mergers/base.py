@@ -24,19 +24,17 @@ class merger_base(configurable, html_builder, ABC):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         schema_path = os.path.join(self.module_dir, self.SCHEMA_NAME)
+        # global defaults for mergers; can override for individual merger classes
         self.json_validator = json_validator(schema_path, self.log_level, self.log_path)
+        self.ini_defaults = {
+            core_constants.ATTRIBUTES: '',
+            core_constants.DEPENDS_CONFIGURE: '',
+            core_constants.DEPENDS_RENDER: '',
+            core_constants.CONFIGURE_PRIORITY: 1000,
+            core_constants.RENDER_PRIORITY: 1000
+        }
         self.attributes = []
         self.specify_params()
-
-    def get_attributes(self):
-        return self.attributes
-
-    def set_attributes(self, attributes):
-        if not isinstance(attributes, list):
-            msg = "Attributes value '{0}' is not a list".format(attributes)
-            self.logger.error(msg)
-            raise ValueError(msg)
-        self.attributes = attributes
 
     def merge_and_sort(self, inputs, sort_key):
         """

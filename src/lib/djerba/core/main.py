@@ -69,14 +69,23 @@ class main(core_base):
         # use CSV reader to allow escaping and handle other edge cases
         return next(csv.reader([list_string]))
 
-    def _resolve_dependencies(self, config, components, ordered_names):
+    def _resolve_configure_dependencies(self, config, components, ordered_names):
+        self._resolve_dependencies(cc.DEPENDS_CONFIGURE, config, components, ordered_names)
+
+    def _resolve_extract_dependencies(self, config, components, ordered_names):
+        self._resolve_dependencies(cc.DEPENDS_EXTRACT, config, components, ordered_names)
+
+    def _resolve_render_dependencies(self, config, components, ordered_names):
+        self._resolve_dependencies(cc.DEPENDS_RENDER, config, components, ordered_names)
+
+    def _resolve_dependencies(self, depends_key, config, components, ordered_names):
         for name in ordered_names:
-            if config.has_option(name, cc.DEPENDS):
-                depends_str = config.get(name, cc.DEPENDS)
+            if config.has_option(name, depends_key):
+                depends_str = config.get(name, depends_key)
             else:
-                depends_str = components[name].get_default_dependencies()
-            if depends_str:
-                depends = self._parse_comma_separated_list(depends_str)
+                depends_str = components[name].get_reserved_default(depends_key)
+            depends = self._parse_comma_separated_list(depends_str)
+            if len(depends)>0:
                 failed = 0
                 for dependency in depends:
                     dependency_ok = False
@@ -126,18 +135,18 @@ class main(core_base):
         components = {}
         priorities = {}
         self.logger.debug('Loading components and finding config priority levels')
-        for section_name in config_in.sections():
-            components[section_name] = self._load_component(section_name)
+        for section in config_in.sections():
+            components[section] = self._load_component(section)
             # if input has a configure priority, use that
             # otherwise, use default priority for the component
-            if config_in.has_option(section_name, cc.CONFIGURE_PRIORITY):
-                priority = config_in.getint(section_name, cc.CONFIGURE_PRIORITY)
+            if config_in.has_option(section, cc.CONFIGURE_PRIORITY):
+                priority = config_in.getint(section, cc.CONFIGURE_PRIORITY)
             else:
-                priority = components[section_name].get_default_config_priority()
-            priorities[section_name] = priority
+                priority = components[section].get_reserved_default(cc.CONFIGURE_PRIORITY)
+            priorities[section] = priority
         self.logger.debug('Configuring components in priority order')
         ordered_names = sorted(priorities.keys(), key=lambda x: priorities[x])
-        self._resolve_dependencies(config_in, components, ordered_names)
+        self._resolve_configure_dependencies(config_in, components, ordered_names)
         config_out = ConfigParser()
         order = 0
         for name in ordered_names:
