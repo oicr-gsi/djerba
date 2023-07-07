@@ -31,7 +31,7 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_MD5 = '66bf99e6ebe64d89bef09184953fd630'
-    SIMPLE_CONFIG_MD5 = '986bc9fd500db178516290035c93765d'
+    SIMPLE_CONFIG_MD5 = 'e54ce074552933986c541df45970348b'
 
     def setUp(self):
         super().setUp() # includes tmp_dir
@@ -181,7 +181,7 @@ class TestConfigValidation(TestCore):
         with self.assertLogs('djerba.core.configure', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
         msg = 'DEBUG:djerba.core.configure:'+\
-            '7 expected INI param(s) found for component demo1'
+            '11 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
 
     def test_optional(self):
@@ -232,11 +232,10 @@ class TestConfigValidation(TestCore):
         with self.assertLogs('djerba.core.configure', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
         msg = 'DEBUG:djerba.core.configure:'+\
-            '8 expected INI param(s) found for component demo1'
+            '12 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
         # test setting all requirements
-        for x in ['foo', 'bar']:
-            plugin.add_ini_required(x)
+        plugin.add_ini_required('bar') # 'foo' is already required
         plugin.set_log_level(logging.CRITICAL)
         with self.assertRaises(DjerbaConfigError):
             plugin.validate_minimal_config(config)
@@ -316,8 +315,7 @@ class TestIniGenerator(TestCore):
             self.assertEqual(in_file_1.read(), in_file_2.read())
 
     def test_script(self):
-        #out_path = os.path.join(self.tmp_dir, 'generated.ini')
-        out_path = os.path.join('/home/ibancarz/tmp', 'generated.ini')
+        out_path = os.path.join(self.tmp_dir, 'generated.ini')
         cmd = ['generate_ini.py', '--out', out_path]
         cmd.extend(self.COMPONENT_NAMES)
         result = subprocess_runner().run(cmd)

@@ -129,7 +129,6 @@ class configurable(logger, ABC):
         """
         config = ConfigParser()
         config.add_section(self.identifier)
-        self.specify_params()
         for option in sorted(list(self.ini_required)):
             config.set(self.identifier, option, 'REQUIRED')
         for option in sorted(list(self.ini_defaults.keys())):
@@ -214,12 +213,15 @@ class configurer(configurable):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # the core has no dependencies or attributes
-        # but we include the INI parameters for consistency with plugins/helpers/mergers
+        # core has no attributes or dependencies, but include the INI params for consistency
         self.ini_defaults = {
             core_constants.ATTRIBUTES: '',
             core_constants.DEPENDS_CONFIGURE: '',
+            core_constants.DEPENDS_EXTRACT: '',
+            core_constants.DEPENDS_RENDER: '',
             core_constants.CONFIGURE_PRIORITY: 0,
+            core_constants.EXTRACT_PRIORITY: 0,
+            core_constants.RENDER_PRIORITY: 0
         }
         self.specify_params()
 
