@@ -30,7 +30,7 @@ class main(plugin_base):
         return data
 
     def render(self, data):
-        return "<h1>Farewell! {0}</h1>".format(data['results']['salutation']),
+        return "<h1>Farewell! {0}</h1>".format(data['results']['salutation'])
 
     def specify_params(self):
         self.logger.debug("Specifying params for plugin demo2")
