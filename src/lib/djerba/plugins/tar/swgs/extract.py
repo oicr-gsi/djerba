@@ -1,5 +1,6 @@
 """
-List of functions to convert Copy Number Variation (CNV) information into json format.
+List of functions to convert sWGS information into json format.
+AUTHOR: Aqsa Alam
 """
 
 # IMPORTS
@@ -49,8 +50,10 @@ class data_builder:
     # DIRECTORIES
     self.input_dir = "."
     self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/Rscripts/"
-    self.report_dir = work_dir
+    self.work_dir = work_dir
     self.data_dir =  os.environ.get('DJERBA_BASE_DIR') + "/data/" 
+    self.cytoband_path = os.path.join(self.data_dir, 'cytoBand.txt')
+    self.cytoband_map = self.read_cytoband_map()
 
 
   def build_graph(self):
@@ -67,7 +70,7 @@ class data_builder:
     rows = []
     #else:
     #    mutation_expression = {}
-    with open(os.path.join(self.input_dir, self.CNA_ANNOTATED)) as input_file:
+    with open(os.path.join(self.work_dir, self.CNA_ANNOTATED)) as input_file:
         reader = csv.DictReader(input_file, delimiter="\t")
         for row in reader:
             gene = row[self.HUGO_SYMBOL_UPPER_CASE]
@@ -101,7 +104,7 @@ class data_builder:
     out_path = os.path.join(out_dir, 'seg_CNV_plot.svg')
     args = [
         os.path.join(self.r_script_dir, 'cnv_plot.R'),
-        '--segfile',  os.path.join(self.input_dir, processed_seg),
+        '--segfile',  os.path.join(self.work_dir, processed_seg),
         '--segfiletype', 'sequenza',
         '-d',out_dir
     ]
@@ -115,7 +118,7 @@ class data_builder:
     Do this using pandas, then convert to a processed .seg.txt file.
     The reason for this wrangling is to force this file to look like aratio_segments.txt from the CNV plugin
     """
-    seg_path =  os.path.join(self.input_dir, seg_file)
+    seg_path =  os.path.join(self.work_dir, seg_file)
  
     # Create a dataframe
     df_seg = pd.read_csv(seg_path, sep = '\t')
@@ -130,7 +133,7 @@ class data_builder:
     df_seg["chromosome"] = "chr" + df_seg["chromosome"].astype(str)
 
     # Convert the dataframe back into a tab-delimited text file.
-    out_path = os.path.join(self.input_dir, seg_file + '_processed.txt')
+    out_path = os.path.join(self.work_dir, seg_file + '_processed.txt')
     df_seg.to_csv(out_path, sep = '\t', index=None)
     return out_path
 
@@ -138,8 +141,7 @@ class data_builder:
    # --------------------------- ALL EXTRA FUNCTIONS ---------------------
   
   def get_cytoband(self, gene_name):
-    cytoband_map = self.read_cytoband_map()
-    cytoband = cytoband_map.get(gene_name)
+    cytoband = self.cytoband_map.get(gene_name)
     if not cytoband:
         cytoband = 'Unknown'
         msg = "Cytoband for gene '{0}' not found in {1}".format(gene_name, self.cytoband_path)
