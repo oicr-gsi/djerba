@@ -49,7 +49,6 @@ class main(core_base):
         self.plugin_loader = plugin_loader(self.log_level, self.log_path)
         self.merger_loader = merger_loader(self.log_level, self.log_path)
         self.helper_loader = helper_loader(self.log_level, self.log_path)
-
     def _get_render_priority(self, plugin_data):
         return plugin_data[cc.PRIORITIES][cc.RENDER]
 
@@ -85,6 +84,10 @@ class main(core_base):
             if len(depends)>0:
                 failed = 0
                 for dependency in depends:
+                    if self._is_merger_name(dependency):
+                        msg = "Cannot specify dependency on merger '{0}'".format(dependency)
+                        self.logger.error(msg)
+                        raise DjerbaDependencyError(msg)
                     dependency_ok = False
                     for other_name in ordered_names:
                         if other_name == name:

@@ -70,7 +70,7 @@ class TestCore(TestBase):
         self.assert_report_MD5(html_string, self.SIMPLE_REPORT_MD5)
 
     def load_demo1_plugin(self):
-        loader = plugin_loader(log_level=logging.DEBUG)
+        loader = plugin_loader(log_level=logging.WARNING)
         plugin = loader.load('demo1', workspace(self.tmp_dir))
         return plugin
 
@@ -304,12 +304,11 @@ class TestDependencies(TestCore):
         html = None
         pdf = None
         args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
-        args.ini = os.path.join(self.test_source_dir, 'depends_configure_broken_1.ini')
-        with self.assertRaises(DjerbaDependencyError):
-            main(work_dir, log_level=logging.CRITICAL).run(args)
-        args.ini = os.path.join(self.test_source_dir, 'depends_configure_broken_2.ini')
-        with self.assertRaises(DjerbaDependencyError):
-            main(work_dir, log_level=logging.CRITICAL).run(args)
+        for num in [1,2,3]:
+            filename = 'depends_configure_broken_{0}.ini'.format(num)
+            args.ini = os.path.join(self.test_source_dir, filename)
+            with self.assertRaises(DjerbaDependencyError):
+                main(work_dir, log_level=logging.CRITICAL).run(args)
         args.ini = os.path.join(self.test_source_dir, 'depends_configure.ini')
         main(work_dir, log_level=logging.WARNING).run(args)
 
@@ -322,12 +321,11 @@ class TestDependencies(TestCore):
         html = None
         pdf = None
         args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
-        args.ini = os.path.join(self.test_source_dir, 'depends_extract_broken_1.ini')
-        with self.assertRaises(DjerbaDependencyError):
-            main(work_dir, log_level=logging.CRITICAL).run(args)
-        args.ini = os.path.join(self.test_source_dir, 'depends_extract_broken_2.ini')
-        with self.assertRaises(DjerbaDependencyError):
-            main(work_dir, log_level=logging.CRITICAL).run(args)
+        for num in [1,2,3]:
+            filename = 'depends_extract_broken_{0}.ini'.format(num)
+            args.ini = os.path.join(self.test_source_dir, filename)
+            with self.assertRaises(DjerbaDependencyError):
+                main(work_dir, log_level=logging.CRITICAL).run(args)
         args.ini = os.path.join(self.test_source_dir, 'depends_extract.ini')
         question_path = os.path.join(self.tmp_dir, 'question.txt')
         with open(question_path, 'w') as out_file:
