@@ -6,9 +6,9 @@ Plugin for TAR SWGS.
 import os
 from djerba.plugins.base import plugin_base
 from mako.lookup import TemplateLookup
-import djerba.plugins.swgs.constants as constants
-from djerba.plugins.swgs.preprocess import preprocess
-from djerba.plugins.swgs.extract import data_builder 
+import djerba.plugins.tar.swgs.constants as constants
+from djerba.plugins.tar.swgs.preprocess import preprocess
+from djerba.plugins.tar.swgs.extract import data_builder 
 import djerba.core.constants as core_constants
 
 
