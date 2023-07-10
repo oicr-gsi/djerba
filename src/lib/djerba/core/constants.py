@@ -9,7 +9,7 @@ DJERBA_TEST_DIR_VAR = 'DJERBA_TEST_DIR'
 ATTRIBUTES = 'attributes'
 DEPENDS_CONFIGURE = 'depends_configure'
 DEPENDS_EXTRACT = 'depends_extract'
-DEPENDS_RENDER = 'depends_render'
+# render dependencies are intentionally not defined
 CLINICAL = 'clinical'
 SUPPLEMENTARY = 'supplementary'
 CONFIGURE_PRIORITY = 'configure_priority'
@@ -24,7 +24,6 @@ RESERVED_PARAMS = [
     ATTRIBUTES,
     DEPENDS_CONFIGURE,
     DEPENDS_EXTRACT,
-    DEPENDS_RENDER,
     CONFIGURE_PRIORITY,
     EXTRACT_PRIORITY,
     RENDER_PRIORITY

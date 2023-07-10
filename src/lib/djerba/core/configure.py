@@ -218,7 +218,6 @@ class configurer(configurable):
             core_constants.ATTRIBUTES: '',
             core_constants.DEPENDS_CONFIGURE: '',
             core_constants.DEPENDS_EXTRACT: '',
-            core_constants.DEPENDS_RENDER: '',
             core_constants.CONFIGURE_PRIORITY: 0,
             core_constants.EXTRACT_PRIORITY: 0,
             core_constants.RENDER_PRIORITY: 0

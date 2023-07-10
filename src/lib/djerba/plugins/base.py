@@ -22,7 +22,6 @@ class plugin_base(configurable, ABC):
             core_constants.ATTRIBUTES: '',
             core_constants.DEPENDS_CONFIGURE: '',
             core_constants.DEPENDS_EXTRACT: '',
-            core_constants.DEPENDS_RENDER: '',
             core_constants.CONFIGURE_PRIORITY: 1000,
             core_constants.EXTRACT_PRIORITY: 1000,
             core_constants.RENDER_PRIORITY: 1000

@@ -31,7 +31,7 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_MD5 = '66bf99e6ebe64d89bef09184953fd630'
-    SIMPLE_CONFIG_MD5 = 'e54ce074552933986c541df45970348b'
+    SIMPLE_CONFIG_MD5 = '88b8757e7d864c61c6145b7c5394176d'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
@@ -181,7 +181,7 @@ class TestConfigValidation(TestCore):
         with self.assertLogs('djerba.core.configure', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
         msg = 'DEBUG:djerba.core.configure:'+\
-            '11 expected INI param(s) found for component demo1'
+            '10 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
 
     def test_optional(self):
@@ -232,7 +232,7 @@ class TestConfigValidation(TestCore):
         with self.assertLogs('djerba.core.configure', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
         msg = 'DEBUG:djerba.core.configure:'+\
-            '12 expected INI param(s) found for component demo1'
+            '11 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
         # test setting all requirements
         plugin.add_ini_required('bar') # 'foo' is already required

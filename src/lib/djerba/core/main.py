@@ -75,10 +75,6 @@ class main(core_base):
     def _resolve_extract_dependencies(self, config, components, ordered_names):
         self._resolve_ini_deps(cc.DEPENDS_EXTRACT, config, components, ordered_names)
 
-    def _resolve_render_dependencies(self, config, components, ordered_names):
-        # TODO FIXME this should use JSON, not INI, as input!
-        self._resolve_dependencies(cc.DEPENDS_RENDER, config, components, ordered_names)
-
     def _resolve_ini_deps(self, depends_key, config, components, ordered_names):
         for name in ordered_names:
             if config.has_option(name, depends_key):
@@ -136,6 +132,7 @@ class main(core_base):
         config_in = self.read_ini_path(config_path_in)
         components = {}
         priorities = {}
+        # 1. Load components, set priorities, resolve dependencies (if any)
         self.logger.debug('Loading components and finding config priority levels')
         for section in config_in.sections():
             components[section] = self._load_component(section)
@@ -149,6 +146,7 @@ class main(core_base):
         self.logger.debug('Configuring components in priority order')
         ordered_names = sorted(priorities.keys(), key=lambda x: priorities[x])
         self._resolve_configure_dependencies(config_in, components, ordered_names)
+        # 2. Validate and run configuration for each component; store in config_out
         config_out = ConfigParser()
         order = 0
         for name in ordered_names:
@@ -175,6 +173,7 @@ class main(core_base):
             self.path_validator.validate_output_file(json_path)
         components = {}
         priorities = {}
+        # 1. Load components, set priorities, resolve dependencies (if any)
         for section in config.sections():
             if not (section == ini.CORE or self._is_merger_name(section)):
                 components[section] = self._load_component(section)
@@ -182,6 +181,7 @@ class main(core_base):
         self.logger.debug('Configuring components in priority order')
         ordered_names = sorted(priorities.keys(), key=lambda x: priorities[x])
         self._resolve_extract_dependencies(config, components, ordered_names)
+        # 2. Validate and run configuration for each component; store in data structure
         self.logger.debug('Generating core data structure')
         data = core_extractor(self.log_level, self.log_path).run(config)
         self.logger.debug('Running extraction for plugins and mergers in priority order')
@@ -220,6 +220,7 @@ class main(core_base):
         body = {} # HTML strings to make up the report body
         priorities = {}
         attributes = {}
+        # 1. Load components, set priorities; dependencies are NOT defined for render
         self.logger.debug('Rendering plugin HTML')
         for plugin_name in data[self.PLUGINS]:
             # render plugin HTML, and find which mergers it uses
@@ -229,6 +230,7 @@ class main(core_base):
             self.logger.debug("Ran plugin '{0}' for rendering".format(plugin_name))
             priorities[plugin_name] = self._get_render_priority(plugin_data)
             attributes[plugin_name] = plugin_data[cc.ATTRIBUTES]
+        # 2. Validate and run rendering for each component; store in data structure
         for (merger_name, merger_config) in data[self.MERGERS].items():
             body[merger_name] = self._run_merger(merger_name, data)
             self.logger.debug("Ran merger '{0}' for rendering".format(merger_name))
