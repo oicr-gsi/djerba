@@ -41,7 +41,7 @@ class configurable(logger, ABC):
         template = "Unknown INI parameter '{0}' in {1} config of component {2}. "+\
             "Required = {3}, Defaults = {4}"
         params = (key, mode, self.identifier, self.ini_required, self.ini_defaults)
-        msg = template.format(params)
+        msg = template.format(*params)
         self.logger.error(msg)
         raise DjerbaConfigError(msg)
 
@@ -62,9 +62,19 @@ class configurable(logger, ABC):
     def get_config_wrapper(self, config):
         return config_wrapper(config, self.identifier, self.log_level, self.log_path)
 
-    def get_default_config_priority(self):
-        # configure priority is defined for all component types: plugin, helper, merger
-        return self.ini_defaults[core_constants.CONFIGURE_PRIORITY]
+    def get_reserved_default(self, param):
+        # get the default value of a reserved parameter
+        # raise an error if it is not defined for the current component
+        msg = None
+        if not param in core_constants.RESERVED_PARAMS:
+            msg = "'{0}' is not a reserved parameter".format(param)
+        elif not param in self.ini_defaults:
+            msg = "'{0}' not found in INI defaults {1}; ".format(param, self.ini_defaults)+\
+                "maybe parameter is not defined for this component type?"
+        if msg:
+            self.logger.error(msg)
+            raise DjerbaConfigError(msg)
+        return self.ini_defaults[param]
 
     def get_module_dir(self):
         return self.module_dir
@@ -81,7 +91,20 @@ class configurable(logger, ABC):
     ### start of methods to handle required/default parameters
 
     def add_ini_required(self, key):
-        self.ini_required.add(key)
+        if key in core_constants.RESERVED_PARAMS:
+            msg = 'Cannot add reserved key {0} as a required parameter'.format(key)
+            self.logger.error(msg)
+            raise DjerbaConfigError(msg)
+        elif key in self.ini_defaults:
+            msg = 'Cannot add {0} as required parameter; '.format(key)+\
+                'already exists as default'
+            self.logger.error(msg)
+            raise DjerbaConfigError(msg)
+        elif key in self.ini_required:
+            msg = 'Redundant addition of required parameter: {0}'.format(key)
+            self.logger.warning(msg)
+        else:
+            self.ini_required.add(key)
 
     def apply_defaults(self, config):
         """
@@ -106,7 +129,6 @@ class configurable(logger, ABC):
         """
         config = ConfigParser()
         config.add_section(self.identifier)
-        self.specify_params()
         for option in sorted(list(self.ini_required)):
             config.set(self.identifier, option, 'REQUIRED')
         for option in sorted(list(self.ini_defaults.keys())):
@@ -114,6 +136,16 @@ class configurable(logger, ABC):
         return config
 
     def set_ini_default(self, key, value):
+        msg = None
+        if key in self.ini_required:
+            msg = 'Cannot set default for {0}; '.format(key)+\
+                'already exists as a required parameter'
+        elif key in core_constants.RESERVED_PARAMS and not key in self.ini_defaults:
+            msg = "Cannot set default for reserved parameter {0} ".format(key)+\
+                "as it is not defined for this component type"
+        if msg:
+            self.logger.error(msg)
+            raise DjerbaConfigError(msg)
         self.ini_defaults[key] = value
 
     @abstractmethod
@@ -143,9 +175,11 @@ class configurable(logger, ABC):
         self.logger.debug(template.format(len(all_keys), self.identifier))
         input_keys = config.options(self.identifier)
         for key in all_keys:
+            # Check all keys defined for the component are input
             if key not in input_keys:
                 self._raise_missing_config_error(key, input_keys, complete=True)
         for key in input_keys:
+            # Check if any keys input are *not* defined for the component
             if key not in all_keys:
                 self._raise_unknown_config_error(key, complete=True)
         self.validate_priorities(config)
@@ -169,9 +203,6 @@ class configurable(logger, ABC):
                     self.logger.error(msg)
                     raise ValueError(msg)
 
-    ### end of methods to handle required/default parameters
-    ### start of methods to handle component priorities
-
 class configurer(configurable):
 
     """Class to do core configuration"""
@@ -180,6 +211,15 @@ class configurer(configurable):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        # core has no attributes or dependencies, but include the INI params for consistency
+        self.ini_defaults = {
+            core_constants.ATTRIBUTES: '',
+            core_constants.DEPENDS_CONFIGURE: '',
+            core_constants.DEPENDS_EXTRACT: '',
+            core_constants.CONFIGURE_PRIORITY: 0,
+            core_constants.EXTRACT_PRIORITY: 0,
+            core_constants.RENDER_PRIORITY: 0
+        }
         self.specify_params()
 
     def configure(self, config):

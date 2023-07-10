@@ -18,7 +18,7 @@ from djerba.core.configure import config_wrapper, DjerbaConfigError
 from djerba.core.ini_generator import ini_generator
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.loaders import plugin_loader
-from djerba.core.main import main, arg_processor
+from djerba.core.main import main, arg_processor, DjerbaDependencyError
 from djerba.core.workspace import workspace
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.testing.tools import TestBase
@@ -31,8 +31,26 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_MD5 = '66bf99e6ebe64d89bef09184953fd630'
-    SIMPLE_CONFIG_MD5 = 'ca2002dadf718da0c80a6222e5eb4546'
+    SIMPLE_CONFIG_MD5 = '88b8757e7d864c61c6145b7c5394176d'
 
+    class mock_args:
+        """Use instead of argparse to store params for testing"""
+
+        def __init__(self, mode, work_dir, ini, ini_out, json, html, pdf):
+            self.subparser_name = mode
+            self.work_dir = work_dir
+            self.ini = ini
+            self.ini_out = ini_out
+            self.json = json
+            self.html = html
+            self.pdf = pdf
+            self.no_archive = True
+            # logging
+            self.log_path = None
+            self.debug = False
+            self.verbose = False
+            self.quiet = True
+    
     def setUp(self):
         super().setUp() # includes tmp_dir
         self.test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -52,36 +70,18 @@ class TestCore(TestBase):
         self.assert_report_MD5(html_string, self.SIMPLE_REPORT_MD5)
 
     def load_demo1_plugin(self):
-        loader = plugin_loader(log_level=logging.WARNING)
+        loader = plugin_loader(log_level=logging.DEBUG)
         plugin = loader.load('demo1', workspace(self.tmp_dir))
         return plugin
 
-    def read_demo1_config(self, plugin):
-        ini_path = os.path.join(self.test_source_dir, 'config_demo1.ini')
+    def read_demo1_config(self, plugin, filename='config_demo1.ini'):
+        ini_path = os.path.join(self.test_source_dir, filename)
         config = ConfigParser()
         config.read(ini_path)
         config = plugin.apply_defaults(config)
         return config
 
 class TestArgs(TestCore):
-
-    class mock_args:
-        """Use instead of argparse to store params for testing"""
-
-        def __init__(self, mode, work_dir, ini, ini_out, json, html, pdf):
-            self.subparser_name = mode
-            self.work_dir = work_dir
-            self.ini = ini
-            self.ini_out = ini_out
-            self.json = json
-            self.html = html
-            self.pdf = pdf
-            self.no_archive = True
-            # logging
-            self.log_path = None
-            self.debug = False
-            self.verbose = False
-            self.quiet = True
 
     def test_processor(self):
         mode = 'report'
@@ -181,7 +181,7 @@ class TestConfigValidation(TestCore):
         with self.assertLogs('djerba.core.configure', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
         msg = 'DEBUG:djerba.core.configure:'+\
-            '7 expected INI param(s) found for component demo1'
+            '10 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
 
     def test_optional(self):
@@ -232,11 +232,10 @@ class TestConfigValidation(TestCore):
         with self.assertLogs('djerba.core.configure', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
         msg = 'DEBUG:djerba.core.configure:'+\
-            '8 expected INI param(s) found for component demo1'
+            '11 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
         # test setting all requirements
-        for x in ['foo', 'bar']:
-            plugin.add_ini_required(x)
+        plugin.add_ini_required('bar') # 'foo' is already required
         plugin.set_log_level(logging.CRITICAL)
         with self.assertRaises(DjerbaConfigError):
             plugin.validate_minimal_config(config)
@@ -293,6 +292,49 @@ class TestConfigWrapper(TestCore):
         if data_dir_orig != None:
             os.environ[core_constants.DJERBA_DATA_DIR_VAR] = data_dir_orig
 
+class TestDependencies(TestCore):
+    """Test the 'depends' parameters"""
+
+    def test_depends_configure(self):
+        mode = 'configure'
+        work_dir = self.tmp_dir
+        ini_path = 'placeholder'
+        out_path = os.path.join(self.tmp_dir, 'config_out.ini')
+        json_path = None
+        html = None
+        pdf = None
+        args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
+        args.ini = os.path.join(self.test_source_dir, 'depends_configure_broken_1.ini')
+        with self.assertRaises(DjerbaDependencyError):
+            main(work_dir, log_level=logging.CRITICAL).run(args)
+        args.ini = os.path.join(self.test_source_dir, 'depends_configure_broken_2.ini')
+        with self.assertRaises(DjerbaDependencyError):
+            main(work_dir, log_level=logging.CRITICAL).run(args)
+        args.ini = os.path.join(self.test_source_dir, 'depends_configure.ini')
+        main(work_dir, log_level=logging.WARNING).run(args)
+
+    def test_depends_extract(self):
+        mode = 'extract'
+        work_dir = self.tmp_dir
+        ini_path = 'placeholder'
+        out_path = None
+        json_path = os.path.join(self.tmp_dir, 'djerba.json')
+        html = None
+        pdf = None
+        args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
+        args.ini = os.path.join(self.test_source_dir, 'depends_extract_broken_1.ini')
+        with self.assertRaises(DjerbaDependencyError):
+            main(work_dir, log_level=logging.CRITICAL).run(args)
+        args.ini = os.path.join(self.test_source_dir, 'depends_extract_broken_2.ini')
+        with self.assertRaises(DjerbaDependencyError):
+            main(work_dir, log_level=logging.CRITICAL).run(args)
+        args.ini = os.path.join(self.test_source_dir, 'depends_extract.ini')
+        question_path = os.path.join(self.tmp_dir, 'question.txt')
+        with open(question_path, 'w') as out_file:
+            out_file.write('What do you get if you multiply six by nine?\n')
+        main(work_dir, log_level=logging.WARNING).run(args)
+        self.assertTrue(os.path.exists(json_path))
+
 
 class TestIniGenerator(TestCore):
     """Test the INI generator"""
@@ -316,8 +358,7 @@ class TestIniGenerator(TestCore):
             self.assertEqual(in_file_1.read(), in_file_2.read())
 
     def test_script(self):
-        #out_path = os.path.join(self.tmp_dir, 'generated.ini')
-        out_path = os.path.join('/home/ibancarz/tmp', 'generated.ini')
+        out_path = os.path.join(self.tmp_dir, 'generated.ini')
         cmd = ['generate_ini.py', '--out', out_path]
         cmd.extend(self.COMPONENT_NAMES)
         result = subprocess_runner().run(cmd)
@@ -581,7 +622,6 @@ class TestWorkspace(TestCore):
         with ws.open_gzip_file(gzip_filename) as gzip_file:
             lorem_from_gzip = gzip_file.read()
         self.assertEqual(lorem_from_gzip, lorem)
-
 
 if __name__ == '__main__':
     unittest.main()

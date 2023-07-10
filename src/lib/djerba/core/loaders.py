@@ -50,6 +50,17 @@ class loader_base(core_base, ABC):
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
 
+    def get_common_args(self, module_name, module):
+        """Get the constructor args common to all component types"""
+        module_dir = os.path.abspath(os.path.dirname(module.__file__))
+        args = {
+            core_constants.IDENTIFIER: module_name,
+            core_constants.MODULE_DIR: module_dir,
+            core_constants.LOG_LEVEL: self.log_level,
+            core_constants.LOG_PATH: self.log_path
+        }
+        return args
+
     def import_module(self, module_type, name):
         args = [module_type, name]
         permitted = [self.PLUGIN, self.MERGER, self.HELPER]
@@ -69,16 +80,15 @@ class loader_base(core_base, ABC):
             raise DjerbaLoadError from err
         return module
 
-    def get_common_args(self, module_name, module):
-        """Get the constructor args common to all component types"""
-        module_dir = os.path.abspath(os.path.dirname(module.__file__))
-        args = {
-            core_constants.IDENTIFIER: module_name,
-            core_constants.MODULE_DIR: module_dir,
-            core_constants.LOG_LEVEL: self.log_level,
-            core_constants.LOG_PATH: self.log_path
-        }
-        return args
+    def instantiate_main(self, module, args):
+        # do some error checking and return an instance of the main class
+        try:
+            main_object = module.main(**args)
+        except TypeError as err:
+            msg = "Error loading component. Maybe specify_params() is not defined?"
+            self.logger.error("{0} {1}".format(msg, err))
+            raise DjerbaLoadError(msg) from err
+        return main_object
 
     def load(self):
         msg = "Attempting to call placeholder method of base loader class; "+\
@@ -147,7 +157,7 @@ class merger_loader(loader_base):
         module = self.import_module(self.MERGER, module_name)
         self.validate_module(module, self.MERGER, module_name)
         args = self.get_common_args(module_name, module)
-        return module.main(**args)
+        return self.instantiate_main(module, args)
 
 class plugin_loader(loader_base):
 
@@ -157,7 +167,7 @@ class plugin_loader(loader_base):
         self.validate_module(module, self.PLUGIN, module_name)
         args = self.get_common_args(module_name, module)
         args[core_constants.WORKSPACE] = workspace
-        return module.main(**args)
+        return self.instantiate_main(module, args)
 
 class helper_loader(loader_base):
 
@@ -167,7 +177,7 @@ class helper_loader(loader_base):
         self.validate_module(module, self.HELPER, module_name)
         args = self.get_common_args(module_name, module)
         args[core_constants.WORKSPACE] = workspace
-        return module.main(**args)
+        return self.instantiate_main(module, args)
 
 
 class DjerbaLoadError(Exception):

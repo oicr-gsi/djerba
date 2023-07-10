@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### GCGI-951: Dependencies
+- Explicitly represent plugin dependencies with INI parameters
+- Params `depends_configure` and `depends_extract` expect a comma-separated list of component names, which will be checked at runtime
+- Do not define a dependency param at the render step; JSON output from each plugin is expected to be self-contained, so all dependencies should be resolved at the extract step.
+
 ### GCGI-955: `specify_params`
 - Each plugin must have a `specify_params` method to define required and optional INI parameters
 - Using an INI parameter not defined in `specify_params` will cause an error

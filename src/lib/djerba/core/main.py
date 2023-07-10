@@ -5,6 +5,7 @@ Main class to:
 - Merge and output results
 """
 from configparser import ConfigParser
+import csv
 import json
 import logging
 import os
@@ -52,6 +53,61 @@ class main(core_base):
     def _get_render_priority(self, plugin_data):
         return plugin_data[cc.PRIORITIES][cc.RENDER]
 
+    def _load_component(self, name):
+        if name == ini.CORE:
+            component = self.core_config_loader.load()
+        elif self._is_helper_name(name):
+            component = self.helper_loader.load(name, self.workspace)
+        elif self._is_merger_name(name):
+            component = self.merger_loader.load(name)
+        else:
+            component = self.plugin_loader.load(name, self.workspace)
+        return component
+
+    def _parse_comma_separated_list(self, list_string):
+        # parse INI values stored as a comma-separated list -- eg. attributes, dependencies
+        # use CSV reader to allow escaping and handle other edge cases
+        return next(csv.reader([list_string]))
+
+    def _resolve_configure_dependencies(self, config, components, ordered_names):
+        self._resolve_ini_deps(cc.DEPENDS_CONFIGURE, config, components, ordered_names)
+
+    def _resolve_extract_dependencies(self, config, components, ordered_names):
+        self._resolve_ini_deps(cc.DEPENDS_EXTRACT, config, components, ordered_names)
+
+    def _resolve_ini_deps(self, depends_key, config, components, ordered_names):
+        for name in ordered_names:
+            if config.has_option(name, depends_key):
+                depends_str = config.get(name, depends_key)
+            else:
+                depends_str = components[name].get_reserved_default(depends_key)
+            depends = self._parse_comma_separated_list(depends_str)
+            if len(depends)>0:
+                failed = 0
+                for dependency in depends:
+                    dependency_ok = False
+                    for other_name in ordered_names:
+                        if other_name == name:
+                            break
+                        elif other_name == dependency:
+                            dependency_ok = True
+                            break
+                    if not dependency_ok:
+                        failed += 1
+                if failed==0:
+                    template = 'Resolved {0} dependencies for component {1}'
+                    self.logger.debug(template.format(len(depends), name))
+                else:
+                    template = 'Failed to resolve {0} of {1} dependencies in {2} for '+\
+                        'component {3}. One or more dependencies is missing or in the '+\
+                        'wrong order. Dependencies: {4} Priority order: {5}'
+                    args = [failed, len(depends), depends_key, name, depends, ordered_names]
+                    msg = template.format(*args)
+                    self.logger.error(msg)
+                    raise DjerbaDependencyError(msg)
+            else:
+                self.logger.debug("No dependencies found for component {0}".format(name))
+
     def _run_merger(self, merger_name, data):
         """Assemble inputs for the named merger and run merge/dedup to get HTML"""
         merger_inputs = []
@@ -74,31 +130,29 @@ class main(core_base):
         if config_path_out:  # do this *before* taking the time to generate output
             self.path_validator.validate_output_file(config_path_out)
         config_in = self.read_ini_path(config_path_in)
-        # TODO first read defaults, then overwrite
         components = {}
+        priorities = {}
+        # 1. Load components, set priorities, resolve dependencies (if any)
         self.logger.debug('Loading components and finding config priority levels')
-        for section_name in config_in.sections():
-            if section_name == ini.CORE:
-                component = self.core_config_loader.load()
-            elif self._is_helper_name(section_name):
-                component = self.helper_loader.load(section_name, self.workspace)
-            elif self._is_merger_name(section_name):
-                component = self.merger_loader.load(section_name)
-            else:
-                component = self.plugin_loader.load(section_name, self.workspace)
+        for section in config_in.sections():
+            components[section] = self._load_component(section)
             # if input has a configure priority, use that
             # otherwise, use default priority for the component
-            if config_in.has_option(section_name, cc.CONFIGURE_PRIORITY):
-                priority = config_in.getint(section_name, cc.CONFIGURE_PRIORITY)
+            if config_in.has_option(section, cc.CONFIGURE_PRIORITY):
+                priority = config_in.getint(section, cc.CONFIGURE_PRIORITY)
             else:
-                priority = component.get_default_config_priority()
-            components[section_name] = (component, priority)
+                priority = components[section].get_reserved_default(cc.CONFIGURE_PRIORITY)
+            priorities[section] = priority
         self.logger.debug('Configuring components in priority order')
+        ordered_names = sorted(priorities.keys(), key=lambda x: priorities[x])
+        self._resolve_configure_dependencies(config_in, components, ordered_names)
+        # 2. Validate and run configuration for each component; store in config_out
         config_out = ConfigParser()
         order = 0
-        for name in sorted(components, key=lambda x: components[x][1]):
+        for name in ordered_names:
             order += 1
-            [component, priority] = components[name]
+            component = components[name]
+            priority = priorities[name]
             msg = 'Configuring {0}, priority {1}, order {2}'.format(name, priority, order)
             self.logger.debug(msg)
             component.validate_minimal_config(config_in)
@@ -118,25 +172,26 @@ class main(core_base):
         if json_path:  # do this *before* taking the time to generate output
             self.path_validator.validate_output_file(json_path)
         components = {}
-        for section_name in config.sections():
-            if section_name == ini.CORE or self._is_merger_name(section_name):
-                continue
-            elif self._is_helper_name(section_name):
-                component = self.helper_loader.load(section_name, self.workspace)
-            else:
-                component = self.plugin_loader.load(section_name, self.workspace)
-            priority = config.getint(section_name, cc.EXTRACT_PRIORITY)
-            components[section_name] = (component, priority)
+        priorities = {}
+        # 1. Load components, set priorities, resolve dependencies (if any)
+        for section in config.sections():
+            if not (section == ini.CORE or self._is_merger_name(section)):
+                components[section] = self._load_component(section)
+                priorities[section] = config.getint(section, cc.EXTRACT_PRIORITY)
+        self.logger.debug('Configuring components in priority order')
+        ordered_names = sorted(priorities.keys(), key=lambda x: priorities[x])
+        self._resolve_extract_dependencies(config, components, ordered_names)
+        # 2. Validate and run configuration for each component; store in data structure
         self.logger.debug('Generating core data structure')
         data = core_extractor(self.log_level, self.log_path).run(config)
         self.logger.debug('Running extraction for plugins and mergers in priority order')
         order = 0
-        for name in sorted(components, key=lambda x: components[x][1]):
+        for name in ordered_names:
             order += 1
-            component = components[name][0]
+            component = components[name]
             self.logger.debug('Extracting component {0} in order {1}'.format(name, order))
             component.validate_full_config(config)
-            component_data = components[name][0].extract(config)
+            component_data = components[name].extract(config)
             if not self._is_helper_name(name):
                 # only plugins, not helpers, write data in the JSON document
                 self.json_validator.validate_data(component_data)
@@ -165,6 +220,7 @@ class main(core_base):
         body = {} # HTML strings to make up the report body
         priorities = {}
         attributes = {}
+        # 1. Load components, set priorities; dependencies are NOT defined for render
         self.logger.debug('Rendering plugin HTML')
         for plugin_name in data[self.PLUGINS]:
             # render plugin HTML, and find which mergers it uses
@@ -174,6 +230,7 @@ class main(core_base):
             self.logger.debug("Ran plugin '{0}' for rendering".format(plugin_name))
             priorities[plugin_name] = self._get_render_priority(plugin_data)
             attributes[plugin_name] = plugin_data[cc.ATTRIBUTES]
+        # 2. Validate and run rendering for each component; store in data structure
         for (merger_name, merger_config) in data[self.MERGERS].items():
             body[merger_name] = self._run_merger(merger_name, data)
             self.logger.debug("Ran merger '{0}' for rendering".format(merger_name))
@@ -373,5 +430,5 @@ class arg_processor(logger):
 class ArgumentNameError(Exception):
     pass
 
-class ComponentNameError(Exception):
+class DjerbaDependencyError(Exception):
     pass

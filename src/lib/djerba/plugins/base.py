@@ -17,6 +17,15 @@ class plugin_base(configurable, ABC):
         super().__init__(**kwargs)
         self.workspace = kwargs['workspace']
         self.json_validator = plugin_json_validator(self.log_level, self.log_path)
+        # global defaults for plugins; can override for individual plugin classes
+        self.ini_defaults = {
+            core_constants.ATTRIBUTES: '',
+            core_constants.DEPENDS_CONFIGURE: '',
+            core_constants.DEPENDS_EXTRACT: '',
+            core_constants.CONFIGURE_PRIORITY: 1000,
+            core_constants.EXTRACT_PRIORITY: 1000,
+            core_constants.RENDER_PRIORITY: 1000
+        }
         self.specify_params()
 
     # configure() method is defined in parent class

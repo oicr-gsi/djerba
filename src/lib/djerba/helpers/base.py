@@ -19,6 +19,14 @@ class helper_base(configurable, ABC):
         # workspace is an instance of djerba.core.workspace
         super().__init__(**kwargs)
         self.workspace = kwargs['workspace']
+        # global defaults for helpers; can override for individual helper classes
+        self.ini_defaults = {
+            core_constants.ATTRIBUTES: '',
+            core_constants.DEPENDS_CONFIGURE: '',
+            core_constants.DEPENDS_EXTRACT: '',
+            core_constants.CONFIGURE_PRIORITY: 1000,
+            core_constants.EXTRACT_PRIORITY: 1000,
+        }
         self.specify_params()
 
     # configure() method is defined in parent class

@@ -51,15 +51,15 @@ class PluginTester(TestBase):
                 raise RuntimeError(msg)
         return plugin_name
 
-    def run_basic_test(self, test_source_dir, params):
+    def run_basic_test(self, test_source_dir, params, plugin_name=None):
         """
         Simple plugin test
         """
-        #self.tmp_dir='/home/ibancarz/workspace/djerba/test/20230426_02'
         ini_path = os.path.join(test_source_dir, params[self.INI])
         expected_json_path = os.path.join(test_source_dir, params[self.JSON])
         expected_md5 = params[self.MD5]
-        plugin_name = self.read_plugin_name(ini_path)
+        if not plugin_name:
+            plugin_name = self.read_plugin_name(ini_path)
         self.assertTrue(plugin_name)
         djerba_main = core_main(self.get_tmp_dir(), log_level=logging.WARNING)
         config = djerba_main.configure(ini_path)
