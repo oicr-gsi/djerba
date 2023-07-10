@@ -169,16 +169,17 @@ class configurable(logger, ABC):
 
     def validate_full_config(self, config):
         """Check that all config keys (both required and optional) are present"""
-        # TODO check that all reserved keys are present
         self.logger.info("Validating fully-specified config for component "+self.identifier)
         all_keys = self.get_all_expected_ini()
         template = "{0} expected INI param(s) found for component {1}"
         self.logger.debug(template.format(len(all_keys), self.identifier))
         input_keys = config.options(self.identifier)
         for key in all_keys:
+            # Check all keys defined for the component are input
             if key not in input_keys:
                 self._raise_missing_config_error(key, input_keys, complete=True)
         for key in input_keys:
+            # Check if any keys input are *not* defined for the component
             if key not in all_keys:
                 self._raise_unknown_config_error(key, complete=True)
         self.validate_priorities(config)
@@ -201,9 +202,6 @@ class configurable(logger, ABC):
                     msg = "{0}:{1} must be a non-negative integer; got {2}".format(s, p, v)
                     self.logger.error(msg)
                     raise ValueError(msg)
-
-    ### end of methods to handle required/default parameters
-    ### start of methods to handle component priorities
 
 class configurer(configurable):
 
