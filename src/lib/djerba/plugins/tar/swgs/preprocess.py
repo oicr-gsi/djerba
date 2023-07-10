@@ -15,7 +15,7 @@ from djerba.sequenza import sequenza_reader
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.extract.oncokb.annotator import oncokb_annotator
 from shutil import copyfile
-import djerba.plugins.swgs.constants as constants 
+import djerba.plugins.tar.swgs.constants as constants 
 
 class preprocess:
 
