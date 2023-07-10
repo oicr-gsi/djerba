@@ -1,15 +1,5 @@
 
-preProcCNA <- function(segfile, genebed, gain, amp, htz, hmz, oncolist, genelist=NA){
-
- # test
- #segfile="/.mounts/labs/TGL/cap/OCTCAP/OCT-01-0118/OCT-01-0118-TS/report/seg.txt"
- #genebed="/.mounts/labs/TGL/gsi/jtorchia/git/cBioWrap/files/gencode_v33_hg38_genes.bed"
- #oncolist="/.mounts/labs/TGL/gsi/jtorchia/git/cBioWrap/files/20200818-oncoKBcancerGeneList.tsv"
- #genelist="/.mounts/labs/TGL/gsi/jtorchia/git/cBioWrap/files/targeted_genelist.txt"
- #gain="0.3"
- #amp="0.7"
- #htz="-0.3"
- #hmz="-0.7"
+preProcCNA <- function(segfile, genebed, oncolist, genelist=NA){
 
  # read oncogenes
  oncogenes <- read.delim(oncolist, header=TRUE, row.names=1)
@@ -20,10 +10,8 @@ preProcCNA <- function(segfile, genebed, gain, amp, htz, hmz, oncolist, genelist
 
  # thresholds
  print("setting thresholds")
- gain=as.numeric(gain)
- amp=as.numeric(amp)
- htz=as.numeric(htz)
- hmz=as.numeric(hmz)
+ amp=as.numeric(4)
+
 
  # get the gene info
  print("getting gene info")
@@ -47,13 +35,7 @@ preProcCNA <- function(segfile, genebed, gain, amp, htz, hmz, oncolist, genelist
  # threshold data
  for (i in 2:ncol(df_cna_thresh))
  {
-     df_cna_thresh[,i] <- ifelse(df_cna_thresh[,i] > amp, 2,
-                         ifelse(df_cna_thresh[,i] < hmz, -2,
-                             ifelse(df_cna_thresh[,i] > gain & df_cna_thresh[,i] <= amp, 1,
-                                 ifelse(df_cna_thresh[,i] < htz & df_cna_thresh[,i] >= hmz, -1, 0)
-                           )
-                               )
-                                   )
+     df_cna_thresh[,i] <- ifelse(df_cna_thresh[,i] > amp, 2)
  }
 
  # fix rownames of log2cna data
