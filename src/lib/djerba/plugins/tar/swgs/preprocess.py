@@ -27,7 +27,7 @@ class preprocess:
   solution = "_primary_"
   seg_file = "./changedAMPREVOLVE_0001_Pl_T_REV-01-001_Pl.seg.txt"
 
-  def __init__(self, work_dir, tar):
+  def __init__(self, work_dir):
 
     # DIRECTORIES
     self.report_dir = work_dir
@@ -45,9 +45,6 @@ class preprocess:
         os.mkdir(self.tmp_dir)
     self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/Rscripts"
     
-    # IS IT TAR? PARAMETER
-    self.tar = tar
-
     # RANDOM
     cache_params = None
     log_level = "logging.WARNING"

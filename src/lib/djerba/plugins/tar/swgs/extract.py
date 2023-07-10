@@ -45,7 +45,7 @@ class data_builder:
     "Unknown"
   ]
 
-   def __init__(self, work_dir, tar):
+  def __init__(self, work_dir):
 
     # DIRECTORIES
     self.input_dir = "."

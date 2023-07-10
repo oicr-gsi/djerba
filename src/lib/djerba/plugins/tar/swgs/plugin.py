@@ -34,8 +34,8 @@ class main(plugin_base):
       wrapper = self.get_config_wrapper(config)
 
       # Pre-process all the files
-      # self.preprocess()
-      preprocess().run_R_code()
+      work_dir = self.workspace.get_work_dir()
+      preprocess(work_dir).run_R_code()
 
       data = {
           'plugin_name': 'Shallow Whole Genome Sequencing (sWGS)',
@@ -43,7 +43,7 @@ class main(plugin_base):
           'priorities': wrapper.get_my_priorities(),
           'attributes': wrapper.get_my_attributes(),
           'merge_inputs': {},
-          'results': data_builder().build_swgs()
+          'results': data_builder(work_dir).build_swgs()
       }
       return data
 
