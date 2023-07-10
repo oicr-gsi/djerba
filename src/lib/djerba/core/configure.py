@@ -9,6 +9,7 @@ import os
 import string
 from abc import ABC, abstractmethod
 from configparser import ConfigParser
+from djerba.core.base import base as core_base
 from djerba.util.logger import logger
 import djerba.core.constants as core_constants
 import djerba.util.ini_fields as ini
@@ -26,6 +27,12 @@ class configurable(logger, ABC):
     - Handle component priorities
     - Get/set/query INI params (other than priority levels)
     """
+
+    # default list of known attributes -- may override in subclasses
+    KNOWN_ATTRIBUTES = [
+        core_constants.CLINICAL,
+        core_constants.SUPPLEMENTARY
+    ]
 
     def __init__(self, **kwargs):
         self.identifier = kwargs[core_constants.IDENTIFIER]
@@ -52,6 +59,14 @@ class configurable(logger, ABC):
         msg = template.format(key, mode, self.identifier, input_keys)
         self.logger.error(msg)
         raise DjerbaConfigError(msg)
+
+    def check_attributes_known(self, attributes):
+        all_known = True
+        for a in attributes:
+            if not a in self.KNOWN_ATTRIBUTES:
+                self.logger.warning("Unknown attribute '{0}' in config".format(a))
+                all_known = False
+        return all_known
 
     def configure(self, config):
         """Input/output is a ConfigParser object"""
@@ -165,7 +180,7 @@ class configurable(logger, ABC):
             if key not in self.ini_required and key not in self.ini_defaults:
                 self._raise_unknown_config_error(key, complete=False)
         self.validate_priorities(config)
-        return True
+        return config
 
     def validate_full_config(self, config):
         """Check that all config keys (both required and optional) are present"""
@@ -183,7 +198,7 @@ class configurable(logger, ABC):
             if key not in all_keys:
                 self._raise_unknown_config_error(key, complete=True)
         self.validate_priorities(config)
-        return True
+        return config
 
     def validate_priorities(self, config):
         # check priorities are non-negative integers
@@ -202,6 +217,7 @@ class configurable(logger, ABC):
                     msg = "{0}:{1} must be a non-negative integer; got {2}".format(s, p, v)
                     self.logger.error(msg)
                     raise ValueError(msg)
+        return config
 
 class configurer(configurable):
 
@@ -236,7 +252,7 @@ class configurer(configurable):
         self.set_ini_default('comment', 'comment goes here')
 
 
-class config_wrapper(logger):
+class config_wrapper(core_base):
 
     """Wrapper for a ConfigParser object with convenience methods"""
 
@@ -268,11 +284,11 @@ class config_wrapper(logger):
     # no set_core_param() -- components only write their own INI section
 
     def get_my_attributes(self):
-        attributes = []
-        for key in ['clinical', 'supplementary', 'failed']:
-            if self.config.has_option(self.identifier, key) \
-               and self.config.getboolean(self.identifier, key):
-                attributes.append(key)
+        if self.has_my_param(core_constants.ATTRIBUTES):
+            attributes_str = self.get_my_string(core_constants.ATTRIBUTES)
+            attributes = self._parse_comma_separated_list(attributes_str)
+        else:
+            attributes = []
         return attributes
 
     # [get|set|has]_my_* methods for the named component

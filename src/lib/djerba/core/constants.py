@@ -33,6 +33,10 @@ CONFIGURE = 'configure'
 EXTRACT = 'extract'
 RENDER = 'render'
 
+# attribute names
+CLINICAL = 'clinical'
+SUPPLEMENTARY = 'supplementary'
+
 # core config elements
 DONOR = 'donor'
 PROJECT = 'project'

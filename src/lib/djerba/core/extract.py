@@ -19,18 +19,15 @@ class extractor(core_base):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.image_converter = converter(log_level, log_path)
 
-    def _get_merger_data(self, config):
+    def _get_merger_params(self, config):
         mergers = {}
         for section_name in config.sections():
             if self._is_merger_name(section_name):
                 merger_data = {}
                 merger_data[core_constants.RENDER_PRIORITY] = \
                     config.getint(section_name, core_constants.RENDER_PRIORITY)
-                attributes = []
-                for key in [core_constants.CLINICAL, core_constants.SUPPLEMENTARY]:
-                    if config.has_option(section_name, key) and \
-                       config.getboolean(section_name, key):
-                        attributes.append(key)
+                attributes_str = config.get(section_name, core_constants.ATTRIBUTES)
+                attributes = self._parse_comma_separated_list(attributes_str)
                 merger_data[core_constants.ATTRIBUTES] = attributes
                 mergers[section_name] = merger_data
         return mergers
@@ -83,6 +80,6 @@ class extractor(core_base):
             },
             'plugins': {},
         }
-        data['mergers'] = self._get_merger_data(config)
+        data['mergers'] = self._get_merger_params(config)
         data['comment'] = config['core']['comment']
         return data

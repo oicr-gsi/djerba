@@ -5,7 +5,6 @@ Main class to:
 - Merge and output results
 """
 from configparser import ConfigParser
-import csv
 import json
 import logging
 import os
@@ -62,11 +61,6 @@ class main(core_base):
         else:
             component = self.plugin_loader.load(name, self.workspace)
         return component
-
-    def _parse_comma_separated_list(self, list_string):
-        # parse INI values stored as a comma-separated list -- eg. attributes, dependencies
-        # use CSV reader to allow escaping and handle other edge cases
-        return next(csv.reader([list_string]))
 
     def _resolve_configure_dependencies(self, config, components, ordered_names):
         self._resolve_ini_deps(cc.DEPENDS_CONFIGURE, config, components, ordered_names)

@@ -15,8 +15,6 @@ class main(merger_base):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.set_ini_default(core_constants.CLINICAL, True)
-        self.set_ini_default(core_constants.SUPPLEMENTARY, True)
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -59,4 +57,5 @@ class main(merger_base):
 
     def specify_params(self):
         self.logger.debug("Specifying params for gene_information_merger")
+        self.set_ini_default(core_constants.ATTRIBUTES, 'clinical,supplementary')
         self.set_priority_defaults(self.PRIORITY)

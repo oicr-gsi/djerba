@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### GCGI-950: Attributes
+- Represent attributes as a comma-separated list, instead of individual parameters
+- Add a method to check all attributes are known
+- Define a list of known attributes in `configurable` class; may override in subclasses
+
 ### GCGI-951: Dependencies
 - Explicitly represent plugin dependencies with INI parameters
 - Params `depends_configure` and `depends_extract` expect a comma-separated list of component names, which will be checked at runtime

@@ -58,6 +58,5 @@ class main(plugin_base):
         self.logger.debug("Specifying params for plugin demo2")
         self.add_ini_required('demo2_param')
         self.set_ini_default('question', 'question.txt')
-        self.set_ini_default(core_constants.CLINICAL, True)
-        self.set_ini_default(core_constants.SUPPLEMENTARY, False)
+        self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_priority_defaults(self.PRIORITY)
