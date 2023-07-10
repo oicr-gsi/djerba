@@ -49,7 +49,7 @@ class data_builder:
 
     # DIRECTORIES
     self.input_dir = "."
-    self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/Rscripts/"
+    self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts/"
     self.work_dir = work_dir
     self.data_dir =  os.environ.get('DJERBA_BASE_DIR') + "/data/" 
     self.cytoband_path = os.path.join(self.data_dir, 'cytoBand.txt')
@@ -100,10 +100,10 @@ class data_builder:
   def write_cnv_plot(self, out_dir):
     """
     """
-    processed_seg = self.process_seg_for_plotting("./changedAMPREVOLVE_0001_Pl_T_REV-01-001_Pl.seg.txt")
+    processed_seg = self.process_seg_for_plotting(self.work_dir + "/changedAMPREVOLVE_0001_Pl_T_REV-01-001_Pl.seg.txt")
     out_path = os.path.join(out_dir, 'seg_CNV_plot.svg')
     args = [
-        os.path.join(self.r_script_dir, 'cnv_plot.R'),
+        os.path.join(self.r_script_dir, 'cnv_plot.r'),
         '--segfile',  os.path.join(self.work_dir, processed_seg),
         '--segfiletype', 'sequenza',
         '-d',out_dir

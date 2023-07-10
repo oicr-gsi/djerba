@@ -35,7 +35,7 @@ preProcCNA <- function(segfile, genebed, oncolist, genelist=NA){
  # threshold data
  for (i in 2:ncol(df_cna_thresh))
  {
-     df_cna_thresh[,i] <- ifelse(df_cna_thresh[,i] > amp, 2)
+     df_cna_thresh[,i] <- ifelse(df_cna_thresh[,i] > amp, 2, 0)
  }
 
  # fix rownames of log2cna data

@@ -25,7 +25,7 @@ class preprocess:
   oncotree_code = "paad"
   gamma = 500
   solution = "_primary_"
-  seg_file = "./changedAMPREVOLVE_0001_Pl_T_REV-01-001_Pl.seg.txt"
+  seg_file = "changedAMPREVOLVE_0001_Pl_T_REV-01-001_Pl.seg.txt"
 
   def __init__(self, work_dir):
 
@@ -43,12 +43,13 @@ class preprocess:
         #print("Creating tmp dir {0} for R script wrapper".format(tmp_dir))
         #self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
         os.mkdir(self.tmp_dir)
-    self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/Rscripts"
+    self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts"
+    self.r_script_dir_swgs = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/swgs/" 
     
     # RANDOM
-    cache_params = None
-    log_level = "logging.WARNING"
-    log_path = "None"
+    self.cache_params = None
+    self.log_level = "logging.WARNING"
+    self.log_path = "None"
   
 
   # ----------------------- to do all the pre-processing --------------------
@@ -58,7 +59,7 @@ class preprocess:
     seg_path = self.preprocess_seg(self.seg_file)
 
     cmd = [
-        'Rscript', "../process_CNA_data.r",
+        'Rscript', self.r_script_dir_swgs + "/process_CNA_data.r",
         '--basedir', self.r_script_dir,
         '--outdir', self.report_dir,
         '--segfile', seg_path,
