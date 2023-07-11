@@ -16,3 +16,9 @@ ONCOKB = 'OncoKB'
 EXPRESSION_METRIC = 'Expression Percentile'
 CNV_PLOT = 'cnv_plot'
 TEXT_ENCODING = 'utf-8'
+
+# Files to delete
+CNV_PLOT_DATA = "cnv_plot_data.txt"
+DATA_CNA = "data_CNA.txt"
+DATA_CNA_ONCOKB = "data_CNA_oncoKBgenes.txt"
+DATA_CNA_ONCOKB_NONDIPLOID = "data_CNA_oncoKBgenes_nonDiploid.txt"

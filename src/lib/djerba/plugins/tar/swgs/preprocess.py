@@ -20,11 +20,8 @@ import djerba.plugins.tar.swgs.constants as constants
 class preprocess:
 
   # FOR TESTING
-  #sequenza_path = "/.mounts/labs/CGI/cap-djerba/PASS01/PANX_1550/PANX_1550_Lv_M_WG_100-PM-064_LCM3_results.zip"
   tumour_id = "100-PM-064_LCM3"
   oncotree_code = "paad"
-  gamma = 500
-  solution = "_primary_"
   seg_file = "REVOLVE_0002_01_LB04-01.seg.txt"
   #seg_file = "changedAMPREVOLVE_0001_Pl_T_REV-01-001_Pl.seg.txt"
 
@@ -46,7 +43,8 @@ class preprocess:
         os.mkdir(self.tmp_dir)
     self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts"
     self.r_script_dir_swgs = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/swgs/" 
-    
+    self.data_dir = os.environ.get('DJERBA_BASE_DIR') + "/data/"
+
     # RANDOM
     self.cache_params = None
     self.log_level = "logging.WARNING"
@@ -65,11 +63,7 @@ class preprocess:
         '--outdir', self.work_dir,
         '--segfile', seg_path,
         '--genebed', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/gencode_v33_hg38_genes.bed",
-        '--oncolist', "../../../data/20200818-oncoKBcancerGeneList.tsv"
-        #'--gain', "0.0341",
-        #'--ampl', "0.1009",
-        #'--htzd', "-0.0358",
-        #'--hmzd', "-0.1094"
+        '--oncolist', self.data_dir + "/20200818-oncoKBcancerGeneList.tsv"
     ]
 
     runner = subprocess_runner()
@@ -78,14 +72,9 @@ class preprocess:
     return result
 
  
-
-
-
   def preprocess_seg(self, seg_file):
     """
     Filter for amplifications.
-    For now, filter for GAIN because I don't see any amplifications in the file.
-    TO DO: change header names
     """
     seg_path =  os.path.join(self.work_dir, seg_file)
 
@@ -104,29 +93,6 @@ class preprocess:
     df_seg.to_csv(out_path, sep = '\t', index=None)
 
     return out_path
-
-
-  #def preprocess_seg(self, seg_file):
-  #  """
-  #  Filter for amplifications.
-  #  For now, filter for GAIN because I don't see any amplifications in the file.
-  #  TO DO: change header names
-  #  """
-  #  seg_path =  os.path.join(self.work_dir, seg_file)
-  #  
-  #  # Create a dataframe so we can filter by amplifications only...or in this case, by gain only for testing.
-  #  df_seg = pd.read_csv(seg_path, sep = '\t')
-  #  df_seg = df_seg[df_seg["call"].str.contains("AMP|HLAMP") == True]
-  # 
-  #  # Delete the seg.mean column, and rename the Corrected_Copy_Number column to seg.mean
-  #  df_seg = df_seg.drop(columns = "seg.mean")
-  #  df_seg = df_seg.rename(columns={"Corrected_Copy_Number": "seg.mean"})
-  #
-  #  # Convert the dataframe back into a tab-delimited text file.
-  #  out_path = os.path.join(self.work_dir, 'seg_amplifications.txt')
-  #  df_seg.to_csv(out_path, sep = '\t', index=None)
-  #
-  #  return out_path
 
 
   def postprocess(self):

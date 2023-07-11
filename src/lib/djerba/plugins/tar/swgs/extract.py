@@ -11,6 +11,7 @@ import logging
 import os
 import re
 import pandas as pd
+from shutil import rmtree
 import djerba.plugins.tar.swgs.constants as constants
 from djerba.plugins.tar.swgs.preprocess import preprocess
 from djerba.util.logger import logger
@@ -55,8 +56,9 @@ class data_builder:
     self.data_dir =  os.environ.get('DJERBA_BASE_DIR') + "/data/" 
     self.cytoband_path = os.path.join(self.data_dir, 'cytoBand.txt')
     self.cytoband_map = self.read_cytoband_map()
-    self.seg_file = "seg_amplifications.txt"
-
+    self.seg_file = "REVOLVE_0002_01_LB04-01.seg.txt"
+    #self.seg_file = "changedAMPREVOLVE_0001_Pl_T_REV-01-001_Pl.seg.txt"
+    self.tmp_dir = work_dir + "/tmp"
 
   def build_graph(self):
     """
@@ -97,6 +99,8 @@ class data_builder:
         constants.CLINICALLY_RELEVANT_VARIANTS: len(rows),
         constants.BODY: rows
     }
+
+    self.file_cleanup()
     return data
     
   def write_cnv_plot(self, out_dir):
@@ -127,8 +131,8 @@ class data_builder:
     df_seg = pd.read_csv(seg_path, sep = '\t')
 
     # Change column names
-    df_seg = df_seg.rename(columns = {"loc.start":"start.pos", 
-                                      "loc.end":"end.pos", 
+    df_seg = df_seg.rename(columns = {"start":"start.pos", 
+                                      "end":"end.pos", 
                                       "Corrected_Copy_Number":"CNt", 
                                       "chrom":"chromosome"})
 
@@ -136,7 +140,7 @@ class data_builder:
     df_seg["chromosome"] = "chr" + df_seg["chromosome"].astype(str)
 
     # Convert the dataframe back into a tab-delimited text file.
-    out_path = os.path.join(self.work_dir, seg_file + '_processed.txt')
+    out_path = os.path.join(self.work_dir, constants.CNV_PLOT_DATA)
     df_seg.to_csv(out_path, sep = '\t', index=None)
     return out_path
 
@@ -253,3 +257,18 @@ class data_builder:
             #self.logger.warning(msg)
             (chromosome, arm, band) = end
     return (chromosome, arm, band)
+
+
+  def file_cleanup(self):
+      """
+      Removes intermediate files now that extract step is done.
+      """
+      rmtree(self.tmp_dir)
+      if os.path.exists(os.path.join(self.work_dir, constants.CNV_PLOT_DATA)):
+          os.remove(os.path.join(self.work_dir, constants.CNV_PLOT_DATA))
+      if os.path.exists(os.path.join(self.work_dir, constants.DATA_CNA)):
+          os.remove(os.path.join(self.work_dir, constants.DATA_CNA))
+      if os.path.exists(os.path.join(self.work_dir, constants.DATA_CNA_ONCOKB)):
+          os.remove(os.path.join(self.work_dir, constants.DATA_CNA_ONCOKB))
+      if os.path.exists(os.path.join(self.work_dir, constants.DATA_CNA_ONCOKB_NONDIPLOID)):
+          os.remove(os.path.join(self.work_dir, constants.DATA_CNA_ONCOKB_NONDIPLOID))

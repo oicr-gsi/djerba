@@ -31,11 +31,10 @@ preProcCNA <- function(segfile, genebed, oncolist, genelist=NA){
  print("thresholding cnas")
  df_cna_thresh <- df_cna
  df_cna_thresh[,c(2:ncol(df_cna))] <- sapply(df_cna_thresh[,c(2:ncol(df_cna))], as.numeric)
-
  # threshold data
  for (i in 2:ncol(df_cna_thresh))
  {
-     df_cna_thresh[,i] <- ifelse(df_cna_thresh[,i] > amp, 2, 0)
+     df_cna_thresh[,i] <- ifelse(df_cna_thresh[,i] >= amp, 2, 0)
  }
 
  # fix rownames of log2cna data
@@ -45,7 +44,7 @@ preProcCNA <- function(segfile, genebed, oncolist, genelist=NA){
 
  # fix rownames of thresholded data
  row.names(df_cna_thresh) <- df_cna_thresh[,1]
- 
+  
  # subset of oncoKB genes
  df_cna_thresh_onco <- df_cna_thresh[df_cna_thresh$Hugo_Symbol %in% rownames(oncogenes),]
 
