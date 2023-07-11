@@ -31,7 +31,7 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_MD5 = '66bf99e6ebe64d89bef09184953fd630'
-    SIMPLE_CONFIG_MD5 = '88b8757e7d864c61c6145b7c5394176d'
+    SIMPLE_CONFIG_MD5 = '298ebe20d9b9194267caf036317403a1'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
@@ -171,7 +171,19 @@ class TestConfigExpected(TestCore):
             self.assertEqual(in_file_1.read(), in_file_2.read())
 
 class TestConfigValidation(TestCore):
-    """Test the methods to validate required/optional INI params"""
+    """Test the methods to validate required/optional INI params and attributes"""
+
+    def test_attributes(self):
+        plugin = self.load_demo1_plugin()
+        config = self.read_demo1_config(plugin)
+        attributes = plugin.get_config_wrapper(config).get_my_attributes()
+        self.assertTrue(plugin.check_attributes_known(attributes))
+        config.set('demo1', 'attributes', 'clinical,awesome')
+        attributes = plugin.get_config_wrapper(config).get_my_attributes()
+        with self.assertLogs('djerba.core.configure', level=logging.WARNING) as log_context:
+            self.assertFalse(plugin.check_attributes_known(attributes))
+        msg = "WARNING:djerba.core.configure:Unknown attribute 'awesome' in config"
+        self.assertIn(msg, log_context.output)
 
     def test_simple(self):
         plugin = self.load_demo1_plugin()
@@ -181,7 +193,7 @@ class TestConfigValidation(TestCore):
         with self.assertLogs('djerba.core.configure', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
         msg = 'DEBUG:djerba.core.configure:'+\
-            '10 expected INI param(s) found for component demo1'
+            '8 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
 
     def test_optional(self):
@@ -232,7 +244,7 @@ class TestConfigValidation(TestCore):
         with self.assertLogs('djerba.core.configure', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
         msg = 'DEBUG:djerba.core.configure:'+\
-            '11 expected INI param(s) found for component demo1'
+            '9 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
         # test setting all requirements
         plugin.add_ini_required('bar') # 'foo' is already required
@@ -255,14 +267,16 @@ class TestConfigWrapper(TestCore):
         cp.read(os.path.join(self.test_source_dir, 'config_full.ini'))
         cw = config_wrapper(cp, 'demo1')
         self.assertEqual(cw.get_core_string('comment'), 'Djerba 1.0 under development')
-        self.assertTrue(cw.get_my_boolean('clinical'))
-        self.assertFalse(cw.get_my_boolean('supplementary'))
         self.assertEqual(cw.get_my_int('configure_priority'), 100)
         self.assertTrue(cw.has_my_param('question'))
         self.assertFalse(cw.has_my_param('noodles'))
         cw.set_my_param('lunch', 'sushi')
         config_1 = cw.get_config()
         self.assertTrue(config_1.get('demo1', 'lunch'), 'sushi')
+        cw.set_my_param('sushi_is_tasty', True)
+        cw.set_my_param('sushi_is_nasty', False)
+        self.assertTrue(cw.get_my_boolean('sushi_is_tasty'))
+        self.assertFalse(cw.get_my_boolean('sushi_is_nasty'))
         cw.set_my_priorities(42)
         for key in [
             core_constants.CONFIGURE_PRIORITY,
@@ -270,8 +284,6 @@ class TestConfigWrapper(TestCore):
             core_constants.RENDER_PRIORITY
         ]:
             self.assertEqual(cw.get_my_int(key), 42)
-        self.assertTrue(cw.get_boolean('demo2', 'clinical'))
-        self.assertFalse(cw.get_boolean('demo2', 'supplementary'))
         self.assertEqual(cw.get_int('demo2', 'configure_priority'), 200)
         self.assertTrue(cw.has_param('demo2', 'demo2_param'))
         self.assertFalse(cw.has_param('demo2', 'noodles'))
@@ -356,6 +368,7 @@ class TestIniGenerator(TestCore):
             self.assertEqual(in_file_1.read(), in_file_2.read())
 
     def test_script(self):
+        self.tmp_dir = '/home/ibancarz/tmp/test_20230710'
         out_path = os.path.join(self.tmp_dir, 'generated.ini')
         cmd = ['generate_ini.py', '--out', out_path]
         cmd.extend(self.COMPONENT_NAMES)
