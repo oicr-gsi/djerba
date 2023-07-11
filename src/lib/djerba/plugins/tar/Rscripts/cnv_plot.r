@@ -66,12 +66,8 @@ segs$Chromosome <-  factor(segs$chr, levels= chromosomes_incl, ordered = T)
 
 fittedSegmentsDF_sub <- segs %>% dplyr::select(start.pos,end.pos,CNt,CNt_high,Chromosome)
 fittedSegmentsDF_sub$cent <- NA
-#write.csv(segs, "segs.csv", row.names=FALSE)
 df = process_centromeres(centromeres_path)
-write.csv(df, "df.csv", row.names=FALSE)
 df2 <- df[,-c(4,5)]
-write.csv(fittedSegmentsDF_sub, "fittedSegmentsDF_sub.csv", row.names=FALSE)
-write.csv(df2, "centromeres.csv", row.names=FALSE)
 fittedSegmentsDF_sub <- rbind.data.frame(
                           fittedSegmentsDF_sub,
                           df2

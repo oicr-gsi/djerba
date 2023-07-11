@@ -20,18 +20,19 @@ import djerba.plugins.tar.swgs.constants as constants
 class preprocess:
 
   # FOR TESTING
-  sequenza_path = "/.mounts/labs/CGI/cap-djerba/PASS01/PANX_1550/PANX_1550_Lv_M_WG_100-PM-064_LCM3_results.zip"
+  #sequenza_path = "/.mounts/labs/CGI/cap-djerba/PASS01/PANX_1550/PANX_1550_Lv_M_WG_100-PM-064_LCM3_results.zip"
   tumour_id = "100-PM-064_LCM3"
   oncotree_code = "paad"
   gamma = 500
   solution = "_primary_"
-  seg_file = "changedAMPREVOLVE_0001_Pl_T_REV-01-001_Pl.seg.txt"
+  seg_file = "REVOLVE_0002_01_LB04-01.seg.txt"
+  #seg_file = "changedAMPREVOLVE_0001_Pl_T_REV-01-001_Pl.seg.txt"
 
   def __init__(self, work_dir):
 
     # DIRECTORIES
-    self.report_dir = work_dir
-    self.tmp_dir = os.path.join(self.report_dir, 'tmp')
+    self.work_dir = work_dir
+    self.tmp_dir = os.path.join(self.work_dir, 'tmp')
     if os.path.isdir(self.tmp_dir):
         print("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
         #self.logger.debug("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
@@ -61,7 +62,7 @@ class preprocess:
     cmd = [
         'Rscript', self.r_script_dir_swgs + "/process_CNA_data.r",
         '--basedir', self.r_script_dir,
-        '--outdir', self.report_dir,
+        '--outdir', self.work_dir,
         '--segfile', seg_path,
         '--genebed', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/gencode_v33_hg38_genes.bed",
         '--oncolist', "../../../data/20200818-oncoKBcancerGeneList.tsv"
@@ -76,28 +77,56 @@ class preprocess:
     self.postprocess()
     return result
 
-  
+ 
+
+
+
   def preprocess_seg(self, seg_file):
     """
     Filter for amplifications.
     For now, filter for GAIN because I don't see any amplifications in the file.
     TO DO: change header names
     """
-    seg_path =  os.path.join(self.report_dir, seg_file)
-    
+    seg_path =  os.path.join(self.work_dir, seg_file)
+
     # Create a dataframe so we can filter by amplifications only...or in this case, by gain only for testing.
     df_seg = pd.read_csv(seg_path, sep = '\t')
     df_seg = df_seg[df_seg["call"].str.contains("AMP|HLAMP") == True]
-   
+
     # Delete the seg.mean column, and rename the Corrected_Copy_Number column to seg.mean
-    df_seg = df_seg.drop(columns = "seg.mean")
+    df_seg = df_seg.drop(columns = "seg.median.logR")
     df_seg = df_seg.rename(columns={"Corrected_Copy_Number": "seg.mean"})
+    df_seg = df_seg.rename(columns={"start": "loc.start"})
+    df_seg = df_seg.rename(columns={"end": "loc.end"})
 
     # Convert the dataframe back into a tab-delimited text file.
-    out_path = os.path.join(self.report_dir, 'seg_amplifications.txt')
+    out_path = os.path.join(self.work_dir, 'seg_amplifications.txt')
     df_seg.to_csv(out_path, sep = '\t', index=None)
 
     return out_path
+
+
+  #def preprocess_seg(self, seg_file):
+  #  """
+  #  Filter for amplifications.
+  #  For now, filter for GAIN because I don't see any amplifications in the file.
+  #  TO DO: change header names
+  #  """
+  #  seg_path =  os.path.join(self.work_dir, seg_file)
+  #  
+  #  # Create a dataframe so we can filter by amplifications only...or in this case, by gain only for testing.
+  #  df_seg = pd.read_csv(seg_path, sep = '\t')
+  #  df_seg = df_seg[df_seg["call"].str.contains("AMP|HLAMP") == True]
+  # 
+  #  # Delete the seg.mean column, and rename the Corrected_Copy_Number column to seg.mean
+  #  df_seg = df_seg.drop(columns = "seg.mean")
+  #  df_seg = df_seg.rename(columns={"Corrected_Copy_Number": "seg.mean"})
+  #
+  #  # Convert the dataframe back into a tab-delimited text file.
+  #  out_path = os.path.join(self.work_dir, 'seg_amplifications.txt')
+  #  df_seg.to_csv(out_path, sep = '\t', index=None)
+  #
+  #  return out_path
 
 
   def postprocess(self):
@@ -107,7 +136,7 @@ class preprocess:
      annotator = oncokb_annotator(
             self.tumour_id,
             self.oncotree_code,
-            self.report_dir,
+            self.work_dir,
             self.tmp_dir,
             self.cache_params,
      )

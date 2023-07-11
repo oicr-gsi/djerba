@@ -12,6 +12,7 @@ import os
 import re
 import pandas as pd
 import djerba.plugins.tar.swgs.constants as constants
+from djerba.plugins.tar.swgs.preprocess import preprocess
 from djerba.util.logger import logger
 from djerba.util.image_to_base64 import converter
 import djerba.extract.oncokb.constants as oncokb
@@ -54,6 +55,7 @@ class data_builder:
     self.data_dir =  os.environ.get('DJERBA_BASE_DIR') + "/data/" 
     self.cytoband_path = os.path.join(self.data_dir, 'cytoBand.txt')
     self.cytoband_map = self.read_cytoband_map()
+    self.seg_file = "seg_amplifications.txt"
 
 
   def build_graph(self):
@@ -61,7 +63,7 @@ class data_builder:
     Puts all the pieces together.
     """
     
-    plot = converter().convert_svg(self.write_cnv_plot(self.input_dir), 'CNV plot')
+    plot = converter().convert_svg(self.write_cnv_plot(self.work_dir), 'CNV plot')
     return plot
     
     
@@ -99,12 +101,13 @@ class data_builder:
     
   def write_cnv_plot(self, out_dir):
     """
-    """
-    processed_seg = self.process_seg_for_plotting(self.work_dir + "/changedAMPREVOLVE_0001_Pl_T_REV-01-001_Pl.seg.txt")
+    """ 
+    processed_seg = self.process_seg_for_plotting(self.seg_file)
     out_path = os.path.join(out_dir, 'seg_CNV_plot.svg')
     args = [
         os.path.join(self.r_script_dir, 'cnv_plot.r'),
-        '--segfile',  os.path.join(self.work_dir, processed_seg),
+        #'--segfile',  os.path.join(self.work_dir, processed_seg),
+        '--segfile', processed_seg,
         '--segfiletype', 'sequenza',
         '-d',out_dir
     ]

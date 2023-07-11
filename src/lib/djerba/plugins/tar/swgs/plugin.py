@@ -16,7 +16,7 @@ class main(plugin_base):
     PRIORITY = 100
     PLUGIN_VERSION = '1.0.0'
   
-    TEMPLATE_NAME = '../html/swgs_template.html'
+    TEMPLATE_NAME = 'swgs_template.html'
     
     def specify_params(self):
       self.add_ini_required('key_3')
