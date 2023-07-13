@@ -130,4 +130,3 @@ class html_builder:
         ]
         rows.append(self.table_row(cells))
     return rows
-

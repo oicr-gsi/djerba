@@ -22,10 +22,9 @@ class preprocess:
   # FOR TESTING
   tumour_id = "100-PM-064_LCM3"
   oncotree_code = "paad"
-  seg_file = "REVOLVE_0002_01_LB04-01.seg.txt"
-  #seg_file = "changedAMPREVOLVE_0001_Pl_T_REV-01-001_Pl.seg.txt"
+  #seg_file = "REVOLVE_0002_01_LB04-01.seg.txt"
 
-  def __init__(self, work_dir):
+  def __init__(self, work_dir, seg_file):
 
     # DIRECTORIES
     self.work_dir = work_dir
@@ -44,6 +43,10 @@ class preprocess:
     self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts"
     self.r_script_dir_swgs = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/swgs/" 
     self.data_dir = os.environ.get('DJERBA_BASE_DIR') + "/data/"
+    
+    # SEG FILE
+
+    self.seg_file = seg_file 
 
     # RANDOM
     self.cache_params = None
@@ -76,8 +79,7 @@ class preprocess:
     """
     Filter for amplifications.
     """
-    seg_path =  os.path.join(self.work_dir, seg_file)
-
+    seg_path =  os.path.join(self.work_dir, self.seg_file)
     # Create a dataframe so we can filter by amplifications only...or in this case, by gain only for testing.
     df_seg = pd.read_csv(seg_path, sep = '\t')
     df_seg = df_seg[df_seg["call"].str.contains("AMP|HLAMP") == True]

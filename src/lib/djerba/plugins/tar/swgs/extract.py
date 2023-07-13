@@ -47,7 +47,7 @@ class data_builder:
     "Unknown"
   ]
 
-  def __init__(self, work_dir):
+  def __init__(self, work_dir, seg_file):
 
     # DIRECTORIES
     self.input_dir = "."
@@ -56,8 +56,7 @@ class data_builder:
     self.data_dir =  os.environ.get('DJERBA_BASE_DIR') + "/data/" 
     self.cytoband_path = os.path.join(self.data_dir, 'cytoBand.txt')
     self.cytoband_map = self.read_cytoband_map()
-    self.seg_file = "REVOLVE_0002_01_LB04-01.seg.txt"
-    #self.seg_file = "changedAMPREVOLVE_0001_Pl_T_REV-01-001_Pl.seg.txt"
+    self.seg_file = seg_file
     self.tmp_dir = work_dir + "/tmp"
 
   def build_graph(self):

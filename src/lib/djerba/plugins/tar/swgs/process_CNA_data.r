@@ -36,15 +36,6 @@ source(paste0(basedir, "/convert_seg_to_gene_singlesample.r"))
 print("Processing CNA data")
 CNAs <- preProcCNA(segfile, genebed, oncolist)
 
-#print("writing seg file")
-# segs
-#write.table(CNAs[[1]], file=paste0(outdir, "/data_segments.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-
-# log2cna
-#print("writing log2 file")
-#write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[2]]), CNAs[[2]], check.names=FALSE),
-#  file=paste0(outdir, "/data_log2CNA.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-
 # gistic-like file
 print("writing cna file")
 write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[3]]), CNAs[[3]], check.names=FALSE),

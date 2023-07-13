@@ -3,6 +3,9 @@ This file contains a list of constants to be used in the sWGS plugin.
 AUTHOR: Aqsa Alam
 """
 
+# For file provenance
+MT_SEG = 'application/seg-txt$'
+
 # For rendering
 TOTAL_VARIANTS = 'Total variants'
 CLINICALLY_RELEVANT_VARIANTS = 'Clinically relevant variants'
