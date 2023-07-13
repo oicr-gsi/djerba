@@ -9,7 +9,7 @@ import json
 
 from mako.lookup import TemplateLookup
 from djerba.plugins.base import plugin_base
-import djerba.plugins.tar.constants as constants
+import djerba.plugins.tar.sample.constants as constants
 from djerba.core.workspace import workspace
 import djerba.core.constants as core_constants
 from djerba.core.workspace import workspace
@@ -23,16 +23,29 @@ except ImportError:
 
 class main(plugin_base):
 
+    PLUGIN_VERSION = '1.0.0'
     DEFAULT_CONFIG_PRIORITY = 100
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        
+
+
+    def specify_params(self):
         #self.add_ini_required('primary_snv_count_file')
         
-        # Setting default parametersn
+        # Setting priorities
+        self.set_priority_defaults(self.DEFAULT_CONFIG_PRIORITY)
+
+        # Setting default parameters
         self.set_ini_default(core_constants.CLINICAL, True)
         self.set_ini_default(core_constants.SUPPLEMENTARY, False)
-        
+       
+        # I removed these from core and temporarily added them to [tar.sample]:
+        self.add_ini_required('group_id')
+        self.add_ini_required('root_sample_name')
+        self.add_ini_required('study_title')
+
         # Setting required parameters
         self.add_ini_required('oncotree')
         self.add_ini_required('known_variants')
@@ -48,8 +61,8 @@ class main(plugin_base):
 
     def configure(self, config):
         config = self.apply_defaults(config)
-        wrapper = self.get_config_wrapper(config)
-        wrapper.set_my_priorities(self.DEFAULT_CONFIG_PRIORITY)
+        #wrapper = self.get_config_wrapper(config)
+        #wrapper.set_my_priorities(self.DEFAULT_CONFIG_PRIORITY)
         return config
 
     def extract(self, config):
@@ -60,14 +73,20 @@ class main(plugin_base):
         self.logger.info("TAR SAMPLE: All data found")
         data = {
             'plugin_name': self.identifier+' plugin',
+            'version': self.PLUGIN_VERSION,
             'priorities': wrapper.get_my_priorities(),
             'attributes': wrapper.get_my_attributes(),
             'merge_inputs': {
             },
             'results': {
-                'group_id': config['core'][constants.GROUP_ID],
-                'root_sample_name': config['core'][constants.DONOR],
-                'study_title': config['core'][constants.STUDY],
+                 
+                # NOTE: thes three used to say "core" but got changed to "self.identifier"
+
+                'group_id': config[self.identifier][constants.GROUP_ID],
+                'root_sample_name': config[self.identifier][constants.DONOR],
+                'study_title': config[self.identifier][constants.STUDY],
+                
+
                 'oncotree': config[self.identifier][constants.ONCOTREE],
                 "known_variants" : config[self.identifier][constants.KNOWN_VARIANTS],
                 "cancer_content" : float(config[self.identifier][constants.CANCER_CONTENT]),
@@ -119,7 +138,6 @@ class main(plugin_base):
         args = data
         html_dir = os.path.realpath(os.path.join(
             os.path.dirname(__file__),
-            '..',
             'html'
         ))
         report_lookup = TemplateLookup(directories=[html_dir, ], strict_undefined=True)
