@@ -14,7 +14,7 @@ import djerba.version as version
 from djerba.core.base import base as core_base
 from djerba.core.configure import configurer as core_configurer
 from djerba.core.database.archiver import archiver
-from djerba.core.extract import extractor as core_extractor
+from djerba.core.extract import extraction_setup
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.render import renderer as core_renderer
 from djerba.core.loaders import \
@@ -180,7 +180,7 @@ class main(core_base):
         self._resolve_extract_dependencies(config, components, ordered_names)
         # 2. Validate and run configuration for each component; store in data structure
         self.logger.debug('Generating core data structure')
-        data = core_extractor(self.log_level, self.log_path).run(config)
+        data = extraction_setup(self.log_level, self.log_path).run(config)
         self.logger.debug('Running extraction for plugins and mergers in priority order')
         order = 0
         for name in ordered_names:
