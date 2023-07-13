@@ -1,0 +1,67 @@
+{
+            "attributes": [
+                "clinical"
+            ],
+            "merge_inputs": {},
+            "plugin_name": "Tar SNV Indel",
+            "priorities": {
+                "configure": 100,
+                "extract": 100,
+                "render": 100
+            },
+            "results": {
+                "Body": [
+                    {
+                        "Chromosome": "11q22.3",
+                        "Copy State": "Neutral",
+                        "Expression Percentile": 0.986,
+                        "Gene": "ATM",
+                        "Gene_URL": "https://www.oncokb.org/gene/ATM",
+                        "LOH (ABratio)": "No (0.5)",
+                        "OncoKB": "Level 3B",
+                        "Protein": "p.R337H",
+                        "Protein_URL": "https://www.oncokb.org/gene/ATM/p.R337H/PAAD",
+                        "Type": "Missense Mutation",
+                        "VAP (%)": 50,
+                        "t_alt_count": 85,
+                        "t_depth": 169
+                    },
+                    {
+                        "Chromosome": "12p12.1",
+                        "Copy State": "Neutral",
+                        "Expression Percentile": 0.9834,
+                        "Gene": "KRAS",
+                        "Gene_URL": "https://www.oncokb.org/gene/KRAS",
+                        "LOH (ABratio)": "No (0.5)",
+                        "OncoKB": "Level 4",
+                        "Protein": "p.G12V",
+                        "Protein_URL": "https://www.oncokb.org/gene/KRAS/p.G12V/PAAD",
+                        "Type": "Missense Mutation",
+                        "VAP (%)": 52,
+                        "t_alt_count": 76,
+                        "t_depth": 146
+                    },
+                    {
+                        "Chromosome": "17p13.1",
+                        "Copy State": "Shallow Deletion",
+                        "Expression Percentile": 0.2434,
+                        "Gene": "TP53",
+                        "Gene_URL": "https://www.oncokb.org/gene/TP53",
+                        "LOH (ABratio)": "No (1.0)",
+                        "OncoKB": "Likely Oncogenic",
+                        "Protein": "p.A161Pfs*9",
+                        "Protein_URL": "https://www.oncokb.org/gene/TP53/p.A161Pfs*9/PAAD",
+                        "Type": "Frame Shift Del",
+                        "VAP (%)": 92,
+                        "t_alt_count": 121,
+                        "t_depth": 131
+                    }
+                ],
+                "Clinically relevant variants": 3,
+                "Has expression data": true,
+                "Total variants": 1120,
+                "vaf_plot": "test/vaf.svg"
+            },
+            "version": "1.0.0"
+        }
+    }
