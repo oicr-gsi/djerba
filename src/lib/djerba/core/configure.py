@@ -9,6 +9,7 @@ import os
 import string
 from abc import ABC, abstractmethod
 from configparser import ConfigParser
+from uuid import uuid4
 from djerba.core.base import base as core_base
 from djerba.util.logger import logger
 import djerba.core.constants as core_constants
@@ -219,7 +220,7 @@ class configurable(logger, ABC):
                     raise ValueError(msg)
         return config
 
-class configurer(configurable):
+class core_configurer(configurable):
 
     """Class to do core configuration"""
 
@@ -227,29 +228,50 @@ class configurer(configurable):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # core has no attributes or dependencies, but include the INI params for consistency
+        self.workspace = kwargs['workspace']
         self.ini_defaults = {
             core_constants.ATTRIBUTES: '',
             core_constants.DEPENDS_CONFIGURE: '',
             core_constants.DEPENDS_EXTRACT: '',
-            core_constants.CONFIGURE_PRIORITY: 0,
-            core_constants.EXTRACT_PRIORITY: 0,
-            core_constants.RENDER_PRIORITY: 0
+            core_constants.CONFIGURE_PRIORITY: self.PRIORITY,
+            core_constants.EXTRACT_PRIORITY: self.PRIORITY,
+            core_constants.RENDER_PRIORITY: self.PRIORITY
         }
         self.specify_params()
 
     def configure(self, config):
+        """Input/output is a ConfigParser object"""
         config = self.apply_defaults(config)
-        config.set(ini.CORE, 'comment', 'Djerba 1.0 under development')
-        return config
-
-    def set_priority_defaults(self, priority):
-        for key in core_constants.PRIORITY_KEYS:
-            self.ini_defaults[key] = priority
+        wrapper = self.get_config_wrapper(config)
+        if wrapper.my_param_is_null(core_constants.REPORT_ID):
+            sample_info_file = wrapper.get_my_string(core_constants.SAMPLE_INFO)
+            if self.workspace.has_file(sample_info_file):
+                # if sample info is available, use to construct the report ID
+                sample_info = self.workspace.read_json(sample_info_file)
+                report_id = "{0}_{1}-v{2}".format(
+                    sample_info[core_constants.TUMOUR_ID],
+                    sample_info[core_constants.NORMAL_ID],
+                    wrapper.get_my_int(core_constants.REPORT_VERSION)
+                )
+            else:
+                # otherwise, fall back to a (sufficiently) unique string of hex characters
+                report_id = "OICR-CGI-".format(uuid4().hex)
+            wrapper.set_my_param(core_constants.REPORT_ID, report_id)
+        return wrapper.get_config()
 
     def specify_params(self):
-        self.set_priority_defaults(self.PRIORITY)
-        self.set_ini_default('comment', 'comment goes here')
+        self.add_ini_default(core_constants.REPORT_ID, core_constants.NULL)
+        self.add_ini_default(core_constants.REPORT_VERSION, 1)
+        self.set_ini_default(core_constants.ARCHIVE_NAME, "djerba")
+        self.set_ini_default(
+            core_constants.ARCHIVE_URL,
+            "http://admin:djerba123@10.30.133.78:5984"
+        )
+        self.set_ini_default(core_constants.AUTHOR, core_constants.DEFAULT_AUTHOR)
+        self.set_ini_default(core_constants.LOGO, core_constants.DEFAULT_LOGO)
+        self.set_ini_default(core_constants.PREAMBLE, core_constants.DEFAULT_PREAMBLE)
+        self.set_ini_default(core_constants.SAMPLE_INFO, core_constants.DEFAULT_SAMPLE_INFO)
+        self.set_ini_default(core_constants.STYLESHEET, core_constants.DEFAULT_CSS)
 
 
 class config_wrapper(core_base):
@@ -290,6 +312,20 @@ class config_wrapper(core_base):
         else:
             attributes = []
         return attributes
+
+    # nullity tests
+
+    def my_param_is_null(self, param):
+        return self.config.get(self.identifier, param) == core_constants.NULL
+
+    def param_is_null(self, section, param):
+        return self.config.get(section, param) == core_constants.NULL
+
+    def my_param_is_not_null(self, param):
+        return not self.my_param_is_null(param)
+
+    def param_is_not_null(self, section, param):
+        return not self.param_is_null(section, param)
 
     # [get|set|has]_my_* methods for the named component
 

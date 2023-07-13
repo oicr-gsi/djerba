@@ -31,6 +31,9 @@ class workspace(logger):
     def get_work_dir(self):
         return self.dir_path
 
+    def has_file(self, rel_path):
+        return os.path.exists(os.path.join(self.dir_path, rel_path))
+
     def open_gzip_file(self, rel_path, write=False):
         if write:
             mode = 'wt'

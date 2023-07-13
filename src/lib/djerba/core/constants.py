@@ -1,4 +1,5 @@
 CORE = 'core'
+NULL = '__NULL__'
 
 # environment variables
 DJERBA_DATA_DIR_VAR = 'DJERBA_DATA_DIR'
@@ -48,14 +49,27 @@ LOG_LEVEL = 'log_level'
 LOG_PATH = 'log_path'
 WORKSPACE = 'workspace'
 
-# keys for the extraction framework
+# keys for core config/extract
 REPORT_ID = 'report_id'
+REPORT_VERSION = 'report_version'
 ARCHIVE_NAME = 'archive_name'
 ARCHIVE_URL = 'archive_url'
 AUTHOR = 'author'
 LOGO = 'logo'
 PREAMBLE = 'preamble'
+SAMPLE_INFO = 'sample_info'
 STYLESHEET = 'stylesheet'
 PLUGINS = 'plugins'
 MERGERS = 'mergers'
 CONFIG = 'config'
+
+# keys for sample ID file written by provenance helper
+TUMOUR_ID = 'tumour_id'
+NORMAL_ID = 'normal_id'
+
+# core config defaults
+DEFAULT_SAMPLE_INFO = "sample_info.json"
+DEFAULT_PREAMBLE = "preamble.html"
+DEFAULT_CSS = "stylesheet.css"
+DEFAULT_AUTHOR = "CGI Author"
+DEFAULT_LOGO = "OICR_Logo_RGB_ENGLISH.png"
