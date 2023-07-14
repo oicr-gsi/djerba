@@ -286,6 +286,9 @@ class core_configurer(configurable):
         self.set_ini_default(core_constants.PREAMBLE, core_constants.DEFAULT_PREAMBLE)
         self.set_ini_default(core_constants.SAMPLE_INFO, core_constants.DEFAULT_SAMPLE_INFO)
         self.set_ini_default(core_constants.STYLESHEET, core_constants.DEFAULT_CSS)
+        self.set_ini_default(core_constants.DOCUMENT_HEADER, core_constants.DEFAULT_DH)
+        self.set_ini_default(core_constants.DOCUMENT_FOOTER, core_constants.DEFAULT_DF)
+        self.set_ini_default(core_constants.RUO_HEADER, core_constants.DEFAULT_RUO_HEADER)
 
     def set_priority_defaults(self, priority):
         for key in core_constants.PRIORITY_KEYS:

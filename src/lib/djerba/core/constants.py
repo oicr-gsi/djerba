@@ -59,6 +59,10 @@ LOGO = 'logo'
 PREAMBLE = 'preamble'
 SAMPLE_INFO = 'sample_info'
 STYLESHEET = 'stylesheet'
+DOCUMENT_HEADER = 'document_header'
+RUO_HEADER = 'ruo_header'
+DOCUMENT_FOOTER = 'document_footer'
+
 PLUGINS = 'plugins'
 MERGERS = 'mergers'
 CONFIG = 'config'
@@ -73,3 +77,6 @@ DEFAULT_PREAMBLE = "preamble.html"
 DEFAULT_CSS = "stylesheet.css"
 DEFAULT_AUTHOR = "CGI Author"
 DEFAULT_LOGO = "OICR_Logo_RGB_ENGLISH.png"
+DEFAULT_DH = "document_header.html"
+DEFAULT_DF = "document_footer.html"
+DEFAULT_RUO_HEADER = "ruo_header.html"
