@@ -5,6 +5,7 @@ NULL = '__NULL__'
 DJERBA_DATA_DIR_VAR = 'DJERBA_DATA_DIR'
 DJERBA_PRIVATE_DIR_VAR = 'DJERBA_PRIVATE_DIR'
 DJERBA_TEST_DIR_VAR = 'DJERBA_TEST_DIR'
+DJERBA_CORE_HTML_DIR_VAR = 'DJERBA_CORE_HTML_DIR'
 
 # shared constants for core classes
 ATTRIBUTES = 'attributes'
@@ -59,9 +60,11 @@ LOGO = 'logo'
 PREAMBLE = 'preamble'
 SAMPLE_INFO = 'sample_info'
 STYLESHEET = 'stylesheet'
-DOCUMENT_HEADER = 'document_header'
+CLINICAL_HEADER = 'clinical_header'
+CLINICAL_FOOTER = 'clinical_footer'
 RUO_HEADER = 'ruo_header'
-DOCUMENT_FOOTER = 'document_footer'
+RUO_FOOTER = 'ruo_footer'
+
 
 PLUGINS = 'plugins'
 MERGERS = 'mergers'
@@ -77,6 +80,7 @@ DEFAULT_PREAMBLE = "preamble.html"
 DEFAULT_CSS = "stylesheet.css"
 DEFAULT_AUTHOR = "CGI Author"
 DEFAULT_LOGO = "OICR_Logo_RGB_ENGLISH.png"
-DEFAULT_DH = "document_header.html"
-DEFAULT_DF = "document_footer.html"
+DEFAULT_CLINICAL_HEADER = "clinical_header.html"
+DEFAULT_CLINICAL_FOOTER = "clinical_footer.html"
 DEFAULT_RUO_HEADER = "ruo_header.html"
+DEFAULT_RUO_FOOTER = "ruo_footer.html"

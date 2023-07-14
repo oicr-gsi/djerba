@@ -5,29 +5,37 @@ Includes merge/deduplicate for shared tables, eg. gene info
 
 import logging
 import os
-import traceback
-import djerba.core.constants as core_constants
-import djerba.util.ini_fields as ini
+import djerba.core.constants as cc
+from djerba.util.image_to_base64 import converter
 from djerba.util.logger import logger
-from mako.lookup import TemplateLookup
+from djerba.util.render_mako import mako_renderer
 
 class renderer(logger):
 
     CLINICAL_HEADER_NAME = 'clinical_header.html'
 
-    def __init__(self, log_level=logging.INFO, log_path=None):
+    def __init__(self, core_data, log_level=logging.INFO, log_path=None):
+        self.data = core_data
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
-        html_dir = os.path.realpath(os.path.join(
-            os.path.dirname(__file__),
-            'html'
-        ))
-        # strict_undefined=True provides an informative error for missing variables in JSON
-        # see https://docs.makotemplates.org/en/latest/runtime.html#context-variables
-        report_lookup = TemplateLookup(directories=[html_dir, ], strict_undefined=True)
-        self.logger.debug("Loading clinical header Mako template")
-        self.clinical_header_template = report_lookup.get_template(self.CLINICAL_HEADER_NAME)
+        if os.environ.get(cc.DJERBA_CORE_HTML_DIR_VAR):
+            self.html_dir = os.environ.get(cc.DJERBA_CORE_HTML_DIR_VAR)
+        else:
+            self.html_dir = os.path.realpath(os.path.join(
+                os.path.dirname(__file__),
+                'html'
+            ))
+
+    def _is_clinical(self, attributes):
+        is_clinical = cc.CLINICAL in attributes \
+            and cc.SUPPLEMENTARY not in attributes
+        return is_clinical
+
+    def _is_supplementary(self, attributes):
+        is_supplementary = cc.CLINICAL not in attributes \
+            and cc.SUPPLEMENTARY in attributes
+        return is_supplementary
 
     def _order_components(self, body, priorities):
         names = body.keys()
@@ -37,44 +45,47 @@ class renderer(logger):
         ordered_body = [body[x] for x in ordered_names]
         return ordered_body
 
-    def render_header(self, data):
-        return self.render_from_template(self.clinical_header_template, data.get(ini.CORE))
-
-    def render_from_template(self, mako_template, args):
-        """General-purpose method to run a mako template and log any errors"""
+    def _read_from_html_dir(self, filename):
         try:
-            html = mako_template.render(**args)
-        except Exception as err:
-            msg = "Unexpected error of type {0} in Mako template rendering: {1}".format(type(err).__name__, err)
-            self.logger.error(msg)
-            trace = ''.join(traceback.format_tb(err.__traceback__))
-            self.logger.error('Traceback: {0}'.format(trace))
+            with open(os.path.join(self.html_dir, filename)) as in_file:
+                contents = in_file.read()
+        except FileNotFoundError as err:
+            self.logger.error("Cannot read core HTML file: {0}".format(err))
             raise
-        return html
+        return contents
 
-    def run(self, body, priorities, attributes, data):
-        header = self.render_header(data)
-        footer_template = """
-        <div>{0}</div>
-        </body>
-        </html>
-        """
-        # make 'clinical research report' and 'supplementary' sections
-        # populate with HTML from body, based on the attributes and sorted by priority
-        all_html = [header,]
-        all_html.append('<h1>Clinical Research Report</h1>') # TODO fix formatting
-        report_names = [x for x in body.keys() \
-                        if core_constants.CLINICAL in attributes[x] \
-                        and core_constants.SUPPLEMENTARY not in attributes[x]]
+    def get_header_and_stylesheet(self):
+        mako = mako_renderer(self.log_level, self.log_path)
+        template = mako.get_template(self.html_dir, self.data.get(cc.CLINICAL_HEADER))
+        stylesheet = self._read_from_html_dir(self.data.get(cc.STYLESHEET))
+        return mako.render_template(template, {'stylesheet': stylesheet})
+
+    def get_logo(self):
+        oicr_logo_path = os.path.join(self.html_dir, self.data.get(cc.LOGO))
+        cv = converter(self.log_level, self.log_path)
+        png = cv.convert_png(oicr_logo_path, 'OICR logo')
+        img = '<img width="105" height="72" style="padding: 0px 0px 0px 0px; " src="{0}"'
+        return img.format(png)
+
+    def get_preamble(self):
+        return self._read_from_html_dir(self.data.get(cc.PREAMBLE))
+
+    def get_footer(self):
+        mako = mako_renderer(self.log_level, self.log_path)
+        template = mako.get_template(self.html_dir, self.data.get(cc.CLINICAL_FOOTER))
+        return mako.render_template(template, {'author': self.data.get(cc.AUTHOR)})
+
+    def run(self, body, priorities, attributes):
+        all_html = []
+        all_html.append(self.get_header_and_stylesheet())
+        all_html.append(self.get_logo())
+        all_html.append(self.get_preamble())
+        # make the clinical report section
+        report_names = [x for x in body.keys() if self._is_clinical(attributes[x])]
         report_body = {x:body[x] for x in report_names}
         all_html.extend(self._order_components(report_body, priorities))
-        all_html.append('<h1>Supplementary</h1>') # TODO fix formatting
-        sup_names = [x for x in body.keys() \
-                     if core_constants.CLINICAL in attributes[x] \
-                     and core_constants.SUPPLEMENTARY in attributes[x]]
-        sup_body = {x:body[x] for x in sup_names}
-        all_html.extend(self._order_components(sup_body, priorities))
-        footer = footer_template.format(data['comment'])
-        all_html.append(footer)
+        # TODO generate research-use-only as a separate HTML document
+        # append the document footer and return as a string
+        all_html.append(self.get_footer())
         html_string = "\n".join(all_html)
         return html_string

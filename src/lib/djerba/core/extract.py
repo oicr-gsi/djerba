@@ -21,7 +21,11 @@ class extraction_setup(core_base):
             cc.AUTHOR,
             cc.LOGO,
             cc.PREAMBLE,
-            cc.STYLESHEET
+            cc.STYLESHEET,
+            cc.CLINICAL_HEADER,
+            cc.CLINICAL_FOOTER,
+            cc.RUO_HEADER,
+            cc.RUO_FOOTER,
         ]
         for key in core_config_keys:
             core_params[key] = config.get(cc.CORE, key)

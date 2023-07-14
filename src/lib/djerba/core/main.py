@@ -234,8 +234,8 @@ class main(core_base):
             priorities[merger_name] = merger_config[cc.RENDER_PRIORITY]
             attributes[merger_name] = merger_config[cc.ATTRIBUTES]
         self.logger.debug("Assembling HTML document")
-        renderer = core_renderer(self.log_level, self.log_path)
-        html = renderer.run(body, priorities, attributes, data) # TODO remove data argument
+        renderer = core_renderer(data[cc.CORE], self.log_level, self.log_path)
+        html = renderer.run(body, priorities, attributes)
         if html_path:
             with open(html_path, 'w') as out_file:
                 out_file.write(html)
