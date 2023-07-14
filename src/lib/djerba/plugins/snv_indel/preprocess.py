@@ -105,42 +105,78 @@ class preprocess():
           os.mkdir(self.tmp_dir)
       self.report_dir = work_dir
       #self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts/"
-      self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/"
       self.tar = tar
+      if self.tar == True:
+          self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/Rscripts"
+      else:
+          self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts/"
+     
 
 
   # ----------------------- to do all the pre-processing --------------------
   
   def run_R_code(self):
   
-    seg_path = self.preprocess_seg(self.sequenza_path)
-    aratio_path = self.preprocess_aratio(self.sequenza_path, self.report_dir)
-    gep_path = self.preprocess_gep(self.gep_file)
-    maf_path = self.preprocess_maf(self.maf_file)
-    cmd = [
-        'Rscript', self.r_script_dir + "process_CNA_data.r",
-        '--basedir', self.r_script_dir,
-        '--outdir', self.report_dir,
-        '--segfile', seg_path,
-        '--genebed', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/gencode_v33_hg38_genes.bed",
-        '--oncolist', os.environ.get('DJERBA_BASE_DIR') + "/data/20200818-oncoKBcancerGeneList.tsv",
-        '--gain', "0.2529454648649786",
-        '--ampl', "0.6927983480061226",
-        '--htzd', "-0.3929375973235762",
-        '--hmzd', "-1.7148656922109384",
-        '--gepfile', gep_path,
-        '--enscon', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/ensemble_conversion_hg38.txt", 
-        '--genelist', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/targeted_genelist.txt",
-        '--tcgadata', "/.mounts/labs/CGI/gsi/tools/RODiC/data",
-        '--tcgacode', self.tcgacode,
-        '--studyid', 'PASS01',
-        '--whizbam_url', 'https://whizbam.oicr.on.ca',
-        '--tumourid', self.tumour_id,
-        '--normalid', '100-PM-064_BC',
-        '--cbiostudy', 'PASS01',
-        '--maffile', maf_path,
-        '--aratiofile', aratio_path
-    ]
+    
+    # FIX THIS BECAUSE THE ARATIO FILE IS DIFFERENT FOR TAR AND NONTAR
+    if self.tar == True:
+        aratio_path = self.preprocess_aratio_tar(BLAH)
+        # do not process GEP, as that is for expression
+        # need to process seg, as that is basically the aratio file and the copy number stuff. can just get this by running swgs plugin first 
+        # don't know what maf does, need to look at it
+
+        # MODIFY THIS MORE. I THINK ONLY THE MAF FILE WILL NEED PROCESSING BUT DOUBLE CHECK!!!!!!!!!!!
+        cmd = [
+         'Rscript', self.r_script_dir + "process_CNA_data.r",
+         '--basedir', self.r_script_dir,
+         '--outdir', self.report_dir,
+         '--segfile', seg_path,
+         '--genebed', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/gencode_v33_hg38_genes.bed",
+         '--oncolist', os.environ.get('DJERBA_BASE_DIR') + "/data/20200818-oncoKBcancerGeneList.tsv",
+         '--enscon', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/ensemble_conversion_hg38.txt", 
+         '--genelist', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/targeted_genelist.txt",
+         '--tcgadata', "/.mounts/labs/CGI/gsi/tools/RODiC/data",
+         '--tcgacode', self.tcgacode,
+         '--studyid', 'PASS01',
+         '--whizbam_url', 'https://whizbam.oicr.on.ca',
+         '--tumourid', self.tumour_id,
+         '--normalid', '100-PM-064_BC',
+         '--cbiostudy', 'PASS01',
+         '--maffile', maf_path,
+         '--aratiofile', aratio_path
+        ]
+
+   
+    else:
+        seg_path = self.preprocess_seg(self.sequenza_path)
+        aratio_path = self.preprocess_aratio(self.sequenza_path, self.report_dir)
+        gep_path = self.preprocess_gep(self.gep_file)
+        maf_path = self.preprocess_maf(self.maf_file)
+       
+        cmd = [
+            'Rscript', self.r_script_dir + "process_CNA_data.r",
+            '--basedir', self.r_script_dir,
+            '--outdir', self.report_dir,
+            '--segfile', seg_path,
+            '--genebed', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/gencode_v33_hg38_genes.bed",
+            '--oncolist', os.environ.get('DJERBA_BASE_DIR') + "/data/20200818-oncoKBcancerGeneList.tsv",
+            '--gain', "0.2529454648649786",
+            '--ampl', "0.6927983480061226",
+            '--htzd', "-0.3929375973235762",
+            '--hmzd', "-1.7148656922109384",
+            '--gepfile', gep_path,
+            '--enscon', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/ensemble_conversion_hg38.txt", 
+            '--genelist', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/targeted_genelist.txt",
+            '--tcgadata', "/.mounts/labs/CGI/gsi/tools/RODiC/data",
+            '--tcgacode', self.tcgacode,
+            '--studyid', 'PASS01',
+            '--whizbam_url', 'https://whizbam.oicr.on.ca',
+            '--tumourid', self.tumour_id,
+            '--normalid', '100-PM-064_BC',
+            '--cbiostudy', 'PASS01',
+            '--maffile', maf_path,
+            '--aratiofile', aratio_path
+        ]
     runner = subprocess_runner()
     result = runner.run(cmd, "main R script")
     self.postprocess()
