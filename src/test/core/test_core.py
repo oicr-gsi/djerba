@@ -14,10 +14,10 @@ import djerba.util.ini_fields as ini
 
 from configparser import ConfigParser
 
-from djerba.core.configure import config_wrapper, DjerbaConfigError
+from djerba.core.configure import config_wrapper, core_configurer, DjerbaConfigError
 from djerba.core.ini_generator import ini_generator
 from djerba.core.json_validator import plugin_json_validator
-from djerba.core.loaders import plugin_loader
+from djerba.core.loaders import plugin_loader, core_config_loader
 from djerba.core.main import main, arg_processor, DjerbaDependencyError
 from djerba.core.workspace import workspace
 from djerba.util.subprocess_runner import subprocess_runner
@@ -303,6 +303,53 @@ class TestConfigWrapper(TestCore):
         self.assertEqual(wrapper.get_my_string('dummy_file'), expected)
         if data_dir_orig != None:
             os.environ[core_constants.DJERBA_DATA_DIR_VAR] = data_dir_orig
+
+class TestCoreConfigurer(TestCore):
+    """Test the 'core_configurer' class"""
+
+    OUTPUT = 'core_config_test.ini'
+
+    def assert_core_config(self, config):
+        out_path = os.path.join(self.tmp_dir, self.OUTPUT)
+        with open(out_path, 'w') as out_file:
+            config.write(out_file)
+        with open(out_path) as in_file:
+            config_found = in_file.read().strip()
+        expected_ini_path = os.path.join(self.test_source_dir, 'core_config_expected.ini')
+        with open(expected_ini_path) as in_file:
+            config_expected = in_file.read().strip()
+        self.assertEqual(config_expected, config_found)
+
+    def run_core_config(self):
+        loader = core_config_loader(log_level=logging.WARNING)
+        core_configurer = loader.load(workspace(self.tmp_dir))
+        config = ConfigParser()
+        config.add_section('core') # empty [core] section is sufficient
+        config = core_configurer.configure(config)
+        return config
+
+    def test_default(self):
+        """Test default configuration with UUID"""
+        config = self.run_core_config()
+        expr = 'OICR-CGI-[abcdefgh0-9]{32}'
+        self.assertTrue(re.match(expr, config.get('core', 'report_id')))
+        config.set('core', 'report_id', 'PLACEHOLDER')
+        self.assert_core_config(config)
+
+    def test_sample_info(self):
+        """Test configuration with sample info file"""
+        info = {
+            core_constants.TUMOUR_ID: 'foo',
+            core_constants.NORMAL_ID: 'bar'
+        }
+        info_path = os.path.join(self.tmp_dir, core_constants.DEFAULT_SAMPLE_INFO)
+        with open(info_path, 'w') as out_file:
+            print(json.dumps(info), file=out_file)
+        config = self.run_core_config()
+        self.assertEqual('foo_bar-v1', config.get('core', 'report_id'))
+        config.set('core', 'report_id', 'PLACEHOLDER')
+        self.assert_core_config(config)
+
 
 class TestDependencies(TestCore):
     """Test the 'depends' parameters"""

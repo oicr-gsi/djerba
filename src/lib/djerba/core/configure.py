@@ -61,6 +61,12 @@ class configurable(logger, ABC):
         self.logger.error(msg)
         raise DjerbaConfigError(msg)
 
+    def _raise_null_param_error(self, key):
+        msg = "INI section {0}, option {1} is null; ".format(self.identifier, key)+\
+            "null values are not permitted in fully-specified Djerba config"
+        self.logger.error(msg)
+        raise DjerbaConfigError(msg)
+
     def check_attributes_known(self, attributes):
         all_known = True
         for a in attributes:
@@ -164,6 +170,12 @@ class configurable(logger, ABC):
             raise DjerbaConfigError(msg)
         self.ini_defaults[key] = value
 
+    def set_ini_null_default(self, key):
+        """
+        Set a null parameter default -- to be filled in at runtime by custom config code
+        """
+        self.set_ini_default(key, core_constants.NULL)
+
     @abstractmethod
     def set_priority_defaults(self, priority):
         # convenience method to set all priority defaults to the given value
@@ -191,9 +203,11 @@ class configurable(logger, ABC):
         self.logger.debug(template.format(len(all_keys), self.identifier))
         input_keys = config.options(self.identifier)
         for key in all_keys:
-            # Check all keys defined for the component are input
+            # Check all keys defined for the component are present and non-null
             if key not in input_keys:
                 self._raise_missing_config_error(key, input_keys, complete=True)
+            elif self._is_null(config.get(self.identifier, key)):
+                self._raise_null_param_error(key)
         for key in input_keys:
             # Check if any keys input are *not* defined for the component
             if key not in all_keys:
@@ -224,7 +238,7 @@ class core_configurer(configurable):
 
     """Class to do core configuration"""
 
-    PRIORITY = 0
+    PRIORITY = 100
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -246,7 +260,7 @@ class core_configurer(configurable):
         if wrapper.my_param_is_null(core_constants.REPORT_ID):
             sample_info_file = wrapper.get_my_string(core_constants.SAMPLE_INFO)
             if self.workspace.has_file(sample_info_file):
-                # if sample info is available, use to construct the report ID
+                self.logger.debug("Generating report ID from sample info")
                 sample_info = self.workspace.read_json(sample_info_file)
                 report_id = "{0}_{1}-v{2}".format(
                     sample_info[core_constants.TUMOUR_ID],
@@ -254,14 +268,14 @@ class core_configurer(configurable):
                     wrapper.get_my_int(core_constants.REPORT_VERSION)
                 )
             else:
-                # otherwise, fall back to a (sufficiently) unique string of hex characters
-                report_id = "OICR-CGI-".format(uuid4().hex)
+                self.logger.debug("Generating report ID from UUID hex string")
+                report_id = "OICR-CGI-{0}".format(uuid4().hex)
             wrapper.set_my_param(core_constants.REPORT_ID, report_id)
         return wrapper.get_config()
 
     def specify_params(self):
-        self.add_ini_default(core_constants.REPORT_ID, core_constants.NULL)
-        self.add_ini_default(core_constants.REPORT_VERSION, 1)
+        self.set_ini_null_default(core_constants.REPORT_ID)
+        self.set_ini_default(core_constants.REPORT_VERSION, 1)
         self.set_ini_default(core_constants.ARCHIVE_NAME, "djerba")
         self.set_ini_default(
             core_constants.ARCHIVE_URL,
@@ -272,6 +286,10 @@ class core_configurer(configurable):
         self.set_ini_default(core_constants.PREAMBLE, core_constants.DEFAULT_PREAMBLE)
         self.set_ini_default(core_constants.SAMPLE_INFO, core_constants.DEFAULT_SAMPLE_INFO)
         self.set_ini_default(core_constants.STYLESHEET, core_constants.DEFAULT_CSS)
+
+    def set_priority_defaults(self, priority):
+        for key in core_constants.PRIORITY_KEYS:
+            self.ini_defaults[key] = priority
 
 
 class config_wrapper(core_base):
@@ -316,10 +334,10 @@ class config_wrapper(core_base):
     # nullity tests
 
     def my_param_is_null(self, param):
-        return self.config.get(self.identifier, param) == core_constants.NULL
+        return self.param_is_null(self.identifier, param)
 
     def param_is_null(self, section, param):
-        return self.config.get(section, param) == core_constants.NULL
+        return self._is_null(self.config.get(section, param))
 
     def my_param_is_not_null(self, param):
         return not self.my_param_is_null(param)
