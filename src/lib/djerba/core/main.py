@@ -53,7 +53,7 @@ class main(core_base):
 
     def _load_component(self, name):
         if name == ini.CORE:
-            component = self.core_config_loader.load()
+            component = self.core_config_loader.load(self.workspace)
         elif self._is_helper_name(name):
             component = self.helper_loader.load(name, self.workspace)
         elif self._is_merger_name(name):

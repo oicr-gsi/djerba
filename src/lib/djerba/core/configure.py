@@ -15,7 +15,7 @@ from djerba.util.logger import logger
 import djerba.core.constants as core_constants
 import djerba.util.ini_fields as ini
 
-class configurable(logger, ABC):
+class configurable(core_base, ABC):
 
     """
     Interface for Djerba objects configurable by INI

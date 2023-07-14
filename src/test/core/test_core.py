@@ -31,7 +31,7 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_MD5 = '66bf99e6ebe64d89bef09184953fd630'
-    SIMPLE_CONFIG_MD5 = '298ebe20d9b9194267caf036317403a1'
+    SIMPLE_CONFIG_MD5 = '9cfec5f021bf07bdd9eebb3778d83115'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
