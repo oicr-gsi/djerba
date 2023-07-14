@@ -36,11 +36,11 @@ class main(plugin_base):
       
       wrapper = self.get_config_wrapper(config)  
       # Pre-process all the files
-      # self.preprocess()
+      
       work_dir = self.workspace.get_work_dir()
-      work_dir = "."
+      #work_dir = "."
       #print(work_dir)
-      #preprocess(work_dir).run_R_code()
+      #preprocess(work_dir, tar = True).run_R_code()
 
       data = {
           'plugin_name': 'Tar SNV Indel',

@@ -104,6 +104,7 @@ class preprocess():
           #self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
           os.mkdir(self.tmp_dir)
       self.report_dir = work_dir
+      #self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts/"
       self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/"
       self.tar = tar
 
@@ -253,13 +254,13 @@ class preprocess():
             else:
                 total += 1
                 if self.tar:
-                    if self._maf_body_row_ok(row, indices, MIN_VAF_TAR):
+                    if self._maf_body_row_ok(row, indices, self.MIN_VAF_TAR):
                         # filter rows in the MAF body and update the tumour_id
                         row[indices.get(self.TUMOUR_SAMPLE_BARCODE)] = self.tumour_id
                         writer.writerow(row)
                         kept += 1
                 else:
-                    if self._maf_body_row_ok(row, indices, MIN_VAF):
+                    if self._maf_body_row_ok(row, indices, self.MIN_VAF):
                         # filter rows in the MAF body and update the tumour_id
                         row[indices.get(self.TUMOUR_SAMPLE_BARCODE)] = self.tumour_id
                         writer.writerow(row)
