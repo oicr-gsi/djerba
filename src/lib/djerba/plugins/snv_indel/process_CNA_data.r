@@ -45,16 +45,10 @@ outdir <- opt$outdir
 segfile <- opt$segfile
 genebed <- opt$genebed
 oncolist <- opt$oncolist
-gain <- opt$gain
-ampl <- opt$ampl
-htzd <- opt$htzd
-hmzd <- opt$hmzd
 enscon <- opt$enscon
 genelist <- opt$genelist
 tcgadata <- opt$tcgadata
 tcgacode <- opt$tcgacode
-gepfile <- opt$gepfile
-aratiofile <- opt$aratiofile
 maffile <- opt$maffile
 studyid <- opt$studyid
 whizbam_url <- opt$whizbam_url
@@ -62,6 +56,16 @@ tumourid <- opt$tumourid
 normalid <- opt$normalid
 seqtype <- opt$seqtype
 genome <- opt$genome
+
+if(opt$tar == 'False'){
+  gain <- opt$gain
+  ampl <- opt$ampl
+  htzd <- opt$htzd
+  hmzd <- opt$hmzd
+  gepfile <- opt$gepfile
+  aratiofile <- opt$aratiofile
+}
+
 
 
 if(opt$cbiostudy == 'None'){
@@ -83,32 +87,42 @@ source(paste0(basedir, "/snv_indel_functions.r"))
 
 ###################### CNA #####################
 
-print("Processing CNA data")
-CNAs <- preProcCNA(segfile, genebed, gain, ampl, htzd, hmzd, oncolist)
 
-print("writing seg file")
-# segs
-write.table(CNAs[[1]], file=paste0(outdir, "/data_segments.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+if (is.null(segfile)) {
+   print("No SEG file input, processing omitted")
+  } else {
+  print("Processing CNA data")
+  CNAs <- preProcCNA(segfile, genebed, gain, ampl, htzd, hmzd, oncolist)
+  
+  print("writing seg file")
+  # segs
+  write.table(CNAs[[1]], file=paste0(outdir, "/data_segments.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+  
+  # log2cna
+  print("writing log2 file")
+  write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[2]]), CNAs[[2]], check.names=FALSE),
+    file=paste0(outdir, "/data_log2CNA.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+  
+  # gistic-like file
+  print("writing cna file")
+  write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[3]]), CNAs[[3]], check.names=FALSE),
+    file=paste0(outdir, "/data_CNA.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+  
+  # write out the oncoKB genes
+  print("writing oncoKB genes")
+  write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[4]]), CNAs[[4]], check.names=FALSE),
+    file=paste0(outdir, "/data_CNA_oncoKBgenes.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+  
+  # write the truncated data_CNA file (non-zero, oncoKB genes) for oncoKB annotator
+  print("writing non-diploid oncoKB genes")
+  write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[5]]), CNAs[[5]], check.names=FALSE),
+    file=paste0(outdir, "/data_CNA_oncoKBgenes_nonDiploid.txt"), sep="\t", row.names=FALSE, quote=FALSE)
 
-# log2cna
-print("writing log2 file")
-write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[2]]), CNAs[[2]], check.names=FALSE),
-  file=paste0(outdir, "/data_log2CNA.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+   }
 
-# gistic-like file
-print("writing cna file")
-write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[3]]), CNAs[[3]], check.names=FALSE),
-  file=paste0(outdir, "/data_CNA.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+  
 
-# write out the oncoKB genes
-print("writing oncoKB genes")
-write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[4]]), CNAs[[4]], check.names=FALSE),
-  file=paste0(outdir, "/data_CNA_oncoKBgenes.txt"), sep="\t", row.names=FALSE, quote=FALSE)
 
-# write the truncated data_CNA file (non-zero, oncoKB genes) for oncoKB annotator
-print("writing non-diploid oncoKB genes")
-write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[5]]), CNAs[[5]], check.names=FALSE),
-  file=paste0(outdir, "/data_CNA_oncoKBgenes_nonDiploid.txt"), sep="\t", row.names=FALSE, quote=FALSE)
 
 ###################### VEP #####################
 
