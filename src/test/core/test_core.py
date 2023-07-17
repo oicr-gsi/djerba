@@ -31,7 +31,7 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_MD5 = 'b4982dc42cc63221c7372457ef335354'
-    SIMPLE_CONFIG_MD5 = '6e02394048dc85421b2be26c2adc4330'
+    SIMPLE_CONFIG_MD5 = 'eb365aa54dba34f8762a5e6f932a9a1c'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
@@ -115,7 +115,7 @@ class TestArgs(TestCore):
         main(work_dir, log_level=logging.WARNING).run(args)
         self.assertEqual(self.getMD5(out_path), self.SIMPLE_CONFIG_MD5)
 
-    def SKIPtest_extract(self):
+    def test_extract(self):
         # run from args, with same inputs as TestSimpleReport
         mode = 'extract'
         work_dir = self.tmp_dir
@@ -143,7 +143,7 @@ class TestArgs(TestCore):
             html_string = html_file.read()
         self.assert_report_MD5(html_string, self.SIMPLE_REPORT_MD5)
 
-    def SKIPtest_report(self):
+    def test_report(self):
         # run from args, with same inputs as TestSimpleReport
         mode = 'report'
         work_dir = self.tmp_dir
