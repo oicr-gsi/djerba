@@ -125,10 +125,10 @@ class pdf_renderer(logger):
         if footer:
             if footer_text:
                 self.logger.debug("Including page numbers and footer text")
-                current_date = datetime.now()
+                temp_date = 'yyyy/mm/dd'
                 options = {
                     'footer-right': '[page] of [topage]',
-                    'footer-left': ' - '.join((current_date.strftime('%Y-%m-%d'), footer_text)),
+                    'footer-left': ' - '.join((temp_date, footer_text)),
                     'quiet': '',
                     'disable-javascript': ''
                 }
