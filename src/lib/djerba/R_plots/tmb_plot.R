@@ -15,13 +15,11 @@ option_list = list(
 # get options
 opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
 opt <- parse_args(opt_parser)
-
 sampleTMB <- opt$tmb
 sample_tcga <- opt$code
 out_path <- opt$output
 
 data_dir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), 'data', sep='/')
-
 external_tmb_file <- paste(data_dir, 'tmbcomp-externaldata.txt', sep='/')
 external_tmb_data <- read.delim(external_tmb_file, header = TRUE, stringsAsFactors = F)
 tcga_tmb_file <- paste(data_dir, 'tmbcomp-tcga.txt', sep='/')

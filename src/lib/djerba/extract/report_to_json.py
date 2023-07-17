@@ -220,6 +220,8 @@ class clinical_report_json_composer(composer_base):
         if tmb_value == None:
             tmb_value = self.build_genomic_landscape_info()[rc.TMB_PER_MB]
         tmb_dict = self.call_TMB(tmb_value)
+        tmb_plot_location = self.write_biomarker_plot(self.input_dir, "tmb", tmb = tmb_value)
+        tmb_dict[rc.METRIC_PLOT] = converter().convert_svg(tmb_plot_location, 'TMB plot')
         return(tmb_dict)
 
     def build_assay_name(self):
@@ -603,8 +605,7 @@ class clinical_report_json_composer(composer_base):
     def call_TMB(self, tmb_value):
         tmb_dict = {rc.ALT: rc.TMB,
                     rc.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/TMB-H",
-                    rc.METRIC_VALUE: tmb_value,
-                    rc.METRIC_PLOT: "see tmb_plot"
+                    rc.METRIC_VALUE: tmb_value
                     }
         if tmb_value >= 10:
             tmb_dict[rc.METRIC_ACTIONABLE] = True
@@ -922,10 +923,8 @@ class clinical_report_json_composer(composer_base):
             data[rc.GENOMIC_LANDSCAPE_INFO] = self.build_genomic_landscape_info()
             tmb = data[rc.GENOMIC_LANDSCAPE_INFO][rc.TMB_PER_MB]
             pga = data[rc.GENOMIC_LANDSCAPE_INFO][rc.PERCENT_GENOME_ALTERED]
-            data[rc.TMB_PLOT] = self.write_tmb_plot(tmb, self.input_dir)
             data[rc.VAF_PLOT] = self.write_vaf_plot(self.input_dir)
             data[rc.CNV_PLOT] = converter().convert_svg(self.write_cnv_plot(self.input_dir), 'CNV plot')
-            data[rc.PGA_PLOT] = converter().convert_svg(self.write_pga_plot(pga, self.input_dir), 'PGA plot')
             data[rc.SMALL_MUTATIONS_AND_INDELS] = self.build_small_mutations_and_indels()
             data[rc.TOP_ONCOGENIC_SOMATIC_CNVS] = self.build_copy_number_variation()
             if self.params.get(xc.ASSAY_TYPE) == rc.ASSAY_WGTS:
@@ -985,14 +984,17 @@ class clinical_report_json_composer(composer_base):
         }
         return row
 
-    def write_biomarker_plot(self, out_dir,marker):
+    def write_biomarker_plot(self, out_dir, marker, tmb = 0):
         out_path = os.path.join(out_dir, marker+'.svg')
         args = [
             os.path.join(self.r_script_dir, 'biomarkers_plot.R'),
-            '-d', self.input_dir
+            '-d', self.input_dir,
+            '-c', self.closest_tcga_lc,
+            '-m', marker,
+            '-t', str(tmb)
         ]
         subprocess_runner(self.log_level, self.log_path).run(args)
-        self.logger.info("Wrote biomarkers plot to {0}".format(out_path))
+        self.logger.info("Wrote biomarker {0} plot to {1}".format(marker, out_path))
         return out_path
 
     def write_cnv_plot(self, out_dir):
@@ -1007,28 +1009,28 @@ class clinical_report_json_composer(composer_base):
             self.logger.info("Wrote CNV plot to {0}".format(out_path))
             return out_path
 
-    def write_pga_plot(self, pga, out_dir):
-        out_path = os.path.join(out_dir, 'pga.svg')
-        args = [
-            os.path.join(self.r_script_dir, 'pga_plot.R'),
-            '-o', out_path,
-            '-p', str(pga)
-        ]
-        subprocess_runner(self.log_level, self.log_path).run(args)
-        self.logger.info("Wrote PGA plot to {0}".format(out_path))
-        return out_path
+    #def write_pga_plot(self, pga, out_dir):
+    #    out_path = os.path.join(out_dir, 'pga.svg')
+    #    args = [
+    #        os.path.join(self.r_script_dir, 'pga_plot.R'),
+    #        '-o', out_path,
+    #        '-p', str(pga)
+    #    ]
+    #    subprocess_runner(self.log_level, self.log_path).run(args)
+    #    self.logger.info("Wrote PGA plot to {0}".format(out_path))
+    #    return out_path
 
-    def write_tmb_plot(self, tmb, out_dir):
-        out_path = os.path.join(out_dir, 'tmb.svg')
-        args = [
-            os.path.join(self.r_script_dir, 'tmb_plot.R'),
-            '-c', self.closest_tcga_lc,
-            '-o', out_path,
-            '-t', str(tmb)
-        ]
-        subprocess_runner(self.log_level, self.log_path).run(args)
-        self.logger.info("Wrote TMB plot to {0}".format(out_path))
-        return out_path
+    #def write_tmb_plot(self, tmb, out_dir):
+    #    out_path = os.path.join(out_dir, 'tmb.full.svg')
+    #    args = [
+    #        os.path.join(self.r_script_dir, 'tmb_plot.R'),
+    #        '-c', self.closest_tcga_lc,
+    #        '-o', out_path,
+    #        '-t', str(tmb)
+    #    ]
+    #    subprocess_runner(self.log_level, self.log_path).run(args)
+    #    self.logger.info("Wrote TMB plot to {0}".format(out_path))
+    #    return out_path
 
     def write_vaf_plot(self, out_dir):
         out_path = os.path.join(out_dir, 'vaf.svg')

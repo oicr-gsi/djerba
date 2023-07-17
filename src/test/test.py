@@ -157,7 +157,7 @@ class TestArchive(TestBase):
         self.assertEqual(get["_id"], get["report"]["patient_info"]["Report ID"])
         rm = requests.delete(url_id+'?rev='+get["_rev"])
         self.assertEqual(rm.status_code, 200)
-        self.assertEqual(len(data['report']), 26)  
+        self.assertEqual(len(data['report']), 24)  
         self.assertEqual(len(data['supplementary']['config']), 4)
 
 class TestConfigure(TestBase):
@@ -269,7 +269,7 @@ class TestExtractor(TestBase):
         with open(expected_path) as in_file:
             data_expected = json.loads(in_file.read())
         # plot paths/contents are not fixed
-        for key in ['oicr_logo', 'cnv_plot', 'pga_plot', 'tmb_plot', 'vaf_plot']:
+        for key in ['oicr_logo', 'cnv_plot', 'vaf_plot']:
             del data_found['report'][key]
             del data_expected['report'][key]
         for biomarker in range(0,len(data_found['report']['genomic_biomarkers']['Body'])):
@@ -721,10 +721,10 @@ class TestRender(TestBase):
         out_path = os.path.join(out_dir, 'djerba_test_wgts.html')
         hr = html_renderer()
         out_path = hr.run_clinical(args_path, out_dir, 'report_WGTS', False)
-        self.check_report(out_path, 'a0c8e86f2429c6edd79931a5c19a327b')
+        self.check_report(out_path, 'ae3a54922142dcb1b949add837354ced')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = hr.run_clinical(args_path, out_dir, 'report_WGS_only', False)
-        self.check_report(out_path, '5e901ce65ea4e43dc4e99c453568687b')
+        self.check_report(out_path, 'b1848cfe2cfbcb50a83b5cb296eff827')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = hr.run_clinical(args_path, out_dir, 'report_failed', False)
         self.check_report(out_path, '5976081ff05c571ce62a90dd63f8d6dc')

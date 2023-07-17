@@ -265,7 +265,6 @@ class extractor(logger):
         # machine-readable; replace image paths with base-64 blobs for a self-contained document
         report_data[logo_key] = self.converter.convert_png(report_data[logo_key], 'OICR logo')
         if not self.failed:
-            report_data[tmb_key] = self.converter.convert_svg(report_data[tmb_key], 'TMB plot')
             report_data[vaf_key] = self.converter.convert_svg(report_data[vaf_key], 'VAF plot')
         report_path = os.path.join(self.report_dir, constants.REPORT_JSON_FILENAME)
         data = {
