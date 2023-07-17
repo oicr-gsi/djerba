@@ -22,7 +22,8 @@ class preprocess():
  
   sequenza_path = "/.mounts/labs/CGI/cap-djerba/PASS01/PANX_1550/PANX_1550_Lv_M_WG_100-PM-064_LCM3_results.zip"
   gep_file = "/.mounts/labs/prod/vidarr/output-clinical/50b8/28fe/fb78/50b828fefb789e627fe6c47a9ee6a417de07c5e685cf7ea077a21e6e018c1869/PANX_1550_Lv_M_WT_100-PM-064_LCM3.genes.results"
-  maf_file = '/.mounts/labs/prod/vidarr/output-clinical/a4b0/7d4e/1634/a4b07d4e16340396340340a3fc0d3d31c509d997ccbaf384477775420d5ca2a2/PANX_1550_Lv_M_WG_100-PM-064_LCM3.filter.deduped.realigned.recalibrated.mutect2.filtered.maf.gz'
+  #maf_file = '/.mounts/labs/prod/vidarr/output-clinical/a4b0/7d4e/1634/a4b07d4e16340396340340a3fc0d3d31c509d997ccbaf384477775420d5ca2a2/PANX_1550_Lv_M_WG_100-PM-064_LCM3.filter.deduped.realigned.recalibrated.mutect2.filtered.maf.gz'
+  maf_file = '/.mounts/labs/prod/vidarr/output-clinical/7ec2/a5da/1161/7ec2a5da1161cca72ace5c88a57f87c1782ed61b3109b2829b7bce082c054e9a/REVOLVE_0005_Pm_P_WG_REV-01-005_TUM.mutect2.filtered.maf.gz'
   tumour_id = "100-PM-064_LCM3"
   oncotree_code = "paad"
   tcgacode = "PAAD"
@@ -126,9 +127,9 @@ class preprocess():
     
     # FIX THIS BECAUSE THE ARATIO FILE IS DIFFERENT FOR TAR AND NONTAR
     if self.tar == True:
-        #maf_path = self.preprocess_maf(self.maf_file)
+        maf_path = self.preprocess_maf(self.maf_file)
         #print(maf_path)
-        maf_path = "report/tmp/annotated_maf.tsv"
+        #maf_path = "report/tmp/annotated_maf.tsv"
         #aratio_path = self.preprocess_seg_to_aratio(self.seg_file)
         #maf_path = "/tmp/annotated_maf.tsv"
         # do not process GEP, as that is for expression
