@@ -31,7 +31,7 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_MD5 = 'b4982dc42cc63221c7372457ef335354'
-    SIMPLE_CONFIG_MD5 = 'eb365aa54dba34f8762a5e6f932a9a1c'
+    SIMPLE_CONFIG_MD5 = '37642790259914f1d60f1c80213d5899'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
@@ -266,8 +266,8 @@ class TestConfigWrapper(TestCore):
         cp = ConfigParser()
         cp.read(os.path.join(self.test_source_dir, 'config_full.ini'))
         cw = config_wrapper(cp, 'demo1')
-        self.assertEqual(cw.get_core_string('comment'), 'Djerba 1.0 under development')
-        self.assertEqual(cw.get_my_int('configure_priority'), 100)
+        self.assertEqual(cw.get_core_string('stylesheet'), 'stylesheet.css')
+        self.assertEqual(cw.get_my_int('configure_priority'), 200)
         self.assertTrue(cw.has_my_param('question'))
         self.assertFalse(cw.has_my_param('noodles'))
         cw.set_my_param('lunch', 'sushi')
@@ -284,7 +284,7 @@ class TestConfigWrapper(TestCore):
             core_constants.RENDER_PRIORITY
         ]:
             self.assertEqual(cw.get_my_int(key), 42)
-        self.assertEqual(cw.get_int('demo2', 'configure_priority'), 200)
+        self.assertEqual(cw.get_int('demo2', 'configure_priority'), 300)
         self.assertTrue(cw.has_param('demo2', 'demo2_param'))
         self.assertFalse(cw.has_param('demo2', 'noodles'))
         cw.set_param('demo2', 'dinner', 'pizza')
@@ -405,7 +405,7 @@ class TestIniGenerator(TestCore):
 
     def test_class(self):
         generator = ini_generator(log_level=logging.WARNING)
-        generated_ini_path = os.path.join(self.tmp_dir, 'generated.ini')
+        generated_ini_path = '/home/ibancarz/tmp/generated.ini'  # os.path.join(self.tmp_dir, 'generated.ini')
         names = ['core']
         names.extend(self.COMPONENT_NAMES)
         generator.write_config(names, generated_ini_path)
