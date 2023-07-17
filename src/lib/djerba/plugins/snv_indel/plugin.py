@@ -1,67 +1,58 @@
 """
-Plugin for TAR SWGS.
+The purpose of this file is to prototype a plugin for TAR SNV Indel
 """
 
 # IMPORTS
 import os
 from djerba.plugins.base import plugin_base
 from mako.lookup import TemplateLookup
-import djerba.plugins.tar.swgs.constants as constants
-from djerba.plugins.tar.swgs.preprocess import preprocess
-from djerba.plugins.tar.swgs.extract import data_builder 
+import djerba.plugins.snv_indel.constants as constants
+from djerba.plugins.snv_indel.preprocess import preprocess
+from djerba.plugins.snv_indel.extract import data_builder 
 import djerba.core.constants as core_constants
-
+from djerba.util.subprocess_runner import subprocess_runner
+import djerba.util.provenance_index as index
+from djerba.core.workspace import workspace
 
 class main(plugin_base):
-    
+   
+    PRIORITY = 100
     PLUGIN_VERSION = '1.0.0'
-    #PRIORITY = 100 
-    TEMPLATE_NAME = 'swgs_template.html'
+    TEMPLATE_NAME = 'snv_indel_template.html'
     
+    def __init__(self, **kwargs):
+      super().__init__(**kwargs)
+         
     def specify_params(self):
-
-      # Required parameters for swgs
-      self.add_ini_required('seg_file')
-
-      # Default parameters for priorities
-      self.set_ini_default('configure_priority', 100)
-      self.set_ini_default('extract_priority', 100)
-      self.set_ini_default('render_priority', 100)
-      #self.set_priority_defaults(self.PRIORITY)
-
-      # Default parameters for clinical, supplementary
       self.set_ini_default(core_constants.CLINICAL, True)
       self.set_ini_default(core_constants.SUPPLEMENTARY, False)
+      self.set_priority_defaults(self.PRIORITY)
 
     def configure(self, config):
       config = self.apply_defaults(config)
-      return config
+      return config  
 
     def extract(self, config):
       
-
-      wrapper = self.get_config_wrapper(config)
-      
-      # Get the seg file from the config
-      seg_file = wrapper.get_my_string('seg_file')
-    
-
+      wrapper = self.get_config_wrapper(config)  
       # Pre-process all the files
+      
       work_dir = self.workspace.get_work_dir()
-      preprocess(work_dir, seg_file).run_R_code()
+      #work_dir = "."
+      #print(work_dir)
+      preprocess(config, work_dir, tar = False).run_R_code()
 
       data = {
-          'plugin_name': 'Shallow Whole Genome Sequencing (sWGS)',
+          'plugin_name': 'Tar SNV Indel',
           'version': self.PLUGIN_VERSION,
           'priorities': wrapper.get_my_priorities(),
           'attributes': wrapper.get_my_attributes(),
           'merge_inputs': {},
-          'results': data_builder(work_dir, seg_file).build_swgs()
+          'results': data_builder(work_dir, tar=False).build_small_mutations_and_indels()
       }
       return data
 
     def render(self, data):
-      super().render(data)
       args = data
       html_dir = os.path.realpath(os.path.join(
           os.path.dirname(__file__),
