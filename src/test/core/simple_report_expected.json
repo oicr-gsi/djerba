@@ -15,9 +15,9 @@
             "plugin_name": "demo1 plugin",
             "version": "1.0.0",
             "priorities": {
-                "configure": 100,
-                "extract": 100,
-                "render": 100
+                "configure": 200,
+                "extract": 200,
+                "render": 200
             },
             "attributes": [
                 "clinical"
@@ -44,9 +44,9 @@
             "plugin_name": "demo2 plugin",
             "version": "1.0.0",
             "priorities": {
-                "configure": 200,
-                "extract": 200,
-                "render": 200
+                "configure": 300,
+                "extract": 300,
+                "render": 300
             },
             "attributes": [
                 "clinical"
@@ -75,7 +75,7 @@
     },
     "mergers": {
         "gene_information_merger": {
-            "render_priority": 300,
+            "render_priority": 500,
             "attributes": [
                 "clinical",
                 "supplementary"
@@ -107,16 +107,16 @@
         "gene_information_merger": {
             "attributes": "clinical,supplementary",
             "depends_configure": "",
-            "configure_priority": "300",
-            "render_priority": "300"
+            "configure_priority": "500",
+            "render_priority": "500"
         },
         "demo1": {
             "attributes": "clinical",
             "depends_configure": "",
             "depends_extract": "",
-            "configure_priority": "100",
-            "extract_priority": "100",
-            "render_priority": "100",
+            "configure_priority": "200",
+            "extract_priority": "200",
+            "render_priority": "200",
             "question": "What do you get if you multiply six by nine?",
             "dummy_file": "/path/of/dummy/file"
         },
@@ -124,9 +124,9 @@
             "attributes": "clinical",
             "depends_configure": "",
             "depends_extract": "",
-            "configure_priority": "200",
-            "extract_priority": "200",
-            "render_priority": "200",
+            "configure_priority": "300",
+            "extract_priority": "300",
+            "render_priority": "300",
             "question": "question.txt",
             "demo2_param": "42"
         }

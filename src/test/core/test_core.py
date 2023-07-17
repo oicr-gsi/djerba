@@ -521,10 +521,10 @@ class TestPriority(TestCore):
         with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
             config = djerba_main.configure(ini_path)
         priority_results = [
-            ['core', 0, 1],
-            ['demo1', 100, 2],
-            ['demo2', 200, 3],
-            ['gene_information_merger', 1000, 4]
+            ['core', 100, 1],
+            ['demo1', 200, 2],
+            ['demo2', 300, 3],
+            ['gene_information_merger', 500, 4]
         ]
         prefix = 'DEBUG:djerba.core.main:Configuring'
         template = '{0} {1}, priority {2}, order {3}'
@@ -540,10 +540,10 @@ class TestPriority(TestCore):
         with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
             djerba_main.configure(ini_path_2)
         priority_results = [
-            ['core', 0, 1],
+            ['core', 100, 1],
             ['demo2', 200, 2], # <---- changed order
             ['demo1', 300, 3],
-            ['gene_information_merger', 1000, 4]
+            ['gene_information_merger', 500, 4]
         ]
         for (name, priority, order) in priority_results:
             msg = template.format(prefix, name, priority, order)
