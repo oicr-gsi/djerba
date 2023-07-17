@@ -15,17 +15,12 @@ option_list = list(
 # get options
 opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
 opt <- parse_args(opt_parser)
+
 sampleTMB <- opt$tmb
 sample_tcga <- opt$code
 out_path <- opt$output
 
 data_dir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), 'data', sep='/')
-
-## test
-#data_dir <- "Documents/GitHub/djerba/src/lib/djerba/data/"
-#out_path <- "~/"
-#sampleTMB <- 7
-#sample_tcga <- "PAAD"
 
 external_tmb_file <- paste(data_dir, 'tmbcomp-externaldata.txt', sep='/')
 external_tmb_data <- read.delim(external_tmb_file, header = TRUE, stringsAsFactors = F)
@@ -76,48 +71,6 @@ ggplot(tcga_tmb_data, aes(tmb)) +
         panel.grid = element_blank(), 
         line = element_blank(),
         legend.background = element_rect(fill='transparent')
-  )
-
-dev.off()
-
-median_tmb <- median(tcga_tmb_data$tmb)
-svg(out_path, width = 5, height = 1)
-
-ggplot(tcga_tmb_data) + 
-  geom_boxplot(aes(x=0,y=tmb,color="All TCGA"),width = 0.05, outlier.shape = NA) +
-  
-  geom_hline(yintercept = 1,alpha=0.25,color="white")  +
-  geom_hline(yintercept = max(sampleTMB, 25), alpha=0.25,color="white")  +
-  
-  annotate( geom="segment", x = -0.1, xend=0.1, y=10, yend=10, colour = "gray") +
-  
-  annotate(geom="text",y = 10,x=0,color="gray30",label="TMB-H Cutoff",  vjust = -4.5, size=2.5) +
-  annotate(geom="text",y = median_tmb, x=0,color="black",label="Cohort", hjust = 0.3, vjust = 3, size=2.5) +
-  annotate(geom="text",y = sampleTMB,x=0,color="red",label="This Sample",  vjust = -2.5,size=2.5) +
-  
-  annotate(geom="point",y = sampleTMB,x=0,color="red",shape=1, size=5) +
-  annotate(geom="point",y = sampleTMB,x=0,color="red",shape=20, size=1.5) +
-  
-  labs(x="",y="",color="",title="",shape="",size="") +
-  scale_color_manual( values= c( "gray30", "red") ) +
-  scale_shape_manual(values=c(16,1)) +
-  theme_classic() +
-  guides(shape="none",size="none",color="none") + 
-  scale_y_continuous( limits = c(0, max(sampleTMB, 25))) +
-  coord_flip(clip = "off") +
-  theme(
-    axis.line.y = element_blank(),
-    panel.grid = element_blank(), 
-    text = element_text(size = 9),
-    legend.title=element_blank(),
-    plot.margin = unit(c(0, 12, 0, 4), "points"),
-    axis.title=element_blank(),
-    axis.text.y=element_blank(),
-    axis.ticks.y=element_blank(),
-    line = element_blank(),
-    panel.background = element_rect(fill = "transparent", colour = NA),
-    plot.background = element_rect(fill="transparent",color=NA)
-    
   )
 
 dev.off()
