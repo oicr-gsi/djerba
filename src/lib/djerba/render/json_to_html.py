@@ -90,6 +90,7 @@ class html_builder:
         return rows
 
     def k_comma_format(self,value):
+        value = int(value)
         value_formatted = f'{value:,}'
         return(value_formatted)
 

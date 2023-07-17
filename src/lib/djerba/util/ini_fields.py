@@ -29,6 +29,7 @@ MAF_FILE = 'maf_file'
 MAVIS_FILE = 'mavis_file'
 MEAN_COVERAGE = 'mean_coverage'
 MIN_FUSION_READS = 'min_fusion_reads'
+MRDETECT_FILE = 'mrdetect_file'
 MSI_FILE = 'msi_file'
 MUTATION_NONSYN = 'mutation_nonsyn'
 NORMAL_ID = 'normalid'
@@ -155,6 +156,7 @@ SCHEMA_DEFAULT = {
         MAVIS_FILE,
         MEAN_COVERAGE,
         MSI_FILE,
+        MRDETECT_FILE,
         MUTATION_NONSYN,
         NORMAL_ID,
         ONCO_LIST,
@@ -251,6 +253,7 @@ SCHEMA_WGS_ONLY = {
         GENOMIC_SUMMARY,
         MAF_FILE,
         MEAN_COVERAGE,
+        MRDETECT_FILE,
         MSI_FILE,
         MUTATION_NONSYN,
         NORMAL_ID,

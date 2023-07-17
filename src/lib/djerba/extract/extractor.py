@@ -259,7 +259,6 @@ class extractor(logger):
                     val = int(val)
                 config_data[section][key] = val
         # shorter key names
-        tmb_key = render_constants.TMB_PLOT
         vaf_key = render_constants.VAF_PLOT
         logo_key = render_constants.OICR_LOGO
         # machine-readable; replace image paths with base-64 blobs for a self-contained document
