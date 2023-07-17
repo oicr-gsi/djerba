@@ -32,9 +32,6 @@ option_list = list(
   make_option(c("-z", "--genome"), type="character", default="hg38", help="genome version", metavar="character")
 )
 
-
-
-
 # get options
 opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE);
 opt <- parse_args(opt_parser);
@@ -56,15 +53,21 @@ tumourid <- opt$tumourid
 normalid <- opt$normalid
 seqtype <- opt$seqtype
 genome <- opt$genome
+gain <- opt$gain
+ampl <- opt$ampl
+htzd <- opt$htzd
+hmzd <- opt$hmzd
+gepfile <- opt$gepfile
+aratiofile <- opt$aratiofile
 
-if(opt$tar == 'False'){
-  gain <- opt$gain
-  ampl <- opt$ampl
-  htzd <- opt$htzd
-  hmzd <- opt$hmzd
-  gepfile <- opt$gepfile
-  aratiofile <- opt$aratiofile
-}
+#if(opt$tar == 'False'){
+#  gain <- opt$gain
+#  ampl <- opt$ampl
+#  htzd <- opt$htzd
+#  hmzd <- opt$hmzd
+#  gepfile <- opt$gepfile
+#  aratiofile <- opt$aratiofile
+#}
 
 
 
