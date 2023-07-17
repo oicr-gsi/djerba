@@ -65,10 +65,10 @@ class data_builder:
   ]
   
 
-  def __init__(self, work_dir):
+  def __init__(self, work_dir, tar):
     self.work_dir = work_dir
     self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/"
-
+    self.tar = tar
 
 
   def build_small_mutations_and_indels(self):
@@ -76,16 +76,23 @@ class data_builder:
     #self.logger.debug("Building data for small mutations and indels table")
     rows = []
     mutation_copy_states = self.read_mutation_copy_states()
-    mutation_LOH_states = self.read_mutation_LOH()
-    if self.is_wgts:
+    if self.tar == True:
+        LOH_state = None
+    else:
+        mutation_LOH_states = self.read_mutation_LOH()
+    if self.is_wgts == True and self.tar == False:
         mutation_expression = self.read_expression()
+        has_expression_data = True
     else:
         mutation_expression = {}
+        has_expression_data = False
     with open(os.path.join(self.work_dir, self.MUTATIONS_EXTENDED_ONCOGENIC)) as data_file:
         for input_row in csv.DictReader(data_file, delimiter="\t"):
             gene = input_row[self.HUGO_SYMBOL_TITLE_CASE]
             cytoband = self.get_cytoband(gene)
             protein = input_row[self.HGVSP_SHORT]
+            if self.tar == False:
+                LOH_state = mutation_LOH_states[gene]
             if 'splice' in input_row[self.VARIANT_CLASSIFICATION].lower():
                 protein = 'p.? (' + input_row[self.HGVSC] + ')'  
             row = {
@@ -100,7 +107,7 @@ class data_builder:
                 constants.TUMOUR_DEPTH: int(input_row[constants.TUMOUR_DEPTH]),
                 constants.TUMOUR_ALT_COUNT: int(input_row[constants.TUMOUR_ALT_COUNT]),
                 constants.COPY_STATE: mutation_copy_states.get(gene, self.UNKNOWN),
-                constants.LOH_STATE: mutation_LOH_states[gene],
+                constants.LOH_STATE: LOH_state,
                 constants.ONCOKB: self.parse_oncokb_level(input_row)
             }
             rows.append(row)
@@ -108,7 +115,7 @@ class data_builder:
     rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
     for row in rows: self.all_reported_variants.add((row.get(constants.GENE), row.get(constants.CHROMOSOME)))
     data = {
-        constants.HAS_EXPRESSION_DATA: self.is_wgts,
+        constants.HAS_EXPRESSION_DATA: has_expression_data,
         constants.VAF_PLOT: self.write_vaf_plot(self.work_dir),
         constants.CLINICALLY_RELEVANT_VARIANTS: len(rows),
         constants.TOTAL_VARIANTS: self.read_somatic_mutation_totals(),

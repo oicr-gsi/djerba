@@ -16,6 +16,7 @@ from djerba.extract.oncokb.annotator import oncokb_annotator
 from shutil import copyfile
 import djerba.plugins.snv_indel.constants as constants 
 from djerba.plugins.base import plugin_base
+import pandas as pd
 
 class preprocess():
  
@@ -89,7 +90,8 @@ class preprocess():
   MAX_UNMATCHED_GNOMAD_AF = 0.001
 
 
-  def __init__(self, work_dir, tar):
+  def __init__(self, config, work_dir, tar):
+      self.config = config
       self.report_dir = work_dir
       self.tmp_dir = os.path.join(self.report_dir, 'tmp')
       if os.path.isdir(self.tmp_dir):
@@ -106,11 +108,15 @@ class preprocess():
       self.report_dir = work_dir
       #self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts/"
       self.tar = tar
-      if self.tar == True:
-          self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/Rscripts"
-      else:
-          self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts/"
-     
+      #if self.tar == True:
+      #    self.seg_file = self.config['tar.swgs']['seg_file']
+      #    self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts"
+      #    self.r_script_dir_snv_indel = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/Rscripts"
+      #else:
+      #    self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/Rscripts/"
+      #    self.r_script_dir_snv_indel = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/Rscripts/"
+      self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/Rscripts/"
+      #self.maf_file = maf_file
 
 
   # ----------------------- to do all the pre-processing --------------------
@@ -120,30 +126,29 @@ class preprocess():
     
     # FIX THIS BECAUSE THE ARATIO FILE IS DIFFERENT FOR TAR AND NONTAR
     if self.tar == True:
-        aratio_path = self.preprocess_aratio_tar(BLAH)
+        #maf_path = self.preprocess_maf(self.maf_file)
+        #print(maf_path)
+        maf_path = "report/tmp/annotated_maf.tsv"
+        #aratio_path = self.preprocess_seg_to_aratio(self.seg_file)
+        #maf_path = "/tmp/annotated_maf.tsv"
         # do not process GEP, as that is for expression
         # need to process seg, as that is basically the aratio file and the copy number stuff. can just get this by running swgs plugin first 
         # don't know what maf does, need to look at it
 
         # MODIFY THIS MORE. I THINK ONLY THE MAF FILE WILL NEED PROCESSING BUT DOUBLE CHECK!!!!!!!!!!!
         cmd = [
-         'Rscript', self.r_script_dir + "process_CNA_data.r",
+         'Rscript', self.r_script_dir + "/process_CNA_data.r",
          '--basedir', self.r_script_dir,
          '--outdir', self.report_dir,
-         '--segfile', seg_path,
-         '--genebed', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/gencode_v33_hg38_genes.bed",
-         '--oncolist', os.environ.get('DJERBA_BASE_DIR') + "/data/20200818-oncoKBcancerGeneList.tsv",
-         '--enscon', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/ensemble_conversion_hg38.txt", 
-         '--genelist', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/targeted_genelist.txt",
-         '--tcgadata', "/.mounts/labs/CGI/gsi/tools/RODiC/data",
-         '--tcgacode', self.tcgacode,
-         '--studyid', 'PASS01',
          '--whizbam_url', 'https://whizbam.oicr.on.ca',
          '--tumourid', self.tumour_id,
          '--normalid', '100-PM-064_BC',
          '--cbiostudy', 'PASS01',
-         '--maffile', maf_path,
-         '--aratiofile', aratio_path
+         '--maffile', maf_path
+        # '--aratiofile', aratio_path,
+        # '--genebed', '/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/gencode_v33_hg38_genes.bed',
+        # '--oncolist', os.environ.get('DJERBA_BASE_DIR') + "/data/20200818-oncoKBcancerGeneList.tsv",
+        # '--genelist', '/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/targeted_genelist.txt'
         ]
 
    
@@ -194,7 +199,33 @@ class preprocess():
     copyfile(seg_path, out_path)
     return out_path
   
-  
+  #def preprocess_seg_to_aratio(self, seg_file):
+  #  """
+  #  We need to change some column names and entries in the .seg.txt file to make the dataframe suitable for plotting.
+  #  Do this using pandas, then convert to a processed .seg.txt file.
+  #  The reason for this wrangling is to force this file to look like aratio_segments.txt from the CNV plugin
+  #  """
+  #  #seg_path =  os.path.join(self.work_dir, seg_file)
+  #  seg_path = seg_file
+  #  # Create a dataframe
+  #  df_seg = pd.read_csv(seg_path, sep = '\t')
+  #
+  #  # Change column names
+  #  df_seg = df_seg.rename(columns = {"start":"start.pos", 
+  #                                    "end":"end.pos", 
+  #                                    "Corrected_Copy_Number":"CNt", 
+  #                                    "chrom":"chromosome"})
+  #
+  #  # Add "chr" to the beginning of the chromosome numbers
+  #  df_seg["chromosome"] = "chr" + df_seg["chromosome"].astype(str)
+  #
+  #  # Convert the dataframe back into a tab-delimited text file.
+  #  out_path = os.path.join(self.report_dir, "seg_to_aratio.txt")
+  #  df_seg.to_csv(out_path, sep = '\t', index=None)
+  #  return out_path
+
+
+
   def preprocess_seg(self, sequenza_path):
     """
     Extract the SEG file from the .zip archive output by Sequenza

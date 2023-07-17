@@ -124,7 +124,7 @@ class data_builder:
     Do this using pandas, then convert to a processed .seg.txt file.
     The reason for this wrangling is to force this file to look like aratio_segments.txt from the CNV plugin
     """
-    seg_path =  os.path.join(self.work_dir, seg_file)
+    seg_path =  os.path.join(seg_file)
  
     # Create a dataframe
     df_seg = pd.read_csv(seg_path, sep = '\t')
@@ -262,12 +262,12 @@ class data_builder:
       """
       Removes intermediate files now that extract step is done.
       """
-      rmtree(self.tmp_dir)
-      if os.path.exists(os.path.join(self.work_dir, constants.CNV_PLOT_DATA)):
-          os.remove(os.path.join(self.work_dir, constants.CNV_PLOT_DATA))
-      if os.path.exists(os.path.join(self.work_dir, constants.DATA_CNA)):
-          os.remove(os.path.join(self.work_dir, constants.DATA_CNA))
-      if os.path.exists(os.path.join(self.work_dir, constants.DATA_CNA_ONCOKB)):
-          os.remove(os.path.join(self.work_dir, constants.DATA_CNA_ONCOKB))
-      if os.path.exists(os.path.join(self.work_dir, constants.DATA_CNA_ONCOKB_NONDIPLOID)):
-          os.remove(os.path.join(self.work_dir, constants.DATA_CNA_ONCOKB_NONDIPLOID))
+      #rmtree(self.tmp_dir)
+      #if os.path.exists(os.path.join(self.work_dir, constants.CNV_PLOT_DATA)):
+      #    os.remove(os.path.join(self.work_dir, constants.CNV_PLOT_DATA))
+      #if os.path.exists(os.path.join(self.work_dir, constants.DATA_CNA)):
+      #    os.remove(os.path.join(self.work_dir, constants.DATA_CNA))
+      #if os.path.exists(os.path.join(self.work_dir, constants.DATA_CNA_ONCOKB)):
+      #    os.remove(os.path.join(self.work_dir, constants.DATA_CNA_ONCOKB))
+      #if os.path.exists(os.path.join(self.work_dir, constants.DATA_CNA_ONCOKB_NONDIPLOID)):
+      #    os.remove(os.path.join(self.work_dir, constants.DATA_CNA_ONCOKB_NONDIPLOID))

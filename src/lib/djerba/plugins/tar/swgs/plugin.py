@@ -15,7 +15,7 @@ import djerba.core.constants as core_constants
 class main(plugin_base):
     
     PLUGIN_VERSION = '1.0.0'
-    PRIORITY = 100 
+    #PRIORITY = 100 
     TEMPLATE_NAME = 'swgs_template.html'
     
     def specify_params(self):
@@ -24,10 +24,10 @@ class main(plugin_base):
       self.add_ini_required('seg_file')
 
       # Default parameters for priorities
-      #self.set_ini_default('configure_priority', 100)
-      #self.set_ini_default('extract_priority', 100)
-      #self.set_ini_default('render_priority', 100)
-      self.set_priority_defaults(self.PRIORITY)
+      self.set_ini_default('configure_priority', 100)
+      self.set_ini_default('extract_priority', 100)
+      self.set_ini_default('render_priority', 100)
+      #self.set_priority_defaults(self.PRIORITY)
 
       # Default parameters for clinical, supplementary
       self.set_ini_default(core_constants.CLINICAL, True)

@@ -40,7 +40,7 @@ class main(plugin_base):
       work_dir = self.workspace.get_work_dir()
       #work_dir = "."
       #print(work_dir)
-      #preprocess(work_dir, tar = True).run_R_code()
+      preprocess(config, work_dir, tar = False).run_R_code()
 
       data = {
           'plugin_name': 'Tar SNV Indel',
@@ -48,7 +48,7 @@ class main(plugin_base):
           'priorities': wrapper.get_my_priorities(),
           'attributes': wrapper.get_my_attributes(),
           'merge_inputs': {},
-          'results': data_builder(work_dir).build_small_mutations_and_indels()
+          'results': data_builder(work_dir, tar=False).build_small_mutations_and_indels()
       }
       return data
 
