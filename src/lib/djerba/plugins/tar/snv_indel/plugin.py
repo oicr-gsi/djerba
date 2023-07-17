@@ -24,6 +24,7 @@ class main(plugin_base):
       super().__init__(**kwargs)
          
     def specify_params(self):
+      self.add_ini_required('maf_file')
       self.set_ini_default(core_constants.CLINICAL, True)
       self.set_ini_default(core_constants.SUPPLEMENTARY, False)
       self.set_priority_defaults(self.PRIORITY)
@@ -38,9 +39,9 @@ class main(plugin_base):
       # Pre-process all the files
       # self.preprocess()
       work_dir = self.workspace.get_work_dir()
-      work_dir = "."
+      #work_dir = "."
       #print(work_dir)
-      #preprocess(work_dir).run_R_code()
+      preprocess(config, work_dir, tar=True).run_R_code()
 
       data = {
           'plugin_name': 'Tar SNV Indel',
@@ -48,7 +49,7 @@ class main(plugin_base):
           'priorities': wrapper.get_my_priorities(),
           'attributes': wrapper.get_my_attributes(),
           'merge_inputs': {},
-          'results': data_builder(work_dir).build_small_mutations_and_indels()
+          'results': data_builder(work_dir, tar=True).build_small_mutations_and_indels()
       }
       return data
 

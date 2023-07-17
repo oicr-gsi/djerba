@@ -24,6 +24,7 @@ class main(plugin_base):
       super().__init__(**kwargs)
          
     def specify_params(self):
+      self.add_ini_required('maf_file')
       self.set_ini_default(core_constants.CLINICAL, True)
       self.set_ini_default(core_constants.SUPPLEMENTARY, False)
       self.set_priority_defaults(self.PRIORITY)

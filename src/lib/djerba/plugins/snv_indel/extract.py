@@ -67,7 +67,7 @@ class data_builder:
 
   def __init__(self, work_dir, tar):
     self.work_dir = work_dir
-    self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/"
+    self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/Rscripts"
     self.tar = tar
 
 
