@@ -76,6 +76,11 @@ DEFAULT_DOCUMENT_CONFIG = "document_config.json"
 # keywords for document rendering
 BODY = 'body'
 DOCUMENTS = 'documents'
+DOCUMENT_HEADER = 'document_header'
+DOCUMENT_FOOTER = 'document_footer'
+DOCUMENT_TYPES = 'document_types'
+DOCUMENT_SETTINGS = 'document_settings'
 FOOTER = 'footer'
 MERGE_LIST = 'merge_list'
 MERGED_FILENAME = 'merged_filename'
+PAGE_FOOTER = 'page_footer'

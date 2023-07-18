@@ -46,15 +46,17 @@ class html_renderer(logger):
 
     def get_document_header(self, doc_type):
         try:
-            file_name = self.config[cc.DOCUMENT_SETTINGS][doc_type][cc.DOCUMENT_HEADER]
-            stylesheet = self.config[cc.DOCUMENT_SETTINGS][doc_type][cc.STYLESHEET]
+            template_name = self.config[cc.DOCUMENT_SETTINGS][doc_type][cc.DOCUMENT_HEADER]
+            stylesheet_name = self.config[cc.DOCUMENT_SETTINGS][doc_type][cc.STYLESHEET]
         except KeyError as err:
             msg = "Document config entry for '{0}' not found: {1}".format(doc_type, err)
             self.logger.error(msg)
             raise RuntimeError from err
         # do template substititon to insert the stylesheet
-        args = {cc.STYLESHEET: os.path.join(self.html_dir, stylesheet)}
-        header = mako.render_name(file_name, args)
+        with open(os.path.join(self.html_dir, stylesheet_name)) as in_file:
+            stylesheet = in_file.read()
+        args = {cc.STYLESHEET: stylesheet}
+        header = self.mako.render_name(template_name, args)
         return header
 
     def get_document_footer(self, doc_type):
@@ -95,7 +97,9 @@ class html_renderer(logger):
             'merged_filename': 'report_id.pdf',
         }
         """
-        data = {}
+        data = {
+            cc.DOCUMENTS: {}
+        }
         merge_list = []
         for doc_type in self.config[cc.DOCUMENT_TYPES]:
             section_names = [x for x in html.keys() if doc_type in attributes[x]]
