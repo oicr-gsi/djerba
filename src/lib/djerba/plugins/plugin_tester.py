@@ -70,7 +70,9 @@ class PluginTester(TestBase):
         validator = plugin_json_validator(log_level=logging.WARNING)
         self.assertTrue(validator.validate_data(plugin_data_found))
         self.assertEqual(plugin_data_found, plugin_data_expected)
-        html = self.redact_html(djerba_main.render(data_found))
+        # TODO check other document types, eg. research
+        rendered = djerba_main.render(data_found)
+        html = self.redact_html(rendered['documents']['placeholder_report.clinical'])
         self.assert_report_MD5(html, expected_md5)
 
     # TODO add standalone tests for configure, extract, render steps
