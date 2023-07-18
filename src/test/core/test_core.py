@@ -36,15 +36,15 @@ class TestCore(TestBase):
     class mock_args:
         """Use instead of argparse to store params for testing"""
 
-        def __init__(self, mode, work_dir, ini, ini_out, json, html, pdf):
+        def __init__(self, mode, work_dir, ini, ini_out, json, out_dir, pdf):
             self.subparser_name = mode
             self.work_dir = work_dir
             self.ini = ini
             self.ini_out = ini_out
             self.json = json
-            self.html = html
-            self.pdf = pdf
+            self.out_dir = out_dir
             self.no_archive = True
+            self.pdf = pdf
             # logging
             self.log_path = None
             self.debug = False
@@ -88,17 +88,13 @@ class TestArgs(TestCore):
         work_dir = self.tmp_dir
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
         out_path = os.path.join(self.tmp_dir, 'test_out.ini')
-        json = os.path.join(self.tmp_dir, 'test.json')
-        html = os.path.join(self.tmp_dir, 'test.html')
         pdf = os.path.join(self.tmp_dir, 'test.pdf')
-        args = self.mock_args(mode, work_dir, ini_path, out_path, json, html, pdf)
+        args = self.mock_args(mode, work_dir, ini_path, out_path, json, self.tmp_dir, False)
         ap = arg_processor(args)
         self.assertEqual(ap.get_mode(), mode)
         self.assertEqual(ap.get_ini_path(), ini_path)
         self.assertEqual(ap.get_ini_out_path(), out_path)
         self.assertEqual(ap.get_json_path(), json)
-        self.assertEqual(ap.get_html_path(), html)
-        self.assertEqual(ap.get_pdf_path(), pdf)
         self.assertEqual(ap.get_log_level(), logging.ERROR)
         self.assertEqual(ap.get_log_path(), None)
 
@@ -108,10 +104,8 @@ class TestArgs(TestCore):
         work_dir = self.tmp_dir
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
         out_path = os.path.join(self.tmp_dir, 'config_out.ini')
-        json_path = None
-        html = None
-        pdf = None
-        args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
+        json = None
+        args = self.mock_args(mode, work_dir, ini_path, out_path, json, self.tmp_dir, False)
         main(work_dir, log_level=logging.WARNING).run(args)
         self.assertEqual(self.SIMPLE_CONFIG_MD5, self.getMD5(out_path))
 
@@ -122,22 +116,20 @@ class TestArgs(TestCore):
         ini_path = os.path.join(self.test_source_dir, 'config_full.ini')
         out_path = None
         json_path = os.path.join(self.tmp_dir, 'djerba.json')
-        html = None
-        pdf = None
-        args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
+        args = self.mock_args(
+            mode, work_dir, ini_path, out_path, json_path, self.tmp_dir, False
+        )
         main(work_dir, log_level=logging.WARNING).run(args)
         self.assertSimpleJSON(json_path)
 
     def test_render(self):
         # run from args, with same inputs as TestSimpleReport
-        mode = 'html'
+        mode = 'render'
         work_dir = self.tmp_dir
         ini_path = None
         out_path = None
-        json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
-        html = os.path.join(self.tmp_dir, 'djerba.html')
-        pdf = None
-        args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
+        json = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
+        args = self.mock_args(mode, work_dir, ini_path, out_path, json, self.tmp_dir, False)
         main(work_dir, log_level=logging.WARNING).run(args)
         with open(html) as html_file:
             html_string = html_file.read()
@@ -149,10 +141,10 @@ class TestArgs(TestCore):
         work_dir = self.tmp_dir
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
         out_path = None
-        json_path = os.path.join(self.tmp_dir, 'test.json')
+        json = os.path.join(self.tmp_dir, 'test.json')
         html = os.path.join(self.tmp_dir, 'test.html')
-        pdf = None
-        args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
+        pdf = False
+        args = self.mock_args(mode, work_dir, ini_path, out_path, json, self.tmp_dir, pdf)
         main(work_dir, log_level=logging.WARNING).run(args)
         self.assertSimpleReport(json_path, html)
 

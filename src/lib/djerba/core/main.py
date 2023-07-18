@@ -361,26 +361,11 @@ class arg_processor(logger):
     def get_log_path(self):
         return self.log_path
 
-    def get_html_path(self):
-        if hasattr(self.args, 'html') and self._get_arg('html') != None:
-           value = self._get_arg('html')
-        else:
-            work_dir = self.get_work_dir()
-            if work_dir == None:
-                msg = "Cannot find default HTML path, work_dir undefined"
-                self.logger.error(msg)
-                raise RuntimeError(msg)
-            value = os.path.join(work_dir, 'djerba_report.html')
-        return value
-
     def get_mode(self):
         return self.mode
 
     def get_out_dir(self):
         return self._get_arg('out_dir')
-
-    def get_pdf_path(self):
-        return self._get_arg('pdf')
 
     def get_work_dir(self):
         # default to None if work_dir is not in args
@@ -419,25 +404,13 @@ class arg_processor(logger):
             v.validate_output_dir(args.work_dir)
             if args.json:
                 v.validate_output_file(args.json)
-        elif args.subparser_name == constants.HTML:
+        elif args.subparser_name == constants.RENDER:
             v.validate_input_file(args.json)
-            v.validate_output_file(args.html)
-            if args.pdf:
-                v.validate_output_file(args.pdf)
-        elif args.subparser_name == constants.PDF:
-            v.validate_input_file(args.json)
-            v.validate_output_dir(args.pdf)
+            v.validate_output_dir(args.out_dir)
         elif args.subparser_name == constants.REPORT:
             v.validate_input_file(args.ini)
             v.validate_output_dir(args.work_dir)
-            if args.ini_out:
-                v.validate_output_file(args.ini_out)
-            if args.html:
-                v.validate_output_file(args.html)
-            if args.json:
-                v.validate_output_file(args.json)
-            if args.pdf:
-                v.validate_output_file(args.pdf)
+            v.validate_output_dir(args.out_dir)
         else:
             # shouldn't happen, but handle this case for completeness
             raise ValueError("Unknown subparser: " + args.subparser_name)

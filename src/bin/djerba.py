@@ -43,8 +43,7 @@ def get_parser():
     # TODO --summary will run a 'mini-extract' step to update the genomic summary with the given file
     # if --summary is in effect, --json-out writes updated JSON to a file, --no-archive cancels archiving
     # see https://jira.oicr.on.ca/browse/GCGI-832
-    render_parser = subparsers.add_parser(constants.HTML, help='read metrics directory and write HTML')
-    render_parser.add_argument('-c', '--clinical-only', action='store_true', help='Generate the clinical report only')
+    render_parser = subparsers.add_parser(constants.RENDER, help='read JSON and write HTML, with optional PDF')
     render_parser.add_argument('-j', '--json', metavar='PATH', required=True, help='Path for JSON input')
     render_parser.add_argument('-o', '--out-dir', metavar='DIR', required=True, help='Directory for output files')
     render_parser.add_argument('-p', '--pdf', action='store_true', help='Generate PDF output from HTML')
@@ -52,10 +51,8 @@ def get_parser():
     # revised json will be written to out_dir
     #render_parser.add_argument('-s', '--summary', metavar='PATH', help='File with updated genomic summary text')
     report_parser = subparsers.add_parser(constants.REPORT, help='run configure/extract/html steps; output HTML; optionally output PDF')
-    render_parser.add_argument('-c', '--clinical-only', action='store_true', help='Generate the clinical report only')
     report_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with user inputs')
-    report_parser.add_argument('-j', '--json', metavar='PATH', help='Path for JSON output; defaults to djerba_report.json in the plugin workspace')
-    render_parser.add_argument('-o', '--out-dir', metavar='DIR', required=True, help='Directory for output files')
+    report_parser.add_argument('-o', '--out-dir', metavar='DIR', required=True, help='Directory for output files')
     report_parser.add_argument('-w', '--work-dir', metavar='PATH', required=True, help='Path to plugin workspace directory')
     report_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
     return parser
