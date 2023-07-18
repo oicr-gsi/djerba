@@ -61,7 +61,7 @@ class TestCore(TestBase):
             data_expected = json.loads(json_file.read())
         with open(json_path) as json_file:
             data_found = json.loads(json_file.read())
-        self.assertEqual(data_found, data_expected)
+        self.assertEqual(data_expected, data_found)
 
     def assertSimpleReport(self, json_path, html_path):
         self.assertSimpleJSON(json_path)
@@ -113,7 +113,7 @@ class TestArgs(TestCore):
         pdf = None
         args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
         main(work_dir, log_level=logging.WARNING).run(args)
-        self.assertEqual(self.getMD5(out_path), self.SIMPLE_CONFIG_MD5)
+        self.assertEqual(self.SIMPLE_CONFIG_MD5, self.getMD5(out_path))
 
     def test_extract(self):
         # run from args, with same inputs as TestSimpleReport
@@ -412,7 +412,7 @@ class TestIniGenerator(TestCore):
         self.assertTrue(os.path.exists(generated_ini_path))
         expected_ini_path = os.path.join(self.test_source_dir, 'generated.ini')
         with open(generated_ini_path) as in_file_1, open(expected_ini_path) as in_file_2:
-            self.assertEqual(in_file_1.read(), in_file_2.read())
+            self.assertEqual(in_file_2.read(), in_file_1.read())
 
     def test_script(self):
         self.tmp_dir = '/home/ibancarz/tmp/test_20230710'
@@ -423,7 +423,7 @@ class TestIniGenerator(TestCore):
         self.assertEqual(result.returncode, 0)
         expected_ini_path = os.path.join(self.test_source_dir, 'generated.ini')
         with open(out_path) as in_file_1, open(expected_ini_path) as in_file_2:
-            self.assertEqual(in_file_1.read(), in_file_2.read())
+            self.assertEqual(in_file_2.read(), in_file_1.read())
 
 
 class TestMainScript(TestCore):
@@ -610,7 +610,7 @@ class TestSimpleReport(TestCore):
         data_found = djerba_main.extract(config)
         with open(json_path) as json_file:
             data_expected = json.loads(json_file.read())
-        self.assertEqual(data_found, data_expected)
+        self.assertEqual(data_expected, data_found)
         html = djerba_main.render(data_found)
         self.assert_report_MD5(html, self.SIMPLE_REPORT_MD5)
 
