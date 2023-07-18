@@ -142,12 +142,12 @@ class TestArgs(TestCore):
         work_dir = self.tmp_dir
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
         out_path = None
-        json = os.path.join(self.tmp_dir, 'test.json')
-        html = os.path.join(self.tmp_dir, 'test.html')
+        json = os.path.join(self.tmp_dir, 'djerba_report.json')
+        html = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         pdf = False
         args = self.mock_args(mode, work_dir, ini_path, out_path, json, self.tmp_dir, pdf)
         main(work_dir, log_level=logging.WARNING).run(args)
-        self.assertSimpleReport(json_path, html)
+        self.assertSimpleReport(json, html)
 
 class TestConfigExpected(TestCore):
     """Test generation of an expected config file"""

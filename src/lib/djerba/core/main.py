@@ -288,9 +288,9 @@ class main(core_base):
         elif mode == constants.REPORT:
             # get operational parameters
             ini_path = ap.get_ini_path()
-            ini_path_out = ap.get_ini_out_path() # may be None
-            json_path = ap.get_json_path() # may be None
-            #pdf_path = ap.get_pdf()
+            out_dir = ap.get_out_dir()
+            ini_path_out = os.path.join(out_dir, 'full_config.ini')
+            json_path = os.path.join(out_dir, 'djerba_report.json')
             # caching and cleanup are plugin-specific, should be configured in INI
             # can also have a script to auto-populate INI files in 'setup' mode
             archive = ap.is_archive_enabled()
