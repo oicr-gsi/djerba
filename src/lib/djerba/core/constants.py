@@ -13,7 +13,7 @@ DEPENDS_CONFIGURE = 'depends_configure'
 DEPENDS_EXTRACT = 'depends_extract'
 # render dependencies are intentionally not defined
 CLINICAL = 'clinical'
-SUPPLEMENTARY = 'supplementary'
+RESEARCH = 'research'
 CONFIGURE_PRIORITY = 'configure_priority'
 EXTRACT_PRIORITY = 'extract_priority'
 RENDER_PRIORITY = 'render_priority'
@@ -56,16 +56,9 @@ REPORT_VERSION = 'report_version'
 ARCHIVE_NAME = 'archive_name'
 ARCHIVE_URL = 'archive_url'
 AUTHOR = 'author'
-LOGO = 'logo'
-PREAMBLE = 'preamble'
 SAMPLE_INFO = 'sample_info'
 STYLESHEET = 'stylesheet'
-CLINICAL_HEADER = 'clinical_header'
-CLINICAL_FOOTER = 'clinical_footer'
-RUO_HEADER = 'ruo_header'
-RUO_FOOTER = 'ruo_footer'
-
-
+DOCUMENT_CONFIG = 'document_config'
 PLUGINS = 'plugins'
 MERGERS = 'mergers'
 CONFIG = 'config'
@@ -76,11 +69,13 @@ NORMAL_ID = 'normal_id'
 
 # core config defaults
 DEFAULT_SAMPLE_INFO = "sample_info.json"
-DEFAULT_PREAMBLE = "preamble.html"
 DEFAULT_CSS = "stylesheet.css"
 DEFAULT_AUTHOR = "CGI Author"
-DEFAULT_LOGO = "OICR_Logo_RGB_ENGLISH.png"
-DEFAULT_CLINICAL_HEADER = "clinical_header.html"
-DEFAULT_CLINICAL_FOOTER = "clinical_footer.html"
-DEFAULT_RUO_HEADER = "ruo_header.html"
-DEFAULT_RUO_FOOTER = "ruo_footer.html"
+DEFAULT_DOCUMENT_CONFIG = "document_config.json"
+
+# keywords for document rendering
+BODY = 'body'
+DOCUMENTS = 'documents'
+FOOTER = 'footer'
+MERGE_LIST = 'merge_list'
+MERGED_FILENAME = 'merged_filename'

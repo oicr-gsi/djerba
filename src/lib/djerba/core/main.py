@@ -7,8 +7,10 @@ Main class to:
 from configparser import ConfigParser
 import json
 import logging
+import pdfkit
 import os
 import re
+from PyPDF2 import PdfMerger
 import djerba.util.ini_fields as ini
 import djerba.version as version
 from djerba.core.base import base as core_base
@@ -16,7 +18,7 @@ from djerba.core.configure import core_configurer
 from djerba.core.database.archiver import archiver
 from djerba.core.extract import extraction_setup
 from djerba.core.json_validator import plugin_json_validator
-from djerba.core.render import renderer as core_renderer
+from djerba.core.render import html_renderer, pdf_renderer
 from djerba.core.loaders import \
     plugin_loader, merger_loader, helper_loader, core_config_loader
 from djerba.core.workspace import workspace
@@ -27,7 +29,6 @@ import djerba.util.constants as constants
 
 class main(core_base):
 
-    # TODO move to constants file(s)
     PLUGINS = 'plugins'
     MERGERS = 'mergers'
     MERGE_INPUTS = 'merge_inputs'
@@ -210,38 +211,52 @@ class main(core_base):
         self.logger.info('Finished Djerba extract step')
         return data
 
-    def render(self, data, html_path=None):
+    def render(self, data, out_dir=None, pdf=False):
         self.logger.info('Starting Djerba render step')
-        if html_path:  # do this *before* taking the time to generate output
-            self.path_validator.validate_output_file(html_path)
-        body = {} # HTML strings to make up the report body
+        if out_dir:  # do this *before* taking the time to generate output
+            self.path_validator.validate_output_dir(out_dir)
+        html = {} # HTML strings to make up the report file(s)
         priorities = {}
         attributes = {}
-        # 1. Load components, set priorities; dependencies are NOT defined for render
+        # 1. Run plugins and mergers to render HTML
         self.logger.debug('Rendering plugin HTML')
         for plugin_name in data[self.PLUGINS]:
-            # render plugin HTML, and find which mergers it uses
             plugin_data = data[self.PLUGINS][plugin_name]
             plugin = self.plugin_loader.load(plugin_name, self.workspace)
-            body[plugin_name] = plugin.render(plugin_data)
+            html[plugin_name] = plugin.render(plugin_data)
             self.logger.debug("Ran plugin '{0}' for rendering".format(plugin_name))
             priorities[plugin_name] = self._get_render_priority(plugin_data)
             attributes[plugin_name] = plugin_data[cc.ATTRIBUTES]
-        # 2. Validate and run rendering for each component; store in data structure
         for (merger_name, merger_config) in data[self.MERGERS].items():
-            body[merger_name] = self._run_merger(merger_name, data)
+            html[merger_name] = self._run_merger(merger_name, data)
             self.logger.debug("Ran merger '{0}' for rendering".format(merger_name))
             priorities[merger_name] = merger_config[cc.RENDER_PRIORITY]
             attributes[merger_name] = merger_config[cc.ATTRIBUTES]
-        self.logger.debug("Assembling HTML document")
-        renderer = core_renderer(data[cc.CORE], self.log_level, self.log_path)
-        html = renderer.run(body, priorities, attributes)
-        if html_path:
-            with open(html_path, 'w') as out_file:
-                out_file.write(html)
-            self.logger.info("Wrote HTML output to {0}".format(html_path))
+        # 2. Assemble plugin/merger HTML outputs according to their priorities/attributes
+        self.logger.debug("Assembling HTML document(s)")
+        h_rend = html_renderer(data[cc.CORE], self.log_level, self.log_path)
+        output_data = h_rend.run(html, priorities, attributes)
+        # 3. Write output files, if any
+        if out_dir:
+            p_rend = pdf_renderer(self.log_level, self.log_path)
+            for prefix in output_data[cc.DOCUMENTS].keys():
+                html_path = os.path.join(out_dir, prefix+'.html')
+                with open(html_path, 'w') as out_file:
+                    out_file.write(output_data[cc.DOCUMENTS][prefix])
+                self.logger.info("Wrote HTML output to {0}".format(html_path))
+                if pdf:
+                    pdf_path = os.path.join(out_dir, prefix+'.pdf')
+                    footer = output_data[cc.PAGE_FOOTER]
+                    p_rend.render(html_path, pdf_path, footer)
+                    self.logger.info("Wrote PDF output to {0}".format(pdf_path))
+            merge_list = output_data[cc.MERGE_LIST]
+            if pdf and len(merge_list)>0:
+                merge_in = [os.path.join(out_dir, x+'.pdf') for x in merge_list]
+                merge_out = os.path.join(out_dir, output_data[cc.MERGED_FILENAME])
+                p_rend.merge_pdfs(merge_in, merge_out)
+                self.logger.info("Wrote merged PDF output to {0}".format(merge_out))
         self.logger.info('Finished Djerba render step')
-        return html
+        return output_data
 
     def read_ini_path(self, ini_path):
         self.path_validator.validate_input_file(ini_path)
@@ -265,25 +280,23 @@ class main(core_base):
             archive = ap.is_archive_enabled()
             config = self.read_ini_path(ini_path)
             self.extract(config, json_path, archive)
-        elif mode == constants.HTML:
+        elif mode == constants.RENDER:
             json_path = ap.get_json_path()
-            html_path = ap.get_html_path()
             with open(json_path) as json_file:
                 data = json.loads(json_file.read())
-            self.render(data, html_path)
+            self.render(data, ap.get_out_dir(), ap.is_pdf_enabled())
         elif mode == constants.REPORT:
             # get operational parameters
             ini_path = ap.get_ini_path()
             ini_path_out = ap.get_ini_out_path() # may be None
             json_path = ap.get_json_path() # may be None
-            html_path = ap.get_html_path()
             #pdf_path = ap.get_pdf()
             # caching and cleanup are plugin-specific, should be configured in INI
             # can also have a script to auto-populate INI files in 'setup' mode
             archive = ap.is_archive_enabled()
             config = self.configure(ini_path, ini_path_out)
             data = self.extract(config, json_path, archive)
-            self.render(data, html_path)
+            self.render(data, ap.get_out_dir())
             # TODO if pdf_path!=None, convert HTML->PDF
         else:
             # TODO add clauses for setup, pdf, etc.
@@ -363,6 +376,9 @@ class arg_processor(logger):
     def get_mode(self):
         return self.mode
 
+    def get_out_dir(self):
+        return self._get_arg('out_dir')
+
     def get_pdf_path(self):
         return self._get_arg('pdf')
 
@@ -381,6 +397,9 @@ class arg_processor(logger):
     def is_cleanup_enabled(self):
         # use to auto-populate INI in 'setup' mode
         return not self._get_arg('no_cleanup')
+
+    def is_pdf_enabled(self):
+        return self._get_arg('pdf')
 
     def validate_args(self, args):
         """

@@ -282,14 +282,8 @@ class core_configurer(configurable):
             "http://admin:djerba123@10.30.133.78:5984"
         )
         self.set_ini_default(cc.AUTHOR, cc.DEFAULT_AUTHOR)
-        self.set_ini_default(cc.LOGO, cc.DEFAULT_LOGO)
-        self.set_ini_default(cc.PREAMBLE, cc.DEFAULT_PREAMBLE)
         self.set_ini_default(cc.SAMPLE_INFO, cc.DEFAULT_SAMPLE_INFO)
-        self.set_ini_default(cc.STYLESHEET, cc.DEFAULT_CSS)
-        self.set_ini_default(cc.CLINICAL_HEADER, cc.DEFAULT_CLINICAL_HEADER)
-        self.set_ini_default(cc.CLINICAL_FOOTER, cc.DEFAULT_CLINICAL_FOOTER)
-        self.set_ini_default(cc.RUO_HEADER, cc.DEFAULT_RUO_HEADER)
-        self.set_ini_default(cc.RUO_FOOTER, cc.DEFAULT_RUO_FOOTER)
+        self.set_ini_default(cc.DOCUMENT_CONFIG, cc.DEFAULT_DOCUMENT_CONFIG)
 
     def set_priority_defaults(self, priority):
         for key in cc.PRIORITY_KEYS:

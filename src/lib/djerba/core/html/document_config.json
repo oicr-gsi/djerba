@@ -1,0 +1,20 @@
+{
+    'document_types': ['clinical', 'research', 'simple'],
+    'document_settings': {
+	'clinical': {
+	    'document_header': 'clinical_header.html',
+	    'document_footer': 'clinical_footer.html',
+	    'stylesheet': 'stylesheet.css'
+	},
+	'research': {
+	    'document_header': 'research_header.html',
+	    'document_footer': 'footer.html',
+	    'stylesheet': 'stylesheet.css'
+	},
+	'simple': {
+	    'document_header': 'simple_header.html',
+	    'document_footer': 'footer.html',
+	    'stylesheet': 'stylesheet.css'
+	}	
+    }
+}

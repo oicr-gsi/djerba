@@ -19,17 +19,10 @@ class extraction_setup(core_base):
         core_params = {}
         core_config_keys = [
             cc.AUTHOR,
-            cc.LOGO,
-            cc.PREAMBLE,
-            cc.STYLESHEET,
-            cc.CLINICAL_HEADER,
-            cc.CLINICAL_FOOTER,
-            cc.RUO_HEADER,
-            cc.RUO_FOOTER,
+            cc.DOCUMENT_CONFIG,
         ]
         for key in core_config_keys:
             core_params[key] = config.get(cc.CORE, key)
-        # TODO construct the report ID
         core_params[cc.REPORT_ID] = "placeholder"
         return core_params
 
@@ -54,9 +47,11 @@ class extraction_setup(core_base):
         - Empty dictionary for plugin results
         - INI config parameters
 
-        The framework will be populated by running the extract() methods of any configured plugins/helpers, in priority order.
+        The framework will be populated by running the extract() methods of any
+        configured plugins/helpers, in priority order.
 
-        The core parameters include filenames for the logo, preamble, and stylesheet; these will be loaded at the render step.
+        The core parameters include filenames for the logo, preamble, and stylesheet;
+        these will be loaded at the render step.
         """
         data = {
             cc.CORE: self._get_core_params(config),

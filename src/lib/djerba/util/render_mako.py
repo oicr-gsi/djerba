@@ -6,10 +6,11 @@ from djerba.util.logger import logger
 
 class mako_renderer(logger):
 
-    def __init__(self, log_level=logging.INFO, log_path=None):
+    def __init__(self, template_dir, log_level=logging.INFO, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
+        self.template_dir = template_dir
 
     def get_template(self, template_dir, filename):
         # strict_undefined=True provides an informative error for missing variables in JSON
@@ -28,3 +29,7 @@ class mako_renderer(logger):
             self.logger.error('Traceback: {0}'.format(trace))
             raise
         return html
+
+    def render_name(self, template_name, args):
+        template = self.get_template(self.template_dir, template_name)
+        return self.render_template(template, args)
