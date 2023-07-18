@@ -33,6 +33,9 @@ ${html_builder().section_cells_begin("<h2>SNVs and in/dels</h2>","main")}
 	    <table class="suppl" width="100%">
               <tr>
 		<td width="50%" vertical-align="top"><b>Chr.</b>: Chromosome and cytoband</td>
+		% if results.get(constants.HAS_EXPRESSION_DATA):
+		<td width="50%" vertical-align="top"><b>Expr. (%)</b>: Expression Percentile for gene mRNA, or NA if comparison data is not available</td></tr>
+	        % endif
 	    </table>
       % endif
 

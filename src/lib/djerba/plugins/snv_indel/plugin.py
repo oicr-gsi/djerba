@@ -24,7 +24,17 @@ class main(plugin_base):
       super().__init__(**kwargs)
          
     def specify_params(self):
+
       self.add_ini_required('maf_file')
+      self.add_ini_required('oncotree_code')
+      self.add_ini_required('tcgacode')
+      self.add_ini_required('gep_file')
+      self.add_ini_required('sequenza_file')
+      self.add_ini_required('sequenza_gamma')
+      self.add_ini_required('sequenza_solution')
+      self.add_ini_required('tumour_id')
+
+
       self.set_ini_default(core_constants.CLINICAL, True)
       self.set_ini_default(core_constants.SUPPLEMENTARY, False)
       self.set_priority_defaults(self.PRIORITY)
@@ -36,11 +46,9 @@ class main(plugin_base):
     def extract(self, config):
       
       wrapper = self.get_config_wrapper(config)  
-      # Pre-process all the files
-      
       work_dir = self.workspace.get_work_dir()
-      #work_dir = "."
-      #print(work_dir)
+      
+      # Preprocess the files
       preprocess(config, work_dir, tar = False).run_R_code()
 
       data = {

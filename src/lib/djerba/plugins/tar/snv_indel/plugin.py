@@ -25,6 +25,10 @@ class main(plugin_base):
          
     def specify_params(self):
       self.add_ini_required('maf_file')
+      self.add_ini_required('oncotree_code')
+      self.add_ini_required('tcgacode')
+      self.add_ini_required('tumour_id')
+
       self.set_ini_default(core_constants.CLINICAL, True)
       self.set_ini_default(core_constants.SUPPLEMENTARY, False)
       self.set_priority_defaults(self.PRIORITY)

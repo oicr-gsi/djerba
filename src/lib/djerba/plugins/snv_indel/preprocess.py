@@ -20,16 +20,6 @@ import pandas as pd
 
 class preprocess():
  
-  sequenza_path = "/.mounts/labs/CGI/cap-djerba/PASS01/PANX_1550/PANX_1550_Lv_M_WG_100-PM-064_LCM3_results.zip"
-  gep_file = "/.mounts/labs/prod/vidarr/output-clinical/50b8/28fe/fb78/50b828fefb789e627fe6c47a9ee6a417de07c5e685cf7ea077a21e6e018c1869/PANX_1550_Lv_M_WT_100-PM-064_LCM3.genes.results"
-  #maf_file = '/.mounts/labs/prod/vidarr/output-clinical/a4b0/7d4e/1634/a4b07d4e16340396340340a3fc0d3d31c509d997ccbaf384477775420d5ca2a2/PANX_1550_Lv_M_WG_100-PM-064_LCM3.filter.deduped.realigned.recalibrated.mutect2.filtered.maf.gz'
-  maf_file = '/.mounts/labs/prod/vidarr/output-clinical/7ec2/a5da/1161/7ec2a5da1161cca72ace5c88a57f87c1782ed61b3109b2829b7bce082c054e9a/REVOLVE_0005_Pm_P_WG_REV-01-005_TUM.mutect2.filtered.maf.gz'
-  tumour_id = "100-PM-064_LCM3"
-  oncotree_code = "paad"
-  tcgacode = "PAAD"
-  
-  gamma = 500
-  solution = "_primary_"
   
   cache_params = None
   log_level = "logging.WARNING"
@@ -109,16 +99,26 @@ class preprocess():
       self.report_dir = work_dir
       #self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts/"
       self.tar = tar
-      #if self.tar == True:
-      #    self.seg_file = self.config['tar.swgs']['seg_file']
-      #    self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts"
-      #    self.r_script_dir_snv_indel = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/Rscripts"
-      #else:
-      #    self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/Rscripts/"
-      #    self.r_script_dir_snv_indel = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/Rscripts/"
-      self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/Rscripts/"
-      #self.maf_file = maf_file
+       
+      # THINGS FROM CONFIG 
+      if self.tar == True:
+          self.seg_file = self.config['tar.swgs']['seg_file']
+          self.oncotree_code = self.config['tar.snv_indel']['oncotree_code']
+          self.tcgacode = self.config['tar.snv_indel']['tcgacode']
+          self.tumour_id = self.config['tar.snv_indel']['tumour_id']
+          self.maf_file = self.config['tar.snv_indel']['maf_file']
+      else:
+          self.sequenza_path = self.config['snv_indel']['sequenza_file']
+          self.sequenza_gamma = int(self.config['snv_indel']['sequenza_gamma'])
+          self.sequenza_solution = self.config['snv_indel']['sequenza_solution']
+          self.gep_file = self.config['snv_indel']['gep_file']
+          self.oncotree_code = self.config['snv_indel']['oncotree_code']
+          self.tcgacode = self.config['snv_indel']['tcgacode']
+          self.tumour_id = self.config['snv_indel']['tumour_id']
+          self.maf_file = self.config['snv_indel']['maf_file']
 
+      self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/Rscripts/"
+      
 
   # ----------------------- to do all the pre-processing --------------------
   
@@ -127,16 +127,9 @@ class preprocess():
     
     # FIX THIS BECAUSE THE ARATIO FILE IS DIFFERENT FOR TAR AND NONTAR
     if self.tar == True:
-        maf_path = self.preprocess_maf(self.maf_file)
-        #print(maf_path)
-        #maf_path = "report/tmp/annotated_maf.tsv"
-        #aratio_path = self.preprocess_seg_to_aratio(self.seg_file)
-        #maf_path = "/tmp/annotated_maf.tsv"
-        # do not process GEP, as that is for expression
-        # need to process seg, as that is basically the aratio file and the copy number stuff. can just get this by running swgs plugin first 
-        # don't know what maf does, need to look at it
+        #maf_path = self.preprocess_maf(self.maf_file)
+        maf_path = "report/tmp/annotated_maf.tsv"
 
-        # MODIFY THIS MORE. I THINK ONLY THE MAF FILE WILL NEED PROCESSING BUT DOUBLE CHECK!!!!!!!!!!!
         cmd = [
          'Rscript', self.r_script_dir + "/process_CNA_data.r",
          '--basedir', self.r_script_dir,
@@ -145,11 +138,8 @@ class preprocess():
          '--tumourid', self.tumour_id,
          '--normalid', '100-PM-064_BC',
          '--cbiostudy', 'PASS01',
-         '--maffile', maf_path
-        # '--aratiofile', aratio_path,
-        # '--genebed', '/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/gencode_v33_hg38_genes.bed',
-        # '--oncolist', os.environ.get('DJERBA_BASE_DIR') + "/data/20200818-oncoKBcancerGeneList.tsv",
-        # '--genelist', '/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/targeted_genelist.txt'
+         '--maffile', maf_path,
+         '--tar', 'TRUE'
         ]
 
    
@@ -157,8 +147,8 @@ class preprocess():
         seg_path = self.preprocess_seg(self.sequenza_path)
         aratio_path = self.preprocess_aratio(self.sequenza_path, self.report_dir)
         gep_path = self.preprocess_gep(self.gep_file)
-        maf_path = self.preprocess_maf(self.maf_file)
-       
+        #maf_path = self.preprocess_maf(self.maf_file)
+        maf_path = "report/tmp/annotated_maf.tsv"
         cmd = [
             'Rscript', self.r_script_dir + "process_CNA_data.r",
             '--basedir', self.r_script_dir,
@@ -181,7 +171,8 @@ class preprocess():
             '--normalid', '100-PM-064_BC',
             '--cbiostudy', 'PASS01',
             '--maffile', maf_path,
-            '--aratiofile', aratio_path
+            '--aratiofile', aratio_path,
+            '--tar', 'FALSE'
         ]
     runner = subprocess_runner()
     result = runner.run(cmd, "main R script")
@@ -195,38 +186,11 @@ class preprocess():
     """
     
     reader = sequenza_reader(sequenza_path)
-    seg_path = reader.extract_segments_text_file(self.tmp_dir, self.gamma, self.solution)
+    seg_path = reader.extract_segments_text_file(self.tmp_dir, self.sequenza_gamma, self.sequenza_solution)
     out_path = os.path.join(report_dir, 'aratio_segments.txt')
     copyfile(seg_path, out_path)
     return out_path
   
-  #def preprocess_seg_to_aratio(self, seg_file):
-  #  """
-  #  We need to change some column names and entries in the .seg.txt file to make the dataframe suitable for plotting.
-  #  Do this using pandas, then convert to a processed .seg.txt file.
-  #  The reason for this wrangling is to force this file to look like aratio_segments.txt from the CNV plugin
-  #  """
-  #  #seg_path =  os.path.join(self.work_dir, seg_file)
-  #  seg_path = seg_file
-  #  # Create a dataframe
-  #  df_seg = pd.read_csv(seg_path, sep = '\t')
-  #
-  #  # Change column names
-  #  df_seg = df_seg.rename(columns = {"start":"start.pos", 
-  #                                    "end":"end.pos", 
-  #                                    "Corrected_Copy_Number":"CNt", 
-  #                                    "chrom":"chromosome"})
-  #
-  #  # Add "chr" to the beginning of the chromosome numbers
-  #  df_seg["chromosome"] = "chr" + df_seg["chromosome"].astype(str)
-  #
-  #  # Convert the dataframe back into a tab-delimited text file.
-  #  out_path = os.path.join(self.report_dir, "seg_to_aratio.txt")
-  #  df_seg.to_csv(out_path, sep = '\t', index=None)
-  #  return out_path
-
-
-
   def preprocess_seg(self, sequenza_path):
     """
     Extract the SEG file from the .zip archive output by Sequenza
@@ -234,7 +198,7 @@ class preprocess():
     Replace entry in the first column with the tumour ID
     """
 
-    seg_path = sequenza_reader(sequenza_path).extract_cn_seg_file(self.tmp_dir, self.gamma)
+    seg_path = sequenza_reader(sequenza_path).extract_cn_seg_file(self.tmp_dir, self.sequenza_gamma)
     out_path = os.path.join(self.tmp_dir, 'seg.txt')
     with open(seg_path, 'rt') as seg_file, open(out_path, 'wt') as out_file:
         reader = csv.reader(seg_file, delimiter="\t")

@@ -29,7 +29,8 @@ option_list = list(
   make_option(c("-w", "--tumourid"), type="character", default=NULL, help="whizbam tumour name", metavar="character"),
   make_option(c("-x", "--normalid"), type="character", default=NULL, help="whizbam normal name", metavar="character"),
   make_option(c("-y", "--seqtype"), type="character", default="GENOME", help="sequencing type", metavar="character"),
-  make_option(c("-z", "--genome"), type="character", default="hg38", help="genome version", metavar="character")
+  make_option(c("-z", "--genome"), type="character", default="hg38", help="genome version", metavar="character"),
+  make_option(c("-T", "--tar"), type="character", default=FALSE, help="true or false value for tar assay", metavar="boolean")
 )
 
 # get options
@@ -59,17 +60,7 @@ htzd <- opt$htzd
 hmzd <- opt$hmzd
 gepfile <- opt$gepfile
 aratiofile <- opt$aratiofile
-
-#if(opt$tar == 'False'){
-#  gain <- opt$gain
-#  ampl <- opt$ampl
-#  htzd <- opt$htzd
-#  hmzd <- opt$hmzd
-#  gepfile <- opt$gepfile
-#  aratiofile <- opt$aratiofile
-#}
-
-
+tar <- opt$tar
 
 if(opt$cbiostudy == 'None'){
   cbio_study <- opt$studyid
@@ -170,14 +161,15 @@ if (is.null(maffile)) {
 
     }
     
-   ##process LOH
-   #print("Processing LOH data")
-   #LOH <- preProcLOH(aratiofile=aratiofile, genebed=genebed, oncolist=oncolist, genelist=df_cbio_filt$Hugo_Symbol)
-   #write.table(LOH[[1]],file=paste0(outdir, "/data_CNA_oncoKBgenes_ARatio.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-   
+    
+   #process LOH
+   if (tar == FALSE) {
+      print("Processing LOH data")
+      LOH <- preProcLOH(aratiofile=aratiofile, genebed=genebed, oncolist=oncolist, genelist=df_cbio_filt$Hugo_Symbol)
+      write.table(LOH[[1]],file=paste0(outdir, "/data_CNA_oncoKBgenes_ARatio.txt"), sep="\t", row.names=FALSE, quote=FALSE)
    }
-
   }
+ }
 
 
 
