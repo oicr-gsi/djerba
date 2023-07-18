@@ -5,6 +5,7 @@ library(ggplot2)
 library(optparse)
 library(scales)
 
+
 option_list = list(
   make_option(c("-d", "--dir"), type="character", default=NULL, help="Input report directory path", metavar="character"),
   make_option(c("-m", "--marker"), type="character", default=NULL, help="msi", metavar="character"),
@@ -20,6 +21,9 @@ sampleTMB <- opt$tmb
 sample_tcga <- opt$code
 work_dir <- opt$dir
 
+cutoff_MSS = 5
+cutoff_MSI = 15
+
 if(biomarker=="tmb"){
   
   data_dir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), 'data', sep='/')
@@ -34,27 +38,23 @@ if(biomarker=="tmb"){
   #subset tcga data to cancer type
   tcga_tmb_data_type <- tcga_tmb_data %>% filter(if (sample_tcga %in% tcga_tmb_data$CANCER.TYPE) CANCER.TYPE == sample_tcga else NA)
   
-  label_location <- max(density(tcga_tmb_data$tmb)$y)
-  if(length(external_tmb_data_type$tmb) > 0){
-    tmp_max <- max(density(external_tmb_data_type$tmb)$y)
-    label_location <- max(label_location,tmp_max)
-  }
-  if(length(tcga_tmb_data_type$tmb) > 0){
-    tmp_max <- max(density(tcga_tmb_data_type$tmb)$y)
-    label_location <- max(label_location,tmp_max)
-  }
-  
-  
   median_tmb <- median(tcga_tmb_data$tmb)
   tmb_path <- paste(work_dir, 'tmb.svg', sep='/')
   
   svg(tmb_path, width = 8, height = 1.6, bg = "transparent")
   print(
   ggplot(tcga_tmb_data) + 
-    geom_boxplot(aes(x=0,y=tmb,color="All TCGA"),width = 0.05, outlier.shape = NA) +
-    
-    geom_hline(yintercept = 1,alpha=0.25,color="white")  +
-    geom_hline(yintercept = max(sampleTMB, 25), alpha=0.25,color="white")  +
+    {
+      if (sample_tcga %in% external_tmb_data_type$CANCER.TYPE)
+        geom_boxplot(data = external_tmb_data_type, aes(x=0,y=tmb,color="Cohort"),width = 0.05, outlier.shape = 20) 
+        
+      else if (sample_tcga %in% tcga_tmb_data_type$CANCER.TYPE)
+        geom_boxplot(data = tcga_tmb_data_type, aes(x=0,y=tmb,color="Cohort"),width = 0.05, outlier.shape = 20) 
+      else
+        geom_boxplot(aes(x=0,y=tmb,color="All TCGA"),width = 0.05, outlier.shape = 20) 
+    } +
+  #  geom_hline(yintercept = 1,alpha=0.25,color="white")  +
+  #  geom_hline(yintercept = max(sampleTMB, 25), alpha=0.25,color="white")  +
     
     annotate( geom="segment", x = -0.1, xend=0.1, y=10, yend=10, colour = "gray") +
     
@@ -65,7 +65,7 @@ if(biomarker=="tmb"){
     annotate(geom="point",y = sampleTMB,x=0,color="red",shape=1, size=5) +
     annotate(geom="point",y = sampleTMB,x=0,color="red",shape=20, size=1.5) +
     
-    labs(x="Tumour Mutational Burden (mutations/mb)",y="",color="",title="",shape="",size="") +
+    labs(x="",y="coding mutations/mb",color="",title="",shape="",size="") +
     scale_color_manual( values= c( "gray30", "red") ) +
     scale_shape_manual(values=c(16,1)) +
     theme_classic() +
@@ -92,8 +92,6 @@ if(biomarker=="tmb"){
 }
 
 if(biomarker=="msi"){
-  cutoff_MSS = 5
-  cutoff_MSI = 15
   
   msi_path <- paste(work_dir, 'msi.txt', sep='/')
   
@@ -109,21 +107,22 @@ if(biomarker=="msi"){
   print(
     
   ggplot(boot,aes(x="Sample")) + 
-    geom_bar(aes(y=median),fill='grey',stat ="identity",alpha=0.5,color="black") + 
-    geom_errorbar(aes(ymin=q1, ymax=q3), width=0,size=2) +
-    geom_errorbar(aes(ymin=q0, ymax=q4), width=0) +
+    geom_errorbar(aes(ymin=q1, ymax=q3), width=0, linewidth=2) +
     
-    annotate(x = 0, xend=2, y=cutoff_MSS, yend=cutoff_MSS,geom="segment",linetype="longdash",colour = "forestgreen") +
-    annotate(geom="text",x = 0,y=0,color="forestgreen",label="MSS", hjust = 0, vjust = -4.1,size=4) +
-
-    annotate(x = 0, xend=2, y=cutoff_MSI, yend=cutoff_MSI,geom="segment",linetype="longdash",colour = "red") +
-    annotate(geom="text",x = 0,y=cutoff_MSI,color="red",label="MSI", hjust = -0.2, vjust = -4.1,size=4) +
+    annotate(x = 0, xend=2, y=cutoff_MSS, yend=cutoff_MSS,geom="segment",colour = "gray") +
+    annotate(geom="text",x = 0,y=0,color="gray30",label="MSS", hjust = 0, vjust = -4.1,size=4) +
     
-    guides(fill=FALSE)+
+    annotate(x = 0, xend=2, y=cutoff_MSI, yend=cutoff_MSI,geom="segment", colour = "gray") +
+    annotate(geom="text",x = 0,y=cutoff_MSI,color="gray30",label="MSI", hjust = -0.2, vjust = -4.1,size=4) +
+    
+    geom_bar(aes(y=median),fill='gray',stat ="identity",alpha=0.5,colour="red") + 
+    geom_errorbar(aes(ymin=q0, ymax=q4), width=0,colour="red") +
+    
+    
     theme_classic() + 
     labs(x="",y="unstable microsatellites (%)",title="") + 
     scale_y_continuous(expand = c(0,0), limit = c(0, 100)) + 
-    guides(alpha="none")+
+    guides(fill="none", alpha="none")+
     coord_flip() +
 
     scale_color_manual(values=c("#65bc45","#000000","#0099ad")) +
