@@ -30,7 +30,7 @@ class TestCore(TestBase):
 
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
-    SIMPLE_REPORT_MD5 = 'b4982dc42cc63221c7372457ef335354'
+    SIMPLE_REPORT_MD5 = '2738c04c2f79f3f77dddffa2e4191932'
     SIMPLE_CONFIG_MD5 = '37c0cb4e01a06cfce93d304ad593f266'
 
     class mock_args:
@@ -131,7 +131,8 @@ class TestArgs(TestCore):
         json = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
         args = self.mock_args(mode, work_dir, ini_path, out_path, json, self.tmp_dir, False)
         main(work_dir, log_level=logging.WARNING).run(args)
-        with open(html) as html_file:
+        filename = 'placeholder_report.clinical.html'
+        with open(os.path.join(self.tmp_dir, filename)) as html_file:
             html_string = html_file.read()
         self.assert_report_MD5(html_string, self.SIMPLE_REPORT_MD5)
 
