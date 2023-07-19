@@ -47,9 +47,6 @@ class extraction_setup(core_base):
 
         The framework will be populated by running the extract() methods of any
         configured plugins/helpers, in priority order.
-
-        The core parameters include filenames for the logo, preamble, and stylesheet;
-        these will be loaded at the render step.
         """
         data = {
             cc.CORE: self._get_core_params(config),
