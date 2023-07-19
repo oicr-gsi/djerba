@@ -381,7 +381,7 @@ class r_script_wrapper(logger):
 
     def preprocess_mrdetect(self, mrdetect_path, report_dir):
         """
-        summarize msisensor file
+        summarize mrdetect-filter-only file
         """
         out_path = os.path.join(report_dir, 'SNP.count.txt')
         with open(mrdetect_path, 'r') as msi_file:
