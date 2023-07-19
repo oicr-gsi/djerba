@@ -398,7 +398,7 @@ class TestIniGenerator(TestCore):
 
     def test_class(self):
         generator = ini_generator(log_level=logging.WARNING)
-        generated_ini_path = '/home/ibancarz/tmp/generated.ini'  # os.path.join(self.tmp_dir, 'generated.ini')
+        generated_ini_path = os.path.join(self.tmp_dir, 'generated.ini')
         names = ['core']
         names.extend(self.COMPONENT_NAMES)
         generator.write_config(names, generated_ini_path)
