@@ -16,14 +16,12 @@ class extraction_setup(core_base):
         self.logger = self.get_logger(log_level, __name__, log_path)
 
     def _get_core_params(self, config):
-        core_params = {}
         core_config_keys = [
             cc.AUTHOR,
             cc.DOCUMENT_CONFIG,
+            cc.REPORT_ID
         ]
-        for key in core_config_keys:
-            core_params[key] = config.get(cc.CORE, key)
-        core_params[cc.REPORT_ID] = "placeholder"
+        core_params = {x: config.get(cc.CORE, x) for x in core_config_keys}
         return core_params
 
     def _get_merger_params(self, config):

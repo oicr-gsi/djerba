@@ -260,16 +260,18 @@ class core_configurer(configurable):
         if wrapper.my_param_is_null(cc.REPORT_ID):
             sample_info_file = wrapper.get_my_string(cc.SAMPLE_INFO)
             if self.workspace.has_file(sample_info_file):
-                self.logger.debug("Generating report ID from sample info")
                 sample_info = self.workspace.read_json(sample_info_file)
                 report_id = "{0}_{1}-v{2}".format(
                     sample_info[cc.TUMOUR_ID],
                     sample_info[cc.NORMAL_ID],
                     wrapper.get_my_int(cc.REPORT_VERSION)
                 )
+                msg = "Generated report ID {0} from sample info JSON".format(report_id)
+                self.logger.debug(msg)
             else:
-                self.logger.debug("Generating report ID from UUID hex string")
                 report_id = "OICR-CGI-{0}".format(uuid4().hex)
+                msg = "Generated report ID {0} from UUID hex string".format(report_id)
+                self.logger.debug(msg)
             wrapper.set_my_param(cc.REPORT_ID, report_id)
         return wrapper.get_config()
 

@@ -31,7 +31,7 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_MD5 = '2738c04c2f79f3f77dddffa2e4191932'
-    SIMPLE_CONFIG_MD5 = '37c0cb4e01a06cfce93d304ad593f266'
+    SIMPLE_CONFIG_MD5 = 'd251fe6f1595328ea9583a23da8a25f0'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
@@ -326,7 +326,7 @@ class TestCoreConfigurer(TestCore):
         config = self.run_core_config()
         expr = 'OICR-CGI-[abcdefgh0-9]{32}'
         self.assertTrue(re.match(expr, config.get('core', 'report_id')))
-        config.set('core', 'report_id', 'PLACEHOLDER')
+        config.set('core', 'report_id', 'placeholder')
         self.assert_core_config(config)
 
     def test_sample_info(self):
@@ -340,7 +340,7 @@ class TestCoreConfigurer(TestCore):
             print(json.dumps(info), file=out_file)
         config = self.run_core_config()
         self.assertEqual('foo_bar-v1', config.get('core', 'report_id'))
-        config.set('core', 'report_id', 'PLACEHOLDER')
+        config.set('core', 'report_id', 'placeholder')
         self.assert_core_config(config)
 
 
@@ -435,7 +435,7 @@ class TestMainScript(TestCore):
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
-        self.assertEqual(self.getMD5(out_path), self.SIMPLE_CONFIG_MD5)
+        self.assertEqual(self.SIMPLE_CONFIG_MD5, self.getMD5(out_path))
 
     def test_extract_cli(self):
         mode = 'extract'

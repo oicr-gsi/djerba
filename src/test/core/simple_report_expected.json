@@ -78,7 +78,7 @@
     },
     "config": {
         "core": {
-            "report_id": "PLACEHOLDER",
+            "report_id": "placeholder",
             "attributes": "",
             "depends_configure": "",
             "depends_extract": "",

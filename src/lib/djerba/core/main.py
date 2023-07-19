@@ -14,7 +14,6 @@ from PyPDF2 import PdfMerger
 import djerba.util.ini_fields as ini
 import djerba.version as version
 from djerba.core.base import base as core_base
-from djerba.core.configure import core_configurer
 from djerba.core.database.archiver import archiver
 from djerba.core.extract import extraction_setup
 from djerba.core.json_validator import plugin_json_validator
