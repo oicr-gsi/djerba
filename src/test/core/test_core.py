@@ -604,8 +604,10 @@ class TestSimpleReport(TestCore):
         with open(json_path) as json_file:
             data_expected = json.loads(json_file.read())
         self.assertEqual(data_expected, data_found)
-        html = djerba_main.render(data_found)
-        self.assert_report_MD5(html, self.SIMPLE_REPORT_MD5)
+        filename = 'placeholder_report.clinical.html'
+        output = djerba_main.render(data_found)
+        html_string = output['documents']['placeholder_report.clinical']
+        self.assert_report_MD5(html_string, self.SIMPLE_REPORT_MD5)
 
 class TestJSONValidator(TestCore):
 
