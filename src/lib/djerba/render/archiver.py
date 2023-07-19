@@ -32,10 +32,8 @@ class archiver(logger):
         # shorter key names
         failed = render_constants.FAILED
         rep = constants.REPORT
-        #tmb = render_constants.TMB_PLOT
         vaf = render_constants.VAF_PLOT
         cnv = render_constants.CNV_PLOT
-       # pga = render_constants.PGA_PLOT
         logo = render_constants.OICR_LOGO
         # convert image paths (if any, they may already be base64)
         data[rep][logo] = self.converter.convert_png(data[rep][logo], 'OICR logo')
