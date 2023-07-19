@@ -1,11 +1,11 @@
 # CHANGELOG
-## unreleased
+## v0.4.12: 2023-07-19
 
 ### Changed
-- The TMB plot has been moved to a linear format and the PGA plot has been removed
+- GCGI-956: The TMB plot has been moved to a linear format and the PGA plot has been removed
   
 ### Added
-- The number of candidate SNVs for the pWGS assay are listed in Genomic Landscape section
+- GCGI-957: The number of candidate SNVs for the pWGS assay are listed in Genomic Landscape section
 
 ## v0.4.11: 2023-06-27
 

@@ -46,12 +46,12 @@ if(biomarker=="tmb"){
   ggplot(tcga_tmb_data) + 
     {
       if (sample_tcga %in% external_tmb_data_type$CANCER.TYPE)
-        geom_boxplot(data = external_tmb_data_type, aes(x=0,y=tmb,color="Cohort"),width = 0.05, outlier.shape = 20) 
+        geom_boxplot(data = external_tmb_data_type, aes(x=0,y=tmb,color="Cohort"),width = 0.05, outlier.shape = NA) 
         
       else if (sample_tcga %in% tcga_tmb_data_type$CANCER.TYPE)
-        geom_boxplot(data = tcga_tmb_data_type, aes(x=0,y=tmb,color="Cohort"),width = 0.05, outlier.shape = 20) 
+        geom_boxplot(data = tcga_tmb_data_type, aes(x=0,y=tmb,color="Cohort"),width = 0.05, outlier.shape = NA) 
       else
-        geom_boxplot(aes(x=0,y=tmb,color="All TCGA"),width = 0.05, outlier.shape = 20) 
+        geom_boxplot(aes(x=0,y=tmb,color="All TCGA"),width = 0.05, outlier.shape = NA) 
     } +
   #  geom_hline(yintercept = 1,alpha=0.25,color="white")  +
   #  geom_hline(yintercept = max(sampleTMB, 25), alpha=0.25,color="white")  +
