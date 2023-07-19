@@ -73,8 +73,6 @@ class PluginTester(TestBase):
         self.assertEqual(plugin_data_found, plugin_data_expected)
         # TODO check other document types, eg. research
         rendered = djerba_main.render(data_found)
-        #import sys
-        #print("### {0}".format(rendered), file=sys.stderr)
         html = self.redact_html(rendered['documents']['placeholder_report.clinical'])
         self.assert_report_MD5(html, expected_md5)
 
