@@ -453,17 +453,17 @@ class TestMainScript(TestCore):
         self.assertSimpleJSON(json_path)
 
     def test_render_cli(self):
-        mode = 'html'
+        mode = 'render'
         work_dir = self.tmp_dir
         json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
-        html_path = os.path.join(self.tmp_dir, 'djerba.html')
         cmd = [
             'djerba.py', mode,
             '--json', json_path,
-            '--html', html_path
+            '--out-dir', self.tmp_dir
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
+        html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
         self.assert_report_MD5(html_string, self.SIMPLE_REPORT_MD5)
@@ -472,14 +472,13 @@ class TestMainScript(TestCore):
         mode = 'report'
         work_dir = self.tmp_dir
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
-        json_path = os.path.join(self.tmp_dir, 'test.json')
-        html = os.path.join(self.tmp_dir, 'test.html')
+        json_path = os.path.join(self.tmp_dir, 'djerba_report.json')
+        html = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         cmd = [
             'djerba.py', mode,
             '--work-dir', work_dir,
             '--ini', ini_path,
-            '--json', json_path,
-            '--html', html
+            '--out-dir', self.tmp_dir
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
