@@ -98,6 +98,7 @@ class clinical_report_json_composer(composer_base):
     ALL_CURATED_GENES = '20201126-allCuratedGenes.tsv'
     CANCER_TYPE_HEADER = 'CANCER.TYPE' # for tmbcomp files
     COMPASS = 'COMPASS'
+    CTDNA_ELIGIBILITY_CUTOFF = 4000
     CYTOBAND = 'cytoBand.txt'
     DATA_SEGMENTS = 'data_segments.txt'
     EXPR_PCT_TCGA = 'data_expression_percentile_tcga.txt'
@@ -109,6 +110,7 @@ class clinical_report_json_composer(composer_base):
     HUGO_SYMBOL_TITLE_CASE = 'Hugo_Symbol'
     HUGO_SYMBOL_UPPER_CASE = 'HUGO_SYMBOL'
     MINIMUM_MAGNITUDE_SEG_MEAN = 0.2
+    MRDETECT_FILTER_ONLY_FILE_NAME = 'SNP.count.txt'
     MSS_CUTOFF = 5.0
     MSI_CUTOFF = 15.0
     MSI_FILE_NAME = 'msi.txt'
@@ -209,6 +211,20 @@ class clinical_report_json_composer(composer_base):
                 self.gene_pair_fusions = None
                 self.expr_input = None
 
+    def assemble_CTDNA(self, candidate_sites_path=None):
+        if candidate_sites_path == None:
+            candidate_sites_path = os.path.join(self.input_dir, self.MRDETECT_FILTER_ONLY_FILE_NAME)
+        ctdna = {}
+        ctdna[rc.CTDNA_CANDIDATES] = self.extract_ctDNA_candidates(candidate_sites_path)
+        if ctdna[rc.CTDNA_CANDIDATES] >= self.CTDNA_ELIGIBILITY_CUTOFF:
+            ctdna[rc.CTDNA_ELIGIBILITY] = "eligible"
+        elif ctdna[rc.CTDNA_CANDIDATES] < self.CTDNA_ELIGIBILITY_CUTOFF:
+            ctdna[rc.CTDNA_ELIGIBILITY] = "ineligible"
+        else:
+            self.logger.info("Discovered ctDNA candidates: {0}".format(ctdna[rc.CTDNA_CANDIDATES]))
+            raise RuntimeError("Unknown number of candidates")
+        return(ctdna)
+
     def assemble_MSI(self, msi_file_path = None):
         msi_value = self.extract_MSI(msi_file_path)
         msi_dict = self.call_MSI(msi_value)
@@ -220,6 +236,8 @@ class clinical_report_json_composer(composer_base):
         if tmb_value == None:
             tmb_value = self.build_genomic_landscape_info()[rc.TMB_PER_MB]
         tmb_dict = self.call_TMB(tmb_value)
+        tmb_plot_location = self.write_biomarker_plot(self.input_dir, "tmb", tmb = tmb_value)
+        tmb_dict[rc.METRIC_PLOT] = converter().convert_svg(tmb_plot_location, 'TMB plot')
         return(tmb_dict)
 
     def build_assay_name(self):
@@ -603,8 +621,7 @@ class clinical_report_json_composer(composer_base):
     def call_TMB(self, tmb_value):
         tmb_dict = {rc.ALT: rc.TMB,
                     rc.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/TMB-H",
-                    rc.METRIC_VALUE: tmb_value,
-                    rc.METRIC_PLOT: "see tmb_plot"
+                    rc.METRIC_VALUE: tmb_value
                     }
         if tmb_value >= 10:
             tmb_dict[rc.METRIC_ACTIONABLE] = True
@@ -652,6 +669,20 @@ class clinical_report_json_composer(composer_base):
                 self.logger.warning(msg)
                 (chromosome, arm, band) = end
         return (chromosome, arm, band)
+
+    def extract_ctDNA_candidates(self, candidate_sites_path):
+        with open(candidate_sites_path, 'r') as candidate_sites_file:
+            reader_file = csv.reader(candidate_sites_file, delimiter="\t")
+            for row in reader_file:
+                try: 
+                    candidates_sites_value = int(row[0])
+                except IndexError as err:
+                    msg = "Incorrect number of columns in mrdetect_filter_only row: '{0}'".format(row)+\
+                          "read from '{0}'".format(os.path.join(self.input_dir, self.MRDETECT_FILTER_ONLY_FILE_NAME))
+                    self.logger.error(msg)
+                    raise RuntimeError(msg) from err
+        return candidates_sites_value
+
 
     def extract_MSI(self, msi_file_path = None):
         if msi_file_path == None:
@@ -920,12 +951,11 @@ class clinical_report_json_composer(composer_base):
             data[rc.APPROVED_BIOMARKERS] = self.build_fda_approved_info()
             data[rc.INVESTIGATIONAL_THERAPIES] = self.build_investigational_therapy_info()
             data[rc.GENOMIC_LANDSCAPE_INFO] = self.build_genomic_landscape_info()
+            data[rc.CTDNA] = self.assemble_CTDNA()
             tmb = data[rc.GENOMIC_LANDSCAPE_INFO][rc.TMB_PER_MB]
             pga = data[rc.GENOMIC_LANDSCAPE_INFO][rc.PERCENT_GENOME_ALTERED]
-            data[rc.TMB_PLOT] = self.write_tmb_plot(tmb, self.input_dir)
             data[rc.VAF_PLOT] = self.write_vaf_plot(self.input_dir)
             data[rc.CNV_PLOT] = converter().convert_svg(self.write_cnv_plot(self.input_dir), 'CNV plot')
-            data[rc.PGA_PLOT] = converter().convert_svg(self.write_pga_plot(pga, self.input_dir), 'PGA plot')
             data[rc.SMALL_MUTATIONS_AND_INDELS] = self.build_small_mutations_and_indels()
             data[rc.TOP_ONCOGENIC_SOMATIC_CNVS] = self.build_copy_number_variation()
             if self.params.get(xc.ASSAY_TYPE) == rc.ASSAY_WGTS:
@@ -985,14 +1015,17 @@ class clinical_report_json_composer(composer_base):
         }
         return row
 
-    def write_biomarker_plot(self, out_dir,marker):
+    def write_biomarker_plot(self, out_dir, marker, tmb = 0):
         out_path = os.path.join(out_dir, marker+'.svg')
         args = [
             os.path.join(self.r_script_dir, 'biomarkers_plot.R'),
-            '-d', self.input_dir
+            '-d', self.input_dir,
+            '-c', self.closest_tcga_lc,
+            '-m', marker,
+            '-t', str(tmb)
         ]
         subprocess_runner(self.log_level, self.log_path).run(args)
-        self.logger.info("Wrote biomarkers plot to {0}".format(out_path))
+        self.logger.info("Wrote biomarker {0} plot to {1}".format(marker, out_path))
         return out_path
 
     def write_cnv_plot(self, out_dir):
@@ -1006,29 +1039,6 @@ class clinical_report_json_composer(composer_base):
             subprocess_runner(self.log_level, self.log_path).run(args)
             self.logger.info("Wrote CNV plot to {0}".format(out_path))
             return out_path
-
-    def write_pga_plot(self, pga, out_dir):
-        out_path = os.path.join(out_dir, 'pga.svg')
-        args = [
-            os.path.join(self.r_script_dir, 'pga_plot.R'),
-            '-o', out_path,
-            '-p', str(pga)
-        ]
-        subprocess_runner(self.log_level, self.log_path).run(args)
-        self.logger.info("Wrote PGA plot to {0}".format(out_path))
-        return out_path
-
-    def write_tmb_plot(self, tmb, out_dir):
-        out_path = os.path.join(out_dir, 'tmb.svg')
-        args = [
-            os.path.join(self.r_script_dir, 'tmb_plot.R'),
-            '-c', self.closest_tcga_lc,
-            '-o', out_path,
-            '-t', str(tmb)
-        ]
-        subprocess_runner(self.log_level, self.log_path).run(args)
-        self.logger.info("Wrote TMB plot to {0}".format(out_path))
-        return out_path
 
     def write_vaf_plot(self, out_dir):
         out_path = os.path.join(out_dir, 'vaf.svg')

@@ -103,6 +103,9 @@ CANCER_SPECIFIC_PERCENTILE = 'Cancer-specific Percentile'
 CANCER_SPECIFIC_COHORT = 'Cancer-specific Cohort'
 PAN_CANCER_PERCENTILE = 'Pan-cancer Percentile'
 PAN_CANCER_COHORT = 'Pan-cancer Cohort'
+CTDNA = 'ctdna'
+CTDNA_CANDIDATES = 'ctDNA_candidate_sites'
+CTDNA_ELIGIBILITY = 'ctDNA_eligibility'
 
 # constants for the CNV table (also shares with investigational therapies)
 ALTERATION = 'Alteration'

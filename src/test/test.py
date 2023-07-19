@@ -157,7 +157,7 @@ class TestArchive(TestBase):
         self.assertEqual(get["_id"], get["report"]["patient_info"]["Report ID"])
         rm = requests.delete(url_id+'?rev='+get["_rev"])
         self.assertEqual(rm.status_code, 200)
-        self.assertEqual(len(data['report']), 26)  
+        self.assertEqual(len(data['report']), 25)  
         self.assertEqual(len(data['supplementary']['config']), 4)
 
 class TestConfigure(TestBase):
@@ -189,19 +189,19 @@ class TestConfigure(TestBase):
         test_configurer.run(out_path)
 
     def test_default(self):
-        self.run_config_test(self.config_user, False, False, 96, self.provenance)
+        self.run_config_test(self.config_user, False, False, 97, self.provenance)
 
     def test_default_fail(self):
         self.run_config_test(self.config_user_failed, False, True, 82, self.provenance)
 
     def test_wgs_only(self):
-        self.run_config_test(self.config_user_wgs_only, True, False, 94, self.provenance)
+        self.run_config_test(self.config_user_wgs_only, True, False, 95, self.provenance)
 
     def test_wgs_only_fail(self):
         self.run_config_test(self.config_user_wgs_only_failed, True, True, 82, self.provenance)
 
     def test_vnwgts(self):
-        self.run_config_test(self.config_user_vnwgts, False, False, 96, self.provenance_vnwgts)
+        self.run_config_test(self.config_user_vnwgts, False, False, 97, self.provenance_vnwgts)
 
     def test_vnwgts_broken(self):
         # test failure modes of sample input
@@ -249,7 +249,8 @@ class TestExtractor(TestBase):
         'data_segments.txt',
         'aratio_segments.txt',
         'sequenza_meta.txt',
-        'msi.txt'
+        'msi.txt',
+        'SNP.count.txt'
     ]
     # md5 sums of files in failed output
     STATIC_MD5 = {
@@ -269,7 +270,7 @@ class TestExtractor(TestBase):
         with open(expected_path) as in_file:
             data_expected = json.loads(in_file.read())
         # plot paths/contents are not fixed
-        for key in ['oicr_logo', 'cnv_plot', 'pga_plot', 'tmb_plot', 'vaf_plot']:
+        for key in ['oicr_logo', 'cnv_plot', 'vaf_plot']:
             del data_found['report'][key]
             del data_expected['report'][key]
         for biomarker in range(0,len(data_found['report']['genomic_biomarkers']['Body'])):
@@ -721,10 +722,10 @@ class TestRender(TestBase):
         out_path = os.path.join(out_dir, 'djerba_test_wgts.html')
         hr = html_renderer()
         out_path = hr.run_clinical(args_path, out_dir, 'report_WGTS', False)
-        self.check_report(out_path, 'a0c8e86f2429c6edd79931a5c19a327b')
+        self.check_report(out_path, '76e370b43f9e47a98d92953a989c4c4f')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = hr.run_clinical(args_path, out_dir, 'report_WGS_only', False)
-        self.check_report(out_path, '5e901ce65ea4e43dc4e99c453568687b')
+        self.check_report(out_path, 'e9cde1c35aa62bf71814e64b8f0a33dd')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = hr.run_clinical(args_path, out_dir, 'report_failed', False)
         self.check_report(out_path, '5976081ff05c571ce62a90dd63f8d6dc')

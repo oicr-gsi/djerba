@@ -32,16 +32,14 @@ class archiver(logger):
         # shorter key names
         failed = render_constants.FAILED
         rep = constants.REPORT
-        tmb = render_constants.TMB_PLOT
         vaf = render_constants.VAF_PLOT
         cnv = render_constants.CNV_PLOT
-        pga = render_constants.PGA_PLOT
         logo = render_constants.OICR_LOGO
         # convert image paths (if any, they may already be base64)
         data[rep][logo] = self.converter.convert_png(data[rep][logo], 'OICR logo')
         if not data[rep][failed]:
-            for key in [tmb, vaf, cnv, pga]:
-                data[rep][tmb] = self.converter.convert_svg(data[rep][key], key)
+            for key in [ vaf, cnv]:
+                data[rep][key] = self.converter.convert_svg(data[rep][key], key)
         return json.dumps(data)
 
     def run(self, data_path):

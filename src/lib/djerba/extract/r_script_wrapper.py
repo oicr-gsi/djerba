@@ -379,6 +379,19 @@ class r_script_wrapper(logger):
         ).annotate_maf(tmp_path)
         return out_path
 
+    def preprocess_mrdetect(self, mrdetect_path, report_dir):
+        """
+        summarize mrdetect-filter-only file
+        """
+        out_path = os.path.join(report_dir, 'SNP.count.txt')
+        with open(mrdetect_path, 'r') as msi_file:
+            reader_file = csv.reader(msi_file, delimiter="\t")
+            for row in reader_file:
+                snv_count = int(row[0])
+        with open(out_path, 'w') as out_file:
+            print(snv_count, file=out_file)
+        return out_path
+
     def preprocess_msi(self, msi_path, report_dir):
         """
         summarize msisensor file
@@ -417,6 +430,7 @@ class r_script_wrapper(logger):
 
     def run(self):
         self.preprocess_msi(self.config[ini.DISCOVERED][ini.MSI_FILE], self.report_dir)
+        self.preprocess_mrdetect(self.config[ini.DISCOVERED][ini.MRDETECT_FILE], self.report_dir)
         maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE])
         seg_path = self.preprocess_seg(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE])
         aratio_path = self.preprocess_aratio(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], self.report_dir)
