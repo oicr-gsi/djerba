@@ -577,7 +577,8 @@ class TestPriority(TestCore):
         djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
         with open(json_path) as json_file:
             data = json.loads(json_file.read())
-        html = djerba_main.render(data)
+        output = djerba_main.render(data)
+        html = output['documents']['placeholder_report.clinical']
         pos1 = self.find_line_position(html, 'demo1')
         pos2 = self.find_line_position(html, 'The Question') # demo2 output
         self.assertNotEqual(0, pos1)
@@ -586,7 +587,8 @@ class TestPriority(TestCore):
         # now give demo2 a higher priority than demo1
         data['plugins']['demo1']['priorities']['render'] = 200
         data['plugins']['demo2']['priorities']['render'] = 100
-        html = djerba_main.render(data)
+        output = djerba_main.render(data)
+        html = output['documents']['placeholder_report.clinical']
         pos1 = self.find_line_position(html, 'demo1')
         pos2 = self.find_line_position(html, 'The Question') # demo2 output
         self.assertNotEqual(0, pos1)
@@ -604,7 +606,6 @@ class TestSimpleReport(TestCore):
         with open(json_path) as json_file:
             data_expected = json.loads(json_file.read())
         self.assertEqual(data_expected, data_found)
-        filename = 'placeholder_report.clinical.html'
         output = djerba_main.render(data_found)
         html_string = output['documents']['placeholder_report.clinical']
         self.assert_report_MD5(html_string, self.SIMPLE_REPORT_MD5)
