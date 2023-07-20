@@ -8,7 +8,7 @@ import os
 import re
 import time
 import unittest
-import djerba.util.ini_fields as ini
+import djerba.core.constants as core_constants
 
 from configparser import ConfigParser
 from djerba.core.json_validator import plugin_json_validator
@@ -41,7 +41,7 @@ class PluginTester(TestBase):
         config.read(ini_path)
         plugin_name = None
         for section_name in config.sections():
-            if section_name == ini.CORE:
+            if section_name == core_constants.CORE:
                 continue
             elif plugin_name == None:
                 plugin_name = section_name
@@ -63,6 +63,7 @@ class PluginTester(TestBase):
         self.assertTrue(plugin_name)
         djerba_main = core_main(self.get_tmp_dir(), log_level=logging.WARNING)
         config = djerba_main.configure(ini_path)
+        config.set(core_constants.CORE, core_constants.REPORT_ID, 'placeholder')
         data_found = self.redact_json_data(djerba_main.extract(config))
         with open(expected_json_path) as json_file:
             plugin_data_expected = json.loads(json_file.read())
@@ -70,7 +71,9 @@ class PluginTester(TestBase):
         validator = plugin_json_validator(log_level=logging.WARNING)
         self.assertTrue(validator.validate_data(plugin_data_found))
         self.assertEqual(plugin_data_found, plugin_data_expected)
-        html = self.redact_html(djerba_main.render(data_found))
+        # TODO check other document types, eg. research
+        rendered = djerba_main.render(data_found)
+        html = self.redact_html(rendered['documents']['placeholder_report.clinical'])
         self.assert_report_MD5(html, expected_md5)
 
     # TODO add standalone tests for configure, extract, render steps

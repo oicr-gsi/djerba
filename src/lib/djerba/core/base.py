@@ -3,6 +3,7 @@
 import csv
 import re
 
+import djerba.core.constants as core_constants
 from djerba.util.logger import logger
 
 class base(logger):
@@ -14,6 +15,10 @@ class base(logger):
     @staticmethod
     def _is_merger_name(name):
         return re.search('_merger$', name)
+
+    @staticmethod
+    def _is_null(param):
+        return param == core_constants.NULL
 
     @staticmethod
     def _parse_comma_separated_list(list_string):

@@ -9,12 +9,13 @@ import os
 import string
 from abc import ABC, abstractmethod
 from configparser import ConfigParser
+from uuid import uuid4
 from djerba.core.base import base as core_base
 from djerba.util.logger import logger
-import djerba.core.constants as core_constants
+import djerba.core.constants as cc
 import djerba.util.ini_fields as ini
 
-class configurable(logger, ABC):
+class configurable(core_base, ABC):
 
     """
     Interface for Djerba objects configurable by INI
@@ -30,15 +31,15 @@ class configurable(logger, ABC):
 
     # default list of known attributes -- may override in subclasses
     KNOWN_ATTRIBUTES = [
-        core_constants.CLINICAL,
-        core_constants.SUPPLEMENTARY
+        cc.CLINICAL,
+        cc.SUPPLEMENTARY
     ]
 
     def __init__(self, **kwargs):
-        self.identifier = kwargs[core_constants.IDENTIFIER]
-        self.module_dir = kwargs[core_constants.MODULE_DIR]
-        self.log_level = kwargs[core_constants.LOG_LEVEL]
-        self.log_path = kwargs[core_constants.LOG_PATH]
+        self.identifier = kwargs[cc.IDENTIFIER]
+        self.module_dir = kwargs[cc.MODULE_DIR]
+        self.log_level = kwargs[cc.LOG_LEVEL]
+        self.log_path = kwargs[cc.LOG_PATH]
         self.logger = self.get_logger(self.log_level, __name__, self.log_path)
         self.ini_required = set() # names of INI parameters the user must supply
         self.ini_defaults = {} # names and default values for other INI parameters
@@ -57,6 +58,12 @@ class configurable(logger, ABC):
         template = "Key '{0}' required for {1} config "+\
             "of component {2} was not found in inputs {3}"
         msg = template.format(key, mode, self.identifier, input_keys)
+        self.logger.error(msg)
+        raise DjerbaConfigError(msg)
+
+    def _raise_null_param_error(self, key):
+        msg = "INI section {0}, option {1} is null; ".format(self.identifier, key)+\
+            "null values are not permitted in fully-specified Djerba config"
         self.logger.error(msg)
         raise DjerbaConfigError(msg)
 
@@ -81,7 +88,7 @@ class configurable(logger, ABC):
         # get the default value of a reserved parameter
         # raise an error if it is not defined for the current component
         msg = None
-        if not param in core_constants.RESERVED_PARAMS:
+        if not param in cc.RESERVED_PARAMS:
             msg = "'{0}' is not a reserved parameter".format(param)
         elif not param in self.ini_defaults:
             msg = "'{0}' not found in INI defaults {1}; ".format(param, self.ini_defaults)+\
@@ -106,7 +113,7 @@ class configurable(logger, ABC):
     ### start of methods to handle required/default parameters
 
     def add_ini_required(self, key):
-        if key in core_constants.RESERVED_PARAMS:
+        if key in cc.RESERVED_PARAMS:
             msg = 'Cannot add reserved key {0} as a required parameter'.format(key)
             self.logger.error(msg)
             raise DjerbaConfigError(msg)
@@ -155,13 +162,19 @@ class configurable(logger, ABC):
         if key in self.ini_required:
             msg = 'Cannot set default for {0}; '.format(key)+\
                 'already exists as a required parameter'
-        elif key in core_constants.RESERVED_PARAMS and not key in self.ini_defaults:
+        elif key in cc.RESERVED_PARAMS and not key in self.ini_defaults:
             msg = "Cannot set default for reserved parameter {0} ".format(key)+\
                 "as it is not defined for this component type"
         if msg:
             self.logger.error(msg)
             raise DjerbaConfigError(msg)
         self.ini_defaults[key] = value
+
+    def set_ini_null_default(self, key):
+        """
+        Set a null parameter default -- to be filled in at runtime by custom config code
+        """
+        self.set_ini_default(key, cc.NULL)
 
     @abstractmethod
     def set_priority_defaults(self, priority):
@@ -190,9 +203,11 @@ class configurable(logger, ABC):
         self.logger.debug(template.format(len(all_keys), self.identifier))
         input_keys = config.options(self.identifier)
         for key in all_keys:
-            # Check all keys defined for the component are input
+            # Check all keys defined for the component are present and non-null
             if key not in input_keys:
                 self._raise_missing_config_error(key, input_keys, complete=True)
+            elif self._is_null(config.get(self.identifier, key)):
+                self._raise_null_param_error(key)
         for key in input_keys:
             # Check if any keys input are *not* defined for the component
             if key not in all_keys:
@@ -205,7 +220,7 @@ class configurable(logger, ABC):
         # TODO sanity checking on other reserved params
         ok = True
         for s in config.sections():
-            for p in core_constants.PRIORITY_KEYS:
+            for p in cc.PRIORITY_KEYS:
                 if config.has_option(s, p):
                     try:
                         v = config.getint(s, p)
@@ -219,37 +234,62 @@ class configurable(logger, ABC):
                     raise ValueError(msg)
         return config
 
-class configurer(configurable):
+class core_configurer(configurable):
 
     """Class to do core configuration"""
 
-    PRIORITY = 0
+    PRIORITY = 100
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # core has no attributes or dependencies, but include the INI params for consistency
+        self.workspace = kwargs['workspace']
         self.ini_defaults = {
-            core_constants.ATTRIBUTES: '',
-            core_constants.DEPENDS_CONFIGURE: '',
-            core_constants.DEPENDS_EXTRACT: '',
-            core_constants.CONFIGURE_PRIORITY: 0,
-            core_constants.EXTRACT_PRIORITY: 0,
-            core_constants.RENDER_PRIORITY: 0
+            cc.ATTRIBUTES: '',
+            cc.DEPENDS_CONFIGURE: '',
+            cc.DEPENDS_EXTRACT: '',
+            cc.CONFIGURE_PRIORITY: self.PRIORITY,
+            cc.EXTRACT_PRIORITY: self.PRIORITY,
+            cc.RENDER_PRIORITY: self.PRIORITY
         }
         self.specify_params()
 
     def configure(self, config):
+        """Input/output is a ConfigParser object"""
         config = self.apply_defaults(config)
-        config.set(ini.CORE, 'comment', 'Djerba 1.0 under development')
-        return config
-
-    def set_priority_defaults(self, priority):
-        for key in core_constants.PRIORITY_KEYS:
-            self.ini_defaults[key] = priority
+        wrapper = self.get_config_wrapper(config)
+        if wrapper.my_param_is_null(cc.REPORT_ID):
+            sample_info_file = wrapper.get_my_string(cc.SAMPLE_INFO)
+            if self.workspace.has_file(sample_info_file):
+                sample_info = self.workspace.read_json(sample_info_file)
+                report_id = "{0}_{1}-v{2}".format(
+                    sample_info[cc.TUMOUR_ID],
+                    sample_info[cc.NORMAL_ID],
+                    wrapper.get_my_int(cc.REPORT_VERSION)
+                )
+                msg = "Generated report ID {0} from sample info JSON".format(report_id)
+                self.logger.debug(msg)
+            else:
+                report_id = "OICR-CGI-{0}".format(uuid4().hex)
+                msg = "Generated report ID {0} from UUID hex string".format(report_id)
+                self.logger.debug(msg)
+            wrapper.set_my_param(cc.REPORT_ID, report_id)
+        return wrapper.get_config()
 
     def specify_params(self):
-        self.set_priority_defaults(self.PRIORITY)
-        self.set_ini_default('comment', 'comment goes here')
+        self.set_ini_null_default(cc.REPORT_ID)
+        self.set_ini_default(cc.REPORT_VERSION, 1)
+        self.set_ini_default(cc.ARCHIVE_NAME, "djerba")
+        self.set_ini_default(
+            cc.ARCHIVE_URL,
+            "http://admin:djerba123@10.30.133.78:5984"
+        )
+        self.set_ini_default(cc.AUTHOR, cc.DEFAULT_AUTHOR)
+        self.set_ini_default(cc.SAMPLE_INFO, cc.DEFAULT_SAMPLE_INFO)
+        self.set_ini_default(cc.DOCUMENT_CONFIG, cc.DEFAULT_DOCUMENT_CONFIG)
+
+    def set_priority_defaults(self, priority):
+        for key in cc.PRIORITY_KEYS:
+            self.ini_defaults[key] = priority
 
 
 class config_wrapper(core_base):
@@ -284,12 +324,26 @@ class config_wrapper(core_base):
     # no set_core_param() -- components only write their own INI section
 
     def get_my_attributes(self):
-        if self.has_my_param(core_constants.ATTRIBUTES):
-            attributes_str = self.get_my_string(core_constants.ATTRIBUTES)
+        if self.has_my_param(cc.ATTRIBUTES):
+            attributes_str = self.get_my_string(cc.ATTRIBUTES)
             attributes = self._parse_comma_separated_list(attributes_str)
         else:
             attributes = []
         return attributes
+
+    # nullity tests
+
+    def my_param_is_null(self, param):
+        return self.param_is_null(self.identifier, param)
+
+    def param_is_null(self, section, param):
+        return self._is_null(self.config.get(section, param))
+
+    def my_param_is_not_null(self, param):
+        return not self.my_param_is_null(param)
+
+    def param_is_not_null(self, section, param):
+        return not self.param_is_null(section, param)
 
     # [get|set|has]_my_* methods for the named component
 
@@ -316,9 +370,9 @@ class config_wrapper(core_base):
         """
         priorities = {}
         mapping = {
-            core_constants.CONFIGURE_PRIORITY: core_constants.CONFIGURE,
-            core_constants.EXTRACT_PRIORITY: core_constants.EXTRACT,
-            core_constants.RENDER_PRIORITY: core_constants.RENDER
+            cc.CONFIGURE_PRIORITY: cc.CONFIGURE,
+            cc.EXTRACT_PRIORITY: cc.EXTRACT,
+            cc.RENDER_PRIORITY: cc.RENDER
         }
         for key, value in mapping.items():
             if self.config.has_option(self.identifier, key):
@@ -327,7 +381,7 @@ class config_wrapper(core_base):
 
     def set_my_priorities(self, priority):
         # convenience method; sets all defined priorities to the same value
-        for key in core_constants.PRIORITY_KEYS:
+        for key in cc.PRIORITY_KEYS:
             if self.has_my_param(key):
                 self.set_my_param(key, priority)
 
@@ -379,9 +433,9 @@ class config_wrapper(core_base):
         https://docs.python.org/3/library/string.html#string.Template.substitute
         """
         var_names = [
-            core_constants.DJERBA_DATA_DIR_VAR,
-            core_constants.DJERBA_PRIVATE_DIR_VAR,
-            core_constants.DJERBA_TEST_DIR_VAR
+            cc.DJERBA_DATA_DIR_VAR,
+            cc.DJERBA_PRIVATE_DIR_VAR,
+            cc.DJERBA_TEST_DIR_VAR
         ]
         mapping = {var: self.get_dir_from_env(var) for var in var_names}
         for section in self.config.sections():
@@ -408,13 +462,13 @@ class config_wrapper(core_base):
         return dir_path
 
     def get_djerba_data_dir(self):
-        return self.get_dir_from_env(core_constants.DJERBA_DATA_DIR_VAR)
+        return self.get_dir_from_env(cc.DJERBA_DATA_DIR_VAR)
 
     def get_djerba_private_dir(self):
-        return self.get_dir_from_env(core_constants.DJERBA_PRIVATE_DIR_VAR)
+        return self.get_dir_from_env(cc.DJERBA_PRIVATE_DIR_VAR)
 
     def get_djerba_test_dir(self):
-        return self.get_dir_from_env(core_constants.DJERBA_TEST_DIR_VAR)
+        return self.get_dir_from_env(cc.DJERBA_TEST_DIR_VAR)
 
     ### end of methods to get special directory paths from environment variables
     #################################################################

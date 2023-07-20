@@ -6,7 +6,7 @@ import djerba.core.constants as core_constants
 
 class main(plugin_base):
 
-    PRIORITY = 100
+    PRIORITY = 200
     PLUGIN_VERSION = '1.0.0'
 
     # __init__ is inherited from the parent class

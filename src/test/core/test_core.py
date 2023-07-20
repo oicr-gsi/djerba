@@ -14,10 +14,10 @@ import djerba.util.ini_fields as ini
 
 from configparser import ConfigParser
 
-from djerba.core.configure import config_wrapper, DjerbaConfigError
+from djerba.core.configure import config_wrapper, core_configurer, DjerbaConfigError
 from djerba.core.ini_generator import ini_generator
 from djerba.core.json_validator import plugin_json_validator
-from djerba.core.loaders import plugin_loader
+from djerba.core.loaders import plugin_loader, core_config_loader
 from djerba.core.main import main, arg_processor, DjerbaDependencyError
 from djerba.core.workspace import workspace
 from djerba.util.subprocess_runner import subprocess_runner
@@ -30,21 +30,21 @@ class TestCore(TestBase):
 
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
-    SIMPLE_REPORT_MD5 = '66bf99e6ebe64d89bef09184953fd630'
-    SIMPLE_CONFIG_MD5 = '298ebe20d9b9194267caf036317403a1'
+    SIMPLE_REPORT_MD5 = '2738c04c2f79f3f77dddffa2e4191932'
+    SIMPLE_CONFIG_MD5 = 'd251fe6f1595328ea9583a23da8a25f0'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
 
-        def __init__(self, mode, work_dir, ini, ini_out, json, html, pdf):
+        def __init__(self, mode, work_dir, ini, ini_out, json, out_dir, pdf):
             self.subparser_name = mode
             self.work_dir = work_dir
             self.ini = ini
             self.ini_out = ini_out
             self.json = json
-            self.html = html
-            self.pdf = pdf
+            self.out_dir = out_dir
             self.no_archive = True
+            self.pdf = pdf
             # logging
             self.log_path = None
             self.debug = False
@@ -61,7 +61,7 @@ class TestCore(TestBase):
             data_expected = json.loads(json_file.read())
         with open(json_path) as json_file:
             data_found = json.loads(json_file.read())
-        self.assertEqual(data_found, data_expected)
+        self.assertEqual(data_expected, data_found)
 
     def assertSimpleReport(self, json_path, html_path):
         self.assertSimpleJSON(json_path)
@@ -88,17 +88,13 @@ class TestArgs(TestCore):
         work_dir = self.tmp_dir
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
         out_path = os.path.join(self.tmp_dir, 'test_out.ini')
-        json = os.path.join(self.tmp_dir, 'test.json')
-        html = os.path.join(self.tmp_dir, 'test.html')
         pdf = os.path.join(self.tmp_dir, 'test.pdf')
-        args = self.mock_args(mode, work_dir, ini_path, out_path, json, html, pdf)
+        args = self.mock_args(mode, work_dir, ini_path, out_path, json, self.tmp_dir, False)
         ap = arg_processor(args)
         self.assertEqual(ap.get_mode(), mode)
         self.assertEqual(ap.get_ini_path(), ini_path)
         self.assertEqual(ap.get_ini_out_path(), out_path)
         self.assertEqual(ap.get_json_path(), json)
-        self.assertEqual(ap.get_html_path(), html)
-        self.assertEqual(ap.get_pdf_path(), pdf)
         self.assertEqual(ap.get_log_level(), logging.ERROR)
         self.assertEqual(ap.get_log_path(), None)
 
@@ -108,12 +104,10 @@ class TestArgs(TestCore):
         work_dir = self.tmp_dir
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
         out_path = os.path.join(self.tmp_dir, 'config_out.ini')
-        json_path = None
-        html = None
-        pdf = None
-        args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
+        json = None
+        args = self.mock_args(mode, work_dir, ini_path, out_path, json, self.tmp_dir, False)
         main(work_dir, log_level=logging.WARNING).run(args)
-        self.assertEqual(self.getMD5(out_path), self.SIMPLE_CONFIG_MD5)
+        self.assertEqual(self.SIMPLE_CONFIG_MD5, self.getMD5(out_path))
 
     def test_extract(self):
         # run from args, with same inputs as TestSimpleReport
@@ -122,24 +116,23 @@ class TestArgs(TestCore):
         ini_path = os.path.join(self.test_source_dir, 'config_full.ini')
         out_path = None
         json_path = os.path.join(self.tmp_dir, 'djerba.json')
-        html = None
-        pdf = None
-        args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
+        args = self.mock_args(
+            mode, work_dir, ini_path, out_path, json_path, self.tmp_dir, False
+        )
         main(work_dir, log_level=logging.WARNING).run(args)
         self.assertSimpleJSON(json_path)
 
     def test_render(self):
         # run from args, with same inputs as TestSimpleReport
-        mode = 'html'
+        mode = 'render'
         work_dir = self.tmp_dir
         ini_path = None
         out_path = None
-        json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
-        html = os.path.join(self.tmp_dir, 'djerba.html')
-        pdf = None
-        args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
+        json = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
+        args = self.mock_args(mode, work_dir, ini_path, out_path, json, self.tmp_dir, False)
         main(work_dir, log_level=logging.WARNING).run(args)
-        with open(html) as html_file:
+        filename = 'placeholder_report.clinical.html'
+        with open(os.path.join(self.tmp_dir, filename)) as html_file:
             html_string = html_file.read()
         self.assert_report_MD5(html_string, self.SIMPLE_REPORT_MD5)
 
@@ -149,12 +142,12 @@ class TestArgs(TestCore):
         work_dir = self.tmp_dir
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
         out_path = None
-        json_path = os.path.join(self.tmp_dir, 'test.json')
-        html = os.path.join(self.tmp_dir, 'test.html')
-        pdf = None
-        args = self.mock_args(mode, work_dir, ini_path, out_path, json_path, html, pdf)
+        json = os.path.join(self.tmp_dir, 'djerba_report.json')
+        html = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
+        pdf = False
+        args = self.mock_args(mode, work_dir, ini_path, out_path, json, self.tmp_dir, pdf)
         main(work_dir, log_level=logging.WARNING).run(args)
-        self.assertSimpleReport(json_path, html)
+        self.assertSimpleReport(json, html)
 
 class TestConfigExpected(TestCore):
     """Test generation of an expected config file"""
@@ -266,8 +259,8 @@ class TestConfigWrapper(TestCore):
         cp = ConfigParser()
         cp.read(os.path.join(self.test_source_dir, 'config_full.ini'))
         cw = config_wrapper(cp, 'demo1')
-        self.assertEqual(cw.get_core_string('comment'), 'Djerba 1.0 under development')
-        self.assertEqual(cw.get_my_int('configure_priority'), 100)
+        self.assertEqual(cw.get_core_string('author'), 'CGI Author')
+        self.assertEqual(cw.get_my_int('configure_priority'), 200)
         self.assertTrue(cw.has_my_param('question'))
         self.assertFalse(cw.has_my_param('noodles'))
         cw.set_my_param('lunch', 'sushi')
@@ -284,7 +277,7 @@ class TestConfigWrapper(TestCore):
             core_constants.RENDER_PRIORITY
         ]:
             self.assertEqual(cw.get_my_int(key), 42)
-        self.assertEqual(cw.get_int('demo2', 'configure_priority'), 200)
+        self.assertEqual(cw.get_int('demo2', 'configure_priority'), 300)
         self.assertTrue(cw.has_param('demo2', 'demo2_param'))
         self.assertFalse(cw.has_param('demo2', 'noodles'))
         cw.set_param('demo2', 'dinner', 'pizza')
@@ -303,6 +296,53 @@ class TestConfigWrapper(TestCore):
         self.assertEqual(wrapper.get_my_string('dummy_file'), expected)
         if data_dir_orig != None:
             os.environ[core_constants.DJERBA_DATA_DIR_VAR] = data_dir_orig
+
+class TestCoreConfigurer(TestCore):
+    """Test the 'core_configurer' class"""
+
+    OUTPUT = 'core_config_test.ini'
+
+    def assert_core_config(self, config):
+        out_path = os.path.join(self.tmp_dir, self.OUTPUT)
+        with open(out_path, 'w') as out_file:
+            config.write(out_file)
+        with open(out_path) as in_file:
+            config_found = in_file.read().strip()
+        expected_ini_path = os.path.join(self.test_source_dir, 'core_config_expected.ini')
+        with open(expected_ini_path) as in_file:
+            config_expected = in_file.read().strip()
+        self.assertEqual(config_expected, config_found)
+
+    def run_core_config(self):
+        loader = core_config_loader(log_level=logging.WARNING)
+        core_configurer = loader.load(workspace(self.tmp_dir))
+        config = ConfigParser()
+        config.add_section('core') # empty [core] section is sufficient
+        config = core_configurer.configure(config)
+        return config
+
+    def test_default(self):
+        """Test default configuration with UUID"""
+        config = self.run_core_config()
+        expr = 'OICR-CGI-[abcdefgh0-9]{32}'
+        self.assertTrue(re.match(expr, config.get('core', 'report_id')))
+        config.set('core', 'report_id', 'placeholder')
+        self.assert_core_config(config)
+
+    def test_sample_info(self):
+        """Test configuration with sample info file"""
+        info = {
+            core_constants.TUMOUR_ID: 'foo',
+            core_constants.NORMAL_ID: 'bar'
+        }
+        info_path = os.path.join(self.tmp_dir, core_constants.DEFAULT_SAMPLE_INFO)
+        with open(info_path, 'w') as out_file:
+            print(json.dumps(info), file=out_file)
+        config = self.run_core_config()
+        self.assertEqual('foo_bar-v1', config.get('core', 'report_id'))
+        config.set('core', 'report_id', 'placeholder')
+        self.assert_core_config(config)
+
 
 class TestDependencies(TestCore):
     """Test the 'depends' parameters"""
@@ -365,7 +405,7 @@ class TestIniGenerator(TestCore):
         self.assertTrue(os.path.exists(generated_ini_path))
         expected_ini_path = os.path.join(self.test_source_dir, 'generated.ini')
         with open(generated_ini_path) as in_file_1, open(expected_ini_path) as in_file_2:
-            self.assertEqual(in_file_1.read(), in_file_2.read())
+            self.assertEqual(in_file_2.read(), in_file_1.read())
 
     def test_script(self):
         self.tmp_dir = '/home/ibancarz/tmp/test_20230710'
@@ -376,7 +416,7 @@ class TestIniGenerator(TestCore):
         self.assertEqual(result.returncode, 0)
         expected_ini_path = os.path.join(self.test_source_dir, 'generated.ini')
         with open(out_path) as in_file_1, open(expected_ini_path) as in_file_2:
-            self.assertEqual(in_file_1.read(), in_file_2.read())
+            self.assertEqual(in_file_2.read(), in_file_1.read())
 
 
 class TestMainScript(TestCore):
@@ -395,7 +435,7 @@ class TestMainScript(TestCore):
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
-        self.assertEqual(self.getMD5(out_path), self.SIMPLE_CONFIG_MD5)
+        self.assertEqual(self.SIMPLE_CONFIG_MD5, self.getMD5(out_path))
 
     def test_extract_cli(self):
         mode = 'extract'
@@ -413,17 +453,17 @@ class TestMainScript(TestCore):
         self.assertSimpleJSON(json_path)
 
     def test_render_cli(self):
-        mode = 'html'
+        mode = 'render'
         work_dir = self.tmp_dir
         json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
-        html_path = os.path.join(self.tmp_dir, 'djerba.html')
         cmd = [
             'djerba.py', mode,
             '--json', json_path,
-            '--html', html_path
+            '--out-dir', self.tmp_dir
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
+        html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
         self.assert_report_MD5(html_string, self.SIMPLE_REPORT_MD5)
@@ -432,14 +472,13 @@ class TestMainScript(TestCore):
         mode = 'report'
         work_dir = self.tmp_dir
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
-        json_path = os.path.join(self.tmp_dir, 'test.json')
-        html = os.path.join(self.tmp_dir, 'test.html')
+        json_path = os.path.join(self.tmp_dir, 'djerba_report.json')
+        html = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         cmd = [
             'djerba.py', mode,
             '--work-dir', work_dir,
             '--ini', ini_path,
-            '--json', json_path,
-            '--html', html
+            '--out-dir', self.tmp_dir
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
@@ -474,10 +513,10 @@ class TestPriority(TestCore):
         with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
             config = djerba_main.configure(ini_path)
         priority_results = [
-            ['core', 0, 1],
-            ['demo1', 100, 2],
-            ['demo2', 200, 3],
-            ['gene_information_merger', 1000, 4]
+            ['core', 100, 1],
+            ['demo1', 200, 2],
+            ['demo2', 300, 3],
+            ['gene_information_merger', 500, 4]
         ]
         prefix = 'DEBUG:djerba.core.main:Configuring'
         template = '{0} {1}, priority {2}, order {3}'
@@ -493,10 +532,10 @@ class TestPriority(TestCore):
         with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
             djerba_main.configure(ini_path_2)
         priority_results = [
-            ['core', 0, 1],
+            ['core', 100, 1],
             ['demo2', 200, 2], # <---- changed order
             ['demo1', 300, 3],
-            ['gene_information_merger', 1000, 4]
+            ['gene_information_merger', 500, 4]
         ]
         for (name, priority, order) in priority_results:
             msg = template.format(prefix, name, priority, order)
@@ -537,7 +576,8 @@ class TestPriority(TestCore):
         djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
         with open(json_path) as json_file:
             data = json.loads(json_file.read())
-        html = djerba_main.render(data)
+        output = djerba_main.render(data)
+        html = output['documents']['placeholder_report.clinical']
         pos1 = self.find_line_position(html, 'demo1')
         pos2 = self.find_line_position(html, 'The Question') # demo2 output
         self.assertNotEqual(0, pos1)
@@ -546,7 +586,8 @@ class TestPriority(TestCore):
         # now give demo2 a higher priority than demo1
         data['plugins']['demo1']['priorities']['render'] = 200
         data['plugins']['demo2']['priorities']['render'] = 100
-        html = djerba_main.render(data)
+        output = djerba_main.render(data)
+        html = output['documents']['placeholder_report.clinical']
         pos1 = self.find_line_position(html, 'demo1')
         pos2 = self.find_line_position(html, 'The Question') # demo2 output
         self.assertNotEqual(0, pos1)
@@ -563,9 +604,15 @@ class TestSimpleReport(TestCore):
         data_found = djerba_main.extract(config)
         with open(json_path) as json_file:
             data_expected = json.loads(json_file.read())
-        self.assertEqual(data_found, data_expected)
-        html = djerba_main.render(data_found)
-        self.assert_report_MD5(html, self.SIMPLE_REPORT_MD5)
+        self.assertEqual(data_expected, data_found)
+        output = djerba_main.render(data_found, out_dir=self.tmp_dir, pdf=True)
+        html_string = output['documents']['placeholder_report.clinical']
+        self.assert_report_MD5(html_string, self.SIMPLE_REPORT_MD5)
+        # minimal test of HTML/PDF writing; TODO add more PDF tests
+        html_out = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
+        pdf_out = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
+        self.assertTrue(os.path.exists(html_out))
+        self.assertTrue(os.path.exists(pdf_out))
 
 class TestJSONValidator(TestCore):
 
