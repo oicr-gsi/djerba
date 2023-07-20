@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v1.0.0-dev0.0.5: 2023-07-20
+## v1.0.0-dev0.0.6: 2023-07-20
 
 ### GCGI-967: Overhaul core functionality
 - Define core INI parameters and implement in `core_configurer`
