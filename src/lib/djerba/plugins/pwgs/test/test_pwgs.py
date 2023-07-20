@@ -10,6 +10,7 @@ from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 import djerba.plugins.pwgs.analysis.plugin as analysis
 import djerba.plugins.pwgs.sample.plugin as sample
+import djerba.plugins.pwgs.pwgs_tools as pwgs_tools
 
 class TestPwgAnalysisPlugin(PluginTester):
 
@@ -44,7 +45,7 @@ class TestPwgAnalysisPlugin(PluginTester):
 
     def testPreprocessResults(self):
         results_expected_location = os.path.join(self.sup_dir ,"pwgs-plugin/mrdetect.txt")
-        results = analysis.main.preprocess_results(self, results_expected_location)
+        results = pwgs_tools.preprocess_results(self, results_expected_location)
         self.assertEqual(results['TF'], 0.016 )
         self.assertEqual(results['pvalue'], 1.903e-05)
         self.assertEqual(results['outcome'], 'DETECTED')
@@ -72,6 +73,18 @@ class TestPwgSamplePlugin(PluginTester):
         snv_count_expected_location = os.path.join(self.sup_dir ,"pwgs-plugin/snv.txt")
         snv_count = sample.main.preprocess_snv_count(self,snv_count_expected_location)
         self.assertEqual(snv_count, 21000)
+
+class TestPwgSupplementaryPlugin(PluginTester):
+
+    def testPwgsSupplementary(self):
+        test_source_dir = os.path.realpath(os.path.dirname(__file__))
+        json_location = os.path.join(self.sup_dir ,"pwgs-plugin/report_json/pwgs.supp.json")
+        params = {
+            self.INI: 'data/pwgs.supp.ini',
+            self.JSON: json_location,
+            self.MD5: '933dd2c7f74da321e7b9cb53355c8296'
+        }
+        self.run_basic_test(test_source_dir, params)
 
 if __name__ == '__main__':
     unittest.main()

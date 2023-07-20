@@ -12,6 +12,7 @@ from djerba.core.workspace import workspace
 import djerba.core.constants as core_constants
 from djerba.core.workspace import workspace
 from djerba.util.subprocess_runner import subprocess_runner
+import djerba.plugins.pwgs.pwgs_tools as pwgs_tools
 
 try:
     import gsiqcetl.column
@@ -56,7 +57,7 @@ class main(plugin_base):
         insert_size_dist_file = self.preprocess_bamqc(config[self.identifier][constants.BAMQC])
         snv_count = self.preprocess_snv_count(config[self.identifier][constants.SNV_COUNT_FILE])
         results_file = config[self.identifier][constants.RESULTS_FILE]
-        mrdetect_results = analysis.main().preprocess_results(results_file)
+        mrdetect_results = pwgs_tools.preprocess_results(self, results_file)
         if mrdetect_results['outcome'] == "DETECTED":
             ctdna_detection = "Detected"
         elif mrdetect_results['outcome'] == "UNDETECTED":
@@ -122,9 +123,9 @@ class main(plugin_base):
     
     def preprocess_bamqc(self, bamqc_file):
         if bamqc_file == 'None':
-            provenance = analysis.main(self.workspace, self.identifier).subset_provenance("dnaSeqQC")
+            provenance = pwgs_tools.subset_provenance(self, "dnaSeqQC")
             try:
-                bamqc_file = analysis.main(self, self.identifier).parse_file_path(self.BAMQC_SUFFIX, provenance)
+                bamqc_file = pwgs_tools.parse_file_path(self, self.BAMQC_SUFFIX, provenance)
             except OSError as err:
                 msg = "File from workflow {0} with extension {1} was not found in Provenance subset file '{2}' not found".format("dnaSeqQC", self.BAMQC_SUFFIX,constants.PROVENANCE_OUTPUT)
                 raise RuntimeError(msg) from err
@@ -145,9 +146,9 @@ class main(plugin_base):
         pull SNV count from file
         """
         if snv_count_path == 'None':
-            provenance = analysis.main(self.workspace, self.identifier).subset_provenance("mrdetect")
+            provenance = pwgs_tools.subset_provenance(self, "mrdetect")
             try:    
-                snv_count_path = analysis.main(self, self.identifier).parse_file_path(self.SNV_COUNT_SUFFIX, provenance)
+                snv_count_path = pwgs_tools.parse_file_path(self, self.SNV_COUNT_SUFFIX, provenance)
             except OSError as err:
                 msg = "File from workflow {0} with extension {1} was not found in Provenance subset file '{2}' not found".format("mrdetect", self.SNV_COUNT_SUFFIX, constants.PROVENANCE_OUTPUT)
                 raise RuntimeError(msg) from err
