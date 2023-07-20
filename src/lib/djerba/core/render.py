@@ -6,6 +6,8 @@ Includes merge/deduplicate for shared tables, eg. gene info
 import json
 import logging
 import os
+import pdfkit
+from PyPDF2 import PdfMerger
 from time import strftime
 import djerba.core.constants as cc
 from djerba.util.image_to_base64 import converter
@@ -106,7 +108,6 @@ class html_renderer(logger):
             section_html = {x:html[x] for x in section_names}
             if len(section_html) > 0:
                 self.logger.info("Assembling HTML report document: {0}".format(doc_type))
-                merge_list.append(doc_type)
                 body_sections = self._order_components(section_html, priorities)
                 document_sections = [self.get_document_header(doc_type), ]
                 document_sections.extend(body_sections)
@@ -114,10 +115,11 @@ class html_renderer(logger):
                 # doc_key is the prefix for HTML/PDF filenames
                 doc_key = "{0}_report.{1}".format(self.report_id, doc_type)
                 data[cc.DOCUMENTS][doc_key] = "\n".join(document_sections)
+                merge_list.append(doc_key)
             else:
                 self.logger.info("Omitting empty report document: {0}".format(doc_type))
         data[cc.MERGE_LIST] = merge_list
-        data[cc.MERGED_FILENAME] = "{0}_report".format(self.report_id)
+        data[cc.MERGED_FILENAME] = "{0}_report.pdf".format(self.report_id)
         data[cc.PAGE_FOOTER] = self.get_page_footer()
         return data
 

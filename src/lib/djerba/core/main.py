@@ -246,10 +246,10 @@ class main(core_base):
                 if pdf:
                     pdf_path = os.path.join(out_dir, prefix+'.pdf')
                     footer = output_data[cc.PAGE_FOOTER]
-                    p_rend.render(html_path, pdf_path, footer)
+                    p_rend.render_file(html_path, pdf_path, footer)
                     self.logger.info("Wrote PDF output to {0}".format(pdf_path))
             merge_list = output_data[cc.MERGE_LIST]
-            if pdf and len(merge_list)>0:
+            if pdf and len(merge_list)>1:
                 merge_in = [os.path.join(out_dir, x+'.pdf') for x in merge_list]
                 merge_out = os.path.join(out_dir, output_data[cc.MERGED_FILENAME])
                 p_rend.merge_pdfs(merge_in, merge_out)
