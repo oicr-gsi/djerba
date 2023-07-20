@@ -26,7 +26,7 @@ class workspace(logger):
 
     def abs_path(self, rel_path):
         """Return the absolute path of a file in the workspace"""
-        return os.path.join(self.dir_path, rel_path)
+        return os.path.abspath(os.path.join(self.dir_path, rel_path))
 
     def get_work_dir(self):
         return self.dir_path
