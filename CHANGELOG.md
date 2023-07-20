@@ -1,6 +1,14 @@
 # CHANGELOG
 
-## Unreleased
+## v1.0.0-dev0.0.5: 2023-07-20
+
+### GCGI-967: Overhaul core functionality
+- Define core INI parameters and implement in `core_configurer`
+- Get rid of placeholder data at the core extract step
+- Add PDF rendering to the core
+- Introduce `document_config.json` with settings to render HTML
+- Render multiple HTML/PDF documents, identified by attributes (clinical, research, etc)
+- Add a `mako_renderer` utility class with tests
 
 ### GCGI-950: Attributes
 - Represent attributes as a comma-separated list, instead of individual parameters
