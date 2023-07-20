@@ -45,9 +45,10 @@ class main(plugin_base):
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
-        mrdetect_results = pwgs_tools.preprocess_results(self, config[self.identifier][constants.RESULTS_FILE])
-        hbc_results = self.preprocess_hbc(config[self.identifier][constants.HBC_FILE])
-        vaf_results = self.preprocess_vaf(config[self.identifier][constants.VAF_FILE])
+        groupid = config['core'][constants.GROUP_ID]
+        mrdetect_results = pwgs_tools.preprocess_results(self, config[self.identifier][constants.RESULTS_FILE], groupid)
+        hbc_results = self.preprocess_hbc(config[self.identifier][constants.HBC_FILE], groupid)
+        vaf_results = self.preprocess_vaf(config[self.identifier][constants.VAF_FILE], groupid)
         pwgs_base64 = self.write_pwgs_plot(hbc_results['hbc_file'], 
                                            vaf_results['vaf_path'],
                                            output_dir = self.workspace.print_location())
@@ -68,13 +69,18 @@ class main(plugin_base):
                 'reads_detected': vaf_results['reads_detected'],
                 'p-value': mrdetect_results['pvalue'],
                 'hbc_n': hbc_results['hbc_n'],
-                'pwgs_base64': pwgs_base64
+                'pwgs_base64': pwgs_base64,
+                'files': {
+                    'results_file': mrdetect_results['results_path'],
+                    'hbc_results': hbc_results["hbc_file"],
+                    'vaf_results': vaf_results["vaf_path"]
+                }
             },
             'version': "1.0"
         }
         self.join_WGS_data(wgs_file = config[self.identifier][constants.WGS_MUTATIONS], 
                            vaf_file = vaf_results['vaf_path'], 
-                           groupid = config['core'][constants.GROUP_ID],
+                           groupid = groupid,
                            output_dir = self.workspace.print_location())
         self.workspace.write_json('hbc_results.json', hbc_results)
         self.workspace.write_json('mrdetect_results.json', mrdetect_results)
@@ -90,12 +96,12 @@ class main(plugin_base):
         ]
         subprocess_runner().run(args)
         
-    def preprocess_hbc(self, hbc_path):
+    def preprocess_hbc(self, hbc_path, group_id):
         """
         summarize healthy blood controls (HBC) file
         """
         if hbc_path == 'None':
-            provenance = pwgs_tools.subset_provenance(self, "mrdetect")
+            provenance = pwgs_tools.subset_provenance(self, "mrdetect", group_id)
             try:
                 hbc_path = pwgs_tools.parse_file_path(self, self.HBC_SUFFIX, provenance)
             except OSError as err:
@@ -124,12 +130,12 @@ class main(plugin_base):
                     'hbc_file': hbc_path}
         return hbc_dict
     
-    def preprocess_vaf(self, vaf_path):
+    def preprocess_vaf(self, vaf_path, group_id):
         """
         summarize Variant Allele Frequency (VAF) file
         """
         if vaf_path == 'None':
-            provenance = pwgs_tools.subset_provenance(self, "mrdetect")
+            provenance = pwgs_tools.subset_provenance(self, "mrdetect", group_id)
             try:
                 vaf_path = pwgs_tools.parse_file_path(self, self.VAF_SUFFIX, provenance)
             except OSError as err:
