@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## Unreleased
+
+### GCGI-982: Provenance helper update
+- Update to complement changes to core functionality
+- Writes subset of provenance and `sample_info.json` at both configure and extract
+
 ## v1.0.0-dev0.0.6: 2023-07-20
 
 ### GCGI-967: Overhaul core functionality

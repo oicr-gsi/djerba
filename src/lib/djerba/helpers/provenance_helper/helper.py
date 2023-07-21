@@ -4,6 +4,7 @@ import csv
 import gzip
 import logging
 import djerba.core.constants as core_constants
+import djerba.util.ini_fields as ini  # TODO new module for these constants?
 import djerba.util.provenance_index as index
 from djerba.helpers.base import helper_base
 from djerba.util.provenance_reader import provenance_reader, sample_name_container, \
@@ -18,46 +19,37 @@ class main(helper_base):
     ROOT_SAMPLE_NAME = 'root_sample_name'
     PROVENANCE_OUTPUT = 'provenance_subset.tsv.gz'
     PRIORITY = 50
-
-    # constants previously in ini_fields.py
-    NORMAL_ID = 'normalid'
-    TUMOUR_ID = 'tumourid'
-    PATIENT_ID = 'patientid'
-    SAMPLE_NAME_WG_N = 'sample_name_whole_genome_normal' # whole genome, normal
-    SAMPLE_NAME_WG_T = 'sample_name_whole_genome_tumour' # whole genome, tumour
-    SAMPLE_NAME_WT_T = 'sample_name_whole_transcriptome' # whole transcriptome, tumour
+    SAMPLE_NAME_KEYS = [
+        ini.SAMPLE_NAME_WG_N,
+        ini.SAMPLE_NAME_WG_T,
+        ini.SAMPLE_NAME_WT_T
+    ]
     
     def configure(self, config):
+        """
+        Writes a subset of provenance, and a sample info JSON file, to the workspace
+        """
+        # TODO This helper could also write relevant file paths as JSON. Alternatively,
+        # other components can create their own provenance readers, using the provenance
+        # subset file and study/donor/sample parameters in the sample info JSON.
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         provenance_path = wrapper.get_my_string(self.PROVENANCE_INPUT_KEY)
         study = wrapper.get_my_string(self.STUDY_TITLE)
         donor = wrapper.get_my_string(self.ROOT_SAMPLE_NAME)
-        self.write_provenance_subset(study, donor, provenance_path)      
-        self.logger.debug("configure: Wrote provenance subset to workspace")
-        # parse the file provenance subset and write sample_info.json to the workspace
-        samples = sample_name_container()
-        if wrapper.my_param_is_not_null(self.SAMPLE_NAME_WG_N):
-            samples.set_wg_n(wrapper.get_my_string(self.SAMPLE_NAME_WG_N))
-        if wrapper.my_param_is_not_null(self.SAMPLE_NAME_WG_T):
-            samples.set_wg_t(wrapper.get_my_string(self.SAMPLE_NAME_WG_T))
-        if wrapper.my_param_is_not_null(self.SAMPLE_NAME_WT_T):
-            samples.set_wt_t(wrapper.get_my_string(self.SAMPLE_NAME_WT_T))
-        if samples.is_valid():
-            self.logger.debug("Sample names from INI are valid: {0}".format(samples))
-        else:
-            msg = "Invalid sample name configuration: {0}.".format(samples)
-            msg = msg + " Must either be empty, or have at least WG tumour/normal names"
-            self.logger.error(msg)
-            raise InvalidConfigurationError(msg)
-        # get canonical names from the file provenance reader
-        names = self.write_sample_info(study, donor, samples)
-        self.logger.debug("configure: Wrote sample info to workspace")
-        for key in names.keys():
-            wrapper.set_my_param(key, names.get(key))
+        self.write_provenance_subset(study, donor, provenance_path)
+        # write sample_info.json; populate sample names from provenance if needed
+        samples = self.get_sample_name_container(wrapper)
+        info = self.read_sample_info(study, donor, samples)
+        self.write_sample_info(info)
+        for key in self.SAMPLE_NAME_KEYS:
+            wrapper.set_my_param(key, info.get(key))
         return wrapper.get_config()
-    
+
     def extract(self, config):
+        """
+        If not already in the workspace, write the provenance subset and sample info JSON
+        """
         self.validate_full_config(config)
         wrapper = self.get_config_wrapper(config)
         provenance_path = wrapper.get_my_string(self.PROVENANCE_INPUT_KEY)
@@ -69,17 +61,68 @@ class main(helper_base):
             self.logger.debug(msg)
         else:
             self.write_provenance_subset(study, donor, provenance_path)
-            self.logger.debug("extract: Wrote provenance subset to workspace")
+        if self.workspace.has_file(core_constants.DEFAULT_SAMPLE_INFO):
+            msg = "extract: {0} ".format(core_constants.DEFAULT_SAMPLE_INFO)+\
+                "already in workspace, will not overwrite"
+            self.logger.debug(msg)
+        else:
+            samples = self.get_sample_name_container(wrapper)
+            info = self.read_sample_info(study, donor, samples)
+            self.write_sample_info(info)
+
+    def get_sample_name_container(self, config_wrapper):
+        """
+        Populate a sample name container for input to the file provenance reader
+        Allowed configurations:
+        - All values null
+        - All values specified
+        - WG tumour/normal names specified, WT name null
+        """
+        samples = sample_name_container()
+        if config_wrapper.my_param_is_not_null(ini.SAMPLE_NAME_WG_N):
+            samples.set_wg_n(config_wrapper.get_my_string(ini.SAMPLE_NAME_WG_N))
+        if config_wrapper.my_param_is_not_null(ini.SAMPLE_NAME_WG_T):
+            samples.set_wg_t(config_wrapper.get_my_string(ini.SAMPLE_NAME_WG_T))
+        if config_wrapper.my_param_is_not_null(ini.SAMPLE_NAME_WT_T):
+            samples.set_wt_t(config_wrapper.get_my_string(ini.SAMPLE_NAME_WT_T))
+        if samples.is_valid():
+            self.logger.debug("Sample names from INI are valid: {0}".format(samples))
+        else:
+            msg = "Invalid sample name configuration: {0}.".format(samples)
+            msg = msg + " Must either be empty, or have at least WG tumour/normal names"
+            self.logger.error(msg)
+            raise InvalidConfigurationError(msg)
+        return samples
+
+    def read_sample_info(self, study, donor, samples):
+        """
+        Parse file provenance and populate the sample info data structure
+        If the sample names are unknown, get from file provenance given study and donor
+        """        
+        subset_path = self.workspace.abs_path(self.PROVENANCE_OUTPUT)
+        reader = provenance_reader(subset_path, study, donor, samples)
+        names = reader.get_sample_names()
+        ids = reader.get_identifiers()
+        sample_info = {
+            self.STUDY_TITLE: study,
+            self.ROOT_SAMPLE_NAME: donor,
+            core_constants.TUMOUR_ID: ids.get(ini.TUMOUR_ID),
+            core_constants.NORMAL_ID: ids.get(ini.NORMAL_ID),
+            ini.SAMPLE_NAME_WG_T: names.get(ini.SAMPLE_NAME_WG_T),
+            ini.SAMPLE_NAME_WG_N: names.get(ini.SAMPLE_NAME_WG_N),
+            ini.SAMPLE_NAME_WT_T: names.get(ini.SAMPLE_NAME_WT_T)
+        }
+        return sample_info
 
     def specify_params(self):
         self.logger.debug("Specifying params for provenance helper")
+        self.set_priority_defaults(self.PRIORITY)
         self.set_ini_default(self.PROVENANCE_INPUT_KEY, self.DEFAULT_PROVENANCE_INPUT)
         self.add_ini_required(self.STUDY_TITLE)
         self.add_ini_required(self.ROOT_SAMPLE_NAME)
-        self.set_priority_defaults(self.PRIORITY)
-        self.set_ini_null_default(self.SAMPLE_NAME_WG_N)
-        self.set_ini_null_default(self.SAMPLE_NAME_WG_T)
-        self.set_ini_null_default(self.SAMPLE_NAME_WT_T)
+        self.set_ini_null_default(ini.SAMPLE_NAME_WG_N)
+        self.set_ini_null_default(ini.SAMPLE_NAME_WG_T)
+        self.set_ini_null_default(ini.SAMPLE_NAME_WT_T)
 
     def write_provenance_subset(self, study, donor, provenance_path):
         self.logger.info('Started reading file provenance from {0}'.format(provenance_path))
@@ -98,22 +141,8 @@ class main(helper_base):
                     kept += 1
         self.logger.debug('Done reading FPR; kept {0} of {1} rows'.format(kept, total))
         self.logger.info('Finished reading file provenance from {0}'.format(provenance_path))
+        self.logger.debug('Wrote provenance subset to {0}'.format(self.PROVENANCE_OUTPUT))
 
-    def write_sample_info(self, study, donor, samples):
-        subset_path = self.workspace.abs_path(self.PROVENANCE_OUTPUT)
-        reader = provenance_reader(subset_path, study, donor, samples)
-        names = reader.get_sample_names()
-        ids = reader.get_identifiers()
-        # TODO should the tumour/normal IDs be INI parameters?
-        sample_info = {
-            self.STUDY_TITLE: study,
-            self.ROOT_SAMPLE_NAME: donor,
-            core_constants.TUMOUR_ID: ids.get(self.TUMOUR_ID),
-            core_constants.NORMAL_ID: ids.get(self.NORMAL_ID),
-            self.SAMPLE_NAME_WG_T: names.get(self.SAMPLE_NAME_WG_T),
-            self.SAMPLE_NAME_WG_N: names.get(self.SAMPLE_NAME_WG_N),
-            self.SAMPLE_NAME_WT_T: names.get(self.SAMPLE_NAME_WT_T)
-        }
+    def write_sample_info(self, sample_info):
         self.workspace.write_json(core_constants.DEFAULT_SAMPLE_INFO, sample_info)
         self.logger.debug("Wrote sample info to workspace: {0}".format(sample_info))
-        return names
