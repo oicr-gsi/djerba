@@ -39,7 +39,7 @@ class main(plugin_base):
             'results': {
                 'author': config[self.identifier]['author']
             },
-            'version': "1.0"
+            'version': str(constants.PWGS_DJERBA_VERSION)
         }
         return data
 

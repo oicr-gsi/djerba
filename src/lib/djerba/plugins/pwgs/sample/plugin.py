@@ -96,7 +96,7 @@ class main(plugin_base):
                     'results_file': mrdetect_results['results_path']
                 }
             },
-            'version': "1.0"
+            'version': str(constants.PWGS_DJERBA_VERSION)
         }
         return data
 

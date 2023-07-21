@@ -110,7 +110,7 @@ ${html_builder().section_cells_begin("<h2>SAMPLE QC</h2>","main")}
       % else:
       <td >${results.get(constants.COVERAGE)}</td>
       % endif 
-      <td >Primary SNVs:</td>
+      <td >Candidate SNVs:</td>
       % if results.get(constants.SNV_COUNT) < 4000:
       <td style="background-color:#ff0000;">${html_builder().k_comma_format(results.get(constants.SNV_COUNT))}</td>
       % else:

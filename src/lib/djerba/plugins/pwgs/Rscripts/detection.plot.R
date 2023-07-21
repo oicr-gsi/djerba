@@ -13,7 +13,7 @@ option_list = list(
   make_option(c("-r", "--hbc_results"), type="character", default=NULL, help="results file path", metavar="character"),
   make_option(c("-v", "--vaf_results"), type="character", default=NULL, help="vaf file path", metavar="character"),
   make_option(c("-o", "--output_directory"), type="character", default="./", help="results file path", metavar="character"),
-  make_option(c("-p", "--pval"), type="numeric", default=3.15e-5, help="p-value cutoff", metavar="numeric")
+  make_option(c("-p", "--pval"), type="numeric", default=3.29e-5, help="p-value cutoff", metavar="numeric")
 )
 
 opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
@@ -44,7 +44,7 @@ results_cov <- results
 results_cov$noise_rate <- results_cov$sites_detected / results_cov$median_coverage
 results_cov$noise <- results_cov$noise_rate * sample_coverage
 
-dataset_cutoff <- ( qnorm(pval_cutoff,lower.tail = F) * sd(results_cov$noise[results$label == "CONTROLS"]) ) +  mean(results_cov$noise[results$label == "CONTROLS"])
+dataset_cutoff <- ( qnorm(pval_cutoff,lower.tail = F) * sd(results_cov$noise) ) +  mean(results_cov$noise[results$label == "CONTROLS"])
 
 rep_length = round(log(sites_checked,10),0)
 my_breaks <- rep(1:9, rep_length) * (10^rep(0:(rep_length-1), each = 9))

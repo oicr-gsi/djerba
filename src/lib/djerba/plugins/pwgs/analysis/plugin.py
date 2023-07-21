@@ -76,7 +76,7 @@ class main(plugin_base):
                     'vaf_results': vaf_results["vaf_path"]
                 }
             },
-            'version': "1.0"
+            'version': str(constants.PWGS_DJERBA_VERSION)
         }
         self.join_WGS_data(wgs_file = config[self.identifier][constants.WGS_MUTATIONS], 
                            vaf_file = vaf_results['vaf_path'], 
@@ -180,7 +180,8 @@ class main(plugin_base):
             os.path.join(constants.RSCRIPTS_LOCATION,'detection.plot.R'),
             '--hbc_results', hbc_path,
             '--vaf_results', vaf_file,
-            '--output_directory', output_dir 
+            '--output_directory', output_dir,
+            '--pval', str(constants.DETECTION_ALPHA)
         ]
         pwgs_results = subprocess_runner().run(args)
         return(pwgs_results.stdout.split('"')[1])
