@@ -46,6 +46,20 @@ class plugin_base(configurable, ABC):
         }
         return data
 
+    def get_starting_plugin_data(self, config_wrapper, plugin_version):
+        # create a data structure with empty merge inputs and results
+        attributes = wrapper.get_my_attributes()
+        self.check_attributes_known(attributes)
+        data = {
+            'plugin_name': self.identifier+' plugin',
+            'version': plugin_version,
+            'priorities': wrapper.get_my_priorities(),
+            'attributes': wrapper.get_my_attributes(),
+            'merge_inputs': {},
+            'results': {},
+        }
+        return data
+
     def render(self, data):
         """
         Input is a data structure satisfying the plugin schema
