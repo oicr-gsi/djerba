@@ -240,6 +240,13 @@ class clinical_report_json_composer(composer_base):
         tmb_dict[rc.METRIC_PLOT] = converter().convert_svg(tmb_plot_location, 'TMB plot')
         return(tmb_dict)
 
+    def assemble_IMMUNE(self):
+        immune_score = 0.278449094
+        immune_dict = {}
+        immune_plot_location = self.write_biomarker_plot(self.input_dir, "immune", immune = immune_score)
+        immune_dict[rc.METRIC_PLOT] = converter().convert_svg(immune_plot_location, 'Immune plot')
+        return(immune_dict)
+
     def build_assay_name(self):
         ##WGS v WGTS
         assay_type = self.params.get(xc.ASSAY_TYPE)
@@ -325,7 +332,8 @@ class clinical_report_json_composer(composer_base):
     def build_genomic_biomarkers(self, input_dir, sample_ID, tmb_value=None, msi_file_path = None):
         biomarkers = [
             self.assemble_TMB(tmb_value),
-            self.assemble_MSI(msi_file_path)
+            self.assemble_MSI(msi_file_path),
+            self.assemble_IMMUNE()
         ]
         # write and annotate the biomarkers file in the report directory
         # the file is used by the build_therapy_info() method
@@ -1015,14 +1023,15 @@ class clinical_report_json_composer(composer_base):
         }
         return row
 
-    def write_biomarker_plot(self, out_dir, marker, tmb = 0):
+    def write_biomarker_plot(self, out_dir, marker, tmb = 0, immune = 0):
         out_path = os.path.join(out_dir, marker+'.svg')
         args = [
             os.path.join(self.r_script_dir, 'biomarkers_plot.R'),
             '-d', self.input_dir,
             '-c', self.closest_tcga_lc,
             '-m', marker,
-            '-t', str(tmb)
+            '-t', str(tmb), 
+            '-s', str(immune)
         ]
         subprocess_runner(self.log_level, self.log_path).run(args)
         self.logger.info("Wrote biomarker {0} plot to {1}".format(marker, out_path))
