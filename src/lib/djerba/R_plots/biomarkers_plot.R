@@ -10,7 +10,8 @@ option_list = list(
   make_option(c("-d", "--dir"), type="character", default=NULL, help="Input report directory path", metavar="character"),
   make_option(c("-m", "--marker"), type="character", default=NULL, help="msi", metavar="character"),
   make_option(c("-c", "--code"), type="character", default=NULL, help="TCGA code", metavar="character"),
-  make_option(c("-t", "--tmb"), type="numeric", default=NULL, help="TMB per Mb", metavar="numeric")
+  make_option(c("-t", "--tmb"), type="numeric", default=NULL, help="TMB per Mb", metavar="numeric"),
+  make_option(c("-s", "--immune"), type="numeric", default=NULL, help="Immune T-cell CD8+ score", metavar="numeric")
 )
 
 # get options
@@ -18,8 +19,10 @@ opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
 opt <- parse_args(opt_parser)
 biomarker <- opt$marker
 sampleTMB <- opt$tmb
+sampleImmuneScore <- opt$immune
 sample_tcga <- opt$code
 work_dir <- opt$dir
+
 
 cutoff_MSS = 5
 cutoff_MSI = 15
@@ -91,6 +94,60 @@ if(biomarker=="tmb"){
 
 }
 
+if(biomarker=="immune"){
+  
+  data_dir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), 'data', sep='/')
+
+  immune_file <- paste(data_dir, 'immune_cohort.txt', sep='/')
+  immune_data <- read.delim(immune_file, header = TRUE, stringsAsFactors = F)
+  
+
+  immune_score <- median(immune_data$score)
+  immune_plot_path <- paste(work_dir, 'immune.svg', sep='/')
+  
+  svg(immune_plot_path, width = 8, height = 1.6, bg = "transparent")
+  print(
+  ggplot(immune_data) + 
+
+    geom_boxplot(aes(x=0,y=score,color="All TCGA"),width = 0.05, outlier.shape = NA) +
+  #  geom_hline(yintercept = 1,alpha=0.25,color="white")  +
+  #  geom_hline(yintercept = max(sampleTMB, 25), alpha=0.25,color="white")  +
+    
+    annotate( geom="segment", x = -0.1, xend=0.1, y=10, yend=10, colour = "gray") +
+    
+    annotate(geom="text",y = median_tmb, x=0,color="black",label="Cohort", hjust = 0.3, vjust = 3, size=4) +
+    annotate(geom="text",y = sampleImmuneScore,x=0,color="red",label="This Sample",  vjust = -2.5,size=4) +
+    
+    annotate(geom="point",y = sampleImmuneScore,x=0,color="red",shape=1, size=5) +
+    annotate(geom="point",y = sampleImmuneScore,x=0,color="red",shape=20, size=1.5) +
+    
+    labs(x="",y="score",color="",title="",shape="",size="") +
+    scale_color_manual( values= c( "gray30", "red") ) +
+    scale_shape_manual(values=c(16,1)) +
+    theme_classic() +
+    guides(shape="none",size="none",color="none") + 
+    scale_y_continuous( limits = c(0, max(sampleImmuneScore, 25))) +
+    coord_flip(clip = "off") +
+    theme(
+      axis.line.y = element_blank(),
+      panel.grid = element_blank(), 
+      text = element_text(size = 18),
+      legend.title=element_blank(),
+      plot.margin = unit(c(0, 12, 0, 4), "points"),
+      axis.title.y=element_blank(),
+      axis.text.y=element_blank(),
+      axis.ticks.y=element_blank(),
+      line = element_blank(),
+      panel.background = element_rect(fill = "transparent", colour = NA),
+      plot.background = element_rect(fill="transparent",color=NA)
+      
+    )
+  )
+  dev.off()
+
+}
+
+                                                 
 if(biomarker=="msi"){
   
   msi_path <- paste(work_dir, 'msi.txt', sep='/')
