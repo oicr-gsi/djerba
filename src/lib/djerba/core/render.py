@@ -62,7 +62,7 @@ class renderer(logger):
         # make 'clinical research report' and 'supplementary' sections
         # populate with HTML from body, based on the attributes and sorted by priority
         all_html = [header,]
-        all_html.append('<h1>Clinical Research Report</h1>') # TODO fix formatting
+        #all_html.append('<h1>Clinical Research Report</h1>') # TODO fix formatting
         report_names = [x for x in body.keys() \
                         if core_constants.CLINICAL in attributes[x] \
                         and core_constants.SUPPLEMENTARY not in attributes[x]]
