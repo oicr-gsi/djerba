@@ -98,7 +98,7 @@ if(biomarker=="immune"){
   
   data_dir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), 'data', sep='/')
 
-  immune_file <- paste(data_dir, 'immune_cohort.txt', sep='/')
+  immune_file <- paste(data_dir, 'immune_cohort_filtered.txt', sep='/')
   immune_data <- read.delim(immune_file, header = TRUE, stringsAsFactors = F)
   
 
@@ -115,7 +115,7 @@ if(biomarker=="immune"){
     
     annotate( geom="segment", x = -0.1, xend=0.1, y=10, yend=10, colour = "gray") +
     
-    annotate(geom="text",y = median_tmb, x=0,color="black",label="Cohort", hjust = 0.3, vjust = 3, size=4) +
+    annotate(geom="text",y = immune_score, x=0,color="black",label="Cohort", hjust = 0.3, vjust = 3, size=4) +
     annotate(geom="text",y = sampleImmuneScore,x=0,color="red",label="This Sample",  vjust = -2.5,size=4) +
     
     annotate(geom="point",y = sampleImmuneScore,x=0,color="red",shape=1, size=5) +
@@ -126,7 +126,7 @@ if(biomarker=="immune"){
     scale_shape_manual(values=c(16,1)) +
     theme_classic() +
     guides(shape="none",size="none",color="none") + 
-    scale_y_continuous( limits = c(0, max(sampleImmuneScore, 25))) +
+    scale_y_continuous( limits = c(0, max(sampleImmuneScore, 1))) +
     coord_flip(clip = "off") +
     theme(
       axis.line.y = element_blank(),

@@ -242,7 +242,7 @@ class clinical_report_json_composer(composer_base):
 
     def assemble_IMMUNE(self):
         immune_score = 0.278449094
-        immune_dict = {}
+        immune_dict = self.call_IMMUNE(immune_score)
         immune_plot_location = self.write_biomarker_plot(self.input_dir, "immune", immune = immune_score)
         immune_dict[rc.METRIC_PLOT] = converter().convert_svg(immune_plot_location, 'Immune plot')
         return(immune_dict)
@@ -644,6 +644,20 @@ class clinical_report_json_composer(composer_base):
             self.logger.error(msg)
             raise RuntimeError(msg)
         return(tmb_dict)
+
+
+    def call_IMMUNE(self, immune_score):
+        immune_dict = {rc.ALT: "IMMUNE",
+                    rc.ALT_URL: None,
+                    rc.METRIC_VALUE: immune_score,
+                    rc.METRIC_ACTIONABLE: False,
+                    rc.METRIC_TEXT: "testing",
+                    rc.METRIC_ALTERATION: "NA"
+                    }
+        #if immune_score:
+        #    metric_text = row[constants.METRIC_TEXT]
+        return immune_dict
+
 
     def cytoband_sort_order(self, cb_input):
         """Cytobands are (usually) of the form [integer][p or q][decimal]; also deal with edge cases"""
