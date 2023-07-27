@@ -28,7 +28,7 @@ class TestPwgAnalysisPlugin(PluginTester):
         params = {
             self.INI: 'data/pwgs.analysis.ini',
             self.JSON: json_location,
-            self.MD5: '81284d021b26f00a913d82886afbb2bc'
+            self.MD5: '2ccca069bda912c101577a8ff6cd03e7'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -65,7 +65,7 @@ class TestPwgSamplePlugin(PluginTester):
         params = {
             self.INI: 'data/pwgs.sample.ini',
             self.JSON: json_location,
-            self.MD5: '2db1c4e3f1070faa16a88aa231dd7116'
+            self.MD5: 'fc429d5a980fa71a94c924e39fb6130b'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -82,7 +82,7 @@ class TestPwgSupplementaryPlugin(PluginTester):
         params = {
             self.INI: 'data/pwgs.supp.ini',
             self.JSON: json_location,
-            self.MD5: '933dd2c7f74da321e7b9cb53355c8296'
+            self.MD5: '7abc0caa45be2b1fe8b4fe21bf41c91b'
         }
         self.run_basic_test(test_source_dir, params)
 

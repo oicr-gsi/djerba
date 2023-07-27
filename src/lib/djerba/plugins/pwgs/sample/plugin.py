@@ -54,12 +54,12 @@ class main(plugin_base):
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
-        tumour_id = config['core'][constants.GROUP_ID]
-        qc_dict = self.fetch_coverage_etl_data(tumour_id, config)
-        insert_size_dist_file = self.preprocess_bamqc(config[self.identifier][constants.BAMQC], tumour_id)
-        snv_count = self.preprocess_snv_count(config[self.identifier][constants.SNV_COUNT_FILE], tumour_id)
+        group_id = config['core'][constants.GROUP_ID]
+        qc_dict = self.fetch_coverage_etl_data(group_id, config)
+        insert_size_dist_file = self.preprocess_bamqc(config[self.identifier][constants.BAMQC], group_id)
+        snv_count = self.preprocess_snv_count(config[self.identifier][constants.SNV_COUNT_FILE], group_id)
         results_file = config[self.identifier][constants.RESULTS_FILE]
-        mrdetect_results = pwgs_tools.preprocess_results(self, results_file, tumour_id)
+        mrdetect_results = pwgs_tools.preprocess_results(self, results_file, group_id)
         if mrdetect_results['outcome'] == "DETECTED":
             ctdna_detection = "Detected"
         elif mrdetect_results['outcome'] == "UNDETECTED":
@@ -100,13 +100,13 @@ class main(plugin_base):
         }
         return data
 
-    def fetch_coverage_etl_data(self, tumour_id, config):
+    def fetch_coverage_etl_data(self, group_id, config):
         self.qcetl_cache = "/scratch2/groups/gsi/production/qcetl_v1"
         self.etl_cache = QCETLCache(self.qcetl_cache)
         cached_coverages = self.etl_cache.bamqc4merged.bamqc4merged
         columns_of_interest = gsiqcetl.column.BamQc4MergedColumn
         data = cached_coverages.loc[
-            (cached_coverages[columns_of_interest.GroupID] == tumour_id),
+            (cached_coverages[columns_of_interest.GroupID] == group_id),
             [columns_of_interest.GroupID, columns_of_interest.CoverageDeduplicated, columns_of_interest.InsertMedian]
             ]
         qc_dict = {}
@@ -116,7 +116,7 @@ class main(plugin_base):
         else:
             coverage = config[self.identifier]['coverage']
             median_insert_size = config[self.identifier]['median_insert_size']
-            msg = "QC metrics associated with tumour_id {0} not found in QC-ETL. Trying to use ini specified parameters instead: cov = {1}, IS = {2}.".format(tumour_id, coverage, median_insert_size)
+            msg = "QC metrics associated with group_id {0} not found in QC-ETL. Trying to use ini specified parameters instead: cov = {1}, IS = {2}.".format(group_id, coverage, median_insert_size)
             self.logger.debug(msg)
             try:
                 qc_dict['coverage'] = float(coverage)
@@ -138,9 +138,9 @@ class main(plugin_base):
         ]
         subprocess_runner().run(args)
     
-    def preprocess_bamqc(self, bamqc_file, tumour_id):
+    def preprocess_bamqc(self, bamqc_file, group_id = "None"):
         if bamqc_file == 'None':
-            provenance = pwgs_tools.subset_provenance(self, "dnaSeqQC", tumour_id)
+            provenance = pwgs_tools.subset_provenance(self, "dnaSeqQC", group_id)
             try:
                 bamqc_file = pwgs_tools.parse_file_path(self, self.BAMQC_SUFFIX, provenance)
             except OSError as err:
@@ -158,12 +158,12 @@ class main(plugin_base):
                 csv_out.writerow([i,is_data[i]])
         return(file_location)
     
-    def preprocess_snv_count(self, snv_count_path, tumour_id):
+    def preprocess_snv_count(self, snv_count_path, group_id = "None"):
         """
         pull SNV count from file
         """
         if snv_count_path == 'None':
-            provenance = pwgs_tools.subset_provenance(self, "mrdetect", tumour_id)
+            provenance = pwgs_tools.subset_provenance(self, "mrdetect", group_id)
             try:    
                 snv_count_path = pwgs_tools.parse_file_path(self, self.SNV_COUNT_SUFFIX, provenance)
             except OSError as err:

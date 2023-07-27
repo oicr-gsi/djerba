@@ -8,7 +8,7 @@ import djerba.plugins.pwgs.constants as constants
 import djerba.util.provenance_index as index
 
 
-def preprocess_results(self, results_path, group_id):
+def preprocess_results(self, results_path, group_id = 'None'):
     """
     pull data from results file
     """

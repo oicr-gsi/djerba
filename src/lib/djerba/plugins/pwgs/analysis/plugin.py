@@ -96,7 +96,7 @@ class main(plugin_base):
         ]
         subprocess_runner().run(args)
         
-    def preprocess_hbc(self, hbc_path, group_id):
+    def preprocess_hbc(self, hbc_path, group_id = 'None'):
         """
         summarize healthy blood controls (HBC) file
         """
@@ -130,7 +130,7 @@ class main(plugin_base):
                     'hbc_file': hbc_path}
         return hbc_dict
     
-    def preprocess_vaf(self, vaf_path, group_id):
+    def preprocess_vaf(self, vaf_path, group_id = 'None'):
         """
         summarize Variant Allele Frequency (VAF) file
         """
