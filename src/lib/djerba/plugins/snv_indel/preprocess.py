@@ -127,8 +127,7 @@ class preprocess():
     
     # FIX THIS BECAUSE THE ARATIO FILE IS DIFFERENT FOR TAR AND NONTAR
     if self.tar == True:
-        #maf_path = self.preprocess_maf(self.maf_file)
-        maf_path = "report/tmp/annotated_maf.tsv"
+        maf_path = self.preprocess_maf(self.maf_file)
 
         cmd = [
          'Rscript', self.r_script_dir + "/process_CNA_data.r",
@@ -147,8 +146,7 @@ class preprocess():
         seg_path = self.preprocess_seg(self.sequenza_path)
         aratio_path = self.preprocess_aratio(self.sequenza_path, self.report_dir)
         gep_path = self.preprocess_gep(self.gep_file)
-        #maf_path = self.preprocess_maf(self.maf_file)
-        maf_path = "report/tmp/annotated_maf.tsv"
+        maf_path = self.preprocess_maf(self.maf_file)
         cmd = [
             'Rscript', self.r_script_dir + "process_CNA_data.r",
             '--basedir', self.r_script_dir,
