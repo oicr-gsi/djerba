@@ -89,7 +89,7 @@ if(biomarker=="tmb"){
       panel.grid = element_blank(), 
       text = element_text(size = 18),
       legend.title=element_blank(),
-      plot.margin = unit(c(0, 12, 0, 4), "points"),
+      plot.margin = unit(c(t=0, r=6, b=0, l=-20), "points"),
       axis.title.y=element_blank(),
       axis.text.y=element_blank(),
       axis.ticks.y=element_blank(),
@@ -151,7 +151,7 @@ if(biomarker=="msi"){
           axis.ticks.y=element_blank(),
           text = element_text(size = 18),
           panel.grid = element_blank(), 
-          plot.margin = unit(c(-20, -20, 0, -20), "points"),
+          plot.margin = unit(c(t=-20, r=-20, b=0, l=-20), "points"),
           line = element_blank(),
           panel.background = element_rect(fill = "transparent", colour = NA),
           plot.background = element_rect(fill="transparent",color=NA)
