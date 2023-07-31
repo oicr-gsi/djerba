@@ -41,10 +41,11 @@ if(biomarker=="tmb"){
   
   if (sample_tcga %in% external_tmb_data_type$CANCER.TYPE){
     median_tmb <- median(external_tmb_data_type$tmb)
-    cohort_label <- "Matched External Cohort"}
+    cohort_label <- paste(toupper(sample_tcga) ,"Cohort")
+  }
   else if (sample_tcga %in% tcga_tmb_data_type$CANCER.TYPE){
     median_tmb <- median(tcga_tmb_data_type$tmb)
-    cohort_label <- "Matched TCGA Cohort"
+    cohort_label <- paste("TCGA",toupper(sample_tcga),"Cohort")
   }
   else{
     median_tmb <- median(tcga_tmb_data$tmb)
@@ -71,7 +72,7 @@ if(biomarker=="tmb"){
     annotate( geom="segment", x = -0.1, xend=0.1, y=10, yend=10, colour = "gray") +
     
     annotate(geom="text",y = 10,x=0,color="gray30",label="TMB-H Cutoff",  vjust = -4.5, size=4) +
-    annotate(geom="text",y = median_tmb, x=0,color="black",label=cohort_label, hjust = 0.3, vjust = 2.8, size=4) +
+    annotate(geom="text",y = median_tmb, x=0,color="black",label=cohort_label, hjust = 0.5, vjust = 2.8, size=4) +
     annotate(geom="text",y = sampleTMB,x=0,color="red",label="This Sample",  vjust = -2.5,size=4) +
     
     annotate(geom="point",y = sampleTMB,x=0,color="red",shape=1, size=8) +
@@ -109,19 +110,19 @@ if(biomarker=="msi"){
   
   boot <- read.table(msi_path,header=FALSE)
   
-  names(boot) <- c("q0","q1","median","q3","q4")
+  names(boot) <- c("q0","q1","median_value","q3","q4")
   boot$Sample <- "Sample"
   
   msi_out_path <- paste(work_dir, 'msi.svg', sep='/')
   
-  msi_median <- unique(boot$median)
+  msi_median <- as.numeric(unique(boot$median_value))
   
   options(bitmapType='cairo')
   svg(msi_out_path, width = 8, height = 1.6, bg = "transparent")
   print(
     
   ggplot(boot,aes(x="Sample")) + 
-    geom_errorbar(aes(ymin=q1, ymax=q3), width=0, linewidth=2) +
+    geom_errorbar(aes(ymin=as.numeric(q1), ymax=as.numeric(q3)), width=0, linewidth=1, color="red") +
     
     annotate(x = 0, xend=2, y=cutoff_MSS, yend=cutoff_MSS,geom="segment",colour = "gray") +
     annotate(geom="text",x = 0,y=cutoff_MSS/2,color="gray30",label="MSS", hjust = 0.5, vjust = -6,size=4) +
@@ -132,9 +133,10 @@ if(biomarker=="msi"){
     annotate(x = 0, xend=2, y=cutoff_MSI, yend=cutoff_MSI,geom="segment", colour = "gray") +
     annotate(geom="text",x = 0,y=(cutoff_MSI + cutoff_MSS)/2, color="gray30",label="Inconclusive", hjust = 0.5, vjust = -6,size=4) +
     
-    geom_bar(aes(y=median),fill='gray',stat ="identity",alpha=0.5,colour="red") + 
-    geom_errorbar(aes(ymin=q0, ymax=q4), width=0,colour="red") +
     
+   # geom_bar(aes(y=median),fill='gray',stat ="identity",alpha=0.5,colour="red") + 
+    annotate(geom="point",y = msi_median, x="Sample",color="red",shape=1, size=8) +
+    annotate(geom="point",y = msi_median, x="Sample",color="red",shape=20, size=3) +
     
     theme_classic() + 
     labs(x="",y="unstable microsatellites (%)",title="") + 
