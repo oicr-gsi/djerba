@@ -29,6 +29,7 @@ MAF_FILE = 'maf_file'
 MAVIS_FILE = 'mavis_file'
 MEAN_COVERAGE = 'mean_coverage'
 MIN_FUSION_READS = 'min_fusion_reads'
+MRDETECT_FILE = 'mrdetect_file'
 MSI_FILE = 'msi_file'
 MUTATION_NONSYN = 'mutation_nonsyn'
 NORMAL_ID = 'normalid'
@@ -59,7 +60,6 @@ SEQUENZA_GAMMA = 'sequenza_gamma'
 SEQUENZA_REVIEWER_1 = 'sequenza_reviewer_1'
 SEQUENZA_REVIEWER_2 = 'sequenza_reviewer_2'
 SEQUENZA_SOLUTION = 'sequenza_solution'
-SEX = 'sex'
 STUDY_ID = 'studyid'
 TARGET_COVERAGE = 'target_coverage'
 TCGA_CODE = 'tcgacode'
@@ -117,7 +117,6 @@ SCHEMA_CORE = {
         SAMPLE_TYPE,
         SEQUENZA_REVIEWER_1,
         SEQUENZA_REVIEWER_2,
-        SEX,
         STUDY_ID,
         TCGA_CODE
     ],
@@ -157,6 +156,7 @@ SCHEMA_DEFAULT = {
         MAVIS_FILE,
         MEAN_COVERAGE,
         MSI_FILE,
+        MRDETECT_FILE,
         MUTATION_NONSYN,
         NORMAL_ID,
         ONCO_LIST,
@@ -187,7 +187,6 @@ SCHEMA_DEFAULT = {
         SAMPLE_TYPE,
         SEQUENZA_REVIEWER_1,
         SEQUENZA_REVIEWER_2,
-        SEX,
         STUDY_ID,
         TCGA_CODE
     ],
@@ -254,6 +253,7 @@ SCHEMA_WGS_ONLY = {
         GENOMIC_SUMMARY,
         MAF_FILE,
         MEAN_COVERAGE,
+        MRDETECT_FILE,
         MSI_FILE,
         MUTATION_NONSYN,
         NORMAL_ID,
@@ -284,7 +284,6 @@ SCHEMA_WGS_ONLY = {
         SAMPLE_TYPE,
         SEQUENZA_REVIEWER_1,
         SEQUENZA_REVIEWER_2,
-        SEX,
         STUDY_ID,
         TCGA_CODE
     ],
@@ -370,7 +369,6 @@ SCHEMA_FAILED = {
         SAMPLE_TYPE,
         SEQUENZA_REVIEWER_1,
         SEQUENZA_REVIEWER_2,
-        SEX,
         STUDY_ID,
         TCGA_CODE
     ],

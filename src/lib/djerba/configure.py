@@ -123,6 +123,7 @@ class configurer(logger):
             updates[ini.SEQUENZA_FILE] = self.reader.parse_sequenza_path()
             updates[ini.MAF_FILE] = self.reader.parse_maf_path()
             updates[ini.MSI_FILE] = self.reader.parse_msi_path()
+            updates[ini.MRDETECT_FILE] = self.reader.parse_mrdetect_path()
             if not self.wgs_only:
                 updates[ini.MAVIS_FILE] = self.reader.parse_mavis_path()
                 updates[ini.GEP_FILE] = self.reader.parse_gep_path()
