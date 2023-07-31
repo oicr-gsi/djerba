@@ -454,7 +454,7 @@ class provenance_reader(logger):
     def parse_sequenza_path(self):
         workflows = [self.WF_SEQUENZA, self.NIASSA_WF_SEQUENZA]
         mt = self.MT_ZIP
-        suffix = '_results\.zip$'
+        suffix = '_results\.sequenza\.zip$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_msi_path(self):
