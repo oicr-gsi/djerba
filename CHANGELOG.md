@@ -1,4 +1,12 @@
 # CHANGELOG
+## v0.4.13: 2023-07-31
+
+### Changed
+- GCGI-989: Made adjustments to biomarker plots 
+  
+### Added
+- example .pdf and .ini of WGTS report in `examples/`
+
 ## v0.4.12: 2023-07-19
 
 ### Changed
