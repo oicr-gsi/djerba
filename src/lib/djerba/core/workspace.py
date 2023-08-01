@@ -69,7 +69,7 @@ class workspace(logger):
 
     def remove_file(self, rel_path):
         os.remove(os.path.join(self.dir_path, rel_path))
-
+    
     # no need to validate paths for write_* methods; output dir already validated as writable
 
     def write_json(self, rel_path, data):
