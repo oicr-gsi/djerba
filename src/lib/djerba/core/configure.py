@@ -112,6 +112,13 @@ class configurable(core_base, ABC):
     #################################################################
     ### start of methods to handle required/default parameters
 
+    def add_ini_discovered(self, key):
+        """
+        Add a 'discovered' parameter to be filled in at runtime by custom config code
+        Do this by setting a null default value
+        """
+        self.set_ini_default(key, cc.NULL)
+
     def add_ini_required(self, key):
         if key in cc.RESERVED_PARAMS:
             msg = 'Cannot add reserved key {0} as a required parameter'.format(key)
@@ -169,12 +176,6 @@ class configurable(core_base, ABC):
             self.logger.error(msg)
             raise DjerbaConfigError(msg)
         self.ini_defaults[key] = value
-
-    def set_ini_null_default(self, key):
-        """
-        Set a null parameter default -- to be filled in at runtime by custom config code
-        """
-        self.set_ini_default(key, cc.NULL)
 
     @abstractmethod
     def set_priority_defaults(self, priority):
@@ -276,7 +277,7 @@ class core_configurer(configurable):
         return wrapper.get_config()
 
     def specify_params(self):
-        self.set_ini_null_default(cc.REPORT_ID)
+        self.add_ini_discovered(cc.REPORT_ID)
         self.set_ini_default(cc.REPORT_VERSION, 1)
         self.set_ini_default(cc.ARCHIVE_NAME, "djerba")
         self.set_ini_default(

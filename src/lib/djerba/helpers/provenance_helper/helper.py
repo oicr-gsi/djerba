@@ -1,4 +1,14 @@
-"""Helper for writing a subset of file provenance to the shared workspace"""
+"""
+Helper for writing a subset of file provenance to the shared workspace
+
+Outputs to the workspace:
+- Subset of sample provenance for the donor and study supplied by the user
+- JSON file with donor, study, and sample names
+
+Plugins can then create their own provenance reader objects using params in the JSON, to
+find relevant file paths. Reading the provenance subset is very much faster than reading 
+the full file provenance report.
+"""
 
 import csv
 import gzip
@@ -24,14 +34,11 @@ class main(helper_base):
         ini.SAMPLE_NAME_WG_T,
         ini.SAMPLE_NAME_WT_T
     ]
-    
+
     def configure(self, config):
         """
         Writes a subset of provenance, and a sample info JSON file, to the workspace
         """
-        # TODO This helper could also write relevant file paths as JSON. Alternatively,
-        # other components can create their own provenance readers, using the provenance
-        # subset file and study/donor/sample parameters in the sample info JSON.
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         provenance_path = wrapper.get_my_string(self.PROVENANCE_INPUT_KEY)
@@ -58,13 +65,13 @@ class main(helper_base):
         if self.workspace.has_file(self.PROVENANCE_OUTPUT):
             msg = "extract: {0} ".format(self.PROVENANCE_OUTPUT)+\
                 "already in workspace, will not overwrite"
-            self.logger.debug(msg)
+            self.logger.info(msg)
         else:
             self.write_provenance_subset(study, donor, provenance_path)
         if self.workspace.has_file(core_constants.DEFAULT_SAMPLE_INFO):
             msg = "extract: {0} ".format(core_constants.DEFAULT_SAMPLE_INFO)+\
                 "already in workspace, will not overwrite"
-            self.logger.debug(msg)
+            self.logger.info(msg)
         else:
             samples = self.get_sample_name_container(wrapper)
             info = self.read_sample_info(study, donor, samples)
@@ -98,7 +105,7 @@ class main(helper_base):
         """
         Parse file provenance and populate the sample info data structure
         If the sample names are unknown, get from file provenance given study and donor
-        """        
+        """
         subset_path = self.workspace.abs_path(self.PROVENANCE_OUTPUT)
         reader = provenance_reader(subset_path, study, donor, samples)
         names = reader.get_sample_names()
@@ -120,9 +127,9 @@ class main(helper_base):
         self.set_ini_default(self.PROVENANCE_INPUT_KEY, self.DEFAULT_PROVENANCE_INPUT)
         self.add_ini_required(self.STUDY_TITLE)
         self.add_ini_required(self.ROOT_SAMPLE_NAME)
-        self.set_ini_null_default(ini.SAMPLE_NAME_WG_N)
-        self.set_ini_null_default(ini.SAMPLE_NAME_WG_T)
-        self.set_ini_null_default(ini.SAMPLE_NAME_WT_T)
+        self.add_ini_discovered(ini.SAMPLE_NAME_WG_N)
+        self.add_ini_discovered(ini.SAMPLE_NAME_WG_T)
+        self.add_ini_discovered(ini.SAMPLE_NAME_WT_T)
 
     def write_provenance_subset(self, study, donor, provenance_path):
         self.logger.info('Started reading file provenance from {0}'.format(provenance_path))
@@ -139,8 +146,7 @@ class main(helper_base):
                 if row[index.STUDY_TITLE] == study and row[index.ROOT_SAMPLE_NAME] == donor:
                     writer.writerow(row)
                     kept += 1
-        self.logger.debug('Done reading FPR; kept {0} of {1} rows'.format(kept, total))
-        self.logger.info('Finished reading file provenance from {0}'.format(provenance_path))
+        self.logger.info('Done reading FPR; kept {0} of {1} rows'.format(kept, total))
         self.logger.debug('Wrote provenance subset to {0}'.format(self.PROVENANCE_OUTPUT))
 
     def write_sample_info(self, sample_info):
