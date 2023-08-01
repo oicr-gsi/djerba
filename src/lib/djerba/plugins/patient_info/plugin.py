@@ -36,15 +36,15 @@ class main(plugin_base):
     # config/results keys
     # REPORT_ID, DONOR and STUDY from core
     # Patient LIMS ID = DONOR
-    ASSAY_SHORT_NAME = "Assay short name"
-    ASSAY = "Assay"
-    BLOOD_SAMPLE_ID = "Blood Sample ID"
-    PRIMARY_CANCER = "Primary cancer"
-    REPORT_DATE = "Report date"
-    REQUISITION_ID = "Requisition ID"
-    REQ_APPROVED_DATE = "Requisition Approved"
-    SAMPLE_ANATOMICAL_SITE = "Site of biopsy/surgery"
-    TUMOUR_SAMPLE_ID = "Tumour Sample ID"
+    ASSAY_SHORT_NAME = "assay short name"
+    ASSAY = "assay"
+    BLOOD_SAMPLE_ID = "blood sample id"
+    PRIMARY_CANCER = "primary cancer"
+    REPORT_DATE = "report date"
+    REQUISITION_ID = "requisition id"
+    REQ_APPROVED_DATE = "requisition approved"
+    SAMPLE_ANATOMICAL_SITE = "site of biopsy/surgery"
+    TUMOUR_SAMPLE_ID = "tumour sample id"
 
     ASSAY_LOOKUP = {
         'WGTS': 'Whole genome and transcriptome sequencing (WGTS)'+\
@@ -54,28 +54,26 @@ class main(plugin_base):
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
-        core_keys = [
-            core_constants.DONOR,
-            core_constants.STUDY,
-            core_constants.REPORT_ID
-        ]
-        for key in core_keys:
-            wrapper.set_my_param(key, self.get_core_string(key))
+        report_id = wrapper.get_core_string(core_constants.REPORT_ID)
+        wrapper.set_my_param(core_constants.REPORT_ID, report_id)
         info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
-        patient_id_key = core_constants.PATIENT_STUDY_ID
         try:
+            patient_id_key = core_constants.PATIENT_STUDY_ID
             wrapper.set_my_param(patient_id_key, info[patient_id_key])
+            wrapper.set_my_param(core_constants.DONOR, info[core_constants.ROOT_SAMPLE_NAME])
+            wrapper.set_my_param(core_constants.DONOR, info[core_constants.ROOT_SAMPLE_NAME])
+            wrapper.set_my_param(core_constants.PROJECT, info[core_constants.STUDY_TITLE])
             wrapper.set_my_param(self.BLOOD_SAMPLE_ID, info[core_constants.NORMAL_ID])
             wrapper.set_my_param(self.TUMOUR_SAMPLE_ID, info[core_constants.TUMOUR_ID])
         except KeyError as err:
             msg = "ID not found in sample info {0}: {1}".format(info, err)
             self.logger.error(msg)
             raise DjerbaPluginError(msg) from err
-        if not wrapper.has_my_param(self.REPORT_DATE):
+        if wrapper.my_param_is_null(self.REPORT_DATE):
             wrapper.set_my_param(self.REPORT_DATE, strftime("%Y/%m/%d"))
         return wrapper.get_config()
 
-    def extract(self):
+    def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         # populate results directly from config
@@ -95,7 +93,7 @@ class main(plugin_base):
         # look up the long assay name
         assay_short_name = wrapper.get_my_string(self.ASSAY_SHORT_NAME)
         try:
-            results[self.ASSAY] = self.ASSAY_LOOKUP[assay_short_name)]
+            results[self.ASSAY] = self.ASSAY_LOOKUP[assay_short_name]
         except KeyError as err:
             msg = "Assay short name '{0}' not found in lookup table {1}: {2}".format(
                 assay_short_name, self.ASSAY_LOOKUP, err
@@ -109,7 +107,7 @@ class main(plugin_base):
         discovered = [
             self.REPORT_DATE,
             core_constants.DONOR,
-            core_constants.STUDY,
+            core_constants.PROJECT,
             core_constants.REPORT_ID,
             core_constants.PATIENT_STUDY_ID,
             self.BLOOD_SAMPLE_ID,
@@ -126,12 +124,10 @@ class main(plugin_base):
         for key in required:
             self.add_ini_required(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
-        self.set_ini_default(core_constants.DEPENDS_CONFIG, 'provenance_helper')
+        self.set_ini_default(core_constants.DEPENDS_CONFIGURE, 'provenance_helper')
         self.set_priority_defaults(self.PRIORITY)
 
     def render(self, data):
         renderer = mako_renderer(self.get_module_dir())
-        args = data[self.get_identifier()]
-        return renderer.render_name(self.MAKO_TEMPLATE_NAME, args)
+        return renderer.render_name(self.MAKO_TEMPLATE_NAME, data)
 
-class 

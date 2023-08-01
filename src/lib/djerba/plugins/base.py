@@ -48,13 +48,13 @@ class plugin_base(configurable, ABC):
 
     def get_starting_plugin_data(self, config_wrapper, plugin_version):
         """Create a data structure with empty merge inputs and results"""
-        attributes = wrapper.get_my_attributes()
+        attributes = config_wrapper.get_my_attributes()
         self.check_attributes_known(attributes)
         data = {
             'plugin_name': self.identifier+' plugin',
             'version': plugin_version,
-            'priorities': wrapper.get_my_priorities(),
-            'attributes': wrapper.get_my_attributes(),
+            'priorities': config_wrapper.get_my_priorities(),
+            'attributes': config_wrapper.get_my_attributes(),
             'merge_inputs': {},
             'results': {},
         }
