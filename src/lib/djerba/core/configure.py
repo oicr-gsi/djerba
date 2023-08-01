@@ -84,6 +84,12 @@ class configurable(core_base, ABC):
     def get_config_wrapper(self, config):
         return config_wrapper(config, self.identifier, self.log_level, self.log_path)
 
+    def get_module_dir(self):
+        return self.module_dir
+
+    def get_identifier(self):
+        return self.identifier
+
     def get_reserved_default(self, param):
         # get the default value of a reserved parameter
         # raise an error if it is not defined for the current component
@@ -97,9 +103,6 @@ class configurable(core_base, ABC):
             self.logger.error(msg)
             raise DjerbaConfigError(msg)
         return self.ini_defaults[param]
-
-    def get_module_dir(self):
-        return self.module_dir
 
     def set_log_level(self, level):
         # use to change the log level set by the component loader, eg. for testing

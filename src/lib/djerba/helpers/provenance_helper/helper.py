@@ -113,6 +113,7 @@ class main(helper_base):
         sample_info = {
             self.STUDY_TITLE: study,
             self.ROOT_SAMPLE_NAME: donor,
+            core_constants.PATIENT_STUDY_ID: ids.get(ini.PATIENT_ID),
             core_constants.TUMOUR_ID: ids.get(ini.TUMOUR_ID),
             core_constants.NORMAL_ID: ids.get(ini.NORMAL_ID),
             ini.SAMPLE_NAME_WG_T: names.get(ini.SAMPLE_NAME_WG_T),
