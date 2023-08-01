@@ -107,7 +107,14 @@ class main(helper_base):
         If the sample names are unknown, get from file provenance given study and donor
         """
         subset_path = self.workspace.abs_path(self.PROVENANCE_OUTPUT)
-        reader = provenance_reader(subset_path, study, donor, samples)
+        reader = provenance_reader(
+            subset_path,
+            study,
+            donor,
+            samples,
+            log_level=self.log_level,
+            log_path=self.log_path
+        )
         names = reader.get_sample_names()
         ids = reader.get_identifiers()
         sample_info = {
