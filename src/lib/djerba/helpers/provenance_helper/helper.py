@@ -24,7 +24,7 @@ class main(helper_base):
         ini.SAMPLE_NAME_WG_T,
         ini.SAMPLE_NAME_WT_T
     ]
-    
+
     def configure(self, config):
         """
         Writes a subset of provenance, and a sample info JSON file, to the workspace
@@ -98,7 +98,7 @@ class main(helper_base):
         """
         Parse file provenance and populate the sample info data structure
         If the sample names are unknown, get from file provenance given study and donor
-        """        
+        """
         subset_path = self.workspace.abs_path(self.PROVENANCE_OUTPUT)
         reader = provenance_reader(subset_path, study, donor, samples)
         names = reader.get_sample_names()
