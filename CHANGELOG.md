@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v1.0.0-dev0.0.7: 2023-08-02
 
 ### GCGI-963: Patient info plugin
 - Simple plugin to generate the Clinical Research Report header and Case Overview section
