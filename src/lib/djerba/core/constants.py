@@ -64,6 +64,10 @@ MERGERS = 'mergers'
 CONFIG = 'config'
 
 # keys for sample ID file written by provenance helper
+# TODO remove duplicate versions from provenance helper main
+STUDY_TITLE = 'study_title'
+ROOT_SAMPLE_NAME = 'root_sample_name'
+PATIENT_STUDY_ID = 'patient_study_id'
 TUMOUR_ID = 'tumour_id'
 NORMAL_ID = 'normal_id'
 
@@ -84,3 +88,6 @@ FOOTER = 'footer'
 MERGE_LIST = 'merge_list'
 MERGED_FILENAME = 'merged_filename'
 PAGE_FOOTER = 'page_footer'
+
+# keywords for plugin structure
+RESULTS = 'results'
