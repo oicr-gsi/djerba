@@ -1,5 +1,5 @@
 CORE = 'core'
-NULL = '__NULL__'
+NULL = '__DJERBA_NULL__'
 
 # environment variables
 DJERBA_DATA_DIR_VAR = 'DJERBA_DATA_DIR'

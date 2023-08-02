@@ -26,7 +26,7 @@ class workspace(logger):
 
     def abs_path(self, rel_path):
         """Return the absolute path of a file in the workspace"""
-        return os.path.join(self.dir_path, rel_path)
+        return os.path.abspath(os.path.join(self.dir_path, rel_path))
 
     def get_work_dir(self):
         return self.dir_path
@@ -67,6 +67,9 @@ class workspace(logger):
             content = in_file.read()
         return content
 
+    def remove_file(self, rel_path):
+        os.remove(os.path.join(self.dir_path, rel_path))
+    
     # no need to validate paths for write_* methods; output dir already validated as writable
 
     def write_json(self, rel_path, data):
