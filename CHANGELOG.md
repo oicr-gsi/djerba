@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### GCGI-963: Patient info plugin
+- Simple plugin to generate the Clinical Research Report header and Case Overview section
+
 ### GCGI-982: Provenance helper update
 - Update to complement changes to core functionality
 - Writes subset of provenance and `sample_info.json` at both configure and extract

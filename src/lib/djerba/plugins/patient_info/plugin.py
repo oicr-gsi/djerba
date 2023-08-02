@@ -1,24 +1,6 @@
-"""Plugin to make the 'Case Overview' and 'Sample Information' sections"""
-
-"""
-We use most (but not all) of the same parameters as "patient info" JSON in Djerba classic.
-Example JSON section from Djerba classic:
-
-        "patient_info": {
-            "Assay": "Whole genome and transcriptome sequencing (WGTS)-80X Tumour, 30X Normal (v2.0)",
-            "Blood Sample ID": "PLACEHOLDER",
-            "Patient Genetic Sex": "Male",
-            "Patient LIMS ID": "PLACEHOLDER",
-            "Patient Study ID": "PLACEHOLDER",
-            "Primary cancer": "Pancreatic Adenocarcinoma",
-            "Report ID": "PLACEHOLDER",
-            "Requisition ID": "REQ01",
-            "Requisition Approved": "2021/01/01",
-            "Site of biopsy/surgery": "PLACEHOLDER",
-            "Study": "PLACEHOLDER",
-            "Project": "PLACEHOLDER",
-            "Tumour Sample ID": "PLACEHOLDER"
-        },
+"""Plugin to generate:
+- Clinical Research Report header
+- Case Overview section
 """
 
 import logging
@@ -47,6 +29,7 @@ class main(plugin_base):
     STUDY = "study"
     TUMOUR_SAMPLE_ID = "tumour sample id"
 
+    # TODO add an entry for WGS, and any other assays using this plugin
     ASSAY_LOOKUP = {
         'WGTS': 'Whole genome and transcriptome sequencing (WGTS)'+\
         '-80X Tumour, 30X Normal (v3.0)',
