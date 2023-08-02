@@ -44,6 +44,7 @@ class main(plugin_base):
     REQUISITION_ID = "requisition id"
     REQ_APPROVED_DATE = "requisition approved"
     SAMPLE_ANATOMICAL_SITE = "site of biopsy/surgery"
+    STUDY = "study"
     TUMOUR_SAMPLE_ID = "tumour sample id"
 
     ASSAY_LOOKUP = {
@@ -62,7 +63,6 @@ class main(plugin_base):
             wrapper.set_my_param(patient_id_key, info[patient_id_key])
             wrapper.set_my_param(core_constants.DONOR, info[core_constants.ROOT_SAMPLE_NAME])
             wrapper.set_my_param(core_constants.DONOR, info[core_constants.ROOT_SAMPLE_NAME])
-            wrapper.set_my_param(core_constants.PROJECT, info[core_constants.STUDY_TITLE])
             wrapper.set_my_param(self.BLOOD_SAMPLE_ID, info[core_constants.NORMAL_ID])
             wrapper.set_my_param(self.TUMOUR_SAMPLE_ID, info[core_constants.TUMOUR_ID])
         except KeyError as err:
@@ -84,10 +84,10 @@ class main(plugin_base):
             core_constants.PATIENT_STUDY_ID,
             self.TUMOUR_SAMPLE_ID,
             self.BLOOD_SAMPLE_ID,
-            core_constants.PROJECT,
             core_constants.REPORT_ID,
             self.REPORT_DATE,
-            self.REQ_APPROVED_DATE
+            self.REQ_APPROVED_DATE,
+            self.STUDY
         ]
         results = {k: wrapper.get_my_string(k) for k in results_keys}
         # look up the long assay name
@@ -107,11 +107,10 @@ class main(plugin_base):
         discovered = [
             self.REPORT_DATE,
             core_constants.DONOR,
-            core_constants.PROJECT,
             core_constants.REPORT_ID,
             core_constants.PATIENT_STUDY_ID,
             self.BLOOD_SAMPLE_ID,
-            self.TUMOUR_SAMPLE_ID
+            self.TUMOUR_SAMPLE_ID,
         ]
         for key in discovered:
             self.add_ini_discovered(key)
@@ -119,7 +118,8 @@ class main(plugin_base):
             self.ASSAY_SHORT_NAME,
             self.PRIMARY_CANCER,
             self.SAMPLE_ANATOMICAL_SITE,
-            self.REQ_APPROVED_DATE
+            self.REQ_APPROVED_DATE,
+            self.STUDY
         ]
         for key in required:
             self.add_ini_required(key)

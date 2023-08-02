@@ -18,7 +18,6 @@ class TestPatientInfo(PluginTester):
     def test(self):
         # customize the INI file with path to provenance input
         # then copy INI and JSON files to the tmp directory and run the basic test
-        self.tmp_dir = '/home/ibancarz/workspace/djerba/test/20230802_01'
         data_dir_root = os.getenv(constants.DJERBA_TEST_DIR_VAR)
         data_dir = os.path.join(data_dir_root, constants.PLUGINS, 'patient_info')
         provenance_path = os.path.join(data_dir, 'provenance_subset.tsv.gz')
@@ -35,7 +34,7 @@ class TestPatientInfo(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: self.JSON_NAME,
-            self.MD5: '9d79a5aee7b0d53f25f89ec814175614'
+            self.MD5: 'f21bf0ac955c214b84f8797b2f7947c3'
         }
         self.run_basic_test(input_dir, params, 'patient_info', logging.ERROR)
 
