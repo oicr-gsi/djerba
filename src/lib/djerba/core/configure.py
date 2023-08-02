@@ -234,6 +234,12 @@ class configurer(configurable):
     def specify_params(self):
         self.set_priority_defaults(self.PRIORITY)
         self.set_ini_default('comment', 'comment goes here')
+        # Setting required parameters
+        #self.add_ini_required('group_id')
+        self.add_ini_required('study_title')
+        self.add_ini_required('root_sample_name')
+        self.add_ini_required('requisition_approved')
+
 
 
 class config_wrapper(logger):

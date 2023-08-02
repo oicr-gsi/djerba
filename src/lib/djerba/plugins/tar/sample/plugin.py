@@ -94,26 +94,40 @@ class main(plugin_base):
                 "unique_coverage" : int(config[self.identifier][constants.UNIQUE_COVERAGE])
             }
         }
+        self.fetch_coverage_etl_data(config[self.identifier][constants.GROUP_ID], config)
         return data
 
-    def fetch_coverage_etl_data(self,tumour_id):
+    def fetch_coverage_etl_data(self, group_id, config):
         self.qcetl_cache = "/scratch2/groups/gsi/production/qcetl_v1"
         self.etl_cache = QCETLCache(self.qcetl_cache)
         cached_coverages = self.etl_cache.bamqc4merged.bamqc4merged
         columns_of_interest = gsiqcetl.column.BamQc4MergedColumn
         data = cached_coverages.loc[
-            (cached_coverages[columns_of_interest.GroupID] == tumour_id),
+            (cached_coverages[columns_of_interest.GroupID] == group_id),
             [columns_of_interest.GroupID, columns_of_interest.CoverageDeduplicated, columns_of_interest.InsertMedian]
             ]
+        qc_dict = {}
         if len(data) > 0:
-           qc_dict = {'coverage' : round(data.iloc[0][columns_of_interest.CoverageDeduplicated].item(),1)}
+           qc_dict['coverage'] = round(data.iloc[0][columns_of_interest.CoverageDeduplicated].item(),1)
            qc_dict['insertSize'] = round(data.iloc[0][columns_of_interest.InsertMedian].item(),1)
-           return(qc_dict)
         else:
-            msg = "Djerba couldn't find the QC metrics associated with tumour_id {0} in QC-ETL. ".format(tumour_id)
+            coverage = config[self.identifier]['coverage']
+            median_insert_size = config[self.identifier]['median_insert_size']
+            msg = "QC metrics associated with group_id {0} not found in QC-ETL. Trying to use ini specified parameters instead: cov = {1}, IS = {2}.".format(group_id, coverage, median_insert_size)
             self.logger.debug(msg)
-            raise MissingQCETLError(msg)
-    
+            try:
+                qc_dict['coverage'] = float(coverage)
+            except ValueError:
+                msg = "No useful coverage information was found in ini."
+                raise ValueError(msg)
+            try:
+                qc_dict['insertSize'] = int(median_insert_size)
+            except ValueError:
+                msg = "No useful insert size information was found in ini."
+                raise ValueError(msg)
+        print(qc_dict)
+        return(qc_dict)
+
     def preprocess_bamqc(self, bamqc_file):
         if bamqc_file == 'None':
             provenance = analysis.main(self.workspace, self.identifier).subset_provenance("dnaSeqQC")

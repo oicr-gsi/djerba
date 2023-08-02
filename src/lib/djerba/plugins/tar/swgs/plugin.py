@@ -10,6 +10,10 @@ import djerba.plugins.tar.swgs.constants as constants
 from djerba.plugins.tar.swgs.preprocess import preprocess
 from djerba.plugins.tar.swgs.extract import data_builder 
 import djerba.core.constants as core_constants
+import djerba.plugins.tar.provenance_tools as provenance_tools
+import gsiqcetl.column
+from gsiqcetl import QCETLCache
+
 
 
 class main(plugin_base):
@@ -17,12 +21,14 @@ class main(plugin_base):
     PLUGIN_VERSION = '1.0.0'
     #PRIORITY = 100 
     TEMPLATE_NAME = 'swgs_template.html'
-    
+    RESULTS_SUFFIX = 'seg/txt-gz$'
+    WORKFLOW = 'ichorcna'
+
     def specify_params(self):
 
       # Required parameters for swgs
-      self.add_ini_required('seg_file')
-
+      self.set_ini_default('seg_file', None)
+      
       # Default parameters for priorities
       self.set_ini_default('configure_priority', 100)
       self.set_ini_default('extract_priority', 100)
@@ -35,6 +41,12 @@ class main(plugin_base):
 
     def configure(self, config):
       config = self.apply_defaults(config)
+      
+      # POPULATE THE INI HERE!?
+      x = self.get_seg_file(config["tar.sample"]["group_id"])
+      print(x)
+      #config[self.identifier]["seg_file"] = self.get_seg_file(config["tar.sample"]["group_id"])
+
       return config
 
     def extract(self, config):
@@ -76,3 +88,26 @@ class main(plugin_base):
           self.logger.error(msg)
           raise
       return html
+
+
+    def get_group_id(self, donor):
+      qcetl_cache = "/scratch2/groups/gsi/production/qcetl_v1"
+      etl_cache = QCETLCache(qcetl_cache)
+      df = etl_cache.bamqc4merged.bamqc4merged
+      df = df.set_index("Donor")
+      if donor in df.index.values.tolist():
+          df = df.loc[donor]
+          group_id = df[df['Group ID'].str.contains("Pl")]['Group ID'][0]
+          return(group_id)
+
+    def get_seg_file(self, group_id):
+      """
+      pull data from results file
+      """
+      provenance = provenance_tools.subset_provenance(self, self.WORKFLOW, group_id)
+      try:
+          results_path = provenance_tools.parse_file_path(self, self.RESULTS_SUFFIX, provenance)
+      except OSError as err:
+          msg = "File with extension {0} not found".format(self.RESULTS_SUFFIX)
+          raise RuntimeError(msg) from err
+      return results_path
