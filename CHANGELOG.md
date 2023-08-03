@@ -1,4 +1,61 @@
 # CHANGELOG
+## v0.4.13: 2023-07-31
+
+### Changed
+- GCGI-989: Made adjustments to biomarker plots
+- GCGI-1011: Update to find new sequenza file path
+  
+### Added
+- example .pdf and .ini of WGTS report in `examples/`
+
+## v0.4.12: 2023-07-19
+
+### Changed
+- GCGI-956: The TMB plot has been moved to a linear format and the PGA plot has been removed
+  
+### Added
+- GCGI-957: The number of candidate SNVs for the pWGS assay are listed in Genomic Landscape section
+
+## v0.4.11: 2023-06-27
+
+### Changed
+- GCGI-864: removed annotation of 5'UTR, 3'UTR, and 3'Flank. 5'Flank only annotated if TERT
+- Sample QC results moved to below summary 
+- Split some `Case Overview` section into a new `Patient and Physician` section
+- Removed tracking of patient's genetic sex
+- GCGI-943: Overrode HGVSp for BRAF V640E to be represented as V600E
+- GCGI-942: Changed expected maf file extension from '.filter.deduped.realigned.recalibrated.mutect2.filtered.maf.gz' to '.mutect2.filtered.maf.gz'
+
+## v0.4.10: 2023-06-06
+
+### Changed
+- ACD -> ACDx
+- Added "-" between date and report name in footer
+- GCGI-806: Modify `benchmark.py` interface; remove `--compare-all` option; add `--delta` argument for permitted difference in expression levels
+
+### Fixed
+- GCGI-870: Fix for biomarker annotation cache; required for benchmark cron
+
+## v0.4.9: 2023-05-15
+
+### Changed
+- GCGI-883: Added date to footer of pdf, as in ISO requirement
+- GCGI-865: replaced MSI LLOD text
+- GCGI-885: Changed "Small regions (&#60;3 Mb) with large copy number gains" to "Regions with large copy number gains (&#8805; 6 CN)"
+### Fixed
+- GCGI-885: Fixed splice site reporting
+
+## v0.4.8: 2023-04-25
+
+### Changed
+- updated version of Arriba from 1.2.0 to 2.4.0
+- updated version of STAR from 2.7.3a to 2.7.10b
+- updated pipeline version to 3.0
+
+### Fixed
+- GCGI-862: fixed fusion oncokb levels (changed to symbols)
+- GCGI-853: fixed and cleaned annotation of genomic biomarkers
+- GCGI-852: Correct file metatype for Mavis summary files
 
 ## v1.0.0-dev0.0.7: 2023-08-02
 
