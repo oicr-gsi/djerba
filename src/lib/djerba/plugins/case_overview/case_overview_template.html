@@ -1,7 +1,7 @@
 <%
   from time import strftime
   import djerba.core.constants as core_constants
-  from djerba.plugins.patient_info.plugin import main as patient_info
+  from djerba.plugins.case_overview.plugin import main as case_overview
 %>
 
 
@@ -13,18 +13,18 @@
       <table class="info">
         <tr>
           <td colspan=1>Assay:</td>
-          <td colspan=3>${results.get(patient_info.ASSAY)}</td>
+          <td colspan=3>${results.get(case_overview.ASSAY)}</td>
         </tr>
       </table>
 
       <table class="info">
         <tr>
           <td colspan=2>Primary cancer:</td>
-          <td colspan=2>${results.get(patient_info.PRIMARY_CANCER)}</td>
+          <td colspan=2>${results.get(case_overview.PRIMARY_CANCER)}</td>
         </tr>
         <tr>
           <td colspan=2>Site of biopsy/surgery:</td>
-          <td colspan=2>${results.get(patient_info.SAMPLE_ANATOMICAL_SITE)}</td>
+          <td colspan=2>${results.get(case_overview.SAMPLE_ANATOMICAL_SITE)}</td>
         </tr>
       </table>
 
@@ -33,17 +33,17 @@
 	      <td width="17%">Patient LIMS ID:</td>
 	      <td width="20%">${results.get(core_constants.DONOR)}</td>
 	      <td width="19%">Tumour Sample ID:</td>
-	      <td width="35%">${results.get(patient_info.TUMOUR_SAMPLE_ID)}</td>
+	      <td width="35%">${results.get(case_overview.TUMOUR_SAMPLE_ID)}</td>
 	    </tr>
             <tr>
 	      <td width="17%">Patient Study ID:</td>
 	      <td width="20%">${results.get(core_constants.PATIENT_STUDY_ID)}</td>
 	      <td width="19%">Blood Sample ID:</td>
-	      <td width="35%">${results.get(patient_info.BLOOD_SAMPLE_ID)}</td>
+	      <td width="35%">${results.get(case_overview.BLOOD_SAMPLE_ID)}</td>
 	    </tr>
             <tr>
 	      <td width="17%">Study:</td>
-	      <td width="20%">${results.get(patient_info.STUDY)}</td>
+	      <td width="20%">${results.get(case_overview.STUDY)}</td>
 	      <td width="19%">Report ID:</td>
 	      <td width="35%">${results.get(core_constants.REPORT_ID)}</td>
 </tr>
@@ -51,7 +51,7 @@
       <table  class="info">
             <tr>
 	      <td width="25%">Date of Report:</td>
-	      <td width="15%">${results.get(patient_info.REPORT_DATE)}</td>
+	      <td width="15%">${results.get(case_overview.REPORT_DATE)}</td>
 	      <td width="23%">Requisitioner Email:</td>
 	      <td width="38%">
 		<a href="mailto:NAME@DOMAIN.COM" class="email">NAME@DOMAIN.COM</a>
@@ -59,7 +59,7 @@
 	    </tr>
             <tr>
 	      <td width="25%">Requisition Approved:</td>
-	      <td width="15%">${results.get(patient_info.REQ_APPROVED_DATE)}</td>
+	      <td width="15%">${results.get(case_overview.REQ_APPROVED_DATE)}</td>
 	      <td width="23%">Patient Name:</td>
 	      <td width="38%" >LAST NAME, FIRST NAME</td>
 	    </tr>

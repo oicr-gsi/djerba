@@ -1,6 +1,4 @@
-"""Plugin to generate:
-- Clinical Research Report header
-- Case Overview section
+"""Plugin to generate the Clinical Research Report header
 """
 
 import logging
@@ -13,7 +11,7 @@ class main(plugin_base):
 
     PRIORITY = 200
     PLUGIN_VERSION = '1.0.0'
-    MAKO_TEMPLATE_NAME = 'patient_info_template.html'
+    MAKO_TEMPLATE_NAME = 'case_overview_template.html'
 
     # config/results keys
     # REPORT_ID, DONOR and STUDY from core

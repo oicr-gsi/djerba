@@ -12,14 +12,14 @@ from djerba.plugins.plugin_tester import PluginTester
 
 class TestPatientInfo(PluginTester):
 
-    INI_NAME = 'patient_info.ini'
-    JSON_NAME = 'patient_info.json'
+    INI_NAME = 'case_overview.ini'
+    JSON_NAME = 'case_overview.json'
 
     def test(self):
         # customize the INI file with path to provenance input
         # then copy INI and JSON files to the tmp directory and run the basic test
         data_dir_root = os.getenv(constants.DJERBA_TEST_DIR_VAR)
-        data_dir = os.path.join(data_dir_root, constants.PLUGINS, 'patient_info')
+        data_dir = os.path.join(data_dir_root, constants.PLUGINS, 'case_overview')
         provenance_path = os.path.join(data_dir, 'provenance_subset.tsv.gz')
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         with open(os.path.join(test_source_dir, self.INI_NAME)) as in_file:
@@ -36,7 +36,7 @@ class TestPatientInfo(PluginTester):
             self.JSON: self.JSON_NAME,
             self.MD5: '1a89cc230242dfd030d7e20e345ed334'
         }
-        self.run_basic_test(input_dir, params, 'patient_info', logging.ERROR)
+        self.run_basic_test(input_dir, params, 'case_overview', logging.ERROR)
 
 if __name__ == '__main__':
     unittest.main()

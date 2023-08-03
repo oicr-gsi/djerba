@@ -1,5 +1,5 @@
 {
-    "plugin_name": "patient_info plugin",
+    "plugin_name": "case_overview plugin",
     "version": "1.0.0",
     "priorities": {
         "configure": 200,
