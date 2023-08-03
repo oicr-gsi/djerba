@@ -10,7 +10,7 @@ import djerba.core.constants as constants
 from shutil import copy
 from djerba.plugins.plugin_tester import PluginTester
 
-class TestPatientInfo(PluginTester):
+class TestCaseOverview(PluginTester):
 
     INI_NAME = 'case_overview.ini'
     JSON_NAME = 'case_overview.json'
@@ -34,7 +34,7 @@ class TestPatientInfo(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: self.JSON_NAME,
-            self.MD5: '1a89cc230242dfd030d7e20e345ed334'
+            self.MD5: '8b44b4f31d9c2efb2be71968d0d1fe7a'
         }
         self.run_basic_test(input_dir, params, 'case_overview', logging.ERROR)
 
