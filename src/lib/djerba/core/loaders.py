@@ -145,10 +145,11 @@ class core_config_loader(loader_base):
 
     # very simple, but we define a loader class for consistency with other components
 
-    def load(self):
+    def load(self, workspace):
         # make an instance of the core configurer
         args = self.get_common_args(core_constants.CORE, core_configure)
-        return core_configure.configurer(**args)
+        args[core_constants.WORKSPACE] = workspace
+        return core_configure.core_configurer(**args)
 
 class merger_loader(loader_base):
 

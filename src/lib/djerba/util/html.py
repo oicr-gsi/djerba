@@ -33,3 +33,4 @@ class html_builder:
         items.extend(cells)
         items.append('</tr>')
         return ''.join(items)
+

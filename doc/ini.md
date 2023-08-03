@@ -55,7 +55,6 @@ All required parameters go in the `[inputs]` section. The "Source" column lists 
 | `sample_type`            | req | |
 | `sequenza_reviewer_1` | user | Name of first reviewer for Sequenza parameters |
 | `sequenza_reviewer_2` | user | Name of second reviewer for Sequenza parameters |
-| `sex`            | req | Patient sex |
 | `studyid`                | req       | Study ID to be displayed in report, eg. PASS-01 |
 | `tcgacode`                | req    | [TCGA](https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga) code for the tumour, eg. PAAD |
 

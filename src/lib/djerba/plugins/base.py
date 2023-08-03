@@ -46,6 +46,20 @@ class plugin_base(configurable, ABC):
         }
         return data
 
+    def get_starting_plugin_data(self, config_wrapper, plugin_version):
+        """Create a data structure with empty merge inputs and results"""
+        attributes = config_wrapper.get_my_attributes()
+        self.check_attributes_known(attributes)
+        data = {
+            'plugin_name': self.identifier+' plugin',
+            'version': plugin_version,
+            'priorities': config_wrapper.get_my_priorities(),
+            'attributes': config_wrapper.get_my_attributes(),
+            'merge_inputs': {},
+            'results': {},
+        }
+        return data
+
     def render(self, data):
         """
         Input is a data structure satisfying the plugin schema
@@ -59,3 +73,7 @@ class plugin_base(configurable, ABC):
     def set_priority_defaults(self, priority):
         for key in core_constants.PRIORITY_KEYS:
             self.ini_defaults[key] = priority
+
+class DjerbaPluginError(Exception):
+    """General-purpose class for Djerba plugin errors; can subclass if needed"""
+    pass

@@ -7,7 +7,7 @@ import logging
 import tempfile
 from configparser import ConfigParser
 from djerba.core.base import base as core_base
-from djerba.core.configure import configurer as core_configurer
+from djerba.core.configure import core_configurer
 from djerba.core.workspace import workspace
 import djerba.util.ini_fields as ini
 from djerba.core.loaders import \
@@ -34,7 +34,7 @@ class ini_generator(core_base):
         for name in component_names:
             self.logger.debug("Generating config for component: {0}".format(name))
             if name == ini.CORE:
-                component = self.core_config_loader.load()
+                component = self.core_config_loader.load(tmp_workspace)
             elif self._is_helper_name(name):
                 component = self.helper_loader.load(name, tmp_workspace)
             elif self._is_merger_name(name):

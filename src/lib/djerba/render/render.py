@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import traceback
+from datetime import datetime
 
 import djerba.util.constants as constants
 import pdfkit
@@ -124,9 +125,10 @@ class pdf_renderer(logger):
         if footer:
             if footer_text:
                 self.logger.debug("Including page numbers and footer text")
+                temp_date = 'yyyy/mm/dd'
                 options = {
                     'footer-right': '[page] of [topage]',
-                    'footer-left': footer_text,
+                    'footer-left': ' - '.join((temp_date, footer_text)),
                     'quiet': '',
                     'disable-javascript': ''
                 }

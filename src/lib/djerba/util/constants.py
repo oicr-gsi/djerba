@@ -49,8 +49,7 @@ SETUP = 'setup'
 CONFIGURE = 'configure'
 DRAFT = 'draft'
 EXTRACT = 'extract'
-HTML = 'html'
-PDF = 'pdf'
+RENDER = 'render'
 ALL = 'all'
 
 # mode names for benchmark.py

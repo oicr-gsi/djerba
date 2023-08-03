@@ -6,7 +6,7 @@ import djerba.core.constants as core_constants
 
 class main(plugin_base):
 
-    PRIORITY = 200
+    PRIORITY = 300
     PLUGIN_VERSION = '1.0.0'
 
     # __init__ inherited from parent class
@@ -58,6 +58,5 @@ class main(plugin_base):
         self.logger.debug("Specifying params for plugin demo2")
         self.add_ini_required('demo2_param')
         self.set_ini_default('question', 'question.txt')
-        self.set_ini_default(core_constants.CLINICAL, True)
-        self.set_ini_default(core_constants.SUPPLEMENTARY, False)
+        self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_priority_defaults(self.PRIORITY)
