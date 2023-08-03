@@ -37,6 +37,7 @@ class main(plugin_base):
       # Default parameters for clinical, supplementary
       self.set_ini_default(core_constants.CLINICAL, True)
       self.set_ini_default(core_constants.SUPPLEMENTARY, False)
+      self.set_ini_default('attributes', 'clinical')
 
     def configure(self, config):
       config = self.apply_defaults(config)
@@ -70,6 +71,9 @@ class main(plugin_base):
       return data
 
     def render(self, data):
+      #renderer = mako_renderer(self.get_module_dir())
+      #return renderer.render_name(self.MAKO_TEMPLATE_NAME, data)
+
       super().render(data)
       args = data
       html_dir = os.path.realpath(os.path.join(

@@ -36,6 +36,7 @@ class main(plugin_base):
 
       self.set_ini_default(core_constants.CLINICAL, True)
       self.set_ini_default(core_constants.SUPPLEMENTARY, False)
+      self.set_ini_default('attributes', 'clinical')
       self.set_priority_defaults(self.PRIORITY)
 
     def configure(self, config):

@@ -10,8 +10,8 @@ import djerba.util.provenance_index as index
 
 
 def subset_provenance(self, workflow, root_sample_name):
-    #provenance_location = 'provenance_subset.tsv.gz'
-    provenance_location = '/scratch2/groups/gsi/production/vidarr/vidarr_files_report_latest.tsv.gz'
+    provenance_location = 'provenance_subset.tsv.gz'
+    #provenance_location = '/scratch2/groups/gsi/production/vidarr/vidarr_files_report_latest.tsv.gz'
     provenance = []
     print(workflow)
     try:
@@ -21,8 +21,8 @@ def subset_provenance(self, workflow, root_sample_name):
                 if row[index.WORKFLOW_NAME] == workflow and row[index.ROOT_SAMPLE_NAME] == root_sample_name:
                     provenance.append(row)
     except OSError as err:
-        #msg = "Provenance subset file '{0}' not found when looking for {1}".format('provenance_subset.tsv.gz', workflow)
-        msg = "Provenance subset file '{0}' not found when looking for {1}".format('/scratch2/groups/gsi/production/vidarr/vidarr_files_report_latest.tsv.gz', workflow)
+        msg = "Provenance subset file '{0}' not found when looking for {1}".format('provenance_subset.tsv.gz', workflow)
+        #msg = "Provenance subset file '{0}' not found when looking for {1}".format('/scratch2/groups/gsi/production/vidarr/vidarr_files_report_latest.tsv.gz', workflow)
         raise RuntimeError(msg) from err
     return(provenance)
 

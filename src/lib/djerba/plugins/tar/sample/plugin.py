@@ -40,7 +40,8 @@ class main(plugin_base):
         # Setting default parameters
         self.set_ini_default(core_constants.CLINICAL, True)
         self.set_ini_default(core_constants.SUPPLEMENTARY, False)
-       
+        self.set_ini_default('attributes', 'clinical')
+
         # I removed these from core and temporarily added them to [tar.sample]:
         self.add_ini_required('group_id')
         self.add_ini_required('root_sample_name')
@@ -125,7 +126,6 @@ class main(plugin_base):
             except ValueError:
                 msg = "No useful insert size information was found in ini."
                 raise ValueError(msg)
-        print(qc_dict)
         return(qc_dict)
 
     def preprocess_bamqc(self, bamqc_file):
