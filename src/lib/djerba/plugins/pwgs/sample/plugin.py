@@ -30,13 +30,16 @@ class main(plugin_base):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         #self.add_ini_required('primary_snv_count_file')
-        
+    
+    def specify_params(self):
         # Setting default parametersn
-        self.set_ini_default(core_constants.CLINICAL, True)
+        self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_ini_default(core_constants.SUPPLEMENTARY, False)
         
         # Setting required parameters
         self.add_ini_required('wgs_json')
+        self.add_ini_required('requisition_approved')
+        self.add_ini_required('group_id')
         
         # Setting default parameters for plugin
         """ Note: these are found after full specification and are not required in the initial config."""
@@ -54,7 +57,7 @@ class main(plugin_base):
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
-        group_id = config['core'][constants.GROUP_ID]
+        group_id = config[self.identifier][constants.GROUP_ID]
         qc_dict = self.fetch_coverage_etl_data(group_id, config)
         insert_size_dist_file = self.preprocess_bamqc(config[self.identifier][constants.BAMQC], group_id)
         snv_count = self.preprocess_snv_count(config[self.identifier][constants.SNV_COUNT_FILE], group_id)
@@ -79,13 +82,13 @@ class main(plugin_base):
             },
             'results': {
                 'primary_cancer': patient_data['Primary cancer'],
-                'requisition_approved': config['core'][constants.REQ_APPROVED],
-                'donor': config['core']['root_sample_name'],
-                'group_id': config['core'][constants.GROUP_ID],
-                'pwgs_report_id': "_".join((config['core'][constants.GROUP_ID],"v1")),
+                'requisition_approved': config[self.identifier][constants.REQ_APPROVED],
+                'donor': "PLACEHOLDER",
+                'group_id': config[self.identifier][constants.GROUP_ID],
+                'pwgs_report_id': "_".join((config[self.identifier][constants.GROUP_ID],"v1")),
                 'wgs_report_id': patient_data['Report ID'],
                 'Patient Study ID': patient_data[constants.PATIENT_ID],
-                'study_title': config['core'][constants.STUDY],
+                'study_title': "PLACEHOLDER",
                 'assay': "plasma Whole Genome Sequencing (pWGS) - 30X (v1.0)",
                 'outcome': mrdetect_results['outcome'],
                 'median_insert_size': qc_dict['insertSize'],

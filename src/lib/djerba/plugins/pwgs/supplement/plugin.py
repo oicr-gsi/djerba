@@ -16,7 +16,8 @@ class main(plugin_base):
         super().__init__(**kwargs)
         # Setting default parameters
 
-        self.set_ini_default(core_constants.CLINICAL, True)
+    def specify_params(self):
+        self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_ini_default(core_constants.SUPPLEMENTARY, False)
         
         # Setting required parameters

@@ -21,11 +21,13 @@ class main(plugin_base):
     HBC_SUFFIX = 'HBCs.csv'
     DEFAULT_CONFIG_PRIORITY = 200
 
+    # TO DO, REMOVE
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         
+    def specify_params(self):
         # Setting default parameters
-        self.set_ini_default(core_constants.CLINICAL, True)
+        self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_ini_default(core_constants.SUPPLEMENTARY, False)
 
         # Setting default parameters
@@ -36,6 +38,7 @@ class main(plugin_base):
 
         # Setting required parameters
         self.add_ini_required('wgs_mutations')
+        self.add_ini_required('group_id')
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -45,8 +48,9 @@ class main(plugin_base):
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
-        groupid = config['core'][constants.GROUP_ID]
+        groupid = config[self.identifier][constants.GROUP_ID]
         mrdetect_results = pwgs_tools.preprocess_results(self, config[self.identifier][constants.RESULTS_FILE], groupid)
+        # TO DO, MOVE TO CONFIGURE
         hbc_results = self.preprocess_hbc(config[self.identifier][constants.HBC_FILE], groupid)
         vaf_results = self.preprocess_vaf(config[self.identifier][constants.VAF_FILE], groupid)
         pwgs_base64 = self.write_pwgs_plot(hbc_results['hbc_file'], 
