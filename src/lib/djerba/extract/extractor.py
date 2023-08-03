@@ -207,8 +207,7 @@ class extractor(logger):
                 [constants.PCT_V7_ABOVE_80X, self.config[ini.DISCOVERED][ini.PCT_V7_ABOVE_80X] ],
                 [constants.REQ_APPROVED_DATE, req_approved_date],
                 [constants.SEQUENZA_PURITY_FRACTION, purity],
-                [constants.SEQUENZA_PLOIDY, ploidy],
-                [constants.SEX, self.config[ini.INPUTS][ini.SEX] ]
+                [constants.SEQUENZA_PLOIDY, ploidy]
             ]
         except KeyError as err:
             msg = "Missing required clinical data value from config"
@@ -260,13 +259,11 @@ class extractor(logger):
                     val = int(val)
                 config_data[section][key] = val
         # shorter key names
-        tmb_key = render_constants.TMB_PLOT
         vaf_key = render_constants.VAF_PLOT
         logo_key = render_constants.OICR_LOGO
         # machine-readable; replace image paths with base-64 blobs for a self-contained document
         report_data[logo_key] = self.converter.convert_png(report_data[logo_key], 'OICR logo')
         if not self.failed:
-            report_data[tmb_key] = self.converter.convert_svg(report_data[tmb_key], 'TMB plot')
             report_data[vaf_key] = self.converter.convert_svg(report_data[vaf_key], 'VAF plot')
         report_path = os.path.join(self.report_dir, constants.REPORT_JSON_FILENAME)
         data = {

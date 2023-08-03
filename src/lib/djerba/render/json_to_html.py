@@ -71,22 +71,26 @@ class html_builder:
         cell = template.format(biomarker,plot)
         return(cell)
 
-    def biomarker_table_rows(self, genomic_biomarker_args):
+    def biomarker_table_rows(self, genomic_biomarker_args, purity):
         row_fields = genomic_biomarker_args[constants.BODY]
         rows = []
         for row in row_fields:
-            if row[constants.ALT] == "TMB":
-                continue
-            else:
+            cells = [
+                self._td(row[constants.ALT]),
+                self._td(row[constants.METRIC_ALTERATION]),
+                self._td(self.assemble_biomarker_plot(row[constants.ALT],row[constants.METRIC_PLOT]))
+            ]
+            if row[constants.ALT] == "MSI" and purity < 50:
                 cells = [
                     self._td(row[constants.ALT]),
-                    self._td(row[constants.METRIC_CALL]),
-                    self._td(self.assemble_biomarker_plot(row[constants.ALT],row[constants.METRIC_PLOT]))
+                    self._td("NA"),
+                    self._td("Cancer cell content &#8804; 50 &#37;, below threshold to call MS score")
                 ]
-                rows.append(self.table_row(cells))
+            rows.append(self.table_row(cells))
         return rows
 
     def k_comma_format(self,value):
+        value = int(value)
         value_formatted = f'{value:,}'
         return(value_formatted)
 
@@ -100,7 +104,7 @@ class html_builder:
             if key in constants.PATIENT_INFO_CONSTANT_FIELDS:
                 value = constants.PATIENT_INFO_CONSTANT_FIELDS.get(key)
             elif key == constants.DATE_OF_REPORT:
-                value = strftime("%Y/%m/%d")
+                value = "yyyy/mm/dd"
             elif key == constants.TMB_TOTAL:
                 tmb_total = args[constants.TMB_TOTAL]
                 tmb_per_mb = args[constants.TMB_PER_MB]
@@ -215,21 +219,21 @@ class html_builder:
 
     def patient_table_report_cols(self, patient_args):
         """Get the patient info table: After initial header, before Sample Information & Quality"""
-        widths = [[17,20], [19,35]]
+        widths = [[24,13], [20,36]]
         key_groups = [
+            [constants.STUDY, constants.PATIENT_STUDY_ID],
             [constants.PATIENT_LIMS_ID, constants.TUMOUR_SAMPLE_ID],
-            [constants.PATIENT_STUDY_ID, constants.BLOOD_SAMPLE_ID],
-            [constants.STUDY , constants.REPORT_ID]
+            [constants.REQ_APPROVED_DATE, constants.BLOOD_SAMPLE_ID],
+            [ constants.DATE_OF_REPORT, constants.REPORT_ID ]
         ]
         return self.key_value_table_rows(patient_args, key_groups, widths)
     
     def patient_table_id_cols(self, patient_args):
         """Get the patient info table: After initial header, before Sample Information & Quality"""
-        widths = [[25,15],[23,38]]
+        widths = [[22,21],[22,36]]
         key_groups = [
-            [constants.DATE_OF_REPORT , constants.REQUISITIONER_EMAIL],
-            [constants.REQ_APPROVED_DATE, constants.NAME],
-            [constants.SEX, constants.DOB],
+            [constants.NAME, constants.DOB],
+            [constants.SEX, constants.REQUISITIONER_EMAIL],
             [constants.LICENCE_NUMBER, constants.PHYSICIAN],
             [constants.PHONE_NUMBER, constants.HOSPITAL]
         ]
@@ -295,7 +299,7 @@ class html_builder:
                 self._td(row[constants.FUSION]),
                 self._td(row[constants.FRAME]),
                 self._td(row[constants.MUTATION_EFFECT]),
-                self._td(row[constants.ONCOKB])
+                self._td_oncokb(row[constants.ONCOKB])
             ]
             rows.append(self.table_row(cells))
         return rows

@@ -23,6 +23,8 @@ from djerba.extract.extractor import extractor
 from djerba.extract.oncokb.annotator import oncokb_annotator
 from djerba.extract.oncokb.cache import oncokb_cache, oncokb_cache_params
 from djerba.extract.r_script_wrapper import r_script_wrapper
+from djerba.extract.report_to_json import clinical_report_json_composer
+import djerba.extract.constants as xc
 from djerba.lister import lister
 from djerba.main import main
 from djerba.mavis import mavis_runner
@@ -155,7 +157,7 @@ class TestArchive(TestBase):
         self.assertEqual(get["_id"], get["report"]["patient_info"]["Report ID"])
         rm = requests.delete(url_id+'?rev='+get["_rev"])
         self.assertEqual(rm.status_code, 200)
-        self.assertEqual(len(data['report']), 26)  
+        self.assertEqual(len(data['report']), 25)  
         self.assertEqual(len(data['supplementary']['config']), 4)
 
 class TestConfigure(TestBase):
@@ -190,13 +192,13 @@ class TestConfigure(TestBase):
         self.run_config_test(self.config_user, False, False, 97, self.provenance)
 
     def test_default_fail(self):
-        self.run_config_test(self.config_user_failed, False, True, 83, self.provenance)
+        self.run_config_test(self.config_user_failed, False, True, 82, self.provenance)
 
     def test_wgs_only(self):
         self.run_config_test(self.config_user_wgs_only, True, False, 95, self.provenance)
 
     def test_wgs_only_fail(self):
-        self.run_config_test(self.config_user_wgs_only_failed, True, True, 83, self.provenance)
+        self.run_config_test(self.config_user_wgs_only_failed, True, True, 82, self.provenance)
 
     def test_vnwgts(self):
         self.run_config_test(self.config_user_vnwgts, False, False, 97, self.provenance_vnwgts)
@@ -247,11 +249,12 @@ class TestExtractor(TestBase):
         'data_segments.txt',
         'aratio_segments.txt',
         'sequenza_meta.txt',
-        'msi.txt'
+        'msi.txt',
+        'SNP.count.txt'
     ]
     # md5 sums of files in failed output
     STATIC_MD5 = {
-        'data_clinical.txt': 'ec0868407eeaf100dbbbdbeaed6f1774',
+        'data_clinical.txt': '9265aa2443b3b62838f97fb601383793',
         'genomic_summary.txt': 'cfd5d2f88e41cf22ef0308930bca8727',
         'technical_notes.txt': '7caedb48f3360f33937cb047579633fd'
     }
@@ -267,7 +270,7 @@ class TestExtractor(TestBase):
         with open(expected_path) as in_file:
             data_expected = json.loads(in_file.read())
         # plot paths/contents are not fixed
-        for key in ['oicr_logo', 'cnv_plot', 'pga_plot', 'tmb_plot', 'vaf_plot']:
+        for key in ['oicr_logo', 'cnv_plot', 'vaf_plot']:
             del data_found['report'][key]
             del data_expected['report'][key]
         for biomarker in range(0,len(data_found['report']['genomic_biomarkers']['Body'])):
@@ -307,7 +310,7 @@ class TestExtractor(TestBase):
             data_found['report']['djerba_version'] = 'PLACEHOLDER'
             del data_found['supplementary'] # do not test supplementary data
             data = json.dumps(data_found)
-            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), 'a57a2e586eedce19e993170922aca0ce')
+            self.assertEqual(hashlib.md5(data.encode(encoding=constants.TEXT_ENCODING)).hexdigest(), '3c1d1e04ee86bce8f9d06c97d3c899e5')
 
     def test_wgts_mode(self):
         out_dir = os.path.join(self.tmp_dir, 'WGTS')
@@ -366,6 +369,37 @@ class TestExtractor(TestBase):
         self.assertEqual(test_extractor.get_description(), expected[1])
         config[ini.INPUTS][ini.ONCOTREE_CODE] = 'FOO'
         self.assertEqual(test_extractor.get_description(), expected[2])
+
+    def test_genomic_biomarkers_annotation(self):
+        genomic_biomarkers_path = os.path.join(self.sup_dir, 'genomic_biomarkers.maf')
+        found_path = os.path.join(self.sup_dir, 'genomic_biomarkers_annotated.maf')
+        expected_path = os.path.join(self.tmp_dir, 'genomic_biomarkers_annotated.maf')
+        oncokb_annotator('sample-01', 'PAAD', self.tmp_dir).annotate_biomarkers_maf(genomic_biomarkers_path, expected_path)
+        with open(found_path) as in_file:
+            data_found = in_file.read()
+        with open(expected_path) as in_file:
+            data_expected = in_file.read()
+        self.maxDiff = None
+        self.assertEqual(data_found, data_expected)
+
+    def test_genomic_biomarkers_building(self):
+        params = {
+            xc.AUTHOR: "None",
+            xc.ASSAY_TYPE: "WGS",
+            xc.COVERAGE: 80,
+            xc.FAILED: False,
+            xc.ONCOKB_CACHE: oncokb_cache_params(),
+            xc.ONCOTREE_CODE: "PAAD",
+            xc.PURITY_FAILURE: False, 
+            xc.PROJECT: "PASS01"
+        }
+        msi_file_path = os.path.join(self.sup_dir, 'PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.msi.booted')
+        input_path = os.path.join(self.sup_dir, 'report_example')
+        data_found = clinical_report_json_composer(self.config_full, input_path, params).build_genomic_biomarkers(self.tmp_dir, 'sample-01', tmb_value=12, msi_file_path = msi_file_path)
+        for biomarker in range(0,len(data_found['Body'])):
+            del data_found['Body'][biomarker]['Genomic biomarker plot']
+        data_expected = {'Clinically relevant variants': 2, 'Body': [{'Alteration': 'TMB', 'Alteration_URL': 'https://www.oncokb.org/gene/Other%20Biomarkers/TMB-H', 'Genomic biomarker value': 12, 'Genomic alteration actionable': True, 'Genomic biomarker alteration': 'TMB-H', 'Genomic biomarker text': 'Tumour Mutational Burden High (TMB-H, &#8805 10 coding mutations / Mb)'}, {'Alteration': 'MSI', 'Alteration_URL': 'https://www.oncokb.org/gene/Other%20Biomarkers/MSI-H', 'Genomic biomarker value': 117.0, 'Genomic alteration actionable': True, 'Genomic biomarker alteration': 'MSI-H', 'Genomic biomarker text': 'Microsatellite Instability High (MSI-H)'}]}
+        self.assertEqual(data_found, data_expected)
 
 class TestLister(TestBase):
 
@@ -688,13 +722,13 @@ class TestRender(TestBase):
         out_path = os.path.join(out_dir, 'djerba_test_wgts.html')
         hr = html_renderer()
         out_path = hr.run_clinical(args_path, out_dir, 'report_WGTS', False)
-        self.check_report(out_path, '8f52c1b6f7b7e833607f492ecb66274b')
+        self.check_report(out_path, '76e370b43f9e47a98d92953a989c4c4f')
         args_path = os.path.join(self.sup_dir, 'report_json', 'WGS_only', 'djerba_report.json')
         out_path = hr.run_clinical(args_path, out_dir, 'report_WGS_only', False)
-        self.check_report(out_path, 'e4ded6d0d4efcee6dafdb50bffff2438')
+        self.check_report(out_path, 'e9cde1c35aa62bf71814e64b8f0a33dd')
         args_path = os.path.join(self.sup_dir, 'report_json', 'failed', 'djerba_report.json')
         out_path = hr.run_clinical(args_path, out_dir, 'report_failed', False)
-        self.check_report(out_path, '0cda263df3fbc1d3dcf89479eebd2fb5')
+        self.check_report(out_path, '5976081ff05c571ce62a90dd63f8d6dc')
 
     def test_html_research(self):
         out_dir = os.path.join(self.tmp_dir, 'html_research')
