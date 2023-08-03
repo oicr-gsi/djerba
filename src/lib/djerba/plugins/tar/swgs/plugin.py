@@ -21,7 +21,8 @@ class main(plugin_base):
     PLUGIN_VERSION = '1.0.0'
     #PRIORITY = 100 
     TEMPLATE_NAME = 'swgs_template.html'
-    RESULTS_SUFFIX = 'seg/txt-gz$'
+    #RESULTS_SUFFIX = 'seg/txt-gz$'
+    RESULTS_SUFFIX = '.seg.txt'
     WORKFLOW = 'ichorcna'
 
     def specify_params(self):
@@ -43,9 +44,10 @@ class main(plugin_base):
       config = self.apply_defaults(config)
       
       # POPULATE THE INI HERE!?
-      x = self.get_seg_file(config["tar.sample"]["group_id"])
-      print(x)
-      #config[self.identifier]["seg_file"] = self.get_seg_file(config["tar.sample"]["group_id"])
+      #print(config["tar.sample"]["root_sample_name"])
+      #x = self.get_seg_file(config["tar.sample"]["root_sample_name"])
+      #print(x)
+      config[self.identifier]["seg_file"] = self.get_seg_file(config["tar.sample"]["root_sample_name"])
 
       return config
 
@@ -100,11 +102,11 @@ class main(plugin_base):
           group_id = df[df['Group ID'].str.contains("Pl")]['Group ID'][0]
           return(group_id)
 
-    def get_seg_file(self, group_id):
+    def get_seg_file(self, root_sample_name):
       """
       pull data from results file
       """
-      provenance = provenance_tools.subset_provenance(self, self.WORKFLOW, group_id)
+      provenance = provenance_tools.subset_provenance(self, self.WORKFLOW, root_sample_name)
       try:
           results_path = provenance_tools.parse_file_path(self, self.RESULTS_SUFFIX, provenance)
       except OSError as err:
