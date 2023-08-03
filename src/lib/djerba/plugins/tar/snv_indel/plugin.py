@@ -12,6 +12,7 @@ from djerba.plugins.snv_indel.extract import data_builder
 import djerba.core.constants as core_constants
 from djerba.util.subprocess_runner import subprocess_runner
 import djerba.util.provenance_index as index
+import djerba.plugins.tar.provenance_tools as provenance_tools
 from djerba.core.workspace import workspace
 
 class main(plugin_base):
@@ -19,12 +20,16 @@ class main(plugin_base):
     PRIORITY = 100
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'snv_indel_template.html'
+    WORKFLOW = 'consensusCruncher'
+    RESULTS_SUFFIX_Pl = 'Pl.merged.maf.gz'
+    RESULTS_SUFFIX_BC = 'BC.merged.maf.gz'
     
     def __init__(self, **kwargs):
       super().__init__(**kwargs)
          
     def specify_params(self):
       self.add_ini_required('maf_file')
+      self.add_ini_required('maf_file_normal')
       self.add_ini_required('oncotree_code')
       self.add_ini_required('tcgacode')
       self.add_ini_required('tumour_id')
@@ -35,6 +40,11 @@ class main(plugin_base):
 
     def configure(self, config):
       config = self.apply_defaults(config)
+
+      # Populate ini
+      config[self.identifier]["maf_file"] = self.get_maf_file(config["tar.sample"]["root_sample_name"], self.RESULTS_SUFFIX_Pl)
+      config[self.identifier]["maf_file_normal"] = self.get_maf_file(config["tar.sample"]["root_sample_name"], self.RESULTS_SUFFIX_BC)
+      
       return config  
 
     def extract(self, config):
@@ -72,3 +82,17 @@ class main(plugin_base):
           self.logger.error(msg)
           raise
       return html
+
+
+    def get_maf_file(self, root_sample_name, results_suffix):
+      """
+      pull data from results file
+      """
+      provenance = provenance_tools.subset_provenance(self, self.WORKFLOW, root_sample_name)
+      try:
+          results_path = provenance_tools.parse_file_path(self, results_suffix, provenance)
+      except OSError as err:
+          msg = "File with extension {0} not found".format(results_suffix)
+          raise RuntimeError(msg) from err
+      return results_path
+

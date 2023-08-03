@@ -19,9 +19,7 @@ from gsiqcetl import QCETLCache
 class main(plugin_base):
     
     PLUGIN_VERSION = '1.0.0'
-    #PRIORITY = 100 
     TEMPLATE_NAME = 'swgs_template.html'
-    #RESULTS_SUFFIX = 'seg/txt-gz$'
     RESULTS_SUFFIX = '.seg.txt'
     WORKFLOW = 'ichorcna'
 
@@ -44,9 +42,6 @@ class main(plugin_base):
       config = self.apply_defaults(config)
       
       # POPULATE THE INI HERE!?
-      #print(config["tar.sample"]["root_sample_name"])
-      #x = self.get_seg_file(config["tar.sample"]["root_sample_name"])
-      #print(x)
       config[self.identifier]["seg_file"] = self.get_seg_file(config["tar.sample"]["root_sample_name"])
 
       return config
