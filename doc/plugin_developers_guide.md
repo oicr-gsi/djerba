@@ -4,7 +4,75 @@ This document is meant as a compact guide to writing plugins, and documents some
 
 ## Plugin requirements
 
-## Useful methods of plugins
+A plugin _must_ inherit from the plugin base class: `src/lib/djerba/plugins/base.py`
+
+A plugin _must not_ override its `__init__` constructor method, unless it uses `super().__init__` to call the superclass constructor.
+
+A plugin _may_ override the following methods of the parent class:
+- `configure`
+- `extract`
+- `render`
+- `specify_params`
+
+These methods are discussed in the "Key methods of plugins" section below. In order for the plugin to do anything useful, it will have to override at least one of the above methods, and usually all of them.
+
+A plugin _may_ be more than one level of inheritance removed from the plugin base class, eg. plugins may be subclasses of other plugins.
+
+## Key methods of plugins
+
+The `configure`, `extract`, and `render` methods implement the three main steps of Djerba report generation.
+
+The `specify_params` method can be thought of as a "pre-configure" step, in which we define the expected parameters and any default values.
+
+### `configure`
+
+This step populates configuration parameters in the INI file. Djerba defines three different parameter types:
+- *Required*: Must be supplied by the user at the `configure` step
+- *Default*: Has a simple default value
+- *Discovered*: Populated by the `configure` method at runtime
+
+The names of required, default, and discovered parameters are defined in the `specify_params` method. The role of the `configure` method is to populate them as needed:
+
+- *Required*: Do nothing; the value has been supplied by the user. Appropriate checks on this are run by the Djerba core.
+- *Default*: Call the `apply_defaults` method to apply all defaults
+- *Discovered*: Whatever customized code is necessary: HTTP request to a server, reading a JSON file, computations to find a numerical threshold, etc.
+
+*IMPORTANT DJERBA CONVENTION:* If the user explicitly supplies a value for a "discovered" or "default" parameter, the `configure` method _must_ apply the user-supplied value. In other words, the user can _always_ override automated defaults/discovery of a parameter by specifying it manually. Adhering to this convention is the developer's responsibility.
+
+- Input: ConfigParser representing with (at least) the minimal set of parameters
+- Output: ConfigParser with a fully specified set of parameters
+
+### `extract`
+
+This step generates metrics, tables, plots, etc. for the given INI configuration, and outputs them in JSON format.
+
+- Input: ConfigParser with a fully specified set of parameters
+- Output: Data structure conforming to the plugin JSON schema
+
+### `render`
+
+This step takes the JSON generated in the `extract` step, and renders it to HTML. Typically this is done using [Mako templates](https://www.makotemplates.org/); the `djerba.util` package has code to support use of Mako.
+
+- Input: Data structure conforming to the plugin JSON schema
+- Output: String for inclusion in an HTML document. May include HTML tags, base64-encoded graphics, etc.
+
+### `specify_params`
+
+Specify parameters for the plugin's INI config file.
+
+It does so by calling one or more of these methods of the parent class:
+- add_ini_required
+- add_ini_discovered
+- set_ini_default
+
+These methods respectively correspond to the required, discovered, and default parameter types in Djerba. See "Other useful methods of plugins" for further details.
+
+- Input: None
+- Output: None
+
+## Other useful methods of plugins
+
+The following are methods of the plugin superclasses (plugin base and its parent class `configurable`) intended for use by plugin developers.
 
 Unless otherwise stated, these apply to all objects which inherit from the `configurable` class -- including helpers and mergers, not just plugins.
 
@@ -16,8 +84,9 @@ Get an data structure which satisfies the plugin JSON schema, for use in the ext
 - *Outputs:* A data structure conforming to the plugin JSON schema
 - *Source code:* `src/lib/djerba/plugins/base.py`
 
+### Other, other methods (descriptions TODO)
+
 check_attributes_known(self, attributes):
-configure(self, config):
 get_config_wrapper(self, config):
 get_module_dir(self):
 get_identifier(self):
