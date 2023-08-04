@@ -83,34 +83,12 @@ Get a parameter from the `[core]` section of the INI config. This is a reserved 
 - Inputs: key
 - Outputs: A string, int, float, or boolean, as appropriate
 
----
-
 ### get_my_attributes
 
 Get the attributes from the INI. Attributes are represented in the INI as a comma-delimited string; this method parses them into a list.
 
 - Inputs: None
 - Outputs: List of attributes (strings)
-
----
-
-### my_param_is_null
-### my_param_is_not_null
-
-Check if a parameter of the current plugin is null, ie. set to the reserved null value `__DJERBA_NULL__`.
-
-- Inputs: key
-- Outputs: Boolean
-
-### param_is_null
-### param_is_not_null
-
-As for `my_param_is_null` and `my_param_is_null`, but for any section in the INI.
-
-- Inputs: Section name, parameter key
-- Outputs: Boolean
-
----
 
 ### get_my_boolean
 ### get_my_float
@@ -139,6 +117,24 @@ Get the configure/extract/render priorities for the current plugin as a dictiona
 
 - Inputs: None
 - Outputs: Dictionary
+
+---
+
+### my_param_is_null
+### my_param_is_not_null
+
+Check if a parameter of the current plugin is null, ie. set to the reserved null value `__DJERBA_NULL__`.
+
+- Inputs: key
+- Outputs: Boolean
+
+### param_is_null
+### param_is_not_null
+
+As for `my_param_is_null` and `my_param_is_null`, but for any section in the INI.
+
+- Inputs: Section name, parameter key
+- Outputs: Boolean
 
 ---
 
