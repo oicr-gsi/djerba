@@ -1,26 +1,88 @@
 # CHANGELOG
+
+## Unreleased
+
+## GCGI-963: Case overview plugin
+- Renamed the patient info plugin
+- Brought up to date with new display format from master
+- Now supports WGTS, WGS, and TAR
+
+## GCGI-1016: Default working directory
+- Make `--work-dir` optional in `djerba.py` script; defaults to the output dir
+
+## Other
+- In clinical report footer, added "Report Sign-Offs" heading and removed auto-generation of the date
+
+## v1.0.0-dev0.0.7: 2023-08-02
+
+### GCGI-963: Patient info plugin
+- Simple plugin to generate the Clinical Research Report header and Case Overview section
+
+### GCGI-982: Provenance helper update
+- Update to complement changes to core functionality
+- Writes subset of provenance and `sample_info.json` at both configure and extract
+
 ## v0.4.13: 2023-07-31
 
 ### Changed
 - GCGI-989: Made adjustments to biomarker plots
 - GCGI-1011: Update to find new sequenza file path
-  
+
 ### Added
 - example .pdf and .ini of WGTS report in `examples/`
+
+## v1.0.0-dev0.0.6: 2023-07-20
+
+### GCGI-967: Overhaul core functionality
+- Define core INI parameters and implement in `core_configurer`
+- Get rid of placeholder data at the core extract step
+- Add PDF rendering to the core
+- Introduce `document_config.json` with settings to render HTML
+- Render multiple HTML/PDF documents, identified by attributes (clinical, research, etc)
+- Add a `mako_renderer` utility class with tests
+
+### GCGI-950: Attributes
+- Represent attributes as a comma-separated list, instead of individual parameters
+- Add a method to check all attributes are known
+- Define a list of known attributes in `configurable` class; may override in subclasses
+
+### GCGI-951: Dependencies
+- Explicitly represent plugin dependencies with INI parameters
+- Params `depends_configure` and `depends_extract` expect a comma-separated list of component names, which will be checked at runtime
+- Do not define a dependency param at the render step; JSON output from each plugin is expected to be self-contained, so all dependencies should be resolved at the extract step.
+
+### GCGI-955: `specify_params`
+- Each plugin must have a `specify_params` method to define required and optional INI parameters
+- Using an INI parameter not defined in `specify_params` will cause an error
+- Refactor INI and priority handling to enable `specify_params`
+
+### Other
+- Strict substitution for environment variable templates; consistent with HOWTO on wiki
 
 ## v0.4.12: 2023-07-19
 
 ### Changed
 - GCGI-956: The TMB plot has been moved to a linear format and the PGA plot has been removed
-  
+
 ### Added
 - GCGI-957: The number of candidate SNVs for the pWGS assay are listed in Genomic Landscape section
+
+## v1.0.0-dev0.0.5: 2023-07-04
+
+### GCGI-946: Versioning for plugins
+- All plugins must output a "version" string in the JSON
+- Updated `plugin_schema.json`, demo plugins, and tests
+
+### GCGI-875: Simplify configurable interface
+- Initialize components with a single `**kwargs` variable, for ease of calling superclass
+- New `config_wrapper` class, with methods to read/edit the INI
+- Reorganize core config classes into a single `configure.py` file
 
 ## v0.4.11: 2023-06-27
 
 ### Changed
 - GCGI-864: removed annotation of 5'UTR, 3'UTR, and 3'Flank. 5'Flank only annotated if TERT
-- Sample QC results moved to below summary 
+- Sample QC results moved to below summary
 - Split some `Case Overview` section into a new `Patient and Physician` section
 - Removed tracking of patient's genetic sex
 - GCGI-943: Overrode HGVSp for BRAF V640E to be represented as V600E
@@ -56,54 +118,6 @@
 - GCGI-862: fixed fusion oncokb levels (changed to symbols)
 - GCGI-853: fixed and cleaned annotation of genomic biomarkers
 - GCGI-852: Correct file metatype for Mavis summary files
-
-## v1.0.0-dev0.0.7: 2023-08-02
-
-### GCGI-963: Patient info plugin
-- Simple plugin to generate the Clinical Research Report header and Case Overview section
-
-### GCGI-982: Provenance helper update
-- Update to complement changes to core functionality
-- Writes subset of provenance and `sample_info.json` at both configure and extract
-
-## v1.0.0-dev0.0.6: 2023-07-20
-
-### GCGI-967: Overhaul core functionality
-- Define core INI parameters and implement in `core_configurer`
-- Get rid of placeholder data at the core extract step
-- Add PDF rendering to the core
-- Introduce `document_config.json` with settings to render HTML
-- Render multiple HTML/PDF documents, identified by attributes (clinical, research, etc)
-- Add a `mako_renderer` utility class with tests
-
-### GCGI-950: Attributes
-- Represent attributes as a comma-separated list, instead of individual parameters
-- Add a method to check all attributes are known
-- Define a list of known attributes in `configurable` class; may override in subclasses
-
-### GCGI-951: Dependencies
-- Explicitly represent plugin dependencies with INI parameters
-- Params `depends_configure` and `depends_extract` expect a comma-separated list of component names, which will be checked at runtime
-- Do not define a dependency param at the render step; JSON output from each plugin is expected to be self-contained, so all dependencies should be resolved at the extract step.
-
-### GCGI-955: `specify_params`
-- Each plugin must have a `specify_params` method to define required and optional INI parameters
-- Using an INI parameter not defined in `specify_params` will cause an error
-- Refactor INI and priority handling to enable `specify_params`
-
-### Other
-- Strict substitution for environment variable templates; consistent with HOWTO on wiki
-
-## v1.0.0-dev0.0.5: 2023-07-04
-
-### GCGI-946: Versioning for plugins
-- All plugins must output a "version" string in the JSON
-- Updated `plugin_schema.json`, demo plugins, and tests
-
-### GCGI-875: Simplify configurable interface
-- Initialize components with a single `**kwargs` variable, for ease of calling superclass
-- New `config_wrapper` class, with methods to read/edit the INI
-- Reorganize core config classes into a single `configure.py` file
 
 ## v1.0.0-dev0.0.4: 2023-05-04
 
