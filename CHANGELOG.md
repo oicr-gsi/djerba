@@ -7,6 +7,9 @@
 - Brought up to date with new display format from master
 - Now supports WGTS, WGS, and TAR
 
+## Other
+- In clinical report footer, added "Report Sign-Offs" heading and removed auto-generation of the date
+
 ## v1.0.0-dev0.0.7: 2023-08-02
 
 ### GCGI-963: Patient info plugin
