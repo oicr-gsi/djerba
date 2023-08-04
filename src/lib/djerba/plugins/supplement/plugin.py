@@ -8,11 +8,18 @@ from djerba.util.render_mako import mako_renderer
 class main(plugin_base):
 
     DEFAULT_CONFIG_PRIORITY = 1000
-    SUPPLEMENT_DJERBA_VERSION = 0.1
     MAKO_TEMPLATE_NAME = 'supplementary_materials_template.html'
+    SUPPLEMENT_DJERBA_VERSION = 0.1
 
+    ASSAY = "assay"
+    
     def specify_params(self):
-        self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')        
+        required = [
+            self.ASSAY
+        ]
+        for key in required:
+            self.add_ini_required(key)
+        self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -29,7 +36,7 @@ class main(plugin_base):
             'attributes': wrapper.get_my_attributes(),
             'merge_inputs': {},
             'results': {
-                'assay': ''
+                'assay': config[self.identifier]['assay']
             },
             'version': str(self.SUPPLEMENT_DJERBA_VERSION)
         }
