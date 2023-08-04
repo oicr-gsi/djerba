@@ -34,7 +34,7 @@ class TestCaseOverview(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: self.JSON_NAME,
-            self.MD5: '8b44b4f31d9c2efb2be71968d0d1fe7a'
+            self.MD5: 'c80fd62a33dbd4967315e3e30a7e0408'
         }
         self.run_basic_test(input_dir, params, 'case_overview', logging.ERROR)
 
