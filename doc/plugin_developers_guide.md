@@ -27,24 +27,26 @@ The `specify_params` method can be thought of as a "pre-configure" step, in whic
 ### `configure`
 
 This step populates configuration parameters in the INI file. Djerba defines three different parameter types:
-- *Required*: Must be supplied by the user at the `configure` step
-- *Default*: Has a simple default value
-- *Discovered*: Populated by the `configure` method at runtime
+- **Required**: Must be supplied by the user at the `configure` step
+- **Default**: Has a simple default value
+- **Discovered**: Populated by the `configure` method at runtime
 
 The names of required, default, and discovered parameters are defined in the `specify_params` method. The role of the `configure` method is to populate them as needed:
 
-- *Required*: Do nothing; the value has been supplied by the user. Appropriate checks on this are run by the Djerba core.
-- *Default*: Call the `apply_defaults` method to apply all defaults
-- *Discovered*: Whatever customized code is necessary: HTTP request to a server, reading a JSON file, computations to find a numerical threshold, etc.
+- **Required**: Do nothing; the value has been supplied by the user. Appropriate checks on this are run by the Djerba core.
+- **Default**: Call the `apply_defaults` method to apply all defaults
+- **Discovered**: Whatever customized code is necessary: HTTP request to a server, reading a JSON file, computations to find a numerical threshold, etc.
 
-*IMPORTANT DJERBA CONVENTION:* If the user explicitly supplies a value for a "discovered" or "default" parameter, the `configure` method _must_ apply the user-supplied value. In other words, the user can _always_ override automated defaults/discovery of a parameter by specifying it manually. Adhering to this convention is the developer's responsibility.
+**IMPORTANT DJERBA CONVENTION:** If the user explicitly supplies a value for a "discovered" or "default" parameter, the `configure` method _must_ apply the user-supplied value. In other words, the user can _always_ override automated defaults/discovery of a parameter by specifying it manually. Adhering to this convention is the developer's responsibility.
+
+If a discovered parameter is _not_ specified by the user, it will be initialized to a special null value; null status can be checked using `my_param_is_null` and similar methods.
 
 - Input: ConfigParser representing with (at least) the minimal set of parameters
 - Output: ConfigParser with a fully specified set of parameters
 
 ### `extract`
 
-This step generates metrics, tables, plots, etc. for the given INI configuration, and outputs them in JSON format.
+This step generates metrics, tables, plots, etc. for the given INI configuration, and outputs them in JSON format. The `get_starting_data` method can be used to get a "blank" data structure to be populated.
 
 - Input: ConfigParser with a fully specified set of parameters
 - Output: Data structure conforming to the plugin JSON schema
