@@ -62,12 +62,16 @@ Constructor for the class
 
 A `config_wrapper` object
 
+---
+
 ### get_config
 
 Get the `ConfigParser`, as modified by any methods called on the `config_wrapper` object. Useful for returning a `ConfigParser` from the `configure` method of a plugin.
 
 - Inputs: None
 - Outputs: A `ConfigParser` object
+
+---
 
 ### get_core_string
 ### get_core_int
@@ -79,12 +83,16 @@ Get a parameter from the `[core]` section of the INI config. This is a reserved 
 - Inputs: key
 - Outputs: A string, int, float, or boolean, as appropriate
 
+---
+
 ### get_my_attributes
 
 Get the attributes from the INI. Attributes are represented in the INI as a comma-delimited string; this method parses them into a list.
 
 - Inputs: None
 - Outputs: List of attributes (strings)
+
+---
 
 ### my_param_is_null
 ### my_param_is_not_null
@@ -102,6 +110,8 @@ As for `my_param_is_null` and `my_param_is_null`, but for any section in the INI
 - Inputs: Section name, parameter key
 - Outputs: Boolean
 
+---
+
 ### get_my_boolean
 ### get_my_float
 ### get_my_int
@@ -111,34 +121,6 @@ Get a parameter for the current plugin.
 
 - Inputs: key
 - Outputs: Boolean, float, int, or string, as appropriate
-
-### has_my_param
-
-Check if a parameter _exists_ for the current plugin -- "does not exist" is distinct from "exists and is null".
-
-- Inputs: key
-- Outputs: Boolean
-
-### get_my_priorities
-
-Get the configure/extract/render priorities for the current plugin as a dictionary.
-
-- Inputs: None
-- Outputs: Dictionary
-
-### set_my_priorities
-
-Set all three priorities (configure, extract and render) to the same integer value.
-
-- Inputs: Integer
-- Outputs: None
-
-### set_my_param
-
-Set a parameter value for the current plugin, converting the input to a string if necessary.
-
-- Inputs: key, value
-- Outputs: None
 
 ### get_boolean
 ### get_float
@@ -151,6 +133,22 @@ Similar to the respective `get_my_*` functions, but more general. Get a value of
 - Inputs: section, key
 - Outputs: value
 
+### get_my_priorities
+
+Get the configure/extract/render priorities for the current plugin as a dictionary.
+
+- Inputs: None
+- Outputs: Dictionary
+
+---
+
+### has_my_param
+
+Check if a parameter _exists_ for the current plugin -- "does not exist" is distinct from "exists and is null".
+
+- Inputs: key
+- Outputs: Boolean
+
 ### has_option
 ### has_param
 
@@ -159,6 +157,15 @@ Identical functions to check if a parameter is present; parameters are referred 
 - Inputs: section, key
 - Outputs: Boolean
 
+---
+
+### set_my_param
+
+Set a parameter value for the current plugin, converting the input to a string if necessary.
+
+- Inputs: key, value
+- Outputs: None
+
 ### set_param
 ### set
 
@@ -166,6 +173,15 @@ General versions of `set_my_param`. Set the given section and option to the give
 
 - Inputs: section, key, value
 - Outputs: None
+
+### set_my_priorities
+
+Set all three priorities (configure, extract and render) to the same integer value.
+
+- Inputs: Integer
+- Outputs: None
+
+---
 
 ### apply_env_templates
 ### apply_my_env_templates
