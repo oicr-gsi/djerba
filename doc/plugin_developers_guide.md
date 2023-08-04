@@ -48,7 +48,7 @@ As the name suggests, the idea of the `config_wrapper` is to wrap around a `Conf
 
 ## Methods of the `config_wrapper` class
 
-### __init__
+### `__init__`
 
 Constructor for the class
 
@@ -112,7 +112,7 @@ Get a parameter for the current plugin.
 - Inputs: key
 - Outputs: Boolean, float, int, or string, as appropriate
 
-### has_my_param(self, param)
+### has_my_param
 
 Check if a parameter _exists_ for the current plugin -- "does not exist" is distinct from "exists and is null".
 
