@@ -53,7 +53,7 @@ def get_parser():
     report_parser = subparsers.add_parser(constants.REPORT, help='run configure/extract/html steps; output HTML; optionally output PDF')
     report_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with user inputs')
     report_parser.add_argument('-o', '--out-dir', metavar='DIR', required=True, help='Directory for output files')
-    report_parser.add_argument('-w', '--work-dir', metavar='PATH', required=True, help='Path to plugin workspace directory')
+    report_parser.add_argument('-w', '--work-dir', metavar='PATH', help='Path to workspace directory; optional, defaults to value of --out-dir')
     report_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
     return parser
 
