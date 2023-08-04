@@ -7,6 +7,9 @@
 - Brought up to date with new display format from master
 - Now supports WGTS, WGS, and TAR
 
+## GCGI-1016: Default working directory
+- Make `--work-dir` optional in `djerba.py` script; defaults to the output dir
+
 ## Other
 - In clinical report footer, added "Report Sign-Offs" heading and removed auto-generation of the date
 
