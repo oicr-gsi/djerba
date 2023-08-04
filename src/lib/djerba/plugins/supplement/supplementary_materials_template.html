@@ -9,6 +9,13 @@
 
   <hr class="header-big-line" style="width:100%; align:right; page-break-before:always;">
   <h2>Supplementary </h2>
+  % if ASSAY == 'TAR' :
+
+    ${html_builder().section_cells_begin("<h3>Gene Information</h3>","supp")}
+      <%include file="resources/TAR.genes.html"/>
+    ${html_builder().section_cells_end()}
+
+  % endif
 
   % if ASSAY in ('WGTS','TAR','WGS') :
 
