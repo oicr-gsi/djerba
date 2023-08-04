@@ -365,15 +365,15 @@ class arg_processor(logger):
         return self._get_arg('out_dir')
 
     def get_work_dir(self):
-        # default to out_dir if work_dir is not in args
         if hasattr(self.args, 'work_dir'):
+            # if work_dir is defined and non-empty, use it
             value = self._get_arg('work_dir')
-        elif hasattr(self.args, 'out_dir'):
-            value = self._get_arg('out_dir')
+            if value == None:
+                # if work_dir is defined and empty, default to out_dir
+                value = self._get_arg('out_dir')
         else:
-            # shouldn't happen, but check for completeness
-            msg = "Need at least one of --work_dir, --out_dir to get working directory"
-            raise RuntimeError(msg)
+            # if work_dir is not defined, default to out_dir (eg. render mode)
+            value = self._get_arg('out_dir')
         return value
 
     def is_archive_enabled(self):
@@ -409,7 +409,8 @@ class arg_processor(logger):
             v.validate_output_dir(args.out_dir)
         elif args.subparser_name == constants.REPORT:
             v.validate_input_file(args.ini)
-            v.validate_output_dir(args.work_dir)
+            if args.work_dir != None: # work_dir is optional in report mode
+                v.validate_output_dir(args.work_dir)
             v.validate_output_dir(args.out_dir)
         else:
             # shouldn't happen, but handle this case for completeness
