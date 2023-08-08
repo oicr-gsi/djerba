@@ -32,7 +32,7 @@ class main(core_base):
     MERGERS = 'mergers'
     MERGE_INPUTS = 'merge_inputs'
 
-    def __init__(self, work_dir=None, log_level=logging.INFO, log_path=None):
+    def __init__(self, work_dir, log_level=logging.INFO, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
@@ -40,10 +40,8 @@ class main(core_base):
         self.json_validator = plugin_json_validator(self.log_level, self.log_path)
         self.path_validator = path_validator(self.log_level, self.log_path)
         self.work_dir = work_dir
-        if self.work_dir != None:
-            self.workspace = workspace(work_dir, self.log_level, self.log_path)
-        else:
-            self.workspace = None # eg. no workspace needed for 'render' only
+        # create a workspace in case it's needed (may not be for some modes/plugins)
+        self.workspace = workspace(work_dir, self.log_level, self.log_path)
         self.core_config_loader = core_config_loader(self.log_level, self.log_path)
         self.plugin_loader = plugin_loader(self.log_level, self.log_path)
         self.merger_loader = merger_loader(self.log_level, self.log_path)
@@ -367,12 +365,15 @@ class arg_processor(logger):
         return self._get_arg('out_dir')
 
     def get_work_dir(self):
-        # default to None if work_dir is not in args
-        # appropriate if eg. only running the 'render' step
         if hasattr(self.args, 'work_dir'):
+            # if work_dir is defined and non-empty, use it
             value = self._get_arg('work_dir')
+            if value == None:
+                # if work_dir is defined and empty, default to out_dir
+                value = self._get_arg('out_dir')
         else:
-            value = None
+            # if work_dir is not defined, default to out_dir (eg. render mode)
+            value = self._get_arg('out_dir')
         return value
 
     def is_archive_enabled(self):
@@ -408,7 +409,8 @@ class arg_processor(logger):
             v.validate_output_dir(args.out_dir)
         elif args.subparser_name == constants.REPORT:
             v.validate_input_file(args.ini)
-            v.validate_output_dir(args.work_dir)
+            if args.work_dir != None: # work_dir is optional in report mode
+                v.validate_output_dir(args.work_dir)
             v.validate_output_dir(args.out_dir)
         else:
             # shouldn't happen, but handle this case for completeness

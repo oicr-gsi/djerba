@@ -50,9 +50,10 @@ SITE_OF_BIOPSY_OR_SURGERY = 'Site of biopsy/surgery'
 TUMOUR_SAMPLE_ID = 'Tumour Sample ID'
 BLOOD_SAMPLE_ID = 'Blood Sample ID'
 PATIENT_INFO_CONSTANT_FIELDS = {
+    SEX: 'SEX',
     DOB: 'yyyy/mm/dd',
     PHYSICIAN: 'LAST, FIRST',
-    NAME: 'LAST NAME, FIRST NAME',
+    NAME: 'LAST, FIRST',
     LICENCE_NUMBER: 'nnnnnnnn',
     PHONE_NUMBER: 'nnn-nnn-nnnn',
     HOSPITAL: 'HOSPITAL NAME AND ADDRESS',
@@ -102,6 +103,9 @@ CANCER_SPECIFIC_PERCENTILE = 'Cancer-specific Percentile'
 CANCER_SPECIFIC_COHORT = 'Cancer-specific Cohort'
 PAN_CANCER_PERCENTILE = 'Pan-cancer Percentile'
 PAN_CANCER_COHORT = 'Pan-cancer Cohort'
+CTDNA = 'ctdna'
+CTDNA_CANDIDATES = 'ctDNA_candidate_sites'
+CTDNA_ELIGIBILITY = 'ctDNA_eligibility'
 
 # constants for the CNV table (also shares with investigational therapies)
 ALTERATION = 'Alteration'

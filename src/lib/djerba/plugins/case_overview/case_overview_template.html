@@ -1,0 +1,53 @@
+<%
+  import djerba.core.constants as core_constants
+  from djerba.plugins.case_overview.plugin import main as case_overview
+%>
+
+<hr class="big-white-line" >
+<div class="twocellmain">
+  <div class="oneoftwocellmain"><h2>Case Overview</h2></div>
+  <div class="twooftwocellmain" ><hr class="big-line" >
+    <table class="info">
+      <tr>
+        <td colspan=1>Assay:</td>
+        <td colspan=3>${results.get(case_overview.ASSAY)}</td>
+      </tr>
+    </table>
+    <table class="info">
+      <tr>
+        <td colspan=2>Primary cancer:</td>
+        <td colspan=2>${results.get(case_overview.PRIMARY_CANCER)}</td>
+      </tr>
+      <tr>
+        <td colspan=2>Site of biopsy/surgery:</td>
+        <td colspan=2>${results.get(case_overview.SAMPLE_ANATOMICAL_SITE)}</td>
+      </tr>
+    </table>
+    <table  class="info">
+      <tr>
+	<td width="24%">Study:</td>
+	<td width="13%" >${results.get(case_overview.STUDY)}</td>
+	<td width="20%">Patient Study ID:</td>
+	<td width="36%">${results.get(core_constants.PATIENT_STUDY_ID)}</td>
+      </tr>
+      <tr>
+	<td width="24%">Patient LIMS ID:</td>
+	<td width="13%">${results.get(core_constants.DONOR)}</td>
+	<td width="20%">Tumour Sample ID:</td>
+	<td width="36%">${results.get(case_overview.TUMOUR_SAMPLE_ID)}</td>
+      </tr>
+      <tr>
+	<td width="24%">Requisition Approved:</td>
+	<td width="13%">${results.get(case_overview.REQ_APPROVED_DATE)}</td>
+	<td width="20%">Blood Sample ID:</td>
+	<td width="36%">${results.get(case_overview.BLOOD_SAMPLE_ID)}</td>
+      </tr>
+      <tr>
+	<td width="24%">Date of Report:</td>
+	<td width="13%">yyyy/mm/dd</td>
+	<td width="20%">Report ID:</td>
+	<td width="36%">${results.get(core_constants.REPORT_ID)}</td>
+      </tr>
+    </table>
+</div></div>
+  
