@@ -1,0 +1,12 @@
+<%
+  import djerba.core.constants as core_constants
+  import djerba.render.constants as constants
+  from djerba.render.json_to_html import html_builder
+%>
+
+  <!-- results summary -->
+  ${html_builder().section_cells_begin("<h2>Results Summary</h2>","main")}
+
+    ${html_builder().markdown_to_html(genomic_summary)}
+
+  ${html_builder().section_cells_end()}
