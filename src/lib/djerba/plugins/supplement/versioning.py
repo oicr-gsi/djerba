@@ -1,3 +1,5 @@
+from djerba import __version__
+
 ##LINKS
 ARRIBA_LINK="https://github.com/suhrig/arriba"
 BWAMEM_LINK="https://bio-bwa.sourceforge.net/"
@@ -23,7 +25,7 @@ VARIANTEFFECTPREDICTOR_LINK="https://useast.ensembl.org/info/docs/tools/vep/inde
 ARRIBA_VERSION="2.4.0"
 BWAMEM_VERSION="0.7.12"
 CONSENSUSCRUNCHER_VERSION=""
-DJERBA_VERSION="DEV"
+DJERBA_VERSION=__version__
 GATK_VERSION="4.1.6.0"
 ICHORCNA_VERSION=""
 ILLUMINA_VERSION="NovaSeq 6000"
