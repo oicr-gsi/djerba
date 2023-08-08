@@ -12,6 +12,7 @@
 
 ## Other
 - In clinical report footer, added "Report Sign-Offs" heading and removed auto-generation of the date
+- Added `supplement` plugin
 
 ## v1.0.0-dev0.0.7: 2023-08-02
 
