@@ -24,7 +24,7 @@ class TestPwgSupplementaryPlugin(PluginTester):
         params = {
             self.INI: 'summary.ini',
             self.JSON: json_location,
-            self.MD5: '2f8e4c672327819d6b4a8cc2a5a724d7'
+            self.MD5: 'c8666f5354e163f6ede1a1f1f91efdf7'
         }
         self.run_basic_test(test_source_dir, params)
 

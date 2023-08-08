@@ -12,14 +12,15 @@ import djerba.util.ini_fields as ini
 def get_parser():
     """Construct the parser for command-line arguments"""
     parser = argparse.ArgumentParser(
-        description='update_genomic_summary.py: Update the genomic summary text in Djerba report JSON',
+        description='update_summary.py: Update the results summary text in Djerba report JSON',
     )
     parser.add_argument('-i', '--in', dest='in_path', metavar='PATH', required=True, help='JSON input file, or - for STDIN')
     parser.add_argument('-o', '--out', metavar='PATH', required=True, help='JSON output file, or - for STDOUT')
-    parser.add_argument('-s', '--summary', metavar='PATH', required=True, help='Text file to insert as genomic summary; required')
+    parser.add_argument('-s', '--summary', metavar='PATH', required=True, help='Text file to insert as results summary; required')
     return parser
 
 def main(args):
+    SUMMARY_TEXT = 'summary_text'
     val = path_validator()
     if args.in_path == '-':
         data = json.loads(sys.stdin.read())
@@ -30,7 +31,7 @@ def main(args):
     val.validate_input_file(args.summary)
     with open(args.summary) as sum_file:
         summary = sum_file.read().strip()
-    data[constants.REPORT][ini.GENOMIC_SUMMARY] = summary
+    data[constants.REPORT][SUMMARY_TEXT] = summary
     if args.out == '-':
         sys.stdout.write(json.dumps(data))
     else:
