@@ -16,37 +16,24 @@ class merger_base(configurable, html_builder, ABC):
 
     SCHEMA_NAME = 'merger_schema.json'
 
+    PRIORITY_KEYS = [
+        core_constants.CONFIGURE_PRIORITY,
+        core_constants.RENDER_PRIORITY
+    ] # extract priority is not defined for mergers
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         schema_path = os.path.join(self.module_dir, self.SCHEMA_NAME)
+        # global defaults for mergers; can override for individual merger classes
         self.json_validator = json_validator(schema_path, self.log_level, self.log_path)
-        defaults = {
-            core_constants.CONFIGURE_PRIORITY: self.DEFAULT_CONFIG_PRIORITY,
-            core_constants.RENDER_PRIORITY: self.DEFAULT_CONFIG_PRIORITY
+        self.ini_defaults = {
+            core_constants.ATTRIBUTES: '',
+            core_constants.DEPENDS_CONFIGURE: '',
+            core_constants.CONFIGURE_PRIORITY: 1000,
+            core_constants.RENDER_PRIORITY: 1000
         }
-        self.set_all_ini_defaults(defaults)
-        self.priority = 1000 # determines order of output for HTML; TODO FIXME use INI instead
         self.attributes = []
-
-    def get_attributes(self):
-        return self.attributes
-
-    def set_attributes(self, attributes):
-        if not isinstance(attributes, list):
-            msg = "Attributes value '{0}' is not a list".format(attributes)
-            self.logger.error(msg)
-            raise ValueError(msg)
-        self.attributes = attributes
-
-    def get_priority(self):
-        return self.priority
-
-    def set_priority(self, priority):
-        if not isinstance(priority, int):
-            msg = "Priority value '{0}' is not an integer".format(priority)
-            self.logger.error(msg)
-            raise ValueError(msg)
-        self.priority = priority
+        self.specify_params()
 
     def merge_and_sort(self, inputs, sort_key):
         """
@@ -77,7 +64,12 @@ class merger_base(configurable, html_builder, ABC):
             self.json_validator.validate_data(item)
         return ''
 
+    def set_priority_defaults(self, priority):
+        for key in self.PRIORITY_KEYS:
+            self.ini_defaults[key] = priority
+
     def validate_inputs(self, inputs):
         for item in inputs:
             self.json_validator.validate_data(item)
         self.logger.info("All merger inputs validated")
+

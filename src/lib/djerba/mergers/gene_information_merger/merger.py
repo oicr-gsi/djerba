@@ -9,20 +9,16 @@ from djerba.mergers.base import merger_base
 
 class main(merger_base):
 
-    RENDER_PRIORITY = 300
+    PRIORITY = 500
     SCHEMA_FILENAME = 'gene_information_schema.json'
     SORT_KEY = 'Gene_URL'
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.set_ini_default(core_constants.CLINICAL, True)
-        self.set_ini_default(core_constants.SUPPLEMENTARY, True)
 
     def configure(self, config):
         config = self.apply_defaults(config)
-        wrapper = self.get_config_wrapper(config)
-        wrapper.set_my_param(core_constants.RENDER_PRIORITY, self.RENDER_PRIORITY)
-        return wrapper.get_config()
+        return config
 
     def table_header(self):
         names = [
@@ -59,3 +55,7 @@ class main(merger_base):
         html.append(self.TABLE_END)
         return "\n".join(html)
 
+    def specify_params(self):
+        self.logger.debug("Specifying params for gene_information_merger")
+        self.set_ini_default(core_constants.ATTRIBUTES, 'clinical,supplementary')
+        self.set_priority_defaults(self.PRIORITY)

@@ -15,6 +15,7 @@ import djerba.render.constants as rc
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 
+from copy import deepcopy
 from glob import glob
 from string import Template
 from djerba.main import main
@@ -75,7 +76,7 @@ class benchmarker(logger):
             sample_inputs[ini.PATIENT] = sample
             sample_inputs[ini.DATA_DIR] = self.data_dir
             sample_inputs[self.TEST_DATA] = self.test_data
-            for key in [ini.TUMOUR_ID, ini.NORMAL_ID, ini.PATIENT_ID, ini.SEX]:
+            for key in [ini.TUMOUR_ID, ini.NORMAL_ID, ini.PATIENT_ID]:
                 sample_inputs[key] = self.sample_params[sample][key]
             pattern = '{0}/**/{1}_*mutect2.filtered.maf.gz'.format(results_dir, sample)
             sample_inputs[ini.MAF_FILE] = self.glob_single(pattern)
@@ -125,39 +126,39 @@ class benchmarker(logger):
 
     def run_comparison(self, report_dirs):
         name = constants.REPORT_JSON_FILENAME
-        data_to_compare = []
+        data = []
         report_paths = []
-        if self.args.compare_all:
-            self.logger.info("Comparing all document contents, including supplementary data")
-        else:
-            self.logger.info("Comparing report elements, excluding supplementary data")
+        self.logger.info("Comparing report elements, excluding supplementary data")
         self.logger.debug("Comparing reports: {0}".format(report_dirs))
         for report_dir in report_dirs:
             self.validator.validate_input_dir(report_dir)
             report_path = self.glob_single('{0}/**/{1}'.format(report_dir, name))
+            if report_path == None:
+                msg = "{0} not found in {1}".format(name, report_dir)
+                self.logger.error(msg)
+                raise RuntimeError(msg)
             self.validator.validate_input_file(report_path)
             report_paths.append(report_path)
-            data = self.read_and_preprocess_report(report_path)
-            if self.args.compare_all:
-                data_to_compare.append(data)
-            else:
-                data_to_compare.append(data.get(constants.REPORT))
+            doc = self.read_and_preprocess_report(report_path)
+            data.append(doc.get(constants.REPORT))
         self.logger.debug("Found report paths: {0}".format(report_paths))
         if os.path.samefile(report_paths[0], report_paths[1]):
             msg = "Report paths are the same file! {0}".format(report_paths)
             self.logger.error(msg)
             raise RuntimeError(msg)
-        diff = ReportDiff(data_to_compare)
-        equivalent = diff.is_equivalent()
-        if equivalent:
+        if self.args.delta < 0 or self.args.delta > 1:
+            msg = "Delta must be between 0 and 1; found {0}".format(self.args.delta)
+            self.logger.error(msg)
+            raise ValueError(msg)
+        diff = report_equivalence_tester(data, self.args.delta, self.log_level, self.log_path)
+        if diff.is_equivalent():
             self.logger.info("Reports are equivalent: {0}".format(report_paths))
         else:
             self.logger.warning("Reports are NOT equivalent: {0}".format(report_paths))
             if self.log_level > logging.INFO:
                 self.logger.warning("Run with --debug or --verbose for full report diff")
-            else:
-                self.logger.info("Report diff:\n{0}".format(diff.get_diff()))
-        return equivalent
+        self.logger.info("Report diff: {0}".format(diff.get_diff_text()))
+        return diff.is_equivalent()
 
     def run_reports(self, input_samples, work_dir):
         self.logger.info("Reporting for {0} samples: {1}".format(len(input_samples), input_samples))
@@ -261,6 +262,98 @@ class main_draft_args():
         self.update_cache = update_cache
         self.wgs_only = False
 
+class report_equivalence_tester(logger):
+
+    def __init__(self, data, expression_delta, log_level=logging.WARNING, log_path=None):
+        self.logger = self.get_logger(log_level, __name__, log_path)
+        self.data = data
+        self.delta = expression_delta
+        diff = ReportDiff(self.data)
+        self.diff_text = diff.get_diff()
+        if diff.is_identical():
+            self.logger.info("EQUIVALENT: Reports are identical")
+            self.equivalent = True
+        elif self.expressions_are_equivalent():
+            # check for non-expression discrepancies
+            diff_no_expr = ReportDiff(self.remove_expression())
+            self.equivalent = diff_no_expr.is_identical()
+            if self.equivalent:
+                msg = "EQUIVALENT: Reports are not identical, "+\
+                      "but equivalent within expression tolerance"
+            else:
+                msg = "NOT EQUIVALENT: Expressions are within tolerance, "+\
+                      "but other report fields differ"
+            self.logger.info(msg)
+        else:
+            msg = "NOT EQUIVALENT: Expressions do not match within "+\
+                  "permitted tolerance; other values may also differ"
+            self.logger.info(msg)
+            self.equivalent = False
+
+    def is_equivalent(self):
+        return self.equivalent
+
+    def get_diff_text(self):
+        return self.diff_text
+
+    def expressions_are_equivalent(self):
+        """
+        Check if input data structures are equivalent
+        Expression levels are permitted to differ by +/- delta
+        """
+        keys = [rc.TOP_ONCOGENIC_SOMATIC_CNVS, rc.SMALL_MUTATIONS_AND_INDELS]
+        expressions = []
+        # find expression by gene, for both datasets, and for both SNVs/indels and CNVs
+        for doc in self.data:
+            expr = {}
+            for key in keys:
+                for alteration in doc[key][rc.BODY]:
+                    expr[alteration[rc.GENE]] = alteration[rc.EXPRESSION_METRIC]
+            expressions.append(expr)
+        # compare the two expression dictionaries
+        if set(expressions[0].keys()) != set(expressions[1].keys()):
+            self.logger.info("Expression gene sets differ, expressions are not equivalent")
+            equivalent = False
+        else:
+            equivalent = True
+            for gene in expressions[0].keys():
+                expr0 = expressions[0][gene]
+                expr1 = expressions[1][gene]
+                if (expr0==None and expr1!=None) or (expr0!=None and expr1==None):
+                    msg = "Expression levels for gene {0}".format(gene)+\
+                          "have mismatched null and non-null values; "+\
+                          "expressions are not equivalent"
+                    self.logger.info(msg)
+                    equivalent = False
+                    break
+                elif expr0==None and expr1==None:
+                    pass # both expressions null is OK
+                else:
+                    diff = abs(expr0 - expr1)
+                    if diff > self.delta:
+                        msg = "Expression levels for gene {0} differ ".format(gene)+\
+                              "by more than permitted maximum of {0}; ".format(self.delta)+\
+                              "expressions are not equivalent"
+                        self.logger.info(msg)
+                        equivalent = False
+                        break
+            if equivalent:
+                msg = "All expression levels are within permitted tolerance "+\
+                      "of {0}; expressions are equivalent".format(self.delta)
+                self.logger.info(msg)
+        return equivalent
+
+    def remove_expression(self):
+        # return a copy of the Djerba report with expression values zeroed out
+        data_copy = deepcopy(self.data)
+        keys = [rc.TOP_ONCOGENIC_SOMATIC_CNVS, rc.SMALL_MUTATIONS_AND_INDELS]
+        for doc in data_copy:
+            for key in keys:
+                for alteration in doc[key][rc.BODY]:
+                    alteration[rc.EXPRESSION_METRIC] = 0
+        return data_copy
+
+
 class ReportDiff(unittest.TestCase):
     """Use a test assertion to diff two data structures"""
 
@@ -271,14 +364,14 @@ class ReportDiff(unittest.TestCase):
         self.maxDiff = None
         try:
             self.assertEqual(data[0], data[1])
-            self.diff=''
-            self.equivalent = True
+            self.diff='NONE'
+            self.identical = True
         except AssertionError as err:
             self.diff = str(err)
-            self.equivalent = False
+            self.identical = False
 
     def get_diff(self):
         return self.diff
 
-    def is_equivalent(self):
-        return self.equivalent
+    def is_identical(self):
+        return self.identical

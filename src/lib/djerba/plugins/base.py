@@ -17,12 +17,16 @@ class plugin_base(configurable, ABC):
         super().__init__(**kwargs)
         self.workspace = kwargs['workspace']
         self.json_validator = plugin_json_validator(self.log_level, self.log_path)
-        defaults = {
-            core_constants.CONFIGURE_PRIORITY: self.DEFAULT_CONFIG_PRIORITY,
-            core_constants.EXTRACT_PRIORITY: self.DEFAULT_CONFIG_PRIORITY,
-            core_constants.RENDER_PRIORITY: self.DEFAULT_CONFIG_PRIORITY
+        # global defaults for plugins; can override for individual plugin classes
+        self.ini_defaults = {
+            core_constants.ATTRIBUTES: '',
+            core_constants.DEPENDS_CONFIGURE: '',
+            core_constants.DEPENDS_EXTRACT: '',
+            core_constants.CONFIGURE_PRIORITY: 1000,
+            core_constants.EXTRACT_PRIORITY: 1000,
+            core_constants.RENDER_PRIORITY: 1000
         }
-        self.set_all_ini_defaults(defaults)
+        self.specify_params()
 
     # configure() method is defined in parent class
 
@@ -42,6 +46,20 @@ class plugin_base(configurable, ABC):
         }
         return data
 
+    def get_starting_plugin_data(self, config_wrapper, plugin_version):
+        """Create a data structure with empty merge inputs and results"""
+        attributes = config_wrapper.get_my_attributes()
+        self.check_attributes_known(attributes)
+        data = {
+            'plugin_name': self.identifier+' plugin',
+            'version': plugin_version,
+            'priorities': config_wrapper.get_my_priorities(),
+            'attributes': config_wrapper.get_my_attributes(),
+            'merge_inputs': {},
+            'results': {},
+        }
+        return data
+
     def render(self, data):
         """
         Input is a data structure satisfying the plugin schema
@@ -51,3 +69,11 @@ class plugin_base(configurable, ABC):
         self.logger.debug(msg)
         self.json_validator.validate_data(data)
         return ''
+
+    def set_priority_defaults(self, priority):
+        for key in core_constants.PRIORITY_KEYS:
+            self.ini_defaults[key] = priority
+
+class DjerbaPluginError(Exception):
+    """General-purpose class for Djerba plugin errors; can subclass if needed"""
+    pass

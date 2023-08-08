@@ -26,6 +26,7 @@ class r_script_wrapper(logger):
     T_DEPTH = 't_depth'
     T_ALT_COUNT = 't_alt_count'
     GNOMAD_AF = 'gnomAD_AF'
+    HUGO_SYMBOL = 'Hugo_Symbol'
     MAF_KEYS = [
         VARIANT_CLASSIFICATION,
         TUMOUR_SAMPLE_BARCODE,
@@ -33,7 +34,8 @@ class r_script_wrapper(logger):
         FILTER,
         T_DEPTH,
         T_ALT_COUNT,
-        GNOMAD_AF
+        GNOMAD_AF,
+        HUGO_SYMBOL
     ]
 
     # 0-based index for GEP results file
@@ -44,10 +46,7 @@ class r_script_wrapper(logger):
     # `Splice_Region` is *included* here, but *excluded* from the somatic mutation count used to compute TMB in report_to_json.py
     # See also JIRA ticket GCGI-469
     MUTATION_TYPES_EXONIC = [
-        "3'Flank",
-        "3'UTR",
         "5'Flank",
-        "5'UTR",
         "Frame_Shift_Del",
         "Frame_Shift_Ins",
         "In_Frame_Del",
@@ -147,6 +146,8 @@ class r_script_wrapper(logger):
            row[ix.get(self.VARIANT_CLASSIFICATION)] in self.MUTATION_TYPES_EXONIC and \
            not any([z in self.FILTER_FLAGS_EXCLUDE for z in filter_flags]):
             ok = True
+            if row[ix.get(self.VARIANT_CLASSIFICATION)] == "5'Flank" and row[ix.get(self.HUGO_SYMBOL)] != 'TERT':
+                ok = False
         return ok
 
     def _read_maf_indices(self, row):
@@ -182,8 +183,7 @@ class r_script_wrapper(logger):
             ini.SEQUENZA_PURITY_FRACTION,
             ini.SEQUENZA_PLOIDY,
             ini.QC_STATUS,
-            ini.QC_COMMENT,
-            ini.SEX
+            ini.QC_COMMENT
         ]
         body = []
         for header in headers:
@@ -379,6 +379,19 @@ class r_script_wrapper(logger):
         ).annotate_maf(tmp_path)
         return out_path
 
+    def preprocess_mrdetect(self, mrdetect_path, report_dir):
+        """
+        summarize mrdetect-filter-only file
+        """
+        out_path = os.path.join(report_dir, 'SNP.count.txt')
+        with open(mrdetect_path, 'r') as msi_file:
+            reader_file = csv.reader(msi_file, delimiter="\t")
+            for row in reader_file:
+                snv_count = int(row[0])
+        with open(out_path, 'w') as out_file:
+            print(snv_count, file=out_file)
+        return out_path
+
     def preprocess_msi(self, msi_path, report_dir):
         """
         summarize msisensor file
@@ -417,6 +430,7 @@ class r_script_wrapper(logger):
 
     def run(self):
         self.preprocess_msi(self.config[ini.DISCOVERED][ini.MSI_FILE], self.report_dir)
+        self.preprocess_mrdetect(self.config[ini.DISCOVERED][ini.MRDETECT_FILE], self.report_dir)
         maf_path = self.preprocess_maf(self.config[ini.DISCOVERED][ini.MAF_FILE])
         seg_path = self.preprocess_seg(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE])
         aratio_path = self.preprocess_aratio(self.config[ini.DISCOVERED][ini.SEQUENZA_FILE], self.report_dir)

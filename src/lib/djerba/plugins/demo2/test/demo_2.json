@@ -1,6 +1,6 @@
 {
     "attributes": ["clinical"],
-    "priorities": {"configure": 200, "extract": 200, "render": 200},
+    "priorities": {"configure": 300, "extract": 300, "render": 300},
     "merge_inputs": {
         "gene_information_merger": [
             {
@@ -21,5 +21,6 @@
     "results": {
         "answer": "42",
 	"question": "What do you get if you multiply six by nine?"
-    }
+    },
+    "version": "1.0.0"
 }

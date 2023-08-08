@@ -35,6 +35,15 @@ setup(
     package_dir={'' : package_root},
     package_data={
         'djerba': [
+            'core/plugin_schema.json',
+            'core/html/clinical_footer.html',
+            'core/html/clinical_header.html',
+            'core/html/document_config.json',
+            'core/html/footer.html',
+            'core/html/OICR_Logo_RGB_ENGLISH.png',
+            'core/html/research_header.html',
+            'core/html/simple_header.html',
+            'core/html/stylesheet.css',
             'data/20200818-oncoKBcancerGeneList.tsv',
             'data/20201126-allCuratedGenes.tsv',
             'data/20201201-OncoTree.txt',

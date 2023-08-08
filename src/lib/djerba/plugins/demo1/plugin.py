@@ -6,27 +6,24 @@ import djerba.core.constants as core_constants
 
 class main(plugin_base):
 
-    DEFAULT_CONFIG_PRIORITY = 100
+    PRIORITY = 200
+    PLUGIN_VERSION = '1.0.0'
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.add_ini_required('question')
-        self.set_ini_default(core_constants.CLINICAL, True)
-        self.set_ini_default(core_constants.SUPPLEMENTARY, False)
-        self.set_ini_default('dummy_file', None)
+    # __init__ is inherited from the parent class
 
     def configure(self, config):
         config = self.apply_defaults(config)
-        wrapper = self.get_config_wrapper(config)
-        wrapper.set_my_priorities(self.DEFAULT_CONFIG_PRIORITY)
-        return wrapper.get_config()
+        return config
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
+        attributes = wrapper.get_my_attributes()
+        self.check_attributes_known(attributes)
         data = {
             'plugin_name': self.identifier+' plugin',
+            'version': self.PLUGIN_VERSION,
             'priorities': wrapper.get_my_priorities(),
-            'attributes': wrapper.get_my_attributes(),
+            'attributes': attributes,
             'merge_inputs': {
                 'gene_information_merger': [
                     {
@@ -52,3 +49,10 @@ class main(plugin_base):
     def render(self, data):
         super().render(data)  # validate against schema
         return "<h3>TODO demo1 plugin output goes here</h3>"
+
+    def specify_params(self):
+        self.logger.debug("Specifying params for plugin demo1")
+        self.add_ini_required('question')
+        self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
+        self.set_ini_default('dummy_file', None)
+        self.set_priority_defaults(self.PRIORITY)

@@ -28,6 +28,7 @@ class provenance_reader(logger):
     WF_BMPP = 'bamMergePreprocessing_by_tumor_group'
     WF_DELLY = 'delly_matched_by_tumor_group'
     WF_MAVIS = 'mavis'
+    WF_MRDETECT = 'mrdetect_filter_only'
     WF_MSISENSOR = 'msisensor'
     WF_RSEM = 'rsem'
     WF_SEQUENZA = 'sequenza_by_tumor_group'
@@ -44,13 +45,13 @@ class provenance_reader(logger):
     NIASSA_WF_VEP = 'variantEffectPredictor'
 
     # metatype patterns
+    MT_PLAIN_TEXT = 'text/plain$'
     MT_OCTET_STREAM = 'application/octet-stream$'
     MT_VCF_GZ = 'application/vcf-gz$'
     MT_TXT_GZ = 'application/te?xt-gz$' # match text OR txt
     MT_ZIP = 'application/zip-report-bundle$'
     MT_BAM = 'application/bam$'
     MT_BAM_INDEX = 'application/bam-index$'
-    MT_TAB = 'application/tab$'
 
     # placeholder
     WT_SAMPLE_NAME_PLACEHOLDER = 'whole_transcriptome_placeholder'
@@ -443,25 +444,31 @@ class provenance_reader(logger):
     def parse_maf_path(self):
         workflows = [self.WF_VEP, self.NIASSA_WF_VEP]
         mt = self.MT_TXT_GZ
-        suffix = '\.filter\.deduped\.realigned\.recalibrated\.mutect2\.filtered\.maf\.gz$'
+        suffix = '\.mutect2\.filtered\.maf\.gz$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_mavis_path(self):
         workflow = self.WF_MAVIS
-        mt = self.MT_TAB
-        suffix = '(mavis-output|summary)\.tab$'
+        mt = self.MT_OCTET_STREAM
+        suffix = 'mavis_summary\.tab$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
     def parse_sequenza_path(self):
         workflows = [self.WF_SEQUENZA, self.NIASSA_WF_SEQUENZA]
         mt = self.MT_ZIP
-        suffix = '_results\.zip$'
+        suffix = '_results(\.sequenza)?\.zip$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_msi_path(self):
         workflows = [self.WF_MSISENSOR]
         mt = self.MT_OCTET_STREAM
         suffix = 'filter\.deduped\.realigned\.recalibrated\.msi\.booted$'
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
+
+    def parse_mrdetect_path(self):
+        workflows = [self.WF_MRDETECT]
+        mt = self.MT_PLAIN_TEXT
+        suffix = 'SNP\.count\.txt$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_starfusion_predictions_path(self):

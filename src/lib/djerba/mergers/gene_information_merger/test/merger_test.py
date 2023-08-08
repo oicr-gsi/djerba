@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import unittest
+import djerba.core.constants as cc
 from configparser import ConfigParser
 from djerba.core.loaders import merger_loader
 from djerba.core.workspace import workspace
@@ -24,9 +25,11 @@ class TestGeneInformationMerger(TestBase):
             inputs = json.loads(json_file.read())
         loader = merger_loader(logging.WARNING)
         merger = loader.load(self.MODULE_NAME)
-        self.assertEqual(merger.get_priority(), 1000)
-        merger.set_priority(500)
-        self.assertEqual(merger.get_priority(), 500)
+        self.assertEqual(merger.ini_defaults.get(cc.CONFIGURE_PRIORITY), 500)
+        self.assertEqual(merger.ini_defaults.get(cc.RENDER_PRIORITY), 500)
+        merger.set_priority_defaults(600)
+        self.assertEqual(merger.ini_defaults.get(cc.CONFIGURE_PRIORITY), 600)
+        self.assertEqual(merger.ini_defaults.get(cc.RENDER_PRIORITY), 600)
         html = merger.render(inputs)
         md5_found = self.getMD5_of_string(html)
         self.assertEqual(md5_found, 'd436df8d05a8af3cbdf71a15eb12f7ea')
