@@ -5,6 +5,7 @@ import gzip
 import logging
 import os
 import djerba.util.constants as constants
+import djerba.util.ini_fields as ini
 import djerba.core.constants as core_constants
 from djerba.helpers.provenance_helper.helper import main as fpr_helper
 from djerba.helpers.base import helper_base
@@ -19,45 +20,49 @@ class main(helper_base):
     RSEM_GENES_RESULTS_KEY = 'rsem_genes_results'
     TCGA_DATA_KEY = 'tgca_data'
     TCGA_CODE_KEY = 'tgca_code'
-    TUMOUR_ID = 'tumour_id' # TODO put in core params
 
     # 0-based index for GEP results file
     GENE_ID = 0
     FPKM = 6
-    
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        defaults = {
-            self.ENSCON_KEY: '${DJERBA_DATA_DIR}/ensemble_conversion_hg38.txt',
-            self.GENE_LIST_KEY: '${DJERBA_DATA_DIR}/targeted_genelist.txt',
-            self.GEP_REFERENCE_KEY: '/home/ibancarz/workspace/djerba/test/20230505_02/gep_reference.txt.gz', # TODO FIXME
-            self.RSEM_GENES_RESULTS_KEY: 'NULL',
-            self.TCGA_DATA_KEY: '/.mounts/labs/CGI/gsi/tools/RODiC/data',
-            self.TCGA_CODE_KEY: 'PAAD' # TODO FIXME
-        }
-        self.set_all_ini_defaults(defaults)
+
+    FPR_NAME = 'provenance_helper'
 
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         wrapper.apply_my_env_templates()
-        fpr_path = self.workspace.abs_path(fpr_helper.PROVENANCE_OUTPUT)
-        donor = wrapper.get_core_string(core_constants.DONOR)
-        project = wrapper.get_core_string(core_constants.PROJECT)
-        if wrapper.get_my_string(self.TCGA_CODE_KEY) == 'NULL': # TODO implement is_null()
+        # set the TCGA project identifier, if needed
+        if wrapper.my_param_is_null(self.TCGA_CODE_KEY):
+            msg = "{0} not configured, falling back to project name {1}".format(
+                self.TCGA_CODE_KEY, project
+            )
+            self.logger.debug(msg)
             wrapper.set_my_param(self.TCGA_CODE_KEY, project)
-        samples = sample_name_container() # empty container; TODO sample names in INI
+        # get donor/project/tumour id and sample names from provenance helper JSON
+        sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
+        donor = sample_info[fpr_helper.ROOT_SAMPLE_NAME]
+        project = sample_info[fpr_helper.STUDY_TITLE]
+        sample_wg_n = sample_info[ini.SAMPLE_NAME_WG_N]
+        sample_wg_t = sample_info[ini.SAMPLE_NAME_WG_T]
+        sample_wt_t = sample_info[ini.SAMPLE_NAME_WT_T]
+        if wrapper.my_param_is_null(core_constants.TUMOUR_ID):
+            tumour_id = sample_info[core_constants.TUMOUR_ID]
+            wrapper.set_my_param(core_constants.TUMOUR_ID, tumour_id)
+        # set up and run the provenance reader
+        samples = sample_name_container()
+        samples.set_and_validate(sample_wg_n, sample_wg_t, sample_wt_t)
+        fpr_path = self.workspace.abs_path(fpr_helper.PROVENANCE_OUTPUT)
         reader = provenance_reader(fpr_path, project, donor, samples)
-        if wrapper.get_my_string(self.RSEM_GENES_RESULTS_KEY) == 'NULL': # TODO implement is_null()
+        if wrapper.my_param_is_null(self.RSEM_GENES_RESULTS_KEY):
             rsem_genes_results = reader.parse_gep_path()
-        wrapper.set_my_param(self.RSEM_GENES_RESULTS_KEY, rsem_genes_results)
+            wrapper.set_my_param(self.RSEM_GENES_RESULTS_KEY, rsem_genes_results)
         return wrapper.get_config()
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         results = wrapper.get_my_string(self.RSEM_GENES_RESULTS_KEY)
         gep_reference = wrapper.get_my_string(self.GEP_REFERENCE_KEY)
-        tumour_id = wrapper.get_core_string(self.TUMOUR_ID)
+        tumour_id = wrapper.get_my_string(core_constants.TUMOUR_ID)
         gep_abs_path = self.preprocess_gep(results, gep_reference, tumour_id)
         # Run the R script with output to the workspace
         cmd = [
@@ -119,4 +124,16 @@ class main(helper_base):
                 writer.writerow(row)
         return self.workspace.abs_path(out_file_name)
 
-
+    def specify_params(self):
+        defaults = {
+            core_constants.DEPENDS_CONFIGURE: 'provenance_helper',
+            self.ENSCON_KEY: '${DJERBA_DATA_DIR}/ensemble_conversion_hg38.txt',
+            self.GENE_LIST_KEY: '${DJERBA_DATA_DIR}/targeted_genelist.txt',
+            self.TCGA_DATA_KEY: '/.mounts/labs/CGI/gsi/tools/RODiC/data',
+        }
+        for key in defaults.keys():
+            self.set_ini_default(key, defaults[key])
+        self.add_ini_discovered(self.RSEM_GENES_RESULTS_KEY)
+        self.add_ini_discovered(self.TCGA_CODE_KEY) # use PAAD for testing
+        self.add_ini_discovered(self.GEP_REFERENCE_KEY)
+        self.add_ini_discovered(core_constants.TUMOUR_ID)

@@ -23,7 +23,7 @@ class TestExpressionHelper(TestBase):
         cp.set(self.CORE, 'donor', 'PANX_1500')
         cp.add_section(self.HELPER_NAME)        
         loader = helper_loader(logging.WARNING)
-        test_dir = '/home/ibancarz/workspace/djerba/test/20230508_01' # TODO FIXME
+        test_dir = '/home/ibancarz/workspace/djerba/test/20230808_03/configure' # TODO FIXME
         ws = workspace(test_dir)
         helper_main = loader.load(self.HELPER_NAME, ws)
         config = helper_main.configure(cp)
@@ -42,7 +42,7 @@ class TestExpressionHelper(TestBase):
         self.assertEqual(self.getMD5_of_string(rsem_path), 'b676a42e2637f6cef80929bc0f4367f8')
 
     def test_extract(self):
-        test_dir = '/home/ibancarz/workspace/djerba/test/20230505_02' # TODO FIXME
+        test_dir = '/home/ibancarz/workspace/djerba/test/20230808_03/extract' # TODO FIXME
         cp = ConfigParser()
         cp.read(test_dir+'/configured.ini')
         loader = helper_loader(logging.DEBUG)
@@ -61,3 +61,6 @@ class TestExpressionHelper(TestBase):
             out_path = os.path.join(test_dir, name)
             self.assertTrue(os.path.exists(out_path))
             self.assertEqual(self.getMD5(out_path), expected[name])
+
+if __name__ == '__main__':
+    unittest.main()
