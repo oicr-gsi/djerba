@@ -6,19 +6,9 @@ import re
 
 import djerba.plugins.pwgs.constants as constants
 import djerba.util.provenance_index as index
-
-
-def preprocess_results(self, results_path, group_id = 'None'):
-    """
-    pull data from results file
-    """
-    if results_path == 'None':
-        provenance = subset_provenance(self, "mrdetect", group_id)
-        try:
-            results_path = parse_file_path(self, self.RESULTS_SUFFIX, provenance)
-        except OSError as err:
-            msg = "File from workflow {0} with extension {1} was not found in Provenance subset file '{2}' not found".format("mrdetect", self.RESULTS_SUFFIX,constants.PROVENANCE_OUTPUT)
-            raise RuntimeError(msg) from err
+        
+def preprocess_results(self, results_path):
+    '''Pulls key result numbers from result file output from default mrdetect run'''
     results_dict = {}
     with open(results_path, 'r') as results_file:
         reader_file = csv.reader(results_file, delimiter="\t")
@@ -26,29 +16,29 @@ def preprocess_results(self, results_path, group_id = 'None'):
         for row in reader_file:
             try:
                 results_dict = {
-                                'TF': float('%.1E' % Decimal(row[7]))*100,
-                                'pvalue':  float('%.3E' % Decimal(row[10]))
+                                constants.TUMOUR_FRACTION_ZVIRAN: float('%.1E' % Decimal(row[7]))*100,
+                                constants.PVALUE:  float('%.3E' % Decimal(row[10]))
                                 }
             except IndexError as err:
                 msg = "Incorrect number of columns in vaf row: '{0}' ".format(row)+\
                         "read from '{0}'".format(results_path)
                 raise RuntimeError(msg) from err
-    if results_dict['pvalue'] > float(constants.DETECTION_ALPHA) :
+    if results_dict[constants.PVALUE] > float(constants.DETECTION_ALPHA) :
         significance_text = "not significantly larger"
-        results_dict['outcome'] = "UNDETECTED"
-        results_dict['TF'] = 0
-    elif results_dict['pvalue'] <= float(constants.DETECTION_ALPHA):
+        results_dict[constants.CTDNA_OUTCOME] = "UNDETECTED"
+        results_dict[constants.TUMOUR_FRACTION_ZVIRAN] = 0
+    elif results_dict[constants.PVALUE] <= float(constants.DETECTION_ALPHA):
         significance_text = "significantly larger"
-        results_dict['outcome'] = "DETECTED"
+        results_dict[constants.CTDNA_OUTCOME] = "DETECTED"
     else:
-        msg = "results pvalue {0} incompatible with detection alpha {1}".format(results_dict['pvalue'], constants.DETECTION_ALPHA)
+        msg = "results pvalue {0} incompatible with detection alpha {1}".format(results_dict[constants.PVALUE], constants.DETECTION_ALPHA)
         self.logger.error(msg)
         raise RuntimeError
-    results_dict['significance_text'] = significance_text
-    results_dict['results_path'] = results_path
+    results_dict[constants.SIGNIFICANCE] = significance_text
     return results_dict
 
-def subset_provenance(self, workflow, group_id):
+def subset_provenance(self, workflow, group_id, suffix):
+    '''Return file path from provenance based on workflow ID, group-id and file suffix'''
     provenance_location = constants.PROVENANCE_OUTPUT
     provenance = []
     try:
@@ -60,11 +50,15 @@ def subset_provenance(self, workflow, group_id):
     except OSError as err:
         msg = "Provenance subset file '{0}' not found when looking for {1}".format(constants.PROVENANCE_OUTPUT, workflow)
         raise RuntimeError(msg) from err
-    return(provenance)
+    try:
+        results_path = parse_file_path(self, suffix, provenance)
+    except OSError as err:
+        msg = "File from workflow {0} with extension {1} was not found in Provenance subset file '{2}' not found".format("mrdetect", self.RESULTS_SUFFIX,constants.PROVENANCE_OUTPUT)
+        raise RuntimeError(msg) from err
+    return(results_path)
 
 def parse_file_path(self, file_pattern, provenance):
-    # get most recent file of given workflow, metatype, file path pattern, and sample name
-    # self._filter_* functions return an iterator
+    # get most recent file of given file path pattern,
     iterrows = _filter_file_path(self, file_pattern, rows=provenance)
     try:
         row = _get_most_recent_row(self, iterrows)

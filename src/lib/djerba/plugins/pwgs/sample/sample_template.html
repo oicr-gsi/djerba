@@ -5,43 +5,14 @@
 %>
 <% date = strftime('%Y/%m/%d') %>
 
-${html_builder().section_cells_begin("<h2>Patient & Physician</h2>","main")}
-      
-  <table class="info">
-    <tr>  
-      <th style="width:22%"></th>   
-      <th style="width:21%"></th>  
-      <th style="width:22%"></th>   
-      <th style="width:36%"></th>  
-    </tr>
-    <tr>  
-      <td >Patient Name:</td><td >LAST, FIRST</td>  
-      <td>Patient DOB:</td><td>yyyy/mm/dd</td>
-    </tr>
-    <tr>
-      <td>Patient Genetic Sex:</td><td>SEX</td>
-      <td>Requisitioner Email:</td><td><a href="mailto:NAME@DOMAIN.COM" class="email">NAME@DOMAIN.COM</a></td>
-    </tr>
-    <tr>
-      <td >Physician Licence #:</td><td>nnnnnnnn</td>
-      <td >Physician:</td><td>LAST, FIRST</td>
-    </tr>
-    <tr>
-      <td>Physician Phone #:</td><td>nnn-nnn-nnnn</td>
-      <td>Physician Hospital:</td><td>HOSPITAL NAME AND ADDRESS</td>
-    </tr>
-  </table>
-      
-${html_builder().section_cells_end()}
-
 ${html_builder().section_cells_begin("<h2>Case Overview</h2>","main")}
 
   <table class="info">
     <tr> 
-      <th style="width:24%"></th>  
-      <th style="width:13%"></th>  
-      <th style="width:20%"></th>  
-      <th style="width:36%"></th> 
+      <th style="width:2.2in"></th>  
+      <th style="width:0.8in"></th>  
+      <th style="width:2.0in"></th>  
+      <th style="width:3.5in"></th> 
     </tr>
     <tr> 
       <td colspan="1">Assay:</td>  
@@ -110,8 +81,9 @@ ${html_builder().section_cells_begin("<h2>SAMPLE QC</h2>","main")}
       <th style="width:36%"></th> 
     </tr>
     <tr>
-      <td>Type of Specimen:</td> <td>Plasma</td>
-      <td >Candidate SNVs:</td>
+      <td>Type of Specimen:</td> 
+      <td>Plasma</td>
+      <td>Candidate SNVs:</td>
       % if results.get(constants.SNV_COUNT) < 4000:
       <td style="background-color:#ff0000;">${html_builder().k_comma_format(results.get(constants.SNV_COUNT))}</td>
       % else:
@@ -119,7 +91,6 @@ ${html_builder().section_cells_begin("<h2>SAMPLE QC</h2>","main")}
       % endif 
     </tr>
     <tr>
-
       <td>Median Insert Size (bp):</td>
       % if results.get(constants.INSERT_SIZE) > 180:
       <td style="background-color:#ff0000;">${results.get(constants.INSERT_SIZE)}</td>
