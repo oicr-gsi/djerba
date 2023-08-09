@@ -69,10 +69,3 @@ ggplot(insert_size,aes(x="",y=insert_size,fill=read_freq)) +
 , ncol = 1, align = 'v',axis = 'tbrl',labels = c("",""),rel_heights = c(0.7,0.3))
 
 dev.off()
-
-
-
-
-
-  
-  

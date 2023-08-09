@@ -152,28 +152,6 @@ Methods inherited by all components:
 - GCGI-838: Introducing "helper" modules, with an example which copies a subset of file provenance to the workspace.
 - GCGI-839: Methods to read/write core config in the workspace, so it can be used by plugins
 
-## v0.4.9: 2023-05-15
-
-### Changed
-- GCGI-883: Added date to footer of pdf, as in ISO requirement
-- GCGI-865: replaced MSI LLOD text
-- GCGI-885: Changed "Small regions (&#60;3 Mb) with large copy number gains" to "Regions with large copy number gains (&#8805; 6 CN)"
-
-### Fixed
-- GCGI-885: Fixed splice site reporting 
-
-## v0.4.8: 2023-04-25
-
-### Changed
-- updated version of Arriba from 1.2.0 to 2.4.0
-- updated version of STAR from 2.7.3a to 2.7.10b 
-- updated pipeline version to 3.0
-
-### Fixed
-- GCGI-862: fixed fusion oncokb levels (changed to symbols)
-- GCGI-853: fixed and cleaned annotation of genomic biomarkers
-- GCGI-852: Correct file metatype for Mavis summary files
-
 ## v0.4.7: 2023-04-13
 
 ### Added

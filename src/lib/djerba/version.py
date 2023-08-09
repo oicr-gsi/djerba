@@ -4,3 +4,4 @@
 # 3) it only needs to be stored in one place
 # See https://stackoverflow.com/a/16084844
 __version__ = '1.0.0-dev0.0.7'
+

@@ -75,7 +75,7 @@ class TestPwgSamplePlugin(PluginTester):
         params = {
             self.INI: 'data/pwgs.sample.ini',
             self.JSON: json_location,
-            self.MD5: 'cbfec6d1a00686bbe4221f5d8107b0a7'
+            self.MD5: '9743fb4c0d0eb0269d3aeb8fe6d2bee1'
         }
         self.run_basic_test(test_source_dir, params)
 
