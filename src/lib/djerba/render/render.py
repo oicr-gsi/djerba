@@ -11,7 +11,7 @@ from datetime import datetime
 import djerba.util.constants as constants
 import pdfkit
 from PyPDF2 import PdfMerger
-# from djerba.render.archiver import archiver
+from djerba.render.archiver import archiver
 from djerba.util.logger import logger
 from mako.lookup import TemplateLookup
 

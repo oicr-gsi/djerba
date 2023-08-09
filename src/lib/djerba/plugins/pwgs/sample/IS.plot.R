@@ -20,10 +20,6 @@ opt <- parse_args(opt_parser)
 insert_size_file <- opt$insert_size_file
 output_directory <- opt$output_directory
 
-##test
-#setwd( '/Volumes/cgi/')
-#insert_size_file <- "scratch/fbeaudry/reporting/djerba_test/plugins/insert_size_distribution.csv"
-
 insert_size <- fread(insert_size_file)
 
 insert_size <- insert_size %>% 

@@ -24,11 +24,6 @@ vaf_path <- opt$vaf_results
 output_directory <- opt$output_directory
 pval_cutoff <- opt$pval
 
-##test
-#results_path <- '/Volumes/cgi/scratch/fbeaudry/reporting/djerba_test_data_lfs/pwgs-plugin/HBCs.csv'
-#vaf_path <- '/Volumes/cgi/scratch/fbeaudry/reporting/djerba_test_data_lfs/pwgs-plugin/mrdetect.vaf.txt'
-#pval_cutoff <- 3.15e-5
-
 ## intake
 vaf <- read.table(vaf_path,header = T)
 sample_coverage = median(vaf$goodreads)

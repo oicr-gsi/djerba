@@ -246,7 +246,6 @@ class core_configurer(configurable):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
         self.workspace = kwargs['workspace']
         self.ini_defaults = {
             cc.ATTRIBUTES: '',

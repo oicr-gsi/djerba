@@ -683,6 +683,7 @@ class clinical_report_json_composer(composer_base):
                     raise RuntimeError(msg) from err
         return candidates_sites_value
 
+
     def extract_MSI(self, msi_file_path = None):
         if msi_file_path == None:
             msi_file_path = os.path.join(self.input_dir, self.MSI_FILE_NAME)
