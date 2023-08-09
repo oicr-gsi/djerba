@@ -231,3 +231,21 @@ hr.lil-line{
 
 .oncokb-levelN3 {background: #AEAEAE;}
 
+.tar td[rowspan] {
+  vertical-align: top;
+  text-align: left;
+  font-size: 14px;
+  padding: 0px 0px 0px 0px;
+}
+.tar td {
+  vertical-align: top;
+  text-align: left;
+  font-size: 14px;
+  padding: 0px 0px 0px 0px;
+}
+.tar th {
+  vertical-align: top;
+  text-align: left;
+  font-size: 14px;
+  padding: 0px 0px 0px 0px;
+} 

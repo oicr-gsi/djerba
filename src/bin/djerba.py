@@ -34,11 +34,11 @@ def get_parser():
     config_parser = subparsers.add_parser(constants.CONFIGURE, help='get configuration parameters')
     config_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with user inputs')
     config_parser.add_argument('-o', '--ini-out', metavar='PATH', required=True, help='Path for output of fully specified INI config file')
-    config_parser.add_argument('-w', '--work-dir', metavar='PATH', required=True, help='Path to plugin workspace directory')
+    config_parser.add_argument('-w', '--work-dir', metavar='PATH', required=True, help='Path to workspace directory')
     extract_parser = subparsers.add_parser(constants.EXTRACT, help='extract metrics from configuration')
     extract_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with fully specified inputs')
     extract_parser.add_argument('-j', '--json', metavar='PATH', help='Path for JSON output; defaults to djerba_report.json in the plugin workspace')
-    extract_parser.add_argument('-w', '--work-dir', metavar='PATH', required=True, help='Path to plugin workspace directory')
+    extract_parser.add_argument('-w', '--work-dir', metavar='PATH', required=True, help='Path to workspace directory')
     extract_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
     # TODO --summary will run a 'mini-extract' step to update the genomic summary with the given file
     # if --summary is in effect, --json-out writes updated JSON to a file, --no-archive cancels archiving
@@ -53,7 +53,7 @@ def get_parser():
     report_parser = subparsers.add_parser(constants.REPORT, help='run configure/extract/html steps; output HTML; optionally output PDF')
     report_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with user inputs')
     report_parser.add_argument('-o', '--out-dir', metavar='DIR', required=True, help='Directory for output files')
-    report_parser.add_argument('-w', '--work-dir', metavar='PATH', required=True, help='Path to plugin workspace directory')
+    report_parser.add_argument('-w', '--work-dir', metavar='PATH', help='Path to workspace directory; optional, defaults to value of --out-dir')
     report_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
     return parser
 
