@@ -7,28 +7,33 @@ import logging
 import re
 
 import djerba.util.provenance_index as index
+import djerba.plugins.tar.sample.constants as constants
 
-
-def subset_provenance(self, workflow, root_sample_name):
-    provenance_location = 'provenance_subset.tsv.gz'
-    #provenance_location = '/scratch2/groups/gsi/production/vidarr/vidarr_files_report_latest.tsv.gz'
+def subset_provenance(self, workflow, group_id, suffix):
+    '''Return file path from provenance based on workflow ID, group-id and file suffix'''
+    provenance_location = constants.PROVENANCE_OUTPUT
     provenance = []
-    print(workflow)
+    joined_group_id = "=".join(("geo_group_id",group_id))
     try:
         with self.workspace.open_gzip_file(provenance_location) as in_file:
             reader = csv.reader(in_file, delimiter="\t")
             for row in reader:
-                if row[index.WORKFLOW_NAME] == workflow and row[index.ROOT_SAMPLE_NAME] == root_sample_name:
-                    provenance.append(row)
+                if row[index.WORKFLOW_NAME] == workflow:
+                    experiment_name_row = row[index.SAMPLE_ATTRIBUTES].split(";")
+                    if experiment_name_row[1] == joined_group_id:
+                        provenance.append(row)
     except OSError as err:
-        msg = "Provenance subset file '{0}' not found when looking for {1}".format('provenance_subset.tsv.gz', workflow)
-        #msg = "Provenance subset file '{0}' not found when looking for {1}".format('/scratch2/groups/gsi/production/vidarr/vidarr_files_report_latest.tsv.gz', workflow)
+        msg = "Provenance subset file '{0}' not found when looking for {1}".format(constants.PROVENANCE_OUTPUT, workflow)
         raise RuntimeError(msg) from err
-    return(provenance)
+    try:
+        results_path = parse_file_path(self, suffix, provenance)
+    except OSError as err:
+        msg = "File from workflow {0} with extension {1} was not found in Provenance subset file '{2}' not found".format(workflow, self.RESULTS_SUFFIX,constants.PROVENANCE_OUTPUT)
+        raise RuntimeError(msg) from err
+    return(results_path)
 
 def parse_file_path(self, file_pattern, provenance):
-    # get most recent file of given workflow, metatype, file path pattern, and sample name
-    # self._filter_* functions return an iterator
+    # get most recent file of given file path pattern,
     iterrows = _filter_file_path(self, file_pattern, rows=provenance)
     try:
         row = _get_most_recent_row(self, iterrows)

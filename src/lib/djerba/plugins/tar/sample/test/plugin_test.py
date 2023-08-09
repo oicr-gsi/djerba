@@ -29,9 +29,19 @@ class TestTarSamplePlugin(PluginTester):
         params = {
             self.INI: 'tar.sample.ini',
             self.JSON: json_location,
-            self.MD5: '8863af3dc3d638517327e59a23a4310c'
+            self.MD5: 'f8763747e45463c8163a8fe6d6c1956a'
         }
         self.run_basic_test(test_source_dir, params)
+
+    def test_process_ichor_json(self):
+        ichor_expected_location = os.path.join(self.sup_dir ,"tar-plugin/ichorCNA_metrics.json")
+        purity = sample.main.process_ichor_json(self, ichor_expected_location)
+        self.assertEqual(purity, 4.0)
+
+    def test_process_croncensus_cruncher(self):
+        cc_expected_location = os.path.join(self.sup_dir ,"tar-plugin/allUnique-hsMetrics.HS.txt")
+        unique_coverage = sample.main.process_croncensus_cruncher(self, cc_expected_location)
+        self.assertEqual(unique_coverage, 2088)
 
 if __name__ == '__main__':
     unittest.main()
