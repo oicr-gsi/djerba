@@ -2,7 +2,7 @@
 TAR-specific constants.
 """
 
-frequency_file = "data/TGL.frequency.20210609.annot.txt"
+FREQUENCY_FILE = "data/TGL.frequency.20210609.annot.txt"
 GENES_TO_KEEP = ["BRCA2", 
                  "BRCA1",
                  "PALB2",
