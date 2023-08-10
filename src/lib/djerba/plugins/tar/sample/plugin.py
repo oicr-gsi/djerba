@@ -35,7 +35,7 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         group_id = config[self.identifier]['group_id']
         if wrapper.my_param_is_null('purity'):
-            ichorcna_metrics_file = provenance_tools.subset_provenance(self, "ichorcna", group_id, "metrics\.json$")
+            ichorcna_metrics_file = provenance_tools.subset_provenance_sample(self, "ichorcna", group_id, "metrics\.json$")
             ichor_json = self.process_ichor_json(ichorcna_metrics_file) 
             self.workspace.write_json('ichor_metrics.json', ichor_json)
             purity = ichor_json["tumor_fraction"]

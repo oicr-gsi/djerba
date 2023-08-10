@@ -47,7 +47,6 @@ class preprocess():
       GNOMAD_AF
   ]
 
-
   # Permitted MAF mutation types
   # `Splice_Region` is *included* here, but *excluded* from the somatic mutation count used to compute TMB in report_to_json.py
   # See also JIRA ticket GCGI-469
@@ -75,6 +74,7 @@ class preprocess():
       'str_contraction',
       't_lod_fstar'
   ]
+
   # MAF filter thresholds
   MIN_VAF = 0.1
   MIN_VAF_TAR = 0.01
@@ -135,7 +135,7 @@ class preprocess():
         maf_path = self.preprocess_maf(self.maf_file)
 
         cmd = [
-         'Rscript', self.r_script_dir + "/process_CNA_data.r",
+         'Rscript', self.r_script_dir + "/process_data.r",
          '--basedir', self.r_script_dir,
          '--outdir', self.report_dir,
          '--whizbam_url', 'https://whizbam.oicr.on.ca',
@@ -145,7 +145,6 @@ class preprocess():
          '--maffile', maf_path,
          '--tar', 'TRUE'
         ]
-
    
     else:
         seg_path = self.preprocess_seg(self.sequenza_path)
@@ -153,7 +152,7 @@ class preprocess():
         gep_path = self.preprocess_gep(self.gep_file)
         maf_path = self.preprocess_maf(self.maf_file)
         cmd = [
-            'Rscript', self.r_script_dir + "process_CNA_data.r",
+            'Rscript', self.r_script_dir + "process_data.r",
             '--basedir', self.r_script_dir,
             '--outdir', self.report_dir,
             '--segfile', seg_path,
