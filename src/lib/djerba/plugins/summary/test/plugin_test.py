@@ -9,7 +9,7 @@ import tempfile
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 
-class TestPwgSupplementaryPlugin(PluginTester):
+class TestSummaryPlugin(PluginTester):
     def setUp(self):
         self.path_validator = path_validator()
         self.maxDiff = None
