@@ -10,7 +10,7 @@ import logging
 import os
 import re
 import pandas as pd
-import djerba.plugins.snv_indel.constants as constants
+import djerba.snv_indel_tools.constants as constants
 from djerba.util.logger import logger
 from djerba.util.image_to_base64 import converter
 import djerba.extract.oncokb.constants as oncokb
@@ -67,7 +67,7 @@ class data_builder:
 
   def __init__(self, work_dir, tar):
     self.work_dir = work_dir
-    self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/Rscripts"
+    self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/Rscripts"
     self.tar = tar
 
 

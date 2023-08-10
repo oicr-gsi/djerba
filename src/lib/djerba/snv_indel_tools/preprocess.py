@@ -14,7 +14,7 @@ from djerba.sequenza import sequenza_reader
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.extract.oncokb.annotator import oncokb_annotator
 from shutil import copyfile
-import djerba.plugins.snv_indel.constants as constants 
+import djerba.snv_indel_tools.constants as constants 
 from djerba.plugins.base import plugin_base
 import pandas as pd
 
@@ -109,7 +109,7 @@ class preprocess():
           self.maf_file = self.config['tar.snv_indel']['maf_file']
           self.normal_id = self.config['tar.snv_indel']['normal_id']
           self.maf_file_normal = self.config['tar.snv_indel']['maf_file_normal']
-          self.study_title = self.config['tar.snv_indel']['study_title']
+          self.study_title = self.config['provenance_helper']['study_title']
       else:
           self.sequenza_path = self.config['snv_indel']['sequenza_file']
           self.sequenza_gamma = int(self.config['snv_indel']['sequenza_gamma'])
@@ -120,9 +120,9 @@ class preprocess():
           self.tumour_id = self.config['snv_indel']['tumour_id']
           self.normal_id = self.config['snv_indel']['normal_id']
           self.maf_file = self.config['snv_indel']['maf_file']
-          self.study_title = self.config['snv_indel']['study_title']
+          self.study_title = self.config['provenance_helper']['study_title']
 
-      self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/Rscripts/"
+      self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/Rscripts/"
       
 
   # ----------------------- to do all the pre-processing --------------------

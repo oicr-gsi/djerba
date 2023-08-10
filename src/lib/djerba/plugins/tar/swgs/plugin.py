@@ -43,7 +43,7 @@ class main(plugin_base):
       config = self.apply_defaults(config)
       
       # POPULATE THE INI HERE!?
-      config[self.identifier]["seg_file"] = self.get_seg_file(config["tar.sample"]["root_sample_name"])
+      config[self.identifier]["seg_file"] = self.get_seg_file(config["provenance_helper"]["root_sample_name"])
 
       return config
 
@@ -60,6 +60,7 @@ class main(plugin_base):
       work_dir = self.workspace.get_work_dir()
       preprocess(config, work_dir, seg_file).run_R_code()
 
+      # ADD IF STATEMENT FOR PURITY
       data = {
           'plugin_name': 'Shallow Whole Genome Sequencing (sWGS)',
           'version': self.PLUGIN_VERSION,
