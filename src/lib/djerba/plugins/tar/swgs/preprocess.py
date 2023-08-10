@@ -20,12 +20,13 @@ import djerba.plugins.tar.swgs.constants as constants
 class preprocess:
 
   # FOR TESTING
-  tumour_id = "100-PM-064_LCM3"
-  oncotree_code = "paad"
+  #tumour_id = "100-PM-064_LCM3"
+  #oncotree_code = "paad"
   #seg_file = "REVOLVE_0002_01_LB04-01.seg.txt"
 
-  def __init__(self, work_dir, seg_file):
+  def __init__(self, config, work_dir, seg_file):
 
+    self.config = config
     # DIRECTORIES
     self.work_dir = work_dir
     self.tmp_dir = os.path.join(self.work_dir, 'tmp')
@@ -43,7 +44,9 @@ class preprocess:
     self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts"
     self.r_script_dir_swgs = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/swgs/" 
     self.data_dir = os.environ.get('DJERBA_BASE_DIR') + "/data/"
-    
+    self.tumour_id = self.config['tar.snv_indel']['tumour_id']
+    self.oncotree_code = self.config['tar.snv_indel']['oncotree_code']
+
     # SEG FILE
 
     self.seg_file = seg_file 

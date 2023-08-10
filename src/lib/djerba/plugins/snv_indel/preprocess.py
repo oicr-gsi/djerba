@@ -107,7 +107,9 @@ class preprocess():
           self.tcgacode = self.config['tar.snv_indel']['tcgacode']
           self.tumour_id = self.config['tar.snv_indel']['tumour_id']
           self.maf_file = self.config['tar.snv_indel']['maf_file']
+          self.normal_id = self.config['tar.snv_indel']['normal_id']
           self.maf_file_normal = self.config['tar.snv_indel']['maf_file_normal']
+          self.study_title = self.config['tar.snv_indel']['study_title']
       else:
           self.sequenza_path = self.config['snv_indel']['sequenza_file']
           self.sequenza_gamma = int(self.config['snv_indel']['sequenza_gamma'])
@@ -116,7 +118,9 @@ class preprocess():
           self.oncotree_code = self.config['snv_indel']['oncotree_code']
           self.tcgacode = self.config['snv_indel']['tcgacode']
           self.tumour_id = self.config['snv_indel']['tumour_id']
+          self.normal_id = self.config['snv_indel']['normal_id']
           self.maf_file = self.config['snv_indel']['maf_file']
+          self.study_title = self.config['snv_indel']['study_title']
 
       self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/snv_indel/Rscripts/"
       
@@ -136,8 +140,8 @@ class preprocess():
          '--outdir', self.report_dir,
          '--whizbam_url', 'https://whizbam.oicr.on.ca',
          '--tumourid', self.tumour_id,
-         '--normalid', '100-PM-064_BC',
-         '--cbiostudy', 'PASS01',
+         '--normalid', self.normal_id,
+         '--cbiostudy', self.study_title,
          '--maffile', maf_path,
          '--tar', 'TRUE'
         ]
@@ -155,20 +159,20 @@ class preprocess():
             '--segfile', seg_path,
             '--genebed', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/gencode_v33_hg38_genes.bed",
             '--oncolist', os.environ.get('DJERBA_BASE_DIR') + "/data/20200818-oncoKBcancerGeneList.tsv",
-            '--gain', "0.2529454648649786",
-            '--ampl', "0.6927983480061226",
-            '--htzd', "-0.3929375973235762",
-            '--hmzd', "-1.7148656922109384",
+            '--gain', "0.2529454648649786", # NEED TO GENERATE VALUES
+            '--ampl', "0.6927983480061226", # NEED TO GENERATE VALUES
+            '--htzd', "-0.3929375973235762", # NEED TO GENERATE VALUES
+            '--hmzd', "-1.7148656922109384", # NEED TO GENERATE VALUES
             '--gepfile', gep_path,
             '--enscon', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/ensemble_conversion_hg38.txt", 
             '--genelist', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/targeted_genelist.txt",
             '--tcgadata', "/.mounts/labs/CGI/gsi/tools/RODiC/data",
             '--tcgacode', self.tcgacode,
-            '--studyid', 'PASS01',
+            '--studyid', self.study_id,
             '--whizbam_url', 'https://whizbam.oicr.on.ca',
             '--tumourid', self.tumour_id,
-            '--normalid', '100-PM-064_BC',
-            '--cbiostudy', 'PASS01',
+            '--normalid', self.normal_id,
+            '--cbiostudy', self.study_id, # NEEDS TO BE CBIOSTUDY ID
             '--maffile', maf_path,
             '--aratiofile', aratio_path,
             '--tar', 'FALSE'
