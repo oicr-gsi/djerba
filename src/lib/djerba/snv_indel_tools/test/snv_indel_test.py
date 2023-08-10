@@ -1,8 +1,7 @@
 #! /usr/bin/env python3
 
 """
-Test of the pwgs plugin
-AUTHOR: Felix Beaudry
+Test of the snv tools
 """
 
 import os
@@ -11,9 +10,8 @@ import tempfile
 
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
-import djerba.plugins.tar.sample.plugin as sample
-from djerba.core.workspace import workspace
 from djerba.snv_indel_tools.preprocess import preprocess
+from djerba.snv_indel_tools.extract import data_builder as data_extractor
 
 class TestTarSamplePlugin(PluginTester):
 
@@ -25,16 +23,16 @@ class TestTarSamplePlugin(PluginTester):
         sup_dir_var = 'DJERBA_TEST_DATA'
         self.sup_dir = os.environ.get(sup_dir_var)
 
-    def test_process_ichor_json(self):
-        ichor_expected_location = os.path.join(self.sup_dir ,"tar-plugin/ichorCNA_metrics.json")
-        ichor_json = sample.main.process_ichor_json(self, ichor_expected_location)
-        purity = ichor_json["tumor_fraction"]
-        self.assertEqual(purity, 0.03978)
+    def test_get_cytoband(self):
+        gene = "AADAC"
+        cytoband = data_extractor(self, "TAR").get_cytoband(gene)
+        self.assertEqual(cytoband, "3q25.1")
 
-    def test_process_croncensus_cruncher(self):
-        cc_expected_location = os.path.join(self.sup_dir ,"tar-plugin/allUnique-hsMetrics.HS.txt")
-        unique_coverage = sample.main.process_croncensus_cruncher(self, cc_expected_location)
-        self.assertEqual(unique_coverage, 2088)
+    def test_build_small_mutations_and_indels(self):
+        data_extended_oncogenic = os.path.join(self.sup_dir ,"report_example/data_mutations_extended_oncogenic.txt")
+        small_mutations_data = data_extractor(self, "TAR").build_small_mutations_and_indels(data_extended_oncogenic)
+        self.assertEqual(small_mutations_data, [{'Gene': 'KRAS', 'Gene_URL': 'https://www.oncokb.org/gene/KRAS', 'Chromosome': '12p12.1', 'Protein': 'p.G12S', 'Protein_URL': 'https://www.oncokb.org/gene/KRAS/p.G12S/TAR', 'Type': 'Missense Mutation', 'Expression Percentile': None, 'VAP (%)': 46, 't_depth': 211, 't_alt_count': 98, 'OncoKB': 'Level 4'}, {'Gene': 'TP53', 'Gene_URL': 'https://www.oncokb.org/gene/TP53', 'Chromosome': '17p13.1', 'Protein': 'p.R273H', 'Protein_URL': 'https://www.oncokb.org/gene/TP53/p.R273H/TAR', 'Type': 'Missense Mutation', 'Expression Percentile': None, 'VAP (%)': 55, 't_depth': 127, 't_alt_count': 70, 'OncoKB': 'Oncogenic'}])
+        pass
 
 if __name__ == '__main__':
     unittest.main()
