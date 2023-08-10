@@ -33,7 +33,8 @@ class main(plugin_base):
       self.add_ini_required('sequenza_gamma')
       self.add_ini_required('sequenza_solution')
       self.add_ini_required('tumour_id')
-
+      self.add_ini_required('normal_id')
+      self.add_ini_required('study_title')
 
       self.set_ini_default(core_constants.CLINICAL, True)
       self.set_ini_default(core_constants.SUPPLEMENTARY, False)
