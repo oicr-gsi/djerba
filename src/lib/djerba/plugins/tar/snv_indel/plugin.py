@@ -6,9 +6,9 @@ Plugin for TAR SNV Indel
 import os
 from djerba.plugins.base import plugin_base
 from mako.lookup import TemplateLookup
-import djerba.plugins.snv_indel.constants as constants
-from djerba.plugins.snv_indel.preprocess import preprocess
-from djerba.plugins.snv_indel.extract import data_builder 
+import djerba.snv_indel_tools.constants as constants
+from djerba.snv_indel_tools.preprocess import preprocess
+from djerba.snv_indel_tools.extract import data_builder 
 import djerba.core.constants as core_constants
 from djerba.util.subprocess_runner import subprocess_runner
 import djerba.util.provenance_index as index
@@ -46,8 +46,8 @@ class main(plugin_base):
       config = self.apply_defaults(config)
 
       # Populate ini
-      config[self.identifier]["maf_file"] = self.get_maf_file(config["tar.sample"]["root_sample_name"], self.RESULTS_SUFFIX_Pl)
-      config[self.identifier]["maf_file_normal"] = self.get_maf_file(config["tar.sample"]["root_sample_name"], self.RESULTS_SUFFIX_BC)
+      config[self.identifier]["maf_file"] = self.get_maf_file(config["provenance_helper"]["root_sample_name"], self.RESULTS_SUFFIX_Pl)
+      config[self.identifier]["maf_file_normal"] = self.get_maf_file(config["provenance_helper"]["root_sample_name"], self.RESULTS_SUFFIX_BC)
       
       return config  
 
