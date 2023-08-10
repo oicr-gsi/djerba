@@ -34,8 +34,12 @@ class main(plugin_base):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         group_id = config[self.identifier]['group_id']
-        if wrapper.my_param_is_null('ichorcna_metrics_file'):
-            wrapper.set_my_param('ichorcna_metrics_file', provenance_tools.subset_provenance(self, "ichorcna", group_id, "metrics\.json$"))
+        if wrapper.my_param_is_null('purity'):
+            ichorcna_metrics_file = provenance_tools.subset_provenance(self, "ichorcna", group_id, "metrics\.json$")
+            ichor_json = self.process_ichor_json(ichorcna_metrics_file) 
+            self.workspace.write_json('ichor_metrics.json', ichor_json)
+            purity = ichor_json["tumor_fraction"]
+            wrapper.set_my_param('purity', float('%.1E' % Decimal(purity*100)))
         if wrapper.my_param_is_null('concensus_cruncher_file'):
             wrapper.set_my_param('concensus_cruncher_file', provenance_tools.subset_provenance(self, "consensusCruncher", group_id, "allUnique-hsMetrics\.HS\.txt$"))
         if wrapper.my_param_is_null('raw_coverage'):
@@ -46,16 +50,14 @@ class main(plugin_base):
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
-        purity = self.process_ichor_json(config[self.identifier]['ichorcna_metrics_file']) 
         unique_coverage = self.process_croncensus_cruncher(config[self.identifier]['concensus_cruncher_file'])
         results =  {
                 "oncotree": config[self.identifier][constants.ONCOTREE],
                 "known_variants" : config[self.identifier][constants.KNOWN_VARIANTS],
-                "cancer_content" : float(purity),
+                "cancer_content" : float(config[self.identifier]['purity']),
                 "raw_coverage" : int(config[self.identifier][constants.RAW_COVERAGE]),
                 "unique_coverage" : unique_coverage,
                 "files": {
-                    "ichorcna_metrics_file": config[self.identifier]['ichorcna_metrics_file'],
                     "concensus_cruncher_file": config[self.identifier]['concensus_cruncher_file']
                 }
             }
@@ -81,9 +83,8 @@ class main(plugin_base):
     
     def process_ichor_json(self, ichor_metrics):
         with open(ichor_metrics, 'r') as ichor_results:
-            data = json.load(ichor_results)
-        purity = data["tumor_fraction"]
-        return(float('%.1E' % Decimal(purity*100)))
+            ichor_json = json.load(ichor_results)
+        return(ichor_json)
 
     def process_croncensus_cruncher(self, concensus_cruncher_file):
         header_line = False
@@ -109,7 +110,7 @@ class main(plugin_base):
         for key in required:
             self.add_ini_required(key)
         discovered = [
-            'ichorcna_metrics_file',
+            'purity',
             'raw_coverage',
             'concensus_cruncher_file'
         ]

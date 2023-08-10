@@ -12,6 +12,7 @@ import tempfile
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 import djerba.plugins.tar.sample.plugin as sample
+from djerba.core.workspace import workspace
 
 class TestTarSamplePlugin(PluginTester):
 
@@ -35,8 +36,9 @@ class TestTarSamplePlugin(PluginTester):
 
     def test_process_ichor_json(self):
         ichor_expected_location = os.path.join(self.sup_dir ,"tar-plugin/ichorCNA_metrics.json")
-        purity = sample.main.process_ichor_json(self, ichor_expected_location)
-        self.assertEqual(purity, 4.0)
+        ichor_json = sample.main.process_ichor_json(self, ichor_expected_location)
+        purity = ichor_json["tumor_fraction"]
+        self.assertEqual(purity, 0.03978)
 
     def test_process_croncensus_cruncher(self):
         cc_expected_location = os.path.join(self.sup_dir ,"tar-plugin/allUnique-hsMetrics.HS.txt")
