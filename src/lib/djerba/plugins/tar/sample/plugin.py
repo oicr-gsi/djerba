@@ -41,7 +41,7 @@ class main(plugin_base):
             purity = ichor_json["tumor_fraction"]
             wrapper.set_my_param('purity', float('%.1E' % Decimal(purity*100)))
         if wrapper.my_param_is_null('concensus_cruncher_file'):
-            wrapper.set_my_param('concensus_cruncher_file', provenance_tools.subset_provenance(self, "consensusCruncher", group_id, "allUnique-hsMetrics\.HS\.txt$"))
+            wrapper.set_my_param('concensus_cruncher_file', provenance_tools.subset_provenance_sample(self, "consensusCruncher", group_id, "allUnique-hsMetrics\.HS\.txt$"))
         if wrapper.my_param_is_null('raw_coverage'):
             qc_dict = self.fetch_coverage_etl_data(group_id)
             wrapper.set_my_param('raw_coverage', qc_dict['raw_coverage'])
@@ -106,6 +106,7 @@ class main(plugin_base):
             'group_id',
             'oncotree',
             'known_variants'
+
         ]
         for key in required:
             self.add_ini_required(key)
