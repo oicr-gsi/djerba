@@ -81,7 +81,7 @@ class preprocess():
   MAX_UNMATCHED_GNOMAD_AF = 0.001
 
 
-  def __init__(self, config, work_dir, tar):
+  def __init__(self, config, work_dir, tar, maf_file):
       self.config = config
       self.report_dir = work_dir
       self.tmp_dir = os.path.join(self.report_dir, 'tmp')
@@ -99,14 +99,13 @@ class preprocess():
       self.report_dir = work_dir
       #self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts/"
       self.tar = tar
-       
+      self.maf_file = maf_file
       # THINGS FROM CONFIG 
       if self.tar == True:
           self.seg_file = self.config['tar.swgs']['seg_file']
           self.oncotree_code = self.config['tar.snv_indel']['oncotree_code']
           self.tcgacode = self.config['tar.snv_indel']['tcgacode']
           self.tumour_id = self.config['tar.snv_indel']['tumour_id']
-          self.maf_file = self.config['tar.snv_indel']['maf_file']
           self.normal_id = self.config['tar.snv_indel']['normal_id']
           self.maf_file_normal = self.config['tar.snv_indel']['maf_file_normal']
           self.study_title = self.config['provenance_helper']['study_title']
@@ -119,7 +118,6 @@ class preprocess():
           self.tcgacode = self.config['snv_indel']['tcgacode']
           self.tumour_id = self.config['snv_indel']['tumour_id']
           self.normal_id = self.config['snv_indel']['normal_id']
-          self.maf_file = self.config['snv_indel']['maf_file']
           self.study_title = self.config['provenance_helper']['study_title']
 
       self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/Rscripts/"
