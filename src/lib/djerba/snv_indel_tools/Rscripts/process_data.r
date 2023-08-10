@@ -2,7 +2,6 @@
 rm(list=ls())
 library(CNTools)
 library(optparse)
-library(deconstructSigs)
 library(BSgenome.Hsapiens.UCSC.hg38)
 
 # command line options
