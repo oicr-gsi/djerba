@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v1.0.0-dev0.0.8: 2023-08-11
 
 ## GCGI-963: Case overview plugin
 - Renamed the patient info plugin
