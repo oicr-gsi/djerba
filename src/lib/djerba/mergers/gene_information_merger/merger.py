@@ -10,11 +10,7 @@ from djerba.mergers.base import merger_base
 class main(merger_base):
 
     PRIORITY = 500
-    SCHEMA_FILENAME = 'gene_information_schema.json'
     SORT_KEY = 'Gene_URL'
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
     def configure(self, config):
         config = self.apply_defaults(config)

@@ -1,0 +1,69 @@
+<%
+  import djerba.core.constants as core_constants
+  from djerba.mergers.treatment_options_merger.merger import main as merger
+  from djerba.util.oncokb_level_tools import oncokb_level_to_html
+%>
+
+<!-- treatment -->
+    
+<hr class="big-white-line">
+<div class="twocellmain">
+  <div class="oneoftwocellmain">
+    <h2>Treatment Options</h2>
+  </div>
+  <div class="twooftwocellmain" ><hr class="big-line" >
+
+      <p>Review identified <strong>${approved_total}</strong> mutation(s) indicating an FDA Approved and/or NCCN Recommended Biomarker and <strong>${investig_total}</strong> mutation(s) indicating investigational therapies.</p>
+      % if approved_total > 0:
+      <h3 class="header3">FDA Approved and/or NCCN Recommended Biomarker:</h3>
+      <table class="variants" width="100%">
+        <thead style="background-color:white">
+	  <tr>
+	    <th style="text-align:left;">OncoKB</th>
+	    <th style="text-align:left;">Treatment(s)</th>
+	    <th style="text-align:left;">Gene(s)</th>
+	    <th style="text-align:left;">Alteration</th>
+	  </tr>
+	</thead>
+        <tbody>
+	  % for row in approved_therapies:
+          <tr style="text-align:left;">
+	    <td width="1%">${oncokb_level_to_html(row[merger.ONCOKB_LEVEL])}</td>
+	    <td width="59%">${row[merger.TREATMENTS]}</td>
+	    <td style="font-style: italic;" width="20%">
+	      ${merger.get_link(row[merger.GENE_URL]), row[merger.GENE]}
+	    </td>
+	    <td width="20%">
+	      ${merger.get_link(row[merger.ALTERATION_URL]), row[merger.ALTERATION]}
+	  </tr>
+	  % endfor
+        </tbody>
+      </table>
+      % endif
+      % if investig_total > 0:
+      <h3 class="header3">Investigational Therapies:</h3>
+      <table class="variants" width="100%">
+        <thead style="background-color:white">
+	  <tr>
+	    <th style="text-align:left;">OncoKB</th>
+	    <th style="text-align:left;">Treatment(s)</th>
+	    <th style="text-align:left;">Gene(s)</th>
+	    <th style="text-align:left;">Alteration</th>
+	  </tr>
+	</thead>
+        <tbody>
+	  % for row in investig_therapies:
+          <tr style="text-align:left;">
+	    <td width="1%">${oncokb_level_to_html(row[merger.ONCOKB_LEVEL])}</td>
+	    <td width="59%">${row[merger.TREATMENTS]}</td>
+	    <td style="font-style: italic;" width="20%">
+	      ${merger.get_link(row[merger.GENE_URL]), row[merger.GENE]}
+	    </td>
+	    <td width="20%">
+	      ${merger.get_link(row[merger.ALTERATION_URL]), row[merger.ALTERATION]}
+	  </tr>
+	  % endfor
+        </tbody>
+      </table>
+      % endif
+</div></div>
