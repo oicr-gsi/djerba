@@ -20,15 +20,6 @@
 	},
 	{
 	    "Tier": "Investigational",
-	    "OncoKB level": "3A",
-	    "Treatments": "consectetur adipiscing elit",
-	    "Gene": "BBBB",
-	    "Gene_URL": "http://example.com/BBBB",
-	    "Alteration": "QQQQ",
-	    "Alteration_URL": "http://example.com/QQQQ"
-	},
-	{
-	    "Tier": "Investigational",
 	    "OncoKB level": "3B",
 	    "Treatments": "lorem ipsum",
 	    "Gene": "CCCC",
@@ -62,6 +53,15 @@
 	    "Gene_URL": "http://example.com/DDDD",
 	    "Alteration": "SSSS",
 	    "Alteration_URL": "http://example.com/SSSS"
-	}	
+	},
+	{
+	    "Tier": "Investigational",
+	    "OncoKB level": "3A",
+	    "Treatments": "consectetur adipiscing elit",
+	    "Gene": "BBBB",
+	    "Gene_URL": "http://example.com/BBBB",
+	    "Alteration": "QQQQ",
+	    "Alteration_URL": "http://example.com/QQQQ"
+	}
     ]
 ]
