@@ -2,7 +2,7 @@
 TAR-specific constants.
 """
 
-FREQUENCY_FILE = "data/TGL.frequency.20210609.annot.txt"
+FREQUENCY_FILE = "plugins/tar/snv_indel/data/TGL.frequency.20210609.annot.txt"
 GENES_TO_KEEP = ["BRCA2", 
                  "BRCA1",
                  "PALB2",

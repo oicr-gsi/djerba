@@ -4,6 +4,7 @@ Plugin for TAR SNV Indel
 
 # IMPORTS
 import os
+import pandas as pd
 from djerba.plugins.base import plugin_base
 from mako.lookup import TemplateLookup
 import djerba.snv_indel_tools.constants as constants
@@ -35,7 +36,6 @@ class main(plugin_base):
       self.add_ini_required('tcgacode')
       self.add_ini_required('tumour_id')
       self.add_ini_required('normal_id')
-      self.add_ini_required('study_title')
 
 
       self.set_ini_default(core_constants.CLINICAL, True)
@@ -58,8 +58,8 @@ class main(plugin_base):
       work_dir = self.workspace.get_work_dir()
 
       # Pre-processing
-      maf_file = self.filter_maf_for_tar(config[self.identifier]["maf_file"])
-      preprocess(config, work_dir, tar=True, maf_file).run_R_code()
+      maf_file = self.filter_maf_for_tar(work_dir, config[self.identifier]["maf_file"], config[self.identifier]["maf_file_normal"])
+      preprocess(config, work_dir, maf_file, tar=True).run_R_code()
 
       data = {
           'plugin_name': 'Tar SNV Indel',
@@ -100,9 +100,9 @@ class main(plugin_base):
           raise RuntimeError(msg) from err
       return results_path
 
-    def filter_maf_for_tar(self, maf_path):
+    def filter_maf_for_tar(self, work_dir, maf_path, maf_file_normal):
 
-      df_bc = pd.read_csv(self.maf_file_normal,
+      df_bc = pd.read_csv(maf_file_normal,
                       sep = "\t",
                       on_bad_lines="error",
                       compression='gzip',
@@ -114,8 +114,7 @@ class main(plugin_base):
                       on_bad_lines="error",
                       compression='gzip',
                       skiprows=[0])
-
-      df_freq = pd.read_csv(tar_constants.FREQUENCY_FILE,
+      df_freq = pd.read_csv(os.path.join(os.environ.get('DJERBA_BASE_DIR'), tar_constants.FREQUENCY_FILE),
                    sep = "\t")
        
       for row in df_pl.iterrows():
@@ -150,11 +149,13 @@ class main(plugin_base):
     
       for row in df_pl.iterrows():
           hugo_symbol = row[1][0]
-          if hugo_symbol not in tar_constants.GENES_TO_KEEP:
-              df_pl = df_pl.drop(row[0])   
-     
+          frequency = row[1][118]
+          n_alt_count = row[1][44]
+          gnomadAD_AF = row[1][104]
+          if hugo_symbol not in tar_constants.GENES_TO_KEEP or frequency > 0.1 or n_alt_count > 4 or gnomadAD_AF > 0.001:
+              df_pl = df_pl.drop(row[0])  
 
-      out_path = os.path.join(self.tmp_dir, 'filtered_maf_for_tar.maf.gz')
+      out_path = os.path.join(work_dir, 'filtered_maf_for_tar.maf.gz')
       df_pl.to_csv(out_path, sep = "\t", compression='gzip', index=False)
       return out_path
 
