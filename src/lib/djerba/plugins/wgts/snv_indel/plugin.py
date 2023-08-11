@@ -32,15 +32,15 @@ class main(plugin_base):
       work_dir = self.workspace.get_work_dir()
       data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
       oncotree = config[self.identifier]['oncotree_code']
-      preprocess(config, work_dir, tar = False).run_R_code()
-      mutations_file = os.path.join(self.work_dir, sic.MUTATIONS_EXTENDED)
-      mutations_extended_file = os.path.join(self.work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)
-      data = data_extractor(self.ASSAY, oncotree).build_small_mutations_and_indels(mutations_extended_file)
+      preprocess(config, work_dir, self.ASSAY, self.identifier).run_R_code()
+      mutations_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED)
+      mutations_extended_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)
+      data_table = data_extractor(self.ASSAY, oncotree).build_small_mutations_and_indels(mutations_extended_file)
       results = {
-          sic.BODY: data,
-          sic.CLINICALLY_RELEVANT_VARIANTS: len(data),
-          sic.TOTAL_VARIANTS: data_extractor(self.ASSAY, oncotree).read_somatic_mutation_totals(mutations_file),
-          sic.VAF_PLOT: data_extractor(self.ASSAY, oncotree).write_vaf_plot(self.work_dir)
+          sic.BODY: data_table,
+          sic.CLINICALLY_RELEVANT_VARIANTS: len(data_table),
+          sic.TOTAL_VARIANTS: data_extractor(self.ASSAY, oncotree).read_somatic_mutation_totals(mutations_file)
+        #  sic.VAF_PLOT: data_extractor(self.ASSAY, oncotree).write_vaf_plot(work_dir)
       }
       data['results'] = results
       return data

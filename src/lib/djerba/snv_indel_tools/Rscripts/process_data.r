@@ -72,7 +72,7 @@ print("Running singleSample with the following options:")
 print(opt)
 
 # source functions
-source(paste0(basedir, "/snv_indel_functions.r"))
+source(paste0(basedir, "supporting_functions.r"))
 #source(paste0(basedir, "/convert_seg_to_gene_singlesample.r"))
 #source(paste0(basedir, "/convert_rsem_results_zscore.r"))
 #source(paste0(basedir, "/convert_vep92_to_filtered_cbio.r")) 

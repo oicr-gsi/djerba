@@ -81,49 +81,41 @@ class preprocess():
   MAX_UNMATCHED_GNOMAD_AF = 0.001
 
 
-  def __init__(self, config, work_dir, tar):
-      self.config = config
-      self.report_dir = work_dir
-      self.tmp_dir = os.path.join(self.report_dir, 'tmp')
-      if os.path.isdir(self.tmp_dir):
-          print("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
-          #self.logger.debug("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
-      elif os.path.exists(self.tmp_dir):
-          msg = "tmp dir path {0} exists but is not a directory".format(self.tmp_dir)
-          #self.logger.error(msg)
-          raise RuntimeError(msg)
-      else:
-          #print("Creating tmp dir {0} for R script wrapper".format(tmp_dir))
-          #self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
-          os.mkdir(self.tmp_dir)
-      self.report_dir = work_dir
-      #self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts/"
-      self.tar = tar
-       
-      # THINGS FROM CONFIG 
-      if self.tar == True:
-          self.seg_file = self.config['tar.swgs']['seg_file']
-          self.oncotree_code = self.config['tar.snv_indel']['oncotree_code']
-          self.tcgacode = self.config['tar.snv_indel']['tcgacode']
-          self.tumour_id = self.config['tar.snv_indel']['tumour_id']
-          self.maf_file = self.config['tar.snv_indel']['maf_file']
-          self.normal_id = self.config['tar.snv_indel']['normal_id']
-          self.maf_file_normal = self.config['tar.snv_indel']['maf_file_normal']
-          self.study_title = self.config['provenance_helper']['study_title']
-      else:
-          self.sequenza_path = self.config['snv_indel']['sequenza_file']
-          self.sequenza_gamma = int(self.config['snv_indel']['sequenza_gamma'])
-          self.sequenza_solution = self.config['snv_indel']['sequenza_solution']
-          self.gep_file = self.config['snv_indel']['gep_file']
-          self.oncotree_code = self.config['snv_indel']['oncotree_code']
-          self.tcgacode = self.config['snv_indel']['tcgacode']
-          self.tumour_id = self.config['snv_indel']['tumour_id']
-          self.normal_id = self.config['snv_indel']['normal_id']
-          self.maf_file = self.config['snv_indel']['maf_file']
-          self.study_title = self.config['provenance_helper']['study_title']
+  def __init__(self, config, work_dir, assay, identifier):
+    self.config = config
+    self.report_dir = work_dir
+    self.tmp_dir = os.path.join(self.report_dir, 'tmp')
+    self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/Rscripts/"
 
-      self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/Rscripts/"
-      
+    if os.path.isdir(self.tmp_dir):
+        print("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
+        #self.logger.debug("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
+    elif os.path.exists(self.tmp_dir):
+        msg = "tmp dir path {0} exists but is not a directory".format(self.tmp_dir)
+        #self.logger.error(msg)
+        raise RuntimeError(msg)
+    else:
+        #print("Creating tmp dir {0} for R script wrapper".format(tmp_dir))
+        #self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
+        os.mkdir(self.tmp_dir)
+    #self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts/"
+    self.assay = assay
+
+    self.study_title = self.config[identifier]['study_title']
+    self.tcgacode = self.config[identifier]['tcgacode']
+    self.oncotree_code = self.config[identifier]['oncotree_code']
+    self.tumour_id = self.config[identifier]['tumour_id']
+    self.normal_id = self.config[identifier]['normal_id']
+    self.maf_file = self.config[identifier]['maf_file']
+
+    if self.assay == "TAR":
+        self.seg_file = self.config[identifier]['seg_file']
+        self.maf_file_normal = self.config[identifier]['maf_file_normal']
+    else:
+        self.sequenza_path = self.config[identifier]['sequenza_file']
+        self.sequenza_gamma = int(self.config[identifier]['sequenza_gamma'])
+        self.sequenza_solution = self.config[identifier]['sequenza_solution']
+        self.gep_file = self.config[identifier]['gep_file']
 
   # ----------------------- to do all the pre-processing --------------------
   
@@ -131,7 +123,7 @@ class preprocess():
   
     
     # FIX THIS BECAUSE THE ARATIO FILE IS DIFFERENT FOR TAR AND NONTAR
-    if self.tar == True:
+    if self.assay == "TAR":
         maf_path = self.preprocess_maf(self.maf_file)
 
         cmd = [
@@ -167,11 +159,11 @@ class preprocess():
             '--genelist', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/targeted_genelist.txt",
             '--tcgadata', "/.mounts/labs/CGI/gsi/tools/RODiC/data",
             '--tcgacode', self.tcgacode,
-            '--studyid', self.study_id,
+            '--studyid', self.study_title,
             '--whizbam_url', 'https://whizbam.oicr.on.ca',
             '--tumourid', self.tumour_id,
             '--normalid', self.normal_id,
-            '--cbiostudy', self.study_id, # NEEDS TO BE CBIOSTUDY ID
+            '--cbiostudy', self.study_title, # NEEDS TO BE CBIOSTUDY ID
             '--maffile', maf_path,
             '--aratiofile', aratio_path,
             '--tar', 'FALSE'
@@ -329,7 +321,7 @@ class preprocess():
   def preprocess_maf(self, maf_path):
     """Apply preprocessing and annotation to a MAF file; write results to tmp_dir"""
     tmp_path = os.path.join(self.tmp_dir, 'tmp_maf.tsv')
-    if self.tar:
+    if self.assay == "TAR":
         maf_path = self.filter_maf_for_tar(maf_path)
     #self.logger.info("Preprocessing MAF input")
     # find the relevant indices on-the-fly from MAF column headers
@@ -355,7 +347,7 @@ class preprocess():
                     in_header = False
             else:
                 total += 1
-                if self.tar:
+                if self.assay == "TAR":
                     if self._maf_body_row_ok(row, indices, self.MIN_VAF_TAR):
                         # filter rows in the MAF body and update the tumour_id
                         row[indices.get(self.TUMOUR_SAMPLE_BARCODE)] = self.tumour_id
