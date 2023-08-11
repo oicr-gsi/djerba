@@ -30,8 +30,8 @@ class TestTarSamplePlugin(PluginTester):
 
     def test_build_small_mutations_and_indels(self):
         data_extended_oncogenic = os.path.join(self.sup_dir ,"report_example/data_mutations_extended_oncogenic.txt")
-        small_mutations_data = data_extractor(self, "TAR").build_small_mutations_and_indels(data_extended_oncogenic)
-        self.assertEqual(small_mutations_data, [{'Gene': 'KRAS', 'Gene_URL': 'https://www.oncokb.org/gene/KRAS', 'Chromosome': '12p12.1', 'Protein': 'p.G12S', 'Protein_URL': 'https://www.oncokb.org/gene/KRAS/p.G12S/TAR', 'Type': 'Missense Mutation', 'Expression Percentile': None, 'VAP (%)': 46, 't_depth': 211, 't_alt_count': 98, 'OncoKB': 'Level 4'}, {'Gene': 'TP53', 'Gene_URL': 'https://www.oncokb.org/gene/TP53', 'Chromosome': '17p13.1', 'Protein': 'p.R273H', 'Protein_URL': 'https://www.oncokb.org/gene/TP53/p.R273H/TAR', 'Type': 'Missense Mutation', 'Expression Percentile': None, 'VAP (%)': 55, 't_depth': 127, 't_alt_count': 70, 'OncoKB': 'Oncogenic'}])
+        small_mutations_data = data_extractor( "TAR","PAAD").build_small_mutations_and_indels(data_extended_oncogenic)
+        self.assertEqual(small_mutations_data, [{'Gene': 'KRAS', 'Gene_URL': 'https://www.oncokb.org/gene/KRAS', 'Chromosome': '12p12.1', 'Protein': 'p.G12S', 'Protein_URL': 'https://www.oncokb.org/gene/KRAS/p.G12S/PAAD', 'Type': 'Missense Mutation', 'Expression Percentile': None, 'VAP (%)': 46, 't_depth': 211, 't_alt_count': 98, 'OncoKB': 'Level 4'}, {'Gene': 'TP53', 'Gene_URL': 'https://www.oncokb.org/gene/TP53', 'Chromosome': '17p13.1', 'Protein': 'p.R273H', 'Protein_URL': 'https://www.oncokb.org/gene/TP53/p.R273H/PAAD', 'Type': 'Missense Mutation', 'Expression Percentile': None, 'VAP (%)': 55, 't_depth': 127, 't_alt_count': 70, 'OncoKB': 'Oncogenic'}])
         pass
 
 if __name__ == '__main__':

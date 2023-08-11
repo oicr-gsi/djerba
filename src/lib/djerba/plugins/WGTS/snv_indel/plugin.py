@@ -34,11 +34,11 @@ class main(plugin_base):
       preprocess(config, work_dir, tar = False).run_R_code()
       mutations_file = os.path.join(self.work_dir, sic.MUTATIONS_EXTENDED)
       mutations_extended_file = os.path.join(self.work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)
-      data = data_extractor(assay = "WGTS").build_small_mutations_and_indels(mutations_extended_file)
+      data = data_extractor(assay = assay).build_small_mutations_and_indels(mutations_extended_file)
       results = {
-           sic.VAF_PLOT: data_extractor(assay = "WGTS").write_vaf_plot(self.work_dir),
+           sic.VAF_PLOT: data_extractor(assay, oncotree).write_vaf_plot(self.work_dir),
            sic.CLINICALLY_RELEVANT_VARIANTS: len(data),
-           sic.TOTAL_VARIANTS: data_extractor(assay = "WGTS").read_somatic_mutation_totals(mutations_file),
+           sic.TOTAL_VARIANTS: data_extractor(assay, oncotree).read_somatic_mutation_totals(mutations_file),
            sic.BODY: data
       }
       data['results'] = results
