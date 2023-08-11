@@ -78,3 +78,7 @@ class merger_base(configurable, html_builder, ABC):
             self.json_validator.validate_data(item)
         self.logger.info("All merger inputs validated")
 
+
+class DjerbaMergerError(Exception):
+    pass
+

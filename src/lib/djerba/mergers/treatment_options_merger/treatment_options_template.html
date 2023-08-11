@@ -31,10 +31,10 @@
 	    <td width="1%">${oncokb_level_to_html(row[merger.ONCOKB_LEVEL])}</td>
 	    <td width="59%">${row[merger.TREATMENTS]}</td>
 	    <td style="font-style: italic;" width="20%">
-	      ${merger.get_link(row[merger.GENE_URL]), row[merger.GENE]}
+	      ${merger.get_link(row[merger.GENE_URL], row[merger.GENE])}
 	    </td>
 	    <td width="20%">
-	      ${merger.get_link(row[merger.ALTERATION_URL]), row[merger.ALTERATION]}
+	      ${merger.get_link(row[merger.ALTERATION_URL], row[merger.ALTERATION])}
 	  </tr>
 	  % endfor
         </tbody>
@@ -57,10 +57,10 @@
 	    <td width="1%">${oncokb_level_to_html(row[merger.ONCOKB_LEVEL])}</td>
 	    <td width="59%">${row[merger.TREATMENTS]}</td>
 	    <td style="font-style: italic;" width="20%">
-	      ${merger.get_link(row[merger.GENE_URL]), row[merger.GENE]}
+	      ${merger.get_link(row[merger.GENE_URL], row[merger.GENE])}
 	    </td>
 	    <td width="20%">
-	      ${merger.get_link(row[merger.ALTERATION_URL]), row[merger.ALTERATION]}
+	      ${merger.get_link(row[merger.ALTERATION_URL], row[merger.ALTERATION])}
 	  </tr>
 	  % endfor
         </tbody>
