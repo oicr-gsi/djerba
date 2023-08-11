@@ -53,11 +53,17 @@ class main(merger_base):
         return '<a href="{0}">{1}</a>'.format(url, text)
 
     def get_therapy_info(self, tier_input):
-        # deduplicate by alteration name
-        unique_items = self.get_unique_dicts(tier_input, self.ALTERATION)
-        # sort by oncokb level, then alteration name
+        # deduplicate by oncokb level and alteration name (both together are a unique ID)
         k1 = self.ONCOKB_LEVEL
         k2 = self.ALTERATION
+        try:
+            unique_items = list({(v[k1], v[k2]):v for v in tier_input}.values())
+        except KeyError as err:
+            msg = "Missing required key(s) from merger input: {0}".format(err)
+            self.logger.error(msg)
+            self.logger.debug("Merger inputs: {0}".format(inputs))
+            raise DjerbaMergerError from err
+        # sort by oncokb level, then alteration name
         return sorted(unique_items, key = lambda x: (oncokb_order(x[k1]), x[k2]))
 
     def render(self, inputs):
