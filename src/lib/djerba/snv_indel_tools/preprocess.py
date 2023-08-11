@@ -274,9 +274,7 @@ class preprocess():
         total = 0
         kept = 0
 
-        count = 0 #########################AQSA
         for row in reader:
-            count += 1 ########################AQSA
             if in_header:
                 if re.match('#version', row[0]):
                     # do not write the version header
@@ -300,7 +298,6 @@ class preprocess():
                         row[indices.get(self.TUMOUR_SAMPLE_BARCODE)] = self.tumour_id
                         writer.writerow(row)
                         kept += 1
-        print(count) ##################AQSA
 
     #self.logger.info("Kept {0} of {1} MAF data rows".format(kept, total))
     # apply annotation to tempfile and return final output
