@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v1.0.0-dev0.0.8: 2023-08-11
 
 ## GCGI-963: Case overview plugin
 - Renamed the patient info plugin
@@ -12,7 +12,8 @@
 
 ## Other
 - In clinical report footer, added "Report Sign-Offs" heading and removed auto-generation of the date
-- Added `supplement` plugin
+- Added `summary` plugin to generate the genomic summary text
+- Added `supplement` plugin to generate supplementary info (definitions, software versions, etc.)
 
 ## v1.0.0-dev0.0.7: 2023-08-02
 
