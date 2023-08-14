@@ -41,10 +41,11 @@ compZ <- function(df) {
 }
 
 construct_whizbam_links <- function(df, whizbam_url) {
+  if( dim(df)[[1]] == 0 ) {
   df$whizbam <- paste0(whizbam_url,
                        "&chr=", gsub("chr", "", df$Chromosome),
                        "&chrloc=", paste0(df$Start_Position, "-", df$End_Position))
-  
+  } 
   return(df)
 }
 
@@ -181,14 +182,10 @@ procVEP <- function(maf_df){
   maf_df <- addVAFtoMAF(maf_df, "t_alt_count", "t_depth", "tumour_vaf")
   maf_df <- addVAFtoMAF(maf_df, "n_alt_count", "n_depth", "normal_vaf")
   
-  # clear memory (important when the mafs are huge - will maybe outgrow R if files are millions and millions of lines)
-  df_anno <- maf_df
-  gc()
-  
   print("--- adding oncogenic binary column ---")
   
   # add oncogenic yes or no columns
-  df_anno <- transform(df_anno,
+  df_anno <- transform(maf_df,
   oncogenic_binary = ifelse(ONCOGENIC == "Oncogenic" | ONCOGENIC == "Likely Oncogenic",
                             "YES", "NO")
   )

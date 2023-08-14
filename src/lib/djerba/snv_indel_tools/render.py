@@ -143,7 +143,7 @@ class html_builder:
             self._td(row[constants.MUTATION_TYPE]),
             self._td(row[constants.VAF_PERCENT]),
             self._td(depth),
-            self._td(row[constants.COPY_STATE]),
+           self._td("PLACEHOLDER"),
             self._td_oncokb(row[constants.ONCOKB])
         ]
         if mutation_info[constants.HAS_EXPRESSION_DATA]:

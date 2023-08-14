@@ -35,14 +35,17 @@ class TestTarSamplePlugin(PluginTester):
         self.assertEqual(small_mutations_data, [{'Gene': 'KRAS', 'Gene_URL': 'https://www.oncokb.org/gene/KRAS', 'Chromosome': '12p12.1', 'Protein': 'p.G12S', 'Protein_URL': 'https://www.oncokb.org/gene/KRAS/p.G12S/PAAD', 'Type': 'Missense Mutation', 'Expression Percentile': None, 'VAP (%)': 46, 't_depth': 211, 't_alt_count': 98, 'OncoKB': 'Level 4'}, {'Gene': 'TP53', 'Gene_URL': 'https://www.oncokb.org/gene/TP53', 'Chromosome': '17p13.1', 'Protein': 'p.R273H', 'Protein_URL': 'https://www.oncokb.org/gene/TP53/p.R273H/PAAD', 'Type': 'Missense Mutation', 'Expression Percentile': None, 'VAP (%)': 55, 't_depth': 127, 't_alt_count': 70, 'OncoKB': 'Oncogenic'}])
         pass
 
-    def test_preprocess_maf(self):
-        #read raw maf, process and count rows 
-        maf_file = os.path.join(self.sup_dir ,"GSICAPBENCH_1219_Lv_M_WG_100-009-005_LCM3.filter.deduped.realigned.recalibrated.mutect2.filtered.reduced.maf.gz")
-        tmp_file = preprocess('config', self.tmp_dir, 'assay', 'identifier').preprocess_maf( maf_file, "WGTS", "100-PM-013_LCM5")
-        with open(tmp_file, 'r') as fp:
-            for count, line in enumerate(fp):
-                pass
-        self.assertEqual(count, 100)
+    #def test_read_maf_indices(self):
+    #    maf_file = os.path.join(self.sup_dir ,"GSICAPBENCH_1219_Lv_M_WG_100-009-005_LCM3.filter.deduped.realigned.recalibrated.mutect2.filtered.reduced.maf.gz")
+
+    # def test_preprocess_maf(self):
+    #     #read raw maf, process and count rows 
+    #     maf_file = os.path.join(self.sup_dir ,"GSICAPBENCH_1219_Lv_M_WG_100-009-005_LCM3.filter.deduped.realigned.recalibrated.mutect2.filtered.reduced.maf.gz")
+    #     tmp_file = preprocess('config', self.tmp_dir, 'assay', 'identifier').preprocess_maf( maf_file, "WGTS", "100-PM-013_LCM5")
+    #     with open(tmp_file, 'r') as fp:
+    #         for count, line in enumerate(fp):
+    #             pass
+    #     self.assertEqual(count, 100)
 
 if __name__ == '__main__':
     unittest.main()

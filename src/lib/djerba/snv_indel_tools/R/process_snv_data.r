@@ -6,22 +6,21 @@ library(BSgenome.Hsapiens.UCSC.hg38)
 
 # command line options
 option_list = list(
-  make_option(c("-a", "--basedir"), type="character", default=NULL, help="R scripts directory", metavar="character"),
-  make_option(c("-f", "--outdir"), type="character", default=NULL, help="output directory", metavar="character"),
+  make_option(c("-a", "--outdir"), type="character", default=NULL, help="output directory", metavar="character"),
+  make_option(c("-b", "--basedir"), type="character", default=NULL, help="R scripts directory", metavar="character"),
   
   make_option(c("-c", "--segfile"), type="character", default=NULL, help="concatenated seg file", metavar="character"),
-  make_option(c("-e", "--gepfile"), type="character", default=NULL, help="concatenated gep file", metavar="character"),
-  make_option(c("-b", "--maffile"), type="character", default=NULL, help="concatenated maf file", metavar="character"),
+  make_option(c("-d", "--gepfile"), type="character", default=NULL, help="concatenated gep file", metavar="character"),
+  make_option(c("-e", "--maffile"), type="character", default=NULL, help="concatenated maf file", metavar="character"),
   
-  make_option(c("-n", "--tcgadata"), type="character", default=NULL, help="tcga datadir", metavar="character"),
-  make_option(c("-i", "--genebed"), type="character", default=NULL, help="gene bed for segmentation", metavar="character"),
-  make_option(c("-k", "--oncolist"), type="character", default=NULL, help="oncoKB cancer genes", metavar="character"),
-  make_option(c("-g", "--enscon"), type="character", default=NULL, help="ensemble conversion file", metavar="character"),
-  make_option(c("-u", "--whizbam_url"), type="character", default="https://whizbam.oicr.on.ca", help="whizbam url", metavar="character"),
+  make_option(c("-f", "--genebed"), type="character", default=NULL, help="gene bed for segmentation", metavar="character"),
+  make_option(c("-g", "--oncolist"), type="character", default=NULL, help="oncoKB cancer genes", metavar="character"),
+  make_option(c("-h", "--enscon"), type="character", default=NULL, help="ensemble conversion file", metavar="character"),
+  make_option(c("-i", "--whizbam_url"), type="character", default="https://whizbam.oicr.on.ca", help="whizbam url", metavar="character"),
+  make_option(c("-j", "--tcgadata"), type="character", default=NULL, help="tcga datadir", metavar="character"),
   
   make_option(c("-o", "--tcgacode"), type="character", default=NULL, help="tcga code", metavar="character"),
-  make_option(c("-T", "--tar"), type="character", default=FALSE, help="true or false value for tar assay", metavar="boolean")
-
+  make_option(c("-p", "--purity"), type="character", default=NULL, help="sample purity", metavar="character")
 )
 
 # get options
@@ -40,9 +39,9 @@ tcgacode <- opt$tcgacode
 maffile <- opt$maffile
 whizbam_url <- opt$whizbam_url
 gepfile <- opt$gepfile
-tar <- opt$tar
+purity <- opt$purity
 
-source(paste0(basedir, "supporting_functions.r"))
+source(paste0(basedir, "/R/supporting_functions.r"))
 
 ###################### CNA #####################
 
@@ -82,21 +81,20 @@ if (is.null(maffile)) {
   maf_df <- read.csv(maffile, sep="\t", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
   
   df_filter <- procVEP(maf_df)
-  
-  # add whizbam links
   df_filt_whizbam <- construct_whizbam_links(df_filter, whizbam_url)
   
-  # get pass
   write.table(df_filt_whizbam, file=paste0(outdir, "/data_mutations_extended.txt"), sep="\t", row.names=FALSE, quote=FALSE)
   
-  if ( dim(df_filt_whizbam)[[1]] == 0 ) {
+  if ( dim(df_filter)[[1]] == 0 ) {
     print("No passed mutations")
     write.table(df_filt_whizbam, file=paste0(outdir, "/data_mutations_extended_oncogenic.txt"), sep="\t", row.names=FALSE, quote=FALSE)
   } else {
     # subset to oncokb annotated genes
     df_filt_oncokb <- subset(df_filt_whizbam, ONCOGENIC == "Oncogenic" | ONCOGENIC == "Likely Oncogenic")
     
-    if ( dim(df_filt_oncokb)[[1]] == 0 ) {print("no oncogenic mutations")} 
+    if ( dim(df_filt_oncokb)[[1]] == 0 ) {
+      print("no oncogenic mutations")
+      } 
     write.table(df_filt_oncokb, file=paste0(outdir, "/data_mutations_extended_oncogenic.txt"), sep="\t", row.names=FALSE, quote=FALSE)
   }
 }

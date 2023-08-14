@@ -18,20 +18,9 @@ from djerba.util.subprocess_runner import subprocess_runner
 
 class data_builder:
 
-    # is_wgts = True
-    # 
-    # if is_wgts == True:
-    #     expr_input = sic.EXPR_PCT_TCGA
-    # else:
-    #     expr_input = None
-
-    def __init__(self,  assay, oncotree_uc):
-        self.data_dir = os.environ.get('DJERBA_BASE_DIR') + '/data/' 
-        self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/Rscripts"
-        #self.work_dir = work_dir
-        self.assay = assay
-        self.cytoband_path = self.data_dir + "cytoBand.txt"
-        self.oncotree_uc = oncotree_uc
+    def __init__(self, work_dir):
+        self.work_dir = work_dir
+        self.cytoband_path = os.environ.get('DJERBA_BASE_DIR') + sic.CYTOBAND
 
     def build_alteration_url(self, gene, alteration, cancer_code):
         #self.logger.debug('Constructing alteration URL from inputs: {0}'.format([self.ONCOKB_URL_BASE, gene, alteration, cancer_code]))
@@ -40,13 +29,13 @@ class data_builder:
     def build_gene_url(self, gene):
         return '/'.join([sic.ONCOKB_URL_BASE, gene])
 
-    def build_small_mutations_and_indels(self, mutations_file):
+    def build_small_mutations_and_indels(self, mutations_file, oncotree_uc, assay):
         """read in small mutations; output rows for oncogenic mutations"""
         #self.logger.debug("Building data for small mutations and indels table")
         rows = []
         all_reported_variants = set()
         # mutation_copy_states = self.read_mutation_copy_states()
-        if self.assay == "WGTS":
+        if assay == "WGTS":
             mutation_expression = self.read_expression()
             has_expression_data = True
         else:
@@ -64,7 +53,7 @@ class data_builder:
                     sic.GENE_URL: self.build_gene_url(gene),
                     sic.CHROMOSOME: cytoband,
                     sic.PROTEIN: protein,
-                    sic.PROTEIN_URL: self.build_alteration_url(gene, protein, self.oncotree_uc),
+                    sic.PROTEIN_URL: self.build_alteration_url(gene, protein, oncotree_uc),
                     sic.MUTATION_TYPE: re.sub('_', ' ', input_row[sic.VARIANT_CLASSIFICATION]),
                     sic.EXPRESSION_METRIC: mutation_expression.get(gene), # None for WGS assay
                     sic.VAF_PERCENT: int(round(float(input_row[sic.TUMOUR_VAF]), 2)*100),
@@ -240,9 +229,10 @@ class data_builder:
         return rows
 
     def write_vaf_plot(self, out_dir):
+        r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/Rscripts"
         out_path = os.path.join(out_dir, 'vaf.svg')
         args = [
-            os.path.join(self.r_script_dir, 'vaf_plot.r'),
+            os.path.join(r_script_dir, 'vaf_plot.r'),
             '-d', self.work_dir,
             '-o', out_path
         ]

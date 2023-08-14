@@ -17,112 +17,28 @@ from shutil import copyfile
 import djerba.snv_indel_tools.constants as constants 
 from djerba.plugins.base import plugin_base
 import pandas as pd
+import djerba.snv_indel_tools.constants as sic
 
-class preprocess():
+class preprocess(logger):
  
-  
-    cache_params = None
-    log_level = "logging.WARNING"
-    log_path = "None"
-
-    GENE_ID = 0
-    FPKM = 6
-    gep_reference = "/.mounts/labs/CGI/gsi/tools/djerba/gep_reference.txt.gz"
-
-    # headers of important MAF columns
-    VARIANT_CLASSIFICATION = 'Variant_Classification'
-    TUMOUR_SAMPLE_BARCODE = 'Tumor_Sample_Barcode'
-    MATCHED_NORM_SAMPLE_BARCODE = 'Matched_Norm_Sample_Barcode'
-    FILTER = 'FILTER'
-    T_DEPTH = 't_depth'
-    T_ALT_COUNT = 't_alt_count'
-    GNOMAD_AF = 'gnomAD_AF'
-    MAF_KEYS = [
-        VARIANT_CLASSIFICATION,
-        TUMOUR_SAMPLE_BARCODE,
-        MATCHED_NORM_SAMPLE_BARCODE,
-        FILTER,
-        T_DEPTH,
-        T_ALT_COUNT,
-        GNOMAD_AF
-    ]
-
-    GENEBED = os.environ.get('DJERBA_BASE_DIR') + "data/gencode_v33_hg38_genes.bed"
-    ONCOLIST = os.environ.get('DJERBA_BASE_DIR') + "/data/20200818-oncoKBcancerGeneList.tsv"
-    ENSEMBL_CONVERSION = os.environ.get('DJERBA_BASE_DIR') + "data/ensemble_conversion_hg38.txt"
-    TCGA_RODIC="/.mounts/labs/CGI/gsi/tools/RODiC/data"
-
-    # Permitted MAF mutation types
-    # `Splice_Region` is *included* here, but *excluded* from the somatic mutation count used to compute TMB in report_to_json.py
-    # See also JIRA ticket GCGI-469
-    MUTATION_TYPES_EXONIC = [
-        "3'Flank",
-        "3'UTR",
-        "5'Flank",
-        "5'UTR",
-        "Frame_Shift_Del",
-        "Frame_Shift_Ins",
-        "In_Frame_Del",
-        "In_Frame_Ins",
-        "Missense_Mutation",
-        "Nonsense_Mutation",
-        "Nonstop_Mutation",
-        "Silent",
-        "Splice_Region",
-        "Splice_Site",
-        "Targeted_Region",
-        "Translation_Start_Site"
-    ]
-
-    # disallowed MAF filter flags; from filter_flags.exclude in CGI-Tools
-    FILTER_FLAGS_EXCLUDE = [
-        'str_contraction',
-        't_lod_fstar'
-    ]
-
-    # MAF filter thresholds
-    MIN_VAF = 0.1
-    MIN_VAF_TAR = 0.01
-    MAX_UNMATCHED_GNOMAD_AF = 0.001
-    WHIZBAM_BASE_URL = 'https://whizbam.oicr.on.ca'
-
-    def __init__(self, config, work_dir, assay, identifier):
-        self.config = config
-        self.report_dir = work_dir
+    def __init__(self, report_dir, log_level=logging.WARNING, log_path=None):
+        self.log_level = log_level
+        self.log_path = log_path
+        self.logger = self.get_logger(log_level, __name__, log_path)
+        self.report_dir = report_dir
         self.tmp_dir = os.path.join(self.report_dir, 'tmp')
-        self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/Rscripts/"
-
         if os.path.isdir(self.tmp_dir):
             print("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
-            #self.logger.debug("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
+            self.logger.debug("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
         elif os.path.exists(self.tmp_dir):
             msg = "tmp dir path {0} exists but is not a directory".format(self.tmp_dir)
-            #self.logger.error(msg)
+            self.logger.error(msg)
             raise RuntimeError(msg)
         else:
-            #print("Creating tmp dir {0} for R script wrapper".format(tmp_dir))
-            #self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
+            print("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
+            self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
             os.mkdir(self.tmp_dir)
-        #self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts/"
-        self.assay = assay
 
-        self.study_title = self.config[identifier]['study_title']
-        self.tcgacode = self.config[identifier]['tcgacode']
-        self.oncotree_code = self.config[identifier]['oncotree_code']
-        self.tumour_id = self.config[identifier]['tumour_id']
-        self.normal_id = self.config[identifier]['normal_id']
-        self.maf_file = self.config[identifier]['maf_file']
-        self.studyid = self.config[identifier]['studyid']
-
-        if self.assay == "TAR":
-            self.seg_file = self.config[identifier]['seg_file']
-            self.maf_file_normal = self.config[identifier]['maf_file_normal']
-        else:
-            self.sequenza_path = self.config[identifier]['sequenza_file']
-            self.sequenza_gamma = int(self.config[identifier]['sequenza_gamma'])
-            self.sequenza_solution = self.config[identifier]['sequenza_solution']
-            self.gep_file = self.config[identifier]['gep_file']
-  
     def construct_whizbam_link( whizbam_base_url, studyid, tumourid, normalid, seqtype, genome):
         whizbam = "".join((whizbam_base_url,
                             "/igv?project1=", studyid,
@@ -137,57 +53,50 @@ class preprocess():
                             ))
         return(whizbam)
 
-    def run_R_code(self):
-
-        whizbam_url = self.construct_whizbam_link( self.WHIZBAM_BASE_URL, self.studyid, self.tumourid, self.normalid, self.seqtype, self.genome)
-        tmp_maf_path = self.preprocess_maf(self.maf_file, self.assay, self.tumour_id)
-        maf_path = oncokb_annotator(
-            self.tumour_id,
-            self.oncotree_code,
+    def run_R_code(self, whizbam_url, assay, raw_maf_file, tumour_id, oncotree_code, maf_file_normal='Null'):
+        dir_location = os.path.dirname(__file__)
+        tmp_maf_path = self.preprocess_maf(raw_maf_file, assay, tumour_id, maf_file_normal)
+        annotated_maf_path = oncokb_annotator(
+            tumour_id,
+            oncotree_code,
             self.report_dir,
-            self.tmp_dir
-            #self.cache_params,
-            #self.log_level,
-            #self.log_path
+            self.tmp_dir,
+            
+            log_level=self.log_level,
+            log_path=self.log_path
         ).annotate_maf(tmp_maf_path)
 
+        #seg_path = self.preprocess_seg(self.sequenza_path)
+        #gep_path = self.preprocess_gep(self.gep_file)
+        cmd = [
+            'Rscript', os.path.join(dir_location + "/R/process_snv_data.r"),
+                '--basedir', dir_location ,
+                '--genebed', os.path.join(dir_location, '..', sic.GENEBED),
+                '--oncolist', os.path.join(dir_location, '..', sic.ONCOLIST),
+                '--enscon', os.path.join(dir_location, '..', sic.ENSEMBL_CONVERSION), 
+                '--tcgadata', sic.TCGA_RODIC,
 
-        if self.assay == "TAR":
-            
-            cmd = [
-                'Rscript', self.r_script_dir + "/process_data.r",
-                '--basedir', self.r_script_dir,
                 '--outdir', self.report_dir,
                 '--whizbam_url', whizbam_url,
-                '--maffile', maf_path,
-                '--tar', 'TRUE'
-            ]
+                '--maffile', annotated_maf_path
 
-        else:
-            #seg_path = self.preprocess_seg(self.sequenza_path)
-            #gep_path = self.preprocess_gep(self.gep_file)
-            cmd = [
-                'Rscript', self.r_script_dir + "process_data.r",
-                '--genebed', self.GENEBED,
-                '--oncolist', self.ONCOLIST,
-                '--enscon', self.ENSEMBL_CONVERSION, 
-                '--tcgadata', self.TCGA_RODIC,
-
-                '--basedir', self.r_script_dir,
-                '--outdir', self.report_dir,
-                '--whizbam_url', whizbam_url,
-                '--maffile', maf_path
-
-               # '--segfile', seg_path,
+                # '--segfile', seg_path,
 
                 ##expression
                 #'--gepfile', gep_path,
                 #'--tcgacode', self.tcgacode
                 
-            ]
+        ]
         runner = subprocess_runner()
         result = runner.run(cmd, "main R script")
-        self.postprocess()
+        # annotator = oncokb_annotator(
+        #         self.tumour_id,
+        #         self.oncotree_code,
+        #         self.report_dir,
+        #         self.tmp_dir,
+        #         self.cache_params
+        # )
+        # annotator.annotate_cna()
         return result
   
     def preprocess_seg(self, sequenza_path):
@@ -225,11 +134,11 @@ class preprocess():
             reader = csv.reader(gep_file, delimiter="\t")
             for row in reader:
                 try:
-                    fkpm[row[self.GENE_ID]] = row[self.FPKM]
+                    fkpm[row[sic.GEP_GENE_ID_INDEX]] = row[sic.GEP_FPKM_INDEX]
                 except IndexError as err:
                     msg = "Incorrect number of columns in GEP row: '{0}'".format(row)+\
                         "read from '{0}'".format(gep_path)
-                    #self.logger.error(msg)
+                    self.logger.error(msg)
                     raise RuntimeError(msg) from err
         # insert as the second column in the generic GEP file
         ref_path = self.gep_reference
@@ -252,12 +161,12 @@ class preprocess():
                     except KeyError as err:
                         msg = 'Reference gene ID {0} from {1} '.format(gene_id, ref_path) +\
                             'not found in gep results path {0}'.format(gep_path)
-                        #self.logger.warn(msg)
+                        self.logger.warn(msg)
                         row.insert(1, '0.0')
                 writer.writerow(row)
         return out_path
 
-    def filter_maf_for_tar(self, maf_path):
+    def filter_maf_for_tar(self, maf_path, maf_file_normal):
         genes = ["BRCA2",
             "BRCA1",
             "PALB2",
@@ -271,7 +180,7 @@ class preprocess():
             "ABCB1",
             "CCNE1"]
 
-        df_bc = pd.read_csv(self.maf_file_normal,
+        df_bc = pd.read_csv(maf_file_normal,
                         sep = "\t",
                         on_bad_lines="error",
                         compression='gzip',
@@ -318,15 +227,15 @@ class preprocess():
         df_pl.to_csv(out_path, sep = "\t", compression='gzip', index=False)
         return out_path
      
-    def preprocess_maf(self, maf_path, assay, tumour_id):
+    def preprocess_maf(self, maf_path, assay, tumour_id, maf_file_normal='Null'):
         """Apply preprocessing and annotation to a MAF file; write results to tmp_dir"""
         tmp_path = os.path.join(self.tmp_dir, 'tmp_maf.tsv')
         if assay == "TAR":
-            maf_path = self.filter_maf_for_tar(maf_path)
-            vaf_cutoff = self.MIN_VAF_TAR
+            maf_path = self.filter_maf_for_tar(maf_path, maf_file_normal)
+            vaf_cutoff = sic.MIN_VAF_TAR
         else:
-            vaf_cutoff = self.MIN_VAF
-        #self.logger.info("Preprocessing MAF input")
+            vaf_cutoff = sic.MIN_VAF
+        self.logger.info("Preprocessing MAF input")
         # find the relevant indices on-the-fly from MAF column headers
         # use this instead of csv.DictReader to preserve the rows for output
         with \
@@ -338,6 +247,7 @@ class preprocess():
             in_header = True
             total = 0
             kept = 0
+            header_length = 0
             for row in reader:
                 if in_header:
                     if re.match('#version', row[0]):
@@ -347,15 +257,19 @@ class preprocess():
                         # write the column headers without change
                         writer.writerow(row)
                         indices = self._read_maf_indices(row)
+                        header_length = len(row)
                         in_header = False
                 else:
                     total += 1
+                    if len(row) != header_length:
+                        msg = "Indices found in MAF header are not of same length as rows!"
+                        raise RuntimeError(msg)
                     if self._maf_body_row_ok(row, indices, vaf_cutoff):
                         # filter rows in the MAF body and update the tumour_id
-                        row[indices.get(self.TUMOUR_SAMPLE_BARCODE)] = tumour_id
+                        row[indices.get(sic.TUMOUR_SAMPLE_BARCODE)] = tumour_id
                         writer.writerow(row)
                         kept += 1
-        #self.logger.info("Kept {0} of {1} MAF data rows".format(kept, total))
+        self.logger.info("Kept {0} of {1} MAF data rows".format(kept, total))
         # apply annotation to tempfile and return final output
         return tmp_path
 
@@ -367,18 +281,18 @@ class preprocess():
         ix is a dictionary of column indices
         """
         ok = False
-        row_t_depth = int(row[ix.get(self.T_DEPTH)])
-        alt_count_raw = row[ix.get(self.T_ALT_COUNT)]
-        gnomad_af_raw = row[ix.get(self.GNOMAD_AF)]
+        row_t_depth = int(row[ix.get(sic.T_DEPTH)])
+        alt_count_raw = row[ix.get(sic.TUMOUR_ALT_COUNT)]
+        gnomad_af_raw = row[ix.get(sic.GNOMAD_AF)]
         row_t_alt_count = float(alt_count_raw) if alt_count_raw!='' else 0.0
         row_gnomad_af = float(gnomad_af_raw) if gnomad_af_raw!='' else 0.0
-        is_matched = row[ix.get(self.MATCHED_NORM_SAMPLE_BARCODE)] != 'unmatched'
-        filter_flags = re.split(';', row[ix.get(self.FILTER)])
+        is_matched = row[ix.get(sic.MATCHED_NORM_SAMPLE_BARCODE)] != 'unmatched'
+        filter_flags = re.split(';', row[ix.get(sic.FILTER)])
         if row_t_depth >= 1 and \
             row_t_alt_count/row_t_depth >= vaf_cutoff and \
             (is_matched or row_gnomad_af < self.MAX_UNMATCHED_GNOMAD_AF) and \
-            row[ix.get(self.VARIANT_CLASSIFICATION)] in self.MUTATION_TYPES_EXONIC and \
-            not any([z in self.FILTER_FLAGS_EXCLUDE for z in filter_flags]):
+            row[ix.get(sic.VARIANT_CLASSIFICATION)] in sic.MUTATION_TYPES_EXONIC and \
+            not any([z in sic.FILTER_FLAGS_EXCLUDE for z in filter_flags]):
             ok = True
         return ok
 
@@ -386,24 +300,11 @@ class preprocess():
         indices = {}
         for i in range(len(row)):
             key = row[i]
-            if key in self.MAF_KEYS:
+            if key in sic.MAF_KEYS:
                 indices[key] = i
-        if set(indices.keys()) != set(self.MAF_KEYS):
+        if set(indices.keys()) != set(sic.MAF_KEYS):
             msg = "Indices found in MAF header {0} ".format(indices.keys()) +\
-                    "do not match required keys {0}".format(self.MAF_KEYS)
-            #self.logger.error(msg)
+                    "do not match required keys {0}".format(sic.MAF_KEYS)
+            self.logger.error(msg)
             raise RuntimeError(msg)
         return indices
-
-    def postprocess(self):
-        """
-        - Annotate CNA 
-        """
-        annotator = oncokb_annotator(
-                self.tumour_id,
-                self.oncotree_code,
-                self.report_dir,
-                self.tmp_dir,
-                self.cache_params,
-        )
-        annotator.annotate_cna()

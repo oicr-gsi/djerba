@@ -1,4 +1,6 @@
 library(testthat)
+basedir="/Volumes/cgi/scratch/fbeaudry/reporting/djerba/src/lib/djerba/snv_indel_tools"
+source(paste0(basedir, "/R/supporting_functions.r"))
 
 expected_cutoffs = list(
     "LOG_R_HTZD" = -0.30521659411863716,
@@ -9,14 +11,15 @@ expected_cutoffs = list(
 
 test_that("log_cutoff_finder finds log cutoff", {
   expect_equal(log_r_cutoff_finder(0.69), expected_cutoffs)
+  expect_equal(log_r_cutoff_finder(1), expected_cutoffs)
   }
 )
 
-maffile <- ""
+maffile <- "/Volumes/cgi/scratch/fbeaudry/reporting/djerba_test/plugins/wgts/tmp/annotated_maf.tsv"
 maf_df <- read.csv(maffile, sep="\t", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
 
 test_that("procVEP processes Variant Effect Predictor file correctly",{
-  procVEP(maf_df)
+  processed_maf <- procVEP(maf_df)
   }
 )
 

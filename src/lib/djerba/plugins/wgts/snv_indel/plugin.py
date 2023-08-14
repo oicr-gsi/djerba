@@ -6,15 +6,13 @@ a plugin for WGTS SNV Indel
 import os
 from djerba.plugins.base import plugin_base
 from mako.lookup import TemplateLookup
-import djerba.snv_indel_tools.constants as constants
+from djerba.util.render_mako import mako_renderer
+import djerba.core.constants as core_constants
+from djerba.core.workspace import workspace
+import djerba.snv_indel_tools.constants as sic
 from djerba.snv_indel_tools.preprocess import preprocess
 from djerba.snv_indel_tools.extract import data_builder as data_extractor
-import djerba.core.constants as core_constants
-from djerba.util.subprocess_runner import subprocess_runner
-import djerba.util.provenance_index as index
-from djerba.core.workspace import workspace
-from djerba.util.render_mako import mako_renderer
-import djerba.snv_indel_tools.constants as sic
+import djerba.render.constants as rc
 
 class main(plugin_base):
    
@@ -22,6 +20,8 @@ class main(plugin_base):
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'snv_indel_template.html'
     ASSAY = 'WGS'
+    SEQTYPE = 'GENOME'
+    GENOME = 'hg38'
     
     def configure(self, config):
       config = self.apply_defaults(config)
@@ -32,14 +32,32 @@ class main(plugin_base):
       work_dir = self.workspace.get_work_dir()
       data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
       oncotree = config[self.identifier]['oncotree_code']
-      preprocess(config, work_dir, self.ASSAY, self.identifier).run_R_code()
+
+      tumour_id = config[self.identifier]['tumour_id']
+      normal_id = config[self.identifier]['normal_id']
+      maf_file = config[self.identifier]['maf_file']
+      studyid = config[self.identifier]['study_title']
+
+      # if self.assay == "TAR":
+      #    self.seg_file = self.config[self.identifier]['seg_file']
+      #    self.maf_file_normal = self.config[self.identifier]['maf_file_normal']
+      # else:
+        # sequenza_path = self.config[self.identifier]['sequenza_file']
+        # sequenza_gamma = int(self.config[self.identifier]['sequenza_gamma'])
+        # sequenza_solution = self.config[self.identifier]['sequenza_solution']
+        # gep_file = self.config[self.identifier]['gep_file']
+
+      whizbam_url = preprocess.construct_whizbam_link(sic.WHIZBAM_BASE_URL, studyid, tumour_id, normal_id, self.SEQTYPE, self.GENOME)
+
+      preprocess(work_dir).run_R_code(whizbam_url, self.ASSAY, maf_file, tumour_id, oncotree)
       mutations_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED)
       mutations_extended_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)
-      data_table = data_extractor(self.ASSAY, oncotree).build_small_mutations_and_indels(mutations_extended_file)
+      data_table = data_extractor(work_dir).build_small_mutations_and_indels(mutations_extended_file, oncotree, self.ASSAY)
       results = {
           sic.BODY: data_table,
           sic.CLINICALLY_RELEVANT_VARIANTS: len(data_table),
-          sic.TOTAL_VARIANTS: data_extractor(self.ASSAY, oncotree).read_somatic_mutation_totals(mutations_file)
+          sic.TOTAL_VARIANTS: data_extractor(work_dir).read_somatic_mutation_totals(mutations_file),
+          rc.HAS_EXPRESSION_DATA: False
         #  sic.VAF_PLOT: data_extractor(self.ASSAY, oncotree).write_vaf_plot(work_dir)
       }
       data['results'] = results
