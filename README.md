@@ -2,6 +2,14 @@
 
 Create reports from metadata and workflow output
 
+----
+
+## NEW: CGC 2023 talk slides
+
+Slides from a talk on Djerba by Iain Bancarz at [CGC 2023](https://cancergenomics.org/meetings/cgc_annual_meeting_2023.php) on 2023-08-14: [Iain_Bancarz_presentation_CGC_2023_Djerba.pdf](./doc/Iain_Bancarz_presentation_CGC_2023_Djerba.pdf)
+
+----
+
 ## Introduction
 
 Djerba translates cancer bioinformatics workflow outputs and metadata into clinical reports, in the format developed by the Clinical Genome Informatics (CGI) group at [OICR](https://oicr.on.ca).
