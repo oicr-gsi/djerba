@@ -102,7 +102,6 @@ class preprocess():
       self.maf_file = maf_file
       # THINGS FROM CONFIG 
       if self.tar == True:
-          self.seg_file = self.config['tar.swgs']['seg_file']
           self.oncotree_code = self.config['tar.snv_indel']['oncotree_code']
           self.tcgacode = self.config['tar.snv_indel']['tcgacode']
           self.tumour_id = self.config['tar.snv_indel']['tumour_id']
