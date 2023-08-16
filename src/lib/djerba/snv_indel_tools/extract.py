@@ -15,10 +15,14 @@ from djerba.util.logger import logger
 from djerba.util.image_to_base64 import converter
 import djerba.extract.oncokb.constants as oncokb
 from djerba.util.subprocess_runner import subprocess_runner
+from djerba.util.logger import logger
 
-class data_builder:
+class data_builder(logger):
 
-    def __init__(self, work_dir):
+    def __init__(self, work_dir, log_level=logging.WARNING, log_path=None):
+        self.log_level = log_level
+        self.log_path = log_path
+        self.logger = self.get_logger(log_level, __name__, log_path)
         self.work_dir = work_dir
         self.cytoband_path = os.environ.get('DJERBA_BASE_DIR') + sic.CYTOBAND
 
@@ -229,13 +233,13 @@ class data_builder:
         return rows
 
     def write_vaf_plot(self, out_dir):
-        r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/Rscripts"
+        r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/R"
         out_path = os.path.join(out_dir, 'vaf.svg')
         args = [
             os.path.join(r_script_dir, 'vaf_plot.r'),
             '-d', self.work_dir,
             '-o', out_path
         ]
-        subprocess_runner().run(args)
-        #self.logger.info("Wrote VAF plot to {0}".format(out_path))
-        return out_path
+        vaf_plot_out = subprocess_runner().run(args)
+        self.logger.info("Wrote VAF plot to {0}".format(out_path))
+        return vaf_plot_out.stdout.split('"')[1]

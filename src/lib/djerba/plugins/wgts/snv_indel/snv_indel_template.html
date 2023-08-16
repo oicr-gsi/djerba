@@ -18,6 +18,8 @@ ${html_builder().section_cells_begin("<h2>SNVs and in/dels</h2>","main")}
             and <strong>${results.get(constants.CLINICALLY_RELEVANT_VARIANTS)}</strong> corresponded to an oncogenic mutation, as defined by OncoKB.
       </p>
       
+      <img id='VAF' style='width: 100%; object-fit: contain' src="${results.get(constants.VAF_PLOT)}"/>
+
       % if results.get(constants.CLINICALLY_RELEVANT_VARIANTS) > 0:
             <table class="variants" width="100%">
                   ${html_builder().oncogenic_small_mutations_and_indels_header(results)}

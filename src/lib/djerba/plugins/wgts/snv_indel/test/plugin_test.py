@@ -30,9 +30,15 @@ class TestWGTSsmallPlugin(PluginTester):
         params = {
             self.INI: 'snv_indel.ini',
             self.JSON: json_location,
-            self.MD5: '385f7b5ec83595a37ea60328b5e28358'
+            self.MD5: 'af2ac8a5c6fd42eb9d85f9ae6eb356ca'
         }
         self.run_basic_test(test_source_dir, params)
+
+    def redact_json_data(self, data):
+        """replaces empty method from testing.tools"""
+        for key in ['vaf_plot']:
+            del data['plugins']['wgts.snv_indel']['results'][key]
+        return data 
 
 if __name__ == '__main__':
     unittest.main()

@@ -53,9 +53,9 @@ class preprocess(logger):
                             ))
         return(whizbam)
 
-    def run_R_code(self, whizbam_url, assay, raw_maf_file, tumour_id, oncotree_code, maf_file_normal='Null'):
+    def run_R_code(self, whizbam_url, assay, raw_maf_file, tumour_id, oncotree_code):
         dir_location = os.path.dirname(__file__)
-        tmp_maf_path = self.preprocess_maf(raw_maf_file, assay, tumour_id, maf_file_normal)
+        tmp_maf_path = self.preprocess_maf(raw_maf_file, assay, tumour_id)
         annotated_maf_path = oncokb_annotator(
             tumour_id,
             oncotree_code,

@@ -38,10 +38,6 @@ class main(plugin_base):
       maf_file = config[self.identifier]['maf_file']
       studyid = config[self.identifier]['study_title']
 
-      # if self.assay == "TAR":
-      #    self.seg_file = self.config[self.identifier]['seg_file']
-      #    self.maf_file_normal = self.config[self.identifier]['maf_file_normal']
-      # else:
         # sequenza_path = self.config[self.identifier]['sequenza_file']
         # sequenza_gamma = int(self.config[self.identifier]['sequenza_gamma'])
         # sequenza_solution = self.config[self.identifier]['sequenza_solution']
@@ -57,8 +53,8 @@ class main(plugin_base):
           sic.BODY: data_table,
           sic.CLINICALLY_RELEVANT_VARIANTS: len(data_table),
           sic.TOTAL_VARIANTS: data_extractor(work_dir).read_somatic_mutation_totals(mutations_file),
-          rc.HAS_EXPRESSION_DATA: False
-        #  sic.VAF_PLOT: data_extractor(self.ASSAY, oncotree).write_vaf_plot(work_dir)
+          rc.HAS_EXPRESSION_DATA: False,
+          sic.VAF_PLOT: data_extractor(work_dir).write_vaf_plot(work_dir)
       }
       data['results'] = results
       return data

@@ -51,3 +51,7 @@ ggplot(MAF) +
 
 
 dev.off()
+
+txt <- paste(readLines(out_path), collapse = "")
+b64txt <- paste0("data:image/svg+xml;base64,", base64enc::base64encode(charToRaw(txt)))
+print(b64txt)
