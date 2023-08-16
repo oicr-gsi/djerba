@@ -81,7 +81,7 @@ class preprocess():
   MAX_UNMATCHED_GNOMAD_AF = 0.001
 
 
-  def __init__(self, config, work_dir, tar):
+  def __init__(self, config, work_dir, maf_file, tar):
       self.config = config
       self.report_dir = work_dir
       self.tmp_dir = os.path.join(self.report_dir, 'tmp')
@@ -99,14 +99,12 @@ class preprocess():
       self.report_dir = work_dir
       #self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts/"
       self.tar = tar
-       
+      self.maf_file = maf_file
       # THINGS FROM CONFIG 
       if self.tar == True:
-          self.seg_file = self.config['tar.swgs']['seg_file']
           self.oncotree_code = self.config['tar.snv_indel']['oncotree_code']
           self.tcgacode = self.config['tar.snv_indel']['tcgacode']
           self.tumour_id = self.config['tar.snv_indel']['tumour_id']
-          self.maf_file = self.config['tar.snv_indel']['maf_file']
           self.normal_id = self.config['tar.snv_indel']['normal_id']
           self.maf_file_normal = self.config['tar.snv_indel']['maf_file_normal']
           self.study_title = self.config['provenance_helper']['study_title']
@@ -119,7 +117,6 @@ class preprocess():
           self.tcgacode = self.config['snv_indel']['tcgacode']
           self.tumour_id = self.config['snv_indel']['tumour_id']
           self.normal_id = self.config['snv_indel']['normal_id']
-          self.maf_file = self.config['snv_indel']['maf_file']
           self.study_title = self.config['provenance_helper']['study_title']
 
       self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/Rscripts/"
@@ -260,77 +257,9 @@ class preprocess():
             writer.writerow(row)
     return out_path
 
-
-
-  def filter_maf_for_tar(self, maf_path):
-    genes = ["BRCA2",
-          "BRCA1",
-          "PALB2",
-          "TP53",
-          "APC",
-          "EPCAM",
-          "PMS2",
-          "MLH1",
-          "MSH2",
-          "MSH6",
-          "ABCB1",
-          "CCNE1"]
-
-    df_bc = pd.read_csv(self.maf_file_normal,
-                    sep = "\t",
-                    on_bad_lines="error",
-                    compression='gzip',
-                    skiprows=[0],
-                    index_col = 34)
-
-    df_pl = pd.read_csv(maf_path,
-                    sep = "\t",
-                    on_bad_lines="error",
-                    compression='gzip',
-                    skiprows=[0])
-
-    for row in df_pl.iterrows():
-        hugo_symbol = row[1][0]
-        hgvsp_short = row[1][34]
-        #if hugo_symbol not in genes:
-        #    df_pl = df_pl.drop(row[0])
-        #else:
-        try:
-            if hgvsp_short in df_bc.index:
-                df_pl.at[row[0], "n_depth"] = df_bc.loc[hgvsp_short]["n_depth"]
-                df_pl.at[row[0], "n_ref_count"] = df_bc.loc[hgvsp_short]["n_ref_count"]
-                df_pl.at[row[0], "n_alt_count"] = df_bc.loc[hgvsp_short]["n_alt_count"]
-            else:
-                df_pl.at[row[0], "n_depth"] = 0
-                df_pl.at[row[0], "n_ref_count"] = 0
-                df_pl.at[row[0], "n_alt_count"] = 0
-                
-        except:
-            df_pl.at[row[0], "n_depth"] = 0
-            df_pl.at[row[0], "n_ref_count"] = 0
-            df_pl.at[row[0], "n_alt_count"] = 0
-            
-        if df_pl.loc[row[0]]["n_alt_count"] > 4 or df_pl.loc[row[0]]["gnomAD_AF"] > 0.001:
-            df_pl = df_pl.drop(row[0])
-    
-    for row in df_pl.iterrows():
-        hugo_symbol = row[1][0]
-        if hugo_symbol not in genes:
-            df_pl = df_pl.drop(row[0])   
-     
-
-    out_path = os.path.join(self.tmp_dir, 'filtered_maf_for_tar.maf.gz')
-    df_pl.to_csv(out_path, sep = "\t", compression='gzip', index=False)
-    return out_path
-     
- 
- 
-
   def preprocess_maf(self, maf_path):
     """Apply preprocessing and annotation to a MAF file; write results to tmp_dir"""
     tmp_path = os.path.join(self.tmp_dir, 'tmp_maf.tsv')
-    if self.tar:
-        maf_path = self.filter_maf_for_tar(maf_path)
     #self.logger.info("Preprocessing MAF input")
     # find the relevant indices on-the-fly from MAF column headers
     # use this instead of csv.DictReader to preserve the rows for output
