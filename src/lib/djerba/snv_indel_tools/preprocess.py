@@ -75,7 +75,6 @@ class preprocess(logger):
                 '--oncolist', os.path.join(dir_location, '..', sic.ONCOLIST),
                 '--enscon', os.path.join(dir_location, '..', sic.ENSEMBL_CONVERSION), 
                 '--tcgadata', sic.TCGA_RODIC,
-
                 '--outdir', self.report_dir,
                 '--whizbam_url', whizbam_url,
                 '--maffile', annotated_maf_path
@@ -165,73 +164,11 @@ class preprocess(logger):
                         row.insert(1, '0.0')
                 writer.writerow(row)
         return out_path
-
-    def filter_maf_for_tar(self, maf_path, maf_file_normal):
-        genes = ["BRCA2",
-            "BRCA1",
-            "PALB2",
-            "TP53",
-            "APC",
-            "EPCAM",
-            "PMS2",
-            "MLH1",
-            "MSH2",
-            "MSH6",
-            "ABCB1",
-            "CCNE1"]
-
-        df_bc = pd.read_csv(maf_file_normal,
-                        sep = "\t",
-                        on_bad_lines="error",
-                        compression='gzip',
-                        skiprows=[0],
-                        index_col = 34)
-
-        df_pl = pd.read_csv(maf_path,
-                        sep = "\t",
-                        on_bad_lines="error",
-                        compression='gzip',
-                        skiprows=[0])
-
-        for row in df_pl.iterrows():
-            hugo_symbol = row[1][0]
-            hgvsp_short = row[1][34]
-            #if hugo_symbol not in genes:
-            #    df_pl = df_pl.drop(row[0])
-            #else:
-            try:
-                if hgvsp_short in df_bc.index:
-                    df_pl.at[row[0], "n_depth"] = df_bc.loc[hgvsp_short]["n_depth"]
-                    df_pl.at[row[0], "n_ref_count"] = df_bc.loc[hgvsp_short]["n_ref_count"]
-                    df_pl.at[row[0], "n_alt_count"] = df_bc.loc[hgvsp_short]["n_alt_count"]
-                else:
-                    df_pl.at[row[0], "n_depth"] = 0
-                    df_pl.at[row[0], "n_ref_count"] = 0
-                    df_pl.at[row[0], "n_alt_count"] = 0
-                    
-            except:
-                df_pl.at[row[0], "n_depth"] = 0
-                df_pl.at[row[0], "n_ref_count"] = 0
-                df_pl.at[row[0], "n_alt_count"] = 0
-                
-            if df_pl.loc[row[0]]["n_alt_count"] > 4 or df_pl.loc[row[0]]["gnomAD_AF"] > 0.001:
-                df_pl = df_pl.drop(row[0])
-        
-        for row in df_pl.iterrows():
-            hugo_symbol = row[1][0]
-            if hugo_symbol not in genes:
-                df_pl = df_pl.drop(row[0])   
-        
-
-        out_path = os.path.join(self.tmp_dir, 'filtered_maf_for_tar.maf.gz')
-        df_pl.to_csv(out_path, sep = "\t", compression='gzip', index=False)
-        return out_path
      
-    def preprocess_maf(self, maf_path, assay, tumour_id, maf_file_normal='Null'):
+    def preprocess_maf(self, maf_path, assay, tumour_id):
         """Apply preprocessing and annotation to a MAF file; write results to tmp_dir"""
         tmp_path = os.path.join(self.tmp_dir, 'tmp_maf.tsv')
         if assay == "TAR":
-            maf_path = self.filter_maf_for_tar(maf_path, maf_file_normal)
             vaf_cutoff = sic.MIN_VAF_TAR
         else:
             vaf_cutoff = sic.MIN_VAF
