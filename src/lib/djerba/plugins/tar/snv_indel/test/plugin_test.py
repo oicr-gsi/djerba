@@ -38,7 +38,6 @@ class TestTarSNVIndelPlugin(PluginTester):
         shutil.copy(self.data_CNA, self.tmp_dir)
         shutil.copy(self.data_CNA_onco, self.tmp_dir)
         shutil.copy(self.provenance_output, self.tmp_dir)
-        shutil.copy(self.json, self.tmp_dir)
 
         json_location = self.json
         params = {
