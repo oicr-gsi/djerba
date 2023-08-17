@@ -1,10 +1,15 @@
 # CHANGELOG
+
+## Unreleased
+
+- GCGI-1030: Fix glob pattern for Sequenza results in benchmarking
+
 ## v0.4.13: 2023-07-31
 
 ### Changed
 - GCGI-989: Made adjustments to biomarker plots
 - GCGI-1011: Update to find new sequenza file path
-  
+
 ### Added
 - example .pdf and .ini of WGTS report in `examples/`
 
@@ -12,7 +17,7 @@
 
 ### Changed
 - GCGI-956: The TMB plot has been moved to a linear format and the PGA plot has been removed
-  
+
 ### Added
 - GCGI-957: The number of candidate SNVs for the pWGS assay are listed in Genomic Landscape section
 
@@ -20,7 +25,7 @@
 
 ### Changed
 - GCGI-864: removed annotation of 5'UTR, 3'UTR, and 3'Flank. 5'Flank only annotated if TERT
-- Sample QC results moved to below summary 
+- Sample QC results moved to below summary
 - Split some `Case Overview` section into a new `Patient and Physician` section
 - Removed tracking of patient's genetic sex
 - GCGI-943: Overrode HGVSp for BRAF V640E to be represented as V600E

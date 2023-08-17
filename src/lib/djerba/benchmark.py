@@ -82,7 +82,7 @@ class benchmarker(logger):
             sample_inputs[ini.MAF_FILE] = self.glob_single(pattern)
             pattern = '{0}/**/{1}/*summary.zip'.format(self.MAVIS_DIR, sample)
             sample_inputs[ini.MAVIS_FILE] = self.glob_single(pattern)
-            pattern = '{0}/**/{1}_*_results.zip'.format(results_dir, sample)
+            pattern = '{0}/**/{1}_*_results.sequenza.zip'.format(results_dir, sample)
             sample_inputs[ini.SEQUENZA_FILE] = self.glob_single(pattern)
             pattern = '{0}/**/{1}_*.genes.results'.format(results_dir, sample)
             sample_inputs[ini.GEP_FILE] = self.glob_single(pattern)
