@@ -26,8 +26,14 @@ class main(plugin_base):
     
     def configure(self, config):
       config = self.apply_defaults(config)
-      #add if cbioid undefined, set to studyid, but can be entered in ini
-      #add if cna_file undefined, set to "CNA_file" in working: os.path.join(self.work_dir, sic.CNA_SIMPLE)
+      wrapper = self.get_config_wrapper(config)
+      work_dir = self.workspace.get_work_dir()
+      if wrapper.my_param_is_null(sic.CNA_FILE):
+            wrapper.set_my_param(sic.CNA_FILE, os.path.join(work_dir, sic.CNA_SIMPLE))
+     # group_id = config[self.identifier][pc.GROUP_ID]
+     # if wrapper.my_param_is_null(sic.MAF_FILE):
+     #       wrapper.set_my_param(sic.MAF_FILE, pwgs_tools.subset_provenance(self, "mrdetect", group_id, pc.RESULTS_SUFFIX))
+      #TO DO: if cbioid undefined, set to studyid, but can be entered in ini
       return config  
 
     def extract(self, config):
@@ -35,24 +41,21 @@ class main(plugin_base):
       work_dir = self.workspace.get_work_dir()
       data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
       oncotree = config[self.identifier]['oncotree_code']
-
-      cbioid = config[self.identifier]['study_title']
+      cbioid = config[self.identifier]['cbioid']
       tumour_id = config[self.identifier]['tumour_id']
       normal_id = config[self.identifier]['normal_id']
       maf_file = config[self.identifier]['maf_file']
       cna_file = config[self.identifier]['cna_file']
-
-      # gep_file = self.config[self.identifier]['gep_file']
-
+      #TO DO: add expression
       whizbam_url = preprocess.construct_whizbam_link(sic.WHIZBAM_BASE_URL, cbioid, tumour_id, normal_id, self.SEQTYPE, self.GENOME)
-
       preprocess(work_dir).run_R_code(whizbam_url, self.ASSAY, maf_file, tumour_id, oncotree)
-      data_table = data_extractor(work_dir).build_small_mutations_and_indels(os.path.join(work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC), cna_file, oncotree, self.ASSAY)
-      mutations_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED)
+      oncogenic_variants_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)
+      oncogenic_variants_table = data_extractor(work_dir).build_small_mutations_and_indels(oncogenic_variants_file, cna_file, oncotree, self.ASSAY)
+      total_variants_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED)
       results = {
-          sic.BODY: data_table,
-          sic.CLINICALLY_RELEVANT_VARIANTS: len(data_table),
-          sic.TOTAL_VARIANTS: data_extractor(work_dir).read_somatic_mutation_totals(mutations_file),
+          sic.BODY: oncogenic_variants_table,
+          sic.CLINICALLY_RELEVANT_VARIANTS: len(oncogenic_variants_table),
+          sic.TOTAL_VARIANTS: data_extractor(work_dir).read_somatic_mutation_totals(total_variants_file),
           rc.HAS_EXPRESSION_DATA: self.HAS_EXPRESSION_DATA,
           sic.VAF_PLOT: data_extractor(work_dir).write_vaf_plot(work_dir)
       }
@@ -65,14 +68,12 @@ class main(plugin_base):
     
     def specify_params(self):
       required = [
-            'maf_file',
+            sic.MAF_FILE,
             'oncotree_code',
             'tumour_id',
             'normal_id',
-            'study_title',
-            'cna_file'
-          #   'gep_file',
-          #   'tcgacode',
+            'cbioid',
+            sic.CNA_FILE
         ]
       for key in required:
           self.add_ini_required(key)

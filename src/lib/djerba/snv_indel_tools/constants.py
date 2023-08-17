@@ -133,3 +133,6 @@ COPY_STATE_CONVERSION = {
     -1: "Shallow Deletion",
     -2: "Deep Deletion"
 }
+
+MAF_FILE = 'maf_file'
+CNA_FILE = 'cna_file'
