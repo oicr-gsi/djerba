@@ -7,8 +7,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Djerba'
-copyright = '2023, Iain Bancarz'
-author = 'Iain Bancarz'
+copyright = '2023, OICR-GSI'
+author = 'OICR-GSI'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
