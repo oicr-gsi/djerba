@@ -10,8 +10,9 @@ from mako.lookup import TemplateLookup
 import djerba.snv_indel_tools.constants as constants
 import djerba.plugins.tar.snv_indel.constants as tar_constants
 from djerba.snv_indel_tools.preprocess import preprocess
-from djerba.snv_indel_tools.extract import data_builder 
+from djerba.snv_indel_tools.extract import data_builder as data_extractor 
 import djerba.core.constants as core_constants
+import djerba.snv_indel_tools.constants as sic
 from djerba.util.subprocess_runner import subprocess_runner
 import djerba.util.provenance_index as index
 import djerba.plugins.tar.provenance_tools as provenance_tools
@@ -54,23 +55,46 @@ class main(plugin_base):
       return config  
 
     def extract(self, config):
-      
-      wrapper = self.get_config_wrapper(config)  
+      wrapper = self.get_config_wrapper(config)
       work_dir = self.workspace.get_work_dir()
+      data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
 
-      # Pre-processing
       maf_file = self.filter_maf_for_tar(work_dir, config[self.identifier]["maf_file"], config[self.identifier]["maf_file_normal"])
+      oncotree = config[self.identifier]["oncotree_code"]
+      assay = "TAR"
       preprocess(config, work_dir, maf_file, tar=True).run_R_code()
-
-      data = {
-          'plugin_name': 'Tar SNV Indel',
-          'version': self.PLUGIN_VERSION,
-          'priorities': wrapper.get_my_priorities(),
-          'attributes': wrapper.get_my_attributes(),
-          'merge_inputs': {},
-          'results': data_builder(work_dir).build_small_mutations_and_indels()
+      mutations_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED)
+      mutations_extended_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)
+      
+      output_data = data_extractor(work_dir, assay, oncotree).build_small_mutations_and_indels(mutations_extended_file)
+      results = {
+           sic.CLINICALLY_RELEVANT_VARIANTS: len(data),
+           sic.TOTAL_VARIANTS: data_extractor(work_dir, assay, oncotree).read_somatic_mutation_totals(mutations_file),
+           sic.HAS_EXPRESSION_DATA: False,
+           sic.BODY: output_data
       }
+      data['results'] = results
       return data
+
+    #def extract(self, config):
+    #  
+    #  wrapper = self.get_config_wrapper(config)  
+    #  work_dir = self.workspace.get_work_dir()
+#
+    #  # Pre-processing
+    #  maf_file = self.filter_maf_for_tar(work_dir, config[self.identifier]["maf_file"], config[self.identifier]["maf_file_normal"])
+    #  oncotree = config[self.identifier]["oncotree_code"]
+    #  preprocess(config, work_dir, maf_file, tar=True).run_R_code()
+
+     # data = {
+     #     'plugin_name': 'Tar SNV Indel',
+     #     'version': self.PLUGIN_VERSION,
+     #     'priorities': wrapper.get_my_priorities(),
+     #     'attributes': wrapper.get_my_attributes(),
+     #     'merge_inputs': {},
+     #     'results': data_builder(work_dir, oncotree).build_small_mutations_and_indels()
+     # }
+     # return data
 
     def render(self, data):
       args = data
