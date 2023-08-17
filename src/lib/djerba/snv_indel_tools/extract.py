@@ -19,11 +19,10 @@ from djerba.util.logger import logger
 
 class data_builder(logger):
 
-    def __init__(self, work_dir, log_level=logging.WARNING, log_path=None):
+    def __init__(self, log_level=logging.WARNING, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
-        self.work_dir = work_dir
         self.cytoband_path = os.environ.get('DJERBA_BASE_DIR') + sic.CYTOBAND
 
     def build_alteration_url(self, gene, alteration, cancer_code):
@@ -33,14 +32,13 @@ class data_builder(logger):
     def build_gene_url(self, gene):
         return '/'.join([sic.ONCOKB_URL_BASE, gene])
 
-    def build_small_mutations_and_indels(self, mutations_file, cna_file, oncotree_uc, assay):
+    def build_small_mutations_and_indels(self, mutations_file, cna_file, oncotree_uc, assay, exp_input_path = None):
         """read in small mutations; output rows for oncogenic mutations"""
         self.logger.debug("Building data for small mutations and indels table")
         rows = []
-        all_reported_variants = set()
         mutation_copy_states = self.read_mutation_copy_states(cna_file)
         if assay == "WGTS":
-            mutation_expression = self.read_expression()
+            mutation_expression = self.read_expression(exp_input_path)
             has_expression_data = True
         else:
             mutation_expression = {}
@@ -69,8 +67,6 @@ class data_builder(logger):
                 rows.append(row)
         self.logger.debug("Sorting and filtering small mutation and indel rows")
         rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
-        #not clear what this does??
-        for row in rows: all_reported_variants.add((row.get(sic.GENE), row.get(sic.CHROMOSOME)))
         return rows
   
     def cytoband_sort_order(self, cb_input):
@@ -168,9 +164,8 @@ class data_builder(logger):
                 cytobands[row[sic.HUGO_SYMBOL_TITLE_CASE]] = row['Chromosome']
         return cytobands
 
-    def read_expression(self):
+    def read_expression(self, input_path):
         # read the expression metric (may be zscore or percentage, depending on choice of input file)
-        input_path = os.path.join(self.work_dir, self.expr_input)
         expr = {}
         with open(input_path) as input_file:
             for row in csv.reader(input_file, delimiter="\t"):
@@ -225,12 +220,12 @@ class data_builder(logger):
         rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row[sic.ONCOKB]))
         return rows
 
-    def write_vaf_plot(self, out_dir):
+    def write_vaf_plot(self, work_dir):
         r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/R"
-        out_path = os.path.join(out_dir, 'vaf.svg')
+        out_path = os.path.join(work_dir, 'vaf.svg')
         args = [
             os.path.join(r_script_dir, 'vaf_plot.r'),
-            '-d', self.work_dir,
+            '-d', work_dir,
             '-o', out_path
         ]
         vaf_plot_out = subprocess_runner().run(args)

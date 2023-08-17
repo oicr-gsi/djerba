@@ -11,7 +11,7 @@ import djerba.core.constants as core_constants
 from djerba.core.workspace import workspace
 import djerba.snv_indel_tools.constants as sic
 from djerba.cnv_tools.preprocess import preprocess as preprocess_cnv
-#from djerba.cnv_tools.extract import data_builder as cnv_data_extractor
+from djerba.cnv_tools.extract import data_builder as cnv_data_extractor
 import djerba.render.constants as rc
 from djerba.sequenza import sequenza_reader
 
@@ -43,8 +43,11 @@ class main(plugin_base):
 
       seg_path = preprocess_cnv(work_dir).preprocess_seg_sequenza(sequenza_file, tumour_id, sequenza_gamma)
       preprocess_cnv(work_dir).run_R_code(seg_path, purity, tumour_id, oncotree_code)
-      #results = cnv_data_extractor(work_dir, ).build_swgs(seg_file, self.ASSAY)
-
+      cna_annotated_path = os.path.join(work_dir, sic.CNA_ANNOTATED)
+      results = cnv_data_extractor(work_dir).build_copy_number_variation(self.ASSAY, cna_annotated_path)
+      #add PGA to results
+      #add CNV plot to results
+      data['results'] = results
       return data
 
     def render(self, data):
@@ -55,7 +58,6 @@ class main(plugin_base):
       required = [
             'sequenza_file',
             'sequenza_gamma',
-          # 'sequenza_solution',
             'tumour_id',
             'purity',
             'oncotree_code'

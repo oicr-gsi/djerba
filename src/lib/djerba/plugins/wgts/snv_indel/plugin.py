@@ -47,17 +47,19 @@ class main(plugin_base):
       maf_file = config[self.identifier]['maf_file']
       cna_file = config[self.identifier]['cna_file']
       #TO DO: add expression
+      #input_path = os.path.join(work_dir, sic.expr_input)
+
       whizbam_url = preprocess.construct_whizbam_link(sic.WHIZBAM_BASE_URL, cbioid, tumour_id, normal_id, self.SEQTYPE, self.GENOME)
       preprocess(work_dir).run_R_code(whizbam_url, self.ASSAY, maf_file, tumour_id, oncotree)
       oncogenic_variants_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)
-      oncogenic_variants_table = data_extractor(work_dir).build_small_mutations_and_indels(oncogenic_variants_file, cna_file, oncotree, self.ASSAY)
+      oncogenic_variants_table = data_extractor().build_small_mutations_and_indels(oncogenic_variants_file, cna_file, oncotree, self.ASSAY)
       total_variants_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED)
       results = {
           sic.BODY: oncogenic_variants_table,
           sic.CLINICALLY_RELEVANT_VARIANTS: len(oncogenic_variants_table),
-          sic.TOTAL_VARIANTS: data_extractor(work_dir).read_somatic_mutation_totals(total_variants_file),
+          sic.TOTAL_VARIANTS: data_extractor().read_somatic_mutation_totals(total_variants_file),
           rc.HAS_EXPRESSION_DATA: self.HAS_EXPRESSION_DATA,
-          sic.VAF_PLOT: data_extractor(work_dir).write_vaf_plot(work_dir)
+          sic.VAF_PLOT: data_extractor().write_vaf_plot(work_dir)
       }
       data['results'] = results
       return data
