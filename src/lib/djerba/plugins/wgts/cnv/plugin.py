@@ -21,13 +21,10 @@ class main(plugin_base):
     TEMPLATE_NAME = 'snv_indel_template.html'
     ASSAY = 'WGS'
     SEQTYPE = 'GENOME'
-    GENOME = 'hg38'
     HAS_EXPRESSION_DATA = False
     
     def configure(self, config):
       config = self.apply_defaults(config)
-      #add if cbioid undefined, set to studyid, but can be entered in ini
-      #add if cna_file undefined, set to "CNA_file" in working: os.path.join(self.work_dir, sic.CNA_SIMPLE)
       return config  
 
     def extract(self, config):
@@ -71,8 +68,6 @@ class main(plugin_base):
             'normal_id',
             'study_title',
             'cna_file'
-          #   'gep_file',
-          #   'tcgacode',
         ]
       for key in required:
           self.add_ini_required(key)

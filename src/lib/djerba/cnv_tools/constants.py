@@ -25,3 +25,5 @@ CNV_PLOT_DATA = "cnv_plot_data.txt"
 DATA_CNA = "data_CNA.txt"
 DATA_CNA_ONCOKB = "data_CNA_oncoKBgenes.txt"
 DATA_CNA_ONCOKB_NONDIPLOID = "data_CNA_oncoKBgenes_nonDiploid.txt"
+
+GENEBED =  "data/gencode_v33_hg38_genes.bed"

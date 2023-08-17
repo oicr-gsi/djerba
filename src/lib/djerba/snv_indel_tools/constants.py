@@ -76,7 +76,6 @@ MAX_UNMATCHED_GNOMAD_AF = 0.001
 
 WHIZBAM_BASE_URL = 'https://whizbam.oicr.on.ca'
 gep_reference = "/.mounts/labs/CGI/gsi/tools/djerba/gep_reference.txt.gz"
-GENEBED =  "data/gencode_v33_hg38_genes.bed"
 ONCOLIST =  "/data/20200818-oncoKBcancerGeneList.tsv"
 ENSEMBL_CONVERSION =  "data/ensemble_conversion_hg38.txt"
 TCGA_RODIC = "/.mounts/labs/CGI/gsi/tools/RODiC/data"
@@ -127,3 +126,10 @@ FILTER_FLAGS_EXCLUDE = [
     't_lod_fstar'
 ]
 
+COPY_STATE_CONVERSION = {
+    0: "Neutral",
+    1: "Gain",
+    2: "Amplification",
+    -1: "Shallow Deletion",
+    -2: "Deep Deletion"
+}

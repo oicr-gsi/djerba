@@ -15,70 +15,52 @@ from djerba.sequenza import sequenza_reader
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.extract.oncokb.annotator import oncokb_annotator
 from shutil import copyfile
-import djerba.plugins.tar.swgs.constants as constants 
+import djerba.cnv_tools.constants as ctc 
+import djerba.cnv_tools.constants as constants 
+import djerba.snv_indel_tools.constants as sic
 
-class preprocess:
+class preprocess(logger):
 
-  # FOR TESTING
-  #tumour_id = "100-PM-064_LCM3"
-  #oncotree_code = "paad"
-  #seg_file = "REVOLVE_0002_01_LB04-01.seg.txt"
-
-  def __init__(self, config, work_dir, seg_file):
-
-    self.config = config
-    # DIRECTORIES
-    self.work_dir = work_dir
-    self.tmp_dir = os.path.join(self.work_dir, 'tmp')
-    if os.path.isdir(self.tmp_dir):
-        print("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
-        #self.logger.debug("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
-    elif os.path.exists(self.tmp_dir):
-        msg = "tmp dir path {0} exists but is not a directory".format(self.tmp_dir)
-        #self.logger.error(msg)
-        raise RuntimeError(msg)
-    else:
-        #print("Creating tmp dir {0} for R script wrapper".format(tmp_dir))
-        #self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
-        os.mkdir(self.tmp_dir)
-    self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts"
-    self.r_script_dir_swgs = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/swgs/" 
-    self.data_dir = os.environ.get('DJERBA_BASE_DIR') + "/data/"
-    self.tumour_id = self.config['tar.snv_indel']['tumour_id']
-    self.oncotree_code = self.config['tar.snv_indel']['oncotree_code']
-
-    # SEG FILE
-
-    self.seg_file = seg_file 
-
-    # RANDOM
-    self.cache_params = None
-    self.log_level = "logging.WARNING"
-    self.log_path = "None"
+  def __init__(self, report_dir, log_level=logging.WARNING, log_path=None):
+      self.log_level = log_level
+      self.log_path = log_path
+      self.logger = self.get_logger(log_level, __name__, log_path)
+      self.report_dir = report_dir
+      self.tmp_dir = os.path.join(self.report_dir, 'tmp')
+      if os.path.isdir(self.tmp_dir):
+          print("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
+          self.logger.debug("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
+      elif os.path.exists(self.tmp_dir):
+          msg = "tmp dir path {0} exists but is not a directory".format(self.tmp_dir)
+          self.logger.error(msg)
+          raise RuntimeError(msg)
+      else:
+          print("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
+          self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
+          os.mkdir(self.tmp_dir)
   
+  def preprocess_seg_sequenza(self, sequenza_path):
+      """
+      Extract the SEG file from the .zip archive output by Sequenza
+      Apply preprocessing and write results to tmp_dir
+      Replace entry in the first column with the tumour ID
+      """
 
-  # ----------------------- to do all the pre-processing --------------------
-    
-    
-  def run_R_code(self):
-    seg_path = self.preprocess_seg(self.seg_file)
+      seg_path = sequenza_reader(sequenza_path).extract_cn_seg_file(self.tmp_dir, self.sequenza_gamma)
+      out_path = os.path.join(self.tmp_dir, 'seg.txt')
+      with open(seg_path, 'rt') as seg_file, open(out_path, 'wt') as out_file:
+          reader = csv.reader(seg_file, delimiter="\t")
+          writer = csv.writer(out_file, delimiter="\t")
+          in_header = True
+          for row in reader:
+              if in_header:
+                  in_header = False
+              else:
+                  row[0] = self.tumour_id
+              writer.writerow(row)
+      return out_path
 
-    cmd = [
-        'Rscript', self.r_script_dir_swgs + "/process_CNA_data.r",
-        '--basedir', self.r_script_dir,
-        '--outdir', self.work_dir,
-        '--segfile', seg_path,
-        '--genebed', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/gencode_v33_hg38_genes.bed",
-        '--oncolist', self.data_dir + "/20200818-oncoKBcancerGeneList.tsv"
-    ]
-
-    runner = subprocess_runner()
-    result = runner.run(cmd, "main R script")
-    self.postprocess()
-    return result
-
- 
-  def preprocess_seg(self, seg_file):
+  def preprocess_seg_tar(self, seg_file):
     """
     Filter for amplifications.
     """
@@ -98,17 +80,32 @@ class preprocess:
     df_seg.to_csv(out_path, sep = '\t', index=None)
 
     return out_path
+  
+  def run_R_code(self, seg_file, assay):
+    dir_location = os.path.dirname(__file__)
+    if assay = "TAR":
+      seg_path = self.preprocess_seg_tar(seg_file)
+    else:
+      seg_path = self.preprocess_seg_sequenza(seg_file)
 
+    cmd = [
+        'Rscript', self.r_script_dir_swgs + "/process_CNA_data.r",
+        '--basedir', self.r_script_dir,
+        '--outdir', self.work_dir,
+        '--segfile', seg_path,
+        '--genebed', os.path.join(dir_location, '..', ctc.GENEBED),
+        '--oncolist', os.path.join(dir_location, '..', sic.ONCOLIST)
+    ]
 
-  def postprocess(self):
-     """
-    Annotate CNA data
-     """
-     annotator = oncokb_annotator(
-            self.tumour_id,
-            self.oncotree_code,
-            self.work_dir,
-            self.tmp_dir,
-            self.cache_params,
-     )
-     annotator.annotate_cna()
+    runner = subprocess_runner()
+    result = runner.run(cmd, "main R script")
+    annotator = oncokb_annotator(
+                 self.tumour_id,
+                 self.oncotree_code,
+                 self.report_dir,
+                 self.tmp_dir,
+                 self.cache_params
+         )
+    annotator.annotate_cna()
+
+    return result

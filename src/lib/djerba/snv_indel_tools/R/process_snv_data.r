@@ -1,6 +1,5 @@
 
 rm(list=ls())
-library(CNTools)
 library(optparse)
 library(BSgenome.Hsapiens.UCSC.hg38)
 
@@ -9,12 +8,9 @@ option_list = list(
   make_option(c("-a", "--outdir"), type="character", default=NULL, help="output directory", metavar="character"),
   make_option(c("-b", "--basedir"), type="character", default=NULL, help="R scripts directory", metavar="character"),
   
-  make_option(c("-c", "--segfile"), type="character", default=NULL, help="concatenated seg file", metavar="character"),
   make_option(c("-d", "--gepfile"), type="character", default=NULL, help="concatenated gep file", metavar="character"),
   make_option(c("-e", "--maffile"), type="character", default=NULL, help="concatenated maf file", metavar="character"),
   
-  make_option(c("-f", "--genebed"), type="character", default=NULL, help="gene bed for segmentation", metavar="character"),
-  make_option(c("-g", "--oncolist"), type="character", default=NULL, help="oncoKB cancer genes", metavar="character"),
   make_option(c("-h", "--enscon"), type="character", default=NULL, help="ensemble conversion file", metavar="character"),
   make_option(c("-i", "--whizbam_url"), type="character", default="https://whizbam.oicr.on.ca", help="whizbam url", metavar="character"),
   make_option(c("-j", "--tcgadata"), type="character", default=NULL, help="tcga datadir", metavar="character"),
@@ -30,9 +26,6 @@ opt <- parse_args(opt_parser)
 # set better variable names
 basedir <- opt$basedir
 outdir <- opt$outdir
-segfile <- opt$segfile
-genebed <- opt$genebed
-oncolist <- opt$oncolist
 enscon <- opt$enscon
 tcgadata <- opt$tcgadata
 tcgacode <- opt$tcgacode
@@ -41,34 +34,9 @@ whizbam_url <- opt$whizbam_url
 gepfile <- opt$gepfile
 purity <- opt$purity
 
-source(paste0(basedir, "/R/supporting_functions.r"))
+source(paste0(basedir, "/R/smalls_supporting_functions.r"))
 
-###################### CNA #####################
 
-if (is.null(segfile)) {
-   print("No SEG file input, processing omitted")
-} else {
-  
-  print("Processing CNA data")
-  cutoffs <- log_r_cutoff_finder(purity)
-  CNAs <- preProcCNA(segfile, genebed, cutoffs, oncolist)
-  
-  print("writing seg file")
-  # segs
-  write.table(CNAs[[1]], file=paste0(outdir, "/data.seg"), sep="\t", row.names=FALSE, quote=FALSE)
-  
-  # log2cna
-  print("writing log2 file")
-  write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[2]]), CNAs[[2]], check.names=FALSE),
-    file=paste0(outdir, "/data_log2CNA.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-  
-  # write the truncated data_CNA file (non-zero, oncoKB genes) for oncoKB annotator
-  print("writing non-diploid oncoKB genes")
-  write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[5]]), CNAs[[5]], check.names=FALSE),
-    file=paste0(outdir, "/data_CNA_oncoKBgenes_nonDiploid.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-
-}
-  
 ###################### VEP #####################
 
 if (is.null(maffile)) {

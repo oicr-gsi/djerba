@@ -27,18 +27,18 @@ class data_builder(logger):
         self.cytoband_path = os.environ.get('DJERBA_BASE_DIR') + sic.CYTOBAND
 
     def build_alteration_url(self, gene, alteration, cancer_code):
-        #self.logger.debug('Constructing alteration URL from inputs: {0}'.format([self.ONCOKB_URL_BASE, gene, alteration, cancer_code]))
+        self.logger.debug('Constructing alteration URL from inputs: {0}'.format([self.ONCOKB_URL_BASE, gene, alteration, cancer_code]))
         return '/'.join([sic.ONCOKB_URL_BASE, gene, alteration, cancer_code])
 
     def build_gene_url(self, gene):
         return '/'.join([sic.ONCOKB_URL_BASE, gene])
 
-    def build_small_mutations_and_indels(self, mutations_file, oncotree_uc, assay):
+    def build_small_mutations_and_indels(self, mutations_file, cna_file, oncotree_uc, assay):
         """read in small mutations; output rows for oncogenic mutations"""
-        #self.logger.debug("Building data for small mutations and indels table")
+        self.logger.debug("Building data for small mutations and indels table")
         rows = []
         all_reported_variants = set()
-        # mutation_copy_states = self.read_mutation_copy_states()
+        mutation_copy_states = self.read_mutation_copy_states(cna_file)
         if assay == "WGTS":
             mutation_expression = self.read_expression()
             has_expression_data = True
@@ -63,11 +63,11 @@ class data_builder(logger):
                     sic.VAF_PERCENT: int(round(float(input_row[sic.TUMOUR_VAF]), 2)*100),
                     sic.TUMOUR_DEPTH: int(input_row[sic.TUMOUR_DEPTH]),
                     sic.TUMOUR_ALT_COUNT: int(input_row[sic.TUMOUR_ALT_COUNT]),
-                #   sic.COPY_STATE: mutation_copy_states.get(gene, sic.UNKNOWN),
+                    sic.COPY_STATE: mutation_copy_states.get(gene, sic.UNKNOWN),
                     sic.ONCOKB: self.parse_oncokb_level(input_row)
                 }
                 rows.append(row)
-        #self.logger.debug("Sorting and filtering small mutation and indel rows")
+        self.logger.debug("Sorting and filtering small mutation and indel rows")
         rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
         #not clear what this does??
         for row in rows: all_reported_variants.add((row.get(sic.GENE), row.get(sic.CHROMOSOME)))
@@ -78,7 +78,7 @@ class data_builder(logger):
         end = (999, 'z', 999999)
         if cb_input in sic.UNCLASSIFIED_CYTOBANDS:
             msg = "Cytoband \"{0}\" is unclassified, moving to end of sort order".format(cb_input)
-            #self.logger.debug(msg)
+            self.logger.debug(msg)
             (chromosome, arm, band) = end
         else:
             try:
@@ -102,7 +102,7 @@ class data_builder(logger):
                 msg = "Cannot parse cytoband \"{0}\" for sorting; ".format(cb_input)+\
                         "moving to end of sort order. No further action is needed. "+\
                         "Reason for parsing failure: {0}".format(err)
-                #self.logger.warning(msg)
+                self.logger.warning(msg)
                 (chromosome, arm, band) = end
         return (chromosome, arm, band)
 
@@ -112,7 +112,7 @@ class data_builder(logger):
         if not cytoband:
             cytoband = 'Unknown'
             msg = "Cytoband for gene '{0}' not found in {1}".format(gene_name, self.cytoband_path)
-            #self.logger.info(msg)
+            self.logger.info(msg)
         return cytoband
     
     def is_null_string(self, value):
@@ -120,7 +120,7 @@ class data_builder(logger):
             return value in ['', sic.NA]
         else:
             msg = "Invalid argument to is_null_string(): '{0}' of type '{1}'".format(value, type(value))
-            #self.logger.error(msg)
+            self.logger.error(msg)
             raise RuntimeError(msg)
 
     def oncokb_filter(self, row):
@@ -138,9 +138,9 @@ class data_builder(logger):
                 break
             i+=1
         if order == None:
-            #self.logger.warning(
-            #    "Unknown OncoKB level '{0}'; known levels are {1}".format(level, self.oncokb_levels)
-            #)
+            self.logger.warning(
+                "Unknown OncoKB level '{0}'; known levels are {1}".format(level, self.oncokb_levels)
+            )
             order = len(self.oncokb_levels)+1 # unknown levels go last
         return order
 
@@ -182,29 +182,22 @@ class data_builder(logger):
                 except ValueError as err:
                     msg = 'Cannot convert expression value "{0}" to float, '.format(row[1])+\
                             '; using 0 as fallback value: {0}'.format(err)
-                    #self.logger.warning(msg)
+                    self.logger.warning(msg)
                     metric = 0.0
                 expr[gene] = metric
         return expr
 
-    def read_mutation_copy_states(self):
+    def read_mutation_copy_states(self, cna_file):
         # convert copy state to human readable string; return mapping of gene -> copy state
-        copy_state_conversion = {
-            0: "Neutral",
-            1: "Gain",
-            2: "Amplification",
-            -1: "Shallow Deletion",
-            -2: "Deep Deletion"
-        }
         copy_states = {}
-        with open(os.path.join(self.work_dir, sic.CNA_SIMPLE)) as in_file:
+        with open(cna_file) as in_file:
             first = True
             for row in csv.reader(in_file, delimiter="\t"):
                 if first:
                     first = False
                 else:
                     [gene, category] = [row[0], int(row[1])]
-                    copy_states[gene] = copy_state_conversion.get(category, sic.UNKNOWN)
+                    copy_states[gene] = sic.COPY_STATE_CONVERSION.get(category, sic.UNKNOWN)
         return copy_states
 
     def read_somatic_mutation_totals(self, mutations_file):
@@ -224,11 +217,11 @@ class data_builder(logger):
 
     def sort_variant_rows(self, rows):
         # sort rows oncokb level, then by cytoband, then by gene name
-        #self.logger.debug("Sorting rows by gene name")
+        self.logger.debug("Sorting rows by gene name")
         rows = sorted(rows, key=lambda row: row[sic.GENE])
-        #self.logger.debug("Sorting rows by cytoband")
+        self.logger.debug("Sorting rows by cytoband")
         rows = sorted(rows, key=lambda row: self.cytoband_sort_order(row[sic.CHROMOSOME]))
-        #self.logger.debug("Sorting rows by oncokb level")
+        self.logger.debug("Sorting rows by oncokb level")
         rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row[sic.ONCOKB]))
         return rows
 

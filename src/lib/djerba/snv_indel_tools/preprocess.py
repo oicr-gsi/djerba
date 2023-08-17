@@ -39,6 +39,42 @@ class preprocess(logger):
             self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
             os.mkdir(self.tmp_dir)
 
+    def _maf_body_row_ok(self, row, ix, vaf_cutoff):
+        """
+        Should a MAF row be kept for output?
+        Implements logic from functions.sh -> hard_filter_maf() in CGI-Tools
+        Expected to filter out >99.9% of input reads
+        ix is a dictionary of column indices
+        """
+        ok = False
+        row_t_depth = int(row[ix.get(sic.T_DEPTH)])
+        alt_count_raw = row[ix.get(sic.TUMOUR_ALT_COUNT)]
+        gnomad_af_raw = row[ix.get(sic.GNOMAD_AF)]
+        row_t_alt_count = float(alt_count_raw) if alt_count_raw!='' else 0.0
+        row_gnomad_af = float(gnomad_af_raw) if gnomad_af_raw!='' else 0.0
+        is_matched = row[ix.get(sic.MATCHED_NORM_SAMPLE_BARCODE)] != 'unmatched'
+        filter_flags = re.split(';', row[ix.get(sic.FILTER)])
+        if row_t_depth >= 1 and \
+            row_t_alt_count/row_t_depth >= vaf_cutoff and \
+            (is_matched or row_gnomad_af < self.MAX_UNMATCHED_GNOMAD_AF) and \
+            row[ix.get(sic.VARIANT_CLASSIFICATION)] in sic.MUTATION_TYPES_EXONIC and \
+            not any([z in sic.FILTER_FLAGS_EXCLUDE for z in filter_flags]):
+            ok = True
+        return ok
+
+    def _read_maf_indices(self, row):
+        indices = {}
+        for i in range(len(row)):
+            key = row[i]
+            if key in sic.MAF_KEYS:
+                indices[key] = i
+        if set(indices.keys()) != set(sic.MAF_KEYS):
+            msg = "Indices found in MAF header {0} ".format(indices.keys()) +\
+                    "do not match required keys {0}".format(sic.MAF_KEYS)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        return indices
+
     def construct_whizbam_link( whizbam_base_url, studyid, tumourid, normalid, seqtype, genome):
         whizbam = "".join((whizbam_base_url,
                             "/igv?project1=", studyid,
@@ -52,72 +88,6 @@ class preprocess(logger):
                             "&genome=", genome
                             ))
         return(whizbam)
-
-    def run_R_code(self, whizbam_url, assay, raw_maf_file, tumour_id, oncotree_code):
-        dir_location = os.path.dirname(__file__)
-        tmp_maf_path = self.preprocess_maf(raw_maf_file, assay, tumour_id)
-        annotated_maf_path = oncokb_annotator(
-            tumour_id,
-            oncotree_code,
-            self.report_dir,
-            self.tmp_dir,
-            
-            log_level=self.log_level,
-            log_path=self.log_path
-        ).annotate_maf(tmp_maf_path)
-
-        #seg_path = self.preprocess_seg(self.sequenza_path)
-        #gep_path = self.preprocess_gep(self.gep_file)
-        cmd = [
-            'Rscript', os.path.join(dir_location + "/R/process_snv_data.r"),
-                '--basedir', dir_location ,
-                '--genebed', os.path.join(dir_location, '..', sic.GENEBED),
-                '--oncolist', os.path.join(dir_location, '..', sic.ONCOLIST),
-                '--enscon', os.path.join(dir_location, '..', sic.ENSEMBL_CONVERSION), 
-                '--tcgadata', sic.TCGA_RODIC,
-                '--outdir', self.report_dir,
-                '--whizbam_url', whizbam_url,
-                '--maffile', annotated_maf_path
-
-                # '--segfile', seg_path,
-
-                ##expression
-                #'--gepfile', gep_path,
-                #'--tcgacode', self.tcgacode
-                
-        ]
-        runner = subprocess_runner()
-        result = runner.run(cmd, "main R script")
-        # annotator = oncokb_annotator(
-        #         self.tumour_id,
-        #         self.oncotree_code,
-        #         self.report_dir,
-        #         self.tmp_dir,
-        #         self.cache_params
-        # )
-        # annotator.annotate_cna()
-        return result
-  
-    def preprocess_seg(self, sequenza_path):
-        """
-        Extract the SEG file from the .zip archive output by Sequenza
-        Apply preprocessing and write results to tmp_dir
-        Replace entry in the first column with the tumour ID
-        """
-
-        seg_path = sequenza_reader(sequenza_path).extract_cn_seg_file(self.tmp_dir, self.sequenza_gamma)
-        out_path = os.path.join(self.tmp_dir, 'seg.txt')
-        with open(seg_path, 'rt') as seg_file, open(out_path, 'wt') as out_file:
-            reader = csv.reader(seg_file, delimiter="\t")
-            writer = csv.writer(out_file, delimiter="\t")
-            in_header = True
-            for row in reader:
-                if in_header:
-                    in_header = False
-                else:
-                    row[0] = self.tumour_id
-                writer.writerow(row)
-        return out_path
   
     def preprocess_gep(self, gep_path):
         """
@@ -210,38 +180,35 @@ class preprocess(logger):
         # apply annotation to tempfile and return final output
         return tmp_path
 
-    def _maf_body_row_ok(self, row, ix, vaf_cutoff):
-        """
-        Should a MAF row be kept for output?
-        Implements logic from functions.sh -> hard_filter_maf() in CGI-Tools
-        Expected to filter out >99.9% of input reads
-        ix is a dictionary of column indices
-        """
-        ok = False
-        row_t_depth = int(row[ix.get(sic.T_DEPTH)])
-        alt_count_raw = row[ix.get(sic.TUMOUR_ALT_COUNT)]
-        gnomad_af_raw = row[ix.get(sic.GNOMAD_AF)]
-        row_t_alt_count = float(alt_count_raw) if alt_count_raw!='' else 0.0
-        row_gnomad_af = float(gnomad_af_raw) if gnomad_af_raw!='' else 0.0
-        is_matched = row[ix.get(sic.MATCHED_NORM_SAMPLE_BARCODE)] != 'unmatched'
-        filter_flags = re.split(';', row[ix.get(sic.FILTER)])
-        if row_t_depth >= 1 and \
-            row_t_alt_count/row_t_depth >= vaf_cutoff and \
-            (is_matched or row_gnomad_af < self.MAX_UNMATCHED_GNOMAD_AF) and \
-            row[ix.get(sic.VARIANT_CLASSIFICATION)] in sic.MUTATION_TYPES_EXONIC and \
-            not any([z in sic.FILTER_FLAGS_EXCLUDE for z in filter_flags]):
-            ok = True
-        return ok
+    def run_R_code(self, whizbam_url, assay, raw_maf_file, tumour_id, oncotree_code):
+        dir_location = os.path.dirname(__file__)
+        tmp_maf_path = self.preprocess_maf(raw_maf_file, assay, tumour_id)
+        annotated_maf_path = oncokb_annotator(
+            tumour_id,
+            oncotree_code,
+            self.report_dir,
+            self.tmp_dir,
+            
+            log_level=self.log_level,
+            log_path=self.log_path
+        ).annotate_maf(tmp_maf_path)
 
-    def _read_maf_indices(self, row):
-        indices = {}
-        for i in range(len(row)):
-            key = row[i]
-            if key in sic.MAF_KEYS:
-                indices[key] = i
-        if set(indices.keys()) != set(sic.MAF_KEYS):
-            msg = "Indices found in MAF header {0} ".format(indices.keys()) +\
-                    "do not match required keys {0}".format(sic.MAF_KEYS)
-            self.logger.error(msg)
-            raise RuntimeError(msg)
-        return indices
+        #gep_path = self.preprocess_gep(self.gep_file)
+        cmd = [
+            'Rscript', os.path.join(dir_location + "/R/process_snv_data.r"),
+                '--basedir', dir_location ,
+                '--enscon', os.path.join(dir_location, '..', sic.ENSEMBL_CONVERSION), 
+                '--tcgadata', sic.TCGA_RODIC,
+                '--outdir', self.report_dir,
+                '--whizbam_url', whizbam_url,
+                '--maffile', annotated_maf_path
+
+                ##expression
+                #'--gepfile', gep_path,
+                #'--tcgacode', self.tcgacode
+                
+        ]
+        runner = subprocess_runner()
+        result = runner.run(cmd, "main R script")
+        return result
+
