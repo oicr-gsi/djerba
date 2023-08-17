@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## Unreleased
+
+## GCGI-1035: Treament options merger
+- Generate the "Treatment Options" section of the report
+- Include both "FDA Approved" and "Investigational Therapies"
+
 ## v1.0.0-dev0.0.8: 2023-08-11
 
 ## GCGI-963: Case overview plugin
