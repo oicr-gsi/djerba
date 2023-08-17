@@ -27,7 +27,7 @@ class data_builder(logger):
         self.cytoband_path = os.environ.get('DJERBA_BASE_DIR') + sic.CYTOBAND
 
     def build_alteration_url(self, gene, alteration, cancer_code):
-        self.logger.debug('Constructing alteration URL from inputs: {0}'.format([self.ONCOKB_URL_BASE, gene, alteration, cancer_code]))
+        self.logger.debug('Constructing alteration URL from inputs: {0}'.format([sic.ONCOKB_URL_BASE, gene, alteration, cancer_code]))
         return '/'.join([sic.ONCOKB_URL_BASE, gene, alteration, cancer_code])
 
     def build_gene_url(self, gene):

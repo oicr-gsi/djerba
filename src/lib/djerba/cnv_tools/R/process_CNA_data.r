@@ -49,6 +49,10 @@ if (is.null(segfile)) {
   write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[2]]), CNAs[[2]], check.names=FALSE),
               file=paste0(outdir, "/data_log2CNA.txt"), sep="\t", row.names=FALSE, quote=FALSE)
   
+  # necessary file to find copy number profile of genes with small mutations
+  write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[3]]), CNAs[[3]], check.names=FALSE),
+              file=paste0(outdir, "/data_CNA.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+  
   # write the short data_CNA file (non-zero, oncoKB genes) for oncoKB annotator
   print("writing non-diploid oncoKB genes")
   write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[5]]), CNAs[[5]], check.names=FALSE),
