@@ -4,6 +4,7 @@ a plugin for WGTS SNV Indel
 
 # IMPORTS
 import os
+import csv
 from djerba.plugins.base import plugin_base
 from mako.lookup import TemplateLookup
 from djerba.util.render_mako import mako_renderer
@@ -46,6 +47,7 @@ class main(plugin_base):
       cna_annotated_path = os.path.join(work_dir, sic.CNA_ANNOTATED)
       results = cnv_data_extractor(work_dir).build_copy_number_variation(self.ASSAY, cna_annotated_path)
       #add PGA to results
+      #data[rc.PERCENT_GENOME_ALTERED] = int(round(self.read_fga()*100, 0))
       #add CNV plot to results
       data['results'] = results
       return data
@@ -66,3 +68,14 @@ class main(plugin_base):
           self.add_ini_required(key)
       self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
       self.set_priority_defaults(self.PRIORITY)
+
+    def read_fga(self):
+        input_path = os.path.join(self.input_dir, self.DATA_SEGMENTS)
+        total = 0
+        with open(input_path) as input_file:
+            for row in csv.DictReader(input_file, delimiter="\t"):
+                if abs(float(row['seg.mean'])) >= self.MINIMUM_MAGNITUDE_SEG_MEAN:
+                    total += int(row['loc.end']) - int(row['loc.start'])
+        # TODO see GCGI-347 for possible updates to genome size
+        fga = float(total)/self.GENOME_SIZE
+        return fga
