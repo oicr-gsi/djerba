@@ -13,3 +13,5 @@ djerba.log
 *.DS_Store
 *.Rhistory
 *.vscode
+# Sphinx build files
+_build
