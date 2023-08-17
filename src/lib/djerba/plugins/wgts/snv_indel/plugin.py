@@ -72,10 +72,14 @@ class main(plugin_base):
             'oncotree_code',
             'tumour_id',
             'normal_id',
-            'cbioid',
-            sic.CNA_FILE
+            'cbioid'
         ]
       for key in required:
           self.add_ini_required(key)
+      discovered = [
+            sic.CNA_FILE
+        ]
+      for key in discovered:
+          self.add_ini_discovered(key)
       self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
       self.set_priority_defaults(self.PRIORITY)

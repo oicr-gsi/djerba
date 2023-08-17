@@ -9,7 +9,8 @@ option_list = list(
   make_option(c("-f", "--outdir"), type="character", default=NULL, help="output directory", metavar="character"),
   make_option(c("-c", "--segfile"), type="character", default=NULL, help="concatenated seg file", metavar="character"),
   make_option(c("-i", "--genebed"), type="character", default=NULL, help="gene bed for segmentation", metavar="character"),
-  make_option(c("-k", "--oncolist"), type="character", default=NULL, help="oncoKB cancer genes", metavar="character")
+  make_option(c("-k", "--oncolist"), type="character", default=NULL, help="oncoKB cancer genes", metavar="character"),
+  make_option(c("-p", "--purity"), type="character", default=NULL, help="sample cellularity for CN cutoffs", metavar="character")
 )
 
 # get options
@@ -22,13 +23,14 @@ outdir <- opt$outdir
 segfile <- opt$segfile
 genebed <- opt$genebed
 oncolist <- opt$oncolist
+purity <- as.numeric(opt$purity)
 
 # print options to output
 print("Running singleSample with the following options:")
 print(opt)
 
 # source functions
-source(paste0(basedir, "/CNA_supporting_functions.r"))
+source(paste0(basedir, "/R/CNA_supporting_functions.r"))
 
 ###################### CNA #####################
 

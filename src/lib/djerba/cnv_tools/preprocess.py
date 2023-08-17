@@ -39,14 +39,13 @@ class preprocess(logger):
           self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
           os.mkdir(self.tmp_dir)
   
-  def preprocess_seg_sequenza(self, sequenza_path):
+  def preprocess_seg_sequenza(self, sequenza_path, tumour_id, sequenza_gamma):
       """
       Extract the SEG file from the .zip archive output by Sequenza
       Apply preprocessing and write results to tmp_dir
       Replace entry in the first column with the tumour ID
       """
-
-      seg_path = sequenza_reader(sequenza_path).extract_cn_seg_file(self.tmp_dir, self.sequenza_gamma)
+      seg_path = sequenza_reader(sequenza_path).extract_cn_seg_file(self.tmp_dir, sequenza_gamma)
       out_path = os.path.join(self.tmp_dir, 'seg.txt')
       with open(seg_path, 'rt') as seg_file, open(out_path, 'wt') as out_file:
           reader = csv.reader(seg_file, delimiter="\t")
@@ -56,7 +55,7 @@ class preprocess(logger):
               if in_header:
                   in_header = False
               else:
-                  row[0] = self.tumour_id
+                  row[0] = tumour_id
               writer.writerow(row)
       return out_path
 
@@ -76,35 +75,33 @@ class preprocess(logger):
     df_seg = df_seg.rename(columns={"end": "loc.end"})
 
     # Convert the dataframe back into a tab-delimited text file.
-    out_path = os.path.join(self.work_dir, 'seg_amplifications.txt')
+    out_path = os.path.join(self.report_dir, 'seg_amplifications.txt')
     df_seg.to_csv(out_path, sep = '\t', index=None)
 
     return out_path
   
-  def run_R_code(self, seg_file, assay):
+  def run_R_code(self, seg_path, purity, tumour_id, oncotree_code):
     dir_location = os.path.dirname(__file__)
-    if assay = "TAR":
-      seg_path = self.preprocess_seg_tar(seg_file)
-    else:
-      seg_path = self.preprocess_seg_sequenza(seg_file)
-
+    genebedpath = os.path.join(dir_location, '..', ctc.GENEBED)
+    oncolistpath = os.path.join(dir_location, '..', sic.ONCOLIST)
     cmd = [
-        'Rscript', self.r_script_dir_swgs + "/process_CNA_data.r",
-        '--basedir', self.r_script_dir,
-        '--outdir', self.work_dir,
+        'Rscript', os.path.join(dir_location + "/R/process_CNA_data.r"),
+        '--basedir',dir_location,
+        '--outdir', self.report_dir,
         '--segfile', seg_path,
-        '--genebed', os.path.join(dir_location, '..', ctc.GENEBED),
-        '--oncolist', os.path.join(dir_location, '..', sic.ONCOLIST)
+        '--genebed', genebedpath,
+        '--oncolist', oncolistpath,
+        '--purity', purity
     ]
 
     runner = subprocess_runner()
     result = runner.run(cmd, "main R script")
     annotator = oncokb_annotator(
-                 self.tumour_id,
-                 self.oncotree_code,
+                 tumour_id,
+                 oncotree_code,
                  self.report_dir,
-                 self.tmp_dir,
-                 self.cache_params
+                 self.tmp_dir
+                 #self.cache_params
          )
     annotator.annotate_cna()
 
