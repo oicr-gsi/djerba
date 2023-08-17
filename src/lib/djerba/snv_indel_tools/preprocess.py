@@ -107,7 +107,7 @@ class preprocess():
           self.tumour_id = self.config['tar.snv_indel']['tumour_id']
           self.normal_id = self.config['tar.snv_indel']['normal_id']
           self.maf_file_normal = self.config['tar.snv_indel']['maf_file_normal']
-          self.study_title = self.config['provenance_helper']['study_title']
+          self.study_title = self.config['tar.snv_indel']['study_title']
       else:
           self.sequenza_path = self.config['snv_indel']['sequenza_file']
           self.sequenza_gamma = int(self.config['snv_indel']['sequenza_gamma'])
@@ -117,7 +117,7 @@ class preprocess():
           self.tcgacode = self.config['snv_indel']['tcgacode']
           self.tumour_id = self.config['snv_indel']['tumour_id']
           self.normal_id = self.config['snv_indel']['normal_id']
-          self.study_title = self.config['provenance_helper']['study_title']
+          self.study_title = self.config['snv_indel']['study_title']
 
       self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/Rscripts/"
       

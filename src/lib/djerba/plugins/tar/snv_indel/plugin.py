@@ -36,7 +36,8 @@ class main(plugin_base):
       self.add_ini_required('tcgacode')
       self.add_ini_required('tumour_id')
       self.add_ini_required('normal_id')
-
+      self.add_ini_required('root_sample_name')
+      self.add_ini_required('study_title')
 
       self.set_ini_default(core_constants.CLINICAL, True)
       self.set_ini_default(core_constants.SUPPLEMENTARY, False)
@@ -47,8 +48,8 @@ class main(plugin_base):
       config = self.apply_defaults(config)
 
       # Populate ini
-      config[self.identifier]["maf_file"] = self.get_maf_file(config["provenance_helper"]["root_sample_name"], self.RESULTS_SUFFIX_Pl)
-      config[self.identifier]["maf_file_normal"] = self.get_maf_file(config["provenance_helper"]["root_sample_name"], self.RESULTS_SUFFIX_BC)
+      config[self.identifier]["maf_file"] = self.get_maf_file(config[self.identifier]["root_sample_name"], self.RESULTS_SUFFIX_Pl)
+      config[self.identifier]["maf_file_normal"] = self.get_maf_file(config[self.identifier]["root_sample_name"], self.RESULTS_SUFFIX_BC)
       
       return config  
 
@@ -67,7 +68,7 @@ class main(plugin_base):
           'priorities': wrapper.get_my_priorities(),
           'attributes': wrapper.get_my_attributes(),
           'merge_inputs': {},
-          'results': data_builder(work_dir, tar=True).build_small_mutations_and_indels()
+          'results': data_builder(work_dir).build_small_mutations_and_indels()
       }
       return data
 
