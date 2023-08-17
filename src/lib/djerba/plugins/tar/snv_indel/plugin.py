@@ -76,26 +76,6 @@ class main(plugin_base):
       data['results'] = results
       return data
 
-    #def extract(self, config):
-    #  
-    #  wrapper = self.get_config_wrapper(config)  
-    #  work_dir = self.workspace.get_work_dir()
-#
-    #  # Pre-processing
-    #  maf_file = self.filter_maf_for_tar(work_dir, config[self.identifier]["maf_file"], config[self.identifier]["maf_file_normal"])
-    #  oncotree = config[self.identifier]["oncotree_code"]
-    #  preprocess(config, work_dir, maf_file, tar=True).run_R_code()
-
-     # data = {
-     #     'plugin_name': 'Tar SNV Indel',
-     #     'version': self.PLUGIN_VERSION,
-     #     'priorities': wrapper.get_my_priorities(),
-     #     'attributes': wrapper.get_my_attributes(),
-     #     'merge_inputs': {},
-     #     'results': data_builder(work_dir, oncotree).build_small_mutations_and_indels()
-     # }
-     # return data
-
     def render(self, data):
       args = data
       html_dir = os.path.realpath(os.path.join(
