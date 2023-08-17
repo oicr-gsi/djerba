@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v0.4.14: 2023-08-17
 
 - GCGI-1030: Fix glob pattern for Sequenza results in benchmarking
 
