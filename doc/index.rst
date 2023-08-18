@@ -10,11 +10,12 @@ Welcome to Djerba's documentation!
    :maxdepth: 2
 
    guide
+   about
 
 
-Indices and tables
+Tools
 ==================
 
-* :ref:`genindex`
-* :ref:`modindex`
+.. * :ref:`genindex`
+.. * :ref:`modindex`
 * :ref:`search`
