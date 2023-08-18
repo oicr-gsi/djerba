@@ -44,6 +44,7 @@ class main(plugin_base):
 
       seg_path = preprocess_cnv(work_dir).preprocess_seg_sequenza(sequenza_file, tumour_id, sequenza_gamma)
       preprocess_cnv(work_dir).run_R_code(seg_path, purity, tumour_id, oncotree_code)
+      #add printed purity cutoffs to json
       cna_annotated_path = os.path.join(work_dir, sic.CNA_ANNOTATED)
       results = cnv_data_extractor(work_dir).build_copy_number_variation(self.ASSAY, cna_annotated_path)
       #add PGA to results

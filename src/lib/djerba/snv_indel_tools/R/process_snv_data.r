@@ -15,8 +15,7 @@ option_list = list(
   make_option(c("-i", "--whizbam_url"), type="character", default="https://whizbam.oicr.on.ca", help="whizbam url", metavar="character"),
   make_option(c("-j", "--tcgadata"), type="character", default=NULL, help="tcga datadir", metavar="character"),
   
-  make_option(c("-o", "--tcgacode"), type="character", default=NULL, help="tcga code", metavar="character"),
-  make_option(c("-p", "--purity"), type="character", default=NULL, help="sample purity", metavar="character")
+  make_option(c("-o", "--tcgacode"), type="character", default=NULL, help="tcga code", metavar="character")
 )
 
 # get options
@@ -32,7 +31,6 @@ tcgacode <- opt$tcgacode
 maffile <- opt$maffile
 whizbam_url <- opt$whizbam_url
 gepfile <- opt$gepfile
-purity <- opt$purity
 
 source(paste0(basedir, "/R/smalls_supporting_functions.r"))
 

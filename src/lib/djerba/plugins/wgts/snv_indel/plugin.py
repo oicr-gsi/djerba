@@ -62,6 +62,8 @@ class main(plugin_base):
           sic.VAF_PLOT: data_extractor().write_vaf_plot(work_dir)
       }
       data['results'] = results
+      #add actionable stuff to merge
+      #add all gene names to merge
       return data
 
     def render(self, data):
