@@ -25,10 +25,10 @@ class data_builder:
     # else:
     #     expr_input = None
 
-    def __init__(self,  assay, oncotree_uc):
+    def __init__(self,  work_dir, assay, oncotree_uc):
         self.data_dir = os.environ.get('DJERBA_BASE_DIR') + '/data/' 
         self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/Rscripts"
-        #self.work_dir = work_dir
+        self.work_dir = work_dir
         self.assay = assay
         self.cytoband_path = self.data_dir + "cytoBand.txt"
         self.oncotree_uc = oncotree_uc
@@ -45,13 +45,11 @@ class data_builder:
         #self.logger.debug("Building data for small mutations and indels table")
         rows = []
         all_reported_variants = set()
-        # mutation_copy_states = self.read_mutation_copy_states()
+        mutation_copy_states = self.read_mutation_copy_states()
         if self.assay == "WGTS":
             mutation_expression = self.read_expression()
-            has_expression_data = True
         else:
             mutation_expression = {}
-            has_expression_data = False
         with open(mutations_file) as data_file:
             for input_row in csv.DictReader(data_file, delimiter="\t"):
                 gene = input_row[sic.HUGO_SYMBOL_TITLE_CASE]
@@ -70,7 +68,7 @@ class data_builder:
                     sic.VAF_PERCENT: int(round(float(input_row[sic.TUMOUR_VAF]), 2)*100),
                     sic.TUMOUR_DEPTH: int(input_row[sic.TUMOUR_DEPTH]),
                     sic.TUMOUR_ALT_COUNT: int(input_row[sic.TUMOUR_ALT_COUNT]),
-                #   sic.COPY_STATE: mutation_copy_states.get(gene, sic.UNKNOWN),
+                    sic.COPY_STATE: mutation_copy_states.get(gene, sic.UNKNOWN),
                     sic.ONCOKB: self.parse_oncokb_level(input_row)
                 }
                 rows.append(row)
@@ -239,8 +237,8 @@ class data_builder:
         rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row[sic.ONCOKB]))
         return rows
 
-    def write_vaf_plot(self, out_dir):
-        out_path = os.path.join(out_dir, 'vaf.svg')
+    def write_vaf_plot(self):
+        out_path = os.path.join(self.work_dir, 'vaf.svg')
         args = [
             os.path.join(self.r_script_dir, 'vaf_plot.r'),
             '-d', self.work_dir,
