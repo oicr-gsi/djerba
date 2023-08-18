@@ -1,6 +1,6 @@
-# Plugin Developer's Guide
+# Plugin Methods Guide
 
-This document is meant as a compact guide to writing plugins, and documents some tools provided by Djerba to make plugins more compact and easier to develop.
+This document describes methods provided by Djerba for plugin development.
 
 ## Plugin requirements
 
