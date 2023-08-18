@@ -8,12 +8,12 @@
 
 project = 'Djerba'
 copyright = '2023, OICR-GSI'
-author = 'OICR-GSI'
+author = 'OICR Genome Systems Informatics'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = []
+extensions = ["myst_parser"]
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
@@ -24,4 +24,5 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'alabaster'
+html_logo = './logo/djerba_logo_small.svg'
 html_static_path = ['_static']

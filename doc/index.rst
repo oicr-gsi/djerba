@@ -8,8 +8,8 @@ Welcome to Djerba's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
+   guide
 
 
 Indices and tables
