@@ -27,3 +27,7 @@ DATA_CNA_ONCOKB = "data_CNA_oncoKBgenes.txt"
 DATA_CNA_ONCOKB_NONDIPLOID = "data_CNA_oncoKBgenes_nonDiploid.txt"
 
 GENEBED =  "data/gencode_v33_hg38_genes.bed"
+DATA_SEGMENTS = 'data.seg'
+MINIMUM_MAGNITUDE_SEG_MEAN = 0.2
+GENOME_SIZE = 3*10**9 # TODO use more accurate value when we release a new report format
+PERCENT_GENOME_ALTERED = 'Percent Genome Altered'
