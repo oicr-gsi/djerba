@@ -30,10 +30,11 @@ class main(plugin_base):
       work_dir = self.workspace.get_work_dir()
       if wrapper.my_param_is_null(sic.CNA_FILE):
             wrapper.set_my_param(sic.CNA_FILE, os.path.join(work_dir, sic.CNA_SIMPLE))
-     # group_id = config[self.identifier][pc.GROUP_ID]
-     # if wrapper.my_param_is_null(sic.MAF_FILE):
-     #       wrapper.set_my_param(sic.MAF_FILE, pwgs_tools.subset_provenance(self, "mrdetect", group_id, pc.RESULTS_SUFFIX))
-      #TO DO: if cbioid undefined, set to studyid, but can be entered in ini
+      #TODO: pull MAF from provenance
+      # group_id = config[self.identifier][pc.GROUP_ID]
+      # if wrapper.my_param_is_null(sic.MAF_FILE):
+      #       wrapper.set_my_param(sic.MAF_FILE, pwgs_tools.subset_provenance(self, "mrdetect", group_id, pc.RESULTS_SUFFIX))
+      #TODO: if cbioid undefined, set to studyid, but can be entered in ini
       return config  
 
     def extract(self, config):
@@ -46,7 +47,7 @@ class main(plugin_base):
       normal_id = config[self.identifier]['normal_id']
       maf_file = config[self.identifier]['maf_file']
       cna_file = config[self.identifier]['cna_file']
-      #TO DO: add expression
+      #TODO: add expression
       #input_path = os.path.join(work_dir, sic.expr_input)
 
       whizbam_url = preprocess.construct_whizbam_link(sic.WHIZBAM_BASE_URL, cbioid, tumour_id, normal_id, self.SEQTYPE, self.GENOME)

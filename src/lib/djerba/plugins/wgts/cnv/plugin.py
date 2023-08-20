@@ -29,6 +29,7 @@ class main(plugin_base):
       if wrapper.my_param_is_null('purity'):
             purity = sequenza_reader(config[self.identifier]['sequenza_file']).get_purity(gamma=int(config[self.identifier]['sequenza_gamma']), solution=config[self.identifier]['sequenza_solution'])
             wrapper.set_my_param('purity', purity)
+      #TODO: pull sequenza from provenance
       return config  
 
     def extract(self, config):
@@ -57,6 +58,7 @@ class main(plugin_base):
       cnv_plot_base64 = cnv.write_cnv_plot(sequenza_file, sequenza_gamma, sequenza_solution)
       data_table['cnv_plot']= cnv_plot_base64
       data['results'] = data_table
+      data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(sic.CNA_ANNOTATED, oncotree_code)
       return data
     
     def render(self, data):

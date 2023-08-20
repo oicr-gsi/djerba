@@ -16,6 +16,7 @@ from djerba.util.image_to_base64 import converter
 import djerba.extract.oncokb.constants as oncokb
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.logger import logger
+import djerba.render.constants as rc
 
 class data_builder(logger):
 
@@ -155,6 +156,20 @@ class data_builder(logger):
             parsed_level = sic.NA
         return parsed_level
 
+    def parse_max_oncokb_level_and_therapies(self, row_dict, levels):
+        # find maximum level (if any) from given levels list, and associated therapies
+        max_level = None
+        therapies = []
+        for level in levels:
+            if not self.is_null_string(row_dict[level]):
+                if not max_level: max_level = level
+                therapies.append(row_dict[level])
+        if max_level:
+            max_level = self.reformat_level_string(max_level)
+        # insert a space between comma and start of next word
+        therapies = [re.sub(r'(?<=[,])(?=[^\s])', r' ', t) for t in therapies]
+        return (max_level, '; '.join(therapies))
+    
     def read_cytoband_map(self):
         input_path = self.cytoband_path
         cytobands = {}
@@ -210,6 +225,16 @@ class data_builder(logger):
     def reformat_level_string(self, level):
         return re.sub('LEVEL_', 'Level ', level)
 
+    def sort_therapy_rows(self, rows):
+        # sort FDA/investigational therapy rows
+        # extract a gene name from 'genes and urls' dictionary keys
+        rows = sorted(
+            rows,
+            key=lambda row: sorted(list(row.get(rc.GENES_AND_URLS).keys())).pop(0)
+        )
+        rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row[rc.ONCOKB]))
+        return rows
+    
     def sort_variant_rows(self, rows):
         # sort rows oncokb level, then by cytoband, then by gene name
         self.logger.debug("Sorting rows by gene name")
