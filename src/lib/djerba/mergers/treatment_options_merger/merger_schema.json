@@ -1,0 +1,20 @@
+{
+    "$id": "https://github.com/oicr-gsi/djerba/blob/treatment_options_merger/PLACEHOLDER_SCHEMA.json",
+    "type": "array",
+    "items": {
+	"type": "object",
+	"properties": {
+	    "Tier": {
+		"type": "string",
+		"enum": ["Approved", "Investigational"]
+	    },
+	    "OncoKB level": {"type": "string" },
+	    "Treatments": {"type": "string" },
+	    "Gene": {"type": "string" },
+	    "Gene_URL": {"type": "string" },
+	    "Alteration": {"type": "string" },
+	    "Alteration_URL": {"type": "string" }
+	}
+    }
+}
+
