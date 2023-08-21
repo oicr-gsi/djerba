@@ -34,15 +34,15 @@ class main(plugin_base):
       # group_id = config[self.identifier][pc.GROUP_ID]
       # if wrapper.my_param_is_null(sic.MAF_FILE):
       #       wrapper.set_my_param(sic.MAF_FILE, pwgs_tools.subset_provenance(self, "mrdetect", group_id, pc.RESULTS_SUFFIX))
-      #TODO: if cbioid undefined, set to studyid, but can be entered in ini
+      #TODO: if cbio_id undefined, set to studyid, but can be entered in ini
       return config  
 
     def extract(self, config):
       wrapper = self.get_config_wrapper(config)  
       work_dir = self.workspace.get_work_dir()
       data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
-      oncotree = config[self.identifier]['oncotree_code']
-      cbioid = config[self.identifier]['cbioid']
+      oncotree_code = config[self.identifier]['oncotree_code']
+      cbio_id = config[self.identifier]['cbio_id']
       tumour_id = config[self.identifier]['tumour_id']
       normal_id = config[self.identifier]['normal_id']
       maf_file = config[self.identifier]['maf_file']
@@ -50,10 +50,10 @@ class main(plugin_base):
       #TODO: add expression
       #input_path = os.path.join(work_dir, sic.expr_input)
 
-      whizbam_url = preprocess.construct_whizbam_link(sic.WHIZBAM_BASE_URL, cbioid, tumour_id, normal_id, self.SEQTYPE, self.GENOME)
-      preprocess(work_dir).run_R_code(whizbam_url, self.ASSAY, maf_file, tumour_id, oncotree)
+      whizbam_url = preprocess.construct_whizbam_link(sic.WHIZBAM_BASE_URL, cbio_id, tumour_id, normal_id, self.SEQTYPE, self.GENOME)
+      preprocess(work_dir).run_R_code(whizbam_url, self.ASSAY, maf_file, tumour_id, oncotree_code)
       oncogenic_variants_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)
-      oncogenic_variants_table = data_extractor().build_small_mutations_and_indels(oncogenic_variants_file, cna_file, oncotree, self.ASSAY)
+      oncogenic_variants_table = data_extractor().build_small_mutations_and_indels(oncogenic_variants_file, cna_file, oncotree_code, self.ASSAY)
       total_variants_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED)
       results = {
           sic.BODY: oncogenic_variants_table,
@@ -63,8 +63,10 @@ class main(plugin_base):
           sic.VAF_PLOT: data_extractor().write_vaf_plot(work_dir)
       }
       data['results'] = results
-      #add actionable stuff to merge
-      #add all gene names to merge
+      #TODO: add actionable stuff to merge
+      mutations_annotated_path = os.path.join(work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)
+      data['merge_inputs']['treatment_options_merger'] =  data_extractor().build_therapy_info(mutations_annotated_path, oncotree_code)
+      #TODO: add all gene names to merge
       return data
 
     def render(self, data):
@@ -77,7 +79,7 @@ class main(plugin_base):
             'oncotree_code',
             'tumour_id',
             'normal_id',
-            'cbioid'
+            'cbio_id'
         ]
       for key in required:
           self.add_ini_required(key)

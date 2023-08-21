@@ -18,6 +18,7 @@ import djerba.snv_indel_tools.constants as constants
 from djerba.plugins.base import plugin_base
 import pandas as pd
 import djerba.snv_indel_tools.constants as sic
+import djerba.render.constants as rc
 
 class preprocess(logger):
  
@@ -211,4 +212,3 @@ class preprocess(logger):
         runner = subprocess_runner()
         result = runner.run(cmd, "main R script")
         return result
-

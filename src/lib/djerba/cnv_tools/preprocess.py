@@ -22,6 +22,7 @@ from djerba.snv_indel_tools.extract import data_builder as sit
 import djerba.render.constants as rc
 from djerba.util.image_to_base64 import converter
 import djerba.extract.oncokb.constants as oncokb
+from djerba.render.json_to_html import html_builder
 
 class preprocess(logger):
 
@@ -62,7 +63,7 @@ class preprocess(logger):
                     rc.GENE_URL: sit().build_gene_url(gene),
                     rc.ALT: row[sic.ALTERATION_UPPER_CASE],
                     rc.CHROMOSOME: cytoband,
-                    rc.ONCOKB: sit().parse_oncokb_level(row)
+                    'OncoKB level': sit().parse_oncokb_level(row)
                 }
                 rows.append(row)
         unfiltered_cnv_total = len(rows)
@@ -154,7 +155,7 @@ class preprocess(logger):
         df_seg.to_csv(out_path, sep = '\t', index=None)
 
         return out_path
-    
+        
     def write_cnv_plot(self, sequenza_path, sequenza_gamma, sequenza_solution):
         segment_file = sequenza_reader(sequenza_path).extract_segments_text_file(self.work_dir, gamma=sequenza_gamma, solution=sequenza_solution)
         dir_location = os.path.dirname(__file__)
@@ -170,12 +171,12 @@ class preprocess(logger):
         base64_plot = converter().convert_svg(out_path, 'CNV plot')
         return base64_plot
     
-    def build_therapy_info(self, cna_annotated, oncotree_uc):
+    def build_therapy_info(self, variants_annotated_file, oncotree_uc):
         # build the "FDA approved" and "investigational" therapies data
         # defined respectively as OncoKB levels 1/2/R1 and R2/3A/3B/4
         # OncoKB "LEVEL" columns contain treatment if there is one, 'NA' otherwise
         # Input files:
-        # - One file each for mutations, CNVs, biomarkers
+        # - One file each for CNVs
         # - Must be annotated by OncoKB script
         # - Must not be missing
         # - May consist of headers only (no data rows)
@@ -184,7 +185,6 @@ class preprocess(logger):
         # - Alteration name, eg. HGVSp_Short value, with oncoKB link
         # - Treatment
         # - OncoKB level
-        cna_annotated_path = os.path.join(self.work_dir, cna_annotated)
         tiered_rows = list()
         for tier in (sic.FDA_APPROVED, sic.INVESTIGATIONAL):
             self.logger.debug("Building therapy info for level: {0}".format(tier))
@@ -193,7 +193,7 @@ class preprocess(logger):
             elif tier == sic.INVESTIGATIONAL:
                 levels = oncokb.INVESTIGATIONAL_LEVELS
             rows = []
-            with open(cna_annotated_path) as data_file:
+            with open(variants_annotated_file) as data_file:
                 for row in csv.DictReader(data_file, delimiter="\t"):
                     gene = row[sic.HUGO_SYMBOL_UPPER_CASE]
                     alteration = row[sic.ALTERATION_UPPER_CASE]
@@ -202,23 +202,6 @@ class preprocess(logger):
                         rows.append(self.treatment_row(gene, alteration, max_level, therapies, oncotree_uc, tier))
             rows = list(filter(sit().oncokb_filter, sit().sort_therapy_rows(rows)))
             if rows:
-                tiered_rows = tiered_rows.append(rows)
+                tiered_rows.append(rows)
         return tiered_rows
-    
-    def treatment_row(self, genes_arg, alteration, max_level, therapies, oncotree_uc, tier):
-        # genes argument may be a string, or an iterable of strings
-        # legacy from djerba classic
-        if isinstance(genes_arg, str):
-            genes_and_urls = {genes_arg: sit().build_gene_url(genes_arg)}
-        else:
-            genes_and_urls = {gene: sit().build_gene_url(gene) for gene in genes_arg}
-        alt_url = self.build_alteration_url(genes_arg, alteration, oncotree_uc)
-        row = {
-            'Tier': tier,
-            rc.ONCOKB: max_level,
-            rc.TREATMENT: therapies,
-            rc.GENES_AND_URLS: genes_and_urls,
-            rc.ALT: alteration,
-            rc.ALT_URL: alt_url
-        }
-        return row
+

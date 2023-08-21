@@ -144,7 +144,7 @@ class html_builder:
             self._td(row[constants.VAF_PERCENT]),
             self._td(depth),
             self._td(row[constants.COPY_STATE]),
-            self._td_oncokb(row[constants.ONCOKB])
+            self._td_oncokb(row['OncoKB level'])
         ]
         if mutation_info[constants.HAS_EXPRESSION_DATA]:
             metric = self._expression_display(row[constants.EXPRESSION_METRIC])

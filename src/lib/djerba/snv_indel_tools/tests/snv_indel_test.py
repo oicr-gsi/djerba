@@ -26,15 +26,20 @@ class TestTarSamplePlugin(PluginTester):
 
     def test_get_cytoband(self):
         gene = "AADAC"
-        cytoband = data_extractor("TAR","PAAD").get_cytoband(gene)
+        cytoband = data_extractor().get_cytoband(gene)
         self.assertEqual(cytoband, "3q25.1")
 
     def test_build_small_mutations_and_indels(self):
         data_extended_oncogenic = os.path.join(self.sup_dir ,"report_example/data_mutations_extended_oncogenic.txt")
-        small_mutations_data = data_extractor( "TAR","PAAD").build_small_mutations_and_indels(data_extended_oncogenic)
-        self.assertEqual(small_mutations_data, [{'Gene': 'KRAS', 'Gene_URL': 'https://www.oncokb.org/gene/KRAS', 'Chromosome': '12p12.1', 'Protein': 'p.G12S', 'Protein_URL': 'https://www.oncokb.org/gene/KRAS/p.G12S/PAAD', 'Type': 'Missense Mutation', 'Expression Percentile': None, 'VAP (%)': 46, 't_depth': 211, 't_alt_count': 98, 'OncoKB': 'Level 4'}, {'Gene': 'TP53', 'Gene_URL': 'https://www.oncokb.org/gene/TP53', 'Chromosome': '17p13.1', 'Protein': 'p.R273H', 'Protein_URL': 'https://www.oncokb.org/gene/TP53/p.R273H/PAAD', 'Type': 'Missense Mutation', 'Expression Percentile': None, 'VAP (%)': 55, 't_depth': 127, 't_alt_count': 70, 'OncoKB': 'Oncogenic'}])
-        pass
+        cna_file = os.path.join(self.sup_dir ,"report_example/data_CNA.txt")
+        small_mutations_data = data_extractor().build_small_mutations_and_indels(data_extended_oncogenic, cna_file, "PAAD", "WGS")
+        self.assertEqual(small_mutations_data, [{'Gene': 'KRAS','Copy State': 'Amplification', 'Gene_URL': 'https://www.oncokb.org/gene/KRAS', 'Chromosome': '12p12.1', 'Protein': 'p.G12S', 'Protein_URL': 'https://www.oncokb.org/gene/KRAS/p.G12S/PAAD', 'Type': 'Missense Mutation', 'Expression Percentile': None, 'VAP (%)': 46, 't_depth': 211, 't_alt_count': 98, 'OncoKB level': 'Level 4'}, {'Gene': 'TP53','Copy State': 'Shallow Deletion', 'Gene_URL': 'https://www.oncokb.org/gene/TP53', 'Chromosome': '17p13.1', 'Protein': 'p.R273H', 'Protein_URL': 'https://www.oncokb.org/gene/TP53/p.R273H/PAAD', 'Type': 'Missense Mutation', 'Expression Percentile': None, 'VAP (%)': 55, 't_depth': 127, 't_alt_count': 70, 'OncoKB level': 'Oncogenic'}])
 
+    def test_build_therapy_info(self):
+        data_extended_oncogenic = os.path.join(self.sup_dir ,"report_example/data_mutations_extended_oncogenic.txt")
+        therapies = data_extractor().build_therapy_info(data_extended_oncogenic, "PAAD")
+        self.assertEqual(therapies, [{'Tier': 'Investigational', 'OncoKB level': 'Level 4', 'Gene': 'KRAS','Gene_URL': 'https://www.oncokb.org/gene/KRAS','Treatments': 'Trametinib, Cobimetinib, Binimetinib', 'Alteration': 'p.G12S', 'Alteration_URL': 'https://www.oncokb.org/gene/KRAS/p.G12S/PAAD'}])
+                 
     #def test_read_maf_indices(self):
     #    maf_file = os.path.join(self.sup_dir ,"GSICAPBENCH_1219_Lv_M_WG_100-009-005_LCM3.filter.deduped.realigned.recalibrated.mutect2.filtered.reduced.maf.gz")
 

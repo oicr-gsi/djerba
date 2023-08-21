@@ -25,6 +25,7 @@ class data_builder(logger):
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.cytoband_path = os.environ.get('DJERBA_BASE_DIR') + sic.CYTOBAND
+        self.oncokb_levels = [self.reformat_level_string(level) for level in oncokb.ORDERED_LEVELS]
 
     def build_alteration_url(self, gene, alteration, cancer_code):
         self.logger.debug('Constructing alteration URL from inputs: {0}'.format([sic.ONCOKB_URL_BASE, gene, alteration, cancer_code]))
@@ -63,7 +64,7 @@ class data_builder(logger):
                     sic.TUMOUR_DEPTH: int(input_row[sic.TUMOUR_DEPTH]),
                     sic.TUMOUR_ALT_COUNT: int(input_row[sic.TUMOUR_ALT_COUNT]),
                     sic.COPY_STATE: mutation_copy_states.get(gene, sic.UNKNOWN),
-                    sic.ONCOKB: self.parse_oncokb_level(input_row)
+                    'OncoKB level': self.parse_oncokb_level(input_row)
                 }
                 rows.append(row)
         self.logger.debug("Sorting and filtering small mutation and indel rows")
@@ -123,7 +124,7 @@ class data_builder(logger):
     def oncokb_filter(self, row):
         """True if level passes filter, ie. if row should be kept"""
         likely_oncogenic_sort_order = self.oncokb_sort_order(oncokb.LIKELY_ONCOGENIC)
-        return self.oncokb_sort_order(row.get(sic.ONCOKB)) <= likely_oncogenic_sort_order
+        return self.oncokb_sort_order(row.get('OncoKB level')) <= likely_oncogenic_sort_order
   
     def oncokb_sort_order(self, level):
         oncokb_levels = [self.reformat_level_string(level) for level in oncokb.ORDERED_LEVELS]
@@ -230,9 +231,9 @@ class data_builder(logger):
         # extract a gene name from 'genes and urls' dictionary keys
         rows = sorted(
             rows,
-            key=lambda row: sorted(list(row.get(rc.GENES_AND_URLS).keys())).pop(0)
+            key=lambda row: sorted(list(row.get('Gene'))).pop(0)
         )
-        rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row[rc.ONCOKB]))
+        rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row['OncoKB level']))
         return rows
     
     def sort_variant_rows(self, rows):
@@ -242,7 +243,7 @@ class data_builder(logger):
         self.logger.debug("Sorting rows by cytoband")
         rows = sorted(rows, key=lambda row: self.cytoband_sort_order(row[sic.CHROMOSOME]))
         self.logger.debug("Sorting rows by oncokb level")
-        rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row[sic.ONCOKB]))
+        rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row['OncoKB level']))
         return rows
 
     def write_vaf_plot(self, work_dir):
@@ -256,3 +257,61 @@ class data_builder(logger):
         vaf_plot_out = subprocess_runner().run(args)
         self.logger.info("Wrote VAF plot to {0}".format(out_path))
         return vaf_plot_out.stdout.split('"')[1]
+    
+    def treatment_row(self, genes_arg, alteration, max_level, therapies, oncotree_uc, tier):
+        # genes argument may be a string, or an iterable of strings
+        # legacy from djerba classic
+        if isinstance(genes_arg, str):
+            genes_and_urls = {genes_arg: self.build_gene_url(genes_arg)}
+        else:
+            genes_and_urls = {gene: self.build_gene_url(gene) for gene in genes_arg}
+        alt_url = self.build_alteration_url(genes_arg, alteration, oncotree_uc)
+        row = {
+            'Tier': tier,
+            'OncoKB level': max_level,
+            'Treatments': therapies,
+           # rc.GENES_AND_URLS: genes_and_urls,
+            'Gene': genes_arg,
+            'Gene_URL': self.build_gene_url(genes_arg),
+            rc.ALT: alteration,
+            rc.ALT_URL: alt_url
+        }
+        return row
+
+    def build_therapy_info(self, variants_annotated_file, oncotree_uc):
+        # build the "FDA approved" and "investigational" therapies data
+        # defined respectively as OncoKB levels 1/2/R1 and R2/3A/3B/4
+        # OncoKB "LEVEL" columns contain treatment if there is one, 'NA' otherwise
+        # Input files:
+        # - One file each for mutation
+        # - Must be annotated by OncoKB script
+        # - Must not be missing
+        # - May consist of headers only (no data rows)
+        # Output columns:
+        # - the gene name, with oncoKB link (or pair of names/links, for fusions)
+        # - Alteration name, eg. HGVSp_Short value, with oncoKB link
+        # - Treatment
+        # - OncoKB level
+        tiered_rows = list()
+        for tier in ('Approved', 'Investigational'):
+            self.logger.debug("Building therapy info for level: {0}".format(tier))
+            if tier == 'Approved':
+                levels = oncokb.FDA_APPROVED_LEVELS
+            elif tier == 'Investigational':
+                levels = oncokb.INVESTIGATIONAL_LEVELS
+            rows = []
+            with open(variants_annotated_file) as data_file:
+                for row in csv.DictReader(data_file, delimiter="\t"):
+                    gene = row[sic.HUGO_SYMBOL_TITLE_CASE]
+                    alteration = row[sic.HGVSP_SHORT]
+                    if gene == 'BRAF' and alteration == 'p.V640E':
+                        alteration = 'p.V600E'
+                    if 'splice' in row[sic.VARIANT_CLASSIFICATION].lower():
+                        alteration = 'p.? (' + row[sic.HGVSC] + ')'  
+                    [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
+                    if max_level:
+                        rows.append(self.treatment_row(gene, alteration, max_level, therapies, oncotree_uc, tier))
+            rows = list(filter(self.oncokb_filter, self.sort_therapy_rows(rows)))
+            if rows:
+                tiered_rows.append(rows)
+        return tiered_rows[0]

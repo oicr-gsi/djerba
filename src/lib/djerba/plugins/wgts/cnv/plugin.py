@@ -15,6 +15,7 @@ from djerba.cnv_tools.preprocess import preprocess as process_cnv
 import djerba.render.constants as rc
 import djerba.cnv_tools.constants as ctc 
 from djerba.sequenza import sequenza_reader
+from djerba.snv_indel_tools.extract import data_builder as data_extractor
 
 class main(plugin_base):
    
@@ -58,7 +59,8 @@ class main(plugin_base):
       cnv_plot_base64 = cnv.write_cnv_plot(sequenza_file, sequenza_gamma, sequenza_solution)
       data_table['cnv_plot']= cnv_plot_base64
       data['results'] = data_table
-      data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(sic.CNA_ANNOTATED, oncotree_code)
+      cna_annotated_path = os.path.join(work_dir, sic.CNA_ANNOTATED)
+      data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(cna_annotated_path, oncotree_code)
       return data
     
     def render(self, data):
