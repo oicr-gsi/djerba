@@ -27,15 +27,15 @@ class main(plugin_base):
     def specify_params(self):
 
       # Required parameters for swgs
-      self.set_ini_default('seg_file', None)
+      self.add_ini_discovered('seg_file')
       self.add_ini_required('root_sample_name')
       self.add_ini_required('oncotree_code')
       self.add_ini_required('tumour_id')
 
       # Default parameters for priorities
-      self.set_ini_default('configure_priority', 100)
-      self.set_ini_default('extract_priority', 100)
-      self.set_ini_default('render_priority', 100)
+      self.set_ini_default('configure_priority', 400)
+      self.set_ini_default('extract_priority', 250)
+      self.set_ini_default('render_priority', 400)
       #self.set_priority_defaults(self.PRIORITY)
 
       # Default parameters for clinical, supplementary
@@ -45,13 +45,13 @@ class main(plugin_base):
 
     def configure(self, config):
       config = self.apply_defaults(config)
-      
+      wrapper = self.get_config_wrapper(config)
       # POPULATE THE INI HERE!?
       #print(type(self.identifier))
       #print(type(config[self.identifier]))
       #print(type(config[self.idenfitier]['root_sample_name']))
-
-      config[self.identifier]["seg_file"] = self.get_seg_file(config[self.identifier]['root_sample_name'])
+      if wrapper.my_param_is_null('seg_file'):
+        config[self.identifier]["seg_file"] = self.get_seg_file(config[self.identifier]['root_sample_name'])
 
       return config
 
@@ -68,7 +68,7 @@ class main(plugin_base):
       work_dir = self.workspace.get_work_dir()
       preprocess(config, work_dir, seg_file).run_R_code()
 
-      data = {
+      cnv_data = {
           'plugin_name': 'Shallow Whole Genome Sequencing (sWGS)',
           'version': self.PLUGIN_VERSION,
           'priorities': wrapper.get_my_priorities(),
@@ -81,15 +81,15 @@ class main(plugin_base):
           purity = float(file.readlines()[0])
       # Check purity
       if purity >= 0.1:
-          data['results'] = data_builder(work_dir, seg_file).build_swgs()
-          data['results'][constants.PASS_TAR_PURITY] = True
+          cnv_data['results'] = data_builder(work_dir, seg_file).build_swgs()
+          cnv_data['results'][constants.PASS_TAR_PURITY] = True
           cna_annotated_path = os.path.join(work_dir, self.CNA_ANNOTATED)
           cnv = data_builder(work_dir, seg_file)
-          data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(cna_annotated_path, config['tar.swgs']['oncotree_code'])
+          cnv_data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(cna_annotated_path, config['tar.swgs']['oncotree_code'])
       else:
-          data['results'] = {constants.CNV_PLOT: data_builder(work_dir, seg_file).build_graph()}
-          data['results'][constants.PASS_TAR_PURITY] = False
-      return data
+          cnv_data['results'] = {constants.CNV_PLOT: data_builder(work_dir, seg_file).build_graph()}
+          cnv_data['results'][constants.PASS_TAR_PURITY] = False
+      return cnv_data
 
     def render(self, data):
       #renderer = mako_renderer(self.get_module_dir())
