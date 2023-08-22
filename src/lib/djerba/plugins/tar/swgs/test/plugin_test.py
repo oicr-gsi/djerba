@@ -20,7 +20,6 @@ class TestTarSNVIndelPlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        
  
         self.provenance_output = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/swgs-plugin/provenance_subset.tsv.gz'
         self.purity_pass = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/swgs-plugin/purity_pass/purity.txt'
@@ -62,6 +61,12 @@ class TestTarSNVIndelPlugin(PluginTester):
             self.MD5: 'cb472dc9ec3dacfcd8ada05fe687fe1c'
         }
         self.run_basic_test(test_source_dir, params)
+    
+    #def redact_json_data(self, data):
+    #    """replaces empty method from testing.tools"""
+    #    for key in ['cnv_plot']:
+    #        del data['plugins']['tar.swgs']['results'][key]
+    #    return data 
 
 if __name__ == '__main__':
     unittest.main()

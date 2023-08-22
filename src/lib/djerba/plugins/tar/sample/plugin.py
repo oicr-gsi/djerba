@@ -27,7 +27,7 @@ except ImportError:
 class main(plugin_base):
 
     PLUGIN_VERSION = '1.0.0'
-    PRIORITY = 100
+    PRIORITY = 200
     QCETL_CACHE = "/scratch2/groups/gsi/production/qcetl_v1"
 
     def configure(self, config):

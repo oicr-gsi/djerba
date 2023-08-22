@@ -20,7 +20,7 @@ from djerba.core.workspace import workspace
 
 class main(plugin_base):
    
-    PRIORITY = 100
+    PRIORITY = 300
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'snv_indel_template.html'
     WORKFLOW = 'consensusCruncher'
@@ -31,8 +31,8 @@ class main(plugin_base):
       super().__init__(**kwargs)
          
     def specify_params(self):
-      self.add_ini_required('maf_file')
-      self.add_ini_required('maf_file_normal')
+      self.add_ini_discovered('maf_file')
+      self.add_ini_discovered('maf_file_normal')
       self.add_ini_required('oncotree_code')
       self.add_ini_required('tcgacode')
       self.add_ini_required('tumour_id')
@@ -46,13 +46,14 @@ class main(plugin_base):
       self.set_priority_defaults(self.PRIORITY)
 
     def configure(self, config):
-      config = self.apply_defaults(config)
-
-      # Populate ini
-      config[self.identifier]["maf_file"] = self.get_maf_file(config[self.identifier]["root_sample_name"], self.RESULTS_SUFFIX_Pl)
-      config[self.identifier]["maf_file_normal"] = self.get_maf_file(config[self.identifier]["root_sample_name"], self.RESULTS_SUFFIX_BC)
-      
-      return config  
+        config = self.apply_defaults(config)
+        wrapper = self.get_config_wrapper(config)
+        # Populate ini
+        if wrapper.my_param_is_null('maf_file'):
+            config[self.identifier]["maf_file"] = self.get_maf_file(config[self.identifier]["root_sample_name"], self.RESULTS_SUFFIX_Pl)
+        if wrapper.my_param_is_null('maf_file_normal'):
+            config[self.identifier]["maf_file_normal"] = self.get_maf_file(config[self.identifier]["root_sample_name"], self.RESULTS_SUFFIX_BC)
+        return config  
 
     def extract(self, config):
       wrapper = self.get_config_wrapper(config)
