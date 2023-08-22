@@ -65,7 +65,7 @@ class TestTarSNVIndelPlugin(PluginTester):
         params = {
             self.INI: 'data/tar_snv_indel.ini',
             self.JSON: json_location,
-            self.MD5: '30036b4f2988da75fb5e562c702a509f'
+            self.MD5: '07f9fbdd8de6191579cb0688413ff3c9'
         }
         self.run_basic_test(test_source_dir, params)
 
