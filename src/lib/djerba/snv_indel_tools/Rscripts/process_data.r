@@ -19,7 +19,6 @@ option_list = list(
   make_option(c("-g", "--enscon"), type="character", default=NULL, help="ensemble conversion file", metavar="character"),
   make_option(c("-j", "--genelist"), type="character", default=NULL, help="subset cnas and rnaseq to these", metavar="character"),
   make_option(c("-n", "--tcgadata"), type="character", default=NULL, help="tcga datadir", metavar="character"),
-  make_option(c("-o", "--tcgacode"), type="character", default=NULL, help="tcga code", metavar="character"),
   make_option(c("-e", "--gepfile"), type="character", default=NULL, help="concatenated gep file", metavar="character"),
   make_option(c("-A", "--aratiofile"), type="character", default=NULL, help="A allele ratio file", metavar="character"),
   make_option(c("-b", "--maffile"), type="character", default=NULL, help="concatenated maf file", metavar="character"),
@@ -46,7 +45,6 @@ oncolist <- opt$oncolist
 enscon <- opt$enscon
 genelist <- opt$genelist
 tcgadata <- opt$tcgadata
-tcgacode <- opt$tcgacode
 maffile <- opt$maffile
 studyid <- opt$studyid
 whizbam_url <- opt$whizbam_url
@@ -197,31 +195,31 @@ if (is.null(gepfile)) {
   write.table(data.frame(Hugo_Symbol=rownames(df_percentile), df_percentile, check.names=FALSE),
     file=paste0(outdir, "/data_expression_percentile_comparison.txt"), sep="\t", row.names=FALSE, quote=FALSE)
 
-  print("getting TCGA-level data")
+#  print("getting TCGA-level data")
 
   # get TCGA comparitor
-  load(file=paste(tcgadata, "/", tcgacode,".PANCAN.matrix.rdf", sep=""))
-  df_tcga <- get(tcgacode)
+##  load(file=paste(tcgadata, "/", tcgacode,".PANCAN.matrix.rdf", sep=""))
+#  df_tcga <- get(tcgacode)
 
   # equalize dfs (get common genes)
-  comg <- as.character(intersect(row.names(df_tcga), row.names(df)))
-  df_tcga_common <- df_tcga[row.names(df_tcga) %in% comg, ]
-  df_tcga_common_sort <- df_tcga_common[ order(row.names(df_tcga_common)), ]
-  df_stud_common <- df[row.names(df) %in% comg, ]
-  df_stud_common_sort <- df_stud_common[ order(row.names(df_stud_common)), ]
-  df_stud_tcga <- merge(df_stud_common_sort, df_tcga_common_sort, by=0, all=TRUE)
-  df_stud_tcga[is.na(df_stud_tcga)] <- 0
-  rownames(df_stud_tcga) <- df_stud_tcga$Row.names
-  df_stud_tcga$Row.names <- NULL
-  df_zscore <- compZ(df_stud_tcga)
-  df_zscore_sample <- data.frame(Hugo_Symbol=rownames(df_zscore), df_zscore[,1], check.names=FALSE)
-  df_percentile <- data.frame(signif(pnorm(as.matrix(df_zscore)), digits=4), check.names=FALSE)
+#  comg <- as.character(intersect(row.names(df_tcga), row.names(df)))
+#  df_tcga_common <- df_tcga[row.names(df_tcga) %in% comg, ]
+#  df_tcga_common_sort <- df_tcga_common[ order(row.names(df_tcga_common)), ]
+#  df_stud_common <- df[row.names(df) %in% comg, ]
+#  df_stud_common_sort <- df_stud_common[ order(row.names(df_stud_common)), ]
+#  df_stud_tcga <- merge(df_stud_common_sort, df_tcga_common_sort, by=0, all=TRUE)
+#  df_stud_tcga[is.na(df_stud_tcga)] <- 0
+#  rownames(df_stud_tcga) <- df_stud_tcga$Row.names
+#  df_stud_tcga$Row.names <- NULL
+#  df_zscore <- compZ(df_stud_tcga)
+#  df_zscore_sample <- data.frame(Hugo_Symbol=rownames(df_zscore), df_zscore[,1], check.names=FALSE)
+#  df_percentile <- data.frame(signif(pnorm(as.matrix(df_zscore)), digits=4), check.names=FALSE)
 
   # z-score TCGA
-  write.table(data.frame(Hugo_Symbol=rownames(df_zscore), df_zscore[sample], check.names=FALSE),
-    file=paste0(outdir, "/data_expression_zscores_tcga.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+#  write.table(data.frame(Hugo_Symbol=rownames(df_zscore), df_zscore[sample], check.names=FALSE),
+#   file=paste0(outdir, "/data_expression_zscores_tcga.txt"), sep="\t", row.names=FALSE, quote=FALSE)
 
   # percentile TCGA
-  write.table(data.frame(Hugo_Symbol=rownames(df_percentile), df_percentile[sample], check.names=FALSE),
-    file=paste0(outdir, "/data_expression_percentile_tcga.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+#  write.table(data.frame(Hugo_Symbol=rownames(df_percentile), df_percentile[sample], check.names=FALSE),
+#    file=paste0(outdir, "/data_expression_percentile_tcga.txt"), sep="\t", row.names=FALSE, quote=FALSE)
 }

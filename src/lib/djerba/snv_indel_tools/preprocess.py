@@ -103,7 +103,6 @@ class preprocess():
       # THINGS FROM CONFIG 
       if self.tar == True:
           self.oncotree_code = self.config['tar.snv_indel']['oncotree_code']
-          self.tcgacode = self.config['tar.snv_indel']['tcgacode']
           self.tumour_id = self.config['tar.snv_indel']['tumour_id']
           self.normal_id = self.config['tar.snv_indel']['normal_id']
           self.maf_file_normal = self.config['tar.snv_indel']['maf_file_normal']
@@ -114,7 +113,6 @@ class preprocess():
           self.sequenza_solution = self.config['snv_indel']['sequenza_solution']
           self.gep_file = self.config['snv_indel']['gep_file']
           self.oncotree_code = self.config['snv_indel']['oncotree_code']
-          self.tcgacode = self.config['snv_indel']['tcgacode']
           self.tumour_id = self.config['snv_indel']['tumour_id']
           self.normal_id = self.config['snv_indel']['normal_id']
           self.study_title = self.config['snv_indel']['study_title']
@@ -163,7 +161,6 @@ class preprocess():
             '--enscon', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/ensemble_conversion_hg38.txt", 
             '--genelist', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/targeted_genelist.txt",
             '--tcgadata', "/.mounts/labs/CGI/gsi/tools/RODiC/data",
-            '--tcgacode', self.tcgacode,
             '--studyid', self.study_id,
             '--whizbam_url', 'https://whizbam.oicr.on.ca',
             '--tumourid', self.tumour_id,
