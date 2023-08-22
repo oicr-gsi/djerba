@@ -22,6 +22,7 @@ class main(plugin_base):
     TEMPLATE_NAME = 'swgs_template.html'
     RESULTS_SUFFIX = '.seg.txt'
     WORKFLOW = 'ichorcna'
+    CNA_ANNOTATED = "data_CNA_oncoKBgenes_nonDiploid_annotated.txt"
 
     def specify_params(self):
 
@@ -82,6 +83,9 @@ class main(plugin_base):
       if purity >= 0.1:
           data['results'] = data_builder(work_dir, seg_file).build_swgs()
           data['results'][constants.PASS_TAR_PURITY] = True
+          cna_annotated_path = os.path.join(work_dir, self.CNA_ANNOTATED)
+          cnv = data_builder(work_dir, seg_file)
+          data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(cna_annotated_path, config['tar.swgs']['oncotree_code'])
       else:
           data['results'] = {constants.CNV_PLOT: data_builder(work_dir, seg_file).build_graph()}
           data['results'][constants.PASS_TAR_PURITY] = False
