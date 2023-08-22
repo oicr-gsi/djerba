@@ -36,13 +36,13 @@ class TestTarSNVIndelPlugin(PluginTester):
         # Copy files into the temporary directory
         shutil.copy(self.provenance_output, self.tmp_dir)
         shutil.copy(self.purity_pass, self.tmp_dir)
-        #json_location = os.path.join(self.sup_dir ,"swgs-plugin/purity_pass/tar_swgs.json")
-        json_location = self.purity_pass_json
+        json_location = os.path.join(self.sup_dir ,"swgs-plugin/purity_pass/tar_swgs_purity_pass.json")
+        #json_location = self.purity_pass_json
 
         params = {
             self.INI: 'data/tar_swgs.ini',
             self.JSON: json_location,
-            self.MD5: 'e270143e36e38c272826fdd3ea4c6bea'
+            self.MD5: '73ff2fd5e9f53005192fbbe4147809c8'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -52,21 +52,20 @@ class TestTarSNVIndelPlugin(PluginTester):
         # Copy files into the temporary directory
         shutil.copy(self.provenance_output, self.tmp_dir)
         shutil.copy(self.purity_fail, self.tmp_dir)
-        #json_location = os.path.join(self.sup_dir ,"swgs-plugin/purity_fail/tar_swgs.json")
-        json_location = self.purity_fail_json
+        json_location = os.path.join(self.sup_dir ,"swgs-plugin/purity_fail/tar_swgs_purity_fail.json")
+        #json_location = self.purity_fail_json
 
         params = {
             self.INI: 'data/tar_swgs.ini',
             self.JSON: json_location,
-            self.MD5: '09a28d07a482dd121770c25a9bb5e252'
+            self.MD5: 'd191237a5b8fb414e714286fbc496984'
         }
         self.run_basic_test(test_source_dir, params)
     
-    #def redact_json_data(self, data):
-    #    """replaces empty method from testing.tools"""
-    #    for key in ['cnv_plot']:
-    #        del data['plugins']['tar.swgs']['results'][key]
-    #    return data 
+    def redact_json_data(self, data):
+        """replaces empty method from testing.tools"""
+        del data['plugins']['tar.swgs']['results']['cnv_plot']
+        return data 
 
 if __name__ == '__main__':
     unittest.main()

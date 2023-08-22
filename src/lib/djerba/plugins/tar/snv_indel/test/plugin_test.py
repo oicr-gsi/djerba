@@ -41,8 +41,8 @@ class TestTarSNVIndelPlugin(PluginTester):
         shutil.copy(self.data_CNA_onco, self.tmp_dir)
         shutil.copy(self.provenance_output, self.tmp_dir)
         shutil.copy(self.purity_fail, self.tmp_dir)
-        json_location = self.purity_fail_json
-        #json_location = os.path.join(self.sup_dir ,"snv-indel-plugin/purity_fail/tar_snv_indel.json")
+        #json_location = self.purity_fail_json
+        json_location = os.path.join(self.sup_dir ,"snv-indel-plugin/purity_fail/tar_snv_indel_purity_fail.json")
 
         params = {
             self.INI: 'data/tar_snv_indel.ini',
@@ -59,8 +59,8 @@ class TestTarSNVIndelPlugin(PluginTester):
         shutil.copy(self.data_CNA_onco, self.tmp_dir)
         shutil.copy(self.provenance_output, self.tmp_dir)
         shutil.copy(self.purity_pass, self.tmp_dir)
-        #json_location = os.path.join(self.sup_dir ,"snv-indel-plugin/purity_pass/tar_snv_indel.json")
-        json_location = self.purity_pass_json
+        json_location = os.path.join(self.sup_dir ,"snv-indel-plugin/purity_pass/tar_snv_indel_purity_pass.json")
+        #json_location = self.purity_pass_json
         
         params = {
             self.INI: 'data/tar_snv_indel.ini',
