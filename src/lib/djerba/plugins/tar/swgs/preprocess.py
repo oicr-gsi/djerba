@@ -44,8 +44,8 @@ class preprocess:
     self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts"
     self.r_script_dir_swgs = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/swgs/" 
     self.data_dir = os.environ.get('DJERBA_BASE_DIR') + "/data/"
-    self.tumour_id = self.config['tar.snv_indel']['tumour_id']
-    self.oncotree_code = self.config['tar.snv_indel']['oncotree_code']
+    self.tumour_id = self.config['tar.swgs']['tumour_id']
+    self.oncotree_code = self.config['tar.swgs']['oncotree_code']
 
     # SEG FILE
 

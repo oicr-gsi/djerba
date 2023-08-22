@@ -58,7 +58,8 @@ class main(plugin_base):
       wrapper = self.get_config_wrapper(config)
       work_dir = self.workspace.get_work_dir()
       data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
-
+      with open(os.path.join(work_dir, 'purity.txt'), "r") as file:
+            purity = float(file.readlines()[0]) 
       maf_file = self.filter_maf_for_tar(work_dir, config[self.identifier]["maf_file"], config[self.identifier]["maf_file_normal"])
       oncotree = config[self.identifier]["oncotree_code"]
       assay = "TAR"
@@ -73,6 +74,10 @@ class main(plugin_base):
            sic.HAS_EXPRESSION_DATA: False,
            sic.BODY: output_data
       }
+      if purity >= 0.1:
+          results[sic.PASS_TAR_PURITY] = True
+      else:
+          results[sic.PASS_TAR_PURITY] = False
       data['results'] = results
 
       mutations_annotated_path = os.path.join(work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)

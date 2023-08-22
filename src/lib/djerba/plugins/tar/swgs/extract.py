@@ -18,6 +18,7 @@ from djerba.util.logger import logger
 from djerba.util.image_to_base64 import converter
 import djerba.extract.oncokb.constants as oncokb
 from djerba.util.subprocess_runner import subprocess_runner
+import djerba.render.constants as rc
 
 class data_builder:
 
@@ -233,7 +234,7 @@ class data_builder:
         (chromosome, arm, band) = end
     else:
         try:
-            cb = re.split('\s+', cb_input).pop(0) # remove suffixes like 'alternate reference locus'
+            cb = re.split(r'\s+', cb_input).pop(0) # remove suffixes like 'alternate reference locus'
             cb = re.split('-', cb).pop(0) # take the first part of eg. 2q22.2-q22.3
             chromosome = re.split('[pq]', cb).pop(0)
             if chromosome == 'X':
@@ -244,10 +245,10 @@ class data_builder:
                 chromosome = int(chromosome)
             arm = 'a' # arm may be missing; default to beginning of sort order
             band = 0 # band may be missing; default to beginning of sort order
-            if re.match('^([0-9]+|[XY])[pq]', cb):
+            if re.match(r'^([0-9]+|[XY])[pq]', cb):
                 arm = re.split('[^pq]+', cb).pop(1)
-            if re.match('^([0-9]+|[XY])[pq][0-9]+\.*\d*$', cb):
-                band = float(re.split('[^0-9\.]+', cb).pop(1))
+            if re.match(r'^([0-9]+|[XY])[pq][0-9]+\.*\d*$', cb):
+                band = float(re.split(r'[^0-9\.]+', cb).pop(1))
         except (IndexError, ValueError) as err:
             # if error occurs in ordering, move to end of sort order
             msg = "Cannot parse cytoband \"{0}\" for sorting; ".format(cb_input)+\
@@ -271,3 +272,78 @@ class data_builder:
       #    os.remove(os.path.join(self.work_dir, constants.DATA_CNA_ONCOKB))
       #if os.path.exists(os.path.join(self.work_dir, constants.DATA_CNA_ONCOKB_NONDIPLOID)):
       #    os.remove(os.path.join(self.work_dir, constants.DATA_CNA_ONCOKB_NONDIPLOID))
+
+  def build_therapy_info(self, variants_annotated_file, oncotree_uc):
+      # build the "FDA approved" and "investigational" therapies data
+      # defined respectively as OncoKB levels 1/2/R1 and R2/3A/3B/4
+      # OncoKB "LEVEL" columns contain treatment if there is one, 'NA' otherwise
+      # Input files:
+      # - One file each for CNVs
+      # - Must be annotated by OncoKB script
+      # - Must not be missing
+      # - May consist of headers only (no data rows)
+      # Output columns:
+      # - the gene name, with oncoKB link (or pair of names/links, for fusions)
+      # - Alteration name, eg. HGVSp_Short value, with oncoKB link
+      # - Treatment
+      # - OncoKB level
+      HUGO_SYMBOL_UPPER_CASE = 'HUGO_SYMBOL'
+      ALTERATION_UPPER_CASE = 'ALTERATION'
+      tiered_rows = list()
+      for tier in ('Approved', 'Investigational'):
+          #self.logger.debug("Building therapy info for level: {0}".format(tier))
+          if tier == 'Approved':
+              levels = oncokb.FDA_APPROVED_LEVELS
+          elif tier == 'Investigational':
+              levels = oncokb.INVESTIGATIONAL_LEVELS
+          rows = []
+          with open(variants_annotated_file) as data_file:
+              for row in csv.DictReader(data_file, delimiter="\t"):
+                  gene = row[HUGO_SYMBOL_UPPER_CASE]
+                  alteration = row[ALTERATION_UPPER_CASE]
+                  [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
+                  if max_level:
+                      rows.append(self.treatment_row(gene, alteration, max_level, therapies, oncotree_uc, tier))
+          rows = list(filter(self.oncokb_filter, self.sort_therapy_rows(rows)))
+          if rows:
+              tiered_rows.append(rows)
+      return tiered_rows
+  
+  def parse_max_oncokb_level_and_therapies(self, row_dict, levels):
+      # find maximum level (if any) from given levels list, and associated therapies
+      max_level = None
+      therapies = []
+      for level in levels:
+          if not self.is_null_string(row_dict[level]):
+              if not max_level: max_level = level
+              therapies.append(row_dict[level])
+      if max_level:
+          max_level = self.reformat_level_string(max_level)
+      # insert a space between comma and start of next word
+      therapies = [re.sub(r'(?<=[,])(?=[^\s])', r' ', t) for t in therapies]
+      return (max_level, '; '.join(therapies))
+  
+  def sort_therapy_rows(self, rows):
+      # sort FDA/investigational therapy rows
+      # extract a gene name from 'genes and urls' dictionary keys
+      rows = sorted(
+          rows,
+          key=lambda row: sorted(list(row.get('Gene'))).pop(0)
+      )
+      rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row['OncoKB level']))
+      return rows
+  
+  def treatment_row(self, genes_arg, alteration, max_level, therapies, oncotree_uc, tier):
+        # genes argument may be a string, or an iterable of strings
+        # legacy from djerba classic
+        alt_url = self.build_alteration_url(genes_arg, alteration, oncotree_uc)
+        row = {
+            'Tier': tier,
+            'OncoKB level': max_level,
+            'Treatments': therapies,
+            'Gene': genes_arg,
+            'Gene_URL': self.build_gene_url(genes_arg),
+            rc.ALT: alteration,
+            rc.ALT_URL: alt_url
+        }
+        return row

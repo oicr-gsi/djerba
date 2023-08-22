@@ -33,6 +33,8 @@ class data_builder:
         self.assay = assay
         self.cytoband_path = self.data_dir + "cytoBand.txt"
         self.oncotree_uc = oncotree_uc
+        with open(os.path.join(work_dir, 'purity.txt'), "r") as file:
+            self.purity = float(file.readlines()[0])
 
     def build_alteration_url(self, gene, alteration, cancer_code):
         #self.logger.debug('Constructing alteration URL from inputs: {0}'.format([self.ONCOKB_URL_BASE, gene, alteration, cancer_code]))
@@ -69,9 +71,12 @@ class data_builder:
                     sic.VAF_PERCENT: int(round(float(input_row[sic.TUMOUR_VAF]), 2)*100),
                     sic.TUMOUR_DEPTH: int(input_row[sic.TUMOUR_DEPTH]),
                     sic.TUMOUR_ALT_COUNT: int(input_row[sic.TUMOUR_ALT_COUNT]),
-                    sic.COPY_STATE: mutation_copy_states.get(gene, sic.UNKNOWN),
                     sic.ONCOKB: self.parse_oncokb_level(input_row)
                 }
+
+                if self.purity >= 0.1:
+                    row[sic.COPY_STATE] = mutation_copy_states.get(gene, sic.UNKNOWN)
+
                 rows.append(row)
         #self.logger.debug("Sorting and filtering small mutation and indel rows")
         rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))

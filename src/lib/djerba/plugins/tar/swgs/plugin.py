@@ -22,12 +22,16 @@ class main(plugin_base):
     TEMPLATE_NAME = 'swgs_template.html'
     RESULTS_SUFFIX = '.seg.txt'
     WORKFLOW = 'ichorcna'
+    CNA_ANNOTATED = "data_CNA_oncoKBgenes_nonDiploid_annotated.txt"
 
     def specify_params(self):
 
       # Required parameters for swgs
       self.set_ini_default('seg_file', None)
-      
+      self.add_ini_required('root_sample_name')
+      self.add_ini_required('oncotree_code')
+      self.add_ini_required('tumour_id')
+
       # Default parameters for priorities
       self.set_ini_default('configure_priority', 100)
       self.set_ini_default('extract_priority', 100)
@@ -43,7 +47,11 @@ class main(plugin_base):
       config = self.apply_defaults(config)
       
       # POPULATE THE INI HERE!?
-      config[self.identifier]["seg_file"] = self.get_seg_file(config["provenance_helper"]["root_sample_name"])
+      #print(type(self.identifier))
+      #print(type(config[self.identifier]))
+      #print(type(config[self.idenfitier]['root_sample_name']))
+
+      config[self.identifier]["seg_file"] = self.get_seg_file(config[self.identifier]['root_sample_name'])
 
       return config
 
@@ -60,15 +68,27 @@ class main(plugin_base):
       work_dir = self.workspace.get_work_dir()
       preprocess(config, work_dir, seg_file).run_R_code()
 
-      # ADD IF STATEMENT FOR PURITY
       data = {
           'plugin_name': 'Shallow Whole Genome Sequencing (sWGS)',
           'version': self.PLUGIN_VERSION,
           'priorities': wrapper.get_my_priorities(),
           'attributes': wrapper.get_my_attributes(),
-          'merge_inputs': {},
-          'results': data_builder(work_dir, seg_file).build_swgs()
+          'merge_inputs': {}
       }
+
+      # Read purity
+      with open(os.path.join(work_dir, 'purity.txt'), "r") as file:
+          purity = float(file.readlines()[0])
+      # Check purity
+      if purity >= 0.1:
+          data['results'] = data_builder(work_dir, seg_file).build_swgs()
+          data['results'][constants.PASS_TAR_PURITY] = True
+          cna_annotated_path = os.path.join(work_dir, self.CNA_ANNOTATED)
+          cnv = data_builder(work_dir, seg_file)
+          data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(cna_annotated_path, config['tar.swgs']['oncotree_code'])
+      else:
+          data['results'] = {constants.CNV_PLOT: data_builder(work_dir, seg_file).build_graph()}
+          data['results'][constants.PASS_TAR_PURITY] = False
       return data
 
     def render(self, data):
