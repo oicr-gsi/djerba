@@ -233,7 +233,7 @@ class data_builder:
         (chromosome, arm, band) = end
     else:
         try:
-            cb = re.split('\s+', cb_input).pop(0) # remove suffixes like 'alternate reference locus'
+            cb = re.split(r'\s+', cb_input).pop(0) # remove suffixes like 'alternate reference locus'
             cb = re.split('-', cb).pop(0) # take the first part of eg. 2q22.2-q22.3
             chromosome = re.split('[pq]', cb).pop(0)
             if chromosome == 'X':
@@ -244,10 +244,10 @@ class data_builder:
                 chromosome = int(chromosome)
             arm = 'a' # arm may be missing; default to beginning of sort order
             band = 0 # band may be missing; default to beginning of sort order
-            if re.match('^([0-9]+|[XY])[pq]', cb):
+            if re.match(r'^([0-9]+|[XY])[pq]', cb):
                 arm = re.split('[^pq]+', cb).pop(1)
-            if re.match('^([0-9]+|[XY])[pq][0-9]+\.*\d*$', cb):
-                band = float(re.split('[^0-9\.]+', cb).pop(1))
+            if re.match(r'^([0-9]+|[XY])[pq][0-9]+\.*\d*$', cb):
+                band = float(re.split(r'[^0-9\.]+', cb).pop(1))
         except (IndexError, ValueError) as err:
             # if error occurs in ordering, move to end of sort order
             msg = "Cannot parse cytoband \"{0}\" for sorting; ".format(cb_input)+\

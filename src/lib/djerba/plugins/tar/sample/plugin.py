@@ -32,6 +32,7 @@ class main(plugin_base):
 
     def configure(self, config):
         config = self.apply_defaults(config)
+        work_dir = self.workspace.get_work_dir()
         wrapper = self.get_config_wrapper(config)
         group_id = config[self.identifier]['group_id']
         if wrapper.my_param_is_null('purity'):
@@ -39,6 +40,7 @@ class main(plugin_base):
             ichor_json = self.process_ichor_json(ichorcna_metrics_file) 
             self.workspace.write_json('ichor_metrics.json', ichor_json)
             purity = ichor_json["tumor_fraction"]
+            self.write_purity(purity, work_dir)
             wrapper.set_my_param('purity', float('%.1E' % Decimal(purity*100)))
         if wrapper.my_param_is_null('concensus_cruncher_file'):
             wrapper.set_my_param('concensus_cruncher_file', provenance_tools.subset_provenance_sample(self, "consensusCruncher", group_id, "allUnique-hsMetrics\.HS\.txt$"))
@@ -80,7 +82,7 @@ class main(plugin_base):
     def render(self, data):
         renderer = mako_renderer(self.get_module_dir())
         return renderer.render_name('sample_template.html', data)
-    
+
     def process_ichor_json(self, ichor_metrics):
         with open(ichor_metrics, 'r') as ichor_results:
             ichor_json = json.load(ichor_results)
@@ -119,6 +121,15 @@ class main(plugin_base):
             self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_priority_defaults(self.PRIORITY)
+
+    def write_purity(self, purity, work_dir):
+        """
+        Writes the purity to a .txt file for other plugins to read.
+        """
+        out_path = os.path.join(work_dir, 'purity.txt')
+        with open(out_path, "w") as file:
+            file.write(str(purity))
+        return out_path
 
 class MissingQCETLError(Exception):
     pass 

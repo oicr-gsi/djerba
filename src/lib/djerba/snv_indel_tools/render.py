@@ -16,7 +16,8 @@ class html_builder:
   EXPR_COL_INDEX_SMALL_MUT = 6 # position of expression column (if any) in small mutations table
   EXPR_COL_INDEX_CNV = 2 # position of expression column (if any) in cnv table
   EXPR_SHORT_NAME = 'Expr. (%)'
-    
+ 
+
   # ------------------- TABLE FORMAT FUNCTIONS -------------------
   
   def section_cells_begin(self, section_title, main_or_supp):
@@ -114,24 +115,29 @@ class html_builder:
     return(value_formatted)
   # ----------------------- CNV FUNCTIONS ----------------------
       
-  def oncogenic_small_mutations_and_indels_header(self, mutation_info):
+  def oncogenic_small_mutations_and_indels_header(self, mutation_info, assay):
     names = [
       constants.GENE,
       'Chr.',
       constants.PROTEIN,
       constants.MUTATION_TYPE,
       constants.VAF_NOPERCENT,
-      constants.DEPTH,
-      constants.COPY_STATE,
-      constants.ONCOKB
-    ]
+      constants.DEPTH
+    ] 
+
+    if assay == "TAR":
+        if mutation_info[constants.PASS_TAR_PURITY]:
+            names.append(constants.COPY_STATE)
+    else:
+        names.append(constants.COPY_STATE)
+    names.append(constants.ONCOKB)
 
     if mutation_info[constants.HAS_EXPRESSION_DATA]:
         names.insert(self.EXPR_COL_INDEX_SMALL_MUT, self.EXPR_SHORT_NAME)
     return self.table_header(names)
 
 
-  def oncogenic_small_mutations_and_indels_rows(self, mutation_info):
+  def oncogenic_small_mutations_and_indels_rows(self, mutation_info, assay):
     row_fields = mutation_info[constants.BODY]
     rows = []
     for row in row_fields:
@@ -142,10 +148,16 @@ class html_builder:
             self._td(self._href(row[constants.PROTEIN_URL], row[constants.PROTEIN])),
             self._td(row[constants.MUTATION_TYPE]),
             self._td(row[constants.VAF_PERCENT]),
-            self._td(depth),
-            self._td(row[constants.COPY_STATE]),
-            self._td_oncokb(row[constants.ONCOKB])
+            self._td(depth)
         ]
+        if assay == "TAR":
+            if mutation_info[constants.PASS_TAR_PURITY]:
+                cells.append(self._td(row[constants.COPY_STATE]))
+        else:
+            cells.append(self._td(row[constants.COPY_STATE]))
+
+        cells.append(self._td_oncokb(row[constants.ONCOKB]))
+        
         if mutation_info[constants.HAS_EXPRESSION_DATA]:
             metric = self._expression_display(row[constants.EXPRESSION_METRIC])
             cells.insert(self.EXPR_COL_INDEX_SMALL_MUT, self._td(metric))

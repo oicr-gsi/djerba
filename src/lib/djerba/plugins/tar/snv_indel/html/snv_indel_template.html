@@ -14,15 +14,14 @@
 ${html_builder().section_cells_begin("<h2>SNVs and in/dels</h2>","main")}
    
       <p>
-            <strong>${html_builder().k_comma_format(results.get(constants.TOTAL_VARIANTS))}</strong> somatic mutation(s) were detected in exonic or splice regions
-            and <strong>${results.get(constants.CLINICALLY_RELEVANT_VARIANTS)}</strong> corresponded to an oncogenic mutation, as defined by OncoKB.
+            The mutations below are oncogenic as defined by OncoKB.
       </p>
 
       % if results.get(constants.CLINICALLY_RELEVANT_VARIANTS) > 0:
             <table class="variants" width="100%">
-                  ${html_builder().oncogenic_small_mutations_and_indels_header(results)}
+                  ${html_builder().oncogenic_small_mutations_and_indels_header(results, assay="TAR")}
                   <tbody>
-                  % for row in html_builder().oncogenic_small_mutations_and_indels_rows(results):
+                  % for row in html_builder().oncogenic_small_mutations_and_indels_rows(results, assay="TAR"):
                         ${row}
                   % endfor
                   </tbody>

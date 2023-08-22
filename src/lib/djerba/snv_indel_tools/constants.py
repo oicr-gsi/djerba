@@ -46,6 +46,7 @@ ONCOKB_URL_BASE = 'https://www.oncokb.org/gene'
 TUMOUR_VAF = 'tumour_vaf'
 UNKNOWN = 'Unknown'
 VARIANT_CLASSIFICATION = 'Variant_Classification'
+PASS_TAR_PURITY = "Above_Purity_Threshold"
 
 UNCLASSIFIED_CYTOBANDS = [
 "", # some genes have an empty string for cytoband

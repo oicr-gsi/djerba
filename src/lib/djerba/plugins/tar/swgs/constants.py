@@ -19,6 +19,7 @@ ONCOKB = 'OncoKB'
 EXPRESSION_METRIC = 'Expression Percentile'
 CNV_PLOT = 'cnv_plot'
 TEXT_ENCODING = 'utf-8'
+PASS_TAR_PURITY = "Above_Purity_Threshold"
 
 # Files to delete
 CNV_PLOT_DATA = "cnv_plot_data.txt"
