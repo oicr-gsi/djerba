@@ -79,6 +79,9 @@ class main(plugin_base):
       else:
           results[sic.PASS_TAR_PURITY] = False
       data['results'] = results
+
+      mutations_annotated_path = os.path.join(work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)
+      data['merge_inputs']['treatment_options_merger'] =  data_extractor(work_dir, assay, oncotree).build_therapy_info(mutations_annotated_path, oncotree)
       return data
 
     def render(self, data):

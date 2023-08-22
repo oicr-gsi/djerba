@@ -27,7 +27,7 @@ ${html_builder().section_cells_begin("<h2>Shallow Whole Genome Sequencing</h2>",
 
        % endif
 
-      <img id='sWGS' style='width: 100%; object-fit: contain' src="${converter().convert_svg(results.get(constants.CNV_PLOT), 'CNV plot')}"/>
+       <img id='sWGS' style='width: 100%; object-fit: contain' src="${converter().convert_svg(results.get(constants.CNV_PLOT), 'CNV plot')}"/>
 
       % if results.get(constants.PASS_TAR_PURITY):
           % if results.get(constants.CLINICALLY_RELEVANT_VARIANTS) > 0:
