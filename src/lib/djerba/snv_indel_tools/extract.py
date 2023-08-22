@@ -15,6 +15,7 @@ from djerba.util.logger import logger
 from djerba.util.image_to_base64 import converter
 import djerba.extract.oncokb.constants as oncokb
 from djerba.util.subprocess_runner import subprocess_runner
+import djerba.render.constants as rc
 
 class data_builder:
 
@@ -247,3 +248,84 @@ class data_builder:
         subprocess_runner().run(args)
         #self.logger.info("Wrote VAF plot to {0}".format(out_path))
         return out_path
+
+    def treatment_row(self, genes_arg, alteration, max_level, therapies, oncotree_uc, tier):
+        # genes argument may be a string, or an iterable of strings
+        # legacy from djerba classic
+        #if isinstance(genes_arg, str):
+        #    genes_and_urls = {genes_arg: self.build_gene_url(genes_arg)}
+        #else:
+        #    genes_and_urls = {gene: self.build_gene_url(gene) for gene in genes_arg}
+        alt_url = self.build_alteration_url(genes_arg, alteration, oncotree_uc)
+        row = {
+            'Tier': tier,
+            sic.ONCOKB: max_level,
+            'Treatments': therapies,
+            'Gene': genes_arg,
+            'Gene_URL': self.build_gene_url(genes_arg),
+            rc.ALT: alteration,
+            rc.ALT_URL: alt_url
+        }
+        return row
+
+    def build_therapy_info(self, variants_annotated_file, oncotree_uc):
+        # build the "FDA approved" and "investigational" therapies data
+        # defined respectively as OncoKB levels 1/2/R1 and R2/3A/3B/4
+        # OncoKB "LEVEL" columns contain treatment if there is one, 'NA' otherwise
+        # Input files:
+        # - One file each for mutation
+        # - Must be annotated by OncoKB script
+        # - Must not be missing
+        # - May consist of headers only (no data rows)
+        # Output columns:
+        # - the gene name, with oncoKB link (or pair of names/links, for fusions)
+        # - Alteration name, eg. HGVSp_Short value, with oncoKB link
+        # - Treatment
+        # - OncoKB level
+        tiered_rows = list()
+        for tier in ('Approved', 'Investigational'):
+            # self.logger.debug("Building therapy info for level: {0}".format(tier))
+            if tier == 'Approved':
+                levels = oncokb.FDA_APPROVED_LEVELS
+            elif tier == 'Investigational':
+                levels = oncokb.INVESTIGATIONAL_LEVELS
+            rows = []
+            with open(variants_annotated_file) as data_file:
+                for row in csv.DictReader(data_file, delimiter="\t"):
+                    gene = row[sic.HUGO_SYMBOL_TITLE_CASE]
+                    alteration = row[sic.HGVSP_SHORT]
+                    if gene == 'BRAF' and alteration == 'p.V640E':
+                        alteration = 'p.V600E'
+                    if 'splice' in row[sic.VARIANT_CLASSIFICATION].lower():
+                        alteration = 'p.? (' + row[sic.HGVSC] + ')'  
+                    [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
+                    if max_level:
+                        rows.append(self.treatment_row(gene, alteration, max_level, therapies, oncotree_uc, tier))
+            rows = list(filter(self.oncokb_filter, self.sort_therapy_rows(rows)))
+            if rows:
+                tiered_rows.append(rows)
+        return tiered_rows[0]
+    
+    def sort_therapy_rows(self, rows):
+        # sort FDA/investigational therapy rows
+        # extract a gene name from 'genes and urls' dictionary keys
+        rows = sorted(
+            rows,
+            key=lambda row: sorted(list(row.get('Gene'))).pop(0)
+        )
+        rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row[sic.ONCOKB]))
+        return rows
+    
+    def parse_max_oncokb_level_and_therapies(self, row_dict, levels):
+        # find maximum level (if any) from given levels list, and associated therapies
+        max_level = None
+        therapies = []
+        for level in levels:
+            if not self.is_null_string(row_dict[level]):
+                if not max_level: max_level = level
+                therapies.append(row_dict[level])
+        if max_level:
+            max_level = self.reformat_level_string(max_level)
+        # insert a space between comma and start of next word
+        therapies = [re.sub(r'(?<=[,])(?=[^\s])', r' ', t) for t in therapies]
+        return (max_level, '; '.join(therapies))

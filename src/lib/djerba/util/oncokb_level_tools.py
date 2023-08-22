@@ -1,32 +1,32 @@
 """Simple functions to process OncoKB levels"""
 
 def oncokb_level_to_html(level):
-    if level == "1" or level == 1:
+    if level == "Level 1" or level == 1:
         html = '<div class="circle oncokb-level1">1</div>'
-    elif level == "2" or level == 2:
+    elif level == "Level 2" or level == 2:
         html = '<div class="circle oncokb-level2">2</div>'
-    elif level == "3A":
+    elif level == "Level 3A":
         html = '<div class="circle oncokb-level3A">3A</div>'
-    elif level == "3B":
+    elif level == "Level 3B":
         html = '<div class="circle oncokb-level3B">3B</div>'
-    elif level == "4":
+    elif level == "Level 4":
         html = '<div class="circle oncokb-level4">4</div>'
-    elif level == "R1":
+    elif level == "Level R1":
         html = '<div class="circle oncokb-levelR1">R1</div>'
-    elif level == "R2":
+    elif level == "Level R2":
         html = '<div class="circle oncokb-levelR2">R2</div>'
-    elif level == "N1":
+    elif level == "Level N1":
         html = '<div class="square oncokb-levelN1">N1</div>'
-    elif level == "N2":
+    elif level == "Level N2":
         html = '<div class="square oncokb-levelN2">N2</div>'
-    elif level == "N3":
+    elif level == "Level N3":
         html = '<div class="square oncokb-levelN3">N3</div>'
     else:
         raise RuntimeError("Unknown OncoKB level: '{0}'".format(level))
     return html
 
 def oncokb_order(level):
-    levels = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'N1', 'N2', 'N3']
+    levels = ['Level 1', 'Level 2', 'Level 3A', 'Level 3B', 'Level 4', 'Level R1', 'Level R2', 'Level N1', 'Level N2', 'Level N3']
     order = None
     for i in range(len(levels)):
         if str(level) == levels[i]:
