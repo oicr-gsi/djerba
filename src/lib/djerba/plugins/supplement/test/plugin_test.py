@@ -24,7 +24,7 @@ class TestPwgSupplementaryPlugin(PluginTester):
         params = {
             self.INI: 'PWGS.supp.ini',
             self.JSON: json_location,
-            self.MD5: '2f8e4c672327819d6b4a8cc2a5a724d7'
+            self.MD5: 'ebca5b9340c4cb6bd70af6b81039dedb'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -34,7 +34,7 @@ class TestPwgSupplementaryPlugin(PluginTester):
         params = {
             self.INI: 'TAR.supp.ini',
             self.JSON: json_location,
-            self.MD5: '625932f55929eef73dcbab58724e719f'
+            self.MD5: '28135cc27dea2d3f0df76040351bebea'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -44,7 +44,7 @@ class TestPwgSupplementaryPlugin(PluginTester):
         params = {
             self.INI: 'WGTS.supp.ini',
             self.JSON: json_location,
-            self.MD5: '776348f4e7d0fee6183bc4c9ae9cf335'
+            self.MD5: '6e2c3161ac47e7c4e0136b217513eb52'
         }
         self.run_basic_test(test_source_dir, params)
 
