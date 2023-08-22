@@ -22,31 +22,51 @@ class TestTarSNVIndelPlugin(PluginTester):
         self.tmp_dir = self.tmp.name
  
         self.provenance_output = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/swgs-plugin/provenance_subset.tsv.gz'
-        self.purity = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/swgs-plugin/purity.txt'
-
+        self.purity_pass = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/swgs-plugin/purity_pass/purity.txt'
+        self.purity_fail = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/swgs-plugin/purity_fail/purity.txt'
+        self.purity_pass_json = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/swgs-plugin/purity_pass/tar_swgs_purity_pass.json'
+        self.purity_fail_json = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/swgs-plugin/purity_fail/tar_swgs_purity_fail.json'
+        
         sup_dir_var = 'DJERBA_TEST_DATA'
         self.sup_dir = os.environ.get(sup_dir_var)
 
-    def testTarSNVIndel(self):
+    def testTarSNVIndelPurityPass(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         
         # Copy files into the temporary directory
         shutil.copy(self.provenance_output, self.tmp_dir)
-        shutil.copy(self.purity, self.tmp_dir)
-        json_location = os.path.join(self.sup_dir ,"swgs-plugin/tar_swgs.json")
+        shutil.copy(self.purity_pass, self.tmp_dir)
+        #json_location = os.path.join(self.sup_dir ,"swgs-plugin/purity_pass/tar_swgs.json")
+        json_location = self.purity_pass_json
 
         params = {
             self.INI: 'data/tar_swgs.ini',
             self.JSON: json_location,
-            self.MD5: '980b75f9e9954d2b00c4b280595732c8'
+            self.MD5: 'e270143e36e38c272826fdd3ea4c6bea'
         }
         self.run_basic_test(test_source_dir, params)
 
-    def redact_json_data(self, data):
-        """replaces empty method from testing.tools"""
-        for key in ['cnv_plot']:
-            del data['plugins']['tar.swgs']['results'][key]
-        return data 
+    def testTarSNVIndelPurityFail(self):
+        test_source_dir = os.path.realpath(os.path.dirname(__file__))
+
+        # Copy files into the temporary directory
+        shutil.copy(self.provenance_output, self.tmp_dir)
+        shutil.copy(self.purity_fail, self.tmp_dir)
+        #json_location = os.path.join(self.sup_dir ,"swgs-plugin/purity_fail/tar_swgs.json")
+        json_location = self.purity_fail_json
+
+        params = {
+            self.INI: 'data/tar_swgs.ini',
+            self.JSON: json_location,
+            self.MD5: '09a28d07a482dd121770c25a9bb5e252'
+        }
+        self.run_basic_test(test_source_dir, params)
+    
+    #def redact_json_data(self, data):
+    #    """replaces empty method from testing.tools"""
+    #    for key in ['cnv_plot']:
+    #        del data['plugins']['tar.swgs']['results'][key]
+    #    return data 
 
 if __name__ == '__main__':
     unittest.main()
