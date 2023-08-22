@@ -81,8 +81,10 @@ class main(plugin_base):
       # Check purity
       if purity >= 0.1:
           data['results'] = data_builder(work_dir, seg_file).build_swgs()
+          data['results'][constants.PASS_TAR_PURITY] = True
       else:
           data['results'] = {constants.CNV_PLOT: data_builder(work_dir, seg_file).build_graph()}
+          data['results'][constants.PASS_TAR_PURITY] = False
       return data
 
     def render(self, data):
