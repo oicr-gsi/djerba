@@ -309,7 +309,10 @@ class data_builder:
             rows = list(filter(self.oncokb_filter, self.sort_therapy_rows(rows)))
             if rows:
                 tiered_rows.append(rows)
-        return tiered_rows[0]
+        if len(tiered_rows)>0:
+            return tiered_rows[0]
+        else:
+            return tiered_rows
     
     def sort_therapy_rows(self, rows):
         # sort FDA/investigational therapy rows
