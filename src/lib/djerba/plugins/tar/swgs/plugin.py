@@ -66,7 +66,8 @@ class main(plugin_base):
 
       # Pre-process all the files
       work_dir = self.workspace.get_work_dir()
-      preprocess(config, work_dir, seg_file).run_R_code()
+      seg_path = preprocess(config, work_dir).preprocess_seg(seg_file)
+      preprocess(config, work_dir).run_R_code(seg_path)
 
       cnv_data = {
           'plugin_name': 'Shallow Whole Genome Sequencing (sWGS)',

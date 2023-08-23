@@ -19,12 +19,7 @@ import djerba.plugins.tar.swgs.constants as constants
 
 class preprocess:
 
-  # FOR TESTING
-  #tumour_id = "100-PM-064_LCM3"
-  #oncotree_code = "paad"
-  #seg_file = "REVOLVE_0002_01_LB04-01.seg.txt"
-
-  def __init__(self, config, work_dir, seg_file):
+  def __init__(self, config, work_dir):
 
     self.config = config
     # DIRECTORIES
@@ -47,10 +42,6 @@ class preprocess:
     self.tumour_id = self.config['tar.swgs']['tumour_id']
     self.oncotree_code = self.config['tar.swgs']['oncotree_code']
 
-    # SEG FILE
-
-    self.seg_file = seg_file 
-
     # RANDOM
     self.cache_params = None
     self.log_level = "logging.WARNING"
@@ -60,9 +51,8 @@ class preprocess:
   # ----------------------- to do all the pre-processing --------------------
     
     
-  def run_R_code(self):
-    seg_path = self.preprocess_seg(self.seg_file)
-
+  def run_R_code(self, seg_path):
+    
     cmd = [
         'Rscript', self.r_script_dir_swgs + "/process_CNA_data.r",
         '--basedir', self.r_script_dir,
@@ -96,9 +86,11 @@ class preprocess:
     # Convert the dataframe back into a tab-delimited text file.
     out_path = os.path.join(self.work_dir, 'seg_amplifications.txt')
     df_seg.to_csv(out_path, sep = '\t', index=None)
-
-    return out_path
-
+    
+    if not df.empty:
+        return out_path
+    else:
+        return None
 
   def postprocess(self):
      """
