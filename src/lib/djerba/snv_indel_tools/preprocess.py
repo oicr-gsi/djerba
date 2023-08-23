@@ -172,7 +172,7 @@ class preprocess():
         ]
     runner = subprocess_runner()
     result = runner.run(cmd, "main R script")
-    self.postprocess()
+    #self.postprocess()
     return result
 
   def preprocess_aratio(self, sequenza_path, report_dir):
@@ -342,21 +342,21 @@ class preprocess():
         raise RuntimeError(msg)
     return indices
 
-  def postprocess(self):
-     """
-     Apply postprocessing to the Rscript output directory
-     - Annotate CNA and (if any) fusion data
-     - Remove unnecessary files written by the R script
-     - Remove the temporary directory if required
-     """
-     annotator = oncokb_annotator(
-            self.tumour_id,
-            self.oncotree_code,
-            self.report_dir,
-            self.tmp_dir,
-            self.cache_params,
-     )
-     annotator.annotate_cna()
+  #def postprocess(self):
+  #   """
+  #   Apply postprocessing to the Rscript output directory
+  #   - Annotate CNA and (if any) fusion data
+  #   - Remove unnecessary files written by the R script
+  #   - Remove the temporary directory if required
+  #   """
+  #   annotator = oncokb_annotator(
+  #          self.tumour_id,
+  #          self.oncotree_code,
+  #          self.report_dir,
+  #          self.tmp_dir,
+  #          self.cache_params,
+  #   )
+  #   annotator.annotate_cna()
         #if self.cleanup:
         #    rmtree(self.tmp_dir)
         #    os.remove(os.path.join(self.report_dir, constants.DATA_CNA_ONCOKB_GENES))

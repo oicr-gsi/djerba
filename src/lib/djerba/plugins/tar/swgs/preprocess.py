@@ -72,7 +72,7 @@ class preprocess:
     """
     Filter for amplifications.
     """
-    seg_path =  os.path.join(self.seg_file)
+    seg_path =  os.path.join(seg_file)
     # Create a dataframe so we can filter by amplifications only...or in this case, by gain only for testing.
     df_seg = pd.read_csv(seg_path, sep = '\t')
     df_seg = df_seg[df_seg["call"].str.contains("AMP|HLAMP") == True]
@@ -87,7 +87,7 @@ class preprocess:
     out_path = os.path.join(self.work_dir, 'seg_amplifications.txt')
     df_seg.to_csv(out_path, sep = '\t', index=None)
     
-    if not df.empty:
+    if not df_seg.empty:
         return out_path
     else:
         return None

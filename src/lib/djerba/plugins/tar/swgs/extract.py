@@ -48,7 +48,7 @@ class data_builder:
     "Unknown"
   ]
 
-  def __init__(self, work_dir, seg_file):
+  def __init__(self, work_dir):
 
     # DIRECTORIES
     self.input_dir = "."
@@ -57,19 +57,18 @@ class data_builder:
     self.data_dir =  os.environ.get('DJERBA_BASE_DIR') + "/data/" 
     self.cytoband_path = os.path.join(self.data_dir, 'cytoBand.txt')
     self.cytoband_map = self.read_cytoband_map()
-    self.seg_file = seg_file
     self.tmp_dir = work_dir + "/tmp"
 
-  def build_graph(self):
+  def build_graph(self, seg_file):
     """
     Puts all the pieces together.
     """
     
-    plot = converter().convert_svg(self.write_cnv_plot(self.work_dir), 'CNV plot')
+    plot = converter().convert_svg(self.write_cnv_plot(seg_file, self.work_dir), 'CNV plot')
     return plot
     
     
-  def build_swgs(self):
+  def build_swgs_rows(self):
     #self.logger.debug("Building data for copy number variation table")
     rows = []
     #else:
@@ -88,25 +87,17 @@ class data_builder:
                   constants.ONCOKB: self.parse_oncokb_level(row)
               }
               rows.append(row)
-    unfiltered_cnv_total = len(rows)
     #self.logger.debug("Sorting and filtering CNV rows")
     rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
     for row in rows: self.all_reported_variants.add((row.get(constants.GENE), row.get(constants.CHROMOSOME)))
-    data = {
-        constants.HAS_EXPRESSION_DATA: False,
-        constants.CNV_PLOT: self.build_graph(),
-        constants.TOTAL_VARIANTS: unfiltered_cnv_total,
-        constants.CLINICALLY_RELEVANT_VARIANTS: len(rows),
-        constants.BODY: rows
-    }
-
-    self.file_cleanup()
-    return data
     
-  def write_cnv_plot(self, out_dir):
+    return rows
+
+    
+  def write_cnv_plot(self, seg_file, out_dir):
     """
     """ 
-    processed_seg = self.process_seg_for_plotting(self.seg_file)
+    processed_seg = self.process_seg_for_plotting(seg_file)
     out_path = os.path.join(out_dir, 'seg_CNV_plot.svg')
     args = [
         os.path.join(self.r_script_dir, 'cnv_plot.r'),
@@ -259,10 +250,10 @@ class data_builder:
     return (chromosome, arm, band)
 
 
-  def file_cleanup(self):
-      """
-      Removes intermediate files now that extract step is done.
-      """
+  #def file_cleanup(self):
+  #    """
+  #    Removes intermediate files now that extract step is done.
+  #    """
       #rmtree(self.tmp_dir)
       #if os.path.exists(os.path.join(self.work_dir, constants.CNV_PLOT_DATA)):
       #    os.remove(os.path.join(self.work_dir, constants.CNV_PLOT_DATA))
