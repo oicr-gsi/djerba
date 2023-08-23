@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## GCGI-1035: Treament options merger
+- Generate the "Treatment Options" section of the report
+- Include both "FDA Approved" and "Investigational Therapies"
+
+## v1.0.0-dev0.0.8: 2023-08-11
+
 ## GCGI-963: Case overview plugin
 - Renamed the patient info plugin
 - Brought up to date with new display format from master
@@ -12,6 +18,8 @@
 
 ## Other
 - In clinical report footer, added "Report Sign-Offs" heading and removed auto-generation of the date
+- Added `summary` plugin to generate the genomic summary text
+- Added `supplement` plugin to generate supplementary info (definitions, software versions, etc.)
 
 ## v1.0.0-dev0.0.7: 2023-08-02
 

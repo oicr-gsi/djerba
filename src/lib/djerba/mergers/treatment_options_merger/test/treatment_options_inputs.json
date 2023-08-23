@@ -1,0 +1,77 @@
+[
+    [
+	{
+	    "Tier": "Approved",
+	    "OncoKB level": "1",
+	    "Treatments": "foobarzanib",
+	    "Gene": "AAAA",
+	    "Gene_URL": "http://example.com/AAAA",
+	    "Alteration": "PPPP",
+	    "Alteration_URL": "http://example.com/PPPP"
+	},
+	{
+	    "Tier": "Approved",
+	    "OncoKB level": "1",
+	    "Treatments": "foobarzanib",
+	    "Gene": "AAAA",
+	    "Gene_URL": "http://example.com/AAAA",
+	    "Alteration": "PPPP",
+	    "Alteration_URL": "http://example.com/PPPP"
+	},
+	{
+	    "Tier": "Investigational",
+	    "OncoKB level": "3B",
+	    "Treatments": "lorem ipsum",
+	    "Gene": "CCCC",
+	    "Gene_URL": "http://example.com/CCCC",
+	    "Alteration": "RRRR",
+	    "Alteration_URL": "http://example.com/RRRR"
+	},
+	{
+	    "Tier": "Investigational",
+	    "OncoKB level": "3B",
+	    "Treatments": "lorem ipsum",
+	    "Gene": "AAAA",
+	    "Gene_URL": "http://example.com/AAAA",
+	    "Alteration": "PPPP",
+	    "Alteration_URL": "http://example.com/PPPP"
+	},
+	{
+	    "Tier": "Investigational",
+	    "OncoKB level": "3B",
+	    "Treatments": "lorem ipsum",
+	    "Gene": "AAAA",
+	    "Gene_URL": "http://example.com/AAAA",
+	    "Alteration": "PPPP",
+	    "Alteration_URL": "http://example.com/PPPP"
+	},
+	{
+	    "Tier": "Investigational",
+	    "OncoKB level": "4",
+	    "Treatments": "labore et dolore magna aliqua",
+	    "Gene": "AAAA",
+	    "Gene_URL": "http://example.com/AAAA",
+	    "Alteration": "PPPP",
+	    "Alteration_URL": "http://example.com/PPPP"
+	},
+
+	{
+	    "Tier": "Investigational",
+	    "OncoKB level": "4",
+	    "Treatments": "eiusmod tempor incididunt",
+	    "Gene": "DDDD",
+	    "Gene_URL": "http://example.com/DDDD",
+	    "Alteration": "SSSS",
+	    "Alteration_URL": "http://example.com/SSSS"
+	},
+	{
+	    "Tier": "Investigational",
+	    "OncoKB level": "3A",
+	    "Treatments": "consectetur adipiscing elit",
+	    "Gene": "BBBB",
+	    "Gene_URL": "http://example.com/BBBB",
+	    "Alteration": "QQQQ",
+	    "Alteration_URL": "http://example.com/QQQQ"
+	}
+    ]
+]
