@@ -42,7 +42,7 @@ class TestTarSNVIndelPlugin(PluginTester):
         params = {
             self.INI: 'data/tar_swgs.ini',
             self.JSON: json_location,
-            self.MD5: '73ff2fd5e9f53005192fbbe4147809c8'
+            self.MD5: 'f88f2a6a4178d13889b2e352eda3c77d'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -58,7 +58,7 @@ class TestTarSNVIndelPlugin(PluginTester):
         params = {
             self.INI: 'data/tar_swgs.ini',
             self.JSON: json_location,
-            self.MD5: 'd191237a5b8fb414e714286fbc496984'
+            self.MD5: '04c1dc596af728ae780767d8cf918c2b'
         }
         self.run_basic_test(test_source_dir, params)
     

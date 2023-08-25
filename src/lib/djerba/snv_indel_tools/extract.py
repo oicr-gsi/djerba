@@ -33,6 +33,10 @@ class data_builder:
         self.assay = assay
         self.cytoband_path = self.data_dir + "cytoBand.txt"
         self.oncotree_uc = oncotree_uc
+        if os.path.exists(os.path.join(self.work_dir, sic.CNA_SIMPLE)):
+            self.data_CNA_exists = True
+        else:
+            self.data_CNA_exists = False
         with open(os.path.join(work_dir, 'purity.txt'), "r") as file:
             self.purity = float(file.readlines()[0])
 
@@ -48,7 +52,8 @@ class data_builder:
         #self.logger.debug("Building data for small mutations and indels table")
         rows = []
         all_reported_variants = set()
-        mutation_copy_states = self.read_mutation_copy_states()
+        if self.data_CNA_exists:
+            mutation_copy_states = self.read_mutation_copy_states()
         if self.assay == "WGTS":
             mutation_expression = self.read_expression()
         else:
@@ -74,7 +79,7 @@ class data_builder:
                     sic.ONCOKB: self.parse_oncokb_level(input_row)
                 }
 
-                if self.purity >= 0.1:
+                if self.purity >= 0.1 and self.data_CNA_exists:
                     row[sic.COPY_STATE] = mutation_copy_states.get(gene, sic.UNKNOWN)
 
                 rows.append(row)

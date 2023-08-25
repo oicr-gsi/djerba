@@ -46,49 +46,67 @@ class main(plugin_base):
     def configure(self, config):
       config = self.apply_defaults(config)
       wrapper = self.get_config_wrapper(config)
-      # POPULATE THE INI HERE!?
-      #print(type(self.identifier))
-      #print(type(config[self.identifier]))
-      #print(type(config[self.idenfitier]['root_sample_name']))
       if wrapper.my_param_is_null('seg_file'):
         config[self.identifier]["seg_file"] = self.get_seg_file(config[self.identifier]['root_sample_name'])
-
       return config
 
     def extract(self, config):
       
-
       wrapper = self.get_config_wrapper(config)
-      
+
+      # Get the working directory
+      work_dir = self.workspace.get_work_dir()
+  
       # Get the seg file from the config
       seg_file = wrapper.get_my_string('seg_file')
-    
-
-      # Pre-process all the files
-      work_dir = self.workspace.get_work_dir()
-      preprocess(config, work_dir, seg_file).run_R_code()
+      
+      # Filter the seg_file only for amplifications (returns None if there are no amplifications)
+      amp_path = preprocess(config, work_dir).preprocess_seg(seg_file)
 
       cnv_data = {
           'plugin_name': 'Shallow Whole Genome Sequencing (sWGS)',
           'version': self.PLUGIN_VERSION,
           'priorities': wrapper.get_my_priorities(),
           'attributes': wrapper.get_my_attributes(),
-          'merge_inputs': {}
+          'merge_inputs': {},
+          'results': {
+              constants.CNV_PLOT: data_builder(work_dir).build_graph(seg_file) # graph is made from the original seg file, NOT the amplification-only seg file
+          }
       }
 
       # Read purity
       with open(os.path.join(work_dir, 'purity.txt'), "r") as file:
           purity = float(file.readlines()[0])
+
+
       # Check purity
-      if purity >= 0.1:
-          cnv_data['results'] = data_builder(work_dir, seg_file).build_swgs()
+      if purity >= 0.1 and amp_path:
+
+          # Preprocess the amplification data
+          preprocess(config, work_dir).run_R_code(amp_path)
+          
+          # Get the table rows
+          rows = data_builder(work_dir).build_swgs_rows()
+          
+          # Put the information in the results section
+          cnv_data['results'][constants.BODY] = rows
+          cnv_data['results'][constants.CLINICALLY_RELEVANT_VARIANTS] = len(rows)
           cnv_data['results'][constants.PASS_TAR_PURITY] = True
+
+          # Merge treatments (if there are any)
           cna_annotated_path = os.path.join(work_dir, self.CNA_ANNOTATED)
-          cnv = data_builder(work_dir, seg_file)
+          cnv = data_builder(work_dir)
           cnv_data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(cna_annotated_path, config['tar.swgs']['oncotree_code'])
+      
+      elif purity >= 0.1 and not amp_path:
+          
+          # There will be no rows, so just set clinically relevant variants to 0, but still pass tar purity.
+          cnv_data['results'][constants.CLINICALLY_RELEVANT_VARIANTS] = 0
+          cnv_data['results'][constants.PASS_TAR_PURITY] = True
+          
       else:
-          cnv_data['results'] = {constants.CNV_PLOT: data_builder(work_dir, seg_file).build_graph()}
           cnv_data['results'][constants.PASS_TAR_PURITY] = False
+      
       return cnv_data
 
     def render(self, data):
