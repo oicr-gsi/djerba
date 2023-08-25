@@ -1,5 +1,5 @@
 
-<!--This file is the HTML code for the Copy Number Variation (CNV) section of the report.-->
+<!--This file is the HTML code for the SNVs and Indels section of the TAR report.-->
 
 
 <!-- IMPORTS -->
@@ -12,10 +12,19 @@
 
 <!-- TAR SNV Indels -->
 ${html_builder().section_cells_begin("<h2>SNVs and in/dels</h2>","main")}
-   
-      <p>
-            The mutations below are oncogenic as defined by OncoKB.
-      </p>
+      
+      % if results.get(constants.CLINICALLY_RELEVANT_VARIANTS) > 0:  
+          <p>
+                The mutations below are oncogenic as defined by OncoKB.
+          </p>
+
+      % elif results.get(constants.CLINICALLY_RELEVANT_VARIANTS) == 0:
+          <p>
+                No oncogenic mutations were uncovered.
+          </p>
+    
+      % endif
+
 
       % if results.get(constants.CLINICALLY_RELEVANT_VARIANTS) > 0:
             <table class="variants" width="100%">
