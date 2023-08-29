@@ -148,15 +148,6 @@ if (is.null(maffile)) {
 
       # write the oncogenic table
       write.table(df_cbio_filt_oncokb, file=paste0(outdir, "/data_mutations_extended_oncogenic.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-
-      # get snvs for dcsigs
-      df_snv <- subset(df_cbio_filt, Variant_Type == "SNP" | Variant_Type == "DNP" | Variant_Type == "TNP")
-      signdir <- paste0(outdir, "/sigs"); dir.create(signdir, showWarnings=FALSE)
-      df_weights <- plot_dcSigs(df_snv, signdir)
-
-      # write out weights
-      write.table(df_weights, file=paste0(signdir, "/weights.txt"), sep="\t", quote=FALSE, row.names=TRUE, col.names=NA)
-
     }
     
     
