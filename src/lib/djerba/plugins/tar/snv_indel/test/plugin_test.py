@@ -22,8 +22,6 @@ class TestTarSNVIndelPlugin(PluginTester):
         self.tmp_dir = self.tmp.name
         
         self.data_CNA = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/snv-indel-plugin/data_CNA.txt'
-        self.data_CNA_onco = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/snv-indel-plugin/data_CNA_oncoKBgenes_nonDiploid.txt'
-
         self.provenance_output = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/snv-indel-plugin/provenance_subset.tsv.gz'
         self.purity_pass_json = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/snv-indel-plugin/purity_pass/tar_snv_indel_purity_pass.json'
         self.purity_fail_json = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/snv-indel-plugin/purity_fail/tar_snv_indel_purity_fail.json'
@@ -38,7 +36,6 @@ class TestTarSNVIndelPlugin(PluginTester):
 
         # Copy files into the temporary directory
         shutil.copy(self.data_CNA, self.tmp_dir)
-        shutil.copy(self.data_CNA_onco, self.tmp_dir)
         shutil.copy(self.provenance_output, self.tmp_dir)
         shutil.copy(self.purity_fail, self.tmp_dir)
         #json_location = self.purity_fail_json
@@ -56,7 +53,6 @@ class TestTarSNVIndelPlugin(PluginTester):
 
         # Copy files into the temporary directory
         shutil.copy(self.data_CNA, self.tmp_dir)
-        shutil.copy(self.data_CNA_onco, self.tmp_dir)
         shutil.copy(self.provenance_output, self.tmp_dir)
         shutil.copy(self.purity_pass, self.tmp_dir)
         json_location = os.path.join(self.sup_dir ,"snv-indel-plugin/purity_pass/tar_snv_indel_purity_pass.json")
