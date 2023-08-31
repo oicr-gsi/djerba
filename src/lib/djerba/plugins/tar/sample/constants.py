@@ -6,6 +6,9 @@ KNOWN_VARIANTS = 'known_variants'
 CANCER_CONTENT = 'cancer_content'
 RAW_COVERAGE = 'raw_coverage'
 UNIQUE_COVERAGE = 'unique_coverage'
+COLLAPSED_COVERAGE_PL = 'collapsed_coverage_pl'
+COLLAPSED_COVERAGE_BC = 'collapsed_coverage_bc'
+PURITY = 'purity'
 
 # sample constants
 ASSAY = 'assay'

@@ -35,6 +35,7 @@ class main(plugin_base):
         work_dir = self.workspace.get_work_dir()
         wrapper = self.get_config_wrapper(config)
         group_id = config[self.identifier]['group_id']
+        normal_id = config[self.identifier]['normal_id']
         if wrapper.my_param_is_null('purity'):
             ichorcna_metrics_file = provenance_tools.subset_provenance_sample(self, "ichorcna", group_id, "metrics\.json$")
             ichor_json = self.process_ichor_json(ichorcna_metrics_file) 
@@ -42,25 +43,33 @@ class main(plugin_base):
             purity = ichor_json["tumor_fraction"]
             self.write_purity(purity, work_dir)
             wrapper.set_my_param('purity', float('%.1E' % Decimal(purity*100)))
-        if wrapper.my_param_is_null('concensus_cruncher_file'):
-            wrapper.set_my_param('concensus_cruncher_file', provenance_tools.subset_provenance_sample(self, "consensusCruncher", group_id, "allUnique-hsMetrics\.HS\.txt$"))
+        if wrapper.my_param_is_null('consensus_cruncher_file'):
+            wrapper.set_my_param('consensus_cruncher_file', provenance_tools.subset_provenance_sample(self, "consensusCruncher", group_id, "allUnique-hsMetrics\.HS\.txt$"))
+        if wrapper.my_param_is_null('consensus_cruncher_file_normal'):
+            wrapper.set_my_param('consensus_cruncher_file_normal', provenance_tools.subset_provenance_sample(self, "consensusCruncher", normal_id, "allUnique-hsMetrics\.HS\.txt$"))
         if wrapper.my_param_is_null('raw_coverage'):
             qc_dict = self.fetch_coverage_etl_data(group_id)
             wrapper.set_my_param('raw_coverage', qc_dict['raw_coverage'])
+
+        # Get values for collapsed coverage for Pl and BC and put in config for QC reporting
+        if wrapper.my_param_is_null('collapsed_coverage_pl'):
+            wrapper.set_my_param('collapsed_coverage_pl', self.process_consensus_cruncher(config[self.identifier]['consensus_cruncher_file']))
+        if wrapper.my_param_is_null('collapsed_coverage_bc'):
+            wrapper.set_my_param('collapsed_coverage_bc', self.process_consensus_cruncher(config[self.identifier]['consensus_cruncher_file_normal']))
+        
         return config
     
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
-        unique_coverage = self.process_croncensus_cruncher(config[self.identifier]['concensus_cruncher_file'])
         results =  {
                 "oncotree": config[self.identifier][constants.ONCOTREE],
                 "known_variants" : config[self.identifier][constants.KNOWN_VARIANTS],
-                "cancer_content" : float(config[self.identifier]['purity']),
+                "cancer_content" : float(config[self.identifier][constants.PURITY]),
                 "raw_coverage" : int(config[self.identifier][constants.RAW_COVERAGE]),
-                "unique_coverage" : unique_coverage,
+                "unique_coverage" : int(config[self.identifier][constants.COLLAPSED_COVERAGE_PL]),
                 "files": {
-                    "concensus_cruncher_file": config[self.identifier]['concensus_cruncher_file']
+                    "consensus_cruncher_file": config[self.identifier]['consensus_cruncher_file']
                 }
             }
         data['results'] = results
@@ -88,16 +97,16 @@ class main(plugin_base):
             ichor_json = json.load(ichor_results)
         return(ichor_json)
 
-    def process_croncensus_cruncher(self, concensus_cruncher_file):
+    def process_consensus_cruncher(self, consensus_cruncher_file):
         header_line = False
-        with open(concensus_cruncher_file, 'r') as cc_file:
+        with open(consensus_cruncher_file, 'r') as cc_file:
             reader_file = csv.reader(cc_file, delimiter="\t")
             for row in reader_file:
                 if row:
                     if row[0] == "BAIT_SET" :
                         header_line = True
                     elif header_line:
-                        unique_coverage = float(row[9])
+                        unique_coverage = float(row[9]) 
                         header_line = False
                     else:
                         next
@@ -106,6 +115,7 @@ class main(plugin_base):
     def specify_params(self):
         required = [
             'group_id',
+            'normal_id',
             'oncotree',
             'known_variants'
 
@@ -115,7 +125,10 @@ class main(plugin_base):
         discovered = [
             'purity',
             'raw_coverage',
-            'concensus_cruncher_file'
+            'consensus_cruncher_file',
+            'consensus_cruncher_file_normal',
+            'collapsed_coverage_pl',
+            'collapsed_coverage_bc'
         ]
         for key in discovered:
             self.add_ini_discovered(key)
