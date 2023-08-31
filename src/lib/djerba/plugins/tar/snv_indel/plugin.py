@@ -69,7 +69,7 @@ class main(plugin_base):
       
       output_data = data_extractor(work_dir, assay, oncotree).build_small_mutations_and_indels(mutations_extended_file)
       results = {
-           sic.CLINICALLY_RELEVANT_VARIANTS: len(data),
+           sic.CLINICALLY_RELEVANT_VARIANTS: len(output_data),
            sic.TOTAL_VARIANTS: data_extractor(work_dir, assay, oncotree).read_somatic_mutation_totals(mutations_file),
            sic.HAS_EXPRESSION_DATA: False,
            sic.BODY: output_data
@@ -151,10 +151,11 @@ class main(plugin_base):
             
           """"For frequency values"""    
           
-          row_lookup = df_freq[(df_freq['Start_Position'] == row[1][5]) & 
-                            (df_freq['Reference_Allele'] == row[1][10]) & 
-                            (df_freq['Tumor_Seq_Allele2'] == row[1][11])]
-        
+          row_lookup = df_freq[(df_freq['Start_Position'] == row[1][5]) &
+                            (df_freq['Reference_Allele'] == row[1][10]) &
+                            ((df_freq['Tumor_Seq_Allele'] == row[1][11]) |
+                            (df_freq['Tumor_Seq_Allele'] == row[1][12]))]
+
           if len(row_lookup) > 0:
               df_pl.at[row[0], 'Freq'] = row_lookup['Freq'].item()
           else:
