@@ -62,8 +62,6 @@ class main(plugin_base):
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
-        #unique_coverage = self.process_consensus_cruncher(config[self.identifier]['consensus_cruncher_file'])
-        #collapsed_coverage_BC = self.process_consensus_cruncher(config[self.identifier]['consensus_cruncher_file_normal']) 
         results =  {
                 "oncotree": config[self.identifier][constants.ONCOTREE],
                 "known_variants" : config[self.identifier][constants.KNOWN_VARIANTS],
@@ -72,7 +70,6 @@ class main(plugin_base):
                 "unique_coverage" : int(config[self.identifier][constants.COLLAPSED_COVERAGE_PL]),
                 "files": {
                     "consensus_cruncher_file": config[self.identifier]['consensus_cruncher_file']
-                    #"consensus_cruncher_file_normal": config[self.identifier]['consensus_cruncher_file_normal'] # would need to edit testing to add this here but there are some issues
                 }
             }
         data['results'] = results
