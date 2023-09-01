@@ -24,15 +24,13 @@ class TestTarSamplePlugin(PluginTester):
         self.tmp_dir = self.tmp.name
         sup_dir_var = 'DJERBA_TEST_DATA'
         self.sup_dir = os.environ.get(sup_dir_var)
-        self.consensus_cruncher_file = os.path.join(self.sup_dir ,"tar-plugin/allUnique-hsMetrics.HS.Pl.txt")
-        self.consensus_cruncher_file_normal = os.path.join(self.sup_dir ,"tar-plugin/allUnique-hsMetrics.HS.BC.txt")
+        self.input_params = os.path.join(self.sup_dir ,"tar-plugin/input_params.json")
 
     def testTarSample(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         json_location = os.path.join(self.sup_dir ,"tar-plugin/report_json/tar.sample.json")
-                
-        shutil.copy(self.consensus_cruncher_file, test_source_dir)
-        shutil.copy(self.consensus_cruncher_file_normal, test_source_dir)
+        
+        shutil.copy(self.input_params, self.tmp_dir)
 
         params = {
             self.INI: 'tar.sample.ini',

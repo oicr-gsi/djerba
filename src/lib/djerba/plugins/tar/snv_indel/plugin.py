@@ -26,6 +26,7 @@ class main(plugin_base):
     WORKFLOW = 'consensusCruncher'
     RESULTS_SUFFIX_Pl = 'Pl.merged.maf.gz'
     RESULTS_SUFFIX_BC = 'BC.merged.maf.gz'
+    INPUT_PARAMS_FILE = "input_params.json"
     
     def __init__(self, **kwargs):
       super().__init__(**kwargs)
@@ -33,11 +34,12 @@ class main(plugin_base):
     def specify_params(self):
       self.add_ini_discovered('maf_file')
       self.add_ini_discovered('maf_file_normal')
-      self.add_ini_required('oncotree_code')
-      self.add_ini_required('tumour_id')
-      self.add_ini_required('normal_id')
-      self.add_ini_required('root_sample_name')
-      self.add_ini_required('study_title')
+      
+      #self.add_ini_required('oncotree_code')
+      #self.add_ini_required('tumour_id')
+      #self.add_ini_required('normal_id')
+      #self.add_ini_required('donor')
+      #self.add_ini_required('study_title')
 
       self.set_ini_default(core_constants.CLINICAL, True)
       self.set_ini_default(core_constants.SUPPLEMENTARY, False)
@@ -45,32 +47,55 @@ class main(plugin_base):
       self.set_priority_defaults(self.PRIORITY)
 
     def configure(self, config):
-        config = self.apply_defaults(config)
-        wrapper = self.get_config_wrapper(config)
-        # Populate ini
-        if wrapper.my_param_is_null('maf_file'):
-            config[self.identifier]["maf_file"] = self.get_maf_file(config[self.identifier]["root_sample_name"], self.RESULTS_SUFFIX_Pl)
-        if wrapper.my_param_is_null('maf_file_normal'):
-            config[self.identifier]["maf_file_normal"] = self.get_maf_file(config[self.identifier]["root_sample_name"], self.RESULTS_SUFFIX_BC)
-        return config  
+      config = self.apply_defaults(config)
+      wrapper = self.get_config_wrapper(config)
+        
+      # Get the working directory
+      work_dir = self.workspace.get_work_dir()
+        
+      # Get any input parameters
+      input_data = self.workspace.read_json(os.path.join(work_dir, self.INPUT_PARAMS_FILE))
+      donor = input_data["donor"]
+
+      # Populate ini
+      if wrapper.my_param_is_null('maf_file'):
+          config[self.identifier]["maf_file"] = self.get_maf_file(donor, self.RESULTS_SUFFIX_Pl)
+      if wrapper.my_param_is_null('maf_file_normal'):
+          config[self.identifier]["maf_file_normal"] = self.get_maf_file(donor, self.RESULTS_SUFFIX_BC)
+      return config  
 
     def extract(self, config):
       wrapper = self.get_config_wrapper(config)
+      
+      # Get the working directory
       work_dir = self.workspace.get_work_dir()
+
+      # Get any input parameters
+      input_data = self.workspace.read_json(os.path.join(work_dir, self.INPUT_PARAMS_FILE))
+      study = input_data["study"]
+      oncotree_code = input_data["oncotree_code"]
+      tumour_id = input_data["tumour_id"]
+      normal_id = input_data["normal_id"]
+      assay = input_data["assay"]
+
+      # Get starting plugin data
       data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
+      
+      # Get purity
       with open(os.path.join(work_dir, 'purity.txt'), "r") as file:
             purity = float(file.readlines()[0]) 
+      
+      # Preprocessing
       maf_file = self.filter_maf_for_tar(work_dir, config[self.identifier]["maf_file"], config[self.identifier]["maf_file_normal"])
-      oncotree = config[self.identifier]["oncotree_code"]
-      assay = "TAR"
-      preprocess(config, work_dir, maf_file, tar=True).run_R_code()
+      preprocess(config, work_dir, assay, study, oncotree_code, tumour_id, normal_id, maf_file).run_R_code()
+      
       mutations_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED)
       mutations_extended_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)
       
-      output_data = data_extractor(work_dir, assay, oncotree).build_small_mutations_and_indels(mutations_extended_file)
+      output_data = data_extractor(work_dir, assay, oncotree_code).build_small_mutations_and_indels(mutations_extended_file)
       results = {
            sic.CLINICALLY_RELEVANT_VARIANTS: len(output_data),
-           sic.TOTAL_VARIANTS: data_extractor(work_dir, assay, oncotree).read_somatic_mutation_totals(mutations_file),
+           sic.TOTAL_VARIANTS: data_extractor(work_dir, assay, oncotree_code).read_somatic_mutation_totals(mutations_file),
            sic.HAS_EXPRESSION_DATA: False,
            sic.BODY: output_data
       }
@@ -81,7 +106,7 @@ class main(plugin_base):
       data['results'] = results
 
       mutations_annotated_path = os.path.join(work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)
-      data['merge_inputs']['treatment_options_merger'] =  data_extractor(work_dir, assay, oncotree).build_therapy_info(mutations_annotated_path, oncotree)
+      data['merge_inputs']['treatment_options_merger'] =  data_extractor(work_dir, assay, oncotree_code).build_therapy_info(mutations_annotated_path, oncotree_code)
       return data
 
     def render(self, data):
@@ -101,11 +126,11 @@ class main(plugin_base):
       return html
 
 
-    def get_maf_file(self, root_sample_name, results_suffix):
+    def get_maf_file(self, donor, results_suffix):
       """
       pull data from results file
       """
-      provenance = provenance_tools.subset_provenance(self, self.WORKFLOW, root_sample_name)
+      provenance = provenance_tools.subset_provenance(self, self.WORKFLOW, donor)
       try:
           results_path = provenance_tools.parse_file_path(self, results_suffix, provenance)
       except OSError as err:

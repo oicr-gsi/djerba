@@ -20,15 +20,15 @@ class TestTarSNVIndelPlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
- 
-        self.provenance_output = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/swgs-plugin/provenance_subset.tsv.gz'
-        self.purity_pass = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/swgs-plugin/purity_pass/purity.txt'
-        self.purity_fail = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/swgs-plugin/purity_fail/purity.txt'
-        self.purity_pass_json = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/swgs-plugin/purity_pass/tar_swgs_purity_pass.json'
-        self.purity_fail_json = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/swgs-plugin/purity_fail/tar_swgs_purity_fail.json'
-        
         sup_dir_var = 'DJERBA_TEST_DATA'
         self.sup_dir = os.environ.get(sup_dir_var)
+
+        self.provenance_output = os.path.join(self.sup_dir, "swgs-plugin/provenance_subset.tsv.gz")
+        self.purity_pass = os.path.join(self.sup_dir, "swgs-plugin/purity_pass/purity.txt")
+        self.purity_fail = os.path.join(self.sup_dir, "swgs-plugin/purity_fail/purity.txt")
+        self.purity_pass_json = os.path.join(self.sup_dir, "swgs-plugin/purity_pass/tar_swgs_purity_pass.json")
+        self.purity_fail_json = os.path.join(self.sup_dir, "swgs-plugin/purity_fail/tar_swgs_purity_fail.json")
+        self.input_params = os.path.join(self.sup_dir ,"swgs-plugin/input_params.json")
 
     def testTarSNVIndelPurityPass(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -36,8 +36,8 @@ class TestTarSNVIndelPlugin(PluginTester):
         # Copy files into the temporary directory
         shutil.copy(self.provenance_output, self.tmp_dir)
         shutil.copy(self.purity_pass, self.tmp_dir)
+        shutil.copy(self.input_params, self.tmp_dir)
         json_location = os.path.join(self.sup_dir ,"swgs-plugin/purity_pass/tar_swgs_purity_pass.json")
-        #json_location = self.purity_pass_json
 
         params = {
             self.INI: 'data/tar_swgs.ini',
@@ -52,8 +52,8 @@ class TestTarSNVIndelPlugin(PluginTester):
         # Copy files into the temporary directory
         shutil.copy(self.provenance_output, self.tmp_dir)
         shutil.copy(self.purity_fail, self.tmp_dir)
+        shutil.copy(self.input_params, self.tmp_dir)
         json_location = os.path.join(self.sup_dir ,"swgs-plugin/purity_fail/tar_swgs_purity_fail.json")
-        #json_location = self.purity_fail_json
 
         params = {
             self.INI: 'data/tar_swgs.ini',

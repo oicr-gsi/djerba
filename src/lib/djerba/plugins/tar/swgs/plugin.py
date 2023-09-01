@@ -23,14 +23,16 @@ class main(plugin_base):
     RESULTS_SUFFIX = '.seg.txt'
     WORKFLOW = 'ichorcna'
     CNA_ANNOTATED = "data_CNA_oncoKBgenes_nonDiploid_annotated.txt"
+    INPUT_PARAMS_FILE = "input_params.json"
 
     def specify_params(self):
 
       # Required parameters for swgs
       self.add_ini_discovered('seg_file')
-      self.add_ini_required('root_sample_name')
-      self.add_ini_required('oncotree_code')
-      self.add_ini_required('tumour_id')
+      
+      #self.add_ini_required('root_sample_name')
+      #self.add_ini_required('oncotree_code')
+      #self.add_ini_required('tumour_id')
 
       # Default parameters for priorities
       self.set_ini_default('configure_priority', 400)
@@ -46,8 +48,16 @@ class main(plugin_base):
     def configure(self, config):
       config = self.apply_defaults(config)
       wrapper = self.get_config_wrapper(config)
+      
+      # Get the working directory
+      work_dir = self.workspace.get_work_dir()
+      
+      # Get any input parameters
+      input_data = self.workspace.read_json(os.path.join(work_dir, self.INPUT_PARAMS_FILE))
+      donor = input_data["donor"]
+
       if wrapper.my_param_is_null('seg_file'):
-        config[self.identifier]["seg_file"] = self.get_seg_file(config[self.identifier]['root_sample_name'])
+        config[self.identifier]["seg_file"] = self.get_seg_file(donor)
       return config
 
     def extract(self, config):
@@ -56,12 +66,17 @@ class main(plugin_base):
 
       # Get the working directory
       work_dir = self.workspace.get_work_dir()
-  
+
+      # Get any input parameters
+      input_data = self.workspace.read_json(os.path.join(work_dir, self.INPUT_PARAMS_FILE))
+      tumour_id = input_data['tumour_id']
+      oncotree_code = input_data['oncotree_code']
+
       # Get the seg file from the config
       seg_file = wrapper.get_my_string('seg_file')
       
       # Filter the seg_file only for amplifications (returns None if there are no amplifications)
-      amp_path = preprocess(config, work_dir).preprocess_seg(seg_file)
+      amp_path = preprocess(tumour_id, oncotree_code, work_dir).preprocess_seg(seg_file)
 
       cnv_data = {
           'plugin_name': 'Shallow Whole Genome Sequencing (sWGS)',
@@ -83,7 +98,7 @@ class main(plugin_base):
       if purity >= 0.1 and amp_path:
 
           # Preprocess the amplification data
-          preprocess(config, work_dir).run_R_code(amp_path)
+          preprocess(tumour_id, oncotree_code, work_dir).run_R_code(amp_path)
           
           # Get the table rows
           rows = data_builder(work_dir).build_swgs_rows()
@@ -96,7 +111,7 @@ class main(plugin_base):
           # Merge treatments (if there are any)
           cna_annotated_path = os.path.join(work_dir, self.CNA_ANNOTATED)
           cnv = data_builder(work_dir)
-          cnv_data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(cna_annotated_path, config['tar.swgs']['oncotree_code'])
+          cnv_data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(cna_annotated_path, oncotree_code)
       
       elif purity >= 0.1 and not amp_path:
           
@@ -111,7 +126,7 @@ class main(plugin_base):
 
     def render(self, data):
       #renderer = mako_renderer(self.get_module_dir())
-      #return renderer.render_name(self.MAKO_TEMPLATE_NAME, data)
+      #return renderer.render_name(self.TEMPLATE_NAME, data)
 
       super().render(data)
       args = data
@@ -128,17 +143,6 @@ class main(plugin_base):
           self.logger.error(msg)
           raise
       return html
-
-
-    def get_group_id(self, donor):
-      qcetl_cache = "/scratch2/groups/gsi/production/qcetl_v1"
-      etl_cache = QCETLCache(qcetl_cache)
-      df = etl_cache.bamqc4merged.bamqc4merged
-      df = df.set_index("Donor")
-      if donor in df.index.values.tolist():
-          df = df.loc[donor]
-          group_id = df[df['Group ID'].str.contains("Pl")]['Group ID'][0]
-          return(group_id)
 
     def get_seg_file(self, root_sample_name):
       """

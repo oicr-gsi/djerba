@@ -29,13 +29,20 @@ class main(plugin_base):
     PLUGIN_VERSION = '1.0.0'
     PRIORITY = 200
     QCETL_CACHE = "/scratch2/groups/gsi/production/qcetl_v1"
+    
+    # Has the necessary input parameters
+    INPUT_PARAMS_FILE = "input_params.json"
 
     def configure(self, config):
         config = self.apply_defaults(config)
         work_dir = self.workspace.get_work_dir()
         wrapper = self.get_config_wrapper(config)
-        group_id = config[self.identifier]['group_id']
-        normal_id = config[self.identifier]['normal_id']
+        
+        # Get group id (which is just tumour id for TAR) and normal id from input_params.json
+        input_data = self.workspace.read_json(os.path.join(work_dir, self.INPUT_PARAMS_FILE))
+        group_id = input_data['tumour_id']
+        normal_id = input_data['normal_id']
+
         if wrapper.my_param_is_null('purity'):
             ichorcna_metrics_file = provenance_tools.subset_provenance_sample(self, "ichorcna", group_id, "metrics\.json$")
             ichor_json = self.process_ichor_json(ichorcna_metrics_file) 
@@ -61,10 +68,12 @@ class main(plugin_base):
     
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
+        work_dir = self.workspace.get_work_dir()
+        input_data = self.workspace.read_json(os.path.join(work_dir, self.INPUT_PARAMS_FILE))
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         results =  {
-                "oncotree": config[self.identifier][constants.ONCOTREE],
-                "known_variants" : config[self.identifier][constants.KNOWN_VARIANTS],
+                "oncotree_code": input_data[constants.ONCOTREE],
+                "known_variants" : input_data[constants.KNOWN_VARIANTS],
                 "cancer_content" : float(config[self.identifier][constants.PURITY]),
                 "raw_coverage" : int(config[self.identifier][constants.RAW_COVERAGE]),
                 "unique_coverage" : int(config[self.identifier][constants.COLLAPSED_COVERAGE_PL]),
@@ -113,15 +122,6 @@ class main(plugin_base):
         return(int(round(unique_coverage, 0)))
 
     def specify_params(self):
-        required = [
-            'group_id',
-            'normal_id',
-            'oncotree',
-            'known_variants'
-
-        ]
-        for key in required:
-            self.add_ini_required(key)
         discovered = [
             'purity',
             'raw_coverage',

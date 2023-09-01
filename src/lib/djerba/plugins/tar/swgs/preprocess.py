@@ -19,9 +19,8 @@ import djerba.plugins.tar.swgs.constants as constants
 
 class preprocess:
 
-  def __init__(self, config, work_dir):
+  def __init__(self, tumour_id, oncotree_code, work_dir):
 
-    self.config = config
     # DIRECTORIES
     self.work_dir = work_dir
     self.tmp_dir = os.path.join(self.work_dir, 'tmp')
@@ -39,8 +38,8 @@ class preprocess:
     self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts"
     self.r_script_dir_swgs = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/swgs/" 
     self.data_dir = os.environ.get('DJERBA_BASE_DIR') + "/data/"
-    self.tumour_id = self.config['tar.swgs']['tumour_id']
-    self.oncotree_code = self.config['tar.swgs']['oncotree_code']
+    self.tumour_id = tumour_id
+    self.oncotree_code = oncotree_code
 
     # RANDOM
     self.cache_params = None
