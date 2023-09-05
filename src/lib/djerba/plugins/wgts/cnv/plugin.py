@@ -10,12 +10,12 @@ from mako.lookup import TemplateLookup
 from djerba.util.render_mako import mako_renderer
 import djerba.core.constants as core_constants
 from djerba.core.workspace import workspace
-import djerba.snv_indel_tools.constants as sic
-from djerba.cnv_tools.preprocess import preprocess as process_cnv
+import djerba.plugins.wgts.snv_indel_tools.constants as sic
+from djerba.plugins.wgts.cnv_tools.preprocess import preprocess as process_cnv
 import djerba.render.constants as rc
-import djerba.cnv_tools.constants as ctc 
+import djerba.plugins.wgts.cnv_tools.constants as ctc 
 from djerba.sequenza import sequenza_reader
-from djerba.snv_indel_tools.extract import data_builder as data_extractor
+from djerba.plugins.wgts.snv_indel_tools.extract import data_builder as data_extractor
 
 class main(plugin_base):
    

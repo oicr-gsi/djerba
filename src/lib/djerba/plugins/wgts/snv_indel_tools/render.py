@@ -7,7 +7,7 @@ import re
 from markdown import markdown
 from time import strftime
 from string import Template
-import djerba.snv_indel_tools.constants as constants
+import djerba.plugins.wgts.snv_indel_tools.constants as constants
 
 class html_builder:
   

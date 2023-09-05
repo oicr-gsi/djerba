@@ -10,11 +10,10 @@ import tempfile
 
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
-from djerba.snv_indel_tools.preprocess import preprocess
-from djerba.snv_indel_tools.extract import data_builder as data_extractor
-from djerba.snv_indel_tools.preprocess import preprocess
+from djerba.plugins.wgts.snv_indel_tools.preprocess import preprocess
+from djerba.plugins.wgts.snv_indel_tools.extract import data_builder as data_extractor
 
-class TestTarSamplePlugin(PluginTester):
+class TestSNVtools(PluginTester):
 
     def setUp(self):
         self.path_validator = path_validator()

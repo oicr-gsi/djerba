@@ -5,12 +5,12 @@ library(BSgenome.Hsapiens.UCSC.hg38)
 
 # command line options
 option_list = list(
-  make_option(c("-b", "--basedir"), type="character", default=NULL, help="Location of R scripts", metavar="character"),
   make_option(c("-d", "--outdir"), type="character", default=NULL, help="output directory", metavar="character"),
   make_option(c("-s", "--segfile"), type="character", default=NULL, help="seg file", metavar="character"),
   make_option(c("-g", "--genebed"), type="character", default=NULL, help="bed file for gene identifying gene locations", metavar="character"),
   make_option(c("-o", "--oncolist"), type="character", default=NULL, help="oncoKB cancer genes", metavar="character"),
-  make_option(c("-p", "--purity"), type="character", default=NULL, help="sample cellularity for CN cutoffs", metavar="character")
+  make_option(c("-p", "--purity"), type="character", default=NULL, help="sample cellularity for CN cutoffs", metavar="character"),
+  make_option(c("-c", "--centromeres"), type="character", default=NULL, help="sample cellularity for CN cutoffs", metavar="character")
 )
 
 # get options
@@ -18,17 +18,16 @@ opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
 opt <- parse_args(opt_parser)
 
 # set better variable names
-basedir <- opt$basedir
-outdir <- opt$outdir
-segfile <- opt$segfile
-genebed <- opt$genebed
-oncolist <- opt$oncolist
-purity <- as.numeric(opt$purity)
+outdir           <- opt$outdir
+segfile          <- opt$segfile
+genebed          <- opt$genebed
+oncolist         <- opt$oncolist
+centromeres_path <- opt$centromeres
+purity           <- as.numeric(opt$purity)
 
 # source functions
-source(paste0(basedir, "/R/CNA_supporting_functions.r"))
-data_dir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), 'data', sep='/')
-centromeres_path <- paste(data_dir, 'hg38_centromeres.txt', sep='/')
+basedir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), sep='/')
+source(paste0(basedir, "/plugins/wgts/cnv_tools/R/CNA_supporting_functions.r"))
 
 ###################### CNA #####################
 
