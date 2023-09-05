@@ -120,7 +120,7 @@ class benchmarker(logger):
             data[constants.REPORT][key] = placeholder
         for entry in data[constants.REPORT][rc.GENOMIC_BIOMARKERS][rc.BODY]:
             # workaround for inconsistent biomarker entry formats
-            if entry[rc.ALTERATION] == rc.MSI:
+            if entry[rc.ALTERATION] == rc.MSI or entry[rc.ALTERATION] == rc.TMB:
                 entry[rc.METRIC_PLOT] = placeholder
         return data
 
