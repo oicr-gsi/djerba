@@ -1,3 +1,5 @@
+#! /usr/bin/env Rscript
+
 rm(list=ls())
 library(CNTools)
 library(optparse)
