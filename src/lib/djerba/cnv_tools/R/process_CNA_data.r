@@ -5,11 +5,11 @@ library(BSgenome.Hsapiens.UCSC.hg38)
 
 # command line options
 option_list = list(
-  make_option(c("-a", "--basedir"), type="character", default=NULL, help="Location of R scripts", metavar="character"),
-  make_option(c("-f", "--outdir"), type="character", default=NULL, help="output directory", metavar="character"),
-  make_option(c("-c", "--segfile"), type="character", default=NULL, help="seg file", metavar="character"),
-  make_option(c("-i", "--genebed"), type="character", default=NULL, help="bed file for gene identifying gene locations", metavar="character"),
-  make_option(c("-k", "--oncolist"), type="character", default=NULL, help="oncoKB cancer genes", metavar="character"),
+  make_option(c("-b", "--basedir"), type="character", default=NULL, help="Location of R scripts", metavar="character"),
+  make_option(c("-d", "--outdir"), type="character", default=NULL, help="output directory", metavar="character"),
+  make_option(c("-s", "--segfile"), type="character", default=NULL, help="seg file", metavar="character"),
+  make_option(c("-g", "--genebed"), type="character", default=NULL, help="bed file for gene identifying gene locations", metavar="character"),
+  make_option(c("-o", "--oncolist"), type="character", default=NULL, help="oncoKB cancer genes", metavar="character"),
   make_option(c("-p", "--purity"), type="character", default=NULL, help="sample cellularity for CN cutoffs", metavar="character")
 )
 
@@ -27,6 +27,8 @@ purity <- as.numeric(opt$purity)
 
 # source functions
 source(paste0(basedir, "/R/CNA_supporting_functions.r"))
+data_dir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), 'data', sep='/')
+centromeres_path <- paste(data_dir, 'hg38_centromeres.txt', sep='/')
 
 ###################### CNA #####################
 
@@ -58,5 +60,16 @@ if (is.null(segfile)) {
   print("writing non-diploid oncoKB genes")
   write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[5]]), CNAs[[5]], check.names=FALSE),
               file=paste0(outdir, "/data_CNA_oncoKBgenes_nonDiploid.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+  
+  if (is.null(centromeres_path)) {
+    print("No centromeres file input, processing omitted")
+  } else {
+    segs <- read.delim(segfile, header=TRUE) # segmented data already
+    print(names(segs))
+    centromeres <- read.table(centromeres_path,header=T)
+    
+    arm_level_calls <- arm_level_caller(segs, centromeres, gain_threshold=cutoffs["LOG_R_GAIN"], shallow_deletion_threshold=cutoffs["LOG_R_HTZD"])
+    write.table(arm_level_calls,file=paste0(outdir, "/arm_level_calls.txt"), sep="\t", row.names=FALSE, quote=FALSE, col.names = FALSE)
+  }
   
 }

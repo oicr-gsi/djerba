@@ -26,7 +26,7 @@ class TestWGTSsmallPlugin(PluginTester):
 
     def testWGTScnv(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
-        json_location = os.path.join(self.sup_dir ,"wgs-cnv-plugin/report_json/cnv.wgs.json")
+        json_location = os.path.join(self.sup_dir ,"cnv-plugin/report_json/cnv.wgs.json")
         params = {
             self.INI: 'cnv.ini',
             self.JSON: json_location,
