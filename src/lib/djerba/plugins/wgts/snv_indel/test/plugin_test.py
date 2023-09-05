@@ -26,7 +26,7 @@ class TestWGTSsmallPlugin(PluginTester):
 
     def testWGTSsmall(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
-        json_location = os.path.join(self.sup_dir ,"snv_indel-plugin/report_json/snv_indel.wgs.json")
+        json_location = os.path.join(self.sup_dir ,"wgs-snv_indel-plugin/report_json/snv_indel.wgs.json")
         params = {
             self.INI: 'snv_indel.ini',
             self.JSON: json_location,

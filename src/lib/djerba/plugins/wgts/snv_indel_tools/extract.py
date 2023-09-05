@@ -10,7 +10,7 @@ import logging
 import os
 import re
 import pandas as pd
-import djerba.snv_indel_tools.constants as sic
+import djerba.plugins.wgts.snv_indel_tools.constants as sic
 from djerba.util.logger import logger
 from djerba.util.image_to_base64 import converter
 import djerba.extract.oncokb.constants as oncokb
@@ -247,7 +247,7 @@ class data_builder(logger):
         return rows
 
     def write_vaf_plot(self, work_dir):
-        r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/R"
+        r_script_dir = os.path.join(os.environ.get('DJERBA_BASE_DIR') , "plugins/wgts/snv_indel_tools/R")
         out_path = os.path.join(work_dir, 'vaf.svg')
         args = [
             os.path.join(r_script_dir, 'vaf_plot.r'),

@@ -9,9 +9,9 @@ from mako.lookup import TemplateLookup
 from djerba.util.render_mako import mako_renderer
 import djerba.core.constants as core_constants
 from djerba.core.workspace import workspace
-import djerba.snv_indel_tools.constants as sic
-from djerba.snv_indel_tools.preprocess import preprocess
-from djerba.snv_indel_tools.extract import data_builder as data_extractor
+import djerba.plugins.wgts.snv_indel_tools.constants as sic
+from djerba.plugins.wgts.snv_indel_tools.preprocess import preprocess
+from djerba.plugins.wgts.snv_indel_tools.extract import data_builder as data_extractor
 import djerba.render.constants as rc
 
 class main(plugin_base):

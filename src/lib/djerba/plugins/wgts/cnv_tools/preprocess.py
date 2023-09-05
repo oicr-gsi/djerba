@@ -15,10 +15,10 @@ from djerba.sequenza import sequenza_reader
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.extract.oncokb.annotator import oncokb_annotator
 from shutil import copyfile
-import djerba.cnv_tools.constants as ctc 
-import djerba.cnv_tools.constants as constants 
-import djerba.snv_indel_tools.constants as sic
-from djerba.snv_indel_tools.extract import data_builder as sit
+import djerba.plugins.wgts.cnv_tools.constants as ctc 
+import djerba.plugins.wgts.cnv_tools.constants as constants 
+import djerba.plugins.wgts.snv_indel_tools.constants as sic
+from djerba.plugins.wgts.snv_indel_tools.extract import data_builder as sit
 import djerba.render.constants as rc
 from djerba.util.image_to_base64 import converter
 import djerba.extract.oncokb.constants as oncokb
@@ -90,16 +90,17 @@ class preprocess(logger):
 
     def convert_to_gene_and_annotate(self, seg_path, purity, tumour_id, oncotree_code):
         dir_location = os.path.dirname(__file__)
-        genebedpath = os.path.join(dir_location, '..', ctc.GENEBED)
-        oncolistpath = os.path.join(dir_location, '..', sic.ONCOLIST)
+        genebedpath = os.path.join(dir_location, '../../..', ctc.GENEBED)
+        oncolistpath = os.path.join(dir_location, '../../..', sic.ONCOLIST)
+        centromerespath = os.path.join(dir_location, '../../..', ctc.CENTROMERES)
         cmd = [
             'Rscript', os.path.join(dir_location + "/R/process_CNA_data.r"),
-            '--basedir',dir_location,
             '--outdir', self.work_dir,
             '--segfile', seg_path,
             '--genebed', genebedpath,
             '--oncolist', oncolistpath,
-            '--purity', purity
+            '--purity', purity,
+            '--centromeres', centromerespath
         ]
 
         runner = subprocess_runner()
