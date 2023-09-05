@@ -66,7 +66,7 @@ class main(plugin_base):
         self.write_purity(purity, work_dir)
 
         results =  {
-                "oncotree_code": config[self.identifier][constants.ONCOTREE],
+                "oncotree": config[self.identifier][constants.ONCOTREE],
                 "known_variants" : config[self.identifier][constants.KNOWN_VARIANTS],
                 "cancer_content" : float('%.1E' % Decimal(purity*100)),
                 "raw_coverage" : int(config[self.identifier][constants.RAW_COVERAGE]),
