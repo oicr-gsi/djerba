@@ -126,6 +126,18 @@ FILTER_FLAGS_EXCLUDE = [
     't_lod_fstar'
 ]
 
+# variant classifications excluded from TMB count
+TMB_EXCLUDED = [
+    "3'Flank",
+    "3'UTR",
+    "5'Flank",
+    "5'UTR",
+    "Silent",
+    "Splice_Region",
+    "Targeted_Region",
+]
+
+
 COPY_STATE_CONVERSION = {
     0: "Neutral",
     1: "Gain",

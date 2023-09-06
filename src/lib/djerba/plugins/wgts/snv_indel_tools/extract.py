@@ -218,10 +218,18 @@ class data_builder(logger):
         # The TMB mutation count is (independently) implemented and used in vaf_plot.R
         # See JIRA ticket GCGI-496
         total = 0
+        excluded = 0
         with open(mutations_file) as data_file:
             for row in csv.DictReader(data_file, delimiter="\t"):
                 total += 1
-        return total
+                if row.get(sic.VARIANT_CLASSIFICATION) in sic.TMB_EXCLUDED:
+                    excluded += 1
+        tmb_count = total - excluded
+        msg = "Found {} small mutations and indels, of which {} are counted for TMB".format(total,
+                                                                                            tmb_count)
+        self.logger.debug(msg)
+        return [total, tmb_count]
+
 
     def reformat_level_string(self, level):
         return re.sub('LEVEL_', 'Level ', level)
