@@ -13,13 +13,13 @@ import djerba.core.constants as core_constants
 import djerba.plugins.tar.provenance_tools as provenance_tools
 import gsiqcetl.column
 from gsiqcetl import QCETLCache
-
+from djerba.util.render_mako import mako_renderer
 
 
 class main(plugin_base):
     
     PLUGIN_VERSION = '1.0.0'
-    TEMPLATE_NAME = 'swgs_template.html'
+    TEMPLATE_NAME = 'html/swgs_template.html'
     RESULTS_SUFFIX = '.seg.txt'
     WORKFLOW = 'ichorcna'
     CNA_ANNOTATED = "data_CNA_oncoKBgenes_nonDiploid_annotated.txt"
@@ -27,18 +27,20 @@ class main(plugin_base):
 
     def specify_params(self):
 
-      # Required parameters for swgs
-      self.add_ini_discovered('seg_file')
-      
-      #self.add_ini_required('root_sample_name')
-      #self.add_ini_required('oncotree_code')
-      #self.add_ini_required('tumour_id')
+      discovered = [
+           'donor',
+           'oncotree_code',
+           'tumour_id',
+           'seg_file'
+      ]
+      for key in discovered:
+          self.add_ini_discovered(key)
+      self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
 
       # Default parameters for priorities
       self.set_ini_default('configure_priority', 400)
       self.set_ini_default('extract_priority', 250)
       self.set_ini_default('render_priority', 400)
-      #self.set_priority_defaults(self.PRIORITY)
 
       # Default parameters for clinical, supplementary
       self.set_ini_default(core_constants.CLINICAL, True)
@@ -52,12 +54,23 @@ class main(plugin_base):
       # Get the working directory
       work_dir = self.workspace.get_work_dir()
       
-      # Get any input parameters
-      input_data = self.workspace.read_json(os.path.join(work_dir, self.INPUT_PARAMS_FILE))
-      donor = input_data["donor"]
+      # If input_params.json exists, read it
+      work_dir = self.workspace.get_work_dir()
+      input_data_path = os.path.join(work_dir, self.INPUT_PARAMS_FILE)
+      if os.path.exists(input_data_path):
+          input_data = self.workspace.read_json(input_data_path)
+      else:
+          msg = "Could not find input_params.json"
+          #print(msg) <-- TO DO: have logger raise warning
 
+      if wrapper.my_param_is_null('donor'):
+          wrapper.set_my_param('donor', input_data['donor'])
+      if wrapper.my_param_is_null('oncotree_code'):
+          wrapper.set_my_param('oncotree_code', input_data['oncotree_code'])
+      if wrapper.my_param_is_null('tumour_id'):
+          wrapper.set_my_param('tumour_id', input_data['tumour_id'])
       if wrapper.my_param_is_null('seg_file'):
-        config[self.identifier]["seg_file"] = self.get_seg_file(donor)
+          wrapper.set_my_param('seg_file', self.get_seg_file(config[self.identifier]['donor']))
       return config
 
     def extract(self, config):
@@ -68,9 +81,8 @@ class main(plugin_base):
       work_dir = self.workspace.get_work_dir()
 
       # Get any input parameters
-      input_data = self.workspace.read_json(os.path.join(work_dir, self.INPUT_PARAMS_FILE))
-      tumour_id = input_data['tumour_id']
-      oncotree_code = input_data['oncotree_code']
+      tumour_id = config[self.identifier]['tumour_id']
+      oncotree_code = config[self.identifier]['oncotree_code']
 
       # Get the seg file from the config
       seg_file = wrapper.get_my_string('seg_file')
@@ -125,24 +137,8 @@ class main(plugin_base):
       return cnv_data
 
     def render(self, data):
-      #renderer = mako_renderer(self.get_module_dir())
-      #return renderer.render_name(self.TEMPLATE_NAME, data)
-
-      super().render(data)
-      args = data
-      html_dir = os.path.realpath(os.path.join(
-          os.path.dirname(__file__),
-          'html'
-      ))
-      report_lookup = TemplateLookup(directories=[html_dir, ], strict_undefined=True)
-      mako_template = report_lookup.get_template(self.TEMPLATE_NAME)
-      try:
-          html = mako_template.render(**args)
-      except Exception as err:
-          msg = "Unexpected error of type {0} in Mako template rendering: {1}".format(type(err).__name__, err)
-          self.logger.error(msg)
-          raise
-      return html
+      renderer = mako_renderer(self.get_module_dir())
+      return renderer.render_name(self.TEMPLATE_NAME, data)
 
     def get_seg_file(self, root_sample_name):
       """
