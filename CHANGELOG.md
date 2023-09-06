@@ -1,6 +1,6 @@
 # CHANGELOG
 
-# Unreleased
+## v0.4.15: 2023-09-06
 
 - GCGI-1063: Redact TMB genomic biomarker plot from benchmark comparison
 
