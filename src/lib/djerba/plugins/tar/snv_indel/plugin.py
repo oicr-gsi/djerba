@@ -40,18 +40,13 @@ class main(plugin_base):
            'assay',
            'tumour_id',
            'normal_id',
-           'study',
+           'project',
            'maf_file',
            'maf_file_normal',
       ]
       for key in discovered:
           self.add_ini_discovered(key)
       self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
-
-      #self.set_ini_default(core_constants.CLINICAL, True)
-      #self.set_ini_default(core_constants.SUPPLEMENTARY, False)
-      #self.set_ini_default('attributes', 'clinical')
-      
       self.set_priority_defaults(self.PRIORITY)
 
     def configure(self, config):
@@ -80,8 +75,9 @@ class main(plugin_base):
           wrapper.set_my_param('tumour_id', input_data['tumour_id'])
       if wrapper.my_param_is_null('normal_id'):
           wrapper.set_my_param('normal_id', input_data['normal_id'])
-      if wrapper.my_param_is_null('study'):
-          wrapper.set_my_param('study', input_data['study'])
+      if wrapper.my_param_is_null('project'):
+          wrapper.set_my_param('project', input_data['project'])
+      
       # SECOND PASS: get files
       if wrapper.my_param_is_null('maf_file'):
           wrapper.set_my_param("maf_file", self.get_maf_file(config[self.identifier]['donor'], self.RESULTS_SUFFIX_Pl))
@@ -96,7 +92,7 @@ class main(plugin_base):
       work_dir = self.workspace.get_work_dir()
 
       # Get any input parameters
-      study = config[self.identifier]["study"]
+      project = config[self.identifier]["project"]
       oncotree_code = config[self.identifier]["oncotree_code"]
       tumour_id = config[self.identifier]["tumour_id"]
       normal_id = config[self.identifier]["normal_id"]
@@ -111,7 +107,7 @@ class main(plugin_base):
       
       # Preprocessing
       maf_file = self.filter_maf_for_tar(work_dir, config[self.identifier]["maf_file"], config[self.identifier]["maf_file_normal"])
-      preprocess(config, work_dir, assay, study, oncotree_code, tumour_id, normal_id, maf_file).run_R_code()
+      preprocess(config, work_dir, assay, project, oncotree_code, tumour_id, normal_id, maf_file).run_R_code()
       
       mutations_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED)
       mutations_extended_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)

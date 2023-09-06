@@ -35,7 +35,6 @@ class main(helper_base):
     KNOWN_VARIANTS = 'known_variants'
     REQUISITION_APPROVED = 'requisition_approved'
     ASSAY = 'assay'
-    ASSAY_DESCRIPTION = 'assay_description'
 
     # Name for output file
     INPUT_PARAMS_FILE = 'input_params.json'
@@ -61,7 +60,6 @@ class main(helper_base):
         self.add_ini_required(self.KNOWN_VARIANTS)
         self.add_ini_required(self.REQUISITION_APPROVED)
         self.add_ini_required(self.ASSAY)
-        self.add_ini_required(self.ASSAY_DESCRIPTION)
 
     def configure(self, config):
         """
@@ -101,7 +99,6 @@ class main(helper_base):
             self.KNOWN_VARIANTS: config[self.identifier][self.KNOWN_VARIANTS],
             self.REQUISITION_APPROVED: config[self.identifier][self.REQUISITION_APPROVED],
             self.ASSAY: config[self.identifier][self.ASSAY],
-            self.ASSAY_DESCRIPTION: config[self.identifier][self.ASSAY_DESCRIPTION]
         }
         return input_params_info
 
