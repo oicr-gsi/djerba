@@ -17,12 +17,13 @@ from djerba.util.subprocess_runner import subprocess_runner
 import djerba.util.provenance_index as index
 import djerba.plugins.tar.provenance_tools as provenance_tools
 from djerba.core.workspace import workspace
+from djerba.util.render_mako import mako_renderer
 
 class main(plugin_base):
    
     PRIORITY = 300
     PLUGIN_VERSION = '1.0.0'
-    TEMPLATE_NAME = 'snv_indel_template.html'
+    TEMPLATE_NAME = 'html/snv_indel_template.html'
     WORKFLOW = 'consensusCruncher'
     RESULTS_SUFFIX_Pl = 'Pl.merged.maf.gz'
     RESULTS_SUFFIX_BC = 'BC.merged.maf.gz'
@@ -32,18 +33,25 @@ class main(plugin_base):
       super().__init__(**kwargs)
          
     def specify_params(self):
-      self.add_ini_discovered('maf_file')
-      self.add_ini_discovered('maf_file_normal')
-      
-      #self.add_ini_required('oncotree_code')
-      #self.add_ini_required('tumour_id')
-      #self.add_ini_required('normal_id')
-      #self.add_ini_required('donor')
-      #self.add_ini_required('study_title')
 
-      self.set_ini_default(core_constants.CLINICAL, True)
-      self.set_ini_default(core_constants.SUPPLEMENTARY, False)
-      self.set_ini_default('attributes', 'clinical')
+      discovered = [
+           'donor',
+           'oncotree_code',
+           'assay',
+           'tumour_id',
+           'normal_id',
+           'study',
+           'maf_file',
+           'maf_file_normal',
+      ]
+      for key in discovered:
+          self.add_ini_discovered(key)
+      self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
+
+      #self.set_ini_default(core_constants.CLINICAL, True)
+      #self.set_ini_default(core_constants.SUPPLEMENTARY, False)
+      #self.set_ini_default('attributes', 'clinical')
+      
       self.set_priority_defaults(self.PRIORITY)
 
     def configure(self, config):
@@ -52,16 +60,33 @@ class main(plugin_base):
         
       # Get the working directory
       work_dir = self.workspace.get_work_dir()
-        
-      # Get any input parameters
-      input_data = self.workspace.read_json(os.path.join(work_dir, self.INPUT_PARAMS_FILE))
-      donor = input_data["donor"]
+      
+      # If input_params.json exists, read it
+      input_data_path = os.path.join(work_dir, self.INPUT_PARAMS_FILE)
+      if os.path.exists(input_data_path):
+          input_data = self.workspace.read_json(input_data_path)
+      else:
+          msg = "Could not find input_params.json"
+          #print(msg) <-- TO DO: have logger raise warning
 
-      # Populate ini
+      # FIRST PASS: get input parameters
+      if wrapper.my_param_is_null('donor'):
+          wrapper.set_my_param('donor', input_data['donor'])
+      if wrapper.my_param_is_null('assay'):
+          wrapper.set_my_param('assay', input_data['assay'])
+      if wrapper.my_param_is_null('oncotree_code'):
+          wrapper.set_my_param('oncotree_code', input_data['oncotree_code'])
+      if wrapper.my_param_is_null('tumour_id'):
+          wrapper.set_my_param('tumour_id', input_data['tumour_id'])
+      if wrapper.my_param_is_null('normal_id'):
+          wrapper.set_my_param('normal_id', input_data['normal_id'])
+      if wrapper.my_param_is_null('study'):
+          wrapper.set_my_param('study', input_data['study'])
+      # SECOND PASS: get files
       if wrapper.my_param_is_null('maf_file'):
-          config[self.identifier]["maf_file"] = self.get_maf_file(donor, self.RESULTS_SUFFIX_Pl)
+          wrapper.set_my_param("maf_file", self.get_maf_file(config[self.identifier]['donor'], self.RESULTS_SUFFIX_Pl))
       if wrapper.my_param_is_null('maf_file_normal'):
-          config[self.identifier]["maf_file_normal"] = self.get_maf_file(donor, self.RESULTS_SUFFIX_BC)
+          wrapper.set_my_param("maf_file_normal", self.get_maf_file(config[self.identifier]['donor'], self.RESULTS_SUFFIX_BC))
       return config  
 
     def extract(self, config):
@@ -71,12 +96,11 @@ class main(plugin_base):
       work_dir = self.workspace.get_work_dir()
 
       # Get any input parameters
-      input_data = self.workspace.read_json(os.path.join(work_dir, self.INPUT_PARAMS_FILE))
-      study = input_data["study"]
-      oncotree_code = input_data["oncotree_code"]
-      tumour_id = input_data["tumour_id"]
-      normal_id = input_data["normal_id"]
-      assay = input_data["assay"]
+      study = config[self.identifier]["study"]
+      oncotree_code = config[self.identifier]["oncotree_code"]
+      tumour_id = config[self.identifier]["tumour_id"]
+      normal_id = config[self.identifier]["normal_id"]
+      assay = config[self.identifier]["assay"]
 
       # Get starting plugin data
       data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
@@ -110,20 +134,22 @@ class main(plugin_base):
       return data
 
     def render(self, data):
-      args = data
-      html_dir = os.path.realpath(os.path.join(
-          os.path.dirname(__file__),
-          'html'
-      ))
-      report_lookup = TemplateLookup(directories=[html_dir, ], strict_undefined=True)
-      mako_template = report_lookup.get_template(self.TEMPLATE_NAME)
-      try:
-          html = mako_template.render(**args)
-      except Exception as err:
-          msg = "Unexpected error of type {0} in Mako template rendering: {1}".format(type(err).__name__, err)
-          self.logger.error(msg)
-          raise
-      return html
+      renderer = mako_renderer(self.get_module_dir())
+      return renderer.render_name(self.TEMPLATE_NAME, data)
+      #args = data
+      #html_dir = os.path.realpath(os.path.join(
+      #    os.path.dirname(__file__),
+      #    'html'
+      #))
+      #report_lookup = TemplateLookup(directories=[html_dir, ], strict_undefined=True)
+      #mako_template = report_lookup.get_template(self.TEMPLATE_NAME)
+      #try:
+      #    html = mako_template.render(**args)
+      #except Exception as err:
+      #    msg = "Unexpected error of type {0} in Mako template rendering: {1}".format(type(err).__name__, err)
+      #    self.logger.error(msg)
+      #    raise
+      #return html
 
 
     def get_maf_file(self, donor, results_suffix):
