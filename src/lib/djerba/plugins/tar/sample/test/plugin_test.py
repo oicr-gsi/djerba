@@ -29,9 +29,8 @@ class TestTarSamplePlugin(PluginTester):
     def testTarSample(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         json_location = os.path.join(self.sup_dir ,"tar-plugin/report_json/tar.sample.json")
-        
         shutil.copy(self.input_params, self.tmp_dir)
-
+                
         params = {
             self.INI: 'tar.sample.ini',
             self.JSON: json_location,

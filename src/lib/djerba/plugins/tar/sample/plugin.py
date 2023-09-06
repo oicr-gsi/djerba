@@ -35,7 +35,6 @@ class main(plugin_base):
 
     def configure(self, config):
         config = self.apply_defaults(config)
-        work_dir = self.workspace.get_work_dir()
         wrapper = self.get_config_wrapper(config)
         
         # Get group id (which is just tumour id for TAR) and normal id from input_params.json
@@ -43,13 +42,8 @@ class main(plugin_base):
         group_id = input_data['tumour_id']
         normal_id = input_data['normal_id']
 
-        if wrapper.my_param_is_null('purity'):
-            ichorcna_metrics_file = provenance_tools.subset_provenance_sample(self, "ichorcna", group_id, "metrics\.json$")
-            ichor_json = self.process_ichor_json(ichorcna_metrics_file) 
-            self.workspace.write_json('ichor_metrics.json', ichor_json)
-            purity = ichor_json["tumor_fraction"]
-            self.write_purity(purity, work_dir)
-            wrapper.set_my_param('purity', float('%.1E' % Decimal(purity*100)))
+        if wrapper.my_param_is_null('ichorcna_file'):
+            wrapper.set_my_param('ichorcna_file', provenance_tools.subset_provenance_sample(self, "ichorcna", group_id, "metrics\.json$"))
         if wrapper.my_param_is_null('consensus_cruncher_file'):
             wrapper.set_my_param('consensus_cruncher_file', provenance_tools.subset_provenance_sample(self, "consensusCruncher", group_id, "allUnique-hsMetrics\.HS\.txt$"))
         if wrapper.my_param_is_null('consensus_cruncher_file_normal'):
@@ -71,14 +65,24 @@ class main(plugin_base):
         work_dir = self.workspace.get_work_dir()
         input_data = self.workspace.read_json(os.path.join(work_dir, self.INPUT_PARAMS_FILE))
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
+        work_dir = self.workspace.get_work_dir()
+
+        # Get purity and write it to purity.txt
+        ichorcna_metrics_file = config[self.identifier]['ichorcna_file']
+        ichor_json = self.process_ichor_json(ichorcna_metrics_file)
+        self.workspace.write_json('ichor_metrics.json', ichor_json)
+        purity = ichor_json["tumor_fraction"]
+        self.write_purity(purity, work_dir)
+
         results =  {
                 "oncotree_code": input_data[constants.ONCOTREE],
                 "known_variants" : input_data[constants.KNOWN_VARIANTS],
-                "cancer_content" : float(config[self.identifier][constants.PURITY]),
+                "cancer_content" : float('%.1E' % Decimal(purity*100)),
                 "raw_coverage" : int(config[self.identifier][constants.RAW_COVERAGE]),
                 "unique_coverage" : int(config[self.identifier][constants.COLLAPSED_COVERAGE_PL]),
                 "files": {
-                    "consensus_cruncher_file": config[self.identifier]['consensus_cruncher_file']
+                    "consensus_cruncher_file": config[self.identifier]['consensus_cruncher_file'],
+                    "ichorcna_file": config[self.identifier]['ichorcna_file']
                 }
             }
         data['results'] = results
@@ -123,7 +127,7 @@ class main(plugin_base):
 
     def specify_params(self):
         discovered = [
-            'purity',
+            'ichorcna_file',
             'raw_coverage',
             'consensus_cruncher_file',
             'consensus_cruncher_file_normal',
