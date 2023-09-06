@@ -37,17 +37,33 @@ class main(plugin_base):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         
-        # Get group id (which is just tumour id for TAR) and normal id from input_params.json
-        input_data = self.workspace.read_json(os.path.join(work_dir, self.INPUT_PARAMS_FILE))
-        group_id = input_data['tumour_id']
-        normal_id = input_data['normal_id']
+        # If input_params.json exists, read it
+        work_dir = self.workspace.get_work_dir()
+        input_data_path = os.path.join(work_dir, self.INPUT_PARAMS_FILE)
+        if os.path.exists(input_data_path):
+            input_data = self.workspace.read_json(input_data_path)
+        else:
+            msg = "Could not find input_params.json"
+            #print(msg) <-- TO DO: have logger raise warning 
+            
 
+        # FIRST PASS: Get the input parameters
+        if wrapper.my_param_is_null('group_id'):
+            wrapper.set_my_param('group_id', input_data['tumour_id'])
+        if wrapper.my_param_is_null('normal_id'):
+            wrapper.set_my_param('normal_id', input_data['normal_id'])
+        if wrapper.my_param_is_null('oncotree_code'):
+            wrapper.set_my_param('oncotree_code', input_data['oncotree_code'])
+        if wrapper.my_param_is_null('known_variants'):
+            wrapper.set_my_param('known_variants', input_data['known_variants'])
+
+        # SECOND PASS: Get files based on input parameters
         if wrapper.my_param_is_null('ichorcna_file'):
-            wrapper.set_my_param('ichorcna_file', provenance_tools.subset_provenance_sample(self, "ichorcna", group_id, "metrics\.json$"))
+            wrapper.set_my_param('ichorcna_file', provenance_tools.subset_provenance_sample(self, "ichorcna", config[self.identifier]['group_id'], "metrics\.json$"))
         if wrapper.my_param_is_null('consensus_cruncher_file'):
-            wrapper.set_my_param('consensus_cruncher_file', provenance_tools.subset_provenance_sample(self, "consensusCruncher", group_id, "allUnique-hsMetrics\.HS\.txt$"))
+            wrapper.set_my_param('consensus_cruncher_file', provenance_tools.subset_provenance_sample(self, "consensusCruncher", config[self.identifier]['group_id'], "allUnique-hsMetrics\.HS\.txt$"))
         if wrapper.my_param_is_null('consensus_cruncher_file_normal'):
-            wrapper.set_my_param('consensus_cruncher_file_normal', provenance_tools.subset_provenance_sample(self, "consensusCruncher", normal_id, "allUnique-hsMetrics\.HS\.txt$"))
+            wrapper.set_my_param('consensus_cruncher_file_normal', provenance_tools.subset_provenance_sample(self, "consensusCruncher", config[self.identifier]['normal_id'], "allUnique-hsMetrics\.HS\.txt$"))
         if wrapper.my_param_is_null('raw_coverage'):
             qc_dict = self.fetch_coverage_etl_data(group_id)
             wrapper.set_my_param('raw_coverage', qc_dict['raw_coverage'])
@@ -63,7 +79,6 @@ class main(plugin_base):
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         work_dir = self.workspace.get_work_dir()
-        input_data = self.workspace.read_json(os.path.join(work_dir, self.INPUT_PARAMS_FILE))
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         work_dir = self.workspace.get_work_dir()
 
@@ -75,8 +90,8 @@ class main(plugin_base):
         self.write_purity(purity, work_dir)
 
         results =  {
-                "oncotree_code": input_data[constants.ONCOTREE],
-                "known_variants" : input_data[constants.KNOWN_VARIANTS],
+                "oncotree_code": config[self.identifier]['oncotree_code'],
+                "known_variants" : config[self.identifier][constants.KNOWN_VARIANTS],
                 "cancer_content" : float('%.1E' % Decimal(purity*100)),
                 "raw_coverage" : int(config[self.identifier][constants.RAW_COVERAGE]),
                 "unique_coverage" : int(config[self.identifier][constants.COLLAPSED_COVERAGE_PL]),
@@ -127,6 +142,10 @@ class main(plugin_base):
 
     def specify_params(self):
         discovered = [
+            'group_id',
+            'normal_id',
+            'oncotree_code',
+            'known_variants',
             'ichorcna_file',
             'raw_coverage',
             'consensus_cruncher_file',
