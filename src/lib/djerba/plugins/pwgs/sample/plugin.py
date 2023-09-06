@@ -17,7 +17,7 @@ try:
     import gsiqcetl.column
     from gsiqcetl import QCETLCache
 except ImportError:
-        raise ImportError('Error Importing QC-ETL, try checking python versions')
+    raise ImportError('Error Importing QC-ETL, try checking python versions')
 
 class main(plugin_base):
 
@@ -40,7 +40,7 @@ class main(plugin_base):
             wrapper.set_my_param(pc.SNV_COUNT,  self.preprocess_snv_count(group_id))
         if wrapper.my_param_is_null(pc.RESULTS_FILE):
             wrapper.set_my_param(pc.RESULTS_FILE, pwgs_tools.subset_provenance(self, "mrdetect", group_id, pc.RESULTS_SUFFIX))
-        return config
+        return wrapper.get_config()
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
@@ -78,7 +78,7 @@ class main(plugin_base):
 
     def fetch_coverage_etl_data(self, group_id, config):
         '''fetch median insert size and coverage QC metrics from QC-ETL'''
-        self.etl_cache = QCETLCache(self.QCETL_CACHE)
+        self.etl_cache = QCETLCache(config[self.identifier]['qcetl_cache'])
         cached_coverages = self.etl_cache.bamqc4merged.bamqc4merged
         columns_of_interest = gsiqcetl.column.BamQc4MergedColumn
         data = cached_coverages.loc[
@@ -109,7 +109,7 @@ class main(plugin_base):
     def plot_insert_size(self, is_path, output_dir ):
         '''call R to plot insert size distribution'''
         args = [
-            os.path.join(os.path.dirname(__file__),'IS.plot.R'),
+            os.path.join(os.path.dirname(__file__),'insert_size_plot.R'),
             '--insert_size_file', is_path,
             '--output_directory', output_dir 
         ]
@@ -157,6 +157,7 @@ class main(plugin_base):
         return renderer.render_name(pc.SAMPLE_TEMPLATE_NAME, data)
     
     def specify_params(self):
+        self.set_ini_default('qcetl_cache', self.QCETL_CACHE)
         required = [
             pc.REQ_APPROVED,
             pc.GROUP_ID,
@@ -176,9 +177,3 @@ class main(plugin_base):
             self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_priority_defaults(self.PRIORITY)
-
-class MissingQCETLError(Exception):
-    pass 
-
-class MissingIniError(Exception):
-    pass 

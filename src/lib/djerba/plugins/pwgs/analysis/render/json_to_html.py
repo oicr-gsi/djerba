@@ -11,12 +11,6 @@ class html_builder:
         value_formatted = f'{value:,}'
         return(value_formatted)
         
-    def replace_zero_with(self, tumour_fraction):
-        if tumour_fraction == 0:
-            return("Not Detected")
-        else:
-            return(tumour_fraction)
-
     def section_cells_begin(self, section_title, main_or_supp):
         # begin a cell structure with title in left-hand cell, body in right-hand cell
         permitted = ['main', 'supp']

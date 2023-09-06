@@ -30,7 +30,7 @@ class main(plugin_base):
             wrapper.set_my_param(pc.VAF_FILE, pwgs_tools.subset_provenance(self, "mrdetect", group_id, pc.VAF_SUFFIX))
         if wrapper.my_param_is_null(pc.HBC_FILE):
             wrapper.set_my_param(pc.HBC_FILE, pwgs_tools.subset_provenance(self, "mrdetect", group_id, pc.HBC_SUFFIX))
-        return config
+        return wrapper.get_config()
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)

@@ -54,7 +54,7 @@ class workspace(logger):
         return open(file_path, mode)
 
     def print_location(self):
-        return(self.dir_path)
+        return self.dir_path
 
     def read_json(self, rel_path):
         in_path = os.path.join(self.dir_path, rel_path)
