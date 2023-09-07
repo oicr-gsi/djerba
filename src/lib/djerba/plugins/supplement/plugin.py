@@ -30,7 +30,7 @@ class main(plugin_base):
         work_dir = self.workspace.get_work_dir()
         input_data_path = os.path.join(work_dir, self.INPUT_PARAMS_FILE)
         if os.path.exists(input_data_path):
-            input_data = self.workspace.read_json(input_data_path)
+            input_data = self.workspace.read_json(self.INPUT_PARAMS_FILE)
         else:
             msg = "Could not find input_params.json"
             #print(msg) <-- TO DO: have logger raise warning

@@ -63,9 +63,17 @@ class main(helper_base):
 
     def configure(self, config):
         """
+        Needs to write the json to the workspace in the configure step
         """
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
+
+        # Retrieve the parameters from the ini
+        info = self.get_input_params(config)
+
+        # Write them to a json
+        self.write_input_params_info(info)
+
         return wrapper.get_config()
 
     def extract(self, config):
@@ -73,13 +81,6 @@ class main(helper_base):
         Write the input params JSON
         """
         self.validate_full_config(config)
-        #wrapper = self.get_config_wrapper(config)
-
-        # Retrieve the parameters from the ini
-        info = self.get_input_params(config)
-
-        # Write them to a json
-        self.write_input_params_info(info)
 
     def get_input_params(self, config):
         """

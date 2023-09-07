@@ -41,7 +41,7 @@ class main(plugin_base):
         work_dir = self.workspace.get_work_dir()
         input_data_path = os.path.join(work_dir, self.INPUT_PARAMS_FILE)
         if os.path.exists(input_data_path):
-            input_data = self.workspace.read_json(input_data_path)
+            input_data = self.workspace.read_json(self.INPUT_PARAMS_FILE)
         else:
             msg = "Could not find input_params.json"
             #print(msg) <-- TO DO: have logger raise warning 
@@ -65,7 +65,7 @@ class main(plugin_base):
         if wrapper.my_param_is_null('consensus_cruncher_file_normal'):
             wrapper.set_my_param('consensus_cruncher_file_normal', provenance_tools.subset_provenance_sample(self, "consensusCruncher", config[self.identifier]['normal_id'], "allUnique-hsMetrics\.HS\.txt$"))
         if wrapper.my_param_is_null('raw_coverage'):
-            qc_dict = self.fetch_coverage_etl_data(group_id)
+            qc_dict = self.fetch_coverage_etl_data(config[self.identifier]['group_id'])
             wrapper.set_my_param('raw_coverage', qc_dict['raw_coverage'])
 
         # Get values for collapsed coverage for Pl and BC and put in config for QC reporting
