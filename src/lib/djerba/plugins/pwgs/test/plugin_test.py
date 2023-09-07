@@ -5,6 +5,7 @@
 import os
 import unittest
 import tempfile
+import string
 
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
@@ -16,6 +17,8 @@ import djerba.plugins.pwgs.constants as constants
 
 class TestPwgAnalysisPlugin(PluginTester):
 
+    INI_NAME = 'pwgs.analysis.ini'
+
     def setUp(self):
         self.path_validator = path_validator()
         self.maxDiff = None
@@ -23,16 +26,6 @@ class TestPwgAnalysisPlugin(PluginTester):
         self.tmp_dir = self.tmp.name
         sup_dir_var = 'DJERBA_TEST_DATA'
         self.sup_dir = os.environ.get(sup_dir_var)
-
-    def testPwgsAnalysis(self):
-        test_source_dir = os.path.realpath(os.path.dirname(__file__))
-        json_location = os.path.join(self.sup_dir ,"pwgs-plugin/report_json/pwgs.analysis.json")
-        params = {
-            self.INI: 'data/pwgs.analysis.ini',
-            self.JSON: json_location,
-            self.MD5: '2c45c4e916784d68aa977b4351b53623'
-        }
-        self.run_basic_test(test_source_dir, params)
 
     def testPreprocessHbc(self):
         hbc_expected_location = os.path.join(self.sup_dir ,"pwgs-plugin/HBCs.csv")
@@ -53,6 +46,24 @@ class TestPwgAnalysisPlugin(PluginTester):
         self.assertEqual(results[constants.CTDNA_OUTCOME], 'DETECTED')
         self.assertEqual(results[constants.SIGNIFICANCE], 'significantly larger')
 
+    def testPwgsAnalysis(self):
+        test_source_dir = os.path.realpath(os.path.dirname(__file__))
+        with open(os.path.join(test_source_dir, self.INI_NAME)) as in_file:
+            template_str = in_file.read()
+        template = string.Template(template_str)
+        ini_str = template.substitute({'DJERBA_TEST_DATA': self.sup_dir})
+        input_dir = os.path.join(self.get_tmp_dir(), 'input')
+        os.mkdir(input_dir)
+        with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
+            ini_file.write(ini_str)
+        json_location = os.path.join(self.sup_dir ,"pwgs-plugin/report_json/pwgs.analysis.json")
+        params = {
+            self.INI: self.INI_NAME,
+            self.JSON: json_location,
+            self.MD5: '2c45c4e916784d68aa977b4351b53623'
+        }
+        self.run_basic_test(input_dir, params)
+
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""
         for key in ['pwgs_base64']:
@@ -60,6 +71,8 @@ class TestPwgAnalysisPlugin(PluginTester):
         return data        
 
 class TestPwgSamplePlugin(PluginTester):
+
+    INI_NAME = 'pwgs.sample.ini'
 
     def setUp(self):
         self.path_validator = path_validator()
@@ -69,20 +82,29 @@ class TestPwgSamplePlugin(PluginTester):
         sup_dir_var = 'DJERBA_TEST_DATA'
         self.sup_dir = os.environ.get(sup_dir_var)
 
-    def testPwgsSample(self):
-        test_source_dir = os.path.realpath(os.path.dirname(__file__))
-        json_location = os.path.join(self.sup_dir ,"pwgs-plugin/report_json/pwgs.sample.json")
-        params = {
-            self.INI: 'data/pwgs.sample.ini',
-            self.JSON: json_location,
-            self.MD5: '9743fb4c0d0eb0269d3aeb8fe6d2bee1'
-        }
-        self.run_basic_test(test_source_dir, params)
-
     def testPreprocessSNVcount(self):
         snv_count_expected_location = os.path.join(self.sup_dir ,"pwgs-plugin/snv.txt")
         snv_count = sample.main.preprocess_snv_count(self, group_id = "None", snv_count_path = snv_count_expected_location)
         self.assertEqual(snv_count, 21000)
+
+    def testPwgsSample(self):
+        test_source_dir = os.path.realpath(os.path.dirname(__file__))
+        with open(os.path.join(test_source_dir, self.INI_NAME)) as in_file:
+            template_str = in_file.read()
+        template = string.Template(template_str)
+        ini_str = template.substitute({'DJERBA_TEST_DATA': self.sup_dir})
+        input_dir = os.path.join(self.get_tmp_dir(), 'input')
+        os.mkdir(input_dir)
+        with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
+            ini_file.write(ini_str)
+        json_location = os.path.join(self.sup_dir ,"pwgs-plugin/report_json/pwgs.sample.json")
+        params = {
+            self.INI: self.INI_NAME,
+            self.JSON: json_location,
+            self.MD5: '9743fb4c0d0eb0269d3aeb8fe6d2bee1'
+        }
+        self.run_basic_test(input_dir, params)
+
 
 if __name__ == '__main__':
     unittest.main()
