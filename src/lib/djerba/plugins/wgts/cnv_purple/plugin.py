@@ -10,12 +10,10 @@ from mako.lookup import TemplateLookup
 from djerba.util.render_mako import mako_renderer
 import djerba.core.constants as core_constants
 from djerba.core.workspace import workspace
-import djerba.snv_indel_tools.constants as sic
-from djerba.cnv_tools.preprocess import preprocess as process_cnv
 import djerba.render.constants as rc
-import djerba.cnv_tools.constants as ctc 
-from djerba.sequenza import sequenza_reader
-from djerba.snv_indel_tools.extract import data_builder as data_extractor
+from djerba.extract.oncokb.annotator import oncokb_annotator
+from djerba.util.subprocess_runner import subprocess_runner
+from djerba.plugins.wgts.cnv_tools.preprocess import preprocess as process_cnv
 
 class main(plugin_base):
    
@@ -23,40 +21,50 @@ class main(plugin_base):
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'cnv_template.html'
     ASSAY = 'WGS'
-    
+    CNA_ANNOTATED = "data_CNA_oncoKBgenes_nonDiploid_annotated.txt"
+    ONCOLIST =  "data/20200818-oncoKBcancerGeneList.tsv"
+
     def configure(self, config):
       config = self.apply_defaults(config)
       wrapper = self.get_config_wrapper(config)
       if wrapper.my_param_is_null('purity'):
-            purity = 0.6
-            wrapper.set_my_param('purity', purity)
-      #TODO: pull sequenza from provenance
-      return config  
+        purity = get_purple_purity(config[self.identifier]['purple_purity_file'])
+        wrapper.set_my_param('purity', purity[0])
+      if wrapper.my_param_is_null('ploidy'):
+        purity = get_purple_purity(config[self.identifier]['purple_purity_file'])
+        wrapper.set_my_param('ploidy', purity[1])
+      return wrapper.get_config()  
 
     def extract(self, config):
       wrapper = self.get_config_wrapper(config)  
-      work_dir = self.workspace.get_work_dir()
+      self.work_dir = self.workspace.get_work_dir()
       data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
-      cnv = process_cnv(work_dir)
 
       tumour_id = config[self.identifier]['tumour_id']
-      purity = config[self.identifier]['purity']
+      ploidy = config[self.identifier]['ploidy']
       oncotree_code = config[self.identifier]['oncotree_code']
+      purple_gene_file = config[self.identifier]['purple_gene_file']
 
-      seg_path = cnv.preprocess_seg_sequenza(sequenza_file, sequenza_gamma, tumour_id)
-      ## outputs files write to working directory
-      cnv.convert_to_gene_and_annotate(seg_path, purity, tumour_id, oncotree_code)
-      data_table = cnv.build_copy_number_variation(self.ASSAY, sic.CNA_ANNOTATED)
-      data_table[ctc.PERCENT_GENOME_ALTERED] = cnv.calculate_percent_genome_altered(ctc.DATA_SEGMENTS)
+      cnv = process_cnv(self.work_dir)
+      self.convert_purple_to_gistic(purple_gene_file, ploidy)
+      self.tmp_dir = os.path.join(self.work_dir, 'tmp')
+      oncokb_annotator(tumour_id, oncotree_code, self.work_dir, self.tmp_dir).annotate_cna()
+      data_table = cnv.build_copy_number_variation(self.ASSAY, self.CNA_ANNOTATED)
+
+      ## segments
+      #cnv_plot_base64 = cnv.write_cnv_plot(sequenza_file, sequenza_gamma, sequenza_solution)
+      #data_table['cnv_plot']= cnv_plot_base64
+      #arm-level should be here
+      #data_table[ctc.PERCENT_GENOME_ALTERED] = cnv.calculate_percent_genome_altered(ctc.DATA_SEGMENTS)
+
       if self.ASSAY == "WGS":
-        data_table[sic.HAS_EXPRESSION_DATA]= False
+        data_table['Has expression data']= False
       elif self.ASSAY == "WGTS":
-        data_table[sic.HAS_EXPRESSION_DATA]= True
+        data_table['Has expression data']= True
         #TODO: add expression support
-      cnv_plot_base64 = cnv.write_cnv_plot(sequenza_file, sequenza_gamma, sequenza_solution)
-      data_table['cnv_plot']= cnv_plot_base64
+
       data['results'] = data_table
-      cna_annotated_path = os.path.join(work_dir, sic.CNA_ANNOTATED)
+      cna_annotated_path = os.path.join(self.work_dir, self.CNA_ANNOTATED)
       data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(cna_annotated_path, oncotree_code)
       return data
     
@@ -68,14 +76,48 @@ class main(plugin_base):
       required = [
             'tumour_id',
             'oncotree_code',
-            'purple_file'
+            'purple_purity_file',
+          #  'purple_segment_file',
+            'purple_gene_file'
           ]
       for key in required:
           self.add_ini_required(key)
       discovered = [
-            'purity'
+            'purity',
+            'ploidy'
         ]
       for key in discovered:
           self.add_ini_discovered(key)
       self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
       self.set_priority_defaults(self.PRIORITY)
+
+    def convert_purple_to_gistic(self, purple_gene_file, ploidy):
+      dir_location = os.path.dirname(__file__)
+      oncolistpath = os.path.join(dir_location, '../../..', self.ONCOLIST)
+      cmd = [
+        'Rscript', os.path.join(dir_location + "/process_CNA_data.r"),
+        '--genefile', purple_gene_file,
+        '--outdir', self.work_dir,
+        '--oncolist', oncolistpath,
+        '--ploidy', ploidy
+      ]
+      runner = subprocess_runner()
+      result = runner.run(cmd, "main R script")
+      return result
+
+def get_purple_purity(purple_purity_path):
+  with open(purple_purity_path, 'r') as purple_purity_file:
+      purple_purity = csv.reader(purple_purity_file, delimiter="\t")
+      header=True
+      for row in purple_purity:
+          if header:
+             header=False
+          else:
+            try: 
+                purity = row[0]
+                ploidy = row[4]
+            except IndexError as err:
+                msg = "Incorrect number of columns in PURPLE Purity file: '{0}'".format(purple_purity_path)
+                raise RuntimeError(msg) from err
+  return [float(purity), float(ploidy)]
+
