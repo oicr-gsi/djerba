@@ -13,6 +13,7 @@ from time import strftime
 from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.util.render_mako import mako_renderer
 import djerba.core.constants as core_constants
+import os
 
 class main(plugin_base):
 
@@ -24,15 +25,16 @@ class main(plugin_base):
     # config/results keys
     # REPORT_ID, DONOR and STUDY from core
     # Patient LIMS ID = DONOR
-    ASSAY_DESCRIPTION = 'assay_description'
     ASSAY = "assay"
-    BLOOD_SAMPLE_ID = "blood sample id"
-    PRIMARY_CANCER = "primary cancer"
+    ASSAY_DESCRIPTION = 'assay_description'
+    BLOOD_SAMPLE_ID = "normal_id"
+    PRIMARY_CANCER = "primary_cancer"
     REQUISITION_ID = "requisition id"
-    REQ_APPROVED_DATE = "requisition approved"
-    SAMPLE_ANATOMICAL_SITE = "site of biopsy/surgery"
+    REQ_APPROVED_DATE = "requisition_approved"
+    SAMPLE_ANATOMICAL_SITE = "site_of_biopsy"
     STUDY = "study"
-    TUMOUR_SAMPLE_ID = "tumour sample id"
+    DONOR = "donor"
+    TUMOUR_SAMPLE_ID = "tumour_id"
     TUMOUR_DEPTH = 80
     NORMAL_DEPTH = 40
 
@@ -61,7 +63,7 @@ class main(plugin_base):
         # If input_params.json exists, read it
         input_data_path = os.path.join(work_dir, self.INPUT_PARAMS_FILE)
         if os.path.exists(input_data_path):
-            input_data = self.workspace.read_json(input_data_path)
+            input_data = self.workspace.read_json(self.INPUT_PARAMS_FILE)
         else:
             msg = "Could not find input_params.json"
             #print(msg) <-- TO DO: have logger raise warning
@@ -107,6 +109,7 @@ class main(plugin_base):
                 self.logger.error(msg)
                 raise DjerbaPluginError(msg) from err
 
+        return wrapper.get_config()
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
@@ -131,21 +134,22 @@ class main(plugin_base):
 
     def specify_params(self):
         discovered = [
-            'donor',
-            'study',
-            'assay',
-            'assay_description',
-            'patient_study_id',
-            'requisition_approved',
-            'site_of_biopsy',
-            'tumour_id',
-            'normal_id',
-            'primary_cancer',
+            self.ASSAY,
+            self.ASSAY_DESCRIPTION,
+            self.PRIMARY_CANCER,
+            self.SAMPLE_ANATOMICAL_SITE,
+            self.DONOR,
+            self.STUDY,
+            core_constants.PATIENT_STUDY_ID,
+            self.TUMOUR_SAMPLE_ID,
+            self.BLOOD_SAMPLE_ID,
             core_constants.REPORT_ID,
+            self.REQ_APPROVED_DATE,
+            core_constants.DEFAULT_SAMPLE_INFO
         ]
         for key in discovered:
             self.add_ini_discovered(key)
-        self.set_ini_default(self.ASSAY_SHORT_NAME, 'WGTS')
+        self.set_ini_default(self.ASSAY, 'WGTS')
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_ini_default(core_constants.DEPENDS_CONFIGURE, 'provenance_helper')
         self.set_priority_defaults(self.PRIORITY)

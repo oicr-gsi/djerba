@@ -74,7 +74,7 @@ class main(plugin_base):
         if wrapper.my_param_is_null('collapsed_coverage_bc'):
             wrapper.set_my_param('collapsed_coverage_bc', self.process_consensus_cruncher(config[self.identifier]['consensus_cruncher_file_normal']))
         
-        return config
+        return wrapper.get_config()
     
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)

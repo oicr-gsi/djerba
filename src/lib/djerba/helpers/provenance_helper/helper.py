@@ -10,6 +10,7 @@ find relevant file paths. Reading the provenance subset is very much faster than
 the full file provenance report.
 """
 
+import os
 import csv
 import gzip
 import logging
@@ -22,11 +23,12 @@ from djerba.util.provenance_reader import provenance_reader, sample_name_contain
 
 class main(helper_base):
 
+    INPUT_PARAMS_FILE = 'input_params.json'
     DEFAULT_PROVENANCE_INPUT = '/scratch2/groups/gsi/production/vidarr/'+\
         'vidarr_files_report_latest.tsv.gz'
     PROVENANCE_INPUT_KEY = 'provenance_input_path'
-    STUDY_TITLE = 'study_title'
-    ROOT_SAMPLE_NAME = 'root_sample_name'
+    STUDY_TITLE = 'project'
+    ROOT_SAMPLE_NAME = 'donor'
     PROVENANCE_OUTPUT = 'provenance_subset.tsv.gz'
     PRIORITY = 50
     SAMPLE_NAME_KEYS = [
@@ -42,6 +44,22 @@ class main(helper_base):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         provenance_path = wrapper.get_my_string(self.PROVENANCE_INPUT_KEY)
+        
+        # If input_params.json exists, read it
+        work_dir = self.workspace.get_work_dir()
+        input_data_path = os.path.join(work_dir, self.INPUT_PARAMS_FILE)
+        if os.path.exists(input_data_path):
+            input_data = self.workspace.read_json(self.INPUT_PARAMS_FILE)
+        else:
+            msg = "Could not find input_params.json"
+            #print(msg) <-- TO DO: have logger raise warning
+
+        # Get the input parameters
+        if wrapper.my_param_is_null(self.STUDY_TITLE):
+            wrapper.set_my_param(self.STUDY_TITLE, input_data[self.STUDY_TITLE])
+        if wrapper.my_param_is_null(self.ROOT_SAMPLE_NAME):
+            wrapper.set_my_param(self.ROOT_SAMPLE_NAME, input_data[self.ROOT_SAMPLE_NAME])
+
         study = wrapper.get_my_string(self.STUDY_TITLE)
         donor = wrapper.get_my_string(self.ROOT_SAMPLE_NAME)
         self.write_provenance_subset(study, donor, provenance_path)
@@ -133,8 +151,10 @@ class main(helper_base):
         self.logger.debug("Specifying params for provenance helper")
         self.set_priority_defaults(self.PRIORITY)
         self.set_ini_default(self.PROVENANCE_INPUT_KEY, self.DEFAULT_PROVENANCE_INPUT)
-        self.add_ini_required(self.STUDY_TITLE)
-        self.add_ini_required(self.ROOT_SAMPLE_NAME)
+        #self.add_ini_required(self.STUDY_TITLE)
+        #self.add_ini_required(self.ROOT_SAMPLE_NAME)
+        self.add_ini_discovered(self.STUDY_TITLE)
+        self.add_ini_discovered(self.ROOT_SAMPLE_NAME)
         self.add_ini_discovered(ini.SAMPLE_NAME_WG_N)
         self.add_ini_discovered(ini.SAMPLE_NAME_WG_T)
         self.add_ini_discovered(ini.SAMPLE_NAME_WT_T)
