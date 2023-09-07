@@ -17,9 +17,11 @@ class TestProvenanceHelper(TestBase):
 
     CORE = 'core'
     HELPER_NAME = 'provenance_helper'
-    SUBSET_MD5 = '62c0b00c42a352d9ce3c49aedb55e8e2'
-    INFO_MD5 = '5d358d76c0013748b5fc34c52b6abe56'
-    
+    #SUBSET_MD5 = '62c0b00c42a352d9ce3c49aedb55e8e2'
+    SUBSET_MD5 = '41c9288d5159f960f0193939a411a113'
+    #INFO_MD5 = '5d358d76c0013748b5fc34c52b6abe56'
+    INFO_MD5 = '6eaf49a1c0e558b6861c328b963e9497'
+
     def test(self):
         data_dir = os.path.join(os.environ.get('DJERBA_TEST_DATA'), 'helpers', 'provenance')
         provenance_input = os.path.join(data_dir, 'provenance_input.tsv.gz')
@@ -34,10 +36,10 @@ class TestProvenanceHelper(TestBase):
         config = helper_main.configure(config)
         subset_path = os.path.join(self.tmp_dir, helper_main.PROVENANCE_OUTPUT)
         self.assertTrue(os.path.exists(subset_path))
-        #self.assertEqual(self.getMD5_of_gzip_path(subset_path), self.SUBSET_MD5)
+        self.assertEqual(self.getMD5_of_gzip_path(subset_path), self.SUBSET_MD5)
         sample_info_path = os.path.join(self.tmp_dir, core_constants.DEFAULT_SAMPLE_INFO)
         self.assertTrue(os.path.exists(sample_info_path))
-        #self.assertEqual(self.getMD5(sample_info_path), self.INFO_MD5)
+        self.assertEqual(self.getMD5(sample_info_path), self.INFO_MD5)
         subset_mod = os.path.getmtime(subset_path)
         info_mod = os.path.getmtime(sample_info_path)
         time.sleep(0.01) # delay to enable file modification time check
@@ -48,10 +50,10 @@ class TestProvenanceHelper(TestBase):
         ws.remove_file(sample_info_path)
         helper_main.extract(config) # should regenerate the files
         self.assertTrue(os.path.exists(subset_path))
-        #self.assertEqual(self.getMD5_of_gzip_path(subset_path), self.SUBSET_MD5)
+        self.assertEqual(self.getMD5_of_gzip_path(subset_path), self.SUBSET_MD5)
         sample_info_path = os.path.join(self.tmp_dir, core_constants.DEFAULT_SAMPLE_INFO)
         self.assertTrue(os.path.exists(sample_info_path))
-        #self.assertEqual(self.getMD5(sample_info_path), self.INFO_MD5)
+        self.assertEqual(self.getMD5(sample_info_path), self.INFO_MD5)
 
 
 if __name__ == '__main__':

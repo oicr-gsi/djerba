@@ -155,9 +155,12 @@ class main(helper_base):
         #self.add_ini_required(self.ROOT_SAMPLE_NAME)
         self.add_ini_discovered(self.STUDY_TITLE)
         self.add_ini_discovered(self.ROOT_SAMPLE_NAME)
-        self.add_ini_discovered(ini.SAMPLE_NAME_WG_N)
-        self.add_ini_discovered(ini.SAMPLE_NAME_WG_T)
-        self.add_ini_discovered(ini.SAMPLE_NAME_WT_T)
+        #self.add_ini_discovered(ini.SAMPLE_NAME_WG_N)
+        #self.add_ini_discovered(ini.SAMPLE_NAME_WG_T)
+        #self.add_ini_discovered(ini.SAMPLE_NAME_WT_T)
+        self.set_ini_default(ini.SAMPLE_NAME_WG_N, "None")
+        self.set_ini_default(ini.SAMPLE_NAME_WG_T, "None")
+        self.set_ini_default(ini.SAMPLE_NAME_WT_T, "None")
 
     def write_provenance_subset(self, study, donor, provenance_path):
         self.logger.info('Started reading file provenance from {0}'.format(provenance_path))
