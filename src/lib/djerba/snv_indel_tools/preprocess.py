@@ -92,7 +92,9 @@ class preprocess():
       self.tmp_dir = os.path.join(self.report_dir, 'tmp')
 
       if os.path.isdir(self.tmp_dir):
-          print("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
+          # TO-DO: use self.logger.debug
+          pass
+          #print("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
           #self.logger.debug("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
       elif os.path.exists(self.tmp_dir):
           msg = "tmp dir path {0} exists but is not a directory".format(self.tmp_dir)
