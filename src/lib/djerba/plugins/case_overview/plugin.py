@@ -100,10 +100,10 @@ class main(plugin_base):
 
         # Get parameters from default sample info
         if wrapper.my_param_is_null(core_constants.DEFAULT_SAMPLE_INFO) and assay != "TAR":
+            wrapper.set_my_param(core_constants.DEFAULT_SAMPLE_INFO, os.path.join(work_dir, core_constants.DEFAULT_SAMPLE_INFO))
             info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
             try:
-                patient_id_key = core_constants.PATIENT_STUDY_ID
-                wrapper.set_my_param(patient_id_key, info[patient_id_key])
+                wrapper.set_my_param(core_constants.PATIENT_STUDY_ID, info[core_constants.PATIENT_STUDY_ID])
                 wrapper.set_my_param(self.BLOOD_SAMPLE_ID, info[core_constants.NORMAL_ID])
                 wrapper.set_my_param(self.TUMOUR_SAMPLE_ID, info[core_constants.TUMOUR_ID])
             except KeyError as err:
@@ -112,6 +112,8 @@ class main(plugin_base):
                 raise DjerbaPluginError(msg) from err
         # TAR can use normal and tumour ids from input_params_helper
         elif assay == "TAR":
+            if wrapper.my_param_is_null(core_constants.DEFAULT_SAMPLE_INFO):
+                wrapper.set_my_param(core_constants.DEFAULT_SAMPLE_INFO, "None")
             if wrapper.my_param_is_null(self.BLOOD_SAMPLE_ID):
                 wrapper.set_my_param(self.BLOOD_SAMPLE_ID, input_data['normal_id'])
             if wrapper.my_param_is_null(self.TUMOUR_SAMPLE_ID):
@@ -161,7 +163,7 @@ class main(plugin_base):
             self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_ini_default(core_constants.DEPENDS_CONFIGURE, 'provenance_helper')
-        self.set_ini_default(core_constants.DEFAULT_SAMPLE_INFO, 'None')
+        #self.set_ini_default(core_constants.DEFAULT_SAMPLE_INFO, 'None')
         self.set_priority_defaults(self.PRIORITY)
         self.set_ini_default('render_priority', 10)
 
