@@ -82,9 +82,11 @@ class main(plugin_base):
         if wrapper.my_param_is_null('assay'):
             wrapper.set_my_param('assay', input_data['assay'])
         
+        # Get assay
+        assay = config[self.identifier][self.ASSAY]
+        
         # Look up assay long name from assay short name
         if wrapper.my_param_is_null('assay_description'):
-            assay = config[self.identifier][self.ASSAY]
             assay_description = self.ASSAY_LOOKUP.get(assay)
             if assay_description == None:
                 msg = "Assay short name '{0}' not found in lookup table {1}".format(
@@ -97,7 +99,7 @@ class main(plugin_base):
                 wrapper.set_my_param(self.ASSAY_DESCRIPTION, assay_description)
 
         # Get parameters from default sample info
-        if wrapper.my_param_is_null(core_constants.DEFAULT_SAMPLE_INFO):
+        if wrapper.my_param_is_null(core_constants.DEFAULT_SAMPLE_INFO) and assay != "TAR":
             info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
             try:
                 patient_id_key = core_constants.PATIENT_STUDY_ID
@@ -108,6 +110,14 @@ class main(plugin_base):
                 msg = "ID not found in sample info {0}: {1}".format(info, err)
                 self.logger.error(msg)
                 raise DjerbaPluginError(msg) from err
+        # TAR can use normal and tumour ids from input_params_helper
+        elif assay == "TAR":
+            if wrapper.my_param_is_null(self.BLOOD_SAMPLE_ID):
+                wrapper.set_my_param(self.BLOOD_SAMPLE_ID, input_data['normal_id'])
+            if wrapper.my_param_is_null(self.TUMOUR_SAMPLE_ID):
+                wrapper.set_my_param(self.TUMOUR_SAMPLE_ID, input_data['tumour_id'])
+            if wrapper.my_param_is_null(core_constants.PATIENT_STUDY_ID):
+                wrapper.set_my_param(core_constants.PATIENT_STUDY_ID, input_data[core_constants.PATIENT_STUDY_ID])
 
         return wrapper.get_config()
 
@@ -149,9 +159,9 @@ class main(plugin_base):
         ]
         for key in discovered:
             self.add_ini_discovered(key)
-        self.set_ini_default(self.ASSAY, 'WGTS')
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_ini_default(core_constants.DEPENDS_CONFIGURE, 'provenance_helper')
+        self.set_ini_default(core_constants.DEFAULT_SAMPLE_INFO, 'None')
         self.set_priority_defaults(self.PRIORITY)
         self.set_ini_default('render_priority', 10)
 
