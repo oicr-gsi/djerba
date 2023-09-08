@@ -21,8 +21,9 @@ class main(plugin_base):
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'cnv_template.html'
     ASSAY = 'WGS'
-    CNA_ANNOTATED = "data_CNA_oncoKBgenes_nonDiploid_annotated.txt"
+    CNA_ANNOTATED = "data_CNA_oncoKBgenes_nonDiploid_annotated.purple.txt"
     ONCOLIST =  "data/20200818-oncoKBcancerGeneList.tsv"
+    CENTROMERES = "data/hg38_centromeres.txt"
 
     def configure(self, config):
       config = self.apply_defaults(config)
@@ -44,6 +45,7 @@ class main(plugin_base):
       ploidy = config[self.identifier]['ploidy']
       oncotree_code = config[self.identifier]['oncotree_code']
       purple_gene_file = config[self.identifier]['purple_gene_file']
+      purple_segment_file = config[self.identifier]['purple_segment_file']
 
       cnv = process_cnv(self.work_dir)
       self.convert_purple_to_gistic(purple_gene_file, ploidy)
@@ -52,9 +54,8 @@ class main(plugin_base):
       data_table = cnv.build_copy_number_variation(self.ASSAY, self.CNA_ANNOTATED)
 
       ## segments
-      #cnv_plot_base64 = cnv.write_cnv_plot(sequenza_file, sequenza_gamma, sequenza_solution)
-      #data_table['cnv_plot']= cnv_plot_base64
-      #arm-level should be here
+      cnv_plot_base64 = self.analyze_segments(purple_segment_file)
+      data_table['cnv_plot']= cnv_plot_base64
       #data_table[ctc.PERCENT_GENOME_ALTERED] = cnv.calculate_percent_genome_altered(ctc.DATA_SEGMENTS)
 
       if self.ASSAY == "WGS":
@@ -77,7 +78,7 @@ class main(plugin_base):
             'tumour_id',
             'oncotree_code',
             'purple_purity_file',
-          #  'purple_segment_file',
+            'purple_segment_file',
             'purple_gene_file'
           ]
       for key in required:
@@ -102,8 +103,22 @@ class main(plugin_base):
         '--ploidy', ploidy
       ]
       runner = subprocess_runner()
-      result = runner.run(cmd, "main R script")
+      result = runner.run(cmd, "CNA R script")
       return result
+    
+    def analyze_segments(self, segfile):
+      dir_location = os.path.dirname(__file__)
+      centromeres_file = os.path.join(dir_location, '../../..', self.CENTROMERES)
+      cmd = [
+        'Rscript', os.path.join(dir_location + "/process_segment_data.r"),
+        '--segfile', segfile,
+        '--outdir', self.work_dir,
+        '--centromeres', centromeres_file
+      ]
+      runner = subprocess_runner()
+      result = runner.run(cmd, "segments R script")
+      return result.stdout.split('"')[1]
+
 
 def get_purple_purity(purple_purity_path):
   with open(purple_purity_path, 'r') as purple_purity_file:

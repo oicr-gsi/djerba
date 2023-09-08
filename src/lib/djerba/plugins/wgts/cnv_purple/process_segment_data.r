@@ -7,32 +7,42 @@ library(ggplot2)
 
 chromosomes_incl <- c(1:22,"X")
 options(bitmapType='cairo')
+basedir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), sep='/')
+source(paste0(basedir, "/plugins/wgts/cnv_purple/CNA_supporting_functions.r"))
 
 ## parse input
 option_list = list(
-  make_option(c("-d", "--dir"), type="character", default=NULL, help="report directory path", metavar="character"),
-  make_option(c("-s", "--segfile"), type="character", default=NULL, help="allele specific segments file (e.g. aratio_segments.txt)", metavar="character"),
-  make_option(c("-c", "--centromeres"), type="character", default='sequenza', help="path to centromeres file", metavar="character")
+  make_option(c("-d", "--outdir"), type="character", default=NULL, help="report directory path", metavar="character"),
+  make_option(c("-s", "--segfile"), type="character", default=NULL, help="segments file ", metavar="character"),
+  make_option(c("-c", "--centromeres"), type="character", default='sequenza', help="path to centromeres file", metavar="character"),
+  make_option(c("-a", "--highCN"), type="character", default=6, help="High copy number (top of y-axis)", metavar="character")
 )
 
 opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
 opt <- parse_args(opt_parser)
 
-segfiletype       <- opt$segfiletype
 segfile_path      <- opt$segfile
-dir_path          <- opt$dir
+dir_path          <- opt$outdir
 centromeres_path  <- opt$centromeres
-highCN <- 6
+highCN            <- as.numeric(opt$highCN)
+baf.min           <- 25
 
-##process segment file
-segs <- read.table(segfile_path, sep = "\t", header = T, comment.char = "!")
-segs <- separate(segs,chromosome,c("blank","chr"),"chr",fill="left",remove = FALSE)
 
-segs$CNt_high[segs$CNt > highCN] <- "high"
+#### arm-level events ####
+segs <- read.delim(segfile_path, header=TRUE) # segmented data already
+centromeres <- read.table(centromeres_path,header=T)
 
+arm_level_calls <- arm_level_caller_purple(segs, centromeres, gain_threshold=highCN, shallow_deletion_threshold=-2)
+write.table(arm_level_calls,file=paste0(dir_path, "/arm_level_calls.txt"), sep="\t", row.names=FALSE, quote=FALSE, col.names = FALSE)
+
+#### segment plot ####
+segs <- separate(segs, chromosome,c("blank","chr"),"chr",fill="left",remove = FALSE)
 segs$Chromosome <-  factor(segs$chr, levels= chromosomes_incl, ordered = T)
 
-fittedSegmentsDF_sub <- segs %>% dplyr::select(start.pos,end.pos,A,B,CNt,CNt_high,Chromosome)
+segs$CNt_high[segs$tumorCopyNumber > highCN] <- "high"
+segs <- segs[segs$bafCount > baf.min,]
+
+fittedSegmentsDF_sub <- segs %>% dplyr::select(start,end,majorAlleleCopyNumber,minorAlleleCopyNumber,tumorCopyNumber,CNt_high,Chromosome)
 fittedSegmentsDF_sub$cent <- NA
 
 fittedSegmentsDF_sub <- rbind.data.frame(
@@ -51,11 +61,11 @@ svg(paste0(dir_path,"/seg_CNV_plot.svg"), width = 8, height = 1.5)
       geom_hline(yintercept = 2,color="lightgrey",linetype="dotted")+
       
       facet_grid(.~Chromosome,scales = "free",space="free", switch="both")+ 
-      geom_point(aes(x=start.pos,y=y_highCN+0.35,shape=CNt_high),size=1) +
+      geom_point(aes(x=start,y=y_highCN+0.35,shape=CNt_high),size=1) +
       
-      geom_segment(aes(x=start.pos, xend=end.pos, y=CNt, yend=CNt),color="black",size=2, na.rm = TRUE) + 
+      geom_segment(aes(x=start, xend=end, y=tumorCopyNumber, yend=tumorCopyNumber),color="black",linewidth=2, na.rm = TRUE) + 
       
-      geom_vline(aes(xintercept = start.pos,linetype=as.factor(cent)),color="lightgrey")  +
+      geom_vline(aes(xintercept = start,linetype=as.factor(cent)),color="lightgrey")  +
       
       guides(shape='none',alpha='none',linetype='none') +
       labs(y="Copy Number") + 
@@ -79,19 +89,19 @@ svg(paste0(dir_path,"/seg_CNV_plot.svg"), width = 8, height = 1.5)
 dev.off()
 
 ## Allele-specific
-fittedSegmentsDF_sub$A_adj <- fittedSegmentsDF_sub$A + 0.1
-fittedSegmentsDF_sub$B_adj <- fittedSegmentsDF_sub$B - 0.1
+fittedSegmentsDF_sub$A_adj <- fittedSegmentsDF_sub$majorAlleleCopyNumber + 0.1
+fittedSegmentsDF_sub$B_adj <- fittedSegmentsDF_sub$minorAlleleCopyNumber - 0.1
 
 svg(paste0(dir_path,"/seg_allele_plot.svg"), width = 8, height = 2)
 print(
   
   ggplot(fittedSegmentsDF_sub) + 
-    geom_vline(aes(xintercept = start.pos,linetype=as.factor(cent)),color="lightgrey") +
+    geom_vline(aes(xintercept = start,linetype=as.factor(cent)),color="lightgrey") +
     
-    geom_segment(aes(x=start.pos, xend=end.pos, y=A_adj, yend=A_adj),color="#65bc45",size=2, na.rm = TRUE) + 
-    geom_segment(aes(x=start.pos, xend=end.pos, y=B_adj, yend=B_adj),color="#0099ad",size=2, na.rm = TRUE) + 
+    geom_segment(aes(x=start, xend=end, y=A_adj, yend=A_adj),color="#65bc45",linewidth=2, na.rm = TRUE) + 
+    geom_segment(aes(x=start, xend=end, y=B_adj, yend=B_adj),color="#0099ad",linewidth=2, na.rm = TRUE) + 
     
-    geom_point(aes(x=start.pos,y=highCN+0.1,shape=CNt_high),size=1) +
+    geom_point(aes(x=start,y=highCN+0.1,shape=CNt_high),size=1) +
     
     facet_grid(.~Chromosome,scales = "free",space="free", switch="both")+ 
     
@@ -117,13 +127,7 @@ print(
 )
 dev.off()
 
-if (is.null(centromeres_path)) {
-  print("No centromeres file input, processing omitted")
-} else {
-  segs <- read.delim(segfile, header=TRUE) # segmented data already
-  print(names(segs))
-  centromeres <- read.table(centromeres_path,header=T)
-  
-  arm_level_calls <- arm_level_caller(segs, centromeres, gain_threshold=cutoffs["LOG_R_GAIN"], shallow_deletion_threshold=cutoffs["LOG_R_HTZD"])
-  write.table(arm_level_calls,file=paste0(outdir, "/arm_level_calls.txt"), sep="\t", row.names=FALSE, quote=FALSE, col.names = FALSE)
-}
+
+txt <- paste(readLines(paste0(dir_path,"/seg_CNV_plot.svg")), collapse = "")
+b64txt <- paste0("data:image/svg+xml;base64,", base64enc::base64encode(charToRaw(txt)))
+print(b64txt)

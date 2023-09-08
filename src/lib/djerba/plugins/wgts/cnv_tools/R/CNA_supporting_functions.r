@@ -1,4 +1,4 @@
-arm_level_caller <- function(segs, centromeres, gain_threshold, shallow_deletion_threshold, seg.perc.threshold=0.8){
+arm_level_caller_sequenza <- function(segs, centromeres, gain_threshold, shallow_deletion_threshold, seg.perc.threshold=0.8){
   library(dplyr)
   library(data.table)
   
@@ -19,7 +19,7 @@ arm_level_caller <- function(segs, centromeres, gain_threshold, shallow_deletion
     segs %>% 
     group_by(chrom) %>% 
     summarise(
-      chrom.start=min(loc.start ),
+      chrom.start=min(loc.start),
       chrom.length=max(loc.end)) %>% 
     left_join(centromeres.rough,by=c("chrom"="chrom"))
   
@@ -76,6 +76,7 @@ arm_level_caller <- function(segs, centromeres, gain_threshold, shallow_deletion
     )
   return(sort(arm_CNA_prop$annotation))
 }
+
 
 preProcCNA <- function(segfile, genebed, cutoffs, oncolist, genelist=NA){
 

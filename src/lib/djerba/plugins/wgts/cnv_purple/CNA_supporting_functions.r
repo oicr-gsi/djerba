@@ -1,9 +1,9 @@
-arm_level_caller <- function(segs, centromeres, gain_threshold, shallow_deletion_threshold, seg.perc.threshold=0.8){
+arm_level_caller_purple <- function(segs, centromeres, gain_threshold, shallow_deletion_threshold, seg.perc.threshold=80, baf.min=50){
   library(dplyr)
   library(data.table)
   
-  #segs$seg.mean <- log(segs$depth.ratio,2)
-  segs$seg.length = segs$loc.end - segs$loc.start
+  segs <- segs[segs$bafCount > baf.min,]
+  segs$seg.length = segs$end - segs$start
   
   ## roughly estimate centromere position 
   ## b/c the annotation has several centromeric regions
@@ -17,21 +17,21 @@ arm_level_caller <- function(segs, centromeres, gain_threshold, shallow_deletion
   
   arms_n_cents <- 
     segs %>% 
-    group_by(chrom) %>% 
+    group_by(chromosome) %>% 
     summarise(
-      chrom.start=min(loc.start ),
-      chrom.length=max(loc.end)) %>% 
-    left_join(centromeres.rough,by=c("chrom"="chrom"))
+      chrom.start=min(start),
+      chrom.length=max(end)) %>% 
+    left_join(centromeres.rough,by=c("chromosome"="chrom"))
   
   ## first arm is always petite (p)
-  p_arms <- arms_n_cents[,c("chrom","chrom.start","cent.start")]
+  p_arms <- arms_n_cents[,c("chromosome","chrom.start","cent.start")]
   names(p_arms) <- c("chrom","arm.start","arm.end")
   p_arms$arm <- "p"
   p_arms$chrom_type <- "metacentric"
   p_arms$chrom_type[p_arms$arm.start > p_arms$arm.end] <- "acrocentric"
   
   ## there should be no q-arms longer than chromosome length
-  q_arms <- arms_n_cents[,c("chrom","cent.start","chrom.length")]
+  q_arms <- arms_n_cents[,c("chromosome","cent.start","chrom.length")]
   names(q_arms) <- c("chrom","arm.start","arm.end")
   q_arms$arm <- "q"
   
@@ -41,24 +41,24 @@ arm_level_caller <- function(segs, centromeres, gain_threshold, shallow_deletion
   arm_definitions$arm.length <- 
     arm_definitions$arm.end - arm_definitions$arm.start
   
-  segs_dt <- setDT(segs) 
+  segs_dt <- setDT(segs[,c("chromosome","start","end","tumorCopyNumber","seg.length")]) 
   arm_definitions_dt <- setDT(arm_definitions)
   
   ## join segs for being within arm boundaries
   segs_armd <- segs_dt[
     arm_definitions_dt, 
-    on = .(loc.start >= arm.start, 
-           loc.end <= arm.end, 
-           chrom = chrom), 
+    on = .(start >= arm.start, 
+           end <= arm.end, 
+           chromosome = chrom), 
     nomatch = 0,
     .(chrom,  arm, arm.length, 
-      seg.mean, seg.length, loc.start, loc.end)
+      tumorCopyNumber, seg.length, start, end)
   ]
   
   ## use NCCN terminology
   segs_armd$CNA <- "neutral"
-  segs_armd$CNA[segs_armd$seg.mean < shallow_deletion_threshold] <- "del"
-  segs_armd$CNA[segs_armd$seg.mean > gain_threshold] <- "+"
+  segs_armd$CNA[segs_armd$tumorCopyNumber < shallow_deletion_threshold] <- "del"
+  segs_armd$CNA[segs_armd$tumorCopyNumber > gain_threshold] <- "+"
   
   arm_CNA_prop <- segs_armd %>% 
     group_by(chrom,arm,CNA,arm.length) %>% 
@@ -126,11 +126,11 @@ process_centromeres <- function(centromeres_path){
   centromeres <- centromeres %>% filter(!is.na(Chr))
   
   centromeres_sub <- centromeres %>% dplyr::select(chromStart,chromEnd,Chr)
-  names(centromeres_sub) <- c("start.pos","end.pos","Chromosome")
-  centromeres_sub$A <- NA
-  centromeres_sub$B <- NA
+  names(centromeres_sub) <- c("start","end","Chromosome")
+  centromeres_sub$majorAlleleCopyNumber <- NA
+  centromeres_sub$minorAlleleCopyNumber <- NA
   centromeres_sub$CNt_high <- NA
-  centromeres_sub$CNt <- NA
+  centromeres_sub$tumorCopyNumber <- NA
   centromeres_sub$cent <- 1
   return(centromeres_sub)
 }

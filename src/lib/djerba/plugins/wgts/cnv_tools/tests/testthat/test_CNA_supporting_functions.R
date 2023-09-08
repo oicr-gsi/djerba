@@ -20,23 +20,25 @@ test_that("log_cutoff_finder finds log cutoff", {
 )
 
 
-test_that("arm_level_caller returns correct arm-level alterations with Sequenza input", {
-  
-  centromeres_path <- paste0(basedir,"data/hg38_centromeres.txt")
-  gain_threshold             <- 0.146
-  shallow_deletion_threshold <- -0.183
-  
-  sequenza_segfile_path <-  paste0(testdatadir,"/data_segments.txt")
-  segs <- read.delim(sequenza_segfile_path, header=TRUE) # segmented data already
-  segs$chrom <- paste0("chr",segs$chrom)
-  #names(segs) <- c("ID","chrom","loc.start", "loc.end","num.mark","seg.mean")
-  centromeres <- read.table(centromeres_path,header=T)
-  
-  expected_arm_level_calls <- sort(c("del(21p)", "del(6q)" , "del(21q)", "del(17p)", "del(18q)", "del(6p)" , "del(9p)"))
-  
-  arm_level_calls <- arm_level_caller(seg=segs, centromeres=centromeres, gain_threshold=gain_threshold, shallow_deletion_threshold=shallow_deletion_threshold, seg.perc.threshold=0.5)
-  expect_equal(arm_level_calls, expected_arm_level_calls)
-}
+test_that("arm_level_caller returns correct arm-level alterations with Sequenza input",
+          {
+            
+            centromeres_path <- paste0(basedir,"/data/hg38_centromeres.txt")
+            centromeres <- read.table(centromeres_path,header=T)
+            
+            gain_threshold             <- 0.6
+            shallow_deletion_threshold <- -0.6
+            
+            sequenza_segfile_path <-  paste0(testdatadir,"/report_example/data_segments.txt")
+            segs <- read.delim(sequenza_segfile_path, header=TRUE) # segmented data already
+            segs$chrom <- paste0("chr",segs$chrom)
+            
+            expected_arm_level_calls <- sort(c("+(12p)","+(3q)","del(22p)"))
+            
+            arm_level_calls <- arm_level_caller_sequenza(seg=segs, centromeres=centromeres, gain_threshold=gain_threshold, shallow_deletion_threshold=shallow_deletion_threshold, seg.perc.threshold=0.5)
+            expect_equal(arm_level_calls, expected_arm_level_calls)
+            
+          }
 )
 
 

@@ -51,5 +51,11 @@ class TestWGTSsmallPlugin(PluginTester):
         }
         self.run_basic_test(input_dir, params)
 
+    def redact_json_data(self, data):
+        """replaces empty method from testing.tools"""
+        for key in ['cnv_plot']:
+            del data['plugins']['wgts.cnv_purple']['results'][key]
+        return data 
+    
 if __name__ == '__main__':
     unittest.main()
