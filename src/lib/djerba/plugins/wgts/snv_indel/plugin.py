@@ -31,9 +31,6 @@ class main(plugin_base):
       if wrapper.my_param_is_null(sic.CNA_FILE):
             wrapper.set_my_param(sic.CNA_FILE, os.path.join(work_dir, sic.CNA_SIMPLE))
       #TODO: pull MAF from provenance
-      # group_id = config[self.identifier][pc.GROUP_ID]
-      # if wrapper.my_param_is_null(sic.MAF_FILE):
-      #       wrapper.set_my_param(sic.MAF_FILE, pwgs_tools.subset_provenance(self, "mrdetect", group_id, pc.RESULTS_SUFFIX))
       #TODO: if cbio_id undefined, set to studyid, but can be entered in ini
       return config  
 
@@ -48,22 +45,21 @@ class main(plugin_base):
       maf_file = config[self.identifier]['maf_file']
       cna_file = config[self.identifier]['cna_file']
       #TODO: add expression
-      #input_path = os.path.join(work_dir, sic.expr_input)
-
       whizbam_url = preprocess.construct_whizbam_link(sic.WHIZBAM_BASE_URL, cbio_id, tumour_id, normal_id, self.SEQTYPE, self.GENOME)
       preprocess(work_dir).run_R_code(whizbam_url, self.ASSAY, maf_file, tumour_id, oncotree_code)
       oncogenic_variants_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)
       oncogenic_variants_table = data_extractor().build_small_mutations_and_indels(oncogenic_variants_file, cna_file, oncotree_code, self.ASSAY)
       total_variants_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED)
+      [self.total_somatic_mutations, self.tmb_count] = data_extractor().read_somatic_mutation_totals(total_variants_file)
       results = {
           sic.BODY: oncogenic_variants_table,
           sic.CLINICALLY_RELEVANT_VARIANTS: len(oncogenic_variants_table),
-          sic.TOTAL_VARIANTS: data_extractor().read_somatic_mutation_totals(total_variants_file),
+          sic.TOTAL_VARIANTS: self.total_somatic_mutations,
+          sic.TMB_TOTAL : self.tmb_count,
           rc.HAS_EXPRESSION_DATA: self.HAS_EXPRESSION_DATA,
           sic.VAF_PLOT: data_extractor().write_vaf_plot(work_dir)
       }
       data['results'] = results
-      #TODO: add actionable stuff to merge
       mutations_annotated_path = os.path.join(work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)
       data['merge_inputs']['treatment_options_merger'] =  data_extractor().build_therapy_info(mutations_annotated_path, oncotree_code)
       #TODO: add all gene names to merge

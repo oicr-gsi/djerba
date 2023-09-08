@@ -62,15 +62,5 @@ if (is.null(segfile)) {
   write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[5]]), CNAs[[5]], check.names=FALSE),
               file=paste0(outdir, "/data_CNA_oncoKBgenes_nonDiploid.txt"), sep="\t", row.names=FALSE, quote=FALSE)
   
-  if (is.null(centromeres_path)) {
-    print("No centromeres file input, processing omitted")
-  } else {
-    segs <- read.delim(segfile, header=TRUE) # segmented data already
-    print(names(segs))
-    centromeres <- read.table(centromeres_path,header=T)
-    
-    arm_level_calls <- arm_level_caller(segs, centromeres, gain_threshold=cutoffs["LOG_R_GAIN"], shallow_deletion_threshold=cutoffs["LOG_R_HTZD"])
-    write.table(arm_level_calls,file=paste0(outdir, "/arm_level_calls.txt"), sep="\t", row.names=FALSE, quote=FALSE, col.names = FALSE)
-  }
-  
+
 }

@@ -61,6 +61,7 @@ class main(plugin_base):
       data['results'] = data_table
       cna_annotated_path = os.path.join(work_dir, sic.CNA_ANNOTATED)
       data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(cna_annotated_path, oncotree_code)
+      #TODO: add all gene names to merge
       return data
     
     def render(self, data):

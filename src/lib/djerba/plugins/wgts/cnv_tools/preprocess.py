@@ -136,27 +136,6 @@ class preprocess(logger):
                 writer.writerow(row)
         return out_path
 
-    def preprocess_seg_tar(self, seg_file):
-        """
-        Filter for amplifications.
-        """
-        seg_path =  os.path.join(seg_file)
-        # Create a dataframe so we can filter by amplifications only...or in this case, by gain only for testing.
-        df_seg = pd.read_csv(seg_path, sep = '\t')
-        df_seg = df_seg[df_seg["call"].str.contains("AMP|HLAMP") == True]
-
-        # Delete the seg.mean column, and rename the Corrected_Copy_Number column to seg.mean
-        df_seg = df_seg.drop(columns = "seg.median.logR")
-        df_seg = df_seg.rename(columns={"Corrected_Copy_Number": "seg.mean"})
-        df_seg = df_seg.rename(columns={"start": "loc.start"})
-        df_seg = df_seg.rename(columns={"end": "loc.end"})
-
-        # Convert the dataframe back into a tab-delimited text file.
-        out_path = os.path.join(self.work_dir, 'seg_amplifications.txt')
-        df_seg.to_csv(out_path, sep = '\t', index=None)
-
-        return out_path
-        
     def write_cnv_plot(self, sequenza_path, sequenza_gamma, sequenza_solution):
         segment_file = sequenza_reader(sequenza_path).extract_segments_text_file(self.work_dir, gamma=sequenza_gamma, solution=sequenza_solution)
         dir_location = os.path.dirname(__file__)
