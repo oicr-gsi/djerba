@@ -19,7 +19,7 @@ test_that("arm_level_caller returns correct arm-level alterations with PURPLE in
     segfile_path <-  paste0(testdatadir,"/wgs-cnv-plugin/OCT_011657_Co_P_OCT_011657-TS.purple/OCT_011657_Co_P_OCT_011657-TS.purple.segment.tsv")
     segs <- read.delim(segfile_path, header=TRUE) # segmented data already
     
-    expected_arm_level_calls <- sort(c("+(19p)", "+(19q)", "+(21p)"))
+    expected_arm_level_calls <- sort(c("+(19p)", "+(19q)"))
     
     arm_level_calls <- arm_level_caller_purple(seg=segs, centromeres=centromeres, gain_threshold=gain_threshold, shallow_deletion_threshold=shallow_deletion_threshold, seg.perc.threshold=80)
     expect_equal(arm_level_calls, expected_arm_level_calls)

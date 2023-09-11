@@ -69,10 +69,10 @@ class oncokb_annotator(logger):
         """Redact the OncoKB token (-b argument) from logging"""
         self.runner.run(command, description, ['-b',])
         
-    def annotate_cna(self):
-        in_path = os.path.join(self.report_dir, oncokb_constants.DATA_CNA_ONCOKB_GENES_NON_DIPLOID)
+    def annotate_cna(self, in_file_extension=''):
+        in_path = os.path.join(self.report_dir, ''.join((in_file_extension,oncokb_constants.DATA_CNA_ONCOKB_GENES_NON_DIPLOID)))
         self.validator.validate_input_file(in_path)
-        out_path = os.path.join(self.report_dir, oncokb_constants.DATA_CNA_ONCOKB_GENES_NON_DIPLOID_ANNOTATED)
+        out_path = os.path.join(self.report_dir, ''.join((in_file_extension,oncokb_constants.DATA_CNA_ONCOKB_GENES_NON_DIPLOID_ANNOTATED)))
         if self.apply_cache:
             self.cache.annotate_cna(in_path, out_path, self.info_path)
         else:

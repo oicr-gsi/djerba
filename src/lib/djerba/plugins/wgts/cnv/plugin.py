@@ -49,7 +49,7 @@ class main(plugin_base):
       seg_path = cnv.preprocess_seg_sequenza(sequenza_file, sequenza_gamma, tumour_id)
       ## outputs files write to working directory
       cnv.convert_to_gene_and_annotate(seg_path, purity, tumour_id, oncotree_code)
-      data_table = cnv.build_copy_number_variation(self.ASSAY, sic.CNA_ANNOTATED)
+      data_table = cnv.build_copy_number_variation(self.ASSAY, sic.CNA_ANNOTATED, oncotree_code)
       data_table[ctc.PERCENT_GENOME_ALTERED] = cnv.calculate_percent_genome_altered(ctc.DATA_SEGMENTS)
       if self.ASSAY == "WGS":
         data_table[sic.HAS_EXPRESSION_DATA]= False

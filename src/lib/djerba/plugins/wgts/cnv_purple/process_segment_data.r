@@ -30,19 +30,27 @@ baf.min           <- 25
 
 #### arm-level events ####
 segs <- read.delim(segfile_path, header=TRUE) # segmented data already
+segs <- segs[segs$bafCount > baf.min & segs$germlineStatus != "NOISE" & segs$refNormalisedCopyNumber > 0,]
+
 centromeres <- read.table(centromeres_path,header=T)
 
 arm_level_calls <- arm_level_caller_purple(segs, centromeres, gain_threshold=highCN, shallow_deletion_threshold=-2)
-write.table(arm_level_calls,file=paste0(dir_path, "/arm_level_calls.txt"), sep="\t", row.names=FALSE, quote=FALSE, col.names = FALSE)
+write.table(arm_level_calls,file=paste0(dir_path, "/purple.arm_level_calls.txt"), sep="\t", row.names=FALSE, quote=FALSE, col.names = FALSE)
+
+segs$ID <- "purple"
+log2 <- segs[,c("ID","chromosome","start","end","bafCount")]
+names(log2) <- c("ID",	"chrom"	,"loc.start"	,"loc.end"	,"num.mark")
+log2$seg.mean <- log(segs$refNormalisedCopyNumber/2, 2)
+write.table(log2,file=paste0(dir_path, "/purple.seg"), sep="\t", row.names=FALSE, quote=FALSE, col.names = FALSE)
 
 #### segment plot ####
 segs <- separate(segs, chromosome,c("blank","chr"),"chr",fill="left",remove = FALSE)
 segs$Chromosome <-  factor(segs$chr, levels= chromosomes_incl, ordered = T)
 
-segs$CNt_high[segs$tumorCopyNumber > highCN] <- "high"
-segs <- segs[segs$bafCount > baf.min,]
+segs$CNt_high[segs$refNormalisedCopyNumber > highCN] <- "high"
 
-fittedSegmentsDF_sub <- segs %>% dplyr::select(start,end,majorAlleleCopyNumber,minorAlleleCopyNumber,tumorCopyNumber,CNt_high,Chromosome)
+
+fittedSegmentsDF_sub <- segs %>% dplyr::select(start,end,majorAlleleCopyNumber,minorAlleleCopyNumber,refNormalisedCopyNumber,CNt_high,Chromosome)
 fittedSegmentsDF_sub$cent <- NA
 
 fittedSegmentsDF_sub <- rbind.data.frame(
@@ -53,7 +61,7 @@ fittedSegmentsDF_sub <- rbind.data.frame(
 ## Copy Number Plot
 y_highCN <- highCN
 
-svg(paste0(dir_path,"/seg_CNV_plot.svg"), width = 8, height = 1.5)
+svg(paste0(dir_path,"/purple.seg_CNV_plot.svg"), width = 8, height = 1.5)
   print(
     
     ggplot(fittedSegmentsDF_sub) + 
@@ -63,7 +71,7 @@ svg(paste0(dir_path,"/seg_CNV_plot.svg"), width = 8, height = 1.5)
       facet_grid(.~Chromosome,scales = "free",space="free", switch="both")+ 
       geom_point(aes(x=start,y=y_highCN+0.35,shape=CNt_high),size=1) +
       
-      geom_segment(aes(x=start, xend=end, y=tumorCopyNumber, yend=tumorCopyNumber),color="black",linewidth=2, na.rm = TRUE) + 
+      geom_segment(aes(x=start, xend=end, y=refNormalisedCopyNumber, yend=refNormalisedCopyNumber),color="black",linewidth=2, na.rm = TRUE) + 
       
       geom_vline(aes(xintercept = start,linetype=as.factor(cent)),color="lightgrey")  +
       
@@ -92,7 +100,7 @@ dev.off()
 fittedSegmentsDF_sub$A_adj <- fittedSegmentsDF_sub$majorAlleleCopyNumber + 0.1
 fittedSegmentsDF_sub$B_adj <- fittedSegmentsDF_sub$minorAlleleCopyNumber - 0.1
 
-svg(paste0(dir_path,"/seg_allele_plot.svg"), width = 8, height = 2)
+svg(paste0(dir_path,"/purple.seg_allele_plot.svg"), width = 8, height = 2)
 print(
   
   ggplot(fittedSegmentsDF_sub) + 
@@ -128,6 +136,6 @@ print(
 dev.off()
 
 
-txt <- paste(readLines(paste0(dir_path,"/seg_CNV_plot.svg")), collapse = "")
+txt <- paste(readLines(paste0(dir_path,"/purple.seg_CNV_plot.svg")), collapse = "")
 b64txt <- paste0("data:image/svg+xml;base64,", base64enc::base64encode(charToRaw(txt)))
 print(b64txt)

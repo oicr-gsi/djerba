@@ -30,7 +30,7 @@ class TestWGTSsmallPlugin(PluginTester):
         params = {
             self.INI: 'cnv.ini',
             self.JSON: json_location,
-            self.MD5: 'e8d5c9777e4dbd6162105cd189cb40bf'
+            self.MD5: 'f594b246ea54d0fdae092380a62dd89f'
         }
         self.run_basic_test(test_source_dir, params)
 

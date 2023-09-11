@@ -44,7 +44,7 @@ class preprocess(logger):
             self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
             os.mkdir(self.tmp_dir)
   
-    def build_copy_number_variation(self, assay, cna_annotated_path):
+    def build_copy_number_variation(self, assay, cna_annotated_path, oncotree_uc):
         cna_annotated_path = os.path.join(self.work_dir, cna_annotated_path)
         self.logger.debug("Building data for copy number variation table")
         rows = []
@@ -62,6 +62,7 @@ class preprocess(logger):
                     rc.GENE: gene,
                     rc.GENE_URL: sit().build_gene_url(gene),
                     rc.ALT: row[sic.ALTERATION_UPPER_CASE],
+                    rc.ALT_URL: self.build_alteration_url(gene, row[sic.ALTERATION_UPPER_CASE], oncotree_uc),
                     rc.CHROMOSOME: cytoband,
                     'OncoKB level': sit().parse_oncokb_level(row)
                 }
@@ -166,11 +167,11 @@ class preprocess(logger):
         # - Treatment
         # - OncoKB level
         tiered_rows = list()
-        for tier in (sic.FDA_APPROVED, sic.INVESTIGATIONAL):
+        for tier in ('Approved', 'Investigational'):
             self.logger.debug("Building therapy info for level: {0}".format(tier))
-            if tier == sic.FDA_APPROVED:
+            if tier == 'Approved':
                 levels = oncokb.FDA_APPROVED_LEVELS
-            elif tier == sic.INVESTIGATIONAL:
+            elif tier == 'Investigational':
                 levels = oncokb.INVESTIGATIONAL_LEVELS
             rows = []
             with open(variants_annotated_file) as data_file:
@@ -183,5 +184,26 @@ class preprocess(logger):
             rows = list(filter(sit().oncokb_filter, sit().sort_therapy_rows(rows)))
             if rows:
                 tiered_rows.append(rows)
-        return tiered_rows
+        if len(tiered_rows) > 0:
+            return tiered_rows[0]
+        else:
+            return tiered_rows
 
+    def treatment_row(self, genes_arg, alteration, max_level, therapies, oncotree_uc, tier):
+        row = {
+            'Tier': tier,
+            'OncoKB level': max_level,
+            'Treatments': therapies,
+            'Gene': genes_arg,
+            'Gene_URL': self.build_gene_url(genes_arg),
+            rc.ALT: alteration,
+            rc.ALT_URL: self.build_alteration_url(genes_arg, alteration, oncotree_uc)
+        }
+        return row
+    
+    def build_alteration_url(self, gene, alteration, cancer_code):
+        #self.logger.debug('Constructing alteration URL from inputs: {0}'.format([sic.ONCOKB_URL_BASE, gene, alteration, cancer_code]))
+        return '/'.join([sic.ONCOKB_URL_BASE, gene, alteration, cancer_code])
+    
+    def build_gene_url(self, gene):
+        return '/'.join([sic.ONCOKB_URL_BASE, gene])

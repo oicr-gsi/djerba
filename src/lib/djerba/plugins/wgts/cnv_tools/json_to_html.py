@@ -70,7 +70,7 @@ class html_builder:
             cells = [
                 self._td(self._href(row[constants.GENE_URL], row[constants.GENE]), italic=True),
                 self._td(row[constants.CHROMOSOME]),
-                self._td(row[constants.ALTERATION]),
+                self._td(self._href(row[constants.ALT_URL], row[constants.ALTERATION])),
                 self._td_oncokb(row['OncoKB level']),
             ]
             if mutation_info[constants.HAS_EXPRESSION_DATA]:
