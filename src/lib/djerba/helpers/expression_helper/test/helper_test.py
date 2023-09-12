@@ -10,7 +10,7 @@ from shutil import copy
 from djerba.core.loaders import helper_loader
 from djerba.core.workspace import workspace
 from djerba.util.testing.tools import TestBase
-
+import djerba.core.constants as cc
 
 class TestExpressionHelper(TestBase):
 
@@ -52,24 +52,27 @@ class TestExpressionHelper(TestBase):
         found = config.get(self.HELPER_NAME, helper_main.GEP_REFERENCE_KEY)
         expected = os.path.join(data_dir,  'results', 'gep_reference.txt.gz')
         self.assertEqual(found, expected)
-        #with open(os.path.join(work_dir, 'config.ini'), 'w') as out_file:
-        #    config.write(out_file)
 
     def test_extract(self):
         test_dir = '/home/ibancarz/workspace/djerba/test/20230912_01/extract' # TODO FIXME
         cp = ConfigParser()
-        cp.read(test_dir+'/configured.ini')
-        loader = helper_loader(logging.DEBUG)
+        cp.read(test_dir+'/config.ini')
+        test_data_dir = os.path.join(
+            os.environ.get(cc.DJERBA_TEST_DIR_VAR), 'helpers', 'expression'
+        )
+        rsem = os.path.join(test_data_dir, 'PANX_1547_Lv_M_WT_100-PM-061_LCM6.genes.results')
+        cp.set(self.HELPER_NAME, 'rsem_genes_results', rsem)
+        loader = helper_loader(logging.WARNING)
         ws = workspace(test_dir)
         helper_main = loader.load(self.HELPER_NAME, ws)
         helper_main.extract(cp)
         gep_path = ws.abs_path('gep.txt')
-        self.assertEqual(self.getMD5(gep_path), '56e3a38493f1dcb76e0d10343b92130c')
+        self.assertEqual(self.getMD5(gep_path), '86793b131107a466f72e64811d2b9758')
         expected = {
-            'data_expression_percentile_comparison.txt': 'abe21376344160a8c4101f772bc484b9',
-            'data_expression_percentile_tcga.txt': '06fcbe6e2ef2be26e2f044c8fcb9948b',
-            'data_expression_zscores_comparison.txt': '5be91225fea2b7ed1fbdb59459d61346',
-            'data_expression_zscores_tcga.txt': '3f0fead97a729fd88fb7fdd69f2e305c'
+            'data_expression_percentile_comparison.txt': 'da9f8c87ad8fd571b1333aa8f8228c16',
+            'data_expression_percentile_tcga.txt': '6078eb231568d104505f763f997b76ca',
+            'data_expression_zscores_comparison.txt': 'b2338b73e5b2ded59f30f069b7f7722a',
+            'data_expression_zscores_tcga.txt': '7a040521c77f9ab1e80eaf23f417f92d'
         }
         for name in expected:
             out_path = os.path.join(test_dir, name)
