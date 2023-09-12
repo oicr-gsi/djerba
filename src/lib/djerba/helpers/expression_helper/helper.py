@@ -18,8 +18,10 @@ class main(helper_base):
     GENE_LIST_KEY = 'gene_list'
     GEP_REFERENCE_KEY = 'gep_reference'
     RSEM_GENES_RESULTS_KEY = 'rsem_genes_results'
-    TCGA_DATA_KEY = 'tcga_data'
     TCGA_CODE_KEY = 'tcga_code'
+    TCGA_DATA_KEY = 'tcga_data'
+    TCGA_EXPR_PCT_TEXT = 'data_expression_percentile_tcga.txt'
+    TCGA_EXPR_PCT_JSON = 'data_expression_percentile_tcga.json'
 
     # 0-based index for GEP results file
     GENE_ID = 0
@@ -83,6 +85,7 @@ class main(helper_base):
         ]
         self.logger.debug("Rscript command: "+" ".join(cmd))
         subprocess_runner(self.log_level, self.log_path).run(cmd)
+        self.write_tcga_json()
 
     def preprocess_gep(self, gep_path, gep_reference, tumour_id):
         """
@@ -143,3 +146,21 @@ class main(helper_base):
         self.add_ini_discovered(self.TCGA_CODE_KEY) # use PAAD for testing
         self.add_ini_discovered(self.GEP_REFERENCE_KEY)
         self.add_ini_discovered(core_constants.TUMOUR_ID)
+
+    def write_tcga_json(self):
+        """Write TCGA expression percentiles in JSON format, for use by other plugins"""
+        expr = {}
+        with self.workspace.open_file(self.TCGA_EXPR_PCT_TEXT) as input_file:
+            for row in csv.reader(input_file, delimiter="\t"):
+                if row[0]=='Hugo_Symbol':
+                    continue
+                gene = row[0]
+                try:
+                    metric = float(row[1])
+                except ValueError as err:
+                    msg = 'Cannot convert expression value "{0}" to float, '.format(row[1])+\
+                          '; using 0 as fallback value: {0}'.format(err)
+                    self.logger.warning(msg)
+                    metric = 0.0
+                expr[gene] = metric
+        self.workspace.write_json(self.TCGA_EXPR_PCT_JSON, expr)

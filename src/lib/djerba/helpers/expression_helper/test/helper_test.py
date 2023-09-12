@@ -72,7 +72,8 @@ class TestExpressionHelper(TestBase):
             'data_expression_percentile_comparison.txt': 'da9f8c87ad8fd571b1333aa8f8228c16',
             'data_expression_percentile_tcga.txt': '6078eb231568d104505f763f997b76ca',
             'data_expression_zscores_comparison.txt': 'b2338b73e5b2ded59f30f069b7f7722a',
-            'data_expression_zscores_tcga.txt': '7a040521c77f9ab1e80eaf23f417f92d'
+            'data_expression_zscores_tcga.txt': '7a040521c77f9ab1e80eaf23f417f92d',
+            'data_expression_percentile_tcga.json': '6e1dc262c978f4be99d1cc0db57e3d59'
         }
         for name in expected:
             out_path = os.path.join(test_dir, name)
