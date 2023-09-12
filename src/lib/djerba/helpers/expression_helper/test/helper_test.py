@@ -6,6 +6,7 @@ import logging
 import os
 import unittest
 from configparser import ConfigParser
+from shutil import copy
 from djerba.core.loaders import helper_loader
 from djerba.core.workspace import workspace
 from djerba.util.testing.tools import TestBase
@@ -15,16 +16,22 @@ class TestExpressionHelper(TestBase):
 
     CORE = 'core'
     HELPER_NAME = 'expression_helper'
-    
+
     def test_configure(self):
         cp = ConfigParser()
         cp.add_section(self.CORE)
         cp.set(self.CORE, 'project', 'PASS01')
         cp.set(self.CORE, 'donor', 'PANX_1500')
-        cp.add_section(self.HELPER_NAME)        
-        loader = helper_loader(logging.WARNING)
-        test_dir = '/home/ibancarz/workspace/djerba/test/20230808_03/configure' # TODO FIXME
-        ws = workspace(test_dir)
+        cp.add_section(self.HELPER_NAME)
+        cp.set(self.HELPER_NAME, 'tcga_code', 'PAAD')
+        loader = helper_loader(logging.ERROR)
+        work_dir = self.tmp_dir
+        test_dir = os.path.join(os.environ.get('DJERBA_TEST_DIR'), 'helpers', 'expression')
+        sample_info = os.path.join(test_dir, 'sample_info.json')
+        fpr = os.path.join(test_dir, 'provenance_subset.tsv.gz')
+        copy(sample_info, work_dir)
+        copy(fpr, work_dir)
+        ws = workspace(work_dir)
         helper_main = loader.load(self.HELPER_NAME, ws)
         config = helper_main.configure(cp)
         data_dir = os.environ.get('DJERBA_DATA_DIR')
@@ -38,11 +45,18 @@ class TestExpressionHelper(TestBase):
         self.assertEqual(configured_gene_list, expected_gene_list)
         tcga_code = config.get(self.HELPER_NAME, helper_main.TCGA_CODE_KEY)
         self.assertEqual(tcga_code, 'PAAD')
-        rsem_path = config.get(self.HELPER_NAME, helper_main.RSEM_GENES_RESULTS_KEY)
-        self.assertEqual(self.getMD5_of_string(rsem_path), 'b676a42e2637f6cef80929bc0f4367f8')
+        # path was derived from file provenance subset, should not change
+        rsem = config.get(self.HELPER_NAME, helper_main.RSEM_GENES_RESULTS_KEY)
+        self.assertEqual(self.getMD5_of_string(rsem), '46021826f0286190316af74c71d75532')
+        # check the reference path
+        found = config.get(self.HELPER_NAME, helper_main.GEP_REFERENCE_KEY)
+        expected = os.path.join(data_dir,  'results', 'gep_reference.txt.gz')
+        self.assertEqual(found, expected)
+        #with open(os.path.join(work_dir, 'config.ini'), 'w') as out_file:
+        #    config.write(out_file)
 
     def test_extract(self):
-        test_dir = '/home/ibancarz/workspace/djerba/test/20230808_03/extract' # TODO FIXME
+        test_dir = '/home/ibancarz/workspace/djerba/test/20230912_01/extract' # TODO FIXME
         cp = ConfigParser()
         cp.read(test_dir+'/configured.ini')
         loader = helper_loader(logging.DEBUG)

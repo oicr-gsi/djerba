@@ -18,8 +18,8 @@ class main(helper_base):
     GENE_LIST_KEY = 'gene_list'
     GEP_REFERENCE_KEY = 'gep_reference'
     RSEM_GENES_RESULTS_KEY = 'rsem_genes_results'
-    TCGA_DATA_KEY = 'tgca_data'
-    TCGA_CODE_KEY = 'tgca_code'
+    TCGA_DATA_KEY = 'tcga_data'
+    TCGA_CODE_KEY = 'tcga_code'
 
     # 0-based index for GEP results file
     GENE_ID = 0
@@ -31,13 +31,6 @@ class main(helper_base):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         wrapper.apply_my_env_templates()
-        # set the TCGA project identifier, if needed
-        if wrapper.my_param_is_null(self.TCGA_CODE_KEY):
-            msg = "{0} not configured, falling back to project name {1}".format(
-                self.TCGA_CODE_KEY, project
-            )
-            self.logger.debug(msg)
-            wrapper.set_my_param(self.TCGA_CODE_KEY, project)
         # get donor/project/tumour id and sample names from provenance helper JSON
         sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
         donor = sample_info[fpr_helper.ROOT_SAMPLE_NAME]
@@ -48,11 +41,24 @@ class main(helper_base):
         if wrapper.my_param_is_null(core_constants.TUMOUR_ID):
             tumour_id = sample_info[core_constants.TUMOUR_ID]
             wrapper.set_my_param(core_constants.TUMOUR_ID, tumour_id)
+        # set the TCGA project identifier, if needed
+        if wrapper.my_param_is_null(self.TCGA_CODE_KEY):
+            msg = "{0} not configured, falling back to project name {1}".format(
+                self.TCGA_CODE_KEY, project
+            )
+            self.logger.debug(msg)
+            wrapper.set_my_param(self.TCGA_CODE_KEY, project)
+        # find the GEP reference path
+        if wrapper.my_param_is_null(self.GEP_REFERENCE_KEY):
+            data_dir = os.environ.get(core_constants.DJERBA_DATA_DIR_VAR)
+            ref_path = os.path.join(data_dir, 'results', 'gep_reference.txt.gz')
+            wrapper.set_my_param(self.GEP_REFERENCE_KEY, ref_path)
         # set up and run the provenance reader
         samples = sample_name_container()
         samples.set_and_validate(sample_wg_n, sample_wg_t, sample_wt_t)
         fpr_path = self.workspace.abs_path(fpr_helper.PROVENANCE_OUTPUT)
-        reader = provenance_reader(fpr_path, project, donor, samples)
+        reader = provenance_reader(fpr_path, project, donor, samples,
+                                   log_level=self.log_level, log_path=self.log_path)
         if wrapper.my_param_is_null(self.RSEM_GENES_RESULTS_KEY):
             rsem_genes_results = reader.parse_gep_path()
             wrapper.set_my_param(self.RSEM_GENES_RESULTS_KEY, rsem_genes_results)
