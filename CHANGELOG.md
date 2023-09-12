@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.4.16: 2023-09-12
+
+- GCGI-1042: Changes to verb tense in genomic summary templated text
+- GCGI-1032: Reference cohort name is uppercase and adds TCGA when it is TCGA
+
 ## v0.4.15: 2023-09-06
 
 - GCGI-1063: Redact TMB genomic biomarker plot from benchmark comparison
