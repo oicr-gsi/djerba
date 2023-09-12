@@ -31,7 +31,7 @@ def main(args):
     val.validate_input_file(args.summary)
     with open(args.summary) as sum_file:
         summary = sum_file.read().strip()
-    data[constants.REPORT][SUMMARY_TEXT] = summary
+    data['plugins']['summary']['results'][SUMMARY_TEXT] = summary
     if args.out == '-':
         sys.stdout.write(json.dumps(data))
     else:
