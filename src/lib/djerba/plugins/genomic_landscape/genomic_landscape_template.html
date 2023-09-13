@@ -1,0 +1,39 @@
+<%
+  import djerba.core.constants as core_constants
+  from djerba.plugins.genomic_landscape.plugin import main as plugin
+  from djerba.util.html import html_builder
+%>
+
+
+<!-- Genomic Landscape -->
+<hr class="big-white-line" ><div class="twocellmain"><div class="oneoftwocellmain"><h2>Genomic Landscape</h2></div><div class="twooftwocellmain" ><hr class="big-line" >
+
+    <p>
+      Tumour Mutation Burden (TMB) was <strong>${results.get(plugin.TMB)}</strong> coding mutations per Mb (${results.get(plugin.TOTAL_MUTATIONS)} mutations)
+      which corresponded to the ${html_builder.make_ordinal(results.get(plugin.PAN_CANCER_PERCENTILE))} percentile
+      of the pan-cancer cohort and classifies it as <strong>${results.get(plugin.TMB_CLASS)}</strong>.       
+      This TMB places the tumour in the <strong>${html_builder.make_ordinal(results.get(plugin.COHORT_PERCENTILE))}</strong> percentile
+      of the ${results.get(plugin.COHORT)} cohort.
+      The microsatellite status is <strong>${results.get(plugin.MSI_STATUS)}</strong>.
+      This tumour has <strong>${results.get(plugin.CTDNA_CANDIDATES)}</strong> candidate SNVs for ctDNA screening, 
+      making the sample <strong>${results.get(plugin.CTDNA_STATUS)}</strong> for OICR&#39;s plasma WGS assay (minimum of ${"{:,}".format(results.get(plugin.CTDNA_MIN))} SNVs required).
+    </p>
+
+      <!-- other biomarkers table -->
+      <table class="variants" style="width:100%">
+        <thead>
+          <th style=" width:10%">Biomarker</th>
+          <th style=" width:10%">Call</th>
+          <th style=" width:80%">Score & Confidence</th>
+        </thead>
+        <tbody>
+          <tr style="text-align:left;"><td>TMB</td><td>${results.get(plugin.TMB_CALL)}</td><td><img id="TMB" style="width: 100%; " src="${results.get(plugin.TMB_PLOT)}"></td></tr>
+	  % if results.get(plugin.MSI_OK):
+          <tr style="text-align:left;"><td>MSI</td><td>${results.get(plugin.MSI_CALL)}</td><td><img id="MSI" style="width: 100%; " src="${results.get(plugin.MSI_PLOT)}"></td></tr>
+	  % else:
+	  <tr style="text-align:left;"><td>MSI</td><td>NA</td><td>Cancer cell content &#8804; 50 &#37;, below threshold to call MS score</td></tr>
+	  % endif
+        </tbody>
+      </table>
+
+</div></div>
