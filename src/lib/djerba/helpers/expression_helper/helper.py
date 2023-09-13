@@ -139,12 +139,12 @@ class main(helper_base):
             self.ENSCON_KEY: '${DJERBA_DATA_DIR}/ensemble_conversion_hg38.txt',
             self.GENE_LIST_KEY: '${DJERBA_DATA_DIR}/targeted_genelist.txt',
             self.TCGA_DATA_KEY: '/.mounts/labs/CGI/gsi/tools/RODiC/data',
+            self.GEP_REFERENCE_KEY: '/.mounts/labs/CGI/gsi/tools/djerba/gep_reference.txt.gz'
         }
         for key in defaults.keys():
             self.set_ini_default(key, defaults[key])
         self.add_ini_discovered(self.RSEM_GENES_RESULTS_KEY)
         self.add_ini_discovered(self.TCGA_CODE_KEY) # use PAAD for testing
-        self.add_ini_discovered(self.GEP_REFERENCE_KEY)
         self.add_ini_discovered(core_constants.TUMOUR_ID)
 
     def write_tcga_json(self):
