@@ -14,6 +14,28 @@ class html_builder:
         return '<a href="{0}">{1}</a>'.format(url, text)
 
     @staticmethod
+    def make_ordinal(n):
+        '''
+        Convert an integer into its ordinal representation::
+
+            make_ordinal(0)   => '0th'
+            make_ordinal(3)   => '3rd'
+            make_ordinal(122) => '122nd'
+            make_ordinal(213) => '213th'
+        '''
+        try:
+            n = int(n)
+        except TypeError as err:
+            msg = "Cannot convert ordinal input '{0}' to an integer".format(n)
+            raise DjerbaHtmlError(msg) from err
+        if 11 <= (n % 100) <= 13:
+            suffix = 'th'
+        else:
+            suffix = ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]
+        return str(n) + suffix
+
+    
+    @staticmethod
     def td(content, italic=False):
         if italic:
             content = '<i>{0}</i>'.format(content)
@@ -34,3 +56,5 @@ class html_builder:
         items.append('</tr>')
         return ''.join(items)
 
+class DjerbaHtmlError(Exception):
+    pass
