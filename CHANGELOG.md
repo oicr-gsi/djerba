@@ -2,7 +2,10 @@
 
 ## Unreleased
 
-## GCGI-1035: Treament options merger
+## GCGI-1071: Expression helper
+- Helper class to compute gene expression levels from RSEM results
+
+## GCGI-1035: Treatment options merger
 - Generate the "Treatment Options" section of the report
 - Include both "FDA Approved" and "Investigational Therapies"
 
