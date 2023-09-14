@@ -1,5 +1,12 @@
 """Simple functions to process OncoKB levels"""
 
+import djerba.core.constants as core_constants
+
+def oncokb_filter(row):
+    """True if level passes filter, ie. if row should be kept"""
+    likely_oncogenic_sort_order = oncokb_order('N2')
+    return oncokb_order(row.get(core_constants.ONCOKB)) <= likely_oncogenic_sort_order
+
 def oncokb_level_to_html(level):
     if level == "1" or level == 1:
         html = '<div class="circle oncokb-level1">1</div>'

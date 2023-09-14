@@ -91,3 +91,6 @@ PAGE_FOOTER = 'page_footer'
 
 # keywords for plugin structure
 RESULTS = 'results'
+
+# keyword for OncoKB level
+ONCOKB = 'OncoKB'
