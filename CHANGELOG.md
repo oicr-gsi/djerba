@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## GCGI-1075: Provenance helper update
+- Write a `path_info.json` file to the workspace
+- Contains commonly used paths for use by other plugins/helpers
+
 ## GCGI-1071: Expression helper
 - Helper class to compute gene expression levels from RSEM results
 
