@@ -24,7 +24,11 @@ class main(plugin_base):
     MAVIS_PATH = 'mavis path'
     ENTREZ_CONVERSION_PATH = 'entrez conv path'
     MIN_FUSION_READS = 'minimum fusion reads'
-    
+    ONCOTREE_CODE = 'oncotree code'
+    ONCOKB_CACHE = 'OncoKB cache'
+    APPLY_CACHE = 'apply cache'
+    UPDATE_CACHE = 'update cache'
+
     # JSON results keys
     TOTAL_VARIANTS = "Total variants"
     CLINICALLY_RELEVANT_VARIANTS = "Clinically relevant variants"
@@ -38,6 +42,29 @@ class main(plugin_base):
 
     # other constants
     ENTRCON_NAME = 'entrez_conversion.txt'
+
+    def annotate_fusions(self, config_wrapper):
+        # annotate from OncoKB
+        cache_params = oncokb_cache_params(
+            config_wrapper.get_my_string(self.ONCOKB_CACHE),
+            config_wrapper.get_my_boolean(self.APPLY_CACHE),
+            config_wrapper.get_my_boolean(self.UPDATE_CACHE),
+            log_level=self.log_level,
+            log_path=self.log_path
+        )
+        self.logger.debug("OncoKB cache params: {0}".format(cache_params))
+        annotator = oncokb_annotator(
+            config_wrapper.get_my_string(core_constants.TUMOUR_ID),
+            config_wrapper.get_my_string(core_constants.ONCOTREE_CODE),
+            self.workspace.get_work_dir(), # output dir
+            self.workspace.get_work_dir(), # temporary dir -- same as output
+            cache_params,
+            self.cache_params,
+            self.log_level,
+            self.log_path
+        )
+        # TODO check if fusions are non empty
+        annotator.annotate_fusion()
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -72,13 +99,8 @@ class main(plugin_base):
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
-        self.process_fusion_files(
-            wrapper.get_my_string(self.MAVIS_PATH),
-            wrapper.get_my_string(core_constants.TUMOUR_ID),
-            wrapper.get_my_string(self.ENTREZ_CONVERSION_PATH),
-            wrapper.get_my_int(self.MIN_FUSION_READS)
-        )
-        self.annotate_fusion_files()
+        self.process_fusion_files(wrapper)
+        self.annotate_fusion_files(wrapper)
         cytobands = self.cytoband_lookup()
         fus_reader = fusion_reader(
             self.workspace.get_work_dir(), self.log_level, self.log_path
@@ -119,12 +141,17 @@ class main(plugin_base):
         data[core_constants.RESULTS] = results
         return data
 
-    def process_fusion_files(self, mavis_path, tumour_id, entrez_conv_path, min_reads):
+    def process_fusion_files(self, config_wrapper):
         """
         Preprocess fusion inputs and run R scripts; write outputs to the workspace
         Inputs assumed to be in Mavis .tab format; .zip format is no longer in use
         """
+        mavis_path = config_wrapper.get_my_string(self.MAVIS_PATH)
+        tumour_id = config_wrapper.get_my_string(core_constants.TUMOUR_ID)
+        entrez_conv_path = config_wrapper.get_my_string(self.ENTREZ_CONVERSION_PATH)
+        min_reads = config_wrapper.wrapper.get_my_int(self.MIN_FUSION_READS)
         fus_path = self.workspace.abs_path('fus.txt')
+        # prepend a column with the tumour ID to the Mavis .tab output
         with open(mavis_path, 'rt') as in_file, open(fus_path, 'wt') as out_file:
             reader = csv.reader(in_file, delimiter="\t")
             writer = csv.writer(out_file, delimiter="\t")
@@ -137,6 +164,7 @@ class main(plugin_base):
                     value = tumour_id
                 new_row = [value] + row
                 writer.writerow(new_row)
+        # run the R script
         plugin_dir = os.path.dirname(os.path.realpath(__file__))
         script_path = os.path.join(plugin_dir, 'fusions.R')
         cmd = [
@@ -147,12 +175,18 @@ class main(plugin_base):
             '--outdir', os.path.abspath(self.workspace.get_work_dir())
         ]
         subprocess_runner(self.log_level, self.log_path).run([str(x) for x in cmd])
+        self.annotate_fusions()
 
     def specify_params(self):
         self.add_ini_discovered(self.ENTREZ_CONVERSION_PATH)
         self.add_ini_discovered(self.MAVIS_PATH)
         self.add_ini_discovered(core_constants.TUMOUR_ID)
+        self.add_ini_discovered(self.ONCOTREE_CODE)
         self.set_ini_default(self.MIN_FUSION_READS, 20)
+        self.set_ini_default(self.APPLY_CACHE, False)
+        self.set_ini_default(self.UPDATE_CACHE, False)
+        cache_default = '/.mounts/labs/CGI/gsi/tools/djerba/oncokb_cache/scratch'
+        self.set_ini_default(self.ONCOKB_CACHE, cache_default)
 
     def render(self, data):
         renderer = mako_renderer(self.get_module_dir())
