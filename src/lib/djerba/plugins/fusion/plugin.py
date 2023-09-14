@@ -4,14 +4,15 @@ Plugin to generate the Fusions report section
 
 import csv
 import logging
-from time import strftime
+import os
+import re
 from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.util.html import html_builder as hb
 from djerba.util.logger import logger
 from djerba.util.render_mako import mako_renderer
 from djerba.util.subprocess_runner import subprocess_runner
 import djerba.core.constants as core_constants
-import djerba.util.oncokb_level_tools
+import djerba.util.oncokb.level_tools
 
 class main(plugin_base):
 
@@ -36,17 +37,27 @@ class main(plugin_base):
     # ONCOKB is from core constants
 
     # other constants
-    ENSCON_NAME = 'ensemble_conversion_hg38.txt'
+    ENTRCON_NAME = 'entrez_conversion.txt'
 
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         data_dir = os.environ.get(core_constants.DJERBA_DATA_DIR_VAR)
         if wrapper.my_param_is_null(self.ENTREZ_CONVERSION_PATH):
-            enscon_path = os.path.join(data_dir, self.ENSCON_NAME)
+            enscon_path = os.path.join(data_dir, self.ENTRCON_NAME)
             wrapper.set_my_param(self.ENTREZ_CONVERSION_PATH, enscon_path)
         if wrapper.my_param_is_null(self.MAVIS_PATH):
-
+            path_info = self.workspace.read_json(core_constants.DEFAULT_PATH_INFO)
+            mavis_path = path_info.get('mavis')
+            if mavis_path == None:
+                msg = 'Cannot find Mavis path for fusion input'
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            wrapper.set_my_param(self.MAVIS_PATH, mavis_path)
+        if wrapper.my_param_is_null(core_constants.TUMOUR_ID):
+            sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
+            tumour_id = sample_info.get(core_constants.TUMOUR_ID)
+            wrapper.set_my_param(core_constants.TUMOUR_ID, tumour_id)
         return wrapper.get_config()
 
     def cytoband_lookup(self):
@@ -63,9 +74,11 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         self.process_fusion_files(
             wrapper.get_my_string(self.MAVIS_PATH),
+            wrapper.get_my_string(core_constants.TUMOUR_ID),
             wrapper.get_my_string(self.ENTREZ_CONVERSION_PATH),
             wrapper.get_my_int(self.MIN_FUSION_READS)
         )
+        self.annotate_fusion_files()
         cytobands = self.cytoband_lookup()
         fus_reader = fusion_reader(
             self.workspace.get_work_dir(), self.log_level, self.log_path
@@ -89,7 +102,7 @@ class main(plugin_base):
                     }
                     rows.append(row)
             # rows are already sorted by the fusion reader
-            rows = list(filter(oncokb_level_tools.oncokb_filter, rows))
+            rows = list(filter(level_tools.oncokb_filter, rows))
             distinct_oncogenic_genes = len(set([row.get(self.GENE) for row in rows]))
             results = {
                 self.TOTAL_VARIANTS: distinct_oncogenic_genes,
@@ -106,16 +119,14 @@ class main(plugin_base):
         data[core_constants.RESULTS] = results
         return data
 
-    def preprocess_fus(self, mavis_path, tumour_id):
+    def process_fusion_files(self, mavis_path, tumour_id, entrez_conv_path, min_reads):
         """
-        Apply preprocessing to the .tab file output by Mavis
-        (The .zip format for Mavis output is no longer used)
-        Prepend a column with the tumour id
+        Preprocess fusion inputs and run R scripts; write outputs to the workspace
+        Inputs assumed to be in Mavis .tab format; .zip format is no longer in use
         """
-        # prepend a tumour id column to the file contents (if any)
-        out_path = self.workspace.abs_path('fus.txt')
-        with open(mavis_path, 'rt') as fus_file, open(out_path, 'wt') as out_file:
-            reader = csv.reader(fus_file, delimiter="\t")
+        fus_path = self.workspace.abs_path('fus.txt')
+        with open(mavis_path, 'rt') as in_file, open(fus_path, 'wt') as out_file:
+            reader = csv.reader(in_file, delimiter="\t")
             writer = csv.writer(out_file, delimiter="\t")
             in_header = True
             for row in reader:
@@ -126,11 +137,6 @@ class main(plugin_base):
                     value = tumour_id
                 new_row = [value] + row
                 writer.writerow(new_row)
-        return out_path
-
-    def process_fusion_files(self, mavis_path, entrez_conv_path, min_reads):
-        """Preprocess fusion inputs and run R scripts; write outputs to the workspace"""
-        fus_path = self.preprocess_fus(mavis_path)
         plugin_dir = os.path.dirname(os.path.realpath(__file__))
         script_path = os.path.join(plugin_dir, 'fusions.R')
         cmd = [
@@ -138,13 +144,14 @@ class main(plugin_base):
             '--entcon', entrez_conv_path,
             '--fusfile', fus_path,
             '--minfusionreads', min_reads,
-            '--outdir', os.path.abs_path(self.workspace.get_work_dir())
+            '--outdir', os.path.abspath(self.workspace.get_work_dir())
         ]
-        subprocess_runner(self.log_level, self.log_path).run(cmd)
+        subprocess_runner(self.log_level, self.log_path).run([str(x) for x in cmd])
 
     def specify_params(self):
         self.add_ini_discovered(self.ENTREZ_CONVERSION_PATH)
         self.add_ini_discovered(self.MAVIS_PATH)
+        self.add_ini_discovered(core_constants.TUMOUR_ID)
         self.set_ini_default(self.MIN_FUSION_READS, 20)
 
     def render(self, data):
@@ -162,7 +169,10 @@ class fusion_reader(logger):
     HUGO_SYMBOL = 'Hugo_Symbol'
 
     def __init__(self, input_dir, log_level=logging.WARNING, log_path=None):
-        super().__init__(log_level, log_path) # calls the parent constructor; creates logger
+        super().__init__()
+        self.log_level = log_level
+        self.log_path = log_path
+        self.logger = self.get_logger(log_level, __name__, log_path)
         self.input_dir = input_dir
         self.old_to_new_delimiter = self.read_fusion_delimiter_map()
         fusion_data = self.read_fusion_data()
