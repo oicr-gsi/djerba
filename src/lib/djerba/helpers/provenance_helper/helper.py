@@ -35,6 +35,14 @@ class main(helper_base):
         ini.SAMPLE_NAME_WT_T
     ]
 
+    # identifiers for bam/bai files
+    WG_N_BAM = 'whole genome normal bam'
+    WG_N_IDX = 'whole genome normal bam index'
+    WG_T_BAM = 'whole genome tumour bam'
+    WG_T_IDX = 'whole genome tumour bam index'
+    WT_T_BAM = 'whole transcriptome tumour bam'
+    WT_T_IDX = 'whole transcriptome tumour bam index'
+
     def configure(self, config):
         """
         Writes a subset of provenance, and a sample info JSON file, to the workspace
@@ -47,10 +55,11 @@ class main(helper_base):
         self.write_provenance_subset(study, donor, provenance_path)
         # write sample_info.json; populate sample names from provenance if needed
         samples = self.get_sample_name_container(wrapper)
-        info = self.read_sample_info(study, donor, samples)
-        self.write_sample_info(info)
+        sample_info, path_info = self.read_provenance(study, donor, samples)
+        self.write_sample_info(sample_info)
+        self.write_path_info(path_info)
         for key in self.SAMPLE_NAME_KEYS:
-            wrapper.set_my_param(key, info.get(key))
+            wrapper.set_my_param(key, sample_info.get(key))
         return wrapper.get_config()
 
     def extract(self, config):
@@ -68,14 +77,19 @@ class main(helper_base):
             self.logger.info(msg)
         else:
             self.write_provenance_subset(study, donor, provenance_path)
-        if self.workspace.has_file(core_constants.DEFAULT_SAMPLE_INFO):
-            msg = "extract: {0} ".format(core_constants.DEFAULT_SAMPLE_INFO)+\
-                "already in workspace, will not overwrite"
+        if self.workspace.has_file(core_constants.DEFAULT_SAMPLE_INFO) and \
+           self.workspace.has_file(core_constants.DEFAULT_PATH_INFO):
+            msg = "extract: sample/path info files already in workspace, will not overwrite"
             self.logger.info(msg)
         else:
             samples = self.get_sample_name_container(wrapper)
-            info = self.read_sample_info(study, donor, samples)
-            self.write_sample_info(info)
+            sample_info, path_info = self.read_provenance(study, donor, samples)
+            if not self.workspace.has_file(core_constants.DEFAULT_SAMPLE_INFO):
+                self.logger.debug('extract: writing sample info')
+                self.write_sample_info(sample_info)
+            if not self.workspace.has_file(core_constants.DEFAULT_PATH_INFO):
+                self.logger.debug('extract: writing path info')
+                self.write_path_info(path_info)
 
     def get_sample_name_container(self, config_wrapper):
         """
@@ -101,10 +115,11 @@ class main(helper_base):
             raise InvalidConfigurationError(msg)
         return samples
 
-    def read_sample_info(self, study, donor, samples):
+    def read_provenance(self, study, donor, samples):
         """
         Parse file provenance and populate the sample info data structure
         If the sample names are unknown, get from file provenance given study and donor
+        Also populate a data structure with workflow outputs (if available)
         """
         subset_path = self.workspace.abs_path(self.PROVENANCE_OUTPUT)
         reader = provenance_reader(
@@ -127,7 +142,29 @@ class main(helper_base):
             ini.SAMPLE_NAME_WG_N: names.get(ini.SAMPLE_NAME_WG_N),
             ini.SAMPLE_NAME_WT_T: names.get(ini.SAMPLE_NAME_WT_T)
         }
-        return sample_info
+        # find paths of workflow outputs; values may be None
+        path_info = {
+            reader.WF_ARRIBA: reader.parse_arriba_path(),
+            reader.WF_BMPP: {
+                self.WG_T_BAM: reader.parse_wg_bam_path(),
+                self.WG_T_IDX: reader.parse_wg_index_path(),
+                self.WG_N_BAM: reader.parse_wg_bam_ref_path(),
+                self.WG_N_IDX: reader.parse_wg_index_ref_path()
+            },
+            reader.WF_DELLY: reader.parse_delly_path(),
+            reader.WF_MAVIS: reader.parse_mavis_path(),
+            reader.WF_MRDETECT: reader.parse_mrdetect_path(),
+            reader.WF_MSISENSOR: reader.parse_msi_path(),
+            reader.WF_RSEM: reader.parse_gep_path(),
+            reader.WF_SEQUENZA: reader.parse_sequenza_path(),
+            reader.WF_STAR: {
+                self.WT_T_BAM: reader.parse_wt_bam_path(),
+                self.WT_T_IDX: reader.parse_wt_index_path()
+            },
+            reader.WF_STARFUSION: reader.parse_starfusion_predictions_path(),
+            reader.WF_VEP: reader.parse_maf_path()
+        }
+        return sample_info, path_info
 
     def specify_params(self):
         self.logger.debug("Specifying params for provenance helper")
@@ -138,6 +175,10 @@ class main(helper_base):
         self.add_ini_discovered(ini.SAMPLE_NAME_WG_N)
         self.add_ini_discovered(ini.SAMPLE_NAME_WG_T)
         self.add_ini_discovered(ini.SAMPLE_NAME_WT_T)
+
+    def write_path_info(self, path_info):
+        self.workspace.write_json(core_constants.DEFAULT_PATH_INFO, path_info)
+        self.logger.debug("Wrote path info to workspace: {0}".format(path_info))
 
     def write_provenance_subset(self, study, donor, provenance_path):
         self.logger.info('Started reading file provenance from {0}'.format(provenance_path))

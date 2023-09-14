@@ -72,6 +72,7 @@ TUMOUR_ID = 'tumour_id'
 NORMAL_ID = 'normal_id'
 
 # core config defaults
+DEFAULT_PATH_INFO = "path_info.json"
 DEFAULT_SAMPLE_INFO = "sample_info.json"
 DEFAULT_CSS = "stylesheet.css"
 DEFAULT_AUTHOR = "CGI Author"
