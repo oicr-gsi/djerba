@@ -25,7 +25,7 @@ import re
 import djerba.core.constants as core_constants
 import djerba.render.constants as constants
 from djerba.mergers.base import merger_base, DjerbaMergerError
-from djerba.util.oncokb_level_tools import oncokb_order
+from djerba.util.oncokb.level_tools import oncokb_order
 from djerba.util.render_mako import mako_renderer
 
 class main(merger_base):
