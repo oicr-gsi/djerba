@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## GCGI-819: Fusions plugin
+- Plugin to generate 'Structural Variants and Fusions' section of report
+
 ## GCGI-1075: Provenance helper update
 - Write a `path_info.json` file to the workspace
 - Contains commonly used paths for use by other plugins/helpers
