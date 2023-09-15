@@ -12,6 +12,14 @@ class html_builder:
     TR_END = '</tr>'
 
     @staticmethod
+    def build_fusion_url(genes, oncotree_code):
+        url = 'https://www.oncokb.org/gene/{0}/Fusion/{1}'.format(
+            '-'.join(genes),
+            oncotree_code
+        )
+        return url
+
+    @staticmethod
     def build_gene_url(gene):
         return 'https://www.oncokb.org/gene/'+gene
 

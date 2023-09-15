@@ -140,6 +140,36 @@ class main(plugin_base):
                         core_constants.SUMMARY: summaries.get(gene)
                     }
                     gene_info.append(gene_info_entry)
+                if fusion.get_fda_level() != None:
+                    # TODO fix the treatment options merger to display 2 genes for fusions
+                    genes = fusion.get_genes()
+                    gene = genes[0]
+                    oncotree_code = wrapper.get_my_string(self.ONCOTREE_CODE)
+                    fda_entry = {
+                        "Tier": "Approved",
+                        "OncoKB level": fusion.get_fda_level(),
+                        "Treatments": fusion.get_fda_therapies(),
+                        self.GENE: gene,
+                        self.GENE_URL: hb.build_gene_url(gene),
+                        "Alteration": "Fusion",
+                        "Alteration_URL": hb.build_fusion_url(genes, oncotree_code)
+                    }
+                    treatment_opts.append(fda_entry)
+                if fusion.get_inv_level() != None:
+                    # TODO fix the treatment options merger to display 2 genes for fusions
+                    genes = fusion.get_genes()
+                    gene = genes[0]
+                    oncotree_code = wrapper.get_my_string(self.ONCOTREE_CODE)
+                    inv_entry = {
+                        "Tier": "Investigational",
+                        "OncoKB level": fusion.get_inv_level(),
+                        "Treatments": fusion.get_inv_therapies(),
+                        self.GENE: gene,
+                        self.GENE_URL: hb.build_gene_url(gene),
+                        "Alteration": "Fusion",
+                        "Alteration_URL": hb.build_fusion_url(genes, oncotree_code)
+                    }
+                    treatment_opts.append(inv_entry)
             # rows are already sorted by the fusion reader
             rows = list(filter(oncokb_levels.oncokb_filter, rows))
             distinct_oncogenic_genes = len(set([row.get(self.GENE) for row in rows]))
@@ -157,7 +187,7 @@ class main(plugin_base):
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         data[core_constants.RESULTS] = results
         data[core_constants.MERGE_INPUTS]['gene_information_merger'] = gene_info
-        #data[core_constants.MERGE_INPUTS]['treatment_options_merger'] = treatment_opts
+        data[core_constants.MERGE_INPUTS]['treatment_options_merger'] = treatment_opts
         return data
 
     def process_fusion_files(self, config_wrapper):
