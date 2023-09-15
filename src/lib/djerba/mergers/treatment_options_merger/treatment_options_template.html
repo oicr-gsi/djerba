@@ -1,7 +1,7 @@
 <%
   import djerba.core.constants as core_constants
   from djerba.mergers.treatment_options_merger.merger import main as merger
-  from djerba.util.oncokb.level_tools import oncokb_level_to_html
+  from djerba.util.oncokb.tools import levels as oncokb
 %>
 
 <!-- treatment -->
@@ -28,7 +28,7 @@
         <tbody>
 	  % for row in approved_therapies:
           <tr style="text-align:left;">
-	    <td width="1%">${oncokb_level_to_html(row[merger.ONCOKB_LEVEL])}</td>
+	    <td width="1%">${oncokb.oncokb_level_to_html(row[merger.ONCOKB_LEVEL])}</td>
 	    <td width="59%">${row[merger.TREATMENTS]}</td>
 	    <td style="font-style: italic;" width="20%">
 	      ${merger.get_link(row[merger.GENE_URL], row[merger.GENE])}
@@ -54,7 +54,7 @@
         <tbody>
 	  % for row in investig_therapies:
           <tr style="text-align:left;">
-	    <td width="1%">${oncokb_level_to_html(row[merger.ONCOKB_LEVEL])}</td>
+	    <td width="1%">${oncokb.oncokb_level_to_html(row[merger.ONCOKB_LEVEL])}</td>
 	    <td width="59%">${row[merger.TREATMENTS]}</td>
 	    <td style="font-style: italic;" width="20%">
 	      ${merger.get_link(row[merger.GENE_URL], row[merger.GENE])}

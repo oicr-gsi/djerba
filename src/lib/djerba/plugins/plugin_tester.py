@@ -69,6 +69,9 @@ class PluginTester(TestBase):
         with open(expected_json_path) as json_file:
             plugin_data_expected = json.loads(json_file.read())
         plugin_data_found = data_found['plugins'][plugin_name]
+        ### uncomment this to dump the plugin output JSON to a file
+        #with open('/tmp/foo.json', 'w') as out_file:
+        #    out_file.write(json.dumps(plugin_data_found, sort_keys=True, indent=4))
         validator = plugin_json_validator(log_level=log_level)
         self.assertTrue(validator.validate_data(plugin_data_found))
         self.assertEqual(plugin_data_found, plugin_data_expected)

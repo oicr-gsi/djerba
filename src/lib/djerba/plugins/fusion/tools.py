@@ -7,7 +7,7 @@ import logging
 import os
 import re
 from djerba.util.logger import logger
-import djerba.util.oncokb.level_tools as oncokb_levels
+from djerba.util.oncokb.tools import levels as oncokb_levels
 import djerba.util.oncokb.constants as oncokb
 
 class fusion_reader(logger):

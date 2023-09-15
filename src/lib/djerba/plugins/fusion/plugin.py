@@ -12,10 +12,11 @@ from djerba.util.html import html_builder as hb
 from djerba.util.logger import logger
 from djerba.util.oncokb.annotator import oncokb_annotator
 from djerba.util.oncokb.cache import oncokb_cache_params
+from djerba.util.oncokb.tools import gene_summary_reader
+from djerba.util.oncokb.tools import levels as oncokb_levels
 from djerba.util.render_mako import mako_renderer
 from djerba.util.subprocess_runner import subprocess_runner
 import djerba.core.constants as core_constants
-import djerba.util.oncokb.level_tools as oncokb_levels
 import djerba.util.oncokb.constants as oncokb
 
 class main(plugin_base):
@@ -111,22 +112,34 @@ class main(plugin_base):
         )
         total_fusion_genes = fus_reader.get_total_fusion_genes()
         gene_pair_fusions = fus_reader.get_fusions()
+        gene_info = []
+        treatment_opts = []
+        summaries = gene_summary_reader()
         if gene_pair_fusions is not None:
             # table has 2 rows for each oncogenic fusion
             rows = []
             for fusion in gene_pair_fusions:
                 oncokb_level = fusion.get_oncokb_level()
                 for gene in fusion.get_genes():
+                    chromosome = cytobands.get(gene)
+                    gene_url = hb.build_gene_url(gene)
                     row =  {
                         self.GENE: gene,
-                        self.GENE_URL: hb.build_gene_url(gene),
-                        self.CHROMOSOME: cytobands.get(gene),
+                        self.GENE_URL: gene_url,
+                        self.CHROMOSOME: chromosome,
                         self.FRAME: fusion.get_frame(),
                         self.FUSION: fusion.get_fusion_id_new(),
                         self.MUTATION_EFFECT: fusion.get_mutation_effect(),
                         core_constants.ONCOKB: oncokb_level
                     }
                     rows.append(row)
+                    gene_info_entry = {
+                        self.GENE: gene,
+                        self.GENE_URL: gene_url,
+                        self.CHROMOSOME: chromosome,
+                        core_constants.SUMMARY: summaries.get(gene)
+                    }
+                    gene_info.append(gene_info_entry)
             # rows are already sorted by the fusion reader
             rows = list(filter(oncokb_levels.oncokb_filter, rows))
             distinct_oncogenic_genes = len(set([row.get(self.GENE) for row in rows]))
@@ -143,6 +156,8 @@ class main(plugin_base):
             }
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         data[core_constants.RESULTS] = results
+        data[core_constants.MERGE_INPUTS]['gene_information_merger'] = gene_info
+        #data[core_constants.MERGE_INPUTS]['treatment_options_merger'] = treatment_opts
         return data
 
     def process_fusion_files(self, config_wrapper):

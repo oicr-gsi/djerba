@@ -25,7 +25,7 @@ import re
 import djerba.core.constants as core_constants
 import djerba.render.constants as constants
 from djerba.mergers.base import merger_base, DjerbaMergerError
-from djerba.util.oncokb.level_tools import oncokb_order
+from djerba.util.oncokb.tools import levels as oncokb
 from djerba.util.render_mako import mako_renderer
 
 class main(merger_base):
@@ -64,7 +64,7 @@ class main(merger_base):
             self.logger.debug("Merger inputs: {0}".format(inputs))
             raise DjerbaMergerError from err
         # sort by oncokb level, then alteration name
-        return sorted(unique_items, key = lambda x: (oncokb_order(x[k1]), x[k2]))
+        return sorted(unique_items, key = lambda x: (oncokb.oncokb_order(x[k1]), x[k2]))
 
     def render(self, inputs):
         self.validate_inputs(inputs)
