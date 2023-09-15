@@ -6,8 +6,6 @@ import re
 
 class html_builder:
 
-    TABLE_START = '<table border=1>'
-    TABLE_END = '</table>'
     TR_START = '<tr style="text-align:left;">'
     TR_END = '</tr>'
 
@@ -21,9 +19,9 @@ class html_builder:
 
     @staticmethod
     def table_row(cells):
-        items = [TR_START, ]
+        items = [html_builder.TR_START, ]
         items.extend(cells)
-        items.append(TR_END)
+        items.append(html_builder.TR_END)
         return ''.join(items)
 
     @staticmethod
@@ -55,7 +53,7 @@ class html_builder:
         elif level == p_onc:
             level = 'N3'
         div = '<div class="{0} oncokb-level{1}">{2}</div>'.format(shape, level, level)
-        return self.td(div)
+        return html_builder.td(div)
 
     @staticmethod
     def thead(names):

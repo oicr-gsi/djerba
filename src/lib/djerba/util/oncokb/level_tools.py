@@ -42,6 +42,8 @@ def oncokb_level_to_html(level):
     return html
 
 def oncokb_order(level):
+    if re.match('Level ', level):
+        level = level.replace('Level ', '')
     levels = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'N1', 'N2', 'N3', 'Unknown']
     order = None
     for i in range(len(levels)):
