@@ -6,7 +6,7 @@ import csv
 import logging
 import os
 import re
-from djerba.plugins.base import plugin_base
+from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.plugins.fusion.tools import fusion_reader
 from djerba.util.html import html_builder as hb
 from djerba.util.logger import logger
@@ -71,6 +71,33 @@ class main(plugin_base):
         # TODO check if fusions are non empty
         annotator.annotate_fusion()
 
+    def build_treatment_entry(self, fusion, tier, oncotree_code):
+        """Make an entry for the treatment options merger"""
+        # TODO fix the treatment options merger to display 2 genes for fusions
+        genes = fusion.get_genes()
+        gene = genes[0]
+        #oncotree_code = wrapper.get_my_string(self.ONCOTREE_CODE)
+        if tier == 'Approved':
+            level = fusion.get_fda_level()
+            treatments = fusion.get_fda_therapies()
+        elif tier == 'Investigational':
+            level = fusion.get_inv_level()
+            treatments = fusion.get_inv_therapies()
+        else:
+            msg = "Unknown therapy tier '{0}'".format(tier)
+            self.logger.error(msg)
+            raise DjerbaPluginError(msg)
+        entry = {
+            "Tier": tier,
+            "OncoKB level": level,
+            "Treatments": treatments,
+            self.GENE: gene,
+            self.GENE_URL: hb.build_gene_url(gene),
+            "Alteration": "Fusion",
+            "Alteration_URL": hb.build_fusion_url(genes, oncotree_code)
+        }
+        return entry
+
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
@@ -106,70 +133,15 @@ class main(plugin_base):
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         self.process_fusion_files(wrapper)
-        cytobands = self.cytoband_lookup()
         fus_reader = fusion_reader(
             self.workspace.get_work_dir(), self.log_level, self.log_path
         )
         total_fusion_genes = fus_reader.get_total_fusion_genes()
         gene_pair_fusions = fus_reader.get_fusions()
-        gene_info = []
-        treatment_opts = []
-        summaries = gene_summary_reader()
         if gene_pair_fusions is not None:
-            # table has 2 rows for each oncogenic fusion
-            rows = []
-            for fusion in gene_pair_fusions:
-                oncokb_level = fusion.get_oncokb_level()
-                for gene in fusion.get_genes():
-                    chromosome = cytobands.get(gene)
-                    gene_url = hb.build_gene_url(gene)
-                    row =  {
-                        self.GENE: gene,
-                        self.GENE_URL: gene_url,
-                        self.CHROMOSOME: chromosome,
-                        self.FRAME: fusion.get_frame(),
-                        self.FUSION: fusion.get_fusion_id_new(),
-                        self.MUTATION_EFFECT: fusion.get_mutation_effect(),
-                        core_constants.ONCOKB: oncokb_level
-                    }
-                    rows.append(row)
-                    gene_info_entry = {
-                        self.GENE: gene,
-                        self.GENE_URL: gene_url,
-                        self.CHROMOSOME: chromosome,
-                        core_constants.SUMMARY: summaries.get(gene)
-                    }
-                    gene_info.append(gene_info_entry)
-                if fusion.get_fda_level() != None:
-                    # TODO fix the treatment options merger to display 2 genes for fusions
-                    genes = fusion.get_genes()
-                    gene = genes[0]
-                    oncotree_code = wrapper.get_my_string(self.ONCOTREE_CODE)
-                    fda_entry = {
-                        "Tier": "Approved",
-                        "OncoKB level": fusion.get_fda_level(),
-                        "Treatments": fusion.get_fda_therapies(),
-                        self.GENE: gene,
-                        self.GENE_URL: hb.build_gene_url(gene),
-                        "Alteration": "Fusion",
-                        "Alteration_URL": hb.build_fusion_url(genes, oncotree_code)
-                    }
-                    treatment_opts.append(fda_entry)
-                if fusion.get_inv_level() != None:
-                    # TODO fix the treatment options merger to display 2 genes for fusions
-                    genes = fusion.get_genes()
-                    gene = genes[0]
-                    oncotree_code = wrapper.get_my_string(self.ONCOTREE_CODE)
-                    inv_entry = {
-                        "Tier": "Investigational",
-                        "OncoKB level": fusion.get_inv_level(),
-                        "Treatments": fusion.get_inv_therapies(),
-                        self.GENE: gene,
-                        self.GENE_URL: hb.build_gene_url(gene),
-                        "Alteration": "Fusion",
-                        "Alteration_URL": hb.build_fusion_url(genes, oncotree_code)
-                    }
-                    treatment_opts.append(inv_entry)
+            oncotree_code = wrapper.get_my_string(self.ONCOTREE_CODE)
+            outputs = self.fusions_to_json(gene_pair_fusions, oncotree_code)
+            [rows, gene_info, treatment_opts] = outputs
             # rows are already sorted by the fusion reader
             rows = list(filter(oncokb_levels.oncokb_filter, rows))
             distinct_oncogenic_genes = len(set([row.get(self.GENE) for row in rows]))
@@ -184,11 +156,50 @@ class main(plugin_base):
                 self.CLINICALLY_RELEVANT_VARIANTS: 0,
                 self.BODY: []
             }
+            gene_info = []
+            treatment_opts = []
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         data[core_constants.RESULTS] = results
         data[core_constants.MERGE_INPUTS]['gene_information_merger'] = gene_info
         data[core_constants.MERGE_INPUTS]['treatment_options_merger'] = treatment_opts
         return data
+
+    def fusions_to_json(self, gene_pair_fusions, oncotree_code):
+        rows = []
+        gene_info = []
+        treatment_opts = []
+        cytobands = self.cytoband_lookup()
+        summaries = gene_summary_reader()
+        # table has 2 rows for each oncogenic fusion
+        for fusion in gene_pair_fusions:
+            oncokb_level = fusion.get_oncokb_level()
+            for gene in fusion.get_genes():
+                chromosome = cytobands.get(gene)
+                gene_url = hb.build_gene_url(gene)
+                row =  {
+                    self.GENE: gene,
+                    self.GENE_URL: gene_url,
+                    self.CHROMOSOME: chromosome,
+                    self.FRAME: fusion.get_frame(),
+                    self.FUSION: fusion.get_fusion_id_new(),
+                    self.MUTATION_EFFECT: fusion.get_mutation_effect(),
+                    core_constants.ONCOKB: oncokb_level
+                }
+                rows.append(row)
+                gene_info_entry = {
+                    self.GENE: gene,
+                    self.GENE_URL: gene_url,
+                    self.CHROMOSOME: chromosome,
+                    core_constants.SUMMARY: summaries.get(gene)
+                }
+                gene_info.append(gene_info_entry)
+            if fusion.get_fda_level() != None:
+                entry = self.build_treatment_entry(fusion, 'Approved', oncotree_code)
+                treatment_opts.append(entry)
+            if fusion.get_inv_level() != None:
+                entry = self.build_treatment_entry(fusion, 'Investigational', oncotree_code)
+                treatment_opts.append(entry)
+        return rows, gene_info, treatment_opts
 
     def process_fusion_files(self, config_wrapper):
         """
