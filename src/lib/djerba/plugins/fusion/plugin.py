@@ -76,7 +76,6 @@ class main(plugin_base):
         # TODO fix the treatment options merger to display 2 genes for fusions
         genes = fusion.get_genes()
         gene = genes[0]
-        #oncotree_code = wrapper.get_my_string(self.ONCOTREE_CODE)
         if tier == 'Approved':
             level = fusion.get_fda_level()
             treatments = fusion.get_fda_therapies()
@@ -87,12 +86,13 @@ class main(plugin_base):
             msg = "Unknown therapy tier '{0}'".format(tier)
             self.logger.error(msg)
             raise DjerbaPluginError(msg)
+        # TODO import dict keys from the merger class
         entry = {
             "Tier": tier,
             "OncoKB level": level,
             "Treatments": treatments,
-            self.GENE: gene,
-            self.GENE_URL: hb.build_gene_url(gene),
+            "Gene": gene,
+            "Gene_URL": hb.build_gene_url(gene),
             "Alteration": "Fusion",
             "Alteration_URL": hb.build_fusion_url(genes, oncotree_code)
         }
@@ -187,8 +187,8 @@ class main(plugin_base):
                 }
                 rows.append(row)
                 gene_info_entry = {
-                    self.GENE: gene,
-                    self.GENE_URL: gene_url,
+                    'Gene': gene,
+                    'Gene_URL': gene_url,
                     self.CHROMOSOME: chromosome,
                     core_constants.SUMMARY: summaries.get(gene)
                 }

@@ -95,7 +95,7 @@ class levels:
 
     @staticmethod
     def reformat_level_string(level):
-        return re.sub('LEVEL_', 'Level ', level)
+        return re.sub('LEVEL_', '', level)
 
 
 class gene_summary_reader:
