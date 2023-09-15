@@ -15,7 +15,10 @@
       <thead style="background-color:white"><tr><th style="text-align:left;">Gene</th><th style="text-align:left;">Chromosome</th><th style="text-align:left;">Fusion</th><th style="text-align:left;">Frame</th><th style="text-align:left;">Mutation effect</th><th style="text-align:left;">OncoKB</th></tr></thead>
       <tbody>
 	% for row in results.get(fusion.BODY):
-	make_row_html(row)
+	<% row_html = make_row_html(row) %>
+	% if row_html != None:
+	row_html
+	% endif
         % endfor
       </tbody>
     </table>

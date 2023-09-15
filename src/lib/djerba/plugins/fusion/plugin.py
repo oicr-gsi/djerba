@@ -9,10 +9,13 @@ import re
 from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.util.html import html_builder as hb
 from djerba.util.logger import logger
+from djerba.util.oncokb.annotator import oncokb_annotator
+from djerba.util.oncokb.cache import oncokb_cache_params
 from djerba.util.render_mako import mako_renderer
 from djerba.util.subprocess_runner import subprocess_runner
 import djerba.core.constants as core_constants
-import djerba.util.oncokb.level_tools
+import djerba.util.oncokb.level_tools as oncokb_levels
+import djerba.util.oncokb.constants as oncokb
 
 class main(plugin_base):
 
@@ -25,7 +28,7 @@ class main(plugin_base):
     ENTREZ_CONVERSION_PATH = 'entrez conv path'
     MIN_FUSION_READS = 'minimum fusion reads'
     ONCOTREE_CODE = 'oncotree code'
-    ONCOKB_CACHE = 'OncoKB cache'
+    ONCOKB_CACHE = 'oncokb cache'
     APPLY_CACHE = 'apply cache'
     UPDATE_CACHE = 'update cache'
 
@@ -33,6 +36,7 @@ class main(plugin_base):
     TOTAL_VARIANTS = "Total variants"
     CLINICALLY_RELEVANT_VARIANTS = "Clinically relevant variants"
     BODY = 'body'
+    FRAME = 'frame'
     GENE = 'gene'
     GENE_URL = 'gene URL'
     CHROMOSOME = 'chromosome'
@@ -43,7 +47,7 @@ class main(plugin_base):
     # other constants
     ENTRCON_NAME = 'entrez_conversion.txt'
 
-    def annotate_fusions(self, config_wrapper):
+    def annotate_fusion_files(self, config_wrapper):
         # annotate from OncoKB
         cache_params = oncokb_cache_params(
             config_wrapper.get_my_string(self.ONCOKB_CACHE),
@@ -55,11 +59,10 @@ class main(plugin_base):
         self.logger.debug("OncoKB cache params: {0}".format(cache_params))
         annotator = oncokb_annotator(
             config_wrapper.get_my_string(core_constants.TUMOUR_ID),
-            config_wrapper.get_my_string(core_constants.ONCOTREE_CODE),
+            config_wrapper.get_my_string(self.ONCOTREE_CODE),
             self.workspace.get_work_dir(), # output dir
             self.workspace.get_work_dir(), # temporary dir -- same as output
             cache_params,
-            self.cache_params,
             self.log_level,
             self.log_path
         )
@@ -69,6 +72,7 @@ class main(plugin_base):
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
+        # TODO populate the oncotree code
         data_dir = os.environ.get(core_constants.DJERBA_DATA_DIR_VAR)
         if wrapper.my_param_is_null(self.ENTREZ_CONVERSION_PATH):
             enscon_path = os.path.join(data_dir, self.ENTRCON_NAME)
@@ -100,7 +104,6 @@ class main(plugin_base):
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         self.process_fusion_files(wrapper)
-        self.annotate_fusion_files(wrapper)
         cytobands = self.cytoband_lookup()
         fus_reader = fusion_reader(
             self.workspace.get_work_dir(), self.log_level, self.log_path
@@ -110,7 +113,7 @@ class main(plugin_base):
         if gene_pair_fusions is not None:
             # table has 2 rows for each oncogenic fusion
             rows = []
-            for fusion in self.gene_pair_fusions:
+            for fusion in gene_pair_fusions:
                 oncokb_level = fusion.get_oncokb_level()
                 for gene in fusion.get_genes():
                     row =  {
@@ -124,11 +127,11 @@ class main(plugin_base):
                     }
                     rows.append(row)
             # rows are already sorted by the fusion reader
-            rows = list(filter(level_tools.oncokb_filter, rows))
+            rows = list(filter(oncokb_levels.oncokb_filter, rows))
             distinct_oncogenic_genes = len(set([row.get(self.GENE) for row in rows]))
             results = {
-                self.TOTAL_VARIANTS: distinct_oncogenic_genes,
-                self.CLINICALLY_RELEVANT_VARIANTS: total_fusion_genes,
+                self.TOTAL_VARIANTS: total_fusion_genes,
+                self.CLINICALLY_RELEVANT_VARIANTS: distinct_oncogenic_genes,
                 self.BODY: rows
             }
         else:
@@ -149,8 +152,9 @@ class main(plugin_base):
         mavis_path = config_wrapper.get_my_string(self.MAVIS_PATH)
         tumour_id = config_wrapper.get_my_string(core_constants.TUMOUR_ID)
         entrez_conv_path = config_wrapper.get_my_string(self.ENTREZ_CONVERSION_PATH)
-        min_reads = config_wrapper.wrapper.get_my_int(self.MIN_FUSION_READS)
+        min_reads = config_wrapper.get_my_int(self.MIN_FUSION_READS)
         fus_path = self.workspace.abs_path('fus.txt')
+        self.logger.info("Processing fusion results from "+mavis_path)
         # prepend a column with the tumour ID to the Mavis .tab output
         with open(mavis_path, 'rt') as in_file, open(fus_path, 'wt') as out_file:
             reader = csv.reader(in_file, delimiter="\t")
@@ -175,7 +179,8 @@ class main(plugin_base):
             '--outdir', os.path.abspath(self.workspace.get_work_dir())
         ]
         subprocess_runner(self.log_level, self.log_path).run([str(x) for x in cmd])
-        self.annotate_fusions()
+        self.annotate_fusion_files(config_wrapper)
+        self.logger.info("Finished writing fusion files")
 
     def specify_params(self):
         self.add_ini_discovered(self.ENTREZ_CONVERSION_PATH)
@@ -224,7 +229,7 @@ class fusion_reader(logger):
         [fusions, self.total_fusion_genes] = self._collate_row_data(fusion_data, annotations)
         # sort the fusions by oncokb level & fusion ID
         fusions = sorted(fusions, key=lambda f: f.get_fusion_id_new())
-        self.fusions = sorted(fusions, key=lambda f: self.oncokb_sort_order(f.get_oncokb_level()))
+        self.fusions = sorted(fusions, key=lambda f: oncokb_levels.oncokb_order(f.get_oncokb_level()))
 
     def _collate_row_data(self, fusion_data, annotations):
         fusions = []
@@ -248,10 +253,10 @@ class fusion_reader(logger):
             frame = fusion_data[fusion_id][0]['Frame']
             ann = annotations[fusion_id]
             effect = ann['MUTATION_EFFECT']
-            oncokb_level = self.parse_oncokb_level(ann)
-            fda = self.parse_max_oncokb_level_and_therapies(ann, oncokb.FDA_APPROVED_LEVELS)
+            oncokb_level = oncokb_levels.parse_oncokb_level(ann)
+            fda = oncokb_levels.parse_max_oncokb_level_and_therapies(ann, oncokb.FDA_APPROVED_LEVELS)
             [fda_level, fda_therapies] = fda
-            inv = self.parse_max_oncokb_level_and_therapies(ann, oncokb.INVESTIGATIONAL_LEVELS)
+            inv = oncokb_levels.parse_max_oncokb_level_and_therapies(ann, oncokb.INVESTIGATIONAL_LEVELS)
             [inv_level, inv_therapies] = inv
             fusions.append(
                 fusion(
@@ -274,6 +279,7 @@ class fusion_reader(logger):
               "Found {0} fusion rows for {1} distinct genes; ".format(total, total_fusion_genes)+\
               "excluded {0} intragenic rows.".format(intragenic)
         self.logger.info(msg)
+        self.logger.debug("Fusions: {0}".format(fusions))
         return [fusions, total_fusion_genes]
 
     def get_fusions(self):
