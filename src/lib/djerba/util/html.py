@@ -6,6 +6,8 @@ import re
 
 class html_builder:
 
+    TABLE_START = '<table border=1>'
+    TABLE_END = '</table>'
     TR_START = '<tr style="text-align:left;">'
     TR_END = '</tr>'
 
