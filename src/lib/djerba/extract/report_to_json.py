@@ -556,6 +556,7 @@ class clinical_report_json_composer(composer_base):
         else:
             raise RuntimeError("Unknown therapy level: '{0}'".format(level))
         rows = []
+        alteration_substitution = ""
         with open(os.path.join(self.input_dir, self.MUTATIONS_EXTENDED_ONCOGENIC)) as data_file:
             for row in csv.DictReader(data_file, delimiter="\t"):
                 gene = row[self.HUGO_SYMBOL_TITLE_CASE]
@@ -563,10 +564,11 @@ class clinical_report_json_composer(composer_base):
                 if gene == 'BRAF' and alteration == 'p.V640E':
                     alteration = 'p.V600E'
                 if 'splice' in row[self.VARIANT_CLASSIFICATION].lower():
-                    alteration = 'p.? (' + row[self.HGVSC] + ')'  
+                    alteration = 'p.? (' + row[self.HGVSC] + ')' 
+                    alteration_substitution = "Truncating%20Mutations"
                 [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
                 if max_level:
-                    rows.append(self.treatment_row(gene, alteration, max_level, therapies))
+                    rows.append(self.treatment_row(gene, alteration, max_level, therapies, alteration_substitution))
         with open(os.path.join(self.input_dir, self.CNA_ANNOTATED)) as data_file:
             for row in csv.DictReader(data_file, delimiter="\t"):
                 gene = row[self.HUGO_SYMBOL_UPPER_CASE]
@@ -989,7 +991,7 @@ class clinical_report_json_composer(composer_base):
         rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row[rc.ONCOKB]))
         return rows
 
-    def treatment_row(self, genes_arg, alteration, max_level, therapies):
+    def treatment_row(self, genes_arg, alteration, max_level, therapies, alteration_substitution = ""):
         # genes argument may be a string, or an iterable of strings
         core_biomarker_url = "https://www.oncokb.org/gene/Other%20Biomarkers"
         if isinstance(genes_arg, str):
@@ -1006,6 +1008,8 @@ class clinical_report_json_composer(composer_base):
                 alt_url = '/'.join([core_biomarker_url,"TMB-H/"])
             if alteration == "MSI-H":
                 alt_url = '/'.join([core_biomarker_url,"Microsatellite%20Instability-High/"])
+        elif alteration_substitution != "":
+            alt_url = self.build_alteration_url(genes_arg, alteration_substitution, self.oncotree_uc)    
         else:
             alt_url = self.build_alteration_url(genes_arg, alteration, self.oncotree_uc)
         row = {
