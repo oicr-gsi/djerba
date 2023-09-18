@@ -445,16 +445,18 @@ class clinical_report_json_composer(composer_base):
                 gene = input_row[self.HUGO_SYMBOL_TITLE_CASE]
                 cytoband = self.get_cytoband(gene)
                 protein = input_row[self.HGVSP_SHORT]
+                protein_url = self.build_alteration_url(gene, protein, self.oncotree_uc)
                 if gene == 'BRAF' and protein == 'p.V640E':
                     protein = 'p.V600E'
                 if 'splice' in input_row[self.VARIANT_CLASSIFICATION].lower():
                     protein = 'p.? (' + input_row[self.HGVSC] + ')'  
+                    protein_url = self.build_alteration_url(gene, "Truncating%20Mutations", self.oncotree_uc)
                 row = {
                     rc.GENE: gene,
                     rc.GENE_URL: self.build_gene_url(gene),
                     rc.CHROMOSOME: cytoband,
                     rc.PROTEIN: protein,
-                    rc.PROTEIN_URL: self.build_alteration_url(gene, protein, self.oncotree_uc),
+                    rc.PROTEIN_URL: protein_url,
                     rc.MUTATION_TYPE: re.sub('_', ' ', input_row[self.VARIANT_CLASSIFICATION]),
                     rc.EXPRESSION_METRIC: mutation_expression.get(gene), # None for WGS assay
                     rc.VAF_PERCENT: int(round(float(input_row[self.TUMOUR_VAF]), 2)*100),
