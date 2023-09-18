@@ -89,10 +89,15 @@ class main(plugin_base):
         purity = ichor_json["tumor_fraction"]
         self.write_purity(purity, work_dir)
 
+        # If purity is <10%, only report as <10% (not exact number)
+        rounded_purity = float('%.1E' % Decimal(purity*100))
+        if rounded_purity < 10:
+            rounded_purity = "<10%"
+
         results =  {
                 "oncotree_code": config[self.identifier]['oncotree_code'],
                 "known_variants" : config[self.identifier][constants.KNOWN_VARIANTS],
-                "cancer_content" : float('%.1E' % Decimal(purity*100)),
+                "cancer_content" : rounded_purity,
                 "raw_coverage" : int(config[self.identifier][constants.RAW_COVERAGE]),
                 "unique_coverage" : int(config[self.identifier][constants.COLLAPSED_COVERAGE_PL]),
                 "files": {
