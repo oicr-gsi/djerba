@@ -1,4 +1,7 @@
 # CHANGELOG
+## v0.4.17: 2023-09-18
+
+- Replaced splice site annotation with `Truncating Mutations` in OncoKB links for splice site mutations
 
 ## v0.4.16: 2023-09-12
 
