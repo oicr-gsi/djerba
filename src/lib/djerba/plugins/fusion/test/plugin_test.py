@@ -10,7 +10,7 @@ import djerba.core.constants as constants
 from shutil import copy
 from djerba.plugins.plugin_tester import PluginTester
 
-class TestCaseOverview(PluginTester):
+class TestFusion(PluginTester):
 
     INI_NAME = 'fusion.ini'
     JSON_NAME = 'fusion.json'
