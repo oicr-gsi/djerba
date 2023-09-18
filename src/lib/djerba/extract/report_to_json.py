@@ -556,9 +556,9 @@ class clinical_report_json_composer(composer_base):
         else:
             raise RuntimeError("Unknown therapy level: '{0}'".format(level))
         rows = []
-        alteration_substitution = ""
         with open(os.path.join(self.input_dir, self.MUTATIONS_EXTENDED_ONCOGENIC)) as data_file:
             for row in csv.DictReader(data_file, delimiter="\t"):
+                alteration_substitution = ""
                 gene = row[self.HUGO_SYMBOL_TITLE_CASE]
                 alteration = row[self.HGVSP_SHORT]
                 if gene == 'BRAF' and alteration == 'p.V640E':
