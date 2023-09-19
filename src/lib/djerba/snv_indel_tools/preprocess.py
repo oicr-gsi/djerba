@@ -18,7 +18,7 @@ import djerba.snv_indel_tools.constants as constants
 from djerba.plugins.base import plugin_base
 import pandas as pd
 
-class preprocess():
+class preprocess(logger):
  
   
   cache_params = None
@@ -81,28 +81,27 @@ class preprocess():
   MAX_UNMATCHED_GNOMAD_AF = 0.001
 
 
-  def __init__(self, config, work_dir, assay, study, oncotree_code, tumour_id, normal_id, maf_file):
+  def __init__(self, config, work_dir, assay, study, oncotree_code, tumour_id, normal_id, maf_file, log_level=logging.DEBUG, log_path=None):
       
       # CONFIG
       self.config = config
       
+      # LOGGING
+      self.logger = self.get_logger(log_level, __name__, log_path)
+
       # DIRECTORIES
       self.report_dir = work_dir
       self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/Rscripts/"
       self.tmp_dir = os.path.join(self.report_dir, 'tmp')
 
       if os.path.isdir(self.tmp_dir):
-          # TO-DO: use self.logger.debug
-          pass
-          #print("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
-          #self.logger.debug("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
+          self.logger.debug("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
       elif os.path.exists(self.tmp_dir):
           msg = "tmp dir path {0} exists but is not a directory".format(self.tmp_dir)
-          #self.logger.error(msg)
+          self.logger.error(msg)
           raise RuntimeError(msg)
       else:
-          #print("Creating tmp dir {0} for R script wrapper".format(tmp_dir))
-          #self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
+          self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
           os.mkdir(self.tmp_dir)
      
       # GEMERA: PARAMETERS
