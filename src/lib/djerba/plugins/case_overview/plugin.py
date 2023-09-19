@@ -56,6 +56,7 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         report_id = wrapper.get_core_string(core_constants.REPORT_ID)
         wrapper.set_my_param(core_constants.REPORT_ID, report_id)
+        work_dir = self.workspace.get_work_dir()
 
         # Get input_data.json if it exists; else return None
         input_data = input_params_tools.get_input_params_json(self)
