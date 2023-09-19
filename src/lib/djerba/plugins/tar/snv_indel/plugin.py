@@ -52,10 +52,9 @@ class main(plugin_base):
     def configure(self, config):
       config = self.apply_defaults(config)
       wrapper = self.get_config_wrapper(config)
-      workspace = self.workspace
 
       # Get input_data.json if it exists; else return None
-      input_data = input_params_tools.get_input_params_json(workspace)
+      input_data = input_params_tools.get_input_params_json(self)
 
 
       # FIRST PASS: get input parameters
@@ -126,21 +125,6 @@ class main(plugin_base):
     def render(self, data):
       renderer = mako_renderer(self.get_module_dir())
       return renderer.render_name(self.TEMPLATE_NAME, data)
-      #args = data
-      #html_dir = os.path.realpath(os.path.join(
-      #    os.path.dirname(__file__),
-      #    'html'
-      #))
-      #report_lookup = TemplateLookup(directories=[html_dir, ], strict_undefined=True)
-      #mako_template = report_lookup.get_template(self.TEMPLATE_NAME)
-      #try:
-      #    html = mako_template.render(**args)
-      #except Exception as err:
-      #    msg = "Unexpected error of type {0} in Mako template rendering: {1}".format(type(err).__name__, err)
-      #    self.logger.error(msg)
-      #    raise
-      #return html
-
 
     def get_maf_file(self, donor, results_suffix):
       """

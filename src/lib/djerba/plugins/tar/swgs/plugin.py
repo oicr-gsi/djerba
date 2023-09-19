@@ -49,10 +49,9 @@ class main(plugin_base):
     def configure(self, config):
       config = self.apply_defaults(config)
       wrapper = self.get_config_wrapper(config)
-      workspace = self.workspace
       
       # Get input_data.json if it exists; else return None
-      input_data = input_params_tools.get_input_params_json(workspace)
+      input_data = input_params_tools.get_input_params_json(self)
 
       if wrapper.my_param_is_null('donor'):
           wrapper.set_my_param('donor', input_data['donor'])

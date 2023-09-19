@@ -27,8 +27,12 @@ class main(helper_base):
     STUDY = 'study'
     PROJECT = 'project'
     ONCOTREE_CODE = 'oncotree_code'
+    PATIENT_STUDY_ID = 'patient_study_id'
+    TUMOUR_ID = 'tumour_id'
+    NORMAL_ID = 'normal_id'
     PRIMARY_CANCER = 'primary_cancer'
     SITE_OF_BIOPSY = 'site_of_biopsy'
+    KNOWN_VARIANTS = 'known_variants'
     REQUISITION_APPROVED = 'requisition_approved'
     ASSAY = 'assay'
 
@@ -48,8 +52,12 @@ class main(helper_base):
         self.add_ini_required(self.PROJECT)
         self.add_ini_required(self.STUDY)
         self.add_ini_required(self.ONCOTREE_CODE)
+        self.add_ini_required(self.PATIENT_STUDY_ID)
+        self.add_ini_required(self.TUMOUR_ID)
+        self.add_ini_required(self.NORMAL_ID)
         self.add_ini_required(self.PRIMARY_CANCER)
         self.add_ini_required(self.SITE_OF_BIOPSY)
+        self.add_ini_required(self.KNOWN_VARIANTS)
         self.add_ini_required(self.REQUISITION_APPROVED)
         self.add_ini_required(self.ASSAY)
 
@@ -84,8 +92,12 @@ class main(helper_base):
             self.STUDY: config[self.identifier][self.STUDY],
             self.PROJECT: config[self.identifier][self.PROJECT],
             self.ONCOTREE_CODE: config[self.identifier][self.ONCOTREE_CODE],
+            self.PATIENT_STUDY_ID: config[self.identifier][self.PATIENT_STUDY_ID],
+            self.TUMOUR_ID: config[self.identifier][self.TUMOUR_ID],
+            self.NORMAL_ID: config[self.identifier][self.NORMAL_ID],
             self.PRIMARY_CANCER: config[self.identifier][self.PRIMARY_CANCER],
             self.SITE_OF_BIOPSY: config[self.identifier][self.SITE_OF_BIOPSY],
+            self.KNOWN_VARIANTS: config[self.identifier][self.KNOWN_VARIANTS],
             self.REQUISITION_APPROVED: config[self.identifier][self.REQUISITION_APPROVED],
             self.ASSAY: config[self.identifier][self.ASSAY],
         }

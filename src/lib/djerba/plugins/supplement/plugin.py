@@ -25,10 +25,9 @@ class main(plugin_base):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         wrapper.set_my_priorities(self.DEFAULT_CONFIG_PRIORITY)
-        workspace = self.workspace
 
         # Get input_data.json if it exists; else return None
-        input_data = input_params_tools.get_input_params_json(workspace)
+        input_data = input_params_tools.get_input_params_json(self)
         
         if wrapper.my_param_is_null(self.ASSAY):
             wrapper.set_my_param(self.ASSAY, input_data[self.ASSAY])

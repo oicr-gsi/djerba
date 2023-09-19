@@ -44,10 +44,9 @@ class main(helper_base):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         provenance_path = wrapper.get_my_string(self.PROVENANCE_INPUT_KEY)
-        workspace = self.workspace
 
         # Get input_data.json if it exists; else return None
-        input_data = input_params_tools.get_input_params_json(workspace)
+        input_data = input_params_tools.get_input_params_json(self)
         
         # Get the input parameters
         if wrapper.my_param_is_null(self.STUDY_TITLE):
@@ -148,9 +147,9 @@ class main(helper_base):
         self.set_ini_default(self.PROVENANCE_INPUT_KEY, self.DEFAULT_PROVENANCE_INPUT)
         self.add_ini_discovered(self.STUDY_TITLE)
         self.add_ini_discovered(self.ROOT_SAMPLE_NAME)
-        self.set_ini_default(ini.SAMPLE_NAME_WG_N, "None")
-        self.set_ini_default(ini.SAMPLE_NAME_WG_T, "None")
-        self.set_ini_default(ini.SAMPLE_NAME_WT_T, "None")
+        self.add_ini_discovered(ini.SAMPLE_NAME_WG_N)
+        self.add_ini_discovered(ini.SAMPLE_NAME_WG_T)
+        self.add_ini_discovered(ini.SAMPLE_NAME_WT_T)
 
     def write_provenance_subset(self, study, donor, provenance_path):
         self.logger.info('Started reading file provenance from {0}'.format(provenance_path))
