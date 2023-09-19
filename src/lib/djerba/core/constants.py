@@ -92,3 +92,8 @@ PAGE_FOOTER = 'page_footer'
 
 # keywords for plugin structure
 RESULTS = 'results'
+MERGE_INPUTS = 'merge_inputs'
+SUMMARY = 'Summary'
+
+# keyword for OncoKB level
+ONCOKB = 'OncoKB'

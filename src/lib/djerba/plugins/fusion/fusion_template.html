@@ -1,0 +1,24 @@
+<%
+  import djerba.core.constants as core_constants
+  from djerba.plugins.fusion.plugin import main as fusion
+  from djerba.plugins.fusion.html import make_table_rows
+%>
+
+
+<hr class="big-white-line" ><div class="twocellmain"><div class="oneoftwocellmain"><h2>Fusions and Structural Variants</h2></div><div class="twooftwocellmain" ><hr class="big-line" >
+
+    <p><strong>${results.get(fusion.TOTAL_VARIANTS)}</strong> cancer gene(s) were subject to rearrangement,
+      of which <strong>${results.get(fusion.CLINICALLY_RELEVANT_VARIANTS)}</strong> corresponded to oncogenic fusions, as defined by OncoKB.</p>
+
+    % if results.get(fusion.CLINICALLY_RELEVANT_VARIANTS) > 0:
+    <table class="variants" width="100%">
+      <thead style="background-color:white"><tr><th style="text-align:left;">Gene</th><th style="text-align:left;">Chromosome</th><th style="text-align:left;">Fusion</th><th style="text-align:left;">Frame</th><th style="text-align:left;">Mutation effect</th><th style="text-align:left;">OncoKB</th></tr></thead>
+      <tbody>
+	% for row in make_table_rows(results.get(fusion.BODY)):
+	${row}
+        % endfor
+      </tbody>
+    </table>
+    % endif
+
+</div></div>
