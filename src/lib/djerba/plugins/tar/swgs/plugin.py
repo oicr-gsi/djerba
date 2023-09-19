@@ -14,7 +14,7 @@ import djerba.plugins.tar.provenance_tools as provenance_tools
 import gsiqcetl.column
 from gsiqcetl import QCETLCache
 from djerba.util.render_mako import mako_renderer
-
+import djerba.util.input_params_tools as input_params_tools
 
 class main(plugin_base):
     
@@ -23,7 +23,6 @@ class main(plugin_base):
     RESULTS_SUFFIX = '.seg.txt'
     WORKFLOW = 'ichorcna'
     CNA_ANNOTATED = "data_CNA_oncoKBgenes_nonDiploid_annotated.txt"
-    INPUT_PARAMS_FILE = "input_params.json"
 
     def specify_params(self):
 
@@ -50,18 +49,10 @@ class main(plugin_base):
     def configure(self, config):
       config = self.apply_defaults(config)
       wrapper = self.get_config_wrapper(config)
+      workspace = self.workspace
       
-      # Get the working directory
-      work_dir = self.workspace.get_work_dir()
-      
-      # If input_params.json exists, read it
-      work_dir = self.workspace.get_work_dir()
-      input_data_path = os.path.join(work_dir, self.INPUT_PARAMS_FILE)
-      if os.path.exists(input_data_path):
-          input_data = self.workspace.read_json(self.INPUT_PARAMS_FILE)
-      else:
-          msg = "Could not find input_params.json"
-          #print(msg) <-- TO DO: have logger raise warning
+      # Get input_data.json if it exists; else return None
+      input_data = input_params_tools.get_input_params_json(workspace)
 
       if wrapper.my_param_is_null('donor'):
           wrapper.set_my_param('donor', input_data['donor'])

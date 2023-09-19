@@ -18,12 +18,12 @@ import djerba.core.constants as core_constants
 import djerba.util.ini_fields as ini  # TODO new module for these constants?
 import djerba.util.provenance_index as index
 from djerba.helpers.base import helper_base
+import djerba.util.input_params_tools as input_params_tools
 from djerba.util.provenance_reader import provenance_reader, sample_name_container, \
     InvalidConfigurationError
 
 class main(helper_base):
 
-    INPUT_PARAMS_FILE = 'input_params.json'
     DEFAULT_PROVENANCE_INPUT = '/scratch2/groups/gsi/production/vidarr/'+\
         'vidarr_files_report_latest.tsv.gz'
     PROVENANCE_INPUT_KEY = 'provenance_input_path'
@@ -44,16 +44,11 @@ class main(helper_base):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         provenance_path = wrapper.get_my_string(self.PROVENANCE_INPUT_KEY)
-        
-        # If input_params.json exists, read it
-        work_dir = self.workspace.get_work_dir()
-        input_data_path = os.path.join(work_dir, self.INPUT_PARAMS_FILE)
-        if os.path.exists(input_data_path):
-            input_data = self.workspace.read_json(self.INPUT_PARAMS_FILE)
-        else:
-            msg = "Could not find input_params.json"
-            #print(msg) <-- TO DO: have logger raise warning
+        workspace = self.workspace
 
+        # Get input_data.json if it exists; else return None
+        input_data = input_params_tools.get_input_params_json(workspace)
+        
         # Get the input parameters
         if wrapper.my_param_is_null(self.STUDY_TITLE):
             wrapper.set_my_param(self.STUDY_TITLE, input_data[self.STUDY_TITLE])

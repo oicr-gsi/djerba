@@ -14,13 +14,13 @@ from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.util.render_mako import mako_renderer
 import djerba.core.constants as core_constants
 import os
+import djerba.util.input_params_tools as input_params_tools
 
 class main(plugin_base):
 
     PRIORITY = 200
     PLUGIN_VERSION = '1.0.0'
     MAKO_TEMPLATE_NAME = 'case_overview_template.html'
-    INPUT_PARAMS_FILE = 'input_params.json'
     
     # config/results keys
     # REPORT_ID, DONOR and STUDY from core
@@ -56,17 +56,10 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         report_id = wrapper.get_core_string(core_constants.REPORT_ID)
         wrapper.set_my_param(core_constants.REPORT_ID, report_id)
-        
-        # Get the working directory
-        work_dir = self.workspace.get_work_dir()
+        workspace = self.workspace
 
-        # If input_params.json exists, read it
-        input_data_path = os.path.join(work_dir, self.INPUT_PARAMS_FILE)
-        if os.path.exists(input_data_path):
-            input_data = self.workspace.read_json(self.INPUT_PARAMS_FILE)
-        else:
-            msg = "Could not find input_params.json"
-            #print(msg) <-- TO DO: have logger raise warning
+        # Get input_data.json if it exists; else return None
+        input_data = input_params_tools.get_input_params_json(workspace)
 
         # Get parameters from input_params.json if not manually specified
         if wrapper.my_param_is_null('primary_cancer'):
