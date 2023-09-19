@@ -1,16 +1,20 @@
 """Djerba merger for gene information"""
 
-import logging
-import os
 import re
 import djerba.core.constants as core_constants
-import djerba.render.constants as constants # TODO how do we handle constants in plugins?
 from djerba.mergers.base import merger_base
+from djerba.util.render_mako import mako_renderer
+
 
 class main(merger_base):
 
+    GENE = 'Gene'
+    GENE_URL = 'Gene_URL'
+    SUMMARY = 'Summary'
+
     PRIORITY = 500
-    SORT_KEY = 'Gene_URL'
+    MAKO_TEMPLATE_NAME = 'gene_information_template.html'
+    SORT_KEY = GENE_URL
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -18,8 +22,8 @@ class main(merger_base):
 
     def table_header(self):
         names = [
-            constants.GENE,
-            constants.SUMMARY
+            self.GENE,
+            self.SUMMARY
         ]
         return self.thead(names)
 
@@ -30,12 +34,12 @@ class main(merger_base):
             # name must be:
             # - preceded by a space or start-of-string
             # - followed by a space or listed punctuation
-            summary = re.sub('(^| ){0}[,.;: ]'.format(row[constants.GENE]),
+            summary = re.sub('(^| ){0}[,.;: ]'.format(row[self.GENE]),
                              lambda m: '<i>{0}</i>'.format(m[0]),
-                             row[constants.SUMMARY])
+                             row[self.SUMMARY])
             cells = [
                 self.td(
-                    self.href(row[constants.GENE_URL], row[constants.GENE]), italic=True
+                    self.href(row[self.GENE_URL], row[self.GENE]), italic=True
                 ),
                 self.td(summary)
             ]
@@ -45,11 +49,11 @@ class main(merger_base):
     def render(self, inputs):
         self.validate_inputs(inputs)
         data = self.merge_and_sort(inputs, self.SORT_KEY)
-        # TODO use CSS/Mako for appropriate template style
-        html = [self.TABLE_START, self.table_header()]
-        html.extend(self.table_rows(data))
-        html.append(self.TABLE_END)
-        return "\n".join(html)
+        mako_input = {
+            'rows': self.table_rows(data)
+        }
+        renderer = mako_renderer(self.get_module_dir())
+        return renderer.render_name(self.MAKO_TEMPLATE_NAME, mako_input)
 
     def specify_params(self):
         self.logger.debug("Specifying params for gene_information_merger")

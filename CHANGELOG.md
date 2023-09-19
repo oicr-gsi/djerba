@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## GCGI-1076: Gene information merger update
+- Add a Mako template to render correctly formatted HTML
+
 ## GCGI-819: Fusions plugin
 - Plugin to generate 'Structural Variants and Fusions' section of report
 
