@@ -156,8 +156,8 @@ class main(plugin_base):
                    sep = "\t")
        
       for row in df_pl.iterrows():
-          hugo_symbol = row[1][0]
-          hgvsp_short = row[1][34]
+          hugo_symbol = row[1]['Hugo_Symbol']
+          hgvsp_short = row[1]['HGVSp_Short']
      
           """"For normal values"""
           try:
@@ -176,10 +176,10 @@ class main(plugin_base):
             
           """"For frequency values"""    
           
-          row_lookup = df_freq[(df_freq['Start_Position'] == row[1][5]) &
-                            (df_freq['Reference_Allele'] == row[1][10]) &
-                            ((df_freq['Tumor_Seq_Allele'] == row[1][11]) |
-                            (df_freq['Tumor_Seq_Allele'] == row[1][12]))]
+          row_lookup = df_freq[(df_freq['Start_Position'] == row[1]['Start_Position']) &
+                            (df_freq['Reference_Allele'] == row[1]['Reference_Allele']) &
+                            ((df_freq['Tumor_Seq_Allele'] == row[1]['Tumor_Seq_Allele1']) |
+                            (df_freq['Tumor_Seq_Allele'] == row[1]['Tumor_Seq_Allele2']))]
 
           if len(row_lookup) > 0:
               df_pl.at[row[0], 'Freq'] = row_lookup['Freq'].item()
@@ -187,11 +187,11 @@ class main(plugin_base):
               df_pl.at[row[0], 'Freq'] = 0
     
       for row in df_pl.iterrows():
-          hugo_symbol = row[1][0]
-          frequency = row[1][118]
-          n_alt_count = row[1][44]
-          gnomadAD_AF = row[1][104]
-          if hugo_symbol not in tar_constants.GENES_TO_KEEP or frequency > 0.1 or n_alt_count > 4 or gnomadAD_AF > 0.001:
+          hugo_symbol = row[1]['Hugo_Symbol']
+          frequency = row[1]['Freq']
+          n_alt_count = row[1]['n_alt_count']
+          gnomAD_AF = row[1]['gnomAD_AF']
+          if hugo_symbol not in tar_constants.GENES_TO_KEEP or frequency > 0.1 or n_alt_count > 4 or gnomAD_AF > 0.001:
               df_pl = df_pl.drop(row[0])  
 
       out_path = os.path.join(work_dir, 'filtered_maf_for_tar.maf.gz')
