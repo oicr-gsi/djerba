@@ -18,7 +18,7 @@ import djerba.snv_indel_tools.constants as constants
 from djerba.plugins.base import plugin_base
 import pandas as pd
 
-class preprocess():
+class preprocess(logger):
  
   
   cache_params = None
@@ -81,41 +81,45 @@ class preprocess():
   MAX_UNMATCHED_GNOMAD_AF = 0.001
 
 
-  def __init__(self, config, work_dir, maf_file, tar):
+  def __init__(self, config, work_dir, assay, study, oncotree_code, tumour_id, normal_id, maf_file, log_level=logging.DEBUG, log_path=None):
+      
+      # CONFIG
       self.config = config
+      
+      # LOGGING
+      self.logger = self.get_logger(log_level, __name__, log_path)
+
+      # DIRECTORIES
       self.report_dir = work_dir
+      self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/Rscripts/"
       self.tmp_dir = os.path.join(self.report_dir, 'tmp')
+
       if os.path.isdir(self.tmp_dir):
-          print("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
-          #self.logger.debug("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
+          self.logger.debug("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
       elif os.path.exists(self.tmp_dir):
           msg = "tmp dir path {0} exists but is not a directory".format(self.tmp_dir)
-          #self.logger.error(msg)
+          self.logger.error(msg)
           raise RuntimeError(msg)
       else:
-          #print("Creating tmp dir {0} for R script wrapper".format(tmp_dir))
-          #self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
+          self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
           os.mkdir(self.tmp_dir)
-      self.report_dir = work_dir
-      #self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts/"
-      self.tar = tar
+     
+      # GEMERA: PARAMETERS
+      self.assay = assay
+      self.oncotree_code = oncotree_code
+      self.tumour_id = tumour_id
+      self.normal_id = normal_id
+      self.study = study
       self.maf_file = maf_file
-      # THINGS FROM CONFIG 
-      if self.tar == True:
-          self.oncotree_code = self.config['tar.snv_indel']['oncotree_code']
-          self.tumour_id = self.config['tar.snv_indel']['tumour_id']
-          self.normal_id = self.config['tar.snv_indel']['normal_id']
+      
+      # ASSAY SPECIFIC PARAMETERS
+      if self.assay == "TAR":
           self.maf_file_normal = self.config['tar.snv_indel']['maf_file_normal']
-          self.study_title = self.config['tar.snv_indel']['study_title']
       else:
           self.sequenza_path = self.config['snv_indel']['sequenza_file']
           self.sequenza_gamma = int(self.config['snv_indel']['sequenza_gamma'])
           self.sequenza_solution = self.config['snv_indel']['sequenza_solution']
           self.gep_file = self.config['snv_indel']['gep_file']
-          self.oncotree_code = self.config['snv_indel']['oncotree_code']
-          self.tumour_id = self.config['snv_indel']['tumour_id']
-          self.normal_id = self.config['snv_indel']['normal_id']
-          self.study_title = self.config['snv_indel']['study_title']
 
       self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/Rscripts/"
       
@@ -126,7 +130,7 @@ class preprocess():
   
     
     # FIX THIS BECAUSE THE ARATIO FILE IS DIFFERENT FOR TAR AND NONTAR
-    if self.tar == True:
+    if self.assay == "TAR":
         maf_path = self.preprocess_maf(self.maf_file)
 
         cmd = [
@@ -136,7 +140,7 @@ class preprocess():
          '--whizbam_url', 'https://whizbam.oicr.on.ca',
          '--tumourid', self.tumour_id,
          '--normalid', self.normal_id,
-         '--cbiostudy', self.study_title,
+         '--cbiostudy', self.study,
          '--maffile', maf_path,
          '--tar', 'TRUE'
         ]
@@ -161,11 +165,11 @@ class preprocess():
             '--enscon', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/ensemble_conversion_hg38.txt", 
             '--genelist', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/targeted_genelist.txt",
             '--tcgadata', "/.mounts/labs/CGI/gsi/tools/RODiC/data",
-            '--studyid', self.study_id,
+            '--studyid', self.study,
             '--whizbam_url', 'https://whizbam.oicr.on.ca',
             '--tumourid', self.tumour_id,
             '--normalid', self.normal_id,
-            '--cbiostudy', self.study_id, # NEEDS TO BE CBIOSTUDY ID
+            '--cbiostudy', self.study, # NEEDS TO BE CBIOSTUDY ID
             '--maffile', maf_path,
             '--aratiofile', aratio_path,
             '--tar', 'FALSE'
@@ -281,7 +285,7 @@ class preprocess():
                     in_header = False
             else:
                 total += 1
-                if self.tar:
+                if self.assay == "TAR":
                     if self._maf_body_row_ok(row, indices, self.MIN_VAF_TAR):
                         # filter rows in the MAF body and update the tumour_id
                         row[indices.get(self.TUMOUR_SAMPLE_BARCODE)] = self.tumour_id

@@ -1,7 +1,7 @@
 # AUTHOR: Felix Beaudry 
 
 # sample variable
-ONCOTREE = 'oncotree'
+ONCOTREE = 'oncotree_code'
 KNOWN_VARIANTS = 'known_variants'
 CANCER_CONTENT = 'cancer_content'
 RAW_COVERAGE = 'raw_coverage'

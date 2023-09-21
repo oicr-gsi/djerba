@@ -17,36 +17,31 @@ from djerba.extract.oncokb.annotator import oncokb_annotator
 from shutil import copyfile
 import djerba.plugins.tar.swgs.constants as constants 
 
-class preprocess:
+class preprocess(logger):
 
-  def __init__(self, config, work_dir):
+  def __init__(self, tumour_id, oncotree_code, work_dir, log_level=logging.DEBUG, log_path=None):
 
-    self.config = config
     # DIRECTORIES
+    self.logger = self.get_logger(log_level, __name__, log_path)
     self.work_dir = work_dir
     self.tmp_dir = os.path.join(self.work_dir, 'tmp')
     if os.path.isdir(self.tmp_dir):
-        print("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
-        #self.logger.debug("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
+        self.logger.debug("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
     elif os.path.exists(self.tmp_dir):
         msg = "tmp dir path {0} exists but is not a directory".format(self.tmp_dir)
-        #self.logger.error(msg)
+        self.logger.error(msg)
         raise RuntimeError(msg)
     else:
-        #print("Creating tmp dir {0} for R script wrapper".format(tmp_dir))
-        #self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
+        self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
         os.mkdir(self.tmp_dir)
     self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts"
     self.r_script_dir_swgs = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/swgs/" 
     self.data_dir = os.environ.get('DJERBA_BASE_DIR') + "/data/"
-    self.tumour_id = self.config['tar.swgs']['tumour_id']
-    self.oncotree_code = self.config['tar.swgs']['oncotree_code']
+    self.tumour_id = tumour_id
+    self.oncotree_code = oncotree_code
 
     # RANDOM
     self.cache_params = None
-    self.log_level = "logging.WARNING"
-    self.log_path = "None"
-  
 
   # ----------------------- to do all the pre-processing --------------------
     

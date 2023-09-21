@@ -24,18 +24,17 @@ def subset_provenance(self, workflow, root_sample_name):
         raise RuntimeError(msg) from err
     return(provenance)
 
-def subset_provenance_sample(self, workflow, group_id, suffix):
+def subset_provenance_sample(self, workflow, input_group_id, suffix):
     '''Return file path from provenance based on workflow ID, group-id and file suffix'''
     provenance_location = constants.PROVENANCE_OUTPUT
     provenance = []
-    joined_group_id = "=".join(("geo_group_id",group_id))
     try:
         with self.workspace.open_gzip_file(provenance_location) as in_file:
             reader = csv.reader(in_file, delimiter="\t")
             for row in reader:
                 if row[index.WORKFLOW_NAME] == workflow:
-                    experiment_name_row = row[index.SAMPLE_ATTRIBUTES].split(";")
-                    if experiment_name_row[1] == joined_group_id:
+                    geo_group_id = dict(tuple(i.split('=')) for i in row[index.SAMPLE_ATTRIBUTES].split(";"))["geo_group_id"]
+                    if geo_group_id == input_group_id:
                         provenance.append(row)
     except OSError as err:
         msg = "Provenance subset file '{0}' not found when looking for {1}".format(constants.PROVENANCE_OUTPUT, workflow)

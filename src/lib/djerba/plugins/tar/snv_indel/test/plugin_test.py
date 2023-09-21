@@ -20,16 +20,15 @@ class TestTarSNVIndelPlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        
-        self.data_CNA = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/snv-indel-plugin/data_CNA.txt'
-        self.provenance_output = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/snv-indel-plugin/provenance_subset.tsv.gz'
-        self.purity_pass_json = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/snv-indel-plugin/purity_pass/tar_snv_indel_purity_pass.json'
-        self.purity_fail_json = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/snv-indel-plugin/purity_fail/tar_snv_indel_purity_fail.json'
-        self.purity_pass = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/snv-indel-plugin/purity_pass/purity.txt'
-        self.purity_fail = '/.mounts/labs/CGI/scratch/aalam/plugin_tests/snv-indel-plugin/purity_fail/purity.txt'
-
         sup_dir_var = 'DJERBA_TEST_DATA'
         self.sup_dir = os.environ.get(sup_dir_var)
+        
+        self.data_CNA = os.path.join(self.sup_dir, "snv-indel-plugin/data_CNA.txt")
+        self.provenance_output = os.path.join(self.sup_dir, "snv-indel-plugin/provenance_subset.tsv.gz")
+        self.purity_pass = os.path.join(self.sup_dir, "snv-indel-plugin/purity_pass/purity.txt")
+        self.purity_fail = os.path.join(self.sup_dir, "snv-indel-plugin/purity_fail/purity.txt")
+        self.purity_pass_json = os.path.join(self.sup_dir, "snv-indel-plugin/purity_pass/tar_snv_indel_purity_pass.json")
+        self.purity_fail_json = os.path.join(self.sup_dir, "snv-indel-plugin/purity_fail/tar_snv_indel_purity_fail.json")
 
     def testTarSNVIndelPurityFail(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -38,7 +37,7 @@ class TestTarSNVIndelPlugin(PluginTester):
         shutil.copy(self.data_CNA, self.tmp_dir)
         shutil.copy(self.provenance_output, self.tmp_dir)
         shutil.copy(self.purity_fail, self.tmp_dir)
-        #json_location = self.purity_fail_json
+        shutil.copy(self.purity_fail, self.tmp_dir)
         json_location = os.path.join(self.sup_dir ,"snv-indel-plugin/purity_fail/tar_snv_indel_purity_fail.json")
 
         params = {
@@ -56,7 +55,6 @@ class TestTarSNVIndelPlugin(PluginTester):
         shutil.copy(self.provenance_output, self.tmp_dir)
         shutil.copy(self.purity_pass, self.tmp_dir)
         json_location = os.path.join(self.sup_dir ,"snv-indel-plugin/purity_pass/tar_snv_indel_purity_pass.json")
-        #json_location = self.purity_pass_json
         
         params = {
             self.INI: 'data/tar_snv_indel.ini',
