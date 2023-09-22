@@ -145,7 +145,7 @@ class main(plugin_base):
                       on_bad_lines="error",
                       compression='gzip',
                       skiprows=[0],
-                      index_col = 34)
+                      index_col = "HGVSp_Short")
 
       df_pl = pd.read_csv(maf_path,
                       sep = "\t",
@@ -158,21 +158,25 @@ class main(plugin_base):
       for row in df_pl.iterrows():
           hugo_symbol = row[1]['Hugo_Symbol']
           hgvsp_short = row[1]['HGVSp_Short']
+          hgvsc = row[1]['HGVSc']
+          variant_classification = row[1]["Variant_Classification"]
      
           """"For normal values"""
-          try:
-              if hgvsp_short in df_bc.index:
-                  df_pl.at[row[0], "n_depth"] = df_bc.loc[hgvsp_short]["n_depth"]
-                  df_pl.at[row[0], "n_ref_count"] = df_bc.loc[hgvsp_short]["n_ref_count"]
-                  df_pl.at[row[0], "n_alt_count"] = df_bc.loc[hgvsp_short]["n_alt_count"]
-              else:
-                  df_pl.at[row[0], "n_depth"] = 0
-                  df_pl.at[row[0], "n_ref_count"] = 0
-                  df_pl.at[row[0], "n_alt_count"] = 0
-          except:
+          if hgvsp_short in df_bc.index and not pd.isna(hgvsp_short):
+              df_pl.at[row[0], "n_depth"] = df_bc.loc[hgvsp_short]["n_depth"]
+              df_pl.at[row[0], "n_ref_count"] = df_bc.loc[hgvsp_short]["n_ref_count"]
+              df_pl.at[row[0], "n_alt_count"] = df_bc.loc[hgvsp_short]["n_alt_count"]
+          elif hgvsp_short not in df_bc.index and not pd.isna(hgvsp_short):
               df_pl.at[row[0], "n_depth"] = 0
               df_pl.at[row[0], "n_ref_count"] = 0
               df_pl.at[row[0], "n_alt_count"] = 0
+          elif "splice" in variant_classification.lower() and hugo_symbol in df_bc[(df_bc['Hugo_Symbol'] == hugo_symbol) & (df_bc['HGVSc'] == hgvsc)].values:
+              # if it at least exists in the BC table
+              df_pl.at[row[0], "n_depth"] = 0
+              df_pl.at[row[0], "n_ref_count"] = 0
+              df_pl.at[row[0], "n_alt_count"] = 0
+          else:
+              df_pl.at[row[0], "n_alt_count"] = 5 # filter it out downstream
             
           """"For frequency values"""    
           
