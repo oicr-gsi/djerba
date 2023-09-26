@@ -2,7 +2,20 @@
 
 ## Unreleased
 
-## GCGI-1035: Treament options merger
+## GCGI-1076: Gene information merger update
+- Add a Mako template to render correctly formatted HTML
+
+## GCGI-819: Fusions plugin
+- Plugin to generate 'Structural Variants and Fusions' section of report
+
+## GCGI-1075: Provenance helper update
+- Write a `path_info.json` file to the workspace
+- Contains commonly used paths for use by other plugins/helpers
+
+## GCGI-1071: Expression helper
+- Helper class to compute gene expression levels from RSEM results
+
+## GCGI-1035: Treatment options merger
 - Generate the "Treatment Options" section of the report
 - Include both "FDA Approved" and "Investigational Therapies"
 

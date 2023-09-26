@@ -53,6 +53,9 @@ class workspace(logger):
             self.validator.validate_output_file(file_path)
         return open(file_path, mode)
 
+    def print_location(self):
+        return self.dir_path
+
     def read_json(self, rel_path):
         in_path = os.path.join(self.dir_path, rel_path)
         self.validator.validate_input_file(in_path)
