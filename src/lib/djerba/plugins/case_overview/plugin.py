@@ -128,3 +128,4 @@ class main(plugin_base):
     def render(self, data):
         renderer = mako_renderer(self.get_module_dir())
         return renderer.render_name(self.MAKO_TEMPLATE_NAME, data)
+
