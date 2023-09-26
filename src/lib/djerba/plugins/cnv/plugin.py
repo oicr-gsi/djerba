@@ -1,21 +1,12 @@
 """
-a plugin for WGTS SNV Indel
+Plugin for whole-genome CNV reporting
 """
 
-# IMPORTS
 import os
-import csv
-from djerba.plugins.base import plugin_base
-from mako.lookup import TemplateLookup
-from djerba.util.render_mako import mako_renderer
 import djerba.core.constants as core_constants
-from djerba.core.workspace import workspace
-import djerba.plugins.wgts.snv_indel_tools.constants as sic
-from djerba.plugins.wgts.cnv_tools.preprocess import preprocess as process_cnv
-import djerba.render.constants as rc
-import djerba.plugins.wgts.cnv_tools.constants as ctc 
-from djerba.sequenza import sequenza_reader
-from djerba.plugins.wgts.snv_indel_tools.extract import data_builder as data_extractor
+from djerba.plugins.base import plugin_base
+from djerba.sequenza import sequenza_reader # TODO move sequenza.py to util?
+from djerba.util.render_mako import mako_renderer
 
 class main(plugin_base):
    
@@ -23,15 +14,39 @@ class main(plugin_base):
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'cnv_template.html'
     ASSAY = 'WGS'
+
+    # INI param names
+    # these params are also used by other plugins; TODO remove reundancy
+    SEQUENZA_PATH = 'sequenza_path'
+    SEQUENZA_GAMMA = 'sequenza_gamma'
+    SEQUENZA_SOLUTION = 'sequenza_solution'
+    PURITY = 'purity'
+    TUMOUR_ID = 'tumour_id'
+    ONCOTREE_CODE = 'oncotree_code'
+
+    # keys for JSON output
+    ALTERATION = 'Alteration'
+    CHROMOSOME = 'Chromosome'
+    EXPRESSION_PERCENTILE = 'Expression Percentile'
+    GENE = 'Gene'
+    GENE_URL = 'Gene_URL'
+    ONCOKB = core_constants.ONCOKB
+
+    # constants for rendering
+    PERCENT_GENOME_ALTERED = 'percent_genome_altered'
+    TOTAL_VARIANTS = 'total_variants'
+    CLINICALLY_RELEVANT_VARIANTS = 'clinically_relevant_variants'
     
     def configure(self, config):
       config = self.apply_defaults(config)
       wrapper = self.get_config_wrapper(config)
-      if wrapper.my_param_is_null('purity'):
-            purity = sequenza_reader(config[self.identifier]['sequenza_file']).get_purity(gamma=int(config[self.identifier]['sequenza_gamma']), solution=config[self.identifier]['sequenza_solution'])
-            wrapper.set_my_param('purity', purity)
-      #TODO: pull sequenza from provenance
-      return config  
+      # TODO get sequenza path from provenenance helper JSON
+      if wrapper.my_param_is_null(self.PURITY):
+          gamma = config.get_my_int(self.SEQUENZA_GAMMA)
+          solution = config.get_my_string(self.SEQUENZA_SOLUTION)
+          reader = sequenza_reader(config.get_my_string(self.SEQUENZA_PATH))
+          wrapper.set_my_param(self.PURITY, reader.get_purity(gamma, solution))
+      return wrapper.get_config()
 
     def extract(self, config):
       wrapper = self.get_config_wrapper(config)  
@@ -39,12 +54,12 @@ class main(plugin_base):
       data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
       cnv = process_cnv(work_dir)
 
-      tumour_id = config[self.identifier]['tumour_id']
-      sequenza_file = config[self.identifier]['sequenza_file']
-      sequenza_gamma = int(config[self.identifier]['sequenza_gamma'])
-      sequenza_solution = config[self.identifier]['sequenza_solution']
-      purity = config[self.identifier]['purity']
-      oncotree_code = config[self.identifier]['oncotree_code']
+      tumour_id = wrapper.get_my_string(self.TUMOUR_ID)
+      sequenza_path = wrapper.get_my_string(self.SEQUENZA_PATH)
+      sequenza_gamma = wrapper.get_my_int(self.SEQUENZA_GAMMA)
+      sequenza_solution = wrapper.get_my_string(self.SEQUENZA_SOLUTION)
+      purity = wrapper.get_my_float(self.PURITY)
+      oncotree_code = wrapper.get_my_string(self.ONCOTREE_CODE)
 
       seg_path = cnv.preprocess_seg_sequenza(sequenza_file, sequenza_gamma, tumour_id)
       ## outputs files write to working directory
