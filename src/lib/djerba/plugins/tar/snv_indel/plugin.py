@@ -7,10 +7,10 @@ import os
 import pandas as pd
 from djerba.plugins.base import plugin_base
 from mako.lookup import TemplateLookup
-import djerba.snv_indel_tools.constants as constants
+import djerba.plugins.tar.snv_indel.snv_indel_tools.constants as constants
 import djerba.plugins.tar.snv_indel.constants as tar_constants
-from djerba.snv_indel_tools.preprocess import preprocess
-from djerba.snv_indel_tools.extract import data_builder as data_extractor 
+from djerba.plugins.tar.snv_indel.snv_indel_tools.preprocess import preprocess
+from djerba.plugins.tar.snv_indel.snv_indel_tools.extract import data_builder as data_extractor 
 import djerba.core.constants as core_constants
 import djerba.snv_indel_tools.constants as sic
 from djerba.util.subprocess_runner import subprocess_runner
