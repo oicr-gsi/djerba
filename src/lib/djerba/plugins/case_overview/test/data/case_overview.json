@@ -1,0 +1,25 @@
+{
+    "plugin_name": "case_overview plugin",
+    "version": "1.0.0",
+    "priorities": {
+        "configure": 200,
+        "extract": 200,
+        "render": 200
+    },
+    "attributes": [
+        "clinical"
+    ],
+    "merge_inputs": {},
+    "results": {
+        "primary cancer": "Pancreatic Adenocarcinoma",
+        "site of biopsy/surgery": "Liver",
+        "donor": "PANX_1547",
+        "patient_study_id": "100-PM-061",
+        "tumour sample id": "100-PM-061_LCM6",
+        "blood sample id": "100-PM-061_BC",
+        "study": "PASS-01",
+        "report_id": "100-PM-061_LCM6_100-PM-061_BC-v1",
+        "requisition approved": "2023/03/06",
+        "assay": "Whole genome and transcriptome sequencing (WGTS)-80X Tumour, 30X Normal (v3.0)"
+    }
+}
