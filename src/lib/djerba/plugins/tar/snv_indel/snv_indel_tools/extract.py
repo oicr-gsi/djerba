@@ -10,7 +10,7 @@ import logging
 import os
 import re
 import pandas as pd
-import djerba.snv_indel_tools.constants as sic
+import djerba.plugins.tar.snv_indel.snv_indel_tools.constants as sic
 from djerba.util.logger import logger
 from djerba.util.image_to_base64 import converter
 import djerba.extract.oncokb.constants as oncokb
@@ -28,7 +28,7 @@ class data_builder:
 
     def __init__(self,  work_dir, assay, oncotree_uc):
         self.data_dir = os.environ.get('DJERBA_BASE_DIR') + '/data/' 
-        self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/Rscripts"
+        self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/snv_indel/snv_indel_tools/Rscripts"
         self.work_dir = work_dir
         self.assay = assay
         self.cytoband_path = self.data_dir + "cytoBand.txt"

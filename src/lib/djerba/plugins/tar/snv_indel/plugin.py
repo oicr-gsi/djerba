@@ -12,7 +12,7 @@ import djerba.plugins.tar.snv_indel.constants as tar_constants
 from djerba.plugins.tar.snv_indel.snv_indel_tools.preprocess import preprocess
 from djerba.plugins.tar.snv_indel.snv_indel_tools.extract import data_builder as data_extractor 
 import djerba.core.constants as core_constants
-import djerba.snv_indel_tools.constants as sic
+import djerba.plugins.tar.snv_indel.snv_indel_tools.constants as sic
 from djerba.util.subprocess_runner import subprocess_runner
 import djerba.util.provenance_index as index
 import djerba.plugins.tar.provenance_tools as provenance_tools

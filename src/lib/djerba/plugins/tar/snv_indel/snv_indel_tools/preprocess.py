@@ -14,7 +14,7 @@ from djerba.sequenza import sequenza_reader
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.extract.oncokb.annotator import oncokb_annotator
 from shutil import copyfile
-import djerba.snv_indel_tools.constants as constants 
+import djerba.plugins.tar.snv_indel.snv_indel_tools.constants as constants 
 from djerba.plugins.base import plugin_base
 import pandas as pd
 
@@ -91,7 +91,7 @@ class preprocess(logger):
 
       # DIRECTORIES
       self.report_dir = work_dir
-      self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/Rscripts/"
+      self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/snv_indel/snv_indel_tools/Rscripts/"
       self.tmp_dir = os.path.join(self.report_dir, 'tmp')
 
       if os.path.isdir(self.tmp_dir):
@@ -120,9 +120,6 @@ class preprocess(logger):
           self.sequenza_gamma = int(self.config['snv_indel']['sequenza_gamma'])
           self.sequenza_solution = self.config['snv_indel']['sequenza_solution']
           self.gep_file = self.config['snv_indel']['gep_file']
-
-      self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/snv_indel_tools/Rscripts/"
-      
 
   # ----------------------- to do all the pre-processing --------------------
   
