@@ -10,7 +10,6 @@ import tempfile
 import shutil
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
-import djerba.plugins.tar.snv_indel.plugin as snv_indel
 from djerba.core.workspace import workspace
 
 class TestTarSNVIndelPlugin(PluginTester):
