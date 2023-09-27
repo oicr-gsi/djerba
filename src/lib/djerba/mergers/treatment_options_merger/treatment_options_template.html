@@ -28,7 +28,7 @@
         <tbody>
 	  % for row in approved_therapies:
           <tr style="text-align:left;">
-	    <td width="1%">${oncokb.oncokb_level_to_html(row[merger.ONCOKB_LEVEL].split(" ")[1])}</td>
+	    <td width="1%">${oncokb.oncokb_level_to_html(row[merger.ONCOKB_LEVEL])}</td>
 	    <td width="59%">${row[merger.TREATMENTS]}</td>
 	    <td style="font-style: italic;" width="20%">
 	      ${merger.get_link(row[merger.GENE_URL], row[merger.GENE])}

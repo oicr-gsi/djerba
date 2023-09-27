@@ -236,7 +236,7 @@ class data_builder:
         return total
 
     def reformat_level_string(self, level):
-        return re.sub('LEVEL_', 'Level ', level)
+        return re.sub('LEVEL_', "", level)
 
     def sort_variant_rows(self, rows):
         # sort rows oncokb level, then by cytoband, then by gene name

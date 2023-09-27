@@ -183,7 +183,7 @@ class data_builder:
         raise RuntimeError(msg)
         
   def reformat_level_string(self, level):
-    return re.sub('LEVEL_', 'Level ', level)
+    return re.sub('LEVEL_', "", level)
   
   def oncokb_filter(self, row):
     """True if level passes filter, ie. if row should be kept"""
