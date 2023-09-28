@@ -1,8 +1,3 @@
-"""
-The purpose of this file is deal with pre-processing necessary files for the SNV Indel plugin.
-They're in a separate file because the pre-processing is a little more complex.
-"""
-
 # IMPORTS
 import os
 import re
@@ -103,7 +98,6 @@ class preprocess(logger):
       self.maf_file = maf_file
       self.maf_file_normal = self.config['tar.snv_indel']['maf_file_normal']
 
-  # ----------------------- to do all the pre-processing --------------------
   
   def run_R_code(self):
 
@@ -128,7 +122,6 @@ class preprocess(logger):
   def preprocess_maf(self, maf_path):
     """Apply preprocessing and annotation to a MAF file; write results to tmp_dir"""
     tmp_path = os.path.join(self.tmp_dir, 'tmp_maf.tsv')
-    #self.logger.info("Preprocessing MAF input")
     # find the relevant indices on-the-fly from MAF column headers
     # use this instead of csv.DictReader to preserve the rows for output
     with \
@@ -157,7 +150,6 @@ class preprocess(logger):
                     row[indices.get(self.TUMOUR_SAMPLE_BARCODE)] = self.tumour_id
                     writer.writerow(row)
                     kept += 1
-    #self.logger.info("Kept {0} of {1} MAF data rows".format(kept, total))
     # apply annotation to tempfile and return final output
     out_path = oncokb_annotator(
         self.tumour_id,
@@ -199,6 +191,5 @@ class preprocess(logger):
     if set(indices.keys()) != set(self.MAF_KEYS):
         msg = "Indices found in MAF header {0} ".format(indices.keys()) +\
                 "do not match required keys {0}".format(self.MAF_KEYS)
-        #self.logger.error(msg)
         raise RuntimeError(msg)
     return indices

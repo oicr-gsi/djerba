@@ -1,8 +1,3 @@
-"""
-List of functions to convert TAR SNV Indel information into json format.
-"""
-
-# IMPORTS
 import base64
 import csv
 import json
@@ -34,7 +29,6 @@ class data_builder:
             self.purity = float(file.readlines()[0])
 
     def build_alteration_url(self, gene, alteration, cancer_code):
-        #self.logger.debug('Constructing alteration URL from inputs: {0}'.format([self.ONCOKB_URL_BASE, gene, alteration, cancer_code]))
         return '/'.join([sic.ONCOKB_URL_BASE, gene, alteration, cancer_code])
 
     def build_gene_url(self, gene):
@@ -42,7 +36,6 @@ class data_builder:
 
     def build_small_mutations_and_indels(self, mutations_file):
         """read in small mutations; output rows for oncogenic mutations"""
-        #self.logger.debug("Building data for small mutations and indels table")
         rows = []
         all_reported_variants = set()
         if self.data_CNA_exists:
@@ -73,7 +66,6 @@ class data_builder:
                     row[sic.COPY_STATE] = mutation_copy_states.get(gene, sic.UNKNOWN)
 
                 rows.append(row)
-        #self.logger.debug("Sorting and filtering small mutation and indel rows")
         rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
         for row in rows: all_reported_variants.add((row.get(sic.GENE), row.get(sic.CHROMOSOME)))
         return rows

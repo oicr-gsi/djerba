@@ -1,8 +1,3 @@
-"""
-Plugin for TAR SNV Indel
-"""
-
-# IMPORTS
 import os
 import pandas as pd
 from djerba.plugins.base import plugin_base
