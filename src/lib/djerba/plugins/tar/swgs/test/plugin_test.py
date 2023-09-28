@@ -12,7 +12,7 @@ from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 from djerba.core.workspace import workspace
 
-class TestTarSNVIndelPlugin(PluginTester):
+class TestTarSwgsPlugin(PluginTester):
 
     def setUp(self):
         self.path_validator = path_validator()
@@ -28,7 +28,7 @@ class TestTarSNVIndelPlugin(PluginTester):
         self.purity_pass_json = os.path.join(self.sup_dir, "swgs-plugin/purity_pass/tar_swgs_purity_pass.json")
         self.purity_fail_json = os.path.join(self.sup_dir, "swgs-plugin/purity_fail/tar_swgs_purity_fail.json")
 
-    def testTarSNVIndelPurityPass(self):
+    def testTarSwgsPurityPass(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         
         # Copy files into the temporary directory
@@ -39,11 +39,11 @@ class TestTarSNVIndelPlugin(PluginTester):
         params = {
             self.INI: 'data/tar_swgs.ini',
             self.JSON: json_location,
-            self.MD5: 'f88f2a6a4178d13889b2e352eda3c77d'
+            self.MD5: 'aab9c370e4570b5264b1822dbdbb64ca'
         }
         self.run_basic_test(test_source_dir, params)
 
-    def testTarSNVIndelPurityFail(self):
+    def testTarSwgsPurityFail(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
 
         # Copy files into the temporary directory
@@ -54,14 +54,9 @@ class TestTarSNVIndelPlugin(PluginTester):
         params = {
             self.INI: 'data/tar_swgs.ini',
             self.JSON: json_location,
-            self.MD5: 'de2c97a2b21949772ae9dbefc5b5fb00'
+            self.MD5: 'b0970bdc2091a6a17a1577bb946f90b4'
         }
         self.run_basic_test(test_source_dir, params)
     
-    def redact_json_data(self, data):
-        """replaces empty method from testing.tools"""
-        del data['plugins']['tar.swgs']['results']['cnv_plot']
-        return data 
-
 if __name__ == '__main__':
     unittest.main()

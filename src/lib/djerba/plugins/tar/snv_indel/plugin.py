@@ -140,8 +140,7 @@ class main(plugin_base):
                       sep = "\t",
                       on_bad_lines="error",
                       compression='gzip',
-                      skiprows=[0],
-                      index_col = "HGVSp_Short")
+                      skiprows=[0])
 
       df_pl = pd.read_csv(maf_path,
                       sep = "\t",
@@ -158,11 +157,18 @@ class main(plugin_base):
           variant_classification = row[1]["Variant_Classification"]
      
           """"For normal values"""
-          if hgvsp_short in df_bc.index and not pd.isna(hgvsp_short):
-              df_pl.at[row[0], "n_depth"] = df_bc.loc[hgvsp_short]["n_depth"]
-              df_pl.at[row[0], "n_ref_count"] = df_bc.loc[hgvsp_short]["n_ref_count"]
-              df_pl.at[row[0], "n_alt_count"] = df_bc.loc[hgvsp_short]["n_alt_count"]
+          if hgvsp_short in df_bc['HGVSp_Short'].values  and not pd.isna(hgvsp_short):
 
+              row_lookup = df_bc[(df_bc['Hugo_Symbol'] == hugo_symbol) & 
+                           (df_bc['HGVSc'] == hgvsc) & 
+                           (df_bc['HGVSp_Short'] == hgvsp_short)]
+              if len(row_lookup) == 1:
+                  df_pl.at[row[0], "n_depth"] = row_lookup['n_depth'].item()
+                  df_pl.at[row[0], "n_ref_count"] = row_lookup['n_ref_count'].item()
+                  df_pl.at[row[0], "n_alt_count"] = row_lookup['n_alt_count'].item()
+              else:
+                  df_pl.at[row[0], "n_alt_count"] = 5 # filter it out
+          
           elif hgvsp_short not in df_bc.index and not pd.isna(hgvsp_short):
               df_pl.at[row[0], "n_depth"] = 0
               df_pl.at[row[0], "n_ref_count"] = 0
@@ -170,7 +176,8 @@ class main(plugin_base):
 
           # Note: splice sites almost always have NA as their HGVSp_Short name. So, compare their HGVSc names instead.
           elif "splice" in variant_classification.lower(): 
-              row_lookup = df_bc[(df_bc['Hugo_Symbol'] == hugo_symbol) & (df_bc['HGVSc'] == hgvsc)]
+              row_lookup = df_bc[(df_bc['Hugo_Symbol'] == hugo_symbol) & 
+                                 (df_bc['HGVSc'] == hgvsc)]
               if len(row_lookup) == 1: # there should only be one entry for one gene
                   df_pl.at[row[0], "n_depth"] = row_lookup['n_depth'].item()
                   df_pl.at[row[0], "n_ref_count"] = row_lookup['n_ref_count'].item()
