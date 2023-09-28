@@ -19,13 +19,6 @@ import djerba.render.constants as rc
 
 class data_builder:
 
-    # is_wgts = True
-    # 
-    # if is_wgts == True:
-    #     expr_input = sic.EXPR_PCT_TCGA
-    # else:
-    #     expr_input = None
-
     def __init__(self,  work_dir, assay, oncotree_uc):
         self.data_dir = os.environ.get('DJERBA_BASE_DIR') + '/data/' 
         self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/snv_indel/snv_indel_tools/Rscripts"
@@ -54,10 +47,7 @@ class data_builder:
         all_reported_variants = set()
         if self.data_CNA_exists:
             mutation_copy_states = self.read_mutation_copy_states()
-        if self.assay == "WGTS":
-            mutation_expression = self.read_expression()
-        else:
-            mutation_expression = {}
+        mutation_expression = {}
         with open(mutations_file) as data_file:
             for input_row in csv.DictReader(data_file, delimiter="\t"):
                 gene = input_row[sic.HUGO_SYMBOL_TITLE_CASE]
@@ -85,7 +75,6 @@ class data_builder:
                 rows.append(row)
         #self.logger.debug("Sorting and filtering small mutation and indel rows")
         rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
-        #not clear what this does??
         for row in rows: all_reported_variants.add((row.get(sic.GENE), row.get(sic.CHROMOSOME)))
         return rows
   
@@ -184,25 +173,6 @@ class data_builder:
                 cytobands[row[sic.HUGO_SYMBOL_TITLE_CASE]] = row['Chromosome']
         return cytobands
 
-    def read_expression(self):
-        # read the expression metric (may be zscore or percentage, depending on choice of input file)
-        input_path = os.path.join(self.work_dir, self.expr_input)
-        expr = {}
-        with open(input_path) as input_file:
-            for row in csv.reader(input_file, delimiter="\t"):
-                if row[0]=='Hugo_Symbol':
-                    continue
-                gene = row[0]
-                try:
-                    metric = float(row[1])
-                except ValueError as err:
-                    msg = 'Cannot convert expression value "{0}" to float, '.format(row[1])+\
-                            '; using 0 as fallback value: {0}'.format(err)
-                    #self.logger.warning(msg)
-                    metric = 0.0
-                expr[gene] = metric
-        return expr
-
     def read_mutation_copy_states(self):
         # convert copy state to human readable string; return mapping of gene -> copy state
         copy_state_conversion = {
@@ -247,17 +217,6 @@ class data_builder:
         #self.logger.debug("Sorting rows by oncokb level")
         rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row[sic.ONCOKB]))
         return rows
-
-    def write_vaf_plot(self):
-        out_path = os.path.join(self.work_dir, 'vaf.svg')
-        args = [
-            os.path.join(self.r_script_dir, 'vaf_plot.r'),
-            '-d', self.work_dir,
-            '-o', out_path
-        ]
-        subprocess_runner().run(args)
-        #self.logger.info("Wrote VAF plot to {0}".format(out_path))
-        return out_path
 
     def treatment_row(self, genes_arg, alteration, max_level, therapies, oncotree_uc, tier):
         # genes argument may be a string, or an iterable of strings

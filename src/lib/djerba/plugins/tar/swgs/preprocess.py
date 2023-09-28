@@ -21,6 +21,10 @@ class preprocess(logger):
 
   def __init__(self, tumour_id, oncotree_code, work_dir, log_level=logging.DEBUG, log_path=None):
 
+    # CONSTANTS
+    self.GENECODE_PATH = "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/gencode_v33_hg38_genes.bed"
+    self.ONCOLIST_PATH = "/20200818-oncoKBcancerGeneList.tsv"
+
     # DIRECTORIES
     self.logger = self.get_logger(log_level, __name__, log_path)
     self.work_dir = work_dir
@@ -34,13 +38,12 @@ class preprocess(logger):
     else:
         self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
         os.mkdir(self.tmp_dir)
-    self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts"
-    self.r_script_dir_swgs = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/swgs/" 
+    self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/swgs/Rscripts"
     self.data_dir = os.environ.get('DJERBA_BASE_DIR') + "/data/"
     self.tumour_id = tumour_id
     self.oncotree_code = oncotree_code
-
-    # RANDOM
+    
+    # For oncokb annotator 
     self.cache_params = None
 
   # ----------------------- to do all the pre-processing --------------------
@@ -49,12 +52,12 @@ class preprocess(logger):
   def run_R_code(self, seg_path):
     
     cmd = [
-        'Rscript', self.r_script_dir_swgs + "/process_CNA_data.r",
+        'Rscript', self.r_script_dir + "/process_data.r",
         '--basedir', self.r_script_dir,
         '--outdir', self.work_dir,
         '--segfile', seg_path,
-        '--genebed', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/gencode_v33_hg38_genes.bed",
-        '--oncolist', self.data_dir + "/20200818-oncoKBcancerGeneList.tsv"
+        '--genebed', self.GENECODE_PATH,
+        '--oncolist', self.data_dir + self.ONCOLIST_PATH
     ]
 
     runner = subprocess_runner()

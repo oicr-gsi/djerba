@@ -86,9 +86,7 @@ class main(plugin_base):
           'priorities': wrapper.get_my_priorities(),
           'attributes': wrapper.get_my_attributes(),
           'merge_inputs': {},
-          'results': {
-              constants.CNV_PLOT: data_builder(work_dir).build_graph(seg_file) # graph is made from the original seg file, NOT the amplification-only seg file
-          }
+          'results': {}
       }
 
       # Read purity

@@ -20,15 +20,6 @@ import pandas as pd
 
 class preprocess(logger):
  
-  
-  cache_params = None
-  log_level = "logging.WARNING"
-  log_path = "None"
-  
-  GENE_ID = 0
-  FPKM = 6
-  gep_reference = "/.mounts/labs/CGI/gsi/tools/djerba/gep_reference.txt.gz"
-  
   # headers of important MAF columns
   VARIANT_CLASSIFICATION = 'Variant_Classification'
   TUMOUR_SAMPLE_BARCODE = 'Tumor_Sample_Barcode'
@@ -76,7 +67,6 @@ class preprocess(logger):
   ]
 
   # MAF filter thresholds
-  MIN_VAF = 0.1
   MIN_VAF_TAR = 0.01
   MAX_UNMATCHED_GNOMAD_AF = 0.001
 
@@ -104,156 +94,36 @@ class preprocess(logger):
           self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
           os.mkdir(self.tmp_dir)
      
-      # GEMERA: PARAMETERS
+      # PARAMETERS
       self.assay = assay
       self.oncotree_code = oncotree_code
       self.tumour_id = tumour_id
       self.normal_id = normal_id
       self.study = study
       self.maf_file = maf_file
-      
-      # ASSAY SPECIFIC PARAMETERS
-      if self.assay == "TAR":
-          self.maf_file_normal = self.config['tar.snv_indel']['maf_file_normal']
-      else:
-          self.sequenza_path = self.config['snv_indel']['sequenza_file']
-          self.sequenza_gamma = int(self.config['snv_indel']['sequenza_gamma'])
-          self.sequenza_solution = self.config['snv_indel']['sequenza_solution']
-          self.gep_file = self.config['snv_indel']['gep_file']
+      self.maf_file_normal = self.config['tar.snv_indel']['maf_file_normal']
 
   # ----------------------- to do all the pre-processing --------------------
   
   def run_R_code(self):
-  
-    
-    # FIX THIS BECAUSE THE ARATIO FILE IS DIFFERENT FOR TAR AND NONTAR
-    if self.assay == "TAR":
-        maf_path = self.preprocess_maf(self.maf_file)
 
-        cmd = [
-         'Rscript', self.r_script_dir + "/process_data.r",
-         '--basedir', self.r_script_dir,
-         '--outdir', self.report_dir,
-         '--whizbam_url', 'https://whizbam.oicr.on.ca',
-         '--tumourid', self.tumour_id,
-         '--normalid', self.normal_id,
-         '--cbiostudy', self.study,
-         '--maffile', maf_path,
-         '--tar', 'TRUE'
-        ]
+    maf_path = self.preprocess_maf(self.maf_file)
+
+    cmd = [
+     'Rscript', self.r_script_dir + "/process_data.r",
+     '--basedir', self.r_script_dir,
+     '--outdir', self.report_dir,
+     '--whizbam_url', 'https://whizbam.oicr.on.ca',
+     '--tumourid', self.tumour_id,
+     '--normalid', self.normal_id,
+     '--cbiostudy', self.study,
+     '--maffile', maf_path,
+     '--tar', 'TRUE'
+    ]
    
-    else:
-        seg_path = self.preprocess_seg(self.sequenza_path)
-        aratio_path = self.preprocess_aratio(self.sequenza_path, self.report_dir)
-        gep_path = self.preprocess_gep(self.gep_file)
-        maf_path = self.preprocess_maf(self.maf_file)
-        cmd = [
-            'Rscript', self.r_script_dir + "process_data.r",
-            '--basedir', self.r_script_dir,
-            '--outdir', self.report_dir,
-            '--segfile', seg_path,
-            '--genebed', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/gencode_v33_hg38_genes.bed",
-            '--oncolist', os.environ.get('DJERBA_BASE_DIR') + "/data/20200818-oncoKBcancerGeneList.tsv",
-            '--gain', "0.2529454648649786", # NEED TO GENERATE VALUES
-            '--ampl', "0.6927983480061226", # NEED TO GENERATE VALUES
-            '--htzd', "-0.3929375973235762", # NEED TO GENERATE VALUES
-            '--hmzd', "-1.7148656922109384", # NEED TO GENERATE VALUES
-            '--gepfile', gep_path,
-            '--enscon', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/ensemble_conversion_hg38.txt", 
-            '--genelist', "/.mounts/labs/gsi/modulator/sw/Ubuntu18.04/djerba-0.4.8/lib/python3.10/site-packages/djerba/data/targeted_genelist.txt",
-            '--tcgadata', "/.mounts/labs/CGI/gsi/tools/RODiC/data",
-            '--studyid', self.study,
-            '--whizbam_url', 'https://whizbam.oicr.on.ca',
-            '--tumourid', self.tumour_id,
-            '--normalid', self.normal_id,
-            '--cbiostudy', self.study, # NEEDS TO BE CBIOSTUDY ID
-            '--maffile', maf_path,
-            '--aratiofile', aratio_path,
-            '--tar', 'FALSE'
-        ]
     runner = subprocess_runner()
     result = runner.run(cmd, "main R script")
-    #self.postprocess()
     return result
-
-  def preprocess_aratio(self, sequenza_path, report_dir):
-    """
-    Extract the appropriate _segments.txt file from the .zip archive output by Sequenza
-    Copy the extracted file to report_dir
-    """
-    
-    reader = sequenza_reader(sequenza_path)
-    seg_path = reader.extract_segments_text_file(self.tmp_dir, self.sequenza_gamma, self.sequenza_solution)
-    out_path = os.path.join(report_dir, 'aratio_segments.txt')
-    copyfile(seg_path, out_path)
-    return out_path
-  
-  def preprocess_seg(self, sequenza_path):
-    """
-    Extract the SEG file from the .zip archive output by Sequenza
-    Apply preprocessing and write results to tmp_dir
-    Replace entry in the first column with the tumour ID
-    """
-
-    seg_path = sequenza_reader(sequenza_path).extract_cn_seg_file(self.tmp_dir, self.sequenza_gamma)
-    out_path = os.path.join(self.tmp_dir, 'seg.txt')
-    with open(seg_path, 'rt') as seg_file, open(out_path, 'wt') as out_file:
-        reader = csv.reader(seg_file, delimiter="\t")
-        writer = csv.writer(out_file, delimiter="\t")
-        in_header = True
-        for row in reader:
-            if in_header:
-                in_header = False
-            else:
-                row[0] = self.tumour_id
-            writer.writerow(row)
-    return out_path
-  
-  def preprocess_gep(self, gep_path):
-    """
-    Apply preprocessing to a GEP file; write results to tmp_dir
-    CGI-Tools constructs the GEP file from scratch, but only one column actually varies
-    As a shortcut, we insert the first column into a ready-made file
-    TODO This is a legacy CGI-Tools method, is there a cleaner way to do it?
-    TODO Should GEP_REFERENCE (list of past GEP results) be updated on a regular basis?
-    """
-    # read the gene id and FPKM metric from the GEP file for this report
-    fkpm = {}
-    with open(gep_path) as gep_file:
-        reader = csv.reader(gep_file, delimiter="\t")
-        for row in reader:
-            try:
-                fkpm[row[self.GENE_ID]] = row[self.FPKM]
-            except IndexError as err:
-                msg = "Incorrect number of columns in GEP row: '{0}'".format(row)+\
-                      "read from '{0}'".format(gep_path)
-                #self.logger.error(msg)
-                raise RuntimeError(msg) from err
-    # insert as the second column in the generic GEP file
-    ref_path = self.gep_reference
-    out_path = os.path.join(self.tmp_dir, 'gep.txt')
-    with \
-         gzip.open(ref_path, 'rt', encoding=constants.TEXT_ENCODING) as in_file, \
-         open(out_path, 'wt') as out_file:
-        # preprocess the GEP file
-        reader = csv.reader(in_file, delimiter="\t")
-        writer = csv.writer(out_file, delimiter="\t")
-        first = True
-        for row in reader:
-            if first:
-                row.insert(1, self.tumour_id)
-                first = False
-            else:
-                gene_id = row[0]
-                try:
-                    row.insert(1, fkpm[gene_id])
-                except KeyError as err:
-                    msg = 'Reference gene ID {0} from {1} '.format(gene_id, ref_path) +\
-                        'not found in gep results path {0}'.format(gep_path)
-                    #self.logger.warn(msg)
-                    row.insert(1, '0.0')
-            writer.writerow(row)
-    return out_path
 
   def preprocess_maf(self, maf_path):
     """Apply preprocessing and annotation to a MAF file; write results to tmp_dir"""
@@ -282,18 +152,11 @@ class preprocess(logger):
                     in_header = False
             else:
                 total += 1
-                if self.assay == "TAR":
-                    if self._maf_body_row_ok(row, indices, self.MIN_VAF_TAR):
-                        # filter rows in the MAF body and update the tumour_id
-                        row[indices.get(self.TUMOUR_SAMPLE_BARCODE)] = self.tumour_id
-                        writer.writerow(row)
-                        kept += 1
-                else:
-                    if self._maf_body_row_ok(row, indices, self.MIN_VAF):
-                        # filter rows in the MAF body and update the tumour_id
-                        row[indices.get(self.TUMOUR_SAMPLE_BARCODE)] = self.tumour_id
-                        writer.writerow(row)
-                        kept += 1
+                if self._maf_body_row_ok(row, indices, self.MIN_VAF_TAR):
+                    # filter rows in the MAF body and update the tumour_id
+                    row[indices.get(self.TUMOUR_SAMPLE_BARCODE)] = self.tumour_id
+                    writer.writerow(row)
+                    kept += 1
     #self.logger.info("Kept {0} of {1} MAF data rows".format(kept, total))
     # apply annotation to tempfile and return final output
     out_path = oncokb_annotator(
@@ -301,9 +164,6 @@ class preprocess(logger):
         self.oncotree_code,
         self.report_dir,
         self.tmp_dir
-        #self.cache_params,
-        #self.log_level,
-        #self.log_path
     ).annotate_maf(tmp_path)
     return out_path
 
@@ -342,22 +202,3 @@ class preprocess(logger):
         #self.logger.error(msg)
         raise RuntimeError(msg)
     return indices
-
-  #def postprocess(self):
-  #   """
-  #   Apply postprocessing to the Rscript output directory
-  #   - Annotate CNA and (if any) fusion data
-  #   - Remove unnecessary files written by the R script
-  #   - Remove the temporary directory if required
-  #   """
-  #   annotator = oncokb_annotator(
-  #          self.tumour_id,
-  #          self.oncotree_code,
-  #          self.report_dir,
-  #          self.tmp_dir,
-  #          self.cache_params,
-  #   )
-  #   annotator.annotate_cna()
-        #if self.cleanup:
-        #    rmtree(self.tmp_dir)
-        #    os.remove(os.path.join(self.report_dir, constants.DATA_CNA_ONCOKB_GENES))

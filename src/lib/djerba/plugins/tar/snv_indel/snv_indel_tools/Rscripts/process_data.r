@@ -72,10 +72,6 @@ print(opt)
 
 # source functions
 source(paste0(basedir, "/supporting_functions.r"))
-#source(paste0(basedir, "/convert_seg_to_gene_singlesample.r"))
-#source(paste0(basedir, "/convert_rsem_results_zscore.r"))
-#source(paste0(basedir, "/convert_vep92_to_filtered_cbio.r")) 
-#source(paste0(basedir, "/calc_mut_sigs.r"))
 
 ###################### CNA #####################
 
@@ -112,9 +108,6 @@ if (is.null(segfile)) {
 
    }
 
-  
-
-
 
 ###################### VEP #####################
 
@@ -149,68 +142,5 @@ if (is.null(maffile)) {
       # write the oncogenic table
       write.table(df_cbio_filt_oncokb, file=paste0(outdir, "/data_mutations_extended_oncogenic.txt"), sep="\t", row.names=FALSE, quote=FALSE)
     }
-    
-    
-   #process LOH
-   if (tar == FALSE) {
-      print("Processing LOH data")
-      LOH <- preProcLOH(aratiofile=aratiofile, genebed=genebed, oncolist=oncolist, genelist=df_cbio_filt$Hugo_Symbol)
-      write.table(LOH[[1]],file=paste0(outdir, "/data_CNA_oncoKBgenes_ARatio.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-   }
   }
  }
-
-
-
-
-#################### RNASEQ Expression ####################
-if (is.null(gepfile)) {	
-  print("No RNASEQ input, processing omitted") 
-} else {
-  print("Processing RNASEQ data")
- 
-  # preprocess the full data frame
-  df <- preProcRNA(gepfile, enscon, genelist)
-  sample <- colnames(df)[1]
-
-  print("getting CAP-level data")
-  # calculate z-score and percentiles TGL
-  df_zscore <- compZ(df)
-  df_percentile <- data.frame(signif(pnorm(as.matrix(df_zscore)), digits=4), check.names=FALSE)
-
-  # write zscores
-  write.table(data.frame(Hugo_Symbol=rownames(df_zscore), df_zscore, check.names=FALSE),
-    file=paste0(outdir, "/data_expression_zscores_comparison.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-
-  # write percentiles
-  write.table(data.frame(Hugo_Symbol=rownames(df_percentile), df_percentile, check.names=FALSE),
-    file=paste0(outdir, "/data_expression_percentile_comparison.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-
-#  print("getting TCGA-level data")
-
-  # get TCGA comparitor
-##  load(file=paste(tcgadata, "/", tcgacode,".PANCAN.matrix.rdf", sep=""))
-#  df_tcga <- get(tcgacode)
-
-  # equalize dfs (get common genes)
-#  comg <- as.character(intersect(row.names(df_tcga), row.names(df)))
-#  df_tcga_common <- df_tcga[row.names(df_tcga) %in% comg, ]
-#  df_tcga_common_sort <- df_tcga_common[ order(row.names(df_tcga_common)), ]
-#  df_stud_common <- df[row.names(df) %in% comg, ]
-#  df_stud_common_sort <- df_stud_common[ order(row.names(df_stud_common)), ]
-#  df_stud_tcga <- merge(df_stud_common_sort, df_tcga_common_sort, by=0, all=TRUE)
-#  df_stud_tcga[is.na(df_stud_tcga)] <- 0
-#  rownames(df_stud_tcga) <- df_stud_tcga$Row.names
-#  df_stud_tcga$Row.names <- NULL
-#  df_zscore <- compZ(df_stud_tcga)
-#  df_zscore_sample <- data.frame(Hugo_Symbol=rownames(df_zscore), df_zscore[,1], check.names=FALSE)
-#  df_percentile <- data.frame(signif(pnorm(as.matrix(df_zscore)), digits=4), check.names=FALSE)
-
-  # z-score TCGA
-#  write.table(data.frame(Hugo_Symbol=rownames(df_zscore), df_zscore[sample], check.names=FALSE),
-#   file=paste0(outdir, "/data_expression_zscores_tcga.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-
-  # percentile TCGA
-#  write.table(data.frame(Hugo_Symbol=rownames(df_percentile), df_percentile[sample], check.names=FALSE),
-#    file=paste0(outdir, "/data_expression_percentile_tcga.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-}

@@ -29,7 +29,7 @@ print("Running singleSample with the following options:")
 print(opt)
 
 # source functions
-source(paste0(basedir, "/convert_seg_to_gene_singlesample.r"))
+source(paste0(basedir, "/supporting_functions.r"))
 
 ###################### CNA #####################
 

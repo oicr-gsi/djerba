@@ -59,20 +59,9 @@ class data_builder:
     self.cytoband_map = self.read_cytoband_map()
     self.tmp_dir = work_dir + "/tmp"
 
-  def build_graph(self, seg_file):
-    """
-    Puts all the pieces together.
-    """
-    
-    plot = converter().convert_svg(self.write_cnv_plot(seg_file, self.work_dir), 'CNV plot')
-    return plot
-    
-    
   def build_swgs_rows(self):
     #self.logger.debug("Building data for copy number variation table")
     rows = []
-    #else:
-    #    mutation_expression = {}
     with open(os.path.join(self.work_dir, self.CNA_ANNOTATED)) as input_file:
         reader = csv.DictReader(input_file, delimiter="\t")
         for row in reader:
@@ -94,48 +83,6 @@ class data_builder:
     return rows
 
     
-  def write_cnv_plot(self, seg_file, out_dir):
-    """
-    """ 
-    processed_seg = self.process_seg_for_plotting(seg_file)
-    out_path = os.path.join(out_dir, 'seg_CNV_plot.svg')
-    args = [
-        os.path.join(self.r_script_dir, 'cnv_plot.r'),
-        #'--segfile',  os.path.join(self.work_dir, processed_seg),
-        '--segfile', processed_seg,
-        '--segfiletype', 'sequenza',
-        '-d',out_dir
-    ]
-    subprocess_runner().run(args)
-    #self.logger.info("Wrote CNV plot to {0}".format(out_path))
-    return out_path
-      
-  def process_seg_for_plotting(self, seg_file):
-    """
-    We need to change some column names and entries in the .seg.txt file to make the dataframe suitable for plotting.
-    Do this using pandas, then convert to a processed .seg.txt file.
-    The reason for this wrangling is to force this file to look like aratio_segments.txt from the CNV plugin
-    """
-    seg_path =  os.path.join(seg_file)
- 
-    # Create a dataframe
-    df_seg = pd.read_csv(seg_path, sep = '\t')
-
-    # Change column names
-    df_seg = df_seg.rename(columns = {"start":"start.pos", 
-                                      "end":"end.pos", 
-                                      "Corrected_Copy_Number":"CNt", 
-                                      "chrom":"chromosome"})
-
-    # Add "chr" to the beginning of the chromosome numbers
-    df_seg["chromosome"] = "chr" + df_seg["chromosome"].astype(str)
-
-    # Convert the dataframe back into a tab-delimited text file.
-    out_path = os.path.join(self.work_dir, constants.CNV_PLOT_DATA)
-    df_seg.to_csv(out_path, sep = '\t', index=None)
-    return out_path
-
-
    # --------------------------- ALL EXTRA FUNCTIONS ---------------------
   
   def get_cytoband(self, gene_name):
@@ -160,7 +107,7 @@ class data_builder:
 
   
   def parse_oncokb_level(self, row_dict):
-    # find oncokb level string: eg. "Level 1", "Likely Oncogenic", "None"
+    # find oncokb level string: eg. "1", "Likely Oncogenic", "None"
     max_level = None
     for level in oncokb.THERAPY_LEVELS:
         if not self.is_null_string(row_dict[level]):
@@ -248,21 +195,6 @@ class data_builder:
             #self.logger.warning(msg)
             (chromosome, arm, band) = end
     return (chromosome, arm, band)
-
-
-  #def file_cleanup(self):
-  #    """
-  #    Removes intermediate files now that extract step is done.
-  #    """
-      #rmtree(self.tmp_dir)
-      #if os.path.exists(os.path.join(self.work_dir, constants.CNV_PLOT_DATA)):
-      #    os.remove(os.path.join(self.work_dir, constants.CNV_PLOT_DATA))
-      #if os.path.exists(os.path.join(self.work_dir, constants.DATA_CNA)):
-      #    os.remove(os.path.join(self.work_dir, constants.DATA_CNA))
-      #if os.path.exists(os.path.join(self.work_dir, constants.DATA_CNA_ONCOKB)):
-      #    os.remove(os.path.join(self.work_dir, constants.DATA_CNA_ONCOKB))
-      #if os.path.exists(os.path.join(self.work_dir, constants.DATA_CNA_ONCOKB_NONDIPLOID)):
-      #    os.remove(os.path.join(self.work_dir, constants.DATA_CNA_ONCOKB_NONDIPLOID))
 
   def build_therapy_info(self, variants_annotated_file, oncotree_uc):
       # build the "FDA approved" and "investigational" therapies data
