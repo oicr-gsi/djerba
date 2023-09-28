@@ -9,9 +9,10 @@ Djerba documentation
 .. toctree::
    :maxdepth: 3
 
-   guide
-   plugin_howto
    about
+   plugin_howto
+   guide
+
 
 
 Tools

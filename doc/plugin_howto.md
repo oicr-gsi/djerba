@@ -1,6 +1,6 @@
 # Plugin HOWTO
 
-This page is currently in an initial draft state. Specifications and procedures may change without notice. If in doubt, check with [Iain Bancarz](https://wiki.oicr.on.ca/display/~ibancarz) .
+**NOTE:** Djerba under active development prior to launch of version 1.0, and this document may not reflect recent code changes. If in doubt, contact the development team.
 
 ## Purpose of this document
 
@@ -24,16 +24,6 @@ A **plugin** works as a mini-Djerba:
 *   Render data as HTML
 
 A plugin is a subclass of the Djerba [plugin base class](https://github.com/oicr-gsi/djerba/blob/GCGI-806_v1.0.0-dev/src/lib/djerba/plugins/base.py).
-
-### The Prime Directive of Rendering
-
-JSON from each plugin is rendered **independently** of every other plugin.
-
-It is an important principle of Djerba that the JSON document is self-contained; in other words, it is possible to generate a complete report using only the JSON document. In particular, we archive JSON to a database with the expectation that it can be rendered to an HTML document if desired.
-
-To enable this, the JSON element for a plugin must be sufficient to generate HTML for that plugin. The render step cannot depend on output from other plugins (whether in the JSON document, or in the workspace).
-
-Dependencies at the configure and extract steps are fine (and Djerba has extensive features to support this), but any dependencies must be resolved by the completion of the extract step.
 
 ### Other definitions
 
@@ -73,7 +63,6 @@ To write a new plugin named `foo`:
 3.  Create a file `src/lib/djerba/plugins/foo`/`plugin.py` and make a subclass of the [plugin base class](https://github.com/oicr-gsi/djerba/blob/GCGI-806_v1.0.0-dev/src/lib/djerba/plugins/base.py)
 4.  Override the `configure`, `extract`, and `render` methods of the base class as described below
 5.  Write tests to check the plugin functions correctly  
-      
     
 
 Plugin code does not necessarily have to be in the main Djerba repository. It can be anywhere, as long as the plugin is a submodule of `djerba.plugins` and visible for import as a Python class (ie. the appropriate directory is on the PYTHONPATH environment variable).
@@ -99,9 +88,9 @@ A plugin has three **priority** parameters: One each for the configure, extract,
 
 Priority parameters are identified by the following keywords:
 
-*   configure\_priority
-*   extract\_priority
-*   render\_priority
+*   `configure_priority`
+*   `extract_priority`
+*   `render_priority`
 
 These are reserved, and may not be used for any other INI parameters.
 
@@ -211,17 +200,18 @@ In this example, we have all the INI parameters for `lego_movie_plugin`. Note th
 *   All reserved parameters required by the Djerba core are present.
 
   
-
-\[lego\_movie\_plugin\]
-configure\_priority = 100
-extract\_priority = 100
-render\_priority = 100
+```
+[lego_movie_plugin]
+configure_priority = 100
+extract_priority = 100
+render_priority = 100
 attributes = clinical
-depends\_configure = batman,star\_wars
-depends\_extract = 
+depends_configure =
+depends_extract = batman,star_wars
 motto = "everything is awesome"
-lucky\_number = 42
-instructions = $DJERBA\_INSTRUCTION\_DIR/instructions.pdf
+lucky_number = 42
+instructions = $DJERBA_INSTRUCTION_DIR/instructions.pdf
+```
 
 ### Implementation: How to write the code
 
@@ -365,7 +355,17 @@ The output string may be generated in any way that is convenient. The use of [Ma
 
 The final HTML document will contain CSS style headers inserted by the Djerba core, similar to those used by [classic Djerba](https://github.com/oicr-gsi/djerba/blob/GCGI-806_v1.0.0-dev/src/lib/djerba/html/style.css). The CSS features can be used to ensure consistent formatting between report sections.  Explicitly defining CSS headers in core Djerba is TODO. 
 
-Do not use the workspace
+### The Prime Directive of Rendering
+
+JSON from each plugin is rendered **independently** of every other plugin.
+
+It is an important principle of Djerba that the JSON document is self-contained; in other words, it is possible to generate a complete report using only the JSON document. In particular, we archive JSON to a database with the expectation that it can be rendered to an HTML document if desired.
+
+To enable this, the JSON element for a plugin must be sufficient to generate HTML for that plugin. The render step cannot depend on output from other plugins (whether in the JSON document, or in the workspace).
+
+Dependencies at the configure and extract steps are fine (and Djerba has extensive features to support this), but any dependencies must be resolved by the completion of the extract step.
+
+### Do not use the workspace
 
 The `workspace` attribute of the plugin can in theory be accessed at the render step. In practice, developers **must not** do this, as it will break the Prime Directive of Rendering. If data from the workspace is needed, it **must** be inserted into the JSON in the extract step.
 
@@ -411,9 +411,9 @@ The `generate_ini.py`  and main `djerba.py`  scripts can be used to do prelimi
 6.  Use your INI file, and the JSON generated by `djerba.py`, to provide inputs to the simple test class.
 7.  Run the simple test. Update the expected MD5 sum for HTML output if necessary.
 
-### Example: `patient_info` plugin
+### Example of running a test
 
-```java
+```bash
 $ generate_ini.py --verbose -o test.ini provenance_helper patient_info
 2023-08-02_17:06:45 djerba.core.ini_generator INFO: Generating config for components: ['core', 'provenance_helper', 'patient_info']
 2023-08-02_17:06:45 djerba.core.ini_generator INFO: Finished generating config.
@@ -436,5 +436,5 @@ Also important for testing is the ability to think outside the box:
 *   This document has set out instructions for how to write a Djerba plugin.
 *   It is not intended to be exhaustive! Rather, it is meant as a reasonably compact tour of the essential plugin features.
 *   Writing mergers and helpers is very similar to writing plugins, but not explicitly covered here.
-*   Questions/comments/bug reports can be sent to [Iain Bancarz](https://wiki.oicr.on.ca/display/~ibancarz) .
+*   Questions/comments/bug reports can be sent to the Djerba development team.
 *   Happy coding!
