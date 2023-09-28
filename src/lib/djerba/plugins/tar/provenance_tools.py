@@ -2,10 +2,7 @@
 Supporting functions to pull files from provenance
 """
 import csv
-from decimal import Decimal
-import logging
 import re
-
 import djerba.util.provenance_index as index
 import djerba.plugins.tar.sample.constants as constants
 

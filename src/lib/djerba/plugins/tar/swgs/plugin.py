@@ -10,7 +10,8 @@ import djerba.plugins.tar.swgs.constants as constants
 from djerba.plugins.tar.swgs.preprocess import preprocess
 from djerba.plugins.tar.swgs.extract import data_builder 
 import djerba.core.constants as core_constants
-import djerba.plugins.tar.provenance_tools as provenance_tools
+from djerba.plugins.tar.provenance_tools import parse_file_path
+from djerba.plugins.tar.provenance_tools import subset_provenance
 import gsiqcetl.column
 from gsiqcetl import QCETLCache
 from djerba.util.render_mako import mako_renderer
@@ -132,9 +133,9 @@ class main(plugin_base):
       """
       pull data from results file
       """
-      provenance = provenance_tools.subset_provenance(self, self.WORKFLOW, root_sample_name)
+      provenance = subset_provenance(self, self.WORKFLOW, root_sample_name)
       try:
-          results_path = provenance_tools.parse_file_path(self, self.RESULTS_SUFFIX, provenance)
+          results_path = parse_file_path(self, self.RESULTS_SUFFIX, provenance)
       except OSError as err:
           msg = "File with extension {0} not found".format(self.RESULTS_SUFFIX)
           raise RuntimeError(msg) from err

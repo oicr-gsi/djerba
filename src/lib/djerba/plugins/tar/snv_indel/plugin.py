@@ -15,7 +15,8 @@ import djerba.core.constants as core_constants
 import djerba.plugins.tar.snv_indel.snv_indel_tools.constants as sic
 from djerba.util.subprocess_runner import subprocess_runner
 import djerba.util.provenance_index as index
-import djerba.plugins.tar.provenance_tools as provenance_tools
+from djerba.plugins.tar.provenance_tools import parse_file_path
+from djerba.plugins.tar.provenance_tools import subset_provenance
 from djerba.core.workspace import workspace
 from djerba.util.render_mako import mako_renderer
 import djerba.util.input_params_tools as input_params_tools
@@ -130,9 +131,9 @@ class main(plugin_base):
       """
       pull data from results file
       """
-      provenance = provenance_tools.subset_provenance(self, self.WORKFLOW, donor)
+      provenance = subset_provenance(self, self.WORKFLOW, donor)
       try:
-          results_path = provenance_tools.parse_file_path(self, results_suffix, provenance)
+          results_path = parse_file_path(self, results_suffix, provenance)
       except OSError as err:
           msg = "File with extension {0} not found".format(results_suffix)
           raise RuntimeError(msg) from err

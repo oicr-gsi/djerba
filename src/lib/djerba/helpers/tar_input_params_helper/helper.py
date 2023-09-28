@@ -1,15 +1,3 @@
-"""
-Helper for writing a subset of file provenance to the shared workspace
-
-Outputs to the workspace:
-- Subset of sample provenance for the donor and study supplied by the user
-- JSON file with donor, study, and sample names
-
-Plugins can then create their own provenance reader objects using params in the JSON, to
-find relevant file paths. Reading the provenance subset is very much faster than reading 
-the full file provenance report.
-"""
-
 import csv
 import gzip
 import logging
@@ -62,9 +50,6 @@ class main(helper_base):
         self.add_ini_required(self.ASSAY)
 
     def configure(self, config):
-        """
-        Needs to write the json to the workspace in the configure step
-        """
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
 
@@ -77,15 +62,9 @@ class main(helper_base):
         return wrapper.get_config()
 
     def extract(self, config):
-        """
-        Write the input params JSON
-        """
         self.validate_full_config(config)
 
     def get_input_params(self, config):
-        """
-        Retrieves values from INI and puts them in a JSON
-        """
         input_params_info = {
             
             self.DONOR: config[self.identifier][self.DONOR],

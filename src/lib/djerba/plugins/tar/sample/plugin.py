@@ -1,7 +1,3 @@
-"""
-Djerba plugin for pwgs sample reporting
-AUTHOR: Felix Beaudry
-"""
 import os
 import csv
 import logging
@@ -15,15 +11,13 @@ from djerba.core.workspace import workspace
 import djerba.core.constants as core_constants
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.render_mako import mako_renderer
-import djerba.plugins.tar.provenance_tools as provenance_tools
+from djerba.plugins.tar.provenance_tools import subset_provenance_sample as subset_p_s
 import djerba.util.input_params_tools as input_params_tools
-
 try:
     import gsiqcetl.column
     from gsiqcetl import QCETLCache
-
-except ImportError:
-        raise ImportError('Error Importing QC-ETL, try checking python versions')
+except ImportError as err:
+    raise RuntimeError('QC-ETL import failure! Try checking python versions') from err
 
 class main(plugin_base):
 
@@ -50,11 +44,11 @@ class main(plugin_base):
 
         # SECOND PASS: Get files based on input parameters
         if wrapper.my_param_is_null('ichorcna_file'):
-            wrapper.set_my_param('ichorcna_file', provenance_tools.subset_provenance_sample(self, "ichorcna", config[self.identifier]['group_id'], "metrics\.json$"))
+            wrapper.set_my_param('ichorcna_file', subset_p_s(self, "ichorcna", config[self.identifier]['group_id'], "metrics\.json$"))
         if wrapper.my_param_is_null('consensus_cruncher_file'):
-            wrapper.set_my_param('consensus_cruncher_file', provenance_tools.subset_provenance_sample(self, "consensusCruncher", config[self.identifier]['group_id'], "allUnique-hsMetrics\.HS\.txt$"))
+            wrapper.set_my_param('consensus_cruncher_file', subset_p_s(self, "consensusCruncher", config[self.identifier]['group_id'], "allUnique-hsMetrics\.HS\.txt$"))
         if wrapper.my_param_is_null('consensus_cruncher_file_normal'):
-            wrapper.set_my_param('consensus_cruncher_file_normal', provenance_tools.subset_provenance_sample(self, "consensusCruncher", config[self.identifier]['normal_id'], "allUnique-hsMetrics\.HS\.txt$"))
+            wrapper.set_my_param('consensus_cruncher_file_normal', subset_p_s(self, "consensusCruncher", config[self.identifier]['normal_id'], "allUnique-hsMetrics\.HS\.txt$"))
         if wrapper.my_param_is_null('raw_coverage'):
             qc_dict = self.fetch_coverage_etl_data(config[self.identifier]['group_id'])
             wrapper.set_my_param('raw_coverage', qc_dict['raw_coverage'])
