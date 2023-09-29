@@ -9,20 +9,7 @@ library(deconstructSigs)
 option_list = list(
   make_option(c("-a", "--basedir"), type="character", default=NULL, help="cBioWrap base directory", metavar="character"),
   make_option(c("-f", "--outdir"), type="character", default=NULL, help="output directory", metavar="character"),
-  make_option(c("-c", "--segfile"), type="character", default=NULL, help="concatenated seg file", metavar="character"),
-  make_option(c("-i", "--genebed"), type="character", default=NULL, help="gene bed for segmentation", metavar="character"),
-  make_option(c("-k", "--oncolist"), type="character", default=NULL, help="oncoKB cancer genes", metavar="character"),
-  make_option(c("-p", "--gain"), type="numeric", default=0.3, help="gain threshold", metavar="numeric"),
-  make_option(c("-q", "--ampl"), type="numeric", default=0.7, help="amp threshold", metavar="numeric"),
-  make_option(c("-r", "--htzd"), type="numeric", default=-0.3, help="htz del threshold", metavar="numeric"),
-  make_option(c("-s", "--hmzd"), type="numeric", default=-0.7, help="hmz del threshold", metavar="numeric"),
-  make_option(c("-g", "--enscon"), type="character", default=NULL, help="ensemble conversion file", metavar="character"),
-  make_option(c("-j", "--genelist"), type="character", default=NULL, help="subset cnas and rnaseq to these", metavar="character"),
-  make_option(c("-n", "--tcgadata"), type="character", default=NULL, help="tcga datadir", metavar="character"),
-  make_option(c("-e", "--gepfile"), type="character", default=NULL, help="concatenated gep file", metavar="character"),
-  make_option(c("-A", "--aratiofile"), type="character", default=NULL, help="A allele ratio file", metavar="character"),
   make_option(c("-b", "--maffile"), type="character", default=NULL, help="concatenated maf file", metavar="character"),
-  make_option(c("-v", "--studyid"), type="character", default=NULL, help="project id", metavar="character"),
   make_option(c("-C", "--cbiostudy"), type="character", default='None', help="cbioportal studyid", metavar="character"),
   make_option(c("-u", "--whizbam_url"), type="character", default="https://whizbam.oicr.on.ca", help="whizbam url", metavar="character"),
   make_option(c("-w", "--tumourid"), type="character", default=NULL, help="whizbam tumour name", metavar="character"),
@@ -39,12 +26,6 @@ opt <- parse_args(opt_parser);
 # set better variable names
 basedir <- opt$basedir
 outdir <- opt$outdir
-segfile <- opt$segfile
-genebed <- opt$genebed
-oncolist <- opt$oncolist
-enscon <- opt$enscon
-genelist <- opt$genelist
-tcgadata <- opt$tcgadata
 maffile <- opt$maffile
 studyid <- opt$studyid
 whizbam_url <- opt$whizbam_url
@@ -52,19 +33,9 @@ tumourid <- opt$tumourid
 normalid <- opt$normalid
 seqtype <- opt$seqtype
 genome <- opt$genome
-gain <- opt$gain
-ampl <- opt$ampl
-htzd <- opt$htzd
-hmzd <- opt$hmzd
-gepfile <- opt$gepfile
-aratiofile <- opt$aratiofile
 tar <- opt$tar
+cbio_study <- opt$cbiostudy
 
-if(opt$cbiostudy == 'None'){
-  cbio_study <- opt$studyid
-}else{
-  cbio_study <- opt$cbiostudy
-}
 
 # print options to output
 print("Running singleSample with the following options:")
@@ -72,42 +43,6 @@ print(opt)
 
 # source functions
 source(paste0(basedir, "/supporting_functions.r"))
-
-###################### CNA #####################
-
-
-if (is.null(segfile)) {
-   print("No SEG file input, processing omitted")
-  } else {
-  print("Processing CNA data")
-  CNAs <- preProcCNA(segfile, genebed, gain, ampl, htzd, hmzd, oncolist)
-  
-  print("writing seg file")
-  # segs
-  write.table(CNAs[[1]], file=paste0(outdir, "/data_segments.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-  
-  # log2cna
-  print("writing log2 file")
-  write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[2]]), CNAs[[2]], check.names=FALSE),
-    file=paste0(outdir, "/data_log2CNA.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-  
-  # gistic-like file
-  print("writing cna file")
-  write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[3]]), CNAs[[3]], check.names=FALSE),
-    file=paste0(outdir, "/data_CNA.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-  
-  # write out the oncoKB genes
-  print("writing oncoKB genes")
-  write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[4]]), CNAs[[4]], check.names=FALSE),
-    file=paste0(outdir, "/data_CNA_oncoKBgenes.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-  
-  # write the truncated data_CNA file (non-zero, oncoKB genes) for oncoKB annotator
-  print("writing non-diploid oncoKB genes")
-  write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[5]]), CNAs[[5]], check.names=FALSE),
-    file=paste0(outdir, "/data_CNA_oncoKBgenes_nonDiploid.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-
-   }
-
 
 ###################### VEP #####################
 
