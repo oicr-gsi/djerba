@@ -156,7 +156,6 @@ class main(plugin_base):
           start_position = row[1]['Start_Position']
           reference_allele = row[1]['Reference_Allele']
           allele = row[1]['Allele']
-          hgvsp_short = row[1]["HGVSp_Short"]
 
           """"For normal values"""
 
