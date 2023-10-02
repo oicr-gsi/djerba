@@ -157,16 +157,20 @@ class main(plugin_base):
           variant_classification = row[1]["Variant_Classification"]
      
           """"For normal values"""
-          if hgvsp_short in df_bc['HGVSp_Short'].values  and not pd.isna(hgvsp_short):
+          if hgvsp_short in df_bc['HGVSp_Short'].values and not pd.isna(hgvsp_short):
 
               row_lookup = df_bc[(df_bc['Hugo_Symbol'] == hugo_symbol) & 
                            (df_bc['HGVSc'] == hgvsc) & 
                            (df_bc['HGVSp_Short'] == hgvsp_short)]
-              if len(row_lookup) == 1:
+              if len(row_lookup) == 1: # only one entry
                   df_pl.at[row[0], "n_depth"] = row_lookup['n_depth'].item()
                   df_pl.at[row[0], "n_ref_count"] = row_lookup['n_ref_count'].item()
                   df_pl.at[row[0], "n_alt_count"] = row_lookup['n_alt_count'].item()
-              else:
+              elif len(row_lookup) == 0: # cannot find in the table
+                  df_pl.at[row[0], "n_depth"] = 0
+                  df_pl.at[row[0], "n_ref_count"] = 0
+                  df_pl.at[row[0], "n_alt_count"] = 0
+              else: # if there's more than one entry
                   df_pl.at[row[0], "n_alt_count"] = 5 # filter it out
           
           elif hgvsp_short not in df_bc.index and not pd.isna(hgvsp_short):
@@ -182,6 +186,10 @@ class main(plugin_base):
                   df_pl.at[row[0], "n_depth"] = row_lookup['n_depth'].item()
                   df_pl.at[row[0], "n_ref_count"] = row_lookup['n_ref_count'].item()
                   df_pl.at[row[0], "n_alt_count"] = row_lookup['n_alt_count'].item()
+              elif len(row_lookup) == 0: # cannot find in table
+                  df_pl.at[row[0], "n_depth"] = 0
+                  df_pl.at[row[0], "n_ref_count"] = 0
+                  df_pl.at[row[0], "n_alt_count"] = 0
               else: # if there are either no entries or more than one entry for one gene, tag it to be filtered out downstream
                   df_pl.at[row[0], "n_alt_count"] = 5
           
