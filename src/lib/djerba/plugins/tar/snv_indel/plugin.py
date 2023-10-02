@@ -156,46 +156,36 @@ class main(plugin_base):
           hgvsc = row[1]['HGVSc']
           variant_classification = row[1]["Variant_Classification"]
      
-          """"For normal values"""
-          if hgvsp_short in df_bc['HGVSp_Short'].values and not pd.isna(hgvsp_short):
+          hugo_symbol = row[1]['Hugo_Symbol']
+          chromosome = row[1]['Chromosome']
+          start_position = row[1]['Start_Position']
+          reference_allele = row[1]['Reference_Allele']
+          allele = row[1]['Allele']
+          hgvsp_short = row[1]["HGVSp_Short"]
 
-              row_lookup = df_bc[(df_bc['Hugo_Symbol'] == hugo_symbol) & 
-                           (df_bc['HGVSc'] == hgvsc) & 
-                           (df_bc['HGVSp_Short'] == hgvsp_short)]
-              if len(row_lookup) == 1: # only one entry
-                  df_pl.at[row[0], "n_depth"] = row_lookup['n_depth'].item()
-                  df_pl.at[row[0], "n_ref_count"] = row_lookup['n_ref_count'].item()
-                  df_pl.at[row[0], "n_alt_count"] = row_lookup['n_alt_count'].item()
-              elif len(row_lookup) == 0: # cannot find in the table
-                  df_pl.at[row[0], "n_depth"] = 0
-                  df_pl.at[row[0], "n_ref_count"] = 0
-                  df_pl.at[row[0], "n_alt_count"] = 0
-              else: # if there's more than one entry
-                  df_pl.at[row[0], "n_alt_count"] = 5 # filter it out
+          """"For normal values"""
+
+          # Lookup the entry in the BC
+          row_lookup = df_bc[(df_bc['Hugo_Symbol'] == hugo_symbol) & 
+                                 (df_bc['Chromosome'] == chromosome) & 
+                                 (df_bc['Start_Position'] == start_position) &
+                                 (df_bc['Reference_Allele'] == reference_allele) &
+                                 (df_bc['Allele'] == allele)]
+
+          # If there's only one entry, take its normal values
+          if len(row_lookup) == 1:
+              df_pl.at[row[0], "n_depth"] = row_lookup['n_depth'].item()
+              df_pl.at[row[0], "n_ref_count"] = row_lookup['n_ref_count'].item()
+              df_pl.at[row[0], "n_alt_count"] = row_lookup['n_alt_count'].item()
           
-          elif hgvsp_short not in df_bc.index and not pd.isna(hgvsp_short):
+          # If the entry isn't in the table, 
+          # or if there is more than one value and so you can't choose which normal values to take, 
+          # set them as 0
+          else:
               df_pl.at[row[0], "n_depth"] = 0
               df_pl.at[row[0], "n_ref_count"] = 0
               df_pl.at[row[0], "n_alt_count"] = 0
 
-          # Note: splice sites almost always have NA as their HGVSp_Short name. So, compare their HGVSc names instead.
-          elif "splice" in variant_classification.lower(): 
-              row_lookup = df_bc[(df_bc['Hugo_Symbol'] == hugo_symbol) & 
-                                 (df_bc['HGVSc'] == hgvsc)]
-              if len(row_lookup) == 1: # there should only be one entry for one gene
-                  df_pl.at[row[0], "n_depth"] = row_lookup['n_depth'].item()
-                  df_pl.at[row[0], "n_ref_count"] = row_lookup['n_ref_count'].item()
-                  df_pl.at[row[0], "n_alt_count"] = row_lookup['n_alt_count'].item()
-              elif len(row_lookup) == 0: # cannot find in table
-                  df_pl.at[row[0], "n_depth"] = 0
-                  df_pl.at[row[0], "n_ref_count"] = 0
-                  df_pl.at[row[0], "n_alt_count"] = 0
-              else: # if there are either no entries or more than one entry for one gene, tag it to be filtered out downstream
-                  df_pl.at[row[0], "n_alt_count"] = 5
-          
-          else:
-              df_pl.at[row[0], "n_alt_count"] = 5 # for all other cases, tag it to be filtered out downstream
-            
           """"For frequency values"""    
           
           row_lookup = df_freq[(df_freq['Start_Position'] == row[1]['Start_Position']) &
