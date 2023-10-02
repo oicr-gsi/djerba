@@ -6,6 +6,8 @@ import csv
 import logging
 import os
 import re
+from djerba.mergers.gene_information_merger.factory import factory as gim_factory
+from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
 from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.plugins.fusion.tools import fusion_reader
 from djerba.util.html import html_builder as hb
@@ -86,16 +88,15 @@ class main(plugin_base):
             msg = "Unknown therapy tier '{0}'".format(tier)
             self.logger.error(msg)
             raise DjerbaPluginError(msg)
-        # TODO import dict keys from the merger class
-        entry = {
-            "Tier": tier,
-            "OncoKB level": level,
-            "Treatments": treatments,
-            "Gene": gene,
-            "Gene_URL": hb.build_gene_url(gene),
-            "Alteration": "Fusion",
-            "Alteration_URL": hb.build_fusion_url(genes, oncotree_code)
-        }
+        factory = tom_factory(self.log_level, self.log_path)
+        entry = factory.get_json(
+            tier=tier,
+            level=level,
+            treatments=treatments,
+            gene=gene,
+            alteration='Fusion',
+            alteration_url=hb.build_fusion_url(genes, oncotree_code)
+        )
         return entry
 
     def configure(self, config):
@@ -170,6 +171,7 @@ class main(plugin_base):
         treatment_opts = []
         cytobands = self.cytoband_lookup()
         summaries = gene_summary_reader()
+        gene_info_factory = gim_factory(self.log_level, self.log_path)
         # table has 2 rows for each oncogenic fusion
         for fusion in gene_pair_fusions:
             oncokb_level = fusion.get_oncokb_level()
@@ -186,12 +188,11 @@ class main(plugin_base):
                     core_constants.ONCOKB: oncokb_level
                 }
                 rows.append(row)
-                gene_info_entry = {
-                    'Gene': gene,
-                    'Gene_URL': gene_url,
-                    self.CHROMOSOME: chromosome,
-                    core_constants.SUMMARY: summaries.get(gene)
-                }
+                gene_info_entry = gene_info_factory.get_json(
+                    gene=gene,
+                    gene_url=gene_url,
+                    summary=summaries.get(gene)
+                )
                 gene_info.append(gene_info_entry)
             if fusion.get_fda_level() != None:
                 entry = self.build_treatment_entry(fusion, 'Approved', oncotree_code)
