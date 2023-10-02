@@ -152,11 +152,6 @@ class main(plugin_base):
        
       for row in df_pl.iterrows():
           hugo_symbol = row[1]['Hugo_Symbol']
-          hgvsp_short = row[1]['HGVSp_Short']
-          hgvsc = row[1]['HGVSc']
-          variant_classification = row[1]["Variant_Classification"]
-     
-          hugo_symbol = row[1]['Hugo_Symbol']
           chromosome = row[1]['Chromosome']
           start_position = row[1]['Start_Position']
           reference_allele = row[1]['Reference_Allele']
