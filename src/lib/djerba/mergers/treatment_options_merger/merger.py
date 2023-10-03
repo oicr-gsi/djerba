@@ -97,3 +97,4 @@ class main(merger_base):
     def specify_params(self):
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical,supplementary')
         self.set_priority_defaults(self.PRIORITY)
+        self.set_ini_default('render_priority', 50)

@@ -17,7 +17,7 @@ class TestProvenanceHelper(TestBase):
 
     CORE = 'core'
     HELPER_NAME = 'provenance_helper'
-    SUBSET_MD5 = '62c0b00c42a352d9ce3c49aedb55e8e2'
+    SUBSET_MD5 = '41c9288d5159f960f0193939a411a113'
     SAMPLE_INFO_MD5 = '5d358d76c0013748b5fc34c52b6abe56'
     PATH_INFO_MD5 = 'f90fd360aeb81bf4d90905c65be905c6'
     
@@ -65,5 +65,4 @@ class TestProvenanceHelper(TestBase):
 
 
 if __name__ == '__main__':
-    unittest.main()
-
+    unittest.main() 

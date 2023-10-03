@@ -25,7 +25,7 @@ class TestTreatmentOptionsMerger(TestBase):
         loader = merger_loader(logging.WARNING)
         merger = loader.load(self.MODULE_NAME)
         self.assertEqual(merger.ini_defaults.get(cc.CONFIGURE_PRIORITY), 300)
-        self.assertEqual(merger.ini_defaults.get(cc.RENDER_PRIORITY), 300)
+        self.assertEqual(merger.ini_defaults.get(cc.RENDER_PRIORITY), 50)
         html = merger.render(inputs)
         md5_found = self.getMD5_of_string(html)
         self.assertEqual(md5_found, '4f0efc5197fdd53b1197384a4dbe2305')

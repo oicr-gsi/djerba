@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## GCGI-1077: Merger JSON factories
+- Add factory classes to generate correct JSON for mergers; use in the fusion plugin
+
 ## GCGI-1076: Gene information merger update
 - Add a Mako template to render correctly formatted HTML
 
