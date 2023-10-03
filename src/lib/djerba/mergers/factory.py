@@ -17,5 +17,3 @@ class factory(logger, ABC):
         Child classes will map from kwargs to a dictionary with appropriate keys
         """
         pass
-        
-        
