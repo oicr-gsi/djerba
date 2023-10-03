@@ -4,6 +4,7 @@ Plugin for whole-genome CNV reporting
 
 import os
 import djerba.core.constants as core_constants
+import djerba.plugins.cnv.constants as cnv_constants
 import djerba.util.oncokb.constants as oncokb_constants
 from djerba.plugins.base import plugin_base
 from djerba.plugins.cnv.tools import cnv_processor
@@ -16,24 +17,6 @@ class main(plugin_base):
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'cnv_template.html'
 
-    # INI param names
-    # these params are also used by other plugins; TODO remove reundancy
-    SEQUENZA_PATH = 'sequenza_path'
-    SEQUENZA_GAMMA = 'sequenza_gamma'
-    SEQUENZA_SOLUTION = 'sequenza_solution'
-    PURITY = 'purity'
-    TUMOUR_ID = 'tumour_id'
-    ONCOTREE_CODE = 'oncotree_code'
-
-    # keys for JSON output
-    ALTERATION = 'Alteration'
-    CHROMOSOME = 'Chromosome'
-    EXPRESSION_PERCENTILE = 'Expression Percentile'
-    GENE = 'Gene'
-    GENE_URL = 'Gene_URL'
-    ONCOKB = core_constants.ONCOKB
-    HAS_EXPRESSION_DATA = 'Has expression data'
-
     # constants for rendering
     PERCENT_GENOME_ALTERED = 'percent_genome_altered'
     TOTAL_VARIANTS = 'total_variants'
@@ -43,15 +26,15 @@ class main(plugin_base):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         # TODO get sequenza path from provenenance helper JSON
-        if wrapper.my_param_is_null(self.PURITY):
-            gamma = config.get_my_int(self.SEQUENZA_GAMMA)
-            solution = config.get_my_string(self.SEQUENZA_SOLUTION)
-            reader = sequenza_reader(config.get_my_string(self.SEQUENZA_PATH))
+        if wrapper.my_param_is_null(cnv_constants.PURITY):
+            gamma = config.get_my_int(cnv_constants.SEQUENZA_GAMMA)
+            solution = config.get_my_string(cnv_constants.SEQUENZA_SOLUTION)
+            reader = sequenza_reader(config.get_my_string(cnv_constants.SEQUENZA_PATH))
             purity = reader.get_purity(gamma, solution)
-            wrapper.set_my_param(self.PURITY, purity)
+            wrapper.set_my_param(cnv_constants.PURITY, purity)
             self.logger.debug("Found purity {0} from sequenza results".format(purity))
         else:
-            purity = wrapper.get_my_float(self.PURITY)
+            purity = wrapper.get_my_float(cnv_constants.PURITY)
             self.logger.debug("Using user-supplied purity: {0}".format(purity))
         return wrapper.get_config()
 
@@ -73,16 +56,16 @@ class main(plugin_base):
     
     def specify_params(self):
         required = [
-            self.SEQUENZA_FILE,
-            self.SEQUENZA_GAMMA,
-            self.SEQUENZA_SOLUTION,
-            self.TUMOUR_ID,
-            self.ONCOTREE_CODE
+            cnv_constants.SEQUENZA_PATH,
+            cnv_constants.SEQUENZA_GAMMA,
+            cnv_constants.SEQUENZA_SOLUTION,
+            cnv_constants.TUMOUR_ID,
+            cnv_constants.ONCOTREE_CODE
         ]
         for key in required:
             self.add_ini_required(key)
         discovered = [
-            self.PURITY
+            cnv_constants.PURITY
         ]
         self.set_ini_default(
             oncokb_constants.ONCOKB_CACHE,

@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import djerba.core.constants as core_constants
-import djerba.helpers.expression.helper.main as expr_helper
+from djerba.helpers.expression_helper.helper import main as expr_helper
 from djerba.util.logger import logger
 
 class wgts_tools(logger):
