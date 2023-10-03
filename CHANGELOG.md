@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## GCGI-1083: SNV and CNV updates
+- Rework the draft SNV/CNV plugins to make them production ready
+
 ## GCGI-1077: Merger JSON factories
 - Add factory classes to generate correct JSON for mergers; use in the fusion plugin
 

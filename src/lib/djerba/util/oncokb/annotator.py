@@ -12,6 +12,34 @@ from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.validator import path_validator
 
+class annotator_factory:
+    """Create an OncoKB annotator from params in a Djerba config wrapper"""
+
+    def __init__(self, log_level=logging.WARNING, log_path=None):
+        self.log_level = log_level
+        self.log_path = log_path
+
+    def get_annotator(self, work_dir, config_wrapper):
+        cache_params = oncokb_cache_params(
+            config_wrapper.get_my_string(oncokb_constants.ONCOKB_CACHE),
+            config_wrapper.get_my_boolean(oncokb_constants.APPLY_CACHE),
+            config_wrapper.get_my_boolean(oncokb_constants.UPDATE_CACHE),
+            log_level=self.log_level,
+            log_path=self.log_path
+        )
+        self.logger.debug("OncoKB cache params: {0}".format(cache_params))
+        annotator = oncokb_annotator(
+            config_wrapper.get_my_string(core_constants.TUMOUR_ID),
+            config_wrapper.get_my_string(oncokb_constants.ONCOTREE_CODE),
+            work_dir, # output dir
+            work_dir, # temporary dir -- same as output
+            cache_params,
+            self.log_level,
+            self.log_path
+        )
+        return annotator
+
+
 class oncokb_annotator(logger):
 
     # environment variable for ONCOKB token path

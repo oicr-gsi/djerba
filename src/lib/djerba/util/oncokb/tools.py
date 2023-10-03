@@ -8,6 +8,9 @@ import djerba.util.oncokb.constants as oncokb
 
 class levels:
 
+    ACTIONABLE_LEVELS = ['1', '2', '3A', '3B', '4', 'R1', 'R2']
+    REPORTABLE_LEVELS = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'N1', 'N2']
+
     @staticmethod
     def is_null_string(value):
         if isinstance(value, str):
@@ -21,6 +24,12 @@ class levels:
         """True if level passes filter, ie. if row should be kept"""
         likely_oncogenic_order = levels.oncokb_order('N2')
         return levels.oncokb_order(row.get(core_constants.ONCOKB)) <= likely_oncogenic_order
+
+    @staticmethod
+    def oncokb_filter_actionable(row):
+        """True if level passes filter, ie. if row should be kept"""
+        actionable_order = levels.oncokb_order('R2')
+        return levels.oncokb_order(row.get(core_constants.ONCOKB)) <= actionable_order
 
     @staticmethod
     def oncokb_level_to_html(level):
@@ -63,6 +72,21 @@ class levels:
         return order
 
     @staticmethod
+    def parse_max_reportable_level(row_dict):
+        [level, therapies] = levels.parse_max_oncokb_level_and_therapies(
+            row_input,
+            levels.REPORTABLE_LEVELS
+        )
+        return level
+
+    @staticmethod
+    def parse_max_actionable_level_and_therapies(row_dict):
+        return levels.parse_max_oncokb_level_and_therapies(
+            row_input,
+            levels.REPORTABLE_LEVELS
+        )
+
+    @staticmethod
     def parse_max_oncokb_level_and_therapies(row_dict, levels_list):
         # find maximum level (if any) from given levels list, and associated therapies
         max_level = None
@@ -97,6 +121,15 @@ class levels:
     def reformat_level_string(level):
         return re.sub('LEVEL_', '', level)
 
+    @staticmethod
+    def tier(level):
+        if level in ['1', '2', 'R1']:
+            tier = "Approved"
+        elif level in ['3A', '3B', '4', 'R2']:
+            tier = "Investigational"
+        else:
+            tier = None
+        return tier
 
 class gene_summary_reader:
 
