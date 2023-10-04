@@ -11,12 +11,14 @@ import djerba.util.oncokb.constants as oncokb_constants
 from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
 from djerba.plugins.wgts.tools import wgts_tools
+from djerba.sequenza import sequenza_reader # TODO move sequenza.py to util?
 from djerba.util.html import html_builder
 from djerba.util.image_to_base64 import converter
+from djerba.util.logger import logger
 from djerba.util.oncokb.annotator import annotator_factory
 from djerba.util.oncokb.tools import levels as oncokb_levels
 from djerba.util.oncokb.tools import gene_summary_reader
-from djerba.util.logger import logger
+from djerba.util.subprocess_runner import subprocess_runner
 
 class cnv_processor(logger):
 
@@ -147,13 +149,13 @@ class cnv_processor(logger):
         cmd = [
             'Rscript', os.path.join(dir_location + "/R/process_CNA_data.r"),
             '--outdir', self.work_dir,
-            '--segfile', self.seg_file,
+            '--segfile', self.seg_path,
             '--genebed', genebed_path,
             '--oncolist', oncolist_path,
             '--purity', purity,
             '--centromeres', centromeres_path
         ]
-        subprocess_runner().run(cmd, "main R script")
+        subprocess_runner().run([str(x) for x in cmd], "main R script")
 
     def write_cnv_plot(self):
         """Generate the CNV plot in SVG format and return as a base64-encoded string"""
@@ -191,7 +193,7 @@ class cnv_processor(logger):
                 if in_header:
                     in_header = False
                 else:
-                    row[0] = self.tumour_id
+                    row[0] = self.config.get_my_string(cnv.TUMOUR_ID)
                 writer.writerow(row)
         # process data with main R script
         self.run_main_r_script()

@@ -27,9 +27,9 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         # TODO get sequenza path from provenenance helper JSON
         if wrapper.my_param_is_null(cnv_constants.PURITY):
-            gamma = config.get_my_int(cnv_constants.SEQUENZA_GAMMA)
-            solution = config.get_my_string(cnv_constants.SEQUENZA_SOLUTION)
-            reader = sequenza_reader(config.get_my_string(cnv_constants.SEQUENZA_PATH))
+            gamma = wrapper.get_my_int(cnv_constants.SEQUENZA_GAMMA)
+            solution = wrapper.get_my_string(cnv_constants.SEQUENZA_SOLUTION)
+            reader = sequenza_reader(wrapper.get_my_string(cnv_constants.SEQUENZA_PATH))
             purity = reader.get_purity(gamma, solution)
             wrapper.set_my_param(cnv_constants.PURITY, purity)
             self.logger.debug("Found purity {0} from sequenza results".format(purity))
@@ -43,7 +43,7 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         # write intermediate files to working directory
         processor = cnv_processor(work_dir, wrapper, self.log_level, self.log_path)
-        processor.run()
+        processor.write_working_files()
         # read results from working directory into data structure
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         data['results'] = processor.get_results()
