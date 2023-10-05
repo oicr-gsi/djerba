@@ -40,7 +40,7 @@ arm_level_caller_purple <- function(segs, centromeres, gain_threshold, shallow_d
   arm_definitions$arm.length <- 
     arm_definitions$arm.end - arm_definitions$arm.start
   
-  segs_dt <- setDT(segs[,c("chromosome","start","end","refNormalisedCopyNumber","seg.length")]) 
+  segs_dt <- setDT(segs[,c("chromosome","start","end","copyNumber","seg.length")]) 
   arm_definitions_dt <- setDT(arm_definitions)
   
   ## join segs for being within arm boundaries
@@ -51,13 +51,13 @@ arm_level_caller_purple <- function(segs, centromeres, gain_threshold, shallow_d
            chromosome = chrom), 
     nomatch = 0,
     .(chrom,  arm, arm.length, 
-      refNormalisedCopyNumber, seg.length, start, end)
+      copyNumber, seg.length, start, end)
   ]
   
   ## use NCCN terminology
   segs_armd$CNA <- "neutral"
-  segs_armd$CNA[segs_armd$refNormalisedCopyNumber < shallow_deletion_threshold] <- "del"
-  segs_armd$CNA[segs_armd$refNormalisedCopyNumber > gain_threshold] <- "+"
+  segs_armd$CNA[segs_armd$copyNumber < shallow_deletion_threshold] <- "del"
+  segs_armd$CNA[segs_armd$copyNumber > gain_threshold] <- "+"
   
   arm_CNA_prop <- segs_armd %>% 
     group_by(chrom,arm,CNA,arm.length) %>% 
@@ -129,7 +129,7 @@ process_centromeres <- function(centromeres_path){
   centromeres_sub$majorAlleleCopyNumber <- NA
   centromeres_sub$minorAlleleCopyNumber <- NA
   centromeres_sub$CNt_high <- NA
-  centromeres_sub$refNormalisedCopyNumber <- NA
+  centromeres_sub$copyNumber <- NA
   centromeres_sub$cent <- 1
   return(centromeres_sub)
 }

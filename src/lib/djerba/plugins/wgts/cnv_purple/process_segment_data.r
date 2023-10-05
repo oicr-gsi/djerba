@@ -30,7 +30,7 @@ baf.min           <- 25
 
 #### arm-level events ####
 segs <- read.delim(segfile_path, header=TRUE) # segmented data already
-segs <- segs[segs$bafCount > baf.min & segs$germlineStatus != "NOISE" & segs$refNormalisedCopyNumber > 0,]
+segs <- segs[segs$bafCount > baf.min ,]
 
 centromeres <- read.table(centromeres_path,header=T)
 
@@ -40,17 +40,17 @@ write.table(arm_level_calls,file=paste0(dir_path, "/purple.arm_level_calls.txt")
 segs$ID <- "purple"
 log2 <- segs[,c("ID","chromosome","start","end","bafCount")]
 names(log2) <- c("ID",	"chrom"	,"loc.start"	,"loc.end"	,"num.mark")
-log2$seg.mean <- log(segs$refNormalisedCopyNumber/2, 2)
+log2$seg.mean <- log(segs$copyNumber/2, 2)
 write.table(log2,file=paste0(dir_path, "/purple.seg"), sep="\t", row.names=FALSE, quote=FALSE, col.names = FALSE)
 
 #### segment plot ####
 segs <- separate(segs, chromosome,c("blank","chr"),"chr",fill="left",remove = FALSE)
 segs$Chromosome <-  factor(segs$chr, levels= chromosomes_incl, ordered = T)
 
-segs$CNt_high[segs$refNormalisedCopyNumber > highCN] <- "high"
+segs$CNt_high[segs$chrom > highCN] <- "high"
 
 
-fittedSegmentsDF_sub <- segs %>% dplyr::select(start,end,majorAlleleCopyNumber,minorAlleleCopyNumber,refNormalisedCopyNumber,CNt_high,Chromosome)
+fittedSegmentsDF_sub <- segs %>% dplyr::select(start,end,Chromosome,majorAlleleCopyNumber,minorAlleleCopyNumber,copyNumber,CNt_high)
 fittedSegmentsDF_sub$cent <- NA
 
 fittedSegmentsDF_sub <- rbind.data.frame(
@@ -71,7 +71,7 @@ svg(paste0(dir_path,"/purple.seg_CNV_plot.svg"), width = 8, height = 1.5)
       facet_grid(.~Chromosome,scales = "free",space="free", switch="both")+ 
       geom_point(aes(x=start,y=y_highCN+0.35,shape=CNt_high),size=1) +
       
-      geom_segment(aes(x=start, xend=end, y=refNormalisedCopyNumber, yend=refNormalisedCopyNumber),color="black",linewidth=2, na.rm = TRUE) + 
+      geom_segment(aes(x=start, xend=end, y=round(copyNumber), yend=round(copyNumber)),color="black",linewidth=2, na.rm = TRUE) + 
       
       geom_vline(aes(xintercept = start,linetype=as.factor(cent)),color="lightgrey")  +
       
