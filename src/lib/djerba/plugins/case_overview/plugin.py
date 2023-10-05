@@ -30,8 +30,8 @@ class main(plugin_base):
     BLOOD_SAMPLE_ID = "normal_id"
     PRIMARY_CANCER = "primary_cancer"
     REQUISITION_ID = "requisition id"
-    REQ_APPROVED_DATE = "requisition_approved"
-    SAMPLE_ANATOMICAL_SITE = "site_of_biopsy"
+    REQUISITION_APPROVED = "requisition_approved"
+    SITE_OF_BIOPSY = "site_of_biopsy"
     STUDY = "study"
     DONOR = "donor"
     TUMOUR_SAMPLE_ID = "tumour_id"
@@ -127,14 +127,14 @@ class main(plugin_base):
             self.ASSAY,
             self.ASSAY_DESCRIPTION,
             self.PRIMARY_CANCER,
-            self.SAMPLE_ANATOMICAL_SITE,
+            self.SITE_OF_BIOPSY,
             self.DONOR,
             self.STUDY,
             core_constants.PATIENT_STUDY_ID,
             self.TUMOUR_SAMPLE_ID,
             self.BLOOD_SAMPLE_ID,
             core_constants.REPORT_ID,
-            self.REQ_APPROVED_DATE,
+            self.REQUISITION_APPROVED,
         ]
         results = {k: wrapper.get_my_string(k) for k in results_keys}
         data[core_constants.RESULTS] = results
@@ -145,14 +145,14 @@ class main(plugin_base):
             self.ASSAY,
             self.ASSAY_DESCRIPTION,
             self.PRIMARY_CANCER,
-            self.SAMPLE_ANATOMICAL_SITE,
+            self.SITE_OF_BIOPSY,
             self.DONOR,
             self.STUDY,
             core_constants.PATIENT_STUDY_ID,
             self.TUMOUR_SAMPLE_ID,
             self.BLOOD_SAMPLE_ID,
             core_constants.REPORT_ID,
-            self.REQ_APPROVED_DATE,
+            self.REQUISITION_APPROVED,
             core_constants.DEFAULT_SAMPLE_INFO
         ]
         for key in discovered:
