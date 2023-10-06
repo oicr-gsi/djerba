@@ -12,7 +12,7 @@ from djerba.plugins.plugin_tester import PluginTester
 
 class TestCaseOverview(PluginTester):
 
-    INI_NAME = 'case_overview.ini'
+    INI_NAME = 'case_overview_WGTS.ini'
     JSON_NAME = 'case_overview.json'
 
     def test(self):
