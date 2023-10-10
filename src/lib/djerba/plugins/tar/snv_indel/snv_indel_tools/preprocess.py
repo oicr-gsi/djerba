@@ -66,7 +66,7 @@ class preprocess(logger):
   MAX_UNMATCHED_GNOMAD_AF = 0.001
 
 
-  def __init__(self, config, work_dir, assay, study, oncotree_code, tumour_id, normal_id, maf_file, log_level=logging.DEBUG, log_path=None):
+  def __init__(self, config, work_dir, assay, oncotree_code, cbio_id, tumour_id, normal_id, maf_file, log_level=logging.DEBUG, log_path=None):
       
       # CONFIG
       self.config = config
@@ -92,9 +92,9 @@ class preprocess(logger):
       # PARAMETERS
       self.assay = assay
       self.oncotree_code = oncotree_code
+      self.cbio_id = cbio_id
       self.tumour_id = tumour_id
       self.normal_id = normal_id
-      self.study = study
       self.maf_file = maf_file
       self.maf_file_normal = self.config['tar.snv_indel']['maf_file_normal']
 
@@ -110,7 +110,7 @@ class preprocess(logger):
      '--whizbam_url', 'https://whizbam.oicr.on.ca',
      '--tumourid', self.tumour_id,
      '--normalid', self.normal_id,
-     '--cbiostudy', self.study,
+     '--cbiostudy', self.cbio_id,
      '--maffile', maf_path,
      '--tar', 'TRUE'
     ]
