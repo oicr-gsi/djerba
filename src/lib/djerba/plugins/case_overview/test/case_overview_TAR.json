@@ -1,0 +1,26 @@
+{
+            "plugin_name": "case_overview plugin",
+            "version": "1.0.0",
+            "priorities": {
+                "configure": 200,
+                "extract": 200,
+                "render": 10
+            },
+            "attributes": [
+                "clinical"
+            ],
+            "merge_inputs": {},
+            "results": {
+                "assay": "TAR",
+                "assay_description": "Targeted Sequencing - REVOLVE Panel - cfDNA and Buffy Coat (v1.0)",
+                "primary_cancer": "High grade serous ovarian carcinoma",
+                "site_of_biopsy": "Omentum",
+                "donor": "PLACEHOLDER",
+                "study": "PLACEHOLDER",
+                "patient_study_id": "PLACEHOLDER",
+                "tumour_id": "PLACEHOLDER_Pl",
+                "normal_id": "PLACEHOLDER_BC",
+                "report_id": "PLACEHOLDER_Pl-v1",
+                "requisition_approved": "2023/08/19"
+    }
+}
