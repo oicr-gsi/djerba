@@ -73,6 +73,7 @@ class main(plugin_base):
         )
         self.set_ini_default(oncokb_constants.APPLY_CACHE, False)
         self.set_ini_default(oncokb_constants.UPDATE_CACHE, False)
+        self.set_ini_default(cnv_constants.HAS_EXPRESSION_DATA, True)
         for key in discovered:
             self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')

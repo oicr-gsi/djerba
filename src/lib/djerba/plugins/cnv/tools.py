@@ -29,10 +29,12 @@ class cnv_processor(logger):
     ONCOLIST = "20200818-oncoKBcancerGeneList.tsv"
     PLOT_FILENAME = 'seg_CNV_plot.svg' # this name is hard-coded in the R plot script
     MINIMUM_MAGNITUDE_SEG_MEAN = 0.2
-    GENOME_SIZE = 3*10**9 # TODO use more accurate value when we release a new report format
+    GENOME_SIZE = 3*10**9 # TODO use more accurate value
     SEG_FILENAME = 'seg.txt'
 
     def __init__(self, work_dir, config_wrapper, log_level=logging.WARNING, log_path=None):
+        self.log_level = log_level
+        self.log_path = log_path
         self.logger = self.get_logger(log_level, log_path)
         self.work_dir = work_dir
         self.config = config_wrapper
@@ -106,7 +108,7 @@ class cnv_processor(logger):
         is_wgts = self.config.get_my_boolean(cnv.HAS_EXPRESSION_DATA)
         rows = []
         if is_wgts:
-            mutation_expression = wgts_tools.read_expression()
+            mutation_expression = wgts_tools.read_expression(self.work_dir)
         else:
             mutation_expression = {}
         cytobands = wgts_tools.cytoband_lookup()
@@ -118,8 +120,8 @@ class cnv_processor(logger):
                 row_output = {
                     cnv.EXPRESSION_PERCENTILE: mutation_expression.get(gene), # None for WGS
                     wgts_tools.GENE: gene,
-                    cnv.GENE_URL: self.build_gene_url(gene),
-                    cnv.ALT: row[self.ALTERATION_UPPER_CASE],
+                    cnv.GENE_URL: html_builder.build_gene_url(gene),
+                    cnv.ALTERATION: row_input[self.ALTERATION_UPPER_CASE],
                     wgts_tools.CHROMOSOME: cytobands.get(gene),
                     wgts_tools.ONCOKB: oncokb_levels.parse_oncokb_level(row_input)
                 }
@@ -159,7 +161,7 @@ class cnv_processor(logger):
 
     def write_cnv_plot(self):
         """Generate the CNV plot in SVG format and return as a base64-encoded string"""
-        reader = sequenza_reader(self.config.get_my_string(cnv.SEQUENZA_FILE))
+        reader = sequenza_reader(self.config.get_my_string(cnv.SEQUENZA_PATH))
         segment_file = reader.extract_segments_text_file(
             self.work_dir,
             gamma=self.config.get_my_int(cnv.SEQUENZA_GAMMA),

@@ -4,9 +4,11 @@ import csv
 import json
 import logging
 import os
+import re
 import djerba.core.constants as core_constants
 from djerba.helpers.expression_helper.helper import main as expr_helper
 from djerba.util.logger import logger
+from djerba.util.oncokb.tools import levels as oncokb_levels
 
 class wgts_tools(logger):
 
@@ -82,7 +84,7 @@ class wgts_tools(logger):
         return (chromosome, arm, band)
 
     @staticmethod
-    def read_expression():
+    def read_expression(work_dir):
         # read the expression metric from JSON written by the expression helper
         in_path = os.path.join(work_dir, expr_helper.TCGA_EXPR_PCT_JSON)
         with open(in_path) as in_file:
@@ -93,6 +95,6 @@ class wgts_tools(logger):
         # sort rows oncokb level, then by cytoband, then by gene name
         rows = sorted(rows, key=lambda row: row[self.GENE])
         rows = sorted(rows, key=lambda row: self.cytoband_sort_order(row[self.CHROMOSOME]))
-        rows = sorted(rows, key=lambda row: oncokb_tools.oncokb_order(row[self.ONCOKB]))
+        rows = sorted(rows, key=lambda row: oncokb_levels.oncokb_order(row[self.ONCOKB]))
         return rows
 

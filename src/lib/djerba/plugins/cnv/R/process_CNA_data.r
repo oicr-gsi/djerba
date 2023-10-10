@@ -27,7 +27,7 @@ purity           <- as.numeric(opt$purity)
 
 # source functions
 basedir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), sep='/')
-source(paste0(basedir, "/plugins/wgts/cnv_tools/R/CNA_supporting_functions.r"))
+source(paste0(basedir, "/plugins/cnv/R/CNA_supporting_functions.r"))
 
 ###################### CNA #####################
 

@@ -111,15 +111,26 @@ class levels:
                 break
         if max_level:
             parsed_level = levels.reformat_level_string(max_level)
-        elif not is_null_string(row_dict[oncokb.ONCOGENIC_UC]):
-            parsed_level = row_dict[oncokb.ONCOGENIC_UC]
+        elif not levels.is_null_string(row_dict[oncokb.ONCOGENIC_UC]):
+            parsed_level = levels.reformat_level_string(row_dict[oncokb.ONCOGENIC_UC])
         else:
             parsed_level = 'NA'
         return parsed_level
 
     @staticmethod
     def reformat_level_string(level):
-        return re.sub('LEVEL_', '', level)
+        unknown = 'Unknown'
+        if level == 'Oncogenic':
+            reformatted = 'N1'
+        elif level == 'Likely Oncogenic':
+            reformatted = 'N2'
+        elif level == 'Predicted Oncogenic':
+            reformatted = 'N3'
+        elif level == unknown:
+            reformatted = unknown
+        else:
+            reformatted = re.sub('LEVEL_', '', level)
+        return reformatted
 
     @staticmethod
     def tier(level):

@@ -5,19 +5,21 @@
 
 import os
 import logging
-import djerba.extract.oncokb.constants as oncokb_constants
+import djerba.core.constants as core_constants
+import djerba.util.oncokb.constants as oncokb_constants
 import djerba.util.constants as constants
 from djerba.extract.oncokb.cache import oncokb_cache, oncokb_cache_params
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.validator import path_validator
 
-class annotator_factory:
+class annotator_factory(logger):
     """Create an OncoKB annotator from params in a Djerba config wrapper"""
 
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
+        self.logger = self.get_logger(log_level, __name__, log_path)
 
     def get_annotator(self, work_dir, config_wrapper):
         cache_params = oncokb_cache_params(
