@@ -52,5 +52,11 @@ class TestTarSamplePlugin(PluginTester):
         collapsed_coverage_bc = sample.main.process_consensus_cruncher(self, cc_expected_location)
         self.assertEqual(collapsed_coverage_bc, 910)
 
+    def redact_json_data(self, data):
+        """replaces empty method from testing.tools"""
+        for key in ['files']:
+            del data['plugins']['tar.sample']['results'][key]
+        return data
+
 if __name__ == '__main__':
     unittest.main()
