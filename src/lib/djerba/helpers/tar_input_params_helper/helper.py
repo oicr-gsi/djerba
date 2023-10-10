@@ -15,6 +15,7 @@ class main(helper_base):
     STUDY = 'study'
     PROJECT = 'project'
     ONCOTREE_CODE = 'oncotree_code'
+    CBIO_ID = 'cbio_id'
     PATIENT_STUDY_ID = 'patient_study_id'
     TUMOUR_ID = 'tumour_id'
     NORMAL_ID = 'normal_id'
@@ -40,6 +41,7 @@ class main(helper_base):
         self.add_ini_required(self.PROJECT)
         self.add_ini_required(self.STUDY)
         self.add_ini_required(self.ONCOTREE_CODE)
+        self.add_ini_required(self.CBIO_ID)
         self.add_ini_required(self.PATIENT_STUDY_ID)
         self.add_ini_required(self.TUMOUR_ID)
         self.add_ini_required(self.NORMAL_ID)
@@ -71,6 +73,7 @@ class main(helper_base):
             self.STUDY: config[self.identifier][self.STUDY],
             self.PROJECT: config[self.identifier][self.PROJECT],
             self.ONCOTREE_CODE: config[self.identifier][self.ONCOTREE_CODE],
+            self.CBIO_ID: config[self.identifier][self.CBIO_ID],
             self.PATIENT_STUDY_ID: config[self.identifier][self.PATIENT_STUDY_ID],
             self.TUMOUR_ID: config[self.identifier][self.TUMOUR_ID],
             self.NORMAL_ID: config[self.identifier][self.NORMAL_ID],
