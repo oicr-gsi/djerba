@@ -1,0 +1,20 @@
+{
+            "donor": "REVOLVE_0003",
+            "project": "REVTAR",
+            "study": "Re-VOLVE",
+            "oncotree_code": "HGSOC",
+            "cbio_id": "REVOLVE",
+            "patient_study_id": "REV-01-003",
+            "tumour_id": "REV-01-003-Pl",
+            "normal_id": "REV-01-003-BC",
+            "primary_cancer": "High grade serous ovarian carcinoma",
+            "site_of_biopsy": "Omentum",
+            "known_variants": "None",
+            "requisition_approved": "2023/03/28",
+            "assay": "TAR",
+            "attributes": "",
+            "depends_configure": "",
+            "depends_extract": "",
+            "configure_priority": "10",
+            "extract_priority": "10"
+}
