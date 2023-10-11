@@ -89,6 +89,9 @@ class wgts_tools(logger):
         in_path = os.path.join(work_dir, expr_helper.TCGA_EXPR_PCT_JSON)
         with open(in_path) as in_file:
             expr = json.loads(in_file.read())
+        # convert from strings to floats
+        for key in expr.keys():
+            expr[key] = float(expr[key])
         return expr
 
     def sort_variant_rows(self, rows):

@@ -17,11 +17,6 @@ class main(plugin_base):
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'cnv_template.html'
 
-    # constants for rendering
-    PERCENT_GENOME_ALTERED = 'percent_genome_altered'
-    TOTAL_VARIANTS = 'total_variants'
-    CLINICALLY_RELEVANT_VARIANTS = 'clinically_relevant_variants'
-    
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)

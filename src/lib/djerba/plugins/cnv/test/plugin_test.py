@@ -32,6 +32,7 @@ class TestWgtsCnv(PluginTester):
         template = string.Template(template_str)
         ini_str = template.substitute({'SEQUENZA_PATH': sequenza_path})
         tmp_dir = self.get_tmp_dir()
+        tmp_dir = '/u/ibancarz/workspace/djerba/test_20231011_02'
         input_dir = os.path.join(tmp_dir, 'input')
         os.mkdir(input_dir)
         work_dir = os.path.join(tmp_dir, 'work')
@@ -43,13 +44,13 @@ class TestWgtsCnv(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: self.JSON_NAME,
-            self.MD5: 'e8d5c9777e4dbd6162105cd189cb40bf'
+            self.MD5: '60b1032eb0c258fdbdaf8bec1ca25298'
         }
         self.run_basic_test(input_dir, params, work_dir=work_dir)
 
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""
-        del data['plugins']['wgts.cnv']['results']['cnv_plot']
+        del data['plugins']['cnv']['results']['cnv plot']
         return data 
 
 if __name__ == '__main__':

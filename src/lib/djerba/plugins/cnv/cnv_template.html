@@ -2,14 +2,14 @@
 ## This file is the HTML code for the Copy Number Variation (CNV) section of the report.
 
 <%
-  from djerba.plugins.cnv.plugin import main as cnv
+  import djerba.plugins.cnv.constants as cnv
   from djerba.plugins.cnv.html import make_table_header, make_table_rows
-  from djerba.util.tools.html import section_cells_begin, section_cells_end
+  from djerba.util.html import html_builder
 %>
   
 <!-- Copy Number Variants -->
 
-${section_cells_begin("Copy Number Variation", main=True)}
+${html_builder.section_cells_begin("Copy Number Variation", True)}
 
       <p>The percent genome altered (PGA) was <strong>${results.get(cnv.PERCENT_GENOME_ALTERED)}</strong>%. 
             <strong>${results.get(cnv.TOTAL_VARIANTS)}</strong> cancer gene(s) were subject to copy number variation, 
@@ -18,7 +18,6 @@ ${section_cells_begin("Copy Number Variation", main=True)}
       </p>
 
       <img id='CNV' style='width: 100%; object-fit: contain' src="${results.get('cnv_plot')}"/>
-
       % if results.get(cnv.CLINICALLY_RELEVANT_VARIANTS) > 0:
             <table class="variants" width="100%">
             ${make_table_header()}
@@ -37,4 +36,4 @@ ${section_cells_begin("Copy Number Variation", main=True)}
 	    </table>
       % endif
       
-${html_builder().section_cells_end()}
+${html_builder.section_cells_end()}

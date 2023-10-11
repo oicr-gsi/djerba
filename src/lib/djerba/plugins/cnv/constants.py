@@ -4,7 +4,7 @@ import djerba.core.constants as core_constants
 import djerba.util.oncokb.constants as oncokb_constants
 
 # INI param names
-# these params are also used by other plugins; TODO remove reundancy
+# these params are also used by other plugins; TODO remove redundancy
 SEQUENZA_PATH = 'sequenza_path'
 SEQUENZA_GAMMA = 'sequenza_gamma'
 SEQUENZA_SOLUTION = 'sequenza_solution'
