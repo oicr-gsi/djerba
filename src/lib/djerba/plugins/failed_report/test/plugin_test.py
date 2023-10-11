@@ -1,15 +1,14 @@
 #! /usr/bin/env python3
 
-"""Test of the summary plugin"""
+"""Test of the failed report plugin"""
 
 import os
 import unittest
 import tempfile
-
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 
-class TestSummaryPlugin(PluginTester):
+class TestFailedReportPlugin(PluginTester):
     def setUp(self):
         self.path_validator = path_validator()
         self.maxDiff = None
@@ -18,13 +17,14 @@ class TestSummaryPlugin(PluginTester):
         sup_dir_var = 'DJERBA_TEST_DATA'
         self.sup_dir = os.environ.get(sup_dir_var)
 
-    def testSummary(self):
+    def testFailedReport(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
-        json_location = os.path.join(self.sup_dir ,"summary-plugin/report_json/summary.json")
+        #json_location = os.path.join(self.sup_dir ,"failed-report-plugin/report_json/summary.json")
+        json_location = "failed_report.json"
         params = {
-            self.INI: 'summary.ini',
+            self.INI: 'failed_report.ini',
             self.JSON: json_location,
-            self.MD5: 'c8666f5354e163f6ede1a1f1f91efdf7'
+            self.MD5: '8c22e353948c79749785f705654a24ff'
         }
         self.run_basic_test(test_source_dir, params)
 

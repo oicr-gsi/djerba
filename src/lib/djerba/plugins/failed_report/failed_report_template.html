@@ -8,9 +8,11 @@
 
   <!-- results summary -->
   ${html_builder().section_cells_begin("<h2>Results Summary</h2>","main")}
-   <hr class="header-big-line" style="width:100%; align:right; page-break-before:always;">
+  <!--<hr class="header-big-line" style="width:100%; align:right; page-break-before:always;"> -->
 
-   <h2>Failed Report</h2>
-    ${html_builder().markdown_to_html(FAILED_TEXT)}
+  <h2>Failed Report</h2>
+  ${html_builder().markdown_to_html(FAILED_TEXT)}
+
+  <!--<p style="border-width:3px; border-style:solid; border-color:#FF0000; padding: 1em;" ${html_builder().markdown_to_html(FAILED_TEXT)}</p>-->
 
   ${html_builder().section_cells_end()}

@@ -1,0 +1,16 @@
+{
+            "plugin_name": "failed_report plugin",
+            "version": "0.1",
+            "priorities": {
+                "configure": 100,
+                "extract": 100,
+                "render": 100
+            },
+            "attributes": [
+                "clinical"
+            ],
+            "merge_inputs": {},
+            "results": {
+                "failed_text": "The patient has been diagnosed with ... and has been referred for the OICR Genomics ... assay through the ... study. The informatically determined purity for this sample (...) did not reach the purity cut-off of a ... minimum for this assay: ... "
+    }
+}
