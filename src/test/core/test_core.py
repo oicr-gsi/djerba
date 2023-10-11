@@ -408,7 +408,6 @@ class TestIniGenerator(TestCore):
             self.assertEqual(in_file_2.read(), in_file_1.read())
 
     def test_script(self):
-        self.tmp_dir = '/home/ibancarz/tmp/test_20230710'
         out_path = os.path.join(self.tmp_dir, 'generated.ini')
         cmd = ['generate_ini.py', '--out', out_path]
         cmd.extend(self.COMPONENT_NAMES)
