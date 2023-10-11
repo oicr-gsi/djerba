@@ -19,12 +19,11 @@ class TestFailedReportPlugin(PluginTester):
 
     def testFailedReport(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
-        #json_location = os.path.join(self.sup_dir ,"failed-report-plugin/report_json/summary.json")
         json_location = "failed_report.json"
         params = {
             self.INI: 'failed_report.ini',
             self.JSON: json_location,
-            self.MD5: '8c22e353948c79749785f705654a24ff'
+            self.MD5: '99a0bf94ff930df392fe1f4d552de4d7'
         }
         self.run_basic_test(test_source_dir, params)
 

@@ -7,7 +7,6 @@ import logging
 from time import strftime
 import csv
 import os
-
 from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.util.render_mako import mako_renderer
 import djerba.core.constants as core_constants
@@ -22,23 +21,6 @@ class main(plugin_base):
     FAILED_FILE = 'failed_file'
     FAILED_TEXT = 'failed_text'
 
-    #ASSAY = 'assay'
-    #ASSAY_DESCRIPTION = 'assay_description'
-
-    #ASSAY_LOOKUP = {
-    #    # WGTS/WGS default to 80X
-    #    'WGTS': 'Whole genome and transcriptome sequencing (WGTS)'+\
-    #    '-80X Tumour, 30X Normal (v3.0)',
-    #    'WGS': 'Whole genome sequencing (WGS)-80X Tumour, 30X Normal (v3.0)',
-    #    # WGTS/WGS at 40X - seldom done now, but included for completeness
-    #    'WGTS40X': 'Whole genome and transcriptome sequencing (WGTS)'+\
-    #    '-40X Tumour, 30X Normal (v3.0)',
-    #    'WGS40X': 'Whole genome sequencing (WGS)-40X Tumour, 30X Normal (v3.0)',
-    #    # TAR
-    #    'TAR': 'Targeted Sequencing - REVOLVE Panel - cfDNA and Buffy Coat (v1.0)'
-    #}
-
-
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
@@ -46,16 +28,6 @@ class main(plugin_base):
         if wrapper.my_param_is_null(self.FAILED_FILE):
             failed_template_path = os.path.join(os.path.dirname(__file__), self.FAILED_TEMPLATE_FILE) 
             wrapper.set_my_param(self.FAILED_FILE, failed_template_path)
-
-        #if wrapper.my_param_is_null(self.ASSAY):
-        #    failed_template_path = os.path.join(os.path.dirname(__file__), self.FAILED_TEMPLATE_FILE)
-        #    wrapper.set_my_param(self.FAILED_FILE, failed_template_path)
-
-        #if wrapper.my_param_is_null(self.ASSAY_DESCRIPTION):
-        #    assay = config[self.identifier][self.ASSAY]
-        #    assay_description = self.ASSAY_LOOKUP[assay]
-        #    wrapper.set_my_param(self.ASSAY_DESCRIPTION, assay_description)
-
 
         return wrapper.get_config()
 
@@ -68,15 +40,9 @@ class main(plugin_base):
         return data
 
     def specify_params(self):
-        #required = [
-        #    self.ASSAY
-        #]
         discovered = [
             self.FAILED_FILE,
-        #    self.ASSAY_DESCRIPTION
         ]
-        #for key in required:
-        #    self.add_ini_required(key)
         for key in discovered:
             self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
