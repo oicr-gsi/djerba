@@ -14,7 +14,7 @@ option_list = list(
   make_option(c("-u", "--whizbam_url"), type="character", default="https://whizbam.oicr.on.ca", help="whizbam url", metavar="character"),
   make_option(c("-w", "--tumourid"), type="character", default=NULL, help="whizbam tumour name", metavar="character"),
   make_option(c("-x", "--normalid"), type="character", default=NULL, help="whizbam normal name", metavar="character"),
-  make_option(c("-y", "--seqtype"), type="character", default="GENOME", help="sequencing type", metavar="character"),
+  make_option(c("-y", "--seqtype"), type="character", default="EXOME", help="sequencing type", metavar="character"),
   make_option(c("-z", "--genome"), type="character", default="hg38", help="genome version", metavar="character"),
   make_option(c("-T", "--tar"), type="character", default=FALSE, help="true or false value for tar assay", metavar="boolean")
 )
