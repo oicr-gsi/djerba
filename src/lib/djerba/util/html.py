@@ -3,6 +3,7 @@
 # adapted from json_to_html.py in djerba/v0.4.x
 
 import re
+from string import Template
 
 class html_builder:
 
@@ -71,24 +72,15 @@ class html_builder:
     def td_oncokb(level):
         # make a table cell with an OncoKB level symbol
         # permitted levels must have a format defined in style.css
-        onc = 'Oncogenic'
-        l_onc = 'Likely Oncogenic'
-        p_onc = 'Predicted Oncogenic'
         level = re.sub('Level ', '', level) # strip off 'Level ' prefix, if any
-        permitted_levels = ['1', '2', '3A', '3B', '4', 'R1', 'R2', onc, l_onc, p_onc]
+        permitted_levels = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'N1', 'N2', 'N3']
         if not level in permitted_levels:
             msg = "Input '{0}' is not a permitted OncoKB level".format(level)
             raise RuntimeError(msg)
-        if level in [onc, l_onc, p_onc]:
+        if level in ['N1', 'N2', 'N3']:
             shape = 'square'
         else:
             shape = 'circle'
-        if level == onc:
-            level = 'N1'
-        elif level == l_onc:
-            level = 'N2'
-        elif level == p_onc:
-            level = 'N3'
         div = '<div class="{0} oncokb-level{1}">{2}</div>'.format(shape, level, level)
         return html_builder.td(div)
 
