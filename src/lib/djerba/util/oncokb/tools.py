@@ -10,6 +10,7 @@ class levels:
 
     ACTIONABLE_LEVELS = ['1', '2', '3A', '3B', '4', 'R1', 'R2']
     REPORTABLE_LEVELS = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'N1', 'N2']
+    ALL_LEVELS = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'N1', 'N2', 'N3', 'N4', 'Unknown']
 
     @staticmethod
     def is_null_string(value):
@@ -61,10 +62,9 @@ class levels:
     def oncokb_order(level):
         if re.match('Level ', level):
             level = level.replace('Level ', '')
-        levels = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'N1', 'N2', 'N3', 'Unknown']
         order = None
-        for i in range(len(levels)):
-            if str(level) == levels[i]:
+        for i in range(len(levels.ALL_LEVELS)):
+            if str(level) == levels.ALL_LEVELS[i]:
                 order = i
                 break
         if order == None:
@@ -74,7 +74,7 @@ class levels:
     @staticmethod
     def parse_max_reportable_level(row_dict):
         [level, therapies] = levels.parse_max_oncokb_level_and_therapies(
-            row_input,
+            row_dict,
             levels.REPORTABLE_LEVELS
         )
         return level
@@ -82,8 +82,8 @@ class levels:
     @staticmethod
     def parse_max_actionable_level_and_therapies(row_dict):
         return levels.parse_max_oncokb_level_and_therapies(
-            row_input,
-            levels.REPORTABLE_LEVELS
+            row_dict,
+            levels.ACTIONABLE_LEVELS
         )
 
     @staticmethod
@@ -91,12 +91,13 @@ class levels:
         # find maximum level (if any) from given levels list, and associated therapies
         max_level = None
         therapies = []
-        for level in levels_list:
-            if not levels.is_null_string(row_dict[level]):
-                if not max_level: max_level = level
-                therapies.append(row_dict[level])
-        if max_level:
-            max_level = levels.reformat_level_string(max_level)
+        # row_dict has keys of the form 'LEVEL_1'; corresponding levels_list entry is '1'
+        for key in row_dict.keys():
+            level = levels.reformat_level_string(key)
+            if level in levels_list and not levels.is_null_string(row_dict[key]):
+                if not max_level:
+                    max_level = level
+                therapies.append(row_dict[key])
         # insert a space between comma and start of next word
         therapies = [re.sub(r'(?<=[,])(?=[^\s])', r' ', t) for t in therapies]
         return (max_level, '; '.join(therapies))
@@ -126,6 +127,8 @@ class levels:
             reformatted = 'N2'
         elif level == 'Predicted Oncogenic':
             reformatted = 'N3'
+        elif level == 'Likely Neutral' or level == 'Inconclusive':
+            reformatted = 'N4'
         elif level == unknown:
             reformatted = unknown
         else:
