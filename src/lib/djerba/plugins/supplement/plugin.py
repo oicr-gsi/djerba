@@ -1,9 +1,10 @@
 """Djerba plugin for pwgs supplement"""
 import logging
-
+import os
 from djerba.plugins.base import plugin_base, DjerbaPluginError
 import djerba.core.constants as core_constants
 from djerba.util.render_mako import mako_renderer
+import djerba.util.input_params_tools as input_params_tools
 
 class main(plugin_base):
 
@@ -14,11 +15,11 @@ class main(plugin_base):
     ASSAY = "assay"
     
     def specify_params(self):
-        required = [
+        discovered = [
             self.ASSAY
         ]
-        for key in required:
-            self.add_ini_required(key)
+        for key in discovered:
+            self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_ini_default(self.FAILED, "False")
     
@@ -26,6 +27,16 @@ class main(plugin_base):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         wrapper.set_my_priorities(self.DEFAULT_CONFIG_PRIORITY)
+        
+        # Get input_data.json if it exists; else return None
+        input_data = input_params_tools.get_input_params_json(self)
+        if input_data == None:
+            msg = "Input_params.json does not exist. Parameters must be set manually."
+            self.logger.warning(msg)
+
+        if wrapper.my_param_is_null(self.ASSAY):
+            wrapper.set_my_param(self.ASSAY, input_data[self.ASSAY])
+
         return config
 
     def extract(self, config):
