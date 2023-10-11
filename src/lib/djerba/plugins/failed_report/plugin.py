@@ -1,5 +1,5 @@
 """
-Plugin to generate the Results Summary report section
+Plugin to generate the failed report results summary report section
 
 """
 
