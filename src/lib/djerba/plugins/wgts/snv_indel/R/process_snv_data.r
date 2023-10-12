@@ -32,7 +32,7 @@ maffile <- opt$maffile
 whizbam_url <- opt$whizbam_url
 gepfile <- opt$gepfile
 
-source(paste0(basedir, "/R/smalls_supporting_functions.r"))
+source(paste0(basedir, "/R/supporting_functions.r"))
 
 
 ###################### VEP #####################
@@ -63,49 +63,4 @@ if (is.null(maffile)) {
       } 
     write.table(df_filt_oncokb, file=paste0(outdir, "/data_mutations_extended_oncogenic.txt"), sep="\t", row.names=FALSE, quote=FALSE)
   }
-}
-
-#################### RNASEQ Expression ####################
-
-if (is.null(gepfile)) {	
-  print("No RNASEQ input, processing omitted") 
-} else {
-  print("Processing RNASEQ data")
- 
-  # preprocess the full data frame
-  df <- preProcRNA(gepfile, enscon)
-  sample <- colnames(df)[1]
-
-  # calculate z-score and percentiles TGL
-  df_zscore <- compZ(df)
-  df_percentile <- data.frame(signif(pnorm(as.matrix(df_zscore)), digits=4), check.names=FALSE)
-
-  # write zscores
-  write.table(data.frame(Hugo_Symbol=rownames(df_zscore), df_zscore, check.names=FALSE),
-    file=paste0(outdir, "/data_expression_zscores_comparison.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-
-  # write percentiles
-  write.table(data.frame(Hugo_Symbol=rownames(df_percentile), df_percentile, check.names=FALSE),
-    file=paste0(outdir, "/data_expression_percentile_comparison.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-
-  print("getting TCGA-level data")
-
-  # get TCGA comparitor
-  load(file=paste(tcgadata, "/", tcgacode,".PANCAN.matrix.rdf", sep=""))
-  df_tcga <- get(tcgacode)
-
-  # equalize dfs (get common genes)
-  df_stud_tcga <- get_common_genes(df, df_tcga)
-  
-  df_zscore <- compZ(df_stud_tcga)
-  df_zscore_sample <- data.frame(Hugo_Symbol=rownames(df_zscore), df_zscore[,1], check.names=FALSE)
-  df_percentile <- data.frame(signif(pnorm(as.matrix(df_zscore)), digits=4), check.names=FALSE)
-
-  # z-score TCGA
-  write.table(data.frame(Hugo_Symbol=rownames(df_zscore), df_zscore[sample], check.names=FALSE),
-    file=paste0(outdir, "/data_expression_zscores_tcga.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-
-  # percentile TCGA
-  write.table(data.frame(Hugo_Symbol=rownames(df_percentile), df_percentile[sample], check.names=FALSE),
-    file=paste0(outdir, "/data_expression_percentile_tcga.txt"), sep="\t", row.names=FALSE, quote=FALSE)
 }

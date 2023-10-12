@@ -25,66 +25,12 @@ addVAFtoMAF <- function(maf_df, alt_col, dep_col, vaf_header) {
   return(maf_df)
 }
 
-# simple zscore function
-compZ <- function(df) {
-  
-  # scale row-wise
-  df_zscore <- t(scale(t(df)))
-  
-  # NaN (when SD is 0) becomes 0
-  df_zscore[is.nan(df_zscore)] <- 0
-  
-  # we want a dataframe
-  df_zscore <- data.frame(signif(df_zscore, digits=4), check.names=FALSE)
-  
-  return(df_zscore)
-}
-
 construct_whizbam_links <- function(df, whizbam_url) {
   if( dim(df)[[1]] == 0 ) {
   df$whizbam <- paste0(whizbam_url,
                        "&chr=", gsub("chr", "", df$Chromosome),
                        "&chrloc=", paste0(df$Start_Position, "-", df$End_Position))
   } 
-  return(df)
-}
-
-get_common_genes <- function(df, df_tcga){
-  comg <- as.character(intersect(row.names(df_tcga), row.names(df)))
-  df_tcga_common <- df_tcga[row.names(df_tcga) %in% comg, ]
-  df_tcga_common_sort <- df_tcga_common[ order(row.names(df_tcga_common)), ]
-  df_stud_common <- df[row.names(df) %in% comg, ]
-  df_stud_common_sort <- df_stud_common[ order(row.names(df_stud_common)), ]
-  df_stud_tcga <- merge(df_stud_common_sort, df_tcga_common_sort, by=0, all=TRUE)
-  df_stud_tcga[is.na(df_stud_tcga)] <- 0
-  rownames(df_stud_tcga) <- df_stud_tcga$Row.names
-  df_stud_tcga$Row.names <- NULL
-  return(df_stud_tcga)
-}
-
-preProcRNA <- function(gepfile, enscon, genelist = NULL){
-  
-  # read in data
-  gepData <- read.csv(gepfile, sep="\t", header=TRUE, check.names=FALSE)
-  ensConv <- read.csv(enscon, sep="\t", header=FALSE)
-  
-  # rename columns
-  colnames(ensConv) <- c("gene_id", "Hugo_Symbol")
-  
-  # merge in Hugo's, re-order columns, deduplicate
-  df <- merge(x=gepData, y=ensConv, by="gene_id", all.x=TRUE)
-  df <- subset(df[,c(ncol(df),2:(ncol(df)-1))], !duplicated(df[,c(ncol(df),2:(ncol(df)-1))][,1]))
-  df <- df[!is.na(df$Hugo_Symbol),]
-  row.names(df) <- df[,1]
-  df <- df[,-1]
-  
-  # subset if gene list given
-  if (!is.null(genelist)) {
-    keep_genes <- readLines(genelist)
-    df <- df[row.names(df) %in% keep_genes,]
-  }
-  
-  # return the data frame
   return(df)
 }
 
