@@ -32,7 +32,6 @@ class TestWgtsCnv(PluginTester):
         template = string.Template(template_str)
         ini_str = template.substitute({'SEQUENZA_PATH': sequenza_path})
         tmp_dir = self.get_tmp_dir()
-        tmp_dir = '/u/ibancarz/workspace/djerba/test_20231011_02'
         input_dir = os.path.join(tmp_dir, 'input')
         os.mkdir(input_dir)
         work_dir = os.path.join(tmp_dir, 'work')
