@@ -14,7 +14,8 @@ source(paste0(basedir, "/plugins/wgts/cnv_purple/CNA_supporting_functions.r"))
 option_list = list(
   make_option(c("-d", "--outdir"), type="character", default=NULL, help="report directory path", metavar="character"),
   make_option(c("-s", "--segfile"), type="character", default=NULL, help="segments file ", metavar="character"),
-  make_option(c("-c", "--centromeres"), type="character", default='sequenza', help="path to centromeres file", metavar="character"),
+  make_option(c("-p", "--ploidy"), type="character", default=2, help="tumour ploidy", metavar="character"),
+  make_option(c("-c", "--centromeres"), type="character", default=NULL, help="path to centromeres file", metavar="character"),
   make_option(c("-a", "--highCN"), type="character", default=6, help="High copy number (top of y-axis)", metavar="character")
 )
 
@@ -25,12 +26,14 @@ segfile_path      <- opt$segfile
 dir_path          <- opt$outdir
 centromeres_path  <- opt$centromeres
 highCN            <- as.numeric(opt$highCN)
+ploidy            <- as.numeric(opt$ploidy)
+
 baf.min           <- 25
 
 
 #### arm-level events ####
 segs <- read.delim(segfile_path, header=TRUE) # segmented data already
-segs <- segs[segs$bafCount > baf.min ,]
+segs <- segs[segs$bafCount > baf.min & segs$depthWindowCount > baf.min,]
 
 centromeres <- read.table(centromeres_path,header=T)
 
@@ -40,7 +43,7 @@ write.table(arm_level_calls,file=paste0(dir_path, "/purple.arm_level_calls.txt")
 segs$ID <- "purple"
 log2 <- segs[,c("ID","chromosome","start","end","bafCount")]
 names(log2) <- c("ID",	"chrom"	,"loc.start"	,"loc.end"	,"num.mark")
-log2$seg.mean <- log(segs$copyNumber/2, 2)
+log2$seg.mean <- log(segs$copyNumber/ploidy, 2)
 write.table(log2,file=paste0(dir_path, "/purple.seg"), sep="\t", row.names=FALSE, quote=FALSE, col.names = FALSE)
 
 #### segment plot ####
@@ -58,8 +61,46 @@ fittedSegmentsDF_sub <- rbind.data.frame(
                           process_centromeres(centromeres_path)
                         )
 
+fittedSegmentsDF_sub$log2 <- round(fittedSegmentsDF_sub$copyNumber) / 2
+
 ## Copy Number Plot
 y_highCN <- highCN
+
+svg(paste0(dir_path,"/purple.seg_log2_plot.svg"), width = 8, height = 1.5)
+print(
+  
+  ggplot(fittedSegmentsDF_sub) + 
+    
+    geom_hline(yintercept = 0,color="lightgrey",linetype="dotted")+
+    
+    facet_grid(.~Chromosome,scales = "free",space="free", switch="both")+ 
+    geom_point(aes(x=start,y=log(y_highCN/2,2)+0.25,shape=CNt_high),size=1) +
+    
+    geom_segment(aes(x=start, xend=end, y=log2, yend=log2),color="black",linewidth=2, na.rm = TRUE) + 
+    
+    geom_vline(aes(xintercept = start,linetype=as.factor(cent)),color="lightgrey")  +
+    
+    guides(shape='none',alpha='none',linetype='none') +
+    labs(y="log2 tumour/normal") + 
+  #  scale_shape_manual(values=c(17)) +
+    
+    scale_y_continuous(limits=c(log(1/2,2),log(y_highCN/2,2)+0.3)) + 
+    theme_bw() + 
+    theme(
+      axis.title.x=element_blank(),
+      axis.text.x=element_blank(),
+      axis.ticks.x=element_blank(),
+      panel.spacing.x=unit(2, "points"),
+      panel.grid.minor = element_blank(),
+      panel.grid.major = element_blank(),
+      strip.background = element_blank(),
+      text = element_text(size = 10),
+      plot.margin = unit(c(2, 2, 2, 2), "points")
+    ) 
+  
+)
+dev.off()
+
 
 svg(paste0(dir_path,"/purple.seg_CNV_plot.svg"), width = 8, height = 1.5)
   print(

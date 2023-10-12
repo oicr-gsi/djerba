@@ -46,6 +46,7 @@ class main(plugin_base):
       oncotree_code = config[self.identifier]['oncotree_code']
       purple_gene_file = config[self.identifier]['purple_gene_file']
       purple_segment_file = config[self.identifier]['purple_segment_file']
+      self.consider_purity_fit(config[self.identifier]['purple_purity_file'])
 
       cnv = process_cnv(self.work_dir)
       self.convert_purple_to_gistic(purple_gene_file, ploidy)
@@ -92,6 +93,17 @@ class main(plugin_base):
       self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
       self.set_priority_defaults(self.PRIORITY)
 
+    def consider_purity_fit(self, purple_range_file):
+      dir_location = os.path.dirname(__file__)
+      cmd = [
+        'Rscript', os.path.join(dir_location + "/process_fit.r"),
+        '--range_file', purple_range_file,
+        '--outdir', self.work_dir
+      ]
+      runner = subprocess_runner()
+      result = runner.run(cmd, "fit R script")
+      return result
+
     def convert_purple_to_gistic(self, purple_gene_file, ploidy):
       dir_location = os.path.dirname(__file__)
       oncolistpath = os.path.join(dir_location, '../../..', self.ONCOLIST)
@@ -124,15 +136,17 @@ def get_purple_purity(purple_purity_path):
   with open(purple_purity_path, 'r') as purple_purity_file:
       purple_purity = csv.reader(purple_purity_file, delimiter="\t")
       header=True
+      purity = []
+      ploidy = []
       for row in purple_purity:
           if header:
              header=False
           else:
             try: 
-                purity = row[0]
-                ploidy = row[4]
+                purity.append(row[0])
+                ploidy.append(row[4])
             except IndexError as err:
                 msg = "Incorrect number of columns in PURPLE Purity file: '{0}'".format(purple_purity_path)
                 raise RuntimeError(msg) from err
-  return [float(purity), float(ploidy)]
+  return [float(purity[0]), float(ploidy[0])]
 
