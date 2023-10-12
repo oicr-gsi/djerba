@@ -11,6 +11,7 @@ class main(plugin_base):
     DEFAULT_CONFIG_PRIORITY = 1000
     MAKO_TEMPLATE_NAME = 'supplementary_materials_template.html'
     SUPPLEMENT_DJERBA_VERSION = 0.1
+    FAILED = "failed"
     ASSAY = "assay"
     
     def specify_params(self):
@@ -20,7 +21,8 @@ class main(plugin_base):
         for key in discovered:
             self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
-
+        self.set_ini_default(self.FAILED, "False")
+    
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
@@ -46,7 +48,8 @@ class main(plugin_base):
             'attributes': wrapper.get_my_attributes(),
             'merge_inputs': {},
             'results': {
-                'assay': config[self.identifier]['assay']
+                'assay': config[self.identifier][self.ASSAY],
+                'failed': config[self.identifier][self.FAILED]
             },
             'version': str(self.SUPPLEMENT_DJERBA_VERSION)
         }

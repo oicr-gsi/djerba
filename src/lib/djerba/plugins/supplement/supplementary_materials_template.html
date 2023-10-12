@@ -5,6 +5,7 @@
   import djerba.plugins.supplement.versioning as versions
   from djerba.plugins.supplement.plugin import main as supplement
   ASSAY = results.get(supplement.ASSAY)
+  FAILED = results.get(supplement.FAILED)
 %>
 
   <hr class="header-big-line" style="width:100%; align:right; page-break-before:always;">
@@ -16,8 +17,8 @@
     ${html_builder().section_cells_end()}
 
   % endif
-
-  % if ASSAY in ('WGTS','TAR','WGS') :
+  
+  % if ASSAY in ('WGTS','TAR','WGS') and FAILED == "False":
 
     ${html_builder().section_cells_begin("<h3>OncoKB Definitions</h3>","supp")}
       <%include file="resources/oncokb.definition.html"/>
@@ -27,15 +28,23 @@
 
   ${html_builder().section_cells_begin("<h3>Definitions</h3>","supp")}
 
-  % if ASSAY == 'WGTS':
-    <%include file="resources/WGS.definitions.html"/>
-    <%include file="resources/WTS.definitions.html"/>
-  % elif ASSAY == 'WGS':
-    <%include file="resources/WGS.definitions.html"/>
-  % elif ASSAY == 'TAR':
-    <%include file="resources/TAR.definitions.html"/>
-  % elif ASSAY == 'PWGS':
-    <%include file="resources/PWGS.definitions.html"/>
+  % if FAILED == "False": 
+      % if ASSAY == 'WGTS':
+        <%include file="resources/WGS.definitions.html"/>
+        <%include file="resources/WTS.definitions.html"/>
+      % elif ASSAY == 'WGS':
+        <%include file="resources/WGS.definitions.html"/>
+      % elif ASSAY == 'TAR':
+        <%include file="resources/TAR.definitions.html"/>
+      % elif ASSAY == 'PWGS':
+        <%include file="resources/PWGS.definitions.html"/>
+      % endif
+  % elif FAILED == "True":
+      % if ASSAY == 'WGTS' or ASSAY == "WGS":
+        <%include file="resources/WGTS.FAIL.definitions.html"/>
+      % elif ASSAY == 'TAR':
+        <%include file="resources/TAR.FAIL.definitions.html"/>
+      % endif
   % endif
 
   ${html_builder().section_cells_end()}
