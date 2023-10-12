@@ -34,9 +34,9 @@ class main(plugin_base):
            'donor',
            'oncotree_code',
            'assay',
+           'cbio_id',
            'tumour_id',
            'normal_id',
-           'project',
            'maf_file',
            'maf_file_normal',
       ]
@@ -60,12 +60,12 @@ class main(plugin_base):
           wrapper.set_my_param('assay', input_data['assay'])
       if wrapper.my_param_is_null('oncotree_code'):
           wrapper.set_my_param('oncotree_code', input_data['oncotree_code'])
+      if wrapper.my_param_is_null('cbio_id'):
+          wrapper.set_my_param('cbio_id', input_data['cbio_id'])
       if wrapper.my_param_is_null('tumour_id'):
           wrapper.set_my_param('tumour_id', input_data['tumour_id'])
       if wrapper.my_param_is_null('normal_id'):
           wrapper.set_my_param('normal_id', input_data['normal_id'])
-      if wrapper.my_param_is_null('project'):
-          wrapper.set_my_param('project', input_data['project'])
       
       # SECOND PASS: get files
       if wrapper.my_param_is_null('maf_file'):
@@ -81,8 +81,8 @@ class main(plugin_base):
       work_dir = self.workspace.get_work_dir()
 
       # Get any input parameters
-      project = config[self.identifier]["project"]
       oncotree_code = config[self.identifier]["oncotree_code"]
+      cbio_id = config[self.identifier]["cbio_id"]
       tumour_id = config[self.identifier]["tumour_id"]
       normal_id = config[self.identifier]["normal_id"]
       assay = config[self.identifier]["assay"]
@@ -96,7 +96,7 @@ class main(plugin_base):
       
       # Preprocessing
       maf_file = self.filter_maf_for_tar(work_dir, config[self.identifier]["maf_file"], config[self.identifier]["maf_file_normal"])
-      preprocess(config, work_dir, assay, project, oncotree_code, tumour_id, normal_id, maf_file).run_R_code()
+      preprocess(config, work_dir, assay, oncotree_code, cbio_id, tumour_id, normal_id, maf_file).run_R_code()
       
       mutations_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED)
       mutations_extended_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)
