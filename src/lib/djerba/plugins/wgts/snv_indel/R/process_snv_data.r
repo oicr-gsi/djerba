@@ -8,15 +8,10 @@ option_list = list(
   make_option(c("-a", "--outdir"), type="character", default=NULL, help="output directory", metavar="character"),
   make_option(c("-b", "--basedir"), type="character", default=NULL, help="R scripts directory", metavar="character"),
   
-  make_option(c("-d", "--gepfile"), type="character", default=NULL, help="concatenated gep file", metavar="character"),
   make_option(c("-e", "--maffile"), type="character", default=NULL, help="concatenated maf file", metavar="character"),
   
   make_option(c("-h", "--enscon"), type="character", default=NULL, help="ensemble conversion file", metavar="character"),
   make_option(c("-i", "--whizbam_url"), type="character", default="https://whizbam.oicr.on.ca", help="whizbam url", metavar="character"),
-  make_option(c("-j", "--tcgadata"), type="character", default=NULL, help="tcga datadir", metavar="character"),
-  
-  make_option(c("-o", "--tcgacode"), type="character", default=NULL, help="tcga code", metavar="character")
-)
 
 # get options
 opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
@@ -26,11 +21,8 @@ opt <- parse_args(opt_parser)
 basedir <- opt$basedir
 outdir <- opt$outdir
 enscon <- opt$enscon
-tcgadata <- opt$tcgadata
-tcgacode <- opt$tcgacode
 maffile <- opt$maffile
 whizbam_url <- opt$whizbam_url
-gepfile <- opt$gepfile
 
 source(paste0(basedir, "/R/supporting_functions.r"))
 

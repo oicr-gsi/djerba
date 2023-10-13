@@ -25,3 +25,6 @@ TOTAL_VARIANTS = 'total variants'
 CLINICALLY_RELEVANT_VARIANTS = 'clinically relevant variants'
 CNV_PLOT = 'cnv plot'
 BODY = 'body'
+
+# filenames
+COPY_STATE_FILE = 'copy_states.json'
