@@ -6,7 +6,7 @@ import os
 import djerba.core.constants as core_constants
 import djerba.plugins.wgts.snv_indel.constants as sic
 from djerba.plugins.base import plugin_base
-from djerba.plugins.wgts.snv_indel.tools import whizbam, preprocessor
+from djerba.plugins.wgts.snv_indel.tools import whizbam, snv_indel_processor
 from djerba.util.render_mako import mako_renderer
 
 class main(plugin_base):
@@ -74,7 +74,7 @@ class main(plugin_base):
         for key in required:
             self.add_ini_required(key)
         discovered = [
-            sic.CNA_FILE
+            sic.CNA_PATH
         ]
         for key in discovered:
             self.add_ini_discovered(key)

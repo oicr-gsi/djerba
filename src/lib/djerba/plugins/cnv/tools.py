@@ -197,7 +197,7 @@ class cnv_processor(logger):
                     try:
                         cna = int(row[1])
                         states[gene] = conversion[cna]
-                    except TypeError, KeyError as err:
+                    except (TypeError, KeyError) as err:
                         msg = "Cannot convert unknown CNA code: {0}".format(row[1])
                         self.logger.error(msg)
                         raise RuntimeError(msg) from err

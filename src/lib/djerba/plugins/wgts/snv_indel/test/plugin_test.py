@@ -1,8 +1,7 @@
 #! /usr/bin/env python3
 
 """
-Test of the WGTS small plugin
-AUTHOR: Felix Beaudry
+Test of the WGTS SNV/indel plugin
 """
 
 import os
