@@ -19,6 +19,15 @@ class main(helper_base):
     SITE_OF_BIOPSY = 'site_of_biopsy'
     REQUISITION_APPROVED = 'requisition_approved'
     ASSAY = 'assay'
+    
+    REQUSITION_ID = 'requisition_id'
+    TCGACODE = 'tcgacode'
+    SAMPLE_TYPE = 'sample_type'
+    SEQ_REV_1 = 'sequenza_reviewer_1'
+    SEQ_REV_2 = 'sequenza_reviewer_2'
+    SEQ_GAMMA = 'sequenza_gamma'
+    SEQ_SOL = 'sequenza_solution'
+
 
     # Name for output file
     INPUT_PARAMS_FILE = 'input_params.json'
@@ -40,6 +49,15 @@ class main(helper_base):
         self.add_ini_required(self.SITE_OF_BIOPSY)
         self.add_ini_required(self.REQUISITION_APPROVED)
         self.add_ini_required(self.ASSAY)
+
+
+        self.add_ini_required(self.REQUISITION_ID)
+        self.add_ini_required(self.TCGACODE)
+        self.add_ini_required(self.SAMPLE_TYPE)
+        self.add_ini_required(self.SEQ_REV_1)
+        self.add_ini_required(self.SEQ_REV_2)
+        self.add_ini_required(self.SEQ_GAMMA)
+        self.add_ini_required(self.SEQ_SOL)
 
     def configure(self, config):
         """
@@ -76,6 +94,15 @@ class main(helper_base):
             self.SITE_OF_BIOPSY: config[self.identifier][self.SITE_OF_BIOPSY],
             self.REQUISITION_APPROVED: config[self.identifier][self.REQUISITION_APPROVED],
             self.ASSAY: config[self.identifier][self.ASSAY],
+            
+            self.REQUISITION_ID: config[self.identifier][self.REQUISITION_ID],
+            self.TCGACODE: config[self.identifier][self.TCGACODE],
+            self.SAMPLE_TYPE: config[self.identifier][self.SAMPLE_TYPE],
+            self.SEQ_REV_1: config[self.identifier][self.SEQ_REV_1],
+            self.SEQ_REV_2: config[self.identifier][self.SEQ_REV_2],
+            self.SEQ_GAMMA: config[self.identifier][self.SEQ_GAMMA],
+            self.SEQ_SOL: config[self.identifier][self.SEQ_SOL]
+
         }
         return input_params_info
 
