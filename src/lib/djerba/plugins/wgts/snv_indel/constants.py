@@ -1,9 +1,10 @@
-ONCOTREE_CODE = 'oncotree_code'
-CBIO_ID = 'cbio_id'
+ONCOTREE_CODE = 'oncotree code'
+STUDY_ID = 'study_id' # cbioportal study ID, eg. PASS01
 TUMOUR_ID = 'tumour_id'
 NORMAL_ID = 'normal_id'
 MAF_PATH = 'maf_path'
 CNA_PATH = 'cna_path'
+HAS_EXPRESSION_DATA = 'has expression data'
 
 # important MAF headers
 VARIANT_CLASSIFICATION = 'Variant_Classification'
@@ -68,19 +69,28 @@ MIN_VAF = 0.1
 MAX_UNMATCHED_GNOMAD_AF = 0.001
 
 # filenames
-VAF_PLOT = 'vaf_plot.svg'
+VAF_PLOT_FILENAME = 'vaf_plot.svg'
 WHIZBAM_ALL = 'whizbam_all.txt'
 WHIZBAM_ONCOGENIC = 'whizbam_oncogenic.txt'
 MUTATIONS_ALL = 'data_mutations_extended.txt'
 MUTATIONS_ONCOGENIC = 'data_mutations_extended_oncogenic.txt'
 WHIZBAM_TEMPLATE = 'whizbam_template.html'
+ENSEMBL_CONVERSION = 'ensemble_conversion_hg38.txt'
 
 # output keys
 TYPE = 'type'
 VAF = 'vaf'
 VAF_PLOT = 'vaf_plot'
 DEPTH = 'depth'
+PROTEIN = 'protein'
+PROTEIN_URL = 'protein_url'
 COPY_STATE = 'copy state'
 SOMATIC_MUTATIONS = 'somatic mutations'
 CODING_SEQUENCE_MUTATIONS = 'coding sequence mutations'
 ONCOGENIC_MUTATIONS = 'oncogenic mutations'
+
+# misc
+WHIZBAM_BASE_URL = 'https://whizbam.oicr.on.ca'
+
+# HTML headers
+VAF_UC = 'VAF'

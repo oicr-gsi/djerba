@@ -5,6 +5,7 @@ a plugin for WGTS SNV Indel
 import os
 import djerba.core.constants as core_constants
 import djerba.plugins.wgts.snv_indel.constants as sic
+import djerba.util.oncokb.constants as oncokb_constants
 from djerba.plugins.base import plugin_base
 from djerba.plugins.wgts.snv_indel.tools import whizbam, snv_indel_processor
 from djerba.util.render_mako import mako_renderer
@@ -40,11 +41,10 @@ class main(plugin_base):
         work_dir = self.workspace.get_work_dir()
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         oncotree_code = wrapper.get_my_string(sic.ONCOTREE_CODE)
-        cbio_id = wrapper.get_my_string(sic.CBIO_ID)
+        cbio_id = wrapper.get_my_string(sic.STUDY_ID)
         tumour_id = wrapper.get_my_string(sic.TUMOUR_ID)
         normal_id = wrapper.get_my_string(sic.NORMAL_ID)
         maf_path = wrapper.get_my_string(sic.MAF_PATH)
-        cna_path = wrapper.get_my_string(sic.CNA_PATH)
         whizbam_url = whizbam.link_base(
             sic.WHIZBAM_BASE_URL,
             cbio_id,
@@ -53,7 +53,7 @@ class main(plugin_base):
             self.SEQTYPE,
             self.GENOME
         )
-        proc = snv_indel_processor(self.work_dir, wrapper, self.log_level, self.log_path)
+        proc = snv_indel_processor(work_dir, wrapper, self.log_level, self.log_path)
         proc.write_working_files(whizbam_url)
         data['results'] = proc.get_results()
         data['merge_inputs']['treatment_options_merger'] = proc.get_merge_inputs()
@@ -69,14 +69,16 @@ class main(plugin_base):
             sic.ONCOTREE_CODE,
             sic.TUMOUR_ID,
             sic.NORMAL_ID,
-            sic.CBIO_ID
+            sic.STUDY_ID,
+            sic.HAS_EXPRESSION_DATA
         ]
         for key in required:
             self.add_ini_required(key)
-        discovered = [
-            sic.CNA_PATH
-        ]
-        for key in discovered:
-            self.add_ini_discovered(key)
+        self.set_ini_default(
+            oncokb_constants.ONCOKB_CACHE,
+            oncokb_constants.DEFAULT_CACHE_PATH
+        )
+        self.set_ini_default(oncokb_constants.APPLY_CACHE, False)
+        self.set_ini_default(oncokb_constants.UPDATE_CACHE, False)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_priority_defaults(self.PRIORITY)

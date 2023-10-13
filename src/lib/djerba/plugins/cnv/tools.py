@@ -3,6 +3,7 @@ Supporting tools for the CNV plugin
 """
 
 import csv
+import json
 import logging
 import os
 import djerba.core.constants as core_constants
@@ -201,7 +202,7 @@ class cnv_processor(logger):
                         msg = "Cannot convert unknown CNA code: {0}".format(row[1])
                         self.logger.error(msg)
                         raise RuntimeError(msg) from err
-        with open(os.path.join(self.work_dir, cnv.COPY_STATE_FILE)) as out_file:
+        with open(os.path.join(self.work_dir, cnv.COPY_STATE_FILE), 'w') as out_file:
             out_file.write(json.dumps(states, sort_keys=True, indent=4))
 
     def write_working_files(self):

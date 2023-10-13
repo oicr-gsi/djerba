@@ -6,14 +6,18 @@ import os
 import re
 import csv
 import gzip
+import json
 import logging
+import djerba.core.constants as core_constants
 import djerba.plugins.wgts.snv_indel.constants as sic
 from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
 from djerba.plugins.cnv import constants as cnv_constants
 from djerba.plugins.wgts.tools import wgts_tools
+from djerba.util.html import html_builder
 from djerba.util.image_to_base64 import converter
 from djerba.util.logger import logger
+from djerba.util.oncokb.annotator import annotator_factory
 from djerba.util.oncokb.tools import levels as oncokb_levels
 from djerba.util.oncokb.tools import gene_summary_reader
 from djerba.util.subprocess_runner import subprocess_runner
@@ -57,7 +61,7 @@ class snv_indel_processor(logger):
         """
         ok = False
         row_t_depth = int(row[ix.get(sic.T_DEPTH)])
-        alt_count_raw = row[ix.get(sic.TUMOUR_ALT_COUNT)]
+        alt_count_raw = row[ix.get(sic.T_ALT_COUNT)]
         gnomad_af_raw = row[ix.get(sic.GNOMAD_AF)]
         row_t_alt_count = float(alt_count_raw) if alt_count_raw!='' else 0.0
         row_gnomad_af = float(gnomad_af_raw) if gnomad_af_raw!='' else 0.0
@@ -86,7 +90,7 @@ class snv_indel_processor(logger):
 
     def annotate_maf(self, maf_path):
         factory = annotator_factory(self.log_level, self.log_path)
-        return factory.get_annotator(self.work_dir, self.config).annotate_maf()
+        return factory.get_annotator(self.work_dir, self.config).annotate_maf(maf_path)
 
     def build_alteration_url(self, gene, alteration, cancer_code):
         base = 'https://www.oncokb.org/gene'
@@ -151,14 +155,14 @@ class snv_indel_processor(logger):
         # See JIRA ticket GCGI-496
         total = 0
         excluded = 0
-        with open(os.path.join(self.work_dir, self.MUTATIONS_ALL)) as data_file:
+        with open(os.path.join(self.work_dir, sic.MUTATIONS_ALL)) as data_file:
             for row in csv.DictReader(data_file, delimiter="\t"):
                 total += 1
                 if row.get(sic.VARIANT_CLASSIFICATION) in sic.TMB_EXCLUDED:
                     excluded += 1
         coding_total = total - excluded
-        msg = "Found {} small mutations and indels, of which {} are coding".format(total,
-                                                                                   tmb_count)
+        msg = "Found {} small mutations and indels, ".format(total)+\
+            "of which {} are coding mutations".format(coding_total)
         self.logger.debug(msg)
         return [total, coding_total]
 
@@ -166,30 +170,33 @@ class snv_indel_processor(logger):
         mutation_type = row[sic.VARIANT_CLASSIFICATION]
         mutation_type = mutation_type.replace('_', ' ')
         return mutation_type
-    
+
     def get_results(self):
         """Read the R script output into the JSON serializable results structure"""
         self.logger.debug("Collating SNV/indel results for JSON output")
         image_converter = converter(self.log_level, self.log_path)
-        plot_path = os.path.join(self.work_dir, sic.VAF_PLOT)
+        plot_path = os.path.join(self.work_dir, sic.VAF_PLOT_FILENAME)
         vaf_plot = image_converter.convert_svg(plot_path, 'CNV plot')
-        is_wgts = self.config.get_my_boolean(cnv.HAS_EXPRESSION_DATA)
+        is_wgts = self.config.get_my_boolean(sic.HAS_EXPRESSION_DATA)
+        oncotree_code = self.config.get_my_string(sic.ONCOTREE_CODE)
         rows = []
         if is_wgts:
             expression = wgts_tools.read_expression(self.work_dir)
         else:
             expression = {}
         cytobands = wgts_tools.cytoband_lookup()
-        input_name = oncokb_constants.DATA_CNA_ONCOKB_GENES_NON_DIPLOID_ANNOTATED
         copy_states = self.read_copy_states()
         with open(os.path.join(self.work_dir, sic.MUTATIONS_ONCOGENIC)) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
             for row_input in reader:
                 gene = row_input[sic.HUGO_SYMBOL]
+                alt = row_input[sic.HGVSP_SHORT]
                 row_output = {
                     wgts_tools.EXPRESSION_PERCENTILE: expression.get(gene), # None for WGS
                     wgts_tools.GENE: gene,
                     wgts_tools.GENE_URL: html_builder.build_gene_url(gene),
+                    sic.PROTEIN: alt,
+                    sic.PROTEIN_URL: self.build_alteration_url(gene, alt, oncotree_code),
                     sic.TYPE: self.get_mutation_type(row_input),
                     sic.VAF: self.get_tumour_vaf(row_input),
                     sic.DEPTH: self.get_mutation_depth(row_input),
@@ -206,7 +213,7 @@ class snv_indel_processor(logger):
             sic.CODING_SEQUENCE_MUTATIONS: coding_seq_total,
             sic.ONCOGENIC_MUTATIONS: len(rows),
             sic.VAF_PLOT: vaf_plot,
-            wgts_tools.HAS_EXPRESSION_DATA: is_wgts,
+            sic.HAS_EXPRESSION_DATA: is_wgts,
             wgts_tools.BODY: rows
         }
         return results
@@ -257,7 +264,7 @@ class snv_indel_processor(logger):
         return tmp_path
 
     def read_copy_states(self):
-        with open(os.path.join(self.work_dir, csv.COPY_STATE_FILE)) as in_file:
+        with open(os.path.join(self.work_dir, cnv_constants.COPY_STATE_FILE)) as in_file:
             states = json.loads(in_file.read())
         return states
 
@@ -296,7 +303,7 @@ class snv_indel_processor(logger):
         out_path = os.path.join(self.work_dir, out_name)
         links = []
         with open(in_path) as in_file, open(out_path, 'w') as out_file:
-            reader = csv.DictReader(in_file, delimiter="/t")
+            reader = csv.DictReader(in_file, delimiter="\t")
             writer = csv.DictWriter(
                 out_file,
                 fieldnames=['Hugo_Symbol', 'whizbam'],
@@ -320,9 +327,10 @@ class snv_indel_processor(logger):
         Preprocess inputs, including OncoKB annotation
         Run the main scripts for data processing and VAF plot
         """
+        maf_path = self.config.get_my_string(sic.MAF_PATH)
         tumour_id = self.config.get_my_string(sic.TUMOUR_ID)
         maf_path_preprocessed = self.preprocess_maf(maf_path, tumour_id)
         maf_path_annotated = self.annotate_maf(maf_path_preprocessed)
-        self.run_data_rscript(whizbam_link, maf_path_annotated)
+        self.run_data_rscript(whizbam_url, maf_path_annotated)
         self.write_vaf_plot()
         self.write_whizbam_files()

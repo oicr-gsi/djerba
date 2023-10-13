@@ -7,11 +7,10 @@ library(BSgenome.Hsapiens.UCSC.hg38)
 option_list = list(
   make_option(c("-a", "--outdir"), type="character", default=NULL, help="output directory", metavar="character"),
   make_option(c("-b", "--basedir"), type="character", default=NULL, help="R scripts directory", metavar="character"),
-  
   make_option(c("-e", "--maffile"), type="character", default=NULL, help="concatenated maf file", metavar="character"),
-  
   make_option(c("-h", "--enscon"), type="character", default=NULL, help="ensemble conversion file", metavar="character"),
-  make_option(c("-i", "--whizbam_url"), type="character", default="https://whizbam.oicr.on.ca", help="whizbam url", metavar="character"),
+  make_option(c("-i", "--whizbam_url"), type="character", default="https://whizbam.oicr.on.ca", help="whizbam url", metavar="character")
+)
 
 # get options
 opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
