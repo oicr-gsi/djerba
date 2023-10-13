@@ -1,30 +1,21 @@
-# AUTHOR: Felix Beaudry 
+"""
+Constants for sample plugin (WGTS)
+"""
+# Parameters for plugin parameters
+ONCOTREE = "oncotree_code"
+SAMPLE_TYPE = "sample_type"
+TUMOUR_ID = "tumour_id"
+CALLABILITY = "callability"
+COVERAGE = "mean_coverage"
+PURITY = "purity"
+PLOIDY = "ploidy"
 
-# sample variable
-ONCOTREE = 'oncotree_code'
-KNOWN_VARIANTS = 'known_variants'
-CANCER_CONTENT = 'cancer_content'
-RAW_COVERAGE = 'raw_coverage'
-UNIQUE_COVERAGE = 'unique_coverage'
-COLLAPSED_COVERAGE_PL = 'collapsed_coverage_pl'
-COLLAPSED_COVERAGE_BC = 'collapsed_coverage_bc'
-PURITY = 'purity'
+# Parameters for rendering
+ONCOTREE_CODE = 'OncoTree code'
+TUMOUR_SAMPLE_TYPE = 'Sample Type'
+CALLABILITY_PERCENT = 'Callability (%)'
+COVERAGE_MEAN = 'Coverage (mean)'
+EST_PLOIDY = 'Estimated Ploidy'
+EST_CANCER_CELL_CONTENT = 'Estimated Cancer Cell Content (%)'
 
-# sample constants
-ASSAY = 'assay'
-AUTHOR = 'author'
-DONOR = 'root_sample_name'
-GROUP_ID = 'group_id'
-PATIENT_ID = 'Patient Study ID'
-PRIMARY_CANCER = 'primary_cancer'
-PWGS_REPORT = 'pwgs_report_id'
-REQ_APPROVED = 'requisition_approved'
-STUDY = 'study_title'
-WGS_REPORT = 'wgs_report_id'
 
-# file constants
-BAMQC = 'bamQC_results'
-PROVENANCE_OUTPUT = 'provenance_subset.tsv.gz'
-
-# render constants
-SAMPLE_TEMPLATE_NAME = 'sample_template.html'

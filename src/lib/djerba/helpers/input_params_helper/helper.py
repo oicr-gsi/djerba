@@ -20,14 +20,13 @@ class main(helper_base):
     REQUISITION_APPROVED = 'requisition_approved'
     ASSAY = 'assay'
     
-    REQUSITION_ID = 'requisition_id'
+    REQUISITION_ID = 'requisition_id'
     TCGACODE = 'tcgacode'
     SAMPLE_TYPE = 'sample_type'
     SEQ_REV_1 = 'sequenza_reviewer_1'
     SEQ_REV_2 = 'sequenza_reviewer_2'
-    SEQ_GAMMA = 'sequenza_gamma'
-    SEQ_SOL = 'sequenza_solution'
-
+    PURITY = 'purity'
+    PLOIDY = 'ploidy'
 
     # Name for output file
     INPUT_PARAMS_FILE = 'input_params.json'
@@ -56,8 +55,8 @@ class main(helper_base):
         self.add_ini_required(self.SAMPLE_TYPE)
         self.add_ini_required(self.SEQ_REV_1)
         self.add_ini_required(self.SEQ_REV_2)
-        self.add_ini_required(self.SEQ_GAMMA)
-        self.add_ini_required(self.SEQ_SOL)
+        self.add_ini_required(self.PURITY)
+        self.add_ini_required(self.PLOIDY)
 
     def configure(self, config):
         """
@@ -100,8 +99,8 @@ class main(helper_base):
             self.SAMPLE_TYPE: config[self.identifier][self.SAMPLE_TYPE],
             self.SEQ_REV_1: config[self.identifier][self.SEQ_REV_1],
             self.SEQ_REV_2: config[self.identifier][self.SEQ_REV_2],
-            self.SEQ_GAMMA: config[self.identifier][self.SEQ_GAMMA],
-            self.SEQ_SOL: config[self.identifier][self.SEQ_SOL]
+            self.PURITY: config[self.identifier][self.PURITY],
+            self.PLOIDY: config[self.identifier][self.PLOIDY]
 
         }
         return input_params_info
