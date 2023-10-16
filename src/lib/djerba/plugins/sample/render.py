@@ -58,9 +58,6 @@ class html_builder:
                 width = widths[i]
                 key = key_group[i]
                 value = values[key]
-                #if key == constants.EST_CANCER_CELL_CONTENT: #and self.purity_failure:
-                #    template = '<td width="{0}%" style="color:red;">{1}:</td><td width="{2}%">{3}</td>'
-                #else:
                 template = '<td width="{0}%">{1}:</td><td width="{2}%" >{3}</td>'
                 cell = template.format(width[0], key, width[1], value)
                 row_items.append(cell)
