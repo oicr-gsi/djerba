@@ -13,7 +13,7 @@ from djerba.plugins.plugin_tester import PluginTester
 import djerba.plugins.sample.plugin as sample
 from djerba.core.workspace import workspace
 
-class TestTarSamplePlugin(PluginTester):
+class TestWgtsSamplePlugin(PluginTester):
 
     def setUp(self):
         self.path_validator = path_validator()
@@ -25,7 +25,7 @@ class TestTarSamplePlugin(PluginTester):
          
         self.sample_info_json = os.path.join(self.sup_dir, "wgts-sample-plugin/sample_info.json")
 
-    def testTarSample(self):
+    def testWgtsSample(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         json_location = os.path.join(self.sup_dir ,"wgts-sample-plugin/report_json/sample.json")
         
