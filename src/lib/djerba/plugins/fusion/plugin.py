@@ -10,10 +10,10 @@ from djerba.mergers.gene_information_merger.factory import factory as gim_factor
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
 from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.plugins.fusion.tools import fusion_reader
+from djerba.plugins.wgts.tools import wgts_tools
 from djerba.util.html import html_builder as hb
 from djerba.util.logger import logger
-from djerba.util.oncokb.annotator import oncokb_annotator
-from djerba.util.oncokb.cache import oncokb_cache_params
+from djerba.util.oncokb.annotator import annotator_factory
 from djerba.util.oncokb.tools import gene_summary_reader
 from djerba.util.oncokb.tools import levels as oncokb_levels
 from djerba.util.render_mako import mako_renderer
@@ -31,10 +31,6 @@ class main(plugin_base):
     MAVIS_PATH = 'mavis path'
     ENTREZ_CONVERSION_PATH = 'entrez conv path'
     MIN_FUSION_READS = 'minimum fusion reads'
-    ONCOTREE_CODE = 'oncotree code'
-    ONCOKB_CACHE = 'oncokb cache'
-    APPLY_CACHE = 'apply cache'
-    UPDATE_CACHE = 'update cache'
 
     # JSON results keys
     TOTAL_VARIANTS = "Total variants"
@@ -53,25 +49,9 @@ class main(plugin_base):
 
     def annotate_fusion_files(self, config_wrapper):
         # annotate from OncoKB
-        cache_params = oncokb_cache_params(
-            config_wrapper.get_my_string(self.ONCOKB_CACHE),
-            config_wrapper.get_my_boolean(self.APPLY_CACHE),
-            config_wrapper.get_my_boolean(self.UPDATE_CACHE),
-            log_level=self.log_level,
-            log_path=self.log_path
-        )
-        self.logger.debug("OncoKB cache params: {0}".format(cache_params))
-        annotator = oncokb_annotator(
-            config_wrapper.get_my_string(core_constants.TUMOUR_ID),
-            config_wrapper.get_my_string(self.ONCOTREE_CODE),
-            self.workspace.get_work_dir(), # output dir
-            self.workspace.get_work_dir(), # temporary dir -- same as output
-            cache_params,
-            self.log_level,
-            self.log_path
-        )
         # TODO check if fusions are non empty
-        annotator.annotate_fusion()
+        factory = annotator_factory(self.log_level, self.log_path)
+        factory.get_annotator(self.work_dir, config_wrapper).annotate_fusion()
 
     def build_treatment_entry(self, fusion, tier, oncotree_code):
         """Make an entry for the treatment options merger"""
@@ -121,16 +101,6 @@ class main(plugin_base):
             wrapper.set_my_param(core_constants.TUMOUR_ID, tumour_id)
         return wrapper.get_config()
 
-    def cytoband_lookup(self):
-        data_dir = os.environ.get(core_constants.DJERBA_DATA_DIR_VAR)
-        cytoband_path = os.path.join(data_dir, 'cytoBand.txt')
-        cytobands = {}
-        with open(cytoband_path) as input_file:
-            reader = csv.DictReader(input_file, delimiter="\t")
-            for row in reader:
-                cytobands[row['Hugo_Symbol']] = row['Chromosome']
-        return cytobands
-
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         self.process_fusion_files(wrapper)
@@ -169,7 +139,7 @@ class main(plugin_base):
         rows = []
         gene_info = []
         treatment_opts = []
-        cytobands = self.cytoband_lookup()
+        cytobands = wgts_tools.cytoband_lookup()
         summaries = gene_summary_reader()
         gene_info_factory = gim_factory(self.log_level, self.log_path)
         # table has 2 rows for each oncogenic fusion
@@ -190,7 +160,6 @@ class main(plugin_base):
                 rows.append(row)
                 gene_info_entry = gene_info_factory.get_json(
                     gene=gene,
-                    gene_url=gene_url,
                     summary=summaries.get(gene)
                 )
                 gene_info.append(gene_info_entry)

@@ -1,0 +1,160 @@
+{
+    "attributes": [
+        "clinical"
+    ],
+    "merge_inputs": {
+        "gene_information_merger": [
+            {
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "Summary": "The CDKN2A gene encodes two proteins, p16INK4A and p14ARF, that regulate the cell growth and survival. CDKN2A is altered by mutation and/or deletion in a broad range of solid and hematologic cancers."
+            }
+        ],
+        "treatment_options_merger": [
+            {
+                "Alteration": "Deletion",
+                "Alteration_URL": null,
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB level": "4",
+                "Tier": "Investigational",
+                "Treatments": "Palbociclib, Ribociclib, Abemaciclib"
+            }
+        ]
+    },
+    "plugin_name": "cnv plugin",
+    "priorities": {
+        "configure": 100,
+        "extract": 100,
+        "render": 100
+    },
+    "results": {
+        "body": [
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Expression Percentile": 0.2377,
+                "Gene": "CDKN2A",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2A",
+                "OncoKB": "4"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q21.2",
+                "Expression Percentile": 0.999,
+                "Gene": "MCL1",
+                "Gene_URL": "https://www.oncokb.org/gene/MCL1",
+                "OncoKB": "N1"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "7q21.2",
+                "Expression Percentile": 1.0,
+                "Gene": "CDK6",
+                "Gene_URL": "https://www.oncokb.org/gene/CDK6",
+                "OncoKB": "N1"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Expression Percentile": 0.04146,
+                "Gene": "CDKN2B",
+                "Gene_URL": "https://www.oncokb.org/gene/CDKN2B",
+                "OncoKB": "N1"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "1q23.1",
+                "Expression Percentile": 0.05637,
+                "Gene": "NTRK1",
+                "Gene_URL": "https://www.oncokb.org/gene/NTRK1",
+                "OncoKB": "N2"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "3p14.2",
+                "Expression Percentile": 0.04677,
+                "Gene": "FHIT",
+                "Gene_URL": "https://www.oncokb.org/gene/FHIT",
+                "OncoKB": "N2"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "3q22.3",
+                "Expression Percentile": 1.0,
+                "Gene": "PIK3CB",
+                "Gene_URL": "https://www.oncokb.org/gene/PIK3CB",
+                "OncoKB": "N2"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "3q26.32",
+                "Expression Percentile": 1.0,
+                "Gene": "PIK3CA",
+                "Gene_URL": "https://www.oncokb.org/gene/PIK3CA",
+                "OncoKB": "N2"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "3q27.3",
+                "Expression Percentile": 0.3641,
+                "Gene": "BCL6",
+                "Gene_URL": "https://www.oncokb.org/gene/BCL6",
+                "OncoKB": "N2"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "7q36.1",
+                "Expression Percentile": 0.5868,
+                "Gene": "EZH2",
+                "Gene_URL": "https://www.oncokb.org/gene/EZH2",
+                "OncoKB": "N2"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "7q36.1",
+                "Expression Percentile": null,
+                "Gene": "KMT2C",
+                "Gene_URL": "https://www.oncokb.org/gene/KMT2C",
+                "OncoKB": "N2"
+            },
+            {
+                "Alteration": "Deletion",
+                "Chromosome": "9p21.3",
+                "Expression Percentile": 0.8832,
+                "Gene": "MTAP",
+                "Gene_URL": "https://www.oncokb.org/gene/MTAP",
+                "OncoKB": "N2"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "13q34",
+                "Expression Percentile": 1.0,
+                "Gene": "CUL4A",
+                "Gene_URL": "https://www.oncokb.org/gene/CUL4A",
+                "OncoKB": "N2"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "13q34",
+                "Expression Percentile": 0.1534,
+                "Gene": "IRS2",
+                "Gene_URL": "https://www.oncokb.org/gene/IRS2",
+                "OncoKB": "N2"
+            },
+            {
+                "Alteration": "Amplification",
+                "Chromosome": "17q23.3",
+                "Expression Percentile": 1.0,
+                "Gene": "DDX5",
+                "Gene_URL": "https://www.oncokb.org/gene/DDX5",
+                "OncoKB": "N2"
+            }
+        ],
+        "clinically relevant variants": 15,
+        "has expression data": true,
+        "percent genome altered": 72,
+        "total variants": 83
+    },
+    "version": "1.0.0"
+}

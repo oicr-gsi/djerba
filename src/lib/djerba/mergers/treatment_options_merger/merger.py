@@ -50,7 +50,10 @@ class main(merger_base):
 
     @staticmethod
     def get_link(url, text):
-        return '<a href="{0}">{1}</a>'.format(url, text)
+        if url==None:
+            return text
+        else:
+            return '<a href="{0}">{1}</a>'.format(url, text)
 
     def get_therapy_info(self, tier_input):
         # deduplicate by oncokb level and alteration name (both together are a unique ID)
