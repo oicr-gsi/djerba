@@ -35,7 +35,7 @@ class TestWgtsSamplePlugin(PluginTester):
         params = {
             self.INI: 'sample.ini',
             self.JSON: json_location,
-            self.MD5: '2564bbc00c738b4e2be0ef9ececb1e24'
+            self.MD5: '1fb06ccdfdfeb5ce708a7db5205ec351'
         }
         self.run_basic_test(test_source_dir, params)
 
