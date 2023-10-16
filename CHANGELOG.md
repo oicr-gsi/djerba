@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v1.0.0-dev0.0.9: 2023-10-16
 
 ## GCGI-1083: SNV and CNV updates
 - Rework the draft CNV plugin to make it production ready
