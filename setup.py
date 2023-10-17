@@ -10,6 +10,8 @@ with open('src/lib/djerba/version.py') as version_file:
     exec(version_file.read()) # sets __version__
 package_root = 'src/lib'
 
+data_wildcards = ['*.json', '*.html', '*.txt', 'data/*']
+
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
@@ -34,16 +36,19 @@ setup(
     packages=find_packages(where=package_root),
     package_dir={'' : package_root},
     package_data={
+        'djerba.core': [
+            'plugin_schema.json',
+            'html/clinical_footer.html',
+            'html/clinical_header.html',
+            'html/document_config.json',
+            'html/footer.html',
+            'html/OICR_Logo_RGB_ENGLISH.png',
+            'html/research_header.html',
+            'html/simple_header.html',
+            'html/stylesheet.css',
+        ],
+        'djerba.mergers.gene_information_merger': data_wildcards,
         'djerba': [
-            'core/plugin_schema.json',
-            'core/html/clinical_footer.html',
-            'core/html/clinical_header.html',
-            'core/html/document_config.json',
-            'core/html/footer.html',
-            'core/html/OICR_Logo_RGB_ENGLISH.png',
-            'core/html/research_header.html',
-            'core/html/simple_header.html',
-            'core/html/stylesheet.css',
             'data/20200818-oncoKBcancerGeneList.tsv',
             'data/20201126-allCuratedGenes.tsv',
             'data/20201201-OncoTree.txt',
@@ -105,14 +110,14 @@ setup(
         'jsonschema',
         'mako',
         'markdown',
-        'numpy',
+        #'numpy',
         'pandas',
         'pdfkit',
         'PyPDF2',
         'requests',
-        'scipy',
+        #'scipy',
         'statsmodels',
-        'tabulate'
+        #'tabulate'
     ],
     python_requires='>=3.10.6',
     author="Iain Bancarz",
