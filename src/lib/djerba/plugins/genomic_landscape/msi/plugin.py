@@ -20,10 +20,10 @@ import djerba.util.input_params_tools as input_params_tools
 class main(plugin_base):
     
     PLUGIN_VERSION = '1.0.0'
-    TEMPLATE_NAME = 'html/swgs_template.html'
-    RESULTS_SUFFIX = '.seg.txt'
-    WORKFLOW = 'ichorcna'
-    CNA_ANNOTATED = "data_CNA_oncoKBgenes_nonDiploid_annotated.txt"
+    TEMPLATE_NAME = 'msi_template.html'
+    
+    RESULTS_SUFFIX = '.filter.deduped.realigned.recalibrated.msi.booted'
+    WORKFLOW = 'msisensor'
 
     def specify_params(self):
 
@@ -142,7 +142,20 @@ class main(plugin_base):
       return results_path
 
 
-
+    def preprocess_msi(self, msi_path, report_dir):
+      """
+      summarize msisensor file
+      """
+      out_path = os.path.join(report_dir, 'msi.txt')
+      msi_boots = []
+      with open(msi_path, 'r') as msi_file:
+          reader_file = csv.reader(msi_file, delimiter="\t")
+          for row in reader_file:
+              msi_boots.append(float(row[3]))
+      msi_perc = numpy.percentile(numpy.array(msi_boots), [0, 25, 50, 75, 100])
+      with open(out_path, 'w') as out_file:
+          print("\t".join([str(item) for item in list(msi_perc)]), file=out_file)
+      return out_path
 
 
 
