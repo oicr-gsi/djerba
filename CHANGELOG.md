@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+## GCGI-1083: SNV and CNV updates
+- Rework the draft SNV/indel plugin to make it production ready
+
 ## v1.0.0-dev0.0.10: 2023-10-17
 
 ## GCGI-1105: Add initializer to directories
