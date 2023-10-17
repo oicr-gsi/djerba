@@ -51,7 +51,16 @@ ORDERED_LEVELS = [
     UNKNOWN
 ]
 
+### INI config keys ###
+
+ONCOTREE_CODE = 'oncotree code'
+ONCOKB_CACHE = 'oncokb cache'
+APPLY_CACHE = 'apply cache'
+UPDATE_CACHE = 'update cache'
+
+
 ### miscellaneous ###
 
 ALL_CURATED_GENES = '20201126-allCuratedGenes.tsv'
 ONCOGENIC_UC = 'ONCOGENIC'
+DEFAULT_CACHE_PATH = '/.mounts/labs/CGI/gsi/tools/djerba/oncokb_cache/scratch'
