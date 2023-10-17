@@ -47,67 +47,64 @@ class data_builder:
   #  self.r_script_dir = os.path.join(os.environ['DJERBA_BASE_DIR'], 'R_plots')  
 
   
-  def build_MSI_only(self, input_dir, sample_ID):
-      rows = []
-      genomic_biomarkers_path = input_dir
-      with open(genomic_biomarkers_path, "w") as genomic_biomarkers_file:
-          rows.append(self.call_MSI(sample_ID, genomic_biomarkers_file))
+  i#def build_MSI_only(self, input_dir, sample_ID):
+   #   rows = []
+   #   genomic_biomarkers_path = input_dir
+   #   with open(genomic_biomarkers_path, "w") as genomic_biomarkers_file:
+   #       rows.append(self.call_MSI(sample_ID, genomic_biomarkers_file))
+#
+#      data = {
+#          constants.CLINICALLY_RELEVANT_VARIANTS: len(rows),
+#          constants.BODY: rows
+#          }
+#      return data
 
-      data = {
-          constants.CLINICALLY_RELEVANT_VARIANTS: len(rows),
-          constants.BODY: rows
-          }
-      return data
-  
-  def call_MSI(self,sample_ID,genomic_biomarkers_file):
-      #convert MSI number into Low, inconclusive or High call
-      msi = self.extract_msi()
-      if msi >= self.MSI_CUTOFF:
-          metric_call = "MSI-H"
-          metric_text = "Microsatellite Instability High (MSI-H)"
-          print("Other Biomarkers\t"+sample_ID+"\tMSI-H", file=genomic_biomarkers_file)
-      elif msi < self.MSI_CUTOFF and msi >= self.MSS_CUTOFF:
-          metric_call = "INCONCLUSIVE"
-          metric_text = "Inconclusive Microsatellite Instability status"
-      elif msi < self.MSS_CUTOFF:
-          metric_call = "MSS"
-          metric_text = "Microsatellite Stable (MSS)"
+
+  def call_MSI(self, msi_value):
+      """convert MSI percentage into a Low, Inconclusive or High call"""
+      msi_dict = {constants.ALT: constants.MSI,
+                  constants.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/MSI-H",
+                  constants.METRIC_VALUE: msi_value
+                  }
+      if msi_value >= self.MSI_CUTOFF:
+          msi_dict[constants.METRIC_ACTIONABLE] = True
+          msi_dict[constants.METRIC_ALTERATION] = "MSI-H"
+          msi_dict[constants.METRIC_TEXT] = "Microsatellite Instability High (MSI-H)"
+      elif msi_value < self.MSI_CUTOFF and msi_value >= self.MSS_CUTOFF:
+          msi_dict[constants.METRIC_ACTIONABLE] = False
+          msi_dict[constants.METRIC_ALTERATION] = "INCONCLUSIVE"
+          msi_dict[constants.METRIC_TEXT] = "Inconclusive Microsatellite Instability status"
+      elif msi_value < self.MSS_CUTOFF:
+          msi_dict[constants.METRIC_ACTIONABLE] = False
+          msi_dict[constants.METRIC_ALTERATION] = "MSS"
+          msi_dict[constants.METRIC_TEXT] = "Microsatellite Stable (MSS)"
       else:
-          msg = "MSI not a number"
+          msg = "MSI value extracted from file is not a number"
           self.logger.error(msg)
           raise RuntimeError(msg)
-      msi_plot_location = self.write_biomarker_plot(self.input_dir,"msi")
-      msi_plot_base64 = converter().convert_svg(msi_plot_location, 'MSI plot')
-      row = {
-          constants.ALT: constants.MSI,
-          constants.METRIC_VALUE: msi,
-          constants.METRIC_CALL: metric_call,
-          constants.METRIC_TEXT: metric_text,
-          constants.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/MSI-H",
-          constants.METRIC_PLOT: msi_plot_base64
-      }
-      return(row)
-    
-  def extract_msi(self):
-    MSI = 0.0
-    with open(os.path.join(self.input_dir, self.MSI_FILE), 'r') as msi_file:
-        reader_file = csv.reader(msi_file, delimiter="\t")
-        for row in reader_file:
-            try: 
-                MSI = float(row[2])
-            except IndexError as err:
-                msg = "Incorrect number of columns in msisensor row: '{0}'".format(row)+\
-                      "read from '{0}'".format(os.path.join(self.input_dir, self.MSI_FILE))
-                self.logger.error(msg)
-                raise RuntimeError(msg) from err
-    return MSI
+      return(msi_dict)
+
+  def extract_MSI(self, msi_file_path = None):
+      if msi_file_path == None:
+          msi_file_path = os.path.join(self.input_dir, self.MSI_FILE_NAME)
+      with open(msi_file_path, 'r') as msi_file:
+          reader_file = csv.reader(msi_file, delimiter="\t")
+          for row in reader_file:
+              try: 
+                  msi_value = float(row[2])
+              except IndexError as err:
+                  msg = "Incorrect number of columns in msisensor row: '{0}'".format(row)+\
+                        "read from '{0}'".format(os.path.join(self.input_dir, self.MSI_FILE_NAME))
+                  self.logger.error(msg)
+                  raise RuntimeError(msg) from err
+      return msi_value
   
   def write_biomarker_plot(self, out_dir,marker):
-    out_path = os.path.join(out_dir, marker+'.svg')
-    args = [
-        os.path.join(self.r_script_dir, 'biomarkers_plot.R'),
-        '-d', self.input_dir
-    ]
-    subprocess_runner(self.log_level, self.log_path).run(args)
-    self.logger.info("Wrote biomarkers plot to {0}".format(out_path))
-    return out_path
+      out_path = os.path.join(out_dir, marker+'.svg')
+      args = [
+          os.path.join(self.r_script_dir, 'biomarkers_plot.R'),
+          '-d', self.input_dir
+      ]
+      subprocess_runner(self.log_level, self.log_path).run(args)
+      self.logger.info("Wrote biomarkers plot to {0}".format(out_path))
+      return out_path

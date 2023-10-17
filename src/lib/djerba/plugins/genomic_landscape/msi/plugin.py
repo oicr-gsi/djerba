@@ -4,18 +4,20 @@ Plugin for TAR SWGS.
 
 # IMPORTS
 import os
+import csv
+import numpy
 from djerba.plugins.base import plugin_base
 from mako.lookup import TemplateLookup
-import djerba.plugins.tar.swgs.constants as constants
-from djerba.plugins.tar.swgs.preprocess import preprocess
-from djerba.plugins.tar.swgs.extract import data_builder 
+import djerba.plugins.genomic_landscape.msi.constants as constants
 import djerba.core.constants as core_constants
 from djerba.plugins.tar.provenance_tools import parse_file_path
 from djerba.plugins.tar.provenance_tools import subset_provenance
 import gsiqcetl.column
+from djerba.util.image_to_base64 import converter
 from gsiqcetl import QCETLCache
 from djerba.util.render_mako import mako_renderer
 import djerba.util.input_params_tools as input_params_tools
+from djerba.util.subprocess_runner import subprocess_runner
 
 class main(plugin_base):
     
@@ -25,22 +27,26 @@ class main(plugin_base):
     RESULTS_SUFFIX = '.filter.deduped.realigned.recalibrated.msi.booted'
     WORKFLOW = 'msisensor'
 
+    MSS_CUTOFF = 5.0
+    MSI_CUTOFF = 15.0
+    MSI_FILE = 'msi.txt'
+
+    r_script_dir = '../'
+
     def specify_params(self):
 
       discovered = [
            'donor',
-           'oncotree_code',
-           'tumour_id',
-           'seg_file'
+           'msi_file'
       ]
       for key in discovered:
           self.add_ini_discovered(key)
       self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
 
       # Default parameters for priorities
-      self.set_ini_default('configure_priority', 400)
-      self.set_ini_default('extract_priority', 250)
-      self.set_ini_default('render_priority', 400)
+      self.set_ini_default('configure_priority', 100)
+      self.set_ini_default('extract_priority', 100)
+      self.set_ini_default('render_priority', 100)
 
       # Default parameters for clinical, supplementary
       self.set_ini_default(core_constants.CLINICAL, True)
@@ -56,12 +62,8 @@ class main(plugin_base):
 
       if wrapper.my_param_is_null('donor'):
           wrapper.set_my_param('donor', input_data['donor'])
-      if wrapper.my_param_is_null('oncotree_code'):
-          wrapper.set_my_param('oncotree_code', input_data['oncotree_code'])
-      if wrapper.my_param_is_null('tumour_id'):
-          wrapper.set_my_param('tumour_id', input_data['tumour_id'])
-      if wrapper.my_param_is_null('seg_file'):
-          wrapper.set_my_param('seg_file', self.get_seg_file(config[self.identifier]['donor']))
+      if wrapper.my_param_is_null('msi_file'):
+          wrapper.set_my_param('msi_file', self.get_msi_file(config[self.identifier]['donor']))
       return config
 
     def extract(self, config):
@@ -71,78 +73,40 @@ class main(plugin_base):
       # Get the working directory
       work_dir = self.workspace.get_work_dir()
 
-      # Get any input parameters
-      tumour_id = config[self.identifier]['tumour_id']
-      oncotree_code = config[self.identifier]['oncotree_code']
-
       # Get the seg file from the config
-      seg_file = wrapper.get_my_string('seg_file')
+      msi_file = wrapper.get_my_string('msi_file')
       
-      # Filter the seg_file only for amplifications (returns None if there are no amplifications)
-      amp_path = preprocess(tumour_id, oncotree_code, work_dir).preprocess_seg(seg_file)
+      # Preprocess the msi file
+      msi_summary = self.preprocess_msi(work_dir, msi_file)
 
-      cnv_data = {
-          'plugin_name': 'Shallow Whole Genome Sequencing (sWGS)',
+      msi_data = {
+          'plugin_name': 'MSI',
           'version': self.PLUGIN_VERSION,
           'priorities': wrapper.get_my_priorities(),
           'attributes': wrapper.get_my_attributes(),
           'merge_inputs': {},
-          'results': {}
+          'results': self.assemble_MSI(work_dir, msi_summary)
       }
 
-      # Read purity
-      with open(os.path.join(work_dir, 'purity.txt'), "r") as file:
-          purity = float(file.readlines()[0])
-
-
-      # Check purity
-      if purity >= 0.1 and amp_path:
-
-          # Preprocess the amplification data
-          preprocess(tumour_id, oncotree_code, work_dir).run_R_code(amp_path)
-          
-          # Get the table rows
-          rows = data_builder(work_dir).build_swgs_rows()
-          
-          # Put the information in the results section
-          cnv_data['results'][constants.BODY] = rows
-          cnv_data['results'][constants.CLINICALLY_RELEVANT_VARIANTS] = len(rows)
-          cnv_data['results'][constants.PASS_TAR_PURITY] = True
-
-          # Merge treatments (if there are any)
-          cna_annotated_path = os.path.join(work_dir, self.CNA_ANNOTATED)
-          cnv = data_builder(work_dir)
-          cnv_data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(cna_annotated_path, oncotree_code)
-      
-      elif purity >= 0.1 and not amp_path:
-          
-          # There will be no rows, so just set clinically relevant variants to 0, but still pass tar purity.
-          cnv_data['results'][constants.CLINICALLY_RELEVANT_VARIANTS] = 0
-          cnv_data['results'][constants.PASS_TAR_PURITY] = True
-          
-      else:
-          cnv_data['results'][constants.PASS_TAR_PURITY] = False
-      
-      return cnv_data
+      return msi_data
 
     def render(self, data):
       renderer = mako_renderer(self.get_module_dir())
       return renderer.render_name(self.TEMPLATE_NAME, data)
 
-    def get_seg_file(self, root_sample_name):
+    def get_msi_file(self, donor):
       """
       pull data from results file
       """
-      provenance = subset_provenance(self, self.WORKFLOW, root_sample_name)
+      provenance = subset_provenance(self, self.WORKFLOW, donor)
       try:
           results_path = parse_file_path(self, self.RESULTS_SUFFIX, provenance)
       except OSError as err:
           msg = "File with extension {0} not found".format(self.RESULTS_SUFFIX)
           raise RuntimeError(msg) from err
       return results_path
-
-
-    def preprocess_msi(self, msi_path, report_dir):
+    
+    def preprocess_msi(self, report_dir, msi_path):
       """
       summarize msisensor file
       """
@@ -157,104 +121,58 @@ class main(plugin_base):
           print("\t".join([str(item) for item in list(msi_perc)]), file=out_file)
       return out_path
 
+    def assemble_MSI(self, work_dir, msi_file_path = None):
+        msi_value = self.extract_MSI(work_dir, msi_file_path)
+        msi_dict = self.call_MSI(msi_value)
+        msi_plot_location = self.write_biomarker_plot(work_dir, "msi")
+        msi_dict[constants.METRIC_PLOT] = converter().convert_svg(msi_plot_location, 'MSI plot')
+        return(msi_dict)
 
+    def call_MSI(self, msi_value):
+      """convert MSI percentage into a Low, Inconclusive or High call"""
+      msi_dict = {constants.ALT: constants.MSI,
+                  constants.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/MSI-H",
+                  constants.METRIC_VALUE: msi_value
+                  }
+      if msi_value >= self.MSI_CUTOFF:
+          msi_dict[constants.METRIC_ACTIONABLE] = True
+          msi_dict[constants.METRIC_ALTERATION] = "MSI-H"
+          msi_dict[constants.METRIC_TEXT] = "Microsatellite Instability High (MSI-H)"
+      elif msi_value < self.MSI_CUTOFF and msi_value >= self.MSS_CUTOFF:
+          msi_dict[constants.METRIC_ACTIONABLE] = False
+          msi_dict[constants.METRIC_ALTERATION] = "INCONCLUSIVE"
+          msi_dict[constants.METRIC_TEXT] = "Inconclusive Microsatellite Instability status"
+      elif msi_value < self.MSS_CUTOFF:
+          msi_dict[constants.METRIC_ACTIONABLE] = False
+          msi_dict[constants.METRIC_ALTERATION] = "MSS"
+          msi_dict[constants.METRIC_TEXT] = "Microsatellite Stable (MSS)"
+      else:
+          msg = "MSI value extracted from file is not a number"
+          self.logger.error(msg)
+          raise RuntimeError(msg)
+      return(msi_dict)
 
-# -------------TO PREPROCESS THE MSI FILE---------------
+    def extract_MSI(self, work_dir, msi_file_path = None):
+      if msi_file_path == None:
+          msi_file_path = os.path.join(work_dir, self.MSI_FILE_NAME)
+      with open(msi_file_path, 'r') as msi_file:
+          reader_file = csv.reader(msi_file, delimiter="\t")
+          for row in reader_file:
+              try:
+                  msi_value = float(row[2])
+              except IndexError as err:
+                  msg = "Incorrect number of columns in msisensor row: '{0}'".format(row)+\
+                        "read from '{0}'".format(os.path.join(work_dir, self.MSI_FILE_NAME))
+                  self.logger.error(msg)
+                  raise RuntimeError(msg) from err
+      return msi_value
 
-import os
-from djerba.plugins.base import plugin_base
-from mako.lookup import TemplateLookup
-import djerba.plugins.msi.constants as constants
-from djerba.plugins.msi.extract import data_builder
-from djerba.sequenza import sequenza_reader
-import csv
-import numpy
-
-class main(plugin_base):
-
-
-  TEMPLATE_NAME = 'msi_only_template.html'
-
-  def configure(self, config_section):
-    return config_section
-
-  def extract(self, config_section):
-
-
-    params = {
-        constants.AUTHOR: "Aqsa Alam",
-        constants.ASSAY_TYPE: "WGTS",
-        constants.COVERAGE: 80,
-        constants.FAILED: False,
-        #constants.ONCOKB_CACHE: self.cache_params,
-        constants.ONCOTREE_CODE: "paad",
-        constants.PURITY_FAILURE: False,
-        constants.PROJECT: "PASS01"
-    }
-
-    # First, preprocess the msi file
-    msi_path = "../plugins/msi/test/PANX_1249_Lv_M_WG_100-PM-013_LCM5.filter.deduped.realigned.recalibrated.msi.booted"
-    report_dir = "../plugins/msi/test/"
-    self.preprocess_msi(msi_path, report_dir)
-
-    # Then, preprocess the seg file
-    sequenza_path = HARD_CODED_PATH
-    self.preprocess_seg(sequenza_path)
-
-    # For genomic biomarkers file
-    genomic_biomarkers_path = os.path.join(report_dir, constants.GENOMIC_BIOMARKERS)
-
-    # Random, for testing
-    x = int(round(data_builder().read_fga()*100, 0))
-    print(x)
-
-    # Then, do something else...
-    data = {
-        'plugin_name': 'Microsatellite (MSI)',
-        'clinical': True,
-        'failed': False,
-        'merge_inputs': {},
-        'results': data_builder().build_MSI_only("100-009-008_LCM2", genomic_biomarkers_path)
-        #'results': data_builder().build_all(params)
-    }
-    return data
-
-
-  def preprocess_msi(self, msi_path, report_dir):
-    """
-    summarize msisensor file
-    """
-    out_path = os.path.join(report_dir, 'msi.txt')
-    msi_boots = []
-    with open(msi_path, 'r') as msi_file:
-        reader_file = csv.reader(msi_file, delimiter="\t")
-        for row in reader_file:
-            msi_boots.append(float(row[3]))
-    msi_perc = numpy.percentile(numpy.array(msi_boots), [0, 25, 50, 75, 100])
-    with open(out_path, 'w') as out_file:
-        print("\t".join([str(item) for item in list(msi_perc)]), file=out_file)
-    #print("Finished pre-processing")
-    return out_path
-
-
-  def preprocess_seg(self, sequenza_path):
-    """
-    Extract the SEG file from the .zip archive output by Sequenza
-    Apply preprocessing and write results to tmp_dir
-    Replace entry in the first column with the tumour ID
-    """
-    #gamma = self.config.getint(ini.DISCOVERED, ini.SEQUENZA_GAMMA)
-    gamma = 400 # HARD CODED TEMPORARY
-    seg_path = sequenza_reader(sequenza_path).extract_cn_seg_file(self.tmp_dir, gamma)
-    out_path = os.path.join(self.tmp_dir, 'seg.txt')
-    with open(seg_path, 'rt') as seg_file, open(out_path, 'wt') as out_file:
-        reader = csv.reader(seg_file, delimiter="\t")
-        writer = csv.writer(out_file, delimiter="\t")
-        in_header = True
-        for row in reader:
-            if in_header:
-                in_header = False
-            else:
-                row[0] = self.tumour_id
-            writer.writerow(row)
-    return out_path
+    def write_biomarker_plot(self, work_dir, marker):
+      out_path = os.path.join(work_dir, marker+'.svg')
+      args = [
+          os.path.join(self.r_script_dir, 'biomarkers_plot.R'),
+          '-d', work_dir
+      ]
+      subprocess_runner(self.log_level, self.log_path).run(args)
+      self.logger.info("Wrote biomarkers plot to {0}".format(out_path))
+      return out_path
