@@ -11,7 +11,8 @@ class subprocess_runner(logger):
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
 
-    def run(self, command, description='subprocess', redact=[], stdin=None, raise_err=True):
+    def run(self, command, description='subprocess', redact=[], stdin=None, raise_err=True,
+            truncate=True):
         msg = None
         if isinstance(command, str) or not isinstance(command, Iterable):
             msg = "Command must be a non-string iterable: Received {0}".format(command)
@@ -33,8 +34,16 @@ class subprocess_runner(logger):
             capture_output=True,
             encoding=constants.TEXT_ENCODING,
         )
-        stdout = result.stdout
-        stderr = result.stderr
+        stdout = str(result.stdout)
+        stderr = str(result.stderr)
+        if len(stdout) > 10000 and truncate:
+            self.logger.debug('Truncating STDOUT to first 10000 characters; '+\
+                              'set truncate=False for full output')
+            stdout = stdout[0:10000]+' (additional characters truncated)'
+        if len(stderr) > 10000 and truncate:
+            self.logger.debug('Truncating STDERR to first 10000 characters; '+\
+                              'set truncate=False for full output')
+            stderr = stderr[0:10000]+' (additional characters truncated)'
         try:
             result.check_returncode()
         except subprocess.CalledProcessError as err:

@@ -36,6 +36,11 @@ class html_builder:
         return '<a href="{0}">{1}</a>'.format(url, text)
 
     @staticmethod
+    def k_comma_format(value):
+        value_formatted = f'{value:,}'
+        return(value_formatted)
+    
+    @staticmethod
     def section_cells_begin(section_title, is_main):
         # begin a cell structure with title in left-hand cell, body in right-hand cell
         if is_main:

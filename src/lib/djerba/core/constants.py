@@ -1,5 +1,6 @@
 CORE = 'core'
 NULL = '__DJERBA_NULL__'
+TEXT_ENCODING = 'utf-8'
 
 # environment variables
 DJERBA_DATA_DIR_VAR = 'DJERBA_DATA_DIR'

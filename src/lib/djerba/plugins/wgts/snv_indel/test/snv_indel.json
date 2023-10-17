@@ -1,0 +1,39 @@
+{
+    "plugin_name": "wgts.snv_indel plugin",
+    "version": "1.0.0",
+    "priorities": {
+        "configure": 100,
+        "extract": 200,
+        "render": 100
+    },
+    "attributes": [
+        "clinical"
+    ],
+    "merge_inputs": {
+        "treatment_options_merger": {
+            "gene_information_merger": [],
+            "treatment_options_merger": []
+        }
+    },
+    "results": {
+        "somatic mutations": 3,
+        "coding sequence mutations": 0,
+        "oncogenic mutations": 1,
+        "has expression data": true,
+        "Body": [
+            {
+                "Expression percentile": 0.9998,
+                "Gene": "NSD1",
+                "Gene URL": "https://www.oncokb.org/gene/NSD1",
+                "protein": "p.? (c.6010-4C>G)",
+                "protein_url": "https://www.oncokb.org/gene/NSD1/Truncating%20Mutations/PAAD",
+                "type": "Splice Region",
+                "vaf": 15,
+                "depth": "28/188",
+                "copy state": "Gain",
+                "Chromosome": "5q35.3",
+                "OncoKB": "N2"
+            }
+        ]
+    }
+}

@@ -13,7 +13,11 @@ from djerba.util.oncokb.tools import levels as oncokb_levels
 class wgts_tools(logger):
 
     CHROMOSOME = 'Chromosome'
+    EXPRESSION_PERCENTILE = 'Expression percentile'
+    HAS_EXPRESSION_DATA = 'Has expression data'
+    BODY = 'Body'
     GENE = 'Gene'
+    GENE_URL = 'Gene URL'
     ONCOKB = core_constants.ONCOKB
     UNCLASSIFIED_CYTOBANDS = [
         "", # some genes have an empty string for cytoband

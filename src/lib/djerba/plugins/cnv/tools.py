@@ -3,6 +3,7 @@ Supporting tools for the CNV plugin
 """
 
 import csv
+import json
 import logging
 import os
 import djerba.core.constants as core_constants
@@ -177,6 +178,33 @@ class cnv_processor(logger):
         subprocess_runner(self.log_level, self.log_path).run(args)
         self.logger.info("Wrote CNV plot to {0}".format(self.plot_path))
 
+    def write_copy_states(self):
+        """
+        Write the copy states to JSON for later reference, eg. by snv/indel plugin
+        """
+        conversion = {
+            0: "Neutral",
+            1: "Gain",
+            2: "Amplification",
+            -1: "Shallow Deletion",
+            -2: "Deep Deletion"
+        }
+        states = {}
+        with open(os.path.join(self.work_dir, 'data_CNA.txt')) as in_file:
+            reader = csv.reader(in_file, delimiter="\t")
+            for row in reader:
+                if row[0]!='Hugo_Symbol':
+                    gene = row[0]
+                    try:
+                        cna = int(row[1])
+                        states[gene] = conversion[cna]
+                    except (TypeError, KeyError) as err:
+                        msg = "Cannot convert unknown CNA code: {0}".format(row[1])
+                        self.logger.error(msg)
+                        raise RuntimeError(msg) from err
+        with open(os.path.join(self.work_dir, cnv.COPY_STATE_FILE), 'w') as out_file:
+            out_file.write(json.dumps(states, sort_keys=True, indent=4))
+
     def write_working_files(self):
         """
         Preprocess the SEG file
@@ -204,3 +232,5 @@ class cnv_processor(logger):
         # annotate
         factory = annotator_factory(self.log_level, self.log_path)
         factory.get_annotator(self.work_dir, self.config).annotate_cna()
+        # write copy states
+        self.write_copy_states()
