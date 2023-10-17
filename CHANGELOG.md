@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## Unreleased
+## v1.0.0-dev0.0.11: 2023-10-17
+
+## GCGI-1106: Update setup
+- Update `setup.py` to correctly install data files
+- Installation must include core, plugins, helpers, mergers
+- Also updated dependencies in `setup.py`
+- GCGI-993 will handle this in a decentralized way, but is out of scope for v1.0.0
 
 ## GCGI-1083: SNV and CNV updates
 - Rework the draft SNV/indel plugin to make it production ready
