@@ -1,57 +1,62 @@
 # CHANGELOG
 
+## Unreleased
+
+### GCGI-1091: Record extraction time in core JSON
+- Record the extraction time in UTC for later reference
+
 ## v1.0.0-dev0.0.11: 2023-10-17
 
-## GCGI-1106: Update setup
+### GCGI-1106: Update setup
 - Update `setup.py` to correctly install data files
 - Installation must include core, plugins, helpers, mergers
 - Also updated dependencies in `setup.py`
 - GCGI-993 will handle this in a decentralized way, but is out of scope for v1.0.0
 
-## GCGI-1083: SNV and CNV updates
+### GCGI-1083: SNV and CNV updates
 - Rework the draft SNV/indel plugin to make it production ready
 
 ## v1.0.0-dev0.0.10: 2023-10-17
 
-## GCGI-1105: Add initializer to directories
+### GCGI-1105: Add initializer to directories
 - Added __init__.py files to directories where it was missing
 
 ## v1.0.0-dev0.0.9: 2023-10-16
 
-## GCGI-1083: SNV and CNV updates
+### GCGI-1083: SNV and CNV updates
 - Rework the draft CNV plugin to make it production ready
 
-## GCGI-1077: Merger JSON factories
+### GCGI-1077: Merger JSON factories
 - Add factory classes to generate correct JSON for mergers; use in the fusion plugin
 
-## GCGI-1076: Gene information merger update
+### GCGI-1076: Gene information merger update
 - Add a Mako template to render correctly formatted HTML
 
-## GCGI-819: Fusions plugin
+### GCGI-819: Fusions plugin
 - Plugin to generate 'Structural Variants and Fusions' section of report
 
-## GCGI-1075: Provenance helper update
+### GCGI-1075: Provenance helper update
 - Write a `path_info.json` file to the workspace
 - Contains commonly used paths for use by other plugins/helpers
 
-## GCGI-1071: Expression helper
+### GCGI-1071: Expression helper
 - Helper class to compute gene expression levels from RSEM results
 
-## GCGI-1035: Treatment options merger
+### GCGI-1035: Treatment options merger
 - Generate the "Treatment Options" section of the report
 - Include both "FDA Approved" and "Investigational Therapies"
 
 ## v1.0.0-dev0.0.8: 2023-08-11
 
-## GCGI-963: Case overview plugin
+### GCGI-963: Case overview plugin
 - Renamed the patient info plugin
 - Brought up to date with new display format from master
 - Now supports WGTS, WGS, and TAR
 
-## GCGI-1016: Default working directory
+### GCGI-1016: Default working directory
 - Make `--work-dir` optional in `djerba.py` script; defaults to the output dir
 
-## Other
+### Other
 - In clinical report footer, added "Report Sign-Offs" heading and removed auto-generation of the date
 - Added `summary` plugin to generate the genomic summary text
 - Added `supplement` plugin to generate supplementary info (definitions, software versions, etc.)

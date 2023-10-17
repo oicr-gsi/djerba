@@ -61,6 +61,7 @@ class TestCore(TestBase):
             data_expected = json.loads(json_file.read())
         with open(json_path) as json_file:
             data_found = json.loads(json_file.read())
+            data_found['core']['extract_time'] = 'placeholder'
         self.assertEqual(data_expected, data_found)
 
     def assertSimpleReport(self, json_path, html_path):
@@ -601,6 +602,7 @@ class TestSimpleReport(TestCore):
         djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
         config = djerba_main.configure(ini_path)
         data_found = djerba_main.extract(config)
+        data_found['core']['extract_time'] = 'placeholder'
         with open(json_path) as json_file:
             data_expected = json.loads(json_file.read())
         self.assertEqual(data_expected, data_found)
