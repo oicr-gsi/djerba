@@ -96,6 +96,13 @@ class snv_indel_processor(logger):
         base = 'https://www.oncokb.org/gene'
         return '/'.join([base, gene, alteration, cancer_code])
 
+    def convert_vaf_plot(self):
+        """Read VAF plot from file and return as a base64 string"""
+        image_converter = converter(self.log_level, self.log_path)
+        plot_path = os.path.join(self.work_dir, sic.VAF_PLOT_FILENAME)
+        vaf_plot = image_converter.convert_svg(plot_path, 'CNV plot')
+        return vaf_plot
+
     def get_merge_inputs(self):
         """
         Read gene and therapy information for merge inputs
@@ -174,9 +181,6 @@ class snv_indel_processor(logger):
     def get_results(self):
         """Read the R script output into the JSON serializable results structure"""
         self.logger.debug("Collating SNV/indel results for JSON output")
-        image_converter = converter(self.log_level, self.log_path)
-        plot_path = os.path.join(self.work_dir, sic.VAF_PLOT_FILENAME)
-        vaf_plot = image_converter.convert_svg(plot_path, 'CNV plot')
         is_wgts = self.config.get_my_boolean(sic.HAS_EXPRESSION_DATA)
         oncotree_code = self.config.get_my_string(sic.ONCOTREE_CODE)
         rows = []
@@ -190,13 +194,13 @@ class snv_indel_processor(logger):
             reader = csv.DictReader(input_file, delimiter="\t")
             for row_input in reader:
                 gene = row_input[sic.HUGO_SYMBOL]
-                alt = row_input[sic.HGVSP_SHORT]
+                [protein, protein_url] = self.get_protein_info(row_input, oncotree_code)
                 row_output = {
                     wgts_tools.EXPRESSION_PERCENTILE: expression.get(gene), # None for WGS
                     wgts_tools.GENE: gene,
                     wgts_tools.GENE_URL: html_builder.build_gene_url(gene),
-                    sic.PROTEIN: alt,
-                    sic.PROTEIN_URL: self.build_alteration_url(gene, alt, oncotree_code),
+                    sic.PROTEIN: protein,
+                    sic.PROTEIN_URL: protein_url,
                     sic.TYPE: self.get_mutation_type(row_input),
                     sic.VAF: self.get_tumour_vaf(row_input),
                     sic.DEPTH: self.get_mutation_depth(row_input),
@@ -212,11 +216,25 @@ class snv_indel_processor(logger):
             sic.SOMATIC_MUTATIONS: somatic_total,
             sic.CODING_SEQUENCE_MUTATIONS: coding_seq_total,
             sic.ONCOGENIC_MUTATIONS: len(rows),
-            sic.VAF_PLOT: vaf_plot,
+            sic.VAF_PLOT: self.convert_vaf_plot(),
             sic.HAS_EXPRESSION_DATA: is_wgts,
             wgts_tools.BODY: rows
         }
         return results
+
+    def get_protein_info(self, row, oncotree_code):
+        """Find protein name/URL and apply special cases"""
+        gene = row[sic.HUGO_SYMBOL]
+        protein = row[sic.HGVSP_SHORT]
+        protein_url = self.build_alteration_url(gene, protein, oncotree_code)
+        if gene == 'BRAF' and protein == 'p.V640E':
+            protein = 'p.V600E'
+        if 'splice' in row[sic.VARIANT_CLASSIFICATION].lower():
+            protein = 'p.? (' + row[sic.HGVSC] + ')'
+            protein_url = self.build_alteration_url(
+                gene, "Truncating%20Mutations", oncotree_code
+            )
+        return [protein, protein_url]
 
     def get_tumour_vaf(self, row):
         vaf = row['tumour_vaf']

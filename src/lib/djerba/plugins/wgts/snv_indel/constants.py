@@ -26,6 +26,7 @@ MAF_KEYS = [
     HUGO_SYMBOL
 ]
 HGVSP_SHORT = 'HGVSp_Short'
+HGVSC = 'HGVSc'
 
 # Permitted MAF mutation types
 # `Splice_Region` is *included* here, but *excluded* from TMB computation
