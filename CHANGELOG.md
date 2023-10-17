@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v1.0.0-dev0.0.10: 2023-10-17
+
+## GCGI-1105: Add initializer to directories
+- Added __init__.py files to directories where it was missing
+
 ## v1.0.0-dev0.0.9: 2023-10-16
 
 ## GCGI-1083: SNV and CNV updates
