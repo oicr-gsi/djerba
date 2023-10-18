@@ -18,7 +18,6 @@ from djerba.util.logger import logger
 from djerba.util.image_to_base64 import converter
 import djerba.util.oncokb.constants as oncokb
 from djerba.util.subprocess_runner import subprocess_runner
-import djerba.render.constants as rc
 
 class data_builder:
 
@@ -266,7 +265,7 @@ class data_builder:
             'Treatments': therapies,
             'Gene': genes_arg,
             'Gene_URL': self.build_gene_url(genes_arg),
-            rc.ALT: alteration,
-            rc.ALT_URL: alt_url
+            'Alteration': alteration,
+            'Alteration_URL': alt_url
         }
         return row
