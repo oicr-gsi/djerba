@@ -8,7 +8,7 @@ import logging
 import djerba.core.constants as core_constants
 import djerba.util.oncokb.constants as oncokb_constants
 import djerba.util.constants as constants
-from djerba.extract.oncokb.cache import oncokb_cache, oncokb_cache_params
+from djerba.util.oncokb.cache import oncokb_cache, oncokb_cache_params
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.validator import path_validator

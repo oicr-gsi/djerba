@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### GCGI-1070: Delete obsolete files
+- Delete obsolete files from Djerba classic
+- Temporary reprieve for files in `render` still in use by plugins
+
 ### GCGI-1091: Record extraction time in core JSON
 - Record the extraction time in UTC for later reference
 

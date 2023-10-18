@@ -13,7 +13,7 @@ import os
 import re
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
-import djerba.extract.oncokb.constants as oncokb_constants
+import djerba.util.oncokb.constants as oncokb_constants
 import djerba.util.constants as constants
 
 class oncokb_cache_params(logger):

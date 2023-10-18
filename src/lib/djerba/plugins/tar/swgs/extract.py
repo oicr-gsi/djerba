@@ -16,7 +16,7 @@ import djerba.plugins.tar.swgs.constants as constants
 from djerba.plugins.tar.swgs.preprocess import preprocess
 from djerba.util.logger import logger
 from djerba.util.image_to_base64 import converter
-import djerba.extract.oncokb.constants as oncokb
+import djerba.util.oncokb.constants as oncokb
 from djerba.util.subprocess_runner import subprocess_runner
 import djerba.render.constants as rc
 
