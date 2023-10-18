@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### GCGI-1114: Fix for tar plugin install
+- Add `djerba.plugins.tar.snv_indel.snv_indel_tools` to `setup.py`
+
 ### GCGI-1070: Delete obsolete files
 - Delete obsolete files from Djerba classic
 - Temporary reprieve for files in `render` still in use by plugins
