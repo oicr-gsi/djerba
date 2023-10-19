@@ -101,6 +101,7 @@ setup(
         'djerba.plugins.supplement': install_wildcards,
         'djerba.plugins.tar.sample': install_wildcards,
         'djerba.plugins.tar.snv_indel': install_wildcards,
+        'djerba.plugins.tar.snv_indel.snv_indel_tools': install_wildcards,
         'djerba.plugins.tar.swgs': install_wildcards,
         'djerba.plugins.wgts.snv_indel': install_wildcards,
     },
