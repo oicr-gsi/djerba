@@ -1,9 +1,14 @@
 # CHANGELOG
 
-## Unreleased
+## v1.0.0-dev0.0.12: 2023-10-19
 
 ### GCGI-1114: Fix for tar plugin install
 - Add `djerba.plugins.tar.snv_indel.snv_indel_tools` to `setup.py`
+
+### GCGI-1108: Remove djerba.render dependencies
+- Remove dependencies on obsolete files
+- Concludes work started in GCGI-1070
+- Corrects path to `gencode_v33_hg38_genes.bed`
 
 ### GCGI-1070: Delete obsolete files
 - Delete obsolete files from Djerba classic
