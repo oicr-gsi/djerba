@@ -255,7 +255,7 @@ class main_draft_args():
         self.ini = ini_path
         self.ini_out = None
         self.dir = out_dir
-        self.no_aconstantshive = True
+        self.no_archive = True
         self.no_cleanup = True
         self.apply_cache = apply_cache
         self.update_cache = update_cache
