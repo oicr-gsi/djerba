@@ -52,7 +52,8 @@ class main(plugin_base):
         # annotate from OncoKB
         # TODO check if fusions are non empty
         factory = annotator_factory(self.log_level, self.log_path)
-        factory.get_annotator(self.work_dir, config_wrapper).annotate_fusion()
+        work_dir = self.workspace.get_work_dir()
+        factory.get_annotator(work_dir, config_wrapper).annotate_fusion()
 
     def build_treatment_entry(self, fusion, tier, oncotree_code):
         """Make an entry for the treatment options merger"""

@@ -56,7 +56,7 @@ class main(plugin_base):
         proc = snv_indel_processor(work_dir, wrapper, self.log_level, self.log_path)
         proc.write_working_files(whizbam_url)
         data['results'] = proc.get_results()
-        data['merge_inputs']['treatment_options_merger'] = proc.get_merge_inputs()
+        data['merge_inputs'] = proc.get_merge_inputs()
         return data
 
     def render(self, data):
