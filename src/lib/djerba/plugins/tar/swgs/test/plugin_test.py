@@ -8,11 +8,14 @@ import os
 import unittest
 import tempfile
 import shutil
+import string
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 from djerba.core.workspace import workspace
 
 class TestTarSwgsPlugin(PluginTester):
+
+    INI_NAME = 'tar_swgs.ini'
 
     def setUp(self):
         self.path_validator = path_validator()
@@ -34,14 +37,24 @@ class TestTarSwgsPlugin(PluginTester):
         # Copy files into the temporary directory
         shutil.copy(self.provenance_output, self.tmp_dir)
         shutil.copy(self.purity_pass, self.tmp_dir)
+        
+        with open(os.path.join(test_source_dir, self.INI_NAME)) as in_file:
+            template_str = in_file.read()
+        template = string.Template(template_str)
+        ini_str = template.substitute({'DJERBA_TEST_DATA': self.sup_dir})
+        input_dir = os.path.join(self.get_tmp_dir(), 'input')
+        os.mkdir(input_dir)
+        with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
+            ini_file.write(ini_str)
+
         json_location = os.path.join(self.sup_dir ,"swgs-plugin/purity_pass/tar_swgs_purity_pass.json")
 
         params = {
-            self.INI: 'data/tar_swgs.ini',
+            self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: 'aab9c370e4570b5264b1822dbdbb64ca'
+            self.MD5: 'ed64edbf5f50a19b856d09789bf35f81'
         }
-        self.run_basic_test(test_source_dir, params)
+        self.run_basic_test(input_dir, params)
 
     def testTarSwgsPurityFail(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -49,14 +62,24 @@ class TestTarSwgsPlugin(PluginTester):
         # Copy files into the temporary directory
         shutil.copy(self.provenance_output, self.tmp_dir)
         shutil.copy(self.purity_fail, self.tmp_dir)
+        
+        with open(os.path.join(test_source_dir, self.INI_NAME)) as in_file:
+            template_str = in_file.read()
+        template = string.Template(template_str)
+        ini_str = template.substitute({'DJERBA_TEST_DATA': self.sup_dir})
+        input_dir = os.path.join(self.get_tmp_dir(), 'input')
+        os.mkdir(input_dir)
+        with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
+            ini_file.write(ini_str)
+
         json_location = os.path.join(self.sup_dir ,"swgs-plugin/purity_fail/tar_swgs_purity_fail.json")
 
         params = {
-            self.INI: 'data/tar_swgs.ini',
+            self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: 'b0970bdc2091a6a17a1577bb946f90b4'
+            self.MD5: '04e08becd28fcdbc7fc31bee4fe5d4f4'
         }
-        self.run_basic_test(test_source_dir, params)
+        self.run_basic_test(input_dir, params)
     
 if __name__ == '__main__':
     unittest.main()

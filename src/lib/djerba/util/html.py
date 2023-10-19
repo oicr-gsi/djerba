@@ -4,6 +4,7 @@
 
 import re
 from string import Template
+from markdown import markdown
 
 class html_builder:
 
@@ -39,6 +40,10 @@ class html_builder:
     def k_comma_format(value):
         value_formatted = f'{value:,}'
         return(value_formatted)
+    
+    @staticmethod
+    def markdown_to_html(markdown_string):
+        return markdown(markdown_string)
     
     @staticmethod
     def section_cells_begin(section_title, is_main):

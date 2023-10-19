@@ -10,7 +10,6 @@ from djerba.util.logger import logger
 from djerba.util.image_to_base64 import converter
 import djerba.util.oncokb.constants as oncokb
 from djerba.util.subprocess_runner import subprocess_runner
-import djerba.render.constants as rc
 
 class data_builder:
 
@@ -67,9 +66,24 @@ class data_builder:
 
                 rows.append(row)
         rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
-        for row in rows: all_reported_variants.add((row.get(sic.GENE), row.get(sic.CHROMOSOME)))
+        for row in rows: 
+            all_reported_variants.add((row.get(sic.GENE), row.get(sic.CHROMOSOME)))
+            row[sic.ONCOKB] = self.change_oncokb_level_name(row[sic.ONCOKB])
         return rows
-  
+ 
+    def change_oncokb_level_name(self, level):
+        onc = 'Oncogenic'
+        l_onc = 'Likely Oncogenic'
+        p_onc = 'Predicted Oncogenic'
+        
+        if level == onc:
+            level = 'N1'
+        elif level == l_onc:
+            level = 'N2'
+        elif level == p_onc:
+            level = 'N3'
+        return level
+    
     def cytoband_sort_order(self, cb_input):
         """Cytobands are (usually) of the form [integer][p or q][decimal]; also deal with edge cases"""
         end = (999, 'z', 999999)
@@ -138,7 +152,7 @@ class data_builder:
             #self.logger.warning(
             #    "Unknown OncoKB level '{0}'; known levels are {1}".format(level, self.oncokb_levels)
             #)
-            order = len(self.oncokb_levels)+1 # unknown levels go last
+            order = len(oncokb_levels)+1 # unknown levels go last
         return order
 
     def parse_oncokb_level(self, row_dict):
@@ -224,8 +238,8 @@ class data_builder:
             'Treatments': therapies,
             'Gene': genes_arg,
             'Gene_URL': self.build_gene_url(genes_arg),
-            rc.ALT: alteration,
-            rc.ALT_URL: alt_url
+            'Alteration': alteration,
+            'Alteration_URL': alt_url
         }
         return row
 
