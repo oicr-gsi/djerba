@@ -22,7 +22,7 @@ class preprocess(logger):
   def __init__(self, tumour_id, oncotree_code, work_dir, log_level=logging.DEBUG, log_path=None):
 
     # CONSTANTS
-    self.GENECODE_PATH = os.environ.get('DJERBA_ROOT') + "/data/gencode_v33_hg38_genes.bed"
+    self.GENECODE_PATH = os.path.join(os.environ.get('DJERBA_RUN_DATA'), 'gencode_v33_hg38_genes.bed')
     self.ONCOLIST_PATH = "/20200818-oncoKBcancerGeneList.tsv"
 
     # DIRECTORIES

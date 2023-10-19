@@ -22,6 +22,7 @@ from djerba.util.subprocess_runner import subprocess_runner
 class data_builder:
 
   ONCOKB_URL_BASE = 'https://www.oncokb.org/gene'
+  ONCOKB_LEVEL = 'OncoKB'
   ALTERATION_UPPER_CASE = 'ALTERATION'
   ONCOGENIC = 'ONCOGENIC'
   CNA_ANNOTATED = "data_CNA_oncoKBgenes_nonDiploid_annotated.txt"
@@ -77,13 +78,29 @@ class data_builder:
               rows.append(row)
     #self.logger.debug("Sorting and filtering CNV rows")
     rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
-    for row in rows: self.all_reported_variants.add((row.get(constants.GENE), row.get(constants.CHROMOSOME)))
+    for row in rows: 
+        self.all_reported_variants.add((row.get(constants.GENE), row.get(constants.CHROMOSOME)))
+        row[self.ONCOKB_LEVEL] = self.change_oncokb_level_name(row[self.ONCOKB_LEVEL])
     
     return rows
 
     
    # --------------------------- ALL EXTRA FUNCTIONS ---------------------
   
+  def change_oncokb_level_name(self, level):
+    onc = 'Oncogenic'
+    l_onc = 'Likely Oncogenic'
+    p_onc = 'Predicted Oncogenic'
+
+    if level == onc:
+        level = 'N1'
+    elif level == l_onc:
+        level = 'N2'
+    elif level == p_onc:
+        level = 'N3'
+    return level
+
+
   def get_cytoband(self, gene_name):
     cytoband = self.cytoband_map.get(gene_name)
     if not cytoband:
