@@ -23,7 +23,6 @@ import logging
 import os
 import re
 import djerba.core.constants as core_constants
-import djerba.render.constants as constants
 from djerba.mergers.base import merger_base, DjerbaMergerError
 from djerba.util.oncokb.tools import levels as oncokb
 from djerba.util.render_mako import mako_renderer
