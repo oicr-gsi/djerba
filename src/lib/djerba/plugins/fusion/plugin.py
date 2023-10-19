@@ -29,6 +29,7 @@ class main(plugin_base):
 
     # INI config keys
     MAVIS_PATH = 'mavis path'
+    ONCOTREE_CODE = 'oncotree code'
     ENTREZ_CONVERSION_PATH = 'entrez conv path'
     MIN_FUSION_READS = 'minimum fusion reads'
 
@@ -216,10 +217,10 @@ class main(plugin_base):
         self.add_ini_discovered(self.ONCOTREE_CODE)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_ini_default(self.MIN_FUSION_READS, 20)
-        self.set_ini_default(self.APPLY_CACHE, False)
-        self.set_ini_default(self.UPDATE_CACHE, False)
+        self.set_ini_default(oncokb.APPLY_CACHE, False)
+        self.set_ini_default(oncokb.UPDATE_CACHE, False)
         cache_default = '/.mounts/labs/CGI/gsi/tools/djerba/oncokb_cache/scratch'
-        self.set_ini_default(self.ONCOKB_CACHE, cache_default)
+        self.set_ini_default(oncokb.ONCOKB_CACHE, cache_default)
         self.set_priority_defaults(self.PRIORITY)
 
     def render(self, data):
