@@ -23,7 +23,7 @@ import djerba.util.oncokb.constants as oncokb
 
 class main(plugin_base):
 
-    PRIORITY = 400
+    PRIORITY = 900
     PLUGIN_VERSION = '1.0.0'
     MAKO_TEMPLATE_NAME = 'fusion_template.html'
 

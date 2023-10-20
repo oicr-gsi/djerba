@@ -23,7 +23,7 @@ except ImportError as err:
 class main(plugin_base):
 
     PLUGIN_VERSION = '1.0.0'
-    PRIORITY = 100
+    PRIORITY = 500
     QCETL_CACHE = "/scratch2/groups/gsi/production/qcetl_v1"
     
     def specify_params(self):
