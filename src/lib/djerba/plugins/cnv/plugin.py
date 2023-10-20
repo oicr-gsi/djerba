@@ -18,6 +18,20 @@ class main(plugin_base):
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'cnv_template.html'
 
+    def check_purity_is_consistent(self, cnv_purity):
+        """Check CNV purity is consistent with input_params_helper value (if any)"""
+        cnv_purity = int(cnv_purity*100) # convert decimal to percentage
+        if self.workspace.has_file(input_params_helper.INPUT_PARAMS_FILE):
+            data = self.workspace.read_json(input_params_helper.INPUT_PARAMS_FILE)
+            iph_purity = int(data.get(input_params_helper.PURITY))
+            if iph_purity != None and iph_purity != cnv_purity:
+                msg = "Inconsistent purity values! "+\
+                    "CNV plugin purity = {0}, ".format(cnv_purity)+\
+                    "Input params helper purity = {0}. ".format(iph_purity)+\
+                    "Update CNV and/or input params INI config so values match."
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
@@ -49,6 +63,8 @@ class main(plugin_base):
         else:
             purity = wrapper.get_my_float(cnv_constants.PURITY)
             self.logger.debug("Using user-supplied purity: {0}".format(purity))
+        if wrapper.get_my_boolean(cnv_constants.PURITY_CHECK):
+            self.check_purity_is_consistent(purity)
         return wrapper.get_config()
 
     def extract(self, config):
@@ -89,4 +105,5 @@ class main(plugin_base):
         for key in discovered:
             self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
+        self.set_ini_default(cnv_constants.PURITY_CHECK, True)
         self.set_priority_defaults(self.PRIORITY)
