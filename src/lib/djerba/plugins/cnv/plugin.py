@@ -6,7 +6,8 @@ import os
 import djerba.core.constants as core_constants
 import djerba.plugins.cnv.constants as cnv_constants
 import djerba.util.oncokb.constants as oncokb_constants
-from djerba.plugins.base import plugin_base
+from djerba.helpers.input_params_helper.helper import main as input_params_helper
+from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.plugins.cnv.tools import cnv_processor
 from djerba.sequenza import sequenza_reader # TODO move sequenza.py to util?
 from djerba.util.render_mako import mako_renderer
@@ -20,7 +21,36 @@ class main(plugin_base):
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
-        # TODO get sequenza path from provenenance helper JSON
+        if wrapper.my_param_is_null(cnv_constants.ONCOTREE_CODE):
+            if self.workspace.has_file(input_params_helper.INPUT_PARAMS_FILE):
+                data = self.workspace.read_json(input_params_helper.INPUT_PARAMS_FILE)
+                oncotree_code = data[input_params_helper.ONCOTREE_CODE]
+                wrapper.set_my_param(cnv_constants.ONCOTREE_CODE, oncotree_code)
+            else:
+                msg = "Cannot find Oncotree code; must be manually specified or "+\
+                    "given in {0}".format(input_params_helper.INPUT_PARAMS_FILE)
+                self.logger.error(msg)
+                raise DjerbaPluginError(msg)
+        if wrapper.my_param_is_null(cnv_constants.TUMOUR_ID):
+            if self.workspace.has_file(core_constants.DEFAULT_SAMPLE_INFO):
+                data = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
+                sequenza_path = data['tumour_id']
+                wrapper.set_my_param(cnv_constants.TUMOUR_ID, sequenza_path)
+            else:
+                msg = "Cannot find tumour ID; must be manually specified or "+\
+                    "given in {0}".format(core_constants.DEFAULT_SAMPLE_INFO)
+                self.logger.error(msg)
+                raise DjerbaPluginError(msg)
+        if wrapper.my_param_is_null(cnv_constants.SEQUENZA_PATH):
+            if self.workspace.has_file(core_constants.DEFAULT_PATH_INFO):
+                data = self.workspace.read_json(core_constants.DEFAULT_PATH_INFO)
+                sequenza_path = data['sequenza_by_tumor_group']
+                wrapper.set_my_param(cnv_constants.SEQUENZA_PATH, sequenza_path)
+            else:
+                msg = "Cannot find Sequenza input path; must be manually specified or "+\
+                    "given in {0}".format(core_constants.DEFAULT_PATH_INFO)
+                self.logger.error(msg)
+                raise DjerbaPluginError(msg)
         if wrapper.my_param_is_null(cnv_constants.PURITY):
             gamma = wrapper.get_my_int(cnv_constants.SEQUENZA_GAMMA)
             solution = wrapper.get_my_string(cnv_constants.SEQUENZA_SOLUTION)
@@ -51,16 +81,16 @@ class main(plugin_base):
     
     def specify_params(self):
         required = [
-            cnv_constants.SEQUENZA_PATH,
             cnv_constants.SEQUENZA_GAMMA,
             cnv_constants.SEQUENZA_SOLUTION,
-            cnv_constants.TUMOUR_ID,
-            cnv_constants.ONCOTREE_CODE
         ]
         for key in required:
             self.add_ini_required(key)
         discovered = [
-            cnv_constants.PURITY
+            cnv_constants.ONCOTREE_CODE,
+            cnv_constants.SEQUENZA_PATH,
+            cnv_constants.PURITY,
+            cnv_constants.TUMOUR_ID
         ]
         self.set_ini_default(
             oncokb_constants.ONCOKB_CACHE,
