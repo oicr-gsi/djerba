@@ -10,10 +10,8 @@
         "clinical"
     ],
     "merge_inputs": {
-        "treatment_options_merger": {
-            "gene_information_merger": [],
-            "treatment_options_merger": []
-        }
+        "gene_information_merger": [],
+        "treatment_options_merger": []
     },
     "results": {
         "somatic mutations": 3,

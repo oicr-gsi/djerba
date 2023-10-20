@@ -21,36 +21,24 @@ class main(plugin_base):
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
-        if wrapper.my_param_is_null(cnv_constants.ONCOTREE_CODE):
-            if self.workspace.has_file(input_params_helper.INPUT_PARAMS_FILE):
-                data = self.workspace.read_json(input_params_helper.INPUT_PARAMS_FILE)
-                oncotree_code = data[input_params_helper.ONCOTREE_CODE]
-                wrapper.set_my_param(cnv_constants.ONCOTREE_CODE, oncotree_code)
-            else:
-                msg = "Cannot find Oncotree code; must be manually specified or "+\
-                    "given in {0}".format(input_params_helper.INPUT_PARAMS_FILE)
-                self.logger.error(msg)
-                raise DjerbaPluginError(msg)
-        if wrapper.my_param_is_null(cnv_constants.TUMOUR_ID):
-            if self.workspace.has_file(core_constants.DEFAULT_SAMPLE_INFO):
-                data = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
-                sequenza_path = data['tumour_id']
-                wrapper.set_my_param(cnv_constants.TUMOUR_ID, sequenza_path)
-            else:
-                msg = "Cannot find tumour ID; must be manually specified or "+\
-                    "given in {0}".format(core_constants.DEFAULT_SAMPLE_INFO)
-                self.logger.error(msg)
-                raise DjerbaPluginError(msg)
-        if wrapper.my_param_is_null(cnv_constants.SEQUENZA_PATH):
-            if self.workspace.has_file(core_constants.DEFAULT_PATH_INFO):
-                data = self.workspace.read_json(core_constants.DEFAULT_PATH_INFO)
-                sequenza_path = data['sequenza_by_tumor_group']
-                wrapper.set_my_param(cnv_constants.SEQUENZA_PATH, sequenza_path)
-            else:
-                msg = "Cannot find Sequenza input path; must be manually specified or "+\
-                    "given in {0}".format(core_constants.DEFAULT_PATH_INFO)
-                self.logger.error(msg)
-                raise DjerbaPluginError(msg)
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            input_params_helper.INPUT_PARAMS_FILE,
+            cnv_constants.ONCOTREE_CODE,
+            input_params_helper.ONCOTREE_CODE
+        )
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_SAMPLE_INFO,
+            cnv_constants.TUMOUR_ID,
+            'tumour_id'
+        )
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_PATH_INFO,
+            cnv_constants.SEQUENZA_PATH,
+            'sequenza_by_tumor_group'
+        )
         if wrapper.my_param_is_null(cnv_constants.PURITY):
             gamma = wrapper.get_my_int(cnv_constants.SEQUENZA_GAMMA)
             solution = wrapper.get_my_string(cnv_constants.SEQUENZA_SOLUTION)
@@ -98,7 +86,6 @@ class main(plugin_base):
         )
         self.set_ini_default(oncokb_constants.APPLY_CACHE, False)
         self.set_ini_default(oncokb_constants.UPDATE_CACHE, False)
-        self.set_ini_default(cnv_constants.HAS_EXPRESSION_DATA, True)
         for key in discovered:
             self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
