@@ -20,7 +20,7 @@ class main(plugin_base):
 
     def check_purity_is_consistent(self, cnv_purity):
         """Check CNV purity is consistent with input_params_helper value (if any)"""
-        cnv_purity = int(cnv_purity*100) # convert decimal to percentage
+        cnv_purity = int(round(cnv_purity*100)) # convert decimal to percentage
         if self.workspace.has_file(input_params_helper.INPUT_PARAMS_FILE):
             data = self.workspace.read_json(input_params_helper.INPUT_PARAMS_FILE)
             iph_purity = int(data.get(input_params_helper.PURITY))
@@ -31,6 +31,8 @@ class main(plugin_base):
                     "Update CNV and/or input params INI config so values match."
                 self.logger.error(msg)
                 raise RuntimeError(msg)
+            else:
+                self.logger.info("Purity configuration check successful")
 
     def configure(self, config):
         config = self.apply_defaults(config)
