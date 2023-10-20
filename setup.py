@@ -41,10 +41,10 @@ setup(
         'src/bin/qc_report.sh',
         'src/bin/run_mavis.py',
         'src/bin/sequenza_explorer.py',
-        'src/bin/update_genomic_summary.py',
         'src/bin/update_oncokb_cache.py',
         'src/bin/update_technical_notes.py',
-        'src/bin/view_json.py'
+        'src/bin/view_json.py',
+        'src/lib/djerba/plugins/summary/update_summary.py'
     ],
     packages=find_packages(where=package_root),
     package_dir={'' : package_root},
