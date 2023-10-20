@@ -48,7 +48,7 @@ class main(helper_base):
             msg = "{0} not configured, falling back to project name {1}".format(
                 self.TCGA_CODE_KEY, project
             )
-            self.logger.debug(msg)
+            self.logger.warning(msg)
             wrapper.set_my_param(self.TCGA_CODE_KEY, project)
         # find the GEP reference path
         if wrapper.my_param_is_null(self.GEP_REFERENCE_KEY):
