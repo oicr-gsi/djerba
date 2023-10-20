@@ -22,12 +22,11 @@ class main(plugin_base):
             self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_ini_default(self.FAILED, "False")
+        self.set_priority_defaults(self.DEFAULT_CONFIG_PRIORITY)
     
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
-        wrapper.set_my_priorities(self.DEFAULT_CONFIG_PRIORITY)
-        
         # Get input_data.json if it exists; else return None
         input_data = input_params_tools.get_input_params_json(self)
         if input_data == None:

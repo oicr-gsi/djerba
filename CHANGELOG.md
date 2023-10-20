@@ -4,6 +4,8 @@
 
 ### GCGI-1113: System integration
 - Minor bugfixes to allow successful generation of integrated report
+- Split supplementary plugin into `body` and (extremely simple) `header` plugins
+- New `supplement.header` plugin allows exact control of header location
 
 ## v1.0.0-dev0.0.12: 2023-10-19
 

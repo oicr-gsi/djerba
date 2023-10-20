@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-"""Test of the supplement plugin"""
+"""Test of the supplement body plugin"""
 
 import os
 import unittest
@@ -24,7 +24,7 @@ class TestPwgSupplementaryPlugin(PluginTester):
         params = {
             self.INI: 'PWGS.supp.ini',
             self.JSON: json_location,
-            self.MD5: '010025a68d39de85f1990e50b9772811'
+            self.MD5: 'd15b300a8034e1c8736e4dc9f300149e'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -34,7 +34,7 @@ class TestPwgSupplementaryPlugin(PluginTester):
         params = {
             self.INI: 'TAR.supp.ini',
             self.JSON: json_location,
-            self.MD5: '199edbd9975d7a7cc07330fbedf0cec6'
+            self.MD5: 'bf0f88cd88bb3a12dc9bf5651cd8547c'
         }
         self.run_basic_test(test_source_dir, params)
    
@@ -44,7 +44,7 @@ class TestPwgSupplementaryPlugin(PluginTester):
         params = {
             self.INI: 'TAR.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'edfd62723081a3c77aa7787db277c7e3'
+            self.MD5: 'b56abd612a4c74bdf114ec3315436940'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -54,7 +54,7 @@ class TestPwgSupplementaryPlugin(PluginTester):
         params = {
             self.INI: 'WGTS.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'd1b3dd956fc8edeeb4128e3a1bda7741'
+            self.MD5: 'd3c2ec65780bfea9be4e9e27e8d67958'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -64,7 +64,7 @@ class TestPwgSupplementaryPlugin(PluginTester):
         params = {
             self.INI: 'WGTS.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'aae4804a10b56056496c91cda9d16038'
+            self.MD5: 'dda3cab0258e6d09fd17d59706652740'
         }
         self.run_basic_test(test_source_dir, params)
 
