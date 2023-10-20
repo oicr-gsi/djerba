@@ -13,7 +13,7 @@ from djerba.util.render_mako import mako_renderer
 
 class main(plugin_base):
    
-    PRIORITY = 100
+    PRIORITY = 800
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'cnv_template.html'
 
