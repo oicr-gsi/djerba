@@ -8,7 +8,7 @@ import djerba.util.input_params_tools as input_params_tools
 
 class main(plugin_base):
 
-    DEFAULT_CONFIG_PRIORITY = 1000
+    DEFAULT_CONFIG_PRIORITY = 1200
     MAKO_TEMPLATE_NAME = 'supplementary_materials_template.html'
     SUPPLEMENT_DJERBA_VERSION = 0.1
     FAILED = "failed"

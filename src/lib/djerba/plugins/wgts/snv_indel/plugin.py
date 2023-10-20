@@ -12,7 +12,7 @@ from djerba.util.render_mako import mako_renderer
 
 class main(plugin_base):
    
-    PRIORITY = 100
+    PRIORITY = 700
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'snv_indel_template.html'
     ASSAY = 'WGS'
