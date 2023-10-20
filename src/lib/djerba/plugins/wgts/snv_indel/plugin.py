@@ -6,7 +6,8 @@ import os
 import djerba.core.constants as core_constants
 import djerba.plugins.wgts.snv_indel.constants as sic
 import djerba.util.oncokb.constants as oncokb_constants
-from djerba.plugins.base import plugin_base
+from djerba.helpers.input_params_helper.helper import main as input_params_helper
+from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.plugins.wgts.snv_indel.tools import whizbam, snv_indel_processor
 from djerba.util.render_mako import mako_renderer
 
@@ -18,13 +19,39 @@ class main(plugin_base):
     ASSAY = 'WGS'
     SEQTYPE = 'GENOME'
     GENOME = 'hg38'
-    HAS_EXPRESSION_DATA = False
     
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
-        # TODO process the config parameters
-        return config  
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            input_params_helper.INPUT_PARAMS_FILE,
+            sic.ONCOTREE_CODE,
+            input_params_helper.ONCOTREE_CODE
+        )
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            input_params_helper.INPUT_PARAMS_FILE,
+            sic.STUDY_ID,
+            input_params_helper.STUDY
+        )
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_PATH_INFO,
+            sic.MAF_PATH,
+            'variantEffectPredictor_matched_by_tumor_group'
+        )
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_SAMPLE_INFO,
+            sic.TUMOUR_ID
+        )
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_SAMPLE_INFO,
+            sic.NORMAL_ID
+        )
+        return wrapper.get_config()
 
     def extract(self, config):
         # Extraction for SNVs/indels:
@@ -64,16 +91,15 @@ class main(plugin_base):
         return renderer.render_name(self.TEMPLATE_NAME, data)
     
     def specify_params(self):
-        required = [
+        discovered = [
             sic.MAF_PATH,
             sic.ONCOTREE_CODE,
             sic.TUMOUR_ID,
             sic.NORMAL_ID,
-            sic.STUDY_ID,
-            sic.HAS_EXPRESSION_DATA
+            sic.STUDY_ID
         ]
-        for key in required:
-            self.add_ini_required(key)
+        for key in discovered:
+            self.add_ini_discovered(key)
         self.set_ini_default(
             oncokb_constants.ONCOKB_CACHE,
             oncokb_constants.DEFAULT_CACHE_PATH

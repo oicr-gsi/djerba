@@ -88,6 +88,11 @@ class wgts_tools(logger):
         return (chromosome, arm, band)
 
     @staticmethod
+    def has_expression(work_dir):
+        in_path = os.path.join(work_dir, expr_helper.TCGA_EXPR_PCT_JSON)
+        return os.path.exists(in_path)
+
+    @staticmethod
     def read_expression(work_dir):
         # read the expression metric from JSON written by the expression helper
         in_path = os.path.join(work_dir, expr_helper.TCGA_EXPR_PCT_JSON)

@@ -8,7 +8,8 @@
 - New `supplement.header` plugin allows exact control of header location
 - Update default priorities for correct rendering order in WGTS report
 - Warn if default author name is in use; OK for testing, not allowed in production
-- Automatically discover sequenza path, oncotree code, tumour id in cnv plugin
+- Automatically discover sequenza path, oncotree code, tumour id in `cnv` plugin
+- Further simplification of INI parameters for `cnv` and `snv_indel` plugins
 
 ## v1.0.0-dev0.0.12: 2023-10-19
 
