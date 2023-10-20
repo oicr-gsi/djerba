@@ -28,8 +28,13 @@ class main(plugin_base):
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'genomic_landscape_template.html'
 
-    RESULTS_SUFFIX = '.filter.deduped.realigned.recalibrated.msi.booted'
-    WORKFLOW = 'msisensor'
+    MSI_RESULTS_SUFFIX = '.filter.deduped.realigned.recalibrated.msi.booted'
+    MSI_WORKFLOW = 'msisensor'
+
+    CTDNA_RESULTS_SUFFIX = 'SNP.count.txt'
+    CTDNA_WORKFLOW = 'mrdetect_filter_only'
+
+
     r_script_dir = os.path.join(os.environ.get('DJERBA_BASE_DIR'), 'plugins/genomic_landscape/Rscripts/')
     data_dir = os.environ.get('DJERBA_RUN_DATA')
 
@@ -97,7 +102,7 @@ class main(plugin_base):
 
       # Get tmb info, genomic landscape
       oncotree_code = 'paad'
-      results = tmb.assemble_TMB_and_genomic_landscape(self, work_dir, oncotree_code)
+      results = tmb.run(self, work_dir, oncotree_code)
       
       # Get msi file, msi data
       msi_file = wrapper.get_my_string('msi_file')

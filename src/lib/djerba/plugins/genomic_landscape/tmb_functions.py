@@ -18,15 +18,8 @@ from djerba.plugins.tar.provenance_tools import parse_file_path
 from djerba.plugins.tar.provenance_tools import subset_provenance
 from statsmodels.distributions.empirical_distribution import ECDF
 
-def run(self):
-      """
-      Runs all functions below.
-      Assembles a chunk of json.
-      """
 
-      return msi_data
-
-def assemble_TMB_and_genomic_landscape(self, work_dir, oncotree_code, tmb_value=None ):
+def run(self, work_dir, oncotree_code, tmb_value=None ):
         #closest_tcga = get_closest_tcga(oncotree_code)
         closest_tcga = 'paad'
         genomic_landscape_info = build_genomic_landscape_info(self, work_dir, closest_tcga)

@@ -60,7 +60,14 @@ TMBCOMP_TCGA = 'tmbcomp-tcga.txt'
 
 MUTATIONS_EXTENDED = 'data_mutations_extended.txt'
 VARIANT_CLASSIFICATION = 'Variant_Classification'
-    
+  
+
+# ctdna
+CTDNA = 'ctdna'
+CTDNA_CANDIDATES = 'ctDNA_candidate_sites'
+CTDNA_ELIGIBILITY = 'ctDNA_eligibility'
+MRDETECT_FILTER_ONLY_FILE_NAME = 'SNP.count.txt'
+
 TMB_EXCLUDED = [
     "3'Flank",
     "3'UTR",
@@ -78,5 +85,5 @@ COMPASS = 'COMPASS'
 DATA_SEGMENTS = 'data_seg.txt'
 MINIMUM_MAGNITUDE_SEG_MEAN = 0.2
 GENOME_SIZE = 3*10**9 # TODO use more accurate value when we release a new report format
-
+CTDNA_ELIGIBILITY_CUTOFF = 4000
 #PURITY_PERCENT = 'Estimated Cancer Cell Content (%)'
