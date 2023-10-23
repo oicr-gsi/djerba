@@ -9,13 +9,15 @@ import os
 import unittest
 import tempfile
 import shutil
-
+import string
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 import djerba.plugins.tar.sample.plugin as sample
 from djerba.core.workspace import workspace
 
 class TestTarSamplePlugin(PluginTester):
+    
+    INI_NAME = 'tar.sample.ini'
 
     def setUp(self):
         self.path_validator = path_validator()
@@ -27,14 +29,23 @@ class TestTarSamplePlugin(PluginTester):
 
     def testTarSample(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
+        
+        with open(os.path.join(test_source_dir, self.INI_NAME)) as in_file:
+            template_str = in_file.read()
+        template = string.Template(template_str)
+        ini_str = template.substitute({'DJERBA_TEST_DATA': self.sup_dir})
+        input_dir = os.path.join(self.get_tmp_dir(), 'input')
+        os.mkdir(input_dir)
+        with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
+            ini_file.write(ini_str)
         json_location = os.path.join(self.sup_dir ,"tar-plugin/report_json/tar.sample.json")
                 
         params = {
-            self.INI: 'tar.sample.ini',
+            self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: 'c6b2462b3e4f3aadafc7dc065b290d2e'
+            self.MD5: '6099e69177f403a758f781f31052c1db'
         }
-        self.run_basic_test(test_source_dir, params)
+        self.run_basic_test(input_dir, params)
 
     def test_process_ichor_json(self):
         ichor_expected_location = os.path.join(self.sup_dir ,"tar-plugin/ichorCNA_metrics.json")

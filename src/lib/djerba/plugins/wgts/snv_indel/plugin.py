@@ -6,25 +6,56 @@ import os
 import djerba.core.constants as core_constants
 import djerba.plugins.wgts.snv_indel.constants as sic
 import djerba.util.oncokb.constants as oncokb_constants
-from djerba.plugins.base import plugin_base
+from djerba.helpers.input_params_helper.helper import main as input_params_helper
+from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.plugins.wgts.snv_indel.tools import whizbam, snv_indel_processor
 from djerba.util.render_mako import mako_renderer
 
 class main(plugin_base):
    
-    PRIORITY = 100
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'snv_indel_template.html'
     ASSAY = 'WGS'
     SEQTYPE = 'GENOME'
     GENOME = 'hg38'
-    HAS_EXPRESSION_DATA = False
-    
+
+    # priorities -- selected so CNV is extracted before SNV/indel but rendered after
+    CONFIGURE = 700
+    EXTRACT = 800
+    RENDER = 700
+
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
-        # TODO process the config parameters
-        return config  
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            input_params_helper.INPUT_PARAMS_FILE,
+            sic.ONCOTREE_CODE,
+            input_params_helper.ONCOTREE_CODE
+        )
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            input_params_helper.INPUT_PARAMS_FILE,
+            sic.STUDY_ID,
+            input_params_helper.STUDY
+        )
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_PATH_INFO,
+            sic.MAF_PATH,
+            'variantEffectPredictor_matched_by_tumor_group'
+        )
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_SAMPLE_INFO,
+            sic.TUMOUR_ID
+        )
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_SAMPLE_INFO,
+            sic.NORMAL_ID
+        )
+        return wrapper.get_config()
 
     def extract(self, config):
         # Extraction for SNVs/indels:
@@ -56,7 +87,7 @@ class main(plugin_base):
         proc = snv_indel_processor(work_dir, wrapper, self.log_level, self.log_path)
         proc.write_working_files(whizbam_url)
         data['results'] = proc.get_results()
-        data['merge_inputs']['treatment_options_merger'] = proc.get_merge_inputs()
+        data['merge_inputs'] = proc.get_merge_inputs()
         return data
 
     def render(self, data):
@@ -64,16 +95,15 @@ class main(plugin_base):
         return renderer.render_name(self.TEMPLATE_NAME, data)
     
     def specify_params(self):
-        required = [
+        discovered = [
             sic.MAF_PATH,
             sic.ONCOTREE_CODE,
             sic.TUMOUR_ID,
             sic.NORMAL_ID,
-            sic.STUDY_ID,
-            sic.HAS_EXPRESSION_DATA
+            sic.STUDY_ID
         ]
-        for key in required:
-            self.add_ini_required(key)
+        for key in discovered:
+            self.add_ini_discovered(key)
         self.set_ini_default(
             oncokb_constants.ONCOKB_CACHE,
             oncokb_constants.DEFAULT_CACHE_PATH
@@ -81,4 +111,6 @@ class main(plugin_base):
         self.set_ini_default(oncokb_constants.APPLY_CACHE, False)
         self.set_ini_default(oncokb_constants.UPDATE_CACHE, False)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
-        self.set_priority_defaults(self.PRIORITY)
+        self.set_ini_default(core_constants.CONFIGURE_PRIORITY, self.CONFIGURE)
+        self.set_ini_default(core_constants.EXTRACT_PRIORITY, self.EXTRACT)
+        self.set_ini_default(core_constants.RENDER_PRIORITY, self.RENDER)

@@ -9,6 +9,7 @@ SEQUENZA_PATH = 'sequenza_path'
 SEQUENZA_GAMMA = 'sequenza_gamma'
 SEQUENZA_SOLUTION = 'sequenza_solution'
 PURITY = 'purity'
+PURITY_CHECK = 'purity_check'
 TUMOUR_ID = 'tumour_id'
 ONCOTREE_CODE = oncokb_constants.ONCOTREE_CODE
 

@@ -7,7 +7,7 @@ import logging
 from djerba.util.logger import logger
 from djerba.sequenza import sequenza_reader
 from djerba.util.subprocess_runner import subprocess_runner
-from djerba.extract.oncokb.annotator import oncokb_annotator
+from djerba.util.oncokb.annotator import oncokb_annotator
 from shutil import copyfile
 import djerba.plugins.tar.snv_indel.snv_indel_tools.constants as constants 
 from djerba.plugins.base import plugin_base

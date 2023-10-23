@@ -23,12 +23,13 @@ import djerba.util.oncokb.constants as oncokb
 
 class main(plugin_base):
 
-    PRIORITY = 400
+    PRIORITY = 900
     PLUGIN_VERSION = '1.0.0'
     MAKO_TEMPLATE_NAME = 'fusion_template.html'
 
     # INI config keys
     MAVIS_PATH = 'mavis path'
+    ONCOTREE_CODE = 'oncotree code'
     ENTREZ_CONVERSION_PATH = 'entrez conv path'
     MIN_FUSION_READS = 'minimum fusion reads'
 
@@ -51,7 +52,8 @@ class main(plugin_base):
         # annotate from OncoKB
         # TODO check if fusions are non empty
         factory = annotator_factory(self.log_level, self.log_path)
-        factory.get_annotator(self.work_dir, config_wrapper).annotate_fusion()
+        work_dir = self.workspace.get_work_dir()
+        factory.get_annotator(work_dir, config_wrapper).annotate_fusion()
 
     def build_treatment_entry(self, fusion, tier, oncotree_code):
         """Make an entry for the treatment options merger"""
@@ -216,10 +218,10 @@ class main(plugin_base):
         self.add_ini_discovered(self.ONCOTREE_CODE)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_ini_default(self.MIN_FUSION_READS, 20)
-        self.set_ini_default(self.APPLY_CACHE, False)
-        self.set_ini_default(self.UPDATE_CACHE, False)
+        self.set_ini_default(oncokb.APPLY_CACHE, False)
+        self.set_ini_default(oncokb.UPDATE_CACHE, False)
         cache_default = '/.mounts/labs/CGI/gsi/tools/djerba/oncokb_cache/scratch'
-        self.set_ini_default(self.ONCOKB_CACHE, cache_default)
+        self.set_ini_default(oncokb.ONCOKB_CACHE, cache_default)
         self.set_priority_defaults(self.PRIORITY)
 
     def render(self, data):

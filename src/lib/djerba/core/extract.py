@@ -4,6 +4,7 @@ The 'plugins' element is left empty, to be populated by the respective plugin cl
 """
 
 import logging
+import time
 import djerba.core.constants as cc
 from djerba.core.base import base as core_base
 from djerba.core.configure import config_wrapper
@@ -22,6 +23,12 @@ class extraction_setup(core_base):
             cc.REPORT_ID
         ]
         core_params = {x: config.get(cc.CORE, x) for x in core_config_keys}
+        # add the timestamp in UTC
+        core_params[cc.EXTRACT_TIME] = time.strftime('%Y-%m-%d_%H:%M:%SZ', time.gmtime())
+        if core_params[cc.AUTHOR] == cc.DEFAULT_AUTHOR:
+            msg = 'Default author name "{}" is in use; '.format(cc.DEFAULT_AUTHOR)+\
+                "if this is a production report, name MUST be set to an authorized individual"
+        self.logger.warning(msg)
         return core_params
 
     def _get_merger_params(self, config):

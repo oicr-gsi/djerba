@@ -181,12 +181,14 @@ class snv_indel_processor(logger):
     def get_results(self):
         """Read the R script output into the JSON serializable results structure"""
         self.logger.debug("Collating SNV/indel results for JSON output")
-        is_wgts = self.config.get_my_boolean(sic.HAS_EXPRESSION_DATA)
         oncotree_code = self.config.get_my_string(sic.ONCOTREE_CODE)
         rows = []
+        is_wgts = wgts_tools.has_expression(self.work_dir)
         if is_wgts:
+            self.logger.info("Reading expression from {0}".format(self.work_dir))
             expression = wgts_tools.read_expression(self.work_dir)
         else:
+            self.logger.info("No expression data found")
             expression = {}
         cytobands = wgts_tools.cytoband_lookup()
         copy_states = self.read_copy_states()

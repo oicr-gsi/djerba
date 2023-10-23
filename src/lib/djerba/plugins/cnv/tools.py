@@ -36,7 +36,7 @@ class cnv_processor(logger):
     def __init__(self, work_dir, config_wrapper, log_level=logging.WARNING, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
-        self.logger = self.get_logger(log_level, log_path)
+        self.logger = self.get_logger(log_level, __name__, log_path)
         self.work_dir = work_dir
         self.config = config_wrapper
         self.plot_path = os.path.join(self.work_dir, self.PLOT_FILENAME)
@@ -106,11 +106,13 @@ class cnv_processor(logger):
         """Read the R script output into the JSON serializable results structure"""
         image_converter = converter(self.log_level, self.log_path)
         cnv_plot = image_converter.convert_svg(self.plot_path, 'CNV plot')
-        is_wgts = self.config.get_my_boolean(cnv.HAS_EXPRESSION_DATA)
         rows = []
+        is_wgts = wgts_tools.has_expression(self.work_dir)
         if is_wgts:
+            self.logger.info("Reading expression from {0}".format(self.work_dir))
             mutation_expression = wgts_tools.read_expression(self.work_dir)
         else:
+            self.logger.info("No expression data found")
             mutation_expression = {}
         cytobands = wgts_tools.cytoband_lookup()
         input_name = oncokb_constants.DATA_CNA_ONCOKB_GENES_NON_DIPLOID_ANNOTATED

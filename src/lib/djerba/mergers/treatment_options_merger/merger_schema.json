@@ -13,7 +13,7 @@
 	    "Gene": {"type": "string" },
 	    "Gene_URL": {"type": "string" },
 	    "Alteration": {"type": "string" },
-	    "Alteration_URL": {"type": "string" }
+	    "Alteration_URL": {"type": ["null", "string"] }
 	}
     }
 }

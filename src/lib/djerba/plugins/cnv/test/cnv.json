@@ -24,9 +24,9 @@
     },
     "plugin_name": "cnv plugin",
     "priorities": {
-        "configure": 100,
-        "extract": 100,
-        "render": 100
+        "configure": 800,
+        "extract": 800,
+        "render": 800
     },
     "results": {
         "body": [

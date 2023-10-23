@@ -23,7 +23,7 @@ except ImportError as err:
 class main(plugin_base):
 
     PLUGIN_VERSION = '1.0.0'
-    PRIORITY = 100
+    PRIORITY = 500
     QCETL_CACHE = "/scratch2/groups/gsi/production/qcetl_v1"
     
     def specify_params(self):
@@ -79,11 +79,12 @@ class main(plugin_base):
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
-
+        # multiply purity by 100 to get a percentage, and round to the nearest integer
+        purity_percent = int(round(float(config[self.identifier][constants.PURITY])*100, 0))
         results = {
                 constants.ONCOTREE_CODE: config[self.identifier][constants.ONCOTREE],
                 constants.TUMOUR_SAMPLE_TYPE : config[self.identifier][constants.SAMPLE_TYPE],
-                constants.EST_CANCER_CELL_CONTENT : config[self.identifier][constants.PURITY],
+                constants.EST_CANCER_CELL_CONTENT : purity_percent,
                 constants.EST_PLOIDY: config[self.identifier][constants.PLOIDY],
                 constants.CALLABILITY_PERCENT: config[self.identifier][constants.CALLABILITY],
                 constants.COVERAGE_MEAN: config[self.identifier][constants.COVERAGE]    

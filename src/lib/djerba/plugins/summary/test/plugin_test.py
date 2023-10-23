@@ -24,7 +24,7 @@ class TestSummaryPlugin(PluginTester):
         params = {
             self.INI: 'summary.ini',
             self.JSON: json_location,
-            self.MD5: 'c8666f5354e163f6ede1a1f1f91efdf7'
+            self.MD5: '6ac0b9359b74ebbc76d20cc26df79807'
         }
         self.run_basic_test(test_source_dir, params)
 

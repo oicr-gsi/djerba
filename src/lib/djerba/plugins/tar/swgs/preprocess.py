@@ -13,7 +13,7 @@ import pandas as pd
 from djerba.util.logger import logger
 from djerba.sequenza import sequenza_reader
 from djerba.util.subprocess_runner import subprocess_runner
-from djerba.extract.oncokb.annotator import oncokb_annotator
+from djerba.util.oncokb.annotator import oncokb_annotator
 from shutil import copyfile
 import djerba.plugins.tar.swgs.constants as constants 
 
@@ -22,7 +22,7 @@ class preprocess(logger):
   def __init__(self, tumour_id, oncotree_code, work_dir, log_level=logging.DEBUG, log_path=None):
 
     # CONSTANTS
-    self.GENECODE_PATH = os.environ.get('DJERBA_ROOT') + "/data/gencode_v33_hg38_genes.bed"
+    self.GENECODE_PATH = os.path.join(os.environ.get('DJERBA_RUN_DATA'), 'gencode_v33_hg38_genes.bed')
     self.ONCOLIST_PATH = "/20200818-oncoKBcancerGeneList.tsv"
 
     # DIRECTORIES
