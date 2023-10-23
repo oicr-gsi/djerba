@@ -36,7 +36,7 @@ class cnv_processor(logger):
     def __init__(self, work_dir, config_wrapper, log_level=logging.WARNING, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
-        self.logger = self.get_logger(log_level, log_path)
+        self.logger = self.get_logger(log_level, __name__, log_path)
         self.work_dir = work_dir
         self.config = config_wrapper
         self.plot_path = os.path.join(self.work_dir, self.PLOT_FILENAME)
