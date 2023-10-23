@@ -1,16 +1,17 @@
 """Interface with a CouchDB instance for JSON report documents"""
 
-import logging
-import configparser
-import requests
-import json
-import os
 
+import configparser
+import json
+import logging
+import os
+import requests
+import time
+import djerba.core.constants as core_constants
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
-from time import sleep
-from datetime import datetime
-from posixpath import join
+
+from urllib.parse import urljoin
 from djerba.util.logger import logger
 
 class database(logger):
@@ -28,57 +29,57 @@ class database(logger):
 
     def create_document(self, report_id):
         couch_info = {
-            '_id': '{}'.format(report_id), 
+            '_id': report_id,
             'last_updated': '{}'.format(self.date_time()),
         }
         return couch_info
 
     def date_time(self):
         "added last_updated date and time"
-        time = datetime.now()
         last_updated = time.strftime("%d/%m/%Y %H:%M")
         return last_updated
 
     def get_upload_params(self, report_data):
-        config = report_data.get(constants.SUPPLEMENTARY).get(constants.CONFIG)
-        base = config[ini.SETTINGS][ini.ARCHIVE_URL]
-        db = config[ini.SETTINGS][ini.ARCHIVE_NAME]
-        url = join(base, db)
-        report_id = report_data["report"]["patient_info"]["Report ID"]
+        # TODO read password from private dir
+        try:
+            core_config = report_data[core_constants.CONFIG][core_constants.CORE]
+            base = core_config[core_constants.ARCHIVE_URL]
+            db = core_config[core_constants.ARCHIVE_NAME]
+        except KeyError as err:
+            msg = "Cannot read required upload param(s) from config: {0}".format(err)
+            self.logger.error(msg)
+            raise
+        url = urljoin(base, db)
+        # find report ID from "core" (not to be confused with "config.core")
+        report_id = report_data[core_constants.CORE][core_constants.REPORT_ID]
         return report_id, base, db, url
 
     def get_revision_and_url(self, report_id, url):
-        url_id = join(url, report_id)
-        pull = requests.get(url_id)
-        if pull.status_code == 200:
+        url_id = urljoin(url, report_id)
+        result = requests.get(url_id)
+        if result.status_code == 200:
             self.logger.debug('Successful HTTP Pull Request from %s', url_id)
         else:
-            self.logger.debug('Error with HTTP Pull at %s! Status Code <%s>', url_id, pull.status_code)
+            self.logger.debug('Error with HTTP Pull at %s! Status Code <%s>', url_id, result.status_code)
             return None, url_id
-        pull = json.loads(pull.text)
-        rev = pull["_rev"]
+        rev = json.loads(pull.text).get("_rev")
         self.logger.debug(f'Retrieved document _rev: {rev}')
         return rev, url_id
 
     def update_document(self, report_id, rev):
         couch_info = {
-            '_id': '{}'.format(report_id),
-            '_rev': '{}'.format(rev),
-            'last_updated': '{}'.format(self.date_time()),
+            '_id': report_id,
+            '_rev': rev,
+            'last_updated': time.strftime("%Y-%m-%d_%H:%M:%S"),
         }
         return couch_info
 
-    def upload_file(self, json_path):
-        """ Upload json to couchdb"""
-        with open(json_path) as report:
-            report_data = json.load(report)
-            report.close()
-
+    def upload_data(self, report_data):
+        """ Upload the report data structure to couchdb"""
         report_id, base, db, url = self.get_upload_params(report_data)
         couch_info = self.create_document(report_id)
         upload = self.combine_dictionaries(couch_info, report_data)
         headers = {'Content-Type': 'application/json'}
-
         attempts = 0
         http_post = True
         uploaded = False
@@ -94,22 +95,25 @@ class database(logger):
                 submit = requests.put(url=url_id, headers= headers, json=upload)
                 self.logger.debug('Updating document in database')
             status = submit.status_code
-
             if status == 201: uploaded = True
             elif status == 409:
                 http_post = False
                 self.logger.info('Document already exists, will retry with HTTP put request')
             else:
                 self.logger.warning('Error! Unknown HTTP Status Code <%s>, will retry', status)
-            sleep(2)
+            time.sleep(2)
             attempts +=1
-
         if uploaded == True:
-            self.logger.info('Upload succesful to %s. File archived: %s', db, report_id)
+            self.logger.info('Upload successful to DB "%s". File archived: %s', db, report_id)
         else:
-            self.logger.warning('Upload of %s to %s database failed', report_id, db)
+            self.logger.warning('Upload of "%s" to DB "%s" failed', report_id, db)
         return uploaded, report_id
 
+    def upload_file(self, json_path):
+        """Read JSON from given path and upload to couchdb"""
+        with open(json_path) as report:
+            report_data = json.load(report)
+        return self.upload_data(report_data)
 
 
     

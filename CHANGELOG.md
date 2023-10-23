@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### GCGI-836: Enable archiving
+- Enable archiving to CouchDB
+- Simplify previous archiving code; get rid of `archiver.py` and just use `database.py`
+
 ### GCGI-1113: System integration
 - Minor bugfixes to allow successful generation of integrated report
 - Split supplementary plugin into `body` and (extremely simple) `header` plugins

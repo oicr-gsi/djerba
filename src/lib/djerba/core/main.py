@@ -14,7 +14,7 @@ from PyPDF2 import PdfMerger
 import djerba.util.ini_fields as ini
 import djerba.version as version
 from djerba.core.base import base as core_base
-from djerba.core.database.archiver import archiver
+from djerba.core.database import database
 from djerba.core.extract import extraction_setup
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.render import html_renderer, pdf_renderer
@@ -197,12 +197,11 @@ class main(core_base):
             with open(json_path, 'w') as out_file:
                 out_file.write(json.dumps(data))
         if archive:
-            self.logger.info('Archiving not yet implemented for djerba.core')
-            #uploaded, report_id = archiver(self.log_level, self.log_path).run(data)
-            #if uploaded:
-            #    self.logger.info(f"Archiving successful: {report_id}")
-            #else:
-            #    self.logger.warning(f"Error! Archiving unsuccessful: {report_id}")
+            uploaded, report_id = database(self.log_level, self.log_path).upload_data(data)
+            if uploaded:
+                self.logger.info(f"Archiving was successful: {report_id}")
+            else:
+                self.logger.warning(f"Archiving was NOT successful: {report_id}")
         else:
             self.logger.info("Archive operation not requested; omitting archiving")
         self.logger.info('Finished Djerba extract step')
@@ -288,8 +287,6 @@ class main(core_base):
             out_dir = ap.get_out_dir()
             ini_path_out = os.path.join(out_dir, 'full_config.ini')
             json_path = os.path.join(out_dir, 'djerba_report.json')
-            # caching and cleanup are plugin-specific, should be configured in INI
-            # can also have a script to auto-populate INI files in 'setup' mode
             archive = ap.is_archive_enabled()
             config = self.configure(ini_path, ini_path_out)
             data = self.extract(config, json_path, archive)
