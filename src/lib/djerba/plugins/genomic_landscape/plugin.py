@@ -206,121 +206,33 @@ class main(plugin_base):
         with open(os.path.join(work_dir, input_name)) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
             for row_input in reader:
-                # record the gene for all reportable alterations
                 level = oncokb_levels.parse_max_reportable_level(row_input)
-                if level != None:
-                    gene = 'Biomarker'
-                    gene_info_entry = gene_info_factory.get_json(
-                        gene=gene,
-                        summary=summaries.get(gene)
-                    )
-                    gene_info.append(gene_info_entry)
-                [level, therapies] = oncokb_levels.parse_max_actionable_level_and_therapies(
-                    row_input
-                )
+                [level, therapies] = oncokb_levels.parse_max_actionable_level_and_therapies(row_input)
                 # record therapy for all actionable alterations (OncoKB level 4 or higher)
                 if level != None:
+                    gene = 'Biomarker'
                     treatment_entry = treatment_option_factory.get_json(
                         tier = oncokb_levels.tier(level),
                         level = level,
                         gene = gene,
                         alteration = row_input['ALTERATION'],
-                        alteration_url = None, # this field is not defined for CNVs
+                        alteration_url = self.get_alt_url(row_input['ALTERATION']),
                         treatments = therapies
                     )
                     treatments.append(treatment_entry)
         # assemble the output
         merge_inputs = {
-            'gene_information_merger': gene_info,
             'treatment_options_merger': treatments
         }
         return merge_inputs
 
-"""
-    def build_therapy_info(self, work_dir):
-        # build the "FDA approved" and "investigational" therapies data
-        # defined respectively as OncoKB levels 1/2/R1 and R2/3A/3B/4
-        # OncoKB "LEVEL" columns contain treatment if there is one, 'NA' otherwise
-        # Input files:
-        # - One file each for mutation
-        # - Must be annotated by OncoKB script
-        # - Must not be missing
-        # - May consist of headers only (no data rows)
-        # Output columns:
-        # - the gene name, with oncoKB link (or pair of names/links, for fusions)
-        # - Alteration name, eg. HGVSp_Short value, with oncoKB link
-        # - Treatment
-        # - OncoKB level
-        for tier in ('Approved', 'Investigational'):
-            # self.logger.debug("Building therapy info for level: {0}".format(tier))
-            if tier == 'Approved':
-                levels = okb.FDA_APPROVED_LEVELS
-            elif tier == 'Investigational':
-                levels = okb.INVESTIGATIONAL_LEVELS
-            else:
-                raise RuntimeError("Unknown therapy level: {0}".format(level))
-            rows = []
-            with open(os.path.join(work_dir, constants.GENOMIC_BIOMARKERS_ANNOTATED)) as data_file:
-                for row in csv.DictReader(data_file, delimiter="\t"):
-                    gene = 'Biomarker'
-                    alteration = row[constants.ALTERATION_UPPER_CASE]
-                    [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
-                    if max_level:
-                        rows.append(self.treatment_row(gene, alteration, max_level, therapies))
-        rows = list(filter(oncokb.oncokb_filter, self.sort_therapy_rows(rows)))
-        return rows
-
-    def treatment_row(self, genes_arg, alteration, max_level, therapies, alteration_substitution = ""):
-        # genes argument may be a string, or an iterable of strings
+    def get_alt_url(self, alteration):
+        # genes argument may be a string, or an iterable of strings (it's just the gene)
         core_biomarker_url = "https://www.oncokb.org/gene/Other%20Biomarkers"
-        if isinstance(genes_arg, str):
-            genes_and_urls = {genes_arg: hb.build_gene_url(genes_arg)}
-        else:
-            genes_and_urls = {gene: hb.build_gene_url(gene) for gene in genes_arg}
         if alteration == "TMB-H" or alteration == "MSI-H":
-            genes_and_urls = {
-                "Biomarker": core_biomarker_url
-            }
             if alteration == "TMB-H":
                 alt_url = '/'.join([core_biomarker_url,"TMB-H/"])
             if alteration == "MSI-H":
                 alt_url = '/'.join([core_biomarker_url,"Microsatellite%20Instability-High/"])
-        row = {
-            constants.GENES_AND_URLS: genes_and_urls,
-            constants.ALT: alteration,
-            constants.ALT_URL: alt_url,
-            constants.ONCOKB: max_level,
-            constants.TREATMENT: therapies
-        }
-        return row
-
-
-    def sort_therapy_rows(self, rows):
-        # sort FDA/investigational therapy rows
-        # extract a gene name from 'genes and urls' dictionary keys
-        rows = sorted(
-            rows,
-            key=lambda row: sorted(list(row.get(constants.GENES_AND_URLS).keys())).pop(0)
-        )
-        rows = sorted(rows, key=lambda row: oncokb.oncokb_order(row[constants.ONCOKB]))
-        return rows 
-
-    def parse_max_oncokb_level_and_therapies(self, row_dict, levels):
-        # find maximum level (if any) from given levels list, and associated therapies
-        max_level = None
-        therapies = []
-        for level in levels:
-            if not oncokb.is_null_string(row_dict[level]):
-                if not max_level: max_level = level
-                therapies.append(row_dict[level])
-        if max_level:
-            max_level = oncokb.reformat_level_string(max_level)
-        therapies = [re.sub(r'(?<=[,])(?=[^\s])', r' ', t) for t in therapies]
-        print("!!!")
-        print(max_level)
-        print(therapies)
-        print("!!!")
-        return (max_level, '; '.join(therapies))
-
-"""
+        return alt_url
 
