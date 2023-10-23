@@ -20,11 +20,11 @@ class main(plugin_base):
 
     def check_purity_is_consistent(self, cnv_purity):
         """Check CNV purity is consistent with input_params_helper value (if any)"""
-        cnv_purity = int(round(cnv_purity*100)) # convert decimal to percentage
+        delta = 0.0000001 # tolerance for float value check
         if self.workspace.has_file(input_params_helper.INPUT_PARAMS_FILE):
             data = self.workspace.read_json(input_params_helper.INPUT_PARAMS_FILE)
-            iph_purity = int(data.get(input_params_helper.PURITY))
-            if iph_purity != None and iph_purity != cnv_purity:
+            iph_purity = data.get(input_params_helper.PURITY)
+            if iph_purity != None and abs(iph_purity - cnv_purity) > delta:
                 msg = "Inconsistent purity values! "+\
                     "CNV plugin purity = {0}, ".format(cnv_purity)+\
                     "Input params helper purity = {0}. ".format(iph_purity)+\
@@ -33,6 +33,8 @@ class main(plugin_base):
                 raise RuntimeError(msg)
             else:
                 self.logger.info("Purity configuration check successful")
+        else:
+            self.logger.info("Input params JSON not found, purity check omitted")
 
     def configure(self, config):
         config = self.apply_defaults(config)
