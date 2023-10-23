@@ -28,7 +28,10 @@ class extraction_setup(core_base):
         if core_params[cc.AUTHOR] == cc.DEFAULT_AUTHOR:
             msg = 'Default author name "{}" is in use; '.format(cc.DEFAULT_AUTHOR)+\
                 "if this is a production report, name MUST be set to an authorized individual"
-        self.logger.warning(msg)
+            self.logger.warning(msg)
+        else:
+            msg = "User-configured author name is '{0}'".format(core_params[cc.AUTHOR])
+            self.logger.debug(msg)
         return core_params
 
     def _get_merger_params(self, config):

@@ -30,6 +30,9 @@
 ### GCGI-1091: Record extraction time in core JSON
 - Record the extraction time in UTC for later reference
 
+### Fixed
+- Fix logging bug for check on author name
+
 ## v1.0.0-dev0.0.11: 2023-10-17
 
 ### GCGI-1106: Update setup
