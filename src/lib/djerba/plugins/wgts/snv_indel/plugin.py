@@ -13,13 +13,17 @@ from djerba.util.render_mako import mako_renderer
 
 class main(plugin_base):
    
-    PRIORITY = 700
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'snv_indel_template.html'
     ASSAY = 'WGS'
     SEQTYPE = 'GENOME'
     GENOME = 'hg38'
-    
+
+    # priorities -- selected so CNV is extracted before SNV/indel but rendered after
+    CONFIGURE = 700
+    EXTRACT = 800
+    RENDER = 700
+
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
@@ -107,4 +111,6 @@ class main(plugin_base):
         self.set_ini_default(oncokb_constants.APPLY_CACHE, False)
         self.set_ini_default(oncokb_constants.UPDATE_CACHE, False)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
-        self.set_priority_defaults(self.PRIORITY)
+        self.set_ini_default(core_constants.CONFIGURE_PRIORITY, self.CONFIGURE)
+        self.set_ini_default(core_constants.EXTRACT_PRIORITY, self.EXTRACT)
+        self.set_ini_default(core_constants.RENDER_PRIORITY, self.RENDER)

@@ -14,9 +14,31 @@ from djerba.util.render_mako import mako_renderer
 
 class main(plugin_base):
    
-    PRIORITY = 800
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'cnv_template.html'
+
+    # priorities -- selected so CNV is extracted before SNV/indel but rendered after
+    CONFIGURE = 800
+    EXTRACT = 700
+    RENDER = 800
+
+    def check_purity_is_consistent(self, cnv_purity):
+        """Check CNV purity is consistent with input_params_helper value (if any)"""
+        delta = 0.0000001 # tolerance for float value check
+        if self.workspace.has_file(input_params_helper.INPUT_PARAMS_FILE):
+            data = self.workspace.read_json(input_params_helper.INPUT_PARAMS_FILE)
+            iph_purity = data.get(input_params_helper.PURITY)
+            if iph_purity != None and abs(iph_purity - cnv_purity) > delta:
+                msg = "Inconsistent purity values! "+\
+                    "CNV plugin purity = {0}, ".format(cnv_purity)+\
+                    "Input params helper purity = {0}. ".format(iph_purity)+\
+                    "Update CNV and/or input params INI config so values match."
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            else:
+                self.logger.info("Purity configuration check successful")
+        else:
+            self.logger.info("Input params JSON not found, purity check omitted")
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -49,6 +71,8 @@ class main(plugin_base):
         else:
             purity = wrapper.get_my_float(cnv_constants.PURITY)
             self.logger.debug("Using user-supplied purity: {0}".format(purity))
+        if wrapper.get_my_boolean(cnv_constants.PURITY_CHECK):
+            self.check_purity_is_consistent(purity)
         return wrapper.get_config()
 
     def extract(self, config):
@@ -89,4 +113,7 @@ class main(plugin_base):
         for key in discovered:
             self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
-        self.set_priority_defaults(self.PRIORITY)
+        self.set_ini_default(cnv_constants.PURITY_CHECK, True)
+        self.set_ini_default(core_constants.CONFIGURE_PRIORITY, self.CONFIGURE)
+        self.set_ini_default(core_constants.EXTRACT_PRIORITY, self.EXTRACT)
+        self.set_ini_default(core_constants.RENDER_PRIORITY, self.RENDER)
