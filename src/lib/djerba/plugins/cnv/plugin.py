@@ -14,9 +14,13 @@ from djerba.util.render_mako import mako_renderer
 
 class main(plugin_base):
    
-    PRIORITY = 800
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'cnv_template.html'
+
+    # priorities -- selected so CNV is extracted before SNV/indel but rendered after
+    CONFIGURE = 800
+    EXTRACT = 700
+    RENDER = 800
 
     def check_purity_is_consistent(self, cnv_purity):
         """Check CNV purity is consistent with input_params_helper value (if any)"""
@@ -110,4 +114,6 @@ class main(plugin_base):
             self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_ini_default(cnv_constants.PURITY_CHECK, True)
-        self.set_priority_defaults(self.PRIORITY)
+        self.set_ini_default(core_constants.CONFIGURE_PRIORITY, self.CONFIGURE)
+        self.set_ini_default(core_constants.EXTRACT_PRIORITY, self.EXTRACT)
+        self.set_ini_default(core_constants.RENDER_PRIORITY, self.RENDER)
