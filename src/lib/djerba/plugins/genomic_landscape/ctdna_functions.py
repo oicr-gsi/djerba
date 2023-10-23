@@ -20,9 +20,9 @@ from statsmodels.distributions.empirical_distribution import ECDF
 
 def run(self, work_dir, candidate_sites_path=None):
         if candidate_sites_path == None:
-            candidate_sites_path = os.path.join(work, constants.MRDETECT_FILTER_ONLY_FILE_NAME)
+            candidate_sites_path = os.path.join(work_dir, constants.MRDETECT_FILTER_ONLY_FILE_NAME)
         ctdna = {}
-        ctdna[constants.CTDNA_CANDIDATES] = constants.extract_ctDNA_candidates(work_dir, candidate_sites_path)
+        ctdna[constants.CTDNA_CANDIDATES] = extract_ctDNA_candidates(self, work_dir, candidate_sites_path)
         if ctdna[constants.CTDNA_CANDIDATES] >= constants.CTDNA_ELIGIBILITY_CUTOFF:
             ctdna[constants.CTDNA_ELIGIBILITY] = "eligible"
         elif ctdna[constants.CTDNA_CANDIDATES] < constants.CTDNA_ELIGIBILITY_CUTOFF:

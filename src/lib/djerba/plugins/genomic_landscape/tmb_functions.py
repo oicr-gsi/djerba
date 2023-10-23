@@ -19,32 +19,37 @@ from djerba.plugins.tar.provenance_tools import subset_provenance
 from statsmodels.distributions.empirical_distribution import ECDF
 
 
-def run(self, work_dir, oncotree_code, tmb_value=None ):
-        #closest_tcga = get_closest_tcga(oncotree_code)
-        closest_tcga = 'paad'
-        genomic_landscape_info = build_genomic_landscape_info(self, work_dir, closest_tcga)
+def run(self, work_dir, tcga_code, biomarkers_path, tumour_id, tmb_value=None):
+        genomic_landscape_info = build_genomic_landscape_info(self, work_dir, tcga_code)
         if tmb_value == None:
             tmb_value = genomic_landscape_info[constants.TMB_PER_MB]
         tmb_dict = call_TMB(self, tmb_value)
-        tmb_plot_location = write_biomarker_plot(self, work_dir, closest_tcga, "tmb", tmb = tmb_value)
+        tmb_plot_location = write_biomarker_plot(self, work_dir, tcga_code, "tmb", tmb = tmb_value)
         tmb_dict[constants.METRIC_PLOT] = converter().convert_svg(tmb_plot_location, 'TMB plot')
 
         data = {
                 constants.GENOMIC_LANDSCAPE_INFO: genomic_landscape_info,
-                constants.BIOMARKERS: [tmb_dict]
+                constants.BIOMARKERS: {constants.TMB: tmb_dict}
         }
+
+        # Write to genomic biomarkers maf if MSI is actionable
+        if data[constants.BIOMARKERS][constants.TMB][constants.METRIC_ACTIONABLE]:
+            with open(biomarkers_path, "a") as biomarkers_file:
+                row = '\t'.join([constants.HUGO_SYMBOL, tumour_id, data[constants.BIOMARKERS][constants.TMB][constants.METRIC_ALTERATION]])
+                biomarkers_file.write(row + "\n")
+
 
         return(data)
 
-def build_genomic_landscape_info(self, work_dir, closest_tcga):
+def build_genomic_landscape_info(self, work_dir, tcga_code):
         # need to calculate TMB and percentiles
-        cohort = read_cohort(self, closest_tcga)
+        cohort = read_cohort(self, tcga_code)
         data = {}
         tmb_count = get_tmb_count(self, work_dir)
         data[constants.TMB_TOTAL] = tmb_count
         data[constants.TMB_PER_MB] = round(tmb_count/constants.V7_TARGET_SIZE, 2)
         data[constants.PERCENT_GENOME_ALTERED] = int(round(read_fga(work_dir)*100, 0))
-        csp = read_cancer_specific_percentile(self, data[constants.TMB_PER_MB], cohort, closest_tcga)
+        csp = read_cancer_specific_percentile(self, data[constants.TMB_PER_MB], cohort, tcga_code)
         data[constants.CANCER_SPECIFIC_PERCENTILE] = csp
         data[constants.CANCER_SPECIFIC_COHORT] = cohort
         pcp = read_pan_cancer_percentile(self, data[constants.TMB_PER_MB])
@@ -94,7 +99,7 @@ def read_cancer_specific_percentile(self, tmb, cohort, cancer_type):
             percentile = int(round(ecdf(tmb)*100, 0)) # return an integer percentile
         return percentile
 
-def read_cohort(self, closest_tcga):
+def read_cohort(self, tcga_code):
         # cohort is:
         # 1) COMPASS if 'closest TCGA' is paad
         # 2) CANCER.TYPE from tmbcomp-tcga.txt if one matches 'closest TCGA'
@@ -108,10 +113,10 @@ def read_cohort(self, closest_tcga):
             reader = csv.reader(tcga_file, delimiter="\t")
             for row in reader:
                 tcga_cancer_types.add(row[3])
-        if closest_tcga.lower() == 'paad':
+        if tcga_code.lower() == 'paad':
             cohort = constants.COMPASS
-        elif closest_tcga.lower() in tcga_cancer_types: 
-            cohort = "".join(("TCGA ", closest_tcga.upper()))
+        elif tcga_code.lower() in tcga_cancer_types: 
+            cohort = "".join(("TCGA ", tcga_code.upper()))
         else:
             cohort = constants.NA
         return cohort
@@ -156,12 +161,12 @@ def get_tmb_count(self, work_dir):
         return tmb_count
 
 
-def write_biomarker_plot(self, work_dir, closest_tcga, marker, tmb):
+def write_biomarker_plot(self, work_dir, tcga_code, marker, tmb):
       out_path = os.path.join(work_dir, marker+'.svg')
       args = [
           os.path.join(self.r_script_dir, 'tmb_plot.R'),
           '-d', work_dir,
-          '-c', closest_tcga,
+          '-c', tcga_code,
           '-m', marker,
           '-t', str(tmb)
       ]

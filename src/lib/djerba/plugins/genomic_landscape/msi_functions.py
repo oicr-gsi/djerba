@@ -33,7 +33,7 @@ def run(self, work_dir, msi_file, biomarkers_path, tumour_id):
       # Write to genomic biomarkers maf if MSI is actionable
       if msi_data[constants.METRIC_ACTIONABLE]:
           with open(biomarkers_path, "a") as biomarkers_file:
-              row = '\t'.join([constants.HUGO_SYMBOL, tumour_ID, biomarker[constants.METRIC_ALTERATION]])
+              row = '\t'.join([constants.HUGO_SYMBOL, tumour_id, msi_data[constants.METRIC_ALTERATION]])
               biomarkers_file.write(row + "\n")
       
       return msi_data

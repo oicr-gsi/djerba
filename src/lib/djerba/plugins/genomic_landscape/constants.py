@@ -63,7 +63,7 @@ VARIANT_CLASSIFICATION = 'Variant_Classification'
   
 
 # ctdna
-CTDNA = 'ctdna'
+CTDNA = 'ctDNA'
 CTDNA_CANDIDATES = 'ctDNA_candidate_sites'
 CTDNA_ELIGIBILITY = 'ctDNA_eligibility'
 MRDETECT_FILTER_ONLY_FILE_NAME = 'SNP.count.txt'
@@ -86,4 +86,8 @@ DATA_SEGMENTS = 'data_seg.txt'
 MINIMUM_MAGNITUDE_SEG_MEAN = 0.2
 GENOME_SIZE = 3*10**9 # TODO use more accurate value when we release a new report format
 CTDNA_ELIGIBILITY_CUTOFF = 4000
-#PURITY_PERCENT = 'Estimated Cancer Cell Content (%)'
+PURITY = 'Estimated Cancer Cell Content (%)'
+ALTERATION_UPPER_CASE = 'ALTERATION'
+GENES_AND_URLS = 'Genes_and_URLs'
+ONCOKB = 'OncoKB'
+TREATMENT = 'Treatment'
