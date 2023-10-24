@@ -47,7 +47,7 @@ def get_parser():
     render_parser.add_argument('-j', '--json', metavar='PATH', required=True, help='Path for JSON input')
     render_parser.add_argument('-o', '--out-dir', metavar='DIR', required=True, help='Directory for output files')
     render_parser.add_argument('-p', '--pdf', action='store_true', help='Generate PDF output from HTML')
-    #render_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
+    render_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
     # revised json will be written to out_dir
     #render_parser.add_argument('-s', '--summary', metavar='PATH', help='File with updated genomic summary text')
     report_parser = subparsers.add_parser(constants.REPORT, help='run configure/extract/html steps; output HTML; optionally output PDF')
