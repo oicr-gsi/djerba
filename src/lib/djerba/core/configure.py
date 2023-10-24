@@ -4,6 +4,7 @@ Base class for all components: Plugins, helpers, mergers
 Defines a wide range of methods for common configuration tasks
 """
 
+import getpass
 import logging
 import os
 import string
@@ -243,6 +244,12 @@ class core_configurer(configurable):
     """Class to do core configuration"""
 
     PRIORITY = 100
+    AUTHORS = {
+        'afortuna': 'Alex Fortuna',
+        'ibancarz': 'Iain Bancarz',
+        'fbeaudry': 'Felix Beaudry',
+        'aalam': 'Aqsa Alam'
+    }
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -277,10 +284,22 @@ class core_configurer(configurable):
                 msg = "Generated report ID {0} from UUID hex string".format(report_id)
                 self.logger.debug(msg)
             wrapper.set_my_param(cc.REPORT_ID, report_id)
+        if wrapper.my_param_is_null(cc.AUTHOR):
+            username = getpass.getuser()
+            if username in self.AUTHORS:
+                author = self.AUTHORS[username]
+                msg = "Found author '{0}' from username {1}".format(author, username)
+                self.logger.debug(msg)
+            else:
+                author = "user {0}".format(username)
+                msg = "Unknown username {0}, author is '{1}'".format(username, author)
+                self.logger.debug(msg)
+            wrapper.set_my_param(cc.AUTHOR, author)
         return wrapper.get_config()
 
     def specify_params(self):
         self.add_ini_discovered(cc.REPORT_ID)
+        self.add_ini_discovered(cc.AUTHOR)
         self.set_ini_default(cc.REPORT_VERSION, 1)
         self.set_ini_default(cc.ARCHIVE_NAME, "djerba")
         self.set_ini_default(
