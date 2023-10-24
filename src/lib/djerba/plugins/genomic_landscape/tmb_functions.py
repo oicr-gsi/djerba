@@ -54,7 +54,7 @@ def build_genomic_landscape_info(self, work_dir, tcga_code):
         data[constants.CANCER_SPECIFIC_COHORT] = cohort
         pcp = read_pan_cancer_percentile(self, data[constants.TMB_PER_MB])
         data[constants.PAN_CANCER_PERCENTILE] = int(round(pcp, 0))
-        data[constants.PAN_CANCER_COHORT] = constants.PAN_CANCER_COHORT
+        data[constants.PAN_CANCER_COHORT] = constants.PAN_CANCER_COHORT_VALUE
         return data
 
 

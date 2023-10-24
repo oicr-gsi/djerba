@@ -1,73 +1,56 @@
 """
-CONSTANTS
+Constants for the Genomic Landscape plugin.
 """
 
-# broad
-#DATA_DIR_NAME = 'data'
+# Constants for configure
+ONCOTREE_CODE = 'oncotree_code'
+TUMOUR_ID = 'tumour_id'
+TCGA_CODE = 'tcgacode'
+PURITY_INPUT = 'purity'
+DONOR = 'donor'
+MSI_FILE = 'msi_file'
+CTDNA_FILE = 'ctdna_file'
 
-# sequenza
-#SEQUENZA_GAMMA = 'sequenza_gamma'
 
-# extract constants for oncokb
-#AUTHOR = 'author'
-#ASSAY_TYPE = 'assay_type'
-#COVERAGE = 'coverage'
-#FAILED = 'failed'
-#ONCOKB_CACHE = 'oncokb_cache'
-#ONCOTREE_CODE = 'oncotree_code'
-#PURITY_FAILURE = 'purity_failure'
-#PROJECT = 'Project'
-
-# clinical data file headers
-#TUMOUR_SAMPLE_ID = 'TUMOUR_SAMPLE_ID'
-#CLINICAL_DATA_FILENAME = 'data_clinical.txt'
-#CLOSEST_TCGA = 'CLOSEST_TCGA'
-
-# constants for other biomarkers
-
-MSI = "MSI"
-TMB = "TMB"
+# Constants for the rest of the plugin in alphabetical order
 ALT = 'Alteration'
 ALT_URL = 'Alteration_URL'
-METRIC_VALUE = 'Genomic biomarker value'
-METRIC_ACTIONABLE = 'Genomic alteration actionable'
-METRIC_ALTERATION = 'Genomic biomarker alteration'
-METRIC_TEXT = 'Genomic biomarker text'
-METRIC_PLOT = 'Genomic biomarker plot'
-HUGO_SYMBOL = "Other Biomarkers"
-#METRIC_CALL = 'Genomic biomarker call'
-GENOMIC_LANDSCAPE_INFO = 'genomic_landscape_info'
+ALTERATION_UPPER_CASE = 'ALTERATION'
 BIOMARKERS = 'genomic_biomarkers'
-
-# render constants for the genomic landscape table
-TMB_TOTAL = 'Tumour Mutation Burden'
-TMB_PER_MB = 'TMB per megabase'
-PERCENT_GENOME_ALTERED = 'Percent Genome Altered'
+BODY = 'Body'
 CANCER_SPECIFIC_PERCENTILE = 'Cancer-specific Percentile'
 CANCER_SPECIFIC_COHORT = 'Cancer-specific Cohort'
-PAN_CANCER_PERCENTILE = 'Pan-cancer Percentile'
-PAN_CANCER_COHORT = 'Pan-cancer Cohort'
+CANCER_TYPE_HEADER = 'CANCER.TYPE'
 CLINICALLY_RELEVANT_VARIANTS = 'Clinically relevant variants'
-BODY = 'Body'
-
-GENOMIC_BIOMARKERS = 'genomic_biomarkers.maf'
-GENOMIC_BIOMARKERS_ANNOTATED = 'genomic_biomarkers_annotated.maf'
-
-TMB_HEADER = 'tmb' # for tmbcomp files
-CANCER_TYPE_HEADER = 'CANCER.TYPE' # for tmbcomp files
-TMBCOMP_EXTERNAL = 'tmbcomp-externaldata.txt'
-TMBCOMP_TCGA = 'tmbcomp-tcga.txt'
-
-MUTATIONS_EXTENDED = 'data_mutations_extended.txt'
-VARIANT_CLASSIFICATION = 'Variant_Classification'
-  
-
-# ctdna
+COMPASS = 'COMPASS'
 CTDNA = 'ctDNA'
 CTDNA_CANDIDATES = 'ctDNA_candidate_sites'
 CTDNA_ELIGIBILITY = 'ctDNA_eligibility'
+CTDNA_ELIGIBILITY_CUTOFF = 4000
+DATA_SEGMENTS = 'data.seg'
+GENOME_SIZE = 3*10**9 # TODO use more accurate value when we release a new report format
+GENOMIC_BIOMARKERS = 'genomic_biomarkers.maf'
+GENOMIC_BIOMARKERS_ANNOTATED = 'genomic_biomarkers_annotated.maf'
+GENOMIC_LANDSCAPE_INFO = 'genomic_landscape_info'
+HUGO_SYMBOL = "Other Biomarkers"
+METRIC_ACTIONABLE = 'Genomic alteration actionable'
+METRIC_ALTERATION = 'Genomic biomarker alteration'
+METRIC_PLOT = 'Genomic biomarker plot'
+METRIC_TEXT = 'Genomic biomarker text'
+METRIC_VALUE = 'Genomic biomarker value'
+MINIMUM_MAGNITUDE_SEG_MEAN = 0.2
 MRDETECT_FILTER_ONLY_FILE_NAME = 'SNP.count.txt'
-
+MSI = "MSI"
+MUTATIONS_EXTENDED = 'data_mutations_extended.txt'
+NA = 'NA'
+ONCOKB = 'OncoKB'
+PAN_CANCER_COHORT = 'Pan-cancer Cohort'
+PAN_CANCER_COHORT_VALUE = 'TCGA Pan-Cancer Atlas 2018 (n=6,446)'
+PAN_CANCER_PERCENTILE = 'Pan-cancer Percentile'
+PERCENT_GENOME_ALTERED = 'Percent Genome Altered'
+PROVENANCE_OUTPUT = 'provenance_subset.tsv.gz'
+PURITY = 'Estimated Cancer Cell Content (%)'
+TMB = "TMB"
 TMB_EXCLUDED = [
     "3'Flank",
     "3'UTR",
@@ -77,17 +60,11 @@ TMB_EXCLUDED = [
     "Splice_Region",
     "Targeted_Region",
     ]
-
-V7_TARGET_SIZE = 37.285536 # inherited from CGI-Tools
-NA = 'NA'
-COMPASS = 'COMPASS'
-
-DATA_SEGMENTS = 'data_seg.txt'
-MINIMUM_MAGNITUDE_SEG_MEAN = 0.2
-GENOME_SIZE = 3*10**9 # TODO use more accurate value when we release a new report format
-CTDNA_ELIGIBILITY_CUTOFF = 4000
-PURITY = 'Estimated Cancer Cell Content (%)'
-ALTERATION_UPPER_CASE = 'ALTERATION'
-GENES_AND_URLS = 'Genes_and_URLs'
-ONCOKB = 'OncoKB'
+TMBCOMP_EXTERNAL = 'tmbcomp-externaldata.txt'
+TMB_HEADER = 'tmb'
+TMB_PER_MB = 'TMB per megabase'
+TMBCOMP_TCGA = 'tmbcomp-tcga.txt'
+TMB_TOTAL = 'Tumour Mutation Burden'
 TREATMENT = 'Treatment'
+VARIANT_CLASSIFICATION = 'Variant_Classification'
+V7_TARGET_SIZE = 37.285536 # inherited from CGI-Tools

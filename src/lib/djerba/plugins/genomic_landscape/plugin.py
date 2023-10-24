@@ -1,18 +1,13 @@
 """
 Plugin for genomic landscape section.
 """
-import re
 import os
 import csv
-import numpy
-from djerba.plugins.base import plugin_base
+from djerba.plugins.base import plugin_base, DjerbaPluginError
 from mako.lookup import TemplateLookup
 import djerba.core.constants as core_constants
-from djerba.plugins.tar.provenance_tools import parse_file_path
-from djerba.plugins.tar.provenance_tools import subset_provenance
-import gsiqcetl.column
-from djerba.util.image_to_base64 import converter
-from gsiqcetl import QCETLCache
+from djerba.plugins.genomic_landscape.provenance_tools import parse_file_path
+from djerba.plugins.genomic_landscape.provenance_tools import subset_provenance
 from djerba.util.render_mako import mako_renderer
 import djerba.util.input_params_tools as input_params_tools
 from djerba.util.subprocess_runner import subprocess_runner
@@ -27,6 +22,7 @@ from djerba.util.html import html_builder as hb
 from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
 from djerba.util.oncokb.tools import gene_summary_reader
+from djerba.helpers.input_params_helper.helper import main as input_params_helper
 
 class main(plugin_base):
     
@@ -36,6 +32,7 @@ class main(plugin_base):
     # For MSI file
     MSI_RESULTS_SUFFIX = '.filter.deduped.realigned.recalibrated.msi.booted'
     MSI_WORKFLOW = 'msisensor'
+    
     # For ctDNA file
     CTDNA_RESULTS_SUFFIX = 'SNP.count.txt'
     CTDNA_WORKFLOW = 'mrdetect_filter_only'
@@ -47,9 +44,13 @@ class main(plugin_base):
     def specify_params(self):
 
       discovered = [
-           'donor',
-           'msi_file',
-           'ctdna_file'
+           constants.DONOR,
+           constants.TUMOUR_ID,
+           constants.ONCOTREE_CODE,
+           constants.TCGA_CODE,
+           constants.PURITY_INPUT,
+           constants.MSI_FILE,
+           constants.CTDNA_FILE
       ]
       for key in discovered:
           self.add_ini_discovered(key)
@@ -57,8 +58,8 @@ class main(plugin_base):
 
       # Default parameters for priorities
       self.set_ini_default('configure_priority', 100)
-      self.set_ini_default('extract_priority', 100)
-      self.set_ini_default('render_priority', 100)
+      self.set_ini_default('extract_priority', 1000)
+      self.set_ini_default('render_priority', 500)
 
       # Default parameters for clinical, supplementary
       self.set_ini_default(core_constants.CLINICAL, True)
@@ -69,22 +70,67 @@ class main(plugin_base):
       config = self.apply_defaults(config)
       wrapper = self.get_config_wrapper(config)
 
-      # Get input_data.json if it exists; else return None
-      input_data = input_params_tools.get_input_params_json(self)
+      if wrapper.my_param_is_null(constants.ONCOTREE_CODE):
+          if self.workspace.has_file(input_params_helper.INPUT_PARAMS_FILE):
+              data = self.workspace.read_json(input_params_helper.INPUT_PARAMS_FILE)
+              oncotree_code = data[constants.ONCOTREE_CODE]
+              wrapper.set_my_param(constants.ONCOTREE_CODE, oncotree_code)
+          else:
+              msg = "Cannot find Oncotree code; must be manually specified or "+\
+                    "given in {0}".format(input_params_helper.INPUT_PARAMS_FILE)
+              self.logger.error(msg)
+              raise DjerbaPluginError(msg)
+      
+      if wrapper.my_param_is_null(constants.TCGA_CODE):
+          if self.workspace.has_file(input_params_helper.INPUT_PARAMS_FILE):
+              data = self.workspace.read_json(input_params_helper.INPUT_PARAMS_FILE)
+              tcga_code = data[constants.TCGA_CODE]
+              wrapper.set_my_param(constants.TCGA_CODE, tcga_code)
+          else:
+              msg = "Cannot find TCGA code; must be manually specified or "+\
+                    "given in {0}".format(input_params_helper.INPUT_PARAMS_FILE)
+              self.logger.error(msg)
+              raise DjerbaPluginError(msg)
 
-      if wrapper.my_param_is_null('donor'):
-          wrapper.set_my_param('donor', input_data['donor'])
+      if wrapper.my_param_is_null(constants.PURITY_INPUT):
+          if self.workspace.has_file(input_params_helper.INPUT_PARAMS_FILE):
+              data = self.workspace.read_json(input_params_helper.INPUT_PARAMS_FILE)
+              purity = data[constants.PURITY_INPUT]
+              wrapper.set_my_param(constants.PURITY_INPUT, purity)
+          else:
+              msg = "Cannot find Purity; must be manually specified or "+\
+                    "given in {0}".format(input_params_helper.INPUT_PARAMS_FILE)
+              self.logger.error(msg)
+              raise DjerbaPluginError(msg)
 
-      # GET TUMOUR ID FROM SAMPLE JSON
-      #if wrapper.my_param_is_null('tumour_id'):
-      donor = config[self.identifier]['donor']
-      if wrapper.my_param_is_null('msi_file'):
-          wrapper.set_my_param('msi_file', self.get_file(donor, self.MSI_WORKFLOW, self.MSI_RESULTS_SUFFIX))
-      if wrapper.my_param_is_null('ctdna_file'):
-          wrapper.set_my_param('ctdna_file', self.get_file(donor, self.CTDNA_WORKFLOW, self.CTDNA_RESULTS_SUFFIX))
+      if wrapper.my_param_is_null(constants.DONOR):
+          if self.workspace.has_file(input_params_helper.INPUT_PARAMS_FILE):
+              data = self.workspace.read_json(input_params_helper.INPUT_PARAMS_FILE)
+              donor = data[constants.DONOR]
+              wrapper.set_my_param(constants.DONOR, donor)
+          else:
+              msg = "Cannot find Purity; must be manually specified or "+\
+                    "given in {0}".format(input_params_helper.INPUT_PARAMS_FILE)
+              self.logger.error(msg)
+              raise DjerbaPluginError(msg)
 
-      # CONFIGURE MSI
-      # CONFIGURE TMB
+      if wrapper.my_param_is_null(constants.TUMOUR_ID):
+          if self.workspace.has_file(core_constants.DEFAULT_SAMPLE_INFO):
+              data = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
+              tumour_id = data['tumour_id']
+              wrapper.set_my_param(constants.TUMOUR_ID, tumour_id)
+          else:
+              msg = "Cannot find tumour ID; must be manually specified or "+\
+                  "given in {0}".format(core_constants.DEFAULT_SAMPLE_INFO)
+              self.logger.error(msg)
+              raise DjerbaPluginError(msg)
+
+      # Get files for MSI, ctDNA
+      donor = config[self.identifier][constants.DONOR]
+      if wrapper.my_param_is_null(constants.MSI_FILE):
+          wrapper.set_my_param(constants.MSI_FILE, self.get_file(donor, self.MSI_WORKFLOW, self.MSI_RESULTS_SUFFIX))
+      if wrapper.my_param_is_null(constants.CTDNA_FILE):
+          wrapper.set_my_param(constants.CTDNA_FILE, self.get_file(donor, self.CTDNA_WORKFLOW, self.CTDNA_RESULTS_SUFFIX))
 
       return config
 
@@ -95,19 +141,11 @@ class main(plugin_base):
       # Get the working directory
       work_dir = self.workspace.get_work_dir()
 
-      # GET SNIPPET OF MSI JSON
-      # GET SNIPPET OF TMB JSON
-      # SLAP THEM TOGETHER
-
-      #return data
-
-      # Get the working directory
-      work_dir = self.workspace.get_work_dir()
-      #tumour_id = wrapper.get_my_string('tumour_id')
-      tumour_id = "100-NH-040_LCM3_4_6"
-      oncotree_code = 'PAAD'
-      tcga_code = 'paad'
-      purity = 61
+      # Get parameters from config 
+      tumour_id = wrapper.get_my_string(constants.TUMOUR_ID)
+      oncotree_code = wrapper.get_my_string(constants.ONCOTREE_CODE)
+      tcga_code = wrapper.get_my_string(constants.TCGA_CODE).lower() # tcga_code is always lowercase
+      purity = wrapper.get_my_string(constants.PURITY_INPUT)
 
       # Make a file where all the (actionable) biomarkers will go
       biomarkers_path = self.make_biomarkers_maf(work_dir)
@@ -124,13 +162,11 @@ class main(plugin_base):
       results[constants.BIOMARKERS][constants.MSI] = msi.run(self, work_dir, msi_file, biomarkers_path, tumour_id)
      
       # Get purity
-      results[constants.PURITY] = purity
+      results[constants.PURITY] = float(purity)*100
 
       # Annotate genomic biomarkers for therapy info/merge inputs
       self.build_genomic_biomarkers(work_dir, oncotree_code, tumour_id)
-      #merge_inputs = self.build_therapy_info(work_dir)
       merge_inputs = self.get_merge_inputs(work_dir)
-      # !!!!!!!!!!!!!!!!!!NEED TO DO THE MERGE INPUTS THING!!!!!!!!!!!!!!!!!      
       
       data = {
           'plugin_name': 'Genomic Landscape and Biomarkers (TMB, MSI)',
@@ -146,8 +182,6 @@ class main(plugin_base):
     def render(self, data):
       renderer = mako_renderer(self.get_module_dir())
       return renderer.render_name(self.TEMPLATE_NAME, data)
-
-      # RENDER ALL JSONS TOGETHER
 
     def get_file(self, donor, workflow, results_suffix):
       """
@@ -227,7 +261,6 @@ class main(plugin_base):
         return merge_inputs
 
     def get_alt_url(self, alteration):
-        # genes argument may be a string, or an iterable of strings (it's just the gene)
         core_biomarker_url = "https://www.oncokb.org/gene/Other%20Biomarkers"
         if alteration == "TMB-H" or alteration == "MSI-H":
             if alteration == "TMB-H":
