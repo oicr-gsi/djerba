@@ -28,7 +28,7 @@ class database(logger):
     def create_document(self, report_id, data):
         couch_info = {
             '_id': report_id,
-            'last_updated': '{}'.format(self.timestamp()),
+            'last_updated': time.strftime("%d/%m/%Y_%H:%M:%SZ", time.gmtime())
         }
         doc = {**couch_info, **data}
         return doc
@@ -62,37 +62,19 @@ class database(logger):
         return report_id, db, url
 
     def get_revision_and_url(self, report_id, url):
-        url_id = posixjoin(url, report_id)
-        result = requests.get(url_id)
-        self.logger.debug("URL with ID: {0}".format(url_id)) ## TODO FIXME
-        if result.status_code == 200:
-            self.logger.debug('Successful HTTP GET for %s', report_id)
+        url_with_id = posixjoin(url, report_id)
+        result = requests.head(url_with_id)
+        status = result.status_code
+        if status == 200:
+            rev = result.headers.get("ETag")
+            msg = "HTTP HEAD request OK for {0}; ".format(report_id)+\
+                "got ETag for _rev: {0}".format(rev)
+            self.logger.debug(msg)
         else:
-            self.logger.warning(
-                'Failed HTTP GET for %s! Status Code <%s>',
-                report_id,
-                result.status_code
-            )
-            return None, url_id
-        self.logger.debug("Result text: '{0}'".format(result.text))
-        self.logger.debug("Result URL: '{0}'".format(result.url))
-        self.logger.debug("Result status: '{0}'".format(result.status_code))
-        self.logger.debug("Result headers: '{0}'".format(result.headers))
-        rev = result.headers.get("ETag")
-        self.logger.debug(f'Retrieved document _rev: {rev}')
-        return rev, url_id
-
-    def timestamp(self):
-        return time.strftime("%d/%m/%Y_%H:%M:%SZ", time.gmtime())
-
-    def update_document(self, report_id, rev, data):
-        couch_info = {
-            '_id': report_id,
-            #'_rev': rev,
-            'last_updated': self.timestamp(),
-        }
-        doc = {**couch_info, **data}
-        return doc
+            rev = None
+            msg = "HTTP HEAD request failed for {0}: status {1}".format(report_id, status)
+            self.logger.warning(msg)
+        return rev, url_with_id
 
     def upload_data(self, report_data):
         """
@@ -117,17 +99,16 @@ class database(logger):
             else:
                 # update document
                 rev, url_with_id = self.get_revision_and_url(report_id, url)
-                if rev == None: self.logger.debug('Unable to get document _rev')
-                updated_doc = self.update_document(report_id, rev, report_data)
-                self.logger.debug('Attempting PUT for {0}'.format(report_id))
-                self.logger.debug('URL to PUT: {0}'.format(url_with_id))
-                self.logger.debug('rev to PUT: {0}'.format(rev))
-                headers['If-Match'] = rev
-                result = requests.put(url=url_with_id, headers=headers, json=updated_doc)
-                self.logger.debug("Result text: '{0}'".format(result.text))
-                self.logger.debug("Result URL: '{0}'".format(result.url))
-                self.logger.debug("Result status: '{0}'".format(result.status_code))
-                self.logger.debug("Result headers: '{0}'".format(result.headers))
+                if rev == None:
+                    self.logger.debug('Unable to get document revision ID; will retry')
+                    time.sleep(2)
+                    continue
+                else:
+                    # create document with updated timestamp
+                    upload_doc = self.create_document(report_id, report_data)
+                    headers['If-Match'] = rev
+                    self.logger.debug('Attempting PUT for {0}'.format(report_id))
+                    result = requests.put(url=url_with_id, headers=headers, json=upload_doc)
             status = result.status_code
             if status == 201:
                 uploaded = True
