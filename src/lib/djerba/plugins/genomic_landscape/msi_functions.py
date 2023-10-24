@@ -5,22 +5,13 @@ List of functions to convert MSI information into json format.
 # IMPORTS
 import base64
 import csv
-import json
 import logging
 import os
-import pandas as pd
 import numpy
 import djerba.plugins.genomic_landscape.constants as constants
 from djerba.util.logger import logger
 from djerba.util.image_to_base64 import converter
 from djerba.util.subprocess_runner import subprocess_runner
-from djerba.plugins.tar.provenance_tools import parse_file_path
-from djerba.plugins.tar.provenance_tools import subset_provenance
-
-MSS_CUTOFF = 5.0
-MSI_CUTOFF = 15.0
-MSI_FILE = 'msi.txt'
-
 
 def run(self, work_dir, msi_file, biomarkers_path, tumour_id):
       """
@@ -66,15 +57,15 @@ def call_MSI(self, msi_value):
                   constants.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/MSI-H",
                   constants.METRIC_VALUE: msi_value
                   }
-      if msi_value >= MSI_CUTOFF:
+      if msi_value >= constants.MSI_CUTOFF:
           msi_dict[constants.METRIC_ACTIONABLE] = True
           msi_dict[constants.METRIC_ALTERATION] = "MSI-H"
           msi_dict[constants.METRIC_TEXT] = "Microsatellite Instability High (MSI-H)"
-      elif msi_value < MSI_CUTOFF and msi_value >= MSS_CUTOFF:
+      elif msi_value < constants.MSI_CUTOFF and msi_value >= constants.MSS_CUTOFF:
           msi_dict[constants.METRIC_ACTIONABLE] = False
           msi_dict[constants.METRIC_ALTERATION] = "INCONCLUSIVE"
           msi_dict[constants.METRIC_TEXT] = "Inconclusive Microsatellite Instability status"
-      elif msi_value < MSS_CUTOFF:
+      elif msi_value < constants.MSS_CUTOFF:
           msi_dict[constants.METRIC_ACTIONABLE] = False
           msi_dict[constants.METRIC_ALTERATION] = "MSS"
           msi_dict[constants.METRIC_TEXT] = "Microsatellite Stable (MSS)"
@@ -86,7 +77,7 @@ def call_MSI(self, msi_value):
 
 def extract_MSI(self, work_dir, msi_file):
       if msi_file == None:
-          msi_file = os.path.join(work_dir, MSI_FILE_NAME)
+          msi_file = os.path.join(work_dir, constants.MSI_FILE_NAME)
       with open(msi_file, 'r') as msi_file:
           reader_file = csv.reader(msi_file, delimiter="\t")
           for row in reader_file:
@@ -94,7 +85,7 @@ def extract_MSI(self, work_dir, msi_file):
                   msi_value = float(row[2])
               except IndexError as err:
                   msg = "Incorrect number of columns in msisensor row: '{0}'".format(row)+\
-                        "read from '{0}'".format(os.path.join(work_dir, MSI_FILE_NAME))
+                        "read from '{0}'".format(os.path.join(work_dir, constants.MSI_FILE_NAME))
                   self.logger.error(msg)
                   raise RuntimeError(msg) from err
       return msi_value
