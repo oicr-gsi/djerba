@@ -80,6 +80,14 @@ DEFAULT_CSS = "stylesheet.css"
 DEFAULT_AUTHOR = "CGI Author"
 DEFAULT_DOCUMENT_CONFIG = "document_config.json"
 
+# archive config
+ARCHIVE_CONFIG = 'archive_config.ini'
+ARCHIVE_HEADER = 'archive'
+USERNAME = 'username'
+PASSWORD = 'password'
+ADDRESS = 'address'
+PORT = 'port'
+
 # keywords for document rendering
 BODY = 'body'
 DOCUMENTS = 'documents'

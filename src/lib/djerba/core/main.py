@@ -197,17 +197,13 @@ class main(core_base):
             with open(json_path, 'w') as out_file:
                 out_file.write(json.dumps(data))
         if archive:
-            uploaded, report_id = database(self.log_level, self.log_path).upload_data(data)
-            if uploaded:
-                self.logger.info(f"Archiving was successful: {report_id}")
-            else:
-                self.logger.warning(f"Archiving was NOT successful: {report_id}")
+            self.upload_archive(data)
         else:
-            self.logger.info("Archive operation not requested; omitting archiving")
+            self.logger.info("Omitting archive upload at extract step")
         self.logger.info('Finished Djerba extract step')
         return data
 
-    def render(self, data, out_dir=None, pdf=False):
+    def render(self, data, out_dir=None, pdf=False, archive=False):
         self.logger.info('Starting Djerba render step')
         if out_dir:  # do this *before* taking the time to generate output
             self.path_validator.validate_output_dir(out_dir)
@@ -232,7 +228,12 @@ class main(core_base):
         self.logger.debug("Assembling HTML document(s)")
         h_rend = html_renderer(data[cc.CORE], self.log_level, self.log_path)
         output_data = h_rend.run(html, priorities, attributes)
-        # 3. Write output files, if any
+        # 3. Archive the JSON data structure, if needed
+        if archive:
+            self.upload_archive(data)
+        else:
+            self.logger.debug("Omitting archive upload at render step")
+        # 4. Write output files, if any
         if out_dir:
             p_rend = pdf_renderer(self.log_level, self.log_path)
             for prefix in output_data[cc.DOCUMENTS].keys():
@@ -278,26 +279,34 @@ class main(core_base):
             self.extract(config, json_path, archive)
         elif mode == constants.RENDER:
             json_path = ap.get_json_path()
+            archive = ap.is_archive_enabled()
             with open(json_path) as json_file:
                 data = json.loads(json_file.read())
-            self.render(data, ap.get_out_dir(), ap.is_pdf_enabled())
+            self.render(data, ap.get_out_dir(), ap.is_pdf_enabled(), archive)
         elif mode == constants.REPORT:
-            # get operational parameters
             ini_path = ap.get_ini_path()
             out_dir = ap.get_out_dir()
             ini_path_out = os.path.join(out_dir, 'full_config.ini')
             json_path = os.path.join(out_dir, 'djerba_report.json')
             archive = ap.is_archive_enabled()
             config = self.configure(ini_path, ini_path_out)
+            # upload to archive at the extract step, not the render step
             data = self.extract(config, json_path, archive)
-            self.render(data, ap.get_out_dir())
-            # TODO if pdf_path!=None, convert HTML->PDF
+            self.render(data, ap.get_out_dir(), ap.is_pdf_enabled(), archive=False)
         else:
             # TODO add clauses for setup, pdf, etc.
             # for now, raise an error
             msg = "Mode '{0}' is not yet defined in Djerba core.main!".format(mode)
             self.logger.error(msg)
             raise RuntimeError(msg)
+
+    def upload_archive(self, data):
+        uploaded, report_id = database(self.log_level, self.log_path).upload_data(data)
+        if uploaded:
+            self.logger.info(f"Archiving was successful: {report_id}")
+        else:
+            self.logger.warning(f"Archiving was NOT successful: {report_id}")
+
 
 class arg_processor(logger):
     # class to process command-line args for creating a main object

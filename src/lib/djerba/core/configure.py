@@ -285,7 +285,7 @@ class core_configurer(configurable):
         self.set_ini_default(cc.ARCHIVE_NAME, "djerba")
         self.set_ini_default(
             cc.ARCHIVE_URL,
-            "http://admin:djerba123@10.30.133.78:5984"
+            "http://${username}:${password}@${address}:${port}"
         )
         self.set_ini_default(cc.AUTHOR, cc.DEFAULT_AUTHOR)
         self.set_ini_default(cc.SAMPLE_INFO, cc.DEFAULT_SAMPLE_INFO)
