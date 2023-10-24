@@ -72,14 +72,6 @@ class levels:
         return order
 
     @staticmethod
-    def parse_max_reportable_level(row_dict):
-        [level, therapies] = levels.parse_max_oncokb_level_and_therapies(
-            row_dict,
-            levels.REPORTABLE_LEVELS
-        )
-        return level
-
-    @staticmethod
     def parse_max_actionable_level_and_therapies(row_dict):
         return levels.parse_max_oncokb_level_and_therapies(
             row_dict,
