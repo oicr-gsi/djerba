@@ -4,6 +4,7 @@ Plugin for TAR SWGS.
 
 # IMPORTS
 import os
+import csv
 from djerba.plugins.base import plugin_base
 from mako.lookup import TemplateLookup
 import djerba.plugins.tar.swgs.constants as constants
@@ -16,6 +17,10 @@ import gsiqcetl.column
 from gsiqcetl import QCETLCache
 from djerba.util.render_mako import mako_renderer
 import djerba.util.input_params_tools as input_params_tools
+from djerba.mergers.gene_information_merger.factory import factory as gim_factory
+from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
+from djerba.util.oncokb.tools import levels as oncokb_levels
+from djerba.util.oncokb.tools import gene_summary_reader
 
 class main(plugin_base):
     
@@ -40,7 +45,7 @@ class main(plugin_base):
       # Default parameters for priorities
       self.set_ini_default('configure_priority', 400)
       self.set_ini_default('extract_priority', 250)
-      self.set_ini_default('render_priority', 400)
+      self.set_ini_default('render_priority', 700)
 
       # Default parameters for clinical, supplementary
       self.set_ini_default(core_constants.CLINICAL, True)
@@ -112,7 +117,8 @@ class main(plugin_base):
           # Merge treatments (if there are any)
           cna_annotated_path = os.path.join(work_dir, self.CNA_ANNOTATED)
           cnv = data_builder(work_dir)
-          cnv_data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(cna_annotated_path, oncotree_code)
+          cnv_data['merge_inputs'] = self.get_merge_inputs(work_dir)
+          #cnv_data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(cna_annotated_path, oncotree_code)
       
       elif purity >= 0.1 and not amp_path:
           
@@ -140,3 +146,50 @@ class main(plugin_base):
           msg = "File with extension {0} not found".format(self.RESULTS_SUFFIX)
           raise RuntimeError(msg) from err
       return results_path
+
+
+    def get_merge_inputs(self, work_dir):
+      """
+      Read gene and therapy information for merge inputs
+      Both are derived from the annotated CNA file
+      """
+      # read the tab-delimited input file
+      gene_info = []
+      gene_info_factory = gim_factory(self.log_level, self.log_path)
+      summaries = gene_summary_reader()
+      treatments = []
+      treatment_option_factory = tom_factory(self.log_level, self.log_path)
+      input_name = self.CNA_ANNOTATED
+      with open(os.path.join(work_dir, input_name)) as input_file:
+          reader = csv.DictReader(input_file, delimiter="\t")
+          for row_input in reader:
+              # record the gene for all reportable alterations
+              level = oncokb_levels.parse_max_reportable_level(row_input)
+              if level != None:
+                  gene = row_input[constants.HUGO_SYMBOL_UPPER_CASE]
+                  gene_info_entry = gene_info_factory.get_json(
+                      gene=gene,
+                      summary=summaries.get(gene)
+                  )
+                  gene_info.append(gene_info_entry)
+              [level, therapies] = oncokb_levels.parse_max_actionable_level_and_therapies(
+                  row_input
+              )
+              # record therapy for all actionable alterations (OncoKB level 4 or higher)
+              if level != None:
+                  treatment_entry = treatment_option_factory.get_json(
+                      tier = oncokb_levels.tier(level),
+                      level = level,
+                      gene = gene,
+                      alteration = row_input['ALTERATION'],
+                      alteration_url = None, # this field is not defined for CNVs
+                      treatments = therapies
+                  )
+                  treatments.append(treatment_entry)
+      # assemble the output
+      merge_inputs = {
+          'gene_information_merger': gene_info,
+          'treatment_options_merger': treatments
+      }
+      return merge_inputs
+

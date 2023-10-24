@@ -1,4 +1,5 @@
 import os
+import csv
 import pandas as pd
 from djerba.plugins.base import plugin_base
 from mako.lookup import TemplateLookup
@@ -15,10 +16,14 @@ from djerba.plugins.tar.provenance_tools import subset_provenance
 from djerba.core.workspace import workspace
 from djerba.util.render_mako import mako_renderer
 import djerba.util.input_params_tools as input_params_tools
+from djerba.mergers.gene_information_merger.factory import factory as gim_factory
+from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
+from djerba.util.oncokb.tools import levels as oncokb_levels
+from djerba.util.oncokb.tools import gene_summary_reader
 
 class main(plugin_base):
    
-    PRIORITY = 300
+    PRIORITY = 600
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'html/snv_indel_template.html'
     WORKFLOW = 'consensusCruncher'
@@ -115,7 +120,7 @@ class main(plugin_base):
       data['results'] = results
 
       mutations_annotated_path = os.path.join(work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)
-      data['merge_inputs']['treatment_options_merger'] =  data_extractor(work_dir, assay, oncotree_code).build_therapy_info(mutations_annotated_path, oncotree_code)
+      data['merge_inputs'] = self.get_merge_inputs(work_dir)
       return data
 
     def render(self, data):
@@ -203,4 +208,53 @@ class main(plugin_base):
       out_path = os.path.join(work_dir, 'filtered_maf_for_tar.maf.gz')
       df_pl.to_csv(out_path, sep = "\t", compression='gzip', index=False)
       return out_path
-
+   
+    def get_merge_inputs(self, work_dir):
+      """
+      Read gene and therapy information for merge inputs
+      Both are derived from the annotated CNA file
+      """
+      # read the tab-delimited input file
+      gene_info = []
+      gene_info_factory = gim_factory(self.log_level, self.log_path)
+      summaries = gene_summary_reader()
+      treatments = []
+      treatment_option_factory = tom_factory(self.log_level, self.log_path)
+      input_name = constants.MUTATIONS_EXTENDED_ONCOGENIC
+      with open(os.path.join(work_dir, input_name)) as input_file:
+          reader = csv.DictReader(input_file, delimiter="\t")
+          for row_input in reader:
+              # record the gene for all reportable alterations
+              level = oncokb_levels.parse_max_reportable_level(row_input)
+              if level != None:
+                  gene = row_input[constants.HUGO_SYMBOL_TITLE_CASE]
+                  gene_info_entry = gene_info_factory.get_json(
+                      gene=gene,
+                      summary=summaries.get(gene)
+                  )
+                  gene_info.append(gene_info_entry)
+              [level, therapies] = oncokb_levels.parse_max_actionable_level_and_therapies(
+                  row_input
+              )
+              # record therapy for all actionable alterations (OncoKB level 4 or higher)
+              if level != None:
+                  alteration = row_input[constants.HGVSP_SHORT]
+                  if gene == 'BRAF' and alteration == 'p.V640E':
+                      alteration = 'p.V600E'
+                  if 'splice' in row_input[constants.VARIANT_CLASSIFICATION].lower():
+                      alteration = 'p.? (' + row_input[constants.HGVSC] + ')'
+                  treatment_entry = treatment_option_factory.get_json(
+                      tier = oncokb_levels.tier(level),
+                      level = level,
+                      gene = gene,
+                      alteration = alteration,
+                      alteration_url = None, # this field is not defined for CNVs
+                      treatments = therapies
+                  )
+                  treatments.append(treatment_entry)
+      # assemble the output
+      merge_inputs = {
+          'gene_information_merger': gene_info,
+          'treatment_options_merger': treatments
+      }
+      return merge_inputs
