@@ -37,10 +37,6 @@ class main(plugin_base):
     CTDNA_RESULTS_SUFFIX = 'SNP.count.txt'
     CTDNA_WORKFLOW = 'mrdetect_filter_only'
 
-    # Directories 
-    r_script_dir = os.path.join(os.environ.get('DJERBA_BASE_DIR'), 'plugins/genomic_landscape/Rscripts/')
-    data_dir = os.environ.get('DJERBA_RUN_DATA')
-
     def specify_params(self):
 
       discovered = [
@@ -233,7 +229,7 @@ class main(plugin_base):
         # read the tab-delimited input file
         gene_info = []
         gene_info_factory = gim_factory(self.log_level, self.log_path)
-        summaries = gene_summary_reader()
+        summaries = gene_summary_reader(self.log_level, self.log_path)
         treatments = []
         treatment_option_factory = tom_factory(self.log_level, self.log_path)
         input_name = constants.GENOMIC_BIOMARKERS_ANNOTATED

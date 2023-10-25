@@ -1,10 +1,13 @@
 """Simple functions to process actionability tiers and other information from OncoKB"""
 
 import csv
+import logging
 import os
 import re
 import djerba.core.constants as core_constants
 import djerba.util.oncokb.constants as oncokb
+from djerba.util.environment import directory_finder
+from djerba.util.logger import logger
 
 class levels:
 
@@ -137,13 +140,13 @@ class levels:
             tier = None
         return tier
 
-class gene_summary_reader:
+class gene_summary_reader(logger):
 
     DEFAULT = 'OncoKB summary not available'
 
-    def __init__(self):
+    def __init__(self, log_level=logging.WARNING, log_path=None):
         self.summaries = {}
-        data_dir = os.environ.get(core_constants.DJERBA_DATA_DIR_VAR)
+        data_dir = directory_finder(log_level, log_path).get_data_dir()
         with open(os.path.join(data_dir, oncokb.ALL_CURATED_GENES)) as in_file:
             for row in csv.DictReader(in_file, delimiter="\t"):
                 self.summaries[row['hugoSymbol']] = row['summary']

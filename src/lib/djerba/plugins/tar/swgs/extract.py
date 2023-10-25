@@ -14,6 +14,7 @@ import pandas as pd
 from shutil import rmtree
 import djerba.plugins.tar.swgs.constants as constants
 from djerba.plugins.tar.swgs.preprocess import preprocess
+from djerba.util.environment import directory_finder
 from djerba.util.logger import logger
 from djerba.util.image_to_base64 import converter
 import djerba.util.oncokb.constants as oncokb
@@ -53,9 +54,11 @@ class data_builder:
 
     # DIRECTORIES
     self.input_dir = "."
-    self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/Rscripts/"
+    finder = directory_finder() # TODO configure logging
+    base_dir = finder.get_base_dir()
+    self.r_script_dir = base_dir + "/plugins/tar/Rscripts/"
     self.work_dir = work_dir
-    self.data_dir =  os.environ.get('DJERBA_BASE_DIR') + "/data/" 
+    self.data_dir = finder.get_data_dir()
     self.cytoband_path = os.path.join(self.data_dir, 'cytoBand.txt')
     self.cytoband_map = self.read_cytoband_map()
     self.tmp_dir = work_dir + "/tmp"

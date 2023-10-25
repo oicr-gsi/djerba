@@ -4,6 +4,7 @@ import re
 import csv
 import gzip
 import logging
+from djerba.util.environment import directory_finder
 from djerba.util.logger import logger
 from djerba.sequenza import sequenza_reader
 from djerba.util.subprocess_runner import subprocess_runner
@@ -76,7 +77,8 @@ class preprocess(logger):
 
       # DIRECTORIES
       self.report_dir = work_dir
-      self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/snv_indel/snv_indel_tools/Rscripts/"
+      finder = directory_finder(log_level, log_path)
+      self.r_script_dir = finder.get_base_dir() + "/plugins/tar/snv_indel/snv_indel_tools/Rscripts/"
       self.tmp_dir = os.path.join(self.report_dir, 'tmp')
 
       if os.path.isdir(self.tmp_dir):

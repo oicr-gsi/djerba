@@ -13,6 +13,7 @@ from djerba.mergers.gene_information_merger.factory import factory as gim_factor
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
 from djerba.plugins.wgts.tools import wgts_tools
 from djerba.sequenza import sequenza_reader # TODO move sequenza.py to util?
+from djerba.util.environment import directory_finder
 from djerba.util.html import html_builder
 from djerba.util.image_to_base64 import converter
 from djerba.util.logger import logger
@@ -41,6 +42,7 @@ class cnv_processor(logger):
         self.config = config_wrapper
         self.plot_path = os.path.join(self.work_dir, self.PLOT_FILENAME)
         self.seg_path = os.path.join(self.work_dir, self.SEG_FILENAME)
+        self.data_dir = directory_finder(log_level, log_path).get_data_dir()        
 
     def calculate_percent_genome_altered(self):
         total = 0
@@ -65,7 +67,7 @@ class cnv_processor(logger):
         # read the tab-delimited input file
         gene_info = []
         gene_info_factory = gim_factory(self.log_level, self.log_path)
-        summaries = gene_summary_reader()
+        summaries = gene_summary_reader(self.log_level, self.log_path)
         treatments = []
         treatment_option_factory = tom_factory(self.log_level, self.log_path)
         input_name = oncokb_constants.DATA_CNA_ONCOKB_GENES_NON_DIPLOID_ANNOTATED
@@ -114,7 +116,7 @@ class cnv_processor(logger):
         else:
             self.logger.info("No expression data found")
             mutation_expression = {}
-        cytobands = wgts_tools.cytoband_lookup()
+        cytobands = wgts_tools(self.log_level, self.log_path).cytoband_lookup()
         input_name = oncokb_constants.DATA_CNA_ONCOKB_GENES_NON_DIPLOID_ANNOTATED
         with open(os.path.join(self.work_dir, input_name)) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
@@ -146,10 +148,9 @@ class cnv_processor(logger):
     def run_main_r_script(self):
         """Run the main process_CNA_data.R script"""
         dir_location = os.path.dirname(__file__)
-        data_dir = os.environ.get(core_constants.DJERBA_DATA_DIR_VAR)
-        genebed_path = os.path.join(data_dir, self.GENEBED)
-        oncolist_path = os.path.join(data_dir, self.ONCOLIST)
-        centromeres_path = os.path.join(data_dir, self.CENTROMERES)
+        genebed_path = os.path.join(self.data_dir, self.GENEBED)
+        oncolist_path = os.path.join(self.data_dir, self.ONCOLIST)
+        centromeres_path = os.path.join(self.data_dir, self.CENTROMERES)
         purity = self.config.get_my_float(cnv.PURITY)
         cmd = [
             'Rscript', os.path.join(dir_location + "/R/process_CNA_data.r"),

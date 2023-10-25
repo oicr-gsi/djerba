@@ -13,6 +13,7 @@ import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 from configparser import ConfigParser
 from posixpath import join as posixjoin
+from djerba.util.environment import directory_finder, DjerbaEnvDirError
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
 
@@ -43,12 +44,12 @@ class database(logger):
             self.logger.error(msg)
             raise
         # read parameters from private dir
-        private_dir = os.environ.get(cc.DJERBA_PRIVATE_DIR_VAR)
-        if private_dir == None:
-            msg = 'Environment variable {0}'.format(cc.DJERBA_PRIVATE_DIR_VAR)+\
-                'is not configured; cannot find archive settings'
+        try:
+            private_dir = directory_finder(self.log_level, self.log_path).get_private_dir()
+        except DjerbaEnvDirError as err:
+            msg = 'Cannot find archive settings: {0}'.format(err)
             self.logger.error(msg)
-            raise RuntimeError(msg)
+            raise RuntimeError(msg) from err
         config_path = os.path.join(private_dir, cc.ARCHIVE_CONFIG)
         path_validator(self.log_level, self.log_path).validate_input_file(config_path)
         config = ConfigParser()

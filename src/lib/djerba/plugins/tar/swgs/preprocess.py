@@ -10,6 +10,7 @@ import csv
 import gzip
 import logging
 import pandas as pd
+from djerba.util.environment import directory_finder
 from djerba.util.logger import logger
 from djerba.sequenza import sequenza_reader
 from djerba.util.subprocess_runner import subprocess_runner
@@ -21,8 +22,9 @@ class preprocess(logger):
 
   def __init__(self, tumour_id, oncotree_code, work_dir, log_level=logging.DEBUG, log_path=None):
 
+    finder = directory_finder(log_level, log_path)
     # CONSTANTS
-    self.GENECODE_PATH = os.path.join(os.environ.get('DJERBA_RUN_DATA'), 'gencode_v33_hg38_genes.bed')
+    self.GENECODE_PATH = os.path.join(finder.get_data_dir(), 'gencode_v33_hg38_genes.bed')
     self.ONCOLIST_PATH = "/20200818-oncoKBcancerGeneList.tsv"
 
     # DIRECTORIES
@@ -38,8 +40,8 @@ class preprocess(logger):
     else:
         self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
         os.mkdir(self.tmp_dir)
-    self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/swgs/Rscripts"
-    self.data_dir = os.environ.get('DJERBA_BASE_DIR') + "/data/"
+    self.r_script_dir = finder.get_base_dir() + "/plugins/tar/swgs/Rscripts"
+    self.data_dir = finder.get_data_dir()
     self.tumour_id = tumour_id
     self.oncotree_code = oncotree_code
     

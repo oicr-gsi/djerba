@@ -11,6 +11,7 @@ from djerba.mergers.treatment_options_merger.factory import factory as tom_facto
 from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.plugins.fusion.tools import fusion_reader
 from djerba.plugins.wgts.tools import wgts_tools
+from djerba.util.environment import directory_finder
 from djerba.util.html import html_builder as hb
 from djerba.util.logger import logger
 from djerba.util.oncokb.annotator import annotator_factory
@@ -85,7 +86,7 @@ class main(plugin_base):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         # TODO populate the oncotree code
-        data_dir = os.environ.get(core_constants.DJERBA_DATA_DIR_VAR)
+        data_dir = directory_finder(self.log_level, self.log_path).get_data_dir()
         if wrapper.my_param_is_null(self.ENTREZ_CONVERSION_PATH):
             enscon_path = os.path.join(data_dir, self.ENTRCON_NAME)
             wrapper.set_my_param(self.ENTREZ_CONVERSION_PATH, enscon_path)
@@ -141,8 +142,8 @@ class main(plugin_base):
         rows = []
         gene_info = []
         treatment_opts = []
-        cytobands = wgts_tools.cytoband_lookup()
-        summaries = gene_summary_reader()
+        cytobands = wgts_tools(self.log_level, self.log_path).cytoband_lookup()
+        summaries = gene_summary_reader(self.log_level, self.log_path)
         gene_info_factory = gim_factory(self.log_level, self.log_path)
         # table has 2 rows for each oncogenic fusion
         for fusion in gene_pair_fusions:

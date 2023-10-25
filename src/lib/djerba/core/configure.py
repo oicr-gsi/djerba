@@ -424,59 +424,6 @@ class config_wrapper(core_base):
         # alias for set_param, to be consistent with ConfigParser interface
         self.set_param(section, param, value)
 
-    ### end of methods to get/set/query INI params (other than priority levels)
-    #################################################################
-    ### start of methods to get special directory paths from environment variables
-
-    def apply_env_templates(self, section):
-        """
-        Included for completeness -- but normally we will use apply_my_env_templates()
-
-        Apply template substitution using variables
-        Replace strings like $DJERBA_DATA_DIR with value of corresponding env variable
-        https://docs.python.org/3/library/string.html#string.Template.substitute
-        """
-        var_names = [
-            cc.DJERBA_DATA_DIR_VAR,
-            cc.DJERBA_PRIVATE_DIR_VAR,
-            cc.DJERBA_TEST_DIR_VAR
-        ]
-        mapping = {var: self.get_dir_from_env(var) for var in var_names}
-        for section in self.config.sections():
-            for option in self.config.options(section):
-                value = self.config.get(section, option)
-                try:
-                    value = string.Template(value).substitute(mapping)
-                except KeyError as err:
-                    msg = "Failed to substitute environment variable in INI "+\
-                        "section {0}, option {1}, value {2}".format(section, option, value)+\
-                        ": {0}".format(err)
-                    self.logger.error(msg)
-                    raise DjerbaConfigError(msg) from err
-                self.config.set(section, option, value)
-
-    def apply_my_env_templates(self):
-        self.apply_env_templates(self.identifier)
-
-    def get_dir_from_env(self, var):
-        dir_path = os.environ.get(var)
-        if dir_path == None:
-            msg = "Environment variable '{0}' is not configured".format(var)
-            self.logger.warning(msg)
-        return dir_path
-
-    def get_djerba_data_dir(self):
-        return self.get_dir_from_env(cc.DJERBA_DATA_DIR_VAR)
-
-    def get_djerba_private_dir(self):
-        return self.get_dir_from_env(cc.DJERBA_PRIVATE_DIR_VAR)
-
-    def get_djerba_test_dir(self):
-        return self.get_dir_from_env(cc.DJERBA_TEST_DIR_VAR)
-
-    ### end of methods to get special directory paths from environment variables
-    #################################################################
-
 
 class DjerbaConfigError(Exception):
     pass

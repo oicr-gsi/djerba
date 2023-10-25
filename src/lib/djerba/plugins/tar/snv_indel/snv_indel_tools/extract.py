@@ -6,6 +6,7 @@ import os
 import re
 import pandas as pd
 import djerba.plugins.tar.snv_indel.snv_indel_tools.constants as sic
+from djerba.util.environment import directory_finder
 from djerba.util.logger import logger
 from djerba.util.image_to_base64 import converter
 from djerba.util.html import html_builder as hb
@@ -15,8 +16,10 @@ from djerba.util.subprocess_runner import subprocess_runner
 class data_builder:
 
     def __init__(self,  work_dir, assay, oncotree_uc):
-        self.data_dir = os.environ.get('DJERBA_BASE_DIR') + '/data/' 
-        self.r_script_dir = os.environ.get('DJERBA_BASE_DIR') + "/plugins/tar/snv_indel/snv_indel_tools/Rscripts"
+        finder = directory_finder() # TODO configure logging
+        base_dir = finder.get_base_dir()
+        self.data_dir = finder.get_data_dir()
+        self.r_script_dir = base_dir + "/plugins/tar/snv_indel/snv_indel_tools/Rscripts"
         self.work_dir = work_dir
         self.assay = assay
         self.cytoband_path = self.data_dir + "cytoBand.txt"

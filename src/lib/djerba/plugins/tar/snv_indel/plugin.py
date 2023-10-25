@@ -19,6 +19,7 @@ from djerba.util.html import html_builder as hb
 import djerba.util.input_params_tools as input_params_tools
 from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
+from djerba.util.environment import directory_finder
 from djerba.util.oncokb.tools import levels as oncokb_levels
 from djerba.util.oncokb.tools import gene_summary_reader
 
@@ -153,7 +154,8 @@ class main(plugin_base):
                       on_bad_lines="error",
                       compression='gzip',
                       skiprows=[0])
-      df_freq = pd.read_csv(os.path.join(os.environ.get('DJERBA_BASE_DIR'), tar_constants.FREQUENCY_FILE),
+      base_dir = directory_finder(self.log_level, self.log_path).get_base_dir()
+      df_freq = pd.read_csv(os.path.join(base_dir, tar_constants.FREQUENCY_FILE),
                    sep = "\t")
        
       for row in df_pl.iterrows():
@@ -218,7 +220,7 @@ class main(plugin_base):
       # read the tab-delimited input file
       gene_info = []
       gene_info_factory = gim_factory(self.log_level, self.log_path)
-      summaries = gene_summary_reader()
+      summaries = gene_summary_reader(self.log_level, self.log_path)
       treatments = []
       treatment_option_factory = tom_factory(self.log_level, self.log_path)
       input_name = constants.MUTATIONS_EXTENDED_ONCOGENIC

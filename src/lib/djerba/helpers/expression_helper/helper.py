@@ -9,6 +9,7 @@ import djerba.util.ini_fields as ini
 import djerba.core.constants as core_constants
 from djerba.helpers.provenance_helper.helper import main as fpr_helper
 from djerba.helpers.base import helper_base
+from djerba.util.environment import directory_finder
 from djerba.util.provenance_reader import provenance_reader, sample_name_container
 from djerba.util.subprocess_runner import subprocess_runner
 
@@ -32,7 +33,7 @@ class main(helper_base):
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
-        wrapper.apply_my_env_templates()
+        data_dir = directory_finder(self.log_level, self.log_path).get_data_dir()
         # get donor/project/tumour id and sample names from provenance helper JSON
         sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
         donor = sample_info[fpr_helper.ROOT_SAMPLE_NAME]
@@ -43,18 +44,21 @@ class main(helper_base):
         if wrapper.my_param_is_null(core_constants.TUMOUR_ID):
             tumour_id = sample_info[core_constants.TUMOUR_ID]
             wrapper.set_my_param(core_constants.TUMOUR_ID, tumour_id)
-        # set the TCGA project identifier, if needed
         if wrapper.my_param_is_null(self.TCGA_CODE_KEY):
             msg = "{0} not configured, falling back to project name {1}".format(
                 self.TCGA_CODE_KEY, project
             )
             self.logger.warning(msg)
             wrapper.set_my_param(self.TCGA_CODE_KEY, project)
-        # find the GEP reference path
         if wrapper.my_param_is_null(self.GEP_REFERENCE_KEY):
-            data_dir = os.environ.get(core_constants.DJERBA_DATA_DIR_VAR)
             ref_path = os.path.join(data_dir, 'results', 'gep_reference.txt.gz')
             wrapper.set_my_param(self.GEP_REFERENCE_KEY, ref_path)
+        if wrapper.my_param_is_null(self.ENSCON_KEY):
+            ref_path = os.path.join(data_dir, 'ensemble_conversion_hg38.txt')
+            wrapper.set_my_param(self.ENSCON_KEY, ref_path)
+        if wrapper.my_param_is_null(self.GENE_LIST_KEY):
+            ref_path = os.path.join(data_dir, 'targeted_genelist.txt')
+            wrapper.set_my_param(self.GENE_LIST_KEY, ref_path)
         # set up and run the provenance reader
         samples = sample_name_container()
         samples.set_and_validate(sample_wg_n, sample_wg_t, sample_wt_t)
@@ -136,13 +140,13 @@ class main(helper_base):
     def specify_params(self):
         defaults = {
             core_constants.DEPENDS_CONFIGURE: 'provenance_helper',
-            self.ENSCON_KEY: '${DJERBA_DATA_DIR}/ensemble_conversion_hg38.txt',
-            self.GENE_LIST_KEY: '${DJERBA_DATA_DIR}/targeted_genelist.txt',
             self.TCGA_DATA_KEY: '/.mounts/labs/CGI/gsi/tools/RODiC/data',
             self.GEP_REFERENCE_KEY: '/.mounts/labs/CGI/gsi/tools/djerba/gep_reference.txt.gz'
         }
         for key in defaults.keys():
             self.set_ini_default(key, defaults[key])
+        self.add_ini_discovered(self.ENSCON_KEY)
+        self.add_ini_discovered(self.GENE_LIST_KEY)
         self.add_ini_discovered(self.RSEM_GENES_RESULTS_KEY)
         self.add_ini_discovered(self.TCGA_CODE_KEY) # use PAAD for testing
         self.add_ini_discovered(core_constants.TUMOUR_ID)

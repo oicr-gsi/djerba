@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### GCGI-1116
+- Make a new `djerba.util.directory_finder` class
+- Use it to replace various ad hoc methods for finding directories from environment vars
+
 ### GCGI-1122
 - Output placeholder values
 
