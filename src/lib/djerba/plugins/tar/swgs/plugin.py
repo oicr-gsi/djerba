@@ -164,8 +164,8 @@ class main(plugin_base):
           reader = csv.DictReader(input_file, delimiter="\t")
           for row_input in reader:
               # record the gene for all reportable alterations
-              level = oncokb_levels.parse_max_reportable_level(row_input)
-              if level != None:
+              level = oncokb_levels.parse_oncokb_level(row_input)
+              if level not in ['Unknown', 'NA']:
                   gene = row_input[constants.HUGO_SYMBOL_UPPER_CASE]
                   gene_info_entry = gene_info_factory.get_json(
                       gene=gene,
