@@ -29,20 +29,24 @@ class main(merger_base):
 
     def table_rows(self, row_fields):
         rows = []
-        for row in row_fields:
-            # italicize the gene name where it appears in the summary
-            # name must be:
-            # - preceded by a space or start-of-string
-            # - followed by a space or listed punctuation
-            summary = re.sub('(^| ){0}[,.;: ]'.format(row[self.GENE]),
-                             lambda m: '<i>{0}</i>'.format(m[0]),
-                             row[self.SUMMARY])
-            cells = [
-                self.td(
-                    self.href(row[self.GENE_URL], row[self.GENE]), italic=True
-                ),
-                self.td(summary)
-            ]
+        if len(row_fields) > 0:
+            for row in row_fields:
+                # italicize the gene name where it appears in the summary
+                # name must be:
+                # - preceded by a space or start-of-string
+                # - followed by a space or listed punctuation
+                summary = re.sub('(^| ){0}[,.;: ]'.format(row[self.GENE]),
+                                 lambda m: '<i>{0}</i>'.format(m[0]),
+                                 row[self.SUMMARY])
+                cells = [
+                    self.td(
+                        self.href(row[self.GENE_URL], row[self.GENE]), italic=True
+                    ),
+                    self.td(summary)
+                ]
+                rows.append(self.tr(cells))
+        else:
+            cells = [self.td(x) for x in ['NA', 'No reportable genes found']]
             rows.append(self.tr(cells))
         return rows
 
