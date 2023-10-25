@@ -14,6 +14,11 @@ class html_builder:
     TR_END = '</tr>'
 
     @staticmethod
+    def build_alteration_url(gene, alteration, cancer_code):
+        base = 'https://www.oncokb.org/gene'
+        return '/'.join([base, gene, alteration, cancer_code])
+
+    @staticmethod
     def build_fusion_url(genes, oncotree_code):
         url = 'https://www.oncokb.org/gene/{0}/Fusion/{1}'.format(
             '-'.join(genes),
