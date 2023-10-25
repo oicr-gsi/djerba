@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### GCGI-1123: Gene information threshold
+- Correct reporting threshold for gene information merger in the CNV and SNV/indel plugins
+
 ### GCGI-836: Enable archiving
 - Enable archiving to CouchDB
 - Simplify previous archiving code; get rid of `archiver.py` and just use `database.py`
