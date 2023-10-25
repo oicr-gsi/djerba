@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### GCGI-1122
+- Output placeholder values
+
 ### GCGI-1123: Gene information threshold
 - Correct reporting threshold for gene information merger in the CNV and SNV/indel plugins
 
