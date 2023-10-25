@@ -22,7 +22,6 @@ except ImportError as err:
 class main(plugin_base):
 
     PLUGIN_VERSION = '1.0.0'
-    PRIORITY = 200
     QCETL_CACHE = "/scratch2/groups/gsi/production/qcetl_v1"
     
     def configure(self, config):
@@ -146,7 +145,10 @@ class main(plugin_base):
         for key in discovered:
             self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
-        self.set_priority_defaults(self.PRIORITY)
+        # Default parameters for priorities
+        self.set_ini_default('configure_priority', 300)
+        self.set_ini_default('extract_priority', 200)
+        self.set_ini_default('render_priority', 500)
 
     def write_purity(self, purity, work_dir):
         """

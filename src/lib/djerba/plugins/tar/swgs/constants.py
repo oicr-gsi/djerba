@@ -6,6 +6,9 @@ AUTHOR: Aqsa Alam
 # For file provenance
 MT_SEG = 'application/seg-txt$'
 
+# For extract
+HUGO_SYMBOL_UPPER_CASE = 'HUGO_SYMBOL'
+
 # For rendering
 TOTAL_VARIANTS = 'Total variants'
 CLINICALLY_RELEVANT_VARIANTS = 'Clinically relevant variants'
