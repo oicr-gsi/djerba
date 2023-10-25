@@ -14,6 +14,7 @@ from djerba.mergers.gene_information_merger.factory import factory as gim_factor
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
 from djerba.plugins.cnv import constants as cnv_constants
 from djerba.plugins.wgts.tools import wgts_tools
+from djerba.util.environment import directory_finder
 from djerba.util.html import html_builder
 from djerba.util.image_to_base64 import converter
 from djerba.util.logger import logger
@@ -51,6 +52,7 @@ class snv_indel_processor(logger):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.work_dir = work_dir
         self.config = config_wrapper
+        self.data_dir = directory_finder(log_level, log_path).get_data_dir()
 
     def _maf_body_row_ok(self, row, ix, vaf_cutoff):
         """
@@ -111,7 +113,7 @@ class snv_indel_processor(logger):
         # read the tab-delimited input file
         gene_info = []
         gene_info_factory = gim_factory(self.log_level, self.log_path)
-        summaries = gene_summary_reader()
+        summaries = gene_summary_reader(self.log_level, self.log_path)
         treatments = []
         treatment_option_factory = tom_factory(self.log_level, self.log_path)
         oncotree_code = self.config.get_my_string(sic.ONCOTREE_CODE)
@@ -190,7 +192,7 @@ class snv_indel_processor(logger):
         else:
             self.logger.info("No expression data found")
             expression = {}
-        cytobands = wgts_tools.cytoband_lookup()
+        cytobands = wgts_tools(self.log_level, self.log_path).cytoband_lookup()
         copy_states = self.read_copy_states()
         with open(os.path.join(self.work_dir, sic.MUTATIONS_ONCOGENIC)) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
@@ -290,12 +292,11 @@ class snv_indel_processor(logger):
 
     def run_data_rscript(self, whizbam_url, maf_input_path):
         dir_location = os.path.dirname(__file__)
-        djerba_data_dir = os.getenv(core_constants.DJERBA_DATA_DIR_VAR)
         # TODO make the ensembl conversion file specific to this plugin?
         cmd = [
             'Rscript', os.path.join(dir_location, 'R', 'process_snv_data.r'),
             '--basedir', dir_location,
-            '--enscon', os.path.join(djerba_data_dir, sic.ENSEMBL_CONVERSION), 
+            '--enscon', os.path.join(self.data_dir, sic.ENSEMBL_CONVERSION), 
             '--outdir', self.work_dir,
             '--whizbam_url', whizbam_url,
             '--maffile', maf_input_path
@@ -307,7 +308,6 @@ class snv_indel_processor(logger):
     def write_vaf_plot(self):
         """Run the R script to write the VAF plot"""
         dir_location = os.path.dirname(__file__)
-        djerba_data_dir = os.getenv(core_constants.DJERBA_DATA_DIR_VAR)
         # TODO make the ensembl conversion file specific to this plugin?
         cmd = [
             'Rscript', os.path.join(dir_location, 'R', 'vaf_plot.r'),

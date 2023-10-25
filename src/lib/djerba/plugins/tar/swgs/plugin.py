@@ -156,7 +156,7 @@ class main(plugin_base):
       # read the tab-delimited input file
       gene_info = []
       gene_info_factory = gim_factory(self.log_level, self.log_path)
-      summaries = gene_summary_reader()
+      summaries = gene_summary_reader(self.log_level, self.log_path)
       treatments = []
       treatment_option_factory = tom_factory(self.log_level, self.log_path)
       input_name = self.CNA_ANNOTATED

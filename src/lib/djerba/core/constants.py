@@ -2,12 +2,6 @@ CORE = 'core'
 NULL = '__DJERBA_NULL__'
 TEXT_ENCODING = 'utf-8'
 
-# environment variables
-DJERBA_DATA_DIR_VAR = 'DJERBA_DATA_DIR'
-DJERBA_PRIVATE_DIR_VAR = 'DJERBA_PRIVATE_DIR'
-DJERBA_TEST_DIR_VAR = 'DJERBA_TEST_DIR'
-DJERBA_CORE_HTML_DIR_VAR = 'DJERBA_CORE_HTML_DIR'
-
 # shared constants for core classes
 ATTRIBUTES = 'attributes'
 DEPENDS_CONFIGURE = 'depends_configure'

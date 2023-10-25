@@ -7,6 +7,7 @@ import os
 import re
 import djerba.core.constants as core_constants
 from djerba.helpers.expression_helper.helper import main as expr_helper
+from djerba.util.environment import directory_finder
 from djerba.util.logger import logger
 from djerba.util.oncokb.tools import levels as oncokb_levels
 
@@ -37,12 +38,13 @@ class wgts_tools(logger):
     ]
 
     def __init__(self, log_level=logging.WARNING, log_path=None):
+        self.log_level = log_level
+        self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
+        self.data_dir = directory_finder(log_level, log_path).get_data_dir()
 
-    @staticmethod
-    def cytoband_lookup():
-        data_dir = os.environ.get(core_constants.DJERBA_DATA_DIR_VAR)
-        cytoband_path = os.path.join(data_dir, 'cytoBand.txt')
+    def cytoband_lookup(self):
+        cytoband_path = os.path.join(self.data_dir, 'cytoBand.txt')
         cytobands = {}
         with open(cytoband_path) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
