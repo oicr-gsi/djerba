@@ -50,6 +50,28 @@ class directory_finder(logger):
     def get_test_dir(self):
         return self.get_directory(self.DJERBA_TEST_DIR_VAR)
 
+    def has_valid_directory(self, var):
+        dir_ok = True
+        value = os.environ.get(var)
+        if value == None or not self.validator.validate_input_dir(value):
+            dir_ok = False
+        return dir_ok
+
+    def has_valid_base_dir(self):
+        return self.has_valid_directory(self.DJERBA_BASE_DIR_VAR)
+
+    def has_valid_core_html_dir(self):
+        return self.has_valid_directory(self.DJERBA_CORE_HTML_DIR_VAR)
+
+    def has_valid_data_dir(self):
+        return self.has_valid_directory(self.DJERBA_RUN_DIR_VAR)
+
+    def has_valid_private_dir(self):
+        return self.has_valid_directory(self.DJERBA_PRIVATE_DIR_VAR)
+
+    def has_valid_test_dir(self):
+        return self.has_valid_directory(self.DJERBA_TEST_DIR_VAR)
+
 
 class DjerbaEnvDirError(Exception):
     pass

@@ -27,9 +27,10 @@ class html_renderer(logger):
         self.author = self.data[cc.AUTHOR]
         self.report_id = self.data[cc.REPORT_ID]
         finder = directory_finder(self.log_level, self.log_path)
-        try:
+        if finder.has_valid_core_html_dir():
             self.html_dir = finder.get_core_html_dir()
-        except DjerbaEnvDirError:
+            self.logger.debug("Got HTML dir from environment: {0}".format(self.html_dir))
+        else:
             self.html_dir = os.path.realpath(os.path.join(
                 os.path.dirname(__file__),
                 'html'
