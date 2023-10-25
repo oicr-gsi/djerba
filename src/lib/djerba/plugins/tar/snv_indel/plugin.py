@@ -15,6 +15,7 @@ from djerba.plugins.tar.provenance_tools import parse_file_path
 from djerba.plugins.tar.provenance_tools import subset_provenance
 from djerba.core.workspace import workspace
 from djerba.util.render_mako import mako_renderer
+from djerba.util.html import html_builder as hb
 import djerba.util.input_params_tools as input_params_tools
 from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
@@ -121,7 +122,7 @@ class main(plugin_base):
       data['results'] = results
 
       mutations_annotated_path = os.path.join(work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)
-      data['merge_inputs'] = self.get_merge_inputs(work_dir)
+      data['merge_inputs'] = self.get_merge_inputs(work_dir, oncotree_code)
       return data
 
     def render(self, data):
@@ -211,7 +212,7 @@ class main(plugin_base):
       df_pl.to_csv(out_path, sep = "\t", compression='gzip', index=False)
       return out_path
    
-    def get_merge_inputs(self, work_dir):
+    def get_merge_inputs(self, work_dir, oncotree_code):
       """
       Read gene and therapy information for merge inputs
       Both are derived from the annotated CNA file
@@ -241,16 +242,18 @@ class main(plugin_base):
               # record therapy for all actionable alterations (OncoKB level 4 or higher)
               if level != None:
                   alteration = row_input[constants.HGVSP_SHORT]
+                  alteration_url = hb.build_alteration_url(gene, alteration, oncotree_code)
                   if gene == 'BRAF' and alteration == 'p.V640E':
                       alteration = 'p.V600E'
                   if 'splice' in row_input[constants.VARIANT_CLASSIFICATION].lower():
                       alteration = 'p.? (' + row_input[constants.HGVSC] + ')'
+                      alteration_url = hb.build_alteration_url(gene, "Truncating%20Mutations", oncotree_code)
                   treatment_entry = treatment_option_factory.get_json(
                       tier = oncokb_levels.tier(level),
                       level = level,
                       gene = gene,
                       alteration = alteration,
-                      alteration_url = None, # this field is not defined for CNVs
+                      alteration_url = alteration_url,
                       treatments = therapies
                   )
                   treatments.append(treatment_entry)

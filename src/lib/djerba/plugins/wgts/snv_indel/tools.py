@@ -94,10 +94,6 @@ class snv_indel_processor(logger):
         factory = annotator_factory(self.log_level, self.log_path)
         return factory.get_annotator(self.work_dir, self.config).annotate_maf(maf_path)
 
-    def build_alteration_url(self, gene, alteration, cancer_code):
-        base = 'https://www.oncokb.org/gene'
-        return '/'.join([base, gene, alteration, cancer_code])
-
     def convert_vaf_plot(self):
         """Read VAF plot from file and return as a base64 string"""
         image_converter = converter(self.log_level, self.log_path)
@@ -135,12 +131,18 @@ class snv_indel_processor(logger):
                 # record therapy for all actionable alterations (OncoKB level 4 or higher)
                 if level != None:
                     alt = row_input[sic.HGVSP_SHORT]
+                    alt_url = html_builder.build_alteration_url(gene, alt, oncotree_code)
+                    if gene == 'BRAF' and alt == 'p.V640E':
+                        alt = 'p.V600E'
+                    if 'splice' in row_input[sic.VARIANT_CLASSIFICATION].lower():
+                        alt = 'p.? (' + row_input[sic.HGVSC] + ')'
+                        alt_url = html_builder.build_alteration_url(gene, "Truncating%20Mutations", oncotree_code)
                     treatment_entry = treatment_option_factory.get_json(
                         tier = oncokb_levels.tier(level),
                         level = level,
                         gene = gene,
                         alteration = alt,
-                        alteration_url = self.build_alteration_url(gene, alt, oncotree_code),
+                        alteration_url = alt_url,
                         treatments = therapies
                     )
                     treatments.append(treatment_entry)
@@ -230,12 +232,12 @@ class snv_indel_processor(logger):
         """Find protein name/URL and apply special cases"""
         gene = row[sic.HUGO_SYMBOL]
         protein = row[sic.HGVSP_SHORT]
-        protein_url = self.build_alteration_url(gene, protein, oncotree_code)
+        protein_url = html_builder.build_alteration_url(gene, protein, oncotree_code)
         if gene == 'BRAF' and protein == 'p.V640E':
             protein = 'p.V600E'
         if 'splice' in row[sic.VARIANT_CLASSIFICATION].lower():
             protein = 'p.? (' + row[sic.HGVSC] + ')'
-            protein_url = self.build_alteration_url(
+            protein_url = html_builder.build_alteration_url(
                 gene, "Truncating%20Mutations", oncotree_code
             )
         return [protein, protein_url]
