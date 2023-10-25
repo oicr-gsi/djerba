@@ -22,7 +22,7 @@ class TestWgtsCnv(PluginTester):
     def testWgtsCnv(self):
         sup_dir = os.environ.get('DJERBA_TEST_DATA')
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
-        json_location = os.path.join(sup_dir, "plugins/cnv/cnv.json")
+        data_dir = os.path.join(sup_dir, 'plugins', 'cnv')
         sequenza_filename = 'PANX_1391_Lv_M_WG_100-NH-020_LCM3_results.test.zip'
         sequenza_path = os.path.join(sup_dir, 'plugins', 'cnv', sequenza_filename)
         expression_filename = 'data_expression_percentile_tcga.json'
@@ -39,11 +39,11 @@ class TestWgtsCnv(PluginTester):
         copy(expression_path, work_dir)
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
-        copy(os.path.join(test_source_dir, self.JSON_NAME), input_dir)
+        copy(os.path.join(data_dir, self.JSON_NAME), input_dir)
         params = {
             self.INI: self.INI_NAME,
             self.JSON: self.JSON_NAME,
-            self.MD5: '60b1032eb0c258fdbdaf8bec1ca25298'
+            self.MD5: '317e76fb2baeb7149652ec5782622e79'
         }
         self.run_basic_test(input_dir, params, work_dir=work_dir)
 

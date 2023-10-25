@@ -42,7 +42,7 @@ class TestSnvIndelPlugin(PluginTester):
         copy(expression_path, work_dir)
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
-        copy(os.path.join(test_source_dir, self.JSON_NAME), input_dir)
+        copy(os.path.join(data_dir, self.JSON_NAME), input_dir)
         params = {
             self.INI: self.INI_NAME,
             self.JSON: self.JSON_NAME,
