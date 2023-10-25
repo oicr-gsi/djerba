@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-### CGCGI-1123: Gene information threshold
+### GCGI-1123: Gene information threshold
 - Correct reporting threshold for gene information merger in the CNV and SNV/indel plugins
 
 ### GCGI-836: Enable archiving
