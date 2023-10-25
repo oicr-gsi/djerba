@@ -18,6 +18,7 @@ from djerba.util.logger import logger
 from djerba.util.image_to_base64 import converter
 import djerba.util.oncokb.constants as oncokb
 from djerba.util.subprocess_runner import subprocess_runner
+from djerba.util.html import html_builder as hb
 
 class data_builder:
 
@@ -70,7 +71,7 @@ class data_builder:
             if row[self.ALTERATION_UPPER_CASE] == "Amplification":
               row = {
                   constants.GENE: gene,
-                  constants.GENE_URL: self.build_gene_url(gene),
+                  constants.GENE_URL: hb.build_gene_url(gene),
                   constants.ALTERATION: row[self.ALTERATION_UPPER_CASE],
                   constants.CHROMOSOME: cytoband,
                   constants.ONCOKB: self.parse_oncokb_level(row)
@@ -117,10 +118,6 @@ class data_builder:
         for row in reader:
             cytobands[row[self.HUGO_SYMBOL_TITLE_CASE]] = row['Chromosome']
     return cytobands
-  
-  def build_gene_url(self, gene):
-    return '/'.join([self.ONCOKB_URL_BASE, gene])
-
   
   def parse_oncokb_level(self, row_dict):
     # find oncokb level string: eg. "1", "Likely Oncogenic", "None"

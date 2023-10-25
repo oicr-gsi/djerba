@@ -8,6 +8,7 @@ import pandas as pd
 import djerba.plugins.tar.snv_indel.snv_indel_tools.constants as sic
 from djerba.util.logger import logger
 from djerba.util.image_to_base64 import converter
+from djerba.util.html import html_builder as hb
 import djerba.util.oncokb.constants as oncokb
 from djerba.util.subprocess_runner import subprocess_runner
 
@@ -27,12 +28,6 @@ class data_builder:
         with open(os.path.join(work_dir, 'purity.txt'), "r") as file:
             self.purity = float(file.readlines()[0])
 
-    def build_alteration_url(self, gene, alteration, cancer_code):
-        return '/'.join([sic.ONCOKB_URL_BASE, gene, alteration, cancer_code])
-
-    def build_gene_url(self, gene):
-        return '/'.join([sic.ONCOKB_URL_BASE, gene])
-
     def build_small_mutations_and_indels(self, mutations_file):
         """read in small mutations; output rows for oncogenic mutations"""
         rows = []
@@ -49,10 +44,10 @@ class data_builder:
                     protein = 'p.? (' + input_row[sic.HGVSC] + ')'  
                 row = {
                     sic.GENE: gene,
-                    sic.GENE_URL: self.build_gene_url(gene),
+                    sic.GENE_URL: hb.build_gene_url(gene),
                     sic.CHROMOSOME: cytoband,
                     sic.PROTEIN: protein,
-                    sic.PROTEIN_URL: self.build_alteration_url(gene, protein, self.oncotree_uc),
+                    sic.PROTEIN_URL: hb.build_alteration_url(gene, protein, self.oncotree_uc),
                     sic.MUTATION_TYPE: re.sub('_', ' ', input_row[sic.VARIANT_CLASSIFICATION]),
                     sic.EXPRESSION_METRIC: mutation_expression.get(gene), # None for WGS assay
                     sic.VAF_PERCENT: int(round(float(input_row[sic.TUMOUR_VAF]), 2)*100),
