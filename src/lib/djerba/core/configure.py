@@ -152,7 +152,7 @@ class configurable(core_base, ABC):
         # returns a set of all expected INI parameter names
         return self.ini_required.union(set(self.ini_defaults.keys()))
 
-    def get_expected_config(self):
+    def get_expected_config(self, compact=False):
         """
         Return a ConfigParser with all expected params
         Params are set to their default values, if any; None otherwise
@@ -163,8 +163,9 @@ class configurable(core_base, ABC):
         config.add_section(self.identifier)
         for option in sorted(list(self.ini_required)):
             config.set(self.identifier, option, 'REQUIRED')
-        for option in sorted(list(self.ini_defaults.keys())):
-            config.set(self.identifier, option, str(self.ini_defaults[option]))
+        if not compact:
+            for option in sorted(list(self.ini_defaults.keys())):
+                config.set(self.identifier, option, str(self.ini_defaults[option]))
         return config
 
     def set_ini_default(self, key, value):
@@ -185,6 +186,27 @@ class configurable(core_base, ABC):
         # convenience method to set all priority defaults to the given value
         # which priorities are defined depends if plugin, helper, or merger
         self.logger.warning("Abstract set_priority_defaults not intended to be called")
+
+    def update_wrapper_if_null(self, wrapper, file_name, config_key, json_key=None):
+        """If parameter is null, attempt to read from workspace JSON"""
+        if json_key == None:
+            json_key = config_key
+        if wrapper.my_param_is_null(config_key):
+            if self.workspace.has_file(file_name):
+                data = self.workspace.read_json(file_name)
+                try:
+                    value = data[json_key]
+                except KeyError as err:
+                    msg = "Cannot find {0} in workspace file {1}".format(json_key, file_name)
+                    self.logger.error(msg)
+                    raise DjerbaConfigError(msg) from err
+                wrapper.set_my_param(config_key, value)
+            else:
+                msg = "Cannot find {0}; must be manually specified ".format(config_key)+\
+                    "or given in workspace {0}".format(file_name)
+                self.logger.error(msg)
+                raise DjerbaConfigError(msg)
+        return wrapper
 
     def validate_minimal_config(self, config):
         """Check for required/unknown config keys in minimal config"""

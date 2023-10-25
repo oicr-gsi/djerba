@@ -44,12 +44,12 @@ class main(helper_base):
         if wrapper.my_param_is_null(core_constants.TUMOUR_ID):
             tumour_id = sample_info[core_constants.TUMOUR_ID]
             wrapper.set_my_param(core_constants.TUMOUR_ID, tumour_id)
-        if wrapper.my_param_is_null(self.TCGA_CODE_KEY):
-            msg = "{0} not configured, falling back to project name {1}".format(
-                self.TCGA_CODE_KEY, project
-            )
-            self.logger.warning(msg)
-            wrapper.set_my_param(self.TCGA_CODE_KEY, project)
+        self.update_wrapper_if_null(
+            wrapper,
+            'input_params.json',
+            self.TCGA_CODE_KEY,
+            'tcgacode'
+        )
         if wrapper.my_param_is_null(self.GEP_REFERENCE_KEY):
             ref_path = os.path.join(data_dir, 'results', 'gep_reference.txt.gz')
             wrapper.set_my_param(self.GEP_REFERENCE_KEY, ref_path)
