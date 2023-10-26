@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v1.0.0-dev0.0.14: 2023-10-26
+- Fix for missing `__init__.py`
+
 ## v1.0.0-dev0.0.13: 2023-10-26
 
 ### GCGI-1118, GCGI-1120
