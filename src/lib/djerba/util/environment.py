@@ -31,7 +31,7 @@ class directory_finder(logger):
             self.logger.error(msg)
             raise DjerbaEnvDirError(msg)
         else:
-            msg = "Directory '{0}' from environment variable '{1}' is OK".format(var, value)
+            msg = "Directory '{0}' from environment variable '{1}' is OK".format(value, var)
             self.logger.debug(msg)
         return value
 

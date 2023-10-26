@@ -16,6 +16,7 @@ import djerba.version as version
 from djerba.core.base import base as core_base
 from djerba.core.database import database
 from djerba.core.extract import extraction_setup
+from djerba.core.ini_generator import ini_generator
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.render import html_renderer, pdf_renderer
 from djerba.core.loaders import \
@@ -267,7 +268,14 @@ class main(core_base):
         ap = arg_processor(args, self.logger, validate=False)
         mode = ap.get_mode()
         work_dir = ap.get_work_dir()
-        if mode == constants.CONFIGURE:
+        if mode == constants.SETUP:
+            assay = ap.get_assay()
+            compact = ap.get_compact()
+            ini_path = ap.get_ini_path()
+            if ini_path == None:
+                ini_path = os.path.join(os.getcwd(), 'config.ini')
+            self.setup(assay, ini_path, compact)
+        elif mode == constants.CONFIGURE:
             ini_path = ap.get_ini_path()
             ini_path_out = ap.get_ini_out_path() # may be None
             self.configure(ini_path, ini_path_out)
@@ -294,11 +302,35 @@ class main(core_base):
             data = self.extract(config, json_path, archive)
             self.render(data, ap.get_out_dir(), ap.is_pdf_enabled(), archive=False)
         else:
-            # TODO add clauses for setup, pdf, etc.
-            # for now, raise an error
-            msg = "Mode '{0}' is not yet defined in Djerba core.main!".format(mode)
+            msg = "Mode '{0}' is not defined in Djerba core.main!".format(mode)
             self.logger.error(msg)
             raise RuntimeError(msg)
+
+    def setup(self, assay, ini_path, compact):
+        if assay == 'WGTS':
+            component_list = [
+                'core',
+                'expression_helper',
+                'input_params_helper',
+                'provenance_helper',
+                'gene_information_merger',
+                'treatment_options_merger',
+                'case_overview',
+                'cnv',
+                'fusion',
+                'sample',
+                'summary',
+                'supplement.header',
+                'supplement.body',
+                'wgts.snv_indel'
+            ]
+        else:
+            msg = "Invalid assay name '{0}'".format(assay)
+            self.logger.error(msg)
+            raise ValueError(msg)
+        generator = ini_generator(self.log_level, self.log_path)
+        generator.write_config(component_list, ini_path, compact)
+        self.logger.info("Wrote config for {0} to {1}".format(assay, ini_path))
 
     def upload_archive(self, data):
         uploaded, report_id = database(self.log_level, self.log_path).upload_data(data)
@@ -339,6 +371,12 @@ class arg_processor(logger):
             raise ArgumentNameError(msg) from err
         return value
 
+    def get_assay(self):
+        return self._get_arg('assay')
+
+    def get_compact(self):
+        return self._get_arg('compact')
+
     def get_ini_path(self):
         return self._get_arg('ini')
 
@@ -377,9 +415,12 @@ class arg_processor(logger):
             if value == None:
                 # if work_dir is defined and empty, default to out_dir
                 value = self._get_arg('out_dir')
-        else:
+        elif hasattr(self.args, 'out_dir'):
             # if work_dir is not defined, default to out_dir (eg. render mode)
             value = self._get_arg('out_dir')
+        else:
+            # if all else fails (eg. setup mode), use the current directory
+            value = os.getcwd()
         return value
 
     def is_archive_enabled(self):
@@ -400,7 +441,8 @@ class arg_processor(logger):
         self.logger.info("Validating paths in command-line arguments")
         v = path_validator(self.log_level, self.log_path)
         if args.subparser_name == constants.SETUP:
-            v.validate_output_dir(args.base)
+            if args.ini!=None:
+                v.validate_output_file(args.ini)
         elif args.subparser_name == constants.CONFIGURE:
             v.validate_input_file(args.ini)
             v.validate_output_file(args.ini_out)

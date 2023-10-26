@@ -74,27 +74,6 @@ class plugin_base(configurable, ABC):
         for key in core_constants.PRIORITY_KEYS:
             self.ini_defaults[key] = priority
 
-    def update_wrapper_if_null(self, wrapper, file_name, config_key, json_key=None):
-        """If parameter is null, attempt to read from workspace JSON"""
-        if json_key == None:
-            json_key = config_key
-        if wrapper.my_param_is_null(config_key):
-            if self.workspace.has_file(file_name):
-                data = self.workspace.read_json(file_name)
-                try:
-                    value = data[json_key]
-                except KeyError as err:
-                    msg = "Cannot find {0} in workspace file {1}".format(json_key, file_name)
-                    self.logger.error(msg)
-                    raise DjerbaPluginError(msg) from err
-                wrapper.set_my_param(config_key, value)
-            else:
-                msg = "Cannot find {0}; must be manually specified ".format(config_key)+\
-                    "or given in workspace {0}".format(file_name)
-                self.logger.error(msg)
-                raise DjerbaPluginError(msg)
-        return wrapper
-
 class DjerbaPluginError(Exception):
     """General-purpose class for Djerba plugin errors; can subclass if needed"""
     pass

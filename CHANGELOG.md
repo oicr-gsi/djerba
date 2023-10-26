@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### GCGI-1124
+- Enable `setup` mode in `djerba.py` to generate an INI file
+- Fixed config omissions in fusion plugin and expression helper
+- Move `update_wrapper_if_null` method to `configurable` class
+
 ### GCGI-1116
 - Make a new `djerba.util.directory_finder` class
 - Use it to replace various ad hoc methods for finding directories from environment vars

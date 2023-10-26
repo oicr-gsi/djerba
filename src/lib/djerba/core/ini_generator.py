@@ -24,8 +24,12 @@ class ini_generator(core_base):
         self.merger_loader = merger_loader(self.log_level, self.log_path)
         self.helper_loader = helper_loader(self.log_level, self.log_path)
 
-    def generate_config(self, component_names):
+    def generate_config(self, component_names, compact=False):
         self.logger.info("Generating config for components: {0}".format(component_names))
+        if compact:
+            self.logger.debug("Compact mode, required parameters only")
+        else:
+            self.logger.debug("Non-compact mode, all parameters included")
         # create a throwaway workspace
         tmp = tempfile.TemporaryDirectory(prefix='djerba_ini_generator')
         tmp_workspace = workspace(tmp.name, self.log_level, self.log_path)
@@ -41,7 +45,7 @@ class ini_generator(core_base):
                 component = self.merger_loader.load(name)
             else:
                 component = self.plugin_loader.load(name, tmp_workspace)
-            component_config = component.get_expected_config()
+            component_config = component.get_expected_config(compact)
             config.add_section(name)
             for option in component_config.options(name):
                 value = component_config.get(name, option)
@@ -50,7 +54,7 @@ class ini_generator(core_base):
         self.logger.info("Finished generating config.")
         return config
 
-    def write_config(self, component_names, out_path):
-        config = self.generate_config(component_names)
+    def write_config(self, component_names, out_path, compact=False):
+        config = self.generate_config(component_names, compact)
         with open(out_path, 'w') as out_file:
             config.write(out_file)

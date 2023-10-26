@@ -85,7 +85,16 @@ class main(plugin_base):
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
-        # TODO populate the oncotree code
+        # find oncotree code and convert to lower case
+        self.update_wrapper_if_null(
+            wrapper,
+            'input_params.json',
+            self.ONCOTREE_CODE,
+            'oncotree_code'
+        )
+        code_lc = wrapper.get_my_string(self.ONCOTREE_CODE).lower()
+        wrapper.set_my_param(self.ONCOTREE_CODE, code_lc)
+        # find other params
         data_dir = directory_finder(self.log_level, self.log_path).get_data_dir()
         if wrapper.my_param_is_null(self.ENTREZ_CONVERSION_PATH):
             enscon_path = os.path.join(data_dir, self.ENTRCON_NAME)
