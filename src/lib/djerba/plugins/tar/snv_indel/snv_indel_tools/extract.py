@@ -22,7 +22,7 @@ class data_builder:
         self.r_script_dir = base_dir + "/plugins/tar/snv_indel/snv_indel_tools/Rscripts"
         self.work_dir = work_dir
         self.assay = assay
-        self.cytoband_path = self.data_dir + "cytoBand.txt"
+        self.cytoband_path = self.data_dir + "/cytoBand.txt"
         self.oncotree_uc = oncotree_uc
         if os.path.exists(os.path.join(self.work_dir, sic.CNA_SIMPLE)):
             self.data_CNA_exists = True

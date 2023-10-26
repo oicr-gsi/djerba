@@ -10,12 +10,12 @@ from djerba.util.subprocess_runner import subprocess_runner
 from statsmodels.distributions.empirical_distribution import ECDF
 
 
-def run(self, work_dir, data_dir, r_script_dir, tcga_code, biomarkers_path, tumour_id, tmb_value=None):
-        genomic_landscape_info = build_genomic_landscape_info(self, work_dir, data_dir, tcga_code)
+def run(genomic_landscape_plugin, work_dir, data_dir, r_script_dir, tcga_code, biomarkers_path, tumour_id, tmb_value=None):
+        genomic_landscape_info = build_genomic_landscape_info(genomic_landscape_plugin, work_dir, data_dir, tcga_code)
         if tmb_value == None:
             tmb_value = genomic_landscape_info[constants.TMB_PER_MB]
-        tmb_dict = call_TMB(self, tmb_value)
-        tmb_plot_location = write_biomarker_plot(self, work_dir, r_script_dir, tcga_code, "tmb", tmb = tmb_value)
+        tmb_dict = call_TMB(genomic_landscape_plugin, tmb_value)
+        tmb_plot_location = write_biomarker_plot(genomic_landscape_plugin, work_dir, r_script_dir, tcga_code, "tmb", tmb = tmb_value)
         tmb_dict[constants.METRIC_PLOT] = converter().convert_svg(tmb_plot_location, 'TMB plot')
 
         data = {
@@ -32,24 +32,24 @@ def run(self, work_dir, data_dir, r_script_dir, tcga_code, biomarkers_path, tumo
 
         return(data)
 
-def build_genomic_landscape_info(self, work_dir, data_dir, tcga_code):
+def build_genomic_landscape_info(genomic_landscape_plugin, work_dir, data_dir, tcga_code):
         # need to calculate TMB and percentiles
-        cohort = read_cohort(self, data_dir, tcga_code)
+        cohort = read_cohort(genomic_landscape_plugin, data_dir, tcga_code)
         data = {}
-        tmb_count = get_tmb_count(self, work_dir)
+        tmb_count = get_tmb_count(genomic_landscape_plugin, work_dir)
         data[constants.TMB_TOTAL] = tmb_count
         data[constants.TMB_PER_MB] = round(tmb_count/constants.V7_TARGET_SIZE, 2)
         data[constants.PERCENT_GENOME_ALTERED] = int(round(read_fga(work_dir)*100, 0))
-        csp = read_cancer_specific_percentile(self, data_dir, data[constants.TMB_PER_MB], cohort, tcga_code)
+        csp = read_cancer_specific_percentile(genomic_landscape_plugin, data_dir, data[constants.TMB_PER_MB], cohort, tcga_code)
         data[constants.CANCER_SPECIFIC_PERCENTILE] = csp
         data[constants.CANCER_SPECIFIC_COHORT] = cohort
-        pcp = read_pan_cancer_percentile(self, data_dir, data[constants.TMB_PER_MB])
+        pcp = read_pan_cancer_percentile(genomic_landscape_plugin, data_dir, data[constants.TMB_PER_MB])
         data[constants.PAN_CANCER_PERCENTILE] = int(round(pcp, 0))
         data[constants.PAN_CANCER_COHORT] = constants.PAN_CANCER_COHORT_VALUE
         return data
 
 
-def call_TMB(self, tmb_value):
+def call_TMB(genomic_landscape_plugin, tmb_value):
         tmb_dict = {constants.ALT: constants.TMB,
                     constants.ALT_URL: "https://www.oncokb.org/gene/Other%20Biomarkers/TMB-H",
                     constants.METRIC_VALUE: tmb_value
@@ -64,12 +64,12 @@ def call_TMB(self, tmb_value):
             tmb_dict[constants.METRIC_TEXT] = "Tumour Mutational Burden Low (TMB-L, < 10 coding mutations / Mb)"
         else:
             msg = "TMB value from landscape info is not a number"
-            self.logger.error(msg)
+            genomic_landscape_plugin.logger.error(msg)
             raise RuntimeError(msg)
         return(tmb_dict)
 
 
-def read_cancer_specific_percentile(self, data_dir, tmb, cohort, cancer_type):
+def read_cancer_specific_percentile(genomic_landscape_plugin, data_dir, tmb, cohort, cancer_type):
         # Read percentile for given TMB/Mb and cohort
         # We use statsmodels to compute the ECDF
         # See: https://stackoverflow.com/a/15792672
@@ -90,7 +90,7 @@ def read_cancer_specific_percentile(self, data_dir, tmb, cohort, cancer_type):
             percentile = int(round(ecdf(tmb)*100, 0)) # return an integer percentile
         return percentile
 
-def read_cohort(self, data_dir, tcga_code):
+def read_cohort(genomic_landscape_plugin, data_dir, tcga_code):
         # cohort is:
         # 1) COMPASS if 'closest TCGA' is paad
         # 2) CANCER.TYPE from tmbcomp-tcga.txt if one matches 'closest TCGA'
@@ -123,7 +123,7 @@ def read_fga(work_dir):
         fga = float(total)/constants.GENOME_SIZE
         return fga
 
-def read_pan_cancer_percentile(self, data_dir, tmb):
+def read_pan_cancer_percentile(genomic_landscape_plugin, data_dir, tmb):
         tmb_array = []
         with open(os.path.join(data_dir, constants.TMBCOMP_TCGA)) as data_file:
             for row in csv.DictReader(data_file, delimiter="\t"):
@@ -132,7 +132,7 @@ def read_pan_cancer_percentile(self, data_dir, tmb):
         percentile = ecdf(tmb)*100
         return percentile
 
-def get_tmb_count(self, work_dir):
+def get_tmb_count(genomic_landscape_plugin, work_dir):
         # Count the somatic mutations
         # Splice_Region is *excluded* for TMB, *included* in our mutation tables and counts
         # Splice_Region mutations are of interest to us, but excluded from the standard TMB definition
@@ -148,11 +148,11 @@ def get_tmb_count(self, work_dir):
         tmb_count = total - excluded
         msg = "Found {} small mutations and indels, of which {} are counted for TMB".format(total,
                                                                                             tmb_count)
-        self.logger.debug(msg)
+        genomic_landscape_plugin.logger.debug(msg)
         return tmb_count
 
 
-def write_biomarker_plot(self, work_dir, r_script_dir, tcga_code, marker, tmb):
+def write_biomarker_plot(genomic_landscape_plugin, work_dir, r_script_dir, tcga_code, marker, tmb):
       out_path = os.path.join(work_dir, marker+'.svg')
       args = [
           os.path.join(r_script_dir, 'tmb_plot.R'),
@@ -161,6 +161,6 @@ def write_biomarker_plot(self, work_dir, r_script_dir, tcga_code, marker, tmb):
           '-m', marker,
           '-t', str(tmb)
       ]
-      subprocess_runner(self.log_level, self.log_path).run(args)
-      self.logger.info("Wrote tmb plot to {0}".format(out_path))
+      subprocess_runner(genomic_landscape_plugin.log_level, genomic_landscape_plugin.log_path).run(args)
+      genomic_landscape_plugin.logger.info("Wrote tmb plot to {0}".format(out_path))
       return out_path
