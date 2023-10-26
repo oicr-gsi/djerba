@@ -1,6 +1,10 @@
 # CHANGELOG
 
-## Unreleased
+## v1.0.0-dev0.0.13: 2023-10-26
+
+### GCGI-1118, GCGI-1120
+- Delete obsolete code
+- Temporarily disable `benchmark.py` script
 
 ### GCGI-1124
 - Enable `setup` mode in `djerba.py` to generate an INI file
