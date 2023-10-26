@@ -13,13 +13,13 @@ from djerba.util.logger import logger
 from djerba.util.image_to_base64 import converter
 from djerba.util.subprocess_runner import subprocess_runner
 
-def run(self, work_dir, msi_file, biomarkers_path, tumour_id):
+def run(self, work_dir, r_script_dir, msi_file, biomarkers_path, tumour_id):
       """
       Runs all functions below.
       Assembles a chunk of json.
       """
       msi_summary = preprocess_msi(work_dir, msi_file)
-      msi_data = assemble_MSI(self, work_dir, msi_summary)
+      msi_data = assemble_MSI(self, work_dir, r_script_dir, msi_summary)
       
       # Write to genomic biomarkers maf if MSI is actionable
       if msi_data[constants.METRIC_ACTIONABLE]:
@@ -44,10 +44,10 @@ def preprocess_msi(work_dir, msi_file):
           print("\t".join([str(item) for item in list(msi_perc)]), file=out_file)
       return out_path
 
-def assemble_MSI(self, work_dir, msi_summary):
+def assemble_MSI(self, work_dir, r_script_dir, msi_summary):
       msi_value = extract_MSI(self, work_dir, msi_summary)
       msi_dict = call_MSI(self, msi_value)
-      msi_plot_location = write_biomarker_plot(self,work_dir, "msi")
+      msi_plot_location = write_biomarker_plot(self, work_dir, r_script_dir, "msi")
       msi_dict[constants.METRIC_PLOT] = converter().convert_svg(msi_plot_location, 'MSI plot')
       return(msi_dict)
 
@@ -90,10 +90,10 @@ def extract_MSI(self, work_dir, msi_file):
                   raise RuntimeError(msg) from err
       return msi_value
 
-def write_biomarker_plot(self, work_dir, marker):
+def write_biomarker_plot(self, work_dir, r_script_dir, marker):
       out_path = os.path.join(work_dir, marker+'.svg')
       args = [
-          os.path.join(self.r_script_dir, 'msi_plot.R'),
+          os.path.join(r_script_dir, 'msi_plot.R'),
           '-d', work_dir
       ]
       subprocess_runner(self.log_level, self.log_path).run(args)

@@ -10,12 +10,12 @@ from djerba.util.subprocess_runner import subprocess_runner
 from statsmodels.distributions.empirical_distribution import ECDF
 
 
-def run(self, work_dir, tcga_code, biomarkers_path, tumour_id, tmb_value=None):
-        genomic_landscape_info = build_genomic_landscape_info(self, work_dir, tcga_code)
+def run(self, work_dir, data_dir, r_script_dir, tcga_code, biomarkers_path, tumour_id, tmb_value=None):
+        genomic_landscape_info = build_genomic_landscape_info(self, work_dir, data_dir, tcga_code)
         if tmb_value == None:
             tmb_value = genomic_landscape_info[constants.TMB_PER_MB]
         tmb_dict = call_TMB(self, tmb_value)
-        tmb_plot_location = write_biomarker_plot(self, work_dir, tcga_code, "tmb", tmb = tmb_value)
+        tmb_plot_location = write_biomarker_plot(self, work_dir, r_script_dir, tcga_code, "tmb", tmb = tmb_value)
         tmb_dict[constants.METRIC_PLOT] = converter().convert_svg(tmb_plot_location, 'TMB plot')
 
         data = {
@@ -32,18 +32,18 @@ def run(self, work_dir, tcga_code, biomarkers_path, tumour_id, tmb_value=None):
 
         return(data)
 
-def build_genomic_landscape_info(self, work_dir, tcga_code):
+def build_genomic_landscape_info(self, work_dir, data_dir, tcga_code):
         # need to calculate TMB and percentiles
-        cohort = read_cohort(self, tcga_code)
+        cohort = read_cohort(self, data_dir, tcga_code)
         data = {}
         tmb_count = get_tmb_count(self, work_dir)
         data[constants.TMB_TOTAL] = tmb_count
         data[constants.TMB_PER_MB] = round(tmb_count/constants.V7_TARGET_SIZE, 2)
         data[constants.PERCENT_GENOME_ALTERED] = int(round(read_fga(work_dir)*100, 0))
-        csp = read_cancer_specific_percentile(self, data[constants.TMB_PER_MB], cohort, tcga_code)
+        csp = read_cancer_specific_percentile(self, data_dir, data[constants.TMB_PER_MB], cohort, tcga_code)
         data[constants.CANCER_SPECIFIC_PERCENTILE] = csp
         data[constants.CANCER_SPECIFIC_COHORT] = cohort
-        pcp = read_pan_cancer_percentile(self, data[constants.TMB_PER_MB])
+        pcp = read_pan_cancer_percentile(self, data_dir, data[constants.TMB_PER_MB])
         data[constants.PAN_CANCER_PERCENTILE] = int(round(pcp, 0))
         data[constants.PAN_CANCER_COHORT] = constants.PAN_CANCER_COHORT_VALUE
         return data
@@ -69,7 +69,7 @@ def call_TMB(self, tmb_value):
         return(tmb_dict)
 
 
-def read_cancer_specific_percentile(self, tmb, cohort, cancer_type):
+def read_cancer_specific_percentile(self, data_dir, tmb, cohort, cancer_type):
         # Read percentile for given TMB/Mb and cohort
         # We use statsmodels to compute the ECDF
         # See: https://stackoverflow.com/a/15792672
@@ -82,7 +82,7 @@ def read_cancer_specific_percentile(self, tmb, cohort, cancer_type):
             else:
                 data_filename = constants.TMBCOMP_TCGA
             tmb_array = []
-            with open(os.path.join(self.data_dir, data_filename)) as data_file:
+            with open(os.path.join(data_dir, data_filename)) as data_file:
                 for row in csv.DictReader(data_file, delimiter="\t"):
                     if row[constants.CANCER_TYPE_HEADER] == cancer_type:
                         tmb_array.append(float(row[constants.TMB_HEADER]))
@@ -90,7 +90,7 @@ def read_cancer_specific_percentile(self, tmb, cohort, cancer_type):
             percentile = int(round(ecdf(tmb)*100, 0)) # return an integer percentile
         return percentile
 
-def read_cohort(self, tcga_code):
+def read_cohort(self, data_dir, tcga_code):
         # cohort is:
         # 1) COMPASS if 'closest TCGA' is paad
         # 2) CANCER.TYPE from tmbcomp-tcga.txt if one matches 'closest TCGA'
@@ -100,7 +100,7 @@ def read_cohort(self, tcga_code):
         # but for now this only has one value
         # TODO need to define a procedure for adding more data cohorts
         tcga_cancer_types = set()
-        with open(os.path.join(self.data_dir, constants.TMBCOMP_TCGA)) as tcga_file:
+        with open(os.path.join(data_dir, constants.TMBCOMP_TCGA)) as tcga_file:
             reader = csv.reader(tcga_file, delimiter="\t")
             for row in reader:
                 tcga_cancer_types.add(row[3])
@@ -123,9 +123,9 @@ def read_fga(work_dir):
         fga = float(total)/constants.GENOME_SIZE
         return fga
 
-def read_pan_cancer_percentile(self, tmb):
+def read_pan_cancer_percentile(self, data_dir, tmb):
         tmb_array = []
-        with open(os.path.join(self.data_dir, constants.TMBCOMP_TCGA)) as data_file:
+        with open(os.path.join(data_dir, constants.TMBCOMP_TCGA)) as data_file:
             for row in csv.DictReader(data_file, delimiter="\t"):
                 tmb_array.append(float(row[constants.TMB_HEADER]))
         ecdf = ECDF(tmb_array)
@@ -152,10 +152,10 @@ def get_tmb_count(self, work_dir):
         return tmb_count
 
 
-def write_biomarker_plot(self, work_dir, tcga_code, marker, tmb):
+def write_biomarker_plot(self, work_dir, r_script_dir, tcga_code, marker, tmb):
       out_path = os.path.join(work_dir, marker+'.svg')
       args = [
-          os.path.join(self.r_script_dir, 'tmb_plot.R'),
+          os.path.join(r_script_dir, 'tmb_plot.R'),
           '-d', work_dir,
           '-c', tcga_code,
           '-m', marker,
