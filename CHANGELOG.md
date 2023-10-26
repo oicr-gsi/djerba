@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v1.0.0-dev0.0.15: 2023-10-26
+
+### GCGI-1127: Genomic Landscape AttributeError
+- Fixed AttibuteError in genomic landscape plugin
+
 ## v1.0.0-dev0.0.14: 2023-10-26
 - Fix for missing `__init__.py`
 
