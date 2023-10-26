@@ -23,6 +23,7 @@ from djerba.mergers.gene_information_merger.factory import factory as gim_factor
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
 from djerba.util.oncokb.tools import gene_summary_reader
 from djerba.helpers.input_params_helper.helper import main as input_params_helper
+from djerba.util.environment import directory_finder
 
 class main(plugin_base):
     
@@ -36,7 +37,7 @@ class main(plugin_base):
     # For ctDNA file
     CTDNA_RESULTS_SUFFIX = 'SNP.count.txt'
     CTDNA_WORKFLOW = 'mrdetect_filter_only'
-
+    
     def specify_params(self):
 
       discovered = [
@@ -133,9 +134,13 @@ class main(plugin_base):
     def extract(self, config):
       
       wrapper = self.get_config_wrapper(config)
-
-      # Get the working directory
+  
+      # Get directories
+      finder = directory_finder(self.log_level, self.log_path)
       work_dir = self.workspace.get_work_dir()
+      data_dir = finder.get_data_dir()
+      r_script_dir = finder.get_base_dir() + "/plugins/genomic_landscape/Rscripts"
+
 
       # Get parameters from config 
       tumour_id = wrapper.get_my_string(constants.TUMOUR_ID)
@@ -147,7 +152,7 @@ class main(plugin_base):
       biomarkers_path = self.make_biomarkers_maf(work_dir)
 
       # Get tmb info, genomic landscape
-      results = tmb.run(self, work_dir, tcga_code, biomarkers_path, tumour_id)
+      results = tmb.run(self, work_dir, data_dir, r_script_dir, tcga_code, biomarkers_path, tumour_id)
 
       # Get ctdna file, ctdna info
       ctdna_file = wrapper.get_my_string('ctdna_file')
@@ -155,7 +160,7 @@ class main(plugin_base):
 
       # Get msi file, msi data
       msi_file = wrapper.get_my_string('msi_file')
-      results[constants.BIOMARKERS][constants.MSI] = msi.run(self, work_dir, msi_file, biomarkers_path, tumour_id)
+      results[constants.BIOMARKERS][constants.MSI] = msi.run(self, work_dir, r_script_dir, msi_file, biomarkers_path, tumour_id)
      
       # Get purity
       results[constants.PURITY] = float(purity)*100
