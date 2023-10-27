@@ -16,7 +16,7 @@ test_that("arm_level_caller returns correct arm-level alterations with PURPLE in
     gain_threshold             <- 7
     shallow_deletion_threshold <- -1
     
-    segfile_path <-  paste0(testdatadir,"/wgs-cnv-plugin/OCT_011657_Co_P_OCT_011657-TS.purple/OCT_011657_Co_P_OCT_011657-TS.purple.segment.tsv")
+    segfile_path <-  paste0(testdatadir,"/wgs-cnv-plugin/OCT_011657_Co_P_OCT_011657-TS.purple/OCT_011657_Co_P_OCT_011657-TS.purple.cnv.somatic.tsv")
     segs <- read.delim(segfile_path, header=TRUE) # segmented data already
     
     expected_arm_level_calls <- sort(c("+(19p)", "+(19q)"))

@@ -133,3 +133,12 @@ process_centromeres <- function(centromeres_path){
   centromeres_sub$cent <- 1
   return(centromeres_sub)
 }
+
+construct_whizbam_links <- function(segs, whizbam_url) {
+  if( dim(segs)[[1]] > 0 ) {
+    segs$whizbam <- paste0(whizbam_url,
+                         "&chr=", gsub("chr", "", segs$chromosome),
+                         "&chrloc=", paste0(segs$start, "-", segs$end))
+  } 
+  return(segs)
+}

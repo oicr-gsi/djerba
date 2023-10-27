@@ -14,9 +14,11 @@ source(paste0(basedir, "/plugins/wgts/cnv_purple/CNA_supporting_functions.r"))
 option_list = list(
   make_option(c("-d", "--outdir"), type="character", default=NULL, help="report directory path", metavar="character"),
   make_option(c("-s", "--segfile"), type="character", default=NULL, help="segments file ", metavar="character"),
-  make_option(c("-p", "--ploidy"), type="character", default=2, help="tumour ploidy", metavar="character"),
   make_option(c("-c", "--centromeres"), type="character", default=NULL, help="path to centromeres file", metavar="character"),
-  make_option(c("-a", "--highCN"), type="character", default=6, help="High copy number (top of y-axis)", metavar="character")
+  make_option(c("-a", "--highCN"), type="character", default=6, help="High copy number (top of y-axis)", metavar="character"),
+  make_option(c("-p", "--purity"), type="character", default=1, help="Purity or cellularity", metavar="character"),
+  make_option(c("-P", "--ploidy"), type="character", default=1, help="ploidy", metavar="character"),
+  make_option(c("-w", "--whizbam_url"), type="character", default=NULL, help="whizbam link", metavar="character")
 )
 
 opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
@@ -26,14 +28,15 @@ segfile_path      <- opt$segfile
 dir_path          <- opt$outdir
 centromeres_path  <- opt$centromeres
 highCN            <- as.numeric(opt$highCN)
+purity            <- as.numeric(opt$purity)
 ploidy            <- as.numeric(opt$ploidy)
-
-baf.min           <- 25
+whizbam_url       <- opt$whizbam_url
 
 
 #### arm-level events ####
 segs <- read.delim(segfile_path, header=TRUE) # segmented data already
-segs <- segs[segs$bafCount > baf.min & segs$depthWindowCount > baf.min,]
+segs_whizbam <- construct_whizbam_links(segs, whizbam_url)
+write.table(segs_whizbam, file=paste0(dir_path, "/purple.segments.txt"), sep="\t", row.names=FALSE, quote=FALSE, col.names = TRUE)
 
 centromeres <- read.table(centromeres_path,header=T)
 
@@ -43,14 +46,14 @@ write.table(arm_level_calls,file=paste0(dir_path, "/purple.arm_level_calls.txt")
 segs$ID <- "purple"
 log2 <- segs[,c("ID","chromosome","start","end","bafCount")]
 names(log2) <- c("ID",	"chrom"	,"loc.start"	,"loc.end"	,"num.mark")
-log2$seg.mean <- log(segs$copyNumber/ploidy, 2)
+log2$seg.mean <- log(1 + (purity *(segs$copyNumber - ploidy)/ploidy), 2)
 write.table(log2,file=paste0(dir_path, "/purple.seg"), sep="\t", row.names=FALSE, quote=FALSE, col.names = FALSE)
 
 #### segment plot ####
 segs <- separate(segs, chromosome,c("blank","chr"),"chr",fill="left",remove = FALSE)
 segs$Chromosome <-  factor(segs$chr, levels= chromosomes_incl, ordered = T)
 
-segs$CNt_high[segs$chrom > highCN] <- "high"
+segs$CNt_high[segs$copyNumber > highCN] <- "high"
 
 
 fittedSegmentsDF_sub <- segs %>% dplyr::select(start,end,Chromosome,majorAlleleCopyNumber,minorAlleleCopyNumber,copyNumber,CNt_high)

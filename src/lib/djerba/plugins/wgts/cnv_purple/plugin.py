@@ -42,7 +42,10 @@ class main(plugin_base):
       data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
 
       tumour_id = config[self.identifier]['tumour_id']
+      normal_id = config[self.identifier]['normal_id'] 
+      cbio_id = config[self.identifier]['cbio_id']
       ploidy = config[self.identifier]['ploidy']
+      purity = config[self.identifier]['purity']
       oncotree_code = config[self.identifier]['oncotree_code']
       purple_gene_file = config[self.identifier]['purple_gene_file']
       purple_segment_file = config[self.identifier]['purple_segment_file']
@@ -55,7 +58,8 @@ class main(plugin_base):
       data_table = cnv.build_copy_number_variation(self.ASSAY, self.CNA_ANNOTATED, oncotree_code)
 
       ## segments
-      cnv_plot_base64 = self.analyze_segments(purple_segment_file)
+      whizbam_url = construct_whizbam_link(cbio_id , tumour_id, normal_id )
+      cnv_plot_base64 = self.analyze_segments(purple_segment_file, whizbam_url, purity, ploidy)
       data_table['cnv_plot']= cnv_plot_base64
       #data_table[ctc.PERCENT_GENOME_ALTERED] = cnv.calculate_percent_genome_altered(ctc.DATA_SEGMENTS)
 
@@ -80,7 +84,9 @@ class main(plugin_base):
             'oncotree_code',
             'purple_purity_file',
             'purple_segment_file',
-            'purple_gene_file'
+            'purple_gene_file',
+            'cbio_id',
+            'normal_id'
           ]
       for key in required:
           self.add_ini_required(key)
@@ -118,19 +124,35 @@ class main(plugin_base):
       result = runner.run(cmd, "CNA R script")
       return result
     
-    def analyze_segments(self, segfile):
+    def analyze_segments(self, segfile, whizbam_url, purity, ploidy):
       dir_location = os.path.dirname(__file__)
       centromeres_file = os.path.join(dir_location, '../../..', self.CENTROMERES)
       cmd = [
         'Rscript', os.path.join(dir_location + "/process_segment_data.r"),
         '--segfile', segfile,
         '--outdir', self.work_dir,
-        '--centromeres', centromeres_file
+        '--centromeres', centromeres_file,
+        '--purity', purity,
+        '--ploidy', ploidy,
+        '--whizbam_url', whizbam_url
       ]
       runner = subprocess_runner()
       result = runner.run(cmd, "segments R script")
       return result.stdout.split('"')[1]
 
+def construct_whizbam_link(studyid, tumourid, normalid,  whizbam_base_url= 'https://whizbam.oicr.on.ca', seqtype= 'GENOME', genome= 'hg38'):
+    whizbam = "".join((whizbam_base_url,
+                        "/igv?project1=", studyid,
+                        "&library1=", tumourid,
+                        "&file1=", tumourid, ".bam",
+                        "&seqtype1=", seqtype,
+                        "&project2=", studyid,
+                        "&library2=", normalid,
+                        "&file2=", normalid, ".bam",
+                        "&seqtype2=", seqtype,
+                        "&genome=", genome
+                        ))
+    return(whizbam)
 
 def get_purple_purity(purple_purity_path):
   with open(purple_purity_path, 'r') as purple_purity_file:
