@@ -87,6 +87,7 @@ setup(
         'djerba.plugins.demo3': install_wildcards,
         'djerba.plugins.failed_report': install_wildcards,
         'djerba.plugins.fusion': install_wildcards,
+        'djerba.plugins.genomic_landscape': install_wildcards,
         'djerba.plugins.pwgs.analysis': install_wildcards,
         'djerba.plugins.pwgs.sample': install_wildcards,
         'djerba.plugins.sample': install_wildcards,

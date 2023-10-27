@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v1.0.0-dev0.0.16: 2023-10-27
+- Add genomic landscape plugin to `setup.py`
+
 ## v1.0.0-dev0.0.15: 2023-10-26
 
 ### GCGI-1127: Genomic Landscape AttributeError
