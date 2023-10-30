@@ -155,26 +155,29 @@ class main(plugin_base):
         summaries = gene_summary_reader(self.log_level, self.log_path)
         gene_info_factory = gim_factory(self.log_level, self.log_path)
         # table has 2 rows for each oncogenic fusion
+        # retain fusions with sort order less than (ie. ahead of) 'Likely Oncogenic'
+        maximum_order = oncokb_levels.oncokb_order('N2')
         for fusion in gene_pair_fusions:
-            oncokb_level = fusion.get_oncokb_level()
-            for gene in fusion.get_genes():
-                chromosome = cytobands.get(gene)
-                gene_url = hb.build_gene_url(gene)
-                row =  {
-                    self.GENE: gene,
-                    self.GENE_URL: gene_url,
-                    self.CHROMOSOME: chromosome,
-                    self.FRAME: fusion.get_frame(),
-                    self.FUSION: fusion.get_fusion_id_new(),
-                    self.MUTATION_EFFECT: fusion.get_mutation_effect(),
-                    core_constants.ONCOKB: oncokb_level
-                }
-                rows.append(row)
-                gene_info_entry = gene_info_factory.get_json(
-                    gene=gene,
-                    summary=summaries.get(gene)
-                )
-                gene_info.append(gene_info_entry)
+            oncokb_order = oncokb_levels.oncokb_order(fusion.get_oncokb_level())
+            if oncokb_order <= maximum_order:
+                for gene in fusion.get_genes():
+                    chromosome = cytobands.get(gene)
+                    gene_url = hb.build_gene_url(gene)
+                    row =  {
+                        self.GENE: gene,
+                        self.GENE_URL: gene_url,
+                        self.CHROMOSOME: chromosome,
+                        self.FRAME: fusion.get_frame(),
+                        self.FUSION: fusion.get_fusion_id_new(),
+                        self.MUTATION_EFFECT: fusion.get_mutation_effect(),
+                        core_constants.ONCOKB: oncokb_level
+                    }
+                    rows.append(row)
+                    gene_info_entry = gene_info_factory.get_json(
+                        gene=gene,
+                        summary=summaries.get(gene)
+                    )
+                    gene_info.append(gene_info_entry)
             if fusion.get_fda_level() != None:
                 entry = self.build_treatment_entry(fusion, 'Approved', oncotree_code)
                 treatment_opts.append(entry)
