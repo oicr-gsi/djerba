@@ -287,9 +287,8 @@ class core_configurer(configurable):
             sample_info_file = wrapper.get_my_string(cc.SAMPLE_INFO)
             if self.workspace.has_file(sample_info_file):
                 sample_info = self.workspace.read_json(sample_info_file)
-                report_id = "{0}_{1}-v{2}".format(
+                report_id = "{0}-v{1}".format(
                     sample_info[cc.TUMOUR_ID],
-                    sample_info[cc.NORMAL_ID],
                     wrapper.get_my_int(cc.REPORT_VERSION)
                 )
                 msg = "Generated report ID {0} from sample info JSON".format(report_id)
