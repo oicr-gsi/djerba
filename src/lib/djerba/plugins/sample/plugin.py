@@ -109,7 +109,7 @@ class main(plugin_base):
             return callability
         else:
             msg = "Djerba couldn't find the callability associated with tumour_id {0} in QC-ETL. ".format(tumour_id)
-            self.logger.debug(msg)
+            self.logger.error(msg)
             raise MissingQCETLError(msg)
         
     def fetch_coverage_etl_data(self,tumour_id):

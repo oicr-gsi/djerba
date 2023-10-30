@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v1.0.0-dev0.0.17: 2023-10-30
+
+### GCGI-1132: Provenance helper fixes
+- Add discovered INI parameters for tumour ID and normal ID
+- Ensure `sample_info.json` is consistent with manual INI configuration
+- Handle missing `input_params.json` without crashing
+- Do not rewrite provenance subset at config step, if file is already present
+
 ## v1.0.0-dev0.0.16: 2023-10-27
 - Add genomic landscape plugin to `setup.py`
 

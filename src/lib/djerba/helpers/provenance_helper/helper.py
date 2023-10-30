@@ -47,35 +47,56 @@ class main(helper_base):
 
     def configure(self, config):
         """
-        Writes a subset of provenance, and a sample info JSON file, to the workspace
+        Writes a subset of provenance, and informative JSON files, to the workspace
         """
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         provenance_path = wrapper.get_my_string(self.PROVENANCE_INPUT_KEY)
-        
-        # Get input_data.json if it exists; else return None
         input_data = input_params_tools.get_input_params_json(self)
         if input_data == None:
-            msg = "Input_params.json does not exist. Parameters must be set manually."
+            msg = "Input params JSON does not exist. Parameters must be set manually."
             self.logger.warning(msg)
- 
-        # Get the input parameters
-        if wrapper.my_param_is_null(self.STUDY_TITLE):
-            wrapper.set_my_param(self.STUDY_TITLE, input_data[self.STUDY_TITLE])
-        if wrapper.my_param_is_null(self.ROOT_SAMPLE_NAME):
-            wrapper.set_my_param(self.ROOT_SAMPLE_NAME, input_data[self.ROOT_SAMPLE_NAME])
-
-
+        # Get the study/sample parameters
+        for key in [self.STUDY_TITLE, self.ROOT_SAMPLE_NAME]:
+            if wrapper.my_param_is_null(key):
+                if input_data == None:
+                    msg = "Cannot resolve INI parameter '{0}'; ".format(key)+\
+                        "input params JSON not available, and no manual INI value was given"
+                    self.logger.error(msg)
+                    raise DjerbaProvenanceError(msg)
+                else:
+                    wrapper.set_my_param(key, input_data[key])
         study = wrapper.get_my_string(self.STUDY_TITLE)
         donor = wrapper.get_my_string(self.ROOT_SAMPLE_NAME)
-        self.write_provenance_subset(study, donor, provenance_path)
+        if self.workspace.has_file(self.PROVENANCE_OUTPUT):
+            self.logger.debug("Provenance subset cache exists, will not overwrite")
+        else:
+            self.logger.info("Writing provenance subset cache to workspace")
+            self.write_provenance_subset(study, donor, provenance_path)
         # write sample_info.json; populate sample names from provenance if needed
         samples = self.get_sample_name_container(wrapper)
         sample_info, path_info = self.read_provenance(study, donor, samples)
-        self.write_sample_info(sample_info)
         self.write_path_info(path_info)
-        for key in self.SAMPLE_NAME_KEYS:
-            wrapper.set_my_param(key, sample_info.get(key))
+        keys = [core_constants.TUMOUR_ID, core_constants.NORMAL_ID]
+        keys.extend(self.SAMPLE_NAME_KEYS)
+        for key in keys:
+            value = sample_info.get(key)
+            if wrapper.my_param_is_null(key):
+                if value == None:
+                    msg = "No value found in provenance for parameter '{0}'; ".format(key)+\
+                        "can manually specify value in config and re-run"
+                    self.logger.error(msg)
+                    raise DjerbaProvenanceError(msg)
+                else:
+                    wrapper.set_my_param(key, value)
+            elif value == None:
+                value = wrapper.get_my_string(key)
+                msg = "Overwriting null value for '{0}' in sample info ".format(key)+\
+                    "with user-defined value '{0}'".format(value)
+                self.logger.debug(msg)
+                sample_info[key] = value
+        # Write updated sample info as JSON
+        self.write_sample_info(sample_info)
         return wrapper.get_config()
 
     def extract(self, config):
@@ -88,10 +109,11 @@ class main(helper_base):
         study = wrapper.get_my_string(self.STUDY_TITLE)
         donor = wrapper.get_my_string(self.ROOT_SAMPLE_NAME)
         if self.workspace.has_file(self.PROVENANCE_OUTPUT):
-            msg = "extract: {0} ".format(self.PROVENANCE_OUTPUT)+\
-                "already in workspace, will not overwrite"
+            cache_path = self.workspace.abs_path(self.PROVENANCE_OUTPUT)
+            msg = "Provenance subset cache {0} exists, will not overwrite".format(cache_path)
             self.logger.info(msg)
         else:
+            self.logger.info("Writing provenance subset cache to workspace")
             self.write_provenance_subset(study, donor, provenance_path)
         if self.workspace.has_file(core_constants.DEFAULT_SAMPLE_INFO) and \
            self.workspace.has_file(core_constants.DEFAULT_PATH_INFO):
@@ -191,6 +213,8 @@ class main(helper_base):
         self.add_ini_discovered(ini.SAMPLE_NAME_WG_N)
         self.add_ini_discovered(ini.SAMPLE_NAME_WG_T)
         self.add_ini_discovered(ini.SAMPLE_NAME_WT_T)
+        self.add_ini_discovered(core_constants.TUMOUR_ID)
+        self.add_ini_discovered(core_constants.NORMAL_ID)
 
     def write_path_info(self, path_info):
         self.workspace.write_json(core_constants.DEFAULT_PATH_INFO, path_info)
@@ -217,3 +241,6 @@ class main(helper_base):
     def write_sample_info(self, sample_info):
         self.workspace.write_json(core_constants.DEFAULT_SAMPLE_INFO, sample_info)
         self.logger.debug("Wrote sample info to workspace: {0}".format(sample_info))
+
+class DjerbaProvenanceError(Exception):
+    pass
