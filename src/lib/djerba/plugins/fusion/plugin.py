@@ -155,10 +155,11 @@ class main(plugin_base):
         summaries = gene_summary_reader(self.log_level, self.log_path)
         gene_info_factory = gim_factory(self.log_level, self.log_path)
         # table has 2 rows for each oncogenic fusion
-        minimum_order = oncokb_levels.oncokb_order('N2') # Likely Oncogenic
+        # retain fusions with sort order less than (ie. ahead of) 'Likely Oncogenic'
+        maximum_order = oncokb_levels.oncokb_order('N2')
         for fusion in gene_pair_fusions:
             oncokb_order = oncokb_levels.oncokb_order(fusion.get_oncokb_level())
-            if oncokb_order <= minimum_order:
+            if oncokb_order <= maximum_order:
                 for gene in fusion.get_genes():
                     chromosome = cytobands.get(gene)
                     gene_url = hb.build_gene_url(gene)
