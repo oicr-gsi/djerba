@@ -10,6 +10,7 @@ import pdfkit
 from PyPDF2 import PdfMerger
 from time import strftime
 import djerba.core.constants as cc
+from djerba.util.environment import directory_finder, DjerbaEnvDirError
 from djerba.util.image_to_base64 import converter
 from djerba.util.logger import logger
 from djerba.util.render_mako import mako_renderer
@@ -25,13 +26,17 @@ class html_renderer(logger):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.author = self.data[cc.AUTHOR]
         self.report_id = self.data[cc.REPORT_ID]
-        if os.environ.get(cc.DJERBA_CORE_HTML_DIR_VAR):
-            self.html_dir = os.environ.get(cc.DJERBA_CORE_HTML_DIR_VAR)
+        finder = directory_finder(self.log_level, self.log_path)
+        if finder.has_valid_core_html_dir():
+            self.html_dir = finder.get_core_html_dir()
+            self.logger.debug("Got HTML dir from environment: {0}".format(self.html_dir))
         else:
             self.html_dir = os.path.realpath(os.path.join(
                 os.path.dirname(__file__),
                 'html'
             ))
+            msg = "No environment var for HTML dir, falling back to {0}".format(self.html_dir)
+            self.logger.debug(msg)
         self.mako = mako_renderer(self.html_dir, self.log_level, self.log_path)
         config_path = os.path.join(self.html_dir, self.data[cc.DOCUMENT_CONFIG])
         self.logger.debug("Reading document config from {0}".format(config_path))

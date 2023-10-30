@@ -52,23 +52,28 @@ class PluginTester(TestBase):
         return plugin_name
 
     def run_basic_test(self, test_source_dir, params,
-                       plugin_name=None, log_level=logging.WARNING):
+                       plugin_name=None, log_level=logging.WARNING, work_dir=None):
         """
         Simple plugin test
         """
+        if work_dir == None:
+            work_dir = self.get_tmp_dir()
         ini_path = os.path.join(test_source_dir, params[self.INI])
         expected_json_path = os.path.join(test_source_dir, params[self.JSON])
         expected_md5 = params[self.MD5]
         if not plugin_name:
             plugin_name = self.read_plugin_name(ini_path)
         self.assertTrue(plugin_name)
-        djerba_main = core_main(self.get_tmp_dir(), log_level=log_level)
+        djerba_main = core_main(work_dir, log_level=log_level)
         config = djerba_main.configure(ini_path)
         config.set(core_constants.CORE, core_constants.REPORT_ID, 'placeholder')
         data_found = self.redact_json_data(djerba_main.extract(config))
         with open(expected_json_path) as json_file:
             plugin_data_expected = json.loads(json_file.read())
         plugin_data_found = data_found['plugins'][plugin_name]
+        ### uncomment this to dump the plugin output JSON to a file
+        #with open('/tmp/foo.json', 'w') as out_file:
+        #    out_file.write(json.dumps(plugin_data_found, sort_keys=True, indent=4))
         validator = plugin_json_validator(log_level=log_level)
         self.assertTrue(validator.validate_data(plugin_data_found))
         self.assertEqual(plugin_data_found, plugin_data_expected)

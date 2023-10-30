@@ -10,13 +10,12 @@ import logging
 import os
 import re
 import pandas as pd
-import djerba.plugins.wgts.snv_indel_tools.constants as sic
+import djerba.plugins.wgts.cnv_purple.constants as cc
 from djerba.util.logger import logger
 from djerba.util.image_to_base64 import converter
-import djerba.extract.oncokb.constants as oncokb
+import djerba.util.oncokb.constants as oncokb
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.logger import logger
-import djerba.render.constants as rc
 
 class data_builder(logger):
 
@@ -24,57 +23,20 @@ class data_builder(logger):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
-        self.cytoband_path = os.environ.get('DJERBA_BASE_DIR') + sic.CYTOBAND
+        self.cytoband_path = os.environ.get('DJERBA_BASE_DIR') + cc.CYTOBAND
         self.oncokb_levels = [self.reformat_level_string(level) for level in oncokb.ORDERED_LEVELS]
 
     def build_alteration_url(self, gene, alteration, cancer_code):
-        self.logger.debug('Constructing alteration URL from inputs: {0}'.format([sic.ONCOKB_URL_BASE, gene, alteration, cancer_code]))
-        return '/'.join([sic.ONCOKB_URL_BASE, gene, alteration, cancer_code])
+        self.logger.debug('Constructing alteration URL from inputs: {0}'.format([cc.ONCOKB_URL_BASE, gene, alteration, cancer_code]))
+        return '/'.join([cc.ONCOKB_URL_BASE, gene, alteration, cancer_code])
 
     def build_gene_url(self, gene):
-        return '/'.join([sic.ONCOKB_URL_BASE, gene])
+        return '/'.join([cc.ONCOKB_URL_BASE, gene])
 
-    def build_small_mutations_and_indels(self, mutations_file, cna_file, oncotree_uc, assay, exp_input_path = None):
-        """read in small mutations; output rows for oncogenic mutations"""
-        self.logger.debug("Building data for small mutations and indels table")
-        rows = []
-        mutation_copy_states = self.read_mutation_copy_states(cna_file)
-        if assay == "WGTS":
-            mutation_expression = self.read_expression(exp_input_path)
-            has_expression_data = True
-        else:
-            mutation_expression = {}
-            has_expression_data = False
-        with open(mutations_file) as data_file:
-            for input_row in csv.DictReader(data_file, delimiter="\t"):
-                gene = input_row[sic.HUGO_SYMBOL_TITLE_CASE]
-                cytoband = self.get_cytoband(gene)
-                protein = input_row[sic.HGVSP_SHORT]
-                if 'splice' in input_row[sic.VARIANT_CLASSIFICATION].lower():
-                    protein = 'p.? (' + input_row[sic.HGVSC] + ')'  
-                row = {
-                    sic.GENE: gene,
-                    sic.GENE_URL: self.build_gene_url(gene),
-                    sic.CHROMOSOME: cytoband,
-                    sic.PROTEIN: protein,
-                    sic.PROTEIN_URL: self.build_alteration_url(gene, protein, oncotree_uc),
-                    sic.MUTATION_TYPE: re.sub('_', ' ', input_row[sic.VARIANT_CLASSIFICATION]),
-                    sic.EXPRESSION_METRIC: mutation_expression.get(gene), # None for WGS assay
-                    sic.VAF_PERCENT: int(round(float(input_row[sic.TUMOUR_VAF]), 2)*100),
-                    sic.TUMOUR_DEPTH: int(input_row[sic.TUMOUR_DEPTH]),
-                    sic.TUMOUR_ALT_COUNT: int(input_row[sic.TUMOUR_ALT_COUNT]),
-                    sic.COPY_STATE: mutation_copy_states.get(gene, sic.UNKNOWN),
-                    'OncoKB level': self.parse_oncokb_level(input_row)
-                }
-                rows.append(row)
-        self.logger.debug("Sorting and filtering small mutation and indel rows")
-        rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
-        return rows
-  
     def cytoband_sort_order(self, cb_input):
         """Cytobands are (usually) of the form [integer][p or q][decimal]; also deal with edge cases"""
         end = (999, 'z', 999999)
-        if cb_input in sic.UNCLASSIFIED_CYTOBANDS:
+        if cb_input in cc.UNCLASSIFIED_CYTOBANDS:
             msg = "Cytoband \"{0}\" is unclassified, moving to end of sort order".format(cb_input)
             self.logger.debug(msg)
             (chromosome, arm, band) = end
@@ -115,7 +77,7 @@ class data_builder(logger):
     
     def is_null_string(self, value):
         if isinstance(value, str):
-            return value in ['', sic.NA]
+            return value in ['', cc.NA]
         else:
             msg = "Invalid argument to is_null_string(): '{0}' of type '{1}'".format(value, type(value))
             self.logger.error(msg)
@@ -151,10 +113,10 @@ class data_builder(logger):
                 break
         if max_level:
             parsed_level = self.reformat_level_string(max_level)
-        elif not self.is_null_string(row_dict[sic.ONCOGENIC]):
-            parsed_level = row_dict[sic.ONCOGENIC]
+        elif not self.is_null_string(row_dict[cc.ONCOGENIC]):
+            parsed_level = row_dict[cc.ONCOGENIC]
         else:
-            parsed_level = sic.NA
+            parsed_level = cc.NA
         return parsed_level
 
     def parse_max_oncokb_level_and_therapies(self, row_dict, levels):
@@ -177,7 +139,7 @@ class data_builder(logger):
         with open(input_path) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
             for row in reader:
-                cytobands[row[sic.HUGO_SYMBOL_TITLE_CASE]] = row['Chromosome']
+                cytobands[row[cc.HUGO_SYMBOL_TITLE_CASE]] = row['Chromosome']
         return cytobands
 
     def read_expression(self, input_path):
@@ -198,39 +160,6 @@ class data_builder(logger):
                 expr[gene] = metric
         return expr
 
-    def read_mutation_copy_states(self, cna_file):
-        # convert copy state to human readable string; return mapping of gene -> copy state
-        copy_states = {}
-        with open(cna_file) as in_file:
-            first = True
-            for row in csv.reader(in_file, delimiter="\t"):
-                if first:
-                    first = False
-                else:
-                    [gene, category] = [row[0], int(row[1])]
-                    copy_states[gene] = sic.COPY_STATE_CONVERSION.get(category, sic.UNKNOWN)
-        return copy_states
-
-    def read_somatic_mutation_totals(self, mutations_file):
-        # Count the somatic mutations
-        # Splice_Region is *excluded* for TMB, *included* in our mutation tables and counts
-        # Splice_Region mutations are of interest to us, but excluded from the standard TMB definition
-        # The TMB mutation count is (independently) implemented and used in vaf_plot.R
-        # See JIRA ticket GCGI-496
-        total = 0
-        excluded = 0
-        with open(mutations_file) as data_file:
-            for row in csv.DictReader(data_file, delimiter="\t"):
-                total += 1
-                if row.get(sic.VARIANT_CLASSIFICATION) in sic.TMB_EXCLUDED:
-                    excluded += 1
-        tmb_count = total - excluded
-        msg = "Found {} small mutations and indels, of which {} are counted for TMB".format(total,
-                                                                                            tmb_count)
-        self.logger.debug(msg)
-        return [total, tmb_count]
-
-
     def reformat_level_string(self, level):
         return re.sub('LEVEL_', 'Level ', level)
 
@@ -247,25 +176,13 @@ class data_builder(logger):
     def sort_variant_rows(self, rows):
         # sort rows oncokb level, then by cytoband, then by gene name
         self.logger.debug("Sorting rows by gene name")
-        rows = sorted(rows, key=lambda row: row[sic.GENE])
+        rows = sorted(rows, key=lambda row: row[cc.GENE])
         self.logger.debug("Sorting rows by cytoband")
-        rows = sorted(rows, key=lambda row: self.cytoband_sort_order(row[sic.CHROMOSOME]))
+        rows = sorted(rows, key=lambda row: self.cytoband_sort_order(row[cc.CHROMOSOME]))
         self.logger.debug("Sorting rows by oncokb level")
         rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row['OncoKB level']))
         return rows
 
-    def write_vaf_plot(self, work_dir):
-        r_script_dir = os.path.join(os.environ.get('DJERBA_BASE_DIR') , "plugins/wgts/snv_indel_tools/R")
-        out_path = os.path.join(work_dir, 'vaf.svg')
-        args = [
-            os.path.join(r_script_dir, 'vaf_plot.r'),
-            '-d', work_dir,
-            '-o', out_path
-        ]
-        vaf_plot_out = subprocess_runner().run(args)
-        self.logger.info("Wrote VAF plot to {0}".format(out_path))
-        return vaf_plot_out.stdout.split('"')[1]
-    
     def treatment_row(self, genes_arg, alteration, max_level, therapies, oncotree_uc, tier):
         # genes argument may be a string, or an iterable of strings
         # legacy from djerba classic
@@ -281,8 +198,8 @@ class data_builder(logger):
            # rc.GENES_AND_URLS: genes_and_urls,
             'Gene': genes_arg,
             'Gene_URL': self.build_gene_url(genes_arg),
-            rc.ALT: alteration,
-            rc.ALT_URL: alt_url
+            cc.ALT: alteration,
+            cc.ALT_URL: alt_url
         }
         return row
 
@@ -310,12 +227,12 @@ class data_builder(logger):
             rows = []
             with open(variants_annotated_file) as data_file:
                 for row in csv.DictReader(data_file, delimiter="\t"):
-                    gene = row[sic.HUGO_SYMBOL_TITLE_CASE]
-                    alteration = row[sic.HGVSP_SHORT]
+                    gene = row[cc.HUGO_SYMBOL_TITLE_CASE]
+                    alteration = row[cc.HGVSP_SHORT]
                     if gene == 'BRAF' and alteration == 'p.V640E':
                         alteration = 'p.V600E'
-                    if 'splice' in row[sic.VARIANT_CLASSIFICATION].lower():
-                        alteration = 'p.? (' + row[sic.HGVSC] + ')'  
+                    if 'splice' in row[cc.VARIANT_CLASSIFICATION].lower():
+                        alteration = 'p.? (' + row[cc.HGVSC] + ')'  
                     [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
                     if max_level:
                         rows.append(self.treatment_row(gene, alteration, max_level, therapies, oncotree_uc, tier))

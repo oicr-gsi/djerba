@@ -1,6 +1,6 @@
 """collection of functions for rendering Djerba content in Mako"""
 
-import djerba.render.constants as constants
+import djerba.plugins.wgts.cnv_purple.constants as cc 
 import re
 from markdown import markdown
 from time import strftime
@@ -54,27 +54,27 @@ class html_builder:
 
     def oncogenic_CNVs_header(self, mutation_info):
         names = [
-            constants.GENE,
-            constants.CHROMOSOME,
-            constants.ALTERATION,
-            constants.ONCOKB
+            cc.GENE,
+            cc.CHROMOSOME,
+            cc.ALTERATION,
+            cc.ONCOKB
         ]
-        if mutation_info[constants.HAS_EXPRESSION_DATA]:
+        if mutation_info[cc.HAS_EXPRESSION_DATA]:
             names.insert(self.EXPR_COL_INDEX_CNV, self.EXPR_SHORT_NAME)
         return self.table_header(names)
 
     def oncogenic_CNVs_rows(self, mutation_info):
-        row_fields = mutation_info[constants.BODY]
+        row_fields = mutation_info[cc.BODY]
         rows = []
         for row in row_fields:
             cells = [
-                self._td(self._href(row[constants.GENE_URL], row[constants.GENE]), italic=True),
-                self._td(row[constants.CHROMOSOME]),
-                self._td(self._href(row[constants.ALT_URL], row[constants.ALTERATION])),
+                self._td(self._href(row[cc.GENE_URL], row[cc.GENE]), italic=True),
+                self._td(row[cc.CHROMOSOME]),
+                self._td(self._href(row[cc.ALT_URL], row[cc.ALTERATION])),
                 self._td_oncokb(row['OncoKB level']),
             ]
-            if mutation_info[constants.HAS_EXPRESSION_DATA]:
-                metric = self._expression_display(row[constants.EXPRESSION_METRIC])
+            if mutation_info[cc.HAS_EXPRESSION_DATA]:
+                metric = self._expression_display(row[cc.EXPRESSION_METRIC])
                 cells.insert(self.EXPR_COL_INDEX_CNV, self._td(metric))
             rows.append(self.table_row(cells))
         return rows

@@ -1,11 +1,6 @@
 CORE = 'core'
 NULL = '__DJERBA_NULL__'
-
-# environment variables
-DJERBA_DATA_DIR_VAR = 'DJERBA_DATA_DIR'
-DJERBA_PRIVATE_DIR_VAR = 'DJERBA_PRIVATE_DIR'
-DJERBA_TEST_DIR_VAR = 'DJERBA_TEST_DIR'
-DJERBA_CORE_HTML_DIR_VAR = 'DJERBA_CORE_HTML_DIR'
+TEXT_ENCODING = 'utf-8'
 
 # shared constants for core classes
 ATTRIBUTES = 'attributes'
@@ -56,6 +51,7 @@ REPORT_VERSION = 'report_version'
 ARCHIVE_NAME = 'archive_name'
 ARCHIVE_URL = 'archive_url'
 AUTHOR = 'author'
+EXTRACT_TIME = 'extract_time'
 SAMPLE_INFO = 'sample_info'
 STYLESHEET = 'stylesheet'
 DOCUMENT_CONFIG = 'document_config'
@@ -72,10 +68,19 @@ TUMOUR_ID = 'tumour_id'
 NORMAL_ID = 'normal_id'
 
 # core config defaults
+DEFAULT_PATH_INFO = "path_info.json"
 DEFAULT_SAMPLE_INFO = "sample_info.json"
 DEFAULT_CSS = "stylesheet.css"
 DEFAULT_AUTHOR = "CGI Author"
 DEFAULT_DOCUMENT_CONFIG = "document_config.json"
+
+# archive config
+ARCHIVE_CONFIG = 'archive_config.ini'
+ARCHIVE_HEADER = 'archive'
+USERNAME = 'username'
+PASSWORD = 'password'
+ADDRESS = 'address'
+PORT = 'port'
 
 # keywords for document rendering
 BODY = 'body'
@@ -91,3 +96,8 @@ PAGE_FOOTER = 'page_footer'
 
 # keywords for plugin structure
 RESULTS = 'results'
+MERGE_INPUTS = 'merge_inputs'
+SUMMARY = 'Summary'
+
+# keyword for OncoKB level
+ONCOKB = 'OncoKB'

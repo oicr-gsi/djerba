@@ -10,10 +10,9 @@ from mako.lookup import TemplateLookup
 from djerba.util.render_mako import mako_renderer
 import djerba.core.constants as core_constants
 from djerba.core.workspace import workspace
-import djerba.render.constants as rc
-from djerba.extract.oncokb.annotator import oncokb_annotator
+from djerba.util.oncokb.annotator import oncokb_annotator
 from djerba.util.subprocess_runner import subprocess_runner
-from djerba.plugins.wgts.cnv_tools.preprocess import preprocess as process_cnv
+from djerba.plugins.wgts.cnv_purple.preprocess import preprocess as process_cnv
 
 class main(plugin_base):
    

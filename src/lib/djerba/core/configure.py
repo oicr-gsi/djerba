@@ -152,7 +152,7 @@ class configurable(core_base, ABC):
         # returns a set of all expected INI parameter names
         return self.ini_required.union(set(self.ini_defaults.keys()))
 
-    def get_expected_config(self):
+    def get_expected_config(self, compact=False):
         """
         Return a ConfigParser with all expected params
         Params are set to their default values, if any; None otherwise
@@ -163,8 +163,9 @@ class configurable(core_base, ABC):
         config.add_section(self.identifier)
         for option in sorted(list(self.ini_required)):
             config.set(self.identifier, option, 'REQUIRED')
-        for option in sorted(list(self.ini_defaults.keys())):
-            config.set(self.identifier, option, str(self.ini_defaults[option]))
+        if not compact:
+            for option in sorted(list(self.ini_defaults.keys())):
+                config.set(self.identifier, option, str(self.ini_defaults[option]))
         return config
 
     def set_ini_default(self, key, value):
@@ -185,6 +186,27 @@ class configurable(core_base, ABC):
         # convenience method to set all priority defaults to the given value
         # which priorities are defined depends if plugin, helper, or merger
         self.logger.warning("Abstract set_priority_defaults not intended to be called")
+
+    def update_wrapper_if_null(self, wrapper, file_name, config_key, json_key=None):
+        """If parameter is null, attempt to read from workspace JSON"""
+        if json_key == None:
+            json_key = config_key
+        if wrapper.my_param_is_null(config_key):
+            if self.workspace.has_file(file_name):
+                data = self.workspace.read_json(file_name)
+                try:
+                    value = data[json_key]
+                except KeyError as err:
+                    msg = "Cannot find {0} in workspace file {1}".format(json_key, file_name)
+                    self.logger.error(msg)
+                    raise DjerbaConfigError(msg) from err
+                wrapper.set_my_param(config_key, value)
+            else:
+                msg = "Cannot find {0}; must be manually specified ".format(config_key)+\
+                    "or given in workspace {0}".format(file_name)
+                self.logger.error(msg)
+                raise DjerbaConfigError(msg)
+        return wrapper
 
     def validate_minimal_config(self, config):
         """Check for required/unknown config keys in minimal config"""
@@ -285,7 +307,7 @@ class core_configurer(configurable):
         self.set_ini_default(cc.ARCHIVE_NAME, "djerba")
         self.set_ini_default(
             cc.ARCHIVE_URL,
-            "http://admin:djerba123@10.30.133.78:5984"
+            "http://${username}:${password}@${address}:${port}"
         )
         self.set_ini_default(cc.AUTHOR, cc.DEFAULT_AUTHOR)
         self.set_ini_default(cc.SAMPLE_INFO, cc.DEFAULT_SAMPLE_INFO)
@@ -423,59 +445,6 @@ class config_wrapper(core_base):
     def set(self, section, param, value):
         # alias for set_param, to be consistent with ConfigParser interface
         self.set_param(section, param, value)
-
-    ### end of methods to get/set/query INI params (other than priority levels)
-    #################################################################
-    ### start of methods to get special directory paths from environment variables
-
-    def apply_env_templates(self, section):
-        """
-        Included for completeness -- but normally we will use apply_my_env_templates()
-
-        Apply template substitution using variables
-        Replace strings like $DJERBA_DATA_DIR with value of corresponding env variable
-        https://docs.python.org/3/library/string.html#string.Template.substitute
-        """
-        var_names = [
-            cc.DJERBA_DATA_DIR_VAR,
-            cc.DJERBA_PRIVATE_DIR_VAR,
-            cc.DJERBA_TEST_DIR_VAR
-        ]
-        mapping = {var: self.get_dir_from_env(var) for var in var_names}
-        for section in self.config.sections():
-            for option in self.config.options(section):
-                value = self.config.get(section, option)
-                try:
-                    value = string.Template(value).substitute(mapping)
-                except KeyError as err:
-                    msg = "Failed to substitute environment variable in INI "+\
-                        "section {0}, option {1}, value {2}".format(section, option, value)+\
-                        ": {0}".format(err)
-                    self.logger.error(msg)
-                    raise DjerbaConfigError(msg) from err
-                self.config.set(section, option, value)
-
-    def apply_my_env_templates(self):
-        self.apply_env_templates(self.identifier)
-
-    def get_dir_from_env(self, var):
-        dir_path = os.environ.get(var)
-        if dir_path == None:
-            msg = "Environment variable '{0}' is not configured".format(var)
-            self.logger.warning(msg)
-        return dir_path
-
-    def get_djerba_data_dir(self):
-        return self.get_dir_from_env(cc.DJERBA_DATA_DIR_VAR)
-
-    def get_djerba_private_dir(self):
-        return self.get_dir_from_env(cc.DJERBA_PRIVATE_DIR_VAR)
-
-    def get_djerba_test_dir(self):
-        return self.get_dir_from_env(cc.DJERBA_TEST_DIR_VAR)
-
-    ### end of methods to get special directory paths from environment variables
-    #################################################################
 
 
 class DjerbaConfigError(Exception):

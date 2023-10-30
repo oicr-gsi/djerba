@@ -23,9 +23,8 @@ import logging
 import os
 import re
 import djerba.core.constants as core_constants
-import djerba.render.constants as constants
 from djerba.mergers.base import merger_base, DjerbaMergerError
-from djerba.util.oncokb_level_tools import oncokb_order
+from djerba.util.oncokb.tools import levels as oncokb
 from djerba.util.render_mako import mako_renderer
 
 class main(merger_base):
@@ -50,7 +49,10 @@ class main(merger_base):
 
     @staticmethod
     def get_link(url, text):
-        return '<a href="{0}">{1}</a>'.format(url, text)
+        if url==None:
+            return text
+        else:
+            return '<a href="{0}">{1}</a>'.format(url, text)
 
     def get_therapy_info(self, tier_input):
         # deduplicate by oncokb level and alteration name (both together are a unique ID)
@@ -64,7 +66,7 @@ class main(merger_base):
             self.logger.debug("Merger inputs: {0}".format(inputs))
             raise DjerbaMergerError from err
         # sort by oncokb level, then alteration name
-        return sorted(unique_items, key = lambda x: (oncokb_order(x[k1]), x[k2]))
+        return sorted(unique_items, key = lambda x: (oncokb.oncokb_order(x[k1]), x[k2]))
 
     def render(self, inputs):
         self.validate_inputs(inputs)
@@ -97,3 +99,4 @@ class main(merger_base):
     def specify_params(self):
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical,supplementary')
         self.set_priority_defaults(self.PRIORITY)
+        self.set_ini_default('render_priority', 50)

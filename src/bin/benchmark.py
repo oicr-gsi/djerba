@@ -5,6 +5,17 @@
 import argparse
 import sys
 
+msg = """
+### INACTIVE ###
+
+The benchmark.py script is inactive for Djerba version 1.0.
+Reinstatement is a high priority for version >=1.1.
+Meanwhile, if use of this script is required, consult Djerba version 0.4.x.
+"""
+print(msg, file=sys.stderr)
+sys.exit(1)
+
+
 sys.path.pop(0) # do not import from script directory
 import djerba.util.constants as constants
 from djerba.benchmark import benchmarker

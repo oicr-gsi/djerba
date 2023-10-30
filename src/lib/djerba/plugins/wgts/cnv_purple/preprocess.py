@@ -13,16 +13,13 @@ import pandas as pd
 from djerba.util.logger import logger
 from djerba.sequenza import sequenza_reader
 from djerba.util.subprocess_runner import subprocess_runner
-from djerba.extract.oncokb.annotator import oncokb_annotator
+from djerba.util.oncokb.annotator import oncokb_annotator
 from shutil import copyfile
-import djerba.plugins.wgts.cnv_tools.constants as ctc 
-import djerba.plugins.wgts.cnv_tools.constants as constants 
-import djerba.plugins.wgts.snv_indel_tools.constants as sic
-from djerba.plugins.wgts.snv_indel_tools.extract import data_builder as sit
-import djerba.render.constants as rc
+import djerba.plugins.wgts.cnv_purple.constants as cc 
+from djerba.plugins.wgts.cnv_purple.extract import data_builder as sit
 from djerba.util.image_to_base64 import converter
-import djerba.extract.oncokb.constants as oncokb
-from djerba.render.json_to_html import html_builder
+import djerba.util.oncokb.constants as oncokb
+from djerba.plugins.wgts.cnv_purple.json_to_html import html_builder
 
 class preprocess(logger):
 
@@ -55,15 +52,15 @@ class preprocess(logger):
         with open(cna_annotated_path) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
             for row in reader:
-                gene = row[sic.HUGO_SYMBOL_UPPER_CASE]
+                gene = row[cc.HUGO_SYMBOL_UPPER_CASE]
                 cytoband = sit().get_cytoband(gene)
                 row = {
-                    rc.EXPRESSION_METRIC: mutation_expression.get(gene), # None for WGS assay
-                    rc.GENE: gene,
-                    rc.GENE_URL: sit().build_gene_url(gene),
-                    rc.ALT: row[sic.ALTERATION_UPPER_CASE],
-                    rc.ALT_URL: self.build_alteration_url(gene, row[sic.ALTERATION_UPPER_CASE], oncotree_uc),
-                    rc.CHROMOSOME: cytoband,
+                    cc.EXPRESSION_METRIC: mutation_expression.get(gene), # None for WGS assay
+                    cc.GENE: gene,
+                    cc.GENE_URL: sit().build_gene_url(gene),
+                    cc.ALT: row[cc.ALTERATION_UPPER_CASE],
+                    cc.ALT_URL: self.build_alteration_url(gene, row[cc.ALTERATION_UPPER_CASE], oncotree_uc),
+                    cc.CHROMOSOME: cytoband,
                     'OncoKB level': sit().parse_oncokb_level(row)
                 }
                 rows.append(row)
@@ -71,10 +68,10 @@ class preprocess(logger):
         self.logger.debug("Sorting and filtering CNV rows")
         rows = list(filter(sit().oncokb_filter, sit().sort_variant_rows(rows)))
         data_table = {
-        #    sic.HAS_EXPRESSION_DATA: self.HAS_EXPRESSION_DATA,
-            sic.TOTAL_VARIANTS: unfiltered_cnv_total,
-            sic.CLINICALLY_RELEVANT_VARIANTS: len(rows),
-            sic.BODY: rows
+        #    cc.HAS_EXPRESSION_DATA: self.HAS_EXPRESSION_DATA,
+            cc.TOTAL_VARIANTS: unfiltered_cnv_total,
+            cc.CLINICALLY_RELEVANT_VARIANTS: len(rows),
+            cc.BODY: rows
         }
         return data_table
     
@@ -83,17 +80,17 @@ class preprocess(logger):
         total = 0
         with open(input_path) as input_file:
             for row in csv.DictReader(input_file, delimiter="\t"):
-                if abs(float(row['seg.mean'])) >= ctc.MINIMUM_MAGNITUDE_SEG_MEAN:
+                if abs(float(row['seg.mean'])) >= cc.MINIMUM_MAGNITUDE_SEG_MEAN:
                     total += int(row['loc.end']) - int(row['loc.start'])
         # TODO see GCGI-347 for possible updates to genome size
-        fga = float(total)/ctc.GENOME_SIZE
+        fga = float(total)/cc.GENOME_SIZE
         return int(round(fga*100, 0))
 
     def convert_to_gene_and_annotate(self, seg_path, purity, tumour_id, oncotree_code):
         dir_location = os.path.dirname(__file__)
-        genebedpath = os.path.join(dir_location, '../../..', ctc.GENEBED)
-        oncolistpath = os.path.join(dir_location, '../../..', sic.ONCOLIST)
-        centromerespath = os.path.join(dir_location, '../../..', ctc.CENTROMERES)
+        genebedpath = os.path.join(dir_location, '../../..', cc.GENEBED)
+        oncolistpath = os.path.join(dir_location, '../../..', cc.ONCOLIST)
+        centromerespath = os.path.join(dir_location, '../../..', cc.CENTROMERES)
         cmd = [
             'Rscript', os.path.join(dir_location + "/R/process_CNA_data.r"),
             '--outdir', self.work_dir,
@@ -176,8 +173,8 @@ class preprocess(logger):
             rows = []
             with open(variants_annotated_file) as data_file:
                 for row in csv.DictReader(data_file, delimiter="\t"):
-                    gene = row[sic.HUGO_SYMBOL_UPPER_CASE]
-                    alteration = row[sic.ALTERATION_UPPER_CASE]
+                    gene = row[cc.HUGO_SYMBOL_UPPER_CASE]
+                    alteration = row[cc.ALTERATION_UPPER_CASE]
                     [max_level, therapies] = sit().parse_max_oncokb_level_and_therapies(row, levels)
                     if max_level:
                         rows.append(self.treatment_row(gene, alteration, max_level, therapies, oncotree_uc, tier))
@@ -196,14 +193,14 @@ class preprocess(logger):
             'Treatments': therapies,
             'Gene': genes_arg,
             'Gene_URL': self.build_gene_url(genes_arg),
-            rc.ALT: alteration,
-            rc.ALT_URL: self.build_alteration_url(genes_arg, alteration, oncotree_uc)
+            cc.ALT: alteration,
+            cc.ALT_URL: self.build_alteration_url(genes_arg, alteration, oncotree_uc)
         }
         return row
     
     def build_alteration_url(self, gene, alteration, cancer_code):
-        #self.logger.debug('Constructing alteration URL from inputs: {0}'.format([sic.ONCOKB_URL_BASE, gene, alteration, cancer_code]))
-        return '/'.join([sic.ONCOKB_URL_BASE, gene, alteration, cancer_code])
+        #self.logger.debug('Constructing alteration URL from inputs: {0}'.format([cc.ONCOKB_URL_BASE, gene, alteration, cancer_code]))
+        return '/'.join([cc.ONCOKB_URL_BASE, gene, alteration, cancer_code])
     
     def build_gene_url(self, gene):
-        return '/'.join([sic.ONCOKB_URL_BASE, gene])
+        return '/'.join([cc.ONCOKB_URL_BASE, gene])
