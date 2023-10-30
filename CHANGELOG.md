@@ -1,6 +1,9 @@
 # CHANGELOG
 
-## Unreleased
+## v1.0.0-dev0.0.18: 2023-10-30
+
+### GCGI-1142: 
+- Remove any building of gene info from genomic landscape plugin
 
 ### GCGI-1129
 - Only report fusion genes if rated Likely Oncogenic or higher
