@@ -19,9 +19,7 @@ import djerba.plugins.genomic_landscape.msi_functions as msi
 import djerba.plugins.genomic_landscape.tmb_functions as tmb
 import djerba.plugins.genomic_landscape.ctdna_functions as ctdna
 from djerba.util.html import html_builder as hb
-from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
-from djerba.util.oncokb.tools import gene_summary_reader
 from djerba.helpers.input_params_helper.helper import main as input_params_helper
 from djerba.util.environment import directory_finder
 
@@ -228,20 +226,17 @@ class main(plugin_base):
 
     def get_merge_inputs(self, work_dir):
         """
-        Read gene and therapy information for merge inputs
-        Both are derived from the annotated CNA file
+        Read therapy information for merge inputs
+        This is derived from the annotated biomarkers file.
+        This does not build gene information (i.e. MSI and TMB are not included in the gene glossary).
         """
         # read the tab-delimited input file
-        gene_info = []
-        gene_info_factory = gim_factory(self.log_level, self.log_path)
-        summaries = gene_summary_reader(self.log_level, self.log_path)
         treatments = []
         treatment_option_factory = tom_factory(self.log_level, self.log_path)
         input_name = constants.GENOMIC_BIOMARKERS_ANNOTATED
         with open(os.path.join(work_dir, input_name)) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
             for row_input in reader:
-                level = oncokb_levels.parse_max_reportable_level(row_input)
                 [level, therapies] = oncokb_levels.parse_max_actionable_level_and_therapies(row_input)
                 # record therapy for all actionable alterations (OncoKB level 4 or higher)
                 if level != None:
