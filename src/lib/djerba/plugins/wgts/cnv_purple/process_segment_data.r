@@ -72,7 +72,7 @@ y_highCN <- highCN
 svg(paste0(dir_path,"/purple.seg_log2_plot.svg"), width = 8, height = 1.5)
 print(
   
-  ggplot(fittedSegmentsDF_sub) + 
+  ggplot(fittedSegmentsDF_sub %>% filter(!is.na(Chromosome))) + 
     
     geom_hline(yintercept = 0,color="lightgrey",linetype="dotted")+
     
@@ -108,7 +108,7 @@ dev.off()
 svg(paste0(dir_path,"/purple.seg_CNV_plot.svg"), width = 8, height = 1.5)
   print(
     
-    ggplot(fittedSegmentsDF_sub) + 
+    ggplot(fittedSegmentsDF_sub %>% filter(!is.na(Chromosome))) + 
       
       geom_hline(yintercept = 2,color="lightgrey",linetype="dotted")+
       
@@ -147,7 +147,7 @@ fittedSegmentsDF_sub$B_adj <- fittedSegmentsDF_sub$minorAlleleCopyNumber - 0.1
 svg(paste0(dir_path,"/purple.seg_allele_plot.svg"), width = 8, height = 2)
 print(
   
-  ggplot(fittedSegmentsDF_sub) + 
+  ggplot(fittedSegmentsDF_sub %>% filter(!is.na(Chromosome))) + 
     geom_vline(aes(xintercept = start,linetype=as.factor(cent)),color="lightgrey") +
     
     geom_segment(aes(x=start, xend=end, y=A_adj, yend=A_adj),color="#65bc45",linewidth=2, na.rm = TRUE) + 
