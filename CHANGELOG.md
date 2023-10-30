@@ -5,6 +5,7 @@
 ### GCGI-1143
 - Removed extra break-end in 'Definitions', before 'Expression Percentile'
 - Removed 'genes tested' from disclaimer
+- Changed report ID to be tumour ID + version only
 
 ### GCGI-1142 
 - Removed any building of gene info from genomic landscape plugin
