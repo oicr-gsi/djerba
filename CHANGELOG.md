@@ -6,7 +6,7 @@
 - Removed extra break-end in 'Definitions', before 'Expression Percentile'
 - Removed 'genes tested' from disclaimer
 
-### GCGI-1142: 
+### GCGI-1142 
 - Removed any building of gene info from genomic landscape plugin
 
 ### GCGI-1129
