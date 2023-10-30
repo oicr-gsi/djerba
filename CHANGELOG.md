@@ -5,6 +5,9 @@
 ### GCGI-1129
 - Only report fusion genes if rated Likely Oncogenic or higher
 
+### GCGI-1130
+- Fix order of columns in snv/indel table
+
 ## v1.0.0-dev0.0.17: 2023-10-30
 
 ### GCGI-1132: Provenance helper fixes
