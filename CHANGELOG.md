@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### GCGI-1145
+- Automatically fill in current date in report author line of sign-offs
+
 ### GCGI-1144
 - Exclude mutations rated below Likely Oncogenic (including Inconclusive) from CNV gene info
 
