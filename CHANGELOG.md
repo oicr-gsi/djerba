@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### GCGI-1144
+- Exclude mutations rated below Likely Oncogenic (including Inconclusive) from CNV gene info
+
 ### GCGI-1128
 - Exclude 5'Flank mutations (other than TERT) when filtering MAF
 

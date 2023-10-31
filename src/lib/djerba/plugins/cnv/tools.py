@@ -76,7 +76,7 @@ class cnv_processor(logger):
             for row_input in reader:
                 # record the gene for all reportable alterations
                 level = oncokb_levels.parse_oncokb_level(row_input)
-                if level not in ['Unknown', 'NA']:
+                if level not in ['N3', 'N4', 'Unknown', 'NA']:
                     gene = row_input[self.HUGO_SYMBOL_UPPER_CASE]
                     gene_info_entry = gene_info_factory.get_json(
                         gene=gene,
