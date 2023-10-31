@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v1.0.0-dev0.0.19: 2023-10-31
 
 ### GCGI-1146
 - OncoKB links for CNVs in therapy tables
