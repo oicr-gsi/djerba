@@ -69,12 +69,16 @@ class snv_indel_processor(logger):
         row_gnomad_af = float(gnomad_af_raw) if gnomad_af_raw!='' else 0.0
         is_matched = row[ix.get(sic.MATCHED_NORM_SAMPLE_BARCODE)] != 'unmatched'
         filter_flags = re.split(';', row[ix.get(sic.FILTER)])
+        var_class = row[ix.get(sic.VARIANT_CLASSIFICATION)]
+        hugo_symbol = row[ix.get(sic.HUGO_SYMBOL)]
         if row_t_depth >= 1 and \
-            row_t_alt_count/row_t_depth >= vaf_cutoff and \
-            (is_matched or row_gnomad_af < self.MAX_UNMATCHED_GNOMAD_AF) and \
-            row[ix.get(sic.VARIANT_CLASSIFICATION)] in sic.MUTATION_TYPES_EXONIC and \
-            not any([z in sic.FILTER_FLAGS_EXCLUDE for z in filter_flags]):
+           row_t_alt_count/row_t_depth >= vaf_cutoff and \
+           (is_matched or row_gnomad_af < self.MAX_UNMATCHED_GNOMAD_AF) and \
+           var_class in sic.MUTATION_TYPES_EXONIC and \
+           not any([z in sic.FILTER_FLAGS_EXCLUDE for z in filter_flags]) and \
+           not (var_class == "5'Flank" and hugo_symbol != 'TERT'):
             ok = True
+        self.logger.debug("Mutation: Gene={0}, Class={1}, OK={2}".format(hugo_symbol, var_class, ok))
         return ok
 
     def _read_maf_indices(self, row):
