@@ -15,7 +15,7 @@ from djerba.core.workspace import workspace
 class main(plugin_base):
 
     PRIORITY = 600
-    PLUGIN_VERSION = '0.1'
+    PLUGIN_VERSION = '1.0.0'
     MAKO_TEMPLATE_NAME = 'failed_report_template.html'
     FAILED_TEMPLATE_FILE = 'failed_template.txt'
     FAILED_FILE = 'failed_file'
