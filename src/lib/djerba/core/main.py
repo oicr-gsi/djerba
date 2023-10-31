@@ -354,7 +354,7 @@ class main(core_base):
                 'supplement.body',
                 'tar.snv_indel'
             ]
-        elif assay == 'pWGS':
+        elif assay == 'PWGS':
             component_list = [
                 'core',
                 'input_params_helper',
