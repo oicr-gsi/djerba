@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### GCGI-1146
+- OncoKB links for CNVs in therapy tables
+
 ### GCGI-1145
 - Automatically fill in current date in report author line of sign-offs
 

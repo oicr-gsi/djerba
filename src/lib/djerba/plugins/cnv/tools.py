@@ -71,6 +71,7 @@ class cnv_processor(logger):
         treatments = []
         treatment_option_factory = tom_factory(self.log_level, self.log_path)
         input_name = oncokb_constants.DATA_CNA_ONCOKB_GENES_NON_DIPLOID_ANNOTATED
+        oncotree_code = self.config.get_my_string(cnv.ONCOTREE_CODE)
         with open(os.path.join(self.work_dir, input_name)) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
             for row_input in reader:
@@ -88,12 +89,14 @@ class cnv_processor(logger):
                 )
                 # record therapy for all actionable alterations (OncoKB level 4 or higher)
                 if level != None:
+                    alt = row_input['ALTERATION']
+                    alt_url = html_builder.build_alteration_url(gene, alt, oncotree_code)
                     treatment_entry = treatment_option_factory.get_json(
                         tier = oncokb_levels.tier(level),
                         level = level,
                         gene = gene,
-                        alteration = row_input['ALTERATION'],
-                        alteration_url = None, # this field is not defined for CNVs
+                        alteration = alt,
+                        alteration_url = alt_url,
                         treatments = therapies
                     )
                     treatments.append(treatment_entry)
