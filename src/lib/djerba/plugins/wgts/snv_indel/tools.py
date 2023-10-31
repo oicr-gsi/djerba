@@ -69,11 +69,14 @@ class snv_indel_processor(logger):
         row_gnomad_af = float(gnomad_af_raw) if gnomad_af_raw!='' else 0.0
         is_matched = row[ix.get(sic.MATCHED_NORM_SAMPLE_BARCODE)] != 'unmatched'
         filter_flags = re.split(';', row[ix.get(sic.FILTER)])
+        var_class = row[ix.get(sic.VARIANT_CLASSIFICATION)]
+        hugo_symbol = row[ix.get(sic.HUGO_SYMBOL)]
         if row_t_depth >= 1 and \
-            row_t_alt_count/row_t_depth >= vaf_cutoff and \
-            (is_matched or row_gnomad_af < self.MAX_UNMATCHED_GNOMAD_AF) and \
-            row[ix.get(sic.VARIANT_CLASSIFICATION)] in sic.MUTATION_TYPES_EXONIC and \
-            not any([z in sic.FILTER_FLAGS_EXCLUDE for z in filter_flags]):
+           row_t_alt_count/row_t_depth >= vaf_cutoff and \
+           (is_matched or row_gnomad_af < self.MAX_UNMATCHED_GNOMAD_AF) and \
+           var_class in sic.MUTATION_TYPES_EXONIC and \
+           not any([z in sic.FILTER_FLAGS_EXCLUDE for z in filter_flags]) and \
+           not (var_class == "5'Flank" and hugo_symbol != 'TERT'):
             ok = True
         return ok
 
@@ -131,9 +134,9 @@ class snv_indel_processor(logger):
                 # record therapy for all actionable alterations (OncoKB level 4 or higher)
                 if level != None:
                     alt = row_input[sic.HGVSP_SHORT]
-                    alt_url = html_builder.build_alteration_url(gene, alt, oncotree_code)
                     if gene == 'BRAF' and alt == 'p.V640E':
                         alt = 'p.V600E'
+                    alt_url = html_builder.build_alteration_url(gene, alt, oncotree_code)
                     if 'splice' in row_input[sic.VARIANT_CLASSIFICATION].lower():
                         alt = 'p.? (' + row_input[sic.HGVSC] + ')'
                         alt_url = html_builder.build_alteration_url(gene, "Truncating%20Mutations", oncotree_code)
@@ -232,9 +235,9 @@ class snv_indel_processor(logger):
         """Find protein name/URL and apply special cases"""
         gene = row[sic.HUGO_SYMBOL]
         protein = row[sic.HGVSP_SHORT]
-        protein_url = html_builder.build_alteration_url(gene, protein, oncotree_code)
         if gene == 'BRAF' and protein == 'p.V640E':
             protein = 'p.V600E'
+        protein_url = html_builder.build_alteration_url(gene, protein, oncotree_code)
         if 'splice' in row[sic.VARIANT_CLASSIFICATION].lower():
             protein = 'p.? (' + row[sic.HGVSC] + ')'
             protein_url = html_builder.build_alteration_url(

@@ -324,6 +324,46 @@ class main(core_base):
                 'supplement.body',
                 'wgts.snv_indel'
             ]
+        elif assay == 'WGS':
+            component_list = [
+                'core',
+                'input_params_helper',
+                'provenance_helper',
+                'gene_information_merger',
+                'treatment_options_merger',
+                'case_overview',
+                'cnv',
+                'sample',
+                'summary',
+                'supplement.header',
+                'supplement.body',
+                'wgts.snv_indel'
+             ]
+	elif assay == 'TAR':
+            component_list = [
+                'core',
+                'tar_input_params_helper',
+                'provenance_helper',
+                'gene_information_merger',
+                'treatment_options_merger',
+                'case_overview',
+                'tar.sample',
+                'tar.swgs', 
+                'summary',
+                'supplement.header',
+                'supplement.body',
+                'tar.snv_indel'
+            ]
+        elif assay == 'PWGS':
+            component_list = [
+                'core',
+                'input_params_helper',
+                'provenance_helper',
+                'pwgs.sample',
+                'pwgs.analysis',  
+                'supplement.header',
+                'supplement.body'
+            ]
         else:
             msg = "Invalid assay name '{0}'".format(assay)
             self.logger.error(msg)

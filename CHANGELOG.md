@@ -1,5 +1,40 @@
 # CHANGELOG
 
+## Unreleased
+
+### GCGI-1147
+- Generate URL after updating BRAF protein name
+
+## v1.0.0-dev0.0.19: 2023-10-31
+
+### GCGI-1146
+- OncoKB links for CNVs in therapy tables
+
+### GCGI-1145
+- Automatically fill in current date in report author line of sign-offs
+
+### GCGI-1144
+- Exclude mutations rated below Likely Oncogenic (including Inconclusive) from CNV gene info
+
+### GCGI-1128
+- Exclude 5'Flank mutations (other than TERT) when filtering MAF
+
+## v1.0.0-dev0.0.18: 2023-10-30
+
+### GCGI-1143
+- Removed extra break-end in 'Definitions', before 'Expression Percentile'
+- Removed 'genes tested' from disclaimer
+- Changed report ID to be tumour ID + version only
+
+### GCGI-1142
+- Removed any building of gene info from genomic landscape plugin
+
+### GCGI-1129
+- Only report fusion genes if rated Likely Oncogenic or higher
+
+### GCGI-1130
+- Fix order of columns in snv/indel table
+
 ## v1.0.0-dev0.0.17: 2023-10-30
 
 ### GCGI-1132: Provenance helper fixes

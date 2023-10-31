@@ -5,7 +5,7 @@ import djerba.plugins.wgts.snv_indel.constants as sic
 from djerba.plugins.wgts.tools import wgts_tools
 from djerba.util.html import html_builder as hb
 
-EXPR_COL_INDEX_SMALL_MUT = 5
+EXPR_COL_INDEX_SMALL_MUT = 6
 EXPR_SHORT_NAME = 'Expr. (%)'
 
 def make_table_header(mutation_info):
