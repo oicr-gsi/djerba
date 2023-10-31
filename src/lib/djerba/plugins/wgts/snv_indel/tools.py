@@ -78,7 +78,6 @@ class snv_indel_processor(logger):
            not any([z in sic.FILTER_FLAGS_EXCLUDE for z in filter_flags]) and \
            not (var_class == "5'Flank" and hugo_symbol != 'TERT'):
             ok = True
-        self.logger.debug("Mutation: Gene={0}, Class={1}, OK={2}".format(hugo_symbol, var_class, ok))
         return ok
 
     def _read_maf_indices(self, row):

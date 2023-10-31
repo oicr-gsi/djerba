@@ -84,9 +84,6 @@ class main(plugin_base):
             self.SEQTYPE,
             self.GENOME
         )
-        import sys
-        sys.stderr.write("Exiting! {0} {1}\n".format(self.log_level, self.log_path))
-        sys.exit(1)
         proc = snv_indel_processor(work_dir, wrapper, self.log_level, self.log_path)
         proc.write_working_files(whizbam_url)
         data['results'] = proc.get_results()
