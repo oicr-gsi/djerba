@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+### GCGI-1147
+- Generate URL after updating BRAF protein name
+
 ## v1.0.0-dev0.0.19: 2023-10-31
 
 ### GCGI-1146
