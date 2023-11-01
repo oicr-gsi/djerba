@@ -338,8 +338,8 @@ class main(core_base):
                 'supplement.header',
                 'supplement.body',
                 'wgts.snv_indel'
-             ]
-       elif assay == 'TAR':
+            ]
+        elif assay == 'TAR':
             component_list = [
                 'core',
                 'tar_input_params_helper',
