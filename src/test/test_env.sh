@@ -4,7 +4,7 @@
 # assumes djerba and djerba_test_data are in ~/git
 # update module and filename as necessary for additional dev releases
 
-module load djerba/1.0.0-dev18
+module load djerba
 export PYTHONPATH=${HOME}/git/djerba/src/lib:$PYTHONPATH
 export PATH=${HOME}/git/djerba/src/bin:$PATH
 export DJERBA_BASE_DIR=${HOME}/git/djerba/src/lib/djerba
