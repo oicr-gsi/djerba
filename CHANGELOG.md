@@ -1,6 +1,11 @@
 # CHANGELOG
 
-## v1.0.0-dev0.0.19: 2023-11-01
+## v1.0.0-dev0.0.21: 2023-11-01
+
+### GCGI-1153
+- Fix syntax errors in assay selection for setup
+
+## v1.0.0-dev0.0.20: 2023-11-01
 
 ### GCGI-1147
 - Generate URL after updating BRAF protein name
