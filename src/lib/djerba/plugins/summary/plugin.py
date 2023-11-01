@@ -15,7 +15,7 @@ from djerba.core.workspace import workspace
 
 class main(plugin_base):
 
-    PRIORITY = 200
+    PRIORITY = 400
     PLUGIN_VERSION = '0.1'
     MAKO_TEMPLATE_NAME = 'summary_report_template.html'
     SUMMARY_TEMPLATE_FILE = 'summary_template.txt'

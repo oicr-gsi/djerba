@@ -14,8 +14,9 @@ from PyPDF2 import PdfMerger
 import djerba.util.ini_fields as ini
 import djerba.version as version
 from djerba.core.base import base as core_base
-from djerba.core.database.archiver import archiver
+from djerba.core.database import database
 from djerba.core.extract import extraction_setup
+from djerba.core.ini_generator import ini_generator
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.render import html_renderer, pdf_renderer
 from djerba.core.loaders import \
@@ -197,18 +198,13 @@ class main(core_base):
             with open(json_path, 'w') as out_file:
                 out_file.write(json.dumps(data))
         if archive:
-            self.logger.info('Archiving not yet implemented for djerba.core')
-            #uploaded, report_id = archiver(self.log_level, self.log_path).run(data)
-            #if uploaded:
-            #    self.logger.info(f"Archiving successful: {report_id}")
-            #else:
-            #    self.logger.warning(f"Error! Archiving unsuccessful: {report_id}")
+            self.upload_archive(data)
         else:
-            self.logger.info("Archive operation not requested; omitting archiving")
+            self.logger.info("Omitting archive upload at extract step")
         self.logger.info('Finished Djerba extract step')
         return data
 
-    def render(self, data, out_dir=None, pdf=False):
+    def render(self, data, out_dir=None, pdf=False, archive=False):
         self.logger.info('Starting Djerba render step')
         if out_dir:  # do this *before* taking the time to generate output
             self.path_validator.validate_output_dir(out_dir)
@@ -233,7 +229,12 @@ class main(core_base):
         self.logger.debug("Assembling HTML document(s)")
         h_rend = html_renderer(data[cc.CORE], self.log_level, self.log_path)
         output_data = h_rend.run(html, priorities, attributes)
-        # 3. Write output files, if any
+        # 3. Archive the JSON data structure, if needed
+        if archive:
+            self.upload_archive(data)
+        else:
+            self.logger.debug("Omitting archive upload at render step")
+        # 4. Write output files, if any
         if out_dir:
             p_rend = pdf_renderer(self.log_level, self.log_path)
             for prefix in output_data[cc.DOCUMENTS].keys():
@@ -267,7 +268,14 @@ class main(core_base):
         ap = arg_processor(args, self.logger, validate=False)
         mode = ap.get_mode()
         work_dir = ap.get_work_dir()
-        if mode == constants.CONFIGURE:
+        if mode == constants.SETUP:
+            assay = ap.get_assay()
+            compact = ap.get_compact()
+            ini_path = ap.get_ini_path()
+            if ini_path == None:
+                ini_path = os.path.join(os.getcwd(), 'config.ini')
+            self.setup(assay, ini_path, compact)
+        elif mode == constants.CONFIGURE:
             ini_path = ap.get_ini_path()
             ini_path_out = ap.get_ini_out_path() # may be None
             self.configure(ini_path, ini_path_out)
@@ -279,28 +287,98 @@ class main(core_base):
             self.extract(config, json_path, archive)
         elif mode == constants.RENDER:
             json_path = ap.get_json_path()
+            archive = ap.is_archive_enabled()
             with open(json_path) as json_file:
                 data = json.loads(json_file.read())
-            self.render(data, ap.get_out_dir(), ap.is_pdf_enabled())
+            self.render(data, ap.get_out_dir(), ap.is_pdf_enabled(), archive)
         elif mode == constants.REPORT:
-            # get operational parameters
             ini_path = ap.get_ini_path()
             out_dir = ap.get_out_dir()
             ini_path_out = os.path.join(out_dir, 'full_config.ini')
             json_path = os.path.join(out_dir, 'djerba_report.json')
-            # caching and cleanup are plugin-specific, should be configured in INI
-            # can also have a script to auto-populate INI files in 'setup' mode
             archive = ap.is_archive_enabled()
             config = self.configure(ini_path, ini_path_out)
+            # upload to archive at the extract step, not the render step
             data = self.extract(config, json_path, archive)
-            self.render(data, ap.get_out_dir())
-            # TODO if pdf_path!=None, convert HTML->PDF
+            self.render(data, ap.get_out_dir(), ap.is_pdf_enabled(), archive=False)
         else:
-            # TODO add clauses for setup, pdf, etc.
-            # for now, raise an error
-            msg = "Mode '{0}' is not yet defined in Djerba core.main!".format(mode)
+            msg = "Mode '{0}' is not defined in Djerba core.main!".format(mode)
             self.logger.error(msg)
             raise RuntimeError(msg)
+
+    def setup(self, assay, ini_path, compact):
+        if assay == 'WGTS':
+            component_list = [
+                'core',
+                'expression_helper',
+                'input_params_helper',
+                'provenance_helper',
+                'gene_information_merger',
+                'treatment_options_merger',
+                'case_overview',
+                'cnv',
+                'fusion',
+                'sample',
+                'summary',
+                'supplement.header',
+                'supplement.body',
+                'wgts.snv_indel'
+            ]
+        elif assay == 'WGS':
+            component_list = [
+                'core',
+                'input_params_helper',
+                'provenance_helper',
+                'gene_information_merger',
+                'treatment_options_merger',
+                'case_overview',
+                'cnv',
+                'sample',
+                'summary',
+                'supplement.header',
+                'supplement.body',
+                'wgts.snv_indel'
+            ]
+        elif assay == 'TAR':
+            component_list = [
+                'core',
+                'tar_input_params_helper',
+                'provenance_helper',
+                'gene_information_merger',
+                'treatment_options_merger',
+                'case_overview',
+                'tar.sample',
+                'tar.swgs', 
+                'summary',
+                'supplement.header',
+                'supplement.body',
+                'tar.snv_indel'
+            ]
+        elif assay == 'PWGS':
+            component_list = [
+                'core',
+                'input_params_helper',
+                'provenance_helper',
+                'pwgs.sample',
+                'pwgs.analysis',  
+                'supplement.header',
+                'supplement.body'
+            ]
+        else:
+            msg = "Invalid assay name '{0}'".format(assay)
+            self.logger.error(msg)
+            raise ValueError(msg)
+        generator = ini_generator(self.log_level, self.log_path)
+        generator.write_config(component_list, ini_path, compact)
+        self.logger.info("Wrote config for {0} to {1}".format(assay, ini_path))
+
+    def upload_archive(self, data):
+        uploaded, report_id = database(self.log_level, self.log_path).upload_data(data)
+        if uploaded:
+            self.logger.info(f"Archiving was successful: {report_id}")
+        else:
+            self.logger.warning(f"Archiving was NOT successful: {report_id}")
+
 
 class arg_processor(logger):
     # class to process command-line args for creating a main object
@@ -332,6 +410,12 @@ class arg_processor(logger):
             self.logger.error(msg)
             raise ArgumentNameError(msg) from err
         return value
+
+    def get_assay(self):
+        return self._get_arg('assay')
+
+    def get_compact(self):
+        return self._get_arg('compact')
 
     def get_ini_path(self):
         return self._get_arg('ini')
@@ -371,9 +455,12 @@ class arg_processor(logger):
             if value == None:
                 # if work_dir is defined and empty, default to out_dir
                 value = self._get_arg('out_dir')
-        else:
+        elif hasattr(self.args, 'out_dir'):
             # if work_dir is not defined, default to out_dir (eg. render mode)
             value = self._get_arg('out_dir')
+        else:
+            # if all else fails (eg. setup mode), use the current directory
+            value = os.getcwd()
         return value
 
     def is_archive_enabled(self):
@@ -394,7 +481,8 @@ class arg_processor(logger):
         self.logger.info("Validating paths in command-line arguments")
         v = path_validator(self.log_level, self.log_path)
         if args.subparser_name == constants.SETUP:
-            v.validate_output_dir(args.base)
+            if args.ini!=None:
+                v.validate_output_file(args.ini)
         elif args.subparser_name == constants.CONFIGURE:
             v.validate_input_file(args.ini)
             v.validate_output_file(args.ini_out)

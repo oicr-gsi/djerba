@@ -1,16 +1,183 @@
 # CHANGELOG
 
+## v1.0.0-dev0.0.21: 2023-11-01
+
+### GCGI-1153
+- Fix syntax errors in assay selection for setup
+
+## v1.0.0-dev0.0.20: 2023-11-01
+
+### GCGI-1147
+- Generate URL after updating BRAF protein name
+
+### GCGI-1128
+- SNV filtering bugfix
+
+### Other
+- Update README
+- Additional options in setup
+- Priority fix for failed report plugin
+- Date in report sign-off
+- Add OncoKB links for actionable CNVs
+
+## v1.0.0-dev0.0.19: 2023-10-31
+
+### GCGI-1146
+- OncoKB links for CNVs in therapy tables
+
+### GCGI-1145
+- Automatically fill in current date in report author line of sign-offs
+
+### GCGI-1144
+- Exclude mutations rated below Likely Oncogenic (including Inconclusive) from CNV gene info
+
+### GCGI-1128
+- Exclude 5'Flank mutations (other than TERT) when filtering MAF
+
+## v1.0.0-dev0.0.18: 2023-10-30
+
+### GCGI-1143
+- Removed extra break-end in 'Definitions', before 'Expression Percentile'
+- Removed 'genes tested' from disclaimer
+- Changed report ID to be tumour ID + version only
+
+### GCGI-1142
+- Removed any building of gene info from genomic landscape plugin
+
+### GCGI-1129
+- Only report fusion genes if rated Likely Oncogenic or higher
+
+### GCGI-1130
+- Fix order of columns in snv/indel table
+
+## v1.0.0-dev0.0.17: 2023-10-30
+
+### GCGI-1132: Provenance helper fixes
+- Add discovered INI parameters for tumour ID and normal ID
+- Ensure `sample_info.json` is consistent with manual INI configuration
+- Handle missing `input_params.json` without crashing
+- Do not rewrite provenance subset at config step, if file is already present
+
+## v1.0.0-dev0.0.16: 2023-10-27
+- Add genomic landscape plugin to `setup.py`
+
+## v1.0.0-dev0.0.15: 2023-10-26
+
+### GCGI-1127: Genomic Landscape AttributeError
+- Fixed AttibuteError in genomic landscape plugin
+
+## v1.0.0-dev0.0.14: 2023-10-26
+- Fix for missing `__init__.py`
+
+## v1.0.0-dev0.0.13: 2023-10-26
+
+### GCGI-1118, GCGI-1120
+- Delete obsolete code
+- Temporarily disable `benchmark.py` script
+
+### GCGI-1124
+- Enable `setup` mode in `djerba.py` to generate an INI file
+- Fixed config omissions in fusion plugin and expression helper
+- Move `update_wrapper_if_null` method to `configurable` class
+
+### GCGI-1116
+- Make a new `djerba.util.directory_finder` class
+- Use it to replace various ad hoc methods for finding directories from environment vars
+
+### GCGI-1122
+- Output placeholder values
+
+### GCGI-1123: Gene information threshold
+- Correct reporting threshold for gene information merger in the CNV and SNV/indel plugins
+
+### GCGI-836: Enable archiving
+- Enable archiving to CouchDB
+- Simplify previous archiving code; get rid of `archiver.py` and just use `database.py`
+- Fixes to POST operation to update existing documents; now confirmed as working
+
+### GCGI-1113: System integration
+- Minor bugfixes to allow successful generation of integrated report
+- Split supplementary plugin into `body` and (extremely simple) `header` plugins
+- New `supplement.header` plugin allows exact control of header location
+- Update default priorities for correct rendering order in WGTS report
+- Warn if default author name is in use; OK for testing, not allowed in production
+- Automatically discover sequenza path, oncotree code, tumour id in `cnv` plugin
+- Further simplification of INI parameters for `cnv` and `snv_indel` plugins
+- Check purity is consistent between `input_params_helper` and `cnv` plugin
+- Validation checks on `input_params_helper` config values
+
+## v1.0.0-dev0.0.12: 2023-10-19
+
+### GCGI-1114: Fix for tar plugin install
+- Add `djerba.plugins.tar.snv_indel.snv_indel_tools` to `setup.py`
+
+### GCGI-1108: Remove djerba.render dependencies
+- Remove dependencies on obsolete files
+- Concludes work started in GCGI-1070
+- Corrects path to `gencode_v33_hg38_genes.bed`
+
+### GCGI-1070: Delete obsolete files
+- Delete obsolete files from Djerba classic
+- Temporary reprieve for files in `render` still in use by plugins
+
+### GCGI-1091: Record extraction time in core JSON
+- Record the extraction time in UTC for later reference
+
+### Fixed
+- Fix logging bug for check on author name
+
+## v1.0.0-dev0.0.11: 2023-10-17
+
+### GCGI-1106: Update setup
+- Update `setup.py` to correctly install data files
+- Installation must include core, plugins, helpers, mergers
+- Also updated dependencies in `setup.py`
+- GCGI-993 will handle this in a decentralized way, but is out of scope for v1.0.0
+
+### GCGI-1083: SNV and CNV updates
+- Rework the draft SNV/indel plugin to make it production ready
+
+## v1.0.0-dev0.0.10: 2023-10-17
+
+### GCGI-1105: Add initializer to directories
+- Added __init__.py files to directories where it was missing
+
+## v1.0.0-dev0.0.9: 2023-10-16
+
+### GCGI-1083: SNV and CNV updates
+- Rework the draft CNV plugin to make it production ready
+
+### GCGI-1077: Merger JSON factories
+- Add factory classes to generate correct JSON for mergers; use in the fusion plugin
+
+### GCGI-1076: Gene information merger update
+- Add a Mako template to render correctly formatted HTML
+
+### GCGI-819: Fusions plugin
+- Plugin to generate 'Structural Variants and Fusions' section of report
+
+### GCGI-1075: Provenance helper update
+- Write a `path_info.json` file to the workspace
+- Contains commonly used paths for use by other plugins/helpers
+
+### GCGI-1071: Expression helper
+- Helper class to compute gene expression levels from RSEM results
+
+### GCGI-1035: Treatment options merger
+- Generate the "Treatment Options" section of the report
+- Include both "FDA Approved" and "Investigational Therapies"
+
 ## v1.0.0-dev0.0.8: 2023-08-11
 
-## GCGI-963: Case overview plugin
+### GCGI-963: Case overview plugin
 - Renamed the patient info plugin
 - Brought up to date with new display format from master
 - Now supports WGTS, WGS, and TAR
 
-## GCGI-1016: Default working directory
+### GCGI-1016: Default working directory
 - Make `--work-dir` optional in `djerba.py` script; defaults to the output dir
 
-## Other
+### Other
 - In clinical report footer, added "Report Sign-Offs" heading and removed auto-generation of the date
 - Added `summary` plugin to generate the genomic summary text
 - Added `supplement` plugin to generate supplementary info (definitions, software versions, etc.)

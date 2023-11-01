@@ -1,0 +1,7 @@
+{"attributes": ["clinical"],
+ "merge_inputs": {},
+ "plugin_name": "supplement.header plugin",
+ "priorities": {"configure": 1000, "extract": 1000, "render": 1000},
+ "results": {},
+ "version": "1.0.0"}
+

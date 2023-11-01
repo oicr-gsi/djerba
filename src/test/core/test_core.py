@@ -30,7 +30,7 @@ class TestCore(TestBase):
 
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
-    SIMPLE_REPORT_MD5 = 'baa7561ae4e164a51cb744efd4e00750'
+    SIMPLE_REPORT_MD5 = '360bd4a3764ef27d100be518ea252122'
     SIMPLE_CONFIG_MD5 = 'd251fe6f1595328ea9583a23da8a25f0'
 
     class mock_args:
@@ -61,6 +61,7 @@ class TestCore(TestBase):
             data_expected = json.loads(json_file.read())
         with open(json_path) as json_file:
             data_found = json.loads(json_file.read())
+            data_found['core']['extract_time'] = 'placeholder'
         self.assertEqual(data_expected, data_found)
 
     def assertSimpleReport(self, json_path, html_path):
@@ -408,7 +409,6 @@ class TestIniGenerator(TestCore):
             self.assertEqual(in_file_2.read(), in_file_1.read())
 
     def test_script(self):
-        self.tmp_dir = '/home/ibancarz/tmp/test_20230710'
         out_path = os.path.join(self.tmp_dir, 'generated.ini')
         cmd = ['generate_ini.py', '--out', out_path]
         cmd.extend(self.COMPONENT_NAMES)
@@ -602,6 +602,7 @@ class TestSimpleReport(TestCore):
         djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
         config = djerba_main.configure(ini_path)
         data_found = djerba_main.extract(config)
+        data_found['core']['extract_time'] = 'placeholder'
         with open(json_path) as json_file:
             data_expected = json.loads(json_file.read())
         self.assertEqual(data_expected, data_found)

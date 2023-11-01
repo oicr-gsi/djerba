@@ -12,6 +12,7 @@ dist
 djerba.log
 *.DS_Store
 *.Rhistory
+*.RData
 *.vscode
 # Sphinx build files
 _build
