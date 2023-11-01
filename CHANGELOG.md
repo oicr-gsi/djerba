@@ -1,9 +1,19 @@
 # CHANGELOG
 
-## Unreleased
+## v1.0.0-dev0.0.19: 2023-11-01
 
 ### GCGI-1147
 - Generate URL after updating BRAF protein name
+
+### GCGI-1128
+- SNV filtering bugfix
+
+### Other
+- Update README
+- Additional options in setup
+- Priority fix for failed report plugin
+- Date in report sign-off
+- Add OncoKB links for actionable CNVs
 
 ## v1.0.0-dev0.0.19: 2023-10-31
 
