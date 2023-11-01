@@ -28,18 +28,18 @@ class TestPwgAnalysisPlugin(PluginTester):
         self.sup_dir = os.environ.get(sup_dir_var)
 
     def testPreprocessHbc(self):
-        hbc_expected_location = os.path.join(self.sup_dir ,"pwgs-plugin/HBCs.csv")
+        hbc_expected_location = os.path.join(self.sup_dir ,"plugins/pwgs/HBCs.csv")
         hbc_result = analysis.main.preprocess_hbc(self, hbc_expected_location)
         self.assertEqual(hbc_result[constants.SITES_CHECKED], 123616)
         self.assertEqual(hbc_result[constants.COHORT_N], 24)
 
     def testPreprocessvaf(self):
-        vaf_expected_location = os.path.join(self.sup_dir ,"pwgs-plugin/mrdetect.vaf.txt")
+        vaf_expected_location = os.path.join(self.sup_dir ,"plugins/pwgs/mrdetect.vaf.txt")
         reads_detected = analysis.main.preprocess_vaf(self, vaf_expected_location)
         self.assertEqual(reads_detected, 18768)
 
     def testPreprocessResults(self):
-        results_expected_location = os.path.join(self.sup_dir ,"pwgs-plugin/mrdetect.txt")
+        results_expected_location = os.path.join(self.sup_dir ,"plugins/pwgs/mrdetect.txt")
         results = pwgs_tools.preprocess_results(self, results_expected_location)
         self.assertEqual(results[constants.TUMOUR_FRACTION_ZVIRAN], 0.016 )
         self.assertEqual(results[constants.PVALUE], 1.903e-05)
@@ -56,17 +56,17 @@ class TestPwgAnalysisPlugin(PluginTester):
         os.mkdir(input_dir)
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
-        json_location = os.path.join(self.sup_dir ,"pwgs-plugin/report_json/pwgs.analysis.json")
+        json_location = os.path.join(self.sup_dir ,"plugins/pwgs/report_json/pwgs.analysis.json")
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '2c45c4e916784d68aa977b4351b53623'
+            self.MD5: '065d576ddca0456b40a25c4749f00c96'
         }
         self.run_basic_test(input_dir, params)
 
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""
-        for key in ['pwgs_base64']:
+        for key in ['pwgs_base64','files']:
             del data['plugins']['pwgs.analysis']['results'][key]
         return data        
 
@@ -83,7 +83,7 @@ class TestPwgSamplePlugin(PluginTester):
         self.sup_dir = os.environ.get(sup_dir_var)
 
     def testPreprocessSNVcount(self):
-        snv_count_expected_location = os.path.join(self.sup_dir ,"pwgs-plugin/snv.txt")
+        snv_count_expected_location = os.path.join(self.sup_dir ,"plugins/pwgs/snv.txt")
         snv_count = sample.main.preprocess_snv_count(self, group_id = "None", snv_count_path = snv_count_expected_location)
         self.assertEqual(snv_count, 21000)
 
@@ -97,11 +97,11 @@ class TestPwgSamplePlugin(PluginTester):
         os.mkdir(input_dir)
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
-        json_location = os.path.join(self.sup_dir ,"pwgs-plugin/report_json/pwgs.sample.json")
+        json_location = os.path.join(self.sup_dir ,"plugins/pwgs/report_json/pwgs.sample.json")
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '9743fb4c0d0eb0269d3aeb8fe6d2bee1'
+            self.MD5: '7c3973dbc617b6c9db716adf0e4b2270'
         }
         self.run_basic_test(input_dir, params)
 
