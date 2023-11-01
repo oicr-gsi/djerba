@@ -20,11 +20,11 @@ class TestSummaryPlugin(PluginTester):
 
     def testSummary(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
-        json_location = os.path.join(self.sup_dir ,"summary-plugin/report_json/summary.json")
+        json_location = os.path.join(self.sup_dir ,"plugins/summary/report_json/summary.json")
         params = {
             self.INI: 'summary.ini',
             self.JSON: json_location,
-            self.MD5: '6ac0b9359b74ebbc76d20cc26df79807'
+            self.MD5: '0245b24892cc137aa40f92b5114bc79e'
         }
         self.run_basic_test(test_source_dir, params)
 
