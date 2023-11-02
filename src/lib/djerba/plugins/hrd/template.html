@@ -1,0 +1,11 @@
+<%
+from djerba.util.html import html_builder
+import djerba.plugins.hrd.constants as hrd
+
+%>
+
+${html_builder.section_cells_begin("Homologous Recombination Deficiency", True)}
+
+      <p> this sample shows signatures consistent with <strong>${results.get(hrd.HRD)}</strong></p>
+
+${html_builder.section_cells_end()}
