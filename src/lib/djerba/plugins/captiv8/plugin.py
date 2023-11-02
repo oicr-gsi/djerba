@@ -14,7 +14,7 @@ from djerba.util.render_mako import mako_renderer
 
 class main(plugin_base):
 
-    PRIORITY = 2000
+    PRIORITY = 3000
     PLUGIN_VERSION = '1.0'
     TEMPLATE_NAME = 'template.html'
 
@@ -26,29 +26,16 @@ class main(plugin_base):
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         work_dir = self.workspace.get_work_dir()
-        hrd_path = config[self.identifier]['hrd_path']
-        hrd_file = open(hrd_path)
-        hrd_data = json.load(hrd_file)
-        hrd_file.close()
+        captiv8_path = config[self.identifier]['captiv8_path']
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
-        self.write_hrd(work_dir, hrd_data["hrdetect_call"]["Probability.w"])
-        hrd_base64 = self.write_plot(work_dir)       
-        if hrd_data["hrdetect_call"]["Probability.w"][1] > 0.7:
-            HRD_long = "Homologous Recombination Deficiency (HR-D)"
-            HRD_short = "HR-D"
-        else:
-            HRD_long = "Homologous Recombination Proficiency (HR-P)"
-            HRD_short = "HR-P"
+        captiv8_base64 = self.write_captiv8_plot(work_dir, captiv8_path)       
         results =  {
                 'files': 
-                    {'hrd_path': hrd_path},
-                'HRD-score': hrd_data["hrdetect_call"]["Probability.w"],
-                'HRD_long': HRD_long,
-                'HRD_short': HRD_short,
-                'QC' : hrd_data["QC"],
-                'hrd_base64' : hrd_base64
+                    {'captiv8_path': captiv8_path},
+                'captiv8-score': 8,
+                'eligibility': "eligible",
+                'captiv8_base64' : captiv8_base64
             }
-        self.workspace.write_json('hrd.json', hrd_data)
         data['results'] = results
         return data
 
@@ -58,23 +45,18 @@ class main(plugin_base):
     
     def specify_params(self):
         discovered = [
-            'hrd_path'
+            'captiv8_path'
         ]
         for key in discovered:
             self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'research')
         self.set_priority_defaults(self.PRIORITY)
 
-    def write_hrd(self, work_dir, quartiles):
-        out_path = os.path.join(work_dir, 'hrd.tmp.txt')
-        with open(out_path, 'w') as out_file:
-            print("\t".join([str(item) for item in list(quartiles)]), file=out_file)
-        return out_path
-
-    def write_plot(self, output_dir ):
+    def write_captiv8_plot(self, output_dir, input_file ):
         args = [
             os.path.join(os.path.dirname(__file__),'plot.R'),
-            '--dir', output_dir
+            '--dir', output_dir,
+            '--input', input_file
         ]
         pwgs_results = subprocess_runner().run(args)
         return(pwgs_results.stdout.split('"')[1])

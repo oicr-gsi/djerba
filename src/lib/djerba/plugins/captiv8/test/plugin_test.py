@@ -9,7 +9,7 @@ import string
 
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
-import djerba.plugins.hrd.plugin as hrd
+import djerba.plugins.captiv8.plugin as captiv8
 from djerba.core.workspace import workspace
 
 class TestPwgAnalysisPlugin(PluginTester):
@@ -24,7 +24,7 @@ class TestPwgAnalysisPlugin(PluginTester):
         sup_dir_var = 'DJERBA_TEST_DATA'
         self.sup_dir = os.environ.get(sup_dir_var)
 
-    def testHRD(self):
+    def testCAPTIV8(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         with open(os.path.join(test_source_dir, self.INI_NAME)) as in_file:
             template_str = in_file.read()
@@ -34,18 +34,18 @@ class TestPwgAnalysisPlugin(PluginTester):
         os.mkdir(input_dir)
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
-        json_location = os.path.join(self.sup_dir ,"plugins/hrd/report_json/hrd.djerba.json")
+        json_location = os.path.join(self.sup_dir ,"plugins/captiv8/report_json/captiv8.json")
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '139f2a882c6bef283525d0f2a0c2497a'
+            self.MD5: '623659ef0af9928b8816c4a6e09cf2df'
         }
         self.run_basic_test(input_dir, params)
 
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""
-        for key in ['files','hrd_base64']:
-            del data['plugins']['hrd']['results'][key]
+        for key in ['files','captiv8_base64']:
+            del data['plugins']['captiv8']['results'][key]
         return data        
 
 if __name__ == '__main__':

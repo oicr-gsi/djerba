@@ -1,3 +1,5 @@
+#! /usr/bin/env Rscript
+
 library(data.table)
 library(cowplot)
 library(optparse)
@@ -8,10 +10,12 @@ captiv8_colors <- c("#91bfdb", "#d73027", "#4575b4",  "#fc8d59","#e0f3f8", "#fee
 
 ##in take##
 option_list = list(
+  make_option(c("-d", "--dir"), type="character", default=NULL, help="Input report directory path", metavar="character"),
   make_option(c("-i", "--input"), type="character", default=NULL, help="captiv8 result file", metavar="character")
 )
 opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
 opt <- parse_args(opt_parser)
+work_dir <- opt$dir
 
 input_path <- opt$input
 
@@ -189,24 +193,22 @@ ggplot(captiv8 %>% filter(marker %in% c("CD8+" , "M1M2"    ,"SWI/SNF" , "TMB"   
     axis.ticks.x=element_blank(),
     text = element_text(size = 15),
     panel.grid = element_blank(), 
-    plot.margin = unit(c(0, 0, 0, -10), "points"),
+    plot.margin = unit(c(t=10, r=0, b=0, l=0), "points"),
     line = element_blank(),
     plot.title = element_text(hjust = 0.5)
   ) 
 
-svg(paste0(input_path,".captiv8.svg"), width = 11, height = 6)
+out_path <- paste(work_dir, 'captiv8.svg', sep='/')
+
+options(bitmapType='cairo')
+svg(out_path, width = 11, height = 6, bg = "transparent")
+
   print(
   plot_grid(captiv8_card,captiv8_el, align = 'hv',axis = 'tbrl', ncol = 2,rel_widths = c(3,.5))
   )
 dev.off()
 
-txt <- paste(readLines(paste0(input_path,".captiv8.svg")), collapse = "")
+txt <- paste(readLines(paste(work_dir,"captiv8.svg",sep="/")), collapse = "")
 b64txt <- paste0("data:image/svg+xml;base64,", base64enc::base64encode(charToRaw(txt)))
+print(b64txt)
 
-write.table(
-  b64txt,
-  file = paste0(input_path,".captiv8.base64.txt"),
-  append = F, quote = FALSE, sep = "\t", 
-  eol = "\n", na = "NA",dec = ".", row.names = FALSE, 
-  col.names = FALSE
-)

@@ -78,8 +78,10 @@ class PluginTester(TestBase):
         self.assertTrue(validator.validate_data(plugin_data_found))
         self.assertEqual(plugin_data_found, plugin_data_expected)
         # TODO check other document types, eg. research
+        # this will break if there is more than one attribute per json
+        report_type = ".".join(('placeholder_report', plugin_data_found['attributes'][0]))
         rendered = djerba_main.render(data_found)
-        html = self.redact_html(rendered['documents']['placeholder_report.clinical'])
+        html = self.redact_html(rendered['documents'][report_type])
         self.assert_report_MD5(html, expected_md5)
 
     # TODO add standalone tests for configure, extract, render steps

@@ -15,65 +15,60 @@ opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
 opt <- parse_args(opt_parser)
 work_dir <- opt$dir
 
-cutoff_MSS = 5
-cutoff_MSI = 15
+cutoff_low = 0.7
+cutoff_high = cutoff_low
 
-if(biomarker=="msi"){
+hrd_path <- paste(work_dir, 'hrd.tmp.txt', sep='/')
+
+boot <- read.table(hrd_path,header=FALSE)
+
+names(boot) <- c("q1","median_value","q3")
+boot$Sample <- "Sample"
+hrd_median <- as.numeric(unique(boot$median_value)) 
+
+out_path <- paste(work_dir, 'hrd.svg', sep='/')
+
+options(bitmapType='cairo')
+svg(out_path, width = 8, height = 1.6, bg = "transparent")
+print(
   
-  msi_path <- paste(work_dir, 'msi.txt', sep='/')
-  
-  boot <- read.table(msi_path,header=FALSE)
-  
-  names(boot) <- c("q0","q1","median_value","q3","q4")
-  boot$Sample <- "Sample"
-  
-  msi_out_path <- paste(work_dir, 'msi.svg', sep='/')
-  
-  msi_median <- as.numeric(unique(boot$median_value))
-  
-  options(bitmapType='cairo')
-  svg(msi_out_path, width = 8, height = 1.6, bg = "transparent")
-  print(
+  ggplot(boot,aes(x="Sample")) + 
+    geom_errorbar(aes(ymin=as.numeric(q1), ymax=as.numeric(q3)), width=0, linewidth=1, color="red") +
     
-    ggplot(boot,aes(x="Sample")) + 
-      geom_errorbar(aes(ymin=as.numeric(q1), ymax=as.numeric(q3)), width=0, linewidth=1, color="red") +
-      
-      annotate(x = 0, xend=2, y=cutoff_MSS, yend=cutoff_MSS,geom="segment",colour = "gray") +
-      annotate(geom="text",x = 0,y=cutoff_MSS/2,color="gray30",label="MSS", hjust = 0.5, vjust = -6,size=4) +
-      
-      annotate(x = 0, xend=2, y=cutoff_MSI, yend=cutoff_MSI,geom="segment", colour = "gray") +
-      annotate(geom="text",x = 0,y=(cutoff_MSI + max(msi_median, 40))/2, color="gray30",label="MSI", hjust = 0.5, vjust = -6,size=4) +
-      
-      annotate(x = 0, xend=2, y=cutoff_MSI, yend=cutoff_MSI,geom="segment", colour = "gray") +
-      annotate(geom="text",x = 0,y=(cutoff_MSI + cutoff_MSS)/2, color="gray30",label="Inconclusive", hjust = 0.5, vjust = -6,size=4) +
-      
-      
-      annotate(geom="point",y = msi_median, x="Sample",color="red",shape=1, size=8) +
-      annotate(geom="point",y = msi_median, x="Sample",color="red",shape=20, size=3) +
-      
-      theme_classic() + 
-      labs(x="",y="unstable microsatellites (%)",title="") + 
-      scale_y_continuous( limit = c(0, max(msi_median, 40))) + 
-      guides(fill="none", alpha="none")+
-      coord_flip() +
-      
-      scale_color_manual(values=c("#65bc45","#000000","#0099ad")) +
-      theme(
-        axis.line.y = element_blank(),
-        legend.title=element_blank(),
-        axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank(),
-        text = element_text(size = 18),
-        panel.grid = element_blank(), 
-        plot.margin = unit(c(t=-20, r=-20, b=0, l=-20), "points"),
-        line = element_blank(),
-        panel.background = element_rect(fill = "transparent", colour = NA),
-        plot.background = element_rect(fill="transparent",color=NA)
-        
-      ) 
+    annotate(x = 0, xend=2, y=cutoff_low, yend=cutoff_low,geom="segment",colour = "gray") +
+    annotate(geom="text",x = 0,y=cutoff_low/2,color="gray30",label="HR-P", hjust = 0.5, vjust = -6,size=4) +
     
-  )
-  dev.off()
+    annotate(x = 0, xend=2, y=cutoff_high, yend=cutoff_high,geom="segment", colour = "gray") +
+    annotate(geom="text",x = 0,y=(cutoff_high + max(hrd_median, 0.40))/2, color="gray30",label="HR-D", hjust = 0.5, vjust = -6,size=4) +
+    
+    annotate(geom="point",y = hrd_median, x="Sample",color="red",shape=1, size=8) +
+    annotate(geom="point",y = hrd_median, x="Sample",color="red",shape=20, size=3) +
+    
+    theme_classic() + 
+    labs(x="",y="HRD Score",title="") + 
+    scale_y_continuous( limit = c(0, max(hrd_median, 0.40))) + 
+    guides(fill="none", alpha="none")+
+    coord_flip() +
+    
+    scale_color_manual(values=c("#65bc45","#000000","#0099ad")) +
+    theme(
+      axis.line.y = element_blank(),
+      legend.title=element_blank(),
+      axis.title.y=element_blank(),
+      axis.text.y=element_blank(),
+      axis.ticks.y=element_blank(),
+      text = element_text(size = 18),
+      panel.grid = element_blank(), 
+      plot.margin = unit(c(t=-20, r=-10, b=0, l=0), "points"),
+      line = element_blank(),
+      panel.background = element_rect(fill = "transparent", colour = NA),
+      plot.background = element_rect(fill="transparent",color=NA)
+      
+    ) 
   
-}
+)
+dev.off()
+  
+txt <- paste(readLines(paste(work_dir,"hrd.svg",sep="/")), collapse = "")
+b64txt <- paste0("data:image/svg+xml;base64,", base64enc::base64encode(charToRaw(txt)))
+print(b64txt)
