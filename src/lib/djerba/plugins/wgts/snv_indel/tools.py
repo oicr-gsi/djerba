@@ -129,7 +129,6 @@ class snv_indel_processor(logger):
                     )
                     gene_info.append(gene_info_entry)
                 therapies = oncokb_levels.parse_actionable_therapies(row_input)
-                self.logger.debug("Therapies: {0}".format(therapies))
                 # record therapy for all actionable alterations (OncoKB level 4 or higher)
                 # row may contain therapies at multiple OncoKB levels
                 for level in therapies.keys():
