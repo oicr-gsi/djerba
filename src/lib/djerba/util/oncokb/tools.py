@@ -98,6 +98,27 @@ class levels:
         return (max_level, '; '.join(therapies))
 
     @staticmethod
+    def parse_actionable_therapies(row_dict):
+        return levels.parse_oncokb_therapies(
+            row_dict,
+            levels.ACTIONABLE_LEVELS
+        )
+
+    @staticmethod
+    def parse_oncokb_therapies(row_dict, levels_list):
+        # find maximum level (if any) from given levels list, and associated therapies
+        # return a dictionary of the form LEVEL->THERAPIES, also record the max level
+        therapies = {}
+        # row_dict has keys of the form 'LEVEL_1'; corresponding levels_list entry is '1'
+        for key in row_dict.keys():
+            level = levels.reformat_level_string(key)
+            if level in levels_list and not levels.is_null_string(row_dict[key]):
+                # insert a space between comma and start of next word
+                therapy = re.sub(r'(?<=[,])(?=[^\s])', r' ', row_dict[key])
+                therapies[level] = therapy
+        return therapies
+
+    @staticmethod
     def parse_oncokb_level(row_dict):
         # find oncokb level string: eg. "Level 1", "Likely Oncogenic", "None"
         max_level = None

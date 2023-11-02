@@ -128,11 +128,11 @@ class snv_indel_processor(logger):
                         summary=summaries.get(gene)
                     )
                     gene_info.append(gene_info_entry)
-                [level, therapies] = oncokb_levels.parse_max_actionable_level_and_therapies(
-                    row_input
-                )
+                therapies = oncokb_levels.parse_actionable_therapies(row_input)
+                self.logger.debug("Therapies: {0}".format(therapies))
                 # record therapy for all actionable alterations (OncoKB level 4 or higher)
-                if level != None:
+                # row may contain therapies at multiple OncoKB levels
+                for level in therapies.keys():
                     alt = row_input[sic.HGVSP_SHORT]
                     if gene == 'BRAF' and alt == 'p.V640E':
                         alt = 'p.V600E'
@@ -146,7 +146,7 @@ class snv_indel_processor(logger):
                         gene = gene,
                         alteration = alt,
                         alteration_url = alt_url,
-                        treatments = therapies
+                        treatments = therapies[level]
                     )
                     treatments.append(treatment_entry)
         # assemble the output
