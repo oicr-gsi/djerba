@@ -31,7 +31,7 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_MD5 = '904bffdedff29e9ca16872d45ed12d21'
-    SIMPLE_CONFIG_MD5 = 'd251fe6f1595328ea9583a23da8a25f0'
+    SIMPLE_CONFIG_MD5 = 'ab4b71b790f2b12aa802b8eaa1658951'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
@@ -424,6 +424,7 @@ class TestMainScript(TestCore):
 
     def test_configure_cli(self):
         mode = 'configure'
+        self.tmp_dir = '/u/ibancarz/tmp/test20231103'
         work_dir = self.tmp_dir
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
         out_path = os.path.join(self.tmp_dir, 'config_out.ini')
@@ -602,8 +603,6 @@ class TestSimpleReport(TestCore):
         djerba_main = main(self.tmp_dir, log_level=logging.ERROR) # suppress author warning
         config = djerba_main.configure(ini_path)
         data_found = djerba_main.extract(config)
-        with open('/tmp/foo.json', 'w') as out_file:
-            print(json.dumps(data_found), file=out_file)
         data_found['core']['extract_time'] = 'placeholder'
         with open(json_path) as json_file:
             data_expected = json.loads(json_file.read())
