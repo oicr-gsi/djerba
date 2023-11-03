@@ -75,27 +75,35 @@ class levels:
         return order
 
     @staticmethod
-    def parse_max_actionable_level_and_therapies(row_dict):
-        return levels.parse_max_oncokb_level_and_therapies(
+    def parse_strongest_level(input_levels):
+        """Level 1 is "stronger" than level 2 despite having a lower number, etc. """
+        strongest = 'Unknown'
+        for level in levels.ALL_LEVELS:
+            if level in input_levels:
+                strongest = level
+                break
+        return strongest
+
+    @staticmethod
+    def parse_actionable_therapies(row_dict):
+        return levels.parse_oncokb_therapies(
             row_dict,
             levels.ACTIONABLE_LEVELS
         )
 
     @staticmethod
-    def parse_max_oncokb_level_and_therapies(row_dict, levels_list):
+    def parse_oncokb_therapies(row_dict, levels_list):
         # find maximum level (if any) from given levels list, and associated therapies
-        max_level = None
-        therapies = []
+        # return a dictionary of the form LEVEL->THERAPIES, also record the max level
+        therapies = {}
         # row_dict has keys of the form 'LEVEL_1'; corresponding levels_list entry is '1'
         for key in row_dict.keys():
             level = levels.reformat_level_string(key)
             if level in levels_list and not levels.is_null_string(row_dict[key]):
-                if not max_level:
-                    max_level = level
-                therapies.append(row_dict[key])
-        # insert a space between comma and start of next word
-        therapies = [re.sub(r'(?<=[,])(?=[^\s])', r' ', t) for t in therapies]
-        return (max_level, '; '.join(therapies))
+                # insert a space between comma and start of next word
+                therapy = re.sub(r'(?<=[,])(?=[^\s])', r' ', row_dict[key])
+                therapies[level] = therapy
+        return therapies
 
     @staticmethod
     def parse_oncokb_level(row_dict):

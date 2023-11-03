@@ -172,18 +172,17 @@ class main(plugin_base):
                       summary=summaries.get(gene)
                   )
                   gene_info.append(gene_info_entry)
-              [level, therapies] = oncokb_levels.parse_max_actionable_level_and_therapies(
-                  row_input
-              )
+              therapies = oncokb_levels.parse_actionable_therapies(row_input)
               # record therapy for all actionable alterations (OncoKB level 4 or higher)
-              if level != None:
+              # row may contain therapies at multiple OncoKB levels
+              for level in therapies.keys():
                   treatment_entry = treatment_option_factory.get_json(
                       tier = oncokb_levels.tier(level),
                       level = level,
                       gene = gene,
                       alteration = row_input['ALTERATION'],
                       alteration_url = None, # this field is not defined for CNVs
-                      treatments = therapies
+                      treatments = therapies[level]
                   )
                   treatments.append(treatment_entry)
       # assemble the output

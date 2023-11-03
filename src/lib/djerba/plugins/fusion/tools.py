@@ -39,9 +39,8 @@ class fusion_reader(logger):
             self.logger.error(msg)
             raise RuntimeError(msg)
         [fusions, self.total_fusion_genes] = self._collate_row_data(fusion_data, annotations)
-        # sort the fusions by oncokb level & fusion ID
-        fusions = sorted(fusions, key=lambda f: f.get_fusion_id_new())
-        self.fusions = sorted(fusions, key=lambda f: oncokb_levels.oncokb_order(f.get_oncokb_level()))
+        # sort the fusions by fusion ID
+        self.fusions = sorted(fusions, key=lambda f: f.get_fusion_id_new())
 
     def _collate_row_data(self, fusion_data, annotations):
         fusions = []
@@ -63,13 +62,9 @@ class fusion_reader(logger):
             fusion_genes.add(gene1)
             fusion_genes.add(gene2)
             frame = fusion_data[fusion_id][0]['Frame']
-            ann = annotations[fusion_id]
-            effect = ann['MUTATION_EFFECT']
-            oncokb_level = oncokb_levels.parse_oncokb_level(ann)
-            fda = oncokb_levels.parse_max_oncokb_level_and_therapies(ann, oncokb.FDA_APPROVED_LEVELS)
-            [fda_level, fda_therapies] = fda
-            inv = oncokb_levels.parse_max_oncokb_level_and_therapies(ann, oncokb.INVESTIGATIONAL_LEVELS)
-            [inv_level, inv_therapies] = inv
+            for row_input in annotations[fusion_id]:
+                effect = row_input['MUTATION_EFFECT']
+            therapies = oncokb_levels.parse_actionable_therapies(row_input)
             fusions.append(
                 fusion(
                     fusion_id,
@@ -78,11 +73,7 @@ class fusion_reader(logger):
                     gene2,
                     frame,
                     effect,
-                    oncokb_level,
-                    fda_level,
-                    fda_therapies,
-                    inv_level,
-                    inv_therapies
+                    therapies
                 )
             )
         total = len(fusions)
@@ -105,7 +96,11 @@ class fusion_reader(logger):
         annotations_by_fusion = {}
         with open(os.path.join(self.input_dir, self.DATA_FUSIONS_ANNOTATED)) as data_file:
             for row in csv.DictReader(data_file, delimiter="\t"):
-                annotations_by_fusion[row['Fusion']] = row
+                fusion = row['Fusion']
+                if fusion in annotations_by_fusion:
+                    annotations_by_fusion[fusion].append(row)
+                else:
+                    annotations_by_fusion[fusion] = [row,]
         return annotations_by_fusion
 
     def read_fusion_data(self):
@@ -154,11 +149,7 @@ class fusion:
             gene2,
             frame,
             effect,
-            oncokb_level,
-            fda_level,
-            fda_therapies,
-            inv_level,
-            inv_therapies
+            therapies
     ):
         self.fusion_id_old = fusion_id_old
         self.fusion_id_new = fusion_id_new
@@ -166,11 +157,7 @@ class fusion:
         self.gene2 = gene2
         self.frame = frame
         self.effect = effect
-        self.oncokb_level = oncokb_level
-        self.fda_level = fda_level
-        self.fda_therapies = fda_therapies
-        self.inv_level = inv_level
-        self.inv_therapies = inv_therapies
+        self.therapies = therapies
 
     def get_fusion_id_old(self):
         return self.fusion_id_old
@@ -184,23 +171,17 @@ class fusion:
     def get_frame(self):
         return self.frame
 
+    def get_strongest_oncokb_level(self):
+        return oncokb_levels.parse_strongest_level(self.therapies.keys())
+
     def get_mutation_effect(self):
         return self.effect
-
-    def get_oncokb_level(self):
-        return self.oncokb_level
 
     def get_fda_level(self):
         return self.fda_level
 
-    def get_fda_therapies(self):
-        return self.fda_therapies
-
-    def get_inv_level(self):
-        return self.inv_level
-
-    def get_inv_therapies(self):
-        return self.inv_therapies
+    def get_therapies(self):
+        return self.therapies
 
 
 

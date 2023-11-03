@@ -8,7 +8,6 @@ import logging
 import os
 import pdfkit
 from PyPDF2 import PdfMerger
-from time import strftime
 import djerba.core.constants as cc
 from djerba.util.environment import directory_finder, DjerbaEnvDirError
 from djerba.util.image_to_base64 import converter
@@ -84,7 +83,7 @@ class html_renderer(logger):
         return footer
 
     def get_page_footer(self):
-        return "{0} - {1}".format(strftime('%Y-%m-%d'), self.report_id)
+        return "{0} - {1}".format('yyyy/mm/dd', self.report_id)
 
     def run(self, html, priorities, attributes):
         """

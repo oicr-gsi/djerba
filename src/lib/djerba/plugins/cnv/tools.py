@@ -84,11 +84,9 @@ class cnv_processor(logger):
                         summary=summaries.get(gene)
                     )
                     gene_info.append(gene_info_entry)
-                [level, therapies] = oncokb_levels.parse_max_actionable_level_and_therapies(
-                    row_input
-                )
                 # record therapy for all actionable alterations (OncoKB level 4 or higher)
-                if level != None:
+                therapies = oncokb_levels.parse_actionable_therapies(row_input)
+                for level in therapies.keys():
                     alt = row_input['ALTERATION']
                     alt_url = html_builder.build_alteration_url(gene, alt, oncotree_code)
                     treatment_entry = treatment_option_factory.get_json(
@@ -97,7 +95,7 @@ class cnv_processor(logger):
                         gene = gene,
                         alteration = alt,
                         alteration_url = alt_url,
-                        treatments = therapies
+                        treatments = therapies[level]
                     )
                     treatments.append(treatment_entry)
         # assemble the output
