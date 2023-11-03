@@ -509,14 +509,14 @@ class TestPriority(TestCore):
 
     def test_configure_priority(self):
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
-        djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
+        djerba_main = main(self.tmp_dir, log_level=logging.ERROR)
         with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
             config = djerba_main.configure(ini_path)
         priority_results = [
             ['core', 100, 1],
             ['demo1', 200, 2],
             ['demo2', 300, 3],
-            ['gene_information_merger', 500, 4]
+            ['gene_information_merger', 1100, 4]
         ]
         prefix = 'DEBUG:djerba.core.main:Configuring'
         template = '{0} {1}, priority {2}, order {3}'
@@ -535,7 +535,7 @@ class TestPriority(TestCore):
             ['core', 100, 1],
             ['demo2', 200, 2], # <---- changed order
             ['demo1', 300, 3],
-            ['gene_information_merger', 500, 4]
+            ['gene_information_merger', 1100, 4]
         ]
         for (name, priority, order) in priority_results:
             msg = template.format(prefix, name, priority, order)
@@ -544,7 +544,7 @@ class TestPriority(TestCore):
     def test_extract_priority(self):
         # core and merger do not have extract steps
         ini_path = os.path.join(self.test_source_dir, 'config_full.ini')
-        djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
+        djerba_main = main(self.tmp_dir, log_level=logging.ERROR)
         config = ConfigParser()
         config.read(ini_path)
         with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
@@ -573,7 +573,7 @@ class TestPriority(TestCore):
 
     def test_render_priority(self):
         json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
-        djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
+        djerba_main = main(self.tmp_dir, log_level=logging.ERROR)
         with open(json_path) as json_file:
             data = json.loads(json_file.read())
         output = djerba_main.render(data)
