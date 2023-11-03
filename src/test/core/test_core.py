@@ -412,7 +412,6 @@ class TestMainScript(TestCore):
 
     def test_configure_cli(self):
         mode = 'configure'
-        self.tmp_dir = '/u/ibancarz/tmp/test20231103'
         work_dir = self.tmp_dir
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
         out_path = os.path.join(self.tmp_dir, 'config_out.ini')
