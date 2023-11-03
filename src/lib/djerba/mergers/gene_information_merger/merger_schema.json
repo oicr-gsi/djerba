@@ -1,0 +1,13 @@
+{
+    "$id": "https://github.com/oicr-gsi/djerba/blob/GCGI-787_plugin-json-validation/src/lib/djerba/mergers/gene_information/gene_information_schema.json",
+    "type": "array",
+    "items": {
+	"type": "object",
+	"properties": {
+	    "Gene": {"type": "string" },
+	    "Gene_URL": {"type": "string" },
+	    "Summary": {"type": "string" }
+	}
+    }
+}
+

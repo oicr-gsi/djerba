@@ -37,13 +37,17 @@ class sequenza_reader(logger):
         # 'sol_id' is the value of gamma, plus the solution designator ('_primary_', 'sol2_0.49', etc.)
         zf = zipfile.ZipFile(self.zip_path)
         sol_id_set = set()
+        # zeroth pass -- get the list of filenames, excluding directories
+        name_list = [x for x in zf.namelist() if not re.search('/$', x)]
         # first pass -- populate the canonical set of gamma IDs
-        for name in zf.namelist():
+        for name in name_list:
+            if re.search('/$', name):
+                continue
             sol_id = self._parse_sol_id(name)
             sol_id_set.add(sol_id)
         self.sol_ids = sorted(list(sol_id_set))
         # second pass -- parse metrics and file locations
-        for name in zf.namelist():
+        for name in name_list:
             sol_id = self._parse_sol_id(name)
             gamma = sol_id[0]
             if re.search('_segments\.txt$', name):
@@ -119,31 +123,36 @@ class sequenza_reader(logger):
         - When actual gradient is less in magnitude than expected gradient, stop and use Nth gamma
         - Return table of working values as a list of lists (may be wanted for output)
         """
-        gammas = sorted([g[0] for g in self.sol_ids if g[1]==constants.SEQUENZA_PRIMARY_SOLUTION])
-        sol_min_id = (gammas[0], constants.SEQUENZA_PRIMARY_SOLUTION)
-        sol_max_id = (gammas[-1], constants.SEQUENZA_PRIMARY_SOLUTION)
-        delta_y = self.segment_counts[sol_max_id] - self.segment_counts[sol_min_id]
-        delta_x = sol_max_id[0] - sol_min_id[0]
-        linear_gradient = float(delta_y)/delta_x
-        chosen_sol = None
-        working_values = []
-        # columns for working_values: ['gamma', 'segments', 'gradient', 'expected']
-        working_values.append([sol_min_id[0], self.segment_counts[sol_min_id], 'NA', 'NA'])
-        for i in range(1, len(gammas)):
-            sol_id_now = (gammas[i], constants.SEQUENZA_PRIMARY_SOLUTION)
-            sol_id_previous = (gammas[i-1], constants.SEQUENZA_PRIMARY_SOLUTION)
-            delta_y = self.segment_counts[sol_id_now] - self.segment_counts[sol_id_previous]
-            delta_x = sol_id_now[0] - sol_id_previous[0]
-            gradient = float(delta_y)/delta_x
-            fields = [
-                sol_id_now[0],
-                self.segment_counts[sol_id_now],
-                gradient,
-                linear_gradient
-            ]
-            working_values.append(fields)
-            if abs(gradient) <= abs(linear_gradient) and chosen_sol==None:
-                chosen_sol = sol_id_now
+        if len(self.sol_ids)==1:
+            # test data sets may contain only a single solution
+            chosen_sol = self.sol_ids[0]
+            working_values = [chosen_sol, 'NA', 'NA', 'NA']
+        else:
+            gammas = sorted([g[0] for g in self.sol_ids if g[1]==constants.SEQUENZA_PRIMARY_SOLUTION])
+            sol_min_id = (gammas[0], constants.SEQUENZA_PRIMARY_SOLUTION)
+            sol_max_id = (gammas[-1], constants.SEQUENZA_PRIMARY_SOLUTION)
+            delta_y = self.segment_counts[sol_max_id] - self.segment_counts[sol_min_id]
+            delta_x = sol_max_id[0] - sol_min_id[0]
+            linear_gradient = float(delta_y)/delta_x
+            chosen_sol = None
+            working_values = []
+            # columns for working_values: ['gamma', 'segments', 'gradient', 'expected']
+            working_values.append([sol_min_id[0], self.segment_counts[sol_min_id], 'NA', 'NA'])
+            for i in range(1, len(gammas)):
+                sol_id_now = (gammas[i], constants.SEQUENZA_PRIMARY_SOLUTION)
+                sol_id_previous = (gammas[i-1], constants.SEQUENZA_PRIMARY_SOLUTION)
+                delta_y = self.segment_counts[sol_id_now] - self.segment_counts[sol_id_previous]
+                delta_x = sol_id_now[0] - sol_id_previous[0]
+                gradient = float(delta_y)/delta_x
+                fields = [
+                    sol_id_now[0],
+                    self.segment_counts[sol_id_now],
+                    gradient,
+                    linear_gradient
+                ]
+                working_values.append(fields)
+                if abs(gradient) <= abs(linear_gradient) and chosen_sol==None:
+                    chosen_sol = sol_id_now
         return (chosen_sol, working_values)
 
     def _find_minmax_purity_sol_id(self):

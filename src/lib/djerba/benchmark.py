@@ -11,7 +11,6 @@ import logging
 import os
 import sys
 import unittest
-import djerba.render.constants as rc
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 
@@ -82,7 +81,7 @@ class benchmarker(logger):
             sample_inputs[ini.MAF_FILE] = self.glob_single(pattern)
             pattern = '{0}/**/{1}/*summary.zip'.format(self.MAVIS_DIR, sample)
             sample_inputs[ini.MAVIS_FILE] = self.glob_single(pattern)
-            pattern = '{0}/**/{1}_*_results.sequenza.zip'.format(results_dir, sample)
+            pattern = '{0}/**/{1}_*_results.zip'.format(results_dir, sample)
             sample_inputs[ini.SEQUENZA_FILE] = self.glob_single(pattern)
             pattern = '{0}/**/{1}_*.genes.results'.format(results_dir, sample)
             sample_inputs[ini.GEP_FILE] = self.glob_single(pattern)
@@ -110,18 +109,18 @@ class benchmarker(logger):
         with open(report_path) as report_file:
             data = json.loads(report_file.read())
         for key in [
-                rc.OICR_LOGO,
-                rc.CNV_PLOT,
-                rc.PGA_PLOT,
-                rc.TMB_PLOT,
-                rc.VAF_PLOT,
-                rc.REPORT_DATE
+                constants.OICR_LOGO,
+                constants.CNV_PLOT,
+                constants.PGA_PLOT,
+                constants.TMB_PLOT,
+                constants.VAF_PLOT,
+                constants.REPORT_DATE
         ]:
             data[constants.REPORT][key] = placeholder
-        for entry in data[constants.REPORT][rc.GENOMIC_BIOMARKERS][rc.BODY]:
+        for entry in data[constants.REPORT][constants.GENOMIC_BIOMARKERS][rc.BODY]:
             # workaround for inconsistent biomarker entry formats
-            if entry[rc.ALTERATION] == rc.MSI or entry[rc.ALTERATION] == rc.TMB:
-                entry[rc.METRIC_PLOT] = placeholder
+            if entry[constants.ALTERATION] == rc.MSI:
+                entry[constants.METRIC_PLOT] = placeholder
         return data
 
     def run_comparison(self, report_dirs):
@@ -301,14 +300,14 @@ class report_equivalence_tester(logger):
         Check if input data structures are equivalent
         Expression levels are permitted to differ by +/- delta
         """
-        keys = [rc.TOP_ONCOGENIC_SOMATIC_CNVS, rc.SMALL_MUTATIONS_AND_INDELS]
+        keys = [constants.TOP_ONCOGENIC_SOMATIC_CNVS, rc.SMALL_MUTATIONS_AND_INDELS]
         expressions = []
         # find expression by gene, for both datasets, and for both SNVs/indels and CNVs
         for doc in self.data:
             expr = {}
             for key in keys:
-                for alteration in doc[key][rc.BODY]:
-                    expr[alteration[rc.GENE]] = alteration[rc.EXPRESSION_METRIC]
+                for alteration in doc[key][constants.BODY]:
+                    expr[alteration[constants.GENE]] = alteration[rc.EXPRESSION_METRIC]
             expressions.append(expr)
         # compare the two expression dictionaries
         if set(expressions[0].keys()) != set(expressions[1].keys()):
@@ -346,11 +345,11 @@ class report_equivalence_tester(logger):
     def remove_expression(self):
         # return a copy of the Djerba report with expression values zeroed out
         data_copy = deepcopy(self.data)
-        keys = [rc.TOP_ONCOGENIC_SOMATIC_CNVS, rc.SMALL_MUTATIONS_AND_INDELS]
+        keys = [constants.TOP_ONCOGENIC_SOMATIC_CNVS, rc.SMALL_MUTATIONS_AND_INDELS]
         for doc in data_copy:
             for key in keys:
-                for alteration in doc[key][rc.BODY]:
-                    alteration[rc.EXPRESSION_METRIC] = 0
+                for alteration in doc[key][constants.BODY]:
+                    alteration[constants.EXPRESSION_METRIC] = 0
         return data_copy
 
 

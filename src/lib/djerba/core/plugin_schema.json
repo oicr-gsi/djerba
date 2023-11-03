@@ -1,0 +1,29 @@
+{
+    "$id": "https://github.com/oicr-gsi/djerba/blob/GCGI-787_plugin-json-validation/src/lib/djerba/core/plugin_schema.json",
+    "type": "object",
+    "properties":
+    {
+	"plugin_name": {"type": "string" },
+	"priorities": {
+	    "type": "object",
+	    "properties": {
+		"configure": {"type": "integer"},
+		"extract": {"type": "integer"},
+		"render": {"type": "integer"}
+	    }
+	},
+	"attributes": {
+	    "type": "array",
+	    "items": {
+		"type": "string",
+		"enum": ["clinical", "supplementary", "failed"]
+	    }
+	},
+	"merge_inputs": {"type": "object"},
+	"results": {"type": "object"},
+	"version": {"type": "string"}
+    },
+    "required": [
+	"plugin_name", "priorities", "attributes", "merge_inputs", "results", "version"
+    ]
+}

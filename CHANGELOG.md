@@ -53,6 +53,286 @@
 ### Fixed
 - GCGI-870: Fix for biomarker annotation cache; required for benchmark cron
 
+## v1.0.0-dev0.0.23: 2023-11-03
+
+### GCGI-1125
+- Update core tests
+
+## v1.0.0-dev0.0.22: 2023-11-03
+
+### GCGI-1155
+- Do not auto-generate the date in PDF page footer; use yyyy/mm/dd placeholder instead
+
+### GCGI-1154
+- Ensure therapies for the same gene with different OncoKB levels are distinct
+
+## v1.0.0-dev0.0.21: 2023-11-01
+
+### GCGI-1153
+- Fix syntax errors in assay selection for setup
+
+## v1.0.0-dev0.0.20: 2023-11-01
+
+### GCGI-1147
+- Generate URL after updating BRAF protein name
+
+### GCGI-1128
+- SNV filtering bugfix
+
+### Other
+- Update README
+- Additional options in setup
+- Priority fix for failed report plugin
+- Date in report sign-off
+- Add OncoKB links for actionable CNVs
+
+## v1.0.0-dev0.0.19: 2023-10-31
+
+### GCGI-1146
+- OncoKB links for CNVs in therapy tables
+
+### GCGI-1145
+- Automatically fill in current date in report author line of sign-offs
+
+### GCGI-1144
+- Exclude mutations rated below Likely Oncogenic (including Inconclusive) from CNV gene info
+
+### GCGI-1128
+- Exclude 5'Flank mutations (other than TERT) when filtering MAF
+
+## v1.0.0-dev0.0.18: 2023-10-30
+
+### GCGI-1143
+- Removed extra break-end in 'Definitions', before 'Expression Percentile'
+- Removed 'genes tested' from disclaimer
+- Changed report ID to be tumour ID + version only
+
+### GCGI-1142
+- Removed any building of gene info from genomic landscape plugin
+
+### GCGI-1129
+- Only report fusion genes if rated Likely Oncogenic or higher
+
+### GCGI-1130
+- Fix order of columns in snv/indel table
+
+## v1.0.0-dev0.0.17: 2023-10-30
+
+### GCGI-1132: Provenance helper fixes
+- Add discovered INI parameters for tumour ID and normal ID
+- Ensure `sample_info.json` is consistent with manual INI configuration
+- Handle missing `input_params.json` without crashing
+- Do not rewrite provenance subset at config step, if file is already present
+
+## v1.0.0-dev0.0.16: 2023-10-27
+- Add genomic landscape plugin to `setup.py`
+
+## v1.0.0-dev0.0.15: 2023-10-26
+
+### GCGI-1127: Genomic Landscape AttributeError
+- Fixed AttibuteError in genomic landscape plugin
+
+## v1.0.0-dev0.0.14: 2023-10-26
+- Fix for missing `__init__.py`
+
+## v1.0.0-dev0.0.13: 2023-10-26
+
+### GCGI-1118, GCGI-1120
+- Delete obsolete code
+- Temporarily disable `benchmark.py` script
+
+### GCGI-1124
+- Enable `setup` mode in `djerba.py` to generate an INI file
+- Fixed config omissions in fusion plugin and expression helper
+- Move `update_wrapper_if_null` method to `configurable` class
+
+### GCGI-1116
+- Make a new `djerba.util.directory_finder` class
+- Use it to replace various ad hoc methods for finding directories from environment vars
+
+### GCGI-1122
+- Output placeholder values
+
+### GCGI-1123: Gene information threshold
+- Correct reporting threshold for gene information merger in the CNV and SNV/indel plugins
+
+### GCGI-836: Enable archiving
+- Enable archiving to CouchDB
+- Simplify previous archiving code; get rid of `archiver.py` and just use `database.py`
+- Fixes to POST operation to update existing documents; now confirmed as working
+
+### GCGI-1113: System integration
+- Minor bugfixes to allow successful generation of integrated report
+- Split supplementary plugin into `body` and (extremely simple) `header` plugins
+- New `supplement.header` plugin allows exact control of header location
+- Update default priorities for correct rendering order in WGTS report
+- Warn if default author name is in use; OK for testing, not allowed in production
+- Automatically discover sequenza path, oncotree code, tumour id in `cnv` plugin
+- Further simplification of INI parameters for `cnv` and `snv_indel` plugins
+- Check purity is consistent between `input_params_helper` and `cnv` plugin
+- Validation checks on `input_params_helper` config values
+
+## v1.0.0-dev0.0.12: 2023-10-19
+
+### GCGI-1114: Fix for tar plugin install
+- Add `djerba.plugins.tar.snv_indel.snv_indel_tools` to `setup.py`
+
+### GCGI-1108: Remove djerba.render dependencies
+- Remove dependencies on obsolete files
+- Concludes work started in GCGI-1070
+- Corrects path to `gencode_v33_hg38_genes.bed`
+
+### GCGI-1070: Delete obsolete files
+- Delete obsolete files from Djerba classic
+- Temporary reprieve for files in `render` still in use by plugins
+
+### GCGI-1091: Record extraction time in core JSON
+- Record the extraction time in UTC for later reference
+
+### Fixed
+- Fix logging bug for check on author name
+
+## v1.0.0-dev0.0.11: 2023-10-17
+
+### GCGI-1106: Update setup
+- Update `setup.py` to correctly install data files
+- Installation must include core, plugins, helpers, mergers
+- Also updated dependencies in `setup.py`
+- GCGI-993 will handle this in a decentralized way, but is out of scope for v1.0.0
+
+### GCGI-1083: SNV and CNV updates
+- Rework the draft SNV/indel plugin to make it production ready
+
+## v1.0.0-dev0.0.10: 2023-10-17
+
+### GCGI-1105: Add initializer to directories
+- Added __init__.py files to directories where it was missing
+
+## v1.0.0-dev0.0.9: 2023-10-16
+
+### GCGI-1083: SNV and CNV updates
+- Rework the draft CNV plugin to make it production ready
+
+### GCGI-1077: Merger JSON factories
+- Add factory classes to generate correct JSON for mergers; use in the fusion plugin
+
+### GCGI-1076: Gene information merger update
+- Add a Mako template to render correctly formatted HTML
+
+### GCGI-819: Fusions plugin
+- Plugin to generate 'Structural Variants and Fusions' section of report
+
+### GCGI-1075: Provenance helper update
+- Write a `path_info.json` file to the workspace
+- Contains commonly used paths for use by other plugins/helpers
+
+### GCGI-1071: Expression helper
+- Helper class to compute gene expression levels from RSEM results
+
+### GCGI-1035: Treatment options merger
+- Generate the "Treatment Options" section of the report
+- Include both "FDA Approved" and "Investigational Therapies"
+
+## v1.0.0-dev0.0.8: 2023-08-11
+
+### GCGI-963: Case overview plugin
+- Renamed the patient info plugin
+- Brought up to date with new display format from master
+- Now supports WGTS, WGS, and TAR
+
+### GCGI-1016: Default working directory
+- Make `--work-dir` optional in `djerba.py` script; defaults to the output dir
+
+### Other
+- In clinical report footer, added "Report Sign-Offs" heading and removed auto-generation of the date
+- Added `summary` plugin to generate the genomic summary text
+- Added `supplement` plugin to generate supplementary info (definitions, software versions, etc.)
+
+## v1.0.0-dev0.0.7: 2023-08-02
+
+### GCGI-963: Patient info plugin
+- Simple plugin to generate the Clinical Research Report header and Case Overview section
+
+### GCGI-982: Provenance helper update
+- Update to complement changes to core functionality
+- Writes subset of provenance and `sample_info.json` at both configure and extract
+
+## v0.4.13: 2023-07-31
+
+### Changed
+- GCGI-989: Made adjustments to biomarker plots
+- GCGI-1011: Update to find new sequenza file path
+
+### Added
+- example .pdf and .ini of WGTS report in `examples/`
+
+## v1.0.0-dev0.0.6: 2023-07-20
+
+### GCGI-967: Overhaul core functionality
+- Define core INI parameters and implement in `core_configurer`
+- Get rid of placeholder data at the core extract step
+- Add PDF rendering to the core
+- Introduce `document_config.json` with settings to render HTML
+- Render multiple HTML/PDF documents, identified by attributes (clinical, research, etc)
+- Add a `mako_renderer` utility class with tests
+
+### GCGI-950: Attributes
+- Represent attributes as a comma-separated list, instead of individual parameters
+- Add a method to check all attributes are known
+- Define a list of known attributes in `configurable` class; may override in subclasses
+
+### GCGI-951: Dependencies
+- Explicitly represent plugin dependencies with INI parameters
+- Params `depends_configure` and `depends_extract` expect a comma-separated list of component names, which will be checked at runtime
+- Do not define a dependency param at the render step; JSON output from each plugin is expected to be self-contained, so all dependencies should be resolved at the extract step.
+
+### GCGI-955: `specify_params`
+- Each plugin must have a `specify_params` method to define required and optional INI parameters
+- Using an INI parameter not defined in `specify_params` will cause an error
+- Refactor INI and priority handling to enable `specify_params`
+
+### Other
+- Strict substitution for environment variable templates; consistent with HOWTO on wiki
+
+## v0.4.12: 2023-07-19
+
+### Changed
+- GCGI-956: The TMB plot has been moved to a linear format and the PGA plot has been removed
+
+### Added
+- GCGI-957: The number of candidate SNVs for the pWGS assay are listed in Genomic Landscape section
+
+## v1.0.0-dev0.0.5: 2023-07-04
+
+### GCGI-946: Versioning for plugins
+- All plugins must output a "version" string in the JSON
+- Updated `plugin_schema.json`, demo plugins, and tests
+
+### GCGI-875: Simplify configurable interface
+- Initialize components with a single `**kwargs` variable, for ease of calling superclass
+- New `config_wrapper` class, with methods to read/edit the INI
+- Reorganize core config classes into a single `configure.py` file
+
+## v0.4.11: 2023-06-27
+
+### Changed
+- GCGI-864: removed annotation of 5'UTR, 3'UTR, and 3'Flank. 5'Flank only annotated if TERT
+- Sample QC results moved to below summary
+- Split some `Case Overview` section into a new `Patient and Physician` section
+- Removed tracking of patient's genetic sex
+- GCGI-943: Overrode HGVSp for BRAF V640E to be represented as V600E
+- GCGI-942: Changed expected maf file extension from '.filter.deduped.realigned.recalibrated.mutect2.filtered.maf.gz' to '.mutect2.filtered.maf.gz'
+
+## v0.4.10: 2023-06-06
+
+### Changed
+- ACD -> ACDx
+- Added "-" between date and report name in footer
+- GCGI-806: Modify `benchmark.py` interface; remove `--compare-all` option; add `--delta` argument for permitted difference in expression levels
+
+### Fixed
+- GCGI-870: Fix for biomarker annotation cache; required for benchmark cron
+
 ## v0.4.9: 2023-05-15
 
 ### Changed
@@ -74,6 +354,39 @@
 - GCGI-853: fixed and cleaned annotation of genomic biomarkers
 - GCGI-852: Correct file metatype for Mavis summary files
 
+## v1.0.0-dev0.0.4: 2023-05-04
+
+### GCGI-850: Priority order for components
+- Control the order of configure/extract/render steps for all components
+- A "component" is shorthand for a plugin, helper, or merger
+- Introduce _priority_; steps are run from lowest to highest priority number
+- Priority allows us to manage dependencies between components
+- At configure (but not extract or render), the core has a priority which can be modified
+- Parameters in INI and JSON for configure/render/extract priority
+
+### Change to API
+
+Configure and extract methods for a component take the entire ConfigParser object, not a section. This allows access to the config parameters of other components; as well as methods of ConfigParser, such as `set` and `getint`. While a component can _read_ any INI section during the configure step, it can only _write_ to its own named section of the INI.
+
+### GCGI-837: Toolbox for configuration in `configurable.py`
+
+Methods inherited by all components:
+- Required/default parameters and parameter validation
+- Get special directory paths from environment variables
+- Handle component priorities
+- Get/set/query INI params (other than priority levels)
+
+## v1.0.0-dev0.0.3: 2023-04-19
+
+- Bugfix for generating default JSON path in `core/main.py`
+
+## v1.0.0-dev0.0.2: 2023-04-19
+
+- GCGI-826: Update the main `djerba.py` script to run core/plugins, with tests. New `report` mode replaces `all` and `draft`. Supported modes: `configure`, `extract`, `html`, `report`. Other modes are TODO.
+- GCGI-827: Workspace class with tests. Represents a shared directory to read/write files, similar to the "report" directory in classic Djerba.
+- GCGI-838: Introducing "helper" modules, with an example which copies a subset of file provenance to the workspace.
+- GCGI-839: Methods to read/write core config in the workspace, so it can be used by plugins
+
 ## v0.4.7: 2023-04-13
 
 ### Added
@@ -81,6 +394,16 @@
 
 ### Fixed
 - GCGI-810: Do not exit prematurely when finding benchmark inputs
+
+## v1.0.0-dev0.0.1: 2023-04-11
+
+- Pre-release for development of v1.1.0
+- This will be the first of several pre-releases to track core/plugin development
+- Git branch for pre-releases will be `GCGI-806_v1.0.0-dev`, not `master` GCGI-806_v1.0.0-dev
+
+### Added
+
+- Working prototypes of core/plugin functionality and testing
 
 ## v0.4.6: 2023-04-06
 

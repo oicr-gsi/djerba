@@ -1,0 +1,26 @@
+{
+    "attributes": ["clinical"],
+    "priorities": {"configure": 300, "extract": 300, "render": 300},
+    "merge_inputs": {
+        "gene_information_merger": [
+            {
+                "Chromosome": "3q26.32",
+                "Gene": "PIK3CA",
+                "Gene_URL": "https://www.oncokb.org/gene/PIK3CA",
+                "Summary": "PIK3CA, the catalytic subunit of PI3-kinase, is frequently mutated in a diverse range of cancers including breast, endometrial and cervical cancers."
+            },
+            {
+                "Chromosome": "3q22.3",
+                "Gene": "PIK3CB",
+                "Gene_URL": "https://www.oncokb.org/gene/PIK3CB",
+                "Summary": "PIK3CB, a catalytic subunit of PI3-kinase, is altered by amplification or mutation in various cancer types."
+            }
+        ]
+    },
+    "plugin_name": "demo2 plugin",
+    "results": {
+        "answer": "42",
+	"question": "What do you get if you multiply six by nine?"
+    },
+    "version": "1.0.0"
+}

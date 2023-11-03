@@ -1,0 +1,52 @@
+<!--This file is the HTML code for the sWGS section of the report.-->
+<!--AUTHOR: Aqsa Alam-->
+
+<!-- IMPORTS -->
+<%
+  from djerba.util.html import html_builder
+  from djerba.plugins.tar.render import html_builder as tar_html_builder
+  import djerba.plugins.tar.swgs.constants as constants
+%>
+  
+  
+<!-- Copy Number Variants -->
+${html_builder().section_cells_begin("<h2>Shallow Whole Genome Sequencing</h2>","main")}
+
+
+       % if results.get(constants.PASS_TAR_PURITY) and results.get(constants.CLINICALLY_RELEVANT_VARIANTS) > 0:
+          <p>      
+                The alterations below are oncogenic as defined by OncoKB. 
+		<!--Small regions (&#60;3mb) with large copy number gains marked as &#9650 in plot below.-->
+          </p>
+
+       % elif results.get(constants.PASS_TAR_PURITY) and results.get(constants.CLINICALLY_RELEVANT_VARIANTS) == 0:
+           <p>
+                No oncogenic mutations were uncovered.
+                <!--Small regions (&#60;3mb) with large copy number gains marked as &#9650 in plot below.-->
+          </p>
+
+       % else:
+          <p>
+		The estimated coverage-derived tumour fraction was below the limit of 10&#37; for reporting copy number variants.
+		<!--Small regions (&#60;3mb) with large copy number gains marked as &#9650 in plot below.-->
+          </p>
+
+       % endif
+
+      % if results.get(constants.PASS_TAR_PURITY):
+          % if results.get(constants.CLINICALLY_RELEVANT_VARIANTS) > 0:
+                <table class="variants" width="100%">
+                ${tar_html_builder().oncogenic_CNVs_header(results)}
+                <tbody>
+                % for row in tar_html_builder().oncogenic_CNVs_rows(results):
+                      ${row}
+                % endfor
+                </table>
+                </tbody>
+                </table>
+	        </table>
+
+          % endif
+      % endif
+      
+${html_builder().section_cells_end()}

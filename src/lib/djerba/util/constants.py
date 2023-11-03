@@ -49,8 +49,7 @@ SETUP = 'setup'
 CONFIGURE = 'configure'
 DRAFT = 'draft'
 EXTRACT = 'extract'
-HTML = 'html'
-PDF = 'pdf'
+RENDER = 'render'
 ALL = 'all'
 
 # mode names for benchmark.py
@@ -64,3 +63,22 @@ MAVIS_SUBDIR_NAME = 'mavis'
 REPORT = 'report'
 SUPPLEMENTARY = 'supplementary'
 CONFIG = 'config'
+
+# for benchmark.py
+OICR_LOGO = 'oicr_logo'
+CNV_PLOT = 'cnv_plot'
+PGA_PLOT = 'pga_plot'
+TMB_PLOT = 'tmb_plot'
+VAF_PLOT = 'vaf_plot'
+REPORT_DATE = 'report_date'
+GENOMIC_BIOMARKERS = 'genomic_biomarkers'
+BODY = 'Body'
+ALTERATION = 'Alteration'
+MSI = 'MSI'
+METRIC_PLOT = 'Genomic biomarker plot' 
+TOP_ONCOGENIC_SOMATIC_CNVS = 'oncogenic_somatic_CNVs'
+SMALL_MUTATIONS_AND_INDELS = 'small_mutations_and_indels'
+GENE = 'Gene'
+EXPRESSION_METRIC = 'Expression Percentile'
+
+

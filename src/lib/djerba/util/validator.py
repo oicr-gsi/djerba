@@ -79,7 +79,10 @@ class config_validator(logger):
         return valid
 
 class config_plugin_validator(config_validator):
-    """Check that plugin INI parameters are valid"""
+    """
+    Check that plugin INI parameters are valid
+    This is for the demo class in `prototypes` -- may be superseded later
+    """
 
     def __init__(self, core_schema, plugin_name, required, optional,
                  log_level=logging.WARNING, log_path=None):
@@ -141,8 +144,8 @@ class path_validator(logger):
 
     def validate_input_dir(self, path):
         """Confirm an input directory exists and is readable"""
-        if not path:
-            error = "Input path '%s' is not a valid path value" % path
+        if not isinstance(path, str):
+            error = "Input path '%s' is not a string" % path
         elif not os.path.exists(path):
             error = "Input path %s does not exist" % path
         elif not os.path.isdir(path):

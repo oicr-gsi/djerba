@@ -1,0 +1,24 @@
+{
+    "attributes": ["clinical"],
+    "plugin_name": "cnv_detector",
+    "priorities": {"configure": 100, "extract": 100, "render": 100},
+    "merge_inputs": {
+	"definitions": {
+	    "alpha": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+	    "beta": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+	},
+	"description": {
+	    "title": "CNV Detector",
+	    "body": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+	},
+	"treatment_options": [],
+	"gene_information": []
+    },
+    "results": {
+        "Total variants": 40,
+        "Clinically relevant variants": 0,
+        "Body": [
+        ]
+    },
+    "version": "1.0.0"
+}

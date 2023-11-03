@@ -5,10 +5,14 @@
 djerba.egg-info
 build
 dist
+.coverage
 .idea
 .project
 .pydevproject
 djerba.log
 *.DS_Store
 *.Rhistory
+*.RData
 *.vscode
+# Sphinx build files
+_build

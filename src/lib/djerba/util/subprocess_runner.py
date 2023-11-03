@@ -11,7 +11,8 @@ class subprocess_runner(logger):
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
 
-    def run(self, command, description='subprocess', redact=[]):
+    def run(self, command, description='subprocess', redact=[], stdin=None, raise_err=True,
+            truncate=True):
         msg = None
         if isinstance(command, str) or not isinstance(command, Iterable):
             msg = "Command must be a non-string iterable: Received {0}".format(command)
@@ -27,16 +28,30 @@ class subprocess_runner(logger):
         else:
             logged_command = ' '.join(command)
         self.logger.info("Running {0}: '{1}'".format(description, logged_command))        
-        result = subprocess.run(command, capture_output=True, encoding=constants.TEXT_ENCODING)
-        stdout = result.stdout
-        stderr = result.stderr
+        result = subprocess.run(
+            command,
+            input = stdin,
+            capture_output=True,
+            encoding=constants.TEXT_ENCODING,
+        )
+        stdout = str(result.stdout)
+        stderr = str(result.stderr)
+        if len(stdout) > 10000 and truncate:
+            self.logger.debug('Truncating STDOUT to first 10000 characters; '+\
+                              'set truncate=False for full output')
+            stdout = stdout[0:10000]+' (additional characters truncated)'
+        if len(stderr) > 10000 and truncate:
+            self.logger.debug('Truncating STDERR to first 10000 characters; '+\
+                              'set truncate=False for full output')
+            stderr = stderr[0:10000]+' (additional characters truncated)'
         try:
             result.check_returncode()
         except subprocess.CalledProcessError as err:
             self.logger.error("Failed to run {0}: {1}".format(description, err))
             self.logger.error("{0} STDOUT: '{1}'".format(description, stdout))
             self.logger.error("{0} STDERR: '{1}'".format(description, stderr))
-            raise
+            if raise_err:
+                raise
         self.logger.info("Successfully ran {0}".format(description))
         self.logger.debug("{0} STDOUT: '{1}'".format(description, stdout))
         self.logger.debug("{0} STDERR: '{1}'".format(description, stderr))
