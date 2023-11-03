@@ -340,7 +340,7 @@ class TestCoreConfigurer(TestCore):
         with open(info_path, 'w') as out_file:
             print(json.dumps(info), file=out_file)
         config = self.run_core_config()
-        self.assertEqual('foo_bar-v1', config.get('core', 'report_id'))
+        self.assertEqual('foo-v1', config.get('core', 'report_id'))
         config.set('core', 'report_id', 'placeholder')
         self.assert_core_config(config)
 
