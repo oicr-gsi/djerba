@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.0.0: 2023-11-03
+- First production release of new plugin-based Djerba
+- Other than version number, code is identical to `v1.0.0-dev0.0.23`
+
 ## v1.0.0-dev0.0.23: 2023-11-03
 
 ### GCGI-1125
