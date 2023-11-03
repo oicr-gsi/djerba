@@ -1,4 +1,9 @@
 
+<%
+  from time import strftime
+%>
+
+
 <hr class="header-big-line" style="width:100%; align:right; page-break-before:always;">
 
 <h2>Report Sign-offs</h2>
@@ -7,7 +12,7 @@
 
 <table class="suppl" width="100%">
     <tr>
-      <td width="33%">Report drafted by ${author} on yyyy/mm/dd</td>
+      <td width="33%">Report drafted by ${author} on ${strftime("%Y/%m/%d")}</td>
     </tr>
     <tr>
       <td width="33%">Report electronically signed out by Trevor Pugh, PhD, FACMG (ABMS #1027812) on yyyy/mm/dd</td>
