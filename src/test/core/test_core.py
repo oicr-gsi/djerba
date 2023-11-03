@@ -131,7 +131,7 @@ class TestArgs(TestCore):
         out_path = None
         json = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
         args = self.mock_args(mode, work_dir, ini_path, out_path, json, self.tmp_dir, False)
-        main(work_dir, log_level=logging.WARNING).run(args)
+        main(work_dir, log_level=logging.ERROR).run(args)
         filename = 'placeholder_report.clinical.html'
         with open(os.path.join(self.tmp_dir, filename)) as html_file:
             html_string = html_file.read()
@@ -147,7 +147,7 @@ class TestArgs(TestCore):
         html = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         pdf = False
         args = self.mock_args(mode, work_dir, ini_path, out_path, json, self.tmp_dir, pdf)
-        main(work_dir, log_level=logging.WARNING).run(args)
+        main(work_dir, log_level=logging.ERROR).run(args)
         self.assertSimpleReport(json, html)
 
 class TestConfigExpected(TestCore):
