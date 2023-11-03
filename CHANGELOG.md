@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+### GCGI-1154
+- Ensure therapies for the same gene with different OncoKB levels are distinct
+
 ## v1.0.0-dev0.0.21: 2023-11-01
 
 ### GCGI-1153
