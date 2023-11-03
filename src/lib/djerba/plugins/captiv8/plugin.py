@@ -28,12 +28,13 @@ class main(plugin_base):
         work_dir = self.workspace.get_work_dir()
         captiv8_path = config[self.identifier]['captiv8_path']
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
-        captiv8_base64 = self.write_captiv8_plot(work_dir, captiv8_path)       
+        captiv8_base64 = self.write_captiv8_plot(work_dir, captiv8_path)
+        eligibility_vector = preprocess_captiv8(captiv8_path)
         results =  {
                 'files': 
                     {'captiv8_path': captiv8_path},
-                'captiv8-score': 8,
-                'eligibility': "eligible",
+                'captiv8-score': int(eligibility_vector[2]),
+                'eligibility': eligibility_vector[1].lower(),
                 'captiv8_base64' : captiv8_base64
             }
         data['results'] = results
@@ -60,3 +61,11 @@ class main(plugin_base):
         ]
         pwgs_results = subprocess_runner().run(args)
         return(pwgs_results.stdout.split('"')[1])
+    
+def preprocess_captiv8(captiv8_file):
+    with open(captiv8_file, 'r') as captiv8_data:
+        reader_file = csv.reader(captiv8_data, delimiter="\t")
+        for row in reader_file:
+            if row[0] == "Eligibility":
+                eligibility_vector = row
+    return eligibility_vector

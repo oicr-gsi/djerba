@@ -5,3 +5,4 @@ import djerba.util.oncokb.constants as oncokb_constants
 
 CAPTIV8_PLOT = 'captiv8_base64'
 ELIGIBILITY = 'eligibility'
+SCORE = 'captiv8-score'
