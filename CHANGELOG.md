@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+### GCGI-1125
+- Update core tests
+
 ## v1.0.0-dev0.0.22: 2023-11-03
 
 ### GCGI-1155
