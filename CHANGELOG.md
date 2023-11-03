@@ -2,6 +2,9 @@
 
 ## v1.0.0-dev0.0.22: 2023-11-03
 
+### GCGI-1155
+- Do not auto-generate the date in PDF page footer; use yyyy/mm/dd placeholder instead
+
 ### GCGI-1154
 - Ensure therapies for the same gene with different OncoKB levels are distinct
 
