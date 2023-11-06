@@ -10,13 +10,19 @@ In other words: You are welcome to write your own plugins!
 
 Support for external development is a work in progress. Known issues are listed on [Github](https://github.com/oicr-gsi/djerba/issues); feel free to [contact](contact) the Djerba developers with any additional questions or concerns.
 
+## Requirements
+
+The Djerba core is written in pure Python. Minimum required version of Python is `3.10`.
+
+Djerba is developed and tested using [Ubuntu 20.04 LTS](https://releases.ubuntu.com/focal/). Alternative operating systems such as other Linux distributions, MacOS, and Windows might work but are not supported.
+
+Plugins are designed for flexibility, and can do any data processing the user desires. As such, they are likely to have additional dependencies. For example, several plugins developed by CGI use the [R language](https://www.r-project.org/about.html).
+
 ## Installation
 
-The Djerba core is written in pure Python and can be installed using `pip`. (Plugins may have additional dependencies, for example on the [R language](https://www.r-project.org/about.html).)
+Djerba has a [setup.py script](https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/#setup-py) and can be installed using [pip](https://packaging.python.org/en/latest/tutorials/installing-packages/).
 
-Minimum required version of Python is `3.10`.
-
-Djerba _may_ be installed in a Python [virtual environment](https://docs.python.org/3/library/venv.html). Alternatively, it may be installed as a normal Python package in a location of the user's choice.
+Djerba may be installed in a Python [virtual environment](https://docs.python.org/3/library/venv.html). Alternatively, it may be installed as a normal Python package in a location of the user's choice.
 
 ### Example installation in a virtual environment
 
