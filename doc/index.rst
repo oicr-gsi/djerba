@@ -11,7 +11,7 @@ Djerba documentation
 
    about
    plugin_howto
-   guide
+   plugin_methods
 
 
 

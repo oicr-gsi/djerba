@@ -14,5 +14,5 @@ Licensed under the [GPL 3.0 license](https://www.gnu.org/licenses/gpl-3.0.en.htm
 
 ## Further Reading
 
-- [Plugin Developers' Guide](./plugin_howto.html): Overview of how to write plugins
-- [Methods of plugin objects](./plugin_methods.html): Useful methods common to all plugins
+- :doc:`Plugin Developer's Guide<plugin_howto>`: Overview of how to write plugins
+- :doc:`Methods of plugin objects<plugin_methods>`: Useful methods common to all plugins
