@@ -2,8 +2,6 @@
 
 # Plugin Developer's Guide
 
-**NOTE:** Djerba under active development prior to launch of version 1.0, and this document may not reflect recent code changes. If in doubt, contact the development team.
-
 ## Purpose of this document
 
 Meeting the basic technical requirements of a plugin is straightforward. Simple examples include the [demo1](https://github.com/oicr-gsi/djerba/blob/GCGI-806_v1.0.0-dev/src/lib/djerba/plugins/demo1/plugin.py) and [demo2](https://github.com/oicr-gsi/djerba/blob/GCGI-806_v1.0.0-dev/src/lib/djerba/plugins/demo2/plugin.py) plugins in the main Djerba repository.
