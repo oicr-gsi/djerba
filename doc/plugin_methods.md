@@ -1,3 +1,5 @@
+(plugin_methods)=
+
 # Methods of plugin objects
 
 This document describes methods provided by Djerba for plugin development.

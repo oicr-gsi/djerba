@@ -1,3 +1,5 @@
+(plugin_developers_guide)=
+
 # Plugin Developer's Guide
 
 **NOTE:** Djerba under active development prior to launch of version 1.0, and this document may not reflect recent code changes. If in doubt, contact the development team.

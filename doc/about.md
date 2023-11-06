@@ -1,3 +1,5 @@
+(plugin_methods)=
+
 # Introduction
 
 ## About Djerba
@@ -14,5 +16,5 @@ Licensed under the [GPL 3.0 license](https://www.gnu.org/licenses/gpl-3.0.en.htm
 
 ## Further Reading
 
-- :doc:`Plugin Developer's Guide<plugin_howto>`: Overview of how to write plugins
-- :doc:`Methods of plugin objects<plugin_methods>`: Useful methods common to all plugins
+- [](plugin_developers_guide): Overview of how to write plugins
+- [](plugin_methods): Useful methods common to all plugins
