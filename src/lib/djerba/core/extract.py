@@ -25,13 +25,6 @@ class extraction_setup(core_base):
         core_params = {x: config.get(cc.CORE, x) for x in core_config_keys}
         # add the timestamp in UTC
         core_params[cc.EXTRACT_TIME] = time.strftime('%Y-%m-%d_%H:%M:%SZ', time.gmtime())
-        if core_params[cc.AUTHOR] == cc.DEFAULT_AUTHOR:
-            msg = 'Default author name "{}" is in use; '.format(cc.DEFAULT_AUTHOR)+\
-                "if this is a production report, name MUST be set to an authorized individual"
-            self.logger.warning(msg)
-        else:
-            msg = "User-configured author name is '{0}'".format(core_params[cc.AUTHOR])
-            self.logger.debug(msg)
         return core_params
 
     def _get_merger_params(self, config):

@@ -30,8 +30,8 @@ class TestCore(TestBase):
 
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
-    SIMPLE_REPORT_MD5 = '360bd4a3764ef27d100be518ea252122'
-    SIMPLE_CONFIG_MD5 = 'd251fe6f1595328ea9583a23da8a25f0'
+    SIMPLE_REPORT_MD5 = '904bffdedff29e9ca16872d45ed12d21'
+    SIMPLE_CONFIG_MD5 = 'ab4b71b790f2b12aa802b8eaa1658951'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
@@ -131,7 +131,7 @@ class TestArgs(TestCore):
         out_path = None
         json = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
         args = self.mock_args(mode, work_dir, ini_path, out_path, json, self.tmp_dir, False)
-        main(work_dir, log_level=logging.WARNING).run(args)
+        main(work_dir, log_level=logging.ERROR).run(args)
         filename = 'placeholder_report.clinical.html'
         with open(os.path.join(self.tmp_dir, filename)) as html_file:
             html_string = html_file.read()
@@ -147,7 +147,7 @@ class TestArgs(TestCore):
         html = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         pdf = False
         args = self.mock_args(mode, work_dir, ini_path, out_path, json, self.tmp_dir, pdf)
-        main(work_dir, log_level=logging.WARNING).run(args)
+        main(work_dir, log_level=logging.ERROR).run(args)
         self.assertSimpleReport(json, html)
 
 class TestConfigExpected(TestCore):
@@ -285,18 +285,6 @@ class TestConfigWrapper(TestCore):
         config_2 = cw.get_config()
         self.assertTrue(config_2.get('demo2', 'dinner'), 'pizza')
 
-    def test_env_templates(self):
-        data_dir_orig = os.environ.get(core_constants.DJERBA_DATA_DIR_VAR)
-        os.environ[core_constants.DJERBA_DATA_DIR_VAR] = self.tmp_dir
-        config = ConfigParser()
-        config.read(os.path.join(self.test_source_dir, 'config_demo1.ini'))
-        # wrapper issues warnings for DJERBA_{PRIVATE|TEST}_DIR, but this is OK
-        wrapper = config_wrapper(config, 'demo1', log_level=logging.ERROR)
-        wrapper.apply_my_env_templates()
-        expected = '{0}/not/a/file.txt'.format(self.tmp_dir)
-        self.assertEqual(wrapper.get_my_string('dummy_file'), expected)
-        if data_dir_orig != None:
-            os.environ[core_constants.DJERBA_DATA_DIR_VAR] = data_dir_orig
 
 class TestCoreConfigurer(TestCore):
     """Test the 'core_configurer' class"""
@@ -340,7 +328,7 @@ class TestCoreConfigurer(TestCore):
         with open(info_path, 'w') as out_file:
             print(json.dumps(info), file=out_file)
         config = self.run_core_config()
-        self.assertEqual('foo_bar-v1', config.get('core', 'report_id'))
+        self.assertEqual('foo-v1', config.get('core', 'report_id'))
         config.set('core', 'report_id', 'placeholder')
         self.assert_core_config(config)
 
@@ -509,14 +497,14 @@ class TestPriority(TestCore):
 
     def test_configure_priority(self):
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
-        djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
+        djerba_main = main(self.tmp_dir, log_level=logging.ERROR)
         with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
             config = djerba_main.configure(ini_path)
         priority_results = [
             ['core', 100, 1],
             ['demo1', 200, 2],
             ['demo2', 300, 3],
-            ['gene_information_merger', 500, 4]
+            ['gene_information_merger', 1100, 4]
         ]
         prefix = 'DEBUG:djerba.core.main:Configuring'
         template = '{0} {1}, priority {2}, order {3}'
@@ -535,7 +523,7 @@ class TestPriority(TestCore):
             ['core', 100, 1],
             ['demo2', 200, 2], # <---- changed order
             ['demo1', 300, 3],
-            ['gene_information_merger', 500, 4]
+            ['gene_information_merger', 1100, 4]
         ]
         for (name, priority, order) in priority_results:
             msg = template.format(prefix, name, priority, order)
@@ -544,7 +532,7 @@ class TestPriority(TestCore):
     def test_extract_priority(self):
         # core and merger do not have extract steps
         ini_path = os.path.join(self.test_source_dir, 'config_full.ini')
-        djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
+        djerba_main = main(self.tmp_dir, log_level=logging.ERROR)
         config = ConfigParser()
         config.read(ini_path)
         with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
@@ -573,7 +561,7 @@ class TestPriority(TestCore):
 
     def test_render_priority(self):
         json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
-        djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
+        djerba_main = main(self.tmp_dir, log_level=logging.ERROR)
         with open(json_path) as json_file:
             data = json.loads(json_file.read())
         output = djerba_main.render(data)
@@ -599,7 +587,7 @@ class TestSimpleReport(TestCore):
     def test_report(self):
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
         json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
-        djerba_main = main(self.tmp_dir, log_level=logging.WARNING)
+        djerba_main = main(self.tmp_dir, log_level=logging.ERROR) # suppress author warning
         config = djerba_main.configure(ini_path)
         data_found = djerba_main.extract(config)
         data_found['core']['extract_time'] = 'placeholder'

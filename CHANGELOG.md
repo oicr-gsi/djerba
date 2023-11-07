@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v1.0.0: 2023-11-03
+- First production release of new plugin-based Djerba
+- Other than version number, code is identical to `v1.0.0-dev0.0.23`
+
+## v1.0.0-dev0.0.23: 2023-11-03
+
+### GCGI-1125
+- Update core tests
+
 ## v1.0.0-dev0.0.22: 2023-11-03
 
 ### GCGI-1155
@@ -175,6 +184,23 @@
 - Generate the "Treatment Options" section of the report
 - Include both "FDA Approved" and "Investigational Therapies"
 
+## v0.4.17: 2023-09-18
+
+- Replaced splice site annotation with `Truncating Mutations` in OncoKB links for splice site mutations
+
+## v0.4.16: 2023-09-12
+
+- GCGI-1042: Changes to verb tense in genomic summary templated text
+- GCGI-1032: Reference cohort name is uppercase and adds TCGA when it is TCGA
+
+## v0.4.15: 2023-09-06
+
+- GCGI-1063: Redact TMB genomic biomarker plot from benchmark comparison
+
+## v0.4.14: 2023-08-17
+
+- GCGI-1030: Fix glob pattern for Sequenza results in benchmarking
+
 ## v1.0.0-dev0.0.8: 2023-08-11
 
 ### GCGI-963: Case overview plugin
@@ -198,6 +224,44 @@
 ### GCGI-982: Provenance helper update
 - Update to complement changes to core functionality
 - Writes subset of provenance and `sample_info.json` at both configure and extract
+
+
+## v0.4.13: 2023-07-31
+
+### Changed
+- GCGI-989: Made adjustments to biomarker plots
+- GCGI-1011: Update to find new sequenza file path
+
+### Added
+- example .pdf and .ini of WGTS report in `examples/`
+
+## v0.4.12: 2023-07-19
+
+### Changed
+- GCGI-956: The TMB plot has been moved to a linear format and the PGA plot has been removed
+
+### Added
+- GCGI-957: The number of candidate SNVs for the pWGS assay are listed in Genomic Landscape section
+
+## v0.4.11: 2023-06-27
+
+### Changed
+- GCGI-864: removed annotation of 5'UTR, 3'UTR, and 3'Flank. 5'Flank only annotated if TERT
+- Sample QC results moved to below summary
+- Split some `Case Overview` section into a new `Patient and Physician` section
+- Removed tracking of patient's genetic sex
+- GCGI-943: Overrode HGVSp for BRAF V640E to be represented as V600E
+- GCGI-942: Changed expected maf file extension from '.filter.deduped.realigned.recalibrated.mutect2.filtered.maf.gz' to '.mutect2.filtered.maf.gz'
+
+## v0.4.10: 2023-06-06
+
+### Changed
+- ACD -> ACDx
+- Added "-" between date and report name in footer
+- GCGI-806: Modify `benchmark.py` interface; remove `--compare-all` option; add `--delta` argument for permitted difference in expression levels
+
+### Fixed
+- GCGI-870: Fix for biomarker annotation cache; required for benchmark cron
 
 ## v0.4.13: 2023-07-31
 
