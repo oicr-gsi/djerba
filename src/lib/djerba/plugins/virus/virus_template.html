@@ -3,15 +3,16 @@
   from djerba.util.html import html_builder 
   from djerba.plugins.virus_breakend.render import html_builder as hb_virus
   import djerba.plugins.virus_breakend.constants as constants
+  TOTAL_VARIANTS = 'Total variants'
 %>
   
 ${html_builder().section_cells_begin("<h2>VIRUS Breakend</h2>","main")}
       
       <p >
-            <strong>${results.get(constants.TOTAL_VARIANTS)}</strong> virus(es) were identified. 
+            <strong>${results.get(TOTAL_VARIANTS)}</strong> virus(es) were identified. 
       </p>
 
-      % if results.get(constants.TOTAL_VARIANTS) > 0:
+      % if results.get(TOTAL_VARIANTS) > 0:
             <table class="variants" width="100%">
             ${hb_virus().virusbreakend_header()}
             <tbody>
