@@ -5,13 +5,22 @@ from djerba.util.html import html_builder as hb
 
 class html_builder:
 
+  # Header constants
   GENUS = 'Genus'
   SPECIES = 'Species'
   COVERAGE = 'Coverage'
   LENGTH = 'Length'
   MEANDEPTH = 'Mean depth'
   INTEGRATION = 'Integration'
-  BODY = 'Body' 
+
+  # Extract constants
+  _GENUS = 'name_genus'
+  _SPECIES = 'name_assigned'
+  _COVERAGE = 'coverage'
+  _LENGTH = 'endpos'
+  _MEANDEPTH = 'meandepth'
+  _INTEGRATION = 'integrations'
+  _BODY = 'Body'
 
   def virusbreakend_header(self):
     """
@@ -31,16 +40,16 @@ class html_builder:
     """
     Creates the rows for the VIRUSBreakend table.
     """
-    row_fields = mutation_info[self.BODY]
+    row_fields = mutation_info[self._BODY]
     rows = []
     for row in row_fields:
         cells = [
-            hb.td(row[self.GENUS]),
-            hb.td(row[self.SPECIES]),
-            hb.td(row[self.COVERAGE]),
-            hb.td(row[self.LENGTH]),
-            hb.td(row[self.MEANDEPTH]),
-            hb.td(row[self.INTEGRATION])
+            hb.td(row[self._GENUS]),
+            hb.td(row[self._SPECIES]),
+            hb.td(row[self._COVERAGE]),
+            hb.td(row[self._LENGTH]),
+            hb.td(row[self._MEANDEPTH]),
+            hb.td(row[self._INTEGRATION])
         ]
         rows.append(hb.table_row(cells))
     return rows
