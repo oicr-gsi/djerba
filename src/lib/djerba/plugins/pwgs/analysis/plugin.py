@@ -6,14 +6,14 @@ import re
 import logging
 
 from mako.lookup import TemplateLookup
+from djerba.util.render_mako import mako_renderer
 from djerba.plugins.base import plugin_base
-import djerba.plugins.pwgs.constants as pc
 from djerba.util.subprocess_runner import subprocess_runner
 import djerba.util.provenance_index as index
 from djerba.core.workspace import workspace
 import djerba.core.constants as core_constants
 import djerba.plugins.pwgs.pwgs_tools as pwgs_tools
-from djerba.util.render_mako import mako_renderer
+import djerba.plugins.pwgs.constants as pc
 
 class main(plugin_base):
 
