@@ -236,11 +236,9 @@ class main(plugin_base):
                       summary=summaries.get(gene)
                   )
                   gene_info.append(gene_info_entry)
-              [level, therapies] = oncokb_levels.parse_max_actionable_level_and_therapies(
-                  row_input
-              )
               # record therapy for all actionable alterations (OncoKB level 4 or higher)
-              if level != None:
+              therapies = oncokb_levels.parse_actionable_therapies(row_input)
+              for level in therapies.keys():
                   alteration = row_input[constants.HGVSP_SHORT]
                   alteration_url = hb.build_alteration_url(gene, alteration, oncotree_code)
                   if gene == 'BRAF' and alteration == 'p.V640E':
@@ -254,7 +252,7 @@ class main(plugin_base):
                       gene = gene,
                       alteration = alteration,
                       alteration_url = alteration_url,
-                      treatments = therapies
+                      treatments = therapies[level]
                   )
                   treatments.append(treatment_entry)
       # assemble the output

@@ -56,31 +56,24 @@ class main(plugin_base):
         work_dir = self.workspace.get_work_dir()
         factory.get_annotator(work_dir, config_wrapper).annotate_fusion()
 
-    def build_treatment_entry(self, fusion, tier, oncotree_code):
+    def build_treatment_entries(self, fusion, therapies):
         """Make an entry for the treatment options merger"""
         # TODO fix the treatment options merger to display 2 genes for fusions
         genes = fusion.get_genes()
         gene = genes[0]
-        if tier == 'Approved':
-            level = fusion.get_fda_level()
-            treatments = fusion.get_fda_therapies()
-        elif tier == 'Investigational':
-            level = fusion.get_inv_level()
-            treatments = fusion.get_inv_therapies()
-        else:
-            msg = "Unknown therapy tier '{0}'".format(tier)
-            self.logger.error(msg)
-            raise DjerbaPluginError(msg)
         factory = tom_factory(self.log_level, self.log_path)
-        entry = factory.get_json(
-            tier=tier,
-            level=level,
-            treatments=treatments,
-            gene=gene,
-            alteration='Fusion',
-            alteration_url=hb.build_fusion_url(genes, oncotree_code)
-        )
-        return entry
+        entries = []
+        for level in therapies.keys():
+            entry = factory.get_json(
+                tier=oncokb_levels.tier(level),
+                level=level,
+                treatments=therapies[level],
+                gene=gene,
+                alteration='Fusion',
+                alteration_url=hb.build_fusion_url(genes, oncotree_code)
+            )
+            entries.append(entry)
+        return entries
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -158,7 +151,7 @@ class main(plugin_base):
         # retain fusions with sort order less than (ie. ahead of) 'Likely Oncogenic'
         maximum_order = oncokb_levels.oncokb_order('N2')
         for fusion in gene_pair_fusions:
-            oncokb_order = oncokb_levels.oncokb_order(fusion.get_oncokb_level())
+            oncokb_order = oncokb_levels.oncokb_order(fusion.get_strongest_oncokb_level())
             if oncokb_order <= maximum_order:
                 for gene in fusion.get_genes():
                     chromosome = cytobands.get(gene)
@@ -178,12 +171,10 @@ class main(plugin_base):
                         summary=summaries.get(gene)
                     )
                     gene_info.append(gene_info_entry)
-            if fusion.get_fda_level() != None:
-                entry = self.build_treatment_entry(fusion, 'Approved', oncotree_code)
-                treatment_opts.append(entry)
-            if fusion.get_inv_level() != None:
-                entry = self.build_treatment_entry(fusion, 'Investigational', oncotree_code)
-                treatment_opts.append(entry)
+                    therapies = fusion.get_therapies()
+                    for level in therapies.keys():
+                        entries = self.build_treatment_entries(fusion, therapies)
+                        treatment_opts.append(entries)
         return rows, gene_info, treatment_opts
 
     def process_fusion_files(self, config_wrapper):

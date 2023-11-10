@@ -237,9 +237,9 @@ class main(plugin_base):
         with open(os.path.join(work_dir, input_name)) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
             for row_input in reader:
-                [level, therapies] = oncokb_levels.parse_max_actionable_level_and_therapies(row_input)
                 # record therapy for all actionable alterations (OncoKB level 4 or higher)
-                if level != None:
+                therapies = oncokb_levels.parse_actionable_therapies(row_input)
+                for level in therapies.keys():
                     gene = 'Biomarker'
                     treatment_entry = treatment_option_factory.get_json(
                         tier = oncokb_levels.tier(level),
@@ -247,7 +247,7 @@ class main(plugin_base):
                         gene = gene,
                         alteration = row_input['ALTERATION'],
                         alteration_url = self.get_alt_url(row_input['ALTERATION']),
-                        treatments = therapies
+                        treatments = therapies[level]
                     )
                     treatments.append(treatment_entry)
         # assemble the output
