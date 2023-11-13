@@ -28,7 +28,7 @@ class TestWGTSsmallPlugin(PluginTester):
         self.sup_dir = os.environ.get(sup_dir_var)
 
     def test_get_purple_purity(self):
-        purple_purity_tsv = os.path.join(self.sup_dir ,"wgs-cnv-plugin/OCT_011657_Co_P_OCT_011657-TS.purple/OCT_011657_Co_P_OCT_011657-TS.purple.purity.tsv")
+        purple_purity_tsv = os.path.join(self.sup_dir ,"plugins/cnv-purple/purple.purity.tsv")
         observed_purity = cnv.get_purple_purity(purple_purity_tsv)
         self.assertEqual(observed_purity[0], 0.3)
         self.assertEqual(observed_purity[1], 5.3)
@@ -43,11 +43,11 @@ class TestWGTSsmallPlugin(PluginTester):
         os.mkdir(input_dir)
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
-        json_location = os.path.join(self.sup_dir ,"wgs-cnv-plugin/report_json/cnv.purple.json")
+        json_location = os.path.join(self.sup_dir ,"plugins/cnv-purple/report_json/cnv.purple.json")
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '842c0ebb4b4dae6f576c6601844203f2'
+            self.MD5: 'c563b6a5a8a2392a2c1929df0c04fd9c'
         }
         self.run_basic_test(input_dir, params)
 

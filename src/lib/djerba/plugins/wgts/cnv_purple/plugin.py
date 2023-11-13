@@ -1,5 +1,5 @@
 """
-a plugin for WGTS SNV Indel
+a plugin for WGTS CNV, based on PURPLE
 """
 
 # IMPORTS
@@ -12,17 +12,17 @@ import djerba.core.constants as core_constants
 from djerba.core.workspace import workspace
 from djerba.util.oncokb.annotator import oncokb_annotator
 from djerba.util.subprocess_runner import subprocess_runner
-from djerba.plugins.wgts.cnv_purple.preprocess import preprocess as process_cnv
+from djerba.plugins.wgts.cnv_purple.tools import process_cnv
+import djerba.plugins.wgts.cnv_purple.constants as cc 
 
 class main(plugin_base):
    
     PRIORITY = 100
-    PLUGIN_VERSION = '1.0.0'
-    TEMPLATE_NAME = 'cnv_template.html'
+    CONFIGURE = 800
+    EXTRACT = 700
+    RENDER = 800
+    PLUGIN_VERSION = '0.1.0'
     ASSAY = 'WGS'
-    CNA_ANNOTATED = "purple.data_CNA_oncoKBgenes_nonDiploid_annotated.txt"
-    ONCOLIST =  "data/20200818-oncoKBcancerGeneList.tsv"
-    CENTROMERES = "data/hg38_centromeres.txt"
 
     def configure(self, config):
       config = self.apply_defaults(config)
@@ -41,24 +41,20 @@ class main(plugin_base):
       data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
 
       tumour_id = config[self.identifier]['tumour_id']
-      normal_id = config[self.identifier]['normal_id'] 
-      cbio_id = config[self.identifier]['cbio_id']
       ploidy = config[self.identifier]['ploidy']
-      purity = config[self.identifier]['purity']
       oncotree_code = config[self.identifier]['oncotree_code']
-      purple_gene_file = config[self.identifier]['purple_gene_file']
-      purple_segment_file = config[self.identifier]['purple_segment_file']
+
       self.consider_purity_fit(config[self.identifier]['purple_purity_file'])
 
       cnv = process_cnv(self.work_dir)
-      self.convert_purple_to_gistic(purple_gene_file, ploidy)
+      self.convert_purple_to_gistic(config[self.identifier]['purple_gene_file'], ploidy)
       self.tmp_dir = os.path.join(self.work_dir, 'tmp')
       oncokb_annotator(tumour_id, oncotree_code, self.work_dir, self.tmp_dir).annotate_cna(in_file_extension='purple.')
-      data_table = cnv.build_copy_number_variation(self.ASSAY, self.CNA_ANNOTATED, oncotree_code)
+      data_table = cnv.build_copy_number_variation(self.ASSAY, cc.CNA_ANNOTATED, oncotree_code)
 
       ## segments
-      whizbam_url = construct_whizbam_link(cbio_id , tumour_id, normal_id )
-      cnv_plot_base64 = self.analyze_segments(purple_segment_file, whizbam_url, purity, ploidy)
+      whizbam_url = construct_whizbam_link(config[self.identifier]['cbio_id'] , tumour_id, config[self.identifier]['normal_id']  )
+      cnv_plot_base64 = self.analyze_segments(config[self.identifier]['purple_segment_file'], whizbam_url, config[self.identifier]['purity'], ploidy)
       data_table['cnv_plot']= cnv_plot_base64
       #data_table[ctc.PERCENT_GENOME_ALTERED] = cnv.calculate_percent_genome_altered(ctc.DATA_SEGMENTS)
 
@@ -69,13 +65,13 @@ class main(plugin_base):
         #TODO: add expression support
 
       data['results'] = data_table
-      cna_annotated_path = os.path.join(self.work_dir, self.CNA_ANNOTATED)
+      cna_annotated_path = os.path.join(self.work_dir, cc.CNA_ANNOTATED)
       data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(cna_annotated_path, oncotree_code)
       return data
     
     def render(self, data):
         renderer = mako_renderer(self.get_module_dir())
-        return renderer.render_name(self.TEMPLATE_NAME, data)
+        return renderer.render_name(cc.TEMPLATE_NAME, data)
     
     def specify_params(self):
       required = [
@@ -101,7 +97,7 @@ class main(plugin_base):
     def consider_purity_fit(self, purple_range_file):
       dir_location = os.path.dirname(__file__)
       cmd = [
-        'Rscript', os.path.join(dir_location + "/process_fit.r"),
+        'Rscript', os.path.join(dir_location + "/r/process_fit.r"),
         '--range_file', purple_range_file,
         '--outdir', self.work_dir
       ]
@@ -111,9 +107,9 @@ class main(plugin_base):
 
     def convert_purple_to_gistic(self, purple_gene_file, ploidy):
       dir_location = os.path.dirname(__file__)
-      oncolistpath = os.path.join(dir_location, '../../..', self.ONCOLIST)
+      oncolistpath = os.path.join(dir_location, '../../..', cc.ONCOLIST)
       cmd = [
-        'Rscript', os.path.join(dir_location + "/process_CNA_data.r"),
+        'Rscript', os.path.join(dir_location + "/r/process_CNA_data.r"),
         '--genefile', purple_gene_file,
         '--outdir', self.work_dir,
         '--oncolist', oncolistpath,
@@ -125,9 +121,9 @@ class main(plugin_base):
     
     def analyze_segments(self, segfile, whizbam_url, purity, ploidy):
       dir_location = os.path.dirname(__file__)
-      centromeres_file = os.path.join(dir_location, '../../..', self.CENTROMERES)
+      centromeres_file = os.path.join(dir_location, '../../..', cc.CENTROMERES)
       cmd = [
-        'Rscript', os.path.join(dir_location + "/process_segment_data.r"),
+        'Rscript', os.path.join(dir_location + "/r/process_segment_data.r"),
         '--segfile', segfile,
         '--outdir', self.work_dir,
         '--centromeres', centromeres_file,

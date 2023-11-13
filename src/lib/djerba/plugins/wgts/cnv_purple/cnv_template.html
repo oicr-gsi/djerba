@@ -6,12 +6,13 @@
 <%
 import djerba.plugins.wgts.cnv_purple.constants as constants
 from djerba.util.image_to_base64 import converter
-from djerba.plugins.wgts.cnv_purple.json_to_html import html_builder
+from djerba.plugins.cnv.html import make_table_header, make_table_rows
+from djerba.util.html import html_builder
 %>
   
 
 <!-- Copy Number Variants -->
-${html_builder().section_cells_begin("<h2>CNV PURPLE DEV</h2>","main")}
+${html_builder.section_cells_begin("Copy Number Variation", True)}
 
       <p>The percent genome altered (PGA) was <strong>${results.get(constants.PERCENT_GENOME_ALTERED)}</strong>%. 
             <strong>${results.get(constants.TOTAL_VARIANTS)}</strong> cancer gene(s) were subject to copy number variation, 
@@ -23,17 +24,20 @@ ${html_builder().section_cells_begin("<h2>CNV PURPLE DEV</h2>","main")}
 
       % if results.get(constants.CLINICALLY_RELEVANT_VARIANTS) > 0:
             <table class="variants" width="100%">
-            ${html_builder().oncogenic_CNVs_header(results)}
+            ${make_table_header()}
             <tbody>
-            % for row in html_builder().oncogenic_CNVs_rows(results):
-                  ${row}
+            % for row in make_table_rows(results.get(constants.BODY)):
+            ${row}
             % endfor
-
+            </table>
             </tbody>
             </table>
-
-
-
+	        % if results.get(constants.HAS_EXPRESSION_DATA):
+                <table class="suppl" width="100%">
+                  <tr><td><b>Expr. (%)</b>: Expression Percentile for gene mRNA, or NA if comparison data is not available</td></tr>
+		</table>
+	        % endif
+	    </table>
       % endif
       
-${html_builder().section_cells_end()}
+${html_builder.section_cells_end()}

@@ -8,7 +8,7 @@ library(ggplot2)
 chromosomes_incl <- c(1:22,"X")
 options(bitmapType='cairo')
 basedir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), sep='/')
-source(paste0(basedir, "/plugins/wgts/cnv_purple/CNA_supporting_functions.r"))
+source(paste0(basedir, "/plugins/wgts/cnv_purple/r/CNA_supporting_functions.r"))
 
 ## parse input
 option_list = list(

@@ -1,37 +1,153 @@
 """
-List of functions to convert TAR SNV Indel information into json format.
+The purpose of this file is deal with pre-processing necessary files for the SWGS plugin.
+They're in a separate file because the pre-processing is a little more complex.
+AUTHOR: Aqsa Alam
 """
 
 # IMPORTS
-import base64
-import csv
-import json
-import logging
 import os
 import re
+import csv
+import gzip
+import logging
 import pandas as pd
-import djerba.plugins.wgts.cnv_purple.constants as cc
+from shutil import copyfile
+
 from djerba.util.logger import logger
+from djerba.util.subprocess_runner import subprocess_runner
+from djerba.util.oncokb.annotator import oncokb_annotator
 from djerba.util.image_to_base64 import converter
 import djerba.util.oncokb.constants as oncokb
-from djerba.util.subprocess_runner import subprocess_runner
-from djerba.util.logger import logger
+import djerba.plugins.wgts.cnv_purple.constants as cc 
 
-class data_builder(logger):
+class process_cnv(logger):
 
-    def __init__(self, log_level=logging.WARNING, log_path=None):
+    def __init__(self, work_dir, log_level=logging.WARNING, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
+        self.work_dir = work_dir
+        self.tmp_dir = os.path.join(self.work_dir, 'tmp')
         self.cytoband_path = os.environ.get('DJERBA_BASE_DIR') + cc.CYTOBAND
         self.oncokb_levels = [self.reformat_level_string(level) for level in oncokb.ORDERED_LEVELS]
-
+        if os.path.isdir(self.tmp_dir):
+            print("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
+            self.logger.debug("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
+        elif os.path.exists(self.tmp_dir):
+            msg = "tmp dir path {0} exists but is not a directory".format(self.tmp_dir)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        else:
+            print("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
+            self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
+            os.mkdir(self.tmp_dir)
+  
     def build_alteration_url(self, gene, alteration, cancer_code):
         self.logger.debug('Constructing alteration URL from inputs: {0}'.format([cc.ONCOKB_URL_BASE, gene, alteration, cancer_code]))
         return '/'.join([cc.ONCOKB_URL_BASE, gene, alteration, cancer_code])
+ 
 
+    def build_copy_number_variation(self, assay, cna_annotated_path, oncotree_uc):
+        cna_annotated_path = os.path.join(self.work_dir, cna_annotated_path)
+        self.logger.debug("Building data for copy number variation table")
+        rows = []
+        if assay == "WGTS":
+            mutation_expression = self.read_expression()
+        else:
+            mutation_expression = {}
+        with open(cna_annotated_path) as input_file:
+            reader = csv.DictReader(input_file, delimiter="\t")
+            for row in reader:
+                gene = row[cc.HUGO_SYMBOL_UPPER_CASE]
+                cytoband = self.get_cytoband(gene)
+                row = {
+                    cc.EXPRESSION_METRIC: mutation_expression.get(gene), # None for WGS assay
+                    cc.GENE: gene,
+                    cc.GENE_URL: self.build_gene_url(gene),
+                    cc.ALT: row[cc.ALTERATION_UPPER_CASE],
+                    cc.ALT_URL: self.build_alteration_url(gene, row[cc.ALTERATION_UPPER_CASE], oncotree_uc),
+                    cc.CHROMOSOME: cytoband,
+                    'OncoKB level': self.parse_oncokb_level(row)
+                }
+                rows.append(row)
+        unfiltered_cnv_total = len(rows)
+        self.logger.debug("Sorting and filtering CNV rows")
+        rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
+        data_table = {
+        #    cc.HAS_EXPRESSION_DATA: self.HAS_EXPRESSION_DATA,
+            cc.TOTAL_VARIANTS: unfiltered_cnv_total,
+            cc.CLINICALLY_RELEVANT_VARIANTS: len(rows),
+            cc.BODY: rows
+        }
+        return data_table
+    
     def build_gene_url(self, gene):
         return '/'.join([cc.ONCOKB_URL_BASE, gene])
+
+    def build_therapy_info(self, variants_annotated_file, oncotree_uc):
+        # build the "FDA approved" and "investigational" therapies data
+        # defined respectively as OncoKB levels 1/2/R1 and R2/3A/3B/4
+        # OncoKB "LEVEL" columns contain treatment if there is one, 'NA' otherwise
+        # Input files:
+        # - One file each for CNVs
+        # - Must be annotated by OncoKB script
+        # - Must not be missing
+        # - May consist of headers only (no data rows)
+        # Output columns:
+        # - the gene name, with oncoKB link (or pair of names/links, for fusions)
+        # - Alteration name, eg. HGVSp_Short value, with oncoKB link
+        # - Treatment
+        # - OncoKB level
+        tiered_rows = list()
+        for tier in ('Approved', 'Investigational'):
+            self.logger.debug("Building therapy info for level: {0}".format(tier))
+            if tier == 'Approved':
+                levels = oncokb.FDA_APPROVED_LEVELS
+            elif tier == 'Investigational':
+                levels = oncokb.INVESTIGATIONAL_LEVELS
+            rows = []
+            with open(variants_annotated_file) as data_file:
+                for row in csv.DictReader(data_file, delimiter="\t"):
+                    gene = row[cc.HUGO_SYMBOL_UPPER_CASE]
+                    alteration = row[cc.ALTERATION_UPPER_CASE]
+                    [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
+                    if max_level:
+                        rows.append(self.treatment_row(gene, alteration, max_level, therapies, oncotree_uc, tier))
+            rows = list(filter(self.oncokb_filter, self.sort_therapy_rows(rows)))
+            if rows:
+                tiered_rows.append(rows)
+        if len(tiered_rows) > 0:
+            return tiered_rows[0]
+        else:
+            return tiered_rows
+        
+    def convert_to_gene_and_annotate(self, seg_path, purity, tumour_id, oncotree_code):
+        dir_location = os.path.dirname(__file__)
+        genebedpath = os.path.join(dir_location, '../../..', cc.GENEBED)
+        oncolistpath = os.path.join(dir_location, '../../..', cc.ONCOLIST)
+        centromerespath = os.path.join(dir_location, '../../..', cc.CENTROMERES)
+        cmd = [
+            'Rscript', os.path.join(dir_location + "/R/process_CNA_data.r"),
+            '--outdir', self.work_dir,
+            '--segfile', seg_path,
+            '--genebed', genebedpath,
+            '--oncolist', oncolistpath,
+            '--purity', purity,
+            '--centromeres', centromerespath
+        ]
+
+        runner = subprocess_runner()
+        result = runner.run(cmd, "main R script")
+        annotator = oncokb_annotator(
+                        tumour_id,
+                        oncotree_code,
+                        self.work_dir,
+                        self.tmp_dir
+                        #self.cache_params
+                )
+        annotator.annotate_cna()
+
+        return result
 
     def cytoband_sort_order(self, cb_input):
         """Cytobands are (usually) of the form [integer][p or q][decimal]; also deal with edge cases"""
@@ -65,7 +181,7 @@ class data_builder(logger):
                 self.logger.warning(msg)
                 (chromosome, arm, band) = end
         return (chromosome, arm, band)
-
+    
     def get_cytoband(self, gene_name):
         cytoband_map = self.read_cytoband_map()
         cytoband = cytoband_map.get(gene_name)
@@ -87,7 +203,8 @@ class data_builder(logger):
         """True if level passes filter, ie. if row should be kept"""
         likely_oncogenic_sort_order = self.oncokb_sort_order(oncokb.LIKELY_ONCOGENIC)
         return self.oncokb_sort_order(row.get('OncoKB level')) <= likely_oncogenic_sort_order
-  
+
+
     def oncokb_sort_order(self, level):
         oncokb_levels = [self.reformat_level_string(level) for level in oncokb.ORDERED_LEVELS]
         order = None
@@ -184,59 +301,14 @@ class data_builder(logger):
         return rows
 
     def treatment_row(self, genes_arg, alteration, max_level, therapies, oncotree_uc, tier):
-        # genes argument may be a string, or an iterable of strings
-        # legacy from djerba classic
-        if isinstance(genes_arg, str):
-            genes_and_urls = {genes_arg: self.build_gene_url(genes_arg)}
-        else:
-            genes_and_urls = {gene: self.build_gene_url(gene) for gene in genes_arg}
-        alt_url = self.build_alteration_url(genes_arg, alteration, oncotree_uc)
         row = {
             'Tier': tier,
             'OncoKB level': max_level,
             'Treatments': therapies,
-           # rc.GENES_AND_URLS: genes_and_urls,
             'Gene': genes_arg,
             'Gene_URL': self.build_gene_url(genes_arg),
             cc.ALT: alteration,
-            cc.ALT_URL: alt_url
+            cc.ALT_URL: self.build_alteration_url(genes_arg, alteration, oncotree_uc)
         }
         return row
-
-    def build_therapy_info(self, variants_annotated_file, oncotree_uc):
-        # build the "FDA approved" and "investigational" therapies data
-        # defined respectively as OncoKB levels 1/2/R1 and R2/3A/3B/4
-        # OncoKB "LEVEL" columns contain treatment if there is one, 'NA' otherwise
-        # Input files:
-        # - One file each for mutation
-        # - Must be annotated by OncoKB script
-        # - Must not be missing
-        # - May consist of headers only (no data rows)
-        # Output columns:
-        # - the gene name, with oncoKB link (or pair of names/links, for fusions)
-        # - Alteration name, eg. HGVSp_Short value, with oncoKB link
-        # - Treatment
-        # - OncoKB level
-        tiered_rows = list()
-        for tier in ('Approved', 'Investigational'):
-            self.logger.debug("Building therapy info for level: {0}".format(tier))
-            if tier == 'Approved':
-                levels = oncokb.FDA_APPROVED_LEVELS
-            elif tier == 'Investigational':
-                levels = oncokb.INVESTIGATIONAL_LEVELS
-            rows = []
-            with open(variants_annotated_file) as data_file:
-                for row in csv.DictReader(data_file, delimiter="\t"):
-                    gene = row[cc.HUGO_SYMBOL_TITLE_CASE]
-                    alteration = row[cc.HGVSP_SHORT]
-                    if gene == 'BRAF' and alteration == 'p.V640E':
-                        alteration = 'p.V600E'
-                    if 'splice' in row[cc.VARIANT_CLASSIFICATION].lower():
-                        alteration = 'p.? (' + row[cc.HGVSC] + ')'  
-                    [max_level, therapies] = self.parse_max_oncokb_level_and_therapies(row, levels)
-                    if max_level:
-                        rows.append(self.treatment_row(gene, alteration, max_level, therapies, oncotree_uc, tier))
-            rows = list(filter(self.oncokb_filter, self.sort_therapy_rows(rows)))
-            if rows:
-                tiered_rows.append(rows)
-        return tiered_rows[0]
+    
