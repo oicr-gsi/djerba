@@ -103,6 +103,7 @@ setup(
     },
     install_requires=[
         'configparse',
+        'email_validator',
         'jsonschema',
         'mako',
         'markdown',
