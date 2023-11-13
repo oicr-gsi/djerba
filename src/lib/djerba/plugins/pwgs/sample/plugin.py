@@ -3,6 +3,7 @@ import os
 import csv
 import logging
 import json
+import requests
 
 from mako.lookup import TemplateLookup
 from djerba.plugins.base import plugin_base
@@ -13,7 +14,6 @@ from djerba.util.subprocess_runner import subprocess_runner
 import djerba.plugins.pwgs.pwgs_tools as pwgs_tools
 from djerba.util.render_mako import mako_renderer
 from djerba.util.provenance_reader import provenance_reader
-import requests
 
 try:
     import gsiqcetl.column
