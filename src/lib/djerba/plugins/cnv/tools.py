@@ -123,12 +123,13 @@ class cnv_processor(logger):
             reader = csv.DictReader(input_file, delimiter="\t")
             for row_input in reader:
                 gene = row_input[self.HUGO_SYMBOL_UPPER_CASE]
+                # if gene not found in cytoBands.txt, default to 'Unknown'
                 row_output = {
                     cnv.EXPRESSION_PERCENTILE: mutation_expression.get(gene), # None for WGS
                     wgts_tools.GENE: gene,
                     cnv.GENE_URL: html_builder.build_gene_url(gene),
                     cnv.ALTERATION: row_input[self.ALTERATION_UPPER_CASE],
-                    wgts_tools.CHROMOSOME: cytobands.get(gene),
+                    wgts_tools.CHROMOSOME: cytobands.get(gene, wgts_tools.UNKNOWN),
                     wgts_tools.ONCOKB: oncokb_levels.parse_oncokb_level(row_input)
                 }
                 rows.append(row_output)

@@ -20,6 +20,7 @@ class wgts_tools(logger):
     GENE = 'Gene'
     GENE_URL = 'Gene URL'
     ONCOKB = core_constants.ONCOKB
+    UNKNOWN = 'Unknown'
     UNCLASSIFIED_CYTOBANDS = [
         "", # some genes have an empty string for cytoband
         "mitochondria",
@@ -34,7 +35,7 @@ class wgts_tools(logger):
         "HSCHR6_MHC_COXp21.32",
         "HSCHR6_MHC_COXp21.33",
         "HSCHR6_MHC_COXp22.1",
-        "Unknown"
+        UNKNOWN
     ]
 
     def __init__(self, log_level=logging.WARNING, log_path=None):

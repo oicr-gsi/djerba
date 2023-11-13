@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-1167: Fix for unknown cytoband names
+
 ## v1.0.0: 2023-11-03
 - First production release of new plugin-based Djerba
 - Other than version number, code is identical to `v1.0.0-dev0.0.23`
