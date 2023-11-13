@@ -25,8 +25,8 @@ class provenance_reader(logger):
     # relevant workflow names
     # temporarily changed to Vidarr versions; TODO allow either Niassa or Vidarr workflow
     WF_ARRIBA = 'arriba'
-    WF_BMPP = 'bamMergePreprocessing_by_tumor_group'
-    WF_DELLY = 'delly_matched_by_tumor_group'
+    WF_BMPP = 'bamMergePreprocessing_by_sample'
+    WF_DELLY = 'delly_matched'
     WF_MAVIS = 'mavis'
     WF_MRDETECT = 'mrdetect_filter_only'
     WF_MSISENSOR = 'msisensor'
@@ -34,7 +34,7 @@ class provenance_reader(logger):
     WF_SEQUENZA = 'sequenza_by_tumor_group'
     WF_STAR = 'star_call_ready'
     WF_STARFUSION = 'starfusion'
-    WF_VEP = 'variantEffectPredictor_matched_by_tumor_group'
+    WF_VEP = 'variantEffectPredictor_matched'
 
     # old-style Niassa names (where different)
     NIASSA_WF_BMPP = 'bamMergePreprocessing'
