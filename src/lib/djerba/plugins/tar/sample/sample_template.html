@@ -24,7 +24,7 @@ ${html_builder().section_cells_begin("<h2>SAMPLE INFORMATION</h2>","main")}
     </tr>
     <tr>
       <td>Sample Type:</td>
-      <td>cfDNA</td>
+      <td>${results.get(constants.SAMPLE_TYPE)}</td>
       <td>Estimated Cancer Cell Content (%):</td>
       <td>${results.get(constants.CANCER_CONTENT)}</td>
     </tr>
