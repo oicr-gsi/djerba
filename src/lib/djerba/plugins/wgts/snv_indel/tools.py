@@ -213,7 +213,7 @@ class snv_indel_processor(logger):
                     sic.VAF: self.get_tumour_vaf(row_input),
                     sic.DEPTH: self.get_mutation_depth(row_input),
                     sic.COPY_STATE: copy_states.get(gene),
-                    wgts_tools.CHROMOSOME: cytobands.get(gene),
+                    wgts_tools.CHROMOSOME: cytobands.get(gene, wgts_tools.UNKNOWN),
                     wgts_tools.ONCOKB: oncokb_levels.parse_oncokb_level(row_input)
                 }
                 rows.append(row_output)
