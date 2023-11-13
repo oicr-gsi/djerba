@@ -1,6 +1,8 @@
 # CHANGELOG
 
 ## Unreleased
+- GCGI-612: Remove hardcoded cfDNA in TAR plugin; add `sample_type` parameter
+- GCGI-1166: Fix for new workflow names
 - GCGI-1167: Fix for unknown cytoband names
 
 ## v1.0.0: 2023-11-03
