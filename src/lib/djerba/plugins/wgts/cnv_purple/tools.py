@@ -19,6 +19,7 @@ from djerba.util.oncokb.annotator import oncokb_annotator
 from djerba.util.image_to_base64 import converter
 import djerba.util.oncokb.constants as oncokb
 import djerba.plugins.wgts.cnv_purple.constants as cc 
+from djerba.util.oncokb.tools import levels as oncokb_levels
 
 class process_cnv(logger):
 
@@ -67,7 +68,7 @@ class process_cnv(logger):
                     cc.ALT: row[cc.ALTERATION_UPPER_CASE],
                     cc.ALT_URL: self.build_alteration_url(gene, row[cc.ALTERATION_UPPER_CASE], oncotree_uc),
                     cc.CHROMOSOME: cytoband,
-                    'OncoKB level': self.parse_oncokb_level(row)
+                    'OncoKB': oncokb_levels.parse_oncokb_level(row)
                 }
                 rows.append(row)
         unfiltered_cnv_total = len(rows)
@@ -202,7 +203,7 @@ class process_cnv(logger):
     def oncokb_filter(self, row):
         """True if level passes filter, ie. if row should be kept"""
         likely_oncogenic_sort_order = self.oncokb_sort_order(oncokb.LIKELY_ONCOGENIC)
-        return self.oncokb_sort_order(row.get('OncoKB level')) <= likely_oncogenic_sort_order
+        return self.oncokb_sort_order(row.get('OncoKB')) <= likely_oncogenic_sort_order
 
 
     def oncokb_sort_order(self, level):
@@ -220,21 +221,6 @@ class process_cnv(logger):
             )
             order = len(self.oncokb_levels)+1 # unknown levels go last
         return order
-
-    def parse_oncokb_level(self, row_dict):
-        # find oncokb level string: eg. "Level 1", "Likely Oncogenic", "None"
-        max_level = None
-        for level in oncokb.THERAPY_LEVELS:
-            if not self.is_null_string(row_dict[level]):
-                max_level = level
-                break
-        if max_level:
-            parsed_level = self.reformat_level_string(max_level)
-        elif not self.is_null_string(row_dict[cc.ONCOGENIC]):
-            parsed_level = row_dict[cc.ONCOGENIC]
-        else:
-            parsed_level = cc.NA
-        return parsed_level
 
     def parse_max_oncokb_level_and_therapies(self, row_dict, levels):
         # find maximum level (if any) from given levels list, and associated therapies
@@ -287,7 +273,7 @@ class process_cnv(logger):
             rows,
             key=lambda row: sorted(list(row.get('Gene'))).pop(0)
         )
-        rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row['OncoKB level']))
+        rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row['OncoKB']))
         return rows
     
     def sort_variant_rows(self, rows):
@@ -297,13 +283,13 @@ class process_cnv(logger):
         self.logger.debug("Sorting rows by cytoband")
         rows = sorted(rows, key=lambda row: self.cytoband_sort_order(row[cc.CHROMOSOME]))
         self.logger.debug("Sorting rows by oncokb level")
-        rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row['OncoKB level']))
+        rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row['OncoKB']))
         return rows
 
     def treatment_row(self, genes_arg, alteration, max_level, therapies, oncotree_uc, tier):
         row = {
             'Tier': tier,
-            'OncoKB level': max_level,
+            'OncoKB': max_level,
             'Treatments': therapies,
             'Gene': genes_arg,
             'Gene_URL': self.build_gene_url(genes_arg),

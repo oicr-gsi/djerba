@@ -38,13 +38,14 @@ if (is.null(genefile)) {
   
   CNAs <- preProcCNA(raw_gene_data, oncogenes, ploidy)
   
+
   # necessary file to find copy number profile of genes with small mutations
   write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[1]]), CNAs[[1]], check.names=FALSE),
               file=paste0(outdir, "/purple.data_CNA.txt"), sep="\t", row.names=FALSE, quote=FALSE)
   
   # write the short data_CNA file (non-zero, oncoKB genes) for oncoKB annotator
   write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[2]]), CNAs[[2]], check.names=FALSE),
-              file=paste0(outdir, "/purple.data_CNA_oncoKBgenes_nonDiploid.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+              file=paste0(outdir, "/data_CNA_oncoKBgenes_nonDiploid.txt"), sep="\t", row.names=FALSE, quote=FALSE)
   
 
 }

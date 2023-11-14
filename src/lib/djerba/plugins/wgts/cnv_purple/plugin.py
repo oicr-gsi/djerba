@@ -14,6 +14,8 @@ from djerba.util.oncokb.annotator import oncokb_annotator
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.plugins.wgts.cnv_purple.tools import process_cnv
 import djerba.plugins.wgts.cnv_purple.constants as cc 
+from djerba.plugins.cnv.tools import cnv_processor
+import djerba.plugins.cnv.constants as cnv_constants
 
 class main(plugin_base):
    
@@ -42,31 +44,37 @@ class main(plugin_base):
 
       tumour_id = config[self.identifier]['tumour_id']
       ploidy = config[self.identifier]['ploidy']
-      oncotree_code = config[self.identifier]['oncotree_code']
+      oncotree_code = config[self.identifier]['oncotree code']
 
       self.consider_purity_fit(config[self.identifier]['purple_purity_file'])
 
       cnv = process_cnv(self.work_dir)
       self.convert_purple_to_gistic(config[self.identifier]['purple_gene_file'], ploidy)
       self.tmp_dir = os.path.join(self.work_dir, 'tmp')
-      oncokb_annotator(tumour_id, oncotree_code, self.work_dir, self.tmp_dir).annotate_cna(in_file_extension='purple.')
+      oncokb_annotator(tumour_id, oncotree_code, self.work_dir, self.tmp_dir).annotate_cna()
       data_table = cnv.build_copy_number_variation(self.ASSAY, cc.CNA_ANNOTATED, oncotree_code)
+      processor = cnv_processor(self.work_dir, wrapper, self.log_level, self.log_path)
 
       ## segments
       whizbam_url = construct_whizbam_link(config[self.identifier]['cbio_id'] , tumour_id, config[self.identifier]['normal_id']  )
       cnv_plot_base64 = self.analyze_segments(config[self.identifier]['purple_segment_file'], whizbam_url, config[self.identifier]['purity'], ploidy)
-      data_table['cnv_plot']= cnv_plot_base64
       #data_table[ctc.PERCENT_GENOME_ALTERED] = cnv.calculate_percent_genome_altered(ctc.DATA_SEGMENTS)
 
-      if self.ASSAY == "WGS":
-        data_table['Has expression data']= False
-      elif self.ASSAY == "WGTS":
-        data_table['Has expression data']= True
+      #if self.ASSAY == "WGS":
+      #  data_table['Has expression data']= False
+      #elif self.ASSAY == "WGTS":
+      #  data_table['Has expression data']= True
         #TODO: add expression support
 
-      data['results'] = data_table
-      cna_annotated_path = os.path.join(self.work_dir, cc.CNA_ANNOTATED)
-      data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(cna_annotated_path, oncotree_code)
+      #data['results'] = data_table
+      data['results'] = processor.get_results()
+      data['results']['cnv plot']= cnv_plot_base64
+
+
+      # cna_annotated_path = os.path.join(self.work_dir, cc.CNA_ANNOTATED)
+      # data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(cna_annotated_path, oncotree_code)
+      data['merge_inputs'] = processor.get_merge_inputs()
+
       return data
     
     def render(self, data):
@@ -76,7 +84,7 @@ class main(plugin_base):
     def specify_params(self):
       required = [
             'tumour_id',
-            'oncotree_code',
+            cnv_constants.ONCOTREE_CODE,
             'purple_purity_file',
             'purple_segment_file',
             'purple_gene_file',

@@ -48,6 +48,7 @@ log2 <- segs[,c("ID","chromosome","start","end","bafCount")]
 names(log2) <- c("ID",	"chrom"	,"loc.start"	,"loc.end"	,"num.mark")
 log2$seg.mean <- log(1 + (purity *(segs$copyNumber - ploidy)/ploidy), 2)
 write.table(log2,file=paste0(dir_path, "/purple.seg"), sep="\t", row.names=FALSE, quote=FALSE, col.names = FALSE)
+write.table(log2,file=paste0(dir_path, "/seg.txt"), sep="\t", row.names=FALSE, quote=FALSE, col.names = TRUE)
 
 #### segment plot ####
 segs <- separate(segs, chromosome,c("blank","chr"),"chr",fill="left",remove = FALSE)
@@ -105,7 +106,7 @@ print(
 dev.off()
 
 
-svg(paste0(dir_path,"/purple.seg_CNV_plot.svg"), width = 8, height = 1.5)
+svg(paste0(dir_path,"/seg_CNV_plot.svg"), width = 8, height = 1.5)
   print(
     
     ggplot(fittedSegmentsDF_sub %>% filter(!is.na(Chromosome))) + 
@@ -180,6 +181,6 @@ print(
 dev.off()
 
 
-txt <- paste(readLines(paste0(dir_path,"/purple.seg_CNV_plot.svg")), collapse = "")
+txt <- paste(readLines(paste0(dir_path,"/seg_CNV_plot.svg")), collapse = "")
 b64txt <- paste0("data:image/svg+xml;base64,", base64enc::base64encode(charToRaw(txt)))
 print(b64txt)
