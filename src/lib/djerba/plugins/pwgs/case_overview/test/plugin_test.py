@@ -14,7 +14,7 @@ import djerba.plugins.pwgs.constants as constants
 import djerba.plugins.pwgs.case_overview.plugin as case
 import djerba.plugins.pwgs.pwgs_tools as pwgs_tools
 
-class TestPwgSamplePlugin(PluginTester):
+class TestPwgCasePlugin(PluginTester):
 
     INI_NAME = 'pwgs.case.ini'
 
@@ -40,7 +40,7 @@ class TestPwgSamplePlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '7309787fd18514f587a0776e67fa48ab'
+            self.MD5: 'd7d6fe3e6edeb3db13c85639de221fe2'
         }
         self.run_basic_test(input_dir, params)
 

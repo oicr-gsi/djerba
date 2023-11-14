@@ -15,13 +15,19 @@ import djerba.helpers.pwgs_provenance_helper.helper as pwgs_helper
 
 class TestCardea(TestBase):
 
+    HELPER_NAME = 'pwgs_provenance_helper'
+    CORE = 'core'
+    SUBSET_MD5 = '36436b2f7894e774e23f6b68a4f73972'
+    SAMPLE_INFO_MD5 = 'eefba097b9449123a66da62beb22c709'
+    PATH_INFO_MD5 = '78330d60b6c5411f16e2a04f09a01e87'
+
     def testGetCardea(self):
-        self.CARDEA_URL='https://cardea.gsi.oicr.on.ca/requisition-cases'
+        CARDEA_URL='https://cardea.gsi.oicr.on.ca/requisition-cases'
         requisition_id = "PWGVAL_011418_Ct"
-        requisition_info = pwgs_helper.main.get_cardea(self, requisition_id)
+        requisition_info = pwgs_helper.main.get_cardea(self, requisition_id, CARDEA_URL)
         self.assertEqual(requisition_info["assay_name"], 'pWGS - 30X')
         self.assertEqual(requisition_info["project"], 'PWGVAL')
-        self.assertEqual(requisition_info["group_id"], 'OCT_011418_Ct_T_nn_1-11_LB01')
+        self.assertEqual(requisition_info["provenance_id"], 'OCT_011418_Ct_T_nn_1-11_LB01-01')
     
     def testGetProvenance(self):
         data_dir = os.path.join(os.environ.get('DJERBA_TEST_DATA'), 'helpers', 'provenance')
@@ -31,8 +37,7 @@ class TestCardea(TestBase):
         helper_main = loader.load(self.HELPER_NAME, ws)
         config = helper_main.get_expected_config()
         config.add_section(self.CORE)
-        config.set(self.HELPER_NAME, 'project', 'PWGVAL')
-        config.set(self.HELPER_NAME, 'donor', 'OCT_011418')
+        config.set(self.HELPER_NAME, 'requisition_id', 'PWGVAL_011418_Ct')
         config.set(self.HELPER_NAME, 'provenance_input_path', provenance_input)
         config = helper_main.configure(config)
         subset_path = os.path.join(self.tmp_dir, helper_main.PROVENANCE_OUTPUT)

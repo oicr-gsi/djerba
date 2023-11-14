@@ -28,7 +28,7 @@ class TestPwgSamplePlugin(PluginTester):
 
     def testPreprocessSNVcount(self):
         snv_count_expected_location = os.path.join(self.sup_dir ,"plugins/pwgs/snv.txt")
-        snv_count = sample.main.preprocess_snv_count(self, group_id = "None", snv_count_path = snv_count_expected_location)
+        snv_count = sample.main.preprocess_snv_count(self, snv_count_expected_location)
         self.assertEqual(snv_count, 21000)
 
     def testPwgsSample(self):
@@ -48,6 +48,8 @@ class TestPwgSamplePlugin(PluginTester):
             self.MD5: '550723e2eefe36f42808faaaeaed5f31'
         }
         self.run_basic_test(input_dir, params)
+
+    #TODO: add fetch_coverage_etl_data test
 
 
 if __name__ == '__main__':

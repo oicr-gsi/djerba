@@ -45,7 +45,7 @@ class main(plugin_base):
                 'wgs_report_id': patient_data['Report ID'],
                 'Patient Study ID': patient_data[pc.PATIENT_ID],
                 'study_title':  config[self.identifier]['study_id'],
-                'pwgs_report_id': "-".join((config[self.identifier][pc.GROUP_ID],"".join(("v",config['core']['report_version']))))
+                'pwgs_report_id': config['core']['report_id']
             }
         data[pc.RESULTS] = results
         return data

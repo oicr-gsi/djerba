@@ -73,48 +73,36 @@ class main(helper_base):
             self.logger.info("Writing provenance subset cache to workspace")
             self.write_provenance_subset(project, donor, provenance_path)
         ## write sample_info.json; populate sample names from provenance if needed
-        group_id = sample_info['group_id']
-        suffixes = [pc.RESULTS_SUFFIX, pc.VAF_SUFFIX, pc.HBC_SUFFIX]
-        path_info = self.subset_provenance("mrdetect", group_id, suffixes)
-        self.write_path_info(path_info)
         #TODO: add discovered for other parameters
         if wrapper.my_param_is_null('project'):
             wrapper.set_my_param('project', project)
         if wrapper.my_param_is_null('donor'):
             wrapper.set_my_param('donor', donor)
+        if wrapper.my_param_is_null('provenance_id'):
+            wrapper.set_my_param('provenance_id', sample_info['provenance_id'])
         # Write updated sample info as JSON
         self.write_sample_info(sample_info)
-        return wrapper.get_config()
-
-    def extract(self, config):
-        """
-        If not already in the workspace, write the provenance subset and sample info JSON
-        """
-        self.validate_full_config(config)
-        wrapper = self.get_config_wrapper(config)
-        provenance_path = wrapper.get_my_string(self.PROVENANCE_INPUT_KEY)
-        study = wrapper.get_my_string('project')
-        donor = wrapper.get_my_string('donor')
         if self.workspace.has_file(self.PROVENANCE_OUTPUT):
             cache_path = self.workspace.abs_path(self.PROVENANCE_OUTPUT)
             msg = "Provenance subset cache {0} exists, will not overwrite".format(cache_path)
             self.logger.info(msg)
         else:
             self.logger.info("Writing provenance subset cache to workspace")
-            self.write_provenance_subset(study, donor, provenance_path)
-        if self.workspace.has_file(core_constants.DEFAULT_SAMPLE_INFO) and \
-           self.workspace.has_file(core_constants.DEFAULT_PATH_INFO):
-            msg = "extract: sample/path info files already in workspace, will not overwrite"
+            self.write_provenance_subset(project, donor, provenance_path)
+        if self.workspace.has_file(core_constants.DEFAULT_PATH_INFO):
+            msg = "extract: path info files already in workspace, will not overwrite"
             self.logger.info(msg)
         else:
-            samples = self.get_sample_name_container(wrapper)
-            sample_info, path_info = self.read_provenance(study, donor, samples)
-            if not self.workspace.has_file(core_constants.DEFAULT_SAMPLE_INFO):
-                self.logger.debug('extract: writing sample info')
-                self.write_sample_info(sample_info)
+            suffixes = [pc.RESULTS_SUFFIX, pc.VAF_SUFFIX, pc.HBC_SUFFIX, pc.SNV_COUNT_SUFFIX]
+            path_info = self.subset_provenance("mrdetect", wrapper.get_my_string('provenance_id'), suffixes)
+            path_info.update(self.subset_provenance("dnaSeqQC",  wrapper.get_my_string('provenance_id'), [pc.BAMQC_SUFFIX]))
             if not self.workspace.has_file(core_constants.DEFAULT_PATH_INFO):
                 self.logger.debug('extract: writing path info')
                 self.write_path_info(path_info)
+        return wrapper.get_config()
+
+    def extract(self, config):
+        self.validate_full_config(config)
 
     def get_cardea(self, requisition_id, cardea_url):
         url = "/".join((cardea_url,requisition_id))
@@ -131,12 +119,16 @@ class main(helper_base):
             patient_id = qc_group['donor']['externalName']
         for project in projects:
             project_id = project["name"]
+        for test in case["tests"]:
+            if test["libraryDesignCode"] == "PG":
+                for fullDepthSequencing in test["fullDepthSequencings"]:
+                    provenance_id = fullDepthSequencing['name']
         requisition_info = {
             'assay_name' : requisition_json["assayName"],
             'project': project_id,
             'donor': root_id,
             'patient_study_id': patient_id,
-            'group_id': group_id,
+            'provenance_id': provenance_id,
             core_constants.TUMOUR_ID: group_id
         }
         return(requisition_info)
@@ -153,7 +145,7 @@ class main(helper_base):
             path = None
         return path
 
-    def subset_provenance(self, workflow, group_id, suffixes):
+    def subset_provenance(self, workflow, provenance_id, suffixes):
         '''Return file path from provenance based on workflow ID, group-id and file suffix'''
         provenance_location = pc.PROVENANCE_OUTPUT
         provenance = []
@@ -161,14 +153,15 @@ class main(helper_base):
             with self.workspace.open_gzip_file(provenance_location) as in_file:
                 reader = csv.reader(in_file, delimiter="\t")
                 for row in reader:
-                    if row[index.WORKFLOW_NAME] == workflow and row[index.SAMPLE_NAME] == group_id:
+                    if row[index.WORKFLOW_NAME] == workflow and row[index.SAMPLE_NAME] == provenance_id:
                         provenance.append(row)
         except OSError as err:
             msg = "Provenance subset file '{0}' not found when looking for {1}".format(pc.PROVENANCE_OUTPUT, workflow)
             raise RuntimeError(msg) from err
+        results_path = {}
         for suffix in suffixes:
             try:
-                results_path = {suffix: self.parse_file_path(suffix, provenance)}
+                results_path[suffix] = self.parse_file_path(suffix, provenance)
             except OSError as err:
                 msg = "File from workflow {0} with extension {1} was not found in Provenance subset file '{2}' not found".format("mrdetect", self.RESULTS_SUFFIX, pc.PROVENANCE_OUTPUT)
                 raise RuntimeError(msg) from err
@@ -182,6 +175,7 @@ class main(helper_base):
         self.add_ini_required('requisition_id')
         self.add_ini_discovered('project')
         self.add_ini_discovered('donor')
+        self.add_ini_discovered('provenance_id')
 
     def write_path_info(self, path_info):
         self.workspace.write_json(core_constants.DEFAULT_PATH_INFO, path_info)

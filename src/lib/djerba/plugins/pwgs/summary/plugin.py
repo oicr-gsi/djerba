@@ -29,9 +29,14 @@ class main(plugin_base):
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
-        group_id = config[self.identifier][pc.GROUP_ID]
         if wrapper.my_param_is_null(pc.RESULTS_FILE):
-            wrapper.set_my_param(pc.RESULTS_FILE, pwgs_tools.subset_provenance(self, "mrdetect", group_id, pc.RESULTS_SUFFIX))
+            path_info = self.workspace.read_json(core_constants.DEFAULT_PATH_INFO)
+            results_path = path_info.get(pc.RESULTS_SUFFIX)
+            if results_path == None:
+                msg = 'Cannot find results path for mrdetect input'
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            wrapper.set_my_param(pc.RESULTS_FILE, results_path)
         return wrapper.get_config()
 
     def extract(self, config):
@@ -57,11 +62,6 @@ class main(plugin_base):
         return renderer.render_name(pc.SUMMARY_TEMPLATE_NAME, data)
     
     def specify_params(self):
-        required = [
-            pc.GROUP_ID
-        ]
-        for key in required:
-            self.add_ini_required(key)
         discovered = [
             pc.RESULTS_FILE
         ]

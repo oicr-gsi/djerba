@@ -13,7 +13,6 @@ import djerba.core.constants as core_constants
 from djerba.util.subprocess_runner import subprocess_runner
 import djerba.plugins.pwgs.pwgs_tools as pwgs_tools
 from djerba.util.render_mako import mako_renderer
-from djerba.util.provenance_reader import provenance_reader
 
 try:
     import gsiqcetl.column
@@ -30,18 +29,40 @@ class main(plugin_base):
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
-        group_id = config[self.identifier][pc.GROUP_ID]
-        qc_dict = self.fetch_coverage_etl_data(group_id, config)
         if wrapper.my_param_is_null(pc.INSERT_SIZE):
+            sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
+            group_id = sample_info.get('tumour_id')
+            qc_dict = self.fetch_coverage_etl_data(group_id, config)
             wrapper.set_my_param(pc.INSERT_SIZE, int(qc_dict[pc.INSERT_SIZE]))
         if wrapper.my_param_is_null(pc.COVERAGE):
+            sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
+            group_id = sample_info.get('tumour_id')
+            qc_dict = self.fetch_coverage_etl_data(group_id, config)
             wrapper.set_my_param(pc.COVERAGE, float(qc_dict[pc.COVERAGE]))
-        if wrapper.my_param_is_null(pc.BAMQC):
-            wrapper.set_my_param(pc.BAMQC, pwgs_tools.subset_provenance(self, "dnaSeqQC", group_id, pc.BAMQC_SUFFIX))
         if wrapper.my_param_is_null(pc.SNV_COUNT):
-            wrapper.set_my_param(pc.SNV_COUNT,  self.preprocess_snv_count(group_id))
+            path_info = self.workspace.read_json(core_constants.DEFAULT_PATH_INFO)
+            snv_count_path = path_info.get(pc.SNV_COUNT_SUFFIX)
+            if snv_count_path == None:
+                msg = 'Cannot find BAMQC path for dnaSeqQC input'
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            wrapper.set_my_param(pc.SNV_COUNT,  self.preprocess_snv_count(snv_count_path))
+        if wrapper.my_param_is_null(pc.BAMQC):
+            path_info = self.workspace.read_json(core_constants.DEFAULT_PATH_INFO)
+            bamqc_path = path_info.get(pc.BAMQC_SUFFIX)
+            if bamqc_path == None:
+                msg = 'Cannot find BAMQC path for dnaSeqQC input'
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            wrapper.set_my_param(pc.BAMQC, bamqc_path)
         if wrapper.my_param_is_null(pc.RESULTS_FILE):
-            wrapper.set_my_param(pc.RESULTS_FILE, pwgs_tools.subset_provenance(self, "mrdetect", group_id, pc.RESULTS_SUFFIX))
+            path_info = self.workspace.read_json(core_constants.DEFAULT_PATH_INFO)
+            results_path = path_info.get(pc.RESULTS_SUFFIX)
+            if results_path == None:
+                msg = 'Cannot find results path for mrdetect input'
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            wrapper.set_my_param(pc.RESULTS_FILE, results_path)
         return wrapper.get_config()
 
     def extract(self, config):
@@ -121,12 +142,10 @@ class main(plugin_base):
                 csv_out.writerow([i,is_data[i]])
         return(file_location)
     
-    def preprocess_snv_count(self, group_id, snv_count_path = "None" ):
+    def preprocess_snv_count(self, snv_count_path ):
         """
         pull SNV count from file
         """
-        if snv_count_path == "None":
-            snv_count_path = pwgs_tools.subset_provenance(self, "mrdetect", group_id, pc.SNV_COUNT_SUFFIX)
         with open(snv_count_path, 'r') as hbc_file:
             reader_file = csv.reader(hbc_file, delimiter="\t")
             for row in reader_file:
@@ -143,11 +162,6 @@ class main(plugin_base):
     
     def specify_params(self):
         self.set_ini_default('qcetl_cache', self.QCETL_CACHE)
-        required = [
-            pc.GROUP_ID
-        ]
-        for key in required:
-            self.add_ini_required(key)
         discovered = [
             pc.BAMQC,
             pc.RESULTS_FILE,
