@@ -43,7 +43,7 @@ class main(plugin_base):
             wrapper,
             core_constants.DEFAULT_PATH_INFO,
             sic.MAF_PATH,
-            'variantEffectPredictor_matched_by_tumor_group'
+            'variantEffectPredictor_matched'
         )
         wrapper = self.update_wrapper_if_null(
             wrapper,
