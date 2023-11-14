@@ -1,6 +1,13 @@
 # CHANGELOG
 
+## v1.0.1: 2023-11-14
+
+- GCGI-612: Remove hardcoded cfDNA in TAR plugin; add `sample_type` parameter
+- GCGI-1166: Fix for new workflow names
+- GCGI-1167: Fix for unknown cytoband names
+
 ## v1.0.0: 2023-11-03
+
 - First production release of new plugin-based Djerba
 - Other than version number, code is identical to `v1.0.0-dev0.0.23`
 
