@@ -65,36 +65,23 @@ class main(helper_base):
             msg = "Input params JSON does not exist. Parameters must be set manually."
             self.logger.warning(msg)
         sample_info = self.get_cardea(requisition_id, cardea_url)
-        study = sample_info['project_id']
-        donor = sample_info['root_id']
+        project = sample_info['project']
+        donor = sample_info['donor']
         if self.workspace.has_file(self.PROVENANCE_OUTPUT):
             self.logger.debug("Provenance subset cache exists, will not overwrite")
         else:
             self.logger.info("Writing provenance subset cache to workspace")
-            self.write_provenance_subset(study, donor, provenance_path)
+            self.write_provenance_subset(project, donor, provenance_path)
         ## write sample_info.json; populate sample names from provenance if needed
         group_id = sample_info['group_id']
         suffixes = [pc.RESULTS_SUFFIX, pc.VAF_SUFFIX, pc.HBC_SUFFIX]
         path_info = self.subset_provenance("mrdetect", group_id, suffixes)
         self.write_path_info(path_info)
-        keys = [core_constants.TUMOUR_ID]
-        keys.extend(self.SAMPLE_NAME_KEYS)
-        for key in keys:
-            #value = sample_info.get(key)
-            if wrapper.my_param_is_null(key):
-                if value == None:
-                    msg = "No value found in provenance for parameter '{0}'; ".format(key)+\
-                        "can manually specify value in config and re-run"
-                    self.logger.error(msg)
-                    raise DjerbaProvenanceError(msg)
-                else:
-                    wrapper.set_my_param(key, value)
-            elif value == None:
-                value = wrapper.get_my_string(key)
-                msg = "Overwriting null value for '{0}' in sample info ".format(key)+\
-                    "with user-defined value '{0}'".format(value)
-                self.logger.debug(msg)
-                sample_info[key] = value
+        #TODO: add discovered for other parameters
+        if wrapper.my_param_is_null('project'):
+            wrapper.set_my_param('project', project)
+        if wrapper.my_param_is_null('donor'):
+            wrapper.set_my_param('donor', donor)
         # Write updated sample info as JSON
         self.write_sample_info(sample_info)
         return wrapper.get_config()
@@ -106,8 +93,8 @@ class main(helper_base):
         self.validate_full_config(config)
         wrapper = self.get_config_wrapper(config)
         provenance_path = wrapper.get_my_string(self.PROVENANCE_INPUT_KEY)
-        study = wrapper.get_my_string(self.STUDY_TITLE)
-        donor = wrapper.get_my_string(self.ROOT_SAMPLE_NAME)
+        study = wrapper.get_my_string('project')
+        donor = wrapper.get_my_string('donor')
         if self.workspace.has_file(self.PROVENANCE_OUTPUT):
             cache_path = self.workspace.abs_path(self.PROVENANCE_OUTPUT)
             msg = "Provenance subset cache {0} exists, will not overwrite".format(cache_path)
@@ -150,6 +137,7 @@ class main(helper_base):
             'donor': root_id,
             'patient_study_id': patient_id,
             'group_id': group_id,
+            core_constants.TUMOUR_ID: group_id
         }
         return(requisition_info)
     
@@ -192,10 +180,8 @@ class main(helper_base):
         self.set_ini_default(self.PROVENANCE_INPUT_KEY, self.DEFAULT_PROVENANCE_INPUT)
         self.set_ini_default('cardea_url', self.DEFAULT_CARDEA_URL)
         self.add_ini_required('requisition_id')
-        self.add_ini_discovered(self.STUDY_TITLE)
-        self.add_ini_discovered(self.ROOT_SAMPLE_NAME)
-        self.add_ini_discovered(ini.SAMPLE_NAME_WG_T)
-        self.add_ini_discovered(core_constants.TUMOUR_ID)
+        self.add_ini_discovered('project')
+        self.add_ini_discovered('donor')
 
     def write_path_info(self, path_info):
         self.workspace.write_json(core_constants.DEFAULT_PATH_INFO, path_info)
