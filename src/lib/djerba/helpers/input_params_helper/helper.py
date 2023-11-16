@@ -28,7 +28,8 @@ class main(helper_base):
     SEQ_REV_2 = 'sequenza_reviewer_2'
     PURITY = 'purity'
     PLOIDY = 'ploidy'
-
+    AUTHOR = 'author'
+    
     # Name for output file
     INPUT_PARAMS_FILE = 'input_params.json'
     
@@ -60,7 +61,7 @@ class main(helper_base):
         self.add_ini_required(self.SEQ_REV_2)
         self.add_ini_required(self.PURITY)
         self.add_ini_required(self.PLOIDY)
-
+        self.add_ini_required(self.AUTHOR) 
     def configure(self, config):
         """
         Needs to write the json to the workspace in the configure step
@@ -101,7 +102,8 @@ class main(helper_base):
                 self.SEQ_REV_1: config[self.identifier][self.SEQ_REV_1],
                 self.SEQ_REV_2: config[self.identifier][self.SEQ_REV_2],
                 self.PURITY: float(config[self.identifier][self.PURITY]),
-                self.PLOIDY: float(config[self.identifier][self.PLOIDY])
+                self.PLOIDY: float(config[self.identifier][self.PLOIDY]),
+                self.AUTHOR: config[self.identifier][self.AUTHOR]
             }
         except KeyError as err:
             msg = "Required config field for input params helper not found: {0}".format(err)
