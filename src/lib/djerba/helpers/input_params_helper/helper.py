@@ -19,8 +19,7 @@ class main(helper_base):
     PRIMARY_CANCER = 'primary_cancer'
     SITE_OF_BIOPSY = 'site_of_biopsy'
     REQUISITION_APPROVED = 'requisition_approved'
-    ASSAY = 'assay'
-    
+    ASSAY = 'assay'    
     REQUISITION_ID = 'requisition_id'
     TCGACODE = 'tcgacode'
     SAMPLE_TYPE = 'sample_type'
@@ -35,7 +34,7 @@ class main(helper_base):
     # Priority
     PRIORITY = 10
 
-    # permitted assay names
+    # Permitted assay names
     VALID_ASSAYS = ['WGTS', 'WGS', 'TAR', 'PWGS']
 
     def specify_params(self):
@@ -51,8 +50,6 @@ class main(helper_base):
         self.add_ini_required(self.SITE_OF_BIOPSY)
         self.add_ini_required(self.REQUISITION_APPROVED)
         self.add_ini_required(self.ASSAY)
-
-
         self.add_ini_required(self.REQUISITION_ID)
         self.add_ini_required(self.TCGACODE)
         self.add_ini_required(self.SAMPLE_TYPE)
@@ -66,8 +63,41 @@ class main(helper_base):
         Needs to write the json to the workspace in the configure step
         """
         config = self.apply_defaults(config)
+        wrapper = self.get_config_wrapper(config)
+        
+        # No parameters are allowed to be empty
+        list_params = [self.DONOR, 
+                      self.PROJECT, 
+                      self.STUDY, 
+                      self.ONCOTREE_CODE, 
+                      self.PRIMARY_CANCER,
+                      self.SITE_OF_BIOPSY,
+                      self.REQUISITION_APPROVED,
+                      self.REQUISITION_ID,
+                      self.TCGACODE,
+                      self.SAMPLE_TYPE,
+                      self.SEQ_REV_1,
+                      self.SEQ_REV_2,
+                      self.PURITY,
+                      self.PLOIDY,
+                      self.ASSAY]
+
+        for param in list_params:
+            if wrapper.my_param_is_null(param) or wrapper.get_my_string(param).strip() == "":
+                msg = 'Missing required parameter: ' + param 
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+
         # Retrieve the parameters from the ini
         info = self.get_input_params(config)
+        
+        # Ensure that the assay is a permmited value
+        assay = info[self.ASSAY]
+        if assay not in self.VALID_ASSAYS:
+            msg = assay + " is not a permitted assay."
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+
         # Write them to a json
         self.write_input_params_info(info)
         return config
