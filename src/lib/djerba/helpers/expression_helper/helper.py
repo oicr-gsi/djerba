@@ -85,7 +85,7 @@ class main(helper_base):
             '--gepfile', gep_abs_path,
             '--outdir', self.workspace.get_work_dir(),
             '--tcgadata', wrapper.get_my_string(self.TCGA_DATA_KEY),
-            '--tcgacode', wrapper.get_my_string(self.TCGA_CODE_KEY)
+            '--tcgacode', wrapper.get_my_string(self.TCGA_CODE_KEY).upper()
         ]
         self.logger.debug("Rscript command: "+" ".join(cmd))
         subprocess_runner(self.log_level, self.log_path).run(cmd)
