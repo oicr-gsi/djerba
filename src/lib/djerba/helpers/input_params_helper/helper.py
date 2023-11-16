@@ -35,7 +35,7 @@ class main(helper_base):
     PRIORITY = 10
 
     # Permitted assay names
-    VALID_ASSAYS = ['WGTS', 'WGS', 'TAR', 'PWGS']
+    VALID_ASSAYS = ['WGTS', 'WGS', 'PWGS']
 
     def specify_params(self):
         self.logger.debug("Specifying params for input params helper")
@@ -84,23 +84,15 @@ class main(helper_base):
 
         for param in list_params:
             if wrapper.my_param_is_null(param) or wrapper.get_my_string(param).strip() == "":
-                msg = 'Missing required parameter: ' + param 
+                msg = 'Missing required parameter: ' + param + ". Did you forget to enter it?"
                 self.logger.error(msg)
                 raise RuntimeError(msg)
 
-        # Retrieve the parameters from the ini
+        # Retrieve the parameters from the ini and write them to the workspace
         info = self.get_input_params(config)
-        
-        # Ensure that the assay is a permmited value
-        assay = info[self.ASSAY]
-        if assay not in self.VALID_ASSAYS:
-            msg = assay + " is not a permitted assay."
-            self.logger.error(msg)
-            raise RuntimeError(msg)
-
-        # Write them to a json
         self.write_input_params_info(info)
-        return config
+        return wrapper.get_config()
+
 
     def extract(self, config):
         """
@@ -147,8 +139,12 @@ class main(helper_base):
 
     def validate_input_params(self, info):
         assay = info.get(self.ASSAY)
-        if not assay in self.VALID_ASSAYS:
+        if not assay in self.VALID_ASSAYS and assay != "TAR":
             msg = "Invalid assay '{0}': Must be one of {1}".format(assay, self.VALID_ASSAYS)
+            self.logger.error(msg)
+            raise ValueError(msg)
+        if assay == "TAR":
+            msg = "Invalid assay '{0}': Must use [tar_input_params_helper]".format(assay)
             self.logger.error(msg)
             raise ValueError(msg)
         purity = info.get(self.PURITY)
