@@ -55,6 +55,9 @@ class main(plugin_base):
             core_constants.DEFAULT_SAMPLE_INFO,
             sic.NORMAL_ID
         )
+        if wrapper.my_param_is_null(sic.WHIZBAM_PROJECT):
+            # if whizbam project not manually configured, default to study id
+            wrapper.set_my_param(sic.WHIZBAM_PROJECT, wrapper.get_my_string(sic.STUDY_ID))
         return wrapper.get_config()
 
     def extract(self, config):
@@ -71,16 +74,11 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)  
         work_dir = self.workspace.get_work_dir()
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
-        oncotree_code = wrapper.get_my_string(sic.ONCOTREE_CODE)
-        cbio_id = wrapper.get_my_string(sic.STUDY_ID)
-        tumour_id = wrapper.get_my_string(sic.TUMOUR_ID)
-        normal_id = wrapper.get_my_string(sic.NORMAL_ID)
-        maf_path = wrapper.get_my_string(sic.MAF_PATH)
         whizbam_url = whizbam.link_base(
             sic.WHIZBAM_BASE_URL,
-            cbio_id,
-            tumour_id,
-            normal_id,
+            wrapper.get_my_string(sic.WHIZBAM_PROJECT),
+            wrapper.get_my_string(sic.TUMOUR_ID),
+            wrapper.get_my_string(sic.NORMAL_ID),
             self.SEQTYPE,
             self.GENOME
         )
@@ -100,7 +98,8 @@ class main(plugin_base):
             sic.ONCOTREE_CODE,
             sic.TUMOUR_ID,
             sic.NORMAL_ID,
-            sic.STUDY_ID
+            sic.STUDY_ID,
+            sic.WHIZBAM_PROJECT
         ]
         for key in discovered:
             self.add_ini_discovered(key)
