@@ -1,22 +1,27 @@
+<%
+  from djerba.plugins.patient_info.plugin import main as plugin
+%>
+
+
 <!-- Patient & Physician -->
 <hr class="big-white-line" ><div class="twocellmain"><div class="oneoftwocellmain"><h2>Patient & Physician</h2></div><div class="twooftwocellmain" ><hr class="big-line" >
 
     <table  class="info">
       <tr>
-	<td width="22%">Patient Name:</td><td width="21%" >${patient_name}</td>
-	<td width="22%">Patient DOB:</td><td width="36%" >${patient_dob}</td>
+	<td width="22%">Patient Name:</td><td width="21%"> ${results.get(plugin.PATIENT_NAME)}</td>
+	<td width="22%">Patient DOB:</td><td width="36%"> ${results.get(plugin.PATIENT_DOB)}</td>
       </tr>
       <tr>
-	<td width="22%">Patient Genetic Sex:</td><td width="21%" >${patient_genetic_sex}</td>
-	<td width="22%">Requisitioner Email:</td><td width="36%" ><a href="${requisitioner_email}" class="email">${requisitioner_email}</a></td>
+	<td width="22%">Patient Genetic Sex:</td><td width="21%"> ${results.get(plugin.PATIENT_SEX)}</td>
+	<td width="22%">Requisitioner Email:</td><td width="36%"> <a href="mailto:${results.get(plugin.REQ_EMAIL)}">${results.get(plugin.REQ_EMAIL)}</a></td>
       </tr>
       <tr>
-	<td width="22%">Physician Licence #:</td><td width="21%" >${physician_licence_number}</td>
-	<td width="22%">Physician:</td><td width="36%" >${physician_name}</td>
+	<td width="22%">Physician Licence #:</td><td width="21%"> ${results.get(plugin.PHYSICIAN_LICENCE)}</td>
+	<td width="22%">Physician:</td><td width="36%"> ${results.get(plugin.PHYSICIAN_NAME)}</td>
       </tr>
       <tr>
-	<td width="22%">Physician Phone #:</td><td width="21%" >${physician_phone_number}</td>
-	<td width="22%">Physician Hospital:</td><td width="36%" >${hospital_name_and_address}</td>
+	<td width="22%">Physician Phone #:</td><td width="21%"> ${results.get(plugin.PHYSICIAN_PHONE)}</td>
+	<td width="22%">Physician Hospital:</td><td width="36%"> ${results.get(plugin.PHYSICIAN_HOSPITAL)}</td>
       </tr>
     </table>
 

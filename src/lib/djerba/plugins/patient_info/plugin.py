@@ -5,6 +5,7 @@ import djerba.core.constants as core_constants
 from email_validator import validate_email, EmailNotValidError
 from time import strptime
 from djerba.plugins.base import plugin_base
+from djerba.util.render_mako import mako_renderer
 
 class main(plugin_base):
 
@@ -40,7 +41,7 @@ class main(plugin_base):
         dob = wrapper.get_my_string(self.PATIENT_DOB)
         if dob != self.DOB_DEFAULT:
             try:
-                time.strptime(dob, '%Y/%m/%d')
+                strptime(dob, '%Y/%m/%d')
             except ValueError as err:
                 msg = "Non-default value for '{0}' must be ".format(self.PATIENT_DOB)+\
                     "a date in yyyy/mm/dd format, got '{0}': {1}".format(dob, err)
@@ -55,7 +56,7 @@ class main(plugin_base):
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
-        # TODO new attribute to redact the uploaded JSON output
+        # TODO new attribute to redact the uploaded JSON output?
         attributes = wrapper.get_my_attributes()
         self.check_attributes_known(attributes)
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
