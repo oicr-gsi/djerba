@@ -140,6 +140,7 @@ class main(helper_base):
     def specify_params(self):
         defaults = {
             core_constants.DEPENDS_CONFIGURE: 'provenance_helper',
+            core_constants.EXTRACT_PRIORITY: 100, # run before cnv & snv plugins
             self.TCGA_DATA_KEY: '/.mounts/labs/CGI/gsi/tools/RODiC/data',
             self.GEP_REFERENCE_KEY: '/.mounts/labs/CGI/gsi/tools/djerba/gep_reference.txt.gz'
         }

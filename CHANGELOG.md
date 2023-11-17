@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+
+- GCGI-1177: Fix execution order of expression helper
+
 ## v1.0.1: 2023-11-14
 
 - GCGI-612: Remove hardcoded cfDNA in TAR plugin; add `sample_type` parameter
