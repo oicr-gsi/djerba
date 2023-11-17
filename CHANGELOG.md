@@ -3,6 +3,7 @@
 ## Unreleased
 
 - GCGI-1177: Fix execution order of expression helper
+- GCGI-1182: Fix generation of Whizbam links
 
 ## v1.0.1: 2023-11-14
 
