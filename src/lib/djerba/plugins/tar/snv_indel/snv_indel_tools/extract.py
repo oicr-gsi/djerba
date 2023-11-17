@@ -34,14 +34,14 @@ class data_builder:
     def build_small_mutations_and_indels(self, mutations_file):
         """read in small mutations; output rows for oncogenic mutations"""
         rows = []
-        all_reported_variants = set()
         if self.data_CNA_exists:
             mutation_copy_states = self.read_mutation_copy_states()
         mutation_expression = {}
+        cytobands = self.read_cytoband_map()
         with open(mutations_file) as data_file:
             for input_row in csv.DictReader(data_file, delimiter="\t"):
                 gene = input_row[sic.HUGO_SYMBOL_TITLE_CASE]
-                cytoband = self.get_cytoband(gene)
+                cytoband = cytobands.get(gene, 'Unknown')
                 protein = input_row[sic.HGVSP_SHORT]
                 if 'splice' in input_row[sic.VARIANT_CLASSIFICATION].lower():
                     protein = 'p.? (' + input_row[sic.HGVSC] + ')'  
@@ -65,7 +65,6 @@ class data_builder:
                 rows.append(row)
         rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
         for row in rows: 
-            all_reported_variants.add((row.get(sic.GENE), row.get(sic.CHROMOSOME)))
             row[sic.ONCOKB] = self.change_oncokb_level_name(row[sic.ONCOKB])
         return rows
  
@@ -114,15 +113,6 @@ class data_builder:
                 #self.logger.warning(msg)
                 (chromosome, arm, band) = end
         return (chromosome, arm, band)
-
-    def get_cytoband(self, gene_name):
-        cytoband_map = self.read_cytoband_map()
-        cytoband = cytoband_map.get(gene_name)
-        if not cytoband:
-            cytoband = 'Unknown'
-            msg = "Cytoband for gene '{0}' not found in {1}".format(gene_name, self.cytoband_path)
-            #self.logger.info(msg)
-        return cytoband
     
     def is_null_string(self, value):
         if isinstance(value, str):
