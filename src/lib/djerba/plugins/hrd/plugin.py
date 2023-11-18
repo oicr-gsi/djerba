@@ -31,7 +31,13 @@ class main(plugin_base):
         hrd_data = json.load(hrd_file)
         hrd_file.close()
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
-        self.write_hrd(work_dir, hrd_data["hrdetect_call"]["Probability.w"])
+        out_path = os.path.join(work_dir, 'hrd.tmp.txt')
+        try:
+            os.remove(out_path)
+        except OSError:
+            pass
+        for row in hrd_data["hrdetect_call"]:
+            self.write_hrd(out_path, row, hrd_data["hrdetect_call"][row])
         hrd_base64 = self.write_plot(work_dir)       
         if hrd_data["hrdetect_call"]["Probability.w"][1] > 0.7:
             HRD_long = "Homologous Recombination Deficiency (HR-D)"
@@ -65,10 +71,9 @@ class main(plugin_base):
         self.set_ini_default(core_constants.ATTRIBUTES, 'research')
         self.set_priority_defaults(self.PRIORITY)
 
-    def write_hrd(self, work_dir, quartiles):
-        out_path = os.path.join(work_dir, 'hrd.tmp.txt')
-        with open(out_path, 'w') as out_file:
-            print("\t".join([str(item) for item in list(quartiles)]), file=out_file)
+    def write_hrd(self, out_path, row, quartiles):
+        with open(out_path, 'a') as out_file:
+            print("\t".join((row,"\t".join([str(item) for item in list(quartiles)]))), file=out_file)
         return out_path
 
     def write_plot(self, output_dir ):
