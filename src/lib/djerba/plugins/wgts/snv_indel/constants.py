@@ -92,6 +92,7 @@ ONCOGENIC_MUTATIONS = 'oncogenic mutations'
 
 # misc
 WHIZBAM_BASE_URL = 'https://whizbam.oicr.on.ca'
+WHIZBAM_PROJECT = 'whizbam_project'
 
 # HTML headers
 VAF_UC = 'VAF'
