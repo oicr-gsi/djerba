@@ -1,9 +1,13 @@
 # CHANGELOG
 
-## Unreleased
+## v1.0.2: 2023-11-20
 
+- GCGI-1172: TCGA code throws error when lower-case
+- GCGI-1174: Add `[genomic_landscape]` to setup mode
+- GCGI-1175: Pipeline version in supplementary
 - GCGI-1177: Fix execution order of expression helper
-- GCGI-1182: Fix generation of Whizbam links
+- GCGI-1182: Fix Whizbam links. New INI parameter `whizbam_project` in `snv_indel`.
+- GCGI-1183: Update Gene Information file
 
 ## v1.0.1: 2023-11-14
 
