@@ -371,7 +371,6 @@ class main(core_base):
         elif assay == 'PWGS':
             component_list = [
                 'core',
-                'pwgs_provenance_helper',
                 'pwgs.case_overview',
                 'pwgs.summary',
                 'pwgs.sample',
