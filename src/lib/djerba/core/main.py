@@ -322,6 +322,7 @@ class main(core_base):
         if assay == 'WGTS':
             component_list = [
                 'core',
+                'genomic_landscape',
                 'expression_helper',
                 'input_params_helper',
                 'provenance_helper',
@@ -339,6 +340,7 @@ class main(core_base):
         elif assay == 'WGS':
             component_list = [
                 'core',
+                'genomic_landscape',
                 'input_params_helper',
                 'provenance_helper',
                 'gene_information_merger',
