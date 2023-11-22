@@ -110,7 +110,8 @@ class cnv_processor(logger):
         image_converter = converter(self.log_level, self.log_path)
         cnv_plot = image_converter.convert_svg(self.plot_path, 'CNV plot')
         rows = []
-        is_wgts = wgts_tools.has_expression(self.work_dir)
+        wgts_toolkit = wgts_tools(self.log_level, self.log_path)
+        is_wgts = wgts_toolkit.has_expression(self.work_dir)
         if is_wgts:
             self.logger.info("Reading expression from {0}".format(self.work_dir))
             mutation_expression = wgts_tools.read_expression(self.work_dir)
@@ -135,7 +136,6 @@ class cnv_processor(logger):
                 rows.append(row_output)
         unfiltered_cnv_total = len(rows)
         self.logger.debug("Sorting and filtering CNV rows")
-        wgts_toolkit = wgts_tools(self.log_level, self.log_path)
         rows = list(filter(oncokb_levels.oncokb_filter, wgts_toolkit.sort_variant_rows(rows)))
         results = {
             cnv.PERCENT_GENOME_ALTERED: self.calculate_percent_genome_altered(),

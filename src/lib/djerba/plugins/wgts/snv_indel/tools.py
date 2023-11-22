@@ -189,7 +189,8 @@ class snv_indel_processor(logger):
         self.logger.debug("Collating SNV/indel results for JSON output")
         oncotree_code = self.config.get_my_string(sic.ONCOTREE_CODE)
         rows = []
-        is_wgts = wgts_tools.has_expression(self.work_dir)
+        wgts_toolkit = wgts_tools(self.log_level, self.log_path)
+        is_wgts = wgts_toolkit.has_expression(self.work_dir)
         if is_wgts:
             self.logger.info("Reading expression from {0}".format(self.work_dir))
             expression = wgts_tools.read_expression(self.work_dir)
@@ -217,7 +218,6 @@ class snv_indel_processor(logger):
                     wgts_tools.ONCOKB: oncokb_levels.parse_oncokb_level(row_input)
                 }
                 rows.append(row_output)
-        wgts_toolkit = wgts_tools(self.log_level, self.log_path)
         rows = list(filter(oncokb_levels.oncokb_filter, wgts_toolkit.sort_variant_rows(rows)))
         somatic_total, coding_seq_total = self.get_mutation_totals()
         results = {
