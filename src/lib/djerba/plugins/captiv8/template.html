@@ -1,0 +1,14 @@
+<%
+from djerba.util.html import html_builder
+import djerba.plugins.captiv8.constants as captiv8
+from djerba.plugins.genomic_landscape.render import html_builder as gl_html_builder
+%>
+
+${html_builder.section_cells_begin("CAPTIV-8 Score", True)}
+ 
+      <p>With a collated score of <strong>${results.get(captiv8.SCORE)}</strong>, this patient is <strong>${results.get(captiv8.ELIGIBILITY)}</strong> for the CAPTIV-8 study. </p>
+
+      <img id="captiv8" style="width: 100%;" src="${results.get(captiv8.CAPTIV8_PLOT)}"/>
+
+
+${html_builder.section_cells_end()}
