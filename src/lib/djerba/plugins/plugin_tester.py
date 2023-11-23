@@ -78,6 +78,8 @@ class PluginTester(TestBase):
         self.assertTrue(validator.validate_data(plugin_data_found))
         self.assertEqual(plugin_data_found, plugin_data_expected)
         # TODO check other document types, eg. research
+        if len(plugin_data_found['attributes']) != 1: 
+            raise RuntimeError('Test framework requires exactly 1 attribute, found: {0}'.format(plugin_data_found['attributes']))
         # this will break if there is more than one attribute per json
         report_type = ".".join(('placeholder_report', plugin_data_found['attributes'][0]))
         rendered = djerba_main.render(data_found)

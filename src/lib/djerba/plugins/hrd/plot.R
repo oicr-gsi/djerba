@@ -59,19 +59,12 @@ svg(out_path, width = 8, height = 1.5, bg = "transparent")
       
       annotate(x = 0, xend=2, y=cutoff_low, yend=cutoff_low, geom="segment",colour = "gray",linetype="dashed") +
       annotate(geom="text",x = 0,y=cutoff_low/2,color="gray30",label="HR-P", hjust = 0.5, vjust = 2,size=4) +
-      
       annotate(geom="text",x = 0,y=(cutoff_high + max(hrd_median, 0.40))/2, color="gray30",label="HR-D", hjust = 0.5, vjust = 2,size=4) +
-      
-   #   geom_point(aes(y=as.numeric(probability_cum_half),x=c(1,1,1,1,1))) +
-      
-   #  geom_segment(aes(yend= c(0.1,0.37,0.55,0.68,0.85), xend=c(1.7,1.7,1.7,1.7,1.7),y=as.numeric(probability_cum_half),x=c(1,1,1,1,1))) +
-   #   geom_label(aes(label=var_longer,y=c(0,0.31,0.54,0.73,0.95), x=c(0,0, 0, 0,0)), vjust = 0, fill="white", label.padding = unit(3, "point"))+
       
       scale_y_continuous( limit = c(0,1)) + 
       scale_fill_manual(values=hrd_color) +
       scale_color_manual(values=hrd_color) +
       
-     # guides(fill='none')+
       theme_bw(base_size = 15) + 
       theme(
         axis.title=element_blank(),
