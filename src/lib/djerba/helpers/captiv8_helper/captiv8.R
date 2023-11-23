@@ -142,7 +142,7 @@ cibersort_df <- read.csv(cibersort, sep=',', header=TRUE, comment.char="#")
 cd8 <- subset(cibersort_df, cibersort_df[1] == "T cell CD8+")[,2]
 print(paste0("CD8+ T cell score: ", cd8))
 print(" ")
-cms_evidence <- "yes"
+#cms_evidence <- "yes"
 
 #--------------------------------------------------------
 # Scoring
