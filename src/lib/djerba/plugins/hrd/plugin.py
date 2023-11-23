@@ -17,16 +17,25 @@ class main(plugin_base):
     PRIORITY = 2000
     PLUGIN_VERSION = '1.0'
     TEMPLATE_NAME = 'template.html'
+    HRDETECT_PATH = 'hrd_path'
 
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
+        if wrapper.my_param_is_null(self.HRDETECT_PATH):
+            path_info = self.workspace.read_json(core_constants.DEFAULT_PATH_INFO)
+            hrdetect_path = path_info.get('hrDetect')
+            if hrdetect_path == None:
+                msg = 'Cannot find hrdetect path for HRD input'
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            wrapper.set_my_param(self.HRDETECT_PATH, hrdetect_path)
         return wrapper.get_config()
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         work_dir = self.workspace.get_work_dir()
-        hrd_path = config[self.identifier]['hrd_path']
+        hrd_path = config[self.identifier][self.HRDETECT_PATH]
         hrd_file = open(hrd_path)
         hrd_data = json.load(hrd_file)
         hrd_file.close()
@@ -64,7 +73,7 @@ class main(plugin_base):
     
     def specify_params(self):
         discovered = [
-            'hrd_path'
+            self.HRDETECT_PATH
         ]
         for key in discovered:
             self.add_ini_discovered(key)
