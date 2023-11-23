@@ -1,7 +1,10 @@
 # CHANGELOG
 
-## VERSION TBD
+## v1.1.0: 2023-11-23
 
+- removed `prototype/`
+- added RUO-report functionality
+- added HRD plugin to RUO report
 - split pWGS-sample plugin into three plugins
 
 ## v1.0.2: 2023-11-20
