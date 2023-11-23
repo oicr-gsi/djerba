@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## VERSION TBD
+
+- split pWGS-sample plugin into three plugins
+
 ## v1.0.2: 2023-11-20
 
 - GCGI-1172: TCGA code throws error when lower-case
