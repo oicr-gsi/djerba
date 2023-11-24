@@ -1,0 +1,25 @@
+<%
+from djerba.util.html import html_builder
+import djerba.plugins.hrd.constants as hrd
+from djerba.plugins.genomic_landscape.render import html_builder as gl_html_builder
+%>
+
+${html_builder.section_cells_begin("HRD", True)}
+
+      <p>This sample shows signatures consistent with <strong>${results.get(hrd.HRD_long)}</strong>.</p>
+
+      <table class="variants" style="width:100%">
+            <thead>
+                  <th style=" width:10%">Biomarker</th>
+                  <th style=" width:10%">Call</th>
+                  <th style=" width:80%">Score & Confidence</th>
+            </thead>
+            <tbody>
+                  <tr style="text-align:left; background-color:white"><td>HRD</td><td>${results.get(hrd.HRD_short)}</td><td><img id="HRD" style="width: 100%;" src="${results.get(hrd.HRD_PLOT)}"/></td>
+            </tbody>
+
+
+      </table>
+
+      
+${html_builder.section_cells_end()}
