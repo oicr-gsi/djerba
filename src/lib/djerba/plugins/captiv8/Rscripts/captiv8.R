@@ -142,7 +142,6 @@ cibersort_df <- read.csv(cibersort, sep=',', header=TRUE, comment.char="#")
 cd8 <- subset(cibersort_df, cibersort_df[1] == "T cell CD8+")[,2]
 print(paste0("CD8+ T cell score: ", cd8))
 print(" ")
-cms_evidence <- "yes"
 
 #--------------------------------------------------------
 # Scoring
@@ -200,7 +199,7 @@ print("...")
 
 marker <- c("CD8+", "M1M2", "SWISNF", "TMB", "Viral", "CMS", "Lymph node", "CAPTIV-8 score", "Eligibility")
 score <- c(cd8_score, m1m2_score, swisnf_score, tmb_score, virus_score, cms_score, lymph, captiv8_score, eligible)
-evidence <- c(cd8, m1m2, swisnf, tmb, virus, cms_evidence, lymph, version, captiv8_score)
+evidence <- c(cd8, m1m2, swisnf, tmb, virus, colon, lymph, version, captiv8_score)
 
 output_file <- data.frame(marker, score, evidence)
 
