@@ -13,6 +13,7 @@ from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.render_mako import mako_renderer
 from djerba.helpers.input_params_helper.helper import main as input_params_helper
 from djerba.util.environment import directory_finder
+from djerba.plugins.genomic_landscape.provenance_tools import parse_file_path, subset_provenance
 
 class main(plugin_base):
 
@@ -56,15 +57,16 @@ class main(plugin_base):
             input_params_helper.PRIMARY_CANCER
         )
 
-      # For now, instead of doing any provenance searching, just put the files manually in the config.
+        # Get files from provenance_subset.tsv.gz
+        donor = config[self.identifier][constants.DONOR]
         if wrapper.my_param_is_null(constants.VIRUS_FILE):
-            wrapper.set_my_param(constants.VIRUS_FILE, config[self.identifier][constants.VIRUS_FILE])
+            wrapper.set_my_param(constants.VIRUS_FILE, self.get_file(donor, constants.VIRUS_WORKFLOW, constants.VIRUS_SUFFIX))
         if wrapper.my_param_is_null(constants.VCF_FILE):
-            wrapper.set_my_param(constants.VCF_FILE, config[self.identifier][constants.VCF_FILE])
+            wrapper.set_my_param(constants.VCF_FILE, self.get_file(donor, constants.VCF_WORKFLOW, constants.VCF_SUFFIX))
         if wrapper.my_param_is_null(constants.RSEM_FILE):
-            wrapper.set_my_param(constants.RSEM_FILE, config[self.identifier][constants.RSEM_FILE])
+            wrapper.set_my_param(constants.RSEM_FILE, self.get_file(donor, constants.RSEM_WORKFLOW, constants.RSEM_SUFFIX))
         if wrapper.my_param_is_null(constants.CIBERSORT_FILE):
-            wrapper.set_my_param(constants.CIBERSORT_FILE, config[self.identifier][constants.CIBERSORT_FILE])
+            wrapper.set_my_param(constants.CIBERSORT_FILE, self.get_file(donor, constants.CIBERSORT_WORKFLOW, constants.CIBERSORT_SUFFIX))
         if wrapper.my_param_is_null(constants.REPORT_DIR):
             wrapper.set_my_param(constants.REPORT_DIR, self.workspace.get_work_dir())
 
@@ -259,3 +261,16 @@ class main(plugin_base):
                 if row[0] == "Eligibility":
                     eligibility_vector = row
         return eligibility_vector
+
+    def get_file(self, donor, workflow, results_suffix):
+      """
+      pull data from results file
+      """
+      provenance = subset_provenance(self, workflow, donor)
+      try:
+          results_path = parse_file_path(self, results_suffix, provenance)
+      except OSError as err:
+          msg = "File with extension {0} not found".format(results_suffix)
+          raise RuntimeError(msg) from err
+      return results_path
+

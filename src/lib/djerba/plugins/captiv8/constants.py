@@ -18,6 +18,16 @@ VCF_FILE = 'vcf_file'
 VIRUS_FILE = 'virus_file'
 REPORT_DIR = 'report_dir'
 
+# File workflow names and suffixes
+VIRUS_WORKFLOW = 'virusbreakend'
+VIRUS_SUFFIX = '.vcf.summary.tsv'
+VCF_WORKFLOW = 'mutect2_matched'
+VCF_SUFFIX = '.mutect2.filtered.vcf.gz$'
+RSEM_WORKFLOW = 'rsem'
+RSEM_SUFFIX = '.genes.results'
+CIBERSORT_WORKFLOW = 'immunedeconv'
+CIBERSORT_SUFFIX = '.immunedeconv_CIBERSORT-Percentiles.csv'
+
 # Misc Constants
 COLREC_ONCOTREE_CODES = ["COADREAD", "COAD", "CAIS", "MACR", "READ", "SRCCR"]
 # Driver viruses from: https://github.com/hartwigmedical/hmftools/blob/master/virus-interpreter/src/test/resources/virus_interpreter/real_virus_reporting_db.tsv
