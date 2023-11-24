@@ -12,3 +12,20 @@ ${html_builder.section_cells_begin("CAPTIV-8 Score", True)}
 
 
 ${html_builder.section_cells_end()}
+
+  <hr class="header-big-line" style="width: 100%; align="right" >
+  <h2>Supplementary </h2>
+
+  ${html_builder().section_cells_begin("<h3>Assay description</h3>","supp")}
+    <p>The  <a href="https://svn.bcgsc.ca/bitbucket/users/etitmuss/repos/captiv-8/browse/">CAPTIV-8</a> score is computed by combining the following attributes:
+      presence of a cancer-driving virus (VIRUSBreakend 2.13.2),
+      loss of function mutations affecting the SWI/SNF complex (MuTect2 GATK 4.2.6.1),
+      genome-wide Tumour Mutation Burden (MuTect2 GATK 4.2.6.1),
+      gene expression value as measured in Transcripts per million (TPM, RSEM 1.3.3),
+      and expression-inferred estimate of immune cell types (CIBERSORT immunedeconv 2.1.0).
+      Additional points are included if sample is a lymph node biopsy or a colorectal cancer as indicated on the requisition form.
+    </p>
+  ${html_builder().section_cells_end()}
+
+</body>
+</html>
