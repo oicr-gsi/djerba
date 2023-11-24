@@ -133,14 +133,14 @@ class main(plugin_base):
           constants.PRIMARY_CANCER,
           constants.RSEM_FILE,
           constants.CIBERSORT_FILE,
-          constants.VCF_FILE, # for TMB
+          constants.VCF_FILE,
           constants.VIRUS_FILE,
           constants.REPORT_DIR
         ]
         for key in discovered:
             self.add_ini_discovered(key)
         self.set_ini_default(constants.IS_HEME, False)
-        self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
+        self.set_ini_default(core_constants.ATTRIBUTES, 'research')
         self.set_priority_defaults(self.PRIORITY)
 
 
@@ -213,7 +213,7 @@ class main(plugin_base):
             return 'no'
 
     def is_lymph(self, primary_cancer, is_heme):
-        if "lymph" in primary_cancer.lower() or is_heme:
+        if "lymph" in primary_cancer.lower() or is_heme == "True":
             return 'yes'
         else:
             return 'no'
