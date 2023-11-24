@@ -124,7 +124,7 @@ if (colon %in% c("yes", "Yes", "YES", "y", "Y")){
   cms_input$dup <- cms_input[,1] #it seems like classifyCMS.SSP needs at least two samples/columns to run, so duplicate the values
   
   cms_res <- classifyCMS.SSP(cms_input) # classify sample
-#  cms_res <- data.frame(sample_id = row.names(cms_res), nearestCMS = cms_res$RF.nearestCMS, predictedCMS = cms_res$RF.predictedCMS)
+  cms_res <- data.frame(sample_id = row.names(cms_res), nearestCMS = cms_res$RF.nearestCMS, predictedCMS = cms_res$RF.predictedCMS)
 #  paste(head(cms_res))
 
   #write.table(cms_res[1,], paste0("CMS_subtyping_", patient, "_", libraries, ".txt"), quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
@@ -142,7 +142,7 @@ cibersort_df <- read.csv(cibersort, sep=',', header=TRUE, comment.char="#")
 cd8 <- subset(cibersort_df, cibersort_df[1] == "T cell CD8+")[,2]
 print(paste0("CD8+ T cell score: ", cd8))
 print(" ")
-#cms_evidence <- "yes"
+cms_evidence <- "yes"
 
 #--------------------------------------------------------
 # Scoring
@@ -204,6 +204,5 @@ evidence <- c(cd8, m1m2, swisnf, tmb, virus, cms_evidence, lymph, version, capti
 
 output_file <- data.frame(marker, score, evidence)
 
-write.table(output_file, paste0("CAPTIV8_", patient, "_", libraries, ".txt"), row.names =FALSE, quote=FALSE, sep='\t')
+write.table(output_file, paste0("captiv8_output.txt"), row.names =FALSE, quote=FALSE, sep='\t')
 
-print(output_file)
