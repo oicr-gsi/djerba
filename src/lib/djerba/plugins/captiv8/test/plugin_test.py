@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-"""Test of the pwgs plugin"""
+"""Test of the CAPTIV-8 plugin"""
 
 import os
 import unittest

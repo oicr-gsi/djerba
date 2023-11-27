@@ -1,4 +1,4 @@
-"""Djerba plugin for pwgs reporting"""
+"""Djerba plugin for CAPTIV-8 (research) reporting"""
 import os
 import csv
 import re
