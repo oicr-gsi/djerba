@@ -203,5 +203,5 @@ evidence <- c(cd8, m1m2, swisnf, tmb, virus, colon, lymph, version, captiv8_scor
 
 output_file <- data.frame(marker, score, evidence)
 
-write.table(output_file, paste0(outdir, "captiv8_output.txt"), row.names =FALSE, quote=FALSE, sep='\t')
+write.table(output_file, paste0(outdir, "/captiv8_output.txt"), row.names =FALSE, quote=FALSE, sep='\t')
 

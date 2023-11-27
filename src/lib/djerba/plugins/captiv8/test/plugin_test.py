@@ -36,11 +36,11 @@ class TestPwgAnalysisPlugin(PluginTester):
             ini_file.write(ini_str)
         json_location = os.path.join(self.sup_dir ,"plugins/captiv8/report_json/captiv8.json")
         params = {
-            self.INI: self.INI_NAME,
+            self.INI: 'input/' + self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '8db5f8f497f99bd865ec559654af1b1f'
+            self.MD5: '787059484010f36d9cd2fa875903d7af'
         }
-        self.run_basic_test(input_dir, params)
+        self.run_basic_test(self.tmp_dir, params)
 
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""

@@ -13,7 +13,7 @@ from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.render_mako import mako_renderer
 from djerba.helpers.input_params_helper.helper import main as input_params_helper
 from djerba.util.environment import directory_finder
-from djerba.plugins.genomic_landscape.provenance_tools import parse_file_path, subset_provenance
+from djerba.plugins.captiv8.provenance_tools import parse_file_path, subset_provenance
 
 class main(plugin_base):
 
@@ -104,9 +104,8 @@ class main(plugin_base):
         
         # Output path is captiv8_output.txt
         self.run_captiv8(r_script_dir, data_dir, work_dir, bed_file, os.path.join(work_dir, constants.CAPTIV8_INPUT)) 
-
+        
         # ------------------- Graph the data  ------------------- #
-
         captiv8_results = os.path.join(work_dir, constants.CAPTIV8_OUTPUT)
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         captiv8_base64 = self.write_captiv8_plot(r_script_dir, work_dir, captiv8_results)
