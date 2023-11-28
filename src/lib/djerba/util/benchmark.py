@@ -17,7 +17,7 @@ import djerba.util.ini_fields as ini
 from copy import deepcopy
 from glob import glob
 from string import Template
-#from djerba.main import main TODO replace with djerba.core.main
+from djerba.core.main import main
 from djerba.util.environment import directory_finder
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
@@ -187,14 +187,12 @@ class benchmarker(logger):
             config_path = os.path.join(work_dir, sample, self.CONFIG_FILE_NAME)
             report_dir = os.path.join(work_dir, sample, self.REPORT_DIR_NAME)
             self.validator.validate_output_dir(report_dir)
-            args = main_draft_args(self.log_level,
-                                   self.log_path,
-                                   config_path,
-                                   report_dir,
-                                   self.args.apply_cache,
-                                   self.args.update_cache)
-            main(args).run()
-            self.logger.info("Finished generating Djerba draft report for {0}".format(sample))
+            # run the Djerba "main" class to generate a JSON report file
+            djerba_main = main(report_dir, self.log_level, self.log_path)
+            config = djerba_main.configure(config_path)
+            json_path = os.path.join(report_dir, 'djerba_report.json')
+            data = djerba_main.extract(config, json_path, archive=False)
+            self.logger.info("Finished Djerba draft report for {0}".format(sample))
 
     def run_setup(self, results_dir, work_dir):
         """For each sample, set up working directory and generate config.ini"""
