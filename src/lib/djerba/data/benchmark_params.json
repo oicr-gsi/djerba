@@ -1,38 +1,26 @@
 {
     "GSICAPBENCH_1219": {
-        "normalid": "100-009-005_BC",
-        "patientid": "100-009-005",
-        "sex": "Male",
-        "tumourid": "100-009-005_LCM3"
+        "normal_id": "100-009-005_BC",
+        "tumour_id": "100-009-005_LCM3"
     },
     "GSICAPBENCH_1232": {
-        "normalid": "100-009-006_BC",
-        "patientid": "100-009-006",
-        "sex": "Male",
-        "tumourid": "100-009-006_LCM3"
+        "normal_id": "100-009-006_BC",
+        "tumour_id": "100-009-006_LCM3"
     },
     "GSICAPBENCH_1233": {
-        "normalid": "100-009-008_BC",
-        "patientid": "100-009-008",
-        "sex": "Male",
-        "tumourid": "100-009-008_LCM2"
+        "normal_id": "100-009-008_BC",
+        "tumour_id": "100-009-008_LCM2"
     },
     "GSICAPBENCH_1273": {
-        "normalid": "100-PM-018_BC",
-        "patientid": "100-PM-018",
-        "sex": "Male",
-        "tumourid": "100-PM-018_LCM4"
+        "normal_id": "100-PM-018_BC",
+        "tumour_id": "100-PM-018_LCM4"
     },
     "GSICAPBENCH_1275": {
-        "normalid": "100-PM-019_BC",
-        "patientid": "100-PM-019",
-        "sex": "Female",
-        "tumourid": "100-PM-019_LCM3"
+        "normal_id": "100-PM-019_BC",
+        "tumour_id": "100-PM-019_LCM3"
     },
     "GSICAPBENCH_1288": {
-        "normalid": "100-JHU-004_BC",
-        "patientid": "100",
-        "sex": "Male",
-        "tumourid": "100_JHU_004_LCM3_6"
+        "normal_id": "100-JHU-004_BC",
+        "tumour_id": "100_JHU_004_LCM3_6"
     }
 }

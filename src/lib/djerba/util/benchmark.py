@@ -17,17 +17,16 @@ import djerba.util.ini_fields as ini
 from copy import deepcopy
 from glob import glob
 from string import Template
-from djerba.main import main
+#from djerba.main import main TODO replace with djerba.core.main
+from djerba.util.environment import directory_finder
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
 
 class benchmarker(logger):
 
     CONFIG_FILE_NAME = 'config.ini'
-    # TODO run Mavis as a pipeline workflow; for now, use fixed Mavis results
-    MAVIS_DIR = '/.mounts/labs/CGI/validation_cap/djerba_cap_bench/mavis/work'
     # TODO set random seed in MSI workflow for consistent outputs
-    MSI_DIR = '/.mounts/labs/CGI/validation_cap/djerba_cap_bench/msi/work'
+    MSI_DIR_NAME = 'msi'
     SAMPLES = [
         "GSICAPBENCH_1219",
         "GSICAPBENCH_1232",
@@ -38,7 +37,21 @@ class benchmarker(logger):
     ]
     REPORT_DIR_NAME = 'report'
     TEMPLATE = 'benchmark_config.ini'
-    TEST_DATA = 'test_data' # identifier for test data directory
+
+    # INI template field names
+    DONOR = 'donor'
+    CTDNA_FILE = 'ctdna_file'
+    MAF_FILE = 'maf_path'
+    MAVIS_FILE = 'mavis_path'
+    MRDETECT_VCF = 'mrdetect_vcf'
+    MSI_FILE = 'msi_file'
+    PLOIDY = 'ploidy'
+    PROJECT = 'project'
+    PURITY = 'purity'
+    RSEM_FILE = 'rsem_genes_results'
+    SEQUENZA_FILE = 'sequenza_path'
+    TUMOUR_ID = 'tumour_id'
+    NORMAL_ID = 'normal_id'
 
     def __init__(self, args):
         self.log_level = self.get_args_log_level(args)
@@ -46,13 +59,13 @@ class benchmarker(logger):
         self.logger = self.get_logger(self.log_level, __name__, self.log_path)
         self.args = args
         self.validator = path_validator(self.log_level, self.log_path)
-        self.data_dir = os.path.join(os.environ.get('DJERBA_BASE_DIR'), constants.DATA_DIR_NAME)
-        self.test_data = os.environ.get('DJERBA_TEST_DATA') # use to find abbreviated provenance file
+        dir_finder = directory_finder(self.log_level, self.log_path)
+        self.data_dir = dir_finder.get_data_dir()
         with open(os.path.join(self.data_dir, 'benchmark_params.json')) as in_file:
             self.sample_params = json.loads(in_file.read())
 
     def glob_single(self, pattern):
-        """Glob recursively for the given pattern; return a single results, or None"""
+        """Glob recursively for the given pattern; return a single result, or None"""
         self.logger.debug("Recursive glob for files matching {0}".format(pattern))
         results = sorted(glob(pattern, recursive=True))
         if len(results)==0:
@@ -70,26 +83,35 @@ class benchmarker(logger):
 
     def find_inputs(self, results_dir):
         inputs = {}
+        templates = {
+            self.MAF_FILE: '{0}/**/{1}_*mutect2.filtered.maf.gz',
+            self.MAVIS_FILE: '{0}/**/{1}*.mavis_summary.tab',
+            self.SEQUENZA_FILE: '{0}/**/{1}_*_results.sequenza.zip',
+            self.RSEM_FILE: '{0}/**/{1}_*.genes.results',
+            self.MSI_FILE: '{0}/**/{1}_*.msi.booted',
+            self.MRDETECT_VCF: '{0}/**/{1}_*.SNP.vcf'
+        }
         for sample in self.SAMPLES:
             sample_inputs = {}
-            sample_inputs[ini.PATIENT] = sample
-            sample_inputs[ini.DATA_DIR] = self.data_dir
-            sample_inputs[self.TEST_DATA] = self.test_data
-            for key in [ini.TUMOUR_ID, ini.NORMAL_ID, ini.PATIENT_ID]:
+            sample_inputs[self.DONOR] = sample
+            sample_inputs[self.PROJECT] = 'placeholder'
+            sample_inputs[self.PLOIDY] = 2.0
+            sample_inputs[self.PURITY] = 0.8
+            for key in [self.TUMOUR_ID, self.NORMAL_ID]:
                 sample_inputs[key] = self.sample_params[sample][key]
-            pattern = '{0}/**/{1}_*mutect2.filtered.maf.gz'.format(results_dir, sample)
-            sample_inputs[ini.MAF_FILE] = self.glob_single(pattern)
-            pattern = '{0}/**/{1}/*summary.zip'.format(self.MAVIS_DIR, sample)
-            sample_inputs[ini.MAVIS_FILE] = self.glob_single(pattern)
-            pattern = '{0}/**/{1}_*_results.zip'.format(results_dir, sample)
-            sample_inputs[ini.SEQUENZA_FILE] = self.glob_single(pattern)
-            pattern = '{0}/**/{1}_*.genes.results'.format(results_dir, sample)
-            sample_inputs[ini.GEP_FILE] = self.glob_single(pattern)
-            pattern = '{0}/**/{1}_*.realigned.recalibrated.msi.booted'.format(self.MSI_DIR, sample)
-            sample_inputs[ini.MSI_FILE] = self.glob_single(pattern)
+            for key in templates.keys():
+                pattern = templates[key].format(results_dir, sample)
+                sample_inputs[key] = self.glob_single(pattern)
+            # Find the SNP.count.txt file
+            mrdetect_dir = os.path.dirname(sample_inputs[self.MRDETECT_VCF])
+            snp_count_path = os.path.join(mrdetect_dir, 'SNP.count.txt')
+            self.validator.validate_input_file(snp_count_path)
+            sample_inputs[self.CTDNA_FILE] = snp_count_path
+            del sample_inputs[self.MRDETECT_VCF] # not needed for reporting
+            self.logger.debug("Sample inputs for {0}: {1}".format(sample, sample_inputs))
             if any([x==None for x in sample_inputs.values()]):
                 # skip samples with missing inputs, eg. for testing
-                self.logger.info("Omitting sample {0}, no inputs found".format(sample))
+                self.logger.info("Omitting {0}, one or more inputs missing".format(sample))
             else:
                 inputs[sample] = sample_inputs
         if len(inputs)==0:
@@ -176,7 +198,8 @@ class benchmarker(logger):
             self.logger.info("Finished generating Djerba draft report for {0}".format(sample))
 
     def run_setup(self, results_dir, work_dir):
-        """For each sample, setup working directory and generate config.ini"""
+        """For each sample, set up working directory and generate config.ini"""
+        self.validator.validate_input_dir(results_dir)
         inputs = self.find_inputs(results_dir)
         input_samples = sorted(inputs.keys())
         self.validator.validate_output_dir(work_dir)
@@ -186,13 +209,14 @@ class benchmarker(logger):
             sample_dir = os.path.join(work_dir, sample)
             os.mkdir(sample_dir)
             os.mkdir(os.path.join(sample_dir, self.REPORT_DIR_NAME))
+            self.logger.debug("Reading INI template: {0}".format(template_path))
             with open(template_path) as template_file:
                 template_ini = Template(template_file.read())
             config = template_ini.substitute(inputs.get(sample))
             out_path = os.path.join(sample_dir, self.CONFIG_FILE_NAME)
             with open(out_path, 'w') as out_file:
                 out_file.write(config)
-            self.logger.info("Created working directory {0} for sample {1}".format(sample_dir, sample))
+            self.logger.info("Created working directory {0}".format(sample_dir))
         self.logger.info("GSICAPBENCH setup complete.")
         return input_samples
 
@@ -202,7 +226,7 @@ class benchmarker(logger):
             input_dir = os.path.abspath(self.args.input_dir)
             output_dir = os.path.abspath(self.args.output_dir)
             dry_run = self.args.dry_run
-            self.logger.info("Setting up working directories for GSICAPBENCH inputs from {0}".format(input_dir))
+            self.logger.info("GSICAPBENCH input directory is '{0}'".format(input_dir))
             input_samples = self.run_setup(input_dir, output_dir)
             if dry_run:
                 self.logger.info("Dry-run mode; omitting report generation")
@@ -213,17 +237,17 @@ class benchmarker(logger):
         elif self.args.subparser_name == constants.COMPARE:
             dirs = self.args.report_dir
             if len(dirs)==2:
-                self.logger.info("Comparing directories {0} and {1}".format(dirs[0], dirs[1]))
+                msg = "Comparing directories {0} and {1}".format(dirs[0], dirs[1])
+                self.logger.info(msg)
                 run_ok = self.run_comparison(dirs) # false if dirs are not equivalent
                 if run_ok:
-                    msg = "Djerba reports are equivalent."
-                    self.logger.info(msg)
+                    self.logger.info("Djerba reports are equivalent.")
                 else:
-                    msg = "Djerba reports are not equivalent! Script will exit with returncode 1."
-                    self.logger.warning(msg)
+                    self.logger.warning("Djerba reports are NOT equivalent!")
             else:
-                msg = "Incorrect number of reporting directories: Expected 2, found {0}. ".format(len(dirs))+\
-                      "Directories are supplied with -r/--report-dir on the command line."
+                msg = "Incorrect number of reporting directories: "+\
+                    "Expected 2, found {0}. ".format(len(dirs))+\
+                    "Directories are supplied with -r/--report-dir on the command line."
                 self.logger.error(msg)
                 raise RuntimeError(msg)
         else:
@@ -300,6 +324,7 @@ class report_equivalence_tester(logger):
         Check if input data structures are equivalent
         Expression levels are permitted to differ by +/- delta
         """
+        # TODO update for new plugin JSON format
         keys = [constants.TOP_ONCOGENIC_SOMATIC_CNVS, rc.SMALL_MUTATIONS_AND_INDELS]
         expressions = []
         # find expression by gene, for both datasets, and for both SNVs/indels and CNVs
