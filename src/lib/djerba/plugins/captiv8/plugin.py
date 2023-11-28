@@ -1,7 +1,8 @@
 """Djerba plugin for CAPTIV-8 (research) reporting"""
 import os
-import csv
 import re
+import sys
+import csv
 import logging
 import json
 import subprocess
@@ -13,7 +14,6 @@ from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.render_mako import mako_renderer
 from djerba.helpers.input_params_helper.helper import main as input_params_helper
 from djerba.util.environment import directory_finder
-from djerba.plugins.captiv8.provenance_tools import parse_file_path, subset_provenance
 
 class main(plugin_base):
 
@@ -56,17 +56,36 @@ class main(plugin_base):
             constants.PRIMARY_CANCER,
             input_params_helper.PRIMARY_CANCER
         )
+        
+        # Get all four requierd files from path_info.json
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_PATH_INFO,
+            constants.VIRUS_FILE,
+            constants.VIRUS_WORKFLOW
+        )
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_PATH_INFO,
+            constants.VCF_FILE,
+            constants.VCF_WORKFLOW
+        )
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_PATH_INFO,
+            constants.RSEM_FILE,
+            constants.RSEM_WORKFLOW
+        )
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_PATH_INFO,
+            constants.CIBERSORT_FILE,
+            constants.CIBERSORT_WORKFLOW
+        )
 
-        # Get files from provenance_subset.tsv.gz
-        donor = config[self.identifier][constants.DONOR]
-        if wrapper.my_param_is_null(constants.VIRUS_FILE):
-            wrapper.set_my_param(constants.VIRUS_FILE, self.get_file(donor, constants.VIRUS_WORKFLOW, constants.VIRUS_SUFFIX))
-        if wrapper.my_param_is_null(constants.VCF_FILE):
-            wrapper.set_my_param(constants.VCF_FILE, self.get_file(donor, constants.VCF_WORKFLOW, constants.VCF_SUFFIX))
-        if wrapper.my_param_is_null(constants.RSEM_FILE):
-            wrapper.set_my_param(constants.RSEM_FILE, self.get_file(donor, constants.RSEM_WORKFLOW, constants.RSEM_SUFFIX))
-        if wrapper.my_param_is_null(constants.CIBERSORT_FILE):
-            wrapper.set_my_param(constants.CIBERSORT_FILE, self.get_file(donor, constants.CIBERSORT_WORKFLOW, constants.CIBERSORT_SUFFIX))
+        # The report dir will default to the current working directory if not otherwise specified.
+        # But, is allowed to be something different; just needs to point to where the following are:
+        # data_mutations_extended.txt, data_CNA.txt
         if wrapper.my_param_is_null(constants.REPORT_DIR):
             wrapper.set_my_param(constants.REPORT_DIR, self.workspace.get_work_dir())
 
@@ -260,16 +279,3 @@ class main(plugin_base):
                 if row[0] == "Eligibility":
                     eligibility_vector = row
         return eligibility_vector
-
-    def get_file(self, donor, workflow, results_suffix):
-      """
-      pull data from results file
-      """
-      provenance = subset_provenance(self, workflow, donor)
-      try:
-          results_path = parse_file_path(self, results_suffix, provenance)
-      except OSError as err:
-          msg = "File with extension {0} not found".format(results_suffix)
-          raise RuntimeError(msg) from err
-      return results_path
-

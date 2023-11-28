@@ -61,9 +61,6 @@ class provenance_reader(logger):
     MT_ZIP = 'application/zip-report-bundle$'
     MT_BAM = 'application/bam$'
     MT_BAM_INDEX = 'application/bam-index$'
-    MT_TSV = 'application/tsv$'
-    MT_RESULTS = 'application/results$'
-    MT_CSV = 'application/csv$'
 
     # placeholder
     WT_SAMPLE_NAME_PLACEHOLDER = 'whole_transcriptome_placeholder'
@@ -462,6 +459,12 @@ class provenance_reader(logger):
         suffix = '\.signatures\.json$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
+    def parse_immune_path(self):
+        workflow = self.WF_IMMUNE
+        mt = self.MT_OCTET_STREAM
+        suffix = 'immunedeconv_CIBERSORT-Percentiles\.csv$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
+
     def parse_maf_path(self):
         workflows = [self.WF_VEP, self.WF_VEP_20231113, self.NIASSA_WF_VEP]
         mt = self.MT_TXT_GZ
@@ -483,7 +486,7 @@ class provenance_reader(logger):
     def parse_msi_path(self):
         workflows = [self.WF_MSISENSOR]
         mt = self.MT_OCTET_STREAM
-        suffix = 'filter\.deduped\.realigned\.recalibrated\.msi\.booted$'
+        suffix = 'recalibrated\.msi\.booted$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_mrdetect_path(self):
@@ -491,18 +494,24 @@ class provenance_reader(logger):
         mt = self.MT_PLAIN_TEXT
         suffix = 'SNP\.count\.txt$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
-
+    
     def parse_starfusion_predictions_path(self):
         workflows = [self.WF_STARFUSION, self.NIASSA_WF_STARFUSION]
         mt = self.MT_OCTET_STREAM
         suffix = 'star-fusion\.fusion_predictions\.tsv$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wt_t)
     
+    def parse_vcf_path(self):
+        workflow = self.WF_VCF
+        mt = self.MT_VCF_GZ
+        suffix = 'mutect2\.filtered\.vcf\.gz$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
+
     def parse_virus_path(self):
         workflow = self.WF_VIRUS
-        mt = self.MT_TSV
-        suffix = 'vcf\.summary\.tsv$'
-        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
+        mt = self.MT_OCTET_STREAM
+        suffix = 'virusbreakend\.vcf\.summary\.tsv$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
     
     def parse_wg_bam_path(self):
         workflows = [self.WF_BMPP, self.WF_BMPP_20231113, self.NIASSA_WF_BMPP]
