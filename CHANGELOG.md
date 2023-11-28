@@ -2,6 +2,7 @@
 
 ## Unreleased
 - Allow tumour ID to be specified in the sample plugin
+- GCGI-1191: fixed MSI suffix from .filter.deduped.realigned.recalibrated.msi.booted to .filter.deduped.recalibrated.msi.booted
 
 ## v1.0.2: 2023-11-20
 
