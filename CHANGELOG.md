@@ -7,6 +7,11 @@
 - added HRD plugin to RUO report
 - split pWGS-sample plugin into three plugins
 
+## v1.0.3: 2023-11-28
+
+- Allow tumour ID to be specified in the sample plugin
+- GCGI-1191: fixed MSI suffix from .filter.deduped.realigned.recalibrated.msi.booted to .recalibrated.msi.booted
+
 ## v1.0.2: 2023-11-20
 
 - GCGI-1172: TCGA code throws error when lower-case
