@@ -23,15 +23,10 @@ class TestWgtsSamplePlugin(PluginTester):
         sup_dir_var = 'DJERBA_TEST_DATA'
         self.sup_dir = os.environ.get(sup_dir_var)
          
-        self.sample_info_json = os.path.join(self.sup_dir, "plugins/sample/sample_info.json")
-
     def testWgtsSample(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         json_location = os.path.join(self.sup_dir ,"plugins/sample/report_json/sample.json")
         ini_location = os.path.join(self.sup_dir ,"plugins/sample/sample.ini") 
-
-        # Copy file into the temporary directory
-        shutil.copy(self.sample_info_json, self.tmp_dir)
 
         params = {
             self.INI: ini_location,
