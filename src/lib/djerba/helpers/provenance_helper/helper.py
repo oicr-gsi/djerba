@@ -83,8 +83,8 @@ class main(helper_base):
             value = sample_info.get(key)
             if wrapper.my_param_is_null(key):
                 if value == None:
-                    msg = "No value found in provenance for parameter '{0}'; ".format(key)+\
-                        "can manually specify value in config and re-run"
+                    msg = "No value found for parameter '{0}' ".format(key)+\
+                        "in sample info or user config; need to add to config INI?"
                     self.logger.error(msg)
                     raise DjerbaProvenanceError(msg)
                 else:

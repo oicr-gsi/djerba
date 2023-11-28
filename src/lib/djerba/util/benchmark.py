@@ -96,8 +96,7 @@ class benchmarker(logger):
             sample_inputs[self.DONOR] = sample
             sample_inputs[self.PROJECT] = 'placeholder'
             sample_inputs[self.PLOIDY] = 2.0
-            sample_inputs[self.PURITY] = 0.8
-            for key in [self.TUMOUR_ID, self.NORMAL_ID]:
+            for key in [self.TUMOUR_ID, self.NORMAL_ID, self.PURITY]:
                 sample_inputs[key] = self.sample_params[sample][key]
             for key in templates.keys():
                 pattern = templates[key].format(results_dir, sample)
@@ -207,11 +206,17 @@ class benchmarker(logger):
         for sample in input_samples:
             self.logger.debug("Setting up working directory for sample {0}".format(sample))
             sample_dir = os.path.join(work_dir, sample)
-            os.mkdir(sample_dir)
-            os.mkdir(os.path.join(sample_dir, self.REPORT_DIR_NAME))
+            if os.path.isdir(sample_dir):
+                self.logger.warning("{0} exists, will overwrite".format(sample_dir))
+            else:
+                os.mkdir(sample_dir)
+            report_dir = os.path.join(sample_dir, self.REPORT_DIR_NAME)
+            if not os.path.isdir(report_dir):
+                os.mkdir(report_dir)
             self.logger.debug("Reading INI template: {0}".format(template_path))
             with open(template_path) as template_file:
                 template_ini = Template(template_file.read())
+            self.logger.debug("Substituting with: {0}".format(inputs.get(sample)))
             config = template_ini.substitute(inputs.get(sample))
             out_path = os.path.join(sample_dir, self.CONFIG_FILE_NAME)
             with open(out_path, 'w') as out_file:
