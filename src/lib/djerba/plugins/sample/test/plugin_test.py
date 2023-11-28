@@ -23,19 +23,15 @@ class TestWgtsSamplePlugin(PluginTester):
         sup_dir_var = 'DJERBA_TEST_DATA'
         self.sup_dir = os.environ.get(sup_dir_var)
          
-        self.sample_info_json = os.path.join(self.sup_dir, "wgts-sample-plugin/sample_info.json")
-
     def testWgtsSample(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
-        json_location = os.path.join(self.sup_dir ,"wgts-sample-plugin/report_json/sample.json")
-        
-        # Copy file into the temporary directory
-        shutil.copy(self.sample_info_json, self.tmp_dir)
+        json_location = os.path.join(self.sup_dir ,"plugins/sample/report_json/sample.json")
+        ini_location = os.path.join(self.sup_dir ,"plugins/sample/sample.ini") 
 
         params = {
-            self.INI: 'sample.ini',
+            self.INI: ini_location,
             self.JSON: json_location,
-            self.MD5: '1fb06ccdfdfeb5ce708a7db5205ec351'
+            self.MD5: '3000449df1bac887f778278221776e03'
         }
         self.run_basic_test(test_source_dir, params)
 

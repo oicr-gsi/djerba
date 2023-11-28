@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- Allow tumour ID to be specified in the sample plugin
+
 ## v1.0.2: 2023-11-20
 
 - GCGI-1172: TCGA code throws error when lower-case
