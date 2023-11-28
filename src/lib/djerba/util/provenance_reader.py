@@ -35,6 +35,9 @@ class provenance_reader(logger):
     WF_STAR = 'star_call_ready'
     WF_STARFUSION = 'starfusion'
     WF_VEP = 'variantEffectPredictor_matched'
+    WF_VIRUS = 'virusbreakend'
+    WF_VCF = 'mutect2_matched'
+    WF_IMMUNE = 'immunedeconv'
 
     # older Vidarr workflow names, deprecated as of 2023-11-13
     WF_BMPP_20231113 = 'bamMergePreprocessing_by_tumor_group'
@@ -58,6 +61,9 @@ class provenance_reader(logger):
     MT_ZIP = 'application/zip-report-bundle$'
     MT_BAM = 'application/bam$'
     MT_BAM_INDEX = 'application/bam-index$'
+    MT_TSV = 'application/tsv$'
+    MT_RESULTS = 'application/results$'
+    MT_CSV = 'application/csv$'
 
     # placeholder
     WT_SAMPLE_NAME_PLACEHOLDER = 'whole_transcriptome_placeholder'
@@ -128,7 +134,10 @@ class provenance_reader(logger):
         wgs_to_check = [
             [self.WF_BMPP, self.WF_BMPP_20231113, self.NIASSA_WF_BMPP],
             [self.WF_SEQUENZA, self.NIASSA_WF_SEQUENZA],
-            [self.WF_VEP, self.WF_VEP_20231113, self.NIASSA_WF_VEP]
+            [self.WF_VEP, self.WF_VEP_20231113, self.NIASSA_WF_VEP],
+            [self.WF_VCF],
+            [self.WF_VIRUS],
+            [self.WF_IMMUNE]
         ]
         wts_to_check = [
             [self.WF_ARRIBA],
@@ -488,7 +497,13 @@ class provenance_reader(logger):
         mt = self.MT_OCTET_STREAM
         suffix = 'star-fusion\.fusion_predictions\.tsv$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wt_t)
-
+    
+    def parse_virus_path(self):
+        workflow = self.WF_VIRUS
+        mt = self.MT_TSV
+        suffix = 'vcf\.summary\.tsv$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
+    
     def parse_wg_bam_path(self):
         workflows = [self.WF_BMPP, self.WF_BMPP_20231113, self.NIASSA_WF_BMPP]
         mt = self.MT_BAM
