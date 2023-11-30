@@ -3,6 +3,7 @@ import os
 import re
 import sys
 import csv
+import gzip
 import logging
 import json
 import subprocess
@@ -108,7 +109,7 @@ class main(plugin_base):
             constants.ID: config[self.identifier][constants.TUMOUR_ID],
             constants.CIBERSORT_PATH: config[self.identifier][constants.CIBERSORT_FILE],
             constants.RSEM_PATH: config[self.identifier][constants.RSEM_FILE],
-            constants.TMB_VALUE: self.get_tmb_value(r_script_dir, config[self.identifier][constants.VCF_FILE]),
+            constants.TMB_VALUE: self.get_tmb_value(r_script_dir, config[self.identifier][constants.REPORT_DIR], config[self.identifier][constants.VCF_FILE]),
             constants.SWI_SNF: self.is_swisnf(config[self.identifier][constants.REPORT_DIR]),
             constants.COLORECTAL: self.is_colorectal(config[self.identifier][constants.ONCOTREE_CODE]),
             constants.LYMPH: self.is_lymph(config[self.identifier][constants.SITE_OF_BIOPSY], config[self.identifier][constants.IS_HEME]),
@@ -177,20 +178,43 @@ class main(plugin_base):
       result = runner.run(cmd, "Captiv8 R script")
       return result
 
-    def get_tmb_value(self, r_script_dir, vcf_file):
-        tmb_script = os.path.join(r_script_dir, "tmb_for_captiv8.sh")
-        tmb_value = subprocess.check_output([tmb_script, vcf_file])
-        # It returns b'string\n' so convert it to a float
-        tmb_value = float(tmb_value.decode('utf-8').strip())
-        return tmb_value
+    def get_tmb_value(self, r_script_dir, report_dir, vcf_file):
+        #tmb_script = os.path.join(r_script_dir, "tmb_for_captiv8.sh")
+        #tmb_value = subprocess.check_output([tmb_script, vcf_file])
+        ## It returns b'string\n' so convert it to a float
+        #tmb_value = float(tmb_value.decode('utf-8').strip())
+        #return tmb_value
+
+        total = 0
+        with gzip.open(vcf_file, 'rt', encoding=core_constants.TEXT_ENCODING) as data_file:
+            reader = csv.reader(data_file, delimiter="\t")
+            first = True
+            second = True
+            for row in reader:
+                if first:
+                    first = False
+                    continue
+                if second:
+                    second = False
+                    continue
+                pass_val = row[100]
+                row_t_depth = float(row[39])
+                alt_count_raw = float(row[41])
+                row_t_alt_count = float(alt_count_raw) if alt_count_raw != '' else 0.0
+                vaf = row_t_alt_count/row_t_depth 
+                if vaf >= constants.VAF_CUTOFF and pass_val == "PASS":
+                    total += 1
+                
+        tmb_count = round(total/constants.DIVISOR, 2)
+        return tmb_count
 
     def is_swisnf(self, report_dir):
 
         # Check status of SWISNF genes for CAPTIV-8
         # Conservative check; any non-silent mutation is flagged as potential LOF
 
-        cna_path = os.path.join(report_dir, 'data_CNA.txt')
-        mut_path = os.path.join(report_dir, 'data_mutations_extended.txt')
+        cna_path = os.path.join(report_dir, constants.DATA_CNA)
+        mut_path = os.path.join(report_dir, constants.DATA_MUTATIONS_EXTENDED)
 
         if not (os.access(cna_path, os.R_OK) and os.access(mut_path, os.R_OK)):
             print("Expected files data_CNA.txt and data_mutations_extended.txt not readable, check input directory")

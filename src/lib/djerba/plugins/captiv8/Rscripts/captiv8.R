@@ -124,15 +124,11 @@ if (colon %in% c("yes", "Yes", "YES", "y", "Y")){
   cms_input$dup <- cms_input[,1] #it seems like classifyCMS.SSP needs at least two samples/columns to run, so duplicate the values
   
   cms_res <- classifyCMS.SSP(cms_input) # classify sample
-  cms_res <- data.frame(sample_id = row.names(cms_res), nearestCMS = cms_res$RF.nearestCMS, predictedCMS = cms_res$RF.predictedCMS)
-#  paste(head(cms_res))
-
-  #write.table(cms_res[1,], paste0("CMS_subtyping_", patient, "_", libraries, ".txt"), quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
-  print(paste0("CMS subtype: ", cms_res$SSP.nearestCMS[1]))
+  cms_evidence <- cms_res$SSP.nearestCMS[1]
 } else {
-  print("No CMS subtyping required")
+  cms_evidence <- 'N/A'
 }
-print(" ")
+
 
 #--------------------------------------------------------
 # Immune scoring
@@ -199,7 +195,7 @@ print("...")
 
 marker <- c("CD8+", "M1M2", "SWISNF", "TMB", "Viral", "CMS", "Lymph node", "CAPTIV-8 score", "Eligibility")
 score <- c(cd8_score, m1m2_score, swisnf_score, tmb_score, virus_score, cms_score, lymph, captiv8_score, eligible)
-evidence <- c(cd8, m1m2, swisnf, tmb, virus, colon, lymph, version, captiv8_score)
+evidence <- c(cd8, m1m2, swisnf, tmb, virus, cms_evidence, lymph, version, captiv8_score)
 
 output_file <- data.frame(marker, score, evidence)
 

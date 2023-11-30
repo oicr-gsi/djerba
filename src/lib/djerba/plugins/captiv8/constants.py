@@ -47,7 +47,7 @@ DRIVER_VIRUSES = ["Human gammaherpesvirus 4",
                     "Human polyomavirus 5"]
 SWISNF_GENES = ['SMARCB1', 'SMARCA4', 'ARID1A', 'ARID1B', 'PBRM1']
 SPECIES = 'name_species'
-BED_FILE_NAME = '/gencode.v31.ensg_annotation_w_entrez.bed'
+BED_FILE_NAME = 'gencode.v31.ensg_annotation_w_entrez.bed'
 
 # Output constants
 PATIENT = 'patient'
@@ -59,6 +59,16 @@ SWI_SNF = 'swisnf'
 COLORECTAL = 'colorectal'
 LYMPH = 'lymph'
 VIRUS = 'virus'
+
+DATA_MUTATIONS_EXTENDED = 'data_mutations_extended.txt'
+DATA_CNA = 'data_CNA.txt'
+TUMOUR_VAF = 'tumour_vaf'
+VAF_CUTOFF = 0.1
+DIVISOR = 3095.978588 # cat $HG38_ROOT/hg38_random.fa | grep -v "^>" | sed s:[^ACGTacgt]::g | tr -d  "\n" | wc -m
+
+# For maf table
+T_DEPTH = 't_depth'
+T_ALT_COUNT = 't_alt_count'
 
 # Name for output file
 CAPTIV8_INPUT = 'captiv8_input.txt'

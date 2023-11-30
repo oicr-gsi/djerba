@@ -56,7 +56,7 @@ ggplot(captiv8 %>% filter(marker == "TMB"),aes(y=as.numeric(evidence),x=marker))
   geom_bar(stat="identity",fill=captiv8_colors[5]) + 
   geom_text(aes(label=round(as.numeric(evidence),2)),  vjust=-0.25) +
   labs(title="Genomic TMB\n(mut/MB)") +
-  scale_y_continuous(breaks=c(0,8,10,20),limits = c(0,50)) +
+  scale_y_continuous(breaks=c(0,8,10,20),limits = c(0,100)) +
   theme_bw(base_size = 15) +
   theme(
     legend.background = element_rect(colour = NA,fill=NA),
