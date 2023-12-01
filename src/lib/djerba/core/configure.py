@@ -32,7 +32,8 @@ class configurable(core_base, ABC):
     # default list of known attributes -- may override in subclasses
     KNOWN_ATTRIBUTES = [
         cc.CLINICAL,
-        cc.SUPPLEMENTARY
+        cc.SUPPLEMENTARY,
+        cc.RESEARCH
     ]
 
     def __init__(self, **kwargs):

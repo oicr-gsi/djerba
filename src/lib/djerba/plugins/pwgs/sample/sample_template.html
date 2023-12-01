@@ -1,72 +1,10 @@
 <%
-  from djerba.plugins.pwgs.analysis.render.json_to_html import html_builder
-  import djerba.plugins.pwgs.constants as constants
+from djerba.util.html import html_builder
+import djerba.plugins.pwgs.constants as constants
 %>
 
-${html_builder().section_cells_begin("<h2>Case Overview</h2>","main")}
+${html_builder.section_cells_begin("SAMPLE QC", True)}
 
-  <table class="info">
-    <tr> 
-      <th style="width:2.2in"></th>  
-      <th style="width:0.8in"></th>  
-      <th style="width:2.0in"></th>  
-      <th style="width:3.5in"></th> 
-    </tr>
-    <tr> 
-      <td colspan="1">Assay:</td>  
-      <td colspan="3"> ${results.get(constants.ASSAY)} </td> 
-    </tr>    
-
-    <tr>      
-      <td colspan="1">Primary cancer:</td> 
-      <td colspan="3">${results.get(constants.PRIMARY_CANCER)}</td>
-    </tr>
-      <td colspan="1">Site of biopsy:</td>  
-      <td colspan="3">Liquid Biopsy</td>
-    </tr>
-    <tr>
-      <td>Study:</td><td>${results.get(constants.STUDY)}</td>
-      <td>Patient Study ID:</td><td>${results.get(constants.PATIENT_ID)}</td>
-    </tr>
-    <tr>
-      <td>Patient LIMS ID:</td><td>${results.get(constants.DONOR)}</td>
-      <td>WGS Report ID:</td><td>${results.get(constants.WGS_REPORT)}</td>
-    </tr>
-    <tr>
-      <td>Requisition Approved:</td><td>${results.get(constants.REQ_APPROVED)}</td>
-      <td>Plasma Sample ID:</td><td>${results.get(constants.GROUP_ID)}</td>
-    </tr>
-    <tr>
-      <td>Date of Report:</td> <td>yyyy/mm/dd</td>
-      <td>pWGS Report ID:</td><td>${results.get(constants.PWGS_REPORT)}</td>
-    </tr>
-
-
-  </table>
-
-${html_builder().section_cells_end()}
-
-<hr class="big-white-line" >
-<div class="twocellmain" style="height: 80px;"  >
-      <div class="oneoftwocellmain"  >
-          <h2 >Summary</h2>
-      </div>
-      <div class="twooftwocellmain"  style="height: 80px; padding: 10px; background-color:rgba(101,188,69,.5);  border: 3px solid #65bc45; border-radius: 12px" >
-          <hr class="big-line" style="margin-top: -30px;">
-
-  <h3 style="margin-top: 45px;">Minimal Residual Disease: ${results.get(constants.CTDNA_DETECTION)}</h3>
-  <table class="info" >
-  <tr>
-    <td>Mutational sampling analysis:</td>
-    <td>ctDNA ${results.get(constants.CTDNA_OUTCOME)}
-
-    </td>
-  </tr>
-  </table>
-
-${html_builder().section_cells_end()}
-
-${html_builder().section_cells_begin("<h2>SAMPLE QC</h2>","main")}
 
   <table class="info">
     <tr>
@@ -80,9 +18,9 @@ ${html_builder().section_cells_begin("<h2>SAMPLE QC</h2>","main")}
       <td>Plasma</td>
       <td>Candidate SNVs:</td>
       % if results.get(constants.SNV_COUNT) < 4000:
-      <td style="background-color:#ff0000;">${html_builder().k_comma_format(results.get(constants.SNV_COUNT))}</td>
+      <td style="background-color:#ff0000;">${html_builder.k_comma_format(results.get(constants.SNV_COUNT))}</td>
       % else:
-      <td >${html_builder().k_comma_format(results.get(constants.SNV_COUNT))}</td>
+      <td >${html_builder.k_comma_format(results.get(constants.SNV_COUNT))}</td>
       % endif 
     </tr>
     <tr>
@@ -101,4 +39,4 @@ ${html_builder().section_cells_begin("<h2>SAMPLE QC</h2>","main")}
     </tr>
   </table>
 
-${html_builder().section_cells_end()}
+${html_builder.section_cells_end()}

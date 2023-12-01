@@ -6,14 +6,14 @@ import re
 import logging
 
 from mako.lookup import TemplateLookup
+from djerba.util.render_mako import mako_renderer
 from djerba.plugins.base import plugin_base
-import djerba.plugins.pwgs.constants as pc
 from djerba.util.subprocess_runner import subprocess_runner
 import djerba.util.provenance_index as index
 from djerba.core.workspace import workspace
 import djerba.core.constants as core_constants
 import djerba.plugins.pwgs.pwgs_tools as pwgs_tools
-from djerba.util.render_mako import mako_renderer
+import djerba.plugins.pwgs.constants as pc
 
 class main(plugin_base):
 
@@ -23,13 +23,30 @@ class main(plugin_base):
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
-        group_id = config[self.identifier][pc.GROUP_ID]
         if wrapper.my_param_is_null(pc.RESULTS_FILE):
-            wrapper.set_my_param(pc.RESULTS_FILE, pwgs_tools.subset_provenance(self, "mrdetect", group_id, pc.RESULTS_SUFFIX))
-        if wrapper.my_param_is_null(pc.VAF_FILE):
-            wrapper.set_my_param(pc.VAF_FILE, pwgs_tools.subset_provenance(self, "mrdetect", group_id, pc.VAF_SUFFIX))
+            path_info = self.workspace.read_json(core_constants.DEFAULT_PATH_INFO)
+            results_path = path_info.get(pc.RESULTS_SUFFIX)
+            if results_path == None:
+                msg = 'Cannot find results path for mrdetect input'
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            wrapper.set_my_param(pc.RESULTS_FILE, results_path)
         if wrapper.my_param_is_null(pc.HBC_FILE):
-            wrapper.set_my_param(pc.HBC_FILE, pwgs_tools.subset_provenance(self, "mrdetect", group_id, pc.HBC_SUFFIX))
+            path_info = self.workspace.read_json(core_constants.DEFAULT_PATH_INFO)
+            hbc_path = path_info.get(pc.HBC_SUFFIX)
+            if hbc_path == None:
+                msg = 'Cannot find HBC path for mrdetect input'
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            wrapper.set_my_param(pc.HBC_FILE, hbc_path)
+        if wrapper.my_param_is_null(pc.VAF_FILE):
+            path_info = self.workspace.read_json(core_constants.DEFAULT_PATH_INFO)
+            vaf_path = path_info.get(pc.VAF_SUFFIX)
+            if results_path == None:
+                msg = 'Cannot find VAF path for mrdetect input'
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            wrapper.set_my_param(pc.VAF_FILE, vaf_path)
         return wrapper.get_config()
 
     def extract(self, config):
@@ -120,7 +137,6 @@ class main(plugin_base):
         ]
         for key in discovered:
             self.add_ini_discovered(key)
-        self.add_ini_required(pc.GROUP_ID)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_priority_defaults(self.PRIORITY)
 

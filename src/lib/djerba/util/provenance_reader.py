@@ -26,6 +26,7 @@ class provenance_reader(logger):
     WF_ARRIBA = 'arriba'
     WF_BMPP = 'bamMergePreprocessing_by_sample'
     WF_DELLY = 'delly_matched'
+    WF_HRDETECT = 'hrDetect'
     WF_MAVIS = 'mavis'
     WF_MRDETECT = 'mrdetect_filter_only'
     WF_MSISENSOR = 'msisensor'
@@ -50,6 +51,7 @@ class provenance_reader(logger):
 
     # metatype patterns
     MT_PLAIN_TEXT = 'text/plain$'
+    MT_JSON_TEXT = 'text/json$'
     MT_OCTET_STREAM = 'application/octet-stream$'
     MT_VCF_GZ = 'application/vcf-gz$'
     MT_TXT_GZ = 'application/te?xt-gz$' # match text OR txt
@@ -444,6 +446,12 @@ class provenance_reader(logger):
         mt = self.MT_OCTET_STREAM
         suffix = '\.genes\.results$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
+
+    def parse_hrdetect_path(self):
+        workflows = [self.WF_HRDETECT]
+        mt = self.MT_JSON_TEXT
+        suffix = '\.signatures\.json$'
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_maf_path(self):
         workflows = [self.WF_VEP, self.WF_VEP_20231113, self.NIASSA_WF_VEP]
