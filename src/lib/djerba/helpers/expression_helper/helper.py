@@ -85,7 +85,7 @@ class main(helper_base):
             '--gepfile', gep_abs_path,
             '--outdir', self.workspace.get_work_dir(),
             '--tcgadata', wrapper.get_my_string(self.TCGA_DATA_KEY),
-            '--tcgacode', wrapper.get_my_string(self.TCGA_CODE_KEY)
+            '--tcgacode', wrapper.get_my_string(self.TCGA_CODE_KEY).upper()
         ]
         self.logger.debug("Rscript command: "+" ".join(cmd))
         subprocess_runner(self.log_level, self.log_path).run(cmd)
@@ -140,6 +140,7 @@ class main(helper_base):
     def specify_params(self):
         defaults = {
             core_constants.DEPENDS_CONFIGURE: 'provenance_helper',
+            core_constants.EXTRACT_PRIORITY: 100, # run before cnv & snv plugins
             self.TCGA_DATA_KEY: '/.mounts/labs/CGI/gsi/tools/RODiC/data',
             self.GEP_REFERENCE_KEY: '/.mounts/labs/CGI/gsi/tools/djerba/gep_reference.txt.gz'
         }

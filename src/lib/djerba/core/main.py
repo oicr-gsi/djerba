@@ -51,10 +51,11 @@ class main(core_base):
     def _check_author_name(self, data):
         if data[cc.CORE][cc.AUTHOR] == cc.DEFAULT_AUTHOR:
             msg = 'Default author name "{}" is in use; '.format(cc.DEFAULT_AUTHOR)+\
-                "if this is a production report, name MUST be set to an authorized individual"
+                "if this is a production report, name MUST be set "+\
+                "to an authorized individual"
             self.logger.warning(msg)
         else:
-            msg = "User-configured author name is '{0}'".format(core_params[cc.AUTHOR])
+            msg = "User-configured author name is '{0}'".format(data[cc.CORE][cc.AUTHOR])
             self.logger.debug(msg)
 
     def _get_render_priority(self, plugin_data):
@@ -321,6 +322,7 @@ class main(core_base):
         if assay == 'WGTS':
             component_list = [
                 'core',
+                'genomic_landscape',
                 'expression_helper',
                 'input_params_helper',
                 'provenance_helper',
@@ -338,6 +340,7 @@ class main(core_base):
         elif assay == 'WGS':
             component_list = [
                 'core',
+                'genomic_landscape',
                 'input_params_helper',
                 'provenance_helper',
                 'gene_information_merger',

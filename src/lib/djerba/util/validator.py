@@ -3,6 +3,7 @@
 import logging
 import os
 import re
+from time import sleep
 import djerba.util.ini_fields as ini
 from djerba.util.logger import logger
 
@@ -204,6 +205,34 @@ class path_validator(logger):
     def validate_present(self, config, section, param):
         # throws a KeyError if param is missing; TODO informative error message
         return config[section][param]
+
+
+class waiting_path_validator(logger):
+    """If path is not found, wait in case of a race condition"""
+
+    def __init__(self, log_level=logging.WARNING, log_path=None):
+        self.logger = self.get_logger(log_level, __name__, log_path)
+
+    def input_path_exists(self, path):
+        """Check if an input path exists"""
+        if not path:
+            error = "Input path '%s' is not a valid path value" % path
+            self.logger.error(msg)
+            raise OSError(msg)
+        path_exists = False
+        for interval in [0.1, 1, 5]:
+            if os.path.exists(path):
+                path_exists = True
+                break
+            msg = "Path {0} not found, waiting {1} second(s)".format(path, interval)
+            self.logger.debug(msg)
+            sleep(interval)
+        if path_exists:
+            self.logger.debug("Path '{0}' exists".format(path))
+        else:
+            self.logger.debug("Path '{0}' not found within the waiting period".format(path))
+        return path_exists
+
 
 class DjerbaConfigError(Exception):
     pass

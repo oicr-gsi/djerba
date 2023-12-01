@@ -34,7 +34,7 @@ class main(plugin_base):
             constants.COVERAGE,
             constants.PURITY,
             constants.PLOIDY,
-            core_constants.DEFAULT_SAMPLE_INFO
+            core_constants.TUMOUR_ID,
         ]
         for key in discovered:
             self.add_ini_discovered(key)
@@ -63,11 +63,12 @@ class main(plugin_base):
             wrapper.set_my_param(constants.PLOIDY, input_data[constants.PLOIDY])
 
         # Get tumour_id from sample info:
-        if wrapper.my_param_is_null(core_constants.DEFAULT_SAMPLE_INFO):
-            wrapper.set_my_param(core_constants.DEFAULT_SAMPLE_INFO, os.path.join(work_dir, core_constants.DEFAULT_SAMPLE_INFO))
-        info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
-        tumour_id = info[constants.TUMOUR_ID]
+        if wrapper.my_param_is_null(core_constants.TUMOUR_ID):
+            info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
+            tumour_id = info[constants.TUMOUR_ID]
+            wrapper.set_my_param(core_constants.TUMOUR_ID, tumour_id)
         
+        tumour_id = config[self.identifier][core_constants.TUMOUR_ID]
         # SECOND PASS: Get files based on input parameters
         if wrapper.my_param_is_null(constants.CALLABILITY):
             wrapper.set_my_param(constants.CALLABILITY, self.fetch_callability_etl_data(tumour_id))        

@@ -10,6 +10,7 @@ from djerba.helpers.expression_helper.helper import main as expr_helper
 from djerba.util.environment import directory_finder
 from djerba.util.logger import logger
 from djerba.util.oncokb.tools import levels as oncokb_levels
+from djerba.util.validator import waiting_path_validator
 
 class wgts_tools(logger):
 
@@ -20,6 +21,7 @@ class wgts_tools(logger):
     GENE = 'Gene'
     GENE_URL = 'Gene URL'
     ONCOKB = core_constants.ONCOKB
+    UNKNOWN = 'Unknown'
     UNCLASSIFIED_CYTOBANDS = [
         "", # some genes have an empty string for cytoband
         "mitochondria",
@@ -34,7 +36,7 @@ class wgts_tools(logger):
         "HSCHR6_MHC_COXp21.32",
         "HSCHR6_MHC_COXp21.33",
         "HSCHR6_MHC_COXp22.1",
-        "Unknown"
+        UNKNOWN
     ]
 
     def __init__(self, log_level=logging.WARNING, log_path=None):
@@ -89,10 +91,10 @@ class wgts_tools(logger):
                 (chromosome, arm, band) = end
         return (chromosome, arm, band)
 
-    @staticmethod
-    def has_expression(work_dir):
+    def has_expression(self, work_dir):
         in_path = os.path.join(work_dir, expr_helper.TCGA_EXPR_PCT_JSON)
-        return os.path.exists(in_path)
+        validator = waiting_path_validator(self.log_level, self.log_path)
+        return validator.input_path_exists(in_path)
 
     @staticmethod
     def read_expression(work_dir):

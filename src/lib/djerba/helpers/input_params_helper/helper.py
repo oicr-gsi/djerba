@@ -19,8 +19,7 @@ class main(helper_base):
     PRIMARY_CANCER = 'primary_cancer'
     SITE_OF_BIOPSY = 'site_of_biopsy'
     REQUISITION_APPROVED = 'requisition_approved'
-    ASSAY = 'assay'
-    
+    ASSAY = 'assay'    
     REQUISITION_ID = 'requisition_id'
     TCGACODE = 'tcgacode'
     SAMPLE_TYPE = 'sample_type'
@@ -35,8 +34,8 @@ class main(helper_base):
     # Priority
     PRIORITY = 10
 
-    # permitted assay names
-    VALID_ASSAYS = ['WGTS', 'WGS', 'TAR', 'PWGS']
+    # Permitted assay names
+    VALID_ASSAYS = ['WGTS', 'WGS', 'PWGS']
 
     def specify_params(self):
         self.logger.debug("Specifying params for input params helper")
@@ -51,8 +50,6 @@ class main(helper_base):
         self.add_ini_required(self.SITE_OF_BIOPSY)
         self.add_ini_required(self.REQUISITION_APPROVED)
         self.add_ini_required(self.ASSAY)
-
-
         self.add_ini_required(self.REQUISITION_ID)
         self.add_ini_required(self.TCGACODE)
         self.add_ini_required(self.SAMPLE_TYPE)
@@ -66,11 +63,36 @@ class main(helper_base):
         Needs to write the json to the workspace in the configure step
         """
         config = self.apply_defaults(config)
-        # Retrieve the parameters from the ini
+        wrapper = self.get_config_wrapper(config)
+        
+        # No parameters are allowed to be empty
+        list_params = [self.DONOR, 
+                      self.PROJECT, 
+                      self.STUDY, 
+                      self.ONCOTREE_CODE, 
+                      self.PRIMARY_CANCER,
+                      self.SITE_OF_BIOPSY,
+                      self.REQUISITION_APPROVED,
+                      self.REQUISITION_ID,
+                      self.TCGACODE,
+                      self.SAMPLE_TYPE,
+                      self.SEQ_REV_1,
+                      self.SEQ_REV_2,
+                      self.PURITY,
+                      self.PLOIDY,
+                      self.ASSAY]
+
+        for param in list_params:
+            if wrapper.my_param_is_null(param) or wrapper.get_my_string(param).strip() == "":
+                msg = 'Missing required parameter: ' + param + ". Did you forget to enter it?"
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+
+        # Retrieve the parameters from the ini and write them to the workspace
         info = self.get_input_params(config)
-        # Write them to a json
         self.write_input_params_info(info)
-        return config
+        return wrapper.get_config()
+
 
     def extract(self, config):
         """
@@ -117,8 +139,12 @@ class main(helper_base):
 
     def validate_input_params(self, info):
         assay = info.get(self.ASSAY)
-        if not assay in self.VALID_ASSAYS:
+        if not assay in self.VALID_ASSAYS and assay != "TAR":
             msg = "Invalid assay '{0}': Must be one of {1}".format(assay, self.VALID_ASSAYS)
+            self.logger.error(msg)
+            raise ValueError(msg)
+        if assay == "TAR":
+            msg = "Invalid assay '{0}': Must use [tar_input_params_helper]".format(assay)
             self.logger.error(msg)
             raise ValueError(msg)
         purity = info.get(self.PURITY)

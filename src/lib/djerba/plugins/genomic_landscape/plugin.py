@@ -29,7 +29,7 @@ class main(plugin_base):
     TEMPLATE_NAME = 'genomic_landscape_template.html'
 
     # For MSI file
-    MSI_RESULTS_SUFFIX = '.filter.deduped.realigned.recalibrated.msi.booted'
+    MSI_RESULTS_SUFFIX = '.recalibrated.msi.booted'
     MSI_WORKFLOW = 'msisensor'
     
     # For ctDNA file

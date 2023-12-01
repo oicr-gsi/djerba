@@ -40,6 +40,8 @@ class main(plugin_base):
             wrapper.set_my_param('oncotree_code', input_data['oncotree_code'])
         if wrapper.my_param_is_null('known_variants'):
             wrapper.set_my_param('known_variants', input_data['known_variants'])
+        if wrapper.my_param_is_null('sample_type'):
+            wrapper.set_my_param('sample_type', input_data['sample_type'])
 
         # SECOND PASS: Get files based on input parameters
         if wrapper.my_param_is_null('ichorcna_file'):
@@ -81,6 +83,7 @@ class main(plugin_base):
         results =  {
                 "oncotree_code": config[self.identifier]['oncotree_code'],
                 "known_variants" : config[self.identifier][constants.KNOWN_VARIANTS],
+                "sample_type" : config[self.identifier][constants.SAMPLE_TYPE],
                 "cancer_content" : rounded_purity,
                 "raw_coverage" : int(config[self.identifier][constants.RAW_COVERAGE]),
                 "unique_coverage" : int(config[self.identifier][constants.COLLAPSED_COVERAGE_PL]),
@@ -135,6 +138,7 @@ class main(plugin_base):
             'normal_id',
             'oncotree_code',
             'known_variants',
+            'sample_type',
             'ichorcna_file',
             'raw_coverage',
             'consensus_cruncher_file',

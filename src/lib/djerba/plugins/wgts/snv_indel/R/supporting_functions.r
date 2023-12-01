@@ -26,11 +26,15 @@ addVAFtoMAF <- function(maf_df, alt_col, dep_col, vaf_header) {
 }
 
 construct_whizbam_links <- function(df, whizbam_url) {
-  if( dim(df)[[1]] == 0 ) {
-  df$whizbam <- paste0(whizbam_url,
+
+  if( dim(df)[[1]] != 0 ) {
+      print("--- adding Whizbam links ---")
+      df$whizbam <- paste0(whizbam_url,
                        "&chr=", gsub("chr", "", df$Chromosome),
                        "&chrloc=", paste0(df$Start_Position, "-", df$End_Position))
-  } 
+  } else {
+      print("--- No Whizbam links added to empty file ---")
+  }
   return(df)
 }
 
