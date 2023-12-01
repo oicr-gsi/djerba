@@ -7,6 +7,7 @@
 - added RUO-report functionality
 - added HRD plugin to RUO report
 - split pWGS-sample plugin into three plugins
+- Created CAPTIV-8 plugin
 
 ## v1.0.3: 2023-11-28
 

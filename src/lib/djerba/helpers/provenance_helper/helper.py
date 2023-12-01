@@ -201,7 +201,9 @@ class main(helper_base):
                 self.WT_T_IDX: reader.parse_wt_index_path()
             },
             reader.WF_STARFUSION: reader.parse_starfusion_predictions_path(),
-            reader.WF_VEP: reader.parse_maf_path()
+            reader.WF_VEP: reader.parse_maf_path(),
+            reader.WF_VIRUS: reader.parse_virus_path(),
+            reader.WF_IMMUNE: reader.parse_immune_path()
         }
         return sample_info, path_info
 
