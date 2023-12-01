@@ -129,20 +129,13 @@ class benchmarker(logger):
         placeholder = 'redacted for benchmark comparison'
         with open(report_path) as report_file:
             data = json.loads(report_file.read())
-        for key in [
-                constants.OICR_LOGO,
-                constants.CNV_PLOT,
-                constants.PGA_PLOT,
-                constants.TMB_PLOT,
-                constants.VAF_PLOT,
-                constants.REPORT_DATE
-        ]:
-            data[constants.REPORT][key] = placeholder
-        for entry in data[constants.REPORT][constants.GENOMIC_BIOMARKERS][rc.BODY]:
-            # workaround for inconsistent biomarker entry formats
-            if entry[constants.ALTERATION] == rc.MSI:
-                entry[constants.METRIC_PLOT] = placeholder
-        return data
+        plugins = data['plugins'] # don't compare config or core elements
+        results = 'results'
+        plugins['cnv'][results]['cnv plot'] = placeholder
+        plugins['wgts.snv_indel'][results]['vaf_plot'] = placeholder
+        for biomarker in ['MSI', 'TMB']:
+            plugins['genomic_landscape'][results]['genomic_biomarkers'][biomarker]['Genomic biomarker plot'] = placeholder
+        return plugins
 
     def run_comparison(self, report_dirs):
         name = constants.REPORT_JSON_FILENAME
@@ -159,8 +152,7 @@ class benchmarker(logger):
                 raise RuntimeError(msg)
             self.validator.validate_input_file(report_path)
             report_paths.append(report_path)
-            doc = self.read_and_preprocess_report(report_path)
-            data.append(doc.get(constants.REPORT))
+            data.append(self.read_and_preprocess_report(report_path))
         self.logger.debug("Found report paths: {0}".format(report_paths))
         if os.path.samefile(report_paths[0], report_paths[1]):
             msg = "Report paths are the same file! {0}".format(report_paths)
@@ -299,7 +291,7 @@ class report_equivalence_tester(logger):
         if diff.is_identical():
             self.logger.info("EQUIVALENT: Reports are identical")
             self.equivalent = True
-        elif self.expressions_are_equivalent():
+        elif False: #self.expressions_are_equivalent():
             # check for non-expression discrepancies
             diff_no_expr = ReportDiff(self.remove_expression())
             self.equivalent = diff_no_expr.is_identical()
