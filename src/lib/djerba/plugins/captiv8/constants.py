@@ -48,6 +48,15 @@ DRIVER_VIRUSES = ["Human gammaherpesvirus 4",
 SWISNF_GENES = ['SMARCB1', 'SMARCA4', 'ARID1A', 'ARID1B', 'PBRM1']
 SPECIES = 'name_species'
 BED_FILE_NAME = 'gencode.v31.ensg_annotation_w_entrez.bed'
+TMB_EXCLUDED = [
+    "3'Flank",
+    "3'UTR",
+    "5'Flank",
+    "5'UTR",
+    "Silent",
+    "Splice_Region",
+    "Targeted_Region",
+    ]
 
 # Output constants
 PATIENT = 'patient'

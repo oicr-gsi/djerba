@@ -241,7 +241,7 @@ class main(plugin_base):
                     continue
                 gene = row[0]
                 var_class = row[8]
-                if gene in constants.SWISNF_GENES and var_class != 'Silent':
+                if gene in constants.SWISNF_GENES and var_class not in constants.TMB_EXCLUDED:
                     potential_lof = True
         if potential_lof:
             return "yes"
