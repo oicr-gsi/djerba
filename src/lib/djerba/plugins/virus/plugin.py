@@ -64,10 +64,10 @@ class main(plugin_base):
             self.logger.error(msg)
             raise DjerbaPluginError(msg)
     
-    # Get virus file
+    # Get virus file # FYI: SHOULD GET FROM PROVENANCE READER. JUST WAIT A BIT FOR THIS.
     donor = config[self.identifier][self.DONOR]
     if wrapper.my_param_is_null(self.VIRUS_FILE):
-        wrapper.set_my_param(self.VIRUS_FILE, self.get_file(donor, self.VIRUS_WORKFLOW, self.VIRUS_RESULTS_SUFFIX))
+        wrapper.set_my_param(self.VIRUS_FILE, config[self.identifier][self.VIRUS_FILE])
     
     return config
   
@@ -91,19 +91,6 @@ class main(plugin_base):
     renderer = mako_renderer(self.get_module_dir())
     return renderer.render_name(self.TEMPLATE_NAME, data)  
 
-  
-  def get_file(self, donor, workflow, results_suffix):
-    """
-    pull data from results file
-    """
-    provenance = subset_provenance(self, workflow, donor)
-    try:
-        results_path = parse_file_path(self, results_suffix, provenance)
-    except OSError as err:
-        msg = "File with extension {0} not found".format(results_suffix)
-        raise RuntimeError(msg) from err
-
-  
   def build_virus(self, work_dir, virus_path):
     """
     Reads in VIRUSBreakend file, outputs data as dictionary for json.
