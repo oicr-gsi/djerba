@@ -14,15 +14,15 @@ IS_HEME = 'is_hemeotological_cancer' # defaults to false
 SITE_OF_BIOPSY = 'site_of_biopsy'
 RSEM_FILE = 'rsem_file'
 CIBERSORT_FILE = 'cibersort_file'
-VCF_FILE = 'vcf_file'
+MAF_FILE = 'maf_file'
 VIRUS_FILE = 'virus_file'
 REPORT_DIR = 'report_dir'
 
 # File workflow names and suffixes
 VIRUS_WORKFLOW = 'virusbreakend'
 VIRUS_SUFFIX = '.vcf.summary.tsv'
-VCF_WORKFLOW = 'mutect2_matched'
-VCF_SUFFIX = '.mutect2.filtered.vcf.gz$'
+MAF_WORKFLOW = 'variantEffectPredictor_matched'
+MAF_SUFFIX = '.mutect2.filtered.maf.gz$'
 RSEM_WORKFLOW = 'rsem'
 RSEM_SUFFIX = '.genes.results'
 CIBERSORT_WORKFLOW = 'immunedeconv'

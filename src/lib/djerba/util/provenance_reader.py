@@ -36,7 +36,6 @@ class provenance_reader(logger):
     WF_STARFUSION = 'starfusion'
     WF_VEP = 'variantEffectPredictor_matched'
     WF_VIRUS = 'virusbreakend'
-    WF_VCF = 'mutect2_matched'
     WF_IMMUNE = 'immunedeconv'
 
     # older Vidarr workflow names, deprecated as of 2023-11-13
@@ -132,7 +131,6 @@ class provenance_reader(logger):
             [self.WF_BMPP, self.WF_BMPP_20231113, self.NIASSA_WF_BMPP],
             [self.WF_SEQUENZA, self.NIASSA_WF_SEQUENZA],
             [self.WF_VEP, self.WF_VEP_20231113, self.NIASSA_WF_VEP],
-            [self.WF_VCF],
             [self.WF_VIRUS],
             [self.WF_IMMUNE]
         ]
@@ -501,12 +499,6 @@ class provenance_reader(logger):
         suffix = 'star-fusion\.fusion_predictions\.tsv$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wt_t)
     
-    def parse_vcf_path(self):
-        workflow = self.WF_VCF
-        mt = self.MT_VCF_GZ
-        suffix = 'mutect2\.filtered\.vcf\.gz$'
-        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
-
     def parse_virus_path(self):
         workflow = self.WF_VIRUS
         mt = self.MT_OCTET_STREAM
