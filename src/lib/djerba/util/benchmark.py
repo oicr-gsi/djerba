@@ -130,6 +130,8 @@ class benchmarker(logger):
         with open(report_path) as report_file:
             data = json.loads(report_file.read())
         plugins = data['plugins'] # don't compare config or core elements
+        for plugin in plugins:
+            plugin['version'] = placeholder # don't compare plugin version numbers
         results = 'results'
         plugins['cnv'][results]['cnv plot'] = placeholder
         plugins['wgts.snv_indel'][results]['vaf_plot'] = placeholder
@@ -282,6 +284,22 @@ class main_draft_args():
 
 class report_equivalence_tester(logger):
 
+    """
+    Equivalence test is specific to the set of plugins in GSICAPBENCH
+    Eg. expression comparison will not necessarily work with different plugins
+    """
+
+    # deal with inconsistent capitalization
+    BODY_KEY = {
+        'cnv': 'body',
+        'wgts.snv_indel': 'Body'
+    }
+    XPCT_KEY = {
+        'cnv': 'Expression Percentile',
+        'wgts.snv_indel': 'Expression percentile'
+    }
+    RESULTS = 'results'
+
     def __init__(self, data, expression_delta, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.data = data
@@ -291,7 +309,7 @@ class report_equivalence_tester(logger):
         if diff.is_identical():
             self.logger.info("EQUIVALENT: Reports are identical")
             self.equivalent = True
-        elif False: #self.expressions_are_equivalent():
+        elif self.expressions_are_equivalent():
             # check for non-expression discrepancies
             diff_no_expr = ReportDiff(self.remove_expression())
             self.equivalent = diff_no_expr.is_identical()
@@ -301,6 +319,7 @@ class report_equivalence_tester(logger):
             else:
                 msg = "NOT EQUIVALENT: Expressions are within tolerance, "+\
                       "but other report fields differ"
+                self.diff_text = diff_no_expr.get_diff()
             self.logger.info(msg)
         else:
             msg = "NOT EQUIVALENT: Expressions do not match within "+\
@@ -319,57 +338,51 @@ class report_equivalence_tester(logger):
         Check if input data structures are equivalent
         Expression levels are permitted to differ by +/- delta
         """
-        # TODO update for new plugin JSON format
-        keys = [constants.TOP_ONCOGENIC_SOMATIC_CNVS, rc.SMALL_MUTATIONS_AND_INDELS]
-        expressions = []
-        # find expression by gene, for both datasets, and for both SNVs/indels and CNVs
-        for doc in self.data:
-            expr = {}
-            for key in keys:
-                for alteration in doc[key][constants.BODY]:
-                    expr[alteration[constants.GENE]] = alteration[rc.EXPRESSION_METRIC]
-            expressions.append(expr)
-        # compare the two expression dictionaries
-        if set(expressions[0].keys()) != set(expressions[1].keys()):
-            self.logger.info("Expression gene sets differ, expressions are not equivalent")
+        equivalent = True
+        for name in ['cnv', 'wgts.snv_indel']:
+            self.logger.info("Checking expression levels for plugin: {0}".format(name))
+            body0 = self.data[0][name][self.RESULTS][self.BODY_KEY.get(name)]
+            body1 = self.data[1][name][self.RESULTS][self.BODY_KEY.get(name)]
+            xpct = self.XPCT_KEY[name]
+            equivalent = self.expressions_equivalent_for_body(body0, body1, xpct)
+            if not equivalent:
+                break
+        return equivalent
+
+    def expressions_equivalent_for_body(self, body0, body1, xpct):
+        """Expression test for CNV and SNV/indel plugins"""
+        genes0 = {x['Gene']: x for x in body0}
+        genes1 = {x['Gene']: x for x in body1}
+        equivalent = True
+        if set(genes0.keys()) != set(genes1.keys()):
+            self.logger.info("Gene sets differ, expressions are not equivalent")
             equivalent = False
-        else:
-            equivalent = True
-            for gene in expressions[0].keys():
-                expr0 = expressions[0][gene]
-                expr1 = expressions[1][gene]
-                if (expr0==None and expr1!=None) or (expr0!=None and expr1==None):
-                    msg = "Expression levels for gene {0}".format(gene)+\
-                          "have mismatched null and non-null values; "+\
-                          "expressions are not equivalent"
-                    self.logger.info(msg)
-                    equivalent = False
-                    break
-                elif expr0==None and expr1==None:
-                    pass # both expressions null is OK
-                else:
-                    diff = abs(expr0 - expr1)
-                    if diff > self.delta:
-                        msg = "Expression levels for gene {0} differ ".format(gene)+\
-                              "by more than permitted maximum of {0}; ".format(self.delta)+\
-                              "expressions are not equivalent"
-                        self.logger.info(msg)
-                        equivalent = False
-                        break
-            if equivalent:
-                msg = "All expression levels are within permitted tolerance "+\
-                      "of {0}; expressions are equivalent".format(self.delta)
+        for gene in genes0.keys():
+            try:
+                diff = abs(genes0[gene][xpct] - genes1[gene][xpct])
+            except KeyError:
+                print("{0}, {1}".format(genes0[gene], genes1[gene]))
+                raise
+            if diff > self.delta:
+                msg = "Expression levels for gene {0} differ ".format(gene)+\
+                    "by more than permitted maximum of {0}; ".format(self.delta)+\
+                    "expressions are not equivalent"
                 self.logger.info(msg)
+                equivalent = False
+                break
         return equivalent
 
     def remove_expression(self):
         # return a copy of the Djerba report with expression values zeroed out
         data_copy = deepcopy(self.data)
-        keys = [constants.TOP_ONCOGENIC_SOMATIC_CNVS, rc.SMALL_MUTATIONS_AND_INDELS]
+        names = ['cnv', 'wgts.snv_indel']
         for doc in data_copy:
-            for key in keys:
-                for alteration in doc[key][constants.BODY]:
-                    alteration[constants.EXPRESSION_METRIC] = 0
+            for name in names:
+                xpct = self.XPCT_KEY.get(name)
+                for index in [0, 1]:
+                    body = data_copy[index][name][self.RESULTS][self.BODY_KEY.get(name)]
+                    for i in range(len(body)):
+                        body[i][xpct] = 'redacted'
         return data_copy
 
 
