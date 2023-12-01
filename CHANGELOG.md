@@ -1,6 +1,7 @@
 # CHANGELOG
 
-## v1.1.0: 2023-11-23
+
+## v1.1.0: 2023-11-29
 
 - removed `prototype/`
 - added RUO-report functionality
