@@ -5,4 +5,3 @@
 # See https://stackoverflow.com/a/16084844
 
 __version__ = '1.1.0'
-

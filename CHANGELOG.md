@@ -1,11 +1,12 @@
 # CHANGELOG
 
-## v1.1.0: 2023-11-23
+## v1.1.0: 2023-11-29
 
 - removed `prototype/`
 - added RUO-report functionality
 - added HRD plugin to RUO report
 - split pWGS-sample plugin into three plugins
+- Created CAPTIV-8 plugin
 
 ## v1.0.3: 2023-11-28
 
