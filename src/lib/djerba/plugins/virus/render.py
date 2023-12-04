@@ -6,20 +6,22 @@ from djerba.util.html import html_builder as hb
 class html_builder:
 
   # Header constants
-  GENUS = 'Genus'
+  #GENUS = 'Genus'
   SPECIES = 'Species'
+  ASSIGNED = 'Assigned Name'
   COVERAGE = 'Coverage'
-  LENGTH = 'Length'
-  MEANDEPTH = 'Mean depth'
-  INTEGRATION = 'Integration'
+  LENGTH = 'Viral Contig Length'
+  INTEGRATION = 'Number of Integration Breakpoints'
+  DRIVER = 'Driver Virus'
 
   # Extract constants
-  _GENUS = 'name_genus'
-  _SPECIES = 'name_assigned'
+  #_GENUS = 'name_genus'
+  _SPECIES = 'name_species'
+  _ASSIGNED = 'name_assigned'
   _COVERAGE = 'coverage'
   _LENGTH = 'endpos'
-  _MEANDEPTH = 'meandepth'
   _INTEGRATION = 'integrations'
+  _DRIVER = 'driver'
   _BODY = 'Body'
 
   def virusbreakend_header(self):
@@ -27,12 +29,13 @@ class html_builder:
     Creates the header for the VIRUSBreakend table.
     """
     names = [
-        self.GENUS,
+        #self.GENUS,
         self.SPECIES,
-        self.COVERAGE,
+        self.ASSIGNED,
         self.LENGTH,
-        self.MEANDEPTH,
-        self.INTEGRATION
+        self.COVERAGE,
+        self.INTEGRATION,
+        self.DRIVER
     ]
     return hb.thead(names)
 
@@ -44,12 +47,13 @@ class html_builder:
     rows = []
     for row in row_fields:
         cells = [
-            hb.td(row[self._GENUS]),
+            #hb.td(row[self._GENUS]),
             hb.td(row[self._SPECIES]),
-            hb.td(row[self._COVERAGE]),
+            hb.td(row[self._ASSIGNED]),
             hb.td(row[self._LENGTH]),
-            hb.td(row[self._MEANDEPTH]),
-            hb.td(row[self._INTEGRATION])
+            hb.td(row[self._COVERAGE]),
+            hb.td(row[self._INTEGRATION]),
+            hb.td(row[self._DRIVER])
         ]
         rows.append(hb.table_row(cells))
     return rows

@@ -20,22 +20,39 @@ class main(plugin_base):
   PRIORITY = 1200
   PLUGIN_VERSION = '1.0.0'
   TEMPLATE_NAME = 'virus_template.html'
-  VIRUS_RESULTS_SUFFIX = 'virusbreakend.vcf.summary.tsv'
-  VIRUS_WORKFLOW = 'virusbreakend'
 
   # Configure constants
   DONOR = 'donor'
   VIRUS_FILE = 'virus_file'
+  VIRUS_WORKFLOW = 'virusbreakend'
 
   # Extract constants
-  GENUS = 'name_genus'
-  SPECIES = 'name_assigned'
+  #GENUS = 'name_genus'
+  SPECIES = 'name_species'
+  ASSIGNED = 'name_assigned'
   COVERAGE = 'coverage'
   LENGTH = 'endpos'
-  MEANDEPTH = 'meandepth'
   INTEGRATION = 'integrations'
+  DRIVER = 'driver'
   BODY = 'Body'
   TOTAL_VARIANTS = 'Total variants'
+
+  # List of driver viruses
+  # Driver viruses from: https://github.com/hartwigmedical/hmftools/blob/master/virus-interpreter/src/test/resources/virus_interpreter/real_virus_reporting_db.tsv
+  DRIVER_VIRUSES = ["Human gammaherpesvirus 4",
+                    "Hepatitis B virus",
+                    "Human gammaherpesvirus 8",
+                    "Alphapapillomavirus 11",
+                    "Alphapapillomavirus 5",
+                    "Alphapapillomavirus 6",
+                    "Alphapapillomavirus 7",
+                    "Alphapapillomavirus 9",
+                    "Alphapapillomavirus 1",
+                    "Alphapapillomavirus 10",
+                    "Alphapapillomavirus 13",
+                    "Alphapapillomavirus 3",
+                    "Alphapapillomavirus 8",
+                    "Human polyomavirus 5"]
 
   def specify_params(self):
     discovered = [
@@ -44,7 +61,7 @@ class main(plugin_base):
     ]
     for key in discovered:
         self.add_ini_discovered(key)
-    self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
+    self.set_ini_default(core_constants.ATTRIBUTES, 'research')
     self.set_priority_defaults(self.PRIORITY)
 
 
@@ -53,22 +70,21 @@ class main(plugin_base):
     config = self.apply_defaults(config)
     wrapper = self.get_config_wrapper(config)
     
-    if wrapper.my_param_is_null(self.DONOR):
-        if self.workspace.has_file(input_params_helper.INPUT_PARAMS_FILE):
-            data = self.workspace.read_json(input_params_helper.INPUT_PARAMS_FILE)
-            donor = data[self.DONOR]
-            wrapper.set_my_param(self.DONOR, donor)
-        else:
-            msg = "Cannot find Donor; must be manually specified or "+\
-                  "given in {0}".format(input_params_helper.INPUT_PARAMS_FILE)
-            self.logger.error(msg)
-            raise DjerbaPluginError(msg)
-    
-    # Get virus file # FYI: SHOULD GET FROM PROVENANCE READER. JUST WAIT A BIT FOR THIS.
-    donor = config[self.identifier][self.DONOR]
-    if wrapper.my_param_is_null(self.VIRUS_FILE):
-        wrapper.set_my_param(self.VIRUS_FILE, config[self.identifier][self.VIRUS_FILE])
-    
+    # Get parameters
+    wrapper = self.update_wrapper_if_null(
+        wrapper,
+        input_params_helper.INPUT_PARAMS_FILE,
+        self.DONOR,
+        input_params_helper.DONOR
+    )
+
+     # Get virus file from path_info.json
+    wrapper = self.update_wrapper_if_null(
+        wrapper,
+        core_constants.DEFAULT_PATH_INFO,
+        self.VIRUS_FILE,
+        self.VIRUS_WORKFLOW
+    )
     return config
   
   def extract(self, config):
@@ -100,15 +116,22 @@ class main(plugin_base):
     with open(os.path.join(work_dir, virus_path)) as data_file:
         for input_row in csv.DictReader(data_file, delimiter="\t"):
             row = {
-                self.GENUS: input_row[self.GENUS],
+                #self.GENUS: input_row[self.GENUS],
                 self.SPECIES: input_row[self.SPECIES],
+                self.ASSIGNED: input_row[self.ASSIGNED],
                 self.COVERAGE: input_row[self.COVERAGE],
                 self.LENGTH: input_row[self.LENGTH],
-                self.MEANDEPTH: input_row[self.MEANDEPTH],
                 self.INTEGRATION: input_row[self.INTEGRATION]
             }
-            rows.append(row)
             
+            # Check if it's a driver virus
+            if input_row[self.SPECIES] in self.DRIVER_VIRUSES:
+                row[self.DRIVER] = "Yes"
+            else:
+                row[self.DRIVER] = "No"
+
+            rows.append(row)
+          
     num_viruses = len(rows)
     data = {
         self.TOTAL_VARIANTS: num_viruses,
