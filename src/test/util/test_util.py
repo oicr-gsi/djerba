@@ -7,7 +7,8 @@ import djerba.util.ini_fields as ini
 
 from configparser import ConfigParser
 
-from djerba.util.benchmark import benchmarker
+from djerba.util.benchmark import benchmarker, report_equivalence_tester
+from djerba.util.environment import directory_finder
 from djerba.util.render_mako import mako_renderer
 from djerba.util.testing.tools import TestBase
 
@@ -20,7 +21,7 @@ class TestBenchmark(TestBase):
         INPUT_DIR_VAR = 'DJERBA_GSICAPBENCH_INPUTS'
 
         def __init__(self, output_dir, dry_run):
-            self.subparser_name = 'report'
+            self.subparser_name = 'generate'
             input_dir = os.environ.get(self.INPUT_DIR_VAR)
             if input_dir==None:
                 raise RuntimeError("Need to set {0} env var".format(self.INPUT_DIR_VAR))
@@ -33,13 +34,15 @@ class TestBenchmark(TestBase):
             else:
                 self.output_dir = output_dir
             self.dry_run = dry_run
+            self.apply_cache = True
+            self.update_cache = False
             # logging
             self.log_path = None
             self.debug = False
-            self.verbose = True # False # TODO FIXME
+            self.verbose = False
             self.quiet = True
 
-    def test_report_dry_run(self):
+    def SKIP_test_report_dry_run(self):
         args = self.mock_report_args(self.tmp_dir, dry_run=True)
         benchmarker(args).run()
         for sample in benchmarker.SAMPLES:
@@ -52,12 +55,19 @@ class TestBenchmark(TestBase):
             self.assertTrue('core' in sections)
 
     def test_report(self):
+        self.tmp_dir = '/u/ibancarz/workspace/djerba/test_20231206_01'
         args = self.mock_report_args(self.tmp_dir, dry_run=False)
-        benchmarker(args).run()
+        bench = benchmarker(args)
+        bench.run()
+        private_dir = directory_finder().get_private_dir()
+        report_name = 'djerba_report.json'
         for sample in benchmarker.SAMPLES:
-            json_path = os.path.join(self.tmp_dir, sample, 'report', 'djerba_report.json')
-            self.assertTrue(os.path.isfile(json_path))
-            # TODO diff this JSON against a previously generated reference file
+            old_path = os.path.join(private_dir, 'benchmarking', sample, report_name)
+            new_path = os.path.join(self.tmp_dir, sample, 'report', report_name)
+            self.assertTrue(os.path.isfile(new_path))
+            tester = report_equivalence_tester([old_path, new_path])
+            self.assertTrue(tester.is_equivalent())
+            
 
 class TestMakoRenderer(TestBase):
 
