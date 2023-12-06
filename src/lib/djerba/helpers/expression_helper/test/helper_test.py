@@ -60,13 +60,13 @@ class TestExpressionHelper(TestBase):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         cp = ConfigParser()
         cp.read(os.path.join(test_source_dir, 'config.ini'))
-        test_data_root = os.environ.get(cc.DJERBA_TEST_DIR_VAR)
-        test_data_dir = os.path.join(test_data_root, 'helpers', 'expression')
+        finder = directory_finder()
+        test_data_dir = os.path.join(finder.get_test_dir(), 'helpers', 'expression')
         loader = helper_loader(logging.WARNING)
         ws = workspace(self.tmp_dir)
         helper_main = loader.load(self.HELPER_NAME, ws)
         # configure the INI
-        data_dir = os.environ.get('DJERBA_DATA_DIR')
+        data_dir = finder.get_data_dir()
         if not data_dir:
             raise RuntimeError('DJERBA_DATA_DIR environment variable is not configured')
         enscon = os.path.join(data_dir, 'ensemble_conversion_hg38.txt')
