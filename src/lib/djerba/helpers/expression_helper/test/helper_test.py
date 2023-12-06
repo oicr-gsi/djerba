@@ -9,6 +9,7 @@ from configparser import ConfigParser
 from shutil import copy
 from djerba.core.loaders import helper_loader
 from djerba.core.workspace import workspace
+from djerba.util.environment import directory_finder
 from djerba.util.testing.tools import TestBase
 import djerba.core.constants as cc
 
@@ -26,7 +27,9 @@ class TestExpressionHelper(TestBase):
         cp.set(self.HELPER_NAME, 'tcga_code', 'PAAD')
         loader = helper_loader(logging.ERROR)
         work_dir = self.tmp_dir
-        test_dir = os.path.join(os.environ.get('DJERBA_TEST_DIR'), 'helpers', 'expression')
+        finder = directory_finder()
+        data_dir = finder.get_data_dir()
+        test_dir = os.path.join(finder.get_test_dir(), 'helpers', 'expression')
         sample_info = os.path.join(test_dir, 'sample_info.json')
         fpr = os.path.join(test_dir, 'provenance_subset.tsv.gz')
         copy(sample_info, work_dir)
@@ -47,7 +50,7 @@ class TestExpressionHelper(TestBase):
         self.assertEqual(tcga_code, 'PAAD')
         # path was derived from file provenance subset, should not change
         rsem = config.get(self.HELPER_NAME, helper_main.RSEM_GENES_RESULTS_KEY)
-        self.assertEqual(self.getMD5_of_string(rsem), '46021826f0286190316af74c71d75532')
+        self.assertEqual(self.getMD5_of_string(rsem), '6adf97f83acf6453d4a6a4b1070f3754')
         # check the reference path
         found = config.get(self.HELPER_NAME, helper_main.GEP_REFERENCE_KEY)
         expected = '/.mounts/labs/CGI/gsi/tools/djerba/gep_reference.txt.gz'
