@@ -58,6 +58,7 @@ DOCUMENT_CONFIG = 'document_config'
 PLUGINS = 'plugins'
 MERGERS = 'mergers'
 CONFIG = 'config'
+CORE_VERSION = 'core_version'
 
 # keys for sample ID file written by provenance helper
 # TODO remove duplicate versions from provenance helper main
