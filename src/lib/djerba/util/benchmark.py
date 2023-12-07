@@ -263,10 +263,14 @@ class report_equivalence_tester(logger):
                  log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
         msg = None
-        if os.path.samefile(report_paths[0], report_paths[1]):
-            msg = "Report paths are the same file! {0}".format(report_paths)
-        elif len(report_paths) != 2:
+        if len(report_paths) != 2:
             msg = "Must have exactly 2 report paths, got: {0}".format(report_paths)
+        elif not os.path.isfile(report_paths[0]):
+            msg = "Report path {0} is not a file".format(report_paths[0])
+        elif not os.path.isfile(report_paths[1]):
+            msg = "Report path {0} is not a file".format(report_paths[1])
+        elif os.path.samefile(report_paths[0], report_paths[1]):
+            msg = "Report paths are the same file! {0}".format(report_paths)
         if msg:
             self.logger.error(msg)
             raise RuntimeError(msg)
@@ -325,12 +329,20 @@ class report_equivalence_tester(logger):
                 plugin_eq = False
             else:
                 for gene in expr0.keys():
-                    diff = abs(expr0[gene] - expr1[gene])
-                    if diff > delta:
-                        template = "{0} not equivalent: Expression delta > {1} "
-                        msg = template.format(gene, delta)
-                        self.logger.info(msg)
-                        plugin_eq = False
+                    if expr0[gene] == None or expr1[gene] == None:
+                        if expr0[gene] == None and expr1[gene] == None:
+                            pass
+                        else:
+                            msg = "{0} not equivalent: Mixed null and non-null expression"
+                            self.logger.debug(msg.format(gene))
+                            plugin_eq = False
+                    else:
+                        diff = abs(expr0[gene] - expr1[gene])
+                        if diff > delta:
+                            template = "{0} not equivalent: Expression delta > {1} "
+                            msg = template.format(gene, delta)
+                            self.logger.debug(msg)
+                            plugin_eq = False
             if plugin_eq:
                 msg = "Expression levels for plugin {0} are equivalent".format(name)
             else:

@@ -42,7 +42,7 @@ class TestBenchmark(TestBase):
             self.verbose = False
             self.quiet = True
 
-    def SKIP_test_report_dry_run(self):
+    def test_report_dry_run(self):
         args = self.mock_report_args(self.tmp_dir, dry_run=True)
         benchmarker(args).run()
         for sample in benchmarker.SAMPLES:
@@ -55,7 +55,6 @@ class TestBenchmark(TestBase):
             self.assertTrue('core' in sections)
 
     def test_report(self):
-        self.tmp_dir = '/u/ibancarz/workspace/djerba/test_20231206_01'
         args = self.mock_report_args(self.tmp_dir, dry_run=False)
         bench = benchmarker(args)
         bench.run()
