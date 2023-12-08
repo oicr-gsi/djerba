@@ -12,7 +12,6 @@ import os
 import re
 from PyPDF2 import PdfMerger
 import djerba.util.ini_fields as ini
-import djerba.version as version
 from djerba.core.base import base as core_base
 from djerba.core.database import database
 from djerba.core.extract import extraction_setup
@@ -24,6 +23,7 @@ from djerba.core.loaders import \
 from djerba.core.workspace import workspace
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
+from djerba.version import get_djerba_version
 import djerba.core.constants as cc
 import djerba.util.constants as constants
 
@@ -37,7 +37,7 @@ class main(core_base):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
-        self.logger.info("Running Djerba version {0}".format(version.__version__))
+        self.logger.info("Running Djerba version {0}".format(get_djerba_version()))
         self.json_validator = plugin_json_validator(self.log_level, self.log_path)
         self.path_validator = path_validator(self.log_level, self.log_path)
         self.work_dir = work_dir

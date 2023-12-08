@@ -4,3 +4,6 @@
 # 3) it only needs to be stored in one place
 # See https://stackoverflow.com/a/16084844
 __version__ = '1.1.0'
+
+def get_djerba_version():
+    return __version__
