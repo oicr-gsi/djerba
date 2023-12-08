@@ -56,7 +56,8 @@ class main(plugin_base):
       processor = cnv_processor(self.work_dir, wrapper, self.log_level, self.log_path)
 
       ## segments
-      whizbam_url = construct_whizbam_link(config[self.identifier]['cbio_id'] , tumour_id, config[self.identifier]['normal_id']  )
+      #TODO
+      whizbam_url = construct_whizbam_link(config[self.identifier]['cbio_id'] , tumour_id )
       cnv_plot_base64 = self.analyze_segments(config[self.identifier]['purple_segment_file'], whizbam_url, config[self.identifier]['purity'], ploidy)
       #data_table[ctc.PERCENT_GENOME_ALTERED] = cnv.calculate_percent_genome_altered(ctc.DATA_SEGMENTS)
 
@@ -88,8 +89,7 @@ class main(plugin_base):
             'purple_purity_file',
             'purple_segment_file',
             'purple_gene_file',
-            'cbio_id',
-            'normal_id'
+            'cbio_id'
           ]
       for key in required:
           self.add_ini_required(key)
@@ -143,16 +143,12 @@ class main(plugin_base):
       result = runner.run(cmd, "segments R script")
       return result.stdout.split('"')[1]
 
-def construct_whizbam_link(studyid, tumourid, normalid,  whizbam_base_url= 'https://whizbam.oicr.on.ca', seqtype= 'GENOME', genome= 'hg38'):
+def construct_whizbam_link(studyid, tumourid,  whizbam_base_url= 'https://whizbam.oicr.on.ca', seqtype= 'GENOME', genome= 'hg38'):
     whizbam = "".join((whizbam_base_url,
                         "/igv?project1=", studyid,
                         "&library1=", tumourid,
                         "&file1=", tumourid, ".bam",
                         "&seqtype1=", seqtype,
-                        "&project2=", studyid,
-                        "&library2=", normalid,
-                        "&file2=", normalid, ".bam",
-                        "&seqtype2=", seqtype,
                         "&genome=", genome
                         ))
     return(whizbam)

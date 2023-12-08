@@ -5,7 +5,7 @@ library(testthat)
 basedir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), sep='/')
 testdatadir <- paste(Sys.getenv(c("DJERBA_TEST_DATA")), sep='/')
 
-source(paste0(basedir, "/plugins/wgts/cnv_purple/CNA_supporting_functions.r"))
+source(paste0(basedir, "/plugins/wgts/cnv_purple/r/CNA_supporting_functions.r"))
 
 test_that("arm_level_caller returns correct arm-level alterations with PURPLE input",
   {

@@ -76,12 +76,12 @@ arm_level_caller_purple <- function(segs, centromeres, gain_threshold, shallow_d
   return(sort(arm_CNA_prop$annotation))
 }
 
-preProcCNA <- function(genefile, oncolist, ploidy=2){
+preProcCNA <- function(genefile, oncolist, ploidy=2, ploidy_multiplier=2.4){
 
   # gain = as.numeric(cutoffs["LOG_R_GAIN"] )
   #  htz = as.numeric(cutoffs["LOG_R_HTZD"])
   
-  amp = 3 * ploidy
+  amp = ploidy_multiplier * ploidy
   hmz = 0.5
   
   oncogenes <- oncolist$Hugo.Symbol[oncolist$OncoKB.Annotated == "Yes"]
