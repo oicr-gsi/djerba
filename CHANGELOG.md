@@ -1,13 +1,15 @@
 # CHANGELOG
 
+## v1.1.0: 2023-12-08
 
-## v1.1.0: 2023-11-29
-
-- removed `prototype/`
-- added RUO-report functionality
-- added HRD plugin to RUO report
-- split pWGS-sample plugin into three plugins
+- Removed `prototype` directory, which is now in the [djerba_prototypes](https://github.com/oicr-gsi/djerba_prototypes) repo
+- Added RUO-report functionality
+- Added HRD plugin to RUO report
+- Split pWGS-sample plugin into three plugins
 - Created CAPTIV-8 plugin
+- Added Djerba core version to JSON output
+- Updated and fixed unit tests which were omitted for release 1.0.0
+- Updated benchmarking functions which were omitted for release 1.0.0
 
 ## v1.0.3: 2023-11-28
 
