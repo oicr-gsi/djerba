@@ -37,9 +37,7 @@ class TestExpressionHelper(TestBase):
         ws = workspace(work_dir)
         helper_main = loader.load(self.HELPER_NAME, ws)
         config = helper_main.configure(cp)
-        data_dir = os.environ.get('DJERBA_DATA_DIR')
-        if not data_dir:
-            raise RuntimeError('DJERBA_DATA_DIR environment variable is not configured')
+        data_dir = directory_finder().get_data_dir()
         expected_enscon = os.path.join(data_dir, 'ensemble_conversion_hg38.txt')
         configured_enscon = config.get(self.HELPER_NAME, helper_main.ENSCON_KEY)
         self.assertEqual(configured_enscon, expected_enscon)
