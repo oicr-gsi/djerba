@@ -50,3 +50,5 @@ BAMQC_SUFFIX = 'bamQC_results.json'
 # render constants
 ANALYSIS_TEMPLATE_NAME = 'analysis_template.html'
 SAMPLE_TEMPLATE_NAME = 'sample_template.html'
+SUMMARY_TEMPLATE_NAME = 'summary_template.html'
+CASE_OVERVIEW_TEMPLATE_NAME = 'case_template.html'

@@ -14,6 +14,7 @@ from time import strftime
 from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.util.render_mako import mako_renderer
 import djerba.core.constants as core_constants
+import djerba.util.assays as assays
 import djerba.util.input_params_tools as input_params_tools
 
 class main(plugin_base):
@@ -37,19 +38,6 @@ class main(plugin_base):
     TUMOUR_SAMPLE_ID = "tumour_id"
     TUMOUR_DEPTH = 80
     NORMAL_DEPTH = 40
-
-    ASSAY_LOOKUP = {
-        # WGTS/WGS default to 80X
-        'WGTS': 'Whole genome and transcriptome sequencing (WGTS)'+\
-        '-80X Tumour, 30X Normal (v3.0)',
-        'WGS': 'Whole genome sequencing (WGS)-80X Tumour, 30X Normal (v3.0)',
-        # WGTS/WGS at 40X - seldom done now, but included for completeness
-        'WGTS40X': 'Whole genome and transcriptome sequencing (WGTS)'+\
-        '-40X Tumour, 30X Normal (v3.0)',
-        'WGS40X': 'Whole genome sequencing (WGS)-40X Tumour, 30X Normal (v3.0)',
-        # TAR
-        'TAR': 'Targeted Sequencing - REVOLVE Panel - cfDNA and Buffy Coat (v1.0)'
-    }
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -79,21 +67,17 @@ class main(plugin_base):
             wrapper.set_my_param(self.ASSAY, input_data[self.ASSAY])
         
         # Get assay
-        assay = config[self.identifier][self.ASSAY]
-        
+        assay = wrapper.get_my_string(self.ASSAY)
         # Look up assay long name from assay short name
         if wrapper.my_param_is_null(self.ASSAY_DESCRIPTION):
-            assay_description = self.ASSAY_LOOKUP.get(assay)
-            if assay_description == None:
-                msg = "Assay short name '{0}' not found in lookup table {1}".format(
-                    assay, self.ASSAY_LOOKUP
-                )
+            [ok, msg] = assays.name_status(assay)
+            if ok:
+                self.logger.debug("Found assay name '{0}' in lookup table".format(assay))
+                wrapper.set_my_param(self.ASSAY_DESCRIPTION, assays.get_description(assay))
+            else:
+                msg = "Cannot resolve assay description from config or default lookup: "+msg
                 self.logger.error(msg)
                 raise DjerbaPluginError(msg)
-            else:
-                self.logger.debug("Found assay name in lookup table")
-                wrapper.set_my_param(self.ASSAY_DESCRIPTION, assay_description)
-
         # Get parameters from default sample info
         if wrapper.my_param_is_null(core_constants.DEFAULT_SAMPLE_INFO) and assay != "TAR":
             wrapper.set_my_param(core_constants.DEFAULT_SAMPLE_INFO, os.path.join(work_dir, core_constants.DEFAULT_SAMPLE_INFO))
@@ -106,7 +90,6 @@ class main(plugin_base):
                 msg = "ID not found in sample info {0}: {1}".format(info, err)
                 self.logger.error(msg)
                 raise DjerbaPluginError(msg) from err
-
         # TAR can use normal and tumour ids from input_params_helper
         elif assay == "TAR":
             if wrapper.my_param_is_null(core_constants.DEFAULT_SAMPLE_INFO):

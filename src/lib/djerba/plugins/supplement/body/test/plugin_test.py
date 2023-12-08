@@ -9,7 +9,7 @@ import tempfile
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 
-class TestPwgSupplementaryPlugin(PluginTester):
+class TestSupplementaryPluginBody(PluginTester):
     def setUp(self):
         self.path_validator = path_validator()
         self.maxDiff = None
@@ -24,7 +24,7 @@ class TestPwgSupplementaryPlugin(PluginTester):
         params = {
             self.INI: 'PWGS.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'd15b300a8034e1c8736e4dc9f300149e'
+            self.MD5: 'bba6863fa170828c95eb97c9e5c2c22e'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -34,7 +34,7 @@ class TestPwgSupplementaryPlugin(PluginTester):
         params = {
             self.INI: 'TAR.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'bf0f88cd88bb3a12dc9bf5651cd8547c'
+            self.MD5: 'd3ba5a11f020af46392fab8bbf553bc2'
         }
         self.run_basic_test(test_source_dir, params)
    
@@ -44,7 +44,7 @@ class TestPwgSupplementaryPlugin(PluginTester):
         params = {
             self.INI: 'TAR.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'b56abd612a4c74bdf114ec3315436940'
+            self.MD5: '2724e816e516614f7921328e763921f5'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -54,7 +54,7 @@ class TestPwgSupplementaryPlugin(PluginTester):
         params = {
             self.INI: 'WGTS.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'd3c2ec65780bfea9be4e9e27e8d67958'
+            self.MD5: '0ccae7e250b8940c822c96f6f610ec7b'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -64,7 +64,27 @@ class TestPwgSupplementaryPlugin(PluginTester):
         params = {
             self.INI: 'WGTS.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'dda3cab0258e6d09fd17d59706652740'
+            self.MD5: '512e46eb1915db5f8a93fdd047147922'
+        }
+        self.run_basic_test(test_source_dir, params)
+
+    def testWgts40XSupplementary(self):
+        test_source_dir = os.path.realpath(os.path.dirname(__file__))
+        json_location = os.path.join(self.sup_dir ,"supplement-plugin/report_json/wgts40X.supplement.json")
+        params = {
+            self.INI: 'WGTS40X.supp.ini',
+            self.JSON: json_location,
+            self.MD5: 'e14d2c46282840f3c64dd1ae1f9b1b44'
+        }
+        self.run_basic_test(test_source_dir, params)
+
+    def testWgts40XFailSupplementary(self):
+        test_source_dir = os.path.realpath(os.path.dirname(__file__))
+        json_location = os.path.join(self.sup_dir ,"supplement-plugin/report_json/wgts40X.fail.supplement.json")
+        params = {
+            self.INI: 'WGTS40X.FAIL.supp.ini',
+            self.JSON: json_location,
+            self.MD5: '719ff62201b0e1dde4c907260bb9062c'
         }
         self.run_basic_test(test_source_dir, params)
 
