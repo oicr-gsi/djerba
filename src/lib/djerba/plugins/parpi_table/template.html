@@ -1,0 +1,172 @@
+<%
+  import djerba.plugins.parpi_table.constants as constants
+%>
+
+<style type="text/css">
+</style>
+
+<table class="tar" width="100%">
+    <thead>
+        <tr>
+          <th width="22%">Categories</th>
+          <th width="10%">Gene</th>
+          <th width="31%">PARPi resistance mechanisms</th>
+          <th width="12%">Mutation Type</th>
+	  <th width="31%">Copy Number</th>
+          <th width="31%">Expression Percentile</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr style="background-color: #f2f2f2;">
+            <td rowspan="6">Replication Fork Stability</td>
+            <td style="font-style: italic;">BRCA1</td>
+            <td>Mutation, deletion, &#60;10&#37;ile exp</td>
+	    <td>${results.get("BRCA1").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("BRCA1").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("BRCA1").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+        <tr style="background-color: #f2f2f2;">
+            <td style="font-style: italic;">BRCA2</td>
+            <td>Mutation, deletion, &#60;10&#37;ile exp</td>
+	    <td>${results.get("BRCA2").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("BRCA2").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("BRCA2").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+        <tr style="background-color: #f2f2f2;">
+            <td style="font-style: italic;">MLL3</td>
+            <td>Mutation</td>
+	    <td>${results.get("MLL3").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("MLL3").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("MLL3").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+        <tr style="background-color: #f2f2f2;">
+            <td style="font-style: italic;">MLL4</td>
+            <td>Mutation</td>
+	    <td>${results.get("MLL4").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("MLL4").get(constants.COPY_NUMBER)}</td>            
+	    <td>${results.get("MLL4").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+	<tr style="background-color: #f2f2f2;">
+            <td style="font-style: italic;">PAXIP1</td>
+            <td>Deletion</td>
+	    <td>${results.get("PAXIP1").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("PAXIP1").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("PAXIP1").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+        <tr style="background-color: #f2f2f2;">
+            <td style="font-style: italic;">SLFN11</td>
+            <td>Deletion</td>
+	    <td>${results.get("SLFN11").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("SLFN11").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("SLFN11").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+
+        <tr>
+            <td rowspan="14">Signal Transduction Pathway</td>
+            <td style="font-style: italic;">AKT1</td>
+            <td>Mutation, &#60;10&#37;ile exp</td>
+	    <td>${results.get("AKT1").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("AKT1").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("AKT1").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+        <tr>
+            <td style="font-style: italic;">ATM</td>
+            <td>Mutation, &#60;10&#37;ile exp</td>
+	    <td>${results.get("ATM").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("ATM").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("ATM").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+        <tr>
+            <td style="font-style: italic;">ATR</td>
+            <td>Mutation, &#60;10&#37;ile exp</td>
+	    <td>${results.get("ATR").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("ATR").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("ATR").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+        <tr>
+            <td style="font-style: italic;">CDC25A</td>
+            <td>&#60;10&#37;ile exp</td>
+	    <td>${results.get("CDC25A").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("CDC25A").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("CDC25A").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+        <tr>
+            <td style="font-style: italic;">CDC25C</td>
+            <td>&#60;10&#37;ile exp</td>
+	    <td>${results.get("CDC25C").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("CDC25C").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("CDC25C").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+        <tr>
+            <td style="font-style: italic;">CHEK1</td>
+            <td>&#60;10&#37;ile exp</td>
+	    <td>${results.get("CHEK1").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("CHEK1").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("CHEK1").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+        <tr>
+            <td style="font-style: italic;">CHEK2</td>
+            <td>&#60;10&#37;ile exp</td>
+	    <td>${results.get("CHEK2").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("CHEK2").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("CHEK2").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+        <tr>
+            <td style="font-style: italic;">MAPK</td>
+            <td>&#60;10&#37;ile exp</td>
+	    <td>${results.get("MAPK").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("MAPK").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("MAPK").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+        <tr>
+            <td style="font-style: italic;">MET</td>
+            <td>Amplification, &#60;10&#37;ile exp</td>
+	    <td>${results.get("MET").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("MET").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("MET").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+        <tr>
+            <td style="font-style: italic;">mTOR</td>
+            <td>&#60;10&#37;ile exp</td>
+	    <td>${results.get("mTOR").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("mTOR").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("mTOR").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+        <tr>
+            <td style="font-style: italic;">PARG</td>
+            <td>&#60;10&#37;ile exp</td>
+	    <td>${results.get("PARG").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("PARG").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("PARG").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+        <tr>
+            <td style="font-style: italic;">PARP1</td>
+            <td>Mutation</td>
+	    <td>${results.get("PARP1").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("PARP1").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("PARP1").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+        <tr>
+            <td style="font-style: italic;">PIK3CA</td>
+            <td>Mutation, Amplification</td>
+	    <td>${results.get("PIK3CA").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("PIK3CA").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("PIK3CA").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+        <tr>
+            <td style="font-style: italic;">VEGFA</td>
+	    <td>Mutation, Amplification</td>
+	    <td>${results.get("VEGFA").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("VEGFA").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("VEGFA").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+        <tr style="background-color: #f2f2f2;">
+            <td>Drug Delivery</a></td>
+            <td style="font-style: italic;">MRD1</td>
+            <td>Deletion, &#60;10&#37;ile exp</td>
+	    <td>${results.get("MRD1").get(constants.MUTATION_TYPE)}</td>
+	    <td>${results.get("MRD1").get(constants.COPY_NUMBER)}</td>
+	    <td>${results.get("MRD1").get(constants.EXPRESSION_PERCENTILE)}</td>
+        </tr>
+    </tbody>
+</table>
