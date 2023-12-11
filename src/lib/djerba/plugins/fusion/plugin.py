@@ -56,7 +56,7 @@ class main(plugin_base):
         work_dir = self.workspace.get_work_dir()
         factory.get_annotator(work_dir, config_wrapper).annotate_fusion()
 
-    def build_treatment_entries(self, fusion, therapies):
+    def build_treatment_entries(self, fusion, therapies, oncotree_code):
         """Make an entry for the treatment options merger"""
         # TODO fix the treatment options merger to display 2 genes for fusions
         genes = fusion.get_genes()
@@ -119,7 +119,9 @@ class main(plugin_base):
             outputs = self.fusions_to_json(gene_pair_fusions, oncotree_code)
             [rows, gene_info, treatment_opts] = outputs
             # rows are already sorted by the fusion reader
-            rows = list(filter(oncokb_levels.oncokb_filter, rows))
+            # fusion class records levels as numeric, not strings
+            max_actionable = oncokb_levels.oncokb_order('R2')
+            rows = list(filter(lambda x: x[core_constants.ONCOKB] <= max_actionable, rows))
             distinct_oncogenic_genes = len(set([row.get(self.GENE) for row in rows]))
             results = {
                 self.TOTAL_VARIANTS: total_fusion_genes,
@@ -163,7 +165,7 @@ class main(plugin_base):
                         self.FRAME: fusion.get_frame(),
                         self.FUSION: fusion.get_fusion_id_new(),
                         self.MUTATION_EFFECT: fusion.get_mutation_effect(),
-                        core_constants.ONCOKB: oncokb_level
+                        core_constants.ONCOKB: oncokb_order
                     }
                     rows.append(row)
                     gene_info_entry = gene_info_factory.get_json(
@@ -173,8 +175,12 @@ class main(plugin_base):
                     gene_info.append(gene_info_entry)
                     therapies = fusion.get_therapies()
                     for level in therapies.keys():
-                        entries = self.build_treatment_entries(fusion, therapies)
-                        treatment_opts.append(entries)
+                        entries = self.build_treatment_entries(
+                            fusion,
+                            therapies,
+                            oncotree_code
+                        )
+                        treatment_opts.extend(entries)
         return rows, gene_info, treatment_opts
 
     def process_fusion_files(self, config_wrapper):

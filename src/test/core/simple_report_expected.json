@@ -2,6 +2,7 @@
     "core": {
         "author": "CGI Author",
         "document_config": "document_config.json",
+	"core_version": "placeholder",
         "report_id": "placeholder",
         "extract_time": "placeholder"
     },
