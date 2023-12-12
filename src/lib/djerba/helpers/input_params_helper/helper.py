@@ -35,7 +35,7 @@ class main(helper_base):
     PRIORITY = 10
 
     # Permitted assay names
-    VALID_ASSAYS = ['WGTS', 'WGS', 'PWGS']
+    VALID_ASSAYS = ['WGTS', 'WGTS40X', 'WGS', 'WGS40X', 'PWGS']
 
     def specify_params(self):
         self.logger.debug("Specifying params for input params helper")

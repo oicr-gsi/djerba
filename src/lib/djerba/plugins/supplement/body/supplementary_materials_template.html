@@ -18,7 +18,7 @@
 
   % endif
   
-  % if ASSAY in ('WGTS','TAR','WGS') and FAILED == "False":
+  % if ASSAY in ('WGTS','TAR','WGS', 'WGTS40X', 'WGS40X') and FAILED == "False":
 
     ${html_builder().section_cells_begin("<h3>OncoKB Definitions</h3>","supp")}
       <%include file="resources/oncokb.definition.html"/>
@@ -29,10 +29,10 @@
   ${html_builder().section_cells_begin("<h3>Definitions</h3>","supp")}
 
   % if not FAILED:
-      % if ASSAY == 'WGTS':
+      % if ASSAY in ('WGTS', 'WGTS40X'):
         <%include file="resources/WGS.definitions.html"/>
         <%include file="resources/WTS.definitions.html"/>
-      % elif ASSAY == 'WGS':
+      % elif ASSAY in ('WGS', 'WGS40X'):
         <%include file="resources/WGS.definitions.html"/>
       % elif ASSAY == 'TAR':
         <%include file="resources/TAR.definitions.html"/>
@@ -40,7 +40,7 @@
         <%include file="resources/PWGS.definitions.html"/>
       % endif
   % else:
-      % if ASSAY == 'WGTS' or ASSAY == "WGS" or ASSAY == 'WGTS40X' or ASSAY == 'WGS40X':
+      % if ASSAY in ('WGTS', 'WGTS40X', 'WGS', 'WGS40X'):
         <%include file="resources/WGTS.FAIL.definitions.html"/>
       % elif ASSAY == 'TAR':
         <%include file="resources/TAR.FAIL.definitions.html"/>
@@ -51,11 +51,11 @@
 
   ${html_builder().section_cells_begin("<h3>Assay description</h3>","supp")}
 
-    % if ASSAY == 'WGTS':
+    % if ASSAY in ('WGTS', 'WGTS40X'):
       <p> This assay combines two comprehensive next generation sequencing assays: a DNA-based whole genome sequencing (WGS) assay and an RNA-based whole transcriptome sequencing (WTS) assay.</p>
       <%include file="resources/WGS.description.versions.html"/>
       <%include file="resources/WTS.description.versions.html"/>
-    % elif ASSAY == 'WGS':
+    % elif ASSAY in ('WGS', 'WGS40X'):
       <p>This assay is a comprehensive next generation sequencing assay, specifically DNA-based whole genome sequencing (WGS). </p>
       <%include file="resources/WGS.description.versions.html"/>
     % elif ASSAY == 'TAR':
