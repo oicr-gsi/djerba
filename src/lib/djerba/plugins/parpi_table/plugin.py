@@ -58,6 +58,9 @@ class main(plugin_base):
         # Update results with expression.
         results = self.get_expression(expression_file, results)
 
+        # Add an extra column that puts an X if it is to be brought to attention.
+        results = self.add_X_marker(results)
+
         data['results'] = results
         return data
 
@@ -67,13 +70,6 @@ class main(plugin_base):
     
     def specify_params(self):
         self.logger.debug("Specifying params for PARPi table plugin.")
-        #discovered = [
-        #  constants.DATA_MUTATIONS_FILE,
-        #  constants.DATA_CNA_FILE,
-        #  constants.DATA_EXPRESSION_FILE,
-        #]
-        #for key in discovered:
-        #    self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'research')
         self.set_priority_defaults(self.PRIORITY)
 
@@ -112,10 +108,7 @@ class main(plugin_base):
                 gene = row[0]
                 exp = row[1]
                 if gene in constants.PARPI_GENES:
-                    results[gene][constants.EXPRESSION_PERCENTILE] = float(exp)*100
-        #for gene, values in results.items():
-        #    if constants.EXPRESSION_PERCENTILE not in values:
-        #        results[gene][constants.EXPRESSION_PERCENTILE] = 'None'
+                    results[gene][constants.EXPRESSION_PERCENTILE] = round(float(exp)*100, 1)
 
         return results
 
@@ -129,14 +122,35 @@ class main(plugin_base):
                     first = False
                     continue
                 gene = row[0]
-                var_class = row[8]
+                var_class = row[8].replace("_", " ")
                 if gene in constants.PARPI_GENES:
                     results[gene][constants.MUTATION_TYPE] = var_class
 
-        # If the "Mutation Type" value didn't get updated, it means it wasn't in data_mutations_extended.txt.
-        # So, update those with "None" as the mutation type.
+        return results
+    
+    def add_X_marker(self, results):
 
-        #for gene, values in results.items():
-        #    if constants.MUTATION_TYPE not in values:
-        #        results[gene][constants.MUTATION_TYPE] = 'None'
+        for gene, value in results.items():
+            
+            # MUTATION: Only check if True == True
+            mutation_1 = constants.MUTATION_TYPE in results[gene] # True if mutation, False if no mutation
+            mutation_2 = constants.PARPI_GENES[gene].get(constants.MUTATION_TYPE) # True if mutation, None if not relevant
+            
+            # COPY NUMBER: Check if Gain == Gain, Homozygous Deletion == Homozygous Deletion, etc.
+            copy_number_1 = results[gene].get(constants.COPY_NUMBER, False) # If not, will be False
+            copy_number_2 = constants.PARPI_GENES[gene].get(constants.COPY_NUMBER) # If not, will be None
+            
+            # EXPRESSION: Check if expression <= 10% if expression is a relevant criteria 
+            expression_1 = results[gene].get(constants.EXPRESSION_PERCENTILE, 100) # If not, will be 100
+            expression_2 = constants.PARPI_GENES[gene].get(constants.EXPRESSION_PERCENTILE, False) # If not, will be False
+
+            if (mutation_1 and mutation_2) or (copy_number_1 == copy_number_2):
+                results[gene][constants.CHECKMARK] = "X"
+            elif expression_2: # if one requirement is that expression is below 10%
+                if expression_1 <= 10:
+                    results[gene][constants.CHECKMARK] = "X"
+                else:
+                    results[gene][constants.CHECKMARK] = ""
+            else:
+                results[gene][constants.CHECKMARK] = ""
         return results
