@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## UNRELEASED
+- Fixed template text for failed plugin
+
 ## v1.1.0: 2023-12-08
 
 - Removed `prototype` directory, which is now in the [djerba_prototypes](https://github.com/oicr-gsi/djerba_prototypes) repo
