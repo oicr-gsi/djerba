@@ -23,7 +23,7 @@ def run(genomic_landscape_plugin, work_dir, data_dir, r_script_dir, tcga_code, b
                 constants.BIOMARKERS: {constants.TMB: tmb_dict}
         }
 
-        # Write to genomic biomarkers maf if MSI is actionable
+        # Write to genomic biomarkers maf if is actionable
         if data[constants.BIOMARKERS][constants.TMB][constants.METRIC_ACTIONABLE]:
             with open(biomarkers_path, "a") as biomarkers_file:
                 row = '\t'.join([constants.HUGO_SYMBOL, tumour_id, data[constants.BIOMARKERS][constants.TMB][constants.METRIC_ALTERATION]])

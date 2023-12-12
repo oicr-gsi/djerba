@@ -22,12 +22,12 @@ class TestGenomicLandscapePlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DATA'
+        sup_dir_var = 'DJERBA_TEST_DIR'
         self.sup_dir = os.environ.get(sup_dir_var)
         
-        self.data_mut_ex = os.path.join(self.sup_dir, "genomic-landscape-plugin/data_mutations_extended.txt")
-        self.data_seg = os.path.join(self.sup_dir, "genomic-landscape-plugin/data.seg")
-        self.sample_info = os.path.join(self.sup_dir, "genomic-landscape-plugin/sample_info.json")
+        self.data_mut_ex = os.path.join(self.sup_dir, "plugins/genomic-landscape-plugin/data_mutations_extended.txt")
+        self.data_seg = os.path.join(self.sup_dir, "plugins/genomic-landscape-plugin/data.seg")
+        self.sample_info = os.path.join(self.sup_dir, "plugins/genomic-landscape-plugin/sample_info.json")
 
     def testGenomicLandscapeLowTmbStableMsi(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -40,18 +40,18 @@ class TestGenomicLandscapePlugin(PluginTester):
         with open(os.path.join(test_source_dir, self.INI_NAME)) as in_file:
             template_str = in_file.read()
         template = string.Template(template_str)
-        ini_str = template.substitute({'DJERBA_TEST_DATA': self.sup_dir})
+        ini_str = template.substitute({'DJERBA_TEST_DIR': self.sup_dir})
         input_dir = os.path.join(self.get_tmp_dir(), 'input')
         os.mkdir(input_dir)
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
 
-        json_location = os.path.join(self.sup_dir ,"genomic-landscape-plugin/report_json/genomic_landscape.json")
+        json_location = os.path.join(self.sup_dir ,"plugins/genomic-landscape-plugin/report_json/genomic_landscape.json")
 
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '53613e154d1e0008376c6fe6d0174760'
+            self.MD5: '54c4901c6cecee91b7d2f62650deaf3f'
         }
         self.run_basic_test(input_dir, params)
 
