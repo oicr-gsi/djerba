@@ -2,6 +2,7 @@
 
 ## UNRELEASED
 - Fixed template text for failed plugin
+- Added plugins missing from `setup.py`
 
 ## v1.1.0: 2023-12-08
 
