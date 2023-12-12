@@ -32,7 +32,7 @@ class TestGeneInformationMerger(TestBase):
         self.assertEqual(merger.ini_defaults.get(cc.RENDER_PRIORITY), 600)
         html = merger.render(inputs)
         md5_found = self.getMD5_of_string(html)
-        self.assertEqual(md5_found, '9d4b674dcaa92d4ab1f387da18424d0c')
+        self.assertEqual(md5_found, 'b0fa22e8c381e38092fb202acd55ddd9')
 
 if __name__ == '__main__':
     unittest.main()

@@ -70,6 +70,7 @@ setup(
             'data/mutation_types.exonic',
             'data/mutation_types.nonsynonymous',
             'data/targeted_genelist.txt',
+            'data/tcga_code_key.txt',
             'data/tmbcomp-externaldata.txt',
             'data/tmbcomp-tcga.txt',
         ],
