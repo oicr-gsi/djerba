@@ -1,8 +1,10 @@
 # CHANGELOG
 
-## UNRELEASED
+## v1.1.1: 2023-12-13
+
 - Fixed template text for failed plugin
 - Added plugins missing from `setup.py`
+- GCGI-1229: Fixed missing OncoKB definitions
 
 ## v1.1.0: 2023-12-08
 
