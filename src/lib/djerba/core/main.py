@@ -279,7 +279,6 @@ class main(core_base):
         # path validation was done in command-line script
         ap = arg_processor(args, self.logger, validate=False)
         mode = ap.get_mode()
-        work_dir = ap.get_work_dir()
         if mode == constants.SETUP:
             assay = ap.get_assay()
             compact = ap.get_compact()
@@ -313,6 +312,12 @@ class main(core_base):
             # upload to archive at the extract step, not the render step
             data = self.extract(config, json_path, archive)
             self.render(data, ap.get_out_dir(), ap.is_pdf_enabled(), archive=False)
+        elif mode == constants.UPDATE:
+            ini_path = ap.get_ini_path()
+            json_path = ap.get_json_path()
+            out_dir = ap.get_out_dir()
+            archive = ap.is_archive_enabled()
+            self.update(ini_path, json_path, out_dir, archive, ap.is_pdf_enabled())
         else:
             msg = "Mode '{0}' is not defined in Djerba core.main!".format(mode)
             self.logger.error(msg)
@@ -385,6 +390,31 @@ class main(core_base):
         generator = ini_generator(self.log_level, self.log_path)
         generator.write_config(component_list, ini_path, compact)
         self.logger.info("Wrote config for {0} to {1}".format(assay, ini_path))
+
+    def update(self, ini_path, json_path, out_dir, archive, pdf):
+        # update procedure:
+        # 1. run plugins from user-supplied INI config to get 'new' (updated) JSON
+        # 2. update the 'old' (user-supplied) JSON
+        # 3. optionally, upload the merged JSON to couchDB
+        # 4. optionally, use the merged JSON to generate HTML/PDF
+        config = self.configure(ini_path)
+        with open(json_path) as in_file:
+            data = json.loads(in_file.read())
+        data_new = self.extract(config, archive=False)
+        # new data overwrites old, on a per-plugin basis
+        # ie. overwriting a given plugin is all-or-nothing
+        # also overwrite JSON config section for the plugin
+        # if plugin data did not exist in old JSON, it will be added
+        for plugin in data_new[self.PLUGINS].keys():
+            data[self.PLUGINS][plugin] = data_new[self.PLUGINS][plugin]
+            data[constants.CONFIG][plugin] = data_new[self.CONFIG][plugin]
+            self.logger.debug('Updated JSON for plugin {0}'.format(plugin))
+        if archive:
+            self.upload_archive(data)
+        else:
+            self.logger.info("Omitting archive upload for update")
+        if out_dir:
+            self.render(data, out_dir, pdf, archive=False)
 
     def upload_archive(self, data):
         uploaded, report_id = database(self.log_level, self.log_path).upload_data(data)

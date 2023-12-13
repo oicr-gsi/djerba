@@ -44,6 +44,13 @@ def get_parser():
     report_parser.add_argument('-w', '--work-dir', metavar='PATH', help='Path to workspace directory; optional, defaults to value of --out-dir')
     report_parser.add_argument('-p', '--pdf', action='store_true', help='Generate PDF output from HTML')
     report_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
+    update_parser = subparsers.add_parser(constants.UPDATE, help='Update an existing JSON report file; optionally render HTML/PDF')
+    update_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with user inputs')
+    update_parser.add_argument('-j', '--json', metavar='PATH', required=True, help='Path for JSON input')
+    update_parser.add_argument('-o', '--out-dir', metavar='DIR', required=True, help='Directory for output files')
+    update_parser.add_argument('-p', '--pdf', action='store_true', help='Generate PDF output from HTML')
+    update_parser.add_argument('-w', '--work-dir', metavar='PATH', help='Path to workspace directory; optional, defaults to value of --out-dir')
+    update_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
     return parser
 
 if __name__ == '__main__':
