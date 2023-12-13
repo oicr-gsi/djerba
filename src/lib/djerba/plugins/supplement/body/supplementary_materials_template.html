@@ -18,7 +18,7 @@
 
   % endif
   
-  % if ASSAY in ('WGTS','TAR','WGS') and FAILED == "False":
+  % if ASSAY in ('WGTS','TAR','WGS') and not FAILED:
 
     ${html_builder().section_cells_begin("<h3>OncoKB Definitions</h3>","supp")}
       <%include file="resources/oncokb.definition.html"/>
