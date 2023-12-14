@@ -45,3 +45,24 @@ test_that("preProcCNA returns correct gene-level alterations with PURPLE input",
   }
 )
   
+test_that("preProcLOH returns correct gene-level LOH from PURPLE input", 
+          {
+            
+            bed_path <- paste0(basedir,"data/gencode_v33_hg38_genes.bed")
+            genebed <- read.delim(bed_path, header=TRUE)
+            
+            segfile_path <-  paste0(testdatadir,"plugins/cnv-purple/purple.cnv.somatic.tsv")
+            segs <- read.delim(segfile_path, header=TRUE) # segmented data already
+            
+            segs$ID <- "purple"
+            loh <- segs[,c("ID","chromosome","start","end","bafCount")]
+            names(loh) <- c("ID",	"chrom"	,"loc.start"	,"loc.end"	,"num.mark")
+            loh$seg.mean <- segs$minorAlleleCopyNumber
+            
+            LOH = preProcLOH(loh, genebed)
+
+            expect_equal(LOH$LOH[LOH$gene == "TP53"], FALSE)
+            
+          }
+)
+

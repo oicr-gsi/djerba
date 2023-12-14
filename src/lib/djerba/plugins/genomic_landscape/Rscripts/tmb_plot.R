@@ -69,9 +69,11 @@ if(biomarker=="tmb"){
     
     annotate( geom="segment", x = -0.1, xend=0.1, y=10, yend=10, colour = "gray") +
     
-    annotate(geom="text",y = 10,x=0,color="gray30",label="TMB-H Cutoff",  vjust = -4.5, size=4) +
-    annotate(geom="text",y = median_tmb, x=0,color="black",label=cohort_label, hjust = 0.5, vjust = 2.8, size=4) +
-    annotate(geom="text",y = sampleTMB,x=0,color="red",label="This Sample",  vjust = -2.5,size=4) +
+    annotate(geom="text",y = 5,x=0,color="gray30",label="TMB-L",  vjust = -4.5, size=4) +
+    annotate(geom="text",y = (10 + max(sampleTMB, 15))/2,x=0,color="gray30",label="TMB-H",  vjust = -4.5, size=4) +
+    annotate(geom="text",y = median_tmb, x=0,color="black",label=cohort_label, vjust = -2, hjust=0.25, size=4) +
+   # annotate(geom="text",y = sampleTMB,x=0,color="red",label="This Sample",  vjust = -2.5,size=4) +
+    annotate(geom="text",y = sampleTMB,x=0,color="red",label="This Sample",  vjust = 2.7, hjust=0.7,  size=4) +
     
     annotate(geom="point",y = sampleTMB,x=0,color="red",shape=1, size=8) +
     annotate(geom="point",y = sampleTMB,x=0,color="red",shape=20, size=3) +

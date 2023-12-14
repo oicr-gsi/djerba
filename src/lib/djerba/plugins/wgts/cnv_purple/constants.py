@@ -31,10 +31,11 @@ CYTOBAND = "/data/cytoBand.txt"
 GENEBED =  "data/gencode_v33_hg38_genes.bed"
 ONCOLIST =  "data/20200818-oncoKBcancerGeneList.tsv"
 ONCOKB_URL_BASE = 'https://www.oncokb.org/gene'
-TEMPLATE_NAME = 'cnv_template.html'
 WHIZBAM_BASE_URL = 'https://whizbam.oicr.on.ca'
 
 GENOME_SIZE = 3*10**9 # TODO use more accurate value when we release a new report format
+MINIMUM_MAGNITUDE_SEG_MEAN = 0.2
+
 
 UNCLASSIFIED_CYTOBANDS = [
     "", # some genes have an empty string for cytoband

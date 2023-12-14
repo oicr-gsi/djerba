@@ -21,67 +21,39 @@ import djerba.util.oncokb.constants as oncokb
 import djerba.plugins.wgts.cnv_purple.constants as cc 
 from djerba.util.oncokb.tools import levels as oncokb_levels
 
-class process_cnv(logger):
+class process_purple(logger):
 
-    def __init__(self, work_dir, log_level=logging.WARNING, log_path=None):
+    def __init__(self, work_dir, tmp_dir, log_level=logging.WARNING, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.work_dir = work_dir
-        self.tmp_dir = os.path.join(self.work_dir, 'tmp')
         self.cytoband_path = os.environ.get('DJERBA_BASE_DIR') + cc.CYTOBAND
         self.oncokb_levels = [self.reformat_level_string(level) for level in oncokb.ORDERED_LEVELS]
-        if os.path.isdir(self.tmp_dir):
-            print("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
-            self.logger.debug("Using tmp dir {0} for R script wrapper".format(self.tmp_dir))
-        elif os.path.exists(self.tmp_dir):
-            msg = "tmp dir path {0} exists but is not a directory".format(self.tmp_dir)
-            self.logger.error(msg)
-            raise RuntimeError(msg)
-        else:
-            print("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
-            self.logger.debug("Creating tmp dir {0} for R script wrapper".format(self.tmp_dir))
-            os.mkdir(self.tmp_dir)
+        self.tmp_dir = tmp_dir
   
+    def analyze_segments(self, segfile, whizbam_url, purity, ploidy):
+        dir_location = os.path.dirname(__file__)
+        centromeres_file = os.path.join(dir_location, '../../..', cc.CENTROMERES)
+        genebedpath = os.path.join(dir_location, '../../..', cc.GENEBED)
+        cmd = [
+            'Rscript', os.path.join(dir_location + "/r/process_segment_data.r"),
+            '--segfile', segfile,
+            '--outdir', self.work_dir,
+            '--genefile', genebedpath,
+            '--centromeres', centromeres_file,
+            '--purity', purity,
+            '--ploidy', ploidy,
+            '--whizbam_url', whizbam_url
+        ]
+        runner = subprocess_runner()
+        result = runner.run(cmd, "segments R script")
+        return result.stdout.split('"')[1]
+
     def build_alteration_url(self, gene, alteration, cancer_code):
         self.logger.debug('Constructing alteration URL from inputs: {0}'.format([cc.ONCOKB_URL_BASE, gene, alteration, cancer_code]))
         return '/'.join([cc.ONCOKB_URL_BASE, gene, alteration, cancer_code])
  
-
-    def build_copy_number_variation(self, assay, cna_annotated_path, oncotree_uc):
-        cna_annotated_path = os.path.join(self.work_dir, cna_annotated_path)
-        self.logger.debug("Building data for copy number variation table")
-        rows = []
-        if assay == "WGTS":
-            mutation_expression = self.read_expression()
-        else:
-            mutation_expression = {}
-        with open(cna_annotated_path) as input_file:
-            reader = csv.DictReader(input_file, delimiter="\t")
-            for row in reader:
-                gene = row[cc.HUGO_SYMBOL_UPPER_CASE]
-                cytoband = self.get_cytoband(gene)
-                row = {
-                    cc.EXPRESSION_METRIC: mutation_expression.get(gene), # None for WGS assay
-                    cc.GENE: gene,
-                    cc.GENE_URL: self.build_gene_url(gene),
-                    cc.ALT: row[cc.ALTERATION_UPPER_CASE],
-                    cc.ALT_URL: self.build_alteration_url(gene, row[cc.ALTERATION_UPPER_CASE], oncotree_uc),
-                    cc.CHROMOSOME: cytoband,
-                    'OncoKB': oncokb_levels.parse_oncokb_level(row)
-                }
-                rows.append(row)
-        unfiltered_cnv_total = len(rows)
-        self.logger.debug("Sorting and filtering CNV rows")
-        rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
-        data_table = {
-        #    cc.HAS_EXPRESSION_DATA: self.HAS_EXPRESSION_DATA,
-            cc.TOTAL_VARIANTS: unfiltered_cnv_total,
-            cc.CLINICALLY_RELEVANT_VARIANTS: len(rows),
-            cc.BODY: rows
-        }
-        return data_table
-    
     def build_gene_url(self, gene):
         return '/'.join([cc.ONCOKB_URL_BASE, gene])
 
@@ -122,6 +94,31 @@ class process_cnv(logger):
         else:
             return tiered_rows
         
+    def consider_purity_fit(self, work_dir, purple_range_file):
+      dir_location = os.path.dirname(__file__)
+      cmd = [
+        'Rscript', os.path.join(dir_location + "/r/process_fit.r"),
+        '--range_file', purple_range_file,
+        '--outdir', work_dir
+      ]
+      runner = subprocess_runner()
+      result = runner.run(cmd, "fit R script")
+      return result
+
+    def convert_purple_to_gistic(self, work_dir, purple_gene_file, ploidy):
+      dir_location = os.path.dirname(__file__)
+      oncolistpath = os.path.join(dir_location, '../../..', cc.ONCOLIST)
+      cmd = [
+        'Rscript', os.path.join(dir_location + "/r/process_CNA_data.r"),
+        '--genefile', purple_gene_file,
+        '--outdir', work_dir,
+        '--oncolist', oncolistpath,
+        '--ploidy', ploidy
+      ]
+      runner = subprocess_runner()
+      result = runner.run(cmd, "CNA R script")
+      return result
+
     def convert_to_gene_and_annotate(self, seg_path, purity, tumour_id, oncotree_code):
         dir_location = os.path.dirname(__file__)
         genebedpath = os.path.join(dir_location, '../../..', cc.GENEBED)

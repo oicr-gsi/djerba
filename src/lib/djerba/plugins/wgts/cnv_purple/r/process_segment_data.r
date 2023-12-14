@@ -18,7 +18,8 @@ option_list = list(
   make_option(c("-a", "--highCN"), type="character", default=6, help="High copy number (top of y-axis)", metavar="character"),
   make_option(c("-p", "--purity"), type="character", default=1, help="Purity or cellularity", metavar="character"),
   make_option(c("-P", "--ploidy"), type="character", default=1, help="ploidy", metavar="character"),
-  make_option(c("-w", "--whizbam_url"), type="character", default=NULL, help="whizbam link", metavar="character")
+  make_option(c("-w", "--whizbam_url"), type="character", default=NULL, help="whizbam link", metavar="character"),
+  make_option(c("-g", "--genefile"), type="character", default=NULL, help="seg file", metavar="character")
 )
 
 opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
@@ -31,6 +32,8 @@ highCN            <- as.numeric(opt$highCN)
 purity            <- as.numeric(opt$purity)
 ploidy            <- as.numeric(opt$ploidy)
 whizbam_url       <- opt$whizbam_url
+genebed  <- opt$genefile
+
 
 
 #### arm-level events ####
@@ -49,6 +52,14 @@ names(log2) <- c("ID",	"chrom"	,"loc.start"	,"loc.end"	,"num.mark")
 log2$seg.mean <- log(1 + (purity *(segs$copyNumber - ploidy)/ploidy), 2)
 write.table(log2,file=paste0(dir_path, "/purple.seg"), sep="\t", row.names=FALSE, quote=FALSE, col.names = FALSE)
 write.table(log2,file=paste0(dir_path, "/seg.txt"), sep="\t", row.names=FALSE, quote=FALSE, col.names = TRUE)
+
+
+loh <- log2
+loh$seg.mean <- segs$minorAlleleCopyNumber
+geneInfo <- read.delim(genebed, sep="\t", header=TRUE)
+loh_post <- preProcLOH(loh, geneInfo)
+write.table(loh_post, file=paste0(dir_path, "/loh.txt"), sep="\t", row.names=FALSE, quote=FALSE, col.names = FALSE)
+
 
 #### segment plot ####
 segs <- separate(segs, chromosome,c("blank","chr"),"chr",fill="left",remove = FALSE)

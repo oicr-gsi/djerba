@@ -12,23 +12,27 @@ import djerba.core.constants as core_constants
 from djerba.core.workspace import workspace
 from djerba.util.oncokb.annotator import oncokb_annotator
 from djerba.util.subprocess_runner import subprocess_runner
-from djerba.plugins.wgts.cnv_purple.tools import process_cnv
-import djerba.plugins.wgts.cnv_purple.constants as cc 
+from djerba.util.oncokb.annotator import annotator_factory
+
+from djerba.plugins.wgts.cnv_purple.tools import process_purple
 from djerba.plugins.cnv.tools import cnv_processor
-import djerba.plugins.cnv.constants as cnv_constants
+import djerba.plugins.wgts.cnv_purple.constants as cpc 
+import djerba.plugins.cnv.constants as cc
 
 class main(plugin_base):
    
-    PRIORITY = 100
+    PLUGIN_VERSION = '0.1.0'
+    TEMPLATE_NAME = 'cnv_template.html'
+
     CONFIGURE = 800
     EXTRACT = 700
     RENDER = 800
-    PLUGIN_VERSION = '0.1.0'
-    ASSAY = 'WGS'
-
+    
     def configure(self, config):
       config = self.apply_defaults(config)
       wrapper = self.get_config_wrapper(config)
+
+      #TODO: integrate input_params_helper
       if wrapper.my_param_is_null('purity'):
         purity = get_purple_purity(config[self.identifier]['purple_purity_file'])
         wrapper.set_my_param('purity', purity[0])
@@ -38,58 +42,59 @@ class main(plugin_base):
       return wrapper.get_config()  
 
     def extract(self, config):
+      work_dir = self.workspace.get_work_dir()
       wrapper = self.get_config_wrapper(config)  
-      self.work_dir = self.workspace.get_work_dir()
       data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
 
       tumour_id = config[self.identifier]['tumour_id']
       ploidy = config[self.identifier]['ploidy']
       oncotree_code = config[self.identifier]['oncotree code']
 
-      self.consider_purity_fit(config[self.identifier]['purple_purity_file'])
+      tmp_dir = self.make_and_check_tmp(work_dir)
+      purple_cnv = process_purple(work_dir, tmp_dir)
+      purple_cnv.consider_purity_fit(work_dir, config[self.identifier]['purple_purity_file'])
+      purple_cnv.convert_purple_to_gistic(work_dir, config[self.identifier]['purple_gene_file'], ploidy)
+      cnv_plot_base64 = purple_cnv.analyze_segments(config[self.identifier]['purple_segment_file'], 
+                                                    construct_whizbam_link(config[self.identifier]['cbio_id'] , tumour_id ),
+                                                    config[self.identifier]['purity'], 
+                                                    ploidy)
 
-      cnv = process_cnv(self.work_dir)
-      self.convert_purple_to_gistic(config[self.identifier]['purple_gene_file'], ploidy)
-      self.tmp_dir = os.path.join(self.work_dir, 'tmp')
-      oncokb_annotator(tumour_id, oncotree_code, self.work_dir, self.tmp_dir).annotate_cna()
-      data_table = cnv.build_copy_number_variation(self.ASSAY, cc.CNA_ANNOTATED, oncotree_code)
-      processor = cnv_processor(self.work_dir, wrapper, self.log_level, self.log_path)
-
-      ## segments
-      #TODO
-      whizbam_url = construct_whizbam_link(config[self.identifier]['cbio_id'] , tumour_id )
-      cnv_plot_base64 = self.analyze_segments(config[self.identifier]['purple_segment_file'], whizbam_url, config[self.identifier]['purity'], ploidy)
-      #data_table[ctc.PERCENT_GENOME_ALTERED] = cnv.calculate_percent_genome_altered(ctc.DATA_SEGMENTS)
-
-      #if self.ASSAY == "WGS":
-      #  data_table['Has expression data']= False
-      #elif self.ASSAY == "WGTS":
-      #  data_table['Has expression data']= True
-        #TODO: add expression support
-
-      #data['results'] = data_table
-      data['results'] = processor.get_results()
+      oncokb_annotator(tumour_id, oncotree_code, work_dir, tmp_dir).annotate_cna()
+      cnv = cnv_processor(work_dir, wrapper, self.log_level, self.log_path)
+      data['results'] = cnv.get_results()
       data['results']['cnv plot']= cnv_plot_base64
-
-
-      # cna_annotated_path = os.path.join(self.work_dir, cc.CNA_ANNOTATED)
-      # data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(cna_annotated_path, oncotree_code)
-      data['merge_inputs'] = processor.get_merge_inputs()
+      data['merge_inputs'] = cnv.get_merge_inputs()
 
       return data
     
+    def make_and_check_tmp(self, work_dir):
+      tmp_dir = os.path.join(work_dir, 'tmp')
+      if os.path.isdir(tmp_dir):
+          print("Using tmp dir {0} for R script wrapper".format(tmp_dir))
+          self.logger.debug("Using tmp dir {0} for R script wrapper".format(tmp_dir))
+      elif os.path.exists(tmp_dir):
+          msg = "tmp dir path {0} exists but is not a directory".format(tmp_dir)
+          self.logger.error(msg)
+          raise RuntimeError(msg)
+      else:
+          print("Creating tmp dir {0} for R script wrapper".format(tmp_dir))
+          self.logger.debug("Creating tmp dir {0} for R script wrapper".format(tmp_dir))
+          os.mkdir(tmp_dir)
+      return(tmp_dir)
+
     def render(self, data):
         renderer = mako_renderer(self.get_module_dir())
-        return renderer.render_name(cc.TEMPLATE_NAME, data)
+        return renderer.render_name(self.TEMPLATE_NAME, data)
     
     def specify_params(self):
       required = [
             'tumour_id',
-            cnv_constants.ONCOTREE_CODE,
+            'oncotree code',
             'purple_purity_file',
             'purple_segment_file',
             'purple_gene_file',
-            'cbio_id'
+            'cbio_id',
+            'assay'
           ]
       for key in required:
           self.add_ini_required(key)
@@ -100,48 +105,9 @@ class main(plugin_base):
       for key in discovered:
           self.add_ini_discovered(key)
       self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
-      self.set_priority_defaults(self.PRIORITY)
-
-    def consider_purity_fit(self, purple_range_file):
-      dir_location = os.path.dirname(__file__)
-      cmd = [
-        'Rscript', os.path.join(dir_location + "/r/process_fit.r"),
-        '--range_file', purple_range_file,
-        '--outdir', self.work_dir
-      ]
-      runner = subprocess_runner()
-      result = runner.run(cmd, "fit R script")
-      return result
-
-    def convert_purple_to_gistic(self, purple_gene_file, ploidy):
-      dir_location = os.path.dirname(__file__)
-      oncolistpath = os.path.join(dir_location, '../../..', cc.ONCOLIST)
-      cmd = [
-        'Rscript', os.path.join(dir_location + "/r/process_CNA_data.r"),
-        '--genefile', purple_gene_file,
-        '--outdir', self.work_dir,
-        '--oncolist', oncolistpath,
-        '--ploidy', ploidy
-      ]
-      runner = subprocess_runner()
-      result = runner.run(cmd, "CNA R script")
-      return result
-    
-    def analyze_segments(self, segfile, whizbam_url, purity, ploidy):
-      dir_location = os.path.dirname(__file__)
-      centromeres_file = os.path.join(dir_location, '../../..', cc.CENTROMERES)
-      cmd = [
-        'Rscript', os.path.join(dir_location + "/r/process_segment_data.r"),
-        '--segfile', segfile,
-        '--outdir', self.work_dir,
-        '--centromeres', centromeres_file,
-        '--purity', purity,
-        '--ploidy', ploidy,
-        '--whizbam_url', whizbam_url
-      ]
-      runner = subprocess_runner()
-      result = runner.run(cmd, "segments R script")
-      return result.stdout.split('"')[1]
+      self.set_ini_default(core_constants.CONFIGURE_PRIORITY, self.CONFIGURE)
+      self.set_ini_default(core_constants.EXTRACT_PRIORITY, self.EXTRACT)
+      self.set_ini_default(core_constants.RENDER_PRIORITY, self.RENDER)
 
 def construct_whizbam_link(studyid, tumourid,  whizbam_base_url= 'https://whizbam.oicr.on.ca', seqtype= 'GENOME', genome= 'hg38'):
     whizbam = "".join((whizbam_base_url,

@@ -47,7 +47,7 @@ weights_df$probability_cum <- cumsum(weights_df$probability)
 weights_df$probability_cum_half <- (weights_df$probability / 2) + c(0,weights_df$probability_cum[-5])
 
 
-out_path <- paste(work_dir, 'hrd.svg', sep='/')
+out_path <- paste(work_dir, 'hrd.stacked.svg', sep='/')
 
 svg(out_path, width = 8, height = 1.5, bg = "transparent")
 
@@ -89,7 +89,54 @@ svg(out_path, width = 8, height = 1.5, bg = "transparent")
 
 dev.off()
 
+out_path <- paste(work_dir, 'hrd.svg', sep='/')
+
+svg(out_path, width = 8, height = 1.5, bg = "transparent")
+
+print(
   
+  ggplot(weights_df,aes(x="Sample",y=as.numeric(probability))) + 
+    geom_bar(aes(fill=var_longer),stat ="identity",width=0.5, color = "white") + 
+    scale_fill_manual(values=c("white","white","white","white","white")) +
+
+    geom_errorbar(aes(ymin=as.numeric(boot$q1[boot$var == "Probability.w"]), ymax=as.numeric(boot$q3[boot$var == "Probability.w"])), width=0, linewidth=1, color="red") +
+    
+    annotate(x = 0, xend=2, y=cutoff_low, yend=cutoff_low,geom="segment",colour = "gray") +
+    annotate(geom="text",x = 0,y=cutoff_low/2,color="gray30",label="HR-P", hjust = 0.5, vjust = -5,size=4) +
+    
+    annotate(x = 0, xend=2, y=cutoff_low, yend=cutoff_low,geom="segment", colour = "gray") +
+    annotate(geom="text",x = 0,y=0.85, color="gray30",label="HR-D", hjust = 0.5, vjust = -5,size=4) +
+    
+    annotate(geom="point",y = boot$median_value[boot$var == "Probability.w"], x="Sample",color="red",shape=1, size=8) +
+    annotate(geom="point",y = boot$median_value[boot$var == "Probability.w"], x="Sample",color="red",shape=20, size=3) +
+   annotate(geom="text",y = boot$median_value[boot$var == "Probability.w"],x=0,color="red",label="This Sample",  vjust = -0.75, hjust=0.25,  size=4) +
+   
+    theme_classic() + 
+    labs(x="",y="HRD probability",title="") + 
+    scale_y_continuous( limit = c(0, max(boot$median_value[boot$var == "Probability.w"], 1))) + 
+
+    coord_flip() +
+    
+    scale_color_manual(values=c("#65bc45","#000000","#0099ad")) +
+    theme(
+      axis.line.y = element_blank(),
+      legend.title=element_blank(),
+      axis.title.y=element_blank(),
+      axis.text.y=element_blank(),
+      axis.ticks.y=element_blank(),
+      text = element_text(size = 18),
+      panel.grid = element_blank(), 
+      plot.margin = unit(c(t=-20, r=-10, b=0, l=0), "points"),
+      line = element_blank(),
+      panel.background = element_rect(fill = "transparent", colour = NA),
+      plot.background = element_rect(fill="transparent",color=NA),
+      legend.box.margin=margin(l=-10,r=5,t=20,b=0)
+      
+    ) 
+  
+)
+dev.off()
+
 txt <- paste(readLines(paste(work_dir,"hrd.svg",sep="/")), collapse = "")
 b64txt <- paste0("data:image/svg+xml;base64,", base64enc::base64encode(charToRaw(txt)))
 print(b64txt)

@@ -118,6 +118,26 @@ preProcCNA <- function(genefile, oncolist, ploidy=2, ploidy_multiplier=2.4){
 }
 
 
+preProcLOH <- function(segments, genebed){
+  library(CNTools)
+  
+  segments$chrom <- gsub("chr", "", segments$chrom)
+  segments$ID <- "b_allele"
+  
+  cnseg_ARatio <- CNSeg(segments)
+  rdByGene_ARatio <- getRS(cnseg_ARatio, by="gene", imput=FALSE, XY=FALSE, geneMap=genebed, what="min")
+  reducedseg_ARatio <- rs(rdByGene_ARatio)
+  
+  a_allele <- reducedseg_ARatio[,c("genename","b_allele")]
+
+  a_allele$LOH <- FALSE
+  a_allele$LOH[a_allele$b_allele == 0 ] <- TRUE
+  
+  return(a_allele)
+  
+}
+
+
 process_centromeres <- function(centromeres_path){
   centromeres <- read.table(centromeres_path,header=T)
   centromeres <- separate(centromeres,chrom,c("blank","chr"),"chr",fill="left",remove = FALSE)
