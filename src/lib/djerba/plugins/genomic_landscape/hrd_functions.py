@@ -9,6 +9,52 @@ import json
 from djerba.core.workspace import workspace
 from djerba.util.subprocess_runner import subprocess_runner
 
+NCCN_HRD_RECOMMENDED_TYPES = ['Ovarian Cancer']
+
+def annotate_hrd(hrd_result, oncotree_code):
+    if hrd_result == 'HR-D':
+        oncotree_main = pull_main_type_from_oncotree(oncotree_code)
+        if oncotree_main in NCCN_HRD_RECOMMENDED_TYPES:
+            oncokb_level = 'Level 2'
+        else:
+            oncokb_level = 'Level 3B'
+        treatment_options = {
+            "Tier": "Investigational",
+            "OncoKB level": oncokb_level,
+            "Treatments": "PARP inhibitor (PARPi) therapy",
+            "Gene": "HRD",
+            "Gene_URL": "",
+            "Alteration": "HR-D",
+            "Alteration_URL": "https://www.nccn.org/professionals/physician_gls/pdf/ovarian_blocks.pdf"
+        }
+    else:
+        treatment_options = {}
+    return(treatment_options)
+
+def pull_main_type_from_oncotree(this_oncotree_code):
+    tree_file = '20231214-OncoTree.json'
+
+    def find_tree_values(id, json_repr):
+        results = []
+        def _decode_dict(a_dict):
+            try:
+                results.append(a_dict[id])
+            except KeyError:
+                pass
+            return a_dict
+        json.loads(json_repr, object_hook=_decode_dict) 
+        return results
+
+    f = open(tree_file, 'r')
+    tree_data = f.read()
+    f.close()
+
+    tree_info_on_this_code = find_tree_values(this_oncotree_code, tree_data)
+
+    for code in tree_info_on_this_code:
+        mainType = code['mainType']
+    return(mainType)
+
 def run(work_dir, hrd_path):
     hrd_file = open(hrd_path)
     hrd_data = json.load(hrd_file)
@@ -38,7 +84,6 @@ def run(work_dir, hrd_path):
             'Genomic biomarker text': HRD_long,
             'Genomic biomarker value': hrd_data["hrdetect_call"]["Probability.w"][1],
             'QC' : hrd_data["QC"],
-            
         }
     return results
 
@@ -54,3 +99,4 @@ def write_plot(output_dir ):
     ]
     pwgs_results = subprocess_runner().run(args)
     return(pwgs_results.stdout.split('"')[1])
+

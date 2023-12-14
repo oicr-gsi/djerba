@@ -94,7 +94,9 @@ class main(plugin_base):
         # Annotate genomic biomarkers for therapy info/merge inputs
         self.build_genomic_biomarkers(work_dir, wrapper.get_my_string(constants.ONCOTREE_CODE), tumour_id)
         
-        data['merge_inputs'] = self.get_merge_inputs(work_dir)
+        merge_inputs = self.get_merge_inputs(work_dir)
+        merge_inputs['hrd'] = hrd.annotate_hrd(results[constants.BIOMARKERS][constants.HRD]['hrd'], wrapper.get_my_string('oncotree code'))
+        data['merge_inputs']['treatment_options_merger'] = merge_inputs
         data['results'] = results
 
         return data
