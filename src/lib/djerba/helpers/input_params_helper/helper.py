@@ -107,6 +107,14 @@ class main(helper_base):
         """
         Retrieves values from INI and puts them in a JSON
         """
+        purity = config[self.identifier][self.PURITY]
+        if purity not in ["NA", "N/A", "na", "n/a", "N/a", "Na"]:
+            purity = float(purity)
+        
+        ploidy = config[self.identifier][self.PLOIDY]
+        if ploidy not in ["NA", "N/A", "na", "n/a", "N/a", "Na"]:
+            ploidy = float(ploidy)
+
         try:
             input_params_info = {
                 self.DONOR: config[self.identifier][self.DONOR],
@@ -122,8 +130,8 @@ class main(helper_base):
                 self.SAMPLE_TYPE: config[self.identifier][self.SAMPLE_TYPE],
                 self.SEQ_REV_1: config[self.identifier][self.SEQ_REV_1],
                 self.SEQ_REV_2: config[self.identifier][self.SEQ_REV_2],
-                self.PURITY: float(config[self.identifier][self.PURITY]),
-                self.PLOIDY: float(config[self.identifier][self.PLOIDY])
+                self.PURITY: purity,
+                self.PLOIDY: ploidy
             }
         except KeyError as err:
             msg = "Required config field for input params helper not found: {0}".format(err)
@@ -148,15 +156,17 @@ class main(helper_base):
             self.logger.error(msg)
             raise ValueError(msg)
         purity = info.get(self.PURITY)
-        if purity < 0 or purity > 1:
-            msg = "Invalid purity '{0}': Must be a number between 0 and 1".format(purity)
-            self.logger.error(msg)
-            raise ValueError(msg)
+        if purity not in ["NA", "N/A", "na", "n/a", "N/a", "Na"]:
+            if purity < 0 or purity > 1:
+                msg = "Invalid purity '{0}': Must be a number between 0 and 1".format(purity)
+                self.logger.error(msg)
+                raise ValueError(msg)
         ploidy = info.get(self.PLOIDY)
-        if ploidy <= 0:
-            msg = "Invalid ploidy '{0}': Must be a positive number".format(ploidy)
-            self.logger.error(msg)
-            raise ValueError(msg)
+        if ploidy not in ["NA", "N/A", "na", "n/a", "N/a", "Na"]:
+            if ploidy <= 0:
+                msg = "Invalid ploidy '{0}': Must be a positive number".format(ploidy)
+                self.logger.error(msg)
+                raise ValueError(msg)
         req_approved = info.get(self.REQUISITION_APPROVED)
         try:
             time.strptime(req_approved, '%Y/%m/%d')
