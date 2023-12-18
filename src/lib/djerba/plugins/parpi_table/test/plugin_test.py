@@ -47,7 +47,7 @@ class TestParpiTablePlugin(PluginTester):
         params = {
             self.INI: 'input/' + self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '667f996b2b3fc2a0dd8c1278c30a074f'
+            self.MD5: '194cd7d4f688e7e0ec3735a22e589a35'
         }
         self.run_basic_test(self.tmp_dir, params)
 

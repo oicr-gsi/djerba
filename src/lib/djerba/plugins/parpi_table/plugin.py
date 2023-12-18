@@ -86,14 +86,12 @@ class main(plugin_base):
                 gene = row[0]
                 status = int(row[1])
                 if gene in constants.PARPI_GENES:
-                    if status == 0:
-                        results[gene][constants.COPY_NUMBER] = 'Neutral'
-                    elif status == -1:
-                        results[gene][constants.COPY_NUMBER] = 'Heterozygous Deletion'
+                    if status == 2:
+                        results[gene][constants.COPY_NUMBER] = 'Amplification'
                     elif status == -2:
-                        results[gene][constants.COPY_NUMBER] = 'Homozygous Deletion'
-                    elif status > 0:
-                        results[gene][constants.COPY_NUMBER] = 'Gain'
+                        results[gene][constants.COPY_NUMBER] = 'Deletion'
+                    else:
+                        results[gene][constants.COPY_NUMBER] = 'None'
         return results
 
     def get_expression(self, exp_path, results):
