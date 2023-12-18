@@ -1,4 +1,4 @@
-"""Djerba plugin for CAPTIV-8 (research) reporting"""
+"""Djerba plugin for PARPi table (research) reporting"""
 import os
 import sys
 import csv
