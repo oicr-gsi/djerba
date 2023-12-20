@@ -37,6 +37,9 @@ class main(helper_base):
     # Permitted assay names
     VALID_ASSAYS = ['WGTS', 'WGS', 'PWGS']
 
+    # Other
+    NA = "NA"
+
     def specify_params(self):
         self.logger.debug("Specifying params for input params helper")
         self.set_priority_defaults(self.PRIORITY)
@@ -107,6 +110,32 @@ class main(helper_base):
         """
         Retrieves values from INI and puts them in a JSON
         """
+        # Purity
+        purity = config[self.identifier][self.PURITY]
+        if purity != self.NA:
+            try:
+                purity = float(purity)
+                if purity < 0 or purity > 1:
+                    msg = "Invalid purity '{0}': Must be a number between 0 and 1".format(purity)
+                    self.logger.error(msg)
+                    raise ValueError(msg)
+            except ValueError as err:
+                msg = 'Purity must be either "NA", or a number between 0 and 1: {0}'.format(err)
+                self.logger.error(msg)
+                raise
+        # Ploidy 
+        ploidy = config[self.identifier][self.PLOIDY]
+        if ploidy != self.NA:
+            try:
+                ploidy = float(ploidy)
+                if ploidy <= 0:
+                    msg = "Invalid ploidy '{0}': Must be a positive number".format(ploidy)
+                    self.logger.error(msg)
+                    raise ValueError(msg)
+            except ValueError as err:
+                msg = 'Ploidy must be either "NA", or a positive number: {0}'.format(err)
+                self.logger.error(msg)
+                raise
         try:
             input_params_info = {
                 self.DONOR: config[self.identifier][self.DONOR],
@@ -122,8 +151,8 @@ class main(helper_base):
                 self.SAMPLE_TYPE: config[self.identifier][self.SAMPLE_TYPE],
                 self.SEQ_REV_1: config[self.identifier][self.SEQ_REV_1],
                 self.SEQ_REV_2: config[self.identifier][self.SEQ_REV_2],
-                self.PURITY: float(config[self.identifier][self.PURITY]),
-                self.PLOIDY: float(config[self.identifier][self.PLOIDY])
+                self.PURITY: purity,
+                self.PLOIDY: ploidy
             }
         except KeyError as err:
             msg = "Required config field for input params helper not found: {0}".format(err)
@@ -145,16 +174,6 @@ class main(helper_base):
             raise ValueError(msg)
         if assay == "TAR":
             msg = "Invalid assay '{0}': Must use [tar_input_params_helper]".format(assay)
-            self.logger.error(msg)
-            raise ValueError(msg)
-        purity = info.get(self.PURITY)
-        if purity < 0 or purity > 1:
-            msg = "Invalid purity '{0}': Must be a number between 0 and 1".format(purity)
-            self.logger.error(msg)
-            raise ValueError(msg)
-        ploidy = info.get(self.PLOIDY)
-        if ploidy <= 0:
-            msg = "Invalid ploidy '{0}': Must be a positive number".format(ploidy)
             self.logger.error(msg)
             raise ValueError(msg)
         req_approved = info.get(self.REQUISITION_APPROVED)

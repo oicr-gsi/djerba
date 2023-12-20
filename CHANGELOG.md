@@ -1,7 +1,7 @@
 # CHANGELOG
 
 ## UNRELEASED
-
+- GCGI-1233: allowed support for purity and ploidy to be "NA", changed failed report template text 
 - Fixed unit tests for various plugins
 
 ## v1.1.1: 2023-12-13

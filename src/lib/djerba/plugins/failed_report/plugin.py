@@ -46,23 +46,16 @@ class main(plugin_base):
             input_params_helper.STUDY,
             input_params_helper.STUDY
         )        
-        wrapper = self.update_wrapper_if_null(
-            wrapper,
-            input_params_helper.INPUT_PARAMS_FILE,
-            input_params_helper.PURITY,
-            input_params_helper.PURITY
-        )
           
         # Get the parameters from the config
         primary_cancer = config[self.identifier][input_params_helper.PRIMARY_CANCER]
         assay = config[self.identifier][input_params_helper.ASSAY]
         study = config[self.identifier][input_params_helper.STUDY]
-        purity = config[self.identifier][input_params_helper.PURITY]
 
         # Write the failed text if there isn't one already specified.
         if wrapper.my_param_is_null(self.FAILED_FILE):
             failed_template_path = os.path.join(work_dir, self.FAILED_TEMPLATE_FILE)
-            self.write_failed_text(failed_template_path, primary_cancer, assay, study, purity)
+            self.write_failed_text(failed_template_path, primary_cancer, assay, study)
             wrapper.set_my_param(self.FAILED_FILE, failed_template_path)
 
         return wrapper.get_config()
@@ -83,8 +76,7 @@ class main(plugin_base):
             self.FAILED_FILE,
             input_params_helper.PRIMARY_CANCER,
             input_params_helper.ASSAY,
-            input_params_helper.STUDY,
-            input_params_helper.PURITY
+            input_params_helper.STUDY
         ]
         for key in discovered:
             self.add_ini_discovered(key)
@@ -95,13 +87,12 @@ class main(plugin_base):
         renderer = mako_renderer(self.get_module_dir())
         return renderer.render_name(self.MAKO_TEMPLATE_NAME, data)
 
-    def write_failed_text(self, failed_template_path, primary_cancer, assay, study, purity):
+    def write_failed_text(self, failed_template_path, primary_cancer, assay, study):
         
         failed_text = "The patient has been diagnosed with " + primary_cancer +  \
                        " and has been referred for the OICR Genomics " + assay + \
-                       " assay through the " + study + \
-                       " study. A quality failure report for this sample is being issued due to the informatically inferred tumour purity of " + str(round(float(purity)*100)) + \
-                       "% which is below the reportable threshold of 30% for the assay."
+                       " assay through the " + study + " study." + \
+                       " A quality failure report for this sample is being issued due to the informatically inferred tumour purity of ...% which is below the reportable threshold of 30% for the assay / is being issued due to failed extraction..."
         
         with open(failed_template_path, "w") as failed_file:
             failed_file.write(failed_text)

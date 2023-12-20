@@ -35,5 +35,21 @@ class TestWgtsSamplePlugin(PluginTester):
         }
         self.run_basic_test(test_source_dir, params)
 
+    def testWgtsSampleWithNA(self):
+        """
+        Purity, ploidy, callability, and coverage are NA
+        """
+        test_source_dir = os.path.realpath(os.path.dirname(__file__))
+        json_location = os.path.join(self.sup_dir ,"plugins/sample/report_json/sample_na.json")
+        ini_location = os.path.join(self.sup_dir ,"plugins/sample/sample_na.ini")
+
+        params = {
+            self.INI: ini_location,
+            self.JSON: json_location,
+            self.MD5: '35fce62d7d85272abfabe16f7d5dfc00'
+        }
+        self.run_basic_test(test_source_dir, params)
+
+
 if __name__ == '__main__':
     unittest.main()

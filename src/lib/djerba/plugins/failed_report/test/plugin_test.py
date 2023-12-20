@@ -23,7 +23,7 @@ class TestFailedReportPlugin(PluginTester):
         params = {
             self.INI: 'failed_report.ini',
             self.JSON: json_location,
-            self.MD5: '53c9c9b1d169a16596cfc06be0ab7558'
+            self.MD5: '8c28f387b1487900f3eea3be2ad521f9'
         }
         self.run_basic_test(test_source_dir, params)
 
