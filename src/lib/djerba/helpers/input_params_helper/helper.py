@@ -37,6 +37,9 @@ class main(helper_base):
     # Permitted assay names
     VALID_ASSAYS = ['WGTS', 'WGS', 'PWGS']
 
+    # Other
+    NA = "NA"
+
     def specify_params(self):
         self.logger.debug("Specifying params for input params helper")
         self.set_priority_defaults(self.PRIORITY)
@@ -107,14 +110,32 @@ class main(helper_base):
         """
         Retrieves values from INI and puts them in a JSON
         """
+        # Purity
         purity = config[self.identifier][self.PURITY]
-        if purity not in ["NA", "N/A", "na", "n/a", "N/a", "Na"]:
-            purity = float(purity)
-        
+        if purity != self.NA:
+            try:
+                purity = float(purity)
+                if purity < 0 or purity > 1:
+                    msg = "Invalid purity '{0}': Must be a number between 0 and 1".format(purity)
+                    self.logger.error(msg)
+                    raise ValueError(msg)
+            except ValueError as err:
+                msg = 'Purity must be either "NA", or a number between 0 and 1: {0}'.format(err)
+                self.logger.error(msg)
+                raise
+        # Ploidy 
         ploidy = config[self.identifier][self.PLOIDY]
-        if ploidy not in ["NA", "N/A", "na", "n/a", "N/a", "Na"]:
-            ploidy = float(ploidy)
-
+        if ploidy != self.NA:
+            try:
+                ploidy = float(ploidy)
+                if ploidy <= 0:
+                    msg = "Invalid ploidy '{0}': Must be a positive number".format(ploidy)
+                    self.logger.error(msg)
+                    raise ValueError(msg)
+            except ValueError as err:
+                msg = 'Ploidy must be either "NA", or a positive number: {0}'.format(err)
+                self.logger.error(msg)
+                raise
         try:
             input_params_info = {
                 self.DONOR: config[self.identifier][self.DONOR],
@@ -155,18 +176,6 @@ class main(helper_base):
             msg = "Invalid assay '{0}': Must use [tar_input_params_helper]".format(assay)
             self.logger.error(msg)
             raise ValueError(msg)
-        purity = info.get(self.PURITY)
-        if purity not in ["NA", "N/A", "na", "n/a", "N/a", "Na"]:
-            if purity < 0 or purity > 1:
-                msg = "Invalid purity '{0}': Must be a number between 0 and 1".format(purity)
-                self.logger.error(msg)
-                raise ValueError(msg)
-        ploidy = info.get(self.PLOIDY)
-        if ploidy not in ["NA", "N/A", "na", "n/a", "N/a", "Na"]:
-            if ploidy <= 0:
-                msg = "Invalid ploidy '{0}': Must be a positive number".format(ploidy)
-                self.logger.error(msg)
-                raise ValueError(msg)
         req_approved = info.get(self.REQUISITION_APPROVED)
         try:
             time.strptime(req_approved, '%Y/%m/%d')
