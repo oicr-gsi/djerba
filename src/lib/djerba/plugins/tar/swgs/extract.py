@@ -68,7 +68,7 @@ class data_builder:
         reader = csv.DictReader(input_file, delimiter="\t")
         for row in reader:
             gene = row[self.HUGO_SYMBOL_UPPER_CASE]
-            cytoband = self.cytoband_map.get(gene_name, 'Unknown')
+            cytoband = self.cytoband_map.get(gene, 'Unknown')
             if row[self.ALTERATION_UPPER_CASE] == "Amplification":
               row = {
                   constants.GENE: gene,
