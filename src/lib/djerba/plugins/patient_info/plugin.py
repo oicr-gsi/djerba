@@ -63,6 +63,7 @@ class main(plugin_base):
         keys = [
             self.PATIENT_NAME,
             self.PATIENT_DOB,
+            self.PATIENT_SEX,
             self.REQ_EMAIL,
             self.PHYSICIAN_LICENCE,
             self.PHYSICIAN_NAME,

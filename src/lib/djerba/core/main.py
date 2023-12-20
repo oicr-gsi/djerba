@@ -336,6 +336,7 @@ class main(core_base):
                 'case_overview',
                 'cnv',
                 'fusion',
+                'patient_info',
                 'sample',
                 'summary',
                 'supplement.header',
@@ -352,6 +353,7 @@ class main(core_base):
                 'treatment_options_merger',
                 'case_overview',
                 'cnv',
+                'patient_info',
                 'sample',
                 'summary',
                 'supplement.header',
@@ -407,7 +409,7 @@ class main(core_base):
         # if plugin data did not exist in old JSON, it will be added
         for plugin in data_new[self.PLUGINS].keys():
             data[self.PLUGINS][plugin] = data_new[self.PLUGINS][plugin]
-            data[constants.CONFIG][plugin] = data_new[self.CONFIG][plugin]
+            data[constants.CONFIG][plugin] = data_new[constants.CONFIG][plugin]
             self.logger.debug('Updated JSON for plugin {0}'.format(plugin))
         if archive:
             self.upload_archive(data)
@@ -544,6 +546,12 @@ class arg_processor(logger):
             if args.work_dir != None: # work_dir is optional in report mode
                 v.validate_output_dir(args.work_dir)
             v.validate_output_dir(args.out_dir)
+        elif args.subparser_name == constants.UPDATE:
+            v.validate_input_file(args.ini)
+            v.validate_input_file(args.json)
+            v.validate_output_dir(args.out_dir)
+            if args.work_dir != None: # work_dir is optional in report mode
+                v.validate_output_dir(args.work_dir)
         else:
             # shouldn't happen, but handle this case for completeness
             raise ValueError("Unknown subparser: " + args.subparser_name)
