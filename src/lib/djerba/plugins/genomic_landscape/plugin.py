@@ -95,7 +95,9 @@ class main(plugin_base):
         self.build_genomic_biomarkers(work_dir, wrapper.get_my_string(constants.ONCOTREE_CODE), tumour_id)
         
         merge_inputs = self.get_merge_inputs(work_dir)
-        merge_inputs['hrd'] = hrd.annotate_hrd(results[constants.BIOMARKERS][constants.HRD]['hrd'], wrapper.get_my_string('oncotree code'))
+        hrd_annotation = hrd.annotate_hrd(results[constants.BIOMARKERS][constants.HRD]['Genomic biomarker alteration'], wrapper.get_my_string(constants.ONCOTREE_CODE), finder.get_data_dir())
+        if hrd_annotation != None:
+            merge_inputs.append(hrd_annotation)
         data['merge_inputs']['treatment_options_merger'] = merge_inputs
         data['results'] = results
 
@@ -162,14 +164,10 @@ class main(plugin_base):
                     )
                     treatments.append(treatment_entry)
         # assemble the output
-        merge_inputs = {
-            'treatment_options_merger': treatments
-        }
-        return merge_inputs
+        return treatments
 
     def make_biomarkers_maf(self, work_dir):
         maf_header = '\t'.join(["HUGO_SYMBOL","SAMPLE_ID","ALTERATION"])
-        hugo_symbol = "Other Biomarkers"
         genomic_biomarkers_path = os.path.join(work_dir, constants.GENOMIC_BIOMARKERS)
         with open(genomic_biomarkers_path, 'w') as genomic_biomarkers_file:
             # Write the header into the file 

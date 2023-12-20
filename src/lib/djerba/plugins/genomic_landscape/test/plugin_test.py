@@ -51,9 +51,15 @@ class TestGenomicLandscapePlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '54c4901c6cecee91b7d2f62650deaf3f'
+            self.MD5: '8bd9c9df872212a1797c4ded8083529f'
         }
         self.run_basic_test(input_dir, params)
+
+    #def redact_json_data(self, data):
+    #    """replaces empty method from testing.tools"""
+    #    for key in ['HRD','TMB','MSI']:
+    #        del data['plugins']['genomic_landscape']['results']['genomic_biomarkers'][key]['Genomic biomarker plot']
+    #    return data        
 
 if __name__ == '__main__':
     unittest.main()
