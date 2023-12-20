@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## UNRELEASED
+
+- Fixed unit tests for various plugins
+
 ## v1.1.1: 2023-12-13
 
 - Fixed template text for failed plugin

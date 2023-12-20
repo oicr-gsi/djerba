@@ -21,7 +21,7 @@ class TestSnvIndelPlugin(PluginTester):
 
     def testSnvIndel(self):
 
-        sup_dir = os.environ.get('DJERBA_TEST_DATA')
+        sup_dir = os.environ.get('DJERBA_TEST_DIR')
         data_dir = os.path.join(sup_dir, 'plugins', 'wgts', 'snv_indel')
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         maf_filename = 'PANX_1391_Lv_M_WG_100-NH-020_LCM3.filter.deduped.realigned.'+\
