@@ -5,7 +5,7 @@ a plugin for WGTS CNV, based on PURPLE
 # IMPORTS
 import os
 import csv
-from djerba.plugins.base import plugin_base
+from djerba.plugins.base import plugin_base, DjerbaPluginError
 from mako.lookup import TemplateLookup
 from djerba.util.render_mako import mako_renderer
 import djerba.core.constants as core_constants
@@ -18,6 +18,8 @@ from djerba.plugins.wgts.cnv_purple.tools import process_purple
 from djerba.plugins.cnv.tools import cnv_processor
 import djerba.plugins.wgts.cnv_purple.constants as cpc 
 import djerba.plugins.cnv.constants as cc
+from djerba.helpers.input_params_helper.helper import main as input_params_helper
+
 
 class main(plugin_base):
    
@@ -32,13 +34,23 @@ class main(plugin_base):
       config = self.apply_defaults(config)
       wrapper = self.get_config_wrapper(config)
 
-      #TODO: integrate input_params_helper
+      wrapper = self.fill_param_if_null(wrapper, 'assay', 'assay', input_params_helper.INPUT_PARAMS_FILE )
+      wrapper = self.fill_param_if_null(wrapper, 'oncotree_code', 'oncotree code', input_params_helper.INPUT_PARAMS_FILE )
+      wrapper = self.fill_param_if_null(wrapper, 'project', 'whizbam_project', input_params_helper.INPUT_PARAMS_FILE )
+
+      wrapper = self.fill_param_if_null(wrapper, 'tumour_id', 'tumour_id', core_constants.DEFAULT_SAMPLE_INFO )
+      wrapper = self.fill_file_if_null(wrapper, 'purple_purity', 'purple_purity_file', core_constants.DEFAULT_PATH_INFO)
+      wrapper = self.fill_file_if_null(wrapper, 'purple_segment', 'purple_segment_file', core_constants.DEFAULT_PATH_INFO)
+      wrapper = self.fill_file_if_null(wrapper, 'purple_gene', 'purple_gene_file', core_constants.DEFAULT_PATH_INFO)
+
       if wrapper.my_param_is_null('purity'):
         purity = get_purple_purity(config[self.identifier]['purple_purity_file'])
         wrapper.set_my_param('purity', purity[0])
       if wrapper.my_param_is_null('ploidy'):
         purity = get_purple_purity(config[self.identifier]['purple_purity_file'])
         wrapper.set_my_param('ploidy', purity[1])
+
+
       return wrapper.get_config()  
 
     def extract(self, config):
@@ -55,7 +67,7 @@ class main(plugin_base):
       purple_cnv.consider_purity_fit(work_dir, config[self.identifier]['purple_purity_file'])
       purple_cnv.convert_purple_to_gistic(work_dir, config[self.identifier]['purple_gene_file'], ploidy)
       cnv_plot_base64 = purple_cnv.analyze_segments(config[self.identifier]['purple_segment_file'], 
-                                                    construct_whizbam_link(config[self.identifier]['cbio_id'] , tumour_id ),
+                                                    construct_whizbam_link(config[self.identifier]['whizbam_project'] , tumour_id ),
                                                     config[self.identifier]['purity'], 
                                                     ploidy)
 
@@ -67,6 +79,31 @@ class main(plugin_base):
 
       return data
     
+    def fill_file_if_null(self, wrapper, workflow_name, ini_param, path_info):
+      if wrapper.my_param_is_null(ini_param):
+          if self.workspace.has_file(path_info):
+              path_info = self.workspace.read_json(path_info)
+              workflow_path = path_info.get(workflow_name)
+              if workflow_path == None:
+                  msg = 'Cannot find {0}'.format(ini_param)
+                  self.logger.error(msg)
+                  raise RuntimeError(msg)
+              wrapper.set_my_param(ini_param, workflow_path)
+      return(wrapper)
+
+    def fill_param_if_null(self, wrapper, param, ini_param, input_param_file):
+        if wrapper.my_param_is_null(ini_param):
+            if self.workspace.has_file(input_param_file):
+                data = self.workspace.read_json(input_param_file)
+                param_value = data[param]
+                wrapper.set_my_param(ini_param, param_value)
+            else:
+                msg = "Cannot find {0}; must be manually specified or ".format(ini_param)+\
+                        "given in {0}".format(input_param_file)
+                self.logger.error(msg)
+                raise DjerbaPluginError(msg)
+        return(wrapper)
+
     def make_and_check_tmp(self, work_dir):
       tmp_dir = os.path.join(work_dir, 'tmp')
       if os.path.isdir(tmp_dir):
@@ -87,18 +124,14 @@ class main(plugin_base):
         return renderer.render_name(self.TEMPLATE_NAME, data)
     
     def specify_params(self):
-      required = [
-            'tumour_id',
+      discovered = [
+            'assay',
+            'whizbam_project',
             'oncotree code',
+            'tumour_id',
             'purple_purity_file',
             'purple_segment_file',
             'purple_gene_file',
-            'cbio_id',
-            'assay'
-          ]
-      for key in required:
-          self.add_ini_required(key)
-      discovered = [
             'purity',
             'ploidy'
         ]

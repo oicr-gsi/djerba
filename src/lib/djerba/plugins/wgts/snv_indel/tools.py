@@ -198,7 +198,7 @@ class snv_indel_processor(logger):
             self.logger.info("No expression data found")
             expression = {}
         cytobands = wgts_tools(self.log_level, self.log_path).cytoband_lookup()
-        copy_states = self.read_copy_states()
+        #copy_states = self.read_copy_states()
         with open(os.path.join(self.work_dir, sic.MUTATIONS_ONCOGENIC)) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
             for row_input in reader:
@@ -213,7 +213,7 @@ class snv_indel_processor(logger):
                     sic.TYPE: self.get_mutation_type(row_input),
                     sic.VAF: self.get_tumour_vaf(row_input),
                     sic.DEPTH: self.get_mutation_depth(row_input),
-                    sic.COPY_STATE: copy_states.get(gene),
+                    #sic.COPY_STATE: copy_states.get(gene),
                     wgts_tools.CHROMOSOME: cytobands.get(gene, wgts_tools.UNKNOWN),
                     wgts_tools.ONCOKB: oncokb_levels.parse_oncokb_level(row_input)
                 }

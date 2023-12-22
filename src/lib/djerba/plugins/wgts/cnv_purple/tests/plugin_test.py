@@ -17,7 +17,8 @@ from djerba.core.workspace import workspace
 
 class TestWGTSsmallPlugin(PluginTester):
 
-    INI_NAME = 'cnv.ini'
+    WGTS_INI_NAME = 'cnv.wgts.ini'
+    WGS_INI_NAME = 'cnv.wgs.ini'
 
     def setUp(self):
         self.path_validator = path_validator()
@@ -35,17 +36,35 @@ class TestWGTSsmallPlugin(PluginTester):
 
     def testWGTScnv(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
-        with open(os.path.join(test_source_dir, self.INI_NAME)) as in_file:
+        with open(os.path.join(test_source_dir, self.WGTS_INI_NAME)) as in_file:
             template_str = in_file.read()
         template = string.Template(template_str)
         ini_str = template.substitute({'DJERBA_TEST_DATA': self.sup_dir})
         input_dir = os.path.join(self.get_tmp_dir(), 'input')
         os.mkdir(input_dir)
-        with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
+        with open(os.path.join(input_dir, self.WGTS_INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
         json_location = os.path.join(self.sup_dir ,"plugins/cnv-purple/report_json/cnv.purple.json")
         params = {
-            self.INI: self.INI_NAME,
+            self.INI: self.WGTS_INI_NAME,
+            self.JSON: json_location,
+            self.MD5: '7cd06343117af2c6ae47121390cefdde'
+        }
+        self.run_basic_test(input_dir, params)
+
+    def testWGScnv(self):
+        test_source_dir = os.path.realpath(os.path.dirname(__file__))
+        with open(os.path.join(test_source_dir, self.WGS_INI_NAME)) as in_file:
+            template_str = in_file.read()
+        template = string.Template(template_str)
+        ini_str = template.substitute({'DJERBA_TEST_DATA': self.sup_dir})
+        input_dir = os.path.join(self.get_tmp_dir(), 'input')
+        os.mkdir(input_dir)
+        with open(os.path.join(input_dir, self.WGS_INI_NAME), 'w') as ini_file:
+            ini_file.write(ini_str)
+        json_location = os.path.join(self.sup_dir ,"plugins/cnv-purple/report_json/cnv.purple.json")
+        params = {
+            self.INI: self.WGS_INI_NAME,
             self.JSON: json_location,
             self.MD5: '7cd06343117af2c6ae47121390cefdde'
         }

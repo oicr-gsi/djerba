@@ -24,10 +24,9 @@ class TestGenomicLandscapePlugin(PluginTester):
         self.tmp_dir = self.tmp.name
         sup_dir_var = 'DJERBA_TEST_DIR'
         self.sup_dir = os.environ.get(sup_dir_var)
-        
-        self.data_mut_ex = os.path.join(self.sup_dir, "plugins/genomic-landscape-plugin/data_mutations_extended.txt")
-        self.data_seg = os.path.join(self.sup_dir, "plugins/genomic-landscape-plugin/data.seg")
-        self.sample_info = os.path.join(self.sup_dir, "plugins/genomic-landscape-plugin/sample_info.json")
+        self.data_mut_ex = os.path.join(self.sup_dir, "plugins/genomic-landscape/data_mutations_extended.txt")
+        self.data_seg = os.path.join(self.sup_dir, "plugins/genomic-landscape/data.seg")
+        self.sample_info = os.path.join(self.sup_dir, "plugins/genomic-landscape/sample_info.json")
 
     def testGenomicLandscapeLowTmbStableMsi(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -45,8 +44,7 @@ class TestGenomicLandscapePlugin(PluginTester):
         os.mkdir(input_dir)
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
-
-        json_location = os.path.join(self.sup_dir ,"plugins/genomic-landscape-plugin/report_json/genomic_landscape.json")
+        json_location = os.path.join(self.sup_dir ,"plugins/genomic-landscape/report_json/genomic_landscape.json")
 
         params = {
             self.INI: self.INI_NAME,

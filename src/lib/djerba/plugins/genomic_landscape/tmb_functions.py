@@ -39,7 +39,7 @@ def build_genomic_landscape_info(genomic_landscape_plugin, work_dir, data_dir, t
         tmb_count = get_tmb_count(genomic_landscape_plugin, work_dir)
         data[constants.TMB_TOTAL] = tmb_count
         data[constants.TMB_PER_MB] = round(tmb_count/constants.V7_TARGET_SIZE, 2)
-        data[constants.PERCENT_GENOME_ALTERED] = int(round(read_fga(work_dir)*100, 0))
+       # data[constants.PERCENT_GENOME_ALTERED] = int(round(read_fga(work_dir)*100, 0))
         csp = read_cancer_specific_percentile(genomic_landscape_plugin, data_dir, data[constants.TMB_PER_MB], cohort, tcga_code)
         data[constants.CANCER_SPECIFIC_PERCENTILE] = csp
         data[constants.CANCER_SPECIFIC_COHORT] = cohort

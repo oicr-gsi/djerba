@@ -16,7 +16,7 @@ def make_table_header(mutation_info):
         'Type',
 	'VAF',
 	'Depth',
-	'Copy State',
+	#'Copy State',
 	'OncoKB'
     ]
     if mutation_info[sic.HAS_EXPRESSION_DATA]:
@@ -34,7 +34,7 @@ def make_table_rows(mutation_info):
             hb.td(row[sic.TYPE]),
             hb.td(row[sic.VAF]),
             hb.td(row[sic.DEPTH]),
-            hb.td(row[sic.COPY_STATE]),
+           # hb.td(row[sic.COPY_STATE]),
             hb.td_oncokb(row[wgts_tools.ONCOKB])
         ]
         if mutation_info[sic.HAS_EXPRESSION_DATA]:

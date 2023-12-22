@@ -30,6 +30,7 @@ class provenance_reader(logger):
     WF_MAVIS = 'mavis'
     WF_MRDETECT = 'mrdetect_filter_only'
     WF_MSISENSOR = 'msisensor'
+    WF_PURPLE = 'purple'
     WF_RSEM = 'rsem'
     WF_SEQUENZA = 'sequenza_by_tumor_group'
     WF_STAR = 'star_call_ready'
@@ -493,6 +494,24 @@ class provenance_reader(logger):
         suffix = 'SNP\.count\.txt$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
     
+    def parse_purple_purity_path(self):
+        workflow = self.WF_PURPLE
+        mt = self.MT_OCTET_STREAM
+        suffix = 'purple\.purity\.range\.tsv$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
+
+    def parse_purple_segment_path(self):
+        workflow = self.WF_PURPLE
+        mt = self.MT_OCTET_STREAM
+        suffix = 'purple\.cnv\.somatic\.tsv$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
+
+    def parse_purple_gene_path(self):
+        workflow = self.WF_PURPLE
+        mt = self.MT_OCTET_STREAM
+        suffix = 'purple\.cnv\.gene\.tsv$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
+
     def parse_starfusion_predictions_path(self):
         workflows = [self.WF_STARFUSION, self.NIASSA_WF_STARFUSION]
         mt = self.MT_OCTET_STREAM
