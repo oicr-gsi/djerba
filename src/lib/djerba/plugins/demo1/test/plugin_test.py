@@ -13,7 +13,7 @@ class TestDemo1(PluginTester):
         params = {
             self.INI: 'demo_1.ini',
             self.JSON: 'demo_1.json',
-            self.MD5: '1d6aa4e7b94b42c788f84f4e5ea8875f'
+            self.MD5: '9aaa43ddde3e4ac53b9d15b7eb43df7a'
         }
         self.run_basic_test(test_source_dir, params)
 

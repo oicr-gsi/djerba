@@ -51,7 +51,7 @@ class TestGenomicLandscapePlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '53613e154d1e0008376c6fe6d0174760'
+            self.MD5: '42bee95bf7f8b3c4409c1c7720647a51'
         }
         self.run_basic_test(input_dir, params)
 

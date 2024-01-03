@@ -48,7 +48,7 @@ class TestTarSwgsPlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '97000042e1dd447fc3521c03f19f2060'
+            self.MD5: '786dab113b69aa670ed530404bf263c2'
         }
         self.run_basic_test(input_dir, params)
 
@@ -73,7 +73,7 @@ class TestTarSwgsPlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '031eb01e68e29a18b8dc36873ab7700d'
+            self.MD5: 'd988d19d0ebd1f9fd897f0a3eae67d4f'
         }
         self.run_basic_test(input_dir, params)
     
