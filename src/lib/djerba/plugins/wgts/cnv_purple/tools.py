@@ -32,19 +32,20 @@ class process_purple(logger):
         self.oncokb_levels = [self.reformat_level_string(level) for level in oncokb.ORDERED_LEVELS]
         self.tmp_dir = tmp_dir
   
-    def analyze_segments(self, segfile, whizbam_url, purity, ploidy):
+    def analyze_segments(self, cnvfile, segfile, whizbam_url, purity, ploidy):
         dir_location = os.path.dirname(__file__)
         centromeres_file = os.path.join(dir_location, '../../..', cc.CENTROMERES)
         genebedpath = os.path.join(dir_location, '../../..', cc.GENEBED)
         cmd = [
             'Rscript', os.path.join(dir_location + "/r/process_segment_data.r"),
-            '--segfile', segfile,
             '--outdir', self.work_dir,
-            '--genefile', genebedpath,
+            '--cnvfile', cnvfile,
+            '--segfile', segfile,
             '--centromeres', centromeres_file,
             '--purity', purity,
             '--ploidy', ploidy,
-            '--whizbam_url', whizbam_url
+            '--whizbam_url', whizbam_url,
+            '--genefile', genebedpath
         ]
         runner = subprocess_runner()
         result = runner.run(cmd, "segments R script")

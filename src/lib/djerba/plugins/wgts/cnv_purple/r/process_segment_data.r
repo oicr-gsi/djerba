@@ -9,10 +9,12 @@ chromosomes_incl <- c(1:22,"X")
 options(bitmapType='cairo')
 basedir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), sep='/')
 source(paste0(basedir, "/plugins/wgts/cnv_purple/r/CNA_supporting_functions.r"))
+source(paste0(basedir, "/plugins/wgts/cnv_purple/r/purple_QC_plots.r"))
 
 ## parse input
 option_list = list(
   make_option(c("-d", "--outdir"), type="character", default=NULL, help="report directory path", metavar="character"),
+  make_option(c("-C", "--cnvfile"), type="character", default=NULL, help="somatic CNV file ", metavar="character"),
   make_option(c("-s", "--segfile"), type="character", default=NULL, help="segments file ", metavar="character"),
   make_option(c("-c", "--centromeres"), type="character", default=NULL, help="path to centromeres file", metavar="character"),
   make_option(c("-a", "--highCN"), type="character", default=6, help="High copy number (top of y-axis)", metavar="character"),
@@ -25,6 +27,7 @@ option_list = list(
 opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
 opt <- parse_args(opt_parser)
 
+cnvfile_path      <- opt$cnvfile
 segfile_path      <- opt$segfile
 dir_path          <- opt$outdir
 centromeres_path  <- opt$centromeres
@@ -34,10 +37,12 @@ ploidy            <- as.numeric(opt$ploidy)
 whizbam_url       <- opt$whizbam_url
 genebed  <- opt$genefile
 
+#### segment QC ####
 
+look_at_purity_fit(segfile_path, this_purity = purity) 
 
 #### arm-level events ####
-segs <- read.delim(segfile_path, header=TRUE) # segmented data already
+segs <- read.delim(cnvfile_path, header=TRUE) # segmented data already
 segs_whizbam <- construct_whizbam_links(segs, whizbam_url)
 write.table(segs_whizbam, file=paste0(dir_path, "/purple.segments.txt"), sep="\t", row.names=FALSE, quote=FALSE, col.names = TRUE)
 

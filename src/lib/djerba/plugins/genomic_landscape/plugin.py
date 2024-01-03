@@ -56,12 +56,12 @@ class main(plugin_base):
 
         parameters_to_fill = [
             constants.ONCOTREE_CODE,
-            constants.TCGA_CODE,
-            constants.PURITY_INPUT
+            constants.TCGA_CODE
         ]
         for param in parameters_to_fill:
             wrapper = self.fill_param_if_null(wrapper, param, input_params_helper.INPUT_PARAMS_FILE )
  
+        wrapper = self.fill_param_if_null(wrapper, constants.PURITY_INPUT, "purity_ploidy.json")
         wrapper = self.fill_param_if_null(wrapper, constants.TUMOUR_ID, core_constants.DEFAULT_SAMPLE_INFO )
         wrapper = self.fill_file_if_null(wrapper, constants.MSI_WORKFLOW, constants.MSI_FILE, core_constants.DEFAULT_PATH_INFO)
         wrapper = self.fill_file_if_null(wrapper, constants.CTDNA_WORKFLOW, constants.CTDNA_FILE, core_constants.DEFAULT_PATH_INFO)

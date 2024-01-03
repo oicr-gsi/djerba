@@ -500,10 +500,16 @@ class provenance_reader(logger):
         suffix = 'purple\.purity\.range\.tsv$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
 
-    def parse_purple_segment_path(self):
+    def parse_purple_cnv_path(self):
         workflow = self.WF_PURPLE
         mt = self.MT_OCTET_STREAM
         suffix = 'purple\.cnv\.somatic\.tsv$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
+
+    def parse_purple_segment_path(self):
+        workflow = self.WF_PURPLE
+        mt = self.MT_OCTET_STREAM
+        suffix = 'purple\.segment\.tsv$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
 
     def parse_purple_gene_path(self):

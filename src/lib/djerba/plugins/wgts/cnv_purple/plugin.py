@@ -26,7 +26,7 @@ class main(plugin_base):
     PLUGIN_VERSION = '0.1.0'
     TEMPLATE_NAME = 'cnv_template.html'
 
-    CONFIGURE = 800
+    CONFIGURE = 80
     EXTRACT = 700
     RENDER = 800
     
@@ -40,6 +40,7 @@ class main(plugin_base):
 
       wrapper = self.fill_param_if_null(wrapper, 'tumour_id', 'tumour_id', core_constants.DEFAULT_SAMPLE_INFO )
       wrapper = self.fill_file_if_null(wrapper, 'purple_purity', 'purple_purity_file', core_constants.DEFAULT_PATH_INFO)
+      wrapper = self.fill_file_if_null(wrapper, 'purple_cnv', 'purple_cnv_file', core_constants.DEFAULT_PATH_INFO)
       wrapper = self.fill_file_if_null(wrapper, 'purple_segment', 'purple_segment_file', core_constants.DEFAULT_PATH_INFO)
       wrapper = self.fill_file_if_null(wrapper, 'purple_gene', 'purple_gene_file', core_constants.DEFAULT_PATH_INFO)
 
@@ -50,6 +51,12 @@ class main(plugin_base):
         purity = get_purple_purity(config[self.identifier]['purple_purity_file'])
         wrapper.set_my_param('ploidy', purity[1])
 
+      purity_ploidy = {
+           "purity" : config[self.identifier]['purity'],
+           "ploidy" : config[self.identifier]['ploidy']
+        }
+      self.workspace.write_json("purity_ploidy.json", purity_ploidy)
+      self.logger.debug("Wrote path info to workspace: {0}".format(purity_ploidy))
 
       return wrapper.get_config()  
 
@@ -66,7 +73,8 @@ class main(plugin_base):
       purple_cnv = process_purple(work_dir, tmp_dir)
       purple_cnv.consider_purity_fit(work_dir, config[self.identifier]['purple_purity_file'])
       purple_cnv.convert_purple_to_gistic(work_dir, config[self.identifier]['purple_gene_file'], ploidy)
-      cnv_plot_base64 = purple_cnv.analyze_segments(config[self.identifier]['purple_segment_file'], 
+      cnv_plot_base64 = purple_cnv.analyze_segments(config[self.identifier]['purple_cnv_file'], 
+                                                    config[self.identifier]['purple_segment_file'], 
                                                     construct_whizbam_link(config[self.identifier]['whizbam_project'] , tumour_id ),
                                                     config[self.identifier]['purity'], 
                                                     ploidy)
@@ -130,8 +138,9 @@ class main(plugin_base):
             'oncotree code',
             'tumour_id',
             'purple_purity_file',
-            'purple_segment_file',
+            'purple_cnv_file',
             'purple_gene_file',
+            'purple_segment_file',
             'purity',
             'ploidy'
         ]

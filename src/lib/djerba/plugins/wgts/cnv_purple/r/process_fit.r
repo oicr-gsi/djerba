@@ -46,8 +46,9 @@ plot_purity_range <- function(rangeDF){
     geom_segment(aes(y = bestPurity, yend = bestPurity, x=minPloidy, xend = maxPloidy + 0.4), linetype = "dashed", linewidth = 0.1) +
     geom_label(data = data.frame(), aes(y = bestPurity, x = maxPloidy + 0.4, label = paste0(bestPurity*100,"%" )), size = 5, hjust = 0.7) +
     
-    scale_y_continuous(labels = c("25%", "50%", "75%", "100%"), breaks = c(0.25, 0.5, 0.75, 1)) +
-    scale_fill_gradientn(colours=c("black","blue","blue", "lightblue", "yellow","red", "white", "white"), limits = c(0, 1), values=c(0,0.1, 0.1999, 0.2, 0.5, 0.8, 0.9, 1), breaks = c(0.1,0.25, 0.5, 1), labels = c("10%","25%", "50%", "100%"), name = "Relative\nScore") +
+    
+    scale_y_continuous(labels = c("30%", "50%", "75%", "100%"), breaks = c(0.3, 0.5, 0.75, 1)) +
+    scale_fill_gradientn(colours=c("black","darkblue","blue", "lightblue",  "white", "white"), limits = c(0, 1), values=c(0,0.1, 0.1999, 0.2, 0.5, 1), breaks = c(0.1,0.25, 0.5, 1), labels = c("10%","25%", "50%", "100%"), name = "Relative\nScore") +
     xlab("Ploidy") + ylab("Cellularity") + theme_bw(base_size=18) +
     theme(panel.grid = element_blank()) 
   

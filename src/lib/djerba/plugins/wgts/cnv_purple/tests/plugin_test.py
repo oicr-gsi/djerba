@@ -15,7 +15,7 @@ from djerba.plugins.plugin_tester import PluginTester
 import djerba.plugins.wgts.cnv_purple.plugin as cnv
 from djerba.core.workspace import workspace
 
-class TestWGTSsmallPlugin(PluginTester):
+class TestPurplePlugin(PluginTester):
 
     WGTS_INI_NAME = 'cnv.wgts.ini'
     WGS_INI_NAME = 'cnv.wgs.ini'
@@ -48,7 +48,7 @@ class TestWGTSsmallPlugin(PluginTester):
         params = {
             self.INI: self.WGTS_INI_NAME,
             self.JSON: json_location,
-            self.MD5: '7cd06343117af2c6ae47121390cefdde'
+            self.MD5: 'c1f50baffe61151698f607f243876780'
         }
         self.run_basic_test(input_dir, params)
 
@@ -66,7 +66,7 @@ class TestWGTSsmallPlugin(PluginTester):
         params = {
             self.INI: self.WGS_INI_NAME,
             self.JSON: json_location,
-            self.MD5: '7cd06343117af2c6ae47121390cefdde'
+            self.MD5: 'c1f50baffe61151698f607f243876780'
         }
         self.run_basic_test(input_dir, params)
 

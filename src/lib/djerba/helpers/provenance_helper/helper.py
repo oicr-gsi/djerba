@@ -189,16 +189,17 @@ class main(helper_base):
                 self.WG_N_BAM: reader.parse_wg_bam_ref_path(),
                 self.WG_N_IDX: reader.parse_wg_index_ref_path()
             },
-            reader.WF_DELLY: reader.parse_delly_path(),
+          #  reader.WF_DELLY: reader.parse_delly_path(),
             reader.WF_HRDETECT: reader.parse_hrdetect_path(),
             reader.WF_MAVIS: reader.parse_mavis_path(),
             reader.WF_MRDETECT: reader.parse_mrdetect_path(),
             reader.WF_MSISENSOR: reader.parse_msi_path(),
             'purple_purity': reader.parse_purple_purity_path(),
             'purple_segment': reader.parse_purple_segment_path(),
+            'purple_cnv': reader.parse_purple_cnv_path(),
             'purple_gene': reader.parse_purple_gene_path(),
             reader.WF_RSEM: reader.parse_gep_path(),
-            reader.WF_SEQUENZA: reader.parse_sequenza_path(),
+           # reader.WF_SEQUENZA: reader.parse_sequenza_path(),
             reader.WF_STAR: {
                 self.WT_T_BAM: reader.parse_wt_bam_path(),
                 self.WT_T_IDX: reader.parse_wt_index_path()

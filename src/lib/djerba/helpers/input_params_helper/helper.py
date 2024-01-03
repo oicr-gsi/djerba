@@ -23,10 +23,6 @@ class main(helper_base):
     REQUISITION_ID = 'requisition_id'
     TCGACODE = 'tcgacode'
     SAMPLE_TYPE = 'sample_type'
-    SEQ_REV_1 = 'sequenza_reviewer_1'
-    SEQ_REV_2 = 'sequenza_reviewer_2'
-    PURITY = 'purity'
-    PLOIDY = 'ploidy'
 
     # Name for output file
     INPUT_PARAMS_FILE = 'input_params.json'
@@ -53,10 +49,6 @@ class main(helper_base):
         self.add_ini_required(self.REQUISITION_ID)
         self.add_ini_required(self.TCGACODE)
         self.add_ini_required(self.SAMPLE_TYPE)
-        self.add_ini_required(self.SEQ_REV_1)
-        self.add_ini_required(self.SEQ_REV_2)
-        self.add_ini_required(self.PURITY)
-        self.add_ini_required(self.PLOIDY)
 
     def configure(self, config):
         """
@@ -76,10 +68,6 @@ class main(helper_base):
                       self.REQUISITION_ID,
                       self.TCGACODE,
                       self.SAMPLE_TYPE,
-                      self.SEQ_REV_1,
-                      self.SEQ_REV_2,
-                      self.PURITY,
-                      self.PLOIDY,
                       self.ASSAY]
 
         for param in list_params:
@@ -119,11 +107,7 @@ class main(helper_base):
                 self.ASSAY: config[self.identifier][self.ASSAY],
                 self.REQUISITION_ID: config[self.identifier][self.REQUISITION_ID],
                 self.TCGACODE: config[self.identifier][self.TCGACODE],
-                self.SAMPLE_TYPE: config[self.identifier][self.SAMPLE_TYPE],
-                self.SEQ_REV_1: config[self.identifier][self.SEQ_REV_1],
-                self.SEQ_REV_2: config[self.identifier][self.SEQ_REV_2],
-                self.PURITY: float(config[self.identifier][self.PURITY]),
-                self.PLOIDY: float(config[self.identifier][self.PLOIDY])
+                self.SAMPLE_TYPE: config[self.identifier][self.SAMPLE_TYPE]
             }
         except KeyError as err:
             msg = "Required config field for input params helper not found: {0}".format(err)
@@ -145,16 +129,6 @@ class main(helper_base):
             raise ValueError(msg)
         if assay == "TAR":
             msg = "Invalid assay '{0}': Must use [tar_input_params_helper]".format(assay)
-            self.logger.error(msg)
-            raise ValueError(msg)
-        purity = info.get(self.PURITY)
-        if purity < 0 or purity > 1:
-            msg = "Invalid purity '{0}': Must be a number between 0 and 1".format(purity)
-            self.logger.error(msg)
-            raise ValueError(msg)
-        ploidy = info.get(self.PLOIDY)
-        if ploidy <= 0:
-            msg = "Invalid ploidy '{0}': Must be a positive number".format(ploidy)
             self.logger.error(msg)
             raise ValueError(msg)
         req_approved = info.get(self.REQUISITION_APPROVED)
