@@ -419,6 +419,11 @@ class main(core_base):
             self.render(data, out_dir, pdf, archive=False)
 
     def upload_archive(self, data):
+        for plugin_name in data[self.PLUGINS]:
+            # load each plugin and redact PHI (if any)
+            plugin_data = data[self.PLUGINS][plugin_name]
+            plugin = self.plugin_loader.load(plugin_name, self.workspace)
+            data[self.PLUGINS][plugin_name] = plugin.redact(plugin_data)
         uploaded, report_id = database(self.log_level, self.log_path).upload_data(data)
         if uploaded:
             self.logger.info(f"Archiving was successful: {report_id}")

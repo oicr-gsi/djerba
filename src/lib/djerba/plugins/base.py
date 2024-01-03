@@ -60,6 +60,15 @@ class plugin_base(configurable, ABC):
         }
         return data
 
+    def redact(self, data):
+        """
+        Input is a data structure satisfying the plugin schema
+        Output is the same data, but with confidential elements (eg. PHI) redacted
+        Call before database upload to ensure PHI is not transmitted to the database
+        By default, this does nothing; can override for individual plugins as needed
+        """
+        return data
+
     def render(self, data):
         """
         Input is a data structure satisfying the plugin schema

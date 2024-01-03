@@ -25,6 +25,17 @@ class main(plugin_base):
     PHYSICIAN_PHONE = 'physician_phone_number'
     PHYSICIAN_HOSPITAL = 'hospital_name_and_address'
 
+    PATIENT_DEFAULTS = {
+        PATIENT_NAME: 'LAST, FIRST',
+        PATIENT_DOB: self.DOB_DEFAULT,
+        PATIENT_SEX: 'SEX',
+        REQ_EMAIL: 'NAME@DOMAIN.COM',
+        PHYSICIAN_LICENCE: 'nnnnnnnn',
+        PHYSICIAN_NAME: 'LAST, FIRST',
+        PHYSICIAN_PHONE: self.PHONE_DEFAULT,
+        PHYSICIAN_HOSPITAL: 'HOSPITAL NAME AND ADDRESS'
+    }
+
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
@@ -60,17 +71,14 @@ class main(plugin_base):
         attributes = wrapper.get_my_attributes()
         self.check_attributes_known(attributes)
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
-        keys = [
-            self.PATIENT_NAME,
-            self.PATIENT_DOB,
-            self.PATIENT_SEX,
-            self.REQ_EMAIL,
-            self.PHYSICIAN_LICENCE,
-            self.PHYSICIAN_NAME,
-            self.PHYSICIAN_PHONE,
-            self.PHYSICIAN_HOSPITAL
-        ]
-        data['results'] = { k: wrapper.get_my_string(k) for k in keys }
+        keys = self.PATIENT_DEFAULTS.keys()
+        data[core_constants.RESULTS] = { k: wrapper.get_my_string(k) for k in keys }
+        return data
+
+    def redact(self, data):
+        # reset patient information to default values, before database upload
+        for key, value in self.PATIENT_DEFAULTS.items():
+            data[core_constants.RESULTS][key] = value
         return data
 
     def render(self, data):
@@ -79,12 +87,6 @@ class main(plugin_base):
 
     def specify_params(self):
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
-        self.set_ini_default(self.PATIENT_NAME, 'LAST, FIRST')
-        self.set_ini_default(self.PATIENT_DOB, self.DOB_DEFAULT)
-        self.set_ini_default(self.PATIENT_SEX, 'SEX')
-        self.set_ini_default(self.REQ_EMAIL, 'NAME@DOMAIN.COM')
-        self.set_ini_default(self.PHYSICIAN_LICENCE, 'nnnnnnnn')
-        self.set_ini_default(self.PHYSICIAN_NAME, 'LAST, FIRST')
-        self.set_ini_default(self.PHYSICIAN_PHONE, self.PHONE_DEFAULT)
-        self.set_ini_default(self.PHYSICIAN_HOSPITAL, 'HOSPITAL NAME AND ADDRESS')
+        for key, value in self.PATIENT_DEFAULTS.items():
+            self.set_ini_default(key, value)
         self.set_priority_defaults(self.PRIORITY)
