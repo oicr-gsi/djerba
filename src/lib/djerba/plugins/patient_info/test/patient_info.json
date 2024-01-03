@@ -5,6 +5,7 @@
  "results": {"hospital_name_and_address": "Central Hospital, Anytown",
              "patient_dob": "1960/01/01",
              "patient_name": "John Smith",
+	     "patient_genetic_sex": "M",
              "physician_licence_number": "1234-5678",
              "physician_name": "Jane Jones",
              "physician_phone_number": "555-123456",
