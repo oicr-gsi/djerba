@@ -90,3 +90,4 @@ class main(plugin_base):
         for key, value in self.PATIENT_DEFAULTS.items():
             self.set_ini_default(key, value)
         self.set_priority_defaults(self.PRIORITY)
+        self.set_ini_default('render_priority', 30)
