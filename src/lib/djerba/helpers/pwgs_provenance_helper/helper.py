@@ -1,13 +1,5 @@
 """
 Helper for writing a subset of file provenance to the shared workspace
-
-Outputs to the workspace:
-- Subset of sample provenance for the donor and study supplied by the user
-- JSON file with donor, study, and sample names
-
-Plugins can then create their own provenance reader objects using params in the JSON, to
-find relevant file paths. Reading the provenance subset is very much faster than reading 
-the full file provenance report.
 """
 
 import os
