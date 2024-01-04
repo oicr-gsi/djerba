@@ -504,6 +504,13 @@ class TestMainScript(TestCore):
         self.assert_report_MD5(html_string, 'e19e63eb0d25430f6459e5e090b1c841')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
+        # again, with the --write-json option
+        cmd.append('--write-json')
+        updated_path = os.path.join(self.tmp_dir, 'updated_report.json')
+        self.assertFalse(os.path.isfile(updated_path))
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        self.assertTrue(os.path.isfile(updated_path))
 
     def test_update_cli_with_summary(self):
         # run with summary-only input
@@ -528,6 +535,14 @@ class TestMainScript(TestCore):
         self.assert_report_MD5(html_string, '00a02930b23bc82546656e03e48e6c37')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
+        # again, with the --write-json option
+        cmd.append('--write-json')
+        updated_path = os.path.join(self.tmp_dir, 'updated_report.json')
+        self.assertFalse(os.path.isfile(updated_path))
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        self.assertTrue(os.path.isfile(updated_path))
+
 
 class TestModuleDir(TestCore):
 

@@ -335,7 +335,8 @@ class main(core_base):
             out_dir = ap.get_out_dir()
             archive = ap.is_archive_enabled()
             pdf = ap.is_pdf_enabled()
-            self.update(config_path, json_path, out_dir, archive, pdf, summary_only)
+            write = ap.is_write_json_enabled()
+            self.update(config_path, json_path, out_dir, archive, pdf, summary_only, write)
         else:
             msg = "Mode '{0}' is not defined in Djerba core.main!".format(mode)
             self.logger.error(msg)
@@ -411,7 +412,8 @@ class main(core_base):
         generator.write_config(component_list, ini_path, compact)
         self.logger.info("Wrote config for {0} to {1}".format(assay, ini_path))
 
-    def update(self, config_path, json_path, out_dir, archive, pdf, summary_only):
+    def update(self, config_path, json_path, out_dir, archive, pdf, summary_only,
+               write_json):
         # update procedure:
         # 1. run plugins from user-supplied config to get 'new' (updated) JSON
         # 2. update the 'old' (user-supplied) JSON
@@ -448,6 +450,10 @@ class main(core_base):
             self.logger.info("Omitting archive upload for update")
         if out_dir:
             self.render(data, out_dir, pdf, archive=False)
+            if write_json:
+                json_path = os.path.join(out_dir, 'updated_report.json')
+                with open(json_path, 'w') as out_file:
+                    print(json.dumps(data), file=out_file)
 
     def upload_archive(self, data):
         for plugin_name in data[self.PLUGINS]:
@@ -557,6 +563,9 @@ class arg_processor(logger):
 
     def is_pdf_enabled(self):
         return self._get_arg('pdf')
+
+    def is_write_json_enabled(self):
+        return self._get_arg('write_json')
 
     def validate_args(self, args):
         """

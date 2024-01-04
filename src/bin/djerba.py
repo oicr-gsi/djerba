@@ -51,6 +51,7 @@ def get_parser():
     update_parser.add_argument('-j', '--json', metavar='PATH', required=True, help='Path for JSON input')
     update_parser.add_argument('-o', '--out-dir', metavar='DIR', required=True, help='Directory for output files')
     update_parser.add_argument('-p', '--pdf', action='store_true', help='Generate PDF output from HTML')
+    update_parser.add_argument('-u', '--write-json', action='store_true', help='Write updated JSON to the output directory')
     update_parser.add_argument('-w', '--work-dir', metavar='PATH', help='Path to workspace directory; optional, defaults to value of --out-dir')
     update_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
     return parser
