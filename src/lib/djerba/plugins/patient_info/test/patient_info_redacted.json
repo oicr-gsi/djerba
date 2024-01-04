@@ -7,7 +7,7 @@
     "priorities": {
         "configure": 100,
         "extract": 100,
-        "render": 100
+        "render": 30
     },
     "results": {
         "hospital_name_and_address": "HOSPITAL NAME AND ADDRESS",
