@@ -133,10 +133,21 @@ class main(core_base):
         return merger.render(merger_inputs)
 
     def configure(self, config_path_in, config_path_out=None):
+        """
+        Run the Djerba configure step, with an INI path as input
+        """
+        self.logger.info('Reading INI config file "{0}"'.format(config_path_in))
+        config_in = self.read_ini_path(config_path_in)
+        return self.configure_from_parser(config_in, config_path_out)
+
+    def configure_from_parser(self, config_in, config_path_out=None):
+        """
+        Run the Djerba configure step, with a ConfigParser as input
+        In update mode, we generate the ConfigParser on-the-fly instead of reading a file
+        """
         self.logger.info('Starting Djerba config step')
         if config_path_out:  # do this *before* taking the time to generate output
             self.path_validator.validate_output_file(config_path_out)
-        config_in = self.read_ini_path(config_path_in)
         components = {}
         priorities = {}
         # 1. Load components, set priorities, resolve dependencies (if any)
@@ -314,10 +325,17 @@ class main(core_base):
             self.render(data, ap.get_out_dir(), ap.is_pdf_enabled(), archive=False)
         elif mode == constants.UPDATE:
             ini_path = ap.get_ini_path()
+            if ini_path == None:
+                config_path = ap.get_summary_path()
+                summary_only = True
+            else:
+                config_path = ini_path
+                summary_only = False
             json_path = ap.get_json_path()
             out_dir = ap.get_out_dir()
             archive = ap.is_archive_enabled()
-            self.update(ini_path, json_path, out_dir, archive, ap.is_pdf_enabled())
+            pdf = ap.is_pdf_enabled()
+            self.update(config_path, json_path, out_dir, archive, pdf, summary_only)
         else:
             msg = "Mode '{0}' is not defined in Djerba core.main!".format(mode)
             self.logger.error(msg)
@@ -393,13 +411,26 @@ class main(core_base):
         generator.write_config(component_list, ini_path, compact)
         self.logger.info("Wrote config for {0} to {1}".format(assay, ini_path))
 
-    def update(self, ini_path, json_path, out_dir, archive, pdf):
+    def update(self, config_path, json_path, out_dir, archive, pdf, summary_only):
         # update procedure:
-        # 1. run plugins from user-supplied INI config to get 'new' (updated) JSON
+        # 1. run plugins from user-supplied config to get 'new' (updated) JSON
         # 2. update the 'old' (user-supplied) JSON
         # 3. optionally, upload the merged JSON to couchDB
         # 4. optionally, use the merged JSON to generate HTML/PDF
-        config = self.configure(ini_path)
+        #
+        # Two ways to configure:
+        # 1. INI config with core + plugins to update
+        # 2. Text file to update summary only
+        # The 'summary_only' argument controls which one is used
+        if summary_only:
+            # make an appropriate ConfigParser on-the-fly
+            config_in = ConfigParser()
+            config_in.add_section(cc.CORE)
+            config_in.add_section('summary')
+            config_in.set('summary', 'summary_file', config_path)
+            config = self.configure_from_parser(config_in)
+        else:
+            config = self.configure(config_path)
         with open(json_path) as in_file:
             data = json.loads(in_file.read())
         data_new = self.extract(config, archive=False)
@@ -499,6 +530,9 @@ class arg_processor(logger):
     def get_out_dir(self):
         return self._get_arg('out_dir')
 
+    def get_summary_path(self):
+        return self._get_arg('summary')
+
     def get_work_dir(self):
         if hasattr(self.args, 'work_dir'):
             # if work_dir is defined and non-empty, use it
@@ -552,7 +586,10 @@ class arg_processor(logger):
                 v.validate_output_dir(args.work_dir)
             v.validate_output_dir(args.out_dir)
         elif args.subparser_name == constants.UPDATE:
-            v.validate_input_file(args.ini)
+            if args.ini != None:
+                v.validate_input_file(args.ini)
+            else:
+                v.validate_input_file(args.summary)
             v.validate_input_file(args.json)
             v.validate_output_dir(args.out_dir)
             if args.work_dir != None: # work_dir is optional in report mode

@@ -474,7 +474,7 @@ class TestMainScript(TestCore):
         self.assertEqual(result.returncode, 0)
         self.assertSimpleReport(json_path, html)
 
-    def test_update_cli(self):
+    def test_update_cli_with_ini(self):
         mode = 'update'
         work_dir = self.tmp_dir
         # write an INI file with the correct test directory
@@ -502,6 +502,30 @@ class TestMainScript(TestCore):
         with open(html_path) as html_file:
             html_string = html_file.read()
         self.assert_report_MD5(html_string, 'e19e63eb0d25430f6459e5e090b1c841')
+        pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
+        self.assertTrue(os.path.isfile(pdf_path))
+
+    def test_update_cli_with_summary(self):
+        # run with summary-only input
+        mode = 'update'
+        work_dir = self.tmp_dir
+        summary_path = os.path.join(self.test_source_dir, 'alternate_summary.txt')
+        # run djerba.py and check the results
+        json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
+        cmd = [
+            'djerba.py', mode,
+            '--work-dir', work_dir,
+            '--summary', summary_path,
+            '--json', json_path,
+            '--out-dir', self.tmp_dir,
+            '--pdf'
+        ]
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
+        with open(html_path) as html_file:
+            html_string = html_file.read()
+        self.assert_report_MD5(html_string, '00a02930b23bc82546656e03e48e6c37')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
 
