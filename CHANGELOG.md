@@ -5,6 +5,7 @@
 - Add a `patient_info` plugin
 - Add `update` mode to the main Djerba script, to update and render an existing JSON file
 - New features are a proof-of-concept for enabling the geneticist to edit reports with a portable mini-Djerba
+- Removed the `update_oncokb_cache.py`; replaced by `djerba.py update --summary=...`
 
 ## v1.1.1: 2023-12-13
 
