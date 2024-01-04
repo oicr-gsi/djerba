@@ -19,10 +19,9 @@ import json
 import re
 
 import djerba.core.constants as core_constants
-import djerba.util.ini_fields as ini  # TODO new module for these constants?
+import djerba.util.ini_fields as ini 
 import djerba.util.provenance_index as index
 from djerba.helpers.base import helper_base
-import djerba.util.input_params_tools as input_params_tools
 from djerba.util.provenance_reader import provenance_reader, sample_name_container, \
     InvalidConfigurationError
 import djerba.plugins.pwgs.constants as pc
@@ -57,25 +56,31 @@ class main(helper_base):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         provenance_path = wrapper.get_my_string(self.PROVENANCE_INPUT_KEY)
-        input_data = input_params_tools.get_input_params_json(self)
-        if input_data == None:
-            msg = "Input params JSON does not exist. Parameters must be set manually."
+
+        work_dir = self.workspace.get_work_dir()
+        if os.path.exists(os.path.join(work_dir,core_constants.DEFAULT_SAMPLE_INFO)):
+            input_data = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
+            project = input_data['project']
+            donor = input_data['donor']
+            
+            if wrapper.my_param_is_null('project'):
+                wrapper.set_my_param('project', project)
+            if wrapper.my_param_is_null('donor'):
+                wrapper.set_my_param('donor', donor)
+            if wrapper.my_param_is_null('provenance_id'):
+                wrapper.set_my_param('provenance_id', input_data['provenance_id'])
+        else:
+            msg = "Sample Info JSON does not exist. Parameters must be set manually."
             self.logger.warning(msg)
-        project = input_data['project']
-        donor = input_data['donor']
+            project = wrapper.get_my_string('project') 
+            donor = wrapper.get_my_string('donor')
+
         if self.workspace.has_file(self.PROVENANCE_OUTPUT):
             self.logger.debug("Provenance subset cache exists, will not overwrite")
         else:
             self.logger.info("Writing provenance subset cache to workspace")
             self.write_provenance_subset(project, donor, provenance_path)
-        ## write sample_info.json; populate sample names from provenance if needed
-        #TODO: add discovered for other parameters
-        if wrapper.my_param_is_null('project'):
-            wrapper.set_my_param('project', project)
-        if wrapper.my_param_is_null('donor'):
-            wrapper.set_my_param('donor', donor)
-        if wrapper.my_param_is_null('provenance_id'):
-            wrapper.set_my_param('provenance_id', input_data['provenance_id'])
+
         # Write updated sample info as JSON
         if self.workspace.has_file(self.PROVENANCE_OUTPUT):
             cache_path = self.workspace.abs_path(self.PROVENANCE_OUTPUT)

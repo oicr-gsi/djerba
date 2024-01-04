@@ -59,6 +59,7 @@ mean_detection <- mrd_stats$mean_detection
 sites_checked  <- mrd_stats$sites_checked
 dataset_cutoff <- mrd_stats$dataset_cutoff
 
+##plot
 rep_length = round(log(sites_checked,10),0)
 my_breaks <- rep(1:9, rep_length) * (10^rep(0:(rep_length-1), each = 9))
 
@@ -70,7 +71,6 @@ my_labels[length(my_labels)] <- sites_checked
 
 my_labels[14] <- "Sites Detected:" 
 
-##plot
 options(bitmapType='cairo')
 svg(paste(output_directory,"pWGS.svg",sep="/"), width = 5, height = 1)
     

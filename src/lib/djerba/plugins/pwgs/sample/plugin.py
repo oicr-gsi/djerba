@@ -29,40 +29,18 @@ class main(plugin_base):
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
-        if wrapper.my_param_is_null(pc.INSERT_SIZE):
-            sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
-            group_id = sample_info.get('tumour_id')
-            qc_dict = self.fetch_coverage_etl_data(group_id, config)
-            wrapper.set_my_param(pc.INSERT_SIZE, int(qc_dict[pc.INSERT_SIZE]))
-        if wrapper.my_param_is_null(pc.COVERAGE):
-            sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
-            group_id = sample_info.get('tumour_id')
-            qc_dict = self.fetch_coverage_etl_data(group_id, config)
-            wrapper.set_my_param(pc.COVERAGE, float(qc_dict[pc.COVERAGE]))
-        if wrapper.my_param_is_null(pc.SNV_COUNT):
-            path_info = self.workspace.read_json(core_constants.DEFAULT_PATH_INFO)
-            snv_count_path = path_info.get(pc.SNV_COUNT_SUFFIX)
-            if snv_count_path == None:
-                msg = 'Cannot find BAMQC path for dnaSeqQC input'
-                self.logger.error(msg)
-                raise RuntimeError(msg)
-            wrapper.set_my_param(pc.SNV_COUNT,  self.preprocess_snv_count(snv_count_path))
-        if wrapper.my_param_is_null(pc.BAMQC):
-            path_info = self.workspace.read_json(core_constants.DEFAULT_PATH_INFO)
-            bamqc_path = path_info.get(pc.BAMQC_SUFFIX)
-            if bamqc_path == None:
-                msg = 'Cannot find BAMQC path for dnaSeqQC input'
-                self.logger.error(msg)
-                raise RuntimeError(msg)
-            wrapper.set_my_param(pc.BAMQC, bamqc_path)
-        if wrapper.my_param_is_null(pc.RESULTS_FILE):
-            path_info = self.workspace.read_json(core_constants.DEFAULT_PATH_INFO)
-            results_path = path_info.get(pc.RESULTS_SUFFIX)
-            if results_path == None:
-                msg = 'Cannot find results path for mrdetect input'
-                self.logger.error(msg)
-                raise RuntimeError(msg)
-            wrapper.set_my_param(pc.RESULTS_FILE, results_path)
+
+        qc_metrics =[
+                pc.INSERT_SIZE,
+                pc.COVERAGE 
+            ]
+        for metric in qc_metrics:
+            wrapper = self.fill_qc_if_null(wrapper, config, metric)
+
+        wrapper = self.fill_file_if_null(wrapper, pc.SNV_COUNT, pc.SNV_COUNT_SUFFIX)
+        wrapper = self.fill_file_if_null(wrapper, pc.BAMQC, pc.BAMQC_SUFFIX)
+        wrapper = self.fill_file_if_null(wrapper, pc.RESULTS_FILE, pc.RESULTS_SUFFIX)
+
         return wrapper.get_config()
 
     def extract(self, config):
@@ -82,7 +60,7 @@ class main(plugin_base):
         results =  {
                 pc.INSERT_SIZE: int(config[self.identifier][pc.INSERT_SIZE]),
                 pc.COVERAGE: float(config[self.identifier][pc.COVERAGE]),
-                pc.SNV_COUNT: int(config[self.identifier][pc.SNV_COUNT]),
+                pc.SNV_COUNT: int(self.preprocess_snv_count(config[self.identifier][pc.SNV_COUNT])),
                 pc.CTDNA_OUTCOME: mrdetect_results[pc.CTDNA_OUTCOME],
                 'ctdna_detection': ctdna_detection
             }
@@ -119,6 +97,31 @@ class main(plugin_base):
                 raise ValueError(msg)
         return(qc_dict)
 
+    def fill_file_if_null(self, wrapper, ini_parameter_name, file_suffix):
+        if wrapper.my_param_is_null(ini_parameter_name):
+            path_info = self.workspace.read_json(core_constants.DEFAULT_PATH_INFO)
+            snv_count_path = path_info.get(file_suffix)
+            if snv_count_path == None:
+                msg = 'Cannot find {0} path'.format(ini_parameter_name)
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            wrapper.set_my_param(ini_parameter_name,  snv_count_path)
+        return(wrapper)
+    
+    def fill_qc_if_null(self, wrapper, config, parameter_name):
+        if wrapper.my_param_is_null(parameter_name):
+            work_dir = self.workspace.get_work_dir()
+            if os.path.exists(os.path.join(work_dir,core_constants.DEFAULT_SAMPLE_INFO)):
+                sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
+                group_id = sample_info.get('tumour_id')
+            else:
+                msg = 'tumour_id not found for querying qc-etl, specify QC values in INI'
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            qc_dict = self.fetch_coverage_etl_data(group_id, config)
+            wrapper.set_my_param(parameter_name, int(qc_dict[parameter_name]))
+        return(wrapper)
+    
     def plot_insert_size(self, is_path, output_dir ):
         '''call R to plot insert size distribution'''
         args = [

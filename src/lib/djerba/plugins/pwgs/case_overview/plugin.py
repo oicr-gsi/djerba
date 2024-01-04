@@ -30,32 +30,38 @@ class main(plugin_base):
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
+        work_dir = self.workspace.get_work_dir()
+        if os.path.exists(os.path.join(work_dir,core_constants.DEFAULT_SAMPLE_INFO)):
+            sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
+            if wrapper.my_param_is_null('donor'):
+                wrapper.set_my_param('donor', sample_info['donor'])
+            if wrapper.my_param_is_null(pc.GROUP_ID):
+                wrapper.set_my_param(pc.GROUP_ID, sample_info['tumour_id'])
+            if wrapper.my_param_is_null('patient study id'):
+                wrapper.set_my_param('patient study id', sample_info['patient_study_id'])
+            if wrapper.my_param_is_null('study_id'):
+                wrapper.set_my_param('study_id', sample_info['project'])
+        else:
+            msg = 'sample info file not found, make sure case overview parameters are in INI'
+            self.logger.warning(msg)
         return wrapper.get_config()
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
-        patient_data = self.preprocess_wgs_json(config[self.identifier][pc.WGS_JSON])
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         results =  {
-                pc.REQ_APPROVED: config[self.identifier][pc.REQ_APPROVED],
-                pc.GROUP_ID: config[self.identifier][pc.GROUP_ID],
                 'assay': "plasma Whole Genome Sequencing (pWGS) - 30X (v1.0)",
-                'primary_cancer': patient_data['Primary cancer'],
-                'donor': patient_data['Patient LIMS ID'],
-                'wgs_report_id': patient_data['Report ID'],
-                'Patient Study ID': patient_data[pc.PATIENT_ID],
+                'pwgs_report_id': config['core']['report_id'],
+                'primary_cancer': config[self.identifier]['primary_cancer'],
+                pc.REQ_APPROVED: config[self.identifier][pc.REQ_APPROVED],
+                'donor': config[self.identifier]['donor'],
+                pc.GROUP_ID: config[self.identifier][pc.GROUP_ID],
+                'Patient Study ID': config[self.identifier]['patient study id'],
                 'study_title':  config[self.identifier]['study_id'],
-                'pwgs_report_id': config['core']['report_id']
+                pc.WGS_REPORT: config[self.identifier][pc.WGS_REPORT]
             }
         data[pc.RESULTS] = results
         return data
-
-    def preprocess_wgs_json(self, wgs_json):
-        '''find patient info from WGS/WGTS djerba report json'''
-        with open(wgs_json, 'r') as wgs_results:
-            data = json.load(wgs_results)
-        patient_data = data["report"]["patient_info"]
-        return(patient_data)
     
     def render(self, data):
         renderer = mako_renderer(self.get_module_dir())
@@ -64,12 +70,19 @@ class main(plugin_base):
     def specify_params(self):
         required = [
             pc.REQ_APPROVED,
-            pc.GROUP_ID,
-            pc.WGS_JSON,
-            'study_id'
+            'primary_cancer',
+            pc.WGS_REPORT
         ]
         for key in required:
             self.add_ini_required(key)
+        discovered = [
+            'donor',
+            pc.GROUP_ID,
+            'patient study id',
+            'study_id'
+        ]
+        for key in discovered:
+            self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_priority_defaults(self.PRIORITY)
 
