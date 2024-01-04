@@ -22,7 +22,12 @@ class TestWgtsSamplePlugin(PluginTester):
         self.tmp_dir = self.tmp.name
         sup_dir_var = 'DJERBA_TEST_DATA'
         self.sup_dir = os.environ.get(sup_dir_var)
-         
+
+    def testPreprocessSNVcount(self):
+        snv_count_expected_location = os.path.join(self.sup_dir ,"plugins/pwgs/snv.txt")
+        snv_count = sample.main.preprocess_snv_count(self, snv_count_expected_location)
+        self.assertEqual(snv_count, 21000)
+        
     def testWgtsSample(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         json_location = os.path.join(self.sup_dir ,"plugins/sample/report_json/sample.json")

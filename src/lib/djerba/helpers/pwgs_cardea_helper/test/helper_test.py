@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-"""Test of the provenance helper"""
+"""Test of the pwgs cardea helper"""
 
 import logging
 import os
