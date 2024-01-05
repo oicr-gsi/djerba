@@ -1,17 +1,23 @@
 """
-Class to initialize the data structure for the 'extract' step
-The 'plugins' element is left empty, to be populated by the respective plugin classes
+Classes to do extraction operations
+Used by both main Djerba and mini-Djerba
 """
 
 import logging
 import time
 import djerba.core.constants as cc
 from djerba.core.base import base as core_base
+from djerba.core.workspace import workspace
 from djerba.core.configure import config_wrapper
 from djerba.version import get_djerba_version
 
 class extraction_setup(core_base):
 
+    """
+    Class to initialize the data structure for the 'extract' step
+    The 'plugins' element is left empty, to be populated by the respective plugin classes
+    """
+    
     def __init__(self, log_level=logging.INFO, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
@@ -61,5 +67,3 @@ class extraction_setup(core_base):
             cc.CONFIG: {s:dict(config.items(s)) for s in config.sections()}
         }
         return data
-
-

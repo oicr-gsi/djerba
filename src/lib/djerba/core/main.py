@@ -14,20 +14,23 @@ from PyPDF2 import PdfMerger
 import djerba.util.ini_fields as ini
 from djerba.core.base import base as core_base
 from djerba.core.database import database
-from djerba.core.extract import extraction_setup
+from djerba.core.extract import extractor
 from djerba.core.ini_generator import ini_generator
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.render import html_renderer, pdf_renderer
 from djerba.core.loaders import \
     plugin_loader, merger_loader, helper_loader, core_config_loader
 from djerba.core.workspace import workspace
+from djerba.util.args import arg_processor_base
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
 from djerba.version import get_djerba_version
 import djerba.core.constants as cc
 import djerba.util.constants as constants
 
-class main(core_base):
+class main_base(core_base):
+    
+    """Base class with shared methods between core-main and mini-main"""
 
     PLUGINS = 'plugins'
     MERGERS = 'mergers'
@@ -57,10 +60,10 @@ class main(core_base):
         else:
             msg = "User-configured author name is '{0}'".format(data[cc.CORE][cc.AUTHOR])
             self.logger.debug(msg)
-
+        
     def _get_render_priority(self, plugin_data):
         return plugin_data[cc.PRIORITIES][cc.RENDER]
-
+    
     def _load_component(self, name):
         if name == ini.CORE:
             component = self.core_config_loader.load(self.workspace)
@@ -71,13 +74,10 @@ class main(core_base):
         else:
             component = self.plugin_loader.load(name, self.workspace)
         return component
-
-    def _resolve_configure_dependencies(self, config, components, ordered_names):
-        self._resolve_ini_deps(cc.DEPENDS_CONFIGURE, config, components, ordered_names)
-
+    
     def _resolve_extract_dependencies(self, config, components, ordered_names):
         self._resolve_ini_deps(cc.DEPENDS_EXTRACT, config, components, ordered_names)
-
+        
     def _resolve_ini_deps(self, depends_key, config, components, ordered_names):
         for name in ordered_names:
             if config.has_option(name, depends_key):
@@ -131,6 +131,112 @@ class main(core_base):
         merger = self.merger_loader.load(merger_name)
         self.logger.debug("Loaded merger {0} for rendering".format(merger_name))
         return merger.render(merger_inputs)
+                
+    def base_extract(self, config):
+        """
+        Base extract operation, shared between core and mini Djerba
+        Just get the data structure; no additional write/archive actions
+        """
+        components = {}
+        priorities = {}
+        # 1. Load components, set priorities, resolve dependencies (if any)
+        for section in config.sections():
+            if not (section == ini.CORE or self._is_merger_name(section)):
+                components[section] = self._load_component(section)
+                priorities[section] = config.getint(section, cc.EXTRACT_PRIORITY)
+        self.logger.debug('Configuring components in priority order')
+        ordered_names = sorted(priorities.keys(), key=lambda x: priorities[x])
+        self._resolve_extract_dependencies(config, components, ordered_names)
+        # 2. Validate and run configuration for each component; store in data structure
+        self.logger.debug('Generating core data structure')
+        data = extraction_setup(self.log_level, self.log_path).run(config)
+        self.logger.debug('Running extraction for plugins and mergers in priority order')
+        order = 0
+        for name in ordered_names:
+            order += 1
+            component = components[name]
+            self.logger.debug('Extracting component {0} in order {1}'.format(name, order))
+            component.validate_full_config(config)
+            component_data = components[name].extract(config)
+            if not self._is_helper_name(name):
+                # only plugins, not helpers, write data in the JSON document
+                self.json_validator.validate_data(component_data)
+                data[self.PLUGINS][name] = component_data
+        self.logger.debug('Finished running extraction')
+        return data
+
+    def base_render(self, data, out_dir=None, pdf=False):
+        """
+        Base render operation, shared between core and mini Djerba
+        Write the HTML and (optional) PDF; no archiving
+        """
+        self._check_author_name(data)
+        if out_dir:  # do this *before* taking the time to generate output
+            self.path_validator.validate_output_dir(out_dir)
+        html = {} # HTML strings to make up the report file(s)
+        priorities = {}
+        attributes = {}
+        # 1. Run plugins and mergers to render HTML
+        self.logger.debug('Rendering plugin HTML')
+        for plugin_name in data[self.PLUGINS]:
+            plugin_data = data[self.PLUGINS][plugin_name]
+            plugin = self.plugin_loader.load(plugin_name, self.workspace)
+            html[plugin_name] = plugin.render(plugin_data)
+            self.logger.debug("Ran plugin '{0}' for rendering".format(plugin_name))
+            priorities[plugin_name] = self._get_render_priority(plugin_data)
+            attributes[plugin_name] = plugin_data[cc.ATTRIBUTES]
+        for (merger_name, merger_config) in data[self.MERGERS].items():
+            html[merger_name] = self._run_merger(merger_name, data)
+            self.logger.debug("Ran merger '{0}' for rendering".format(merger_name))
+            priorities[merger_name] = merger_config[cc.RENDER_PRIORITY]
+            attributes[merger_name] = merger_config[cc.ATTRIBUTES]
+        # 2. Assemble plugin/merger HTML outputs according to their priorities/attributes
+        self.logger.debug("Assembling HTML document(s)")
+        h_rend = html_renderer(data[cc.CORE], self.log_level, self.log_path)
+        output_data = h_rend.run(html, priorities, attributes)
+        # 3. Write output files, if any
+        if out_dir:
+            p_rend = pdf_renderer(self.log_level, self.log_path)
+            for prefix in output_data[cc.DOCUMENTS].keys():
+                html_path = os.path.join(out_dir, prefix+'.html')
+                with open(html_path, 'w') as out_file:
+                    out_file.write(output_data[cc.DOCUMENTS][prefix])
+                self.logger.info("Wrote HTML output to {0}".format(html_path))
+                if pdf:
+                    pdf_path = os.path.join(out_dir, prefix+'.pdf')
+                    footer = output_data[cc.PAGE_FOOTER]
+                    p_rend.render_file(html_path, pdf_path, footer)
+                    self.logger.info("Wrote PDF output to {0}".format(pdf_path))
+            merge_list = output_data[cc.MERGE_LIST]
+            if pdf and len(merge_list)>1:
+                merge_in = [os.path.join(out_dir, x+'.pdf') for x in merge_list]
+                merge_out = os.path.join(out_dir, output_data[cc.MERGED_FILENAME])
+                p_rend.merge_pdfs(merge_in, merge_out)
+                self.logger.info("Wrote merged PDF output to {0}".format(merge_out))
+        self.logger.info('Finished Djerba render step')
+        return output_data
+
+    def update_data_from_file(self, new_data, json_path):
+        """Read old JSON from a file, and return the updated data structure"""
+        with open(json_path) as in_file:
+            data = json.loads(in_file.read())
+        # new data overwrites old, on a per-plugin basis
+        # ie. overwriting a given plugin is all-or-nothing
+        # also overwrite JSON config section for the plugin
+        # if plugin data did not exist in old JSON, it will be added
+        for plugin in new_data[self.PLUGINS].keys():
+            data[self.PLUGINS][plugin] = new_data[self.PLUGINS][plugin]
+            data[constants.CONFIG][plugin] = new_data[constants.CONFIG][plugin]
+            self.logger.debug('Updated JSON for plugin {0}'.format(plugin))
+        return data
+
+
+class main(main_base):
+
+    """Main class for Djerba core"""
+
+    def _resolve_configure_dependencies(self, config, components, ordered_names):
+        self._resolve_ini_deps(cc.DEPENDS_CONFIGURE, config, components, ordered_names)
 
     def configure(self, config_path_in, config_path_out=None):
         """
@@ -189,32 +295,7 @@ class main(core_base):
         self.logger.info('Starting Djerba extract step')
         if json_path:  # do this *before* taking the time to generate output
             self.path_validator.validate_output_file(json_path)
-        components = {}
-        priorities = {}
-        # 1. Load components, set priorities, resolve dependencies (if any)
-        for section in config.sections():
-            if not (section == ini.CORE or self._is_merger_name(section)):
-                components[section] = self._load_component(section)
-                priorities[section] = config.getint(section, cc.EXTRACT_PRIORITY)
-        self.logger.debug('Configuring components in priority order')
-        ordered_names = sorted(priorities.keys(), key=lambda x: priorities[x])
-        self._resolve_extract_dependencies(config, components, ordered_names)
-        # 2. Validate and run configuration for each component; store in data structure
-        self.logger.debug('Generating core data structure')
-        data = extraction_setup(self.log_level, self.log_path).run(config)
-        self.logger.debug('Running extraction for plugins and mergers in priority order')
-        order = 0
-        for name in ordered_names:
-            order += 1
-            component = components[name]
-            self.logger.debug('Extracting component {0} in order {1}'.format(name, order))
-            component.validate_full_config(config)
-            component_data = components[name].extract(config)
-            if not self._is_helper_name(name):
-                # only plugins, not helpers, write data in the JSON document
-                self.json_validator.validate_data(component_data)
-                data[self.PLUGINS][name] = component_data
-        self.logger.debug('Finished running extraction')
+        data = self.base_extract(config)
         if json_path:
             self.logger.debug('Writing JSON output to {0}'.format(json_path))
             with open(json_path, 'w') as out_file:
@@ -228,56 +309,13 @@ class main(core_base):
 
     def render(self, data, out_dir=None, pdf=False, archive=False):
         self.logger.info('Starting Djerba render step')
-        self._check_author_name(data)
-        if out_dir:  # do this *before* taking the time to generate output
-            self.path_validator.validate_output_dir(out_dir)
-        html = {} # HTML strings to make up the report file(s)
-        priorities = {}
-        attributes = {}
-        # 1. Run plugins and mergers to render HTML
-        self.logger.debug('Rendering plugin HTML')
-        for plugin_name in data[self.PLUGINS]:
-            plugin_data = data[self.PLUGINS][plugin_name]
-            plugin = self.plugin_loader.load(plugin_name, self.workspace)
-            html[plugin_name] = plugin.render(plugin_data)
-            self.logger.debug("Ran plugin '{0}' for rendering".format(plugin_name))
-            priorities[plugin_name] = self._get_render_priority(plugin_data)
-            attributes[plugin_name] = plugin_data[cc.ATTRIBUTES]
-        for (merger_name, merger_config) in data[self.MERGERS].items():
-            html[merger_name] = self._run_merger(merger_name, data)
-            self.logger.debug("Ran merger '{0}' for rendering".format(merger_name))
-            priorities[merger_name] = merger_config[cc.RENDER_PRIORITY]
-            attributes[merger_name] = merger_config[cc.ATTRIBUTES]
-        # 2. Assemble plugin/merger HTML outputs according to their priorities/attributes
-        self.logger.debug("Assembling HTML document(s)")
-        h_rend = html_renderer(data[cc.CORE], self.log_level, self.log_path)
-        output_data = h_rend.run(html, priorities, attributes)
-        # 3. Archive the JSON data structure, if needed
+        # Archive the JSON data structure, if needed
         if archive:
             self.upload_archive(data)
         else:
             self.logger.debug("Omitting archive upload at render step")
-        # 4. Write output files, if any
-        if out_dir:
-            p_rend = pdf_renderer(self.log_level, self.log_path)
-            for prefix in output_data[cc.DOCUMENTS].keys():
-                html_path = os.path.join(out_dir, prefix+'.html')
-                with open(html_path, 'w') as out_file:
-                    out_file.write(output_data[cc.DOCUMENTS][prefix])
-                self.logger.info("Wrote HTML output to {0}".format(html_path))
-                if pdf:
-                    pdf_path = os.path.join(out_dir, prefix+'.pdf')
-                    footer = output_data[cc.PAGE_FOOTER]
-                    p_rend.render_file(html_path, pdf_path, footer)
-                    self.logger.info("Wrote PDF output to {0}".format(pdf_path))
-            merge_list = output_data[cc.MERGE_LIST]
-            if pdf and len(merge_list)>1:
-                merge_in = [os.path.join(out_dir, x+'.pdf') for x in merge_list]
-                merge_out = os.path.join(out_dir, output_data[cc.MERGED_FILENAME])
-                p_rend.merge_pdfs(merge_in, merge_out)
-                self.logger.info("Wrote merged PDF output to {0}".format(merge_out))
-        self.logger.info('Finished Djerba render step')
-        return output_data
+        # run the main rendering operation
+        return self.base_render(data, out_dir, pdf)
 
     def read_ini_path(self, ini_path):
         self.path_validator.validate_input_file(ini_path)
@@ -436,14 +474,7 @@ class main(core_base):
         with open(json_path) as in_file:
             data = json.loads(in_file.read())
         data_new = self.extract(config, archive=False)
-        # new data overwrites old, on a per-plugin basis
-        # ie. overwriting a given plugin is all-or-nothing
-        # also overwrite JSON config section for the plugin
-        # if plugin data did not exist in old JSON, it will be added
-        for plugin in data_new[self.PLUGINS].keys():
-            data[self.PLUGINS][plugin] = data_new[self.PLUGINS][plugin]
-            data[constants.CONFIG][plugin] = data_new[constants.CONFIG][plugin]
-            self.logger.debug('Updated JSON for plugin {0}'.format(plugin))
+        data = self.update_data_from_file(data_new, json_path)
         if archive:
             self.upload_archive(data)
         else:
@@ -468,36 +499,8 @@ class main(core_base):
             self.logger.warning(f"Archiving was NOT successful: {report_id}")
 
 
-class arg_processor(logger):
+class arg_processor(arg_processor_base):
     # class to process command-line args for creating a main object
-
-    DEFAULT_JSON_FILENAME = 'djerba_report.json'
-
-    def __init__(self, args, logger=None, validate=True):
-        self.args = args
-        if logger:
-            # do not call 'get_logger' if one has already been configured
-            # this way, we can preserve the level/path of an existing logger
-            self.logger = logger
-        else:
-            self.log_level = self.get_args_log_level(self.args)
-            self.log_path = self.args.log_path
-            if self.log_path:
-                # we are verifying the log path, so don't write output there yet
-                path_validator(self.log_level).validate_output_file(self.log_path)
-            self.logger = self.get_logger(self.log_level, __name__, self.log_path)
-        if validate:
-            self.validate_args(self.args)  # checks subparser and args are valid
-        self.mode = self.args.subparser_name
-
-    def _get_arg(self, arg_name):
-        try:
-            value = getattr(self.args, arg_name)
-        except AttributeError as err:
-            msg = "Argument {0} not defined in Djerba mode {1}".format(arg_name, self.mode)
-            self.logger.error(msg)
-            raise ArgumentNameError(msg) from err
-        return value
 
     def get_assay(self):
         return self._get_arg('assay')
@@ -524,18 +527,6 @@ class arg_processor(logger):
             json_path = os.path.join(work_dir, self.DEFAULT_JSON_FILENAME)
         return json_path
 
-    def get_log_level(self):
-        return self.log_level
-
-    def get_log_path(self):
-        return self.log_path
-
-    def get_mode(self):
-        return self.mode
-
-    def get_out_dir(self):
-        return self._get_arg('out_dir')
-
     def get_summary_path(self):
         return self._get_arg('summary')
 
@@ -560,12 +551,6 @@ class arg_processor(logger):
     def is_cleanup_enabled(self):
         # use to auto-populate INI in 'setup' mode
         return not self._get_arg('no_cleanup')
-
-    def is_pdf_enabled(self):
-        return self._get_arg('pdf')
-
-    def is_write_json_enabled(self):
-        return self._get_arg('write_json')
 
     def validate_args(self, args):
         """
@@ -607,9 +592,6 @@ class arg_processor(logger):
             # shouldn't happen, but handle this case for completeness
             raise ValueError("Unknown subparser: " + args.subparser_name)
         self.logger.info("Command-line path validation finished.")
-
-class ArgumentNameError(Exception):
-    pass
 
 class DjerbaDependencyError(Exception):
     pass
