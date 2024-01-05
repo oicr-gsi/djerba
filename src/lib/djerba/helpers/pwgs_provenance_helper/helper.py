@@ -48,32 +48,22 @@ class main(helper_base):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         provenance_path = wrapper.get_my_string(self.PROVENANCE_INPUT_KEY)
-
         work_dir = self.workspace.get_work_dir()
+        # Set INI parameters from cardea, if available
         if os.path.exists(os.path.join(work_dir,core_constants.DEFAULT_SAMPLE_INFO)):
             input_data = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
-            project = input_data['project']
-            donor = input_data['donor']
-            
-            if wrapper.my_param_is_null('project'):
-                wrapper.set_my_param('project', project)
-            if wrapper.my_param_is_null('donor'):
-                wrapper.set_my_param('donor', donor)
-            if wrapper.my_param_is_null('provenance_id'):
-                wrapper.set_my_param('provenance_id', input_data['provenance_id'])
+            if wrapper.my_param_is_null(pc.PROJECT):
+                wrapper.set_my_param(pc.PROJECT, input_data[pc.PROJECT])
+            if wrapper.my_param_is_null(pc.DONOR):
+                wrapper.set_my_param(pc.DONOR, input_data[pc.DONOR])
+            if wrapper.my_param_is_null(pc.PROVENANCE_ID):
+                wrapper.set_my_param(pc.PROVENANCE_ID, input_data[pc.PROVENANCE_ID])
         else:
             msg = "Sample Info JSON does not exist. Parameters must be set manually."
             self.logger.warning(msg)
-            project = wrapper.get_my_string('project') 
-            donor = wrapper.get_my_string('donor')
-
-        if self.workspace.has_file(self.PROVENANCE_OUTPUT):
-            self.logger.debug("Provenance subset cache exists, will not overwrite")
-        else:
-            self.logger.info("Writing provenance subset cache to workspace")
-            self.write_provenance_subset(project, donor, provenance_path)
-
-        # Write updated sample info as JSON
+        project = wrapper.get_my_string(pc.PROJECT) 
+        donor = wrapper.get_my_string(pc.DONOR)
+        # Write Provenance subset, if it doesn't exist
         if self.workspace.has_file(self.PROVENANCE_OUTPUT):
             cache_path = self.workspace.abs_path(self.PROVENANCE_OUTPUT)
             msg = "Provenance subset cache {0} exists, will not overwrite".format(cache_path)
@@ -81,16 +71,15 @@ class main(helper_base):
         else:
             self.logger.info("Writing provenance subset cache to workspace")
             self.write_provenance_subset(project, donor, provenance_path)
+        # Make path_info file, if it doesn't exist
         if self.workspace.has_file(core_constants.DEFAULT_PATH_INFO):
             msg = "extract: path info files already in workspace, will not overwrite"
             self.logger.info(msg)
         else:
-            suffixes = [pc.RESULTS_SUFFIX, pc.VAF_SUFFIX, pc.HBC_SUFFIX, pc.SNV_COUNT_SUFFIX]
-            path_info = self.subset_provenance("mrdetect", wrapper.get_my_string('provenance_id'), suffixes)
-            path_info.update(self.subset_provenance("dnaSeqQC",  wrapper.get_my_string('provenance_id'), [pc.BAMQC_SUFFIX]))
-            if not self.workspace.has_file(core_constants.DEFAULT_PATH_INFO):
-                self.logger.debug('extract: writing path info')
-                self.write_path_info(path_info)
+            mrdetect_file_suffixes = [pc.RESULTS_SUFFIX, pc.VAF_SUFFIX, pc.HBC_SUFFIX, pc.SNV_COUNT_SUFFIX]
+            path_info = self.subset_provenance("mrdetect", wrapper.get_my_string(pc.PROVENANCE_ID), mrdetect_file_suffixes)
+            path_info.update(self.subset_provenance("dnaSeqQC",  wrapper.get_my_string(pc.PROVENANCE_ID), [pc.BAMQC_SUFFIX]))
+            self.write_path_info(path_info)
         return wrapper.get_config()
 
     def extract(self, config):
@@ -111,6 +100,7 @@ class main(helper_base):
     def subset_provenance(self, workflow, provenance_id, suffixes):
         '''Return file path from provenance based on workflow ID, group-id and file suffix'''
         provenance_location = pc.PROVENANCE_OUTPUT
+        # Subset Provenance to only files within the specified workflow
         provenance = []
         try:
             with self.workspace.open_gzip_file(provenance_location) as in_file:
@@ -121,12 +111,13 @@ class main(helper_base):
         except OSError as err:
             msg = "Provenance subset file '{0}' not found when looking for {1}".format(pc.PROVENANCE_OUTPUT, workflow)
             raise RuntimeError(msg) from err
+        # Make path file by matching with file suffixes
         results_path = {}
         for suffix in suffixes:
             try:
                 results_path[suffix] = self.parse_file_path(suffix, provenance)
             except OSError as err:
-                msg = "File from workflow {0} with extension {1} was not found in Provenance subset file '{2}' not found".format("mrdetect", self.RESULTS_SUFFIX, pc.PROVENANCE_OUTPUT)
+                msg = "File from workflow {0} with extension {1} was not found in Provenance subset file {2}".format("mrdetect", self.RESULTS_SUFFIX, pc.PROVENANCE_OUTPUT)
                 raise RuntimeError(msg) from err
         return(results_path)
 
@@ -134,9 +125,13 @@ class main(helper_base):
         self.logger.debug("Specifying params for provenance helper")
         self.set_priority_defaults(self.PRIORITY)
         self.set_ini_default(self.PROVENANCE_INPUT_KEY, self.DEFAULT_PROVENANCE_INPUT)
-        self.add_ini_discovered('project')
-        self.add_ini_discovered('donor')
-        self.add_ini_discovered('provenance_id')
+        discovered = [
+            pc.PROJECT,
+            pc.DONOR,
+            pc.PROVENANCE_ID
+        ]
+        for key in discovered:
+            self.add_ini_discovered(key)
 
     def write_path_info(self, path_info):
         self.workspace.write_json(core_constants.DEFAULT_PATH_INFO, path_info)
@@ -159,10 +154,6 @@ class main(helper_base):
                     kept += 1
         self.logger.info('Done reading FPR; kept {0} of {1} rows'.format(kept, total))
         self.logger.debug('Wrote provenance subset to {0}'.format(self.PROVENANCE_OUTPUT))
-
-    def write_sample_info(self, sample_info):
-        self.workspace.write_json(core_constants.DEFAULT_SAMPLE_INFO, sample_info)
-        self.logger.debug("Wrote sample info to workspace: {0}".format(sample_info))
     
 class MissingProvenanceError(Exception):
     pass

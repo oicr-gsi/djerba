@@ -62,14 +62,14 @@ class main(plugin_base):
                 pc.COVERAGE: float(config[self.identifier][pc.COVERAGE]),
                 pc.SNV_COUNT: int(self.preprocess_snv_count(config[self.identifier][pc.SNV_COUNT])),
                 pc.CTDNA_OUTCOME: mrdetect_results[pc.CTDNA_OUTCOME],
-                'ctdna_detection': ctdna_detection
+                pc.CTDNA_DETECTION: ctdna_detection
             }
         data[pc.RESULTS] = results
         return data
 
     def fetch_coverage_etl_data(self, group_id, config):
         '''fetch median insert size and coverage QC metrics from QC-ETL'''
-        self.etl_cache = QCETLCache(config[self.identifier]['qcetl_cache'])
+        self.etl_cache = QCETLCache(config[self.identifier][pc.QCETL_CACHE])
         cached_coverages = self.etl_cache.bamqc4merged.bamqc4merged
         columns_of_interest = gsiqcetl.column.BamQc4MergedColumn
         data = cached_coverages.loc[
@@ -164,7 +164,7 @@ class main(plugin_base):
         return renderer.render_name(pc.SAMPLE_TEMPLATE_NAME, data)
     
     def specify_params(self):
-        self.set_ini_default('qcetl_cache', self.QCETL_CACHE)
+        self.set_ini_default(pc.QCETL_CACHE, self.QCETL_CACHE)
         discovered = [
             pc.BAMQC,
             pc.RESULTS_FILE,

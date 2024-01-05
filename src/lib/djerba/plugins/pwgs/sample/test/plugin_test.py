@@ -26,6 +26,11 @@ class TestPwgSamplePlugin(PluginTester):
         sup_dir_var = 'DJERBA_TEST_DATA'
         self.sup_dir = os.environ.get(sup_dir_var)
 
+    def testPreprocessSNVcount(self):
+        snv_count_expected_location = os.path.join(self.sup_dir ,"plugins/pwgs/snv.txt")
+        snv_count = sample.main.preprocess_snv_count(self, snv_count_expected_location)
+        self.assertEqual(snv_count, 21000)
+
     def testPwgsSample(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         with open(os.path.join(test_source_dir, self.INI_NAME)) as in_file:

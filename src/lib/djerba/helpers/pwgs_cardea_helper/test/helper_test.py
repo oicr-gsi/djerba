@@ -16,17 +16,12 @@ from djerba.helpers.pwgs_cardea_helper.helper import main, \
 
 class TestCardea(TestBase):
 
-    HELPER_NAME = 'pwgs_provenance_helper'
-    CORE = 'core'
-    SUBSET_MD5 = '36436b2f7894e774e23f6b68a4f73972'
-    SAMPLE_INFO_MD5 = 'eefba097b9449123a66da62beb22c709'
-    PATH_INFO_MD5 = '78330d60b6c5411f16e2a04f09a01e87'
     CARDEA_URL='https://cardea.gsi.oicr.on.ca/requisition-cases'
 
     def testGetCardea(self):
         requisition_id = "PWGVAL_011418_Ct"
         requisition_info = main.get_cardea(self, requisition_id, self.CARDEA_URL)
-        self.assertEqual(requisition_info["assay_name"], 'pWGS - 30X')
+        self.assertEqual(requisition_info["assay"], 'pWGS - 30X')
         self.assertEqual(requisition_info["project"], 'PWGVAL')
         self.assertEqual(requisition_info["provenance_id"], 'OCT_011418_Ct_T_nn_1-11_LB01-01')
 
