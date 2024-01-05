@@ -5,6 +5,29 @@ library(ggplot2)
 
 '%ni%' <- function(x,y)!('%in%'(x,y))
 
+process_results <- function(results, sample_coverage){
+  results$label <- "CONTROLS"
+  results$label[1] <- "THIS SAMPLE"
+  results$noise_rate <- results$sites_detected / results$median_coverage
+  results$noise <- results$noise_rate * sample_coverage
+  return(results)
+}
+
+get_mrd_stats <- function(results, pval_cutoff){
+  zscore <- (results$noise[results$label == "THIS SAMPLE"] - mean(results$noise))/ sd(results$noise)
+  pvalue <- pnorm(zscore,lower.tail=F)
+  dataset_cutoff <- (qnorm(pval_cutoff,lower.tail = F) * sd(results$noise)) +  mean(results$noise[results$label == "CONTROLS"])
+  
+  mrd_stats <- list(
+    "zscore" = zscore,
+    "pvalue" = pvalue,
+    "dataset_cutoff" = dataset_cutoff,
+    "sites_checked" =  results$sites_checked[results$label == "THIS SAMPLE"],
+    "mean_detection" = mean(results$sites_detected[results$label == "CONTROLS"])
+  )
+  return(mrd_stats)
+}
+
 options(scipen=999)
 options(digits = 5)
 
@@ -28,19 +51,15 @@ pval_cutoff <- opt$pval
 vaf <- read.table(vaf_path,header = T)
 sample_coverage = median(vaf$goodreads)
 
-results <- read.csv(results_path,header=TRUE)
-results$label <- "CONTROLS"
-results$label[1] <- "THIS SAMPLE"
+results_raw <- read.csv(results_path, header=T)
+results <- process_results(results_raw, sample_coverage)
+mrd_stats <- get_mrd_stats(results, pval_cutoff)
 
-mean_detection <- mean(results$sites_detected[results$label == "CONTROLS"])
-sites_checked <- results$sites_checked[results$label == "THIS SAMPLE"]
+mean_detection <- mrd_stats$mean_detection
+sites_checked  <- mrd_stats$sites_checked
+dataset_cutoff <- mrd_stats$dataset_cutoff
 
-results_cov <- results
-results_cov$noise_rate <- results_cov$sites_detected / results_cov$median_coverage
-results_cov$noise <- results_cov$noise_rate * sample_coverage
-
-dataset_cutoff <- ( qnorm(pval_cutoff,lower.tail = F) * sd(results_cov$noise) ) +  mean(results_cov$noise[results$label == "CONTROLS"])
-
+##plot
 rep_length = round(log(sites_checked,10),0)
 my_breaks <- rep(1:9, rep_length) * (10^rep(0:(rep_length-1), each = 9))
 
@@ -52,11 +71,10 @@ my_labels[length(my_labels)] <- sites_checked
 
 my_labels[14] <- "Sites Detected:" 
 
-##plot
 options(bitmapType='cairo')
 svg(paste(output_directory,"pWGS.svg",sep="/"), width = 5, height = 1)
     
-ggplot(results_cov[results$label == "CONTROLS",]) + 
+ggplot(results[results$label == "CONTROLS",]) + 
     geom_boxplot(aes(x=0,y=noise,color=label,shape=label),width = 0.05, outlier.shape = NA) +
     
     geom_hline(yintercept = 1,alpha=0.25,color="white")  +
