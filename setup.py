@@ -36,8 +36,7 @@ setup(
         'src/bin/djerba.py',
         'src/bin/generate_ini.py',
         'src/bin/sequenza_explorer.py',
-        'src/bin/update_oncokb_cache.py',
-        'src/lib/djerba/plugins/summary/update_summary.py'
+        'src/bin/update_oncokb_cache.py'
     ],
     packages=find_packages(where=package_root),
     package_dir={'' : package_root},
@@ -108,6 +107,7 @@ setup(
     },
     install_requires=[
         'configparse',
+        'email_validator',
         'jsonschema',
         'mako',
         'markdown',
