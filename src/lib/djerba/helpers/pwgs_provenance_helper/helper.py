@@ -77,8 +77,8 @@ class main(helper_base):
             self.logger.info(msg)
         else:
             mrdetect_file_suffixes = [pc.RESULTS_SUFFIX, pc.VAF_SUFFIX, pc.HBC_SUFFIX, pc.SNV_COUNT_SUFFIX]
-            path_info = self.subset_provenance("mrdetect", wrapper.get_my_string(pc.PROVENANCE_ID), mrdetect_file_suffixes)
-            path_info.update(self.subset_provenance("dnaSeqQC",  wrapper.get_my_string(pc.PROVENANCE_ID), [pc.BAMQC_SUFFIX]))
+            path_info = self.read_provenance_subset("mrdetect", wrapper.get_my_string(pc.PROVENANCE_ID), mrdetect_file_suffixes)
+            path_info.update(self.read_provenance_subset("dnaSeqQC",  wrapper.get_my_string(pc.PROVENANCE_ID), [pc.BAMQC_SUFFIX]))
             self.write_path_info(path_info)
         return wrapper.get_config()
 
@@ -97,7 +97,7 @@ class main(helper_base):
             path = None
         return path
 
-    def subset_provenance(self, workflow, provenance_id, suffixes):
+    def read_provenance_subset(self, workflow, provenance_id, suffixes):
         '''Return file path from provenance based on workflow ID, group-id and file suffix'''
         provenance_location = pc.PROVENANCE_OUTPUT
         # Subset Provenance to only files within the specified workflow
@@ -156,7 +156,4 @@ class main(helper_base):
         self.logger.debug('Wrote provenance subset to {0}'.format(self.PROVENANCE_OUTPUT))
     
 class MissingProvenanceError(Exception):
-    pass
-
-class DjerbaProvenanceError(Exception):
     pass
