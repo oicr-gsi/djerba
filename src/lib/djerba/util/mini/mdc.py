@@ -1,6 +1,6 @@
 """
 Mini-Djerba config class
-INI and free-text block nested inside XML tags
+INI and free-text block separated by ###
 """
 
 import logging
@@ -31,33 +31,37 @@ class mdc(logger):
         self.validator = path_validator(self.log_level, self.log_path) 
 
     def read(self, in_path):
+        """
+        Input: Path to a .mdc config file
+        Output: Dictionary of patient info, and string containing summary text
+        """
         self.validator.validate_input_file(in_path)
         with open(in_path, encoding=core_constants.TEXT_ENCODING) as in_file:
             in_lines = in_file.readlines()
         # Read INI lines up to a ### marker, then switch to the free text section
-        # include empty [core] and [summary] sections for later use
-        ini_lines = [
-            "[core]\n\n",
-            "[summary]\n\n"
-            "[patient_info]\n",
-        ]
+        ini_lines = ["[patient_info]\n"]
         text_lines = []
         ini_section = True
         for line in in_lines:
             if re.search('###', line):
                 ini_section = False
             elif ini_section:
-                if re.search('\S+', line): # line is not whitespace-only
-                    ini_lines.append(line)
+                ini_lines.append(line)
             else:
                 text_lines.append(line)
         text = ''.join(text_lines).strip() # leading/trailing whitespace is removed
+        if text == '':
+            self.logger.warning("No summary text found, proceeding with empty summary")
         config = ConfigParser()
         config.read_string(''.join(ini_lines))
+        patient_info = {k:config.get('patient_info', k) for k in self.PATIENT_INFO_KEYS}
         self.logger.info("Read MDC file from {0}".format(in_path))
-        return [config, text]
+        return [patient_info, text]
 
     def write(self, out_path, patient_info, text):
+        """
+        Input: Dictionary of patient info, and string containing summary text
+        """
         self.validator.validate_output_file(out_path)
         with open(out_path, 'w', encoding=core_constants.TEXT_ENCODING) as out_file:
             for key in self.PATIENT_INFO_KEYS:
@@ -66,8 +70,3 @@ class mdc(logger):
             print("\n###\n", file=out_file)
             print(text, file=out_file)
         self.logger.info("Wrote MDC file to {0}".format(out_path))
-
-
-
-class MDCError(Exception):
-    pass
