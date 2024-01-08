@@ -11,6 +11,6 @@
             ],
             "merge_inputs": {},
             "results": {
-                "failed_text": "The patient has been diagnosed with PLACEHOLDER_CANCER and has been referred for the OICR Genomics WGTS assay through the PLACEHOLDER_STUDY study. A quality failure report for this sample is being issued due to the informatically inferred tumour purity of 25% which is below the reportable threshold of 30% for the assay."
+                "failed_text": "The patient has been diagnosed with PLACEHOLDER_CANCER and has been referred for the OICR Genomics WGTS assay through the PLACEHOLDER_STUDY study. A quality failure report for this sample is being issued due to the informatically inferred tumour purity of ...% which is below the reportable threshold of 30% for the assay / is being issued due to failed extraction..."
     }
 }

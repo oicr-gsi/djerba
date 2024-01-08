@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v.1.1.2: 2024-01-08
+
+- GCGI-1233: allowed support for purity and ploidy to be "NA", changed failed report template text 
+- Fixed unit tests for various plugins
+- Changed sign-offs page break to "auto"
+- GCGI-1240/1241: added filtering for 2 TERT hotspots: -124bp G>A and -146bp G>A 
+
 ## v1.1.1: 2023-12-13
 
 - Fixed template text for failed plugin
