@@ -1,5 +1,6 @@
 CORE = 'core'
 NULL = '__DJERBA_NULL__'
+VERSION = 'version'
 TEXT_ENCODING = 'utf-8'
 
 # shared constants for core classes

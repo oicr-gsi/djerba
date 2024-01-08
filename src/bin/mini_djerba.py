@@ -28,6 +28,7 @@ def get_parser():
     ready_parser.add_argument('-o', '--out', metavar='PATH', default='config.mdc', help='Output path. Optional, defaults to config.mdc in the current directory.')
     update_parser = subparsers.add_parser(constants.UPDATE, help='Update an existing JSON report file; render HTML and optional PDF')
     update_parser.add_argument('-c', '--config', metavar='PATH', required=True, help='Path to an MDC (mini-Djerba config) file')
+    update_parser.add_argument('-f', '--force', action='store_true', help='Force update of mismatched plugin versions')
     update_parser.add_argument('-j', '--json', metavar='PATH', required=True, help='Path for JSON input')
     update_parser.add_argument('-o', '--out-dir', metavar='DIR', required=True, help='Directory for output files')
     update_parser.add_argument('-p', '--pdf', action='store_true', help='Generate PDF output from HTML')

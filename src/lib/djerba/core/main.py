@@ -264,7 +264,7 @@ class main_base(core_base):
         self.logger.info('Finished Djerba config step')
         return config_out
 
-    def update_data_from_file(self, new_data, json_path):
+    def update_data_from_file(self, new_data, json_path, force):
         """Read old JSON from a file, and return the updated data structure"""
         with open(json_path) as in_file:
             data = json.loads(in_file.read())
@@ -274,6 +274,18 @@ class main_base(core_base):
         # if plugin data did not exist in old JSON, it will be added
         # TODO check plugin version numbers in old/new JSON
         for plugin in new_data[self.PLUGINS].keys():
+            old_version = data[self.PLUGINS][plugin][cc.VERSION]
+            new_version = new_data[self.PLUGINS][plugin][cc.VERSION]
+            if old_version != new_version:
+                msg = "Versions differ for {0} plugin: ".format(plugin)+\
+                    "Old version = {0}, new version = {1}".format(old_version, new_version)
+                if force:
+                    msg += "; --force option in effect, proceeding"
+                    self.logger.warning(msg)
+                else:
+                    msg += "; run with --force to proceed"
+                    self.logger.error(msg)
+                    raise DjerbaVersionMismatchError(msg)
             data[self.PLUGINS][plugin] = new_data[self.PLUGINS][plugin]
             data[constants.CONFIG][plugin] = new_data[constants.CONFIG][plugin]
             self.logger.debug('Updated JSON for plugin {0}'.format(plugin))
@@ -370,12 +382,13 @@ class main(main_base):
             else:
                 config_path = ini_path
                 summary_only = False
-            json_path = ap.get_json_path()
+            jp = ap.get_json_path()
             out_dir = ap.get_out_dir()
             archive = ap.is_archive_enabled()
             pdf = ap.is_pdf_enabled()
             write = ap.is_write_json_enabled()
-            self.update(config_path, json_path, out_dir, archive, pdf, summary_only, write)
+            force = ap.is_forced()
+            self.update(config_path, jp, out_dir, archive, pdf, summary_only, write, force)
         else:
             msg = "Mode '{0}' is not defined in Djerba core.main!".format(mode)
             self.logger.error(msg)
@@ -452,7 +465,7 @@ class main(main_base):
         self.logger.info("Wrote config for {0} to {1}".format(assay, ini_path))
 
     def update(self, config_path, json_path, out_dir, archive, pdf, summary_only,
-               write_json):
+               write_json, force):
         # update procedure:
         # 1. run plugins from user-supplied config to get 'new' (updated) JSON
         # 2. update the 'old' (user-supplied) JSON
@@ -475,7 +488,7 @@ class main(main_base):
         with open(json_path) as in_file:
             data = json.loads(in_file.read())
         data_new = self.extract(config, archive=False)
-        data = self.update_data_from_file(data_new, json_path)
+        data = self.update_data_from_file(data_new, json_path, force)
         if archive:
             self.upload_archive(data)
         else:
@@ -595,4 +608,7 @@ class arg_processor(arg_processor_base):
         self.logger.info("Command-line path validation finished.")
 
 class DjerbaDependencyError(Exception):
+    pass
+
+class DjerbaVersionMismatchError(Exception):
     pass

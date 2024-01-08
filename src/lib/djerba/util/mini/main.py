@@ -48,14 +48,15 @@ class main(main_base):
                 ap.get_json_path(),
                 ap.get_out_dir(),
                 ap.is_pdf_enabled(),
-                ap.is_write_json_enabled()
+                ap.is_write_json_enabled(),
+                ap.is_forced()
             )
         else:
             msg = "Mode '{0}' is not defined in Djerba mini.main!".format(mode)
             self.logger.error(msg)
             raise RuntimeError(msg)
 
-    def update(self, config_path, json_path, out_dir, pdf, write_json):
+    def update(self, config_path, json_path, out_dir, pdf, write_json, force):
         """
         Differs from update method in core:
         - MDC instead of INI/TXT as config
@@ -79,7 +80,7 @@ class main(main_base):
         config.set('summary', summary_plugin.SUMMARY_FILE, summary_path)
         config = self.configure_from_parser(config)
         data_new = self.base_extract(config)
-        data = self.update_data_from_file(data_new, json_path)
+        data = self.update_data_from_file(data_new, json_path, force)
         self.base_render(data, out_dir, pdf)
         if write_json:
             json_path = os.path.join(out_dir, 'updated_report.json')

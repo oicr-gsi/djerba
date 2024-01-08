@@ -52,7 +52,7 @@ class plugin_base(configurable, ABC):
         self.check_attributes_known(attributes)
         data = {
             'plugin_name': self.identifier+' plugin',
-            'version': plugin_version,
+            core_constants.VERSION: plugin_version,
             'priorities': config_wrapper.get_my_priorities(),
             'attributes': config_wrapper.get_my_attributes(),
             'merge_inputs': {},

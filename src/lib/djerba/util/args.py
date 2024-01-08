@@ -34,6 +34,9 @@ class arg_processor_base(logger):
             raise ArgumentNameError(msg) from err
         return value
 
+    def is_forced(self):
+        return self._get_arg('force')
+
     def is_pdf_enabled(self):
         return self._get_arg('pdf')
 
