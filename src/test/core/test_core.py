@@ -31,6 +31,7 @@ class TestCore(TestBase):
 
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
+    SIMPLE_REPORT_UPDATE_JSON = 'simple_report_for_update.json'
     SIMPLE_REPORT_MD5 = 'efab9a40e349af0723bb066385b77b91'
     SIMPLE_CONFIG_MD5 = 'ab4b71b790f2b12aa802b8eaa1658951'
 
@@ -487,7 +488,7 @@ class TestMainScript(TestCore):
         with open(ini_path, 'w') as out_file:
             print(ini_string, file=out_file)
         # run djerba.py and check the results
-        json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
+        json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_UPDATE_JSON)
         cmd = [
             'djerba.py', mode,
             '--work-dir', work_dir,
@@ -501,7 +502,7 @@ class TestMainScript(TestCore):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, 'e19e63eb0d25430f6459e5e090b1c841')
+        self.assert_report_MD5(html_string, '2a1cbf9964c086fb51a1055da564d4d9')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         # again, with the --write-json option
@@ -518,7 +519,7 @@ class TestMainScript(TestCore):
         work_dir = self.tmp_dir
         summary_path = os.path.join(self.test_source_dir, 'alternate_summary.txt')
         # run djerba.py and check the results
-        json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
+        json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_UPDATE_JSON)
         cmd = [
             'djerba.py', mode,
             '--work-dir', work_dir,
@@ -532,7 +533,7 @@ class TestMainScript(TestCore):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, '00a02930b23bc82546656e03e48e6c37')
+        self.assert_report_MD5(html_string, '2a1cbf9964c086fb51a1055da564d4d9')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         # again, with the --write-json option

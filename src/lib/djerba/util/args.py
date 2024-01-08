@@ -34,12 +34,6 @@ class arg_processor_base(logger):
             raise ArgumentNameError(msg) from err
         return value
 
-    def is_forced(self):
-        return self._get_arg('force')
-
-    def is_pdf_enabled(self):
-        return self._get_arg('pdf')
-
     def get_log_level(self):
         return self.log_level
 
@@ -51,6 +45,15 @@ class arg_processor_base(logger):
 
     def get_out_dir(self):
         return self._get_arg('out_dir')
+
+    def is_forced(self):
+        return self._get_arg('force')
+
+    def is_pdf_enabled(self):
+        return self._get_arg('pdf')
+
+    def is_write_json_enabled(self):
+        return self._get_arg('write_json')
 
 
 class ArgumentNameError(Exception):

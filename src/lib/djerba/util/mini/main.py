@@ -119,6 +119,3 @@ class arg_processor(arg_processor_base):
     def get_out_file(self):
         return self._get_arg('out')
 
-    def is_write_json_enabled(self):
-        return self._get_arg('write_json')
-
