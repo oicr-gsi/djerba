@@ -29,16 +29,13 @@ class arg_processor_base(logger):
         try:
             value = getattr(self.args, arg_name)
         except AttributeError as err:
-            msg = "Argument {0} not defined in Djerba mode {1}".format(arg_name, self.mode)
+            msg = "Argument {0} not defined in script mode {1}".format(arg_name, self.mode)
             self.logger.error(msg)
             raise ArgumentNameError(msg) from err
         return value
 
     def is_pdf_enabled(self):
         return self._get_arg('pdf')
-
-    def is_write_json_enabled(self):
-        return self._get_arg('write_json')
 
     def get_log_level(self):
         return self.log_level

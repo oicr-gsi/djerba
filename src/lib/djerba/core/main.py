@@ -75,6 +75,9 @@ class main_base(core_base):
             component = self.plugin_loader.load(name, self.workspace)
         return component
 
+    def _resolve_configure_dependencies(self, config, components, ordered_names):
+        self._resolve_ini_deps(cc.DEPENDS_CONFIGURE, config, components, ordered_names)
+
     def _resolve_extract_dependencies(self, config, components, ordered_names):
         self._resolve_ini_deps(cc.DEPENDS_EXTRACT, config, components, ordered_names)
 
@@ -216,37 +219,6 @@ class main_base(core_base):
         self.logger.info('Finished Djerba render step')
         return output_data
 
-    def update_data_from_file(self, new_data, json_path):
-        """Read old JSON from a file, and return the updated data structure"""
-        with open(json_path) as in_file:
-            data = json.loads(in_file.read())
-        # new data overwrites old, on a per-plugin basis
-        # ie. overwriting a given plugin is all-or-nothing
-        # also overwrite JSON config section for the plugin
-        # if plugin data did not exist in old JSON, it will be added
-        # TODO check plugin version numbers in old/new JSON and warn on mismatch
-        for plugin in new_data[self.PLUGINS].keys():
-            data[self.PLUGINS][plugin] = new_data[self.PLUGINS][plugin]
-            data[constants.CONFIG][plugin] = new_data[constants.CONFIG][plugin]
-            self.logger.debug('Updated JSON for plugin {0}'.format(plugin))
-        return data
-
-
-class main(main_base):
-
-    """Main class for Djerba core"""
-
-    def _resolve_configure_dependencies(self, config, components, ordered_names):
-        self._resolve_ini_deps(cc.DEPENDS_CONFIGURE, config, components, ordered_names)
-
-    def configure(self, config_path_in, config_path_out=None):
-        """
-        Run the Djerba configure step, with an INI path as input
-        """
-        self.logger.info('Reading INI config file "{0}"'.format(config_path_in))
-        config_in = self.read_ini_path(config_path_in)
-        return self.configure_from_parser(config_in, config_path_out)
-
     def configure_from_parser(self, config_in, config_path_out=None):
         """
         Run the Djerba configure step, with a ConfigParser as input
@@ -291,6 +263,34 @@ class main(main_base):
                 config_out.write(out_file)
         self.logger.info('Finished Djerba config step')
         return config_out
+
+    def update_data_from_file(self, new_data, json_path):
+        """Read old JSON from a file, and return the updated data structure"""
+        with open(json_path) as in_file:
+            data = json.loads(in_file.read())
+        # new data overwrites old, on a per-plugin basis
+        # ie. overwriting a given plugin is all-or-nothing
+        # also overwrite JSON config section for the plugin
+        # if plugin data did not exist in old JSON, it will be added
+        # TODO check plugin version numbers in old/new JSON
+        for plugin in new_data[self.PLUGINS].keys():
+            data[self.PLUGINS][plugin] = new_data[self.PLUGINS][plugin]
+            data[constants.CONFIG][plugin] = new_data[constants.CONFIG][plugin]
+            self.logger.debug('Updated JSON for plugin {0}'.format(plugin))
+        return data
+
+
+class main(main_base):
+
+    """Main class for Djerba core"""
+
+    def configure(self, config_path_in, config_path_out=None):
+        """
+        Run the Djerba configure step, with an INI path as input
+        """
+        self.logger.info('Reading INI config file "{0}"'.format(config_path_in))
+        config_in = self.read_ini_path(config_path_in)
+        return self.configure_from_parser(config_in, config_path_out)
 
     def extract(self, config, json_path=None, archive=False):
         self.logger.info('Starting Djerba extract step')

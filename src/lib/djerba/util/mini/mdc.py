@@ -36,40 +36,37 @@ class mdc(logger):
             in_lines = in_file.readlines()
         # Read INI lines up to a ### marker, then switch to the free text section
         # include empty [core] and [summary] sections for later use
-        ini = [
+        ini_lines = [
             "[core]\n\n",
             "[summary]\n\n"
             "[patient_info]\n",
         ]
-        text = []
+        text_lines = []
         ini_section = True
-        for line in lines:
+        for line in in_lines:
             if re.search('###', line):
                 ini_section = False
             elif ini_section:
                 if re.search('\S+', line): # line is not whitespace-only
-                    ini.append(line)
+                    ini_lines.append(line)
             else:
-                text.append(line)
-        self.text = ''.join(text).strip() # leading/trailing whitespace is removed
-        self.config = ConfigParser().read_string(''.join(ini))
+                text_lines.append(line)
+        text = ''.join(text_lines).strip() # leading/trailing whitespace is removed
+        config = ConfigParser()
+        config.read_string(''.join(ini_lines))
         self.logger.info("Read MDC file from {0}".format(in_path))
+        return [config, text]
 
-    def write(self, out_path, config, text):
+    def write(self, out_path, patient_info, text):
         self.validator.validate_output_file(out_path)
         with open(out_path, 'w', encoding=core_constants.TEXT_ENCODING) as out_file:
             for key in self.PATIENT_INFO_KEYS:
-                value = config.get('patient_info', key)
+                value = patient_info.get(key)
                 print("{0} = {1}".format(key, value), file=out_file)
             print("\n###\n", file=out_file)
             print(text, file=out_file)
         self.logger.info("Wrote MDC file to {0}".format(out_path))
 
-    def get_text(self):
-        return self.text
-
-    def get_config(self):
-        return self.config
 
 
 class MDCError(Exception):

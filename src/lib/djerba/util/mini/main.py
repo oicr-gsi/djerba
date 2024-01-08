@@ -1,5 +1,6 @@
 """Main class for mini-Djerba"""
 
+import json
 import logging
 import os
 import djerba.core.constants as cc
@@ -17,20 +18,42 @@ class main(main_base):
 
     SUMMARY_NAME = 'summary.txt'
 
-    def ready(self, args):
+    def ready(self, out_path, json_path):
         """
         Read an existing JSON file, write an MDC file ready for editing
         MDC contains placeholder values for PHI, and summary text from the JSON
         """
-        pass
+        with open(json_path, encoding=cc.TEXT_ENCODING) as in_file:
+            data = json.loads(in_file.read())
+        patient_info = data[cc.PLUGINS]['patient_info'][cc.RESULTS]
+        text = data[cc.PLUGINS]['summary'][cc.RESULTS][summary_plugin.SUMMARY_TEXT]
+        mdc(self.log_level, self.log_path).write(out_path, patient_info, text)
 
     def run(self, args):
         """
         Process command-line args and run either 'ready' or 'update'
         """
-        pass
+        ap = arg_processor(args, self.logger, validate=False)
+        mode = ap.get_mode()
+        if mode == constants.READY:
+            self.ready(
+                ap.get_out_file(),
+                ap.get_json_path()
+            )
+        elif mode == constants.UPDATE:
+            self.update(
+                ap.get_config_path(),
+                ap.get_json_path(),
+                ap.get_out_dir(),
+                ap.is_pdf_enabled(),
+                ap.is_write_json_enabled()
+            )
+        else:
+            msg = "Mode '{0}' is not defined in Djerba mini.main!".format(mode)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
 
-    def update(self, self, config_path, json_path, out_dir, pdf, write_json):
+    def update(self, config_path, json_path, out_dir, pdf, write_json):
         """
         Differs from update method in core:
         - MDC instead of INI/TXT as config
@@ -40,13 +63,12 @@ class main(main_base):
         # read the config file and generate a ConfigParser
         # write summary text to a temporary file
         # then run extraction to get the data structure for update
-        mini_config = mdc(config_path, self.log_level, self.log_path)
-        update_config = mini_config.get_config()
-        update_text = mini_config.get_text()
-        out_path = os.path.join(self.work_dir, self.SUMMARY_NAME)
-        with open(out_path, 'w', encoding=cc.TEXT_ENCODING) as out_file:
+        [update_config, update_text] = mdc(self.log_level, self.log_path).read(config_path)
+        update_config = self.configure_from_parser(update_config)
+        summary_path = os.path.join(self.work_dir, self.SUMMARY_NAME)
+        with open(summary_path, 'w', encoding=cc.TEXT_ENCODING) as out_file:
             print(update_text, file=out_file)
-        update_config.set('summary', summary_plugin.SUMMARY_FILE, update_text)
+        update_config.set('summary', summary_plugin.SUMMARY_FILE, summary_path)
         data_new = self.base_extract(update_config)
         data = self.update_data_from_file(data_new, json_path)
         self.base_render(data, out_dir, pdf)
@@ -77,3 +99,16 @@ class arg_processor(arg_processor_base):
             # shouldn't happen, but handle this case for completeness
             raise ValueError("Unknown subparser: " + args.subparser_name)
         self.logger.info("Command-line path validation finished.")
+
+    def get_config_path(self):
+        return self._get_arg('config')
+
+    def get_json_path(self):
+        return self._get_arg('json')
+
+    def get_out_file(self):
+        return self._get_arg('out')
+
+    def is_write_json_enabled(self):
+        return self._get_arg('write_json')
+

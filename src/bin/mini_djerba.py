@@ -4,6 +4,9 @@
 Script to run a reduced set of Djerba operations: In particular, updating patient info and summary text
 """
 
+import sys
+sys.path.pop(0) # do not import from script directory
+
 import argparse
 from tempfile import TemporaryDirectory
 import djerba.util.mini.constants as constants
