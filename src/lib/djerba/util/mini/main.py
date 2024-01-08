@@ -17,14 +17,13 @@ class main(main_base):
 
     SUMMARY_NAME = 'summary.txt'
 
-    
     def ready(self, args):
         """
         Read an existing JSON file, write an MDC file ready for editing
         MDC contains placeholder values for PHI, and summary text from the JSON
         """
         pass
-    
+
     def run(self, args):
         """
         Process command-line args and run either 'ready' or 'update'
@@ -56,7 +55,6 @@ class main(main_base):
             with open(json_path, 'w') as out_file:
                 print(json.dumps(data), file=out_file)
 
-    
 class arg_processor(arg_processor_base):
 
     def validate_args(self, args):

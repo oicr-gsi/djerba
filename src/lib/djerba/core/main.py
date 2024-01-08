@@ -14,7 +14,7 @@ from PyPDF2 import PdfMerger
 import djerba.util.ini_fields as ini
 from djerba.core.base import base as core_base
 from djerba.core.database import database
-from djerba.core.extract import extractor
+from djerba.core.extract import extraction_setup
 from djerba.core.ini_generator import ini_generator
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.render import html_renderer, pdf_renderer
@@ -29,7 +29,7 @@ import djerba.core.constants as cc
 import djerba.util.constants as constants
 
 class main_base(core_base):
-    
+
     """Base class with shared methods between core-main and mini-main"""
 
     PLUGINS = 'plugins'
@@ -60,10 +60,10 @@ class main_base(core_base):
         else:
             msg = "User-configured author name is '{0}'".format(data[cc.CORE][cc.AUTHOR])
             self.logger.debug(msg)
-        
+
     def _get_render_priority(self, plugin_data):
         return plugin_data[cc.PRIORITIES][cc.RENDER]
-    
+
     def _load_component(self, name):
         if name == ini.CORE:
             component = self.core_config_loader.load(self.workspace)
@@ -74,10 +74,10 @@ class main_base(core_base):
         else:
             component = self.plugin_loader.load(name, self.workspace)
         return component
-    
+
     def _resolve_extract_dependencies(self, config, components, ordered_names):
         self._resolve_ini_deps(cc.DEPENDS_EXTRACT, config, components, ordered_names)
-        
+
     def _resolve_ini_deps(self, depends_key, config, components, ordered_names):
         for name in ordered_names:
             if config.has_option(name, depends_key):
@@ -131,7 +131,7 @@ class main_base(core_base):
         merger = self.merger_loader.load(merger_name)
         self.logger.debug("Loaded merger {0} for rendering".format(merger_name))
         return merger.render(merger_inputs)
-                
+
     def base_extract(self, config):
         """
         Base extract operation, shared between core and mini Djerba
@@ -224,6 +224,7 @@ class main_base(core_base):
         # ie. overwriting a given plugin is all-or-nothing
         # also overwrite JSON config section for the plugin
         # if plugin data did not exist in old JSON, it will be added
+        # TODO check plugin version numbers in old/new JSON and warn on mismatch
         for plugin in new_data[self.PLUGINS].keys():
             data[self.PLUGINS][plugin] = new_data[self.PLUGINS][plugin]
             data[constants.CONFIG][plugin] = new_data[constants.CONFIG][plugin]

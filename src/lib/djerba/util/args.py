@@ -39,7 +39,7 @@ class arg_processor_base(logger):
 
     def is_write_json_enabled(self):
         return self._get_arg('write_json')
-    
+
     def get_log_level(self):
         return self.log_level
 
