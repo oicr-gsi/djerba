@@ -38,6 +38,7 @@ class mdc(logger):
         self.validator.validate_input_file(in_path)
         with open(in_path, encoding=core_constants.TEXT_ENCODING) as in_file:
             in_lines = in_file.readlines()
+        self.sanity_check(in_lines)
         # Read INI lines up to a ### marker, then switch to the free text section
         ini_lines = ["[patient_info]\n"]
         text_lines = []
@@ -58,6 +59,40 @@ class mdc(logger):
         self.logger.info("Read MDC file from {0}".format(in_path))
         return [patient_info, text]
 
+    def sanity_check(self, lines):
+        """
+        Sanity check on config input
+        Not intended to be foolproof, but should catch obvious errors
+        """
+        ini_section = True
+        has_ini = False
+        has_separator = False
+        has_text = False
+        for line in lines:
+            if re.search('###', line):
+                ini_section = False
+                has_separator = True
+            elif ini_section:
+                if re.search('\s*\w+\s*=\s*\w+', line):
+                    has_ini = True
+                elif not re.search('^\s+$', line):
+                    msg = 'INI section line should be key=value or empty space, '+\
+                        'found "{0}"'.format(line.strip())
+                    self.logger.error(msg)
+                    raise MDCFormatError(msg)
+            elif re.search('\S+', line):
+                has_text = True
+        err = None
+        if not has_separator:
+            err = "MDC file must contain a section separator of the form '###', none found"
+        elif not has_ini:
+            err = "MDC file must contain at least one key=value pair, none found"
+        elif not has_text:
+            err = "MDC file must contain non-empty summary text, none found"
+        if err:
+            self.logger.error(err)
+            raise MDCFormatError(err)
+
     def write(self, out_path, patient_info, text):
         """
         Input: Dictionary of patient info, and string containing summary text
@@ -70,3 +105,6 @@ class mdc(logger):
             print("\n###\n", file=out_file)
             print(text, file=out_file)
         self.logger.info("Wrote MDC file to {0}".format(out_path))
+
+class MDCFormatError(Exception):
+    pass
