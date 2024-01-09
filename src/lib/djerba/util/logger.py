@@ -32,6 +32,8 @@ class logger:
         logger = logging.getLogger(log_name)
         logger.setLevel(log_level)
         if len(logger.handlers) > 0: # remove duplicate handlers from previous get_logger() calls
+            for handler in logger.handlers:
+                handler.close()
             logger.handlers.clear()
         handler = None
         if log_path==None:
