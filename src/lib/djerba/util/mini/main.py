@@ -7,6 +7,7 @@ import djerba.core.constants as cc
 import djerba.util.mini.constants as constants
 from configparser import ConfigParser
 from djerba.core.main import main_base
+from djerba.plugins.patient_info.plugin import main as patient_info_plugin
 from djerba.plugins.summary.plugin import main as summary_plugin
 from djerba.util.args import arg_processor_base
 from djerba.util.logger import logger
@@ -22,13 +23,17 @@ class main(main_base):
 
     def ready(self, out_path, json_path):
         """
-        Read an existing JSON file, write an MDC file ready for editing
+        Read an existing JSON file (if any), write an MDC file ready for editing
         MDC contains placeholder values for PHI, and summary text from the JSON
         """
-        with open(json_path, encoding=cc.TEXT_ENCODING) as in_file:
-            data = json.loads(in_file.read())
-        patient_info = data[cc.PLUGINS][self.PATIENT_INFO][cc.RESULTS]
-        text = data[cc.PLUGINS][self.SUMMARY][cc.RESULTS][summary_plugin.SUMMARY_TEXT]
+        if json_path == None:
+            patient_info = patient_info_plugin.PATIENT_DEFAULTS
+            text = 'Patient summary text goes here'
+        else:
+            with open(json_path, encoding=cc.TEXT_ENCODING) as in_file:
+                data = json.loads(in_file.read())
+            patient_info = data[cc.PLUGINS][self.PATIENT_INFO][cc.RESULTS]
+            text = data[cc.PLUGINS][self.SUMMARY][cc.RESULTS][summary_plugin.SUMMARY_TEXT]
         mdc(self.log_level, self.log_path).write(out_path, patient_info, text)
 
     def run(self, args):
@@ -97,7 +102,8 @@ class arg_processor(arg_processor_base):
         self.logger.info("Validating paths in command-line arguments")
         v = path_validator(self.log_level, self.log_path)
         if args.subparser_name == constants.READY:
-            v.validate_input_file(args.json)
+            if args.json != None:
+                v.validate_input_file(args.json)
             v.validate_output_file(args.out)
         elif args.subparser_name == constants.UPDATE:
             v.validate_input_file(args.config)
