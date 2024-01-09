@@ -22,7 +22,7 @@ class TestWgtsSamplePlugin(PluginTester):
         self.tmp_dir = self.tmp.name
         sup_dir_var = 'DJERBA_TEST_DIR'
         self.sup_dir = os.environ.get(sup_dir_var)
-         
+        
     def testWgtsSample(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         json_location = os.path.join(self.sup_dir ,"plugins/sample/report_json/sample.json")
