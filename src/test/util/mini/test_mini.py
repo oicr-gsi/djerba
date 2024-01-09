@@ -5,6 +5,7 @@ import logging
 import os
 import unittest
 
+from djerba.core.main import DjerbaVersionMismatchError
 from djerba.plugins.patient_info.plugin import main as patient_info_plugin
 from djerba.util.mini.main import main
 from djerba.util.mini.mdc import mdc, MDCFormatError
@@ -112,6 +113,27 @@ class TestMain(TestMiniBase):
         args = self.mock_args_ready(out_file, json_path)
         main(self.tmp_dir).run(args)
         self.assert_MDC(out_file)
+
+    def test_version_fail(self):
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        config_path = os.path.join(test_dir, 'config_for_update.mdc')
+        json_path = os.path.join(test_dir, 'simple_report_mismatched_version.json')
+        pdf = True
+        write_json = True
+        args = self.mock_args_update(
+            config_path, json_path, self.tmp_dir, pdf, write_json, force=False
+        )
+        with self.assertRaises(DjerbaVersionMismatchError):
+            main(self.tmp_dir, log_level=logging.CRITICAL).run(args)
+        args_force = self.mock_args_update(
+            config_path, json_path, self.tmp_dir, pdf, write_json, force=True
+        )
+        log_tmp = os.path.join(self.tmp_dir, 'test.log')
+        with self.assertLogs(level=logging.WARNING) as cm:
+            main(self.tmp_dir, log_path=log_tmp).run(args_force)
+        self.assertTrue(cm.output[0].find('Old version = bad-version') >= 0)
+        self.assertTrue(cm.output[1].find('Old version = another-bad-version') >= 0)
+        self.assert_update()
 
     def test_update(self):
         test_dir = os.path.dirname(os.path.realpath(__file__))
