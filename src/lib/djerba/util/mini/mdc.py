@@ -24,7 +24,7 @@ class mdc(logger):
         plugin.PHYSICIAN_HOSPITAL
     ]
 
-    def __init__(self, log_level=logging.INFO, log_path=None):
+    def __init__(self, log_level=logging.WARNING, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
