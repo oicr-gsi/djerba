@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import logging
 import os
 import unittest
 
@@ -16,6 +17,19 @@ class TestMDC(TestBase):
         patient_info, text = mdc().read(test_file)
         self.assertEqual(patient_info, patient_info_plugin.PATIENT_DEFAULTS)
         self.assertEqual(text, 'Hello, world!')
+
+    def test_read_fail(self):
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        test_files = [
+            'config_broken_1.mdc',
+            'config_broken_2.mdc',
+            'config_broken_3.mdc',
+            'config_broken_4.mdc',
+            'config_broken_5.mdc'
+        ]
+        for file_name in test_files:
+            with self.assertRaises(MDCFormatError):
+                mdc(log_level=logging.CRITICAL).read(os.path.join(test_dir, file_name))
 
     def test_write(self):
         out_path = os.path.join(self.tmp_dir, 'config.mdc')

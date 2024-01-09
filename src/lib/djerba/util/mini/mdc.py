@@ -6,7 +6,7 @@ INI and free-text block separated by ###
 import logging
 import re
 import djerba.core.constants as core_constants
-from configparser import ConfigParser
+from configparser import ConfigParser, NoOptionError
 from djerba.plugins.patient_info.plugin import main as plugin
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
@@ -51,11 +51,15 @@ class mdc(logger):
             else:
                 text_lines.append(line)
         text = ''.join(text_lines).strip() # leading/trailing whitespace is removed
-        if text == '':
-            self.logger.warning("No summary text found, proceeding with empty summary")
         config = ConfigParser()
         config.read_string(''.join(ini_lines))
-        patient_info = {k:config.get('patient_info', k) for k in self.PATIENT_INFO_KEYS}
+        try:
+            patient_info = {k:config.get('patient_info', k) for k in self.PATIENT_INFO_KEYS}
+        except NoOptionError as err:
+            msg = "Missing one or more key=value pairs. MDC file must have values "+\
+                "for the following keys: {0}".format(', '.join(self.PATIENT_INFO_KEYS))
+            self.logger.error(msg)
+            raise MDCFormatError(msg) from err
         self.logger.info("Read MDC file from {0}".format(in_path))
         return [patient_info, text]
 
@@ -86,7 +90,7 @@ class mdc(logger):
         if not has_separator:
             err = "MDC file must contain a section separator of the form '###', none found"
         elif not has_ini:
-            err = "MDC file must contain at least one key=value pair, none found"
+            err = "MDC file must contain key=value pairs, none found"
         elif not has_text:
             err = "MDC file must contain non-empty summary text, none found"
         if err:
