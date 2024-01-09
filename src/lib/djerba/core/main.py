@@ -36,7 +36,7 @@ class main_base(core_base):
     MERGERS = 'mergers'
     MERGE_INPUTS = 'merge_inputs'
 
-    def __init__(self, work_dir, log_level=logging.INFO, log_path=None):
+    def __init__(self, work_dir, log_level=logging.WARNING, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)

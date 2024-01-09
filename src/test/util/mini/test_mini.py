@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import json
 import logging
 import os
 import unittest
@@ -43,6 +44,76 @@ class TestMDC(TestBase):
         self.assertEqual(patient_info, patient_info_new)
         self.assertEqual(patient_info_new['patient_name'], 'Smith, John')
         self.assertEqual(text, text_new)
+
+
+class TestMain(TestBase):
+
+    JSON_NAME = 'simple_report_for_update.json'
+
+    class mock_args_ready:
+        """Use instead of argparse to store params for testing"""
+
+        def __init__(self, out_file, json):
+            self.subparser_name = 'ready'
+            self.json = json
+            self.out = out_file
+            # logging
+            self.log_path = None
+            self.debug = False
+            self.verbose = False
+            self.quiet = True
+
+    class mock_args_update:
+        """Use instead of argparse to store params for testing"""
+
+        def __init__(self, config_path, json, out_dir, pdf, write_json, force=False):
+            self.subparser_name = 'update'
+            self.config = config_path
+            self.json = json
+            self.out_dir = out_dir
+            self.pdf = pdf
+            self.write_json = write_json
+            self.force = force
+            # logging
+            self.log_path = None
+            self.debug = False
+            self.verbose = False
+            self.quiet = True
+
+    def test_ready(self):
+        out_file = os.path.join(self.tmp_dir, 'config.mdc')
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        json_path = os.path.join(test_dir, self.JSON_NAME)
+        args = self.mock_args_ready(out_file, json_path)
+        main(self.tmp_dir).run(args)
+        self.assertTrue(os.path.isfile(out_file))
+        self.assertEqual(self.getMD5(out_file), '48efe0ce5121a1878ebfc04f143f49cc')
+
+    def test_update(self):
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        config_path = os.path.join(test_dir, 'config_for_update.mdc')
+        json_path = os.path.join(test_dir, self.JSON_NAME)
+        pdf = True
+        write_json = True
+        force = False
+        args = self.mock_args_update(config_path, json_path, self.tmp_dir, pdf, write_json)
+        main(self.tmp_dir).run(args)
+        html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
+        pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
+        json_out = os.path.join(self.tmp_dir, 'updated_report.json')
+        for out_path in [html_path, pdf_path, json_out]:
+            self.assertTrue(os.path.isfile(out_path))
+        with open(html_path) as html_file:
+            redacted = self.redact_html(html_file.read())
+        self.assertEqual(self.getMD5_of_string(redacted), 'bf06a4b1959df709ca95720dc2841110')
+        with open(json_out) as json_file:
+            json_data = json.loads(json_file.read())
+        dob = json_data['plugins']['patient_info']['results']['patient_dob']
+        self.assertEqual(dob, '1970/01/01')
+        text = json_data['plugins']['summary']['results']['summary_text']
+        expected_text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed '+\
+            'do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+        self.assertEqual(text, expected_text)
 
 if __name__ == '__main__':
     unittest.main()
