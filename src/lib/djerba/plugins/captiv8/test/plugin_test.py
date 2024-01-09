@@ -12,7 +12,7 @@ from djerba.plugins.plugin_tester import PluginTester
 import djerba.plugins.captiv8.plugin as captiv8
 from djerba.core.workspace import workspace
 
-class TestPwgAnalysisPlugin(PluginTester):
+class TestCaptiv8Plugin(PluginTester):
 
     INI_NAME = 'test.ini'
 
@@ -21,7 +21,7 @@ class TestPwgAnalysisPlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DATA'
+        sup_dir_var = 'DJERBA_TEST_DIR'
         self.sup_dir = os.environ.get(sup_dir_var)
 
     def testCAPTIV8(self):

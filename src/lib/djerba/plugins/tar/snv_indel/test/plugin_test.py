@@ -1,9 +1,5 @@
 #! /usr/bin/env python3
 
-"""
-Test of the snv_indel plugin
-"""
-
 import os
 import unittest
 import tempfile
@@ -23,15 +19,15 @@ class TestTarSNVIndelPlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DATA'
+        sup_dir_var = 'DJERBA_TEST_DIR'
         self.sup_dir = os.environ.get(sup_dir_var)
         
-        self.data_CNA = os.path.join(self.sup_dir, "snv-indel-plugin/data_CNA.txt")
-        self.provenance_output = os.path.join(self.sup_dir, "snv-indel-plugin/provenance_subset.tsv.gz")
-        self.purity_pass = os.path.join(self.sup_dir, "snv-indel-plugin/purity_pass/purity.txt")
-        self.purity_fail = os.path.join(self.sup_dir, "snv-indel-plugin/purity_fail/purity.txt")
-        self.purity_pass_json = os.path.join(self.sup_dir, "snv-indel-plugin/purity_pass/tar_snv_indel_purity_pass.json")
-        self.purity_fail_json = os.path.join(self.sup_dir, "snv-indel-plugin/purity_fail/tar_snv_indel_purity_fail.json")
+        self.data_CNA = os.path.join(self.sup_dir, "plugins/tar/tar-snv-indel/data_CNA.txt")
+        self.provenance_output = os.path.join(self.sup_dir, "plugins/tar/tar-snv-indel/provenance_subset.tsv.gz")
+        self.purity_pass = os.path.join(self.sup_dir, "plugins/tar/tar-snv-indel/purity_pass/purity.txt")
+        self.purity_fail = os.path.join(self.sup_dir, "plugins/tar/tar-snv-indel/purity_fail/purity.txt")
+        self.purity_pass_json = os.path.join(self.sup_dir, "plugins/tar/tar-snv-indel/purity_pass/tar_snv_indel_purity_pass.json")
+        self.purity_fail_json = os.path.join(self.sup_dir, "plugins/tar/tar-snv-indel/purity_fail/tar_snv_indel_purity_fail.json")
 
     def testTarSNVIndelPurityFail(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -51,12 +47,12 @@ class TestTarSNVIndelPlugin(PluginTester):
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
 
-        json_location = os.path.join(self.sup_dir ,"snv-indel-plugin/purity_fail/tar_snv_indel_purity_fail.json")
+        json_location = os.path.join(self.sup_dir ,"plugins/tar/tar-snv-indel/purity_fail/tar_snv_indel_purity_fail.json")
 
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: 'a4a18518b37945236f6b1d00c7de7a31'
+            self.MD5: 'd9dc0fc1e1f56bcf29f682db7cd714fa'
         }
         self.run_basic_test(input_dir, params)
 
@@ -77,12 +73,12 @@ class TestTarSNVIndelPlugin(PluginTester):
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
 
-        json_location = os.path.join(self.sup_dir ,"snv-indel-plugin/purity_pass/tar_snv_indel_purity_pass.json")
+        json_location = os.path.join(self.sup_dir ,"plugins/tar/tar-snv-indel/purity_pass/tar_snv_indel_purity_pass.json")
         
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: 'c2daa329f0b379c737026d01d40adcd9'
+            self.MD5: '59302c96b44604af17eecbacb97200d4'
         }
         self.run_basic_test(input_dir, params)
 

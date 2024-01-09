@@ -32,7 +32,7 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_UPDATE_JSON = 'simple_report_for_update.json'
-    SIMPLE_REPORT_MD5 = 'efab9a40e349af0723bb066385b77b91'
+    SIMPLE_REPORT_MD5 = '323e6bf971a26d1cb7533f634a78687d'
     SIMPLE_CONFIG_MD5 = 'ab4b71b790f2b12aa802b8eaa1658951'
 
     class mock_args:
@@ -502,7 +502,7 @@ class TestMainScript(TestCore):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, '2a1cbf9964c086fb51a1055da564d4d9')
+        self.assert_report_MD5(html_string, '785b5e2ac98a0eb616a075c5ba397443')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         # again, with the --write-json option
@@ -533,7 +533,7 @@ class TestMainScript(TestCore):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, '2a1cbf9964c086fb51a1055da564d4d9')
+        self.assert_report_MD5(html_string, '785b5e2ac98a0eb616a075c5ba397443')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         # again, with the --write-json option
