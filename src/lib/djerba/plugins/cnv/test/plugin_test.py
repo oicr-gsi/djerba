@@ -43,7 +43,7 @@ class TestWgtsCnv(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: self.JSON_NAME,
-            self.MD5: '84df608a34052efa8f2f89c5cfd6d80e'
+            self.MD5: '62d7d793d630ef155323fc3d750a6c99'
         }
         self.run_basic_test(input_dir, params, work_dir=work_dir)
 

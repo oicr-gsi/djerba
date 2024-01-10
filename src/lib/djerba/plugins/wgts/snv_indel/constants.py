@@ -15,6 +15,10 @@ T_DEPTH = 't_depth'
 T_ALT_COUNT = 't_alt_count'
 GNOMAD_AF = 'gnomAD_AF'
 HUGO_SYMBOL = 'Hugo_Symbol'
+CHROMOSOME = 'Chromosome'
+START = 'Start_Position'
+REF_ALLELE = 'Reference_Allele'
+TUM_ALLELE = 'Allele'
 MAF_KEYS = [
     VARIANT_CLASSIFICATION,
     TUMOUR_SAMPLE_BARCODE,
@@ -23,7 +27,11 @@ MAF_KEYS = [
     T_DEPTH,
     T_ALT_COUNT,
     GNOMAD_AF,
-    HUGO_SYMBOL
+    HUGO_SYMBOL,
+    CHROMOSOME,
+    START,
+    REF_ALLELE,
+    TUM_ALLELE
 ]
 HGVSP_SHORT = 'HGVSp_Short'
 HGVSC = 'HGVSc'

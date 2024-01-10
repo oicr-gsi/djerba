@@ -26,7 +26,7 @@ class TestBase(unittest.TestCase):
     def assert_report_MD5(self, report_string, expected_md5):
         body = self.redact_html(report_string)
         self.assertEqual(self.getMD5_of_string(body), expected_md5)
-    
+
     def getMD5(self, inputPath):
         with open(inputPath, 'r') as f:
             md5sum = self.getMD5_of_string(f.read())
@@ -59,10 +59,10 @@ class TestBase(unittest.TestCase):
         # could use an XML parser instead, but this way is simpler
         redacted_lines = []
         for line in contents:
-            if not re.search('<img src=', line) and not re.search('<script', line):
+            if not re.search('<img.* src=', line) and not re.search('<script', line):
                 redacted_lines.append(line)
         redacted = ''.join(redacted_lines)
-        redacted = redacted.replace(time.strftime("%Y/%m/%d"), '0000/00/31')
+        redacted = re.sub('[0-9]{4}/[0-9]{2}/[0-9]{2}', '0000/00/31', redacted)
         return redacted
 
     def redact_json_data(self, data):
