@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v1.2.0: 2024-01-10
 
 - Add a `patient_info` plugin
 - Add `update` mode to the main Djerba script, to update and render an existing JSON file
