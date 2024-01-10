@@ -18,7 +18,7 @@ class TestPatientInfo(PluginTester):
         params = {
             self.INI: 'patient_info.ini',
             self.JSON: 'patient_info.json',
-            self.MD5: 'a8c3a9e11c02ad5ae74bdb3c0a5ce9ca'
+            self.MD5: 'a83cee6ec54bea5e52dd14a5d7d76290'
         }
         self.run_basic_test(test_source_dir, params)
 
