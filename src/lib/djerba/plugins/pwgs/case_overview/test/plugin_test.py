@@ -40,7 +40,7 @@ class TestPwgCasePlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: 'd7d6fe3e6edeb3db13c85639de221fe2'
+            self.MD5: 'c83526d2dfbd57cbab4616ff06c5ed02'
         }
         self.run_basic_test(input_dir, params)
 
