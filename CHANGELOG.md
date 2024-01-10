@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v.1.1.3: 2024-01-10
+- Fixed unit tests for supplements plugin
+
 ## v.1.1.2: 2024-01-08
 
 - GCGI-1233: allowed support for purity and ploidy to be "NA", changed failed report template text 
