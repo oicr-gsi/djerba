@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v1.2.1: 2024-01-12
+- Fixes for clinical report header and installation of patient_info plugin
+
 ## v1.2.0: 2024-01-11
 
 - Add a `patient_info` plugin
