@@ -133,10 +133,21 @@ class main(core_base):
         return merger.render(merger_inputs)
 
     def configure(self, config_path_in, config_path_out=None):
+        """
+        Run the Djerba configure step, with an INI path as input
+        """
+        self.logger.info('Reading INI config file "{0}"'.format(config_path_in))
+        config_in = self.read_ini_path(config_path_in)
+        return self.configure_from_parser(config_in, config_path_out)
+
+    def configure_from_parser(self, config_in, config_path_out=None):
+        """
+        Run the Djerba configure step, with a ConfigParser as input
+        In update mode, we generate the ConfigParser on-the-fly instead of reading a file
+        """
         self.logger.info('Starting Djerba config step')
         if config_path_out:  # do this *before* taking the time to generate output
             self.path_validator.validate_output_file(config_path_out)
-        config_in = self.read_ini_path(config_path_in)
         components = {}
         priorities = {}
         # 1. Load components, set priorities, resolve dependencies (if any)
@@ -279,7 +290,6 @@ class main(core_base):
         # path validation was done in command-line script
         ap = arg_processor(args, self.logger, validate=False)
         mode = ap.get_mode()
-        work_dir = ap.get_work_dir()
         if mode == constants.SETUP:
             assay = ap.get_assay()
             compact = ap.get_compact()
@@ -313,6 +323,20 @@ class main(core_base):
             # upload to archive at the extract step, not the render step
             data = self.extract(config, json_path, archive)
             self.render(data, ap.get_out_dir(), ap.is_pdf_enabled(), archive=False)
+        elif mode == constants.UPDATE:
+            ini_path = ap.get_ini_path()
+            if ini_path == None:
+                config_path = ap.get_summary_path()
+                summary_only = True
+            else:
+                config_path = ini_path
+                summary_only = False
+            json_path = ap.get_json_path()
+            out_dir = ap.get_out_dir()
+            archive = ap.is_archive_enabled()
+            pdf = ap.is_pdf_enabled()
+            write = ap.is_write_json_enabled()
+            self.update(config_path, json_path, out_dir, archive, pdf, summary_only, write)
         else:
             msg = "Mode '{0}' is not defined in Djerba core.main!".format(mode)
             self.logger.error(msg)
@@ -331,6 +355,7 @@ class main(core_base):
                 'case_overview',
                 'cnv',
                 'fusion',
+                'patient_info',
                 'sample',
                 'summary',
                 'supplement.header',
@@ -347,6 +372,7 @@ class main(core_base):
                 'treatment_options_merger',
                 'case_overview',
                 'cnv',
+                'patient_info',
                 'sample',
                 'summary',
                 'supplement.header',
@@ -386,7 +412,55 @@ class main(core_base):
         generator.write_config(component_list, ini_path, compact)
         self.logger.info("Wrote config for {0} to {1}".format(assay, ini_path))
 
+    def update(self, config_path, json_path, out_dir, archive, pdf, summary_only,
+               write_json):
+        # update procedure:
+        # 1. run plugins from user-supplied config to get 'new' (updated) JSON
+        # 2. update the 'old' (user-supplied) JSON
+        # 3. optionally, upload the merged JSON to couchDB
+        # 4. optionally, use the merged JSON to generate HTML/PDF
+        #
+        # Two ways to configure:
+        # 1. INI config with core + plugins to update
+        # 2. Text file to update summary only
+        # The 'summary_only' argument controls which one is used
+        if summary_only:
+            # make an appropriate ConfigParser on-the-fly
+            config_in = ConfigParser()
+            config_in.add_section(cc.CORE)
+            config_in.add_section('summary')
+            config_in.set('summary', 'summary_file', config_path)
+            config = self.configure_from_parser(config_in)
+        else:
+            config = self.configure(config_path)
+        with open(json_path) as in_file:
+            data = json.loads(in_file.read())
+        data_new = self.extract(config, archive=False)
+        # new data overwrites old, on a per-plugin basis
+        # ie. overwriting a given plugin is all-or-nothing
+        # also overwrite JSON config section for the plugin
+        # if plugin data did not exist in old JSON, it will be added
+        for plugin in data_new[self.PLUGINS].keys():
+            data[self.PLUGINS][plugin] = data_new[self.PLUGINS][plugin]
+            data[constants.CONFIG][plugin] = data_new[constants.CONFIG][plugin]
+            self.logger.debug('Updated JSON for plugin {0}'.format(plugin))
+        if archive:
+            self.upload_archive(data)
+        else:
+            self.logger.info("Omitting archive upload for update")
+        if out_dir:
+            self.render(data, out_dir, pdf, archive=False)
+            if write_json:
+                json_path = os.path.join(out_dir, 'updated_report.json')
+                with open(json_path, 'w') as out_file:
+                    print(json.dumps(data), file=out_file)
+
     def upload_archive(self, data):
+        for plugin_name in data[self.PLUGINS]:
+            # load each plugin and redact PHI (if any)
+            plugin_data = data[self.PLUGINS][plugin_name]
+            plugin = self.plugin_loader.load(plugin_name, self.workspace)
+            data[self.PLUGINS][plugin_name] = plugin.redact(plugin_data)
         uploaded, report_id = database(self.log_level, self.log_path).upload_data(data)
         if uploaded:
             self.logger.info(f"Archiving was successful: {report_id}")
@@ -462,6 +536,9 @@ class arg_processor(logger):
     def get_out_dir(self):
         return self._get_arg('out_dir')
 
+    def get_summary_path(self):
+        return self._get_arg('summary')
+
     def get_work_dir(self):
         if hasattr(self.args, 'work_dir'):
             # if work_dir is defined and non-empty, use it
@@ -486,6 +563,9 @@ class arg_processor(logger):
 
     def is_pdf_enabled(self):
         return self._get_arg('pdf')
+
+    def is_write_json_enabled(self):
+        return self._get_arg('write_json')
 
     def validate_args(self, args):
         """
@@ -514,6 +594,15 @@ class arg_processor(logger):
             if args.work_dir != None: # work_dir is optional in report mode
                 v.validate_output_dir(args.work_dir)
             v.validate_output_dir(args.out_dir)
+        elif args.subparser_name == constants.UPDATE:
+            if args.ini != None:
+                v.validate_input_file(args.ini)
+            else:
+                v.validate_input_file(args.summary)
+            v.validate_input_file(args.json)
+            v.validate_output_dir(args.out_dir)
+            if args.work_dir != None: # work_dir is optional in report mode
+                v.validate_output_dir(args.work_dir)
         else:
             # shouldn't happen, but handle this case for completeness
             raise ValueError("Unknown subparser: " + args.subparser_name)

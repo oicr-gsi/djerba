@@ -13,6 +13,7 @@ import unittest
 import djerba.util.ini_fields as ini
 
 from configparser import ConfigParser
+from string import Template
 
 from djerba.core.configure import config_wrapper, core_configurer, DjerbaConfigError
 from djerba.core.ini_generator import ini_generator
@@ -30,7 +31,7 @@ class TestCore(TestBase):
 
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
-    SIMPLE_REPORT_MD5 = 'f78e83206c5c12b989e1cee69503ffce'
+    SIMPLE_REPORT_MD5 = '37caf581f36b1450900d6d770f9c497e'
     SIMPLE_CONFIG_MD5 = 'ab4b71b790f2b12aa802b8eaa1658951'
 
     class mock_args:
@@ -472,6 +473,76 @@ class TestMainScript(TestCore):
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
         self.assertSimpleReport(json_path, html)
+
+    def test_update_cli_with_ini(self):
+        mode = 'update'
+        work_dir = self.tmp_dir
+        # write an INI file with the correct test directory
+        ini_template_path = os.path.join(self.test_source_dir, 'update.ini')
+        with open(ini_template_path) as in_file:
+            ini_template_string = in_file.read()
+        ini_template = Template(ini_template_string)
+        ini_string = ini_template.substitute({'TEST_SOURCE_DIR': self.test_source_dir})
+        ini_path = os.path.join(self.tmp_dir, 'update.ini')
+        with open(ini_path, 'w') as out_file:
+            print(ini_string, file=out_file)
+        # run djerba.py and check the results
+        json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
+        cmd = [
+            'djerba.py', mode,
+            '--work-dir', work_dir,
+            '--ini', ini_path,
+            '--json', json_path,
+            '--out-dir', self.tmp_dir,
+            '--pdf'
+        ]
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
+        with open(html_path) as html_file:
+            html_string = html_file.read()
+        self.assert_report_MD5(html_string, '0be6f09432ed2e861af63565d8205716')
+        pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
+        self.assertTrue(os.path.isfile(pdf_path))
+        # again, with the --write-json option
+        cmd.append('--write-json')
+        updated_path = os.path.join(self.tmp_dir, 'updated_report.json')
+        self.assertFalse(os.path.isfile(updated_path))
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        self.assertTrue(os.path.isfile(updated_path))
+
+    def test_update_cli_with_summary(self):
+        # run with summary-only input
+        mode = 'update'
+        work_dir = self.tmp_dir
+        summary_path = os.path.join(self.test_source_dir, 'alternate_summary.txt')
+        # run djerba.py and check the results
+        json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_JSON)
+        cmd = [
+            'djerba.py', mode,
+            '--work-dir', work_dir,
+            '--summary', summary_path,
+            '--json', json_path,
+            '--out-dir', self.tmp_dir,
+            '--pdf'
+        ]
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
+        with open(html_path) as html_file:
+            html_string = html_file.read()
+        self.assert_report_MD5(html_string, 'a0a3308b8ed6dd4dacb7bfff8f7adc72')
+        pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
+        self.assertTrue(os.path.isfile(pdf_path))
+        # again, with the --write-json option
+        cmd.append('--write-json')
+        updated_path = os.path.join(self.tmp_dir, 'updated_report.json')
+        self.assertFalse(os.path.isfile(updated_path))
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        self.assertTrue(os.path.isfile(updated_path))
+
 
 class TestModuleDir(TestCore):
 

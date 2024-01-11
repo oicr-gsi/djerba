@@ -1,14 +1,23 @@
 # CHANGELOG
 
+## v1.2.0: 2024-01-11
+
+- Add a `patient_info` plugin
+- Add `update` mode to the main Djerba script, to update and render an existing JSON file
+- New features are a proof-of-concept for enabling the geneticist to edit reports with a portable mini-Djerba
+- Removed the `update_oncokb_cache.py` script; replaced by `djerba.py update --summary=...`
+- Addition of `pwgs_cardea_helper` to pull sample info using a requisition ID
+
 ## v.1.1.3: 2024-01-10
+
 - Fixed unit tests for supplements plugin
 
 ## v.1.1.2: 2024-01-08
 
-- GCGI-1233: allowed support for purity and ploidy to be "NA", changed failed report template text 
+- GCGI-1233: allowed support for purity and ploidy to be "NA", changed failed report template text
 - Fixed unit tests for various plugins
 - Changed sign-offs page break to "auto"
-- GCGI-1240/1241: added filtering for 2 TERT hotspots: -124bp G>A and -146bp G>A 
+- GCGI-1240/1241: added filtering for 2 TERT hotspots: -124bp G>A and -146bp G>A
 
 ## v1.1.1: 2023-12-13
 

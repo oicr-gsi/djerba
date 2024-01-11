@@ -22,7 +22,7 @@ class TestWgtsSamplePlugin(PluginTester):
         self.tmp_dir = self.tmp.name
         sup_dir_var = 'DJERBA_TEST_DIR'
         self.sup_dir = os.environ.get(sup_dir_var)
-         
+        
     def testWgtsSample(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         json_location = os.path.join(self.sup_dir ,"plugins/sample/report_json/sample.json")
@@ -31,7 +31,7 @@ class TestWgtsSamplePlugin(PluginTester):
         params = {
             self.INI: ini_location,
             self.JSON: json_location,
-            self.MD5: 'f23dbf3e5ac417740bcbb990723db0f0'
+            self.MD5: '55a4c4b25376d02f0ca9965afbc63e3f'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -46,7 +46,7 @@ class TestWgtsSamplePlugin(PluginTester):
         params = {
             self.INI: ini_location,
             self.JSON: json_location,
-            self.MD5: 'c9b5dd13be0f6d947550d93cd165b64f'
+            self.MD5: '2a304e1264d51e54497892d8e9f21b2b'
         }
         self.run_basic_test(test_source_dir, params)
 
