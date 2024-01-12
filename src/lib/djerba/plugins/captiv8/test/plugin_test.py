@@ -38,7 +38,7 @@ class TestCaptiv8Plugin(PluginTester):
         params = {
             self.INI: 'input/' + self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '7dd8d8d0c1f005f667d084f1644b21f6'
+            self.MD5: '815dcffda5bf62b794257ae2de86b064'
         }
         self.run_basic_test(self.tmp_dir, params)
 

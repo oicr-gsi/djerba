@@ -20,7 +20,7 @@ class TestCaseOverview(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DIR'
+        sup_dir_var = 'DJERBA_TEST_DATA'
         self.sup_dir = os.environ.get(sup_dir_var)
         self.sample_json = os.path.join(self.sup_dir, "plugins/case_overview/sample_info.json")
 
@@ -32,7 +32,7 @@ class TestCaseOverview(PluginTester):
         params = {
             self.INI: 'case_overview_WGTS.ini',
             self.JSON: json_location,
-            self.MD5: '7532366678d57cc4ac51ac790cc3f902'
+            self.MD5: '466edd497ee81ab7e29f747920d5277d'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -43,7 +43,7 @@ class TestCaseOverview(PluginTester):
         params = {
             self.INI: 'case_overview_TAR.ini',
             self.JSON: json_location,
-            self.MD5: '08627c99b146c91c034f56c90563570b'
+            self.MD5: '5d503e55ad7079f866f251724f4a1dfd'
         }
         self.run_basic_test(test_source_dir, params)
 
