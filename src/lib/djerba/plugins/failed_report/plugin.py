@@ -80,7 +80,7 @@ class main(plugin_base):
         ]
         for key in discovered:
             self.add_ini_discovered(key)
-        self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
+        self.set_ini_default(core_constants.ATTRIBUTES, 'failed')
         self.set_priority_defaults(self.PRIORITY)
 
     def render(self, data):
@@ -92,7 +92,7 @@ class main(plugin_base):
         failed_text = "The patient has been diagnosed with " + primary_cancer +  \
                        " and has been referred for the OICR Genomics " + assay + \
                        " assay through the " + study + " study." + \
-                       " A quality failure report for this sample is being issued due to the informatically inferred tumour purity of ...% which is below the reportable threshold of 30% for the assay / is being issued due to failed extraction..."
+                       " A quality failure report for this sample / is being issued due to the informatically inferred tumour purity of ...% which is below the reportable threshold of 30% for the assay / is being issued due to failed extraction / is being issued as the quantity of extracted DNA/RNA from tissue material was below the lower quantifiable range and therefore below the minimum input amount for this assay (minimums of 25ng for DNA and 50ng for RNA)..."
         
         with open(failed_template_path, "w") as failed_file:
             failed_file.write(failed_text)

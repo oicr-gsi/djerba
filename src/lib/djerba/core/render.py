@@ -16,8 +16,6 @@ from djerba.util.render_mako import mako_renderer
 
 class html_renderer(logger):
 
-    CLINICAL_HEADER_NAME = 'clinical_header.html'
-
     def __init__(self, core_data, log_level=logging.INFO, log_path=None):
         self.data = core_data
         self.log_level = log_level

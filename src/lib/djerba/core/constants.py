@@ -33,6 +33,7 @@ RENDER = 'render'
 # attribute names
 CLINICAL = 'clinical'
 SUPPLEMENTARY = 'supplementary'
+FAILED = 'failed'
 
 # core config elements
 DONOR = 'donor'

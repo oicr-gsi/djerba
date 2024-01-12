@@ -7,10 +7,10 @@
                 "render": 600
             },
             "attributes": [
-                "clinical"
+                "failed"
             ],
             "merge_inputs": {},
             "results": {
-                "failed_text": "The patient has been diagnosed with PLACEHOLDER_CANCER and has been referred for the OICR Genomics WGTS assay through the PLACEHOLDER_STUDY study. A quality failure report for this sample is being issued due to the informatically inferred tumour purity of ...% which is below the reportable threshold of 30% for the assay / is being issued due to failed extraction..."
+                "failed_text": "The patient has been diagnosed with PLACEHOLDER_CANCER and has been referred for the OICR Genomics WGTS assay through the PLACEHOLDER_STUDY study. A quality failure report for this sample / is being issued due to the informatically inferred tumour purity of ...% which is below the reportable threshold of 30% for the assay / is being issued due to failed extraction / is being issued as the quantity of extracted DNA/RNA from tissue material was below the lower quantifiable range and therefore below the minimum input amount for this assay (minimums of 25ng for DNA and 50ng for RNA)..."
     }
 }

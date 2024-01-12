@@ -1,5 +1,5 @@
 {
-    "document_types": ["clinical", "research", "simple"],
+    "document_types": ["clinical", "research", "simple", "failed"],
     "document_settings": {
 	"clinical": {
 	    "document_header": "clinical_header.html",
@@ -15,6 +15,12 @@
 	    "document_header": "simple_header.html",
 	    "document_footer": "footer.html",
 	    "stylesheet": "stylesheet.css"
-	}	
+	},
+        "failed": {
+            "document_header": "failed_header.html",
+            "document_footer": "footer.html",
+            "stylesheet": "stylesheet.css"
+        }
+
     }
 }

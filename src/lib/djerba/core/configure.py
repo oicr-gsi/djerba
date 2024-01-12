@@ -33,7 +33,8 @@ class configurable(core_base, ABC):
     KNOWN_ATTRIBUTES = [
         cc.CLINICAL,
         cc.SUPPLEMENTARY,
-        cc.RESEARCH
+        cc.RESEARCH,
+        cc.FAILED
     ]
 
     def __init__(self, **kwargs):
