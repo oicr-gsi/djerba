@@ -544,6 +544,9 @@ class arg_processor(arg_processor_base):
     def get_summary_path(self):
         return self._get_arg('summary')
 
+    def get_summary_path(self):
+        return self._get_arg('summary')
+
     def get_work_dir(self):
         if hasattr(self.args, 'work_dir'):
             # if work_dir is defined and non-empty, use it

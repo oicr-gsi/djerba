@@ -5,6 +5,21 @@
 - Mini-Djerba: Lightweight application to update patient info/summary in existing reports
 - Config file format: Mini-Djerba Config, with file extension .mdc
 
+## v1.2.1: 2024-01-12
+- Fixes for clinical report header and installation of patient_info plugin
+
+## v1.2.0: 2024-01-11
+
+- Add a `patient_info` plugin
+- Add `update` mode to the main Djerba script, to update and render an existing JSON file
+- New features are a proof-of-concept for enabling the geneticist to edit reports with a portable mini-Djerba
+- Removed the `update_oncokb_cache.py` script; replaced by `djerba.py update --summary=...`
+- Addition of `pwgs_cardea_helper` to pull sample info using a requisition ID
+
+## v.1.1.3: 2024-01-10
+
+- Fixed unit tests for supplements plugin
+
 ## v.1.1.2: 2024-01-08
 
 - GCGI-1233: allowed support for purity and ploidy to be "NA", changed failed report template text
