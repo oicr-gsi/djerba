@@ -36,6 +36,9 @@ def get_parser():
     update_parser.add_argument('-w', '--work-dir', metavar='PATH', help='Path to workspace directory; optional, defaults to a temporary directory')
     return parser
 
+class MiniDjerbaScriptError(Exception):
+    pass
+
 if __name__ == '__main__':
     parser = get_parser()
     if len(sys.argv) == 1:
@@ -43,5 +46,9 @@ if __name__ == '__main__':
         sys.exit(1)
     args = parser.parse_args()
     ap = arg_processor(args)
-    with TemporaryDirectory(prefix='mini_djerba_') as tmp_dir:
-        main(tmp_dir, ap.get_log_level(), ap.get_log_path()).run(args)
+    try:
+        with TemporaryDirectory(prefix='mini_djerba_') as tmp_dir:
+            main(tmp_dir, ap.get_log_level(), ap.get_log_path()).run(args)
+    except Exception as err:
+        msg = "Unexpected Mini-Djerba error! Contact the developers."
+        raise MiniDjerbaScriptError(msg) from err
