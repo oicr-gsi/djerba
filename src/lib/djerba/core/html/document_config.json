@@ -18,7 +18,7 @@
 	},
         "failed": {
             "document_header": "failed_header.html",
-            "document_footer": "footer.html",
+            "document_footer": "clinical_footer.html",
             "stylesheet": "stylesheet.css"
         }
 

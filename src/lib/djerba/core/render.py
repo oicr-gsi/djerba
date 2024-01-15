@@ -72,7 +72,7 @@ class html_renderer(logger):
             self.logger.error(msg)
             raise
         # do template substitution for clinical footer; otherwise just read the file
-        if doc_type == cc.CLINICAL:
+        if doc_type in [cc.CLINICAL, cc.FAILED]:
             args = {cc.AUTHOR: self.author}
             footer = self.mako.render_name(file_name, args)
         else:

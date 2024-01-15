@@ -1,0 +1,110 @@
+{
+    "core": {
+        "author": "CGI Author",
+        "document_config": "document_config.json",
+	"core_version": "placeholder",
+        "report_id": "placeholder",
+        "extract_time": "placeholder"
+    },
+    "plugins": {
+        "demo1": {
+            "plugin_name": "demo1 plugin",
+            "version": "1.0.0",
+            "priorities": {
+                "configure": 200,
+                "extract": 200,
+                "render": 200
+            },
+            "attributes": [
+                "failed"
+            ],
+            "merge_inputs": {
+                "gene_information_merger": [
+                    {
+                        "Gene": "KRAS",
+                        "Gene_URL": "https://www.oncokb.org/gene/KRAS",
+                        "Chromosome": "12p12.1",
+                        "Summary": "KRAS, a GTPase which functions as an upstream regulator of the MAPK and PI3K pathways, is frequently mutated in various cancer types including pancreatic, colorectal and lung cancers."
+                    },
+                    {
+                        "Gene": "PIK3CA",
+                        "Gene_URL": "https://www.oncokb.org/gene/PIK3CA",
+                        "Chromosome": "3q26.32",
+                        "Summary": "PIK3CA, the catalytic subunit of PI3-kinase, is frequently mutated in a diverse range of cancers including breast, endometrial and cervical cancers."
+                    }
+                ]
+            },
+            "results": {}
+        },
+        "demo2": {
+            "plugin_name": "demo2 plugin",
+            "version": "1.0.0",
+            "priorities": {
+                "configure": 300,
+                "extract": 300,
+                "render": 300
+            },
+            "attributes": [
+                "failed"
+            ],
+            "merge_inputs": {
+                "gene_information_merger": [
+                    {
+                        "Gene": "PIK3CA",
+                        "Gene_URL": "https://www.oncokb.org/gene/PIK3CA",
+                        "Chromosome": "3q26.32",
+                        "Summary": "PIK3CA, the catalytic subunit of PI3-kinase, is frequently mutated in a diverse range of cancers including breast, endometrial and cervical cancers."
+                    },
+                    {
+                        "Gene": "PIK3CB",
+                        "Gene_URL": "https://www.oncokb.org/gene/PIK3CB",
+                        "Chromosome": "3q22.3",
+                        "Summary": "PIK3CB, a catalytic subunit of PI3-kinase, is altered by amplification or mutation in various cancer types."
+                    }
+                ]
+            },
+            "results": {
+                "answer": "42",
+                "question": "What do you get if you multiply six by nine?"
+            }
+        }
+    },
+    "mergers": {},
+    "config": {
+        "core": {
+            "report_id": "placeholder",
+            "attributes": "",
+            "depends_configure": "",
+            "depends_extract": "",
+            "configure_priority": "100",
+            "extract_priority": "100",
+            "render_priority": "100",
+            "report_version": "1",
+            "archive_name": "djerba",
+            "archive_url": "http://${username}:${password}@${address}:${port}",
+            "author": "CGI Author",
+            "sample_info": "sample_info.json",
+            "document_config": "document_config.json"
+        },
+        "demo1": {
+            "question": "What do you get if you multiply six by nine?",
+            "dummy_file": "/path/of/dummy/file",
+            "attributes": "failed",
+            "depends_configure": "",
+            "depends_extract": "",
+            "configure_priority": "200",
+            "extract_priority": "200",
+            "render_priority": "200"
+        },
+        "demo2": {
+            "question": "question.txt",
+            "demo2_param": "42",
+            "attributes": "failed",
+            "depends_configure": "",
+            "depends_extract": "",
+            "configure_priority": "300",
+            "extract_priority": "300",
+            "render_priority": "300"
+        }
+    }
+}

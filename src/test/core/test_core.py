@@ -33,6 +33,9 @@ class TestCore(TestBase):
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_MD5 = 'bba1ed174db424cc0dcd10766a28b2e3'
     SIMPLE_CONFIG_MD5 = 'ab4b71b790f2b12aa802b8eaa1658951'
+    
+    FAILED_REPORT_JSON = 'failed_report_expected.json'
+    FAILED_REPORT_MD5 = '35be726ce7c6b8981a2adb36d0bde13a'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
@@ -673,6 +676,30 @@ class TestSimpleReport(TestCore):
         # minimal test of HTML/PDF writing; TODO add more PDF tests
         html_out = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         pdf_out = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
+        self.assertTrue(os.path.exists(html_out))
+        self.assertTrue(os.path.exists(pdf_out))
+
+class TestFailedReport(TestCore):
+
+    def test_failed_report(self):
+        ini_path = os.path.join(self.test_source_dir, 'config_failed.ini')
+        json_path = os.path.join(self.test_source_dir, self.FAILED_REPORT_JSON)
+        djerba_main = main(self.tmp_dir, log_level=logging.ERROR) # suppress author warning
+        config = djerba_main.configure(ini_path)
+        config.set('demo1', 'attributes', 'failed')
+        config.set('demo2', 'attributes', 'failed')
+        data_found = djerba_main.extract(config)
+        data_found['core']['extract_time'] = 'placeholder'
+        data_found['core']['core_version'] = 'placeholder'
+        with open(json_path) as json_file:
+            data_expected = json.loads(json_file.read())
+        self.assertEqual(data_expected, data_found)
+        output = djerba_main.render(data_found, out_dir=self.tmp_dir, pdf=True)
+        html_string = output['documents']['placeholder_report.failed']
+        self.assert_report_MD5(html_string, self.FAILED_REPORT_MD5)
+        # minimal test of HTML/PDF writing; TODO add more PDF tests
+        html_out = os.path.join(self.tmp_dir, 'placeholder_report.failed.html')
+        pdf_out = os.path.join(self.tmp_dir, 'placeholder_report.failed.pdf')
         self.assertTrue(os.path.exists(html_out))
         self.assertTrue(os.path.exists(pdf_out))
 
