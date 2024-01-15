@@ -21,7 +21,7 @@ class TestProvenance(TestBase):
     PATH_INFO_MD5 = '78330d60b6c5411f16e2a04f09a01e87'
 
     def testGetProvenance(self):
-        data_dir = os.path.join(os.environ.get('DJERBA_TEST_DATA'), 'helpers', 'provenance')
+        data_dir = os.path.join(os.environ.get('DJERBA_TEST_DIR'), 'helpers', 'provenance')
         provenance_input = os.path.join(data_dir, 'provenance_input.tsv.gz')
         ws = workspace(self.tmp_dir)
         loader = helper_loader(logging.WARNING)

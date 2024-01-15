@@ -23,7 +23,7 @@ class TestPwgAnalysisPlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DATA'
+        sup_dir_var = 'DJERBA_TEST_DIR'
         self.sup_dir = os.environ.get(sup_dir_var)
 
     def testPreprocessHbc(self):
@@ -59,7 +59,7 @@ class TestPwgAnalysisPlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '279b1c6321ec878b3d7fa2787d0ef1bd'
+            self.MD5: 'ce849defe896e5b4203cfcf180241b15'
         }
         self.run_basic_test(input_dir, params)
 
