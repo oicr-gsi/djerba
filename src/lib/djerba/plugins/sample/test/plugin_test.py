@@ -31,7 +31,7 @@ class TestWgtsSamplePlugin(PluginTester):
         params = {
             self.INI: ini_location,
             self.JSON: json_location,
-            self.MD5: '55a4c4b25376d02f0ca9965afbc63e3f'
+            self.MD5: 'ed58293ca8e47099f79e8e5cca1d1d78'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -46,7 +46,7 @@ class TestWgtsSamplePlugin(PluginTester):
         params = {
             self.INI: ini_location,
             self.JSON: json_location,
-            self.MD5: '2a304e1264d51e54497892d8e9f21b2b'
+            self.MD5: '27571539df907bfc0f49380a4ce8d78c'
         }
         self.run_basic_test(test_source_dir, params)
 

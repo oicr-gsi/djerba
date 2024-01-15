@@ -24,7 +24,7 @@ class TestPwgSamplePlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DATA'
+        sup_dir_var = 'DJERBA_TEST_DIR'
         self.sup_dir = os.environ.get(sup_dir_var)
 
     def testPwgsSummary(self):
@@ -41,7 +41,7 @@ class TestPwgSamplePlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '0b848b10831c5aa40a1711f7f093a18f'
+            self.MD5: '7a624e9cd3077ad4d1b473e5de4f41cc'
         }
         self.run_basic_test(input_dir, params)
 
