@@ -23,7 +23,7 @@ class TestPwgSamplePlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DATA'
+        sup_dir_var = 'DJERBA_TEST_DIR'
         self.sup_dir = os.environ.get(sup_dir_var)
 
     def testPreprocessSNVcount(self):
@@ -45,7 +45,7 @@ class TestPwgSamplePlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '29d7af558da3aced6116ef8ec740f716'
+            self.MD5: '4aed163a39e4d1df741b2bcf84c54b86'
         }
         self.run_basic_test(input_dir, params)
 
