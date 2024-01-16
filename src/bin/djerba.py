@@ -48,6 +48,7 @@ def get_parser():
     group = update_parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-i', '--ini', metavar='PATH', help='INI config file with plugins to update')
     group.add_argument('-s', '--summary', metavar='PATH', help='Text file with results summary')
+    update_parser.add_argument('-f', '--force', action='store_true', help='Force update of mismatched plugin versions')
     update_parser.add_argument('-j', '--json', metavar='PATH', required=True, help='Path for JSON input')
     update_parser.add_argument('-o', '--out-dir', metavar='DIR', required=True, help='Directory for output files')
     update_parser.add_argument('-p', '--pdf', action='store_true', help='Generate PDF output from HTML')
