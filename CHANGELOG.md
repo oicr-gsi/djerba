@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v1.3.0: 2024-01-16
 
 - Mini-Djerba: Lightweight application to update patient info/summary in existing reports
 - MDC file format: Mini-Djerba Config, with file extension .mdc
