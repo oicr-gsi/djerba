@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import unittest
+from subprocess import CalledProcessError
 
 from djerba.core.main import DjerbaVersionMismatchError
 from djerba.plugins.patient_info.plugin import main as patient_info_plugin
@@ -146,36 +147,63 @@ class TestMain(TestMiniBase):
         main(self.tmp_dir).run(args)
         self.assert_update()
 
-    class TestScript(TestMiniBase):
+class TestScript(TestMiniBase):
 
-        def test_ready(self):
-            test_dir = os.path.dirname(os.path.realpath(__file__))
-            json_path = os.path.join(test_dir, self.JSON_NAME)
-            out_path = os.path.join(self.tmp_dir, 'config.mdc')
-            cmd = [
-                'mini_djerba.py', 'ready',
-                '--json', json_path,
-                '--out', out_path
-            ]
-            result = subprocess_runner().run(cmd)
-            self.assertEqual(result.returncode, 0)
-            self.assertMDC(out_path)
+    def test_ready(self):
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        json_path = os.path.join(test_dir, self.JSON_NAME)
+        out_path = os.path.join(self.tmp_dir, 'config.mdc')
+        cmd = [
+            'mini_djerba.py', 'ready',
+            '--json', json_path,
+            '--out', out_path
+        ]
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        self.assert_MDC(out_path)
 
-        def test_update(self):
-            test_dir = os.path.dirname(os.path.realpath(__file__))
-            config_path = os.path.join(test_dir, 'config_for_update.mdc')
-            json_path = os.path.join(test_dir, self.JSON_NAME)
-            cmd = [
-                'mini_djerba.py', 'update',
-                '--config', config_path,
-                '--json', json_path,
-                '--out_dir', self.tmp_dir,
-                '--pdf',
-                '--write-json'
-            ]
-            result = subprocess_runner().run(cmd)
-            self.assertEqual(result.returncode, 0)
-            self.assert_update()
+    def test_update(self):
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        config_path = os.path.join(test_dir, 'config_for_update.mdc')
+        json_path = os.path.join(test_dir, self.JSON_NAME)
+        cmd = [
+            'mini_djerba.py', 'update',
+            '--config', config_path,
+            '--json', json_path,
+            '--out-dir', self.tmp_dir,
+            '--pdf',
+            '--write-json'
+        ]
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        self.assert_update()
+
+    def test_fail(self):
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        config_path = os.path.join(test_dir, 'config_broken_1.mdc')
+        json_path = os.path.join(test_dir, self.JSON_NAME)
+        cmd = [
+            'mini_djerba.py', 'update',
+            '--config', config_path,
+            '--json', json_path,
+            '--out-dir', self.tmp_dir,
+            '--pdf',
+            '--write-json'
+        ]
+        with self.assertRaises(CalledProcessError):
+            subprocess_runner(log_level=logging.CRITICAL).run(cmd)
+        config_path = os.path.join(test_dir, 'config_for_update.mdc')
+        cmd = [
+            'mini_djerba.py', 'update',
+            '--config', config_path,
+            '--json', '/broken/json/path',
+            '--out-dir', self.tmp_dir,
+            '--pdf',
+            '--write-json'
+        ]
+        with self.assertRaises(CalledProcessError):
+            subprocess_runner(log_level=logging.CRITICAL).run(cmd)
+
 
 
 if __name__ == '__main__':

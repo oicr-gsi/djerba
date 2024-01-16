@@ -125,3 +125,6 @@ class arg_processor(arg_processor_base):
     def get_out_file(self):
         return self._get_arg('out')
 
+class MiniDjerbaScriptError(Exception):
+    pass
+

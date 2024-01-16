@@ -10,7 +10,8 @@ sys.path.pop(0) # do not import from script directory
 import argparse
 from tempfile import TemporaryDirectory
 import djerba.util.mini.constants as constants
-from djerba.util.mini.main import main, arg_processor
+from djerba.util.mini.main import main, arg_processor, MiniDjerbaScriptError
+from djerba.util.mini.mdc import MDCFormatError
 
 def get_parser():
     """Construct the parser for command-line arguments"""
@@ -36,9 +37,6 @@ def get_parser():
     update_parser.add_argument('-w', '--work-dir', metavar='PATH', help='Path to workspace directory; optional, defaults to a temporary directory')
     return parser
 
-class MiniDjerbaScriptError(Exception):
-    pass
-
 if __name__ == '__main__':
     parser = get_parser()
     if len(sys.argv) == 1:
@@ -49,6 +47,10 @@ if __name__ == '__main__':
     try:
         with TemporaryDirectory(prefix='mini_djerba_') as tmp_dir:
             main(tmp_dir, ap.get_log_level(), ap.get_log_path()).run(args)
+    except MDCFormatError as err:
+        msg = "Configuration error: Please check the -c/--config file and try again."
+        print(msg, file=sys.stderr)
+        raise
     except Exception as err:
         msg = "Unexpected Mini-Djerba error! Contact the developers."
         raise MiniDjerbaScriptError(msg) from err
