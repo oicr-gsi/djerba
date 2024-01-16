@@ -5,7 +5,6 @@ Plugin to generate the Results Summary report section
 
 import logging
 from time import strftime
-import csv
 import os
 
 from djerba.plugins.base import plugin_base, DjerbaPluginError
@@ -56,14 +55,3 @@ class main(plugin_base):
     def render(self, data):
         renderer = mako_renderer(self.get_module_dir())
         return renderer.render_name(self.MAKO_TEMPLATE_NAME, data)
-
-    def read_results_summary(self, results_summary_path):
-        """
-        read results summary from file
-        """
-        with open(results_summary_path, 'r') as summary_file:
-            summary_text = csv.reader(summary_file, delimiter="\t")
-            summary = ''
-            for row in summary_text:
-                summary = summary.join(row)
-        return summary
