@@ -50,7 +50,7 @@ CONFIGURE = 'configure'
 DRAFT = 'draft'
 EXTRACT = 'extract'
 RENDER = 'render'
-ALL = 'all'
+UPDATE = 'update'
 
 # mode names for benchmark.py
 # REPORT = 'report' # duplicate of top-level JSON section name; this is fine

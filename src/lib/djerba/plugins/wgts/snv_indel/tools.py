@@ -70,6 +70,7 @@ class snv_indel_processor(logger):
         is_matched = row[ix.get(sic.MATCHED_NORM_SAMPLE_BARCODE)] != 'unmatched'
         filter_flags = re.split(';', row[ix.get(sic.FILTER)])
         var_class = row[ix.get(sic.VARIANT_CLASSIFICATION)]
+        tert_hotspot = self.is_tert_hotspot(row, ix)
         hugo_symbol = row[ix.get(sic.HUGO_SYMBOL)]
         if row_t_depth >= 1 and \
            row_t_alt_count/row_t_depth >= vaf_cutoff and \
@@ -78,6 +79,8 @@ class snv_indel_processor(logger):
            not any([z in sic.FILTER_FLAGS_EXCLUDE for z in filter_flags]) and \
            not (var_class == "5'Flank" and hugo_symbol != 'TERT'):
             ok = True
+            if hugo_symbol == 'TERT' and not tert_hotspot:
+                ok = False
         return ok
 
     def _read_maf_indices(self, row):
@@ -139,6 +142,16 @@ class snv_indel_processor(logger):
                     if 'splice' in row_input[sic.VARIANT_CLASSIFICATION].lower():
                         alt = 'p.? (' + row_input[sic.HGVSC] + ')'
                         alt_url = html_builder.build_alteration_url(gene, "Truncating%20Mutations", oncotree_code)
+                    if gene == 'TERT':
+                        # filtering for TERT hot spot would have already occured so this is a hot spot
+                        if row_input[sic.START] == '1295113':
+                            alt = 'p.? (c.-124G>A)'
+                        elif row_input[sic.START] == '1295135':
+                            alt = 'p.? (c.-146G>A)'
+                        alt_url = html_builder.build_alteration_url(
+                            gene, "Promoter%20Mutation", oncotree_code
+                        )
+
                     treatment_entry = treatment_option_factory.get_json(
                         tier = oncokb_levels.tier(level),
                         level = level,
@@ -242,12 +255,39 @@ class snv_indel_processor(logger):
             protein_url = html_builder.build_alteration_url(
                 gene, "Truncating%20Mutations", oncotree_code
             )
+        if gene == 'TERT': 
+            # filtering for TERT hot spot would have already occured so this is a hot spot
+            if row[sic.START] == '1295113':
+                protein = 'p.? (c.-124G>A)'
+            elif row[sic.START] == '1295135':
+                protein = 'p.? (c.-146G>A)'
+            protein_url = html_builder.build_alteration_url(
+                gene, "Promoter%20Mutation", oncotree_code
+            )
+
+
         return [protein, protein_url]
 
     def get_tumour_vaf(self, row):
         vaf = row['tumour_vaf']
         vaf = int(round(float(vaf), 2)*100)
         return vaf
+
+    def is_tert_hotspot(self, row, ix):
+        """
+        Hot spots are:
+        1. -124 bp (nucleotide polymorphism G > A (chr5, 1295113 assembly GRCh38))
+        2. -146 bp (nucleotide polymorphism G > A (chr5, 1295135 assembly GRCh38))
+        """
+        chromosome = row[ix.get(sic.CHROMOSOME)]
+        start = row[ix.get(sic.START)]
+        ref_allele = row[ix.get(sic.REF_ALLELE)]
+        tum_allele = row[ix.get(sic.TUM_ALLELE)]
+
+        if chromosome == 'chr5' and start in ['1295113', '1295135'] and ref_allele == "G" and tum_allele == "A":
+            return True
+        else:
+            return False
 
     def preprocess_maf(self, maf_path, tumour_id):
         """Filter a MAF file to remove unwanted rows; also update the tumour ID"""

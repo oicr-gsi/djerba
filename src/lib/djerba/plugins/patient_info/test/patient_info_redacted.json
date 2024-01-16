@@ -1,0 +1,23 @@
+{
+    "attributes": [
+        "clinical"
+    ],
+    "merge_inputs": {},
+    "plugin_name": "patient_info plugin",
+    "priorities": {
+        "configure": 100,
+        "extract": 100,
+        "render": 30
+    },
+    "results": {
+        "hospital_name_and_address": "HOSPITAL NAME AND ADDRESS",
+        "patient_dob": "yyyy/mm/dd",
+        "patient_name": "LAST, FIRST",
+        "patient_genetic_sex": "SEX",
+        "physician_licence_number": "nnnnnnnn",
+        "physician_name": "LAST, FIRST",
+        "physician_phone_number": "nnn-nnn-nnnn",
+        "requisitioner_email": "NAME@DOMAIN.COM"
+    },
+    "version": "1.0.0"
+}

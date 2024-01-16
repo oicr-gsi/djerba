@@ -33,6 +33,9 @@ class main(helper_base):
     # Permitted assay names
     VALID_ASSAYS = ['WGTS', 'WGS', 'PWGS']
 
+    # Other
+    NA = "NA"
+
     def specify_params(self):
         self.logger.debug("Specifying params for input params helper")
         self.set_priority_defaults(self.PRIORITY)
@@ -95,29 +98,19 @@ class main(helper_base):
         """
         Retrieves values from INI and puts them in a JSON
         """
-        try:
-            input_params_info = {
-                self.DONOR: config[self.identifier][self.DONOR],
-                self.STUDY: config[self.identifier][self.STUDY],
-                self.PROJECT: config[self.identifier][self.PROJECT],
-                self.ONCOTREE_CODE: config[self.identifier][self.ONCOTREE_CODE],
-                self.PRIMARY_CANCER: config[self.identifier][self.PRIMARY_CANCER],
-                self.SITE_OF_BIOPSY: config[self.identifier][self.SITE_OF_BIOPSY],
-                self.REQUISITION_APPROVED: config[self.identifier][self.REQUISITION_APPROVED],
-                self.ASSAY: config[self.identifier][self.ASSAY],
-                self.REQUISITION_ID: config[self.identifier][self.REQUISITION_ID],
-                self.TCGACODE: config[self.identifier][self.TCGACODE],
-                self.SAMPLE_TYPE: config[self.identifier][self.SAMPLE_TYPE]
-            }
-        except KeyError as err:
-            msg = "Required config field for input params helper not found: {0}".format(err)
-            self.logger.error(err)
-            raise
-        except ValueError as err:
-            # failure to convert config string to float
-            msg = "Invalid numeric config value for input params helper: {0}".format(err)
-            self.logger.error(err)
-            raise
+        input_params_info = {
+            self.DONOR: config[self.identifier][self.DONOR],
+            self.STUDY: config[self.identifier][self.STUDY],
+            self.PROJECT: config[self.identifier][self.PROJECT],
+            self.ONCOTREE_CODE: config[self.identifier][self.ONCOTREE_CODE],
+            self.PRIMARY_CANCER: config[self.identifier][self.PRIMARY_CANCER],
+            self.SITE_OF_BIOPSY: config[self.identifier][self.SITE_OF_BIOPSY],
+            self.REQUISITION_APPROVED: config[self.identifier][self.REQUISITION_APPROVED],
+            self.ASSAY: config[self.identifier][self.ASSAY],
+            self.REQUISITION_ID: config[self.identifier][self.REQUISITION_ID],
+            self.TCGACODE: config[self.identifier][self.TCGACODE],
+            self.SAMPLE_TYPE: config[self.identifier][self.SAMPLE_TYPE]
+        }
         self.validate_input_params(input_params_info)
         return input_params_info
 
