@@ -1,5 +1,5 @@
-marker	source	significance
-t(4;14)	NCCN	Prognostic
-t(14;16)	NCCN	Prognostic
-t(11;14)	NCCN	Prognostic
-t(14;20)	NCCN	Prognostic
+marker	source	significance	oncotree
+t(4;14)	NCCN	Prognostic	PCM
+t(14;16)	NCCN	Prognostic	PCM
+t(11;14)	NCCN	Prognostic	PCM
+t(14;20)	NCCN	Prognostic	PCM
