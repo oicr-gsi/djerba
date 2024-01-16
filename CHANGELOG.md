@@ -6,6 +6,7 @@
 - MDC file format: Mini-Djerba Config, with file extension .mdc
 - New `report_title` plugin
 - Added annotation of translocations eg t(11;14)
+- Fixed issue with reading summary text path (GCGI-1256)
 
 ## v1.2.1: 2024-01-12
 

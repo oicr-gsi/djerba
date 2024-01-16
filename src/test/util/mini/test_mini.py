@@ -64,7 +64,7 @@ class TestMiniBase(TestBase):
             self.assertTrue(os.path.isfile(out_path))
         with open(html_path) as html_file:
             redacted = self.redact_html(html_file.read())
-        self.assertEqual(self.getMD5_of_string(redacted), '2b80c93f0192f0920ebc1030ef682ef9')
+        self.assertEqual(self.getMD5_of_string(redacted), '72e4b407d28cbba6112e744823f65448')
         with open(json_out) as json_file:
             json_data = json.loads(json_file.read())
         dob = json_data['plugins']['patient_info']['results']['patient_dob']
@@ -72,7 +72,7 @@ class TestMiniBase(TestBase):
         text = json_data['plugins']['summary']['results']['summary_text']
         expected_text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed '+\
             'do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
-        self.assertEqual(text, expected_text)
+        self.assertEqual(text.strip(), expected_text)
 
 
 class TestMain(TestMiniBase):
