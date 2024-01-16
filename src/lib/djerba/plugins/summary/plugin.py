@@ -26,16 +26,22 @@ class main(plugin_base):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         if wrapper.my_param_is_null(self.SUMMARY_FILE):
-            summary_template_path = os.path.join(os.path.dirname(__file__), self.SUMMARY_TEMPLATE_FILE) 
+            summary_template_path = \
+                os.path.join(os.path.dirname(__file__), self.SUMMARY_TEMPLATE_FILE)
             wrapper.set_my_param(self.SUMMARY_FILE, summary_template_path)
         return wrapper.get_config()
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
-        summary_text = self.read_results_summary(config[self.identifier][self.SUMMARY_FILE])
+        summary_path = wrapper.get_my_string(self.SUMMARY_FILE)
+        with open(summary_path) as in_file:
+            summary_text = in_file.read()
+        self.logger.debug('Read summary from {0}: "{1}"'.format(summary_path, summary_text))
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         data[core_constants.RESULTS][self.SUMMARY_TEXT] = summary_text
-        self.workspace.write_string('results_summary.txt', summary_text)
+        filename = 'results_summary.txt'
+        self.workspace.write_string(filename, summary_text)
+        self.logger.debug('Wrote summary to {0}'.format(self.workspace.abs_path(filename)))
         return data
 
     def specify_params(self):
