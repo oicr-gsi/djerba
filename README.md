@@ -28,7 +28,9 @@ Generating a report with Djerba has the following steps:
 3. **Render** the JSON to HTML
 4. **Publish** the HTML as PDF
 
-Djerba supports *archiving* the JSON report documents to a [CouchDB](https://couchdb.apache.org/) database.
+In addition, Djerba supports:
+- *Archiving* the JSON report documents to a [CouchDB](https://couchdb.apache.org/) database.
+- *Updating* a JSON document with revised summary text and/or PHI (as of version 1.3.0).
 
 ### Software components
 
