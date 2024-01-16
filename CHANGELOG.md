@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v1.3.0: Unreleased
+- Added annotation of translocations eg t(11;14)
+
 ## v1.2.1: 2024-01-12
 - Fixes for clinical report header and installation of patient_info plugin
 
