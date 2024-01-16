@@ -1,0 +1,16 @@
+{
+            "plugin_name": "report_title plugin",
+            "version": "1.0.0",
+            "priorities": {
+                "configure": 10,
+                "extract": 10,
+                "render": 10
+            },
+            "attributes": [
+                "clinical"
+            ],
+            "merge_inputs": {},
+            "results": {
+                "header_type": "clinical_title"
+            }
+}

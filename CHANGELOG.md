@@ -3,9 +3,12 @@
 ## Unreleased
 
 - Mini-Djerba: Lightweight application to update patient info/summary in existing reports
-- Config file format: Mini-Djerba Config, with file extension .mdc
+- MDC file format: Mini-Djerba Config, with file extension .mdc
+- New `report_title` plugin
+- Added annotation of translocations eg t(11;14)
 
 ## v1.2.1: 2024-01-12
+
 - Fixes for clinical report header and installation of patient_info plugin
 
 ## v1.2.0: 2024-01-11
