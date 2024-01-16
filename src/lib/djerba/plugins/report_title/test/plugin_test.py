@@ -1,7 +1,5 @@
 #! /usr/bin/env python3
 
-"""Test of the case overview plugin"""
-
 import os
 import shutil
 import logging
