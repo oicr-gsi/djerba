@@ -35,8 +35,10 @@ setup(
         'src/bin/benchmark.py',
         'src/bin/djerba.py',
         'src/bin/generate_ini.py',
+        'src/bin/mini_djerba.py',
         'src/bin/sequenza_explorer.py',
-        'src/bin/update_oncokb_cache.py'
+        'src/bin/update_oncokb_cache.py',
+        'src/bin/validate_plugin_json.py'
     ],
     packages=find_packages(where=package_root),
     package_dir={'' : package_root},
@@ -45,6 +47,7 @@ setup(
             'data/20200818-oncoKBcancerGeneList.tsv',
             'data/20231116-allCuratedGenes.tsv',
             'data/20201201-OncoTree.txt',
+            'data/20240116-translocation_annotations.txt',
             'data/benchmark_config.ini',
             'data/benchmark_params.json',
             'data/civic/01-Jun-2020-GeneSummaries.tsv',
@@ -105,6 +108,7 @@ setup(
         'djerba.plugins.tar.snv_indel.snv_indel_tools': install_wildcards,
         'djerba.plugins.tar.swgs': install_wildcards,
         'djerba.plugins.wgts.snv_indel': install_wildcards,
+        'djerba.plugins.report_title': install_wildcards
     },
     install_requires=[
         'configparse',

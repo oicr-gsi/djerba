@@ -1,6 +1,58 @@
 #! /usr/bin/env Rscript
 
 library(optparse)
+library(data.table)
+library(dplyr)
+
+annotate_translocations <- function(fusfile, data_dir, data_file = "20240116-translocation_annotations.txt"){
+  
+
+  fus_raw = fread(fusfile)
+  fus = fus_raw %>% filter(event_type %in% c("inverted translocation", "translocation") &
+                             protocol == "transcriptome") %>% select(
+                               
+                               "break1_chromosome",
+                               "break2_chromosome",
+                               
+                               "break1_split_reads",
+                               "break2_split_reads",
+                               "spanning_reads",
+                               "linking_split_reads",
+                               
+                               "gene1_aliases",
+                               "break1_position_start",
+                               "break1_position_end",
+                               "gene2_aliases",
+                               "break2_position_start",
+                               "break2_position_end",
+                               "tools",
+                               "call_method"
+                             ) 
+  
+  fus$break1_chromosome[fus$break1_chromosome == "X"] <- "23"
+  fus$break2_chromosome[fus$break2_chromosome == "X"] <- "23"
+  
+  fus$break1_chromosome <- as.numeric(fus$break1_chromosome)
+  fus$break2_chromosome <- as.numeric(fus$break2_chromosome)
+  
+  min(fus$break1_chromosome, fus$break2_chromosome)
+  
+  fus <- fus %>% 
+    rowwise() %>%
+    mutate(min = min(break1_chromosome, break2_chromosome),
+           max = max(break1_chromosome, break2_chromosome))
+  
+  fus$translocation <- paste0("t(",fus$min,";",fus$max,")")
+  fus = fus[,!(names(fus) %in% c("min","max"))]
+  fus$translocation <- gsub("23","X",x = fus$translocation)
+  
+  
+  data_path = paste0(data_dir, "/", data_file) 
+  translocation_annotations = read.table(data_path, header = T)
+  
+  fus_annotated <- inner_join(translocation_annotations, fus,  by=c("marker"="translocation"))
+  return(fus_annotated)
+}
 
 # main function to read/write fusion data; was 'preProcFus' in Djerba classic
 processFusions <- function(datafile, readfilt, entrfile){
@@ -121,6 +173,7 @@ entcon <- opt$entcon
 fusfile <- opt$fusfile
 minfusionreads <- opt$minfusionreads
 outdir <- opt$outdir
+data_dir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), 'data', sep='/')
 
 # check if input is empty
 num_lines <- readLines(fusfile, warn=FALSE)
@@ -144,4 +197,10 @@ if(length(num_lines)<=1) {
   # write file with new-style fusion identifiers
   print("writing fus file with new-style fusion delimiter")
   write.table(fusion_cbio[[3]], file=paste0(outdir, "/data_fusions_new_delimiter.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+  
+  translocations_annotated <- annotate_translocations(fusfile, data_dir)
+  
+  write.table(translocations_annotated,
+              file=paste0(outdir, "/translocations.annotated.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+  
 }
