@@ -12,6 +12,7 @@ Djerba documentation
    about
    plugin_howto
    guide
+   mini_djerba
 
 
 
