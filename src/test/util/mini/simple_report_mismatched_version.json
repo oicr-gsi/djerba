@@ -1,0 +1,94 @@
+{
+    "core": {
+        "author": "Test Author",
+        "document_config": "document_config.json",
+        "report_id": "placeholder",
+        "core_version": "1.1.1",
+        "extract_time": "2023-12-20_21:38:10Z"
+    },
+    "plugins": {
+        "patient_info": {
+            "plugin_name": "patient_info plugin",
+            "version": "bad-version",
+            "priorities": {
+                "configure": 100,
+                "extract": 100,
+                "render": 100
+            },
+            "attributes": [
+                "clinical"
+            ],
+            "merge_inputs": {},
+            "results": {
+                "patient_name": "LAST, FIRST",
+                "patient_dob": "yyyy/mm/dd",
+                "patient_genetic_sex": "SEX",
+                "requisitioner_email": "NAME@domain.com",
+                "physician_licence_number": "nnnnnnnn",
+                "physician_name": "LAST, FIRST",
+                "physician_phone_number": "nnn-nnn-nnnn",
+                "hospital_name_and_address": "HOSPITAL NAME AND ADDRESS"
+            }
+        },
+        "summary": {
+            "plugin_name": "summary plugin",
+            "version": "another-bad-version",
+            "priorities": {
+                "configure": 400,
+                "extract": 400,
+                "render": 400
+            },
+            "attributes": [
+                "clinical"
+            ],
+            "merge_inputs": {},
+            "results": {
+                "summary_text": "The patient has been diagnosed with ... and has been referred for the OICR Genomics ... assay through the ... study. This test uncovered ... most commonly altered genes in ... cancer (DOI:[10.1038/nature](https://www.nature.com/)). While there is no FDA-approved therapeutic option for this mutation in ..., ... are FDA-approved for treatment with .... Small mutation analysis uncovered ... . Copy number analysis uncovered ... .  There are currently no therapies associated with these alterations. The tumour had an estimated ploidy of ... and the mutational burden was ... coding mutations per Mb, which is ... (mean ... coding mutations/Mb, DOI:[DOI:10.1038/nature](https://www.nature.com/)). &alpha;&beta;&gamma;&delta; &#42;"
+            }
+        }
+    },
+    "mergers": {
+    },
+    "config": {
+        "core": {
+            "archive_name": "djerba",
+            "archive_url": "http://admin:djerba123@10.30.133.78:5984",
+            "attributes": "",
+            "configure_priority": "100",
+            "depends_configure": "",
+            "depends_extract": "",
+            "document_config": "document_config.json",
+            "extract_priority": "100",
+            "render_priority": "100",
+            "report_id": "100-009-005_LCM3-v1",
+            "report_version": "1",
+            "sample_info": "sample_info.json",
+            "author": "CGI Author"
+        },
+        "patient_info": {
+            "attributes": "clinical",
+            "depends_configure": "",
+            "depends_extract": "",
+            "configure_priority": "100",
+            "extract_priority": "100",
+            "render_priority": "100",
+            "patient_name": "LAST, FIRST",
+            "patient_dob": "yyyy/mm/dd",
+            "patient_genetic_sex": "SEX",
+            "requisitioner_email": "NAME@domain.com",
+            "physician_licence_number": "nnnnnnnn",
+            "physician_name": "LAST, FIRST",
+            "physician_phone_number": "nnn-nnn-nnnn",
+            "hospital_name_and_address": "HOSPITAL NAME AND ADDRESS"
+        },
+        "summary": {
+            "attributes": "clinical",
+            "configure_priority": "400",
+            "depends_configure": "",
+            "depends_extract": "",
+            "extract_priority": "400",
+            "render_priority": "400",
+            "summary_file": "/u/ibancarz/git/djerba/src/lib/djerba/plugins/summary/summary_template.txt"
+        }
+    }
+}

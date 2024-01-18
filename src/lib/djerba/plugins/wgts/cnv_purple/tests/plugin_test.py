@@ -48,7 +48,7 @@ class TestPurplePlugin(PluginTester):
         params = {
             self.INI: self.WGTS_INI_NAME,
             self.JSON: json_location,
-            self.MD5: 'c1f50baffe61151698f607f243876780'
+            self.MD5: '4b32ff882773269118f45ba78770eaed'
         }
         self.run_basic_test(input_dir, params)
 
@@ -66,7 +66,7 @@ class TestPurplePlugin(PluginTester):
         params = {
             self.INI: self.WGS_INI_NAME,
             self.JSON: json_location,
-            self.MD5: 'c1f50baffe61151698f607f243876780'
+            self.MD5: '4b32ff882773269118f45ba78770eaed'
         }
         self.run_basic_test(input_dir, params)
 

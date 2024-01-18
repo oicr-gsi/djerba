@@ -1,6 +1,15 @@
 # CHANGELOG
 
+## v1.3.0: 2024-01-16
+
+- Mini-Djerba: Lightweight application to update patient info/summary in existing reports
+- MDC file format: Mini-Djerba Config, with file extension .mdc
+- New `report_title` plugin
+- Added annotation of translocations eg t(11;14)
+- Fixed issue with reading summary text path (GCGI-1256)
+
 ## v1.2.1: 2024-01-12
+
 - Fixes for clinical report header and installation of patient_info plugin
 
 ## v1.2.0: 2024-01-11

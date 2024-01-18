@@ -1,0 +1,2 @@
+READY = 'ready'
+UPDATE = 'update'
