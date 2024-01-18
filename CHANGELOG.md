@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## Unreleased
+
+- GCGI-1186: Remove `mavis.py`
+- GCGI-1258: Fix import in args processor base
+- GCGI-1264: Rename mini-djerba link
+
 ## v1.3.0: 2024-01-16
 
 - Mini-Djerba: Lightweight application to update patient info/summary in existing reports
