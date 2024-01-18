@@ -2,6 +2,7 @@
 
 import logging
 from djerba.util.logger import logger
+from djerba.util.validator import path_validator
 
 class arg_processor_base(logger):
     # class to process command-line args for creating a main object
@@ -54,6 +55,9 @@ class arg_processor_base(logger):
 
     def is_write_json_enabled(self):
         return self._get_arg('write_json')
+
+    def validate_args(self, args):
+        self.logger.warning("Placeholder validate_args method, should override in subclass")
 
 
 class ArgumentNameError(Exception):
