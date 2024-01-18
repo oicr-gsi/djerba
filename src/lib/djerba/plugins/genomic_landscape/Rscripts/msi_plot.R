@@ -67,7 +67,7 @@ if(biomarker=="msi"){
           axis.title.y=element_blank(),
           axis.text.y=element_blank(),
           axis.ticks.y=element_blank(),
-          text = element_text(size = 18),
+          text = element_text(size = 16, family = "TT Arial"),
           panel.grid = element_blank(), 
           plot.margin = unit(c(t=-20, r=-20, b=0, l=-20), "points"),
           line = element_blank(),

@@ -64,15 +64,12 @@ if(biomarker=="tmb"){
       else
         geom_boxplot(aes(x=0,y=tmb,color="All TCGA"),width = 0.1, outlier.shape = NA) 
     } +
-  #  geom_hline(yintercept = 1,alpha=0.25,color="white")  +
-  #  geom_hline(yintercept = max(sampleTMB, 25), alpha=0.25,color="white")  +
-    
+
     annotate( geom="segment", x = -0.1, xend=0.1, y=10, yend=10, colour = "gray") +
     
     annotate(geom="text",y = 5,x=0,color="gray30",label="TMB-L",  vjust = -4.5, size=4) +
     annotate(geom="text",y = (10 + max(sampleTMB, 15))/2,x=0,color="gray30",label="TMB-H",  vjust = -4.5, size=4) +
     annotate(geom="text",y = median_tmb, x=0,color="black",label=cohort_label, vjust = -2, hjust=0.25, size=4) +
-   # annotate(geom="text",y = sampleTMB,x=0,color="red",label="This Sample",  vjust = -2.5,size=4) +
     annotate(geom="text",y = sampleTMB,x=0,color="red",label="This Sample",  vjust = 2.7, hjust=0.7,  size=4) +
     
     annotate(geom="point",y = sampleTMB,x=0,color="red",shape=1, size=8) +
@@ -88,7 +85,7 @@ if(biomarker=="tmb"){
     theme(
       axis.line.y = element_blank(),
       panel.grid = element_blank(), 
-      text = element_text(size = 18),
+      text = element_text(size = 16, family = "TT Arial"),
       legend.title=element_blank(),
       plot.margin = unit(c(t=0, r=6, b=0, l=-20), "points"),
       axis.title.y=element_blank(),

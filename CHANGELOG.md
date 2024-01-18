@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## Unreleased
+
+- Removed unused data files
+- Removed file list in expression data
+- added HRD to genomic landscape
+- GCGI-1173: plugin will use provenance_helper
+- new PURPLE CNV calling plugin
+- removed sequenza support
+
 ## v1.3.0: 2024-01-16
 
 - Mini-Djerba: Lightweight application to update patient info/summary in existing reports

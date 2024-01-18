@@ -39,7 +39,7 @@ weights_df$var_long[weights_df$var == "SV3.w"] <- "Tandem Duplications"
 weights_df$var_long[weights_df$var == "SNV3.w"] <- "COSMIC SBS3"
 weights_df$var_long[weights_df$var == "hrd.w"] <- "LOH"
 weights_df$var_long[weights_df$var == "del.mh.prop.w"] <- "Microhomologous Deletions"
-weights_df$var_longer <- paste0(weights_df$var_long,": ", round(weights_df$probability,2))
+weights_df$var_longer <- paste0(weights_df$var_long,": ", sprintf("%0.2f", round(weights_df$probability, digits = 2)))
 
 weights_df <- weights_df[order(weights_df$var_long,decreasing = T),]
 
@@ -89,6 +89,11 @@ svg(out_path, width = 8, height = 1.5, bg = "transparent")
 
 dev.off()
 
+adjust_label_w_position =0.25
+if(boot$median_value[boot$var == "Probability.w"] > 0.5){
+  adjust_label_w_position =0.8
+}
+
 out_path <- paste(work_dir, 'hrd.svg', sep='/')
 
 svg(out_path, width = 8, height = 1.5, bg = "transparent")
@@ -107,9 +112,9 @@ print(
     annotate(x = 0, xend=2, y=cutoff_low, yend=cutoff_low,geom="segment", colour = "gray") +
     annotate(geom="text",x = 0,y=0.85, color="gray30",label="HR-D", hjust = 0.5, vjust = -5,size=4) +
     
-    annotate(geom="point",y = boot$median_value[boot$var == "Probability.w"], x="Sample",color="red",shape=1, size=8) +
-    annotate(geom="point",y = boot$median_value[boot$var == "Probability.w"], x="Sample",color="red",shape=20, size=3) +
-   annotate(geom="text",y = boot$median_value[boot$var == "Probability.w"],x=0,color="red",label="This Sample",  vjust = -0.75, hjust=0.25,  size=4) +
+    annotate(geom="point",y = boot$median_value[boot$var == "Probability.w"], x="Sample", color="red",shape=1, size=8) +
+    annotate(geom="point",y = boot$median_value[boot$var == "Probability.w"], x="Sample", color="red",shape=20, size=3) +
+   annotate(geom="text",y = boot$median_value[boot$var == "Probability.w"], x=0, color="red",label="This Sample",  vjust = -0.75, hjust=adjust_label_w_position,  size=4) +
    
     theme_classic() + 
     labs(x="",y="HRD probability",title="") + 
@@ -122,9 +127,10 @@ print(
       axis.line.y = element_blank(),
       legend.title=element_blank(),
       axis.title.y=element_blank(),
+      legend.text.align = 1,
       axis.text.y=element_blank(),
       axis.ticks.y=element_blank(),
-      text = element_text(size = 18),
+      text = element_text(size = 16, family = "TT Arial"),
       panel.grid = element_blank(), 
       plot.margin = unit(c(t=-20, r=-10, b=0, l=0), "points"),
       line = element_blank(),
