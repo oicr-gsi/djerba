@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v1.3.1: 2024-01-19
+
+- Fixed support for 40X assay
+- Remove obsolete `mavis.py` file
+- Fix import error for validating log path
+- Rename mini-Djerba link
+
 ## v1.3.0: 2024-01-16
 
 - Mini-Djerba: Lightweight application to update patient info/summary in existing reports
