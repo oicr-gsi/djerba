@@ -3,9 +3,9 @@
 ## v1.3.1: 2024-01-19
 
 - Fixed support for 40X assay
-- Remove obsolete `mavis.py` file
-- Fix import error for validating log path
-- Rename mini-Djerba link
+- GCGI-1186: Remove `mavis.py`
+- GCGI-1258: Fix import in args processor base
+- GCGI-1264: Rename mini-djerba link
 
 ## v1.3.0: 2024-01-16
 
