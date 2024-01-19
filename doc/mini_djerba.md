@@ -31,7 +31,7 @@ hospital_name_and_address = HOSPITAL NAME AND ADDRESS
 
 ###
 
-[Lorem ipsum dolor](https://www.lipsum.com/) sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+[Lorem ipsum dolor](https://www.lipsum.com/) sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 
 ```
 
@@ -54,7 +54,7 @@ The 8 entries correspond to the 8 PHI fields listed above:
 
 These entries may occur in any order, but _must_ be present and have non-empty values.
 
-Summary text must be non-empty. Leading or trailing whitespace will be removed before the text is inserted into the report; but whitespace, including line breaks, may occur within the text block. Formatting with [Markdown notation](https://www.markdownguide.org/cheat-sheet/) and/or HTML tags is supported.
+Summary text must be non-empty. Leading or trailing whitespace will be removed before the text is inserted into the report; but whitespace, including line breaks, may occur within the text block. Formatting with [Markdown notation](https://www.markdownguide.org/cheat-sheet/) and/or HTML tags is supported. This enables the user to create or edit bold/italic text, hyperlinks, etc.
 
 ## Usage
 
@@ -62,18 +62,49 @@ Using Mini-Djerba consists of two steps:
 1. *Ready:* Read an input JSON file and generate the MDC
 2. *Update:* Edit the MDC as needed, and produce HTML and PDF output
 
-### The input JSON
+### Input JSON
 
-The Djerba JSON document is produced as part of the report drafting process by the Clinical Genome Interpretation team. It is a machine-readable file containing the data needed to produce a clinical report. It is _not_ intended to be edited by hand; mini-Djerba gets the user inputs it needs from the MDC file.
+The Djerba JSON document is produced as part of the report drafting process by the Clinical Genome Interpretation team. It is a machine-readable file containing the data needed to produce a clinical report.
+
+The JSON is _not_ intended to be edited by hand; mini-Djerba gets the user inputs it needs from the MDC file.
 
 ### Ready step
 
-ready
+This step generates the MDC file. Using a Djerba JSON file as input will insert report text drafted by CGI, for subsequent editing.
+
+```
+mini_djerba ready -j djerba_report.json
+```
+
+The above command writes a file called `config.mdc` in the current directory.
 
 ### Update step
 
-update
+After editing the MDC file, generate an updated report as follows:
 
+```
+mini_djerba update -c config.mdc -j djerba_report.json --pdf
+```
+
+### Additional options
+
+For a full listing of command-line options, run with `-h`:
+
+```
+mini_djerba -h
+mini_djerba ready -h
+mini_djerba update -h
+```
+
+### Troubleshooting
+
+There are 3 main types of error in mini-Djerba:
+
+1. **Incorrectly formatted MDC file:** Check the MDC specification and try again.
+2. **Mismatched plugin versions:** Mini-Djerba is built with a self-contained set of Djerba plugins. A Djerba JSON report may have been generated with _newer_ plugin versions than the ones in mini-Djerba; this is cause for a warning, which can be overridden with the `--force` option. Running with mismatched plugin versions will _usually_ work correctly, but may result in errors. Alternatively, upgrade to a newer version of mini-Djerba.
+3. **Unexpected errors:** Mini-Djerba is tested before release, but unexpected errors may occur from time to time.
+
+In the first two cases, `mini-djerba` will print an informative error message to the command line. In the third, the error is likely to be more technical. If in doubt, consult the Djerba developers.
 
 ## For Developers
 
@@ -81,9 +112,11 @@ update
 
 Building mini-Djerba is done with [PyInstaller](https://pyinstaller.org/en/stable/).
 
+Detailed instructions are on the [OICR wiki](https://wiki.oicr.on.ca/x/xgBTDw).
+
 ### Technical notes
 
-Key/value parsing is done with the Python [configparser](https://docs.python.org/3/library/configparser.html) package and has similar formatting conventions, except no section headers are needed.
+Key/value parsing is done with the Python [configparser](https://docs.python.org/3/library/configparser.html) package and has similar formatting conventions.
 
 The MDC file format is implemented in Djerba as the [mdc class](https://github.com/oicr-gsi/djerba/blob/main/src/lib/djerba/util/mini/mdc.py#L14).
 
