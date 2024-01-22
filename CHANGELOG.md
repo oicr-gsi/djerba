@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## Unreleased 
+
+- GCGI-611: fix fusion frameshift hardcode
+- GCGI-443: merge duplicate fusion rows
+- GCGI-1272: New non-drug but actionable box
+
 ## v1.3.1: 2024-01-19
 
 - Fixed support for 40X assay
