@@ -88,10 +88,15 @@ class main(plugin_base):
         code_lc = wrapper.get_my_string(self.ONCOTREE_CODE).lower()
         wrapper.set_my_param(self.ONCOTREE_CODE, code_lc)
         # find other params
-        data_dir = directory_finder(self.log_level, self.log_path).get_data_dir()
-        if wrapper.my_param_is_null(self.ENTREZ_CONVERSION_PATH):
-            enscon_path = os.path.join(data_dir, self.ENTRCON_NAME)
-            wrapper.set_my_param(self.ENTREZ_CONVERSION_PATH, enscon_path)
+        if wrapper.my_param_is_null('arriba_path'):
+            path_info_workflow_name = 'arriba'
+            path_info = self.workspace.read_json(core_constants.DEFAULT_PATH_INFO)
+            file_path = path_info.get(path_info_workflow_name)
+            if file_path == None:
+                msg = "Cannot find {0} path for fusion input".format(path_info_workflow_name)
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            wrapper.set_my_param('arriba_path', file_path)
         if wrapper.my_param_is_null(self.MAVIS_PATH):
             path_info = self.workspace.read_json(core_constants.DEFAULT_PATH_INFO)
             mavis_path = path_info.get('mavis')
@@ -162,7 +167,9 @@ class main(plugin_base):
                         self.GENE: gene,
                         self.GENE_URL: gene_url,
                         self.CHROMOSOME: chromosome,
+                        'oncokb_link': fusion.get_oncokb_link(),
                         self.FRAME: fusion.get_frame(),
+                        'translocation': fusion.get_translocation(),
                         self.FUSION: fusion.get_fusion_id_new(),
                         self.MUTATION_EFFECT: fusion.get_mutation_effect(),
                         core_constants.ONCOKB: fusion.get_oncokb_level()
@@ -189,7 +196,10 @@ class main(plugin_base):
         Inputs assumed to be in Mavis .tab format; .zip format is no longer in use
         """
         mavis_path = config_wrapper.get_my_string(self.MAVIS_PATH)
+        arriba_path = config_wrapper.get_my_string('arriba_path')
         tumour_id = config_wrapper.get_my_string(core_constants.TUMOUR_ID)
+        oncotree = config_wrapper.get_my_string(self.ONCOTREE_CODE)
+        oncotree = oncotree.upper()
         entrez_conv_path = config_wrapper.get_my_string(self.ENTREZ_CONVERSION_PATH)
         min_reads = config_wrapper.get_my_int(self.MIN_FUSION_READS)
         fus_path = self.workspace.abs_path('fus.txt')
@@ -214,18 +224,24 @@ class main(plugin_base):
             'Rscript', script_path,
             '--entcon', entrez_conv_path,
             '--fusfile', fus_path,
+            '--arriba', arriba_path,
             '--minfusionreads', min_reads,
-            '--outdir', os.path.abspath(self.workspace.get_work_dir())
+            '--workdir', os.path.abspath(self.workspace.get_work_dir()),
+            '--oncotree', oncotree
         ]
         subprocess_runner(self.log_level, self.log_path).run([str(x) for x in cmd])
         self.annotate_fusion_files(config_wrapper)
         self.logger.info("Finished writing fusion files")
 
     def specify_params(self):
-        self.add_ini_discovered(self.ENTREZ_CONVERSION_PATH)
         self.add_ini_discovered(self.MAVIS_PATH)
+        self.add_ini_discovered('arriba_path')
         self.add_ini_discovered(core_constants.TUMOUR_ID)
         self.add_ini_discovered(self.ONCOTREE_CODE)
+        #set defaults
+        data_dir = directory_finder(self.log_level, self.log_path).get_data_dir()
+        enscon_path = os.path.join(data_dir, self.ENTRCON_NAME)
+        self.set_ini_default(self.ENTREZ_CONVERSION_PATH, enscon_path)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_ini_default(self.MIN_FUSION_READS, 20)
         self.set_ini_default(oncokb.APPLY_CACHE, False)

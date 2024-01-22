@@ -12,7 +12,15 @@
 
     % if results.get(fusion.CLINICALLY_RELEVANT_VARIANTS) > 0:
     <table class="variants" width="100%">
-      <thead style="background-color:white"><tr><th style="text-align:left;">Gene</th><th style="text-align:left;">Chromosome</th><th style="text-align:left;">Fusion</th><th style="text-align:left;">Frame</th><th style="text-align:left;">Mutation effect</th><th style="text-align:left;">OncoKB</th></tr></thead>
+      <thead style="background-color:white">
+        <tr>
+<!--          <th style="text-align:left;">Gene</th> -->
+<!--          <th style="text-align:left;">Chromosome</th> -->
+          <th style="text-align:left;">Fusion</th>
+          <th style="text-align:left;">Translocation</th>
+          <th style="text-align:left;">Frame</th>
+          <th style="text-align:left;">Mutation effect</th>
+          <th style="text-align:left;">OncoKB</th></tr></thead>
       <tbody>
 	% for row in make_table_rows(results.get(fusion.BODY)):
 	${row}

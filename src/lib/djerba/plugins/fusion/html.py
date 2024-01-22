@@ -14,12 +14,14 @@ def make_table_rows(rows):
         else:
             level = row.get(core_constants.ONCOKB)
             cells = [
-                hb.td(hb.href(row[plugin.GENE_URL], row[plugin.GENE]), italic=True),
-                hb.td(row[plugin.CHROMOSOME]),
-                hb.td(row[plugin.FUSION]),
+                hb.td(row["oncokb_link"], italic=True),
+               # hb.td(row[plugin.CHROMOSOME]),
+                #hb.td(row[plugin.FUSION]),
+                hb.td(row["translocation"]),
                 hb.td(row[plugin.FRAME]),
                 hb.td(row[plugin.MUTATION_EFFECT]),
                 hb.td_oncokb(level)
             ]
             table_rows.append(hb.table_row(cells))
+    table_rows = list(dict.fromkeys(table_rows))
     return table_rows

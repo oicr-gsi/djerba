@@ -9,6 +9,7 @@ import re
 from djerba.util.logger import logger
 from djerba.util.oncokb.tools import levels as oncokb_levels
 import djerba.util.oncokb.constants as oncokb
+from djerba.util.html import html_builder as hb
 
 class fusion_reader(logger):
 
@@ -16,7 +17,7 @@ class fusion_reader(logger):
     DATA_FUSIONS_NEW = 'data_fusions_new_delimiter.txt'
     DATA_FUSIONS_OLD = 'data_fusions.txt'
     DATA_FUSIONS_ANNOTATED = 'data_fusions_oncokb_annotated.txt'
-    FUSION_INDEX = 4
+    FUSION_INDEX = 3
     HUGO_SYMBOL = 'Hugo_Symbol'
 
     def __init__(self, input_dir, log_level=logging.WARNING, log_path=None):
@@ -63,10 +64,10 @@ class fusion_reader(logger):
             fusion_genes.add(gene1)
             fusion_genes.add(gene2)
             frame = fusion_data[fusion_id][0]['Frame']
+            translocation = fusion_data[fusion_id][0]['translocation']
             for row_input in annotations[fusion_id]:
                 effect = row_input['MUTATION_EFFECT']
             level = oncokb_levels.parse_oncokb_level(row_input)
-            print(level)
             if level not in ['Unknown', 'NA']:
                 therapies = oncokb_levels.parse_actionable_therapies(row_input)
                 fusions.append(
@@ -78,7 +79,8 @@ class fusion_reader(logger):
                         frame,
                         effect,
                         level,
-                        therapies
+                        therapies,
+                        translocation
                     )
                 )
         total = len(fusions)
@@ -138,7 +140,7 @@ class fusion_reader(logger):
         with open(os.path.join(self.input_dir, self.DATA_FUSIONS_NEW)) as file_new:
             new = [row[self.FUSION_INDEX] for row in csv.reader(file_new, delimiter="\t")]
         if len(old) != len(new):
-            msg = "Fusion ID lists from {0} are of unequal length".format(report_dir)
+            msg = "Fusion ID lists from {0} are of unequal length".format(self.input_dir)
             self.logger.error(msg)
             raise RuntimeError(msg)
         # first item of each list is the header, which can be ignored
@@ -156,13 +158,15 @@ class fusion:
             frame,
             effect,
             level,
-            therapies
+            therapies,
+            translocation
     ):
         self.fusion_id_old = fusion_id_old
         self.fusion_id_new = fusion_id_new
         self.gene1 = gene1
         self.gene2 = gene2
         self.frame = frame
+        self.translocation = translocation
         self.effect = effect
         self.therapies = therapies
         self.level = level
@@ -176,8 +180,18 @@ class fusion:
     def get_genes(self):
         return [self.gene1, self.gene2]
 
+    def get_translocation(self):
+        return self.translocation
+
     def get_frame(self):
         return self.frame
+
+    def get_oncokb_link(self):
+        gene1_url = hb.build_gene_url(self.gene1)
+        gene1_and_url = hb.href(gene1_url, self.gene1)
+        gene2_url = hb.build_gene_url(self.gene2)
+        gene2_and_url = hb.href(gene2_url, self.gene2)
+        return("::".join((gene1_and_url, gene2_and_url)))
 
     def get_oncokb_level(self):
         return self.level
