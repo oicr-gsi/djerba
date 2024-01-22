@@ -25,7 +25,7 @@ import djerba.util.oncokb.constants as oncokb
 class main(plugin_base):
 
     PRIORITY = 900
-    PLUGIN_VERSION = '1.0.0'
+    PLUGIN_VERSION = '1.1.0'
     MAKO_TEMPLATE_NAME = 'fusion_template.html'
 
     # INI config keys
@@ -120,8 +120,8 @@ class main(plugin_base):
             [rows, gene_info, treatment_opts] = outputs
             # rows are already sorted by the fusion reader
             # fusion class records levels as numeric, not strings
-            max_actionable = oncokb_levels.oncokb_order('R2')
-            rows = list(filter(lambda x: x[core_constants.ONCOKB] <= max_actionable, rows))
+            max_actionable = oncokb_levels.oncokb_order('N2')
+            rows = list(filter(lambda x: oncokb_levels.oncokb_order(x[core_constants.ONCOKB]) <= max_actionable, rows))
             distinct_oncogenic_genes = len(set([row.get(self.GENE) for row in rows]))
             results = {
                 self.TOTAL_VARIANTS: total_fusion_genes,
@@ -153,7 +153,7 @@ class main(plugin_base):
         # retain fusions with sort order less than (ie. ahead of) 'Likely Oncogenic'
         maximum_order = oncokb_levels.oncokb_order('N2')
         for fusion in gene_pair_fusions:
-            oncokb_order = oncokb_levels.oncokb_order(fusion.get_strongest_oncokb_level())
+            oncokb_order = oncokb_levels.oncokb_order(fusion.get_oncokb_level())
             if oncokb_order <= maximum_order:
                 for gene in fusion.get_genes():
                     chromosome = cytobands.get(gene)
@@ -165,7 +165,7 @@ class main(plugin_base):
                         self.FRAME: fusion.get_frame(),
                         self.FUSION: fusion.get_fusion_id_new(),
                         self.MUTATION_EFFECT: fusion.get_mutation_effect(),
-                        core_constants.ONCOKB: oncokb_order
+                        core_constants.ONCOKB: fusion.get_oncokb_level()
                     }
                     rows.append(row)
                     gene_info_entry = gene_info_factory.get_json(

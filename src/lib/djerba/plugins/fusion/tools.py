@@ -41,6 +41,7 @@ class fusion_reader(logger):
         [fusions, self.total_fusion_genes] = self._collate_row_data(fusion_data, annotations)
         # sort the fusions by fusion ID
         self.fusions = sorted(fusions, key=lambda f: f.get_fusion_id_new())
+        
 
     def _collate_row_data(self, fusion_data, annotations):
         fusions = []
@@ -64,25 +65,30 @@ class fusion_reader(logger):
             frame = fusion_data[fusion_id][0]['Frame']
             for row_input in annotations[fusion_id]:
                 effect = row_input['MUTATION_EFFECT']
-            therapies = oncokb_levels.parse_actionable_therapies(row_input)
-            fusions.append(
-                fusion(
-                    fusion_id,
-                    self.old_to_new_delimiter[fusion_id],
-                    gene1,
-                    gene2,
-                    frame,
-                    effect,
-                    therapies
+            level = oncokb_levels.parse_oncokb_level(row_input)
+            print(level)
+            if level not in ['Unknown', 'NA']:
+                therapies = oncokb_levels.parse_actionable_therapies(row_input)
+                fusions.append(
+                    fusion(
+                        fusion_id,
+                        self.old_to_new_delimiter[fusion_id],
+                        gene1,
+                        gene2,
+                        frame,
+                        effect,
+                        level,
+                        therapies
+                    )
                 )
-            )
         total = len(fusions)
         total_fusion_genes = len(fusion_genes)
         msg = "Finished collating fusion table data. "+\
               "Found {0} fusion rows for {1} distinct genes; ".format(total, total_fusion_genes)+\
               "excluded {0} intragenic rows.".format(intragenic)
         self.logger.info(msg)
-        self.logger.debug("Fusions: {0}".format(fusions))
+        for fusion_row in fusions:
+            self.logger.debug("Fusions: {0}".format(fusion_row.get_genes()))
         return [fusions, total_fusion_genes]
 
     def get_fusions(self):
@@ -149,6 +155,7 @@ class fusion:
             gene2,
             frame,
             effect,
+            level,
             therapies
     ):
         self.fusion_id_old = fusion_id_old
@@ -158,6 +165,7 @@ class fusion:
         self.frame = frame
         self.effect = effect
         self.therapies = therapies
+        self.level = level
 
     def get_fusion_id_old(self):
         return self.fusion_id_old
@@ -171,8 +179,8 @@ class fusion:
     def get_frame(self):
         return self.frame
 
-    def get_strongest_oncokb_level(self):
-        return oncokb_levels.parse_strongest_level(self.therapies.keys())
+    def get_oncokb_level(self):
+        return self.level
 
     def get_mutation_effect(self):
         return self.effect
