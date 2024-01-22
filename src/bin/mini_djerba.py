@@ -8,6 +8,7 @@ import sys
 sys.path.pop(0) # do not import from script directory
 
 import argparse
+import logging
 from tempfile import TemporaryDirectory
 import djerba.util.mini.constants as constants
 from djerba.util.mini.main import main, arg_processor, MiniDjerbaScriptError
@@ -42,15 +43,33 @@ if __name__ == '__main__':
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         sys.exit(1)
+    # suppress the error stacktrace unless verbose logging is in effect
+    error_message = None
     args = parser.parse_args()
-    ap = arg_processor(args)
+    if not (args.verbose or args.debug or args.quiet):
+        args.silent = True
+    else:
+        args.silent = False
     try:
+        ap = arg_processor(args)
         with TemporaryDirectory(prefix='mini_djerba_') as tmp_dir:
             main(tmp_dir, ap.get_log_level(), ap.get_log_path()).run(args)
     except MDCFormatError as err:
-        msg = "Configuration error: Please check the -c/--config file and try again."
-        print(msg, file=sys.stderr)
-        raise
+        error_message = "Error reading the -c/--config file: {0}".format(err)
+        if not args.silent:
+            raise
+    except OSError as err:
+        error_message = "Filesystem error: {0}".format(err)
+        if not args.silent:
+            raise
     except Exception as err:
-        msg = "Unexpected Mini-Djerba error! Contact the developers."
-        raise MiniDjerbaScriptError(msg) from err
+        error_message = "Unexpected Mini-Djerba error! Run with --verbose or --debug for details.\n"+\
+            "If errors persist:\n"+\
+            "- Email gsi@oicr.on.ca\n"+\
+            "- Please DO NOT include personal health information (PHI)"
+        if not args.silent:
+            raise MiniDjerbaScriptError(error_message) from err
+    if error_message:
+        # only called if logging is "silent"
+        print(error_message, file=sys.stderr)
+        sys.exit(1)
