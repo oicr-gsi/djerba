@@ -13,6 +13,7 @@ from tempfile import TemporaryDirectory
 import djerba.util.mini.constants as constants
 from djerba.util.mini.main import main, arg_processor, MiniDjerbaScriptError
 from djerba.util.mini.mdc import MDCFormatError
+from djerba.version import get_djerba_version
 
 def get_parser():
     """Construct the parser for command-line arguments"""
@@ -24,6 +25,7 @@ def get_parser():
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose logging')
     parser.add_argument('-q', '--quiet', action='store_true', help='Logging for error messages only')
     parser.add_argument('-l', '--log-path', help='Output file for log messages; defaults to STDERR')
+    parser.add_argument('--version', action='store_true', help='Print the version number and exit')
     subparsers = parser.add_subparsers(title='subcommands', help='sub-command help', dest='subparser_name')
     ready_parser = subparsers.add_parser(constants.READY, help='Ready an MDC (mini-Djerba config) file')
     ready_parser.add_argument('-j', '--json', metavar='PATH', help='Existing report JSON. Optional, if not given will generate a blank config file.')
@@ -46,6 +48,9 @@ if __name__ == '__main__':
     # suppress the error stacktrace unless verbose logging is in effect
     error_message = None
     args = parser.parse_args()
+    if args.version:
+        print("Djerba core version {0}".format(get_djerba_version()))
+        sys.exit(0)
     if not (args.verbose or args.debug or args.quiet):
         args.silent = True
     else:

@@ -7,6 +7,7 @@ import sys
 
 sys.path.pop(0) # do not import from script directory
 from djerba.core.main import main, arg_processor
+from djerba.version import get_djerba_version
 import djerba.util.constants as constants
 
 def get_parser():
@@ -19,6 +20,7 @@ def get_parser():
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose logging')
     parser.add_argument('-q', '--quiet', action='store_true', help='Logging for error messages only')
     parser.add_argument('-l', '--log-path', help='Output file for log messages; defaults to STDERR')
+    parser.add_argument('--version', action='store_true', help='Print the version number and exit')
     subparsers = parser.add_subparsers(title='subcommands', help='sub-command help', dest='subparser_name')
     setup_parser = subparsers.add_parser(constants.SETUP, help='setup for a Djerba report')
     setup_parser.add_argument('-a', '--assay', metavar='NAME', required=True, choices=['WGTS', 'WGS', 'TAR', 'PWGS'], help='Name of assay')
@@ -63,5 +65,8 @@ if __name__ == '__main__':
         parser.print_help(sys.stderr)
         sys.exit(1)
     args = parser.parse_args()
+    if args.version:
+        print("Djerba core version {0}".format(get_djerba_version()))
+        sys.exit(0)
     ap = arg_processor(args)
     main(ap.get_work_dir(), ap.get_log_level(), ap.get_log_path()).run(args)
