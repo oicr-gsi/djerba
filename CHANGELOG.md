@@ -2,10 +2,12 @@
 
 ## Unreleased
 
-- Removed unused data files
 - Removed file list in expression data
 - added HRD to genomic landscape
-- GCGI-1173: plugin will use provenance_helper
+- GCGI-1173: genomic landscape plugin uses provenance_helper
+- GCGI-1220: fixed MSI table formatting
+- GCGI-1190: Removed obsolete data values/files
+- GCGI-1012: Moved R testing to formal tests
 - new PURPLE CNV calling plugin
 - removed sequenza support
 
