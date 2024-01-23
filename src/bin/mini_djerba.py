@@ -27,17 +27,22 @@ def get_parser():
     parser.add_argument('-l', '--log-path', help='Output file for log messages; defaults to STDERR')
     parser.add_argument('--version', action='store_true', help='Print the version number and exit')
     subparsers = parser.add_subparsers(title='subcommands', help='sub-command help', dest='subparser_name')
-    ready_parser = subparsers.add_parser(constants.READY, help='Ready an MDC (mini-Djerba config) file')
-    ready_parser.add_argument('-j', '--json', metavar='PATH', help='Existing report JSON. Optional, if not given will generate a blank config file.')
-    ready_parser.add_argument('-o', '--out', metavar='PATH', default='config.mdc', help='Output path. Optional, defaults to config.mdc in the current directory.')
-    update_parser = subparsers.add_parser(constants.UPDATE, help='Update an existing JSON report file; render HTML and optional PDF')
+    setup_parser = subparsers.add_parser(constants.SETUP, help='Set up an MDC (mini-Djerba config) file')
+    setup_parser.add_argument('-j', '--json', metavar='PATH', help='Existing report JSON. Optional, if not given will generate a blank config file.')
+    setup_parser.add_argument('-o', '--out', metavar='PATH', default='config.mdc', help='Output path. Optional, defaults to config.mdc in the current directory.')
+    render_parser = subparsers.add_parser(constants.RENDER, help='Render a JSON report file to HTML and optional PDF, with no changes')
+    render_parser.add_argument('-j', '--json', metavar='PATH', required=True, help='Path to the Djerba report JSON file to be updated')
+    render_parser.add_argument('-o', '--out-dir', metavar='DIR', default='.', help='Directory for output files. Optional, defaults to the current directory.')
+    render_parser.add_argument('-w', '--work-dir', metavar='PATH', help='Path to workspace directory; optional, defaults to a temporary directory')
+    render_parser.add_argument('--no-pdf', action='store_true', help='Do not generate PDF output from HTML')
+    update_parser = subparsers.add_parser(constants.UPDATE, help='Render a JSON file to HTML and optional PDF, with updates from an MDC file')
     update_parser.add_argument('-c', '--config', metavar='PATH', required=True, help='Path to an MDC (mini-Djerba config) file')
     update_parser.add_argument('-f', '--force', action='store_true', help='Force update of mismatched plugin versions')
     update_parser.add_argument('-j', '--json', metavar='PATH', required=True, help='Path to the Djerba report JSON file to be updated')
     update_parser.add_argument('-o', '--out-dir', metavar='DIR', default='.', help='Directory for output files. Optional, defaults to the current directory.')
-    update_parser.add_argument('-p', '--pdf', action='store_true', help='Generate PDF output from HTML')
     update_parser.add_argument('-u', '--write-json', action='store_true', help='Write updated JSON to the output directory')
     update_parser.add_argument('-w', '--work-dir', metavar='PATH', help='Path to workspace directory; optional, defaults to a temporary directory')
+    update_parser.add_argument('--no-pdf', action='store_true', help='Do not generate PDF output from HTML')
     return parser
 
 if __name__ == '__main__':
@@ -56,9 +61,14 @@ if __name__ == '__main__':
     else:
         args.silent = False
     try:
+        if hasattr(args, 'no_pdf'):
+            args.pdf = not args.no_pdf
         ap = arg_processor(args)
-        with TemporaryDirectory(prefix='mini_djerba_') as tmp_dir:
-            main(tmp_dir, ap.get_log_level(), ap.get_log_path()).run(args)
+        if hasattr(args, 'work_dir') and args.work_dir != None:
+            main(args.work_dir, ap.get_log_level(), ap.get_log_path()).run(args)
+        else:
+            with TemporaryDirectory(prefix='mini_djerba_') as tmp_dir:
+                main(tmp_dir, ap.get_log_level(), ap.get_log_path()).run(args)
     except MDCFormatError as err:
         error_message = "Error reading the -c/--config file: {0}".format(err)
         if not args.silent:
