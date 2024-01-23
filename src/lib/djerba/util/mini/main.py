@@ -45,12 +45,12 @@ class main(main_base):
         if mode == constants.READY:
             self.ready(
                 ap.get_out_file(),
-                ap.get_json_path()
+                ap.get_json()
             )
         elif mode == constants.UPDATE:
             self.update(
                 ap.get_config_path(),
-                ap.get_json_path(),
+                ap.get_json(),
                 ap.get_out_dir(),
                 ap.is_pdf_enabled(),
                 ap.is_write_json_enabled(),

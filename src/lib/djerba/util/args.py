@@ -7,8 +7,6 @@ from djerba.util.validator import path_validator
 class arg_processor_base(logger):
     # class to process command-line args for creating a main object
 
-    DEFAULT_JSON_FILENAME = 'djerba_report.json'
-
     def __init__(self, args, logger=None, validate=True):
         self.args = args
         if logger:
@@ -34,6 +32,9 @@ class arg_processor_base(logger):
             self.logger.error(msg)
             raise ArgumentNameError(msg) from err
         return value
+
+    def get_json(self):
+        return self._get_arg('json')
 
     def get_log_level(self):
         return self.log_level

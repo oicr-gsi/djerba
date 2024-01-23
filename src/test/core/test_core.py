@@ -13,6 +13,7 @@ import unittest
 import djerba.util.ini_fields as ini
 
 from configparser import ConfigParser
+from glob import glob
 from string import Template
 
 from djerba.core.configure import config_wrapper, core_configurer, DjerbaConfigError
@@ -98,7 +99,7 @@ class TestArgs(TestCore):
         self.assertEqual(ap.get_mode(), mode)
         self.assertEqual(ap.get_ini_path(), ini_path)
         self.assertEqual(ap.get_ini_out_path(), out_path)
-        self.assertEqual(ap.get_json_path(), json)
+        self.assertEqual(ap.get_json(), json)
         self.assertEqual(ap.get_log_level(), logging.ERROR)
         self.assertEqual(ap.get_log_path(), None)
 
@@ -146,7 +147,7 @@ class TestArgs(TestCore):
         work_dir = self.tmp_dir
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
         out_path = None
-        json = os.path.join(self.tmp_dir, 'djerba_report.json')
+        json = os.path.join(self.tmp_dir, 'placeholder_djerba_report.json')
         html = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         pdf = False
         args = self.mock_args(mode, work_dir, ini_path, out_path, json, self.tmp_dir, pdf)
@@ -463,7 +464,6 @@ class TestMainScript(TestCore):
         mode = 'report'
         work_dir = self.tmp_dir
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
-        json_path = os.path.join(self.tmp_dir, 'djerba_report.json')
         html = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         cmd = [
             'djerba.py', mode,
@@ -472,6 +472,8 @@ class TestMainScript(TestCore):
             '--out-dir', self.tmp_dir
         ]
         result = subprocess_runner().run(cmd)
+        pattern = os.path.join(self.tmp_dir, '*'+core_constants.REPORT_JSON_SUFFIX)
+        json_path = glob(pattern).pop(0)
         self.assertEqual(result.returncode, 0)
         self.assertSimpleReport(json_path, html)
 
