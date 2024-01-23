@@ -2,21 +2,24 @@
   import djerba.core.constants as core_constants
   from djerba.mergers.treatment_options_merger.merger import main as merger
   from djerba.util.oncokb.tools import levels as oncokb
+  from djerba.util.html import html_builder
 %>
 
 <!-- gene information -->
 
+${html_builder().section_cells_begin("<h3>Gene Descriptions</h3>","supp")}
 
-<hr class="big-white-line" ><div class="twocellsupp"><div class="oneoftwocellsupp"><h3>Gene Information</h3></div><div class="twooftwocellsupp" ><hr class="big-line" >
 
     <table class="variants" width="100%" >
       <thead style="background-color:white"><tr><th style="text-align:left;">Gene</th><th style="text-align:left;">Summary</th></tr></thead>
       <tbody>
-	% for row in rows:
-	${row}
-	% endfor
+      % for row in rows:
+      ${row}
+      % endfor
       </tbody>
     </table>
-    <p>Although whole genome sequencing encompasses all genes in a specimen, this report is restricted to cancer genes defined by OncoKB as of the date the report is issued.</p>
 
-    </div></div>
+${html_builder().section_cells_end()}
+<br>
+<br>
+<hr class="big-line" style="width: 100%; "  >

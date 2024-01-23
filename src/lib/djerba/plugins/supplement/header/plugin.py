@@ -10,10 +10,6 @@ class main(plugin_base):
     MAKO_TEMPLATE_NAME = 'header.html'
     PLUGIN_VERSION = '1.0.0'
     
-    def specify_params(self):
-        self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
-        self.set_priority_defaults(self.DEFAULT_CONFIG_PRIORITY)
-    
     def configure(self, config):
         config = self.apply_defaults(config)
         return config
@@ -22,6 +18,10 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         return data
+
+    def specify_params(self):
+        self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
+        self.set_priority_defaults(self.DEFAULT_CONFIG_PRIORITY)
 
     def render(self, data):
         renderer = mako_renderer(self.get_module_dir())
