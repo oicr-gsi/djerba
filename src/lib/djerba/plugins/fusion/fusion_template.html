@@ -5,13 +5,14 @@
 %>
 
 
-<hr class="big-white-line" ><div class="twocellmain"><div class="oneoftwocellmain"><h2>Fusions and Structural Variants</h2></div><div class="twooftwocellmain" ><hr class="big-line" >
+<hr class="big-white-line" ><div class="twocellmain"><div class="oneoftwocellmain"><h2>RNA Fusions</h2></div><div class="twooftwocellmain" ><hr class="big-line" >
   <style type="text/css">
     .oncokb-levelP {background: #000000;}
   </style>
 
-    <p><strong>${results.get(fusion.TOTAL_VARIANTS)}</strong> cancer gene(s) were subject to rearrangement,
-      of which <strong>${results.get(fusion.CLINICALLY_RELEVANT_VARIANTS)}</strong> corresponded to oncogenic fusions, as defined by OncoKB.</p>
+    <p><strong>${results.get(fusion.TOTAL_VARIANTS)}</strong> cancer gene(s) were subject to rearrangement. 
+      <strong>${results.get(fusion.CLINICALLY_RELEVANT_VARIANTS)}</strong> fusion(s) were oncogenic according to OncoKB, 
+      in addition to which <strong>${results.get(fusion.NCCN_RELEVANT_VARIANTS)}</strong> rearrangement(s) appeared in NCCN's biomarker compendium.</p>
 
     % if results.get(fusion.CLINICALLY_RELEVANT_VARIANTS) > 0:
     <table class="variants" width="100%">
@@ -21,8 +22,8 @@
 <!--          <th style="text-align:left;">Chromosome</th> -->
           <th style="text-align:left;">Fusion</th>
           <th style="text-align:left;">Rearrangement</th>
-          <th style="text-align:left;">Frame</th>
-          <th style="text-align:left;">Mutation effect</th>
+          <th style="text-align:left;">CDS Frame</th>
+          <th style="text-align:left;">Mutation Effect</th>
           <th style="text-align:left;">Actionability</th></tr></thead>
       <tbody>
 	% for row in make_table_rows(results.get(fusion.BODY)):

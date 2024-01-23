@@ -36,3 +36,4 @@ DATA_FUSIONS_ANNOTATED = 'data_fusions_oncokb_annotated.txt'
 DATA_FUSIONS_NCCN_ANNOTATED = 'data_fusions_NCCN.txt'
 FUSION_INDEX = 3
 HUGO_SYMBOL = 'Hugo_Symbol'
+NCCN_RELEVANT_VARIANTS = 'nccn_relevant_variants'

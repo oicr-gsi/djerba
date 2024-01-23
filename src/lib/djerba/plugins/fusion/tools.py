@@ -39,7 +39,7 @@ class fusion_reader(logger):
                   "Annotations: {0}".format(sorted(list(set(annotations.keys()))))
             self.logger.error(msg)
             raise RuntimeError(msg)
-        [fusions, self.total_fusion_genes] = self._collate_row_data(fusion_data, annotations)
+        [fusions, self.total_fusion_genes, self.total_oncokb_fusions, self.total_nccn_fusions] = self._collate_row_data(fusion_data, annotations)
         # sort the fusions by fusion ID
         self.fusions = sorted(fusions, key=lambda f: f.get_fusion_id_new())
         
@@ -48,6 +48,7 @@ class fusion_reader(logger):
         fusion_genes = set()
         self.logger.debug("Starting to collate fusion table data.")
         intragenic = 0
+        nccn_fusion_total = 0
         NCCN_fusions = set()
         with open(os.path.join(self.input_dir, fc.DATA_FUSIONS_NCCN_ANNOTATED)) as data_file:
             for row in csv.DictReader(data_file, delimiter="\t"):
@@ -61,6 +62,7 @@ class fusion_reader(logger):
                     self.logger.debug("Fusion {0} rescued by NCCN annotation".format(fusion))
                     gene2_exists = False
                     gene2 = "Intergenic"
+                    nccn_fusion_total += 1
                 else:
                     intragenic += 1
                     continue
@@ -71,11 +73,8 @@ class fusion_reader(logger):
             gene1 = fusion_data[fusion_id][0][fc.HUGO_SYMBOL]
             if gene2_exists:
                 gene2 = fusion_data[fusion_id][1][fc.HUGO_SYMBOL]
-            fusion_genes.add(gene1)
-            fusion_genes.add(gene2)
-            frame = fusion_data[fusion_id][0]['Frame']
-            translocation = fusion_data[fusion_id][0]['translocation']
-            Fusion_newStyle = fusion_data[fusion_id][0]['Fusion_newStyle']
+                fusion_genes.add(gene1)
+                fusion_genes.add(gene2)
             if gene2_exists:
                 for row_input in annotations[fusion_id]:
                     effect = row_input['MUTATION_EFFECT']
@@ -91,17 +90,17 @@ class fusion_reader(logger):
                 fusions.append(
                     fusion(
                         fusion_id,
-                        Fusion_newStyle,
+                        fusion_data[fusion_id][0]['Fusion_newStyle'],
                         gene1,
                         gene2,
-                        frame,
+                        fusion_data[fusion_id][0]['Frame'],
                         effect,
                         level,
                         therapies,
-                        translocation
+                        fusion_data[fusion_id][0]['translocation']
                     )
                 )
-        total = len(fusions)
+        total = len(fusions) - nccn_fusion_total
         total_fusion_genes = len(fusion_genes)
         msg = "Finished collating fusion table data. "+\
               "Found {0} fusion rows for {1} distinct genes; ".format(total, total_fusion_genes)+\
@@ -109,7 +108,7 @@ class fusion_reader(logger):
         self.logger.info(msg)
         for fusion_row in fusions:
             self.logger.debug("Fusions: {0}".format(fusion_row.get_genes()))
-        return [fusions, total_fusion_genes]
+        return [fusions, total_fusion_genes, total, nccn_fusion_total]
 
     def build_treatment_entries(self, fusion, therapies, oncotree_code):
         """Make an entry for the treatment options merger"""
@@ -179,6 +178,12 @@ class fusion_reader(logger):
     def get_total_fusion_genes(self):
         return self.total_fusion_genes
  
+    def get_total_nccn_fusions(self):
+        return self.total_nccn_fusions
+
+    def get_total_oncokb_fusions(self):
+        return self.total_oncokb_fusions
+
     def read_annotation_data(self):
         # annotation file has exactly 1 line per fusion
         annotations_by_fusion = {}
