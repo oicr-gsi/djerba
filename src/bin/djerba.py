@@ -32,7 +32,7 @@ def get_parser():
     config_parser.add_argument('-w', '--work-dir', metavar='PATH', required=True, help='Path to workspace directory')
     extract_parser = subparsers.add_parser(constants.EXTRACT, help='extract metrics from configuration')
     extract_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with fully specified inputs')
-    extract_parser.add_argument('-j', '--json', metavar='PATH', help='Path for JSON output; defaults to djerba_report.json in the plugin workspace')
+    extract_parser.add_argument('-j', '--json', metavar='PATH', help='Path for JSON output; defaults to ${REPORT_ID}_report.json in the plugin workspace')
     extract_parser.add_argument('-w', '--work-dir', metavar='PATH', required=True, help='Path to workspace directory')
     extract_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
     render_parser = subparsers.add_parser(constants.RENDER, help='read JSON and write HTML, with optional PDF')

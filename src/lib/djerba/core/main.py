@@ -273,7 +273,8 @@ class main_base(core_base):
         # ie. overwriting a given plugin is all-or-nothing
         # also overwrite JSON config section for the plugin
         # if plugin data did not exist in old JSON, it will be added
-        # TODO check plugin version numbers in old/new JSON
+        # check plugin version numbers in old/new JSON
+        # This updates plugins only; core data (including report timestamp) is not altered
         for plugin in new_data[self.PLUGINS].keys():
             old_version = data[self.PLUGINS][plugin][cc.VERSION]
             new_version = new_data[self.PLUGINS][plugin][cc.VERSION]

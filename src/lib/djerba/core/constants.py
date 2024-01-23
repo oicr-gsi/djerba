@@ -105,4 +105,4 @@ SUMMARY = 'Summary'
 ONCOKB = 'OncoKB'
 
 # JSON file suffix
-REPORT_JSON_SUFFIX = '_djerba_report.json'
+REPORT_JSON_SUFFIX = '_report.json'

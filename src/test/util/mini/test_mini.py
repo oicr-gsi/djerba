@@ -5,6 +5,7 @@ import logging
 import os
 import unittest
 from subprocess import CalledProcessError
+from time import strftime
 
 from djerba.core.main import DjerbaVersionMismatchError
 from djerba.plugins.patient_info.plugin import main as patient_info_plugin
@@ -63,10 +64,14 @@ class TestMiniBase(TestBase):
         for out_path in [html_path, pdf_path, json_out]:
             self.assertTrue(os.path.isfile(out_path))
         with open(html_path) as html_file:
-            redacted = self.redact_html(html_file.read())
-        self.assertEqual(self.getMD5_of_string(redacted), '72e4b407d28cbba6112e744823f65448')
+            original = html_file.read()
+        self.assertTrue('2023/12/20' in original) # draft date is preserved
+        self.assertTrue(strftime('%Y/%m/%d') in original) # today's date is present
+        redacted = self.redact_html(original)
+        self.assertEqual(self.getMD5_of_string(redacted), '170774e05b752a708f5ee74276579e7f')
         with open(json_out) as json_file:
             json_data = json.loads(json_file.read())
+        self.assertEqual(json_data['core']['extract_time'], '2023-12-20_21:38:10Z')
         dob = json_data['plugins']['patient_info']['results']['patient_dob']
         self.assertEqual(dob, '1970/01/01')
         text = json_data['plugins']['summary']['results']['summary_text']

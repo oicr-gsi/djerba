@@ -60,7 +60,7 @@ class TestBenchmark(TestBase):
         bench = benchmarker(args)
         bench.run()
         private_dir = directory_finder().get_private_dir()
-        report_pattern = '*djerba_report.json'
+        report_pattern = '*report.json'
         for sample in benchmarker.SAMPLES:
             # use glob to find old/new paths for each sample
             old_pattern = os.path.join(private_dir, 'benchmarking', sample, report_pattern)
