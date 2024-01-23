@@ -9,9 +9,6 @@ from djerba.util.oncokb.tools import levels as oncokb_levels
 def make_table_rows(rows):
     table_rows = []
     for row in rows:
-        #if re.search('intragenic', row[plugin.FUSION]): # omit intragenic fusions
-        #    continue
-        #else:
         level = row.get(core_constants.ONCOKB)
         cells = [
             hb.td(row["oncokb_link"], italic=True),
