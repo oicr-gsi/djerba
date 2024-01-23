@@ -19,7 +19,7 @@ def get_parser():
     """Construct the parser for command-line arguments"""
     parser = argparse.ArgumentParser(
 	description='Mini-Djerba: A tool for updating bioinformatics clinical reports',
-	epilog='Run any subcommand with -h/--help for additional information'
+	epilog='For details, run any subcommand with -h/--help, or visit https://djerba.readthedocs.io/en/latest/mini_djerba.html'
     )
     parser.add_argument('-d', '--debug', action='store_true', help='More verbose logging')
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose logging')
