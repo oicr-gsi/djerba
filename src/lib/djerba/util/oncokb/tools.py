@@ -11,9 +11,9 @@ from djerba.util.logger import logger
 
 class levels:
 
-    ACTIONABLE_LEVELS = ['1', '2', '3A', '3B', '4', 'R1', 'R2']
-    REPORTABLE_LEVELS = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'N1', 'N2']
-    ALL_LEVELS = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'N1', 'N2', 'N3', 'N4', 'Unknown']
+    ACTIONABLE_LEVELS = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'P']
+    REPORTABLE_LEVELS = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'N1', 'N2', 'P']
+    ALL_LEVELS = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'N1', 'N2', 'N3', 'N4', 'P', 'Unknown']
 
     @staticmethod
     def is_null_string(value):
@@ -57,6 +57,8 @@ class levels:
             html = '<div class="square oncokb-levelN2">N2</div>'
         elif level == "N3":
             html = '<div class="square oncokb-levelN3">N3</div>'
+        elif level == "P":
+            html = '<div class="square oncokb-levelP">P</div>'
         else:
             raise RuntimeError("Unknown OncoKB level: '{0}'".format(level))
         return html
@@ -144,6 +146,8 @@ class levels:
             tier = "Approved"
         elif level in ['3A', '3B', '4', 'R2']:
             tier = "Investigational"
+        elif level in ['P']:
+            tier = "Prognostic"
         else:
             tier = None
         return tier

@@ -21,7 +21,7 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
    return(df)
  }
 
- print("--- reading fusion data ---")
+ cat("reading fusion data...\n")
  data <- read.csv(datafile, sep="\t", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
  entr <- read.csv(entrfile, sep="\t", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
  
@@ -68,6 +68,7 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
 
  #### add translocation style ####
  
+ 
  data_dedup$break1_chromosome_num <- data_dedup$break1_chromosome
  data_dedup$break2_chromosome_num <- data_dedup$break2_chromosome
  
@@ -86,16 +87,28 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  data_dedup = data_dedup[,!(names(data_dedup) %in% c("min","max"))]
  data_dedup$translocation <- gsub("23","X",x = data_dedup$translocation)
  
+ data_dedup$translocation[data_dedup$event_type %ni% c("inverted translocation", "translocation")] <- data_dedup$event_type[data_dedup$event_type %ni% c("inverted translocation", "translocation")]
+ 
+ data_dedup$translocation[data_dedup$event_type == "inversion"] <- paste0("inv(",data_dedup$break1_chromosome[data_dedup$event_type == "inversion"],")")
+ 
+ 
  #####
+ cat("Adding Arriba data...\n")
+ 
  arriba <- read.csv(arribafile, sep="\t", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
  arriba$arriba <- "arriba"
- arriba$reading_frame[arriba$reading_frame == "."] <- "No effect"
+ if(length(arriba$reading_frame[arriba$reading_frame == "."]) > 0){
+   cat("Replacing . reading frame with No effect\n")
+  arriba$reading_frame[arriba$reading_frame == "."] <- "No effect"
+ }
  names(arriba)[1] <- "gene1"
  
- 
+ cat(names(arriba),"\n")
  intersecting_genes <- intersect(unique(c(arriba$gene2,arriba$gene1)),unique(c(data_dedup$gene1_aliases,data_dedup$gene2_aliases)))
  arriba$gene1[arriba$gene1 %ni% intersecting_genes ] <- "None"
  arriba$gene2[arriba$gene2 %ni% intersecting_genes ] <- "None"
+ 
+
  
  arriba <- arriba %>%
    rowwise() %>%      # for each row
@@ -109,7 +122,11 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  
 
  data_dedup <- left_join(data_dedup, arriba, by=c("fusion_alpha"="fusion_alpha"))
- data_dedup$reading_frame[is.na(data_dedup$reading_frame)] <- "Undetermined"
+ 
+ if(length(data_dedup$reading_frame[is.na(data_dedup$reading_frame)]) > 0){
+    cat("Replacing empty reading frame with Undertermined\n")
+    data_dedup$reading_frame[is.na(data_dedup$reading_frame)] <- "Undetermined"
+ }
  
  #### split into tables ####
  
@@ -143,7 +160,7 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
    df_cbio$Fusion <- gsub("None", "intragenic", df_cbio$Fusion)
 
    # change to old-style fusion delimiter for compatability with OncoKB's FusionAnnotator.py 
-   df_cbio_new_delim <- df_cbio
+   df_cbio$Fusion_newStyle <- df_cbio$Fusion
    df_cbio$Fusion <- gsub("::", "-", df_cbio$Fusion)
    
    
@@ -154,7 +171,7 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  FUSs=list()
  FUSs[[1]] <- df_cbio
  FUSs[[2]] <- df_cbio_oncokb
- FUSs[[3]] <- df_cbio_new_delim
+# FUSs[[3]] <- df_cbio_new_delim
  return(FUSs)
 
 }
@@ -201,14 +218,11 @@ if(length(num_lines)<=1) {
   print("writing fus file for oncokb annotator")
   write.table(fusion_cbio[[2]], file=paste0(outdir, "/data_fusions_oncokb.txt"), sep="\t", row.names=FALSE, quote=FALSE)
 
-  # write file with new-style fusion identifiers
-  print("writing fus file with new-style fusion delimiter")
-  write.table(fusion_cbio[[3]], file=paste0(outdir, "/data_fusions_new_delimiter.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-  
   annotation_path = paste0(data_dir, "/", annotation_file) 
   translocation_annotations = read.table(annotation_path, header = T)
-  fus_annotated <- inner_join(translocation_annotations, fusion_cbio[[3]],  by=c("marker"="translocation"))
+  fus_annotated <- inner_join(translocation_annotations, fusion_cbio[[1]],  by=c("marker"="translocation"))
   fus_annotated <- fus_annotated[fus_annotated$oncotree == oncotree,]
+  fus_annotated <- fus_annotated[c("Tumor_Sample_Barcode", "Fusion")]
   write.table(fus_annotated, file=paste0(outdir, "/data_fusions_NCCN.txt"), sep="\t", row.names=FALSE, quote=FALSE)
   
 }

@@ -88,11 +88,11 @@ class html_builder:
         # make a table cell with an OncoKB level symbol
         # permitted levels must have a format defined in style.css
         level = re.sub('Level ', '', level) # strip off 'Level ' prefix, if any
-        permitted_levels = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'N1', 'N2', 'N3']
+        permitted_levels = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'N1', 'N2', 'N3','P']
         if not level in permitted_levels:
             msg = "Input '{0}' is not a permitted OncoKB level".format(level)
             raise RuntimeError(msg)
-        if level in ['N1', 'N2', 'N3']:
+        if level in ['N1', 'N2', 'N3','P']:
             shape = 'square'
         else:
             shape = 'circle'
