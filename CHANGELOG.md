@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+
+- GCGI-1266: moved clinical footer into supplement plugin
+
 ## v1.3.1: 2024-01-19
 
 - Fixed support for 40X assay
