@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+ - GCGI-1217: Remove NORMAL_DEPTH variable  
+ - GCGI-1194: Research Report PDF Footer says RUO 
+
 ## v1.3.1: 2024-01-19
 
 - Fixed support for 40X assay

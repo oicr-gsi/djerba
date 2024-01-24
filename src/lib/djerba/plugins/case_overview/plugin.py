@@ -37,7 +37,6 @@ class main(plugin_base):
     DONOR = "donor"
     TUMOUR_SAMPLE_ID = "tumour_id"
     TUMOUR_DEPTH = 80
-    NORMAL_DEPTH = 40
 
     def configure(self, config):
         config = self.apply_defaults(config)
