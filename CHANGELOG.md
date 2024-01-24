@@ -1,9 +1,12 @@
 # CHANGELOG
 
-## Unreleased
+## Unreleased 
 
-- GCGI-1217: Remove NORMAL_DEPTH variable
-- GCGI-1194: Research Report PDF Footer says RUO
+- GCGI-611: fix fusion frameshift hardcode
+- GCGI-443: merge duplicate fusion rows
+- fixed bug removing oncogenic fusions
+- GCGI-1217: Remove NORMAL_DEPTH variable  
+- GCGI-1194: Research Report PDF Footer says RUO 
 - GCGI-1261: Update plugin tester base class, so it is unaffected by changes in core HTML
 
 ### Improvements for mini-Djerba
