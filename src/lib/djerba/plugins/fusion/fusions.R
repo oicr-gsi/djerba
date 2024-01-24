@@ -103,12 +103,9 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  }
  names(arriba)[1] <- "gene1"
  
- cat(names(arriba),"\n")
  intersecting_genes <- intersect(unique(c(arriba$gene2,arriba$gene1)),unique(c(data_dedup$gene1_aliases,data_dedup$gene2_aliases)))
  arriba$gene1[arriba$gene1 %ni% intersecting_genes ] <- "None"
  arriba$gene2[arriba$gene2 %ni% intersecting_genes ] <- "None"
- 
-
  
  arriba <- arriba %>%
    rowwise() %>%      # for each row
@@ -171,7 +168,6 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  FUSs=list()
  FUSs[[1]] <- df_cbio
  FUSs[[2]] <- df_cbio_oncokb
-# FUSs[[3]] <- df_cbio_new_delim
  return(FUSs)
 
 }

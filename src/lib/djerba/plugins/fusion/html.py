@@ -12,8 +12,6 @@ def make_table_rows(rows):
         level = row.get(core_constants.ONCOKB)
         cells = [
             hb.td(row["oncokb_link"], italic=True),
-            # hb.td(row[plugin.CHROMOSOME]),
-            #hb.td(row[plugin.FUSION]),
             hb.td(row["translocation"]),
             hb.td(row[plugin.FRAME]),
             hb.td(row[plugin.MUTATION_EFFECT]),
