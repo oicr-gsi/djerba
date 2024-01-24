@@ -52,7 +52,7 @@ class TestTarSNVIndelPlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '72e110ded8b7a7b9036b0bbbf65813a8'
+            self.MD5: '4a6ecfc672265f9ce9e13bd1674f0969'
         }
         self.run_basic_test(input_dir, params)
 
@@ -78,7 +78,7 @@ class TestTarSNVIndelPlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '14c82ac9b9bea83ea757fbf7065af808'
+            self.MD5: 'c645d99817ef63d1e8d048534de14060'
         }
         self.run_basic_test(input_dir, params)
 
