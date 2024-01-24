@@ -25,6 +25,14 @@ class html_builder:
             oncotree_code
         )
         return url
+    
+    @staticmethod
+    def build_onefusion_url(gene, oncotree_code):
+        url = 'https://www.oncokb.org/gene/{0}/Fusion/{1}'.format(
+            gene,
+            oncotree_code
+        )
+        return url
 
     @staticmethod
     def build_gene_url(gene):

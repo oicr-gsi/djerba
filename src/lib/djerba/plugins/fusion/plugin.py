@@ -46,7 +46,7 @@ class main(plugin_base):
             # rows are already sorted by the fusion reader
             max_actionable = oncokb_levels.oncokb_order('P')
             rows = list(filter(lambda x: oncokb_levels.oncokb_order(x[core_constants.ONCOKB]) <= max_actionable, rows))
-            distinct_oncogenic_genes = len(set([row.get(fc.GENE) for row in rows]))
+            # distinct_oncogenic_genes = len(set([row.get(fc.GENE) for row in rows]))
             results = {
                 fc.TOTAL_VARIANTS: total_fusion_genes,
                 fc.CLINICALLY_RELEVANT_VARIANTS: fus_reader.get_total_oncokb_fusions(),

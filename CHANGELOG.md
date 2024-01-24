@@ -4,7 +4,7 @@
 
 - GCGI-611: fix fusion frameshift hardcode
 - GCGI-443: merge duplicate fusion rows
-- Keep NCCN translocations
+- fixed bug removing oncogenic fusions
 
 ## v1.3.1: 2024-01-19
 

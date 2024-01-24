@@ -138,7 +138,8 @@ class fusion_reader(logger):
         gene_info_factory = gim_factory(self.log_level, self.log_path)
         # table has 2 rows for each oncogenic fusion
         # retain fusions with sort order less than (ie. ahead of) 'Likely Oncogenic'
-        maximum_order = oncokb_levels.oncokb_order('P')
+        # TODO: change max actionable to 'P' once we have NCCN support enabled
+        maximum_order = oncokb_levels.oncokb_order('N2')
         for fusion in gene_pair_fusions:
             oncokb_order = oncokb_levels.oncokb_order(fusion.get_oncokb_level())
             if oncokb_order <= maximum_order:
@@ -149,7 +150,7 @@ class fusion_reader(logger):
                         fc.GENE: gene,
                         fc.GENE_URL: gene_url,
                         fc.CHROMOSOME: chromosome,
-                        fc.ONCOKB_LINK: fusion.get_oncokb_link(),
+                        fc.ONCOKB_LINK: fusion.get_oncokb_link(oncotree_code),
                         fc.FRAME: fusion.get_frame(),
                         fc.TRANSLOCATION: fusion.get_translocation(),
                         fc.FUSION: fusion.get_fusion_id_new(),
@@ -322,10 +323,11 @@ class fusion:
     def get_frame(self):
         return self.frame
 
-    def get_oncokb_link(self):
-        gene1_url = hb.build_gene_url(self.gene1)
+    def get_oncokb_link(self, oncotree):
+        #need to both make the URL and then make the HTML for the URL
+        gene1_url = hb.build_onefusion_url(self.gene1, oncotree)
         gene1_and_url = hb.href(gene1_url, self.gene1)
-        gene2_url = hb.build_gene_url(self.gene2)
+        gene2_url = hb.build_onefusion_url(self.gene2, oncotree)
         gene2_and_url = hb.href(gene2_url, self.gene2)
         return("::".join((gene1_and_url, gene2_and_url)))
 

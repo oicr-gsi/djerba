@@ -50,7 +50,7 @@ class TestFusion(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: self.JSON_NAME,
-            self.MD5: 'd0e0bfe3b753b212a0e9c643c0e4e1d9'
+            self.MD5: '5baaba5b8a4ba661f62691af4466d11b'
         }
         self.run_basic_test(input_dir, params, 'fusion', logging.ERROR, work_dir)
 
