@@ -95,6 +95,7 @@ FOOTER = 'footer'
 MERGE_LIST = 'merge_list'
 MERGED_FILENAME = 'merged_filename'
 PAGE_FOOTER = 'page_footer'
+PDF_FOOTERS = 'pdf_footers'
 
 # keywords for plugin structure
 RESULTS = 'results'
@@ -103,3 +104,6 @@ SUMMARY = 'Summary'
 
 # keyword for OncoKB level
 ONCOKB = 'OncoKB'
+
+# JSON file suffix
+REPORT_JSON_SUFFIX = '_report.json'
