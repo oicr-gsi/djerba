@@ -38,14 +38,14 @@ class TestCaptiv8Plugin(PluginTester):
         params = {
             self.INI: 'input/' + self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '815dcffda5bf62b794257ae2de86b064'
+            self.MD5: 'c0740ac334677f34d1a9594b3fceb87f'
         }
         self.run_basic_test(self.tmp_dir, params)
 
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""
         for key in ['files','captiv8_base64']:
-            del data['plugins']['captiv8']['results'][key]
+            del data['results'][key]
         return data        
 
 if __name__ == '__main__':
