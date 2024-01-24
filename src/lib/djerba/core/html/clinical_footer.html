@@ -1,6 +1,8 @@
 
 <%
-  from time import strftime
+  from time import strftime, strptime
+  fields = extract_time.split('_')
+  draft_date = strftime("%Y/%m/%d", strptime(fields[0], "%Y-%m-%d"))
 %>
 
 <br>
@@ -13,10 +15,10 @@
 
 <table class="suppl" width="100%">
     <tr>
-      <td width="33%">Report drafted by ${author} on ${strftime("%Y/%m/%d")}</td>
+      <td width="33%">Report drafted by ${author} on ${draft_date}</td>
     </tr>
     <tr>
-      <td width="33%">Report electronically signed out by Trevor Pugh, PhD, FACMG (ABMS #1027812) on yyyy/mm/dd</td>
+      <td width="33%">Report electronically signed out by Trevor Pugh, PhD, FACMG (ABMS #1027812) on ${strftime("%Y/%m/%d")}</td>
     </tr>
   </table>
 

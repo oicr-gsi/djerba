@@ -11,6 +11,7 @@ import logging
 import os
 import sys
 import unittest
+import djerba.core.constants as core_constants
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 
@@ -167,7 +168,8 @@ class benchmarker(logger):
             # run the Djerba "main" class to generate a JSON report file
             djerba_main = main(report_dir, self.log_level, self.log_path)
             config = djerba_main.configure(config_path)
-            json_path = os.path.join(report_dir, 'djerba_report.json')
+            pattern = os.path.join(report_dir, '*'+core_constants.REPORT_JSON_SUFFIX)
+            json_path = self.glob_single(pattern)
             data = djerba_main.extract(config, json_path, archive=False)
             self.logger.info("Finished Djerba draft report for {0}".format(sample))
 

@@ -104,3 +104,6 @@ SUMMARY = 'Summary'
 
 # keyword for OncoKB level
 ONCOKB = 'OncoKB'
+
+# JSON file suffix
+REPORT_JSON_SUFFIX = '_report.json'

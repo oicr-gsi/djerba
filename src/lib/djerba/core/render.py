@@ -8,6 +8,7 @@ import logging
 import os
 import pdfkit
 from PyPDF2 import PdfMerger
+from time import strftime
 import djerba.core.constants as cc
 from djerba.util.environment import directory_finder, DjerbaEnvDirError
 from djerba.util.image_to_base64 import converter
@@ -25,6 +26,7 @@ class html_renderer(logger):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.author = self.data[cc.AUTHOR]
         self.report_id = self.data[cc.REPORT_ID]
+        self.original_extract_time = self.data[cc.EXTRACT_TIME]
         finder = directory_finder(self.log_level, self.log_path)
         if finder.has_valid_core_html_dir():
             self.html_dir = finder.get_core_html_dir()
@@ -75,7 +77,7 @@ class html_renderer(logger):
             raise
         # do template substitution for clinical footer; otherwise just read the file
         if doc_type == cc.CLINICAL:
-            args = {cc.AUTHOR: self.author}
+            args = {key: self.data[key] for key in [cc.AUTHOR, cc.EXTRACT_TIME]}
             footer = self.mako.render_name(file_name, args)
         else:
             with open(os.path.join(self.html_dir, file_name)) as footer_file:
@@ -84,11 +86,11 @@ class html_renderer(logger):
 
     def get_page_footer(self, doc_type):
         if doc_type == cc.CLINICAL:
-            pdf_footer = "{0} - {1}".format('yyyy/mm/dd', self.report_id)
+            pdf_footer = "{0} - {1}".format(strftime("%Y/%m/%d"), self.report_id)
         elif doc_type == cc.RESEARCH:
             pdf_footer = 'For Research Use Only'
         else:
-            pdf_footer = "{0} ".format('yyyy/mm/dd')
+            pdf_footer = "{0} ".format(strftime("%Y/%m/%d"))
         return pdf_footer
 
     def run(self, html, priorities, attributes):

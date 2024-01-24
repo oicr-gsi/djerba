@@ -1,2 +1,3 @@
-READY = 'ready'
+SETUP = 'setup'
+RENDER = 'render'
 UPDATE = 'update'

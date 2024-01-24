@@ -13,6 +13,7 @@ import unittest
 import djerba.util.ini_fields as ini
 
 from configparser import ConfigParser
+from glob import glob
 from string import Template
 
 from djerba.core.configure import config_wrapper, core_configurer, DjerbaConfigError
@@ -32,7 +33,7 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_UPDATE_JSON = 'simple_report_for_update.json'
-    SIMPLE_REPORT_MD5 = '37caf581f36b1450900d6d770f9c497e'
+    SIMPLE_REPORT_MD5 = 'e9735a42d075de02374cdd5108534c70'
     SIMPLE_CONFIG_MD5 = 'ab4b71b790f2b12aa802b8eaa1658951'
 
     class mock_args:
@@ -63,7 +64,7 @@ class TestCore(TestBase):
             data_expected = json.loads(json_file.read())
         with open(json_path) as json_file:
             data_found = json.loads(json_file.read())
-            data_found['core']['extract_time'] = 'placeholder'
+            data_found['core']['extract_time'] = '2024-01-01_12:00:00 -0500'
             data_found['core']['core_version'] = 'placeholder'
         self.assertEqual(data_expected, data_found)
 
@@ -98,7 +99,7 @@ class TestArgs(TestCore):
         self.assertEqual(ap.get_mode(), mode)
         self.assertEqual(ap.get_ini_path(), ini_path)
         self.assertEqual(ap.get_ini_out_path(), out_path)
-        self.assertEqual(ap.get_json_path(), json)
+        self.assertEqual(ap.get_json(), json)
         self.assertEqual(ap.get_log_level(), logging.ERROR)
         self.assertEqual(ap.get_log_path(), None)
 
@@ -146,7 +147,7 @@ class TestArgs(TestCore):
         work_dir = self.tmp_dir
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
         out_path = None
-        json = os.path.join(self.tmp_dir, 'djerba_report.json')
+        json = os.path.join(self.tmp_dir, 'placeholder_report.json')
         html = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         pdf = False
         args = self.mock_args(mode, work_dir, ini_path, out_path, json, self.tmp_dir, pdf)
@@ -463,7 +464,6 @@ class TestMainScript(TestCore):
         mode = 'report'
         work_dir = self.tmp_dir
         ini_path = os.path.join(self.test_source_dir, 'config.ini')
-        json_path = os.path.join(self.tmp_dir, 'djerba_report.json')
         html = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         cmd = [
             'djerba.py', mode,
@@ -472,6 +472,8 @@ class TestMainScript(TestCore):
             '--out-dir', self.tmp_dir
         ]
         result = subprocess_runner().run(cmd)
+        pattern = os.path.join(self.tmp_dir, '*'+core_constants.REPORT_JSON_SUFFIX)
+        json_path = glob(pattern).pop(0)
         self.assertEqual(result.returncode, 0)
         self.assertSimpleReport(json_path, html)
 
@@ -502,7 +504,7 @@ class TestMainScript(TestCore):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, '205bdfda6858a9fafb8797900fa4a1b7')
+        self.assert_report_MD5(html_string, '4d6089dae0c1ddc2b27d36b732ddc720')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         # again, with the --write-json option
@@ -533,7 +535,7 @@ class TestMainScript(TestCore):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, '205bdfda6858a9fafb8797900fa4a1b7')
+        self.assert_report_MD5(html_string, '4d6089dae0c1ddc2b27d36b732ddc720')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         # again, with the --write-json option
@@ -663,7 +665,7 @@ class TestSimpleReport(TestCore):
         djerba_main = main(self.tmp_dir, log_level=logging.ERROR) # suppress author warning
         config = djerba_main.configure(ini_path)
         data_found = djerba_main.extract(config)
-        data_found['core']['extract_time'] = 'placeholder'
+        data_found['core']['extract_time'] = '2024-01-01_12:00:00 -0500'
         data_found['core']['core_version'] = 'placeholder'
         with open(json_path) as json_file:
             data_expected = json.loads(json_file.read())

@@ -27,7 +27,7 @@ class extraction_setup(core_base):
         # add the core release version
         core_params[cc.CORE_VERSION] = get_djerba_version()
         # add the timestamp in UTC
-        core_params[cc.EXTRACT_TIME] = time.strftime('%Y-%m-%d_%H:%M:%SZ', time.gmtime())
+        core_params[cc.EXTRACT_TIME] = time.strftime('%Y-%m-%d_%H:%M:%S %z', time.localtime())
         return core_params
 
     def _get_merger_params(self, config):
