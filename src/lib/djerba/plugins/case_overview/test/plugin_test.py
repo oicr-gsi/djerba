@@ -32,18 +32,17 @@ class TestCaseOverview(PluginTester):
         params = {
             self.INI: 'case_overview_WGTS.ini',
             self.JSON: json_location,
-            self.MD5: '466edd497ee81ab7e29f747920d5277d'
+            self.MD5: '98420eb4576d80fd2944788973c9cb32'
         }
         self.run_basic_test(test_source_dir, params)
 
     def testCaseOverviewTAR(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         json_location = os.path.join(self.sup_dir ,"plugins/case_overview/case_overview_TAR.json")
-
         params = {
             self.INI: 'case_overview_TAR.ini',
             self.JSON: json_location,
-            self.MD5: '5d503e55ad7079f866f251724f4a1dfd'
+            self.MD5: '06d2aa02f67915c9a2f8a9eb1815735e'
         }
         self.run_basic_test(test_source_dir, params)
 

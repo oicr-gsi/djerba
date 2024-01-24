@@ -38,14 +38,14 @@ class TestPwgAnalysisPlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '212ab89ac414c7f39bb8db283f28b2eb'
+            self.MD5: '7fbe689b710eb70063f8816ed6c5c4f9'
         }
         self.run_basic_test(input_dir, params)
 
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""
         for key in ['files','hrd_base64']:
-            del data['plugins']['hrd']['results'][key]
+            del data['results'][key]
         return data        
 
 if __name__ == '__main__':

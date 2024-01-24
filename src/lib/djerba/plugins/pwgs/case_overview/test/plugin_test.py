@@ -40,9 +40,14 @@ class TestPwgCasePlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '6c3dcf8f30e999bce3a183d174bffa6c'
+            self.MD5: '13655e31f88039cae030d374134c9438'
         }
         self.run_basic_test(input_dir, params)
+
+    def redact_json_data(self, data):
+        """replaces empty method from testing.tools"""
+        data['results']['pwgs_report_id'] = 'placeholder'
+        return data        
 
 
 if __name__ == '__main__':

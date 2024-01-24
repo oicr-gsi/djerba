@@ -46,13 +46,13 @@ class TestSnvIndelPlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: self.JSON_NAME,
-            self.MD5: '10e078e17b094c735c2c58cfa4176b21'
+            self.MD5: '5f84958bf8f8d3528e6bffa2399bb80c'
         }
         self.run_basic_test(input_dir, params, work_dir=work_dir)
 
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""
-        del data['plugins']['wgts.snv_indel']['results']['vaf_plot']
+        del data['results']['vaf_plot']
         return data 
 
 if __name__ == '__main__':
