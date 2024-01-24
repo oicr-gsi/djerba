@@ -2,7 +2,10 @@
 
 ## Unreleased
 
-Improvements for mini-Djerba:
+Testing:
+- Update plugin tester base class, so it is unaffected by changes in core HTML
+
+Mini-Djerba:
 - GCGI-1265: Automatically fill in report dates (preserving date of original report draft)
 - GCGI-1268: Use report ID for name of JSON output file
 - GCGI-1269: Default to user-friendly minimal error text
