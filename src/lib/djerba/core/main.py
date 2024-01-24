@@ -208,7 +208,7 @@ class main_base(core_base):
                 self.logger.info("Wrote HTML output to {0}".format(html_path))
                 if pdf:
                     pdf_path = os.path.join(out_dir, prefix+'.pdf')
-                    footer = output_data[cc.PAGE_FOOTER]
+                    footer = output_data[cc.PDF_FOOTERS][prefix]
                     p_rend.render_file(html_path, pdf_path, footer)
                     self.logger.info("Wrote PDF output to {0}".format(pdf_path))
             merge_list = output_data[cc.MERGE_LIST]

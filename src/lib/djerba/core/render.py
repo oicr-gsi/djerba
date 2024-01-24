@@ -84,8 +84,14 @@ class html_renderer(logger):
                 footer = footer_file.read()
         return footer
 
-    def get_page_footer(self):
-        return "{0} - {1}".format(strftime("%Y/%m/%d"), self.report_id)
+    def get_page_footer(self, doc_type):
+        if doc_type == cc.CLINICAL:
+            pdf_footer = "{0} - {1}".format(strftime("%Y/%m/%d"), self.report_id)
+        elif doc_type == cc.RESEARCH:
+            pdf_footer = 'For Research Use Only'
+        else:
+            pdf_footer = "{0} ".format(strftime("%Y/%m/%d"))
+        return pdf_footer
 
     def run(self, html, priorities, attributes):
         """
@@ -106,7 +112,8 @@ class html_renderer(logger):
         }
         """
         data = {
-            cc.DOCUMENTS: {}
+            cc.DOCUMENTS: {},
+            cc.PDF_FOOTERS: {}
         }
         merge_list = []
         for doc_type in self.config[cc.DOCUMENT_TYPES]:
@@ -121,12 +128,13 @@ class html_renderer(logger):
                 # doc_key is the prefix for HTML/PDF filenames
                 doc_key = "{0}_report.{1}".format(self.report_id, doc_type)
                 data[cc.DOCUMENTS][doc_key] = "\n".join(document_sections)
+                data[cc.PDF_FOOTERS][doc_key] = self.get_page_footer(doc_type)
                 merge_list.append(doc_key)
             else:
                 self.logger.info("Omitting empty report document: {0}".format(doc_type))
         data[cc.MERGE_LIST] = merge_list
         data[cc.MERGED_FILENAME] = "{0}_report.pdf".format(self.report_id)
-        data[cc.PAGE_FOOTER] = self.get_page_footer()
+        
         return data
 
 class pdf_renderer(logger):
