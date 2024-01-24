@@ -13,8 +13,6 @@ from shutil import copy
 from djerba.plugins.plugin_tester import PluginTester
 from djerba.util.validator import path_validator
 
-import sys
-
 class TestCaseOverview(PluginTester):
 
     def setUp(self):
@@ -29,7 +27,6 @@ class TestCaseOverview(PluginTester):
     def testCaseOverviewWGTS(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         json_location = os.path.join(self.sup_dir ,"plugins/case_overview/case_overview_WGTS.json")
-        print(json_location, file=sys.stderr)
         shutil.copy(self.sample_json, self.tmp_dir)
 
         params = {
@@ -39,10 +36,9 @@ class TestCaseOverview(PluginTester):
         }
         self.run_basic_test(test_source_dir, params)
 
-    def SKIPtestCaseOverviewTAR(self):
+    def testCaseOverviewTAR(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         json_location = os.path.join(self.sup_dir ,"plugins/case_overview/case_overview_TAR.json")
-        print(json_location, file=sys.stderr)
         params = {
             self.INI: 'case_overview_TAR.ini',
             self.JSON: json_location,
