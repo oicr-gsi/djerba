@@ -6,6 +6,7 @@ import djerba.core.constants as core_constants
 from djerba.util.render_mako import mako_renderer
 import djerba.util.assays as assays
 import djerba.util.input_params_tools as input_params_tools
+from time import strftime
 
 class main(plugin_base):
 
@@ -49,7 +50,10 @@ class main(plugin_base):
             'merge_inputs': {},
             'results': {
                 'assay': wrapper.get_my_string(self.ASSAY),
-                'failed': wrapper.get_my_boolean(self.FAILED)
+                'failed': wrapper.get_my_boolean(self.FAILED),
+                core_constants.AUTHOR: config['core'][core_constants.AUTHOR],
+                'extract_time': strftime("%Y/%m/%d"),
+                'geneticist': wrapper.get_my_string('geneticist')
             },
             'version': str(self.SUPPLEMENT_DJERBA_VERSION)
         }
@@ -65,6 +69,7 @@ class main(plugin_base):
         ]
         for key in discovered:
             self.add_ini_discovered(key)
+        self.set_ini_default('geneticist', 'Trevor Pugh, PhD, FACMG (ABMS #1027812)')
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_ini_default(self.FAILED, "False")
         self.set_priority_defaults(self.DEFAULT_CONFIG_PRIORITY)

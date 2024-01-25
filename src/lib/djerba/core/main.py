@@ -440,7 +440,6 @@ class main(main_base):
                 'cnv',
                 'fusion',
                 'gene_information_merger',
-                'supplement.header',
                 'supplement.body',
             ]
         elif assay == 'WGS':
@@ -458,7 +457,6 @@ class main(main_base):
                 'wgts.snv_indel',
                 'cnv',
                 'gene_information_merger',
-                'supplement.header',
                 'supplement.body',
             ]
         elif assay == 'TAR':
@@ -475,7 +473,6 @@ class main(main_base):
                 'tar.snv_indel',
                 'tar.swgs',
                 'gene_information_merger',
-                'supplement.header',
                 'supplement.body',
             ]
         elif assay == 'PWGS':
@@ -486,7 +483,6 @@ class main(main_base):
                 'pwgs.summary',
                 'pwgs.sample',
                 'pwgs.analysis',  
-                'supplement.header',
                 'supplement.body'
             ]
         else:

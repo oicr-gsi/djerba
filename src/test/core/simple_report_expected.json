@@ -71,7 +71,7 @@
     },
     "mergers": {
         "gene_information_merger": {
-            "render_priority": 1100,
+            "render_priority": 2000,
             "attributes": [
                 "clinical",
                 "supplementary"
@@ -117,8 +117,8 @@
         "gene_information_merger": {
             "attributes": "clinical,supplementary",
             "depends_configure": "",
-            "configure_priority": "1100",
-            "render_priority": "1100"
+            "configure_priority": "2000",
+            "render_priority": "2000"
         }
     }
 }

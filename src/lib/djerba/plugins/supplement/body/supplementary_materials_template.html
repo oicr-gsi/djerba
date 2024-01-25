@@ -66,10 +66,10 @@ ${html_builder().section_cells_begin("<h2>Report<br>Sign-offs</h2>","main")}
 
 <table class="suppl" width="100%">
     <tr>
-      <td width="33%">Report drafted by PLACEHOLDER on ${strftime("%Y/%m/%d")}</td>
+      <td width="33%">Report drafted by ${results.get(core_constants.AUTHOR)} on ${results.get('extract_time')}</td>
     </tr>
     <tr>
-      <td width="33%">Report electronically signed out by Trevor Pugh, PhD, FACMG (ABMS #1027812) on yyyy/mm/dd</td>
+      <td width="33%">Report electronically signed out by ${results.get('geneticist')} on ${strftime("%Y/%m/%d")}</td>
     </tr>
   </table>
 

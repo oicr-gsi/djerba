@@ -33,8 +33,8 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_UPDATE_JSON = 'simple_report_for_update.json'
-    SIMPLE_REPORT_MD5 = 'e9735a42d075de02374cdd5108534c70'
-    SIMPLE_CONFIG_MD5 = 'ab4b71b790f2b12aa802b8eaa1658951'
+    SIMPLE_REPORT_MD5 = 'e2b5d1f23f08c2aca7bc3a595c2b5173'
+    SIMPLE_CONFIG_MD5 = 'fc6265eeb6a9f8f2a5c864a97e07250c'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
@@ -504,7 +504,7 @@ class TestMainScript(TestCore):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, '4d6089dae0c1ddc2b27d36b732ddc720')
+        self.assert_report_MD5(html_string, 'b11a1d1623af8ae77385994f2f0ab9fa')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         # again, with the --write-json option
@@ -535,7 +535,7 @@ class TestMainScript(TestCore):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, '4d6089dae0c1ddc2b27d36b732ddc720')
+        self.assert_report_MD5(html_string, 'b11a1d1623af8ae77385994f2f0ab9fa')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         # again, with the --write-json option
@@ -579,7 +579,7 @@ class TestPriority(TestCore):
             ['core', 100, 1],
             ['demo1', 200, 2],
             ['demo2', 300, 3],
-            ['gene_information_merger', 1100, 4]
+            ['gene_information_merger', 2000, 4]
         ]
         prefix = 'DEBUG:djerba.core.main:Configuring'
         template = '{0} {1}, priority {2}, order {3}'
@@ -598,7 +598,7 @@ class TestPriority(TestCore):
             ['core', 100, 1],
             ['demo2', 200, 2], # <---- changed order
             ['demo1', 300, 3],
-            ['gene_information_merger', 1100, 4]
+            ['gene_information_merger', 2000, 4]
         ]
         for (name, priority, order) in priority_results:
             msg = template.format(prefix, name, priority, order)
