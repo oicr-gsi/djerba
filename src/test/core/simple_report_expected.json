@@ -4,7 +4,7 @@
         "document_config": "document_config.json",
 	"core_version": "placeholder",
         "report_id": "placeholder",
-        "extract_time": "placeholder"
+        "extract_time": "2024-01-01_12:00:00 -0500"
     },
     "plugins": {
         "demo1": {

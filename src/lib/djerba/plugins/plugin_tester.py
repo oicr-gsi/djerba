@@ -12,6 +12,7 @@ import djerba.core.constants as core_constants
 
 from configparser import ConfigParser
 from djerba.core.json_validator import plugin_json_validator
+from djerba.core.loaders import plugin_loader
 from djerba.core.main import main as core_main
 from djerba.core.workspace import workspace
 from djerba.util.subprocess_runner import subprocess_runner
@@ -64,26 +65,35 @@ class PluginTester(TestBase):
         if not plugin_name:
             plugin_name = self.read_plugin_name(ini_path)
         self.assertTrue(plugin_name)
-        djerba_main = core_main(work_dir, log_level=log_level)
-        config = djerba_main.configure(ini_path)
+        # !!! First pass -- load the plugin, run as standalone, do JSON & HTML checks
+        loader = plugin_loader(log_level)
+        plugin = loader.load(plugin_name, workspace(work_dir, log_level))
+        config = ConfigParser()
+        with open(ini_path) as in_file:
+            config.read_file(in_file)
         config.set(core_constants.CORE, core_constants.REPORT_ID, 'placeholder')
-        data_found = self.redact_json_data(djerba_main.extract(config))
+        plugin_config = plugin.configure(config)
+        self.assertTrue(plugin_config.has_section(plugin_name))
+        plugin_data_found = self.redact_json_data(plugin.extract(plugin_config))
         with open(expected_json_path) as json_file:
             plugin_data_expected = json.loads(json_file.read())
-        plugin_data_found = data_found['plugins'][plugin_name]
         ### uncomment this to dump the plugin output JSON to a file
         #with open('/tmp/foo.json', 'w') as out_file:
         #    out_file.write(json.dumps(plugin_data_found, sort_keys=True, indent=4))
         validator = plugin_json_validator(log_level=log_level)
         self.assertTrue(validator.validate_data(plugin_data_found))
         self.assertEqual(plugin_data_found, plugin_data_expected)
-        # TODO check other document types, eg. research
-        if len(plugin_data_found['attributes']) != 1: 
-            raise RuntimeError('Test framework requires exactly 1 attribute, found: {0}'.format(plugin_data_found['attributes']))
-        # this will break if there is more than one attribute per json
-        report_type = ".".join(('placeholder_report', plugin_data_found['attributes'][0]))
-        rendered = djerba_main.render(data_found)
-        html = self.redact_html(rendered['documents'][report_type])
+        html = plugin.render(plugin_data_found)
         self.assert_report_MD5(html, expected_md5)
+        # !!! Second pass -- run the plugin as part of Djerba main, do JSON check only
+        djerba_main = core_main(work_dir, log_level=log_level)
+        main_config = djerba_main.configure(ini_path)
+        self.assertTrue(main_config.has_section(plugin_name))
+        main_data = djerba_main.extract(main_config)
+        self.assertTrue(plugin_name in main_data['plugins'])
+        main_plugin_data = self.redact_json_data(main_data['plugins'][plugin_name])
+        self.assertEqual(main_plugin_data, plugin_data_expected)
+        main_html = djerba_main.render(main_data)
+        self.assertTrue(len(main_html)>0)
 
     # TODO add standalone tests for configure, extract, render steps

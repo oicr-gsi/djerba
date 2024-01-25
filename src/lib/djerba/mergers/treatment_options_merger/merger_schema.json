@@ -6,7 +6,7 @@
 	"properties": {
 	    "Tier": {
 		"type": "string",
-		"enum": ["Approved", "Investigational"]
+		"enum": ["Approved", "Investigational", "Prognostic"]
 	    },
 	    "OncoKB level": {"type": "string" },
 	    "Treatments": {"type": "string" },

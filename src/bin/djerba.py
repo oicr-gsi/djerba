@@ -7,18 +7,20 @@ import sys
 
 sys.path.pop(0) # do not import from script directory
 from djerba.core.main import main, arg_processor
+from djerba.version import get_djerba_version
 import djerba.util.constants as constants
 
 def get_parser():
     """Construct the parser for command-line arguments"""
     parser = argparse.ArgumentParser(
         description='Djerba: A tool for making bioinformatics clinical reports',
-        epilog='Run any subcommand with -h/--help for additional information'
+        epilog='For details, run any subcommand with -h/--help, or visit https://djerba.readthedocs.io'
     )
     parser.add_argument('-d', '--debug', action='store_true', help='More verbose logging')
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose logging')
     parser.add_argument('-q', '--quiet', action='store_true', help='Logging for error messages only')
     parser.add_argument('-l', '--log-path', help='Output file for log messages; defaults to STDERR')
+    parser.add_argument('--version', action='store_true', help='Print the version number and exit')
     subparsers = parser.add_subparsers(title='subcommands', help='sub-command help', dest='subparser_name')
     setup_parser = subparsers.add_parser(constants.SETUP, help='setup for a Djerba report')
     setup_parser.add_argument('-a', '--assay', metavar='NAME', required=True, choices=['WGTS', 'WGS', 'TAR', 'PWGS'], help='Name of assay')
@@ -30,7 +32,7 @@ def get_parser():
     config_parser.add_argument('-w', '--work-dir', metavar='PATH', required=True, help='Path to workspace directory')
     extract_parser = subparsers.add_parser(constants.EXTRACT, help='extract metrics from configuration')
     extract_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with fully specified inputs')
-    extract_parser.add_argument('-j', '--json', metavar='PATH', help='Path for JSON output; defaults to djerba_report.json in the plugin workspace')
+    extract_parser.add_argument('-j', '--json', metavar='PATH', help='Path for JSON output; defaults to ${REPORT_ID}_report.json in the plugin workspace')
     extract_parser.add_argument('-w', '--work-dir', metavar='PATH', required=True, help='Path to workspace directory')
     extract_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
     render_parser = subparsers.add_parser(constants.RENDER, help='read JSON and write HTML, with optional PDF')
@@ -63,5 +65,8 @@ if __name__ == '__main__':
         parser.print_help(sys.stderr)
         sys.exit(1)
     args = parser.parse_args()
+    if args.version:
+        print("Djerba core version {0}".format(get_djerba_version()))
+        sys.exit(0)
     ap = arg_processor(args)
     main(ap.get_work_dir(), ap.get_log_level(), ap.get_log_path()).run(args)

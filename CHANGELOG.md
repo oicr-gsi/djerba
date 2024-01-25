@@ -4,6 +4,23 @@
 
 - GCGI-1266: moved clinical footer into supplement plugin
 
+## Unreleased 
+
+- GCGI-611: fix fusion frameshift hardcode
+- GCGI-443: merge duplicate fusion rows
+- fixed bug removing oncogenic fusions
+- GCGI-1217: Remove NORMAL_DEPTH variable  
+- GCGI-1194: Research Report PDF Footer says RUO 
+- GCGI-1261: Update plugin tester base class, so it is unaffected by changes in core HTML
+
+### Improvements for mini-Djerba
+
+- GCGI-1265: Automatically fill in report dates (preserving date of original report draft)
+- GCGI-1268: Use report ID for name of JSON output file
+- GCGI-1269: Default to user-friendly minimal error text
+- GCGI-1270: `--version` option in `djerba.py` and mini-Djerba
+- GCGI-1271: Mini-Djerba modes changed to setup/render/update
+
 ## v1.3.1: 2024-01-19
 
 - Fixed support for 40X assay

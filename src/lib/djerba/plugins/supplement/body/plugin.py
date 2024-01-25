@@ -15,16 +15,6 @@ class main(plugin_base):
     FAILED = "failed"
     ASSAY = "assay"
     
-    def specify_params(self):
-        discovered = [
-            self.ASSAY
-        ]
-        for key in discovered:
-            self.add_ini_discovered(key)
-        self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
-        self.set_ini_default(self.FAILED, "False")
-        self.set_priority_defaults(self.DEFAULT_CONFIG_PRIORITY)
-
     def check_assay_name(self, wrapper):
         [ok, msg] = assays.name_status(wrapper.get_my_string(self.ASSAY))
         if not ok:
@@ -68,3 +58,13 @@ class main(plugin_base):
     def render(self, data):
         renderer = mako_renderer(self.get_module_dir())
         return renderer.render_name(self.MAKO_TEMPLATE_NAME, data)
+
+    def specify_params(self):
+        discovered = [
+            self.ASSAY
+        ]
+        for key in discovered:
+            self.add_ini_discovered(key)
+        self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
+        self.set_ini_default(self.FAILED, "False")
+        self.set_priority_defaults(self.DEFAULT_CONFIG_PRIORITY)

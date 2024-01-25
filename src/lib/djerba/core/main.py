@@ -10,6 +10,7 @@ import logging
 import pdfkit
 import os
 import re
+from glob import glob
 from PyPDF2 import PdfMerger
 import djerba.util.ini_fields as ini
 from djerba.core.base import base as core_base
@@ -207,7 +208,7 @@ class main_base(core_base):
                 self.logger.info("Wrote HTML output to {0}".format(html_path))
                 if pdf:
                     pdf_path = os.path.join(out_dir, prefix+'.pdf')
-                    footer = output_data[cc.PAGE_FOOTER]
+                    footer = output_data[cc.PDF_FOOTERS][prefix]
                     p_rend.render_file(html_path, pdf_path, footer)
                     self.logger.info("Wrote PDF output to {0}".format(pdf_path))
             merge_list = output_data[cc.MERGE_LIST]
@@ -272,7 +273,8 @@ class main_base(core_base):
         # ie. overwriting a given plugin is all-or-nothing
         # also overwrite JSON config section for the plugin
         # if plugin data did not exist in old JSON, it will be added
-        # TODO check plugin version numbers in old/new JSON
+        # check plugin version numbers in old/new JSON
+        # This updates plugins only; core data (including report timestamp) is not altered
         for plugin in new_data[self.PLUGINS].keys():
             old_version = data[self.PLUGINS][plugin][cc.VERSION]
             new_version = new_data[self.PLUGINS][plugin][cc.VERSION]
@@ -309,16 +311,42 @@ class main(main_base):
         if json_path:  # do this *before* taking the time to generate output
             self.path_validator.validate_output_file(json_path)
         data = self.base_extract(config)
-        if json_path:
-            self.logger.debug('Writing JSON output to {0}'.format(json_path))
-            with open(json_path, 'w') as out_file:
-                out_file.write(json.dumps(data))
+        if not json_path:
+            json_path = self.get_default_json_output_path(data)
+        self.logger.debug('Writing JSON output to {0}'.format(json_path))
+        with open(json_path, 'w') as out_file:
+            out_file.write(json.dumps(data))
         if archive:
             self.upload_archive(data)
         else:
             self.logger.info("Omitting archive upload at extract step")
         self.logger.info('Finished Djerba extract step')
         return data
+
+    def get_json_input_path(self, json_arg):
+        if json_arg:
+            input_path = json_arg
+        else:
+            candidates = glob(os.path.join(self.work_dir, '*'+cc.REPORT_JSON_SUFFIX))
+            total = len(candidates)
+            if total == 0:
+                msg = 'Cannot find default JSON path; work_dir has no files '+\
+                    'ending in "{0}"'+format(cc.REPORT_JSON_SUFFIX)
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            elif total > 1:
+                msg = 'Cannot find default JSON path; multiple candidates '+\
+                    'ending in "{0}": {1}'+format((cc.REPORT_JSON_SUFFIX, candidates))
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            else:
+                input_path = candidates[0]
+        return input_path
+
+    def get_default_json_output_path(self, data):
+        filename = data[cc.CORE][cc.REPORT_ID]+cc.REPORT_JSON_SUFFIX
+        json_path = os.path.join(self.work_dir, filename)
+        return json_path
 
     def render(self, data, out_dir=None, pdf=False, archive=False):
         self.logger.info('Starting Djerba render step')
@@ -354,12 +382,12 @@ class main(main_base):
             self.configure(ini_path, ini_path_out)
         elif mode == constants.EXTRACT:
             ini_path = ap.get_ini_path()
-            json_path = ap.get_json_path()
+            json_arg = ap.get_json()
             archive = ap.is_archive_enabled()
             config = self.read_ini_path(ini_path)
-            self.extract(config, json_path, archive)
+            self.extract(config, json_arg, archive)
         elif mode == constants.RENDER:
-            json_path = ap.get_json_path()
+            json_path = self.get_json_input_path(ap.get_json())
             archive = ap.is_archive_enabled()
             with open(json_path) as json_file:
                 data = json.loads(json_file.read())
@@ -368,7 +396,7 @@ class main(main_base):
             ini_path = ap.get_ini_path()
             out_dir = ap.get_out_dir()
             ini_path_out = os.path.join(out_dir, 'full_config.ini')
-            json_path = os.path.join(out_dir, 'djerba_report.json')
+            json_path = None # write JSON to default workspace location
             archive = ap.is_archive_enabled()
             config = self.configure(ini_path, ini_path_out)
             # upload to archive at the extract step, not the render step
@@ -382,7 +410,7 @@ class main(main_base):
             else:
                 config_path = ini_path
                 summary_only = False
-            jp = ap.get_json_path()
+            jp = self.get_json_input_path(ap.get_json())
             out_dir = ap.get_out_dir()
             archive = ap.is_archive_enabled()
             pdf = ap.is_pdf_enabled()
@@ -532,22 +560,6 @@ class arg_processor(arg_processor_base):
 
     def get_ini_out_path(self):
         return self._get_arg('ini_out')
-
-    def get_json_path(self):
-        json_arg = self._get_arg('json')
-        if json_arg:
-            json_path = json_arg
-        else:
-            work_dir = self.get_work_dir()
-            if work_dir == None:
-                msg = "Cannot find default JSON path, work_dir undefined"
-                self.logger.error(msg)
-                raise RuntimeError(msg)
-            json_path = os.path.join(work_dir, self.DEFAULT_JSON_FILENAME)
-        return json_path
-
-    def get_summary_path(self):
-        return self._get_arg('summary')
 
     def get_summary_path(self):
         return self._get_arg('summary')

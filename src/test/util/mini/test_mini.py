@@ -5,6 +5,7 @@ import logging
 import os
 import unittest
 from subprocess import CalledProcessError
+from time import strftime
 
 from djerba.core.main import DjerbaVersionMismatchError
 from djerba.plugins.patient_info.plugin import main as patient_info_plugin
@@ -51,10 +52,23 @@ class TestMDC(TestBase):
 class TestMiniBase(TestBase):
 
     JSON_NAME = 'simple_report_for_update.json'
+    DRAFT_DATE = '2023/12/20'
 
     def assert_MDC(self, out_path):
         self.assertTrue(os.path.isfile(out_path))
         self.assertEqual(self.getMD5(out_path), '48efe0ce5121a1878ebfc04f143f49cc')
+
+    def assert_render(self):
+        html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
+        pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
+        for out_path in [html_path, pdf_path]:
+            self.assertTrue(os.path.isfile(out_path))
+        with open(html_path) as html_file:
+            original = html_file.read()
+        self.assertTrue(self.DRAFT_DATE in original) # draft date is preserved
+        self.assertTrue(strftime('%Y/%m/%d') in original) # today's date is present
+        redacted = self.redact_html(original)
+        self.assertEqual(self.getMD5_of_string(redacted), '7b4b44392758f9062c545e1f1daa9f5c')
 
     def assert_update(self):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
@@ -63,10 +77,14 @@ class TestMiniBase(TestBase):
         for out_path in [html_path, pdf_path, json_out]:
             self.assertTrue(os.path.isfile(out_path))
         with open(html_path) as html_file:
-            redacted = self.redact_html(html_file.read())
-        self.assertEqual(self.getMD5_of_string(redacted), '72e4b407d28cbba6112e744823f65448')
+            original = html_file.read()
+        self.assertTrue(self.DRAFT_DATE in original) # draft date is preserved
+        self.assertTrue(strftime('%Y/%m/%d') in original) # today's date is present
+        redacted = self.redact_html(original)
+        self.assertEqual(self.getMD5_of_string(redacted), '170774e05b752a708f5ee74276579e7f')
         with open(json_out) as json_file:
             json_data = json.loads(json_file.read())
+        self.assertEqual(json_data['core']['extract_time'], '2023-12-20_21:38:10Z')
         dob = json_data['plugins']['patient_info']['results']['patient_dob']
         self.assertEqual(dob, '1970/01/01')
         text = json_data['plugins']['summary']['results']['summary_text']
@@ -77,13 +95,27 @@ class TestMiniBase(TestBase):
 
 class TestMain(TestMiniBase):
 
-    class mock_args_ready:
+    class mock_args_setup:
         """Use instead of argparse to store params for testing"""
 
         def __init__(self, out_file, json):
-            self.subparser_name = 'ready'
+            self.subparser_name = 'setup'
             self.json = json
             self.out = out_file
+            # logging
+            self.log_path = None
+            self.debug = False
+            self.verbose = False
+            self.quiet = True
+
+    class mock_args_render:
+        """Use instead of argparse to store params for testing"""
+
+        def __init__(self, json, out_dir, pdf):
+            self.subparser_name = 'render'
+            self.json = json
+            self.out_dir = out_dir
+            self.pdf = pdf
             # logging
             self.log_path = None
             self.debug = False
@@ -107,13 +139,23 @@ class TestMain(TestMiniBase):
             self.verbose = False
             self.quiet = True
 
-    def test_ready(self):
+    def test_setup(self):
         out_file = os.path.join(self.tmp_dir, 'config.mdc')
         test_dir = os.path.dirname(os.path.realpath(__file__))
         json_path = os.path.join(test_dir, self.JSON_NAME)
-        args = self.mock_args_ready(out_file, json_path)
+        args = self.mock_args_setup(out_file, json_path)
         main(self.tmp_dir).run(args)
         self.assert_MDC(out_file)
+
+    def test_render(self):
+        out_dir = self.tmp_dir
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        config_path = os.path.join(test_dir, 'config_for_update.mdc')
+        json_path = os.path.join(test_dir, self.JSON_NAME)
+        pdf = True
+        args = self.mock_args_render(json_path, self.tmp_dir, pdf)
+        main(self.tmp_dir).run(args)
+        self.assert_render()
 
     def test_version_fail(self):
         test_dir = os.path.dirname(os.path.realpath(__file__))
@@ -149,18 +191,46 @@ class TestMain(TestMiniBase):
 
 class TestScript(TestMiniBase):
 
-    def test_ready(self):
+    def test_setup(self):
         test_dir = os.path.dirname(os.path.realpath(__file__))
         json_path = os.path.join(test_dir, self.JSON_NAME)
         out_path = os.path.join(self.tmp_dir, 'config.mdc')
         cmd = [
-            'mini_djerba.py', 'ready',
+            'mini_djerba.py', 'setup',
             '--json', json_path,
             '--out', out_path
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
         self.assert_MDC(out_path)
+
+    def test_render(self):
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        json_path = os.path.join(test_dir, self.JSON_NAME)
+        cmd = [
+            'mini_djerba.py', 'render',
+            '--json', json_path,
+            '--out-dir', self.tmp_dir
+        ]
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        self.assert_render()
+
+    def test_render_no_pdf(self):
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        json_path = os.path.join(test_dir, self.JSON_NAME)
+        cmd = [
+            'mini_djerba.py', 'render',
+            '--json', json_path,
+            '--out-dir', self.tmp_dir,
+            '--no-pdf'
+        ]
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
+        pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
+        self.assertTrue(os.path.isfile(html_path))
+        self.assertFalse(os.path.isfile(pdf_path))
 
     def test_update(self):
         test_dir = os.path.dirname(os.path.realpath(__file__))
@@ -171,12 +241,30 @@ class TestScript(TestMiniBase):
             '--config', config_path,
             '--json', json_path,
             '--out-dir', self.tmp_dir,
-            '--pdf',
             '--write-json'
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
         self.assert_update()
+
+    def test_update_no_pdf(self):
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        config_path = os.path.join(test_dir, 'config_for_update.mdc')
+        json_path = os.path.join(test_dir, self.JSON_NAME)
+        cmd = [
+            'mini_djerba.py', 'update',
+            '--config', config_path,
+            '--json', json_path,
+            '--out-dir', self.tmp_dir,
+            '--write-json',
+            '--no-pdf'
+        ]
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
+        pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
+        self.assertTrue(os.path.isfile(html_path))
+        self.assertFalse(os.path.isfile(pdf_path))
 
     def test_fail(self):
         test_dir = os.path.dirname(os.path.realpath(__file__))
@@ -187,7 +275,6 @@ class TestScript(TestMiniBase):
             '--config', config_path,
             '--json', json_path,
             '--out-dir', self.tmp_dir,
-            '--pdf',
             '--write-json'
         ]
         with self.assertRaises(CalledProcessError):
@@ -198,7 +285,6 @@ class TestScript(TestMiniBase):
             '--config', config_path,
             '--json', '/broken/json/path',
             '--out-dir', self.tmp_dir,
-            '--pdf',
             '--write-json'
         ]
         with self.assertRaises(CalledProcessError):

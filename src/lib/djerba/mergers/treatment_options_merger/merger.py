@@ -81,6 +81,8 @@ class main(merger_base):
                 approved.append(item)
             elif tier == self.INVESTIG:
                 investig.append(item)
+            elif tier == "Prognostic":
+                continue
             else:
                 msg = "Unknown actionability tier: '{0}'".format(tier)
                 self.logger.error(msg)
