@@ -37,11 +37,17 @@ class main(plugin_base):
                 msg = "Cannot find assay from input_params.json or manual config"
                 self.logger.error(msg)
                 raise DjerbaPluginError(msg)
+        if wrapper.my_param_is_null('extract_time'):
+            wrapper.set_my_param('extract_time', "TBD")
         self.check_assay_name(wrapper)
         return wrapper.get_config()
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
+        if wrapper.get_my_string('extract_time') == "TBD":
+            extract_time = strftime("%Y/%m/%d")
+        else:
+            extract_time = wrapper.get_my_string('extract_time')
         self.check_assay_name(wrapper)
         data = {
             'plugin_name': self.identifier+' plugin',
@@ -52,7 +58,7 @@ class main(plugin_base):
                 'assay': wrapper.get_my_string(self.ASSAY),
                 'failed': wrapper.get_my_boolean(self.FAILED),
                 core_constants.AUTHOR: config['core'][core_constants.AUTHOR],
-                'extract_time': strftime("%Y/%m/%d"),
+                'extract_time': extract_time,
                 'geneticist': wrapper.get_my_string('geneticist')
             },
             'version': str(self.SUPPLEMENT_DJERBA_VERSION)
@@ -65,7 +71,8 @@ class main(plugin_base):
 
     def specify_params(self):
         discovered = [
-            self.ASSAY
+            self.ASSAY,
+            'extract_time'
         ]
         for key in discovered:
             self.add_ini_discovered(key)
