@@ -77,5 +77,5 @@ svg(paste0(dir_path,"/purple.range.svg"), width = 8, height = 7)
 print(purity_plot)
 dev.off()
 
-
+write.table(rangeDF, file=paste0(dir_path, "/purple.range.txt"), sep="\t", row.names=FALSE, quote=FALSE)
 

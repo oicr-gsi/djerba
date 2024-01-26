@@ -20,6 +20,8 @@ from djerba.util.image_to_base64 import converter
 import djerba.util.oncokb.constants as oncokb
 import djerba.plugins.wgts.cnv_purple.constants as cc 
 from djerba.util.oncokb.tools import levels as oncokb_levels
+import djerba.core.constants as core_constants
+from djerba.core.workspace import workspace
 
 class process_purple(logger):
 
@@ -296,3 +298,20 @@ class process_purple(logger):
         }
         return row
     
+    def write_purple_alternate_launcher(self, path_info):
+        bam_files = path_info.get("bamMergePreprocessing_by_sample")
+        purple_paths = {
+            "purple.normal_bam": bam_files["whole genome normal bam"],
+            "purple.normal_bai": bam_files["whole genome normal bam index"] ,
+            "purple.tumour_bam": bam_files["whole genome tumour bam"] ,
+            "purple.tumour_bai": bam_files["whole genome tumour bam index"] ,
+            "purple.filterSV.vcf": "SV_vcf" ,
+            "purple.filterSMALL.vcf": "smalls_vcf" ,
+            "purple.filterSMALL.vcf_index": "smalls_tbi" ,
+            "purple.runPURPLE.min_ploidy": 0,
+            "purple.runPURPLE.max_ploidy": 8,
+            "purple.runPURPLE.min_purity": 0,
+            "purple.runPURPLE.max_purity": 1
+        }
+        return(purple_paths)
+        
