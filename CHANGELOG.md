@@ -8,6 +8,7 @@
 - GCGI-1217: Remove NORMAL_DEPTH variable  
 - GCGI-1194: Research Report PDF Footer says RUO 
 - GCGI-1261: Update plugin tester base class, so it is unaffected by changes in core HTML
+- removed "Quality Failure" text in failed report plugin html
 
 ### Improvements for mini-Djerba
 
