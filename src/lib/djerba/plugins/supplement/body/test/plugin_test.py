@@ -34,7 +34,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'TAR.supp.ini',
             self.JSON: json_location,
-            self.MD5: '39b433a6599858cd7db8599b189e9a34'
+            self.MD5: 'fa84ae88cfc8d4daa9379e5495c8116e'
         }
         self.run_basic_test(test_source_dir, params)
    
@@ -54,7 +54,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.supp.ini',
             self.JSON: json_location,
-            self.MD5: '75df677de0543728c4d3eaac516daec8'
+            self.MD5: '55a7a1fc31e31c8bcd233e37343aac3e'
         }
         self.run_basic_test(test_source_dir, params)
 
