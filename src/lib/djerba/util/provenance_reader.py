@@ -26,10 +26,12 @@ class provenance_reader(logger):
     WF_ARRIBA = 'arriba'
     WF_BMPP = 'bamMergePreprocessing_by_sample'
     WF_DELLY = 'delly_matched'
+    WF_GRIDSS = 'gridss'
     WF_HRDETECT = 'hrDetect'
     WF_MAVIS = 'mavis'
     WF_MRDETECT = 'mrdetect_filter_only'
     WF_MSISENSOR = 'msisensor'
+    WF_MUTECT = 'mutect2_matched'
     WF_PURPLE = 'purple'
     WF_RSEM = 'rsem'
     WF_SEQUENZA = 'sequenza_by_tumor_group'
@@ -57,6 +59,7 @@ class provenance_reader(logger):
     MT_JSON_TEXT = 'text/json$'
     MT_OCTET_STREAM = 'application/octet-stream$'
     MT_VCF_GZ = 'application/vcf-gz$'
+    MT_TXT_VCF = 'text/vcf$'
     MT_TXT_GZ = 'application/te?xt-gz$' # match text OR txt
     MT_ZIP = 'application/zip-report-bundle$'
     MT_BAM = 'application/bam$'
@@ -452,6 +455,12 @@ class provenance_reader(logger):
         suffix = '\.genes\.results$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
+    def parse_gridss_path(self):
+        workflows = [self.WF_GRIDSS]
+        mt = self.MT_TXT_VCF
+        suffix = '\.allocated\.vcf$'
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
+
     def parse_hrdetect_path(self):
         workflows = [self.WF_HRDETECT]
         mt = self.MT_JSON_TEXT
@@ -494,6 +503,12 @@ class provenance_reader(logger):
         suffix = 'SNP\.count\.txt$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
     
+    def parse_mutect_path(self):
+        workflows = [self.WF_MUTECT]
+        mt = self.MT_VCF_GZ
+        suffix = '\.mutect2\.filtered\.vcf\.gz$'
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
+
     def parse_purple_purity_path(self):
         workflow = self.WF_PURPLE
         mt = self.MT_OCTET_STREAM
