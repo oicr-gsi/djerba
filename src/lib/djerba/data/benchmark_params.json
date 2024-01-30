@@ -2,31 +2,37 @@
     "GSICAPBENCH_1219": {
         "normal_id": "100-009-005_BC",
         "tumour_id": "100-009-005_LCM3",
-	"purity": 0.74
+	"purity": 0.74,
+	"arriba_path": "/.mounts/labs/CGI/scratch/aalam/arriba.fusions.tsv"
     },
     "GSICAPBENCH_1232": {
         "normal_id": "100-009-006_BC",
         "tumour_id": "100-009-006_LCM3",
-	"purity": 0.74
+	"purity": 0.74,
+	"arriba_path": "/.mounts/labs/CGI/scratch/aalam/arriba.fusions.tsv"
     },
     "GSICAPBENCH_1233": {
         "normal_id": "100-009-008_BC",
         "tumour_id": "100-009-008_LCM2",
-	"purity": 0.74
+	"purity": 0.74,
+	"arriba_path": "/.mounts/labs/CGI/scratch/aalam/arriba.fusions.tsv"
     },
     "GSICAPBENCH_1273": {
         "normal_id": "100-PM-018_BC",
         "tumour_id": "100-PM-018_LCM4",
-	"purity": 0.74
+	"purity": 0.74,
+	"arriba_path": "/.mounts/labs/CGI/scratch/aalam/arriba.fusions.tsv"
     },
     "GSICAPBENCH_1275": {
         "normal_id": "100-PM-019_BC",
         "tumour_id": "100-PM-019_LCM3",
-	"purity": 0.74
+	"purity": 0.74,
+	"arriba_path": "/.mounts/labs/CGI/scratch/aalam/arriba.fusions.tsv"
     },
     "GSICAPBENCH_1288": {
         "normal_id": "100-JHU-004_BC",
         "tumour_id": "100_JHU_004_LCM3_6",
-	"purity": 0.74
+	"purity": 0.74,
+	"arriba_path": "/.mounts/labs/CGI/scratch/aalam/arriba.fusions.tsv"
     }
 }
