@@ -19,7 +19,7 @@ class TestProvenanceHelper(TestBase):
     HELPER_NAME = 'provenance_helper'
     SUBSET_MD5 = '41c9288d5159f960f0193939a411a113'
     SAMPLE_INFO_MD5 = '6eaf49a1c0e558b6861c328b963e9497'
-    PATH_INFO_MD5 = 'fcee97f35b956e9e9b49941c983e7e53'
+    PATH_INFO_MD5 = '213db825db81cbdc75a8a36c2508489e'
     
     def test(self):
         data_dir = os.path.join(os.environ.get('DJERBA_TEST_DIR'), 'helpers', 'provenance')

@@ -78,8 +78,9 @@ class main(plugin_base):
                                                     construct_whizbam_link(config[self.identifier]['whizbam_project'] , tumour_id ),
                                                     config[self.identifier]['purity'], 
                                                     ploidy)
-      purple_alternate = purple_cnv.write_purple_alternate_launcher(self.workspace.read_json(core_constants.DEFAULT_PATH_INFO))
-      self.workspace.write_json("purple.alternate.json", purple_alternate)
+      if os.path.exists(core_constants.DEFAULT_PATH_INFO):
+        purple_alternate = purple_cnv.write_purple_alternate_launcher(self.workspace.read_json(core_constants.DEFAULT_PATH_INFO))
+        self.workspace.write_json("purple.alternate.json", purple_alternate)
       oncokb_annotator(tumour_id, oncotree_code, work_dir, tmp_dir).annotate_cna()
       cnv = cnv_processor(work_dir, wrapper, self.log_level, self.log_path)
       data['results'] = cnv.get_results()
