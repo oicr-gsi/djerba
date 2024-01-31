@@ -38,7 +38,7 @@ class TestTarSamplePlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '1673af8acfff3459605a430f0963a355'
+            self.MD5: '56272ce15c0f0acadf7faff781ad950d'
         }
         self.run_basic_test(input_dir, params)
 
@@ -61,7 +61,7 @@ class TestTarSamplePlugin(PluginTester):
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""
         for key in ['files']:
-            del data['plugins']['tar.sample']['results'][key]
+            del data['results'][key]
         return data
 
 if __name__ == '__main__':

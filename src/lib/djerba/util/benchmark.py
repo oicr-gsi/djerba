@@ -11,6 +11,7 @@ import logging
 import os
 import sys
 import unittest
+import djerba.core.constants as core_constants
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 
@@ -43,6 +44,7 @@ class benchmarker(logger):
     COMPARE = 'compare'
 
     # INI template field names
+    ARRIBA_FILE = 'arriba_path'
     DONOR = 'donor'
     CTDNA_FILE = 'ctdna_file'
     MAF_FILE = 'maf_path'
@@ -67,6 +69,7 @@ class benchmarker(logger):
         self.validator = path_validator(self.log_level, self.log_path)
         dir_finder = directory_finder(self.log_level, self.log_path)
         self.data_dir = dir_finder.get_data_dir()
+        self.private_dir = dir_finder.get_private_dir()
         with open(os.path.join(self.data_dir, 'benchmark_params.json')) as in_file:
             self.sample_params = json.loads(in_file.read())
 
@@ -109,6 +112,12 @@ class benchmarker(logger):
             for key in templates.keys():
                 pattern = templates[key].format(results_dir, sample)
                 sample_inputs[key] = self.glob_single(pattern)
+            arriba_path = os.path.join(self.private_dir, 'arriba', 'arriba.fusions.tsv')
+            if not os.path.isfile(arriba_path):
+                msg = "Expected arriba path '{0}' is not a file".format(arriba_path)
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            sample_inputs[self.ARRIBA_FILE] = arriba_path
             if None in sample_inputs.values():
                 template = "Skipping {0} as one or more values are missing: {1}"
                 msg = template.format(sample, sample_inputs)
@@ -167,7 +176,8 @@ class benchmarker(logger):
             # run the Djerba "main" class to generate a JSON report file
             djerba_main = main(report_dir, self.log_level, self.log_path)
             config = djerba_main.configure(config_path)
-            json_path = os.path.join(report_dir, 'djerba_report.json')
+            pattern = os.path.join(report_dir, '*'+core_constants.REPORT_JSON_SUFFIX)
+            json_path = self.glob_single(pattern)
             data = djerba_main.extract(config, json_path, archive=False)
             self.logger.info("Finished Djerba draft report for {0}".format(sample))
 

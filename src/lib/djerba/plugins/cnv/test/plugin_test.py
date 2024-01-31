@@ -43,13 +43,13 @@ class TestWgtsCnv(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: self.JSON_NAME,
-            self.MD5: '62d7d793d630ef155323fc3d750a6c99'
+            self.MD5: 'ca15c4bfe156b5a453bb47e57a4d8159'
         }
         self.run_basic_test(input_dir, params, work_dir=work_dir)
 
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""
-        del data['plugins']['cnv']['results']['cnv plot']
+        del data['results']['cnv plot']
         return data 
 
 if __name__ == '__main__':

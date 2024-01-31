@@ -26,6 +26,8 @@ class TestFusion(PluginTester):
         provenance_path = os.path.join(data_dir, 'provenance_PANX_1391.tsv.gz')
         mavis_name = 'PANX_1391_Lv_M_100-NH-020_LCM3.mavis_summary.tab'
         mavis_path = os.path.join(data_dir, mavis_name)
+        arriba_name = 'arriba.fusions.tsv'
+        arriba_path = os.path.join(data_dir, arriba_name)
         sample_info_path = os.path.join(data_dir, 'sample_info.json')
         json_path = os.path.join(data_dir, self.JSON_NAME)
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -34,7 +36,8 @@ class TestFusion(PluginTester):
         template = string.Template(template_str)
         ini_str = template.substitute({
             'FPR_PATH': provenance_path,
-            'MAVIS_PATH': mavis_path
+            'MAVIS_PATH': mavis_path,
+            'ARRIBA_PATH': arriba_path
         })
         input_dir = os.path.join(self.get_tmp_dir(), 'input')
         os.mkdir(input_dir)
@@ -47,7 +50,7 @@ class TestFusion(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: self.JSON_NAME,
-            self.MD5: '25cffd2ad83b0fff00e6421e5d02fe7f'
+            self.MD5: 'd9aebba76c8052d2aeb1384b15f9d690'
         }
         self.run_basic_test(input_dir, params, 'fusion', logging.ERROR, work_dir)
 

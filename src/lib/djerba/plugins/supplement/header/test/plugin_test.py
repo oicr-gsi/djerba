@@ -13,7 +13,7 @@ class TestHeader(PluginTester):
         params = {
             self.INI: 'header.ini',
             self.JSON: 'header.json',
-            self.MD5: 'd9472d6e2a853fe3caef0537d39abebc'
+            self.MD5: '1503e793b8b457b0ab0e0b8cfabb484e'
         }
         self.run_basic_test(test_source_dir, params)
 

@@ -26,7 +26,7 @@ class TestReportTitle(PluginTester):
         params = {
             self.INI: 'clinical_title.ini',
             self.JSON: json_location,
-            self.MD5: '88622b8d4f78317f7835271eea87815a'
+            self.MD5: 'dcaa16f893c873d5a1382a340222c777'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -37,7 +37,7 @@ class TestReportTitle(PluginTester):
         params = {
             self.INI: 'failed_title.ini',
             self.JSON: json_location,
-            self.MD5: 'eb1efb411fbfad5e0a027004ea4830f5'
+            self.MD5: '924bbd63f2058d74856ec81244055271'
         }
         self.run_basic_test(test_source_dir, params)
 
