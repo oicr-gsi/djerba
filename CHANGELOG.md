@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v1.4.0: 2024-01-31
 
 - GCGI-611: fix fusion frameshift hardcode
 - GCGI-443: merge duplicate fusion rows
