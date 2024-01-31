@@ -9,6 +9,7 @@
 - GCGI-1194: Research Report PDF Footer says RUO 
 - GCGI-1261: Update plugin tester base class, so it is unaffected by changes in core HTML
 - removed "Quality Failure" text in failed report plugin html
+- GCGI-1282: fixed config generation for pWGS in setup mode, and removed automatic generation of failed report sentence
 
 ### Improvements for mini-Djerba
 
