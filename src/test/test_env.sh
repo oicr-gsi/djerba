@@ -1,10 +1,8 @@
 #! /usr/bin/env bash
 
 # 'source' this file to run tests
-# assumes djerba_test_data is in ~/git
-# update module and filename as necessary for additional dev releases
 
-# if DJERBA_SOURCE_DIR and DJERBA_TEST_DIR not set, assign defaults
+# if DJERBA_SOURCE_DIR not set
 if [ -z "${DJERBA_SOURCE_DIR}" ]; then
     # set source dir based on script location; see https://stackoverflow.com/a/246128
     DJERBA_SOURCE_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )/../.." &> /dev/null && pwd )
