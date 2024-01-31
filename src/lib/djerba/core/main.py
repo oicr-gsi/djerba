@@ -482,6 +482,8 @@ class main(main_base):
             component_list = [
                 'core',
                 'report_title',
+                'patient_info',
+                'pwgs_cardea_helper',
                 'pwgs.case_overview',
                 'pwgs.summary',
                 'pwgs.sample',
