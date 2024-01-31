@@ -64,7 +64,9 @@ class configurable(core_base, ABC):
 
     def _raise_null_param_error(self, key):
         msg = "INI section {0}, option {1} is null; ".format(self.identifier, key)+\
-            "null values are not permitted in fully-specified Djerba config"
+            "null values are not permitted in fully-specified Djerba config. "+\
+            "Note that parameter defaults will NOT overwrite a null value "+\
+            "explicitly assigned in the config input."
         self.logger.error(msg)
         raise DjerbaConfigError(msg)
 
