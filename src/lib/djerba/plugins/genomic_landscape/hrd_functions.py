@@ -12,25 +12,21 @@ from djerba.util.subprocess_runner import subprocess_runner
 NCCN_HRD_RECOMMENDED_TYPES = ['Ovarian Cancer']
 
 def annotate_hrd(hrd_result, oncotree_code, data_dir):
+    treatment_options = None
     if hrd_result == 'HRD':
         oncotree_main = pull_main_type_from_oncotree(oncotree_code, data_dir)
         if oncotree_main in NCCN_HRD_RECOMMENDED_TYPES:
-            oncokb_level = '2'
-            annotation_tier = "Approved"
-        else:
-            oncokb_level = '3B'
-            annotation_tier = "Investigational"
-        treatment_options = {
-            "Tier": annotation_tier,
-            "OncoKB level": oncokb_level,
-            "Treatments": "PARP inhibitors",
-            "Gene": "HRD",
-            "Gene_URL": "",
-            "Alteration": "HRD",
-            "Alteration_URL": "https://www.nccn.org/professionals/physician_gls/pdf/ovarian_blocks.pdf"
-        }
-    else:
-        treatment_options = None
+            oncokb_level = 'P'
+            annotation_tier = "Prognostic"
+            treatment_options = {
+                "Tier": annotation_tier,
+                "OncoKB level": oncokb_level,
+                "Treatments": "",
+                "Gene": "HRD",
+                "Gene_URL": "",
+                "Alteration": "Genomic Landscape",
+                "Alteration_URL": "https://www.nccn.org/professionals/physician_gls/pdf/ovarian_blocks.pdf"
+            }        
     return(treatment_options)
 
 def find_tree_values(id, json_repr):

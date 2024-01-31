@@ -103,6 +103,7 @@ setup(
         'markdown',
         'pandas',
         'pdfkit',
+        'pyinstaller',
         'PyPDF2',
         'requests',
         'statsmodels',

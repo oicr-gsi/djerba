@@ -6,6 +6,7 @@ import unittest
 import djerba.util.ini_fields as ini
 
 from configparser import ConfigParser
+from glob import glob
 
 from djerba.util.benchmark import benchmarker, report_equivalence_tester
 from djerba.util.environment import directory_finder
@@ -59,14 +60,18 @@ class TestBenchmark(TestBase):
         bench = benchmarker(args)
         bench.run()
         private_dir = directory_finder().get_private_dir()
-        report_name = 'djerba_report.json'
+        report_pattern = '*report.json'
         for sample in benchmarker.SAMPLES:
-            old_path = os.path.join(private_dir, 'benchmarking', sample, report_name)
-            new_path = os.path.join(self.tmp_dir, sample, 'report', report_name)
-            self.assertTrue(os.path.isfile(new_path))
+            # use glob to find old/new paths for each sample
+            old_pattern = os.path.join(private_dir, 'benchmarking', sample, report_pattern)
+            old_path = glob(old_pattern)[0]
+            new_pattern = os.path.join(self.tmp_dir, sample, 'report', report_pattern)
+            new_glob = glob(new_pattern)
+            self.assertEqual(len(new_glob), 1) # fails if output file was not found
+            new_path = new_glob[0]
             tester = report_equivalence_tester([old_path, new_path])
             self.assertTrue(tester.is_equivalent())
-            
+
 
 class TestMakoRenderer(TestBase):
 

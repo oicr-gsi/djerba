@@ -48,7 +48,7 @@ class TestPurplePlugin(PluginTester):
         params = {
             self.INI: self.WGTS_INI_NAME,
             self.JSON: json_location,
-            self.MD5: '4b32ff882773269118f45ba78770eaed'
+            self.MD5: '7e34add8dad894e9dbd86f6b2ce1d489'
         }
         self.run_basic_test(input_dir, params)
 
@@ -66,14 +66,14 @@ class TestPurplePlugin(PluginTester):
         params = {
             self.INI: self.WGS_INI_NAME,
             self.JSON: json_location,
-            self.MD5: '4b32ff882773269118f45ba78770eaed'
+            self.MD5: '7e34add8dad894e9dbd86f6b2ce1d489'
         }
         self.run_basic_test(input_dir, params)
 
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""
         for key in ['cnv plot']:
-            del data['plugins']['wgts.cnv_purple']['results'][key]
+            del data['results'][key]
         return data 
     
 if __name__ == '__main__':

@@ -63,7 +63,7 @@ class main(merger_base):
         except KeyError as err:
             msg = "Missing required key(s) from merger input: {0}".format(err)
             self.logger.error(msg)
-            self.logger.debug("Merger inputs: {0}".format(inputs))
+            self.logger.debug("Merger inputs: {0}".format(tier_input))
             raise DjerbaMergerError from err
         # sort by oncokb level, then alteration name
         return sorted(unique_items, key = lambda x: (oncokb.oncokb_order(x[k1]), x[k2]))
@@ -75,23 +75,29 @@ class main(merger_base):
         flattened = [x for sublist in inputs for x in sublist]
         approved = []
         investig = []
+        prognostic = []
         for item in flattened:
             tier = item[self.TIER]
             if tier == self.APPROVED:
                 approved.append(item)
             elif tier == self.INVESTIG:
                 investig.append(item)
+            elif tier == "Prognostic":
+                prognostic.append(item)
             else:
                 msg = "Unknown actionability tier: '{0}'".format(tier)
                 self.logger.error(msg)
                 raise DjerbaMergerError(msg)
         approved_therapies = self.get_therapy_info(approved)
         investig_therapies = self.get_therapy_info(investig)
+        prognostic_noduplicates = self.get_therapy_info(prognostic)
         data = {
             'approved_total': len(approved_therapies),
             'investig_total': len(investig_therapies),
+            'prognostic_total': len(prognostic_noduplicates),
             'approved_therapies': approved_therapies,
-            'investig_therapies': investig_therapies
+            'investig_therapies': investig_therapies,
+            'prognostic_markers': prognostic_noduplicates
         }
         renderer = mako_renderer(self.get_module_dir())
         return renderer.render_name(self.MAKO_TEMPLATE_NAME, data)

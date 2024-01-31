@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## WGS 4.0
 
 - Removed file list in expression data
 - added HRD to genomic landscape
@@ -10,6 +10,31 @@
 - GCGI-1012: Moved R testing to formal tests
 - new PURPLE CNV calling plugin
 - removed sequenza support
+
+## Unreleased 
+
+- GCGI-611: fix fusion frameshift hardcode
+- GCGI-443: merge duplicate fusion rows
+- fixed bug removing oncogenic fusions
+- GCGI-1217: Remove NORMAL_DEPTH variable  
+- GCGI-1194: Research Report PDF Footer says RUO 
+- GCGI-1261: Update plugin tester base class, so it is unaffected by changes in core HTML
+- removed "Quality Failure" text in failed report plugin html
+
+### Improvements for mini-Djerba
+
+- GCGI-1265: Automatically fill in report dates (preserving date of original report draft)
+- GCGI-1268: Use report ID for name of JSON output file
+- GCGI-1269: Default to user-friendly minimal error text
+- GCGI-1270: `--version` option in `djerba.py` and mini-Djerba
+- GCGI-1271: Mini-Djerba modes changed to setup/render/update
+
+## v1.3.1: 2024-01-19
+
+- Fixed support for 40X assay
+- GCGI-1186: Remove `mavis.py`
+- GCGI-1258: Fix import in args processor base
+- GCGI-1264: Rename mini-djerba link
 
 ## v1.3.0: 2024-01-16
 
