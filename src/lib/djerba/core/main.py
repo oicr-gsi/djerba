@@ -483,6 +483,7 @@ class main(main_base):
                 'core',
                 'report_title',
                 'patient_info',
+                'pwgs_provenance_helper',
                 'pwgs_cardea_helper',
                 'pwgs.case_overview',
                 'pwgs.summary',
