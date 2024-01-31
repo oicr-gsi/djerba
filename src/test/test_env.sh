@@ -1,18 +1,29 @@
 #! /usr/bin/env bash
 
 # 'source' this file to run tests
-# assumes djerba and djerba_test_data are in ~/git
+# assumes djerba_test_data is in ~/git
 # update module and filename as necessary for additional dev releases
 
+# if DJERBA_SOURCE_DIR and DJERBA_TEST_DIR not set, assign defaults
 if [ -z "${DJERBA_SOURCE_DIR}" ]; then
-	echo "Must set environment variable DJERBA_SOURCE_DIR"
+    # set source dir based on script location; see https://stackoverflow.com/a/246128
+    DJERBA_SOURCE_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )/../.." &> /dev/null && pwd )
+fi
+
+# do sanity checking, then export the test variables
+if [ ! -d "${DJERBA_SOURCE_DIR}" ]; then
+    echo "DJERBA_SOURCE_DIR '$DJERBA_SOURCE_DIR' does not exist"
+elif [ ! -d "${DJERBA_TEST_DIR}" ]; then
+    echo "DJERBA_TEST_DIR '$DJERBA_TEST_DIR' does not exist"
+elif [ -z "${DJERBA_BASE_DIR}" ]; then
+    echo "Must load the Djerba environment module; first update MODULEPATH if necessary"
 else
-	module load djerba
-	export PYTHONPATH=${DJERBA_SOURCE_DIR}/src/lib:$PYTHONPATH
-	export PATH=${DJERBA_SOURCE_DIR}/src/bin:$PATH
-	export DJERBA_BASE_DIR=${DJERBA_SOURCE_DIR}/src/lib/djerba
-	export DJERBA_DATA_DIR=${DJERBA_SOURCE_DIR}/src/lib/djerba/data
-	export DJERBA_PRIVATE_DIR=${HOME}/workspace/djerba/env/private
-	export DJERBA_TEST_DIR=${HOME}/git/djerba_test_data
-	export DJERBA_GSICAPBENCH_DATA=/.mounts/labs/CGI/gsi/djerba_test/GSICAPBENCH_djerba_latest
+    # export variables for running tests on the source code
+    export PYTHONPATH=${DJERBA_SOURCE_DIR}/src/lib:$PYTHONPATH
+    export PATH=${DJERBA_SOURCE_DIR}/src/bin:$PATH
+    export DJERBA_BASE_DIR=${DJERBA_SOURCE_DIR}/src/lib/djerba
+    export DJERBA_RUN_DIR=${DJERBA_BASE_DIR}/data
+    # DJERBA_TEST_DIR is set by the environment module
+    export DJERBA_TEST_DATA=$DJERBA_TEST_DIR # deprecated, but still used in some tests
+    # DJERBA_PRIVATE_DIR is set by the environment module
 fi
