@@ -103,6 +103,31 @@ ${html_builder().section_cells_begin("<h2>Report<br>Sign-offs</h2>","main")}
   <br/>
   <hr class="big-white-line" >
 
+  ${html_builder().section_cells_begin("<h3>Definitions</h3>","supp")}
+
+  % if not FAILED:
+      % if ASSAY in ['WGTS', 'WGTS40X']:
+        <%include file="resources/WGS.definitions.html"/>
+        <%include file="resources/WTS.definitions.html"/>
+      % elif ASSAY in ['WGS', 'WGS40X']:
+        <%include file="resources/WGS.definitions.html"/>
+      % elif ASSAY == 'TAR':
+        <%include file="resources/TAR.definitions.html"/>
+      % elif ASSAY == 'PWGS':
+        <%include file="resources/PWGS.definitions.html"/>
+      % endif
+  % else:
+      % if ASSAY == 'WGTS' or ASSAY == "WGS" or ASSAY == 'WGTS40X' or ASSAY == 'WGS40X':
+        <%include file="resources/WGTS.FAIL.definitions.html"/>
+      % elif ASSAY == 'TAR':
+        <%include file="resources/TAR.FAIL.definitions.html"/>
+      % elif ASSAY == 'PWGS':
+        <%include file="resources/PWGS.definitions.html"/>
+      % endif
+  % endif
+
+  ${html_builder().section_cells_end()}
+
 ${html_builder().section_cells_begin("<h3>Definitions</h3>","main")}
 
 % if not FAILED:
