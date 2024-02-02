@@ -24,7 +24,7 @@ Available modes are:
 
 ## Usage
 
-### 1. Render initial PDF
+### Render initial PDF
 
 The `render` mode converts a JSON document to PDF format. In other words, it goes from the machine-readable format to human-readable.
 
@@ -36,7 +36,7 @@ mini-djerba render -j report.json
 
 The default location for output is a PDF file in the current working directory named `[report_id].json`.
 
-### 2. Generate config file
+### Generate config file
 
 The config file is in MDC (mini-Djerba config) format. This is a simple text-based format defined for mini-Djerba. See [MDC format](#mdc_format) for details.
 
@@ -47,13 +47,13 @@ Example:
 mini-djerba setup -j report.json
 ```
 
-### 3. Edit the config file with PHI values and summary text
+### Edit the config file with PHI values and summary text
 
 - This can be done in any text editor, eg. [nano](https://www.nano-editor.org/), [Notepad](https://apps.microsoft.com/detail/9MSMLRH6LZF3?hl=en-US&gl=US) for Windows, [Emacs](https://www.gnu.org/software/emacs/), [Vim](https://www.vim.org/).
 - Using a full-featured word processor such as MS Word is unnecessary; if doing so, output must be saved in plain-text format.
 - See [MDC format](#mdc_format) for details and an example config file.
 
-### 4. Update to produce a new PDF
+### Update to produce a new PDF
 
 We now bring the input PDF and config file together, to produce an updated report PDF.
 
