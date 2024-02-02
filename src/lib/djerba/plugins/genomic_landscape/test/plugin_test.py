@@ -12,6 +12,7 @@ import string
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 from djerba.core.workspace import workspace
+from djerba.util.environment import directory_finder
 
 class TestGenomicLandscapePlugin(PluginTester):
     
@@ -22,8 +23,7 @@ class TestGenomicLandscapePlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DIR'
-        self.sup_dir = os.environ.get(sup_dir_var)
+        self.sup_dir = directory_finder().get_test_dir()
         
         self.data_mut_ex = os.path.join(self.sup_dir, "plugins/genomic-landscape/data_mutations_extended.txt")
         self.data_seg = os.path.join(self.sup_dir, "plugins/genomic-landscape/data.seg")

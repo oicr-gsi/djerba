@@ -11,7 +11,7 @@ import djerba.core.constants as core_constants
 from djerba.core.loaders import helper_loader
 from djerba.core.workspace import workspace
 from djerba.util.testing.tools import TestBase
-
+from djerba.util.environment import directory_finder
 
 class TestProvenanceHelper(TestBase):
 
@@ -22,7 +22,8 @@ class TestProvenanceHelper(TestBase):
     PATH_INFO_MD5 = 'f160132c02b77699b0b01a3c7bcafd1b'
     
     def test(self):
-        data_dir = os.path.join(os.environ.get('DJERBA_TEST_DIR'), 'helpers', 'provenance')
+        self.data_dir_root = directory_finder().get_test_dir()
+        data_dir = os.path.join(self.data_dir_root, 'helpers', 'provenance')
         provenance_input = os.path.join(data_dir, 'provenance_input.tsv.gz')
         ws = workspace(self.tmp_dir)
         loader = helper_loader(logging.WARNING)
