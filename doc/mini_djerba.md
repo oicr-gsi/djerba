@@ -1,17 +1,7 @@
-<a id="top"></a>
+
 # Mini-Djerba
 
-<a id="contents"></a>
-## Contents
-
-- [Introduction](#intro)
-- [Usage](#usage)
-- [Troubleshooting](#trouble)
-- [The Mini-Djerba config file](#mdc_format)
-- [The JSON input file](#json)
-- [For Developers](#devel)
-
-<h2><a id="intro"></a> Introduction</h2>
+## Introduction
 
 Mini-Djerba allows a clinical geneticist to update personal health information (PHI) and edit the results summary in a Djerba report.
 
@@ -32,7 +22,7 @@ Available modes are:
 - `setup`: Generate a config file to be updated by the user
 - `update`: Use the JSON input and config file to generate an *updated* PDF document
 
-<h2><a id="usage"></a>Usage</h2>
+## Usage
 
 ### 1. Render initial PDF
 
@@ -87,7 +77,7 @@ mini_djerba setup -h
 mini_djerba update -h
 ```
 
-<h2><a id="trouble"></a>Troubleshooting</h2>
+## Troubleshooting
 
 There are 3 main types of error in mini-Djerba:
 
@@ -97,7 +87,8 @@ There are 3 main types of error in mini-Djerba:
 
 In the first two cases, `mini-djerba` will print an informative error message to the command line. In the third, the error is likely to be more technical. If in doubt, consult the Djerba developers.
 
-## <a name="mdc_format"></a><h2>The Mini-Djerba config file</h2>
+<a name="mdc_format"></a>
+## The Mini-Djerba config file
 
 MDC files (mini-Djerba config, file extension `.mdc`) specify the PHI and summary in a compact, text-based format. It is a simple, text-based format developed for Mini-Djerba.
 
@@ -142,14 +133,14 @@ These entries may occur in any order, but _must_ be present and have non-empty v
 
 Summary text must be non-empty. Leading or trailing whitespace will be removed before the text is inserted into the report; but whitespace, including line breaks, may occur within the text block. Formatting with [Markdown notation](https://www.markdownguide.org/cheat-sheet/) and/or HTML tags is supported. This enables the user to create or edit bold/italic text, hyperlinks, etc.
 
-<h2><a id="json"></a>The JSON input file</h2>
+## The JSON input file
 
 The Djerba [JSON](https://en.wikipedia.org/wiki/JSON) document is produced as part of the report drafting process by the Clinical Genome Interpretation team. It is a machine-readable file containing the data needed to produce a clinical report.
 
 The JSON is _not_ intended to be edited by hand; mini-Djerba gets the user inputs it needs from the MDC file.
 
 
-<h2><a id="devel"></a> For Developers</h2>
+## For Developers
 
 ### Build instructions
 
@@ -164,7 +155,3 @@ Key/value parsing is done with the Python [configparser](https://docs.python.org
 The MDC file format is implemented in Djerba as the [mdc class](https://github.com/oicr-gsi/djerba/blob/main/src/lib/djerba/util/mini/mdc.py#L14).
 
 Tests are in the [TestMDC class](https://github.com/oicr-gsi/djerba/blob/main/src/test/util/mini/test_mini.py#L16).
-
------------------
-
-[Back to top](#top)
