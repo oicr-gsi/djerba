@@ -1,6 +1,8 @@
-<h1><a id="top"></a>Mini-Djerba</h1>
+<a id="top"></a>
+# Mini-Djerba
 
-<h2><a id="contents"></a>Contents</h2>
+<a id="contents"></a>
+## Contents
 
 - [Introduction](#intro)
 - [Usage](#usage)
