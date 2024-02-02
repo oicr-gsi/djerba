@@ -87,7 +87,6 @@ There are 3 main types of error in mini-Djerba:
 
 In the first two cases, `mini-djerba` will print an informative error message to the command line. In the third, the error is likely to be more technical. If in doubt, consult the Djerba developers.
 
-<a name="mdc_format"></a>
 ## The Mini-Djerba config file
 
 MDC files (mini-Djerba config, file extension `.mdc`) specify the PHI and summary in a compact, text-based format. It is a simple, text-based format developed for Mini-Djerba.
