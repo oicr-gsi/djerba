@@ -38,7 +38,7 @@ The default location for output is a PDF file in the current working directory n
 
 ### Generate config file
 
-The config file is in MDC (mini-Djerba config) format. This is a simple text-based format defined for mini-Djerba. See [MDC format](#mdc_format) for details.
+The config file is in MDC (mini-Djerba config) format. This is a simple text-based format defined for mini-Djerba. See [MDC format](#mdc) for details.
 
 The file is generated in `setup` mode. The `-j` option inserts summary text drafted by a genome interpreter, for subsequent editing. Running without `-j` produces a "blank" MDC file.
 
@@ -47,7 +47,7 @@ Example:
 mini-djerba setup -j report.json
 ```
 
-### Edit the config file with PHI values and summary text
+### Edit config file
 
 - This can be done in any text editor, eg. [nano](https://www.nano-editor.org/), [Notepad](https://apps.microsoft.com/detail/9MSMLRH6LZF3?hl=en-US&gl=US) for Windows, [Emacs](https://www.gnu.org/software/emacs/), [Vim](https://www.vim.org/).
 - Using a full-featured word processor such as MS Word is unnecessary; if doing so, output must be saved in plain-text format.
@@ -87,6 +87,7 @@ There are 3 main types of error in mini-Djerba:
 
 In the first two cases, `mini-djerba` will print an informative error message to the command line. In the third, the error is likely to be more technical. If in doubt, consult the Djerba developers.
 
+<a name="mdc"></a>
 ## The Mini-Djerba config file
 
 MDC files (mini-Djerba config, file extension `.mdc`) specify the PHI and summary in a compact, text-based format. It is a simple, text-based format developed for Mini-Djerba.
