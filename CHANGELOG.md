@@ -2,6 +2,7 @@
 ## v1.4.1: 2024-02-02
 
 - fix bug when fusions have multiple possible reading frames
+- GCGI-1251: replaced and automated test dir variables
 
 ## v1.4.0: 2024-01-31
 

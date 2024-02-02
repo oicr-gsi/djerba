@@ -8,6 +8,7 @@ import tempfile
 
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
+from djerba.util.environment import directory_finder
 
 class TestSupplementaryPluginBody(PluginTester):
     def setUp(self):
@@ -15,8 +16,7 @@ class TestSupplementaryPluginBody(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DIR'
-        self.sup_dir = os.environ.get(sup_dir_var)
+        self.sup_dir = directory_finder().get_test_dir()
 
     def testPwgsSupplementary(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
