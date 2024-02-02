@@ -132,6 +132,14 @@ These entries may occur in any order, but _must_ be present and have non-empty v
 
 Summary text must be non-empty. Leading or trailing whitespace will be removed before the text is inserted into the report; but whitespace, including line breaks, may occur within the text block. Formatting with [Markdown notation](https://www.markdownguide.org/cheat-sheet/) and/or HTML tags is supported. This enables the user to create or edit bold/italic text, hyperlinks, etc.
 
+### MDC Version History
+
+The MDC file format is versioned. Each version accompanies a release of the main Djerba software.
+
+| MDC Version | Djerba version | Release date |
+| ------------| ---------------|--------------|
+| `1.0`       | `1.4.0`        | 2024-01-31   |
+
 ## The JSON input file
 
 The Djerba [JSON](https://en.wikipedia.org/wiki/JSON) document is produced as part of the report drafting process by the Clinical Genome Interpretation team. It is a machine-readable file containing the data needed to produce a clinical report.
