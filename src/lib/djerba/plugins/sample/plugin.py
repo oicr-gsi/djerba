@@ -34,7 +34,7 @@ class main(plugin_base):
             constants.COVERAGE,
             constants.PURITY,
             constants.PLOIDY,
-            core_constants.DEFAULT_SAMPLE_INFO
+            core_constants.TUMOUR_ID,
         ]
         for key in discovered:
             self.add_ini_discovered(key)
@@ -63,11 +63,12 @@ class main(plugin_base):
             wrapper.set_my_param(constants.PLOIDY, input_data[constants.PLOIDY])
 
         # Get tumour_id from sample info:
-        if wrapper.my_param_is_null(core_constants.DEFAULT_SAMPLE_INFO):
-            wrapper.set_my_param(core_constants.DEFAULT_SAMPLE_INFO, os.path.join(work_dir, core_constants.DEFAULT_SAMPLE_INFO))
-        info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
-        tumour_id = info[constants.TUMOUR_ID]
+        if wrapper.my_param_is_null(core_constants.TUMOUR_ID):
+            info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
+            tumour_id = info[constants.TUMOUR_ID]
+            wrapper.set_my_param(core_constants.TUMOUR_ID, tumour_id)
         
+        tumour_id = config[self.identifier][core_constants.TUMOUR_ID]
         # SECOND PASS: Get files based on input parameters
         if wrapper.my_param_is_null(constants.CALLABILITY):
             wrapper.set_my_param(constants.CALLABILITY, self.fetch_callability_etl_data(tumour_id))        
@@ -80,11 +81,13 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         # multiply purity by 100 to get a percentage, and round to the nearest integer
-        purity_percent = int(round(float(config[self.identifier][constants.PURITY])*100, 0))
+        purity = config[self.identifier][constants.PURITY]
+        if purity not in ["NA", "N/A", "na", "n/a", "N/a", "Na"]:
+            purity = int(round(float(purity)*100, 0))
         results = {
                 constants.ONCOTREE_CODE: config[self.identifier][constants.ONCOTREE],
                 constants.TUMOUR_SAMPLE_TYPE : config[self.identifier][constants.SAMPLE_TYPE],
-                constants.EST_CANCER_CELL_CONTENT : purity_percent,
+                constants.EST_CANCER_CELL_CONTENT : purity,
                 constants.EST_PLOIDY: config[self.identifier][constants.PLOIDY],
                 constants.CALLABILITY_PERCENT: config[self.identifier][constants.CALLABILITY],
                 constants.COVERAGE_MEAN: config[self.identifier][constants.COVERAGE]    

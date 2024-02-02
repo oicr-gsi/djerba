@@ -19,8 +19,7 @@ class main(helper_base):
     PRIMARY_CANCER = 'primary_cancer'
     SITE_OF_BIOPSY = 'site_of_biopsy'
     REQUISITION_APPROVED = 'requisition_approved'
-    ASSAY = 'assay'
-    
+    ASSAY = 'assay'    
     REQUISITION_ID = 'requisition_id'
     TCGACODE = 'tcgacode'
     SAMPLE_TYPE = 'sample_type'
@@ -35,8 +34,11 @@ class main(helper_base):
     # Priority
     PRIORITY = 10
 
-    # permitted assay names
-    VALID_ASSAYS = ['WGTS', 'WGS', 'TAR', 'PWGS']
+    # Permitted assay names
+    VALID_ASSAYS = ['WGTS', 'WGS', 'PWGS']
+
+    # Other
+    NA = "NA"
 
     def specify_params(self):
         self.logger.debug("Specifying params for input params helper")
@@ -51,8 +53,6 @@ class main(helper_base):
         self.add_ini_required(self.SITE_OF_BIOPSY)
         self.add_ini_required(self.REQUISITION_APPROVED)
         self.add_ini_required(self.ASSAY)
-
-
         self.add_ini_required(self.REQUISITION_ID)
         self.add_ini_required(self.TCGACODE)
         self.add_ini_required(self.SAMPLE_TYPE)
@@ -66,11 +66,36 @@ class main(helper_base):
         Needs to write the json to the workspace in the configure step
         """
         config = self.apply_defaults(config)
-        # Retrieve the parameters from the ini
+        wrapper = self.get_config_wrapper(config)
+        
+        # No parameters are allowed to be empty
+        list_params = [self.DONOR, 
+                      self.PROJECT, 
+                      self.STUDY, 
+                      self.ONCOTREE_CODE, 
+                      self.PRIMARY_CANCER,
+                      self.SITE_OF_BIOPSY,
+                      self.REQUISITION_APPROVED,
+                      self.REQUISITION_ID,
+                      self.TCGACODE,
+                      self.SAMPLE_TYPE,
+                      self.SEQ_REV_1,
+                      self.SEQ_REV_2,
+                      self.PURITY,
+                      self.PLOIDY,
+                      self.ASSAY]
+
+        for param in list_params:
+            if wrapper.my_param_is_null(param) or wrapper.get_my_string(param).strip() == "":
+                msg = 'Missing required parameter: ' + param + ". Did you forget to enter it?"
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+
+        # Retrieve the parameters from the ini and write them to the workspace
         info = self.get_input_params(config)
-        # Write them to a json
         self.write_input_params_info(info)
-        return config
+        return wrapper.get_config()
+
 
     def extract(self, config):
         """
@@ -85,6 +110,32 @@ class main(helper_base):
         """
         Retrieves values from INI and puts them in a JSON
         """
+        # Purity
+        purity = config[self.identifier][self.PURITY]
+        if purity != self.NA:
+            try:
+                purity = float(purity)
+                if purity < 0 or purity > 1:
+                    msg = "Invalid purity '{0}': Must be a number between 0 and 1".format(purity)
+                    self.logger.error(msg)
+                    raise ValueError(msg)
+            except ValueError as err:
+                msg = 'Purity must be either "NA", or a number between 0 and 1: {0}'.format(err)
+                self.logger.error(msg)
+                raise
+        # Ploidy 
+        ploidy = config[self.identifier][self.PLOIDY]
+        if ploidy != self.NA:
+            try:
+                ploidy = float(ploidy)
+                if ploidy <= 0:
+                    msg = "Invalid ploidy '{0}': Must be a positive number".format(ploidy)
+                    self.logger.error(msg)
+                    raise ValueError(msg)
+            except ValueError as err:
+                msg = 'Ploidy must be either "NA", or a positive number: {0}'.format(err)
+                self.logger.error(msg)
+                raise
         try:
             input_params_info = {
                 self.DONOR: config[self.identifier][self.DONOR],
@@ -100,8 +151,8 @@ class main(helper_base):
                 self.SAMPLE_TYPE: config[self.identifier][self.SAMPLE_TYPE],
                 self.SEQ_REV_1: config[self.identifier][self.SEQ_REV_1],
                 self.SEQ_REV_2: config[self.identifier][self.SEQ_REV_2],
-                self.PURITY: float(config[self.identifier][self.PURITY]),
-                self.PLOIDY: float(config[self.identifier][self.PLOIDY])
+                self.PURITY: purity,
+                self.PLOIDY: ploidy
             }
         except KeyError as err:
             msg = "Required config field for input params helper not found: {0}".format(err)
@@ -117,18 +168,12 @@ class main(helper_base):
 
     def validate_input_params(self, info):
         assay = info.get(self.ASSAY)
-        if not assay in self.VALID_ASSAYS:
+        if not assay in self.VALID_ASSAYS and assay != "TAR":
             msg = "Invalid assay '{0}': Must be one of {1}".format(assay, self.VALID_ASSAYS)
             self.logger.error(msg)
             raise ValueError(msg)
-        purity = info.get(self.PURITY)
-        if purity < 0 or purity > 1:
-            msg = "Invalid purity '{0}': Must be a number between 0 and 1".format(purity)
-            self.logger.error(msg)
-            raise ValueError(msg)
-        ploidy = info.get(self.PLOIDY)
-        if ploidy <= 0:
-            msg = "Invalid ploidy '{0}': Must be a positive number".format(ploidy)
+        if assay == "TAR":
+            msg = "Invalid assay '{0}': Must use [tar_input_params_helper]".format(assay)
             self.logger.error(msg)
             raise ValueError(msg)
         req_approved = info.get(self.REQUISITION_APPROVED)

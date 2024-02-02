@@ -1,6 +1,54 @@
 # CHANGELOG
 
+## v.1.1.3: 2024-01-10
+- Fixed unit tests for supplements plugin
+
+## v.1.1.2: 2024-01-08
+
+- GCGI-1233: allowed support for purity and ploidy to be "NA", changed failed report template text 
+- Fixed unit tests for various plugins
+- Changed sign-offs page break to "auto"
+- GCGI-1240/1241: added filtering for 2 TERT hotspots: -124bp G>A and -146bp G>A 
+
+## v1.1.1: 2023-12-13
+
+- Fixed template text for failed plugin
+- Added plugins missing from `setup.py`
+- GCGI-1229: Fixed missing OncoKB definitions
+
+## v1.1.0: 2023-12-08
+
+- Removed `prototype` directory, which is now in the [djerba_prototypes](https://github.com/oicr-gsi/djerba_prototypes) repo
+- Added RUO-report functionality
+- Added HRD plugin to RUO report
+- Split pWGS-sample plugin into three plugins
+- Created CAPTIV-8 plugin
+- Added Djerba core version to JSON output
+- Updated and fixed unit tests which were omitted for release 1.0.0
+- Updated benchmarking functions which were omitted for release 1.0.0
+
+## v1.0.3: 2023-11-28
+
+- Allow tumour ID to be specified in the sample plugin
+- GCGI-1191: fixed MSI suffix from .filter.deduped.realigned.recalibrated.msi.booted to .recalibrated.msi.booted
+
+## v1.0.2: 2023-11-20
+
+- GCGI-1172: TCGA code throws error when lower-case
+- GCGI-1174: Add `[genomic_landscape]` to setup mode
+- GCGI-1175: Pipeline version in supplementary
+- GCGI-1177: Fix execution order of expression helper
+- GCGI-1182: Fix Whizbam links. New INI parameter `whizbam_project` in `snv_indel`.
+- GCGI-1183: Update Gene Information file
+
+## v1.0.1: 2023-11-14
+
+- GCGI-612: Remove hardcoded cfDNA in TAR plugin; add `sample_type` parameter
+- GCGI-1166: Fix for new workflow names
+- GCGI-1167: Fix for unknown cytoband names
+
 ## v1.0.0: 2023-11-03
+
 - First production release of new plugin-based Djerba
 - Other than version number, code is identical to `v1.0.0-dev0.0.23`
 

@@ -20,7 +20,7 @@ class TestWgtsCnv(PluginTester):
     JSON_NAME = 'cnv.json'
 
     def testWgtsCnv(self):
-        sup_dir = os.environ.get('DJERBA_TEST_DATA')
+        sup_dir = os.environ.get('DJERBA_TEST_DIR')
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         data_dir = os.path.join(sup_dir, 'plugins', 'cnv')
         sequenza_filename = 'PANX_1391_Lv_M_WG_100-NH-020_LCM3_results.test.zip'
@@ -43,7 +43,7 @@ class TestWgtsCnv(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: self.JSON_NAME,
-            self.MD5: '317e76fb2baeb7149652ec5782622e79'
+            self.MD5: 'd5a5725c6097228b6aefffdc4521cc03'
         }
         self.run_basic_test(input_dir, params, work_dir=work_dir)
 

@@ -31,7 +31,6 @@ class data_builder:
   HUGO_SYMBOL_UPPER_CASE = 'HUGO_SYMBOL'
   HUGO_SYMBOL_TITLE_CASE = 'Hugo_Symbol'
   NA = 'NA'
-  all_reported_variants = set()
 
   UNCLASSIFIED_CYTOBANDS = [
     "", # some genes have an empty string for cytoband
@@ -64,13 +63,12 @@ class data_builder:
     self.tmp_dir = work_dir + "/tmp"
 
   def build_swgs_rows(self):
-    #self.logger.debug("Building data for copy number variation table")
     rows = []
     with open(os.path.join(self.work_dir, self.CNA_ANNOTATED)) as input_file:
         reader = csv.DictReader(input_file, delimiter="\t")
         for row in reader:
             gene = row[self.HUGO_SYMBOL_UPPER_CASE]
-            cytoband = self.get_cytoband(gene)
+            cytoband = self.cytoband_map.get(gene, 'Unknown')
             if row[self.ALTERATION_UPPER_CASE] == "Amplification":
               row = {
                   constants.GENE: gene,
@@ -80,10 +78,8 @@ class data_builder:
                   constants.ONCOKB: self.parse_oncokb_level(row)
               }
               rows.append(row)
-    #self.logger.debug("Sorting and filtering CNV rows")
     rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
     for row in rows: 
-        self.all_reported_variants.add((row.get(constants.GENE), row.get(constants.CHROMOSOME)))
         row[self.ONCOKB_LEVEL] = self.change_oncokb_level_name(row[self.ONCOKB_LEVEL])
     
     return rows
@@ -104,15 +100,6 @@ class data_builder:
         level = 'N3'
     return level
 
-
-  def get_cytoband(self, gene_name):
-    cytoband = self.cytoband_map.get(gene_name)
-    if not cytoband:
-        cytoband = 'Unknown'
-        msg = "Cytoband for gene '{0}' not found in {1}".format(gene_name, self.cytoband_path)
-        #self.logger.info(msg)
-    return cytoband
-  
   def read_cytoband_map(self):
     input_path = self.cytoband_path
     cytobands = {}
@@ -184,7 +171,7 @@ class data_builder:
     end = (999, 'z', 999999)
     if cb_input in self.UNCLASSIFIED_CYTOBANDS:
         msg = "Cytoband \"{0}\" is unclassified, moving to end of sort order".format(cb_input)
-        #self.logger.debug(msg)
+        self.logger.debug(msg)
         (chromosome, arm, band) = end
     else:
         try:
@@ -208,6 +195,6 @@ class data_builder:
             msg = "Cannot parse cytoband \"{0}\" for sorting; ".format(cb_input)+\
                     "moving to end of sort order. No further action is needed. "+\
                     "Reason for parsing failure: {0}".format(err)
-            #self.logger.warning(msg)
+            self.logger.info(msg)
             (chromosome, arm, band) = end
     return (chromosome, arm, band)

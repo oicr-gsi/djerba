@@ -83,8 +83,8 @@ class main(helper_base):
             value = sample_info.get(key)
             if wrapper.my_param_is_null(key):
                 if value == None:
-                    msg = "No value found in provenance for parameter '{0}'; ".format(key)+\
-                        "can manually specify value in config and re-run"
+                    msg = "No value found for parameter '{0}' ".format(key)+\
+                        "in sample info or user config; need to add to config INI?"
                     self.logger.error(msg)
                     raise DjerbaProvenanceError(msg)
                 else:
@@ -190,6 +190,7 @@ class main(helper_base):
                 self.WG_N_IDX: reader.parse_wg_index_ref_path()
             },
             reader.WF_DELLY: reader.parse_delly_path(),
+            reader.WF_HRDETECT: reader.parse_hrdetect_path(),
             reader.WF_MAVIS: reader.parse_mavis_path(),
             reader.WF_MRDETECT: reader.parse_mrdetect_path(),
             reader.WF_MSISENSOR: reader.parse_msi_path(),
@@ -200,7 +201,9 @@ class main(helper_base):
                 self.WT_T_IDX: reader.parse_wt_index_path()
             },
             reader.WF_STARFUSION: reader.parse_starfusion_predictions_path(),
-            reader.WF_VEP: reader.parse_maf_path()
+            reader.WF_VEP: reader.parse_maf_path(),
+            reader.WF_VIRUS: reader.parse_virus_path(),
+            reader.WF_IMMUNE: reader.parse_immune_path()
         }
         return sample_info, path_info
 

@@ -20,24 +20,36 @@ class TestWgtsSamplePlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DATA'
+        sup_dir_var = 'DJERBA_TEST_DIR'
         self.sup_dir = os.environ.get(sup_dir_var)
          
-        self.sample_info_json = os.path.join(self.sup_dir, "wgts-sample-plugin/sample_info.json")
-
     def testWgtsSample(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
-        json_location = os.path.join(self.sup_dir ,"wgts-sample-plugin/report_json/sample.json")
-        
-        # Copy file into the temporary directory
-        shutil.copy(self.sample_info_json, self.tmp_dir)
+        json_location = os.path.join(self.sup_dir ,"plugins/sample/report_json/sample.json")
+        ini_location = os.path.join(self.sup_dir ,"plugins/sample/sample.ini") 
 
         params = {
-            self.INI: 'sample.ini',
+            self.INI: ini_location,
             self.JSON: json_location,
-            self.MD5: '1fb06ccdfdfeb5ce708a7db5205ec351'
+            self.MD5: 'f23dbf3e5ac417740bcbb990723db0f0'
         }
         self.run_basic_test(test_source_dir, params)
+
+    def testWgtsSampleWithNA(self):
+        """
+        Purity, ploidy, callability, and coverage are NA
+        """
+        test_source_dir = os.path.realpath(os.path.dirname(__file__))
+        json_location = os.path.join(self.sup_dir ,"plugins/sample/report_json/sample_na.json")
+        ini_location = os.path.join(self.sup_dir ,"plugins/sample/sample_na.ini")
+
+        params = {
+            self.INI: ini_location,
+            self.JSON: json_location,
+            self.MD5: 'c9b5dd13be0f6d947550d93cd165b64f'
+        }
+        self.run_basic_test(test_source_dir, params)
+
 
 if __name__ == '__main__':
     unittest.main()

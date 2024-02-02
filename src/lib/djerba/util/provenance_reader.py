@@ -23,10 +23,10 @@ class provenance_reader(logger):
     GEO_TUBE_ID = 'geo_tube_id'
 
     # relevant workflow names
-    # temporarily changed to Vidarr versions; TODO allow either Niassa or Vidarr workflow
     WF_ARRIBA = 'arriba'
-    WF_BMPP = 'bamMergePreprocessing_by_tumor_group'
-    WF_DELLY = 'delly_matched_by_tumor_group'
+    WF_BMPP = 'bamMergePreprocessing_by_sample'
+    WF_DELLY = 'delly_matched'
+    WF_HRDETECT = 'hrDetect'
     WF_MAVIS = 'mavis'
     WF_MRDETECT = 'mrdetect_filter_only'
     WF_MSISENSOR = 'msisensor'
@@ -34,7 +34,14 @@ class provenance_reader(logger):
     WF_SEQUENZA = 'sequenza_by_tumor_group'
     WF_STAR = 'star_call_ready'
     WF_STARFUSION = 'starfusion'
-    WF_VEP = 'variantEffectPredictor_matched_by_tumor_group'
+    WF_VEP = 'variantEffectPredictor_matched'
+    WF_VIRUS = 'virusbreakend'
+    WF_IMMUNE = 'immunedeconv'
+
+    # older Vidarr workflow names, deprecated as of 2023-11-13
+    WF_BMPP_20231113 = 'bamMergePreprocessing_by_tumor_group'
+    WF_DELLY_20231113 = 'delly_matched_by_tumor_group'
+    WF_VEP_20231113 = 'variantEffectPredictor_matched_by_tumor_group'
 
     # old-style Niassa names (where different)
     NIASSA_WF_BMPP = 'bamMergePreprocessing'
@@ -46,6 +53,7 @@ class provenance_reader(logger):
 
     # metatype patterns
     MT_PLAIN_TEXT = 'text/plain$'
+    MT_JSON_TEXT = 'text/json$'
     MT_OCTET_STREAM = 'application/octet-stream$'
     MT_VCF_GZ = 'application/vcf-gz$'
     MT_TXT_GZ = 'application/te?xt-gz$' # match text OR txt
@@ -120,13 +128,15 @@ class provenance_reader(logger):
         # check that provenance has all recommended workflows (Niassa or Vidarr); warn if not
         # this only checks if output exists, *not* if it is correct
         wgs_to_check = [
-            [self.WF_BMPP, self.NIASSA_WF_BMPP],
+            [self.WF_BMPP, self.WF_BMPP_20231113, self.NIASSA_WF_BMPP],
             [self.WF_SEQUENZA, self.NIASSA_WF_SEQUENZA],
-            [self.WF_VEP, self.NIASSA_WF_VEP]
+            [self.WF_VEP, self.WF_VEP_20231113, self.NIASSA_WF_VEP],
+            [self.WF_VIRUS],
+            [self.WF_IMMUNE]
         ]
-        wts_to_check = [ # TODO add Mavis once it is automated
+        wts_to_check = [
             [self.WF_ARRIBA],
-            [self.WF_DELLY, self.NIASSA_WF_DELLY],
+            [self.WF_DELLY, self.WF_DELLY_20231113, self.NIASSA_WF_DELLY],
             [self.WF_RSEM],
             [self.WF_STAR, self.NIASSA_WF_STAR],
             [self.WF_STARFUSION, self.NIASSA_WF_STARFUSION],
@@ -430,7 +440,7 @@ class provenance_reader(logger):
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
     def parse_delly_path(self):
-        workflows = [self.WF_DELLY, self.NIASSA_WF_DELLY]
+        workflows = [self.WF_DELLY, self.WF_DELLY_20231113, self.NIASSA_WF_DELLY]
         mt = self.MT_VCF_GZ
         suffix = '\.somatic_filtered\.delly\.merged\.vcf\.gz$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
@@ -441,8 +451,20 @@ class provenance_reader(logger):
         suffix = '\.genes\.results$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
+    def parse_hrdetect_path(self):
+        workflows = [self.WF_HRDETECT]
+        mt = self.MT_JSON_TEXT
+        suffix = '\.signatures\.json$'
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
+
+    def parse_immune_path(self):
+        workflow = self.WF_IMMUNE
+        mt = self.MT_OCTET_STREAM
+        suffix = 'immunedeconv_CIBERSORT-Percentiles\.csv$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
+
     def parse_maf_path(self):
-        workflows = [self.WF_VEP, self.NIASSA_WF_VEP]
+        workflows = [self.WF_VEP, self.WF_VEP_20231113, self.NIASSA_WF_VEP]
         mt = self.MT_TXT_GZ
         suffix = '\.mutect2\.filtered\.maf\.gz$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
@@ -462,7 +484,7 @@ class provenance_reader(logger):
     def parse_msi_path(self):
         workflows = [self.WF_MSISENSOR]
         mt = self.MT_OCTET_STREAM
-        suffix = 'filter\.deduped\.realigned\.recalibrated\.msi\.booted$'
+        suffix = 'recalibrated\.msi\.booted$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_mrdetect_path(self):
@@ -470,35 +492,41 @@ class provenance_reader(logger):
         mt = self.MT_PLAIN_TEXT
         suffix = 'SNP\.count\.txt$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
-
+    
     def parse_starfusion_predictions_path(self):
         workflows = [self.WF_STARFUSION, self.NIASSA_WF_STARFUSION]
         mt = self.MT_OCTET_STREAM
         suffix = 'star-fusion\.fusion_predictions\.tsv$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wt_t)
-
+    
+    def parse_virus_path(self):
+        workflow = self.WF_VIRUS
+        mt = self.MT_OCTET_STREAM
+        suffix = 'virusbreakend\.vcf\.summary\.tsv$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
+    
     def parse_wg_bam_path(self):
-        workflows = [self.WF_BMPP, self.NIASSA_WF_BMPP]
+        workflows = [self.WF_BMPP, self.WF_BMPP_20231113, self.NIASSA_WF_BMPP]
         mt = self.MT_BAM
         suffix = '\.filter\.deduped\.realigned\.recalibrated\.bam$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_wg_bam_ref_path(self):
         # find the reference (normal) BAM
-        workflows = [self.WF_BMPP, self.NIASSA_WF_BMPP]
+        workflows = [self.WF_BMPP, self.WF_BMPP_20231113, self.NIASSA_WF_BMPP]
         mt = self.MT_BAM
         suffix = '\.filter\.deduped\.realigned\.recalibrated\.bam$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_n)
 
     def parse_wg_index_path(self):
-        workflows = [self.WF_BMPP, self.NIASSA_WF_BMPP]
+        workflows = [self.WF_BMPP, self.WF_BMPP_20231113, self.NIASSA_WF_BMPP]
         mt = self.MT_BAM_INDEX
         suffix = '\.filter\.deduped\.realigned\.recalibrated\.bai$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_wg_index_ref_path(self):
         # find the reference (normal) BAM index
-        workflows = [self.WF_BMPP, self.NIASSA_WF_BMPP]
+        workflows = [self.WF_BMPP, self.WF_BMPP_20231113, self.NIASSA_WF_BMPP]
         mt = self.MT_BAM_INDEX
         suffix = '\.filter\.deduped\.realigned\.recalibrated\.bai$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_n)

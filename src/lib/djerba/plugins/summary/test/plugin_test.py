@@ -15,7 +15,7 @@ class TestSummaryPlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DATA'
+        sup_dir_var = 'DJERBA_TEST_DIR'
         self.sup_dir = os.environ.get(sup_dir_var)
 
     def testSummary(self):
@@ -24,7 +24,7 @@ class TestSummaryPlugin(PluginTester):
         params = {
             self.INI: 'summary.ini',
             self.JSON: json_location,
-            self.MD5: '0245b24892cc137aa40f92b5114bc79e'
+            self.MD5: '2019ab441f76d19c1090b4218f4d9654'
         }
         self.run_basic_test(test_source_dir, params)
 

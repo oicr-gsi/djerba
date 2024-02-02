@@ -3,6 +3,7 @@
 # sample variable
 ONCOTREE = 'oncotree_code'
 KNOWN_VARIANTS = 'known_variants'
+SAMPLE_TYPE = 'sample_type'
 CANCER_CONTENT = 'cancer_content'
 RAW_COVERAGE = 'raw_coverage'
 UNIQUE_COVERAGE = 'unique_coverage'
