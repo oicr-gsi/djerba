@@ -11,6 +11,7 @@ from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 import djerba.plugins.hrd.plugin as hrd
 from djerba.core.workspace import workspace
+from djerba.util.environment import directory_finder
 
 class TestPwgAnalysisPlugin(PluginTester):
 
@@ -21,8 +22,7 @@ class TestPwgAnalysisPlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DIR'
-        self.sup_dir = os.environ.get(sup_dir_var)
+        self.sup_dir = directory_finder().get_test_dir()
 
     def testHRD(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
