@@ -13,6 +13,7 @@ from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 import djerba.plugins.wgts.snv_indel.plugin as snv_indel
 from djerba.core.workspace import workspace
+from djerba.util.environment import directory_finder
 
 class TestSnvIndelPlugin(PluginTester):
 
@@ -21,8 +22,8 @@ class TestSnvIndelPlugin(PluginTester):
 
     def testSnvIndel(self):
 
-        sup_dir = os.environ.get('DJERBA_TEST_DATA')
-        data_dir = os.path.join(sup_dir, 'plugins', 'wgts', 'snv_indel')
+        data_dir_root = directory_finder().get_test_dir()
+        data_dir = os.path.join(data_dir_root, 'plugins', 'wgts', 'snv_indel')
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         maf_filename = 'PANX_1391_Lv_M_WG_100-NH-020_LCM3.filter.deduped.realigned.'+\
             'recalibrated.mutect2.filtered.subset.maf.gz'

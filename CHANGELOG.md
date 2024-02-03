@@ -11,15 +11,22 @@
 - new PURPLE CNV calling plugin
 - removed sequenza support
 
-## Unreleased 
+## v1.4.1: 2024-02-02
+
+- fix bug when fusions have multiple possible reading frames
+- GCGI-1251: replaced and automated test dir variables
+
+## v1.4.0: 2024-01-31
 
 - GCGI-611: fix fusion frameshift hardcode
 - GCGI-443: merge duplicate fusion rows
 - fixed bug removing oncogenic fusions
-- GCGI-1217: Remove NORMAL_DEPTH variable  
-- GCGI-1194: Research Report PDF Footer says RUO 
+- GCGI-1217: Remove NORMAL_DEPTH variable
+- GCGI-1194: Research Report PDF Footer says RUO
 - GCGI-1261: Update plugin tester base class, so it is unaffected by changes in core HTML
 - removed "Quality Failure" text in failed report plugin html
+- GCGI-1282: fixed config generation for pWGS in setup mode, and removed automatic generation of failed report sentence
+- GCGI-1278: Fix issues with fusion plugin in benchmark tests; update `test_env.sh`; add convenience test scripts
 
 ### Improvements for mini-Djerba
 

@@ -65,8 +65,6 @@ class TestExpressionHelper(TestBase):
         helper_main = loader.load(self.HELPER_NAME, ws)
         # configure the INI
         data_dir = finder.get_data_dir()
-        if not data_dir:
-            raise RuntimeError('DJERBA_DATA_DIR environment variable is not configured')
         enscon = os.path.join(data_dir, 'ensemble_conversion_hg38.txt')
         cp.set(self.HELPER_NAME, helper_main.ENSCON_KEY, enscon)
         gene_list = os.path.join(data_dir, 'targeted_genelist.txt')

@@ -91,7 +91,8 @@ class main(plugin_base):
         return renderer.render_name(fc.MAKO_TEMPLATE_NAME, data)
 
     def update_file_if_null(self, wrapper, ini_name, path_info_workflow_name):
-        if wrapper.my_param_is_null(ini_name): 
+        if wrapper.my_param_is_null(ini_name):
+            self.logger.debug("Updating {0} with path info for {1}".format(ini_name, path_info_workflow_name))
             path_info = self.workspace.read_json(core_constants.DEFAULT_PATH_INFO)
             file_path = path_info.get(path_info_workflow_name)
             if file_path == None:

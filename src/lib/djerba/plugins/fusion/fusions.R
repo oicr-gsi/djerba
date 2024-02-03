@@ -160,8 +160,18 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
    df_cbio$Fusion_newStyle <- df_cbio$Fusion
    df_cbio$Fusion <- gsub("::", "-", df_cbio$Fusion)
    
+   df_cbio <- df_cbio[!duplicated(df_cbio),]
+   
+   # deal with cases where there is more than one possible reading frame
+   multiple_frames <- names(table(df_cbio$Fusion)[table(df_cbio$Fusion) > 2 ])
+   df_cbio$Frame[df_cbio$Fusion %in% multiple_frames] <- "Multiple Frames"
+   df_cbio$arriba_site1[df_cbio$Fusion %in% multiple_frames] <- "Multiple Sites"
+   df_cbio$arriba_site2[df_cbio$Fusion %in% multiple_frames] <- "Multiple Sites"
+   
+   df_cbio <- df_cbio[!duplicated(df_cbio),]
    
  }
+ 
  # input for oncoKB annotator
  df_cbio_oncokb <- df_cbio[c("Tumor_Sample_Barcode", "Fusion")]
 
