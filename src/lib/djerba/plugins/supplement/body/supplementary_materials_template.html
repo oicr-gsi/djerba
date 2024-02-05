@@ -69,7 +69,7 @@ ${html_builder().section_cells_begin("<h2>Report<br>Sign-offs</h2>","main")}
       <td width="33%">Report drafted by ${results.get(core_constants.AUTHOR)} on ${results.get('extract_time')}</td>
     </tr>
     <tr>
-      <td width="33%">Report electronically signed out by ${results.get('geneticist')} on ${strftime("%Y/%m/%d")}</td>
+      <td width="33%">Report electronically signed out by ${results.get('clinical_geneticist_name')} (ABMS \#${results.get('clinical_geneticist_licence')}) on ${strftime("%Y/%m/%d")}</td>
     </tr>
   </table>
 

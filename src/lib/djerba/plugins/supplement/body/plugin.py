@@ -6,7 +6,7 @@ import djerba.core.constants as core_constants
 from djerba.util.render_mako import mako_renderer
 import djerba.util.assays as assays
 import djerba.util.input_params_tools as input_params_tools
-import time
+from time import strftime
 
 class main(plugin_base):
 
@@ -37,13 +37,23 @@ class main(plugin_base):
                 msg = "Cannot find assay from input_params.json or manual config"
                 self.logger.error(msg)
                 raise DjerbaPluginError(msg)
-        #if wrapper.my_param_is_null('extract_time'):
-        #    wrapper.set_my_param('extract_time', "TBD")
+        if wrapper.my_param_is_null('user_supplied_draft_date'):
+            wrapper.set_my_param('user_supplied_draft_date', "NONE_SPECIFIED")
+        if wrapper.my_param_is_null('report_signoff_date'):
+            wrapper.set_my_param('report_signoff_date', "NONE_SPECIFIED")
         self.check_assay_name(wrapper)
         return wrapper.get_config()
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
+        if wrapper.get_my_string('user_supplied_draft_date') == "NONE_SPECIFIED":
+            draft_date = strftime("%Y/%m/%d")
+        else:
+            draft_date = wrapper.get_my_string('user_supplied_draft_date')
+        if wrapper.get_my_string('report_signoff_date') == "NONE_SPECIFIED":
+            report_signoff_date = strftime("%Y/%m/%d")
+        else:
+            report_signoff_date = wrapper.get_my_string('report_signoff_date')
         self.check_assay_name(wrapper)
         data = {
             'plugin_name': self.identifier+' plugin',
@@ -54,8 +64,10 @@ class main(plugin_base):
                 'assay': wrapper.get_my_string(self.ASSAY),
                 'failed': wrapper.get_my_boolean(self.FAILED),
                 core_constants.AUTHOR: config['core'][core_constants.AUTHOR],
-                core_constants.EXTRACT_TIME: time.strftime('%Y-%m-%d_%H:%M:%S %z', time.localtime()),
-                'geneticist': wrapper.get_my_string('geneticist')
+                'extract_time': draft_date,
+                'report_signoff_date': report_signoff_date,
+                'clinical_geneticist_name': wrapper.get_my_string('clinical_geneticist_name'),
+                'clinical_geneticist_licence': wrapper.get_my_string('clinical_geneticist_licence')
             },
             'version': str(self.SUPPLEMENT_DJERBA_VERSION)
         }
@@ -67,12 +79,14 @@ class main(plugin_base):
 
     def specify_params(self):
         discovered = [
-            self.ASSAY
-        #    'extract_time'
+            self.ASSAY,
+            'user_supplied_draft_date',
+            'report_signoff_date'
         ]
         for key in discovered:
             self.add_ini_discovered(key)
-        self.set_ini_default('geneticist', 'Trevor Pugh, PhD, FACMG (ABMS #1027812)')
+        self.set_ini_default('clinical_geneticist_name', 'Trevor Pugh, PhD, FACMG')
+        self.set_ini_default('clinical_geneticist_licence', '1027812')
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_ini_default(self.FAILED, "False")
         self.set_priority_defaults(self.DEFAULT_CONFIG_PRIORITY)
