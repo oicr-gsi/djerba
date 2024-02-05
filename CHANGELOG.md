@@ -1,14 +1,14 @@
 # CHANGELOG
+## Unreleased 
+
+- GCGI-1266: moved clinical footer into supplement plugin
+
 ## v1.4.1: 2024-02-02
 
 - fix bug when fusions have multiple possible reading frames
 - GCGI-1251: replaced and automated test dir variables
 
 ## v1.4.0: 2024-01-31
-
-- GCGI-1266: moved clinical footer into supplement plugin
-
-## Unreleased 
 
 - GCGI-611: fix fusion frameshift hardcode
 - GCGI-443: merge duplicate fusion rows
