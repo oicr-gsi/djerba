@@ -72,7 +72,7 @@ class TestBenchmark(TestBase):
             new_glob = glob(new_pattern)
             self.assertEqual(len(new_glob), 1) # fails if output file was not found
             new_path = new_glob[0]
-            tester = report_equivalence_tester([old_path, new_path])
+            tester = report_equivalence_tester([old_path, new_path], log_level=logging.INFO)
             self.assertTrue(tester.is_equivalent())
 
 class TestReportEquivalence(TestBase):
