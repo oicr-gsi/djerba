@@ -14,6 +14,7 @@ import djerba.plugins.pwgs.sample.plugin as sample
 import djerba.plugins.pwgs.pwgs_tools as pwgs_tools
 from djerba.core.workspace import workspace
 import djerba.plugins.pwgs.constants as constants
+from djerba.util.environment import directory_finder
 
 class TestPwgSamplePlugin(PluginTester):
 
@@ -24,8 +25,7 @@ class TestPwgSamplePlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DATA'
-        self.sup_dir = os.environ.get(sup_dir_var)
+        self.sup_dir = directory_finder().get_test_dir()
 
     def testPwgsSummary(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))

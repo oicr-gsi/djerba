@@ -13,6 +13,7 @@ from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 from djerba.plugins.cnv.plugin import main as cnv
 from djerba.core.workspace import workspace
+from djerba.util.environment import directory_finder
 
 class TestWgtsCnv(PluginTester):
 
@@ -20,7 +21,7 @@ class TestWgtsCnv(PluginTester):
     JSON_NAME = 'cnv.json'
 
     def testWgtsCnv(self):
-        sup_dir = os.environ.get('DJERBA_TEST_DATA')
+        sup_dir = directory_finder().get_test_dir()
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         data_dir = os.path.join(sup_dir, 'plugins', 'cnv')
         sequenza_filename = 'PANX_1391_Lv_M_WG_100-NH-020_LCM3_results.test.zip'

@@ -9,6 +9,7 @@ from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 import djerba.plugins.tar.snv_indel.plugin as snv_indel
 from djerba.core.workspace import workspace
+from djerba.util.environment import directory_finder
 
 class TestTarSNVIndelPlugin(PluginTester):
     
@@ -19,8 +20,7 @@ class TestTarSNVIndelPlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DIR'
-        self.sup_dir = os.environ.get(sup_dir_var)
+        self.sup_dir = directory_finder().get_test_dir()
         
         self.data_CNA = os.path.join(self.sup_dir, "plugins/tar/tar-snv-indel/data_CNA.txt")
         self.provenance_output = os.path.join(self.sup_dir, "plugins/tar/tar-snv-indel/provenance_subset.tsv.gz")
