@@ -52,7 +52,7 @@ class TestMDC(TestBase):
 class TestMiniBase(TestBase):
 
     JSON_NAME = 'simple_report_for_update.json'
-    DRAFT_DATE = '2023/12/20'
+    DRAFT_DATE = '2020/02/02'
 
     def assert_MDC(self, out_path):
         self.assertTrue(os.path.isfile(out_path))
