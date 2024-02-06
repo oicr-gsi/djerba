@@ -1,0 +1,6 @@
+marker	source	significance	oncotree	url
+t(4;14)	NCCN	Prognostic	PCM	https://www.nccn.org/professionals/physician_gls/pdf/myeloma_blocks.pdf
+t(14;16)	NCCN	Prognostic	PCM	https://www.nccn.org/professionals/physician_gls/pdf/myeloma_blocks.pdf
+t(11;14)	NCCN	Prognostic	PCM	https://www.nccn.org/professionals/physician_gls/pdf/myeloma_blocks.pdf
+t(14;20)	NCCN	Prognostic	PCM	https://www.nccn.org/professionals/physician_gls/pdf/myeloma_blocks.pdf
+HRD	NCCN	Prognostic	Ovary	https://www.nccn.org/professionals/physician_gls/pdf/ovarian_blocks.pdf

@@ -167,6 +167,9 @@ class main(plugin_base):
         return treatments
 
     def make_biomarkers_maf(self, work_dir):
+        """
+        Make MAF file of TMB and MSI for annotation by ONCOKB
+        """
         maf_header = '\t'.join(["HUGO_SYMBOL","SAMPLE_ID","ALTERATION"])
         genomic_biomarkers_path = os.path.join(work_dir, constants.GENOMIC_BIOMARKERS)
         with open(genomic_biomarkers_path, 'w') as genomic_biomarkers_file:

@@ -10,6 +10,8 @@ from djerba.core.workspace import workspace
 from djerba.util.subprocess_runner import subprocess_runner
 
 NCCN_HRD_RECOMMENDED_TYPES = ['Ovarian Cancer']
+ONCOTREE_FILE = 'OncoTree.json'
+HRD_CUTOFF = "0.7"
 
 def annotate_hrd(hrd_result, oncotree_code, data_dir):
     treatment_options = None
@@ -42,20 +44,20 @@ def find_tree_values(id, json_repr):
     return results
 
 def pull_main_type_from_oncotree(this_oncotree_code, data_dir):
-    ONCOTREE_FILE = '20231214-OncoTree.json'
     tree_file = os.path.join(data_dir, ONCOTREE_FILE) 
-
     f = open(tree_file, 'r')
     tree_data = f.read()
     f.close()
-
     tree_info_on_this_code = find_tree_values(this_oncotree_code, tree_data)
-
     for code in tree_info_on_this_code:
         mainType = code['mainType']
     return(mainType)
 
 def run(work_dir, hrd_path):
+    """
+    Main HRD function, makes biomarker according to biomarker schema
+    TODO: make official schema for biomarkers (with checks)
+    """
     hrd_file = open(hrd_path)
     hrd_data = json.load(hrd_file)
     hrd_file.close()
@@ -67,7 +69,7 @@ def run(work_dir, hrd_path):
     for row in hrd_data["hrdetect_call"]:
         write_hrd(out_path, row, hrd_data["hrdetect_call"][row])
     hrd_base64 = write_plot(work_dir)       
-    if hrd_data["hrdetect_call"]["Probability.w"][1] > 0.7:
+    if hrd_data["hrdetect_call"]["Probability.w"][1] > float(HRD_CUTOFF):
         HRD_long = "Homologous Recombination Deficiency (HRD)"
         HRD_short = "HRD"
         actionable = True
@@ -95,7 +97,8 @@ def write_hrd(out_path, row, quartiles):
 def write_plot(output_dir ):
     args = [
         os.path.join(os.path.dirname(__file__),'Rscripts/hrd_plot.R'),
-        '--dir', output_dir
+        '--dir', output_dir,
+        '--cutoff', HRD_CUTOFF
     ]
     pwgs_results = subprocess_runner().run(args)
     return(pwgs_results.stdout.split('"')[1])

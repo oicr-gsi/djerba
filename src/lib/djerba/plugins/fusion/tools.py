@@ -140,6 +140,7 @@ class fusion_reader(logger):
                 treatments=therapies[level],
                 gene=fusion.get_translocation(),
                 alteration='Fusion',
+                #TODO: pull URL from NCCN_annotation.txt
                 alteration_url="https://www.nccn.org/professionals/physician_gls/pdf/myeloma_blocks.pdf"
             )
             entries.append(entry)

@@ -300,6 +300,10 @@ class process_purple(logger):
     
     def write_purple_alternate_launcher(self, path_info):
         bam_files = path_info.get("bamMergePreprocessing_by_sample")
+        if not path_info.get("mutect2_matched") == None:
+            vcf_index = ".".join((path_info.get("mutect2_matched"),"tbi")) 
+        else: 
+            vcf_index = None
         purple_paths = {
             "purple.normal_bam": bam_files["whole genome normal bam"],
             "purple.normal_bai": bam_files["whole genome normal bam index"] ,
@@ -307,7 +311,7 @@ class process_purple(logger):
             "purple.tumour_bai": bam_files["whole genome tumour bam index"] ,
             "purple.filterSV.vcf": path_info.get("gridss") ,
             "purple.filterSMALL.vcf": path_info.get("mutect2_matched") ,
-            "purple.filterSMALL.vcf_index": ".".join((path_info.get("mutect2_matched"),"tbi")) ,
+            "purple.filterSMALL.vcf_index": vcf_index ,
             "purple.runPURPLE.min_ploidy": 0,
             "purple.runPURPLE.max_ploidy": 8,
             "purple.runPURPLE.min_purity": 0,

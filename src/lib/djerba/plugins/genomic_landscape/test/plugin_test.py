@@ -17,6 +17,7 @@ from djerba.util.environment import directory_finder
 class TestGenomicLandscapePlugin(PluginTester):
     
     INI_NAME = 'genomic_landscape.ini'
+    BLANK = "INTENTIONALLY BLANK FOR TESTING"
 
     def setUp(self):
         self.path_validator = path_validator()
@@ -53,11 +54,11 @@ class TestGenomicLandscapePlugin(PluginTester):
         }
         self.run_basic_test(input_dir, params)
 
-    #def redact_json_data(self, data):
-    #    """replaces empty method from testing.tools"""
-    #    for key in ['HRD','TMB','MSI']:
-    #        del data['plugins']['genomic_landscape']['results']['genomic_biomarkers'][key]['Genomic biomarker plot']
-    #    return data        
+    def redact_json_data(self, data):
+        """replaces empty method from testing.tools"""
+        for key in ['HRD','TMB','MSI']:
+            data['results']['genomic_biomarkers'][key]['Genomic biomarker plot'] = self.BLANK
+        return data        
 
 if __name__ == '__main__':
     unittest.main()

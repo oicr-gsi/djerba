@@ -81,7 +81,6 @@ class main(helper_base):
             'Rscript',
             os.path.join(self.get_module_dir(), 'find_expression.R'),
             '--enscon', wrapper.get_my_string(self.ENSCON_KEY),
-          #  '--genelist', wrapper.get_my_string(self.GENE_LIST_KEY),
             '--gepfile', gep_abs_path,
             '--outdir', self.workspace.get_work_dir(),
             '--tcgadata', wrapper.get_my_string(self.TCGA_DATA_KEY),
