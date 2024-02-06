@@ -95,7 +95,7 @@ class main(plugin_base):
         self.build_genomic_biomarkers(work_dir, wrapper.get_my_string(constants.ONCOTREE_CODE), tumour_id)
         
         merge_inputs = self.get_merge_inputs(work_dir)
-        hrd_annotation = hrd.annotate_hrd(results[constants.BIOMARKERS][constants.HRD]['Genomic biomarker alteration'], wrapper.get_my_string(constants.ONCOTREE_CODE), finder.get_data_dir())
+        hrd_annotation = hrd.annotate_NCCN(results[constants.BIOMARKERS][constants.HRD]['Genomic biomarker alteration'], wrapper.get_my_string(constants.ONCOTREE_CODE), finder.get_data_dir())
         if hrd_annotation != None:
             merge_inputs.append(hrd_annotation)
         data['merge_inputs']['treatment_options_merger'] = merge_inputs
