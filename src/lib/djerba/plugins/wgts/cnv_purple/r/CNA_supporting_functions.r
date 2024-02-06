@@ -1,4 +1,6 @@
 arm_level_caller_purple <- function(segs, centromeres, gain_threshold, shallow_deletion_threshold, seg.perc.threshold=80, baf.min=50){
+  #' Take segment information and turn into chromosome arm level AMP/DEL calls, assuming $seg.perc.threshold is AMP'd or DEL'd
+  
   library(dplyr)
   library(data.table)
   
@@ -76,10 +78,18 @@ arm_level_caller_purple <- function(segs, centromeres, gain_threshold, shallow_d
   return(sort(arm_CNA_prop$annotation))
 }
 
-preProcCNA <- function(genefile, oncolist, ploidy=2, ploidy_multiplier=2.4){
 
-  # gain = as.numeric(cutoffs["LOG_R_GAIN"] )
-  #  htz = as.numeric(cutoffs["LOG_R_HTZD"])
+construct_whizbam_links <- function(segs, whizbam_url) {
+  if( dim(segs)[[1]] > 0 ) {
+    segs$whizbam <- paste0(whizbam_url,
+                           "&chr=", gsub("chr", "", segs$chromosome),
+                           "&chrloc=", paste0(segs$start, "-", segs$end))
+  } 
+  return(segs)
+}
+
+preProcCNA <- function(genefile, oncolist, ploidy=2, ploidy_multiplier=2.4){
+  #' take segment-level CNV calls and translate to genes
   
   amp = ploidy_multiplier * ploidy
   hmz = 0.5
@@ -118,7 +128,8 @@ preProcCNA <- function(genefile, oncolist, ploidy=2, ploidy_multiplier=2.4){
 }
 
 
-preProcLOH <- function(segments, genebed){
+preProcLOH <- function(segments, genebed, cutoff=0){
+  #' take segment-level LOH calls and translate to genes
   library(CNTools)
   
   segments$chrom <- gsub("chr", "", segments$chrom)
@@ -131,7 +142,7 @@ preProcLOH <- function(segments, genebed){
   a_allele <- reducedseg_ARatio[,c("genename","b_allele")]
 
   a_allele$LOH <- FALSE
-  a_allele$LOH[a_allele$b_allele == 0 ] <- TRUE
+  a_allele$LOH[a_allele$b_allele == cutoff ] <- TRUE
   
   return(a_allele)
   
@@ -139,6 +150,7 @@ preProcLOH <- function(segments, genebed){
 
 
 process_centromeres <- function(centromeres_path){
+  #' Add some columns to the centromere file so it plots pretty in CNV track
   centromeres <- read.table(centromeres_path,header=T)
   centromeres <- separate(centromeres,chrom,c("blank","chr"),"chr",fill="left",remove = FALSE)
   centromeres$Chr <- factor(c(centromeres$chr), levels = c(1:22,"X"))
@@ -152,13 +164,4 @@ process_centromeres <- function(centromeres_path){
   centromeres_sub$copyNumber <- NA
   centromeres_sub$cent <- 1
   return(centromeres_sub)
-}
-
-construct_whizbam_links <- function(segs, whizbam_url) {
-  if( dim(segs)[[1]] > 0 ) {
-    segs$whizbam <- paste0(whizbam_url,
-                         "&chr=", gsub("chr", "", segs$chromosome),
-                         "&chrloc=", paste0(segs$start, "-", segs$end))
-  } 
-  return(segs)
 }
