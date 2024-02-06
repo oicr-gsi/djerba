@@ -59,22 +59,21 @@ class html_builder:
         return markdown(markdown_string)
     
     @staticmethod
-    def section_cells_begin(section_title, is_main, is_top=False):
+    def section_cells_begin(section_title, is_main, no_hr_after=False):
         # begin a cell structure with title in left-hand cell, body in right-hand cell
+        template = '<hr class="big-white-line" ><div class="twocell{0}">'+\
+                '<div class="oneoftwocell{0}"><h{1}>{2}</h{1}></div>'+\
+                '<div class="twooftwocell{0}" >'
         if is_main:
             class_suffix = 'main'
             rank = '2'
         else:
             class_suffix = 'supp'
             rank = '3'
-        if is_top:
-            template = '<hr class="big-white-line" ><div class="twocell{0}">'+\
-                '<div class="oneoftwocell{0}"><h{1}>{2}</h{1}></div>'+\
-                '<div class="twooftwocell{0}" >'
+        if no_hr_after:
+            pass
         else:
-            template = '<hr class="big-white-line" ><div class="twocell{0}">'+\
-                '<div class="oneoftwocell{0}"><h{1}>{2}</h{1}></div>'+\
-                '<div class="twooftwocell{0}" ><hr class="big-line" >'
+            template = template + '<hr class="big-line" >'
         cell_begin = template.format(class_suffix, rank, section_title)
         return cell_begin
 

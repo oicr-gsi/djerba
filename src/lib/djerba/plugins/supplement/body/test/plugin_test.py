@@ -24,7 +24,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'PWGS.supp.ini',
             self.JSON: json_location,
-            self.MD5: '823937829c01f3036f2bc9b8a0d8e0e6'
+            self.MD5: 'e0b00fdce6e91f9b5be4feeb8bd5e275'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -34,7 +34,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'TAR.supp.ini',
             self.JSON: json_location,
-            self.MD5: '0d77744d0e2e34f7a38770d394f8fd12'
+            self.MD5: '473be5b88b486a4b2cd7da2f0f61eb6a'
         }
         self.run_basic_test(test_source_dir, params)
    
@@ -44,7 +44,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'TAR.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: '72c3d8fa1f1a6ce3d705dce8c93b1d04'
+            self.MD5: '232bd372777958ff8b2982dbfd683c6b'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -54,7 +54,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.supp.ini',
             self.JSON: json_location,
-            self.MD5: '498f4339905424c2432d35c2be44119a'
+            self.MD5: '4d15d4970813034819b79d3917b752fb'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -64,7 +64,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'b2e1e23aedbca3569f238b585920a700'
+            self.MD5: 'bc7c5d78e1ccc38d4da3b3d060354d16'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -74,7 +74,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'eab60800ed05da9916fd61ffce54f531'
+            self.MD5: '3649e19632a6099c8bcec2b9e23e4ed5'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -84,7 +84,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: '69a0d9ec527b585789399a23b46b2c7c'
+            self.MD5: 'ae9fecdd7f26fbf4d882626ae16ade38'
         }
         self.run_basic_test(test_source_dir, params)
     

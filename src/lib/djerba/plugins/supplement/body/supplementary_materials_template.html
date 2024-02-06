@@ -18,7 +18,7 @@
 
 <hr class="big-line" style="width: 100%; "  >
 
-${html_builder().section_cells_begin("<h2>Assay description</h2>","main", is_top=True)}
+${html_builder().section_cells_begin("<h2>Assay description</h2>",True, no_hr_after=True)}
 
 % if ASSAY in ['WGTS', 'WGTS40X']:
   <p> This assay combines two comprehensive next generation sequencing assays: a DNA-based whole genome sequencing (WGS) assay and an RNA-based whole transcriptome sequencing (WTS) assay.</p>
@@ -40,13 +40,13 @@ ${html_builder().section_cells_end()}
 
 % if ASSAY == 'TAR' :
 
-    ${html_builder().section_cells_begin("<h2>Target Group Information</h2>","main")}
+    ${html_builder().section_cells_begin("<h2>Target Group Information</h2>",True)}
       <%include file="resources/TAR.genes.html"/>
     ${html_builder().section_cells_end()}
 
   % endif
 
-  ${html_builder().section_cells_begin("<h2>Disclaimer</h2>","main")}
+  ${html_builder().section_cells_begin("<h2>Disclaimer</h2>",True)}
 
 % if ASSAY in ('WGTS','WGS'):
   <%include file="resources/WGS.disclaimer.html"/>
@@ -60,13 +60,13 @@ ${html_builder().section_cells_end()}
 
 ${html_builder().section_cells_end()}
 
-${html_builder().section_cells_begin("<h2>Report<br>Sign-offs</h2>","main")}
+${html_builder().section_cells_begin("<h2>Report<br>Sign-offs</h2>",True)}
 
 
 
 <table class="suppl" width="100%">
     <tr>
-      <td width="33%">Report drafted by ${results.get(core_constants.AUTHOR)} on ${results.get('extract_time')}</td>
+      <td width="33%">Report drafted by ${results.get(core_constants.AUTHOR)} on ${results.get('extract_date')}</td>
     </tr>
     <tr>
       <td width="33%">Report electronically signed out by ${results.get('clinical_geneticist_name')} (ABMS \#${results.get('clinical_geneticist_licence')}) on ${strftime("%Y/%m/%d")}</td>
@@ -92,7 +92,7 @@ ${html_builder().section_cells_begin("<h2>Report<br>Sign-offs</h2>","main")}
 
   % if ASSAY in ('WGTS','TAR','WGS') and not FAILED:
 
-    ${html_builder().section_cells_begin("<h3>Actionability</h3>","main", is_top=True)}
+    ${html_builder().section_cells_begin("<h3>Actionability</h3>",True, no_hr_after=True)}
       <%include file="resources/oncokb.definition.html"/>
     ${html_builder().section_cells_end()}
 
@@ -103,15 +103,18 @@ ${html_builder().section_cells_begin("<h2>Report<br>Sign-offs</h2>","main")}
   <br/>
   <hr class="big-white-line" >
 
-  ${html_builder().section_cells_begin("<h3>Definitions</h3>","supp")}
+  ${html_builder().section_cells_begin("<h3>Definitions</h3>",False)}
 
   % if not FAILED:
       % if ASSAY in ['WGTS', 'WGTS40X']:
+        <%include file="resources/WGTS.FAIL.definitions.html"/>
         <%include file="resources/WGS.definitions.html"/>
         <%include file="resources/WTS.definitions.html"/>
       % elif ASSAY in ['WGS', 'WGS40X']:
+        <%include file="resources/WGTS.FAIL.definitions.html"/>
         <%include file="resources/WGS.definitions.html"/>
       % elif ASSAY == 'TAR':
+        <%include file="resources/TAR.FAIL.definitions.html"/>
         <%include file="resources/TAR.definitions.html"/>
       % elif ASSAY == 'PWGS':
         <%include file="resources/PWGS.definitions.html"/>
@@ -127,26 +130,3 @@ ${html_builder().section_cells_begin("<h2>Report<br>Sign-offs</h2>","main")}
   % endif
 
   ${html_builder().section_cells_end()}
-
-${html_builder().section_cells_begin("<h3>Definitions</h3>","main")}
-
-% if not FAILED:
-    % if ASSAY in ['WGTS', 'WGTS40X']:
-      <%include file="resources/WGS.definitions.html"/>
-      <%include file="resources/WTS.definitions.html"/>
-    % elif ASSAY in ['WGS', 'WGS40X']:
-      <%include file="resources/WGS.definitions.html"/>
-    % elif ASSAY == 'TAR':
-      <%include file="resources/TAR.definitions.html"/>
-    % elif ASSAY == 'PWGS':
-      <%include file="resources/PWGS.definitions.html"/>
-    % endif
-% else:
-    % if ASSAY == 'WGTS' or ASSAY == "WGS" or ASSAY == 'WGTS40X' or ASSAY == 'WGS40X':
-      <%include file="resources/WGTS.FAIL.definitions.html"/>
-    % elif ASSAY == 'TAR':
-      <%include file="resources/TAR.FAIL.definitions.html"/>
-    % endif
-% endif
-
-${html_builder().section_cells_end()}
