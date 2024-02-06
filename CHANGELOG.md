@@ -1,4 +1,10 @@
 # CHANGELOG
+## Unreleased 
+
+- GCGI-1266: moved clinical footer into supplement plugin
+- supplement.header plugin removed
+- added Geneticist INI parameter to appendix
+
 ## v1.4.1: 2024-02-02
 
 - fix bug when fusions have multiple possible reading frames
