@@ -12,7 +12,7 @@ class main(merger_base):
     GENE_URL = 'Gene_URL'
     SUMMARY = 'Summary'
 
-    PRIORITY = 1100
+    PRIORITY = 2000
     MAKO_TEMPLATE_NAME = 'gene_information_template.html'
     SORT_KEY = GENE_URL
 
