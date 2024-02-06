@@ -14,6 +14,7 @@ from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 import djerba.plugins.wgts.cnv_purple.plugin as cnv
 from djerba.core.workspace import workspace
+from djerba.util.environment import directory_finder
 
 class TestPurplePlugin(PluginTester):
 
@@ -25,8 +26,7 @@ class TestPurplePlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DATA'
-        self.sup_dir = os.environ.get(sup_dir_var)
+        self.sup_dir = directory_finder().get_test_dir()
 
     def test_get_purple_purity(self):
         purple_purity_tsv = os.path.join(self.sup_dir ,"plugins/cnv-purple/purple.purity.tsv")

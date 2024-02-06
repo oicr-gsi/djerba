@@ -25,8 +25,6 @@ ploidy    <- as.numeric(opt$ploidy)
 basedir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), sep='/')
 source(paste0(basedir, "/plugins/wgts/cnv_purple/r/CNA_supporting_functions.r"))
 
-###################### CNA #####################
-
 if (is.null(genefile)) {
   cat("No SEG file input, processing omitted\n")
 } else {
@@ -38,7 +36,6 @@ if (is.null(genefile)) {
   
   CNAs <- preProcCNA(raw_gene_data, oncogenes, ploidy)
   
-
   # necessary file to find copy number profile of genes with small mutations
   write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[1]]), CNAs[[1]], check.names=FALSE),
               file=paste0(outdir, "/purple.data_CNA.txt"), sep="\t", row.names=FALSE, quote=FALSE)

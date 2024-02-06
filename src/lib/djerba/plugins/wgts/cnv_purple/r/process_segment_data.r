@@ -9,7 +9,7 @@ chromosomes_incl <- c(1:22,"X")
 options(bitmapType='cairo')
 basedir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), sep='/')
 source(paste0(basedir, "/plugins/wgts/cnv_purple/r/CNA_supporting_functions.r"))
-source(paste0(basedir, "/plugins/wgts/cnv_purple/r/purple_QC_plots.r"))
+source(paste0(basedir, "/plugins/wgts/cnv_purple/r/purple_QC_functions.r"))
 
 ## parse input
 option_list = list(
@@ -51,6 +51,7 @@ centromeres <- read.table(centromeres_path,header=T)
 arm_level_calls <- arm_level_caller_purple(segs, centromeres, gain_threshold=highCN, shallow_deletion_threshold=-2)
 write.table(arm_level_calls,file=paste0(dir_path, "/purple.arm_level_calls.txt"), sep="\t", row.names=FALSE, quote=FALSE, col.names = FALSE)
 
+# Back convert Copy Number profiles to log2 values for plotting in IGV
 segs$ID <- "purple"
 log2 <- segs[,c("ID","chromosome","start","end","bafCount")]
 names(log2) <- c("ID",	"chrom"	,"loc.start"	,"loc.end"	,"num.mark")
@@ -58,7 +59,7 @@ log2$seg.mean <- log(1 + (purity *(segs$copyNumber - ploidy)/ploidy), 2)
 write.table(log2,file=paste0(dir_path, "/purple.seg"), sep="\t", row.names=FALSE, quote=FALSE, col.names = FALSE)
 write.table(log2,file=paste0(dir_path, "/seg.txt"), sep="\t", row.names=FALSE, quote=FALSE, col.names = TRUE)
 
-
+# get gene-level LOH from segment data
 loh <- log2
 loh$seg.mean <- segs$minorAlleleCopyNumber
 geneInfo <- read.delim(genebed, sep="\t", header=TRUE)
@@ -81,46 +82,7 @@ fittedSegmentsDF_sub <- rbind.data.frame(
                           process_centromeres(centromeres_path)
                         )
 
-fittedSegmentsDF_sub$log2 <- round(fittedSegmentsDF_sub$copyNumber) / 2
-
-## Copy Number Plot
 y_highCN <- highCN
-
-svg(paste0(dir_path,"/purple.seg_log2_plot.svg"), width = 8, height = 1.5)
-print(
-  
-  ggplot(fittedSegmentsDF_sub %>% filter(!is.na(Chromosome))) + 
-    
-    geom_hline(yintercept = 0,color="lightgrey",linetype="dotted")+
-    
-    facet_grid(.~Chromosome,scales = "free",space="free", switch="both")+ 
-    geom_point(aes(x=start,y=log(y_highCN/2,2)+0.25,shape=CNt_high),size=1) +
-    
-    geom_segment(aes(x=start, xend=end, y=log2, yend=log2),color="black",linewidth=2, na.rm = TRUE) + 
-    
-    geom_vline(aes(xintercept = start,linetype=as.factor(cent)),color="lightgrey")  +
-    
-    guides(shape='none',alpha='none',linetype='none') +
-    labs(y="log2 tumour/normal") + 
-  #  scale_shape_manual(values=c(17)) +
-    
-    scale_y_continuous(limits=c(log(1/2,2),log(y_highCN/2,2)+0.3)) + 
-    theme_bw() + 
-    theme(
-      axis.title.x=element_blank(),
-      axis.text.x=element_blank(),
-      axis.ticks.x=element_blank(),
-      panel.spacing.x=unit(2, "points"),
-      panel.grid.minor = element_blank(),
-      panel.grid.major = element_blank(),
-      strip.background = element_blank(),
-      text = element_text(size = 10),
-      plot.margin = unit(c(2, 2, 2, 2), "points")
-    ) 
-  
-)
-dev.off()
-
 
 svg(paste0(dir_path,"/seg_CNV_plot.svg"), width = 8, height = 1.5)
   print(
@@ -157,7 +119,12 @@ svg(paste0(dir_path,"/seg_CNV_plot.svg"), width = 8, height = 1.5)
   )
 dev.off()
 
-## Allele-specific
+txt <- paste(readLines(paste0(dir_path,"/seg_CNV_plot.svg")), collapse = "")
+b64txt <- paste0("data:image/svg+xml;base64,", base64enc::base64encode(charToRaw(txt)))
+print(b64txt)
+
+## Allele-specific segment plot
+
 fittedSegmentsDF_sub$A_adj <- fittedSegmentsDF_sub$majorAlleleCopyNumber + 0.1
 fittedSegmentsDF_sub$B_adj <- fittedSegmentsDF_sub$minorAlleleCopyNumber - 0.1
 
@@ -197,6 +164,3 @@ print(
 dev.off()
 
 
-txt <- paste(readLines(paste0(dir_path,"/seg_CNV_plot.svg")), collapse = "")
-b64txt <- paste0("data:image/svg+xml;base64,", base64enc::base64encode(charToRaw(txt)))
-print(b64txt)
