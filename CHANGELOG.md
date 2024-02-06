@@ -1,9 +1,15 @@
 # CHANGELOG
-## Unreleased 
+## Unreleased
 
+### Report reformatting
 - GCGI-1266: moved clinical footer into supplement plugin
 - supplement.header plugin removed
 - added Geneticist INI parameter to appendix
+
+### Benchmark and test improvements
+- GCGI-1253: Fix JSON equivalence check and add tests
+- Update `test_env.sh`
+- Add convenience scripts to run tests: `run_all_tests.sh`, `run_quick_tests.sh`
 
 ## v1.4.1: 2024-02-02
 
