@@ -13,6 +13,7 @@ from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 from djerba.core.workspace import workspace
 from djerba.util.environment import directory_finder
+import djerba.plugins.genomic_landscape.hrd_functions as hrd
 
 class TestGenomicLandscapePlugin(PluginTester):
     
@@ -28,6 +29,13 @@ class TestGenomicLandscapePlugin(PluginTester):
         self.data_mut_ex = os.path.join(self.sup_dir, "plugins/genomic-landscape/data_mutations_extended.txt")
         self.data_seg = os.path.join(self.sup_dir, "plugins/genomic-landscape/data.seg")
         self.sample_info = os.path.join(self.sup_dir, "plugins/genomic-landscape/sample_info.json")
+
+    def testNCCNAnnotation(self):
+        data_dir = directory_finder().get_data_dir()
+        self.assertEqual(hrd.annotate_NCCN("HRD", "PAAD", data_dir), None)
+        self.assertEqual(hrd.annotate_NCCN("HR Proficient", "HGSOC", data_dir), None)
+        HRD_annotated = hrd.annotate_NCCN("HRD", "HGSOC", data_dir)
+        self.assertEqual(HRD_annotated['Tier'], "Prognostic")        
 
     def testGenomicLandscapeLowTmbStableMsi(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -57,6 +65,7 @@ class TestGenomicLandscapePlugin(PluginTester):
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""
         for key in ['HRD','TMB','MSI']:
+            # replace big ugly chunks of plot with BLANK
             data['results']['genomic_biomarkers'][key]['Genomic biomarker plot'] = self.BLANK
         return data        
 

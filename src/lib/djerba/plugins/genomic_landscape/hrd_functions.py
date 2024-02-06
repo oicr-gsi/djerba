@@ -9,66 +9,80 @@ import json
 from djerba.core.workspace import workspace
 from djerba.util.subprocess_runner import subprocess_runner
 
-NCCN_HRD_RECOMMENDED_TYPES = ['Ovarian Cancer']
 ONCOTREE_FILE = 'OncoTree.json'
+NCCN_ANNOTATION_FILE = 'NCCN_annotations.txt'
 HRD_CUTOFF = "0.7"
+ONCOTREE_INDEX = 3
+URL_INDEX = 4
 
-def annotate_hrd(hrd_result, oncotree_code, data_dir):
+def annotate_NCCN(hrd_result, oncotree_code, data_dir):
+    """
+    Use NCCN Annotation file to filter by oncotree code and add NCCN URL
+    """
     treatment_options = None
     if hrd_result == 'HRD':
         oncotree_main = pull_main_type_from_oncotree(oncotree_code, data_dir)
-        if oncotree_main in NCCN_HRD_RECOMMENDED_TYPES:
-            oncokb_level = 'P'
-            annotation_tier = "Prognostic"
-            treatment_options = {
-                "Tier": annotation_tier,
-                "OncoKB level": oncokb_level,
-                "Treatments": "",
-                "Gene": "HRD",
-                "Gene_URL": "",
-                "Alteration": "Genomic Landscape",
-                "Alteration_URL": "https://www.nccn.org/professionals/physician_gls/pdf/ovarian_blocks.pdf"
-            }        
+        NCCN_annotation_path = os.path.join(data_dir, NCCN_ANNOTATION_FILE)
+        with open(NCCN_annotation_path) as NCCN_annotation_file:
+            tsv_reader = csv.reader(NCCN_annotation_file, delimiter="\t")
+            for marker_row in tsv_reader:
+                if oncotree_main in marker_row[ONCOTREE_INDEX]:
+                    oncokb_level = 'P'
+                    annotation_tier = "Prognostic"
+                    treatment_options = {
+                        "Tier": annotation_tier,
+                        "OncoKB level": oncokb_level,
+                        "Treatments": "",
+                        "Gene": "HRD",
+                        "Gene_URL": "",
+                        "Alteration": "Genomic Landscape",
+                        "Alteration_URL": marker_row[URL_INDEX]
+                    }        
     return(treatment_options)
 
-def find_tree_values(id, json_repr):
-    results = []
-    id = id.upper()
+def find_main_value_from_tree(oncotree_code, json_as_text):
+    """
+    Look in JSON and return sub-dictionaries that contain that oncotree_code
+    """
+    tree_info_on_this_code = []
+    oncotree_code = oncotree_code.upper()
     def _decode_dict(a_dict):
         try:
-            results.append(a_dict[id])
+            tree_info_on_this_code.append(a_dict[oncotree_code])
         except KeyError:
             pass
         return a_dict
-    json.loads(json_repr, object_hook=_decode_dict) 
-    return results
-
-def pull_main_type_from_oncotree(this_oncotree_code, data_dir):
-    tree_file = os.path.join(data_dir, ONCOTREE_FILE) 
-    f = open(tree_file, 'r')
-    tree_data = f.read()
-    f.close()
-    tree_info_on_this_code = find_tree_values(this_oncotree_code, tree_data)
+    json.loads(json_as_text, object_hook=_decode_dict) 
     for code in tree_info_on_this_code:
         mainType = code['mainType']
+    return mainType
+
+def make_HRD_plot(output_dir ):
+    args = [
+        os.path.join(os.path.dirname(__file__),'Rscripts/hrd_plot.R'),
+        '--dir', output_dir,
+        '--cutoff', HRD_CUTOFF
+    ]
+    pwgs_results = subprocess_runner().run(args)
+    return(pwgs_results.stdout.split('"')[1])
+
+def pull_main_type_from_oncotree(this_oncotree_code, data_dir):
+    """
+    Read Oncotree JSON file and return main type for given code
+    """
+    tree_path = os.path.join(data_dir, ONCOTREE_FILE)
+    with open(tree_path) as tree_file:
+        json_as_text = tree_file.read()
+    mainType = find_main_value_from_tree(this_oncotree_code, json_as_text)
     return(mainType)
 
 def run(work_dir, hrd_path):
     """
     Main HRD function, makes biomarker according to biomarker schema
-    TODO: make official schema for biomarkers (with checks)
+    TODO: make official schema for biomarkers (with schema checks)
     """
-    hrd_file = open(hrd_path)
-    hrd_data = json.load(hrd_file)
-    hrd_file.close()
-    out_path = os.path.join(work_dir, 'hrd.tmp.txt')
-    try:
-        os.remove(out_path)
-    except OSError:
-        pass
-    for row in hrd_data["hrdetect_call"]:
-        write_hrd(out_path, row, hrd_data["hrdetect_call"][row])
-    hrd_base64 = write_plot(work_dir)       
+    hrd_data = write_hrd_quartiles(work_dir, hrd_path)
+    hrd_base64 = make_HRD_plot(work_dir)       
     if hrd_data["hrdetect_call"]["Probability.w"][1] > float(HRD_CUTOFF):
         HRD_long = "Homologous Recombination Deficiency (HRD)"
         HRD_short = "HRD"
@@ -89,17 +103,17 @@ def run(work_dir, hrd_path):
         }
     return results
 
-def write_hrd(out_path, row, quartiles):
-    with open(out_path, 'a') as out_file:
-        print("\t".join((row,"\t".join([str(item) for item in list(quartiles)]))), file=out_file)
-    return out_path
+def write_hrd_quartiles(work_dir, hrd_path):
+    """
+    Reads JSON from hrDetect and writes quartiles file for R plotting
+    """
+    with open(hrd_path) as f:
+        hrd_data = json.load(f)
+    out_path = os.path.join(work_dir, 'hrd.tmp.txt')
+    with open(out_path, 'w') as out_file:
+        for row in hrd_data["hrdetect_call"]:
+            quartiles = hrd_data["hrdetect_call"][row]
+            print("\t".join((row,"\t".join([str(item) for item in list(quartiles)]))), file=out_file)
+    return hrd_data
 
-def write_plot(output_dir ):
-    args = [
-        os.path.join(os.path.dirname(__file__),'Rscripts/hrd_plot.R'),
-        '--dir', output_dir,
-        '--cutoff', HRD_CUTOFF
-    ]
-    pwgs_results = subprocess_runner().run(args)
-    return(pwgs_results.stdout.split('"')[1])
 
