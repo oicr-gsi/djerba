@@ -509,28 +509,10 @@ class provenance_reader(logger):
         suffix = '\.mutect2\.filtered\.vcf\.gz$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
-    def parse_purple_purity_path(self):
+    def parse_purple_zip_path(self):
         workflow = self.WF_PURPLE
-        mt = self.MT_OCTET_STREAM
-        suffix = 'purple\.purity\.range\.tsv$'
-        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
-
-    def parse_purple_cnv_path(self):
-        workflow = self.WF_PURPLE
-        mt = self.MT_OCTET_STREAM
-        suffix = 'purple\.cnv\.somatic\.tsv$'
-        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
-
-    def parse_purple_segment_path(self):
-        workflow = self.WF_PURPLE
-        mt = self.MT_OCTET_STREAM
-        suffix = 'purple\.segment\.tsv$'
-        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
-
-    def parse_purple_gene_path(self):
-        workflow = self.WF_PURPLE
-        mt = self.MT_OCTET_STREAM
-        suffix = 'purple\.cnv\.gene\.tsv$'
+        mt = self.MT_ZIP
+        suffix = 'purple\.zip$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
 
     def parse_starfusion_predictions_path(self):
