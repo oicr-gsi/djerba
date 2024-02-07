@@ -1,7 +1,6 @@
 """
-The purpose of this file is deal with pre-processing necessary files for the SWGS plugin.
-They're in a separate file because the pre-processing is a little more complex.
-AUTHOR: Aqsa Alam
+The purpose of this file is deal with pre-processing necessary files for the PURPLE plugin.
+AUTHOR: Felix Beaudry
 """
 
 # IMPORTS
