@@ -69,7 +69,7 @@ setup(
         'djerba.mergers.treatment_options_merger': install_wildcards,
         'djerba.plugins.captiv8': install_wildcards,
         'djerba.plugins.case_overview': install_wildcards,
-        'djerba.plugins.cnv': install_wildcards,
+        'djerba.plugins.wgts.cnv_purple': install_wildcards,
         'djerba.plugins.demo1': install_wildcards,
         'djerba.plugins.demo2': install_wildcards,
         'djerba.plugins.demo3': install_wildcards,

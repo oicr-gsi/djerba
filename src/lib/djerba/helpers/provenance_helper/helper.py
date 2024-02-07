@@ -196,10 +196,7 @@ class main(helper_base):
             reader.WF_MRDETECT: reader.parse_mrdetect_path(),
             reader.WF_MSISENSOR: reader.parse_msi_path(),
             reader.WF_MUTECT: reader.parse_mutect_path(),
-            'purple_purity': reader.parse_purple_purity_path(),
-            'purple_segment': reader.parse_purple_segment_path(),
-            'purple_cnv': reader.parse_purple_cnv_path(),
-            'purple_gene': reader.parse_purple_gene_path(),
+            reader.WF_PURPLE: reader.parse_purple_zip_path(),
             reader.WF_RSEM: reader.parse_gep_path(),
             reader.WF_SEQUENZA: reader.parse_sequenza_path(),
             reader.WF_STAR: {
