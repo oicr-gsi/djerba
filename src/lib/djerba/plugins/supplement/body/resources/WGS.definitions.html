@@ -19,8 +19,6 @@ and other structural variants, summed as an HRD score.
 <br>
 <strong>Percent Genome Altered (PGA): </strong>
 The fraction of the genome with evidence of copy number change, for a given sample. 
-PGA is calculated as the fraction of the genome where the absolute value of log<sub>2</sub> 
-of the tumor / normal depth ratio is &#8805 0.2 , using copy number segment data produced by Sequenza.
 <br>
 <strong>Cohort: </strong>
 If available, the name of an external dataset used to calculate TMB percentile. 
@@ -30,16 +28,10 @@ Percentiles for tumour mutation burden (TMB) are plotted and reported against th
 Percentile of TMB scores are plotted relative to 
 <a href="https://gdc.cancer.gov/about-data/publications/pancanatlas">all TCGA samples</a> or closest cohort.
 <br>
-<strong>Copy State:</strong> 
-Copy state changes were called according to the log<sub>2</sub> coverage-ratio, 
-which can be used to calculate an approximate minimum copy number for a diploid tumour with 100% cancer cell content. 
-As the log<sub>2</sub> coverage-ratio thresholds scale with tumour purity, absolute copy number may be lower than predicted, 
-in tumours with lower cancer cell content. Calls represent levels derived from copy-number analysis, 
-are used for annotation by OncoKB, and indicate the copy-number level per gene, as follows: 
+<strong>Copy Number Variants:</strong> 
+Calls at the gene-scale represent levels derived from copy-number analysis as used for annotation by OncoKB: 
 </p>
 <table class="suppl" width="100%">
-  <tr><td>Deep Deletion</td><td>a deep loss, possibly a homozygous deletion</td></tr>
-  <tr><td>Shallow Deletion</td><td>a shallow loss, possibly a heterozygous deletion</td></tr>
-  <tr><td>Gain</td><td>a low-level gain (a few additional copies, often broad)</td></tr>
-  <tr><td>Amplification</td><td>a high-level amplification (more copies, often focal)</td></tr>
+  <tr><td>Deletion</td><td>a deep loss, possibly a homozygous deletion, defined by less than 0.5 copies</td></tr>
+  <tr><td>Amplification</td><td>a high-level amplification (more copies, often focal), defined as greater than 2.4Xploidy copies</td></tr>
 </table>
