@@ -144,7 +144,6 @@ class benchmarker(logger):
         return inputs
 
     def run_comparison(self, report_paths):
-        name = constants.REPORT_JSON_FILENAME
         data = []
         self.logger.info("Comparing reports: {0}".format(report_paths))
         for report_path in report_paths:
@@ -251,14 +250,16 @@ class report_equivalence_tester(logger):
     Eg. expression comparison will not necessarily work with different plugins
     """
 
+    CNV_NAME = 'cnv'
+    SNV_INDEL_NAME = 'wgts.snv_indel'
     # deal with inconsistent capitalization
     BODY_KEY = {
-        'cnv': 'body',
-        'wgts.snv_indel': 'Body'
+        CNV_NAME: 'body',
+        SNV_INDEL_NAME: 'Body'
     }
     XPCT_KEY = {
-        'cnv': 'Expression Percentile',
-        'wgts.snv_indel': 'Expression percentile'
+        CNV_NAME: 'Expression Percentile',
+        SNV_INDEL_NAME: 'Expression percentile'
     }
     GENE = 'Gene'
     RESULTS = 'results'
@@ -268,6 +269,7 @@ class report_equivalence_tester(logger):
         EXPRESSION: 0.1, # expression is recorded as a number, this delta is 10%
         MSI: 1.0  # MSI is recorded as a percentage, this delta is 1.0%
     }
+    PLACEHOLDER = 0
 
     def __init__(self, report_paths, delta_path=None,
                  log_level=logging.WARNING, log_path=None):
@@ -283,7 +285,7 @@ class report_equivalence_tester(logger):
             msg = "Report paths are the same file! {0}".format(report_paths)
         if msg:
             self.logger.error(msg)
-            raise RuntimeError(msg)
+            raise DjerbaReportDiffError(msg)
         self.data = [self.read_and_preprocess_report(x) for x in report_paths]
         if delta_path:
             with open(delta_path) as delta_file:
@@ -291,7 +293,7 @@ class report_equivalence_tester(logger):
             if set(deltas.keys()) != set(self.DELTA_DEFAULTS.keys()):
                 msg = "Bad key set for delta config file '{0}'".format(delta_path)
                 self.logger.error(msg)
-                raise ValueError(msg)
+                raise DjerbaReportDiffError(msg)
             self.deltas = deltas
         else:
             self.deltas = self.DELTA_DEFAULTS
@@ -302,10 +304,17 @@ class report_equivalence_tester(logger):
             self.logger.info("EQUIVALENT: Reports are identical")
             self.equivalent = True
         elif self.deltas_are_equivalent():
-            msg = "EQUIVALENT: Reports are not identical, "+\
-                "but equivalent within tolerance"
-            self.logger.info(msg)
-            self.equivalent = True
+            # check if metrics without a delta match exactly
+            if self.non_deltas_are_equivalent():
+                msg = "EQUIVALENT: Reports are not identical, "+\
+                    "but equivalent within tolerance"
+                self.logger.info(msg)
+                self.equivalent = True
+            else:
+                msg = "NOT EQUIVALENT: Metrics with non-zero tolerance are within "+\
+                    "permitted range, but other metrics differ."
+                self.logger.info(msg)
+                self.equivalent = False
         else:
             msg = "NOT EQUIVALENT: Reports do not match within tolerance"
             self.logger.info(msg)
@@ -315,12 +324,6 @@ class report_equivalence_tester(logger):
         eq = self.expressions_are_equivalent() and \
             self.msi_values_are_equivalent()
         return eq
-            
-    def is_equivalent(self):
-        return self.equivalent
-
-    def get_diff_text(self):
-        return self.diff_text
 
     def expressions_are_equivalent(self):
         """
@@ -328,7 +331,7 @@ class report_equivalence_tester(logger):
         Expression levels are permitted to differ by +/- delta
         """
         equivalent = True
-        for name in ['cnv', 'wgts.snv_indel']:
+        for name in [self.CNV_NAME, self.SNV_INDEL_NAME]:
             plugin_eq = True
             self.logger.debug("Checking expression levels for plugin: {0}".format(name))
             expr0 = self.get_expressions_by_gene(self.data[0], name)
@@ -361,6 +364,12 @@ class report_equivalence_tester(logger):
             self.logger.info(msg)
         return equivalent
 
+    def is_equivalent(self):
+        return self.equivalent
+
+    def get_diff_text(self):
+        return self.diff_text
+
     def get_expressions_by_gene(self, data, plugin):
         body_key = self.BODY_KEY[plugin]
         xpct_key = self.XPCT_KEY[plugin]
@@ -374,13 +383,15 @@ class report_equivalence_tester(logger):
             key = item[self.GENE]
             value = item[xpct_key]
             expr[key] = value
-        return expr            
-    
+        return expr
+
+    def get_msi(self, report_data):
+        return report_data['genomic_landscape']['results']\
+            ['genomic_biomarkers']['MSI']['Genomic biomarker value']
+
     def msi_values_are_equivalent(self):
-        msi0 = self.data[0]['genomic_landscape']['results']\
-            ['genomic_biomarkers']['MSI']['Genomic biomarker value']
-        msi1 = self.data[1]['genomic_landscape']['results']\
-            ['genomic_biomarkers']['MSI']['Genomic biomarker value']
+        msi0 = self.get_msi(self.data[0])
+        msi1 = self.get_msi(self.data[1])
         delta = self.deltas[self.MSI]
         if abs(msi0 - msi1) < delta:
             self.logger.info("MSI values are equivalent")
@@ -389,6 +400,18 @@ class report_equivalence_tester(logger):
             self.logger.info("MSI values are NOT equivalent")
             eq = False
         return eq
+
+    def non_deltas_are_equivalent(self):
+        # remove metrics with a non-zero tolerance range; compare the other metrics
+        redacted = []
+        for data_set in self.data:
+            redacted_set = deepcopy(data_set)
+            redacted_set = self.set_msi(redacted_set, self.PLACEHOLDER)
+            for name in [self.CNV_NAME, self.SNV_INDEL_NAME]:
+                redacted_set = self.set_expression(redacted_set, name, self.PLACEHOLDER)
+            redacted.append(redacted_set)
+        diff = ReportDiff(redacted)
+        return diff.is_identical()
 
     def read_and_preprocess_report(self, report_path):
         """
@@ -402,11 +425,30 @@ class report_equivalence_tester(logger):
         for plugin_name in plugins.keys():
             plugins[plugin_name]['version'] = placeholder
         results = 'results'
-        plugins['cnv'][results]['cnv plot'] = placeholder
-        plugins['wgts.snv_indel'][results]['vaf_plot'] = placeholder
+        plugins[self.CNV_NAME][results]['cnv plot'] = placeholder
+        plugins[self.SNV_INDEL_NAME][results]['vaf_plot'] = placeholder
         for biomarker in ['MSI', 'TMB']:
             plugins['genomic_landscape'][results]['genomic_biomarkers'][biomarker]['Genomic biomarker plot'] = placeholder
         return plugins
+
+    def set_expression(self, data, plugin, value):
+        # set all expressions for the given plugin to the same value
+        # use to redact data and compare without expressions
+        body_key = self.BODY_KEY[plugin]
+        xpct_key = self.XPCT_KEY[plugin]
+        try:
+            body = data[plugin][self.RESULTS][body_key]
+        except KeyError:
+            self.logger.error("{0}: {1}".format(plugin, data.keys()))
+            raise
+        for item in body:
+            item[xpct_key] = value
+        return data
+
+    def set_msi(self, report_data, value):
+        report_data['genomic_landscape']['results']\
+            ['genomic_biomarkers']['MSI']['Genomic biomarker value'] = value
+        return report_data
 
 
 class ReportDiff(unittest.TestCase):
@@ -415,7 +457,7 @@ class ReportDiff(unittest.TestCase):
     def __init__(self, data):
         super().__init__()
         if len(data)!=2:
-            raise RuntimeError("Expected 2 inputs, found {0}".format(len(data)))
+            raise DjerbaReportDiffError("Expected 2 inputs, found {0}".format(len(data)))
         self.maxDiff = None
         try:
             self.assertEqual(data[0], data[1])
@@ -430,3 +472,6 @@ class ReportDiff(unittest.TestCase):
 
     def is_identical(self):
         return self.identical
+
+class DjerbaReportDiffError(Exception):
+    pass
