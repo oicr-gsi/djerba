@@ -41,7 +41,7 @@ class TestPurplePlugin(PluginTester):
         params = {
             self.INI: self.WGTS_INI_NAME,
             self.JSON: json_location,
-            self.MD5: 'e21161043b4532e488ddd5833d7464a6'
+            self.MD5: 'b90f726e5f58eeddc4a495e9c55e5ce3'
         }
         self.run_basic_test(input_dir, params)
 
