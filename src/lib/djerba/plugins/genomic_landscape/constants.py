@@ -3,7 +3,7 @@ Constants for the Genomic Landscape plugin.
 """
 
 # Constants for configure
-ONCOTREE_CODE = 'oncotree_code'
+# ONCOTREE_CODE taken from oncokb.constants
 TUMOUR_ID = 'tumour_id'
 TCGA_CODE = 'tcgacode'
 PURITY_INPUT = 'purity'
