@@ -10,3 +10,5 @@ echo "Running plugin discovery tests, may take ~5 minutes..."
 python3 -m unittest discover -s src/lib/djerba  -p "*_test.py" -v
 echo "Running benchmarking and other utility tests, may take ~10 minutes..."
 ./src/test/util/test_util.py -v
+echo "Running R scripts"
+./src/lib/djerba/plugins/wgts/cnv_purple/tests/testthat/test_CNA_supporting_functions.R
