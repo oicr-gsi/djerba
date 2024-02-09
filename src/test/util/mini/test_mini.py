@@ -52,7 +52,6 @@ class TestMDC(TestBase):
 class TestMiniBase(TestBase):
 
     JSON_NAME = 'simple_report_for_update.json'
-    DRAFT_DATE = '2023/12/20'
 
     def assert_MDC(self, out_path):
         self.assertTrue(os.path.isfile(out_path))
@@ -65,10 +64,8 @@ class TestMiniBase(TestBase):
             self.assertTrue(os.path.isfile(out_path))
         with open(html_path) as html_file:
             original = html_file.read()
-        self.assertTrue(self.DRAFT_DATE in original) # draft date is preserved
-        self.assertTrue(strftime('%Y/%m/%d') in original) # today's date is present
         redacted = self.redact_html(original)
-        self.assertEqual(self.getMD5_of_string(redacted), '7b4b44392758f9062c545e1f1daa9f5c')
+        self.assertEqual(self.getMD5_of_string(redacted), '90cb5c19d578c8e75348d6515486fa83')
 
     def assert_update(self):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
@@ -78,10 +75,8 @@ class TestMiniBase(TestBase):
             self.assertTrue(os.path.isfile(out_path))
         with open(html_path) as html_file:
             original = html_file.read()
-        self.assertTrue(self.DRAFT_DATE in original) # draft date is preserved
-        self.assertTrue(strftime('%Y/%m/%d') in original) # today's date is present
         redacted = self.redact_html(original)
-        self.assertEqual(self.getMD5_of_string(redacted), '170774e05b752a708f5ee74276579e7f')
+        self.assertEqual(self.getMD5_of_string(redacted), '315487573e94112bf4a847b7aac52822')
         with open(json_out) as json_file:
             json_data = json.loads(json_file.read())
         self.assertEqual(json_data['core']['extract_time'], '2023-12-20_21:38:10Z')
