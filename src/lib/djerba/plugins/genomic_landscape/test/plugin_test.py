@@ -17,6 +17,7 @@ from djerba.util.environment import directory_finder
 class TestGenomicLandscapePlugin(PluginTester):
     
     INI_NAME = 'genomic_landscape.ini'
+    PLACEHOLDER = 'placeholder'
 
     def setUp(self):
         self.path_validator = path_validator()
@@ -28,6 +29,13 @@ class TestGenomicLandscapePlugin(PluginTester):
         self.data_mut_ex = os.path.join(self.sup_dir, "plugins/genomic-landscape/data_mutations_extended.txt")
         self.data_seg = os.path.join(self.sup_dir, "plugins/genomic-landscape/data.seg")
         self.sample_info = os.path.join(self.sup_dir, "plugins/genomic-landscape/sample_info.json")
+
+    def redact_json_data(self, data):
+        # overrides method in ancestor TestBase class
+        # redact images from JSON before comparison
+        for key in ["TMB", "MSI"]:
+            data["results"]["genomic_biomarkers"][key]["Genomic biomarker plot"] = self.PLACEHOLDER
+        return data
 
     def testGenomicLandscapeLowTmbStableMsi(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))

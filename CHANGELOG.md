@@ -8,6 +8,7 @@
 
 ### Benchmark and test improvements
 - GCGI-1253: Fix JSON equivalence check and add tests
+- GCGI-1292: Add OncoKB caching to `genomic_landscape` plugin
 - Update `test_env.sh`
 - Add convenience scripts to run tests: `run_all_tests.sh`, `run_quick_tests.sh`
 

@@ -252,6 +252,7 @@ class report_equivalence_tester(logger):
 
     CNV_NAME = 'cnv'
     SNV_INDEL_NAME = 'wgts.snv_indel'
+    SUPPLEMENT_NAME = 'supplement.body'
     # deal with inconsistent capitalization
     BODY_KEY = {
         CNV_NAME: 'body',
@@ -429,6 +430,8 @@ class report_equivalence_tester(logger):
         plugins[self.SNV_INDEL_NAME][results]['vaf_plot'] = placeholder
         for biomarker in ['MSI', 'TMB']:
             plugins['genomic_landscape'][results]['genomic_biomarkers'][biomarker]['Genomic biomarker plot'] = placeholder
+        for date_key in ['extract_date', 'report_signoff_date']:
+            plugins[self.SUPPLEMENT_NAME][results][date_key] = placeholder
         return plugins
 
     def set_expression(self, data, plugin, value):
