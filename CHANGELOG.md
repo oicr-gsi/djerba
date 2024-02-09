@@ -12,6 +12,9 @@
 - Update `test_env.sh`
 - Add convenience scripts to run tests: `run_all_tests.sh`, `run_quick_tests.sh`
 
+### Update mode bugfix
+- GCGI-1291: Do not overwrite previous JSON before generating updated report
+
 ## v1.4.1: 2024-02-02
 
 - fix bug when fusions have multiple possible reading frames
