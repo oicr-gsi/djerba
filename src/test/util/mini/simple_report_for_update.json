@@ -30,6 +30,28 @@
                 "hospital_name_and_address": "HOSPITAL NAME AND ADDRESS"
             }
         },
+	"supplement.body": {
+            "plugin_name": "supplement.body plugin",
+            "priorities": {
+                "configure": 1200,
+                "extract": 1200,
+                "render": 1200
+            },
+            "attributes": [
+                "clinical"
+            ],
+            "merge_inputs": {},
+            "results": {
+                "assay": "WGTS",
+                "failed": false,
+                "author": "Iain Bancarz",
+                "extract_date": "2024/02/09",
+                "report_signoff_date": "2024/02/09",
+                "clinical_geneticist_name": "Trevor Pugh, PhD, FACMG",
+                "clinical_geneticist_licence": "1027812"
+            },
+            "version": "0.1"
+        },
         "summary": {
             "plugin_name": "summary plugin",
             "version": "0.1",
@@ -81,6 +103,20 @@
             "physician_phone_number": "nnn-nnn-nnnn",
             "hospital_name_and_address": "HOSPITAL NAME AND ADDRESS"
         },
+	"supplement.body": {
+            "assay": "WGTS",
+            "attributes": "clinical",
+            "configure_priority": "1200",
+            "depends_configure": "",
+            "depends_extract": "",
+            "extract_priority": "1200",
+            "failed": "False",
+            "render_priority": "1200",
+            "report_signoff_date": "NONE_SPECIFIED",
+            "user_supplied_draft_date": "NONE_SPECIFIED",
+            "clinical_geneticist_name": "Trevor Pugh, PhD, FACMG",
+            "clinical_geneticist_licence": "1027812"
+	},
         "summary": {
             "attributes": "clinical",
             "configure_priority": "400",
