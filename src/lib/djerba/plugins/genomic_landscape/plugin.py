@@ -229,7 +229,6 @@ class main(plugin_base):
         # read the tab-delimited input file
         treatments = []
         treatment_option_factory = tom_factory(self.log_level, self.log_path)
-        input_name = constants.GENOMIC_BIOMARKERS_ANNOTATED
         with open(annotated_maf_path) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
             for row_input in reader:
