@@ -29,6 +29,9 @@ class main(plugin_base):
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'genomic_landscape_template.html'
 
+    # TODO standardize this constant, see ticket GCGI-1290
+    INPUT_PARAMS_ONCOTREE_CODE = 'oncotree_code'
+
     # For MSI file
     MSI_RESULTS_SUFFIX = '.recalibrated.msi.booted'
     MSI_WORKFLOW = 'msisensor'
@@ -75,7 +78,7 @@ class main(plugin_base):
       if wrapper.my_param_is_null(oncokb_constants.ONCOTREE_CODE):
           if self.workspace.has_file(input_params_helper.INPUT_PARAMS_FILE):
               data = self.workspace.read_json(input_params_helper.INPUT_PARAMS_FILE)
-              oncotree_code = data[oncokb_constants.ONCOTREE_CODE]
+              oncotree_code = data[self.INPUT_PARAMS_ONCOTREE_CODE]
               wrapper.set_my_param(oncokb_constants.ONCOTREE_CODE, oncotree_code)
           else:
               msg = "Cannot find Oncotree code; must be manually specified or "+\
