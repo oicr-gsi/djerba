@@ -74,69 +74,39 @@ class main(plugin_base):
     def configure(self, config):
       config = self.apply_defaults(config)
       wrapper = self.get_config_wrapper(config)
-
-      if wrapper.my_param_is_null(oncokb_constants.ONCOTREE_CODE):
-          if self.workspace.has_file(input_params_helper.INPUT_PARAMS_FILE):
-              data = self.workspace.read_json(input_params_helper.INPUT_PARAMS_FILE)
-              oncotree_code = data[self.INPUT_PARAMS_ONCOTREE_CODE]
-              wrapper.set_my_param(oncokb_constants.ONCOTREE_CODE, oncotree_code)
-          else:
-              msg = "Cannot find Oncotree code; must be manually specified or "+\
-                    "given in {0}".format(input_params_helper.INPUT_PARAMS_FILE)
-              self.logger.error(msg)
-              raise DjerbaPluginError(msg)
-      
-      if wrapper.my_param_is_null(constants.TCGA_CODE):
-          if self.workspace.has_file(input_params_helper.INPUT_PARAMS_FILE):
-              data = self.workspace.read_json(input_params_helper.INPUT_PARAMS_FILE)
-              tcga_code = data[constants.TCGA_CODE]
-              wrapper.set_my_param(constants.TCGA_CODE, tcga_code)
-          else:
-              msg = "Cannot find TCGA code; must be manually specified or "+\
-                    "given in {0}".format(input_params_helper.INPUT_PARAMS_FILE)
-              self.logger.error(msg)
-              raise DjerbaPluginError(msg)
-
-      if wrapper.my_param_is_null(constants.PURITY_INPUT):
-          if self.workspace.has_file(input_params_helper.INPUT_PARAMS_FILE):
-              data = self.workspace.read_json(input_params_helper.INPUT_PARAMS_FILE)
-              purity = data[constants.PURITY_INPUT]
-              wrapper.set_my_param(constants.PURITY_INPUT, purity)
-          else:
-              msg = "Cannot find Purity; must be manually specified or "+\
-                    "given in {0}".format(input_params_helper.INPUT_PARAMS_FILE)
-              self.logger.error(msg)
-              raise DjerbaPluginError(msg)
-
-      if wrapper.my_param_is_null(constants.DONOR):
-          if self.workspace.has_file(input_params_helper.INPUT_PARAMS_FILE):
-              data = self.workspace.read_json(input_params_helper.INPUT_PARAMS_FILE)
-              donor = data[constants.DONOR]
-              wrapper.set_my_param(constants.DONOR, donor)
-          else:
-              msg = "Cannot find Purity; must be manually specified or "+\
-                    "given in {0}".format(input_params_helper.INPUT_PARAMS_FILE)
-              self.logger.error(msg)
-              raise DjerbaPluginError(msg)
-
+      # mapping of input params JSON keys -> genomic landscape INI keys
+      input_keys = [constants.TCGA_CODE, constants.PURITY_INPUT, constants.DONOR]
+      config_keys = {k:k for k in input_keys}
+      config_keys[self.INPUT_PARAMS_ONCOTREE_CODE] = oncokb_constants.ONCOTREE_CODE
+      # try to find config values
+      for k in config_keys.keys():
+          if wrapper.my_param_is_null(config_keys[k]):
+              if self.workspace.has_file(input_params_helper.INPUT_PARAMS_FILE):
+                  data = self.workspace.read_json(input_params_helper.INPUT_PARAMS_FILE)
+                  wrapper.set_my_param(config_keys[k], data[k])
+                  self.logger.debug("Read {0} from input params JSON".format(k))
+              else:
+                  msg = "Cannot find {0}; must be manually specified or ".format(k)+\
+                      "given in {0}".format(input_params_helper.INPUT_PARAMS_FILE)
+                  self.logger.error(msg)
+                  raise DjerbaPluginError(msg)
       if wrapper.my_param_is_null(constants.TUMOUR_ID):
           if self.workspace.has_file(core_constants.DEFAULT_SAMPLE_INFO):
               data = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
               tumour_id = data['tumour_id']
               wrapper.set_my_param(constants.TUMOUR_ID, tumour_id)
+              self.logger.debug("Read tumour ID from default sample info JSON")
           else:
               msg = "Cannot find tumour ID; must be manually specified or "+\
                   "given in {0}".format(core_constants.DEFAULT_SAMPLE_INFO)
               self.logger.error(msg)
               raise DjerbaPluginError(msg)
-
       # Get files for MSI, ctDNA
       donor = config[self.identifier][constants.DONOR]
       if wrapper.my_param_is_null(constants.MSI_FILE):
           wrapper.set_my_param(constants.MSI_FILE, self.get_file(donor, self.MSI_WORKFLOW, self.MSI_RESULTS_SUFFIX))
       if wrapper.my_param_is_null(constants.CTDNA_FILE):
           wrapper.set_my_param(constants.CTDNA_FILE, self.get_file(donor, self.CTDNA_WORKFLOW, self.CTDNA_RESULTS_SUFFIX))
-
       return config
 
     def extract(self, config):
