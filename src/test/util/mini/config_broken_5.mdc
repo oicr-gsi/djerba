@@ -5,9 +5,6 @@ physician_licence_number = nnnnnnnn
 physician_name = LAST, FIRST
 physician_phone_number = nnn-nnn-nnnn
 hospital_name_and_address = HOSPITAL NAME AND ADDRESS
-report_signoff_date = 2023/12/01
-clinical_geneticist_name = LAST, FIRST
-clinical_geneticist_licence = nnnnnnnn
 
 ###
 
