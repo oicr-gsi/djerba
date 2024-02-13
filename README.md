@@ -56,6 +56,6 @@ See the [changelog](./CHANGELOG.md) for a detailed development history. In brief
 
 ## Copyright and License
 
-Copyright &copy; 2020-2023 by Genome Sequence Informatics, Ontario Institute for Cancer Research.
+Copyright &copy; 2020-2024 by Genome Sequence Informatics, Ontario Institute for Cancer Research.
 
 Licensed under the [GPL 3.0 license](https://www.gnu.org/licenses/gpl-3.0.en.html).

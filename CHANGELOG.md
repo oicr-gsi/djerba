@@ -15,6 +15,10 @@
 ### Update mode bugfix
 - GCGI-1291: Do not overwrite previous JSON before generating updated report
 
+### Minor cleanup actions
+- GCGI-1287: Remove obsolete data files
+- GCGI-1267: Fix copyright date in README
+
 ## v1.4.1: 2024-02-02
 
 - fix bug when fusions have multiple possible reading frames
