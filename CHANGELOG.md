@@ -1,10 +1,12 @@
 # CHANGELOG
-## Unreleased
+
+## v1.5.0: 2024-02-13
 
 ### Report reformatting
 - GCGI-1266: moved clinical footer into supplement plugin
 - supplement.header plugin removed
 - added Geneticist INI parameter to appendix
+- GCGI-1294: Support new supplement.body params in mini-Djerba
 
 ### Benchmark and test improvements
 - GCGI-1253: Fix JSON equivalence check and add tests
