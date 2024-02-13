@@ -38,7 +38,7 @@ The default location for output is a PDF file in the current working directory n
 
 ### Generate config file
 
-The config file is in MDC (mini-Djerba config) format. This is a simple text-based format defined for mini-Djerba. See the [MDC section](https://djerba.readthedocs.io/en/latest/mini_djerba.html#the-mini-djerba-config-file) for details.
+The config file is in MDC (mini-Djerba config) format. This is a simple text-based format defined for mini-Djerba. See the [MDC section](mdc_main) for details.
 
 The file is generated in `setup` mode. The `-j` option inserts summary text drafted by a genome interpreter, for subsequent editing. Running without `-j` produces a "blank" MDC file.
 
@@ -51,7 +51,7 @@ mini-djerba setup -j report.json
 
 - This can be done in any text editor, eg. [nano](https://www.nano-editor.org/), [Notepad](https://apps.microsoft.com/detail/9MSMLRH6LZF3?hl=en-US&gl=US) for Windows, [Emacs](https://www.gnu.org/software/emacs/), [Vim](https://www.vim.org/).
 - Using a full-featured word processor such as MS Word is unnecessary; if doing so, output must be saved in plain-text format.
-- See [MDC format](https://djerba.readthedocs.io/en/latest/mini_djerba.html#the-mini-djerba-config-file) for details and an example config file.
+- See the [MDC section](mdc_main) for details and an example config file.
 
 ### Update to produce a new PDF
 
@@ -81,17 +81,19 @@ mini_djerba update -h
 
 There are 3 main types of error in mini-Djerba:
 
-1. **Incorrectly formatted MDC file:** Check the [MDC documentation](#mdc_format) and try again.
+1. **Incorrectly formatted MDC file:** Check the [MDC documentation](mdc_main) and try again.
 2. **Mismatched plugin versions:** Mini-Djerba is built with a self-contained set of Djerba plugins. A Djerba JSON report may have been generated with _newer_ plugin versions than the ones in mini-Djerba; this is cause for a warning, which can be overridden with the `--force` option. Running with mismatched plugin versions will _usually_ work correctly, but may result in errors. Alternatively, upgrade to a newer version of mini-Djerba.
 3. **Unexpected errors:** Mini-Djerba is tested before release, but unexpected errors may occur from time to time.
 
 In the first two cases, `mini-djerba` will print an informative error message to the command line. In the third, the error is likely to be more technical. If in doubt, consult the Djerba developers.
 
+(mdc_main)=
 ## The Mini-Djerba config file
+
 
 MDC files (mini-Djerba config, file extension `.mdc`) specify the PHI and summary in a compact, text-based format. It is a simple, text-based format developed for Mini-Djerba.
 
-This document describes the current MDC format. See [MDC versions](https://djerba.readthedocs.io/en/latest/mdc_versions.html) for previous specifications.
+This document describes the current MDC format. See [MDC formats](mdc_formats) for previous specifications.
 
 ### MDC example
 
