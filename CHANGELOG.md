@@ -1,4 +1,26 @@
 # CHANGELOG
+
+## v1.5.0: 2024-02-13
+
+### Report reformatting
+- GCGI-1266: moved clinical footer into supplement plugin
+- supplement.header plugin removed
+- added Geneticist INI parameter to appendix
+- GCGI-1294: Support new supplement.body params in mini-Djerba
+
+### Benchmark and test improvements
+- GCGI-1253: Fix JSON equivalence check and add tests
+- GCGI-1292: Add OncoKB caching to `genomic_landscape` plugin
+- Update `test_env.sh`
+- Add convenience scripts to run tests: `run_all_tests.sh`, `run_quick_tests.sh`
+
+### Update mode bugfix
+- GCGI-1291: Do not overwrite previous JSON before generating updated report
+
+### Minor cleanup actions
+- GCGI-1287: Remove obsolete data files
+- GCGI-1267: Fix copyright date in README
+
 ## v1.4.1: 2024-02-02
 
 - fix bug when fusions have multiple possible reading frames
