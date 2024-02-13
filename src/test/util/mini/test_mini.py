@@ -71,7 +71,10 @@ class TestMiniBase(TestBase):
 
     def assert_MDC(self, out_path):
         self.assertTrue(os.path.isfile(out_path))
-        self.assertEqual(self.getMD5(out_path), 'd9ee2ef8009be095977eaa1f7dcb1203')
+        with open(out_path) as out_file:
+            contents = out_file.read()
+        contents = contents.replace(strftime('%Y/%m/%d'), 'placeholder')
+        self.assertEqual(self.getMD5_of_string(contents), '2ba55ae5caf797415ed484c7da04781d')
 
     def assert_render(self):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
