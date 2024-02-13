@@ -91,6 +91,8 @@ In the first two cases, `mini-djerba` will print an informative error message to
 
 MDC files (mini-Djerba config, file extension `.mdc`) specify the PHI and summary in a compact, text-based format. It is a simple, text-based format developed for Mini-Djerba.
 
+This document describes the current MDC format. See [MDC versions](https://djerba.readthedocs.io/en/latest/mdc_versions.html) for previous specifications.
+
 ### MDC example
 
 Here is an example MDC file with placeholder values:
@@ -104,6 +106,9 @@ physician_licence_number = nnnnnnnn
 physician_name = LAST, FIRST
 physician_phone_number = nnn-nnn-nnnn
 hospital_name_and_address = HOSPITAL NAME AND ADDRESS
+report_signoff_date = 2024/02/13
+clinical_geneticist_name = Trevor Pugh, PhD, FACMG
+clinical_geneticist_licence = 1027812
 
 ###
 
@@ -111,14 +116,14 @@ hospital_name_and_address = HOSPITAL NAME AND ADDRESS
 
 ```
 
-### MDC Format Specification: Version 1.0
+### MDC Format Specification: Version 2.0
 
 The following elements _must_ appear in this order:
-1. A section with exactly 8 entries of the form `key = value`
+1. A section with exactly 11 entries of the form `key = value`
 2. A separator consisting of 3 hash marks: `###`
 3. Summary text
 
-The 8 entries correspond to the 8 PHI fields listed above:
+The 11 entries correspond to the 8 PHI fields listed above:
 1. `patient_name`
 2. `patient_dob`
 3. `patient_genetic_sex`
@@ -127,10 +132,16 @@ The 8 entries correspond to the 8 PHI fields listed above:
 6. `physician_name`
 7. `physician_phone_number`
 8. `hospital_name_and_address`
+9. `report_signoff_date`
+10. `clinical_geneticist_name`
+11. `clinical_geneticist_licence`
 
 These entries may occur in any order, but _must_ be present and have non-empty values.
 
+Field 9 is filled in with the current date but can be changed by the user.
+
 Summary text must be non-empty. Leading or trailing whitespace will be removed before the text is inserted into the report; but whitespace, including line breaks, may occur within the text block. Formatting with [Markdown notation](https://www.markdownguide.org/cheat-sheet/) and/or HTML tags is supported. This enables the user to create or edit bold/italic text, hyperlinks, etc.
+
 
 ### MDC Version History
 
@@ -138,6 +149,7 @@ The MDC file format is versioned. Each version accompanies a release of the main
 
 | MDC Version | Djerba version | Release date |
 | ------------| ---------------|--------------|
+| `2.0`       | `1.5.0`        | 2024-02-13   |
 | `1.0`       | `1.4.0`        | 2024-01-31   |
 
 ## The JSON input file
