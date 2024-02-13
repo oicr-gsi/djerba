@@ -21,7 +21,10 @@ class main(plugin_base):
     GENETICIST = "clinical_geneticist_name"
     GENETICIST_ID = "clinical_geneticist_licence"
     EXTRACT_DATE = "extract_date"
-    
+
+    GENETICIST_DEFAULT = 'Trevor Pugh, PhD, FACMG'
+    GENETICIST_ID_DEFAULT = '1027812'
+
     def check_assay_name(self, wrapper):
         [ok, msg] = assays.name_status(wrapper.get_my_string(self.ASSAY))
         if not ok:
@@ -91,8 +94,8 @@ class main(plugin_base):
             self.add_ini_discovered(key)
         self.set_ini_default(self.REPORT_SIGNOFF_DATE, self.NONE_SPECIFIED)
         self.set_ini_default(self.USER_SUPPLIED_DRAFT_DATE, self.NONE_SPECIFIED)
-        self.set_ini_default(self.GENETICIST, 'Trevor Pugh, PhD, FACMG')
-        self.set_ini_default(self.GENETICIST_ID, '1027812')
+        self.set_ini_default(self.GENETICIST, self.GENETICIST_DEFAULT)
+        self.set_ini_default(self.GENETICIST_ID, self.GENETICIST_ID_DEFAULT)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_ini_default(self.FAILED, "False")
         self.set_priority_defaults(self.DEFAULT_CONFIG_PRIORITY)
