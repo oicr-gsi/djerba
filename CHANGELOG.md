@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.5.1: 2024-02-15
+
+- GCGI-1296: Remove unwanted backslash and correctly insert configured sign-off date
+
 ## v1.5.0: 2024-02-13
 
 ### Report reformatting
