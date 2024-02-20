@@ -55,7 +55,7 @@ class TestBenchmark(TestBase):
             cp = ConfigParser()
             cp.read(ini_path)
             sections = cp.sections()
-            self.assertEqual(len(sections), 14)
+            self.assertEqual(len(sections), 16)
             self.assertTrue('core' in sections)
 
     def test_report(self):
