@@ -4,6 +4,7 @@ TUMOUR_ID = 'tumour_id'
 NORMAL_ID = 'normal_id'
 MAF_PATH = 'maf_path'
 CNA_PATH = 'cna_path'
+HAS_COPY_STATE_DATA = 'has copy state data'
 HAS_EXPRESSION_DATA = 'has expression data'
 
 # important MAF headers
