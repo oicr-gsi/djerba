@@ -11,8 +11,8 @@ class snv_indel_table_builder:
     EXPR_COL_TITLE = 'Expr. (%)'
     COPY_STATE_COL_TITLE = 'Copy State'
 
-    @staticmethod
-    def make_header(mutation_info):
+    @classmethod
+    def make_header(klass, mutation_info):
         # output between 7 and 9 columns
         # insert copy state (if any), then expression (if any)
         names = [
@@ -25,13 +25,13 @@ class snv_indel_table_builder:
 	    'OncoKB'
         ]
         if mutation_info[sic.HAS_COPY_STATE_DATA]:
-            names.insert(self.INSERT_COL_INDEX, self.COPY_STATE_COL_TITLE)
+            names.insert(klass.INSERT_COL_INDEX, klass.COPY_STATE_COL_TITLE)
         if mutation_info[sic.HAS_EXPRESSION_DATA]:
-            names.insert(self.INSERT_COL_INDEX, self.EXPR_COL_TITLE)
+            names.insert(klass.INSERT_COL_INDEX, klass.EXPR_COL_TITLE)
         return hb.thead(names)
 
-    @staticmethod
-    def make_rows(mutation_info):
+    @classmethod
+    def make_rows(klass, mutation_info):
         row_fields = mutation_info[wgts_tools.BODY]
         rows = []
         for row in row_fields:
@@ -46,11 +46,11 @@ class snv_indel_table_builder:
             ]
             if mutation_info[sic.HAS_COPY_STATE_DATA]:
                 metric_cell = hb.td(row[sic.COPY_STATE])
-                cells.insert(self.INSERT_COL_INDEX, metric_cell)
+                cells.insert(klass.INSERT_COL_INDEX, metric_cell)
             if mutation_info[sic.HAS_EXPRESSION_DATA]:
                 metric = row[wgts_tools.EXPRESSION_PERCENTILE]
                 metric_cell = hb.td(hb.expression_display(metric))
-                cells.insert(self.INSERT_COL_INDEX, metric_cell)
+                cells.insert(klass.INSERT_COL_INDEX, metric_cell)
             rows.append(hb.tr(cells))
         return rows
 

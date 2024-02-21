@@ -27,33 +27,40 @@ class main(plugin_base):
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
-        wrapper = self.update_wrapper_if_null(
-            wrapper,
-            input_params_helper.INPUT_PARAMS_FILE,
-            sic.ONCOTREE_CODE,
-            input_params_helper.ONCOTREE_CODE
-        )
-        wrapper = self.update_wrapper_if_null(
-            wrapper,
-            input_params_helper.INPUT_PARAMS_FILE,
-            sic.STUDY_ID,
-            input_params_helper.STUDY
-        )
+        # required params -- must be in INI or JSON
+        # MAF input file, required for obvious reasons
         wrapper = self.update_wrapper_if_null(
             wrapper,
             core_constants.DEFAULT_PATH_INFO,
             sic.MAF_PATH,
             'variantEffectPredictor_matched'
         )
+        # oncotree code is required for making OncoKB links and annotation
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            input_params_helper.INPUT_PARAMS_FILE,
+            sic.ONCOTREE_CODE,
+            input_params_helper.ONCOTREE_CODE
+        )
+        # tumour ID is required for MAF update and OncoKB annotation
         wrapper = self.update_wrapper_if_null(
             wrapper,
             core_constants.DEFAULT_SAMPLE_INFO,
             sic.TUMOUR_ID
         )
+        # optional params with fallback value -- used only for constructing Whizbam links
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            input_params_helper.INPUT_PARAMS_FILE,
+            sic.STUDY_ID,
+            input_params_helper.STUDY,
+            fallback=sic.DEFAULT
+        )
         wrapper = self.update_wrapper_if_null(
             wrapper,
             core_constants.DEFAULT_SAMPLE_INFO,
-            sic.NORMAL_ID
+            sic.NORMAL_ID,
+            fallback=sic.DEFAULT
         )
         if wrapper.my_param_is_null(sic.WHIZBAM_PROJECT):
             # if whizbam project not manually configured, default to study id

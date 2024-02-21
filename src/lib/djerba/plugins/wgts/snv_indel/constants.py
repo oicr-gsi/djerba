@@ -6,6 +6,7 @@ MAF_PATH = 'maf_path'
 CNA_PATH = 'cna_path'
 HAS_COPY_STATE_DATA = 'has copy state data'
 HAS_EXPRESSION_DATA = 'has expression data'
+DEFAULT = 'snv_indel_default'
 
 # important MAF headers
 VARIANT_CLASSIFICATION = 'Variant_Classification'
