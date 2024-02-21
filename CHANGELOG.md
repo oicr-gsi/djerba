@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v1.5.2: 2024-02-20
+
+- GCGI-1299: Redact gene descriptions in benchmark comparison
+- GCGI-1301: Add report title and patient info to benchmark INI
+
+## v1.5.1: 2024-02-15
+
+- GCGI-1296: Remove unwanted backslash and correctly insert configured sign-off date
+
 ## v1.5.0: 2024-02-13
 
 ### Report reformatting

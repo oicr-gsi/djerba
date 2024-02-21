@@ -1,6 +1,5 @@
 <%
   from djerba.util.html import html_builder
-  from time import strftime
   import djerba.core.constants as core_constants
   import djerba.plugins.supplement.body.versioning as versions
   from djerba.plugins.supplement.body.plugin import main as supplement
@@ -69,7 +68,7 @@ ${html_builder().section_cells_begin("<h2>Report<br>Sign-offs</h2>",True)}
       <td width="33%">Report drafted by ${results.get(core_constants.AUTHOR)} on ${results.get('extract_date')}</td>
     </tr>
     <tr>
-      <td width="33%">Report electronically signed out by ${results.get('clinical_geneticist_name')} (ABMS \#${results.get('clinical_geneticist_licence')}) on ${strftime("%Y/%m/%d")}</td>
+      <td width="33%">Report electronically signed out by ${results.get('clinical_geneticist_name')} (ABMS #${results.get('clinical_geneticist_licence')}) on ${results.get('report_signoff_date')}</td>
     </tr>
   </table>
 
