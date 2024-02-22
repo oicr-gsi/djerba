@@ -1,7 +1,7 @@
 
 <%
   import djerba.plugins.wgts.snv_indel.constants as constants
-  from djerba.plugins.wgts.snv_indel.html import make_table_header, make_table_rows
+  from djerba.plugins.wgts.snv_indel.html import snv_indel_table_builder
   from djerba.util.html import html_builder
 %>
   
@@ -17,9 +17,9 @@ ${html_builder().section_cells_begin("<h2>SNVs and in/dels</h2>","main")}
 
       % if results.get(constants.ONCOGENIC_MUTATIONS) > 0:
             <table class="variants" width="100%">
-                  ${make_table_header(results)}
+                  ${snv_indel_table_builder.make_header(results)}
                   <tbody>
-                  % for row in make_table_rows(results):
+                  % for row in snv_indel_table_builder.make_rows(results):
                         ${row}
                   % endfor
                   </tbody>

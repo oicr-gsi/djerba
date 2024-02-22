@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v1.5.3: 2024-02-22
+
+- GCGI-1280: Allow `wgts.snv_indel` plugin to run as standalone
+- Enable fallback values when updating null parameters from JSON
+
 ## v1.5.2: 2024-02-20
 
 - GCGI-1299: Redact gene descriptions in benchmark comparison
