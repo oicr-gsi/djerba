@@ -110,8 +110,10 @@ class loader_base(core_base, ABC):
                 self.logger.error(msg)
                 raise DjerbaLoadError from err
         else:
-            "Cannot load module {0} of type {1}; no valid spec ".format(name, module_type)+\
-                "in top-level DJERBA_PACKAGES: {0}".format(self.packages)
+            msg = "Cannot load module {0} of type {1}; ".format(name, module_type)+\
+                "no valid spec in top-level DJERBA_PACKAGES: {0}".format(self.packages)
+            self.logger.error(msg)
+            raise DjerbaLoadError(msg)
         return module
 
     def instantiate_main(self, module, args):

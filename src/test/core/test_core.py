@@ -20,7 +20,7 @@ from string import Template
 from djerba.core.configure import config_wrapper, core_configurer, DjerbaConfigError
 from djerba.core.ini_generator import ini_generator
 from djerba.core.json_validator import plugin_json_validator
-from djerba.core.loaders import plugin_loader, core_config_loader
+from djerba.core.loaders import plugin_loader, core_config_loader, DjerbaLoadError
 from djerba.core.main import main, arg_processor, DjerbaDependencyError
 from djerba.core.workspace import workspace
 from djerba.util.subprocess_runner import subprocess_runner
@@ -427,6 +427,11 @@ class TestLoader(TestCore):
         self.assertTrue(isinstance(plugin, djerba.plugins.base.plugin_base))
         plugin = loader.load('demo2', workspace(self.tmp_dir))
         self.assertTrue(isinstance(plugin, djerba.plugins.base.plugin_base))
+        # remove the alternate package; make a loader with new environment
+        os.environ[var] = 'djerba'
+        new_loader = plugin_loader(log_level=logging.CRITICAL)
+        with self.assertRaises(DjerbaLoadError):
+            plugin = new_loader.load('demo4', workspace(self.tmp_dir))
         # reset the environment to its original value
         if original:
             os.environ[var] = original
