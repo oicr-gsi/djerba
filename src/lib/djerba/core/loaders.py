@@ -25,12 +25,20 @@ Merger modules are similar, but:
 Helper modules are similar, but:
 - *Must* have a module `helper.py` with a class `main`
 - Only need `configure` and `extract` methods
+
+The DJERBA_PACKAGES environment variable lists allowed top-level package names
+- Defaults to the name `djerba`
+- May include multiple names separated by colons
+- Top-level package names are resolved from left to right
+- Djerba attempts to import from each package name in order
+- Failure to find a named component in any top-level package raises an error
 """
 
 import importlib
 import inspect
 import logging
 import os
+import re
 from abc import ABC
 from djerba.core.base import base as core_base
 from djerba.plugins.base import plugin_base
@@ -45,10 +53,14 @@ class loader_base(core_base, ABC):
     MERGER = 'merger'
     HELPER = 'helper'
 
+    DJERBA_PACKAGES = 'DJERBA_PACKAGES'
+    DJERBA_PACKAGES_DEFAULT = ['djerba', ]
+
     def __init__(self, log_level=logging.INFO, log_path=None):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
+        self.packages = self.resolve_top_packages()
 
     def get_common_args(self, module_name, module):
         """Get the constructor args common to all component types"""
@@ -62,7 +74,6 @@ class loader_base(core_base, ABC):
         return args
 
     def import_module(self, module_type, name):
-        args = [module_type, name]
         permitted = [self.PLUGIN, self.MERGER, self.HELPER]
         if module_type not in permitted:
             msg = "Module type {0} not in permitted list {1}".format(
@@ -71,13 +82,36 @@ class loader_base(core_base, ABC):
             )
             self.logger.error(msg)
             raise DjerbaLoadError(msg)
-        try:
-            full_name = 'djerba.{0}s.{1}.{0}'.format(*args)
-            module = importlib.import_module(full_name)
-        except ModuleNotFoundError as err:
-            msg = "Cannot load {0} {1}: {2}".format(*args, err)
-            self.logger.error(msg)
-            raise DjerbaLoadError from err
+        # full name for import is eg. djerba.plugins.cnv.plugin
+        # check each top-level package in turn
+        # use the first one with a valid import spec; if none found, raise an error
+        package_for_import = None
+        for package in self.packages:
+            # work down the hierarchy of package names
+            # do it this way to avoid an ImportError when checking non-existent package
+            hierarchy = [package, module_type+'s', name, module_type]
+            levels = []
+            package_ok = True
+            for level in hierarchy:
+                levels.append(level)
+                if importlib.util.find_spec('.'.join(levels)) == None:
+                    package_ok = False
+                    break
+            if package_ok:
+                package_for_import = package
+                break
+        if package_for_import:
+            try:
+                args = [package_for_import, module_type, name]
+                full_name = '{0}.{1}s.{2}.{1}'.format(*args)
+                module = importlib.import_module(full_name)
+            except Exception as err:
+                msg = "Cannot load {0}.{1}s.{2}.{1}: {3}".format(*args, err)
+                self.logger.error(msg)
+                raise DjerbaLoadError from err
+        else:
+            "Cannot load module {0} of type {1}; no valid spec ".format(name, module_type)+\
+                "in top-level DJERBA_PACKAGES: {0}".format(self.packages)
         return module
 
     def instantiate_main(self, module, args):
@@ -95,6 +129,24 @@ class loader_base(core_base, ABC):
             "must be overridden in subclasses"
         self.logger.error(msg)
         raise DjerbaLoadError(msg)
+
+    def resolve_top_packages(self):
+        # find top-level package names from environment variable, or use default
+        if self.DJERBA_PACKAGES in os.environ:
+            packages = re.split(':', os.environ.get(self.DJERBA_PACKAGES))
+            for p in packages:
+                # check if package names are valid Python identifiers
+                # does *not* check if they can be imported; this is done later
+                if not p.isidentifier():
+                    msg = 'Package name "{0}" is not a valid Python identifier; '.format(p)+\
+                        'incorrectly configured {1} variable'.format(self.DJERBA_PACKAGES)
+                    self.logger.error(msg)
+                    raise DjerbaLoadError(msg)
+            self.logger.debug("Found Djerba packages: {0}".format(packages))
+        else:
+            packages = self.DJERBA_PACKAGES_DEFAULT
+            self.logger.debug(self.DJERBA_PACKAGES+' not configured, defaulting to "djerba"')
+        return packages
 
     def validate_module(self, module, module_type, module_name):
         args = [module_type, module_name]
