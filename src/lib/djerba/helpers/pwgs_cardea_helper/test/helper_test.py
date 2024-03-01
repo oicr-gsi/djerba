@@ -21,7 +21,7 @@ class TestCardea(TestBase):
     def testGetCardea(self):
         requisition_id = "PWGVAL_011418_Ct"
         requisition_info = main.get_cardea(self, requisition_id, self.CARDEA_URL)
-        self.assertEqual(requisition_info["assay"], 'pWGS - 30X')
+        self.assertEqual(requisition_info["assay"], 'PWGS')
         self.assertEqual(requisition_info["project"], 'PWGVAL')
         self.assertEqual(requisition_info["provenance_id"], 'OCT_011418_Ct_T_nn_1-11_LB01-01')
 

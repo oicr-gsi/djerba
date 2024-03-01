@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.5.4: 2024-03-01
+
+- Fixed pWGS Cardea helper, pWGS provenance helper 
+
 ## v1.5.3: 2024-02-22
 
 - GCGI-1280: Allow `wgts.snv_indel` plugin to run as standalone
