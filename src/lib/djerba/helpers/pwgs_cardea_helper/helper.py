@@ -43,17 +43,29 @@ class main(helper_base):
             msg = "The requisition {0} was not found on Cardea".format(requisition_id)
             raise MissingCardeaError(msg)
         else:
-            requisition_json = json.loads(r.text)
-            assay_name = requisition_json['assayName']
-            for case in requisition_json['cases']:
+            requisition_json = json.loads(r.text)            
+            assay_name = requisition_json['assayName'].split("-")[0].strip().upper()
+            cases = requisition_json['cases']
+            if len(cases) > 1 or len(cases) < 1: # only one case expected for clinical 
+                msg = "{0} case(s) were found. Only 1 case is expected".format(len(cases))
+                raise ValueError(msg)
+            else:
+                case = requisition_json['cases'][0]
                 requisition = case['requisition']
                 projects = case['projects']
-            for qc_group in requisition['qcGroups']:
-                group_id = qc_group['groupId']
-                root_id = qc_group['donor']['name']
-                patient_id = qc_group['donor']['externalName']
-            for project in projects:
-                project_id = project['name']
+                root_id = case['donor']['name']
+                patient_id = case['donor']['externalName']
+
+            for qc_group in case['qcGroups']:
+                if qc_group['libraryDesignCode'] == "PG":
+                    group_id = qc_group['groupId']
+            
+            if len(projects) > 1 or len(projects) < 1:
+                msg = "{0} case(s) were found. Only 1 case is expected".format(len(cases))
+                raise ValueError(msg)
+            else:
+                project_id = projects[0]['name']
+
             for test in case['tests']:
                 if test['libraryDesignCode'] == "PG":
                     for fullDepthSequencing in test['fullDepthSequencings']:
