@@ -43,7 +43,7 @@ class main(helper_base):
             msg = "The requisition {0} was not found on Cardea".format(requisition_id)
             raise MissingCardeaError(msg)
         else:
-            requisition_json = json.loads(r.text)            
+            requisition_json = json.loads(r.text)
             assay_name = requisition_json['assayName'].split("-")[0].strip().upper()
             cases = requisition_json['cases']
             if len(cases) > 1 or len(cases) < 1: # only one case expected for clinical 
@@ -60,11 +60,19 @@ class main(helper_base):
                 if qc_group['libraryDesignCode'] == "PG":
                     group_id = qc_group['groupId']
             
-            if len(projects) > 1 or len(projects) < 1:
-                msg = "{0} case(s) were found. Only 1 case is expected".format(len(cases))
+            if len(projects) < 1:
+                msg = "No projects were found. 1 project in the 'Accredited' or 'Accredited with Clinical Report' pipeline is required"
                 raise ValueError(msg)
             else:
-                project_id = projects[0]['name']
+                clinical = "no"
+                for project in projects:
+                    if "Accredited" in project["pipeline"]:
+                        project_id = project['name']
+                        clinical = "yes"
+                if clinical == "no":
+                    print(project['pipeline'])
+                    msg = "No projects in the 'Accredited' or 'Accredited with Clinical Report' pipeline were found; 1 is required"
+                    raise ValueError(msg)
 
             for test in case['tests']:
                 if test['libraryDesignCode'] == "PG":
