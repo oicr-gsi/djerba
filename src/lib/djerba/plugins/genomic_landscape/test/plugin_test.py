@@ -13,7 +13,7 @@ from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 from djerba.core.workspace import workspace
 from djerba.util.environment import directory_finder
-import djerba.plugins.genomic_landscape.hrd_functions as hrd
+import djerba.plugins.genomic_landscape.hrd as hrd
 
 class TestGenomicLandscapePlugin(PluginTester):
     
