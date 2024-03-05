@@ -5,6 +5,7 @@ Test of the genomic_landscape plugin
 """
 
 import os
+import logging
 import unittest
 import tempfile
 import shutil
@@ -13,7 +14,7 @@ from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 from djerba.core.workspace import workspace
 from djerba.util.environment import directory_finder
-import djerba.plugins.genomic_landscape.hrd as hrd
+from djerba.plugins.genomic_landscape.hrd import hrd_processor
 
 class TestGenomicLandscapePlugin(PluginTester):
     
@@ -32,6 +33,7 @@ class TestGenomicLandscapePlugin(PluginTester):
 
     def testNCCNAnnotation(self):
         data_dir = directory_finder().get_data_dir()
+        hrd = hrd_processor(log_level=logging.ERROR, log_path=None)
         self.assertEqual(hrd.annotate_NCCN("HRD", "PAAD", data_dir), None)
         self.assertEqual(hrd.annotate_NCCN("HR Proficient", "HGSOC", data_dir), None)
         HRD_annotated = hrd.annotate_NCCN("HRD", "HGSOC", data_dir)

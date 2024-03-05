@@ -96,12 +96,8 @@ class main(plugin_base):
 
         # Make a file where all the (actionable) biomarkers will go
         biomarkers_path = self.make_biomarkers_maf(work_dir)
-
-        # TODO do *not* pass the current object as an argument!!!
-        # applies to tmb, ctdna, msi "run" functions
-        # it is being used as a (confusing and inconsistent) way to access a logger
         results = tmb_processor(self.log_level, self.log_path).run(
-            self, work_dir, data_dir, r_script_dir, tcga_code, biomarkers_path, tumour_id
+            work_dir, data_dir, r_script_dir, tcga_code, biomarkers_path, tumour_id
         )
         results[glc.PURITY] = wrapper.get_my_float(glc.PURITY_INPUT) * 100
         results[glc.CTDNA] = ctdna_processor(self.log_level, self.log_path).run(wrapper.get_my_string(glc.CTDNA_FILE))
