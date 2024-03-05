@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v.1.5.5: 2024-03-05
+- Further fixes to pWGS Cardea helper to allow multiple projects for one donor
+
 ## v1.5.4: 2024-03-01
 
 - Fixed pWGS Cardea helper, pWGS provenance helper 
