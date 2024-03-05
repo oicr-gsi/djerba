@@ -1,26 +1,26 @@
 """
 Plugin for genomic landscape section.
 """
-import os
 import csv
+import os
+
 import djerba.core.constants as core_constants
-import djerba.util.oncokb.constants as oncokb_constants
 import djerba.plugins.genomic_landscape.constants as glc
-import djerba.plugins.genomic_landscape.msi_functions as msi
-import djerba.plugins.genomic_landscape.tmb_functions as tmb
-import djerba.plugins.genomic_landscape.ctdna_functions as ctdna
-import djerba.plugins.genomic_landscape.hrd_functions as hrd
+import djerba.util.oncokb.constants as oncokb_constants
 from djerba.helpers.input_params_helper.helper import main as input_params_helper
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
-from djerba.plugins.base import plugin_base, DjerbaPluginError
+from djerba.plugins.base import plugin_base
+from djerba.plugins.genomic_landscape.ctdna import ctdna_processor
+from djerba.plugins.genomic_landscape.hrd import hrd_processor
+from djerba.plugins.genomic_landscape.msi import msi_processor
+from djerba.plugins.genomic_landscape.tmb import tmb_processor
 from djerba.util.environment import directory_finder
-from djerba.util.html import html_builder as hb
-from djerba.util.render_mako import mako_renderer
 from djerba.util.oncokb.annotator import annotator_factory
 from djerba.util.oncokb.tools import levels as oncokb_levels
+from djerba.util.render_mako import mako_renderer
+
 
 class main(plugin_base):
-    
     PLUGIN_VERSION = '2.0.0'
     TEMPLATE_NAME = 'genomic_landscape_template.html'
 
@@ -30,11 +30,11 @@ class main(plugin_base):
     # For MSI file
     MSI_RESULTS_SUFFIX = '.recalibrated.msi.booted'
     MSI_WORKFLOW = 'msisensor'
-    
+
     # For ctDNA file
     CTDNA_RESULTS_SUFFIX = 'SNP.count.txt'
     CTDNA_WORKFLOW = 'mrdetect_filter_only'
-    
+
     def specify_params(self):
         discovered = [
             glc.TUMOUR_ID,
@@ -85,7 +85,7 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         tumour_id = wrapper.get_my_string(glc.TUMOUR_ID)
-        tcga_code = wrapper.get_my_string(glc.TCGA_CODE).lower() # always lowercase
+        tcga_code = wrapper.get_my_string(glc.TCGA_CODE).lower()  # always lowercase
 
         # Get directories
         finder = directory_finder(self.log_level, self.log_path)
@@ -100,18 +100,16 @@ class main(plugin_base):
         # TODO do *not* pass the current object as an argument!!!
         # applies to tmb, ctdna, msi "run" functions
         # it is being used as a (confusing and inconsistent) way to access a logger
-        results = tmb.run(
+        results = tmb_processor(self.log_level, self.log_path).run(
             self, work_dir, data_dir, r_script_dir, tcga_code, biomarkers_path, tumour_id
         )
-        results[glc.PURITY] = wrapper.get_my_float(glc.PURITY_INPUT)*100
-        results[glc.CTDNA] = ctdna.run(
-            self, work_dir, wrapper.get_my_string(glc.CTDNA_FILE)
-        )
+        results[glc.PURITY] = wrapper.get_my_float(glc.PURITY_INPUT) * 100
+        results[glc.CTDNA] = ctdna_processor(self.log_level, self.log_path).run(wrapper.get_my_string(glc.CTDNA_FILE))
+        hrd = hrd_processor(self.log_level, self.log_path)
         results[glc.BIOMARKERS][glc.HRD] = hrd.run(
             work_dir, wrapper.get_my_string(glc.HRDETECT_PATH)
         )
-        results[glc.BIOMARKERS][glc.MSI] = msi.run(
-            self,
+        results[glc.BIOMARKERS][glc.MSI] = msi_processor(self.log_level, self.log_path).run(
             work_dir,
             r_script_dir,
             wrapper.get_my_string(glc.MSI_FILE),
@@ -157,7 +155,6 @@ class main(plugin_base):
         # read the tab-delimited input file
         treatments = []
         treatment_option_factory = tom_factory(self.log_level, self.log_path)
-        input_name = glc.GENOMIC_BIOMARKERS_ANNOTATED
         with open(annotated_maf_path) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
             for row_input in reader:
@@ -166,31 +163,33 @@ class main(plugin_base):
                 for level in therapies.keys():
                     gene = 'Biomarker'
                     treatment_entry = treatment_option_factory.get_json(
-                        tier = oncokb_levels.tier(level),
-                        level = level,
-                        gene = gene,
-                        alteration = row_input['ALTERATION'],
-                        alteration_url = self.get_alt_url(row_input['ALTERATION']),
-                        treatments = therapies[level]
+                        tier=oncokb_levels.tier(level),
+                        level=level,
+                        gene=gene,
+                        alteration=row_input['ALTERATION'],
+                        alteration_url=self.get_alt_url(row_input['ALTERATION']),
+                        treatments=therapies[level]
                     )
                     treatments.append(treatment_entry)
         # assemble the output
         return treatments
-        
+
     def make_biomarkers_maf(self, work_dir):
-        maf_header = '\t'.join(["HUGO_SYMBOL","SAMPLE_ID","ALTERATION"])
+        maf_header = '\t'.join(["HUGO_SYMBOL", "SAMPLE_ID", "ALTERATION"])
         genomic_biomarkers_path = os.path.join(work_dir, glc.GENOMIC_BIOMARKERS)
         with open(genomic_biomarkers_path, 'w') as genomic_biomarkers_file:
             # Write the header into the file 
             print(maf_header, file=genomic_biomarkers_file)
-        return(genomic_biomarkers_path)
+        return genomic_biomarkers_path
 
     def get_alt_url(self, alteration):
         core_biomarker_url = "https://www.oncokb.org/gene/Other%20Biomarkers"
-        if alteration == "TMB-H" or alteration == "MSI-H":
-            if alteration == "TMB-H":
-                alt_url = '/'.join([core_biomarker_url,"TMB-H/"])
-            if alteration == "MSI-H":
-                alt_url = '/'.join([core_biomarker_url,"Microsatellite%20Instability-High/"])
+        if alteration == "TMB-H":
+            alt_url = '/'.join([core_biomarker_url, "TMB-H/"])
+        elif alteration == "MSI-H":
+            alt_url = '/'.join([core_biomarker_url, "Microsatellite%20Instability-High/"])
+        else:
+            msg = "Unknown alteration '{0}', cannot generate URL".format(alteration)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
         return alt_url
-
