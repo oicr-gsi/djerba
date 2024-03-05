@@ -48,6 +48,7 @@ class main(helper_base):
             cases = requisition_json['cases']
             if len(cases) > 1 or len(cases) < 1: # only one case expected for clinical 
                 msg = "{0} case(s) were found. Only 1 case is expected".format(len(cases))
+                self.logger.error(msg)
                 raise ValueError(msg)
             else:
                 case = requisition_json['cases'][0]
@@ -62,16 +63,18 @@ class main(helper_base):
             
             if len(projects) < 1:
                 msg = "No projects were found. 1 project in the 'Accredited' or 'Accredited with Clinical Report' pipeline is required"
+                self.logger.error(msg)
                 raise ValueError(msg)
             else:
-                clinical = "no"
+                clinical = False
                 for project in projects:
                     if "Accredited" in project["pipeline"]:
                         project_id = project['name']
-                        clinical = "yes"
-                if clinical == "no":
+                        clinical = True
+                if clinical == False:
                     print(project['pipeline'])
                     msg = "No projects in the 'Accredited' or 'Accredited with Clinical Report' pipeline were found; 1 is required"
+                    self.logger.error(msg)
                     raise ValueError(msg)
 
             for test in case['tests']:
