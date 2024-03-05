@@ -74,7 +74,7 @@ class main(plugin_base):
         oc = oncokb_constants.ONCOTREE_CODE
         w = self.update_wrapper_if_null(w, ipf, glc.TCGA_CODE)
         w = self.update_wrapper_if_null(w, ipf, glc.PURITY_INPUT)
-        w = self.update_wrapper_if_null(w, ipf, self.INPUT_PARAMS_ONCOTREE_CODE, oc)
+        w = self.update_wrapper_if_null(w, ipf, oc, self.INPUT_PARAMS_ONCOTREE_CODE)
         w = self.update_wrapper_if_null(w, dsi, glc.TUMOUR_ID)
         w = self.update_wrapper_if_null(w, dpi, glc.MSI_FILE, glc.MSI_WORKFLOW)
         w = self.update_wrapper_if_null(w, dpi, glc.CTDNA_FILE, glc.CTDNA_WORKFLOW)
@@ -123,7 +123,7 @@ class main(plugin_base):
         merge_inputs = self.get_merge_inputs(annotated_maf)
         hrd_annotation = hrd.annotate_NCCN(
             results[glc.BIOMARKERS][glc.HRD]['Genomic biomarker alteration'],
-            wrapper.get_my_string(glc.ONCOTREE_CODE),
+            wrapper.get_my_string(oncokb_constants.ONCOTREE_CODE),
             data_dir
         )
         if hrd_annotation != None:
