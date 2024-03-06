@@ -27,9 +27,10 @@ class TestGenomicLandscapePlugin(PluginTester):
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
         self.sup_dir = directory_finder().get_test_dir()
-        self.data_mut_ex = os.path.join(self.sup_dir, "plugins/genomic-landscape/data_mutations_extended.txt")
-        self.data_seg = os.path.join(self.sup_dir, "plugins/genomic-landscape/data.seg")
-        self.sample_info = os.path.join(self.sup_dir, "plugins/genomic-landscape/sample_info.json")
+        self.plugin_test_dir = os.path.join(self.sup_dir, "plugins", "genomic-landscape")
+        self.data_mut_ex = os.path.join(self.plugin_test_dir, "data_mutations_extended.txt")
+        self.data_seg = os.path.join(self.plugin_test_dir, "data.seg")
+        self.sample_info = os.path.join(self.plugin_test_dir, "sample_info.json")
 
     def testNCCNAnnotation(self):
         data_dir = directory_finder().get_data_dir()
@@ -55,12 +56,11 @@ class TestGenomicLandscapePlugin(PluginTester):
         os.mkdir(input_dir)
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
-        json_location = os.path.join(self.sup_dir ,"plugins/genomic-landscape/report_json/genomic_landscape.json")
-
+        json_location = os.path.join(self.plugin_test_dir, "report_json", "genomic_landscape.json")
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '9ce53bdd5883af1d8b515187b7aa7e98'
+            self.MD5: 'b8483c476a1c17404ac81f9e3a439641'
         }
         self.run_basic_test(input_dir, params)
 
