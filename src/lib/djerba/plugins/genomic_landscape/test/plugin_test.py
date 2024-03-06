@@ -5,6 +5,7 @@ Test of the genomic_landscape plugin
 """
 
 import os
+import logging
 import unittest
 import tempfile
 import shutil
@@ -13,7 +14,7 @@ from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 from djerba.core.workspace import workspace
 from djerba.util.environment import directory_finder
-import djerba.plugins.genomic_landscape.hrd_functions as hrd
+from djerba.plugins.genomic_landscape.hrd import hrd_processor
 
 class TestGenomicLandscapePlugin(PluginTester):
     
@@ -32,10 +33,11 @@ class TestGenomicLandscapePlugin(PluginTester):
 
     def testNCCNAnnotation(self):
         data_dir = directory_finder().get_data_dir()
+        hrd = hrd_processor(log_level=logging.ERROR, log_path=None)
         self.assertEqual(hrd.annotate_NCCN("HRD", "PAAD", data_dir), None)
         self.assertEqual(hrd.annotate_NCCN("HR Proficient", "HGSOC", data_dir), None)
         HRD_annotated = hrd.annotate_NCCN("HRD", "HGSOC", data_dir)
-        self.assertEqual(HRD_annotated['Tier'], "Prognostic")        
+        self.assertEqual(HRD_annotated['Tier'], "Prognostic")
 
     def testGenomicLandscapeLowTmbStableMsi(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -58,16 +60,16 @@ class TestGenomicLandscapePlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: 'b8483c476a1c17404ac81f9e3a439641'
+            self.MD5: '9ce53bdd5883af1d8b515187b7aa7e98'
         }
         self.run_basic_test(input_dir, params)
 
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""
+        plot_key = 'Genomic biomarker plot'
         for key in ['HRD','TMB','MSI']:
-            # replace big ugly chunks of plot with BLANK
-            data['results']['genomic_biomarkers'][key]['Genomic biomarker plot'] = self.BLANK
-        return data        
+            data['results']['genomic_biomarkers'][key][plot_key] = 'placeholder'
+        return data
 
 if __name__ == '__main__':
     unittest.main()

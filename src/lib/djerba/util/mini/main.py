@@ -6,9 +6,11 @@ import os
 import djerba.core.constants as cc
 import djerba.util.mini.constants as constants
 from configparser import ConfigParser
+from time import strftime
 from djerba.core.main import main_base
 from djerba.plugins.patient_info.plugin import main as patient_info_plugin
 from djerba.plugins.summary.plugin import main as summary_plugin
+from djerba.plugins.supplement.body.plugin import main as supplement_plugin
 from djerba.util.args import arg_processor_base
 from djerba.util.logger import logger
 from djerba.util.mini.mdc import mdc
@@ -18,8 +20,21 @@ from djerba.version import get_djerba_version
 class main(main_base):
 
     PATIENT_INFO = 'patient_info'
+    SUPPLEMENT = 'supplement.body'
     SUMMARY = 'summary'
     SUMMARY_FILENAME = 'summary.txt'
+
+    def get_supplement_params(self, mdc_supplement, data):
+        # want to configure the supplement.body plugin with new keys from MDC:
+        # - report_signoff_date (defaults to current date)
+        # - clinical_geneticist_name
+        # - clinical_geneticist_licence
+        #
+        # other config params (eg. date of CGI draft) retain original values from JSON
+        supplement = data[cc.CONFIG][self.SUPPLEMENT]
+        for key in mdc_supplement.keys():
+            supplement[key] = mdc_supplement.get(key)
+        return supplement
 
     def render(self, json_path, out_dir, pdf):
         """
@@ -68,12 +83,18 @@ class main(main_base):
         if json_path == None:
             patient_info = patient_info_plugin.PATIENT_DEFAULTS
             text = 'Patient summary text goes here'
+            supplement = {
+                supplement_plugin.REPORT_SIGNOFF_DATE: strftime('%Y/%m/%d'),
+                supplement_plugin.GENETICIST: supplement_plugin.GENETICIST_DEFAULT,
+                supplement_plugin.GENETICIST_ID: supplement_plugin.GENETICIST_ID_DEFAULT
+            }
         else:
             with open(json_path, encoding=cc.TEXT_ENCODING) as in_file:
                 data = json.loads(in_file.read())
             patient_info = data[cc.PLUGINS][self.PATIENT_INFO][cc.RESULTS]
+            supplement = data[cc.PLUGINS][self.PATIENT_INFO][cc.RESULTS]
             text = data[cc.PLUGINS][self.SUMMARY][cc.RESULTS][summary_plugin.SUMMARY_TEXT]
-        mdc(self.log_level, self.log_path).write(out_path, patient_info, text)
+        mdc(self.log_level, self.log_path).write(out_path, patient_info, supplement, text)
 
     def update(self, config_path, json_path, out_dir, pdf, write_json, force):
         """
@@ -82,16 +103,29 @@ class main(main_base):
         - No archive capability
         - Always write (at least) HTML output
         """
-        # read the config file and generate a ConfigParser
+        # read the config file and generate a ConfigParser on-the-fly
         # write summary text to the workspace
         # run configure step to populate default values
         # then run extraction to get the data structure for update
-        [patient_info, summary_text] = mdc(self.log_level, self.log_path).read(config_path)
+        mdc_handler = mdc(self.log_level, self.log_path)
+        [patient_info, supplement_mdc, summary_text] = mdc_handler.read(config_path)
+        with open(json_path) as json_file:
+            old_json = json.loads(json_file.read())
         config = ConfigParser()
+        # core params (eg. the CGI author name) are unchanged from the input JSON
         config.add_section(cc.CORE)
+        core_params = old_json[cc.CONFIG][cc.CORE]
+        for k in core_params.keys():
+            config.set(cc.CORE, k, core_params[k])
+        # patient info params are all taken from the MDC file
         config.add_section(self.PATIENT_INFO)
         for k in patient_info.keys():
             config.set(self.PATIENT_INFO, k, patient_info[k])
+        config.add_section(self.SUPPLEMENT)
+        # supplementary params are a mix of MDC params and existing JSON defaults
+        supplement_params = self.get_supplement_params(supplement_mdc, old_json)
+        for k in supplement_params.keys():
+            config.set(self.SUPPLEMENT, k, str(supplement_params[k]))
         config.add_section(self.SUMMARY)
         summary_path = os.path.join(self.work_dir, self.SUMMARY_FILENAME)
         with open(summary_path, 'w', encoding=cc.TEXT_ENCODING) as out_file:

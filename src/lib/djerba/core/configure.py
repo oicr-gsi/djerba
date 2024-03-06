@@ -190,8 +190,15 @@ class configurable(core_base, ABC):
         # which priorities are defined depends if plugin, helper, or merger
         self.logger.warning("Abstract set_priority_defaults not intended to be called")
 
-    def update_wrapper_if_null(self, wrapper, file_name, config_key, json_key=None):
-        """If parameter is null, attempt to read from workspace JSON"""
+    def update_wrapper_if_null(self, wrapper, file_name, config_key, json_key=None,
+                               fallback=None):
+        """
+        If parameter is null, attempt to read from workspace JSON.
+        If workspace JSON not present:
+        - If fallback value is defined, use that
+        - Otherwise, raise an error
+        The json_key parameter is used in case JSON and INI keys differ.
+        """
         if json_key == None:
             json_key = config_key
         if wrapper.my_param_is_null(config_key):
@@ -204,9 +211,11 @@ class configurable(core_base, ABC):
                     self.logger.error(msg)
                     raise DjerbaConfigError(msg) from err
                 wrapper.set_my_param(config_key, value)
+            elif fallback != None:
+                wrapper.set_my_param(config_key, fallback)
             else:
-                msg = "Cannot find {0}; must be manually specified ".format(config_key)+\
-                    "or given in workspace {0}".format(file_name)
+                msg = "Cannot find {0}; no fallback defined; ".format(config_key)+\
+                    "must be manually specified or given in workspace {0}".format(file_name)
                 self.logger.error(msg)
                 raise DjerbaConfigError(msg)
         return wrapper

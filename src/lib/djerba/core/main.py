@@ -519,7 +519,7 @@ class main(main_base):
             config = self.configure(config_path)
         with open(json_path) as in_file:
             data = json.loads(in_file.read())
-        data_new = self.extract(config, archive=False)
+        data_new = self.base_extract(config)
         data = self.update_data_from_file(data_new, json_path, force)
         if archive:
             self.upload_archive(data)

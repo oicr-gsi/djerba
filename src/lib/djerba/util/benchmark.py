@@ -251,7 +251,9 @@ class report_equivalence_tester(logger):
     """
 
     CNV_NAME = 'cnv'
+    FUSION_NAME = 'fusion'
     SNV_INDEL_NAME = 'wgts.snv_indel'
+    SUPPLEMENT_NAME = 'supplement.body'
     # deal with inconsistent capitalization
     BODY_KEY = {
         CNV_NAME: 'body',
@@ -422,6 +424,7 @@ class report_equivalence_tester(logger):
         with open(report_path) as report_file:
             data = json.loads(report_file.read())
         plugins = data['plugins'] # don't compare config or core elements
+        # redact plugin versions, plots, dates
         for plugin_name in plugins.keys():
             plugins[plugin_name]['version'] = placeholder
         results = 'results'
@@ -429,6 +432,12 @@ class report_equivalence_tester(logger):
         plugins[self.SNV_INDEL_NAME][results]['vaf_plot'] = placeholder
         for biomarker in ['MSI', 'TMB']:
             plugins['genomic_landscape'][results]['genomic_biomarkers'][biomarker]['Genomic biomarker plot'] = placeholder
+        for date_key in ['extract_date', 'report_signoff_date']:
+            plugins[self.SUPPLEMENT_NAME][results][date_key] = placeholder
+        # redact gene descriptions; text encoding issues can cause irrelevant discrepancies
+        for name in [self.CNV_NAME, self.SNV_INDEL_NAME, self.FUSION_NAME]:
+            for item in plugins[name]['merge_inputs']['gene_information_merger']:
+                item['Summary'] = placeholder
         return plugins
 
     def set_expression(self, data, plugin, value):

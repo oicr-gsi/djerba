@@ -98,6 +98,7 @@ setup(
         'jsonschema',
         'mako',
         'markdown',
+        'numpy',
         'pandas',
         'pdfkit',
         'pyinstaller',

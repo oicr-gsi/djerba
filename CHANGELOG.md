@@ -1,6 +1,8 @@
 # CHANGELOG
 
-## WGS 4.0
+## Unreleased
+
+### WGS 4.0
 
 - Removed file list in expression data
 - added HRD to genomic landscape
@@ -8,20 +10,53 @@
 - GCGI-1220: fixed MSI table formatting
 - GCGI-1190: Removed obsolete data values/files
 - GCGI-1012: Moved R testing to formal tests
+- GCGI-1304: Merge updates to genomic landscape plugin and resolve conflicts
+
 - new PURPLE CNV calling plugin
 - removed sequenza support
 
-## v1.5.0: Unreleased
+## v1.5.5: 2024-03-05
+- Further fixes to pWGS Cardea helper to allow multiple projects for one donor
+
+## v1.5.4: 2024-03-01
+
+- Fixed pWGS Cardea helper, pWGS provenance helper
+
+## v1.5.3: 2024-02-22
+
+- GCGI-1280: Allow `wgts.snv_indel` plugin to run as standalone
+- Enable fallback values when updating null parameters from JSON
+
+## v1.5.2: 2024-02-20
+
+- GCGI-1299: Redact gene descriptions in benchmark comparison
+- GCGI-1301: Add report title and patient info to benchmark INI
+
+## v1.5.1: 2024-02-15
+
+- GCGI-1296: Remove unwanted backslash and correctly insert configured sign-off date
+
+## v1.5.0: 2024-02-13
+>>>>>>> dev-GCGI-1304_genomic-landscape-merge
 
 ### Report reformatting
 - GCGI-1266: moved clinical footer into supplement plugin
 - supplement.header plugin removed
 - added Geneticist INI parameter to appendix
+- GCGI-1294: Support new supplement.body params in mini-Djerba
 
 ### Benchmark and test improvements
 - GCGI-1253: Fix JSON equivalence check and add tests
+- GCGI-1292: Add OncoKB caching to `genomic_landscape` plugin
 - Update `test_env.sh`
 - Add convenience scripts to run tests: `run_all_tests.sh`, `run_quick_tests.sh`
+
+### Update mode bugfix
+- GCGI-1291: Do not overwrite previous JSON before generating updated report
+
+### Minor cleanup actions
+- GCGI-1287: Remove obsolete data files
+- GCGI-1267: Fix copyright date in README
 
 ## v1.4.1: 2024-02-02
 
