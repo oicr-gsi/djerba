@@ -78,7 +78,7 @@ class main(helper_base):
         else:
             mrdetect_file_suffixes = [pc.RESULTS_SUFFIX, pc.VAF_SUFFIX, pc.HBC_SUFFIX, pc.SNV_COUNT_SUFFIX]
             path_info = self.read_provenance_subset("mrdetect", wrapper.get_my_string(pc.PROVENANCE_ID), mrdetect_file_suffixes)
-            path_info.update(self.read_provenance_subset("dnaSeqQC",  wrapper.get_my_string(pc.PROVENANCE_ID), [pc.BAMQC_SUFFIX]))
+            path_info.update(self.read_provenance_subset("bamqc_call_ready",  wrapper.get_my_string(pc.PROVENANCE_ID), [pc.BAMQC_SUFFIX]))
             self.write_path_info(path_info)
         return wrapper.get_config()
 

@@ -44,16 +44,39 @@ class main(helper_base):
             raise MissingCardeaError(msg)
         else:
             requisition_json = json.loads(r.text)
-            assay_name = requisition_json['assayName']
-            for case in requisition_json['cases']:
+            assay_name = requisition_json['assayName'].split("-")[0].strip().upper()
+            cases = requisition_json['cases']
+            if len(cases) > 1 or len(cases) < 1: # only one case expected for clinical 
+                msg = "{0} case(s) were found. Only 1 case is expected".format(len(cases))
+                self.logger.error(msg)
+                raise ValueError(msg)
+            else:
+                case = requisition_json['cases'][0]
                 requisition = case['requisition']
                 projects = case['projects']
-            for qc_group in requisition['qcGroups']:
-                group_id = qc_group['groupId']
-                root_id = qc_group['donor']['name']
-                patient_id = qc_group['donor']['externalName']
-            for project in projects:
-                project_id = project['name']
+                root_id = case['donor']['name']
+                patient_id = case['donor']['externalName']
+
+            for qc_group in case['qcGroups']:
+                if qc_group['libraryDesignCode'] == "PG":
+                    group_id = qc_group['groupId']
+            
+            if len(projects) < 1:
+                msg = "No projects were found. 1 project in the 'Accredited' or 'Accredited with Clinical Report' pipeline is required"
+                self.logger.error(msg)
+                raise ValueError(msg)
+            else:
+                clinical = False
+                for project in projects:
+                    if "Accredited" in project["pipeline"]:
+                        project_id = project['name']
+                        clinical = True
+                if clinical == False:
+                    print(project['pipeline'])
+                    msg = "No projects in the 'Accredited' or 'Accredited with Clinical Report' pipeline were found; 1 is required"
+                    self.logger.error(msg)
+                    raise ValueError(msg)
+
             for test in case['tests']:
                 if test['libraryDesignCode'] == "PG":
                     for fullDepthSequencing in test['fullDepthSequencings']:
