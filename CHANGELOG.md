@@ -1,11 +1,26 @@
 # CHANGELOG
 
-## v.1.5.5: 2024-03-05
+## Unreleased
+
+### WGS 4.0
+
+- Removed file list in expression data
+- added HRD to genomic landscape
+- GCGI-1173: genomic landscape plugin uses provenance_helper
+- GCGI-1220: fixed MSI table formatting
+- GCGI-1190: Removed obsolete data values/files
+- GCGI-1012: Moved R testing to formal tests
+- GCGI-1304: Merge updates to genomic landscape plugin and resolve conflicts
+
+- new PURPLE CNV calling plugin
+- removed sequenza support
+
+## v1.5.5: 2024-03-05
 - Further fixes to pWGS Cardea helper to allow multiple projects for one donor
 
 ## v1.5.4: 2024-03-01
 
-- Fixed pWGS Cardea helper, pWGS provenance helper 
+- Fixed pWGS Cardea helper, pWGS provenance helper
 
 ## v1.5.3: 2024-02-22
 
@@ -22,6 +37,7 @@
 - GCGI-1296: Remove unwanted backslash and correctly insert configured sign-off date
 
 ## v1.5.0: 2024-02-13
+>>>>>>> dev-GCGI-1304_genomic-landscape-merge
 
 ### Report reformatting
 - GCGI-1266: moved clinical footer into supplement plugin

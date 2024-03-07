@@ -17,8 +17,8 @@ class InputParamsHelper(TestBase):
 
     CORE = 'core'
     HELPER_NAME = 'input_params_helper'
-    INPUT_PARAMS_MD5 = '3f882da7af12b319cdfbf52188b6f078'
-    INPUT_PARAMS_MD5_NA = 'b86f0e822a00da98de64ebeaa5df07ae'
+    INPUT_PARAMS_MD5 = 'f599f682fe895f0670d84e6f24fc54de'
+    INPUT_PARAMS_MD5_NA = 'f599f682fe895f0670d84e6f24fc54de'
 
 
     def testExtract(self):

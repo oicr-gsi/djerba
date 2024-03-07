@@ -7,7 +7,7 @@ import json
 from decimal import Decimal
 from mako.lookup import TemplateLookup
 import djerba.plugins.sample.constants as constants
-from djerba.plugins.base import plugin_base
+from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.core.workspace import workspace
 import djerba.core.constants as core_constants
 from djerba.util.subprocess_runner import subprocess_runner
@@ -57,10 +57,9 @@ class main(plugin_base):
             wrapper.set_my_param(constants.ONCOTREE, input_data[constants.ONCOTREE])
         if wrapper.my_param_is_null(constants.SAMPLE_TYPE):
             wrapper.set_my_param(constants.SAMPLE_TYPE, input_data[constants.SAMPLE_TYPE])
-        if wrapper.my_param_is_null(constants.PURITY):
-            wrapper.set_my_param(constants.PURITY, input_data[constants.PURITY])
-        if wrapper.my_param_is_null(constants.PLOIDY):
-            wrapper.set_my_param(constants.PLOIDY, input_data[constants.PLOIDY])
+
+        wrapper = self.fill_param_if_null(wrapper, constants.PURITY, "purity_ploidy.json")
+        wrapper = self.fill_param_if_null(wrapper, constants.PLOIDY, "purity_ploidy.json")
 
         # Get tumour_id from sample info:
         if wrapper.my_param_is_null(core_constants.TUMOUR_ID):
@@ -131,6 +130,18 @@ class main(plugin_base):
             self.logger.debug(msg)
             raise MissingQCETLError(msg)
 
+    def fill_param_if_null(self, wrapper, param, input_param_file):
+        if wrapper.my_param_is_null(param):
+            if self.workspace.has_file(input_param_file):
+                data = self.workspace.read_json(input_param_file)
+                param_value = data[param]
+                wrapper.set_my_param(param, param_value)
+            else:
+                msg = "Cannot find {0}; must be manually specified or ".format(param)+\
+                        "given in {0}".format(input_param_file)
+                self.logger.error(msg)
+                raise DjerbaPluginError(msg)
+        return(wrapper)
 
 class MissingQCETLError(Exception):
     pass 

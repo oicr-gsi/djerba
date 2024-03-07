@@ -6,7 +6,6 @@ import gzip
 import logging
 from djerba.util.environment import directory_finder
 from djerba.util.logger import logger
-from djerba.sequenza import sequenza_reader
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.oncokb.annotator import oncokb_annotator
 from shutil import copyfile
