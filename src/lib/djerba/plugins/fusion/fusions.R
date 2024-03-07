@@ -192,7 +192,7 @@ option_list = list(
     make_option(c("-m", "--minfusionreads"), type="numeric", default=20, help="minimum read support for fusions", metavar="numeric"),
     make_option(c("-w", "--workdir"), type="character", default=NULL, help="output directory", metavar="character"),
     make_option(c("-o", "--oncotree"), type="character", default=NULL, help="oncotree code", metavar="character"),
-    make_option(c("-a", "--annotation_file"), type="character", default="20240116-translocation_annotations.txt", help="translocation_annotations", metavar="character")
+    make_option(c("-a", "--annotation_file"), type="character", default="NCCN_annotations.txt", help="translocation_annotations", metavar="character")
 )
 
 opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE);

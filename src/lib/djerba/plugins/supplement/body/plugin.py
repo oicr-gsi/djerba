@@ -42,7 +42,10 @@ class main(plugin_base):
         if wrapper.my_param_is_null(self.ASSAY):
             if input_data:
                 wrapper.set_my_param(self.ASSAY, input_data[self.ASSAY])
-            else:
+            elif self.workspace.has_file("sample_info.json"):
+                sample_info = self.workspace.read_json("sample_info.json")
+                wrapper.set_my_param(self.ASSAY, sample_info[self.ASSAY])
+            else: 
                 msg = "Cannot find assay from input_params.json or manual config"
                 self.logger.error(msg)
                 raise DjerbaPluginError(msg)

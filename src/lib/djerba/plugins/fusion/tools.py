@@ -128,6 +128,24 @@ class fusion_reader(logger):
             )
             entries.append(entry)
         return entries
+    
+    def build_treatment_entries_nccn(self, fusion, therapies, oncotree_code):
+        """Make an entry for the treatment options merger, for NCCN biomarkers"""
+        factory = tom_factory(self.log_level, self.log_path)
+        entries = []
+        for level in therapies.keys():
+            entry = factory.get_json(
+                tier=oncokb_levels.tier(level),
+                level=level,
+                treatments=therapies[level],
+                gene=fusion.get_translocation(),
+                alteration='Fusion',
+                #TODO: pull URL from NCCN_annotation.txt
+                alteration_url="https://www.nccn.org/professionals/physician_gls/pdf/myeloma_blocks.pdf"
+            )
+            entries.append(entry)
+        return entries
+
 
     def fusions_to_json(self, gene_pair_fusions, oncotree_code):
         rows = []
@@ -138,8 +156,7 @@ class fusion_reader(logger):
         gene_info_factory = gim_factory(self.log_level, self.log_path)
         # table has 2 rows for each oncogenic fusion
         # retain fusions with sort order less than (ie. ahead of) 'Likely Oncogenic'
-        # TODO: change max actionable to 'P' once we have NCCN support enabled
-        maximum_order = oncokb_levels.oncokb_order('N2')
+        maximum_order = oncokb_levels.oncokb_order('P')
         for fusion in gene_pair_fusions:
             oncokb_order = oncokb_levels.oncokb_order(fusion.get_oncokb_level())
             if oncokb_order <= maximum_order:
@@ -165,12 +182,20 @@ class fusion_reader(logger):
                     gene_info.append(gene_info_entry)
                     therapies = fusion.get_therapies()
                     for level in therapies.keys():
-                        entries = self.build_treatment_entries(
-                            fusion,
-                            therapies,
-                            oncotree_code.lower()
-                        )
-                        treatment_opts.extend(entries)
+                        if oncokb_order != oncokb_levels.oncokb_order('P'):
+                            entries = self.build_treatment_entries(
+                                fusion,
+                                therapies,
+                                oncotree_code.lower()
+                            )
+                            treatment_opts.extend(entries)
+                        else:
+                            entries = self.build_treatment_entries_nccn(
+                                fusion,
+                                therapies,
+                                oncotree_code.lower()
+                            )
+                            treatment_opts.extend(entries)
         return rows, gene_info, treatment_opts
     
     def get_fusions(self):

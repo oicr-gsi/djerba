@@ -190,10 +190,13 @@ class main(helper_base):
                 self.WG_N_IDX: reader.parse_wg_index_ref_path()
             },
             reader.WF_DELLY: reader.parse_delly_path(),
+            reader.WF_GRIDSS: reader.parse_gridss_path(),
             reader.WF_HRDETECT: reader.parse_hrdetect_path(),
             reader.WF_MAVIS: reader.parse_mavis_path(),
             reader.WF_MRDETECT: reader.parse_mrdetect_path(),
             reader.WF_MSISENSOR: reader.parse_msi_path(),
+            reader.WF_MUTECT: reader.parse_mutect_path(),
+            reader.WF_PURPLE: reader.parse_purple_zip_path(),
             reader.WF_RSEM: reader.parse_gep_path(),
             reader.WF_SEQUENZA: reader.parse_sequenza_path(),
             reader.WF_STAR: {
