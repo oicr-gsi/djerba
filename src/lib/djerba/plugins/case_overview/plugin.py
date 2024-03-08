@@ -15,7 +15,7 @@ from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.util.render_mako import mako_renderer
 import djerba.core.constants as core_constants
 import djerba.util.assays as assays
-import djerba.util.input_params_tools as input_params_tools
+
 
 class main(plugin_base):
 
@@ -46,25 +46,23 @@ class main(plugin_base):
         work_dir = self.workspace.get_work_dir()        
         
         # Get input_data.json if it exists; else return None
-        input_data = input_params_tools.get_input_params_json(self)
-        if input_data == None:
-            msg = "Input_params.json does not exist. Parameters must be set manually."
-            self.logger.warning(msg)
-
+        input_data = self.workspace.read_maybe_input_params()
         # Get parameters from input_params.json if not manually specified
-        if wrapper.my_param_is_null(self.PRIMARY_CANCER):
-            wrapper.set_my_param(self.PRIMARY_CANCER, input_data[self.PRIMARY_CANCER])
-        if wrapper.my_param_is_null(self.REQUISITION_APPROVED):
-            wrapper.set_my_param(self.REQUISITION_APPROVED, input_data[self.REQUISITION_APPROVED])
-        if wrapper.my_param_is_null(self.SITE_OF_BIOPSY):
-            wrapper.set_my_param(self.SITE_OF_BIOPSY, input_data[self.SITE_OF_BIOPSY])
-        if wrapper.my_param_is_null(self.DONOR):
-            wrapper.set_my_param(self.DONOR, input_data[self.DONOR])
-        if wrapper.my_param_is_null(self.STUDY):
-            wrapper.set_my_param(self.STUDY, input_data[self.STUDY])
-        if wrapper.my_param_is_null(self.ASSAY):
-            wrapper.set_my_param(self.ASSAY, input_data[self.ASSAY])
-        
+        for key in [
+            self.PRIMARY_CANCER,
+            self.REQUISITION_APPROVED,
+            self.SITE_OF_BIOPSY,
+            self.DONOR,
+            self.STUDY,
+            self.ASSAY
+        ]:
+            if wrapper.my_param_is_null(key):
+                if input_data != None:
+                    wrapper.set_my_param(key, input_data[key])
+                else:
+                    msg = "Cannot find {0} in manual config or input_params.json".format(key)
+                    self.logger.error(msg)
+                    raise RuntimeError(msg)
         # Get assay
         assay = wrapper.get_my_string(self.ASSAY)
         # Look up assay long name from assay short name

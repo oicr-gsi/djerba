@@ -84,7 +84,7 @@ class TestMiniBase(TestBase):
         with open(html_path) as html_file:
             original = html_file.read()
         redacted = self.redact_html(original)
-        self.assertEqual(self.getMD5_of_string(redacted), 'a103c74828891c72e2cec20d9b42583c')
+        self.assertEqual(self.getMD5_of_string(redacted), 'c47495c3ea02347f08db8f1b214007d2')
 
     def assert_update(self):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
@@ -95,7 +95,7 @@ class TestMiniBase(TestBase):
         with open(html_path) as html_file:
             original = html_file.read()
         redacted = self.redact_html(original)
-        self.assertEqual(self.getMD5_of_string(redacted), '241dcffbec6c6bb2702d7f8631ec86b1')
+        self.assertEqual(self.getMD5_of_string(redacted), 'e9d286a4ee4672caa5402294f322f011')
         with open(json_out) as json_file:
             json_data = json.loads(json_file.read())
         self.assertEqual(json_data['core']['extract_time'], '2023-12-20_21:38:10Z')

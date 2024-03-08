@@ -12,7 +12,6 @@ import djerba.core.constants as core_constants
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.render_mako import mako_renderer
 from djerba.plugins.tar.provenance_tools import subset_provenance_sample as subset_p_s
-import djerba.util.input_params_tools as input_params_tools
 try:
     import gsiqcetl.column
     from gsiqcetl import QCETLCache
@@ -29,20 +28,20 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         
         # Get input_data.json if it exists; else return None
-        input_data = input_params_tools.get_input_params_json(self)
+        input_data = self.workspace.read_maybe_input_params()
 
         # FIRST PASS: Get the input parameters
-        if wrapper.my_param_is_null('group_id'):
-            wrapper.set_my_param('group_id', input_data['tumour_id'])
-        if wrapper.my_param_is_null('normal_id'):
-            wrapper.set_my_param('normal_id', input_data['normal_id'])
-        if wrapper.my_param_is_null('oncotree_code'):
-            wrapper.set_my_param('oncotree_code', input_data['oncotree_code'])
-        if wrapper.my_param_is_null('known_variants'):
-            wrapper.set_my_param('known_variants', input_data['known_variants'])
-        if wrapper.my_param_is_null('sample_type'):
-            wrapper.set_my_param('sample_type', input_data['sample_type'])
-
+        keys = ['normal_id', 'oncotree_code', 'known_variants', 'sample_type']
+        key_mapping = {k:k for k in keys} # mapping from INI keys to input_params.json keys
+        key_mapping['group_id'] = 'tumour_id'
+        for key,val in key_mapping.items():
+            if wrapper.my_param_is_null(key):
+                if input_data != None:
+                    wrapper.set_my_param(key, input_data[val])
+                else:
+                    msg = "Cannot find {0} in manual config or input_params.json".format(key)
+                    self.logger.error(msg)
+                    raise RuntimeError(msg)
         # SECOND PASS: Get files based on input parameters
         if wrapper.my_param_is_null('ichorcna_file'):
             wrapper.set_my_param('ichorcna_file', subset_p_s(self, "ichorcna", config[self.identifier]['group_id'], "metrics\.json$"))
