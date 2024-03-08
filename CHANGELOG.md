@@ -15,6 +15,10 @@
 - new PURPLE CNV calling plugin
 - removed sequenza support
 
+### Other
+
+- GCGI-1313: Refactor reading input_params.json
+
 ## v1.5.5: 2024-03-05
 - Further fixes to pWGS Cardea helper to allow multiple projects for one donor
 

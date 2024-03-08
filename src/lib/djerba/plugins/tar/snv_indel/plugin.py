@@ -16,7 +16,6 @@ from djerba.plugins.tar.provenance_tools import subset_provenance
 from djerba.core.workspace import workspace
 from djerba.util.render_mako import mako_renderer
 from djerba.util.html import html_builder as hb
-import djerba.util.input_params_tools as input_params_tools
 from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
 from djerba.util.environment import directory_finder
@@ -57,22 +56,23 @@ class main(plugin_base):
       wrapper = self.get_config_wrapper(config)
 
       # Get input_data.json if it exists; else return None
-      input_data = input_params_tools.get_input_params_json(self)
-
-
+      input_data = self.workspace.read_maybe_input_params()
       # FIRST PASS: get input parameters
-      if wrapper.my_param_is_null('donor'):
-          wrapper.set_my_param('donor', input_data['donor'])
-      if wrapper.my_param_is_null('assay'):
-          wrapper.set_my_param('assay', input_data['assay'])
-      if wrapper.my_param_is_null('oncotree_code'):
-          wrapper.set_my_param('oncotree_code', input_data['oncotree_code'])
-      if wrapper.my_param_is_null('cbio_id'):
-          wrapper.set_my_param('cbio_id', input_data['cbio_id'])
-      if wrapper.my_param_is_null('tumour_id'):
-          wrapper.set_my_param('tumour_id', input_data['tumour_id'])
-      if wrapper.my_param_is_null('normal_id'):
-          wrapper.set_my_param('normal_id', input_data['normal_id'])
+      for key in [
+          'normal_id',
+          'tumour_id',
+          'cbio_id',
+          'oncotree_code',
+          'assay',
+          'donor'
+      ]:
+          if wrapper.my_param_is_null(key):
+              if input_data != None:
+                  wrapper.set_my_param(key, input_data[key])
+              else:
+                  msg = "Cannot find {0} in manual config or input_params.json".format(key)
+                  self.logger.error(msg)
+                  raise RuntimeError(msg)
       
       # SECOND PASS: get files
       if wrapper.my_param_is_null('maf_file'):
