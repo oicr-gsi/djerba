@@ -10,6 +10,7 @@ class snv_indel_table_builder:
     INSERT_COL_INDEX = 6
     EXPR_COL_TITLE = 'Expr. (%)'
     COPY_STATE_COL_TITLE = 'Copy State'
+    LOH_COL_TITLE = 'Loss of Heterozygosity'
 
     @classmethod
     def make_header(klass, mutation_info):
@@ -26,6 +27,8 @@ class snv_indel_table_builder:
         ]
         if mutation_info[sic.HAS_COPY_STATE_DATA]:
             names.insert(klass.INSERT_COL_INDEX, klass.COPY_STATE_COL_TITLE)
+        if mutation_info[sic.HAS_LOH_DATA]:
+            names.insert(klass.INSERT_COL_INDEX, klass.LOH_COL_TITLE)
         if mutation_info[sic.HAS_EXPRESSION_DATA]:
             names.insert(klass.INSERT_COL_INDEX, klass.EXPR_COL_TITLE)
         return hb.thead(names)
@@ -46,6 +49,9 @@ class snv_indel_table_builder:
             ]
             if mutation_info[sic.HAS_COPY_STATE_DATA]:
                 metric_cell = hb.td(row[sic.COPY_STATE])
+                cells.insert(klass.INSERT_COL_INDEX, metric_cell)
+            if mutation_info[sic.HAS_LOH_DATA]:
+                metric_cell = hb.td(row[sic.LOH])
                 cells.insert(klass.INSERT_COL_INDEX, metric_cell)
             if mutation_info[sic.HAS_EXPRESSION_DATA]:
                 metric = row[wgts_tools.EXPRESSION_PERCENTILE]

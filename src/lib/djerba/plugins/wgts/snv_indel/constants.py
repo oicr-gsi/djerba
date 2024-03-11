@@ -38,6 +38,11 @@ MAF_KEYS = [
 HGVSP_SHORT = 'HGVSp_Short'
 HGVSC = 'HGVSc'
 
+# LOH
+LOH = 'LOH'
+HAS_LOH_DATA = 'has loh data'
+LOH_FILE = 'loh.txt'
+
 # Permitted MAF mutation types
 # `Splice_Region` is *included* here, but *excluded* from TMB computation
 # See also JIRA ticket GCGI-469

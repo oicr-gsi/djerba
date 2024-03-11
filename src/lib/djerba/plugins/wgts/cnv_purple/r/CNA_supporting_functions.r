@@ -128,8 +128,10 @@ preProcCNA <- function(genefile, oncolist, ploidy=2, ploidy_multiplier=2.4){
 }
 
 
+
+
 preProcLOH <- function(segments, genebed, cutoff=0){
-  #' take segment-level LOH calls and translate to genes
+  # take segment-level LOH calls and translate to genes
   library(CNTools)
   
   segments$chrom <- gsub("chr", "", segments$chrom)
@@ -140,13 +142,25 @@ preProcLOH <- function(segments, genebed, cutoff=0){
   reducedseg_ARatio <- rs(rdByGene_ARatio)
   
   a_allele <- reducedseg_ARatio[,c("genename","b_allele")]
-
-  a_allele$LOH <- FALSE
-  a_allele$LOH[a_allele$b_allele == cutoff ] <- TRUE
   
   return(a_allele)
   
 }
+
+
+#computeLOH <- function(CN_table, purity){
+#
+#  temp_table <- CN_table %>% mutate(LHS = purity*CN)
+#  final_table <- temp_table %>% mutate(RHS = CN-0.5)
+#
+#  final_table$LOH <- final_table$LHS > final_table$RHS
+#
+#  #a_allele$LOH <- FALSE
+#  #a_allele$LOH[a_allele$b_allele == cutoff ] <- TRUE
+#
+#  return(final_table)
+#
+#}
 
 
 process_centromeres <- function(centromeres_path){
