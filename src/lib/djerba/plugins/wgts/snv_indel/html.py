@@ -10,7 +10,7 @@ class snv_indel_table_builder:
     INSERT_COL_INDEX = 6
     EXPR_COL_TITLE = 'Expr. (%)'
     COPY_STATE_COL_TITLE = 'Copy State'
-    LOH_COL_TITLE = 'Loss of Heterozygosity'
+    LOH_COL_TITLE = 'LOH'
 
     @classmethod
     def make_header(klass, mutation_info):

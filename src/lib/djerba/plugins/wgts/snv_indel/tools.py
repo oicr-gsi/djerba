@@ -225,7 +225,7 @@ class snv_indel_processor(logger):
             loh_dict = dict(zip(loh_df.Hugo_Symbol, loh_df.LOH))
         else:
             has_loh = False
-            loh = {}
+            loh_dict = {}
         with open(os.path.join(self.work_dir, sic.MUTATIONS_ONCOGENIC)) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
             for row_input in reader:
