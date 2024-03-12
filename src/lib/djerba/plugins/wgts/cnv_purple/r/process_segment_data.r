@@ -60,7 +60,7 @@ write.table(log2,file=paste0(dir_path, "/purple.seg"), sep="\t", row.names=FALSE
 write.table(log2,file=paste0(dir_path, "/seg.txt"), sep="\t", row.names=FALSE, quote=FALSE, col.names = TRUE)
 
 
-##### COMPUTING LOH #####
+##### Getting information for LOH  #####
 
 ### Table with Genes, Minor Allele Copy Number (MACN), Copy Number (CN):
 
