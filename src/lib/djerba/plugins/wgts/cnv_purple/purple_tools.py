@@ -98,17 +98,16 @@ class process_purple(logger):
         }
         states = {}
         with open(os.path.join(self.work_dir, 'purple.data_CNA.txt')) as in_file:
-            reader = csv.reader(in_file, delimiter="\t")
+            reader = csv.DictReader(in_file, delimiter="\t")
             for row in reader:
-                if row[0] != 'Hugo_Symbol':
-                    gene = row[0]
-                    try:
-                        cna = int(row[1])
-                        states[gene] = conversion[cna]
-                    except (TypeError, KeyError) as err:
-                        msg = "Cannot convert unknown CNA code: {0}".format(row[1])
-                        self.logger.error(msg)
-                        raise RuntimeError(msg) from err
+                gene = row['Hugo_Symbol']
+                try:
+                    cna = int(row['minCopyNumber'])
+                    states[gene] = conversion[cna]
+                except (TypeError, KeyError) as err:
+                    msg = "Cannot convert unknown CNA code: {0}".format(row[1])
+                    self.logger.error(msg)
+                    raise RuntimeError(msg) from err
         with open(os.path.join(self.work_dir, self.COPY_STATE_FILE), 'w') as out_file:
             out_file.write(json.dumps(states, sort_keys=True, indent=4))
 
