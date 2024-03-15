@@ -4,6 +4,7 @@ AUTHOR: Felix Beaudry
 """
 
 import csv
+import json
 import logging
 import os
 import re
@@ -16,6 +17,8 @@ from djerba.util.subprocess_runner import subprocess_runner
 
 
 class process_purple(logger):
+
+    COPY_STATE_FILE = 'purple_copy_states.json'
 
     def __init__(self, work_dir, log_level=logging.WARNING, log_path=None):
         self.log_level = log_level
@@ -81,6 +84,33 @@ class process_purple(logger):
             elif re.search('purple\.cnv\.gene\.tsv$', name):
                 purple_files[cc.PURPLE_GENE] = zf.extract(name, self.work_dir)
         return purple_files
+
+    def write_copy_states(self):
+        """
+        Write the copy states to JSON for later reference, eg. by snv/indel plugin
+        """
+        conversion = {
+            0: "Neutral",
+            1: "Gain",
+            2: "Amplification",
+            -1: "Shallow Deletion",
+            -2: "Deep Deletion"
+        }
+        states = {}
+        with open(os.path.join(self.work_dir, 'purple.data_CNA.txt')) as in_file:
+            reader = csv.reader(in_file, delimiter="\t")
+            for row in reader:
+                if row[0] != 'Hugo_Symbol':
+                    gene = row[0]
+                    try:
+                        cna = int(row[1])
+                        states[gene] = conversion[cna]
+                    except (TypeError, KeyError) as err:
+                        msg = "Cannot convert unknown CNA code: {0}".format(row[1])
+                        self.logger.error(msg)
+                        raise RuntimeError(msg) from err
+        with open(os.path.join(self.work_dir, self.COPY_STATE_FILE), 'w') as out_file:
+            out_file.write(json.dumps(states, sort_keys=True, indent=4))
 
     def write_purple_alternate_launcher(self, path_info):
         bam_files = path_info.get(cc.BMPP)

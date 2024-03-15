@@ -60,6 +60,7 @@ class main(plugin_base):
                                                                                  core_constants.TUMOUR_ID)),
                                                       purity_ploidy[cc.PURITY],
                                                       ploidy)
+        purple_cnv.write_copy_states()
 
         # write alternate solutions launcher JSON
         if os.path.exists(os.path.join(work_dir, core_constants.DEFAULT_PATH_INFO)):
