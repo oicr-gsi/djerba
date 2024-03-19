@@ -25,10 +25,10 @@ HAS_EXPRESSION_DATA = 'has expression data'
 PERCENT_GENOME_ALTERED = 'percent genome altered'
 TOTAL_VARIANTS = 'total variants'
 
-# links and locations
-CENTROMERES = "data/hg38_centromeres.txt"
-GENEBED =  "data/gencode_v33_hg38_genes.bed"
-ONCOLIST =  "data/20200818-oncoKBcancerGeneList.tsv"
+# data files
+CENTROMERES = "hg38_centromeres.txt"
+GENEBED =  "gencode_v33_hg38_genes.bed"
+ONCOLIST =  "20200818-oncoKBcancerGeneList.tsv"
 
 # whizbam
 WHIZBAM_BASE_URL = 'https://whizbam.oicr.on.ca'
