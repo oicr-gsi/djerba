@@ -10,7 +10,7 @@ import djerba.plugins.wgts.cnv_purple.constants as pc
 import djerba.util.oncokb.constants as oc
 from djerba.helpers.input_params_helper.helper import main as iph
 from djerba.plugins.base import plugin_base, DjerbaPluginError
-from djerba.plugins.cnv.tools import cnv_processor
+from djerba.plugins.wgts.common.cnv.tools import cnv_processor
 from djerba.plugins.wgts.cnv_purple.purple_tools import purple_processor
 from djerba.util.oncokb.annotator import annotator_factory
 from djerba.util.render_mako import mako_renderer

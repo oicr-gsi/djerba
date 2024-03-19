@@ -14,6 +14,7 @@
 
 - new PURPLE CNV calling plugin
 - removed sequenza support
+- new `djerba.plugins.wgts.common` package for code shared between multiple WGTS/WGS plugins
 
 ### Other
 
