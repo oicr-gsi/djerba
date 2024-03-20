@@ -7,11 +7,11 @@ import json
 import logging
 import os
 import djerba.core.constants as core_constants
-import djerba.plugins.cnv.constants as cnv
+import djerba.plugins.wgts.common.cnv.constants as cnv
 import djerba.util.oncokb.constants as oncokb_constants
 from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
-from djerba.plugins.wgts.tools import wgts_tools
+from djerba.plugins.wgts.common.tools import wgts_tools
 from djerba.util.sequenza import sequenza_reader 
 from djerba.util.environment import directory_finder
 from djerba.util.html import html_builder
@@ -149,19 +149,20 @@ class cnv_processor(logger):
 
     def run_main_r_script(self):
         """Run the main process_CNA_data.R script"""
-        dir_location = os.path.dirname(__file__)
+        r_script_dir = os.path.join(os.path.dirname(__file__), 'R')
         genebed_path = os.path.join(self.data_dir, self.GENEBED)
         oncolist_path = os.path.join(self.data_dir, self.ONCOLIST)
         centromeres_path = os.path.join(self.data_dir, self.CENTROMERES)
         purity = self.config.get_my_float(cnv.PURITY)
         cmd = [
-            'Rscript', os.path.join(dir_location + "/R/process_CNA_data.r"),
+            'Rscript', os.path.join(r_script_dir, "process_CNA_data.r"),
             '--outdir', self.work_dir,
             '--segfile', self.seg_path,
             '--genebed', genebed_path,
             '--oncolist', oncolist_path,
             '--purity', purity,
-            '--centromeres', centromeres_path
+            '--centromeres', centromeres_path,
+            '--import', r_script_dir
         ]
         subprocess_runner().run([str(x) for x in cmd], "main R script")
 

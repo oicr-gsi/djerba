@@ -10,7 +10,8 @@ option_list = list(
   make_option(c("-g", "--genebed"), type="character", default=NULL, help="bed file for gene identifying gene locations", metavar="character"),
   make_option(c("-o", "--oncolist"), type="character", default=NULL, help="oncoKB cancer genes", metavar="character"),
   make_option(c("-p", "--purity"), type="character", default=NULL, help="sample cellularity for CN cutoffs", metavar="character"),
-  make_option(c("-c", "--centromeres"), type="character", default=NULL, help="sample cellularity for CN cutoffs", metavar="character")
+  make_option(c("-c", "--centromeres"), type="character", default=NULL, help="sample cellularity for CN cutoffs", metavar="character"),
+  make_option(c("-i", "--import"), type="character", default=NULL, help="script directory for additional R imports", metavar="character")
 )
 
 # get options
@@ -24,10 +25,10 @@ genebed          <- opt$genebed
 oncolist         <- opt$oncolist
 centromeres_path <- opt$centromeres
 purity           <- as.numeric(opt$purity)
+import_dir       <- opt$import
 
 # source functions
-basedir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), sep='/')
-source(paste0(basedir, "/plugins/cnv/R/CNA_supporting_functions.r"))
+source(paste(import_dir, "CNA_supporting_functions.r", sep="/"))
 
 ###################### CNA #####################
 

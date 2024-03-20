@@ -9,11 +9,11 @@ import gzip
 import json
 import logging
 import djerba.core.constants as core_constants
+import djerba.plugins.wgts.common.cnv.constants as cnv_constants
 import djerba.plugins.wgts.snv_indel.constants as sic
 from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
-from djerba.plugins.cnv import constants as cnv_constants
-from djerba.plugins.wgts.tools import wgts_tools
+from djerba.plugins.wgts.common.tools import wgts_tools
 from djerba.util.environment import directory_finder
 from djerba.util.html import html_builder
 from djerba.util.image_to_base64 import converter
