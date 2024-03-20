@@ -11,6 +11,7 @@
 - GCGI-1190: Removed obsolete data values/files
 - GCGI-1012: Moved R testing to formal tests
 - GCGI-1304: Merge updates to genomic landscape plugin and resolve conflicts
+- GCGI-1319: Update genomic landscape plugin to read purity from PURPLE output file
 
 - new PURPLE CNV calling plugin
 - removed sequenza support
