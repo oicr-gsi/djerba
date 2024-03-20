@@ -19,7 +19,7 @@ import djerba.plugins.tar.swgs.constants as constants
 
 class preprocess(logger):
 
-  def __init__(self, tumour_id, oncotree_code, work_dir, log_level=logging.DEBUG, log_path=None):
+  def __init__(self, tumour_id, oncotree_code, work_dir, log_level=logging.WARNING, log_path=None):
 
     finder = directory_finder(log_level, log_path)
     # CONSTANTS

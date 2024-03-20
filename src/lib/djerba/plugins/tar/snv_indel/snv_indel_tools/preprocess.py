@@ -66,7 +66,7 @@ class preprocess(logger):
   MAX_UNMATCHED_GNOMAD_AF = 0.001
 
 
-  def __init__(self, config, work_dir, assay, oncotree_code, cbio_id, tumour_id, normal_id, maf_file, log_level=logging.DEBUG, log_path=None):
+  def __init__(self, config, work_dir, assay, oncotree_code, cbio_id, tumour_id, normal_id, maf_file, log_level=logging.WARNING, log_path=None):
       
       # CONFIG
       self.config = config

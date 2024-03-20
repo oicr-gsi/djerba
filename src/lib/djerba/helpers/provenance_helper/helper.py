@@ -18,7 +18,6 @@ import djerba.core.constants as core_constants
 import djerba.util.ini_fields as ini  # TODO new module for these constants?
 import djerba.util.provenance_index as index
 from djerba.helpers.base import helper_base
-import djerba.util.input_params_tools as input_params_tools
 from djerba.util.provenance_reader import provenance_reader, sample_name_container, \
     InvalidConfigurationError
 
@@ -52,7 +51,7 @@ class main(helper_base):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         provenance_path = wrapper.get_my_string(self.PROVENANCE_INPUT_KEY)
-        input_data = input_params_tools.get_input_params_json(self)
+        input_data = self.workspace.read_maybe_input_params()
         if input_data == None:
             msg = "Input params JSON does not exist. Parameters must be set manually."
             self.logger.warning(msg)

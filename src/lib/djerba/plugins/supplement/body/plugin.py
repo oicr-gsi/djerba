@@ -5,7 +5,6 @@ from djerba.plugins.base import plugin_base, DjerbaPluginError
 import djerba.core.constants as core_constants
 from djerba.util.render_mako import mako_renderer
 import djerba.util.assays as assays
-import djerba.util.input_params_tools as input_params_tools
 from time import strftime
 
 class main(plugin_base):
@@ -35,10 +34,7 @@ class main(plugin_base):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         # Get input_data.json if it exists; else return None
-        input_data = input_params_tools.get_input_params_json(self)
-        if input_data == None:
-            msg = "File input_params.json does not exist. Parameters must be set manually."
-            self.logger.info(msg)
+        input_data = self.workspace.read_maybe_input_params()
         if wrapper.my_param_is_null(self.ASSAY):
             if input_data:
                 wrapper.set_my_param(self.ASSAY, input_data[self.ASSAY])
