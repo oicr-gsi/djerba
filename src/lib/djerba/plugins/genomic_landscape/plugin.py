@@ -6,6 +6,7 @@ import os
 
 import djerba.core.constants as core_constants
 import djerba.plugins.genomic_landscape.constants as glc
+import djerba.plugins.wgts.cnv_purple.constants as purple_constants
 import djerba.util.oncokb.constants as oncokb_constants
 from djerba.helpers.input_params_helper.helper import main as input_params_helper
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
@@ -69,12 +70,13 @@ class main(plugin_base):
         config = self.apply_defaults(config)
         w = self.get_config_wrapper(config)
         ipf = input_params_helper.INPUT_PARAMS_FILE
+        ppf = purple_constants.PURITY_PLOIDY
         dsi = core_constants.DEFAULT_SAMPLE_INFO
         dpi = core_constants.DEFAULT_PATH_INFO
         oc = oncokb_constants.ONCOTREE_CODE
         w = self.update_wrapper_if_null(w, ipf, glc.TCGA_CODE)
-        w = self.update_wrapper_if_null(w, ipf, glc.PURITY_INPUT)
         w = self.update_wrapper_if_null(w, ipf, oc, self.INPUT_PARAMS_ONCOTREE_CODE)
+        w = self.update_wrapper_if_null(w, ppf, purple_constants.PURITY)
         w = self.update_wrapper_if_null(w, dsi, glc.TUMOUR_ID)
         w = self.update_wrapper_if_null(w, dpi, glc.MSI_FILE, glc.MSI_WORKFLOW)
         w = self.update_wrapper_if_null(w, dpi, glc.CTDNA_FILE, glc.CTDNA_WORKFLOW)

@@ -1,7 +1,7 @@
 """Methods to generate CNV table html"""
 
 import djerba.core.constants as core_constants
-import djerba.plugins.cnv.constants as cnv
+import djerba.plugins.wgts.common.cnv.constants as cnv
 from djerba.util.html import html_builder as hb
 
 def make_table_header():  

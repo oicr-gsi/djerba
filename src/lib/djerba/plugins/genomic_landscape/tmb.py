@@ -142,11 +142,18 @@ class tmb_processor(logger):
         # See JIRA ticket GCGI-496
         total = 0
         excluded = 0
-        with open(os.path.join(work_dir, constants.MUTATIONS_EXTENDED)) as data_file:
-            for row in csv.DictReader(data_file, delimiter="\t"):
-                total += 1
-                if row.get(constants.VARIANT_CLASSIFICATION) in constants.TMB_EXCLUDED:
-                    excluded += 1
+        mutations_path = os.path.join(work_dir, constants.MUTATIONS_EXTENDED)
+        if os.path.isfile(mutations_path):
+            with open(mutations_path) as data_file:
+                for row in csv.DictReader(data_file, delimiter="\t"):
+                    total += 1
+                    if row.get(constants.VARIANT_CLASSIFICATION) in constants.TMB_EXCLUDED:
+                        excluded += 1
+        else:
+            msg = "Unable to compute TMB, file "+constants.MUTATIONS_EXTENDED+\
+                " not found in workspace; need to run wgts.snv_indel plugin?"
+            self.logger.error(msg)
+            raise RuntimeError(msg)
         tmb_count = total - excluded
         msg = "Found {} small mutations and indels, of which {} are counted for TMB".format(total,
                                                                                             tmb_count)

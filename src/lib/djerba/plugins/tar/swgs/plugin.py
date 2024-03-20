@@ -16,7 +16,6 @@ from djerba.plugins.tar.provenance_tools import subset_provenance
 import gsiqcetl.column
 from gsiqcetl import QCETLCache
 from djerba.util.render_mako import mako_renderer
-import djerba.util.input_params_tools as input_params_tools
 from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
 from djerba.util.oncokb.tools import levels as oncokb_levels
@@ -57,16 +56,17 @@ class main(plugin_base):
       wrapper = self.get_config_wrapper(config)
       
       # Get input_data.json if it exists; else return None
-      input_data = input_params_tools.get_input_params_json(self)
-
-      if wrapper.my_param_is_null('donor'):
-          wrapper.set_my_param('donor', input_data['donor'])
-      if wrapper.my_param_is_null('oncotree_code'):
-          wrapper.set_my_param('oncotree_code', input_data['oncotree_code'])
-      if wrapper.my_param_is_null('tumour_id'):
-          wrapper.set_my_param('tumour_id', input_data['tumour_id'])
+      input_data = self.workspace.read_maybe_input_params()
+      for key in ['donor', 'oncotree_code', 'tumour_id']:
+            if wrapper.my_param_is_null(key):
+                if input_data != None:
+                    wrapper.set_my_param(key, input_data[key])
+                else:
+                    msg = "Cannot find {0} in manual config or input_params.json".format(key)
+                    self.logger.error(msg)
+                    raise RuntimeError(msg)
       if wrapper.my_param_is_null('seg_file'):
-          wrapper.set_my_param('seg_file', self.get_seg_file(config[self.identifier]['donor']))
+          wrapper.set_my_param('seg_file', self.get_seg_file(wrapper.get_my_string('donor')))
       return config
 
     def extract(self, config):
@@ -138,6 +138,7 @@ class main(plugin_base):
     def get_seg_file(self, root_sample_name):
       """
       pull data from results file
+      TODO update to use provenance helper output, if available
       """
       provenance = subset_provenance(self, self.WORKFLOW, root_sample_name)
       try:
