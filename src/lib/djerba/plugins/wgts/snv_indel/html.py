@@ -51,8 +51,12 @@ class snv_indel_table_builder:
                 metric_cell = hb.td(row[sic.COPY_STATE])
                 cells.insert(klass.INSERT_COL_INDEX, metric_cell)
             if mutation_info[sic.HAS_LOH_DATA]:
-                metric_cell = hb.td(row[sic.LOH])
-                cells.insert(klass.INSERT_COL_INDEX, metric_cell)
+                if "X" in row[wgts_tools.CHROMOSOME]:
+                    metric_cell = hb.td("NA")
+                    cells.insert(klass.INSERT_COL_INDEX, metrix_cell)
+                else:
+                    metric_cell = hb.td(row[sic.LOH])
+                    cells.insert(klass.INSERT_COL_INDEX, metric_cell)
             if mutation_info[sic.HAS_EXPRESSION_DATA]:
                 metric = row[wgts_tools.EXPRESSION_PERCENTILE]
                 metric_cell = hb.td(hb.expression_display(metric))
