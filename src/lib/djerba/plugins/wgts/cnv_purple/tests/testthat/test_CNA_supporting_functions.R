@@ -45,23 +45,35 @@ test_that("preProcCNA returns correct gene-level alterations with PURPLE input",
   }
 )
   
-test_that("preProcLOH returns correct gene-level LOH from PURPLE input", 
+test_that("preProcLOH returns CN and MACN info from PURPLE input for later LOH calculation", 
           {
             
-            bed_path <- paste0(basedir,"data/gencode_v33_hg38_genes.bed")
+            bed_path <- paste0(basedir,"/data/gencode_v33_hg38_genes.bed")
             genebed <- read.delim(bed_path, header=TRUE)
             
-            segfile_path <-  paste0(testdatadir,"plugins/cnv-purple/purple.cnv.somatic.tsv")
+            segfile_path <-  paste0(testdatadir,"/plugins/cnv-purple/purple.cnv.somatic.tsv")
             segs <- read.delim(segfile_path, header=TRUE) # segmented data already
             
             segs$ID <- "purple"
-            loh <- segs[,c("ID","chromosome","start","end","bafCount")]
-            names(loh) <- c("ID",	"chrom"	,"loc.start"	,"loc.end"	,"num.mark")
-            loh$seg.mean <- segs$minorAlleleCopyNumber
+            data <- segs[,c("ID","chromosome","start","end","bafCount")]
+            names(data) <- c("ID",	"chrom"	,"loc.start"	,"loc.end"	,"num.mark")
             
-            LOH = preProcLOH(loh, genebed)
+	    # Check MACN
+	    data$seg.mean <- segs$minorAlleleCopyNumber
+            MACN = preProcLOH(data, genebed)
+	    # filter only for TP53
+            tp53 <- MACN[(which(MACN == "TP53")),]
+	    expect_equal(tp53$genename, "TP53")
+	    expect_equal(tp53$b_allele, 0.7342)
 
-            expect_equal(LOH$LOH[LOH$gene == "TP53"], FALSE)
+	    # Check CN
+	    data$seg.mean <- segs$copyNumber
+            CN= preProcLOH(data, genebed)
+	    # filter only for TP53
+            tp53 <- CN[(which(MACN == "TP53")),]
+            expect_equal(tp53$genename, "TP53")
+	    expect_equal(tp53$b_allele, 5.6306)
+
             
           }
 )

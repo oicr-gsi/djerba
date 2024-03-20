@@ -128,9 +128,7 @@ preProcCNA <- function(genefile, oncolist, ploidy=2, ploidy_multiplier=2.4){
 }
 
 
-
-
-preProcLOH <- function(segments, genebed, cutoff=0){
+preProcLOH <- function(segments, genebed){
   library(CNTools)
   
   segments$chrom <- gsub("chr", "", segments$chrom)
@@ -141,7 +139,7 @@ preProcLOH <- function(segments, genebed, cutoff=0){
   reducedseg_ARatio <- rs(rdByGene_ARatio)
   
   a_allele <- reducedseg_ARatio[,c("genename","b_allele")]
-  
+
   return(a_allele)
   
 }
