@@ -16,11 +16,11 @@ import djerba.core.constants as core_constants
 import djerba.plugins.pwgs.pwgs_tools as pwgs_tools
 import djerba.plugins.pwgs.constants as pc
 
-class main(plugin_base):
 
+class main(plugin_base):
     PRIORITY = 200
     PLUGIN_VERSION = '1.1'
-    
+
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
@@ -55,29 +55,32 @@ class main(plugin_base):
         mrdetect_results = pwgs_tools.preprocess_results(self, config[self.identifier][pc.RESULTS_FILE])
         hbc_results = self.preprocess_hbc(config[self.identifier][pc.HBC_FILE])
         reads_detected = self.preprocess_vaf(config[self.identifier][pc.VAF_FILE])
-        pwgs_base64 = self.write_pwgs_plot(config[self.identifier][pc.HBC_FILE], 
+        pwgs_base64 = self.write_pwgs_plot(config[self.identifier][pc.HBC_FILE],
                                            config[self.identifier][pc.VAF_FILE],
-                                           output_dir = self.workspace.print_location())
+                                           output_dir=self.workspace.print_location())
         self.logger.info("PWGS ANALYSIS: Finished preprocessing files")
-        data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)       
-        results =  {
-                pc.CTDNA_OUTCOME: mrdetect_results[pc.CTDNA_OUTCOME],
-                pc.SIGNIFICANCE: mrdetect_results[pc.SIGNIFICANCE],
-                pc.TUMOUR_FRACTION_READS: float('%.1E' % Decimal( reads_detected*100 / hbc_results[pc.READS_CHECKED] )),
-                pc.SITES_CHECKED: hbc_results[pc.SITES_CHECKED],
-                pc.READS_CHECKED: hbc_results[pc.READS_CHECKED],
-                pc.SITES_DETECTED: hbc_results[pc.SITES_DETECTED],
-                pc.READS_DETECTED: reads_detected,
-                pc.PVALUE: mrdetect_results[pc.PVALUE],
-                pc.DATASET_DETECTION_CUTOFF: math.ceil(mrdetect_results[pc.DATASET_DETECTION_CUTOFF]),
-                pc.COHORT_N: hbc_results[pc.COHORT_N],
-                'pwgs_base64': pwgs_base64,
-                'files': {
-                    'results_file': config[self.identifier][pc.RESULTS_FILE],
-                    'hbc_results': config[self.identifier][pc.HBC_FILE],
-                    'vaf_results': config[self.identifier][pc.VAF_FILE]
-                }
+        data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
+        results = {
+            pc.ASSAY: "plasma Whole Genome Sequencing (pWGS) - 30X (v1.0)",
+            pc.STUDY: config[self.identifier][pc.STUDY],
+            pc.PRIMARY_CANCER: config[self.identifier][pc.PRIMARY_CANCER],
+            pc.CTDNA_OUTCOME: mrdetect_results[pc.CTDNA_OUTCOME],
+            pc.SIGNIFICANCE: mrdetect_results[pc.SIGNIFICANCE],
+            pc.TUMOUR_FRACTION_READS: float('%.1E' % Decimal(reads_detected * 100 / hbc_results[pc.READS_CHECKED])),
+            pc.SITES_CHECKED: hbc_results[pc.SITES_CHECKED],
+            pc.READS_CHECKED: hbc_results[pc.READS_CHECKED],
+            pc.SITES_DETECTED: hbc_results[pc.SITES_DETECTED],
+            pc.READS_DETECTED: reads_detected,
+            pc.PVALUE: mrdetect_results[pc.PVALUE],
+            pc.DATASET_DETECTION_CUTOFF: math.ceil(mrdetect_results[pc.DATASET_DETECTION_CUTOFF]),
+            pc.COHORT_N: hbc_results[pc.COHORT_N],
+            'pwgs_base64': pwgs_base64,
+            'files': {
+                'results_file': config[self.identifier][pc.RESULTS_FILE],
+                'hbc_results': config[self.identifier][pc.HBC_FILE],
+                'vaf_results': config[self.identifier][pc.VAF_FILE]
             }
+        }
         data[pc.RESULTS] = results
         self.workspace.write_json('hbc_results.json', hbc_results)
         self.workspace.write_json('mrdetect_results.json', mrdetect_results)
@@ -99,8 +102,8 @@ class main(plugin_base):
                     reads_checked.append(row[3])
                     sites_detected.append(row[4])
                 except IndexError as err:
-                    msg = "Incorrect number of columns in HBC row: '{0}'".format(row)+\
-                        "read from '{0}'".format(hbc_path)
+                    msg = "Incorrect number of columns in HBC row: '{0}'".format(row) + \
+                          "read from '{0}'".format(hbc_path)
                     raise RuntimeError(msg) from err
         hbc_n = len(sites_detected) - 1
         hbc_dict = {pc.SITES_CHECKED: int(sites_checked[0]),
@@ -108,7 +111,7 @@ class main(plugin_base):
                     pc.SITES_DETECTED: int(sites_detected[0]),
                     pc.COHORT_N: hbc_n}
         return hbc_dict
-    
+
     def preprocess_vaf(self, vaf_path):
         """
         summarize Variant Allele Frequency (VAF) file
@@ -118,19 +121,19 @@ class main(plugin_base):
             reader_file = csv.reader(hbc_file, delimiter="\t")
             next(reader_file, None)
             for row in reader_file:
-                try: 
+                try:
                     reads_tmp = row[1]
                     reads_detected = reads_detected + int(reads_tmp)
                 except IndexError as err:
-                    msg = "Incorrect number of columns in vaf row: '{0}' ".format(row)+\
+                    msg = "Incorrect number of columns in vaf row: '{0}' ".format(row) + \
                           "read from '{0}'".format(vaf_path)
-                    raise RuntimeError(msg) from err      
+                    raise RuntimeError(msg) from err
         return reads_detected
-    
+
     def render(self, data):
         renderer = mako_renderer(self.get_module_dir())
         return renderer.render_name(pc.ANALYSIS_TEMPLATE_NAME, data)
-    
+
     def specify_params(self):
         discovered = [
             pc.RESULTS_FILE,
@@ -142,19 +145,18 @@ class main(plugin_base):
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_priority_defaults(self.PRIORITY)
 
-    def write_pwgs_plot(self, hbc_path, vaf_file, output_dir ):
+    def write_pwgs_plot(self, hbc_path, vaf_file, output_dir):
         '''
         use R to plot the detection rate 
         compared to healthy blood control, 
         return in base64
         '''
         args = [
-            os.path.join(os.path.dirname(__file__),'detection.plot.R'),
+            os.path.join(os.path.dirname(__file__), 'detection.plot.R'),
             '--hbc_results', hbc_path,
             '--vaf_results', vaf_file,
             '--output_directory', output_dir,
             '--pval', str(pc.DETECTION_ALPHA)
         ]
         pwgs_results = subprocess_runner().run(args)
-        return(pwgs_results.stdout.split('"')[1])
-    
+        return (pwgs_results.stdout.split('"')[1])
