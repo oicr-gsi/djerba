@@ -17,6 +17,10 @@
 - removed sequenza support
 - new `djerba.plugins.wgts.common` package for code shared between multiple WGTS/WGS plugins
 
+### External plugin support
+
+- GCGI-993: Support for plugins outwith the main `djerba` package
+
 ### Other
 
 - GCGI-1313: Refactor reading input_params.json
@@ -43,7 +47,6 @@
 - GCGI-1296: Remove unwanted backslash and correctly insert configured sign-off date
 
 ## v1.5.0: 2024-02-13
->>>>>>> dev-GCGI-1304_genomic-landscape-merge
 
 ### Report reformatting
 - GCGI-1266: moved clinical footer into supplement plugin
