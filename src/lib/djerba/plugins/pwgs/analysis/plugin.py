@@ -2,6 +2,7 @@
 import os
 import csv
 from decimal import Decimal
+import math
 import re
 import logging
 
@@ -68,6 +69,7 @@ class main(plugin_base):
                 pc.SITES_DETECTED: hbc_results[pc.SITES_DETECTED],
                 pc.READS_DETECTED: reads_detected,
                 pc.PVALUE: mrdetect_results[pc.PVALUE],
+                pc.DATASET_DETECTION_CUTOFF: math.ceil(mrdetect_results[pc.DATASET_DETECTION_CUTOFF]),
                 pc.COHORT_N: hbc_results[pc.COHORT_N],
                 'pwgs_base64': pwgs_base64,
                 'files': {
