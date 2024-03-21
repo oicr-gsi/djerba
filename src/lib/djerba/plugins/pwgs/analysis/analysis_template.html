@@ -1,5 +1,4 @@
 <%
-  from djerba.plugins.case_overview.plugin import main as case_overview
   import djerba.plugins.pwgs.constants as constants
   from djerba.util.html import html_builder
 %>
@@ -9,7 +8,7 @@ ${html_builder.section_cells_begin("Mutational Sampling", True)}
 
       <img id='Detection' style='width: 100%; object-fit: contain' src="${results.get(constants.PWGS_PLOT)}"/>
 
-      <p> This patient has been diagnosed with ${results.get(case_overview.PRIMARY_CANCER)} and has been referred for the OICR Genomics ${results.get(case_overview.ASSAY_DESCRIPTION)} assay through the ${results.get(case_overview.STUDY)} study.
+      <p> This patient has been diagnosed with ${results.get(constants.PRIMARY_CANCER)} and has been referred for the OICR Genomics ${results.get(constants.ASSAY)} assay through the ${results.get(constants.STUDY)} study.
             This test counted the number of sites in the patient's plasma
             at which variants were detected that match variants found in the patient's primary tumour 
             (candidate sites passing QC: <strong>${html_builder.k_comma_format(results.get(constants.SITES_CHECKED))}</strong>).
