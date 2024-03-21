@@ -59,13 +59,32 @@ log2$seg.mean <- log(1 + (purity *(segs$copyNumber - ploidy)/ploidy), 2)
 write.table(log2,file=paste0(dir_path, "/purple.seg"), sep="\t", row.names=FALSE, quote=FALSE, col.names = FALSE)
 write.table(log2,file=paste0(dir_path, "/seg.txt"), sep="\t", row.names=FALSE, quote=FALSE, col.names = TRUE)
 
-# get gene-level LOH from segment data
-loh <- log2
-loh$seg.mean <- segs$minorAlleleCopyNumber
-geneInfo <- read.delim(genebed, sep="\t", header=TRUE)
-loh_post <- preProcLOH(loh, geneInfo)
-write.table(loh_post, file=paste0(dir_path, "/loh.txt"), sep="\t", row.names=FALSE, quote=FALSE, col.names = FALSE)
 
+##### Getting information for later calculation of LOH in snv_indel plugin  #####
+
+### Table with Genes, Minor Allele Copy Number (MACN), Copy Number (CN):
+
+# Convert chromosomes to genes and display their MACN
+genes_MACN <- log2
+genes_MACN$seg.mean <- segs$minorAlleleCopyNumber
+geneInfo <- read.delim(genebed, sep="\t", header=TRUE)
+CN_table <- preProcLOH(genes_MACN, geneInfo)
+
+# Convert chromosomes to genes and display their MACN
+genes_CN <- log2
+genes_CN$seg.mean <- segs$copyNumber
+genes_CN <- preProcLOH(genes_CN, geneInfo)
+
+# Put the tables together to output a table with genes, MACN, CN
+CN_table$local_cn <- genes_CN$b_allele
+
+# Rename the columns
+names(CN_table)[1] <- "Hugo_Symbol"
+names(CN_table)[2] <- "MACN"
+names(CN_table)[3] <- "CN"
+
+# Write to a table
+write.table(CN_table, file=paste0(dir_path, "/cn.txt"), sep="\t", row.names=FALSE, quote=FALSE, col.names = TRUE)
 
 #### segment plot ####
 segs <- separate(segs, chromosome,c("blank","chr"),"chr",fill="left",remove = FALSE)

@@ -28,4 +28,4 @@ CNV_PLOT = 'cnv plot'
 BODY = 'body'
 
 # filenames
-COPY_STATE_FILE = 'copy_states.json'
+COPY_STATE_FILE = 'purple_copy_states.json'

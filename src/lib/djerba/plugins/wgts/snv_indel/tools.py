@@ -7,6 +7,7 @@ import re
 import csv
 import gzip
 import json
+import pandas as pd
 import logging
 import djerba.core.constants as core_constants
 import djerba.plugins.wgts.common.cnv.constants as cnv_constants
@@ -218,6 +219,13 @@ class snv_indel_processor(logger):
         else:
             has_copy_states = False
             copy_states = {}
+        if self.workspace.has_file(sic.LOH_FILE):
+            has_loh = True
+            loh_df = pd.read_csv(os.path.join(self.work_dir, sic.LOH_FILE), sep="\t")
+            loh_dict = dict(zip(loh_df.Hugo_Symbol, loh_df.LOH))
+        else:
+            has_loh = False
+            loh_dict = {}
         with open(os.path.join(self.work_dir, sic.MUTATIONS_ONCOGENIC)) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
             for row_input in reader:
@@ -233,6 +241,7 @@ class snv_indel_processor(logger):
                     sic.VAF: self.get_tumour_vaf(row_input),
                     sic.DEPTH: self.get_mutation_depth(row_input),
                     sic.COPY_STATE: copy_states.get(gene), # None if copy states not available
+                    sic.LOH: loh_dict.get(gene), # None of LOH not available
                     wgts_tools.CHROMOSOME: cytobands.get(gene, wgts_tools.UNKNOWN),
                     wgts_tools.ONCOKB: oncokb_levels.parse_oncokb_level(row_input)
                 }
@@ -245,6 +254,7 @@ class snv_indel_processor(logger):
             sic.ONCOGENIC_MUTATIONS: len(rows),
             sic.VAF_PLOT: self.convert_vaf_plot(),
             sic.HAS_COPY_STATE_DATA: has_copy_states,
+            sic.HAS_LOH_DATA: has_loh,
             sic.HAS_EXPRESSION_DATA: is_wgts,
             wgts_tools.BODY: rows
         }
@@ -345,6 +355,12 @@ class snv_indel_processor(logger):
             '--whizbam_url', whizbam_url,
             '--maffile', maf_input_path
         ]
+
+        if self.workspace.has_file("purity_ploidy.json") and self.workspace.has_file("cn.txt"):
+            purity = str(self.workspace.read_json("purity_ploidy.json")["purity"])
+            cn_file = os.path.join(self.work_dir, "cn.txt")
+            cmd.extend(['--purity', purity,
+                        '--cnfile', cn_file])
         runner = subprocess_runner(self.log_level, self.log_path)
         result = runner.run(cmd, "main snv/indel R script")
         return result
