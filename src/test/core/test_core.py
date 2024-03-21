@@ -421,7 +421,7 @@ class TestLoader(TestCore):
             original = copy(os.environ[var])
         else:
             original = None
-        os.environ[var] = 'djerba_alternate:djerba'
+        os.environ[var] = 'alternate_djerba:djerba'
         loader = plugin_loader(log_level=logging.WARNING)
         plugin = loader.load('demo4', workspace(self.tmp_dir))
         self.assertTrue(isinstance(plugin, djerba.plugins.base.plugin_base))
