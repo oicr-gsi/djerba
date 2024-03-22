@@ -62,7 +62,8 @@ class main(plugin_base):
         self.logger.info("PWGS ANALYSIS: Finished preprocessing files")
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         f_config = configparser.ConfigParser() #Initializing the configparser
-        f_config_path = self.workspace + "/full_config.ini"
+        workspace_dir = self.workspace.get_work_dir()
+        f_config_path = workspace_dir + "/full_config.ini"
         f_config.read(f_config_path)
         results = {
             pc.ASSAY: "plasma Whole Genome Sequencing (pWGS) - 30X (v1.0)",
