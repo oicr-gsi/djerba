@@ -3,6 +3,7 @@ import os
 import csv
 from decimal import Decimal
 import math
+import configparser
 import re
 import logging
 
@@ -60,11 +61,13 @@ class main(plugin_base):
                                            output_dir=self.workspace.print_location())
         self.logger.info("PWGS ANALYSIS: Finished preprocessing files")
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
-        case_overview_parameters = config[self.identifier][pc.RESULTS]
+        f_config = configparser.ConfigParser() #Initializing the configparser
+        f_config_path = self.workspace + "/full_config.ini"
+        f_config.read(f_config_path)
         results = {
             pc.ASSAY: "plasma Whole Genome Sequencing (pWGS) - 30X (v1.0)",
-            pc.STUDY: case_overview_parameters[pc.STUDY],
-            pc.PRIMARY_CANCER: case_overview_parameters[pc.PRIMARY_CANCER],
+            pc.STUDY: f_config["pwgs.case_overview"]["study_title"],
+            pc.PRIMARY_CANCER: f_config["pwgs.case_overview"]["primary_cancer"],
             pc.CTDNA_OUTCOME: mrdetect_results[pc.CTDNA_OUTCOME],
             pc.SIGNIFICANCE: mrdetect_results[pc.SIGNIFICANCE],
             pc.TUMOUR_FRACTION_READS: float('%.1E' % Decimal(reads_detected * 100 / hbc_results[pc.READS_CHECKED])),
