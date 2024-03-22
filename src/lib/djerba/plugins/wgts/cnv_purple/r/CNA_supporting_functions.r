@@ -128,8 +128,7 @@ preProcCNA <- function(genefile, oncolist, ploidy=2, ploidy_multiplier=2.4){
 }
 
 
-preProcLOH <- function(segments, genebed, cutoff=0){
-  #' take segment-level LOH calls and translate to genes
+preProcLOH <- function(segments, genebed){
   library(CNTools)
   
   segments$chrom <- gsub("chr", "", segments$chrom)
@@ -141,13 +140,9 @@ preProcLOH <- function(segments, genebed, cutoff=0){
   
   a_allele <- reducedseg_ARatio[,c("genename","b_allele")]
 
-  a_allele$LOH <- FALSE
-  a_allele$LOH[a_allele$b_allele == cutoff ] <- TRUE
-  
   return(a_allele)
   
 }
-
 
 process_centromeres <- function(centromeres_path){
   #' Add some columns to the centromere file so it plots pretty in CNV track

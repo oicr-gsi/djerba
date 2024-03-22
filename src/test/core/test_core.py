@@ -13,19 +13,21 @@ import unittest
 import djerba.util.ini_fields as ini
 
 from configparser import ConfigParser
+from copy import copy
 from glob import glob
 from string import Template
 
 from djerba.core.configure import config_wrapper, core_configurer, DjerbaConfigError
 from djerba.core.ini_generator import ini_generator
 from djerba.core.json_validator import plugin_json_validator
-from djerba.core.loaders import plugin_loader, core_config_loader
+from djerba.core.loaders import plugin_loader, core_config_loader, DjerbaLoadError
 from djerba.core.main import main, arg_processor, DjerbaDependencyError
 from djerba.core.workspace import workspace
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.testing.tools import TestBase
 from djerba.util.validator import path_validator
 import djerba.core.constants as core_constants
+import djerba.plugins.base
 import djerba.util.constants as constants
 
 class TestCore(TestBase):
@@ -410,6 +412,29 @@ class TestIniGenerator(TestCore):
         with open(out_path) as in_file_1, open(expected_ini_path) as in_file_2:
             self.assertEqual(in_file_2.read(), in_file_1.read())
 
+class TestLoader(TestCore):
+    """Test loading from multiple top-level packages"""
+
+    def test(self):
+        var = plugin_loader.DJERBA_PACKAGES
+        if var in os.environ:
+            original = copy(os.environ[var])
+        else:
+            original = None
+        os.environ[var] = 'alternate_djerba:djerba'
+        loader = plugin_loader(log_level=logging.WARNING)
+        plugin = loader.load('demo4', workspace(self.tmp_dir))
+        self.assertTrue(isinstance(plugin, djerba.plugins.base.plugin_base))
+        plugin = loader.load('demo2', workspace(self.tmp_dir))
+        self.assertTrue(isinstance(plugin, djerba.plugins.base.plugin_base))
+        # remove the alternate package; make a loader with new environment
+        os.environ[var] = 'djerba'
+        new_loader = plugin_loader(log_level=logging.CRITICAL)
+        with self.assertRaises(DjerbaLoadError):
+            plugin = new_loader.load('demo4', workspace(self.tmp_dir))
+        # reset the environment to its original value
+        if original:
+            os.environ[var] = original
 
 class TestMainScript(TestCore):
     """Test the main djerba.py script"""
