@@ -22,6 +22,7 @@ install_wildcards = [
     'html/*',
     'resources/*',
     'R/*',
+    'r/*',
     'Rscripts/*'
 ]
 
