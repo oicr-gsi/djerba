@@ -53,7 +53,7 @@ class snv_indel_table_builder:
             if mutation_info[sic.HAS_LOH_DATA]:
                 if "X" in row[wgts_tools.CHROMOSOME]:
                     metric_cell = hb.td("NA")
-                    cells.insert(klass.INSERT_COL_INDEX, metrix_cell)
+                    cells.insert(klass.INSERT_COL_INDEX, metric_cell)
                 else:
                     metric_cell = hb.td(row[sic.LOH])
                     cells.insert(klass.INSERT_COL_INDEX, metric_cell)
