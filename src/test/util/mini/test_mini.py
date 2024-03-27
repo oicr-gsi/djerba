@@ -68,15 +68,22 @@ class TestMDC(TestBase):
 class TestMiniBase(TestBase):
 
     JSON_NAME = 'simple_report_for_update.json'
+    JSON_NO_SUMMARY = 'simple_report_no_summary.json'
 
-    def assert_MDC(self, out_path):
+    def assert_MDC(self, out_path, md5):
         self.assertTrue(os.path.isfile(out_path))
         with open(out_path) as out_file:
             contents = out_file.read()
         contents = contents.replace(strftime('%Y/%m/%d'), 'placeholder')
-        self.assertEqual(self.getMD5_of_string(contents), '2ba55ae5caf797415ed484c7da04781d')
+        self.assertEqual(self.getMD5_of_string(contents), md5)
 
-    def assert_render(self):
+    def assert_MDC_with_summary(self, out_path):
+        self.assert_MDC(out_path, '2ba55ae5caf797415ed484c7da04781d')
+
+    def assert_MDC_without_summary(self, out_path):
+        self.assert_MDC(out_path, 'f02725b91ff5ec1e79963e579b92e4dd')
+
+    def assert_render(self, md5):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         for out_path in [html_path, pdf_path]:
@@ -84,9 +91,15 @@ class TestMiniBase(TestBase):
         with open(html_path) as html_file:
             original = html_file.read()
         redacted = self.redact_html(original)
-        self.assertEqual(self.getMD5_of_string(redacted), 'c47495c3ea02347f08db8f1b214007d2')
+        self.assertEqual(self.getMD5_of_string(redacted), md5)
 
-    def assert_update(self):
+    def assert_render_with_summary(self):
+        self.assert_render('c47495c3ea02347f08db8f1b214007d2')
+
+    def assert_render_without_summary(self):
+        self.assert_render('986dc5b5f448ad660f1c2c0438b5e082')
+
+    def assert_update(self, md5):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         json_out = os.path.join(self.tmp_dir, 'updated_report.json')
@@ -95,16 +108,23 @@ class TestMiniBase(TestBase):
         with open(html_path) as html_file:
             original = html_file.read()
         redacted = self.redact_html(original)
-        self.assertEqual(self.getMD5_of_string(redacted), 'e9d286a4ee4672caa5402294f322f011')
+        self.assertEqual(self.getMD5_of_string(redacted), md5)
         with open(json_out) as json_file:
             json_data = json.loads(json_file.read())
         self.assertEqual(json_data['core']['extract_time'], '2023-12-20_21:38:10Z')
         dob = json_data['plugins']['patient_info']['results']['patient_dob']
         self.assertEqual(dob, '1970/01/01')
-        text = json_data['plugins']['summary']['results']['summary_text']
-        expected_text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed '+\
-            'do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
-        self.assertEqual(text.strip(), expected_text)
+        if 'summary' in json_data['plugins']:
+            text = json_data['plugins']['summary']['results']['summary_text']
+            expected_text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed '+\
+                'do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+            self.assertEqual(text.strip(), expected_text)
+
+    def assert_update_with_summary(self):
+        self.assert_update('e9d286a4ee4672caa5402294f322f011')
+
+    def assert_update_without_summary(self):
+        self.assert_update('34b51028fcc7c52f3f07f1f229ef7081')
 
 
 class TestMain(TestMiniBase):
@@ -159,7 +179,15 @@ class TestMain(TestMiniBase):
         json_path = os.path.join(test_dir, self.JSON_NAME)
         args = self.mock_args_setup(out_file, json_path)
         main(self.tmp_dir).run(args)
-        self.assert_MDC(out_file)
+        self.assert_MDC_with_summary(out_file)
+
+    def test_setup_no_summary(self):
+        out_file = os.path.join(self.tmp_dir, 'config.mdc')
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        json_path = os.path.join(test_dir, self.JSON_NO_SUMMARY)
+        args = self.mock_args_setup(out_file, json_path)
+        main(self.tmp_dir).run(args)
+        self.assert_MDC_without_summary(out_file)
 
     def test_render(self):
         out_dir = self.tmp_dir
@@ -169,7 +197,17 @@ class TestMain(TestMiniBase):
         pdf = True
         args = self.mock_args_render(json_path, self.tmp_dir, pdf)
         main(self.tmp_dir).run(args)
-        self.assert_render()
+        self.assert_render_with_summary()
+
+    def test_render_no_summary(self):
+        out_dir = self.tmp_dir
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        config_path = os.path.join(test_dir, 'config_for_update.mdc')
+        json_path = os.path.join(test_dir, self.JSON_NO_SUMMARY)
+        pdf = True
+        args = self.mock_args_render(json_path, self.tmp_dir, pdf)
+        main(self.tmp_dir).run(args)
+        self.assert_render_without_summary()
 
     def test_version_fail(self):
         test_dir = os.path.dirname(os.path.realpath(__file__))
@@ -190,7 +228,7 @@ class TestMain(TestMiniBase):
             main(self.tmp_dir, log_path=log_tmp).run(args_force)
         self.assertTrue(cm.output[0].find('Old version = bad-version') >= 0)
         self.assertTrue(cm.output[1].find('Old version = another-bad-version') >= 0)
-        self.assert_update()
+        self.assert_update_with_summary()
 
     def test_update(self):
         test_dir = os.path.dirname(os.path.realpath(__file__))
@@ -201,7 +239,19 @@ class TestMain(TestMiniBase):
         force = False
         args = self.mock_args_update(config_path, json_path, self.tmp_dir, pdf, write_json)
         main(self.tmp_dir).run(args)
-        self.assert_update()
+        self.assert_update_with_summary()
+
+    def test_update_no_summary(self):
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        config_path = os.path.join(test_dir, 'config_for_update.mdc')
+        json_path = os.path.join(test_dir, self.JSON_NO_SUMMARY)
+        pdf = True
+        write_json = True
+        force = False
+        args = self.mock_args_update(config_path, json_path, self.tmp_dir, pdf, write_json)
+        main(self.tmp_dir).run(args)
+        self.assert_update_without_summary()
+
 
 class TestScript(TestMiniBase):
 
@@ -216,7 +266,7 @@ class TestScript(TestMiniBase):
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
-        self.assert_MDC(out_path)
+        self.assert_MDC_with_summary(out_path)
 
     def test_render(self):
         test_dir = os.path.dirname(os.path.realpath(__file__))
@@ -228,7 +278,7 @@ class TestScript(TestMiniBase):
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
-        self.assert_render()
+        self.assert_render_with_summary()
 
     def test_render_no_pdf(self):
         test_dir = os.path.dirname(os.path.realpath(__file__))
@@ -259,7 +309,7 @@ class TestScript(TestMiniBase):
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
-        self.assert_update()
+        self.assert_update_with_summary()
 
     def test_update_no_pdf(self):
         test_dir = os.path.dirname(os.path.realpath(__file__))
