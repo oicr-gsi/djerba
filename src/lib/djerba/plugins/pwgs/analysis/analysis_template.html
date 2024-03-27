@@ -8,7 +8,8 @@ ${html_builder.section_cells_begin("Mutational Sampling", True)}
 
       <img id='Detection' style='width: 100%; object-fit: contain' src="${results.get(constants.PWGS_PLOT)}"/>
 
-      <p> This test counted the number of sites in the patient's plasma 
+      <p> This patient has been diagnosed with ${results.get(constants.PRIMARY_CANCER)} and has been referred for the OICR Genomics ${results.get(constants.ASSAY)} assay through the ${results.get(constants.STUDY)} study.
+            This test counted the number of sites in the patient's plasma
             at which variants were detected that match variants found in the patient's primary tumour 
             (candidate sites passing QC: <strong>${html_builder.k_comma_format(results.get(constants.SITES_CHECKED))}</strong>).
             To test for the possibility that candidate SNVs match SNVs arising from sequencing artefacts, 
@@ -17,12 +18,12 @@ ${html_builder.section_cells_begin("Mutational Sampling", True)}
             The number of SNVs of tumour origin 
             detected in this plasma sample (detected sites: <strong>${html_builder.k_comma_format(results.get(constants.SITES_DETECTED))}</strong>) was
              <strong>${results.get(constants.SIGNIFICANCE)} </strong>  
-             than in the control cohort (N=${results.get(constants.COHORT_N)}).</p>
+             than in the control cohort (N=${results.get(constants.COHORT_N)}). Dataset detection cutoff is <strong>${html_builder.k_comma_format(results.get(constants.DATASET_DETECTION_CUTOFF))}</strong>. </p>
             <table class="variants" style="width:100%">
                   <thead>
                         <th style=" width:16%">Reads Checked</th>
                         <th style=" width:16%">Reads Detected</th>
-                        <th style=" width:20%">Detected:Checked Reads Ratio (%)</th>
+                        <th style=" width:20%">Detected:Checked Reads (%)</th>
                   </thead>
                   <tbody>
                         <tr>
