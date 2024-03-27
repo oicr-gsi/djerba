@@ -65,12 +65,13 @@ class main(plugin_base):
         # Read from the case_overview JSON file and populate results
         with open(os.path.join(workspace_dir, "pWGS_case_overview_output.json"), 'r') as json_file:
             json_data = json.load(json_file)
-            pc_study = json_data.get(pc.STUDY)
-            pc_primary_cancer = json_data.get(pc.PRIMARY_CANCER)
+            assay = json_data.get("results", {}).get("assay", "Assay name not found")
+            primary_cancer = json_data.get("results", {}).get("primary_cancer", "Primary cancer not found")
+            study_title = json_data.get("results", {}).get("study_title", "Study title not found")
         results = {
-            pc.ASSAY: "plasma Whole Genome Sequencing (pWGS) - 30X (v1.0)",
-            pc.STUDY: pc_study,
-            pc.PRIMARY_CANCER: pc_primary_cancer,
+            pc.ASSAY: assay,
+            pc.STUDY: study_title,
+            pc.PRIMARY_CANCER: primary_cancer,
             pc.CTDNA_OUTCOME: mrdetect_results[pc.CTDNA_OUTCOME],
             pc.SIGNIFICANCE: mrdetect_results[pc.SIGNIFICANCE],
             pc.TUMOUR_FRACTION_READS: float('%.1E' % Decimal(reads_detected * 100 / hbc_results[pc.READS_CHECKED])),
