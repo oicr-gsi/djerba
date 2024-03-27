@@ -24,6 +24,7 @@
 ### Other
 
 - GCGI-1313: Refactor reading input_params.json
+- GCGI-1323: Support PWGS in mini-Djerba by making summary optional
 
 ## v1.5.5: 2024-03-05
 - Further fixes to pWGS Cardea helper to allow multiple projects for one donor

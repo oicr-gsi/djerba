@@ -23,6 +23,7 @@ class main(main_base):
     SUPPLEMENT = 'supplement.body'
     SUMMARY = 'summary'
     SUMMARY_FILENAME = 'summary.txt'
+    SUMMARY_DEFAULT = 'Patient summary text; not in use for PWGS'
 
     def get_supplement_params(self, mdc_supplement, data):
         # want to configure the supplement.body plugin with new keys from MDC:
@@ -35,6 +36,10 @@ class main(main_base):
         for key in mdc_supplement.keys():
             supplement[key] = mdc_supplement.get(key)
         return supplement
+
+    def has_summary(self, data):
+        # check if summary plugin is present
+        return self.SUMMARY in data[cc.PLUGINS]
 
     def render(self, json_path, out_dir, pdf):
         """
@@ -82,7 +87,7 @@ class main(main_base):
         """
         if json_path == None:
             patient_info = patient_info_plugin.PATIENT_DEFAULTS
-            text = 'Patient summary text goes here'
+            text = self.SUMMARY_DEFAULT
             supplement = {
                 supplement_plugin.REPORT_SIGNOFF_DATE: strftime('%Y/%m/%d'),
                 supplement_plugin.GENETICIST: supplement_plugin.GENETICIST_DEFAULT,
@@ -93,7 +98,10 @@ class main(main_base):
                 data = json.loads(in_file.read())
             patient_info = data[cc.PLUGINS][self.PATIENT_INFO][cc.RESULTS]
             supplement = data[cc.PLUGINS][self.PATIENT_INFO][cc.RESULTS]
-            text = data[cc.PLUGINS][self.SUMMARY][cc.RESULTS][summary_plugin.SUMMARY_TEXT]
+            if self.has_summary(data):
+                text = data[cc.PLUGINS][self.SUMMARY][cc.RESULTS][summary_plugin.SUMMARY_TEXT]
+            else:
+                text = self.SUMMARY_DEFAULT
         mdc(self.log_level, self.log_path).write(out_path, patient_info, supplement, text)
 
     def update(self, config_path, json_path, out_dir, pdf, write_json, force):
@@ -107,6 +115,7 @@ class main(main_base):
         # write summary text to the workspace
         # run configure step to populate default values
         # then run extraction to get the data structure for update
+        self.logger.info("Updating {0} from {1}".format(json_path, config_path))
         mdc_handler = mdc(self.log_level, self.log_path)
         [patient_info, supplement_mdc, summary_text] = mdc_handler.read(config_path)
         with open(json_path) as json_file:
@@ -118,6 +127,7 @@ class main(main_base):
         for k in core_params.keys():
             config.set(cc.CORE, k, core_params[k])
         # patient info params are all taken from the MDC file
+        self.logger.info("Updating patient info")
         config.add_section(self.PATIENT_INFO)
         for k in patient_info.keys():
             config.set(self.PATIENT_INFO, k, patient_info[k])
@@ -126,11 +136,16 @@ class main(main_base):
         supplement_params = self.get_supplement_params(supplement_mdc, old_json)
         for k in supplement_params.keys():
             config.set(self.SUPPLEMENT, k, str(supplement_params[k]))
-        config.add_section(self.SUMMARY)
-        summary_path = os.path.join(self.work_dir, self.SUMMARY_FILENAME)
-        with open(summary_path, 'w', encoding=cc.TEXT_ENCODING) as out_file:
-            print(summary_text, file=out_file)
-        config.set('summary', summary_plugin.SUMMARY_FILE, summary_path)
+        if self.has_summary(old_json):
+            self.logger.info("Updating summary text")
+            config.add_section(self.SUMMARY)
+            summary_path = os.path.join(self.work_dir, self.SUMMARY_FILENAME)
+            with open(summary_path, 'w', encoding=cc.TEXT_ENCODING) as out_file:
+                print(summary_text, file=out_file)
+            config.set('summary', summary_plugin.SUMMARY_FILE, summary_path)
+        else:
+            # summary not required for PWGS
+            self.logger.info("Summary not present in input JSON, will not update")
         config = self.configure_from_parser(config)
         data_new = self.base_extract(config)
         data = self.update_data_from_file(data_new, json_path, force)
@@ -139,6 +154,8 @@ class main(main_base):
             json_path = os.path.join(out_dir, 'updated_report.json')
             with open(json_path, 'w') as out_file:
                 print(json.dumps(data), file=out_file)
+            self.logger.info("Wrote updated JSON to "+json_path)
+        self.logger.info("Update complete")
 
 class arg_processor(arg_processor_base):
 
