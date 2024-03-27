@@ -11,8 +11,8 @@ from djerba.util.render_mako import mako_renderer
 import djerba.plugins.pwgs.pwgs_tools as pwgs_tools
 import djerba.plugins.pwgs.constants as pc
 
-class main(plugin_base):
 
+class main(plugin_base):
     PRIORITY = 100
     PLUGIN_VERSION = '1.0'
 
@@ -20,7 +20,7 @@ class main(plugin_base):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         work_dir = self.workspace.get_work_dir()
-        if os.path.exists(os.path.join(work_dir,core_constants.DEFAULT_SAMPLE_INFO)):
+        if os.path.exists(os.path.join(work_dir, core_constants.DEFAULT_SAMPLE_INFO)):
             sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
             if wrapper.my_param_is_null(pc.DONOR):
                 wrapper.set_my_param(pc.DONOR, sample_info[pc.DONOR])
@@ -40,24 +40,24 @@ class main(plugin_base):
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
-        results =  {
-                pc.ASSAY: "plasma Whole Genome Sequencing (pWGS) - 30X (v1.0)",
-                pc.PWGS_REPORT: config['core']['report_id'],
-                pc.PRIMARY_CANCER: config[self.identifier][pc.PRIMARY_CANCER],
-                pc.REQ_APPROVED: config[self.identifier][pc.REQ_APPROVED],
-                pc.DONOR: config[self.identifier][pc.DONOR],
-                pc.GROUP_ID: config[self.identifier][pc.GROUP_ID],
-                pc.PATIENT_ID: config[self.identifier][pc.PATIENT_ID_LOWER],
-                pc.STUDY:  config[self.identifier][pc.STUDY],
-                pc.WGS_REPORT: config[self.identifier][pc.WGS_REPORT]
-            }
+        results = {
+            pc.ASSAY: "plasma Whole Genome Sequencing (pWGS) - 30X (v1.0)",
+            pc.PWGS_REPORT: config['core']['report_id'],
+            pc.PRIMARY_CANCER: config[self.identifier][pc.PRIMARY_CANCER],
+            pc.REQ_APPROVED: config[self.identifier][pc.REQ_APPROVED],
+            pc.DONOR: config[self.identifier][pc.DONOR],
+            pc.GROUP_ID: config[self.identifier][pc.GROUP_ID],
+            pc.PATIENT_ID: config[self.identifier][pc.PATIENT_ID_LOWER],
+            pc.STUDY: config[self.identifier][pc.STUDY],
+            pc.WGS_REPORT: config[self.identifier][pc.WGS_REPORT]
+        }
         data[pc.RESULTS] = results
         return data
-    
+
     def render(self, data):
         renderer = mako_renderer(self.get_module_dir())
         return renderer.render_name(pc.CASE_OVERVIEW_TEMPLATE_NAME, data)
-    
+
     def specify_params(self):
         required = [
             pc.REQ_APPROVED,
@@ -77,3 +77,7 @@ class main(plugin_base):
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_priority_defaults(self.PRIORITY)
 
+    def write_results_to_json(self, data):
+        output_file = os.path.join(self.workspace.get_work_dir(), "pWGS_case_overview_output.json")
+        with open(output_file, 'w') as json_file:
+            json.dump(data, json_file, indent=4)

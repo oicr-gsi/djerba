@@ -3,7 +3,7 @@ import os
 import csv
 from decimal import Decimal
 import math
-import configparser
+import json
 import re
 import logging
 
@@ -61,14 +61,16 @@ class main(plugin_base):
                                            output_dir=self.workspace.print_location())
         self.logger.info("PWGS ANALYSIS: Finished preprocessing files")
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
-        f_config = configparser.ConfigParser() #Initializing the configparser
         workspace_dir = self.workspace.get_work_dir()
-        f_config_path = workspace_dir + "/full_config.ini"
-        f_config.read(f_config_path)
+        # Read from the case_overview JSON file and populate results
+        with open(os.path.join(workspace_dir, "pWGS_case_overview_output.json"), 'r') as json_file:
+            json_data = json.load(json_file)
+            pc_study = json_data.get(pc.STUDY)
+            pc_primary_cancer = json_data.get(pc.PRIMARY_CANCER)
         results = {
             pc.ASSAY: "plasma Whole Genome Sequencing (pWGS) - 30X (v1.0)",
-            pc.STUDY: f_config["pwgs.case_overview"]["study_title"],
-            pc.PRIMARY_CANCER: f_config["pwgs.case_overview"]["primary_cancer"],
+            pc.STUDY: pc_study,
+            pc.PRIMARY_CANCER: pc_primary_cancer,
             pc.CTDNA_OUTCOME: mrdetect_results[pc.CTDNA_OUTCOME],
             pc.SIGNIFICANCE: mrdetect_results[pc.SIGNIFICANCE],
             pc.TUMOUR_FRACTION_READS: float('%.1E' % Decimal(reads_detected * 100 / hbc_results[pc.READS_CHECKED])),
