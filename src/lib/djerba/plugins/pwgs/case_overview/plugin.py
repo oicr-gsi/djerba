@@ -52,6 +52,7 @@ class main(plugin_base):
             pc.WGS_REPORT: config[self.identifier][pc.WGS_REPORT]
         }
         data[pc.RESULTS] = results
+        self.write_results_to_json(data)
         return data
 
     def render(self, data):
