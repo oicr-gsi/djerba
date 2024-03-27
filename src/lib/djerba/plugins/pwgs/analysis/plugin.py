@@ -84,7 +84,6 @@ class main(plugin_base):
             pc.COHORT_N: hbc_results[pc.COHORT_N],
             'pwgs_base64': pwgs_base64,
             'files': {
-                'results_file': config[self.identifier][pc.RESULTS_FILE],
                 'hbc_results': config[self.identifier][pc.HBC_FILE],
                 'vaf_results': config[self.identifier][pc.VAF_FILE]
             }
