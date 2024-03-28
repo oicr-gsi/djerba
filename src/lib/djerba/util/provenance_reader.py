@@ -399,10 +399,9 @@ class provenance_reader(logger):
             self.logger.info("Consistency check between supplied and inferred sample names: OK")
         else:
             msg = "Conflicting sample names: {0} from file provenance, ".format(fpr_samples)+\
-                  "{1} from user input. ".format(sample_inputs)+\
+                  "{0} from user input. ".format(sample_inputs)+\
                   "If INI config has user-supplied sample names, check they are correct."
-            self.logger.error(msg)
-            raise SampleNameConflictError(msg)
+            self.logger.warning(msg)
         # Finally, set relevant instance variables
         self.sample_name_wg_n = fpr_samples.get(self.wg_n)
         self.sample_name_wg_t = fpr_samples.get(self.wg_t)
