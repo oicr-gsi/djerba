@@ -45,7 +45,7 @@ DRIVER_VIRUSES = ["Human gammaherpesvirus 4",
                     "Alphapapillomavirus 3",
                     "Alphapapillomavirus 8",
                     "Human polyomavirus 5"]
-SWISNF_GENES = ['SMARCB1', 'SMARCA4', 'ARID1A', 'ARID1B', 'PBRM1']
+SWISNF_GENES = ['SMARCB1', 'SMARCA4', 'ARID1A', 'ARID1B', 'PBRM1', 'ARID2']
 SPECIES = 'name_species'
 BED_FILE_NAME = 'gencode.v31.ensg_annotation_w_entrez.bed'
 TMB_EXCLUDED = [
