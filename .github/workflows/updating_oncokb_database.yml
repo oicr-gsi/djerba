@@ -1,0 +1,52 @@
+name: update oncokb curated gene List
+
+on:
+  schedule:
+    # Runs at 00:00 on the 1st day of every second month
+    - cron: '0 0 1 */2 *'
+  workflow_dispatch: {}
+    #run manually
+
+jobs:
+  update-gene-list:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: checkout repo
+      uses: actions/checkout@v4
+      with:
+        ref: release-1.6.0
+
+    - name: set up python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: installing dependencies
+      run:
+        pip install pandas
+
+    - name: fetch and update gene list
+      env:
+        TOKEN: ${{ secrets.ONCOKB_TOKEN }}
+      run: |
+        # download the database
+        curl -H "Authorization: Bearer $TOKEN" https://www.oncokb.org/api/v1/utils/allCuratedGenes > allCuratedGenes.json
+        
+        # convert json to tsv
+        python -c "import pandas as pd; import datetime; df = pd.read_json('allCuratedGenes.json'); date_str = datetime.datetime.now().strftime('%Y%m%d'); df.to_csv(f'djerba/src/lib/djerba/data/{date_str}_allcuratedgenelist.tsv', sep='\t', index=False)"
+        
+        # delete json file 
+        rm allCuratedGenes.json
+        
+        # replace filename in the constants.py script
+        sed -i "s|ALL_CURATED_GENES = .*|ALL_CURATED_GENES = '{date_str}_allcuratedgenelist.tsv'|g" djerba/src/lib/djerba/util/oncoKB/constants.py
+
+    - name: create pull request
+      uses: peter-evans/create-pull-request@v6
+      with:
+        commit-message: "Update curated gene list"
+        branch: OncoKb_database_update
+        base: release-1.6.0
+        title: "Update curated gene list"
+        body: "This is an automated PR made by Github Actions to update OncoKb list of curated genes."
