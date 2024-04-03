@@ -34,13 +34,13 @@ jobs:
         curl -H "Authorization: Bearer $TOKEN" https://www.oncokb.org/api/v1/utils/allCuratedGenes > allCuratedGenes.json
         
         # convert json to tsv
-        python -c "import pandas as pd; import datetime; df = pd.read_json('allCuratedGenes.json'); date_str = datetime.datetime.now().strftime('%Y%m%d'); df.to_csv(f'djerba/src/lib/djerba/data/{date_str}_allcuratedgenelist.tsv', sep='\t', index=False)"
+        python -c "import pandas as pd; import datetime; df = pd.read_json('allCuratedGenes.json'); date_str = datetime.datetime.now().strftime('%Y%m%d'); df.to_csv(f'src/lib/djerba/data/{date_str}_allcuratedgenelist.tsv', sep='\t', index=False)"
         
         # delete json file 
         rm allCuratedGenes.json
         
         # replace filename in the constants.py script
-        sed -i "s|ALL_CURATED_GENES = .*|ALL_CURATED_GENES = '{date_str}_allcuratedgenelist.tsv'|g" djerba/src/lib/djerba/util/oncoKB/constants.py
+        awk -v new_val="ALL_CURATED_GENES = \"${date_str}_allcuratedgenelist.tsv\"" '{gsub(/ALL_CURATED_GENES = \047.*\047/, new_val)}1' src/lib/djerba/util/oncoKB/constants.py > temp && mv temp src/lib/djerba/util/oncoKB/constants.py
 
     - name: create pull request
       uses: peter-evans/create-pull-request@v6
