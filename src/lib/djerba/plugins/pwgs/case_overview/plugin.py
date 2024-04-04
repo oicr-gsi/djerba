@@ -52,7 +52,7 @@ class main(plugin_base):
             pc.WGS_REPORT: config[self.identifier][pc.WGS_REPORT]
         }
         data[pc.RESULTS] = results
-        self.write_results_to_json(data)
+        self.workspace.write_json('pWGS_case_overview_output.json', data)
         return data
 
     def render(self, data):
@@ -78,7 +78,4 @@ class main(plugin_base):
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_priority_defaults(self.PRIORITY)
 
-    def write_results_to_json(self, data):
-        output_file = os.path.join(self.workspace.get_work_dir(), "pWGS_case_overview_output.json")
-        with open(output_file, 'w') as json_file:
-            json.dump(data, json_file, indent=4)
+
