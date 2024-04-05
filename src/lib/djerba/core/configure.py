@@ -430,6 +430,11 @@ class config_wrapper(core_base):
     def set_my_param(self, param, value):
         self.config.set(self.identifier, param, str(value))
 
+    def set_my_param_if_null(self, param, value):
+        # convenience method; overwrite value if null, otherwise do nothing
+        if self.my_param_is_null(param):
+            self.set_my_param(param, value)
+
     # [get|set|has]_my_* methods for other components
 
     def get_boolean(self, section, param):
