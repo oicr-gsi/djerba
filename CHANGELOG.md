@@ -16,7 +16,9 @@
 - removed sequenza support
 - new `djerba.plugins.wgts.common` package for code shared between multiple WGTS/WGS plugins
 - Added "r" directory to setup, bug fix (metrix_cell -> metric_cell)
-= Added ARID2 to SWI/SNF gene list in CAPTIV8 plugin
+- Added ARID2 to SWI/SNF gene list in CAPTIV8 plugin
+- Removed copy state from SNVs and Indels plugin
+- Added LOH to SNVs and Indels plugin
 
 ### External plugin support
 

@@ -213,12 +213,6 @@ class snv_indel_processor(logger):
             self.logger.info("No expression data found")
             expression = {}
         cytobands = wgts_tools(self.log_level, self.log_path).cytoband_lookup()
-        if self.workspace.has_file(cnv_constants.COPY_STATE_FILE):
-            has_copy_states = True
-            copy_states = self.workspace.read_json(cnv_constants.COPY_STATE_FILE)
-        else:
-            has_copy_states = False
-            copy_states = {}
         if self.workspace.has_file(sic.LOH_FILE):
             has_loh = True
             loh_df = pd.read_csv(os.path.join(self.work_dir, sic.LOH_FILE), sep="\t")
@@ -240,7 +234,6 @@ class snv_indel_processor(logger):
                     sic.TYPE: self.get_mutation_type(row_input),
                     sic.VAF: self.get_tumour_vaf(row_input),
                     sic.DEPTH: self.get_mutation_depth(row_input),
-                    sic.COPY_STATE: copy_states.get(gene), # None if copy states not available
                     sic.LOH: loh_dict.get(gene), # None of LOH not available
                     wgts_tools.CHROMOSOME: cytobands.get(gene, wgts_tools.UNKNOWN),
                     wgts_tools.ONCOKB: oncokb_levels.parse_oncokb_level(row_input)
@@ -253,7 +246,6 @@ class snv_indel_processor(logger):
             sic.CODING_SEQUENCE_MUTATIONS: coding_seq_total,
             sic.ONCOGENIC_MUTATIONS: len(rows),
             sic.VAF_PLOT: self.convert_vaf_plot(),
-            sic.HAS_COPY_STATE_DATA: has_copy_states,
             sic.HAS_LOH_DATA: has_loh,
             sic.HAS_EXPRESSION_DATA: is_wgts,
             wgts_tools.BODY: rows
