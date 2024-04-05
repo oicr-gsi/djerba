@@ -29,7 +29,6 @@ class TestSnvIndelPlugin(PluginTester):
         maf_filename = 'PANX_1391_Lv_M_WG_100-NH-020_LCM3.filter.deduped.realigned.'+\
             'recalibrated.mutect2.filtered.subset.maf.gz'
         maf_path = os.path.join(data_dir, maf_filename)
-        copy_state_path = os.path.join(data_dir, 'purple_copy_states.json')
         expression_path = os.path.join(data_dir, 'data_expression_percentile_tcga.json')
         copy_number_path = os.path.join(data_dir, 'cn.txt')
         purity_ploidy_path = os.path.join(data_dir, 'purity_ploidy.json')
@@ -42,9 +41,8 @@ class TestSnvIndelPlugin(PluginTester):
         os.mkdir(input_dir)
         work_dir = os.path.join(tmp_dir, 'work')
         os.mkdir(work_dir)
-        copy(copy_state_path, work_dir)
-        copy(expression_path, work_dir)
         copy(copy_number_path, work_dir)
+        copy(expression_path, work_dir)
         copy(purity_ploidy_path, work_dir)
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
@@ -52,7 +50,7 @@ class TestSnvIndelPlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: self.JSON_NAME,
-            self.MD5: '9064ac742f683240c3f0d3025bd58366'
+            self.MD5: 'bb72d0529e04e6e7ed2ccec51073ac26'
         }
         self.run_basic_test(input_dir, params, work_dir=work_dir)
 

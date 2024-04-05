@@ -9,7 +9,6 @@ class snv_indel_table_builder:
 
     INSERT_COL_INDEX = 6
     EXPR_COL_TITLE = 'Expr. (%)'
-    COPY_STATE_COL_TITLE = 'Copy State'
     LOH_COL_TITLE = 'LOH'
 
     @classmethod
@@ -25,8 +24,6 @@ class snv_indel_table_builder:
 	    'Depth',
 	    'OncoKB'
         ]
-        if mutation_info[sic.HAS_COPY_STATE_DATA]:
-            names.insert(klass.INSERT_COL_INDEX, klass.COPY_STATE_COL_TITLE)
         if mutation_info[sic.HAS_LOH_DATA]:
             names.insert(klass.INSERT_COL_INDEX, klass.LOH_COL_TITLE)
         if mutation_info[sic.HAS_EXPRESSION_DATA]:
@@ -47,9 +44,6 @@ class snv_indel_table_builder:
                 hb.td(row[sic.DEPTH]),
                 hb.td_oncokb(row[wgts_tools.ONCOKB])
             ]
-            if mutation_info[sic.HAS_COPY_STATE_DATA]:
-                metric_cell = hb.td(row[sic.COPY_STATE])
-                cells.insert(klass.INSERT_COL_INDEX, metric_cell)
             if mutation_info[sic.HAS_LOH_DATA]:
                 if "X" in row[wgts_tools.CHROMOSOME]:
                     metric_cell = hb.td("NA")
