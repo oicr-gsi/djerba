@@ -53,12 +53,10 @@ class main(plugin_base):
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
-        mrdetect_results = pwgs_tools.preprocess_results(self, config[self.identifier][pc.RESULTS_FILE])
-        hbc_results = self.preprocess_hbc(config[self.identifier][pc.HBC_FILE])
-        reads_detected = self.preprocess_vaf(config[self.identifier][pc.VAF_FILE])
-        pwgs_base64 = self.write_pwgs_plot(config[self.identifier][pc.HBC_FILE],
-                                           config[self.identifier][pc.VAF_FILE],
-                                           output_dir=self.workspace.print_location())
+        mrdetect_results = pwgs_tools.preprocess_results(self, wrapper.get_my_string(pc.RESULTS_FILE))
+        hbc_results = self.preprocess_hbc(wrapper.get_my_string(pc.HBC_FILE))
+        reads_detected = self.preprocess_vaf(wrapper.get_my_string(pc.VAF_FILE))
+        pwgs_base64 = self.write_pwgs_plot(wrapper.get_my_string(pc.HBC_FILE), wrapper.get_my_string(pc.VAF_FILE), output_dir=self.workspace.print_location())
         self.logger.info("PWGS ANALYSIS: Finished preprocessing files")
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         workspace_dir = self.workspace.get_work_dir()
@@ -84,8 +82,8 @@ class main(plugin_base):
             pc.COHORT_N: hbc_results[pc.COHORT_N],
             'pwgs_base64': pwgs_base64,
             'files': {
-                'hbc_results': config[self.identifier][pc.HBC_FILE],
-                'vaf_results': config[self.identifier][pc.VAF_FILE]
+                'hbc_results': wrapper.get_my_string(pc.HBC_FILE),
+                'vaf_results': wrapper.get_my_string(pc.VAF_FILE)
             }
         }
         data[pc.RESULTS] = results
