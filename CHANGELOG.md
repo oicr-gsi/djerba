@@ -26,6 +26,7 @@
 
 ### Other
 
+- GCGI-1257: Fix import of traceback module
 - GCGI-1313: Refactor reading input_params.json
 - GCGI-1322: Warning instead of error if manually configured sample name does not match provenance
 - GCGI-1323: Support PWGS in mini-Djerba by making summary optional

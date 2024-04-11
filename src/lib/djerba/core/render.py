@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import pdfkit
+import traceback
 from PyPDF2 import PdfMerger
 from time import strftime
 import djerba.core.constants as cc
