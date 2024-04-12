@@ -62,13 +62,13 @@ class main(plugin_base):
         workspace_dir = self.workspace.get_work_dir()
         # Read from the case_overview JSON file and populate results
         json_file_path = os.path.join(workspace_dir, "pWGS_case_overview_output.json")
-        try:
+        if os.path.exists(json_file_path):
             with open(json_file_path, 'r') as json_file:
                 json_data = json.load(json_file)
                 assay = json_data.get("results", {}).get("assay", "Assay name not found")
                 primary_cancer = json_data.get("results", {}).get("primary_cancer", "Primary cancer not found")
                 study_title = json_data.get("results", {}).get("study_title", "Study title not found")
-        except IOError:
+        else:
             assay = "Assay name not found"
             primary_cancer = "Primary cancer not found"
             study_title = "Study title not found"
