@@ -17,7 +17,8 @@ def preprocess_results(self, results_path):
             try:
                 results_dict = {
                                 constants.TUMOUR_FRACTION_ZVIRAN: float('%.1E' % Decimal(row[7]))*100,
-                                constants.PVALUE:  float('%.3E' % Decimal(row[10]))
+                                constants.PVALUE:  float('%.3E' % Decimal(row[10])),
+                                constants.DATASET_DETECTION_CUTOFF: float(row[11])
                                 }
             except IndexError as err:
                 msg = "Incorrect number of columns in vaf row: '{0}' ".format(row)+\
