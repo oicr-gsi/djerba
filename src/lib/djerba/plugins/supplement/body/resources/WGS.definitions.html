@@ -28,7 +28,12 @@ Percentiles for tumour mutation burden (TMB) are plotted and reported against th
 Percentile of TMB scores are plotted relative to 
 <a href="https://gdc.cancer.gov/about-data/publications/pancanatlas">all TCGA samples</a> or closest cohort.
 <br>
-<strong>Copy Number Variants:</strong> 
+<strong>Loss of Heterozygosity: </strong>
+A genetic event where there is loss of allelic variation for a given gene, ex. by loss of a wild-type allele. The calculation for LOH is a modification of the calculation described in the <a href="https://github.com/hartwigmedical/hmftools/blob/master/purple/README.md">PURPLE documentation</a>. First, the variant copy number (VCN) is computed by adjusting the variant allele frequency (VAF) of a particular alteration by the purity and multiplying by the copy number (CN) for that gene. Then, based on the minor allele copy number (MACN) for that gene, the logic for the classification of LOH is as follows: 
+<p style="text-indent:30px;">If MACN &#x2264; 0.5 and VCN &gt; CN-0.5, LOH = True.</p>
+<p style="text-indent:30px;">If MACN &#x2264; 0.5 and VCN &lt; CN-0.5, LOH = False.</p>
+<p style="text-indent:30px;">If MACN &gt; 0.5, LOH = False.</p>
+<p><strong>Copy Number Variants:</strong>
 Calls at the gene-scale represent levels derived from copy-number analysis as used for annotation by OncoKB: 
 </p>
 <table class="suppl" width="100%">
