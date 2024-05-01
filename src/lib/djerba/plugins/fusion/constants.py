@@ -27,6 +27,8 @@ TRANSLOCATION = 'translocation'
 # other constants
 ENTRCON_NAME = 'entrez_conversion.txt'
 
+WHIZBAM_BASE_URL = 'https://whizbam.oicr.on.ca'
+
 # read files from an input directory and gather information on fusions
 
 DATA_FUSIONS_OLD = 'data_fusions.txt'

@@ -19,6 +19,7 @@ import djerba.plugins.fusion.constants as fc
 import djerba.core.constants as core_constants
 from djerba.util.subprocess_runner import subprocess_runner
 
+
 class fusion_reader(logger):
 
     def __init__(self, input_dir, log_level=logging.WARNING, log_path=None):
@@ -34,15 +35,16 @@ class fusion_reader(logger):
             del annotations[key]
         # now check the key sets match
         if set(fusion_data.keys()) != set(annotations.keys()):
-            msg = "Distinct fusion identifiers and annotations do not match. "+\
-                  "Fusion data: {0}; ".format(sorted(list(set(fusion_data.keys()))))+\
+            msg = "Distinct fusion identifiers and annotations do not match. " + \
+                  "Fusion data: {0}; ".format(sorted(list(set(fusion_data.keys())))) + \
                   "Annotations: {0}".format(sorted(list(set(annotations.keys()))))
             self.logger.error(msg)
             raise RuntimeError(msg)
-        [fusions, self.total_fusion_genes, self.total_oncokb_fusions, self.total_nccn_fusions] = self._collate_row_data(fusion_data, annotations)
+        [fusions, self.total_fusion_genes, self.total_oncokb_fusions, self.total_nccn_fusions] = self._collate_row_data(
+            fusion_data, annotations)
         # sort the fusions by fusion ID
         self.fusions = sorted(fusions, key=lambda f: f.get_fusion_id_new())
-        
+
     def _collate_row_data(self, fusion_data, annotations):
         fusions = []
         fusion_genes = set()
@@ -55,7 +57,7 @@ class fusion_reader(logger):
                 NCCN_fusions.add(row['Fusion'])
         for fusion_id in fusion_data.keys():
             gene2_exists = True
-            if len(fusion_data[fusion_id])==1:
+            if len(fusion_data[fusion_id]) == 1:
                 # skip intragenic fusions, but add to the gene count
                 fusion_genes.add(fusion_data[fusion_id][0][fc.HUGO_SYMBOL])
                 if fusion_id in NCCN_fusions:
@@ -102,8 +104,8 @@ class fusion_reader(logger):
                 )
         total = len(fusions) - nccn_fusion_total
         total_fusion_genes = len(fusion_genes)
-        msg = "Finished collating fusion table data. "+\
-              "Found {0} fusion rows for {1} distinct genes; ".format(total, total_fusion_genes)+\
+        msg = "Finished collating fusion table data. " + \
+              "Found {0} fusion rows for {1} distinct genes; ".format(total, total_fusion_genes) + \
               "excluded {0} intragenic rows.".format(intragenic)
         self.logger.info(msg)
         for fusion_row in fusions:
@@ -128,7 +130,7 @@ class fusion_reader(logger):
             )
             entries.append(entry)
         return entries
-    
+
     def build_treatment_entries_nccn(self, fusion, therapies, oncotree_code):
         """Make an entry for the treatment options merger, for NCCN biomarkers"""
         factory = tom_factory(self.log_level, self.log_path)
@@ -140,12 +142,11 @@ class fusion_reader(logger):
                 treatments=therapies[level],
                 gene=fusion.get_translocation(),
                 alteration='Fusion',
-                #TODO: pull URL from NCCN_annotation.txt
+                # TODO: pull URL from NCCN_annotation.txt
                 alteration_url="https://www.nccn.org/professionals/physician_gls/pdf/myeloma_blocks.pdf"
             )
             entries.append(entry)
         return entries
-
 
     def fusions_to_json(self, gene_pair_fusions, oncotree_code):
         rows = []
@@ -163,7 +164,7 @@ class fusion_reader(logger):
                 for gene in fusion.get_genes():
                     chromosome = cytobands.get(gene)
                     gene_url = hb.build_gene_url(gene)
-                    row =  {
+                    row = {
                         fc.GENE: gene,
                         fc.GENE_URL: gene_url,
                         fc.CHROMOSOME: chromosome,
@@ -197,13 +198,13 @@ class fusion_reader(logger):
                             )
                             treatment_opts.extend(entries)
         return rows, gene_info, treatment_opts
-    
+
     def get_fusions(self):
         return self.fusions
 
     def get_total_fusion_genes(self):
         return self.total_fusion_genes
- 
+
     def get_total_nccn_fusions(self):
         return self.total_nccn_fusions
 
@@ -219,14 +220,14 @@ class fusion_reader(logger):
                 if fusion in annotations_by_fusion:
                     annotations_by_fusion[fusion].append(row)
                 else:
-                    annotations_by_fusion[fusion] = [row,]
+                    annotations_by_fusion[fusion] = [row, ]
         with open(os.path.join(self.input_dir, fc.DATA_FUSIONS_NCCN_ANNOTATED)) as data_file:
             for row in csv.DictReader(data_file, delimiter="\t"):
                 fusion = row['Fusion']
                 if fusion in annotations_by_fusion:
                     annotations_by_fusion[fusion].append(row)
                 else:
-                    annotations_by_fusion[fusion] = [row,]
+                    annotations_by_fusion[fusion] = [row, ]
         return annotations_by_fusion
 
     def read_fusion_data(self):
@@ -237,7 +238,7 @@ class fusion_reader(logger):
             total = 0
             for row in csv.DictReader(data_file, delimiter="\t"):
                 total += 1
-                if row['Method']=='delly':
+                if row['Method'] == 'delly':
                     # omit delly structural variants (which are not yet validated)
                     delly_count += 1
                 else:
@@ -246,9 +247,10 @@ class fusion_reader(logger):
                     if fusion_id in data_by_fusion:
                         data_by_fusion[fusion_id].append(row)
                     else:
-                        data_by_fusion[fusion_id] = [row,]
+                        data_by_fusion[fusion_id] = [row, ]
         self.logger.debug("Read {0} rows of fusion input; excluded {1} delly rows".format(total, delly_count))
         return data_by_fusion
+
 
 class prepare_fusions(logger):
 
@@ -277,7 +279,7 @@ class prepare_fusions(logger):
         oncotree = oncotree.upper()
         entrez_conv_path = config_wrapper.get_my_string(fc.ENTREZ_CONVERSION_PATH)
         min_reads = config_wrapper.get_my_int(fc.MIN_FUSION_READS)
-        fus_path = os.path.join(self.input_dir, 'fus.txt') 
+        fus_path = os.path.join(self.input_dir, 'fus.txt')
         self.logger.info("Processing fusion results from " + mavis_path)
         # prepend a column with the tumour ID to the Mavis .tab output
         with open(mavis_path, 'rt') as in_file, open(fus_path, 'wt') as out_file:
@@ -307,6 +309,7 @@ class prepare_fusions(logger):
         subprocess_runner(self.log_level, self.log_path).run([str(x) for x in cmd])
         self.annotate_fusion_files(config_wrapper)
         self.logger.info("Finished writing fusion files")
+
 
 class fusion:
     # container for data relevant to reporting a fusion
@@ -349,12 +352,12 @@ class fusion:
         return self.frame
 
     def get_oncokb_link(self, oncotree):
-        #need to both make the URL and then make the HTML for the URL
+        # need to both make the URL and then make the HTML for the URL
         gene1_url = hb.build_onefusion_url(self.gene1, oncotree)
         gene1_and_url = hb.href(gene1_url, self.gene1)
         gene2_url = hb.build_onefusion_url(self.gene2, oncotree)
         gene2_and_url = hb.href(gene2_url, self.gene2)
-        return("::".join((gene1_and_url, gene2_and_url)))
+        return ("::".join((gene1_and_url, gene2_and_url)))
 
     def get_oncokb_level(self):
         return self.level
@@ -368,7 +371,14 @@ class fusion:
     def get_therapies(self):
         return self.therapies
 
-
-
-
-
+class whizbam:
+    @staticmethod
+    def construct_whizbam_link(whizbam_base_url, studyid, tumourid, seqtype, genome):
+        whizbam_link = "".join([whizbam_base_url,
+                                "/igv?project1=", studyid,
+                                "&library1=", tumourid,
+                                "&file1=", tumourid, ".bam",
+                                "&seqtype1=", seqtype,
+                                "&genome=", genome
+                                ])
+        return whizbam_link

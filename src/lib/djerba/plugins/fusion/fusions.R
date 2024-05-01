@@ -193,6 +193,7 @@ option_list = list(
     make_option(c("-w", "--workdir"), type="character", default=NULL, help="output directory", metavar="character"),
     make_option(c("-o", "--oncotree"), type="character", default=NULL, help="oncotree code", metavar="character"),
     make_option(c("-a", "--annotation_file"), type="character", default="NCCN_annotations.txt", help="translocation_annotations", metavar="character")
+    make_option(c("-i", "--whizbam_url"), type="character", default="https://whizbam.oicr.on.ca", help="whizbam url", metavar="character")
 )
 
 opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE);
@@ -203,6 +204,7 @@ arribafile <- opt$arriba
 minfusionreads <- opt$minfusionreads
 outdir <- opt$workdir
 annotation_file <- opt$annotation_file
+whizbam_url <- opt$whizbam_url
 oncotree <- opt$oncotree
 data_dir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), 'data', sep='/')
 
@@ -216,10 +218,21 @@ if(length(num_lines)<=1) {
 
   # function returns list of 3 objects ### TO WRITE
   fusion_cbio <- processFusions(fusfile, minfusionreads, entcon, arribafile)
+
+  # add whizbam links to fusion data
+  fusion_cbio[[1]]$Whizbam_Link <- paste0(whizbam_url,
+                                        "&chr=", gsub("chr", "", fusion_cbio[[1]]$break1_chromosome),
+                                        "&chrloc=", paste0(fusion_cbio[[1]]$break1_position_start, "-", fusion_cbio[[1]]$break1_position_end))
+
   # write input for oncoKB annotator
   print("writing fus file for oncokb annotator")
   write.table(fusion_cbio[[1]], file=paste0(outdir, "/data_fusions.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-  
+
+  # add whizbam links to fusion data for oncoKB annotator
+  fusion_cbio[[2]]$Whizbam_Link <- paste0(whizbam_url,
+                                        "&chr=", gsub("chr", "", fusion_cbio[[2]]$break1_chromosome),
+                                        "&chrloc=", paste0(fusion_cbio[[2]]$break1_position_start, "-", fusion_cbio[[2]]$break1_position_end))
+
   # write input for oncoKB annotator
   print("writing fus file for oncokb annotator")
   write.table(fusion_cbio[[2]], file=paste0(outdir, "/data_fusions_oncokb.txt"), sep="\t", row.names=FALSE, quote=FALSE)

@@ -7,7 +7,7 @@ import logging
 import os
 import re
 from djerba.plugins.base import plugin_base, DjerbaPluginError
-from djerba.plugins.fusion.tools import fusion_reader, prepare_fusions
+from djerba.plugins.fusion.tools import fusion_reader, prepare_fusions, whizbam
 from djerba.util.environment import directory_finder
 from djerba.util.html import html_builder as hb
 from djerba.util.logger import logger
@@ -22,6 +22,8 @@ class main(plugin_base):
     PRIORITY = 900
     PLUGIN_VERSION = '1.1.0'
     CACHE_DEFAULT = '/.mounts/labs/CGI/gsi/tools/djerba/oncokb_cache/scratch'
+    SEQTYPE = 'RNASEQ'
+    GENOME = 'hg38'
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -36,6 +38,14 @@ class main(plugin_base):
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
+        whizbam_url = whizbam.construct_whizbam_link(
+            fc.WHIZBAM_BASE_URL,
+            wrapper.get_my_string(core_constants.PATIENT_STUDY_ID),
+            wrapper.get_my_string(core_constants.TUMOUR_ID),
+            wrapper.get_my_string(core_constants.NORMAL_ID),
+            self.SEQTYPE,
+            self.GENOME
+        )
         prepare_fusions( self.workspace.get_work_dir(), self.log_level, self.log_path).process_fusion_files(wrapper)
         fus_reader = fusion_reader( self.workspace.get_work_dir(), self.log_level, self.log_path )
         total_fusion_genes = fus_reader.get_total_fusion_genes()
@@ -65,6 +75,7 @@ class main(plugin_base):
         data[core_constants.RESULTS] = results
         data[core_constants.MERGE_INPUTS]['gene_information_merger'] = gene_info
         data[core_constants.MERGE_INPUTS]['treatment_options_merger'] = treatment_opts
+        data['whizbam_url'] = whizbam_url
         return data
 
     def specify_params(self):
