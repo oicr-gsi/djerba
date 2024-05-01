@@ -532,12 +532,7 @@ class TestMainScript(TestCore):
         self.assert_report_MD5(html_string, 'b11a1d1623af8ae77385994f2f0ab9fa')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
-        # again, with the --write-json option
-        cmd.append('--write-json')
-        updated_path = os.path.join(self.tmp_dir, 'updated_report.json')
-        self.assertFalse(os.path.isfile(updated_path))
-        result = subprocess_runner().run(cmd)
-        self.assertEqual(result.returncode, 0)
+        updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')
         self.assertTrue(os.path.isfile(updated_path))
 
     def test_update_cli_with_summary(self):
@@ -563,12 +558,7 @@ class TestMainScript(TestCore):
         self.assert_report_MD5(html_string, 'b11a1d1623af8ae77385994f2f0ab9fa')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
-        # again, with the --write-json option
-        cmd.append('--write-json')
-        updated_path = os.path.join(self.tmp_dir, 'updated_report.json')
-        self.assertFalse(os.path.isfile(updated_path))
-        result = subprocess_runner().run(cmd)
-        self.assertEqual(result.returncode, 0)
+        updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')
         self.assertTrue(os.path.isfile(updated_path))
 
 

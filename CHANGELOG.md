@@ -31,6 +31,7 @@
 - GCGI-1322: Warning instead of error if manually configured sample name does not match provenance
 - GCGI-1323: Support PWGS in mini-Djerba by making summary optional
 - GCGI-1325: Rewrite case_overview config method to fix bugs and make it clearer
+- GCGI-1344: Write updated JSON by default, with a more informative name
 
 ## v1.5.5: 2024-03-05
 - Further fixes to pWGS Cardea helper to allow multiple projects for one donor
