@@ -16,20 +16,20 @@ ${html_builder.section_cells_begin("Mutational Sampling", True)}
             the number of detected sites in the plasma sample was statistically 
             compared to the number of detected sites in a healthy control cohort. 
             The number of SNVs of tumour origin 
-            detected in this plasma sample (detected sites: <strong>${html_builder.k_comma_format(results.get(constants.SITES_DETECTED))}</strong>) was
+            detected in this plasma sample was
              <strong>${results.get(constants.SIGNIFICANCE)} </strong>  
-             than in the control cohort (N=${results.get(constants.COHORT_N)}). Dataset detection cutoff is <strong>${html_builder.k_comma_format(results.get(constants.DATASET_DETECTION_CUTOFF))}</strong>. </p>
+             than in the control cohort (N=${results.get(constants.COHORT_N)}). </p>
             <table class="variants" style="width:100%">
                   <thead>
                         <th style=" width:16%">Reads Checked</th>
-                        <th style=" width:16%">Reads Detected</th>
-                        <th style=" width:20%">Detected:Checked Reads (%)</th>
+                        <th style=" width:16%">Mutant Reads Detected</th>
+                        <th style=" width:20%">Mutant/Checked Read Percentage</th>
                   </thead>
                   <tbody>
                         <tr>
                               <td>${html_builder.k_comma_format(results.get(constants.READS_CHECKED))}</td>
                               <td>${html_builder.k_comma_format(results.get(constants.READS_DETECTED))}</td>
-                              <td>${results.get(constants.TUMOUR_FRACTION_READS)}</td>
+                              <td>${results.get(constants.TUMOUR_FRACTION_READS)}%</td>
                         </tr>
                   </tbody>
             </table>

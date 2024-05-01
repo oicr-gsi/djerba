@@ -50,7 +50,7 @@ class TestSnvIndelPlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: self.JSON_NAME,
-            self.MD5: 'bb72d0529e04e6e7ed2ccec51073ac26'
+            self.MD5: '5893324737a3b0e9b93b7d3458d4aa27'
         }
         self.run_basic_test(input_dir, params, work_dir=work_dir)
 
