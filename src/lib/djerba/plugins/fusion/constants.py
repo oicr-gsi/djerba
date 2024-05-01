@@ -11,6 +11,10 @@ ONCOTREE_CODE = 'oncotree code'
 ENTREZ_CONVERSION_PATH = 'entrez conv path'
 MIN_FUSION_READS = 'minimum fusion reads'
 
+PATIENT_STUDY_ID = 'patient_study_id'
+TUMOUR_ID = 'tumour_id'
+NORMAL_ID = 'normal_id'
+
 # JSON results keys
 TOTAL_VARIANTS = "Total variants"
 CLINICALLY_RELEVANT_VARIANTS = "Clinically relevant variants"

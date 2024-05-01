@@ -17,8 +17,8 @@ import djerba.core.constants as core_constants
 import djerba.util.oncokb.constants as oncokb
 import djerba.plugins.fusion.constants as fc
 
-class main(plugin_base):
 
+class main(plugin_base):
     PRIORITY = 900
     PLUGIN_VERSION = '1.1.0'
     CACHE_DEFAULT = '/.mounts/labs/CGI/gsi/tools/djerba/oncokb_cache/scratch'
@@ -31,26 +31,29 @@ class main(plugin_base):
         wrapper = self.update_file_if_null(wrapper, fc.ARRIBA_PATH, 'arriba')
         wrapper = self.update_file_if_null(wrapper, fc.MAVIS_PATH, 'mavis')
 
+        wrapper = self.update_wrapper_if_null(wrapper, core_constants.DEFAULT_SAMPLE_INFO, fc.TUMOUR_ID)
+        wrapper = self.update_wrapper_if_null(wrapper, core_constants.DEFAULT_SAMPLE_INFO, fc.NORMAL_ID)
+        wrapper = self.update_wrapper_if_null(wrapper, core_constants.DEFAULT_SAMPLE_INFO, fc.PATIENT_STUDY_ID)
+
         self.update_wrapper_if_null(wrapper, 'input_params.json', fc.ONCOTREE_CODE, 'oncotree_code')
         if wrapper.my_param_is_null(core_constants.TUMOUR_ID):
             sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
             wrapper.set_my_param(core_constants.TUMOUR_ID, sample_info.get(core_constants.TUMOUR_ID))
-            wrapper.set_my_param(core_constants.NORMAL_ID, sample_info.get(core_constants.NORMAL_ID))
-            wrapper.set_my_param(core_constants.PATIENT_STUDY_ID, sample_info.get(core_constants.PATIENT_STUDY_ID))
+
         return wrapper.get_config()
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         whizbam_url = whizbam.construct_whizbam_link(
             fc.WHIZBAM_BASE_URL,
-            wrapper.get_my_string(core_constants.PATIENT_STUDY_ID),
-            wrapper.get_my_string(core_constants.TUMOUR_ID),
-            wrapper.get_my_string(core_constants.NORMAL_ID),
+            wrapper.get_my_string(fc.PATIENT_STUDY_ID),
+            wrapper.get_my_string(fc.TUMOUR_ID),
+            wrapper.get_my_string(fc.NORMAL_ID),
             self.SEQTYPE,
             self.GENOME
         )
-        prepare_fusions( self.workspace.get_work_dir(), self.log_level, self.log_path).process_fusion_files(wrapper)
-        fus_reader = fusion_reader( self.workspace.get_work_dir(), self.log_level, self.log_path )
+        prepare_fusions(self.workspace.get_work_dir(), self.log_level, self.log_path).process_fusion_files(wrapper)
+        fus_reader = fusion_reader(self.workspace.get_work_dir(), self.log_level, self.log_path)
         total_fusion_genes = fus_reader.get_total_fusion_genes()
         gene_pair_fusions = fus_reader.get_fusions()
         if gene_pair_fusions is not None:
@@ -90,7 +93,7 @@ class main(plugin_base):
         ]
         for key in discovered:
             self.add_ini_discovered(key)
-        #set defaults
+        # set defaults
         data_dir = directory_finder(self.log_level, self.log_path).get_data_dir()
         self.set_ini_default(fc.ENTREZ_CONVERSION_PATH, os.path.join(data_dir, fc.ENTRCON_NAME))
         self.set_ini_default(fc.MIN_FUSION_READS, 20)
@@ -114,4 +117,4 @@ class main(plugin_base):
                 self.logger.error(msg)
                 raise RuntimeError(msg)
             wrapper.set_my_param(ini_name, file_path)
-        return(wrapper)
+        return (wrapper)
