@@ -30,6 +30,8 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         wrapper = self.update_file_if_null(wrapper, fc.ARRIBA_PATH, 'arriba')
         wrapper = self.update_file_if_null(wrapper, fc.MAVIS_PATH, 'mavis')
+        wrapper = self.update_wrapper_if_null(wrapper, core_constants.DEFAULT_SAMPLE_INFO, core_constants.TUMOUR_ID, core_constants.NORMAL_ID)
+
         self.update_wrapper_if_null(wrapper, 'input_params.json', fc.ONCOTREE_CODE, 'oncotree_code')
         if wrapper.my_param_is_null(core_constants.TUMOUR_ID):
             sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
