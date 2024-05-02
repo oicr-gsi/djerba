@@ -30,11 +30,11 @@ class benchmarker(logger):
     MSI_DIR_NAME = 'msi'
     SAMPLES = [
         "GSICAPBENCH_1219",
-        #"GSICAPBENCH_1232", # FIXME temporarily use just one sample for quicker testing
-        #"GSICAPBENCH_1233",
-        #"GSICAPBENCH_1273",
-        #"GSICAPBENCH_1275",
-        #"GSICAPBENCH_1288"
+        #"GSICAPBENCH_1232", # temporarily commented out, sample not in GSICAPBENCH240425
+        "GSICAPBENCH_1233",
+        "GSICAPBENCH_1273",
+        "GSICAPBENCH_1275",
+        "GSICAPBENCH_1288"
     ]
     REPORT_DIR_NAME = 'report'
     TEMPLATE = 'benchmark_config.ini'
@@ -259,7 +259,7 @@ class report_equivalence_tester(logger):
     Eg. expression comparison will not necessarily work with different plugins
     """
 
-    CNV_NAME = 'cnv'
+    CNV_NAME = 'wgts.cnv_purple'
     FUSION_NAME = 'fusion'
     SNV_INDEL_NAME = 'wgts.snv_indel'
     SUPPLEMENT_NAME = 'supplement.body'
@@ -430,6 +430,7 @@ class report_equivalence_tester(logger):
         Replace variable elements (images, dates) with dummy values
         """
         placeholder = 'redacted for benchmark comparison'
+        self.logger.info("Preprocessing report path {0}".format(report_path))
         with open(report_path) as report_file:
             data = json.loads(report_file.read())
         plugins = data['plugins'] # don't compare config or core elements
