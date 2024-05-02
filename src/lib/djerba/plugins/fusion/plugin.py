@@ -32,21 +32,21 @@ class main(plugin_base):
         wrapper = self.update_file_if_null(wrapper, fc.MAVIS_PATH, 'mavis')
 
         print("BEFORE")
-        print("TUMOUR_ID", config.get("fusion",fc.TUMOUR_ID))
-        print("NORMAL_ID", config.get("fusion", fc.NORMAL_ID))
+        print("TUMOUR_ID", config.get("fusion", fc.TUMOUR_ID, fallback="nothing"))
+        print("NORMAL_ID", config.get("fusion", fc.NORMAL_ID, fallback="nothing"))
 
 
         wrapper = self.update_wrapper_if_null(wrapper, core_constants.DEFAULT_SAMPLE_INFO, fc.TUMOUR_ID)
 
         print("AFTER1")
-        print("TUMOUR_ID", config.get("fusion", fc.TUMOUR_ID))
-        print("NORMAL_ID", config.get("fusion", fc.NORMAL_ID))
+        print("TUMOUR_ID", config.get("fusion", fc.TUMOUR_ID, fallback="nothing"))
+        print("NORMAL_ID", config.get("fusion", fc.NORMAL_ID, fallback="nothing"))
 
         wrapper = self.update_wrapper_if_null(wrapper, core_constants.DEFAULT_SAMPLE_INFO, fc.NORMAL_ID)
 
         print("AFTER2")
-        print("TUMOUR_ID", config.get("fusion", fc.TUMOUR_ID))
-        print("NORMAL_ID", config.get("fusion", fc.NORMAL_ID))
+        print("TUMOUR_ID", config.get("fusion", fc.TUMOUR_ID, fallback="nothing"))
+        print("NORMAL_ID", config.get("fusion", fc.NORMAL_ID, fallback="nothing"))
 
         wrapper = self.update_wrapper_if_null(wrapper, core_constants.DEFAULT_SAMPLE_INFO, fc.PATIENT_STUDY_ID)
 
