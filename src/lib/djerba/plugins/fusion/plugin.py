@@ -31,8 +31,23 @@ class main(plugin_base):
         wrapper = self.update_file_if_null(wrapper, fc.ARRIBA_PATH, 'arriba')
         wrapper = self.update_file_if_null(wrapper, fc.MAVIS_PATH, 'mavis')
 
+        print("BEFORE")
+        print("TUMOUR_ID", config.get("fusion",fc.TUMOUR_ID))
+        print("NORMAL_ID", config.get("fusion", fc.NORMAL_ID))
+
+
         wrapper = self.update_wrapper_if_null(wrapper, core_constants.DEFAULT_SAMPLE_INFO, fc.TUMOUR_ID)
+
+        print("AFTER1")
+        print("TUMOUR_ID", config.get("fusion", fc.TUMOUR_ID))
+        print("NORMAL_ID", config.get("fusion", fc.NORMAL_ID))
+
         wrapper = self.update_wrapper_if_null(wrapper, core_constants.DEFAULT_SAMPLE_INFO, fc.NORMAL_ID)
+
+        print("AFTER2")
+        print("TUMOUR_ID", config.get("fusion", fc.TUMOUR_ID))
+        print("NORMAL_ID", config.get("fusion", fc.NORMAL_ID))
+
         wrapper = self.update_wrapper_if_null(wrapper, core_constants.DEFAULT_SAMPLE_INFO, fc.PATIENT_STUDY_ID)
 
         self.update_wrapper_if_null(wrapper, 'input_params.json', fc.ONCOTREE_CODE, 'oncotree_code')
