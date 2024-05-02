@@ -205,9 +205,6 @@ class configurable(core_base, ABC):
             if self.workspace.has_file(file_name):
                 self.logger.debug("Reading {0} from file {1}".format(config_key, file_name))
                 data = self.workspace.read_json(file_name)
-                full_path = self.workspace.abs_path(file_name)
-                print("JSON FULL PATH IS", full_path, "\n")
-                print(data)
                 try:
                     value = data[json_key]
                 except KeyError as err:
