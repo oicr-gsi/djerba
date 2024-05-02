@@ -12,6 +12,7 @@
 - GCGI-1012: Moved R testing to formal tests
 - GCGI-1304: Merge updates to genomic landscape plugin and resolve conflicts
 - GCGI-1319: Update genomic landscape plugin to read purity from PURPLE output file
+- GCGI-1349: Update plugin lists for djerba.py setup mode
 - new PURPLE CNV calling plugin
 - removed sequenza support
 - new `djerba.plugins.wgts.common` package for code shared between multiple WGTS/WGS plugins

@@ -436,7 +436,7 @@ class main(main_base):
                 'genomic_landscape',
                 'expression_helper',
                 'wgts.snv_indel',
-                'cnv',
+                'wgts.cnv_purple',
                 'fusion',
                 'gene_information_merger',
                 'supplement.body',
@@ -454,7 +454,7 @@ class main(main_base):
                 'sample',
                 'genomic_landscape',
                 'wgts.snv_indel',
-                'cnv',
+                'wgts.cnv_purple',
                 'gene_information_merger',
                 'supplement.body',
             ]
