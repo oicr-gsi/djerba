@@ -35,7 +35,6 @@ class main(plugin_base):
         print("TUMOUR_ID", config.get("fusion", fc.TUMOUR_ID, fallback="nothing"))
         print("NORMAL_ID", config.get("fusion", fc.NORMAL_ID, fallback="nothing"))
 
-
         wrapper = self.update_wrapper_if_null(wrapper, core_constants.DEFAULT_SAMPLE_INFO, fc.TUMOUR_ID)
 
         print("AFTER1")
@@ -104,6 +103,8 @@ class main(plugin_base):
             fc.MAVIS_PATH,
             fc.ARRIBA_PATH,
             core_constants.TUMOUR_ID,
+            core_constants.NORMAL_ID,
+            core_constants.PATIENT_STUDY_ID,
             fc.ONCOTREE_CODE
         ]
         for key in discovered:
