@@ -50,7 +50,7 @@ class main(plugin_base):
             self.SEQTYPE,
             self.GENOME
         )
-        prepare_fusions(self.workspace.get_work_dir(), self.log_level, self.log_path).process_fusion_files(wrapper)
+        prepare_fusions(self.workspace.get_work_dir(), self.log_level, self.log_path).process_fusion_files(wrapper, whizbam_url)
         fus_reader = fusion_reader(self.workspace.get_work_dir(), self.log_level, self.log_path)
         total_fusion_genes = fus_reader.get_total_fusion_genes()
         gene_pair_fusions = fus_reader.get_fusions()

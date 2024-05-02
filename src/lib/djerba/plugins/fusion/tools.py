@@ -261,13 +261,28 @@ class prepare_fusions(logger):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.input_dir = input_dir
 
+    def run_r_script(self, entrez_conv_path, fus_path, arriba_path, min_reads, whizbam_url, oncotree):
+        plugin_dir = os.path.dirname(os.path.realpath(__file__))
+        script_path = os.path.join(plugin_dir, 'fusions.R')
+        cmd = [
+            'Rscript', script_path,
+            '--entcon', entrez_conv_path,
+            '--fusfile', fus_path,
+            '--arriba', arriba_path,
+            '--minfusionreads', min_reads,
+            '--workdir', self.input_dir,
+            '--whizbam_url', whizbam_url,
+            '--oncotree', oncotree
+        ]
+        subprocess_runner(self.log_level, self.log_path).run([str(x) for x in cmd])
+
     def annotate_fusion_files(self, config_wrapper):
         # annotate from OncoKB
         # TODO check if fusions are non empty
         factory = annotator_factory(self.log_level, self.log_path)
         factory.get_annotator(self.input_dir, config_wrapper).annotate_fusion()
 
-    def process_fusion_files(self, config_wrapper):
+    def process_fusion_files(self, config_wrapper, whizbam_url):
         """
         Preprocess fusion inputs and run R scripts; write outputs to the workspace
         Inputs assumed to be in Mavis .tab format; .zip format is no longer in use
@@ -295,18 +310,7 @@ class prepare_fusions(logger):
                 new_row = [value] + row
                 writer.writerow(new_row)
         # run the R script
-        plugin_dir = os.path.dirname(os.path.realpath(__file__))
-        script_path = os.path.join(plugin_dir, 'fusions.R')
-        cmd = [
-            'Rscript', script_path,
-            '--entcon', entrez_conv_path,
-            '--fusfile', fus_path,
-            '--arriba', arriba_path,
-            '--minfusionreads', min_reads,
-            '--workdir', self.input_dir,
-            '--oncotree', oncotree
-        ]
-        subprocess_runner(self.log_level, self.log_path).run([str(x) for x in cmd])
+        self.run_r_script(entrez_conv_path, fus_path, arriba_path, min_reads, whizbam_url, oncotree)
         self.annotate_fusion_files(config_wrapper)
         self.logger.info("Finished writing fusion files")
 
