@@ -8,7 +8,7 @@ library(dplyr)
 
 # main function to read/write fusion data; was 'preProcFus' in Djerba classic
 processFusions <- function(datafile, readfilt, entrfile, arribafile ){
-  
+
  # function to split and take max value from list of columns
  split_column_take_max <- function(df, columns) {
   for (column in columns) {
@@ -24,7 +24,7 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  cat("reading fusion data...\n")
  data <- read.csv(datafile, sep="\t", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
  entr <- read.csv(entrfile, sep="\t", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
- 
+
 
  # reformat the filtering columns to split and take the max value within cell
  columns <- c("contig_remapped_reads", "flanking_pairs", "break1_split_reads", "break2_split_reads", "linking_split_reads")
@@ -62,39 +62,39 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
 
  # add some missing columns
  data_dedup$DNA_support <- ifelse(grepl("delly", data_dedup$tools), "yes", "no")
- data_dedup$RNA_support <- ifelse(grepl("arriba", data_dedup$tools), "yes", 
+ data_dedup$RNA_support <- ifelse(grepl("arriba", data_dedup$tools), "yes",
                               ifelse(grepl("star", data_dedup$tools), "yes", "no")
                                 )
 
  #### add translocation style ####
- 
- 
+
+
  data_dedup$break1_chromosome_num <- data_dedup$break1_chromosome
  data_dedup$break2_chromosome_num <- data_dedup$break2_chromosome
- 
+
  data_dedup$break1_chromosome_num[data_dedup$break1_chromosome_num == "X"] <- "23"
  data_dedup$break2_chromosome_num[data_dedup$break2_chromosome_num == "X"] <- "23"
- 
+
  data_dedup$break1_chromosome_num <- as.numeric(data_dedup$break1_chromosome_num)
  data_dedup$break2_chromosome_num <- as.numeric(data_dedup$break2_chromosome_num)
- 
- data_dedup <- data_dedup %>% 
+
+ data_dedup <- data_dedup %>%
    rowwise() %>%
    mutate(min = min(break1_chromosome_num, break2_chromosome_num),
           max = max(break1_chromosome_num, break2_chromosome_num))
- 
+
  data_dedup$translocation <- paste0("t(",data_dedup$min,";",data_dedup$max,")")
  data_dedup = data_dedup[,!(names(data_dedup) %in% c("min","max"))]
  data_dedup$translocation <- gsub("23","X",x = data_dedup$translocation)
- 
+
  data_dedup$translocation[data_dedup$event_type %ni% c("inverted translocation", "translocation")] <- data_dedup$event_type[data_dedup$event_type %ni% c("inverted translocation", "translocation")]
- 
+
  data_dedup$translocation[data_dedup$event_type == "inversion"] <- paste0("inv(",data_dedup$break1_chromosome[data_dedup$event_type == "inversion"],")")
- 
- 
+
+
  #####
  cat("Adding Arriba data...\n")
- 
+
  arriba <- read.csv(arribafile, sep="\t", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
  arriba$arriba <- "arriba"
  if(length(arriba$reading_frame[arriba$reading_frame == "."]) > 0){
@@ -102,41 +102,42 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
   arriba$reading_frame[arriba$reading_frame == "."] <- "No effect"
  }
  names(arriba)[1] <- "gene1"
- 
+
  intersecting_genes <- intersect(unique(c(arriba$gene2,arriba$gene1)),unique(c(data_dedup$gene1_aliases,data_dedup$gene2_aliases)))
  arriba$gene1[arriba$gene1 %ni% intersecting_genes ] <- "None"
  arriba$gene2[arriba$gene2 %ni% intersecting_genes ] <- "None"
- 
+
  arriba <- arriba %>%
    rowwise() %>%      # for each row
    mutate(fusion_alpha = paste(sort(c(gene1, gene2)), collapse = " - ")) %>%  # sort alphabetically and then combine them separating with -
-   ungroup() 
- 
+   ungroup()
+
  data_dedup <- data_dedup %>%
    rowwise() %>%      # for each row
    mutate(fusion_alpha = paste(sort(c(gene1_aliases, gene2_aliases)), collapse = " - ")) %>%  # sort alphabetically and then combine them separating with -
-   ungroup() 
- 
+   ungroup()
+
 
  data_dedup <- left_join(data_dedup, arriba, by=c("fusion_alpha"="fusion_alpha"))
- 
+
  if(length(data_dedup$reading_frame[is.na(data_dedup$reading_frame)]) > 0){
     cat("Replacing empty reading frame with Undertermined\n")
     data_dedup$reading_frame[is.na(data_dedup$reading_frame)] <- "Undetermined"
  }
- 
+
  #### split into tables ####
- 
- header <- c("Hugo_Symbol", "Entrez_Gene_Id",  "Tumor_Sample_Barcode", "Fusion", "DNA_support", "RNA_support", "Method", "translocation", "arriba_site1", "arriba_site2", "Frame")
- 
+
+ header <- c("Hugo_Symbol", "Entrez_Gene_Id",  "Tumor_Sample_Barcode", "Fusion", "DNA_support", "RNA_support", "Method", "translocation", "arriba_site1", "arriba_site2", "Frame", "break1_chromosome", "break1_position_start", "break1_position_end")
+
+
  if (nrow(data_dedup)==0) {
-   
+
    print("--- Fusion data table is empty! ---")
 
    df_cbio <- data.frame(matrix(ncol = length(header), nrow = 0))
    colnames(df_cbio) <- header
    df_cbio_new_delim <- df_cbio
-   
+
  } else {
 
    # get left gene data
@@ -156,12 +157,12 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
    df_cbio <- df_cbio[!is.na(df_cbio$Entrez_Gene_Id),]
    df_cbio$Fusion <- gsub("None", "intragenic", df_cbio$Fusion)
 
-   # change to old-style fusion delimiter for compatability with OncoKB's FusionAnnotator.py 
+   # change to old-style fusion delimiter for compatability with OncoKB's FusionAnnotator.py
    df_cbio$Fusion_newStyle <- df_cbio$Fusion
    df_cbio$Fusion <- gsub("::", "-", df_cbio$Fusion)
-   
+
    df_cbio <- df_cbio[!duplicated(df_cbio),]
-   
+
    # deal with cases where there is more than one possible reading frame
    multiple_frames <- names(table(df_cbio$Fusion)[table(df_cbio$Fusion) > 2 ])
    df_cbio$Frame[df_cbio$Fusion %in% multiple_frames] <- "Multiple Frames"
@@ -169,9 +170,12 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
    df_cbio$arriba_site2[df_cbio$Fusion %in% multiple_frames] <- "Multiple Sites"
    
    df_cbio <- df_cbio[!duplicated(df_cbio),]
-   
+
+   df_cbio <- merge(df_cbio, data[, c("Sample", "break1_chromosome", "break1_position_start", "break1_position_end")], by="Tumor_Sample_Barcode", all.x=TRUE)
+   colnames(df_cbio) <- header
+
  }
- 
+
  # input for oncoKB annotator
  df_cbio_oncokb <- df_cbio[c("Tumor_Sample_Barcode", "Fusion")]
 
@@ -219,10 +223,6 @@ if(length(num_lines)<=1) {
   # function returns list of 3 objects ### TO WRITE
   fusion_cbio <- processFusions(fusfile, minfusionreads, entcon, arribafile)
 
-  print("fusion_cbio"); print(fusion_cbio); print("\n")
-  print("cbio1"); print(fusion_cbio[[1]]); print("\n")
-  print("cbio2"); print(fusion_cbio[[2]]); print("\n")
-
 
 
   # add whizbam links to fusion data
@@ -238,6 +238,10 @@ if(length(num_lines)<=1) {
   fusion_cbio[[2]]$Whizbam_Link <- paste0(whizbam_url,
                                         "&chr=", gsub("chr", "", fusion_cbio[[2]]$break1_chromosome),
                                         "&chrloc=", paste0(fusion_cbio[[2]]$break1_position_start, "-", fusion_cbio[[2]]$break1_position_end))
+
+  print("cbio1"); print(fusion_cbio[[1]])
+  print("cbio2"); print(fusion_cbio[[2]])
+
 
   # write input for oncoKB annotator
   print("writing fus file for oncokb annotator")
