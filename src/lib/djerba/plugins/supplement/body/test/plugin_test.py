@@ -24,7 +24,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'PWGS.supp.ini',
             self.JSON: json_location,
-            self.MD5: '8a958cc5924b86cb05a0d8ea94fd34cb'
+            self.MD5: '89c814fa0785bdbf3a7949afd8dd7fc7'
         }
         self.run_basic_test(test_source_dir, params)
 
