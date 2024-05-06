@@ -2,6 +2,7 @@
 
 ## UNRELEASED
 - Fix to TERT protein annotation (G>A -> C>T)
+- Removed extra white space in gene information section
 
 ## v.1.5.5: 2024-03-05
 - Further fixes to pWGS Cardea helper to allow multiple projects for one donor
