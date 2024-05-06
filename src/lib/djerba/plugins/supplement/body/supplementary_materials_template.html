@@ -68,7 +68,7 @@ ${html_builder().section_cells_begin("<h2>Report<br>Sign-offs</h2>",True)}
       <td width="33%">Report drafted by ${results.get(core_constants.AUTHOR)} on ${results.get('extract_date')}</td>
     </tr>
     <tr>
-      <td width="33%" style="padding-bottom: ${'300px' if ASSAY == 'PWGS' else '0'};">Report electronically signed out by ${results.get('clinical_geneticist_name')} (ABMS #${results.get('clinical_geneticist_licence')}) on ${results.get('report_signoff_date')}</td>
+      <td width="33%" style="padding-bottom: ${'150px' if ASSAY == 'PWGS' else '0'};">Report electronically signed out by ${results.get('clinical_geneticist_name')} (ABMS #${results.get('clinical_geneticist_licence')}) on ${results.get('report_signoff_date')}</td>
     </tr>
   </table>
 
