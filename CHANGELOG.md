@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## UNRELEASED
+## v.1.5.6: 2024-05-06
 - Fix to TERT protein annotation (G>A -> C>T)
 - Removed extra white space in gene information section
 
