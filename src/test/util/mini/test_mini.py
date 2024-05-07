@@ -94,10 +94,10 @@ class TestMiniBase(TestBase):
         self.assertEqual(self.getMD5_of_string(redacted), md5)
 
     def assert_render_with_summary(self):
-        self.assert_render('cf4be4d7b985f439c5023dd6893bb127')
+        self.assert_render('a841cd3a9574ea53f7202691280f5ab7')
 
     def assert_render_without_summary(self):
-        self.assert_render('2f42dd22ff1eded5542069f0bffe5a21')
+        self.assert_render('71b0f3dc0e83132c529e5dddf51d5f28')
 
     def assert_update(self, md5):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
@@ -121,10 +121,10 @@ class TestMiniBase(TestBase):
             self.assertEqual(text.strip(), expected_text)
 
     def assert_update_with_summary(self):
-        self.assert_update('bde42f81bfc210e6600dbea669e9680c')
+        self.assert_update('503d67085ff2ad669309c753df05b828')
 
     def assert_update_without_summary(self):
-        self.assert_update('cb68d6bee6181ec891a0a670f4e9bddc')
+        self.assert_update('f263f0109838d45b36ec4303795de231')
 
 
 class TestMain(TestMiniBase):
