@@ -36,7 +36,13 @@
 - GCGI-1344: Write updated JSON by default, with a more informative name
 - GCGI-1346: Fixes and updates to GSICAPBENCH
 
-## v1.5.5: 2024-03-05
+## v.1.5.6: 2024-05-06
+
+- Fix to TERT protein annotation (G>A -> C>T)
+- Removed extra white space in gene information section
+
+## v.1.5.5: 2024-03-05
+
 - Further fixes to pWGS Cardea helper to allow multiple projects for one donor
 
 ## v1.5.4: 2024-03-01
