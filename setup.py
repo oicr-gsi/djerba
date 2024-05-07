@@ -65,6 +65,7 @@ setup(
         'djerba.helpers.expression_helper': install_wildcards,
         'djerba.helpers.input_params_helper': install_wildcards,
         'djerba.helpers.provenance_helper': install_wildcards,
+        'djerba.helpers.pwgs_cardea_helper': install_wildcards,
         'djerba.helpers.tar_input_params_helper': install_wildcards,
         'djerba.mergers.gene_information_merger': install_wildcards,
         'djerba.mergers.treatment_options_merger': install_wildcards,
