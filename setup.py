@@ -46,7 +46,7 @@ setup(
     package_data={
         'djerba': [
             'data/20200818-oncoKBcancerGeneList.tsv',
-            'data/20231116-allCuratedGenes.tsv',
+            'data/20240315-allCuratedGenes.tsv',
             'data/OncoTree.json',
             'data/NCCN_annotations.txt',
             'data/benchmark_config.ini',

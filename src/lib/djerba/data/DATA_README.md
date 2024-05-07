@@ -17,7 +17,8 @@ It is recommended to check Djerba against the reference sources, and update if n
    a. Run Djerba unit and validation tests
    b. Resolve any failures; test and validate any required code changes
    c. Note the updated files in the changelog
-   d. Merge the working branch; tag and release a new version of Djerba
+   d. If any _filenames_ have changed, update the Djerba `setup.py` script
+   e. Merge the working branch; tag and release a new version of Djerba
 4. Close the ticket, with a comment noting if files were changed
 
 Updating the reference files is not expected to change the behaviour of Djerba tests; variants may be added, but modifying the existing variants in the tests is less likely. If any failures do occur, they must be corrected, with appropriate validation of any code changes.
