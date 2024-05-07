@@ -148,9 +148,9 @@ class snv_indel_processor(logger):
                     if gene == 'TERT':
                         # filtering for TERT hot spot would have already occured so this is a hot spot
                         if row_input[sic.START] == '1295113':
-                            alt = 'p.? (c.-124G>A)'
+                            alt = 'p.? (c.-124C>T)'
                         elif row_input[sic.START] == '1295135':
-                            alt = 'p.? (c.-146G>A)'
+                            alt = 'p.? (c.-146C>T)'
                         alt_url = html_builder.build_alteration_url(
                             gene, "Promoter%20Mutation", oncotree_code
                         )
@@ -196,6 +196,8 @@ class snv_indel_processor(logger):
 
     def get_mutation_type(self, row):
         mutation_type = row[sic.VARIANT_CLASSIFICATION]
+        if row[sic.HUGO_SYMBOL] == 'TERT':
+            mutation_type = 'Promoter'
         mutation_type = mutation_type.replace('_', ' ')
         return mutation_type
 
@@ -267,9 +269,9 @@ class snv_indel_processor(logger):
         if gene == 'TERT': 
             # filtering for TERT hot spot would have already occured so this is a hot spot
             if row[sic.START] == '1295113':
-                protein = 'p.? (c.-124G>A)'
+                protein = 'p.? (c.-124C>T)'
             elif row[sic.START] == '1295135':
-                protein = 'p.? (c.-146G>A)'
+                protein = 'p.? (c.-146C>T)'
             protein_url = html_builder.build_alteration_url(
                 gene, "Promoter%20Mutation", oncotree_code
             )
