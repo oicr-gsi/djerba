@@ -70,7 +70,6 @@ setup(
         'djerba.mergers.treatment_options_merger': install_wildcards,
         'djerba.plugins.captiv8': install_wildcards,
         'djerba.plugins.case_overview': install_wildcards,
-        'djerba.plugins.wgts.cnv_purple': install_wildcards,
         'djerba.plugins.demo1': install_wildcards,
         'djerba.plugins.demo2': install_wildcards,
         'djerba.plugins.demo3': install_wildcards,
@@ -82,9 +81,9 @@ setup(
         'djerba.plugins.pwgs.case_overview': install_wildcards,
         'djerba.plugins.pwgs.sample': install_wildcards,
         'djerba.plugins.pwgs.summary': install_wildcards,
+        'djerba.plugins.report_title': install_wildcards,
         'djerba.plugins.sample': install_wildcards,
         'djerba.plugins.summary': install_wildcards,
-        'djerba.plugins.supplement': install_wildcards,
         'djerba.plugins.supplement.body': install_wildcards,
         'djerba.plugins.tar.sample': install_wildcards,
         'djerba.plugins.tar.snv_indel': install_wildcards,
@@ -93,7 +92,7 @@ setup(
         'djerba.plugins.wgts.cnv_purple': install_wildcards,
         'djerba.plugins.wgts.common.cnv': install_wildcards,
         'djerba.plugins.wgts.snv_indel': install_wildcards,
-        'djerba.plugins.report_title': install_wildcards
+        'alternate_djerba.plugins.demo4': install_wildcards,
     },
     install_requires=[
         'configparse',
