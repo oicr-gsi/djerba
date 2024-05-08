@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v1.6.0: 2024-05-08
 
 ### WGS 4.0
 
@@ -35,6 +35,7 @@
 - GCGI-1325: Rewrite case_overview config method to fix bugs and make it clearer
 - GCGI-1344: Write updated JSON by default, with a more informative name
 - GCGI-1346: Fixes and updates to GSICAPBENCH
+- GCGI-1352: Update WGTS example INI and PDF
 
 ## v.1.5.6: 2024-05-06
 
