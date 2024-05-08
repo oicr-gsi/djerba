@@ -440,7 +440,7 @@ class report_equivalence_tester(logger):
         results = 'results'
         plugins[self.CNV_NAME][results]['cnv plot'] = placeholder
         plugins[self.SNV_INDEL_NAME][results]['vaf_plot'] = placeholder
-        for biomarker in ['MSI', 'TMB']:
+        for biomarker in ['MSI', 'TMB', 'HRD']:
             plugins['genomic_landscape'][results]['genomic_biomarkers'][biomarker]['Genomic biomarker plot'] = placeholder
         for date_key in ['extract_date', 'report_signoff_date']:
             plugins[self.SUPPLEMENT_NAME][results][date_key] = placeholder
