@@ -171,6 +171,14 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
    
    df_cbio <- df_cbio[!duplicated(df_cbio),]
 
+   print("Column names in data df")
+   print(names(data))
+   print(head(data))
+   print("Column names in 'df_cbio' before merging")
+   print(names(df_cbio))
+   print(head(df_cbio))
+
+
    if(all(df_cbio$Tumor_Sample_Barcode == data$Sample)) {
      df_cbio <- merge(df_cbio, data[, c("Sample", "break1_chromosome", "break1_position_start", "break1_position_end")], by="Tumor_Sample_Barcode", all.x=TRUE)
    } else {
