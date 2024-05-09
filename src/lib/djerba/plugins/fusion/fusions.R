@@ -236,14 +236,6 @@ if(length(num_lines)<=1) {
   print("writing fus file for oncokb annotator")
   write.table(fusion_cbio[[1]], file=paste0(outdir, "/data_fusions.txt"), sep="\t", row.names=FALSE, quote=FALSE)
 
-  # add whizbam links to fusion data for oncoKB annotator
-  fusion_cbio[[2]]$Whizbam_Link <- paste0(whizbam_url,
-                                        "&chr=", gsub("chr", "", fusion_cbio[[2]]$break1_chromosome),
-                                        "&chrloc=", paste0(fusion_cbio[[2]]$break1_position_start, "-", fusion_cbio[[2]]$break1_position_end))
-
-  print("cbio1"); print(fusion_cbio[[1]])
-  print("cbio2"); print(fusion_cbio[[2]])
-
 
   # write input for oncoKB annotator
   print("writing fus file for oncokb annotator")

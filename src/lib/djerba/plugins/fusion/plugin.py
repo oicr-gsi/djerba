@@ -32,7 +32,7 @@ class main(plugin_base):
         wrapper = self.update_file_if_null(wrapper, fc.MAVIS_PATH, 'mavis')
 
         wrapper = self.update_wrapper_if_null(wrapper, core_constants.DEFAULT_SAMPLE_INFO, fc.TUMOUR_ID)
-        wrapper = self.update_wrapper_if_null(wrapper, core_constants.DEFAULT_SAMPLE_INFO, fc.PATIENT_STUDY_ID)
+        wrapper = self.update_wrapper_if_null(wrapper, core_constants.DEFAULT_SAMPLE_INFO, fc.STUDY_TITLE)
 
         self.update_wrapper_if_null(wrapper, 'input_params.json', fc.ONCOTREE_CODE, 'oncotree_code')
         if wrapper.my_param_is_null(core_constants.TUMOUR_ID):
@@ -45,7 +45,7 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         whizbam_url = whizbam.construct_whizbam_link(
             fc.WHIZBAM_BASE_URL,
-            wrapper.get_my_string(fc.PATIENT_STUDY_ID),
+            wrapper.get_my_string(fc.STUDY_TITLE),
             wrapper.get_my_string(fc.TUMOUR_ID),
             self.SEQTYPE,
             self.GENOME
@@ -87,7 +87,7 @@ class main(plugin_base):
             fc.MAVIS_PATH,
             fc.ARRIBA_PATH,
             core_constants.TUMOUR_ID,
-            core_constants.PATIENT_STUDY_ID,
+            core_constants.STUDY_TITLE,
             fc.ONCOTREE_CODE
         ]
         for key in discovered:
