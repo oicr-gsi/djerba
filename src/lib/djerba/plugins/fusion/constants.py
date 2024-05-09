@@ -11,7 +11,7 @@ ONCOTREE_CODE = 'oncotree code'
 ENTREZ_CONVERSION_PATH = 'entrez conv path'
 MIN_FUSION_READS = 'minimum fusion reads'
 
-STUDY_TITLE = 'study_title'
+PROJECT = 'project'
 TUMOUR_ID = 'tumour_id'
 NORMAL_ID = 'normal_id'
 
