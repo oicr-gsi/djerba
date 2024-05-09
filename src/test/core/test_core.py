@@ -13,19 +13,21 @@ import unittest
 import djerba.util.ini_fields as ini
 
 from configparser import ConfigParser
+from copy import copy
 from glob import glob
 from string import Template
 
 from djerba.core.configure import config_wrapper, core_configurer, DjerbaConfigError
 from djerba.core.ini_generator import ini_generator
 from djerba.core.json_validator import plugin_json_validator
-from djerba.core.loaders import plugin_loader, core_config_loader
+from djerba.core.loaders import plugin_loader, core_config_loader, DjerbaLoadError
 from djerba.core.main import main, arg_processor, DjerbaDependencyError
 from djerba.core.workspace import workspace
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.testing.tools import TestBase
 from djerba.util.validator import path_validator
 import djerba.core.constants as core_constants
+import djerba.plugins.base
 import djerba.util.constants as constants
 
 class TestCore(TestBase):
@@ -33,7 +35,7 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_UPDATE_JSON = 'simple_report_for_update.json'
-    SIMPLE_REPORT_MD5 = 'c3ee01a00e24a8fc6c2cc8232fcf9636'
+    SIMPLE_REPORT_MD5 = 'd8af6dbb0b5b8aca1acd204878c7d9d6'
     SIMPLE_CONFIG_MD5 = 'fc6265eeb6a9f8f2a5c864a97e07250c'
 
     class mock_args:
@@ -410,6 +412,29 @@ class TestIniGenerator(TestCore):
         with open(out_path) as in_file_1, open(expected_ini_path) as in_file_2:
             self.assertEqual(in_file_2.read(), in_file_1.read())
 
+class TestLoader(TestCore):
+    """Test loading from multiple top-level packages"""
+
+    def test(self):
+        var = plugin_loader.DJERBA_PACKAGES
+        if var in os.environ:
+            original = copy(os.environ[var])
+        else:
+            original = None
+        os.environ[var] = 'alternate_djerba:djerba'
+        loader = plugin_loader(log_level=logging.WARNING)
+        plugin = loader.load('demo4', workspace(self.tmp_dir))
+        self.assertTrue(isinstance(plugin, djerba.plugins.base.plugin_base))
+        plugin = loader.load('demo2', workspace(self.tmp_dir))
+        self.assertTrue(isinstance(plugin, djerba.plugins.base.plugin_base))
+        # remove the alternate package; make a loader with new environment
+        os.environ[var] = 'djerba'
+        new_loader = plugin_loader(log_level=logging.CRITICAL)
+        with self.assertRaises(DjerbaLoadError):
+            plugin = new_loader.load('demo4', workspace(self.tmp_dir))
+        # reset the environment to its original value
+        if original:
+            os.environ[var] = original
 
 class TestMainScript(TestCore):
     """Test the main djerba.py script"""
@@ -507,12 +532,7 @@ class TestMainScript(TestCore):
         self.assert_report_MD5(html_string, 'b11a1d1623af8ae77385994f2f0ab9fa')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
-        # again, with the --write-json option
-        cmd.append('--write-json')
-        updated_path = os.path.join(self.tmp_dir, 'updated_report.json')
-        self.assertFalse(os.path.isfile(updated_path))
-        result = subprocess_runner().run(cmd)
-        self.assertEqual(result.returncode, 0)
+        updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')
         self.assertTrue(os.path.isfile(updated_path))
 
     def test_update_cli_with_summary(self):
@@ -538,12 +558,7 @@ class TestMainScript(TestCore):
         self.assert_report_MD5(html_string, 'b11a1d1623af8ae77385994f2f0ab9fa')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
-        # again, with the --write-json option
-        cmd.append('--write-json')
-        updated_path = os.path.join(self.tmp_dir, 'updated_report.json')
-        self.assertFalse(os.path.isfile(updated_path))
-        result = subprocess_runner().run(cmd)
-        self.assertEqual(result.returncode, 0)
+        updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')
         self.assertTrue(os.path.isfile(updated_path))
 
 

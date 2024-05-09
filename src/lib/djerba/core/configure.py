@@ -203,6 +203,7 @@ class configurable(core_base, ABC):
             json_key = config_key
         if wrapper.my_param_is_null(config_key):
             if self.workspace.has_file(file_name):
+                self.logger.debug("Reading {0} from file {1}".format(config_key, file_name))
                 data = self.workspace.read_json(file_name)
                 try:
                     value = data[json_key]
@@ -212,12 +213,16 @@ class configurable(core_base, ABC):
                     raise DjerbaConfigError(msg) from err
                 wrapper.set_my_param(config_key, value)
             elif fallback != None:
+                msg = "File {0} not found, setting {1} to fallback value {2}"
+                self.logger.debug(msg.format(file_name, config_key, fallback))
                 wrapper.set_my_param(config_key, fallback)
             else:
                 msg = "Cannot find {0}; no fallback defined; ".format(config_key)+\
                     "must be manually specified or given in workspace {0}".format(file_name)
                 self.logger.error(msg)
                 raise DjerbaConfigError(msg)
+        else:
+            self.logger.debug("Using existing config value for {0}".format(config_key))
         return wrapper
 
     def validate_minimal_config(self, config):
@@ -424,6 +429,11 @@ class config_wrapper(core_base):
 
     def set_my_param(self, param, value):
         self.config.set(self.identifier, param, str(value))
+
+    def set_my_param_if_null(self, param, value):
+        # convenience method; overwrite value if null, otherwise do nothing
+        if self.my_param_is_null(param):
+            self.set_my_param(param, value)
 
     # [get|set|has]_my_* methods for other components
 

@@ -52,6 +52,7 @@ if(biomarker=="msi"){
     
     annotate(geom="point",y = msi_median, x="Sample",color="red",shape=1, size=8) +
     annotate(geom="point",y = msi_median, x="Sample",color="red",shape=20, size=3) +
+    annotate(geom="text",y = msi_median,x=0,color="red",label="This Sample",  vjust = -0.9, hjust=0.25,  size=4) +
     
     theme_classic() + 
     labs(x="",y="unstable microsatellites (%)",title="") + 
@@ -66,7 +67,7 @@ if(biomarker=="msi"){
           axis.title.y=element_blank(),
           axis.text.y=element_blank(),
           axis.ticks.y=element_blank(),
-          text = element_text(size = 18),
+          text = element_text(size = 16, family = "TT Arial"),
           panel.grid = element_blank(), 
           plot.margin = unit(c(t=-20, r=-20, b=0, l=-20), "points"),
           line = element_blank(),

@@ -66,7 +66,7 @@ class TestBenchmark(TestBase):
         report_pattern = '*report.json'
         for sample in benchmarker.SAMPLES:
             # use glob to find old/new paths for each sample
-            old_pattern = os.path.join(private_dir, 'benchmarking', sample, report_pattern)
+            old_pattern = os.path.join(private_dir, 'djerba_bench_reference', sample, report_pattern)
             old_path = glob(old_pattern)[0]
             new_pattern = os.path.join(self.tmp_dir, sample, 'report', report_pattern)
             new_glob = glob(new_pattern)
@@ -83,7 +83,7 @@ class TestReportEquivalence(TestBase):
         report_basic = os.path.join(test_dir, '100-009-005_LCM3-v1_report.json')
         report_copy = os.path.join(test_dir, '100-009-005_LCM3-v1_report.copy.json')
         report_broken = os.path.join(test_dir, '100-009-005_LCM3-v1_report.broken.json')
-        report_other_sample = os.path.join(test_dir, '100-009-006_LCM3-v1_report.json')
+        report_other_sample = os.path.join(test_dir, '100-009-008_LCM2-v1_report.json')
         report_modified = os.path.join(test_dir, '100-009-005_LCM3-v1_report.modified.json')
         with self.assertRaises(DjerbaReportDiffError):
             inputs = [report_basic, report_basic]

@@ -23,10 +23,6 @@ class main(helper_base):
     REQUISITION_ID = 'requisition_id'
     TCGACODE = 'tcgacode'
     SAMPLE_TYPE = 'sample_type'
-    SEQ_REV_1 = 'sequenza_reviewer_1'
-    SEQ_REV_2 = 'sequenza_reviewer_2'
-    PURITY = 'purity'
-    PLOIDY = 'ploidy'
 
     # Name for output file
     INPUT_PARAMS_FILE = 'input_params.json'
@@ -56,10 +52,6 @@ class main(helper_base):
         self.add_ini_required(self.REQUISITION_ID)
         self.add_ini_required(self.TCGACODE)
         self.add_ini_required(self.SAMPLE_TYPE)
-        self.add_ini_required(self.SEQ_REV_1)
-        self.add_ini_required(self.SEQ_REV_2)
-        self.add_ini_required(self.PURITY)
-        self.add_ini_required(self.PLOIDY)
 
     def configure(self, config):
         """
@@ -79,10 +71,6 @@ class main(helper_base):
                       self.REQUISITION_ID,
                       self.TCGACODE,
                       self.SAMPLE_TYPE,
-                      self.SEQ_REV_1,
-                      self.SEQ_REV_2,
-                      self.PURITY,
-                      self.PLOIDY,
                       self.ASSAY]
 
         for param in list_params:
@@ -110,32 +98,6 @@ class main(helper_base):
         """
         Retrieves values from INI and puts them in a JSON
         """
-        # Purity
-        purity = config[self.identifier][self.PURITY]
-        if purity != self.NA:
-            try:
-                purity = float(purity)
-                if purity < 0 or purity > 1:
-                    msg = "Invalid purity '{0}': Must be a number between 0 and 1".format(purity)
-                    self.logger.error(msg)
-                    raise ValueError(msg)
-            except ValueError as err:
-                msg = 'Purity must be either "NA", or a number between 0 and 1: {0}'.format(err)
-                self.logger.error(msg)
-                raise
-        # Ploidy 
-        ploidy = config[self.identifier][self.PLOIDY]
-        if ploidy != self.NA:
-            try:
-                ploidy = float(ploidy)
-                if ploidy <= 0:
-                    msg = "Invalid ploidy '{0}': Must be a positive number".format(ploidy)
-                    self.logger.error(msg)
-                    raise ValueError(msg)
-            except ValueError as err:
-                msg = 'Ploidy must be either "NA", or a positive number: {0}'.format(err)
-                self.logger.error(msg)
-                raise
         try:
             input_params_info = {
                 self.DONOR: config[self.identifier][self.DONOR],
@@ -148,11 +110,7 @@ class main(helper_base):
                 self.ASSAY: config[self.identifier][self.ASSAY],
                 self.REQUISITION_ID: config[self.identifier][self.REQUISITION_ID],
                 self.TCGACODE: config[self.identifier][self.TCGACODE],
-                self.SAMPLE_TYPE: config[self.identifier][self.SAMPLE_TYPE],
-                self.SEQ_REV_1: config[self.identifier][self.SEQ_REV_1],
-                self.SEQ_REV_2: config[self.identifier][self.SEQ_REV_2],
-                self.PURITY: purity,
-                self.PLOIDY: ploidy
+                self.SAMPLE_TYPE: config[self.identifier][self.SAMPLE_TYPE]
             }
         except KeyError as err:
             msg = "Required config field for input params helper not found: {0}".format(err)

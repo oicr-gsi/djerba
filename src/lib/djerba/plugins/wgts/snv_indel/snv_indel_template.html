@@ -30,6 +30,9 @@ ${html_builder().section_cells_begin("<h2>SNVs and in/dels</h2>","main")}
 		% if results.get(constants.HAS_EXPRESSION_DATA):
 		<td width="50%" vertical-align="top"><b>Expr. (%)</b>: Expression Percentile for gene mRNA, or NA if comparison data is not available</td></tr>
 	        % endif
+		% if results.get(constants.HAS_LOH_DATA):
+		<td width="50%" vertical-align="top"><b>LOH</b>: Loss of heterozygosity</td></tr>
+	        % endif
 	    </table>
       % endif
 

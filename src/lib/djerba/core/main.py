@@ -414,9 +414,8 @@ class main(main_base):
             out_dir = ap.get_out_dir()
             archive = ap.is_archive_enabled()
             pdf = ap.is_pdf_enabled()
-            write = ap.is_write_json_enabled()
             force = ap.is_forced()
-            self.update(config_path, jp, out_dir, archive, pdf, summary_only, write, force)
+            self.update(config_path, jp, out_dir, archive, pdf, summary_only, force)
         else:
             msg = "Mode '{0}' is not defined in Djerba core.main!".format(mode)
             self.logger.error(msg)
@@ -437,7 +436,7 @@ class main(main_base):
                 'genomic_landscape',
                 'expression_helper',
                 'wgts.snv_indel',
-                'cnv',
+                'wgts.cnv_purple',
                 'fusion',
                 'gene_information_merger',
                 'supplement.body',
@@ -455,7 +454,7 @@ class main(main_base):
                 'sample',
                 'genomic_landscape',
                 'wgts.snv_indel',
-                'cnv',
+                'wgts.cnv_purple',
                 'gene_information_merger',
                 'supplement.body',
             ]
@@ -496,8 +495,7 @@ class main(main_base):
         generator.write_config(component_list, ini_path, compact)
         self.logger.info("Wrote config for {0} to {1}".format(assay, ini_path))
 
-    def update(self, config_path, json_path, out_dir, archive, pdf, summary_only,
-               write_json, force):
+    def update(self, config_path, json_path, out_dir, archive, pdf, summary_only, force):
         # update procedure:
         # 1. run plugins from user-supplied config to get 'new' (updated) JSON
         # 2. update the 'old' (user-supplied) JSON
@@ -527,10 +525,19 @@ class main(main_base):
             self.logger.info("Omitting archive upload for update")
         if out_dir:
             self.render(data, out_dir, pdf, archive=False)
-            if write_json:
-                json_path = os.path.join(out_dir, 'updated_report.json')
-                with open(json_path, 'w') as out_file:
-                    print(json.dumps(data), file=out_file)
+            input_name = os.path.basename(json_path)
+            # generate an appropriate output filename
+            if re.search('\.updated\.json$', json_path):
+                output_name = input_name
+            elif not re.search('\.json$', json_path):
+                ouptut_name = input_name+'.updated.json'
+            else:
+                terms = re.split('\.', input_name)
+                terms.pop()
+                output_name = '.'.join(terms)+'.updated.json'
+            json_path = os.path.join(out_dir, output_name)
+            with open(json_path, 'w') as out_file:
+                print(json.dumps(data), file=out_file)
 
     def upload_archive(self, data):
         for plugin_name in data[self.PLUGINS]:

@@ -1,15 +1,54 @@
 # CHANGELOG
 
+## v1.6.0: 2024-05-08
+
+### WGS 4.0
+
+- Removed file list in expression data
+- added HRD to genomic landscape
+- GCGI-1173: genomic landscape plugin uses provenance_helper
+- GCGI-1220: fixed MSI table formatting
+- GCGI-1190: Removed obsolete data values/files
+- GCGI-1012: Moved R testing to formal tests
+- GCGI-1304: Merge updates to genomic landscape plugin and resolve conflicts
+- GCGI-1319: Update genomic landscape plugin to read purity from PURPLE output file
+- GCGI-1349: Update plugin lists for djerba.py setup mode
+- GCGI-1334: Add HRDetect text to Djerba report footer
+- new PURPLE CNV calling plugin
+- removed sequenza support
+- new `djerba.plugins.wgts.common` package for code shared between multiple WGTS/WGS plugins
+- Added "r" directory to setup, bug fix (metrix_cell -> metric_cell)
+- Added ARID2 to SWI/SNF gene list in CAPTIV8 plugin
+- Removed copy state from SNVs and Indels plugin
+- Added LOH to SNVs and Indels plugin
+
+### External plugin support
+
+- GCGI-993: Support for plugins outwith the main `djerba` package
+
+### Other
+
+- GCGI-1257: Fix import of traceback module
+- GCGI-1313: Refactor reading input_params.json
+- GCGI-1322: Warning instead of error if manually configured sample name does not match provenance
+- GCGI-1323: Support PWGS in mini-Djerba by making summary optional
+- GCGI-1325: Rewrite case_overview config method to fix bugs and make it clearer
+- GCGI-1344: Write updated JSON by default, with a more informative name
+- GCGI-1346: Fixes and updates to GSICAPBENCH
+- GCGI-1352: Update WGTS example INI and PDF
+
 ## v.1.5.6: 2024-05-06
+
 - Fix to TERT protein annotation (G>A -> C>T)
 - Removed extra white space in gene information section
 
 ## v.1.5.5: 2024-03-05
+
 - Further fixes to pWGS Cardea helper to allow multiple projects for one donor
 
 ## v1.5.4: 2024-03-01
 
-- Fixed pWGS Cardea helper, pWGS provenance helper 
+- Fixed pWGS Cardea helper, pWGS provenance helper
 
 ## v1.5.3: 2024-02-22
 
