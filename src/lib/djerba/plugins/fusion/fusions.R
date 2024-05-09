@@ -171,24 +171,9 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
    
    df_cbio <- df_cbio[!duplicated(df_cbio),]
 
-   print("Column names in data df")
-   print(names(data))
-   print(head(data))
-   print("Column names in 'df_cbio' before merging")
-   print(names(df_cbio))
-   print(head(df_cbio))
-
-
-   if(all(df_cbio$Tumor_Sample_Barcode == data$Sample)) {
-     df_cbio <- merge(df_cbio, data[, c("Sample", "break1_chromosome", "break1_position_start", "break1_position_end")], by="Tumor_Sample_Barcode", all.x=TRUE)
-   } else {
-     print("Warning: Tumor_Sample_Barcode and Sample columns do not match!")
-     mismatch_rows <- which(df_cbio$Tumor_Sample_Barcode != data$Sample)
-     print("Mismatched rows:")
-     print(df_cbio[mismatch_rows, c("Tumor_Sample_Barcode", "Sample")])
-   }
-
+   df_cbio <- merge(df_cbio, data[, c("Sample", "break1_chromosome", "break1_position_start", "break1_position_end")], by.x="Hugo_Symbol", by.y="gene1_aliases", all.x=TRUE)
    colnames(df_cbio) <- header
+
 
  }
 
