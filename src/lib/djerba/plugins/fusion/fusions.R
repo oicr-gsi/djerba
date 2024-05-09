@@ -127,7 +127,7 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
 
  #### split into tables ####
 
- header <- c("Hugo_Symbol", "Entrez_Gene_Id",  "Tumor_Sample_Barcode", "Fusion", "DNA_support", "RNA_support", "Method", "translocation", "arriba_site1", "arriba_site2", "Frame", "break1_chromosome", "break1_position_start", "break1_position_end")
+ header <- c("Hugo_Symbol", "Entrez_Gene_Id",  "Tumor_Sample_Barcode", "Fusion", "DNA_support", "RNA_support", "Method", "translocation", "arriba_site1", "arriba_site2", "Frame", "Fusion" "break1_chromosome", "break1_position_start", "break1_position_end")
 
 
  if (nrow(data_dedup)==0) {
@@ -171,7 +171,7 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
    
    df_cbio <- df_cbio[!duplicated(df_cbio),]
 
-   df_cbio <- merge(df_cbio, data[, c("Sample", "break1_chromosome", "break1_position_start", "break1_position_end", "gene1_aliases")], by.x="Hugo_Symbol", by.y="gene1_aliases", all.x=TRUE)
+   df_cbio <- merge(df_cbio, data[, c("break1_chromosome", "break1_position_start", "break1_position_end", "gene1_aliases")], by.x="Hugo_Symbol", by.y="gene1_aliases", all.x=TRUE)
 
    colnames(df_cbio) <- header
 
