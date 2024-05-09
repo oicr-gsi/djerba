@@ -161,6 +161,13 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
    df_cbio$Fusion_newStyle <- df_cbio$Fusion
    df_cbio$Fusion <- gsub("::", "-", df_cbio$Fusion)
 
+   # keep Fusion column with the new format
+   df_cbio$New_Fusion <- df_cbio$Fusion_newStyle
+   df_cbio <- df_cbio[, !names(df_cbio) %in% c("Fusion")]
+   colnames(df_cbio)[colnames(df_cbio) == "New_Fusion"] <- "Fusion"
+
+
+
    df_cbio <- df_cbio[!duplicated(df_cbio),]
 
    # deal with cases where there is more than one possible reading frame
