@@ -231,7 +231,10 @@ if(length(num_lines)<=1) {
 
   # function returns list of 3 objects ### TO WRITE
   fusion_cbio <- processFusions(fusfile, minfusionreads, entcon, arribafile)
+ 
+  print("fusion_cbio"); print(fusion_cbio); print("\n")
 
+  print("cbio1"); print(fusion_cbio[[1]]); print("\n")
 
 
   # add whizbam links to fusion data
