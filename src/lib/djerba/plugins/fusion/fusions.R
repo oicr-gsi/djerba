@@ -127,7 +127,7 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
 
  #### split into tables ####
 
- header <- c("Hugo_Symbol", "Entrez_Gene_Id",  "Tumor_Sample_Barcode", "Fusion", "DNA_support", "RNA_support", "Method", "translocation", "arriba_site1", "arriba_site2", "Frame", "Fusion_tuples", "break1_chromosome", "break1_position_start", "break1_position_end")
+ header <- c("Hugo_Symbol", "Entrez_Gene_Id",  "Tumor_Sample_Barcode", "Fusion", "DNA_support", "RNA_support", "Method", "translocation", "arriba_site1", "arriba_site2", "Frame", "Fusion_newStyle", "break1_chromosome", "break1_position_start", "break1_position_end")
 
 
  if (nrow(data_dedup)==0) {
