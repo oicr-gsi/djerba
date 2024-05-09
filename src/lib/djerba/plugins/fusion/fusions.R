@@ -127,7 +127,7 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
 
  #### split into tables ####
 
- header <- c("Hugo_Symbol", "Entrez_Gene_Id",  "Tumor_Sample_Barcode", "Fusion", "DNA_support", "RNA_support", "Method", "translocation", "arriba_site1", "arriba_site2", "Frame", "break1_chromosome", "break1_position_start", "break1_position_end")
+ header <- c("Hugo_Symbol", "Entrez_Gene_Id",  "Tumor_Sample_Barcode", "DNA_support", "RNA_support", "Method", "translocation", "arriba_site1", "arriba_site2", "Frame", "Fusion", "break1_chromosome", "break1_position_start", "break1_position_end")
 
 
  if (nrow(data_dedup)==0) {
@@ -162,9 +162,9 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
    df_cbio$Fusion <- gsub("::", "-", df_cbio$Fusion)
 
    # keep Fusion column with the new format
-   df_cbio$New_Fusion <- df_cbio$Fusion_newStyle
-   df_cbio <- df_cbio[, !names(df_cbio) %in% c("Fusion")]
-   colnames(df_cbio)[colnames(df_cbio) == "New_Fusion"] <- "Fusion"
+#    df_cbio$New_Fusion <- df_cbio$Fusion_newStyle
+#    df_cbio <- df_cbio[, !names(df_cbio) %in% c("Fusion")]
+#    colnames(df_cbio)[colnames(df_cbio) == "New_Fusion"] <- "Fusion"
 
 
 
@@ -231,7 +231,7 @@ if(length(num_lines)<=1) {
 
   # function returns list of 3 objects ### TO WRITE
   fusion_cbio <- processFusions(fusfile, minfusionreads, entcon, arribafile)
- 
+
   print("fusion_cbio"); print(fusion_cbio); print("\n")
 
   print("cbio1"); print(fusion_cbio[[1]]); print("\n")
