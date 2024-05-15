@@ -83,9 +83,9 @@ ggplot(results[results$label == "CONTROLS",]) +
   
     annotate( geom="segment", x = -0.1, xend=0.1, y=dataset_cutoff, yend=dataset_cutoff, colour = "gray") +
     
-    annotate(geom="text",y = dataset_cutoff,x=0,color="gray30",label=paste("Detection Cutoff:", round(dataset_cutoff, 2),"reads"),  vjust = -4.5, size=2.5) +
+    annotate(geom="text",y = dataset_cutoff,x=0,color="gray30",label=paste("Detection Cutoff:", ceiling(dataset_cutoff),"sites"),  vjust = -4.5, size=2.5) +
     annotate(geom="text",y = mean_detection, x=0,color="black",label="Control Cohort", hjust = 0.3, vjust = 3, size=2.5) +
-    annotate(geom="text",y = results$sites_detected[1],x=0,color="red",label=paste("This Sample:",round(results$sites_detected[1]),"reads"),  vjust = -2.5,size=2.5) +
+    annotate(geom="text",y = results$sites_detected[1],x=0,color="red",label=paste("This Sample:",round(results$sites_detected[1]),"sites"),  vjust = -2.5,size=2.5) +
    
     annotate(geom="point",y = results$sites_detected[1],x=0,color="red",shape=1, size=5) +
     annotate(geom="point",y = results$sites_detected[1],x=0,color="red",shape=20, size=1.5) +
