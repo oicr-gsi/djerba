@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.6.1: 2024-05-15
+
+- GCGI-1357: Change 'reads' to 'sites' in PWGS plot label and round cutoff up to nearest integer
+
 ## v1.6.0: 2024-05-08
 
 ### WGS 4.0
