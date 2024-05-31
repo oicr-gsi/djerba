@@ -6,7 +6,7 @@ import argparse
 import sys
 
 sys.path.pop(0) # do not import from script directory
-from djerba.core.main import main, arg_processor
+from djerba.core.main import main, arg_processor, DjerbaSubcommandError
 from djerba.version import get_djerba_version
 import djerba.util.constants as constants
 
@@ -67,5 +67,9 @@ if __name__ == '__main__':
     if args.version:
         print("Djerba core version {0}".format(get_djerba_version()))
         sys.exit(0)
-    ap = arg_processor(args)
+    try:
+        ap = arg_processor(args)
+    except DjerbaSubcommandError as err:
+        print("{0}".format(err), file=sys.stderr)
+        sys.exit(1)
     main(ap.get_work_dir(), ap.get_log_level(), ap.get_log_path()).run(args)

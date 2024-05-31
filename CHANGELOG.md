@@ -3,6 +3,7 @@
 ## Unreleased
 
 - GCGI-1362: Remove obsolete `sequenza_explorer.py` script
+- GCGI-1359: Correctly handle missing subcommand in `djerba.py` main script
 
 ## v1.6.1: 2024-05-15
 
