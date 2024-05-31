@@ -628,12 +628,18 @@ class arg_processor(arg_processor_base):
             v.validate_output_dir(args.out_dir)
             if args.work_dir != None: # work_dir is optional in report mode
                 v.validate_output_dir(args.work_dir)
+        elif args.subparser_name == None:
+            msg = "No subcommand name given; run with -h/--help for valid names"
+            raise DjerbaSubcommandError(msg)
         else:
             # shouldn't happen, but handle this case for completeness
-            raise ValueError("Unknown subparser: " + args.subparser_name)
+            raise DjerbaSubcommandError("Unknown subcommand: " + args.subparser_name)
         self.logger.info("Command-line path validation finished.")
 
 class DjerbaDependencyError(Exception):
+    pass
+
+class DjerbaSubcommandError(Exception):
     pass
 
 class DjerbaVersionMismatchError(Exception):
