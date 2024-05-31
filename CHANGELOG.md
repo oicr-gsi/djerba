@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+
+- GCGI-1359: Correctly handle missing subcommand in `djerba.py` main script
+
 ## v1.6.1: 2024-05-15
 
 - GCGI-1357: Change 'reads' to 'sites' in PWGS plot label and round cutoff up to nearest integer
