@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v1.5.7: 2024-06-03
 
 - GCGI-1363: excluded all but protein coding variants from maf filtering (BIOTYPE = protein_coding)
 
@@ -13,7 +13,7 @@
 
 ## v1.5.4: 2024-03-01
 
-- Fixed pWGS Cardea helper, pWGS provenance helper 
+- Fixed pWGS Cardea helper, pWGS provenance helper
 
 ## v1.5.3: 2024-02-22
 
