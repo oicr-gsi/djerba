@@ -1,10 +1,16 @@
 # CHANGELOG
 
-## Unreleased
+## v1.6.2: 2024-06-03
 
 - GCGI-1362: Remove obsolete `sequenza_explorer.py` script
 - GCGI-1359: Correctly handle missing subcommand in `djerba.py` main script
+- GCGI-1361: Update for new Cardea data structure
 - GCGI-1363: Excluded all but protein coding variants from maf filtering (BIOTYPE = protein_coding)
+
+## v1.5.7: 2024-06-03
+
+- Maintenance release as v1.5.x is still in use for WGTS reports
+- Incorporates GCGI-1363 fix from v1.6.2
 
 ## v1.6.1: 2024-05-15
 
