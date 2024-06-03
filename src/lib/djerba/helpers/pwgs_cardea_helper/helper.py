@@ -44,14 +44,19 @@ class main(helper_base):
             raise MissingCardeaError(msg)
         else:
             requisition_json = json.loads(r.text)
-            assay_name = requisition_json['assayName'].split("-")[0].strip().upper()
-            cases = requisition_json['cases']
-            if len(cases) > 1 or len(cases) < 1: # only one case expected for clinical 
-                msg = "{0} case(s) were found. Only 1 case is expected".format(len(cases))
+            
+            if len(requisition_json) != 1: # only one case expected per requisition for clinical 
+                msg = "{0} case(s) were found. Only 1 case is expected".format(len(requisition_json))
                 self.logger.error(msg)
                 raise ValueError(msg)
             else:
-                case = requisition_json['cases'][0]
+                case = requisition_json[0]
+                try:
+                    assay_name = case['assayName'].split("-")[0].strip().upper() 
+                except (KeyError, IndexError) as err:
+                    msg = "Unexpected format for Cardea results: {0}".format(err)
+                    self.logger.error(msg)
+                    raise ValueError(msg) from err
                 requisition = case['requisition']
                 projects = case['projects']
                 root_id = case['donor']['name']

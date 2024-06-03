@@ -37,7 +37,6 @@ setup(
         'src/bin/djerba.py',
         'src/bin/generate_ini.py',
         'src/bin/mini_djerba.py',
-        'src/bin/sequenza_explorer.py',
         'src/bin/update_oncokb_cache.py',
         'src/bin/validate_plugin_json.py'
     ],
