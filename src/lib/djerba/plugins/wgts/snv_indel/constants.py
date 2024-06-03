@@ -16,6 +16,7 @@ FILTER = 'FILTER'
 T_DEPTH = 't_depth'
 T_ALT_COUNT = 't_alt_count'
 GNOMAD_AF = 'gnomAD_AF'
+BIOTYPE = 'BIOTYPE'
 HUGO_SYMBOL = 'Hugo_Symbol'
 CHROMOSOME = 'Chromosome'
 START = 'Start_Position'
@@ -29,6 +30,7 @@ MAF_KEYS = [
     T_DEPTH,
     T_ALT_COUNT,
     GNOMAD_AF,
+    BIOTYPE,
     HUGO_SYMBOL,
     CHROMOSOME,
     START,

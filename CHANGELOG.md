@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+
+- GCGI-1363: excluded all but protein coding variants from maf filtering (BIOTYPE = protein_coding)
+
 ## v.1.5.6: 2024-05-06
 - Fix to TERT protein annotation (G>A -> C>T)
 - Removed extra white space in gene information section
