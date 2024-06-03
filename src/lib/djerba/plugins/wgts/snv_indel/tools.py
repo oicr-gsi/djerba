@@ -68,6 +68,7 @@ class snv_indel_processor(logger):
         row_t_depth = int(row[ix.get(sic.T_DEPTH)])
         alt_count_raw = row[ix.get(sic.T_ALT_COUNT)]
         gnomad_af_raw = row[ix.get(sic.GNOMAD_AF)]
+        biotype = row[ix.get(sic.BIOTYPE)]
         row_t_alt_count = float(alt_count_raw) if alt_count_raw!='' else 0.0
         row_gnomad_af = float(gnomad_af_raw) if gnomad_af_raw!='' else 0.0
         is_matched = row[ix.get(sic.MATCHED_NORM_SAMPLE_BARCODE)] != 'unmatched'
@@ -78,6 +79,7 @@ class snv_indel_processor(logger):
         if row_t_depth >= 1 and \
            row_t_alt_count/row_t_depth >= vaf_cutoff and \
            (is_matched or row_gnomad_af < self.MAX_UNMATCHED_GNOMAD_AF) and \
+           biotype == "protein_coding" and \
            var_class in sic.MUTATION_TYPES_EXONIC and \
            not any([z in sic.FILTER_FLAGS_EXCLUDE for z in filter_flags]) and \
            not (var_class == "5'Flank" and hugo_symbol != 'TERT'):

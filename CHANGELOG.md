@@ -4,6 +4,7 @@
 
 - GCGI-1362: Remove obsolete `sequenza_explorer.py` script
 - GCGI-1359: Correctly handle missing subcommand in `djerba.py` main script
+- GCGI-1363: Excluded all but protein coding variants from maf filtering (BIOTYPE = protein_coding)
 
 ## v1.6.1: 2024-05-15
 
