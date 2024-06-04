@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-1365: Fixed TAR plugin to handle input mafs with unclean columns (strings, NaNs, etc)
+
 ## v1.6.2: 2024-06-03
 
 - GCGI-1362: Remove obsolete `sequenza_explorer.py` script
