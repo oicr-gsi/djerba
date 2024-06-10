@@ -157,7 +157,16 @@ class main(plugin_base):
       base_dir = directory_finder(self.log_level, self.log_path).get_base_dir()
       df_freq = pd.read_csv(os.path.join(base_dir, tar_constants.FREQUENCY_FILE),
                    sep = "\t")
-       
+
+      # Need to clean up the tumour and normal dataframes
+      for column in tar_constants.CLEAN_COLUMNS:
+          # Convert to numeric, setting errors='coerce' to turn non-numeric values into NaN
+          df_pl[column] = pd.to_numeric(df_pl[column], errors='coerce')
+          df_bc[column] = pd.to_numeric(df_bc[column], errors='coerce')
+          # Replace NaN with 0
+          df_pl[column] = df_pl[column].fillna(0)
+          df_bc[column] = df_bc[column].fillna(0)
+
       for row in df_pl.iterrows():
           hugo_symbol = row[1]['Hugo_Symbol']
           chromosome = row[1]['Chromosome']
