@@ -2,6 +2,7 @@
 
 ## Unreleased
 - GCGI-1365: Fixed TAR plugin to handle input mafs with unclean columns (strings, NaNs, etc)
+- GCGI-1368: Removed dependency of tar.snv_indel on tar.swgs (it will ignore copy state if purity.txt is not available)
 
 ## v1.6.2: 2024-06-03
 
