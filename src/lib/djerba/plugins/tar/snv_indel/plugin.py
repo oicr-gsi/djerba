@@ -97,10 +97,13 @@ class main(plugin_base):
       # Get starting plugin data
       data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
       
-      # Get purity
-      with open(os.path.join(work_dir, 'purity.txt'), "r") as file:
-            purity = float(file.readlines()[0]) 
-      
+      # Get purity only if the file exists
+      if self.workspace.has_file('purity.txt'):
+          with open(os.path.join(work_dir, 'purity.txt'), "r") as file:
+              purity = float(file.readlines()[0]) 
+      else:
+          purity = 0 # just needs to be anything less than 10% to ignore copy state
+
       # Preprocessing
       maf_file = self.filter_maf_for_tar(work_dir, config[self.identifier]["maf_file"], config[self.identifier]["maf_file_normal"])
       preprocess(config, work_dir, assay, oncotree_code, cbio_id, tumour_id, normal_id, maf_file).run_R_code()

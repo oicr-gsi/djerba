@@ -28,8 +28,13 @@ class data_builder:
             self.data_CNA_exists = True
         else:
             self.data_CNA_exists = False
-        with open(os.path.join(work_dir, 'purity.txt'), "r") as file:
-            self.purity = float(file.readlines()[0])
+        # Get purity only if the file exists
+        if os.path.exists(os.path.join(work_dir, 'purity.txt')):
+            with open(os.path.join(work_dir, 'purity.txt'), "r") as file:
+                self.purity = float(file.readlines()[0])
+        else:
+            self.purity = 0 # just needs to be anything less than 10% to ignore copy state
+
 
     def build_small_mutations_and_indels(self, mutations_file):
         """read in small mutations; output rows for oncogenic mutations"""
