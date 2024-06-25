@@ -3,6 +3,7 @@
 ## Unreleased
 - GCGI-1365: Fixed TAR plugin to handle input mafs with unclean columns (strings, NaNs, etc)
 - GCGI-1368: Removed dependency of tar.snv_indel on tar.swgs (it will ignore copy state if purity.txt is not available)
+- GCGI-1375: Added "somatic" in "oncogenic somatic mutations" in TAR snv_indel html text for 0 variants 
 
 ## v1.6.2: 2024-06-03
 
