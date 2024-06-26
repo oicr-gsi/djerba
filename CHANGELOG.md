@@ -7,6 +7,7 @@
 - GCGI-1375: Added "somatic" in "oncogenic somatic mutations" in TAR snv_indel html text for 0 variants
 - GCGI-1379: Use a blank white image as a spacer in the "Report Sign-Offs" section
 - GCGI-1380: Increment pipeline version to 5.0
+- Set exact version for `numpy` in `setup.py` to avoid build conflict with `gsi-qc-etl`
 
 ## v1.6.2: 2024-06-03
 
