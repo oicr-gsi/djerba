@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v1.6.3: 2024-06-26
+
+- GCGI-1365: Fixed TAR plugin to handle input mafs with unclean columns (strings, NaNs, etc)
+- GCGI-1368: Removed dependency of tar.snv_indel on tar.swgs (it will ignore copy state if purity.txt is not available)
+- GCGI-1375: Added "somatic" in "oncogenic somatic mutations" in TAR snv_indel html text for 0 variants
+- GCGI-1379: Use a blank white image as a spacer in the "Report Sign-Offs" section
+- GCGI-1380: Increment pipeline version to 5.0
+- Set exact version for `numpy` in `setup.py` to avoid build conflict with `gsi-qc-etl`
+
 ## v1.6.2: 2024-06-03
 
 - GCGI-1362: Remove obsolete `sequenza_explorer.py` script

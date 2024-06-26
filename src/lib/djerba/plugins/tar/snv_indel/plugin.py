@@ -97,10 +97,13 @@ class main(plugin_base):
       # Get starting plugin data
       data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
       
-      # Get purity
-      with open(os.path.join(work_dir, 'purity.txt'), "r") as file:
-            purity = float(file.readlines()[0]) 
-      
+      # Get purity only if the file exists
+      if self.workspace.has_file('purity.txt'):
+          with open(os.path.join(work_dir, 'purity.txt'), "r") as file:
+              purity = float(file.readlines()[0]) 
+      else:
+          purity = 0 # just needs to be anything less than 10% to ignore copy state
+
       # Preprocessing
       maf_file = self.filter_maf_for_tar(work_dir, config[self.identifier]["maf_file"], config[self.identifier]["maf_file_normal"])
       preprocess(config, work_dir, assay, oncotree_code, cbio_id, tumour_id, normal_id, maf_file).run_R_code()
@@ -157,7 +160,16 @@ class main(plugin_base):
       base_dir = directory_finder(self.log_level, self.log_path).get_base_dir()
       df_freq = pd.read_csv(os.path.join(base_dir, tar_constants.FREQUENCY_FILE),
                    sep = "\t")
-       
+
+      # Need to clean up the tumour and normal dataframes
+      for column in tar_constants.CLEAN_COLUMNS:
+          # Convert to numeric, setting errors='coerce' to turn non-numeric values into NaN
+          df_pl[column] = pd.to_numeric(df_pl[column], errors='coerce')
+          df_bc[column] = pd.to_numeric(df_bc[column], errors='coerce')
+          # Replace NaN with 0
+          df_pl[column] = df_pl[column].fillna(0)
+          df_bc[column] = df_bc[column].fillna(0)
+
       for row in df_pl.iterrows():
           hugo_symbol = row[1]['Hugo_Symbol']
           chromosome = row[1]['Chromosome']
