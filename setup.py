@@ -101,7 +101,7 @@ setup(
         'jsonschema',
         'mako',
         'markdown',
-        'numpy>=1.23.1',
+        #'numpy', # commented out to avoid an OICR build conflict; uncomment if numpy not already installed
         'pandas',
         'pdfkit',
         'pyinstaller',
