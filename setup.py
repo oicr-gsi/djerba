@@ -101,7 +101,7 @@ setup(
         'jsonschema',
         'mako',
         'markdown',
-        'numpy',
+        'numpy>=1.23.1',
         'pandas',
         'pdfkit',
         'pyinstaller',
