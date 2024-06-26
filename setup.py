@@ -101,7 +101,7 @@ setup(
         'jsonschema',
         'mako',
         'markdown',
-        #'numpy', # commented out to avoid an OICR build conflict; uncomment if numpy not already installed
+        'numpy==1.23.1', # set exact version to avoid build conflict with gsi-qc-etl
         'pandas',
         'pdfkit',
         'pyinstaller',
