@@ -59,27 +59,28 @@ ${html_builder().section_cells_end()}
 
 ${html_builder().section_cells_end()}
 
-${html_builder().section_cells_begin("<h2>Report<br>Sign-offs</h2>",True)}
 
+% if results.get('include_signoffs') == 'clinical':
 
+    ${html_builder().section_cells_begin("<h2>Report<br>Sign-offs</h2>",True)}
 
-<table class="suppl" width="100%">
-    <tr>
-      <td width="33%">Report drafted by ${results.get(core_constants.AUTHOR)} on ${results.get('extract_date')}</td>
-    </tr>
-    <tr>
-      <td width="33%">Report electronically signed out by ${results.get('clinical_geneticist_name')} (ABMS #${results.get('clinical_geneticist_licence')}) on ${results.get('report_signoff_date')}</td>
-    </tr>
-    <tr>
-      <td width="33%"><img id='spacer' height='150' style='width: 100%; object-fit: contain' src='data:image/png;base64, <%include file="resources/blank_white_rectangle_base64.png.txt"/>'/></td>
-    </tr>
-</table>
+    <table class="suppl" width="100%">
+        <tr>
+          <td width="33%">Report drafted by ${results.get(core_constants.AUTHOR)} on ${results.get('extract_date')}</td>
+        </tr>
+        <tr>
+          <td width="33%">Report electronically signed out by ${results.get('clinical_geneticist_name')} (ABMS #${results.get('clinical_geneticist_licence')}) on ${results.get('report_signoff_date')}</td>
+        </tr>
+        <tr>
+          <td width="33%"><img id='spacer' height='150' style='width: 100%; object-fit: contain' src='data:image/png;base64, <%include file="resources/blank_white_rectangle_base64.png.txt"/>'/></td>
+        </tr>
+    </table>
 
   <br/>
 
-
   ${html_builder().section_cells_end()}
 
+% endif
 
   <hr class="big-line" style="width: 100%; ${'page-break-after: always;' if ASSAY != 'PWGS' else ''}" >
   <hr class="header-big-line" style="width:100%; align:right">

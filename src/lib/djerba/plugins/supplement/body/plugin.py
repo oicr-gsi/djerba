@@ -20,7 +20,7 @@ class main(plugin_base):
     GENETICIST = "clinical_geneticist_name"
     GENETICIST_ID = "clinical_geneticist_licence"
     EXTRACT_DATE = "extract_date"
-
+    INCLUDE_SIGNOFFS = "include_signoffs"
     GENETICIST_DEFAULT = 'Trevor Pugh, PhD, FACMG'
     GENETICIST_ID_DEFAULT = '1027812'
 
@@ -63,6 +63,12 @@ class main(plugin_base):
         else:
             report_signoff_date = wrapper.get_my_string(self.REPORT_SIGNOFF_DATE)
         self.check_assay_name(wrapper)
+       
+        if wrapper.get_my_attributes()[0] == "clinical":
+            include_signoffs = True
+        elif wrapper.get_my_attributes()[0] == "research":
+            include_signoffs = False
+
         data = {
             'plugin_name': self.identifier+' plugin',
             'priorities': wrapper.get_my_priorities(),
@@ -75,7 +81,8 @@ class main(plugin_base):
                 self.EXTRACT_DATE: draft_date,
                 self.REPORT_SIGNOFF_DATE: report_signoff_date,
                 self.GENETICIST: wrapper.get_my_string(self.GENETICIST),
-                self.GENETICIST_ID: wrapper.get_my_string(self.GENETICIST_ID)
+                self.GENETICIST_ID: wrapper.get_my_string(self.GENETICIST_ID),
+                self.INCLUDE_SIGNOFFS: include_signoffs
             },
             'version': str(self.SUPPLEMENT_DJERBA_VERSION)
         }

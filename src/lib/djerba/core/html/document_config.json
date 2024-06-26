@@ -8,7 +8,7 @@
 	},
 	"research": {
 	    "document_header": "research_header.html",
-	    "document_footer": "footer.html",
+	    "document_footer": "research_footer.html",
 	    "stylesheet": "stylesheet.css"
 	},
 	"simple": {
