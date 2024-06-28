@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## UNRELEASED
+- GCGI-1382: Fixed TAR disclaimer text (typos, flow)
+
 ## v1.6.3: 2024-06-26
 
 - GCGI-1365: Fixed TAR plugin to handle input mafs with unclean columns (strings, NaNs, etc)
