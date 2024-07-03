@@ -13,7 +13,6 @@ GENES_TO_KEEP = ["BRCA2",
                  "MLH1",
                  "MSH2",
                  "MSH6",
-                 "ABCB1",
                  "CCNE1"]
 CLEAN_COLUMNS = ["t_depth", 
                  "t_ref_count", 
