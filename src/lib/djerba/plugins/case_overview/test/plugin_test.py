@@ -32,7 +32,7 @@ class TestCaseOverview(PluginTester):
         params = {
             self.INI: 'case_overview_WGTS.ini',
             self.JSON: json_location,
-            self.MD5: '2569e35057de927e2565d8a477fa8fa0'
+            self.MD5: '8214f488ee0ebf597dd9cb711067b511'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -42,7 +42,7 @@ class TestCaseOverview(PluginTester):
         params = {
             self.INI: 'case_overview_TAR.ini',
             self.JSON: json_location,
-            self.MD5: '7f9c206aa8b10d1f620f52f1fe31d392'
+            self.MD5: '7cef990fc3f16c5514c0bc9b4124a451'
         }
         self.run_basic_test(test_source_dir, params)
 
