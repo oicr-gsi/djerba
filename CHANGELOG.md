@@ -2,6 +2,7 @@
 
 ## UNRELEASED
 - GCGI-1382: Fixed TAR disclaimer text (typos, flow)
+- GCGI-1385: Change Tumour Sample ID to Plasma Sample ID for TAR reports
 
 ## v1.6.3: 2024-06-26
 
