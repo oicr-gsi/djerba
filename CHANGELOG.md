@@ -2,6 +2,7 @@
 
 ## UNRELEASED
 - GCGI-1382: Fixed TAR disclaimer text (typos, flow)
+- GCGI-1336: Fixed "cannot resolve assay" issue in case overview plugin
 
 ## v1.6.3: 2024-06-26
 
