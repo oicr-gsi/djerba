@@ -301,17 +301,20 @@ class core_configurer(configurable):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         if wrapper.my_param_is_null(cc.REPORT_ID):
-            sample_info_file = wrapper.get_my_string(cc.SAMPLE_INFO)
-            if self.workspace.has_file(sample_info_file):
-                sample_info = self.workspace.read_json(sample_info_file)
+            if wrapper.my_param_is_not_null(cc.REQUISITION_ID):
+                requisition_id = wrapper.get_my_string(cc.REQUISITION_ID)
                 report_id = "{0}-v{1}".format(
-                    sample_info[cc.TUMOUR_ID],
+                    requisition_id,
                     wrapper.get_my_int(cc.REPORT_VERSION)
                 )
                 msg = "Generated report ID {0} from sample info JSON".format(report_id)
                 self.logger.debug(msg)
             else:
+                # If there is no requisition associated with the case,
+                # Assign it a unique report string,
+                # And set requisition ID to be "None"
                 report_id = "OICR-CGI-{0}".format(uuid4().hex)
+                wrapper.set_my_param(cc.REQUISITION_ID, "None")
                 msg = "Generated report ID {0} from UUID hex string".format(report_id)
                 self.logger.debug(msg)
             wrapper.set_my_param(cc.REPORT_ID, report_id)
@@ -319,6 +322,7 @@ class core_configurer(configurable):
 
     def specify_params(self):
         self.add_ini_discovered(cc.REPORT_ID)
+        seld.add_ini_discovered(cc.REQUISITION_ID)
         self.set_ini_default(cc.REPORT_VERSION, 1)
         self.set_ini_default(cc.ARCHIVE_NAME, "djerba")
         self.set_ini_default(
@@ -326,7 +330,6 @@ class core_configurer(configurable):
             "http://${username}:${password}@${address}:${port}"
         )
         self.set_ini_default(cc.AUTHOR, cc.DEFAULT_AUTHOR)
-        self.set_ini_default(cc.SAMPLE_INFO, cc.DEFAULT_SAMPLE_INFO)
         self.set_ini_default(cc.DOCUMENT_CONFIG, cc.DEFAULT_DOCUMENT_CONFIG)
 
     def set_priority_defaults(self, priority):
