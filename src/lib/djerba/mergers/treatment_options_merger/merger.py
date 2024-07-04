@@ -55,13 +55,13 @@ class main(merger_base):
             return '<a href="{0}">{1}</a>'.format(url, text)
 
     def get_therapy_info(self, tier_input):
-        # deduplicate by oncokb level and alteration name (both together are a unique ID)
+        # deduplicate by oncokb level, alteration name and gene (all together are a unique ID)
         k1 = self.ONCOKB_LEVEL
         k2 = self.ALTERATION
         k3 = self.GENE
 
         try:
-            unique_items = list({(v[k1], v[k2]): v for v in tier_input}.values())
+            unique_items = list({(v[k1], v[k2], v[k3]): v for v in tier_input}.values())
         except KeyError as err:
             msg = "Missing required key(s) from merger input: {0}".format(err)
             self.logger.error(msg)
