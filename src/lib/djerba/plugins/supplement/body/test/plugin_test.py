@@ -34,7 +34,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'TAR.supp.ini',
             self.JSON: json_location,
-            self.MD5: '1239b10a8a0caf28859e334aa5d11943'
+            self.MD5: '5c2426796afb69648de1aca34b2f349e'
         }
         self.run_basic_test(test_source_dir, params)
    
@@ -44,7 +44,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'TAR.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: '67b8649beafbd0d8255c903077ed9fb2'
+            self.MD5: '3b3822f18b8b24b2350026bf22af64d8'
         }
         self.run_basic_test(test_source_dir, params)
 

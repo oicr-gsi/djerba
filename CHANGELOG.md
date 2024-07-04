@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v.1.6.4: 2024-07-04
+- GCGI-1382: Fixed TAR disclaimer text (typos, flow)
+- GCGI-1385: Change Tumour Sample ID to Plasma Sample ID for TAR reports
+- Modified treatment options merger to deduplicate by gene in addition to oncokb level and alteration name
+
 ## v1.6.3: 2024-06-26
 
 - GCGI-1365: Fixed TAR plugin to handle input mafs with unclean columns (strings, NaNs, etc)
