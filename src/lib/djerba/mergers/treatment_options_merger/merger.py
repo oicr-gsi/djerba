@@ -27,8 +27,8 @@ from djerba.mergers.base import merger_base, DjerbaMergerError
 from djerba.util.oncokb.tools import levels as oncokb
 from djerba.util.render_mako import mako_renderer
 
-class main(merger_base):
 
+class main(merger_base):
     MAKO_TEMPLATE_NAME = 'treatment_options_template.html'
     PRIORITY = 300
 
@@ -49,7 +49,7 @@ class main(merger_base):
 
     @staticmethod
     def get_link(url, text):
-        if url==None:
+        if url == None:
             return text
         else:
             return '<a href="{0}">{1}</a>'.format(url, text)
@@ -58,15 +58,17 @@ class main(merger_base):
         # deduplicate by oncokb level and alteration name (both together are a unique ID)
         k1 = self.ONCOKB_LEVEL
         k2 = self.ALTERATION
+        k3 = self.GENE
+
         try:
-            unique_items = list({(v[k1], v[k2]):v for v in tier_input}.values())
+            unique_items = list({(v[k1], v[k2]): v for v in tier_input}.values())
         except KeyError as err:
             msg = "Missing required key(s) from merger input: {0}".format(err)
             self.logger.error(msg)
             self.logger.debug("Merger inputs: {0}".format(tier_input))
             raise DjerbaMergerError from err
         # sort by oncokb level, then alteration name
-        return sorted(unique_items, key = lambda x: (oncokb.oncokb_order(x[k1]), x[k2]))
+        return sorted(unique_items, key=lambda x: (oncokb.oncokb_order(x[k1]), x[k2], x[k3]))
 
     def render(self, inputs):
         self.validate_inputs(inputs)
