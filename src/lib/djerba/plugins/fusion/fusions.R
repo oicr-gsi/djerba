@@ -98,8 +98,8 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  arriba <- read.csv(arribafile, sep="\t", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
  arriba$arriba <- "arriba"
  if(length(arriba$reading_frame[arriba$reading_frame == "."]) > 0){
-   cat("Replacing . reading frame with No effect\n")
-  arriba$reading_frame[arriba$reading_frame == "."] <- "No effect"
+   cat("Replacing . reading frame with Unknown\n")
+  arriba$reading_frame[arriba$reading_frame == "."] <- "Unknown"
  }
  names(arriba)[1] <- "gene1"
  
