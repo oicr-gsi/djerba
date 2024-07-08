@@ -1,7 +1,8 @@
 # CHANGELOG
 
-## UNRELEASED
+## UNRELEASED 
 - GCGI-1336: Fixed "cannot resolve assay" issue in case overview plugin
+- GCGI-1887: Changed "no effect" fusion reading frame to "unknown"
 
 ## v.1.6.4: 2024-07-04
 - GCGI-1382: Fixed TAR disclaimer text (typos, flow)
