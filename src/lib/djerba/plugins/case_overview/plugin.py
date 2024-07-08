@@ -44,16 +44,6 @@ class main(plugin_base):
         report_id = wrapper.get_core_string(core_constants.REPORT_ID)
         wrapper.set_my_param(core_constants.REPORT_ID, report_id)
         # Look up assay long name from assay short name
-        assay = wrapper.get_my_string(self.ASSAY)
-        if wrapper.my_param_is_null(self.ASSAY_DESCRIPTION):
-            [ok, msg] = assays.name_status(assay)
-            if ok:
-                self.logger.debug("Found assay name '{0}' in lookup table".format(assay))
-                wrapper.set_my_param(self.ASSAY_DESCRIPTION, assays.get_description(assay))
-            else:
-                msg = "Cannot resolve assay description from config or default lookup: "+msg
-                self.logger.error(msg)
-                raise DjerbaPluginError(msg)
         # use manually configured values if available
         # otherwise, check for JSON file(s):
         # 1) input_params.json
@@ -64,11 +54,13 @@ class main(plugin_base):
         # - written by provenance_helper
         # - for non-TAR reports only, has sample IDs and patient study ID
         input_params = self.workspace.read_maybe_input_params()
+        
         id_keys = [
             self.BLOOD_SAMPLE_ID,
             self.TUMOUR_SAMPLE_ID,
             core_constants.PATIENT_STUDY_ID
         ]
+        
         if input_params:
             keys = [
                 self.PRIMARY_CANCER,
@@ -78,15 +70,36 @@ class main(plugin_base):
                 self.STUDY,
                 self.ASSAY
             ]
-            if assay == assays.TAR:
-                keys.extend(id_keys) # TAR uses input_params.json for ID values
             for key in keys:
                 wrapper.set_my_param_if_null(key, input_params[key])
+        
+
+        # Now, get assay, for assay related information.
+        assay = wrapper.get_my_string(self.ASSAY)
+
+        if assay == assays.TAR:
+            if input_params:
+                for key in id_keys:
+                    wrapper.set_my_param_if_null(key, input_params[key])
+       
         if assay!=assays.TAR and self.workspace.has_file(core_constants.DEFAULT_SAMPLE_INFO):
             sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
             for key in id_keys:
                 # non-TAR uses sample_info.json for ID values
                 wrapper.set_my_param_if_null(key, sample_info[key])
+
+        # Look up assay long name from assay short name
+        if wrapper.my_param_is_null(self.ASSAY_DESCRIPTION):
+            [ok, msg] = assays.name_status(assay)
+            if ok:
+                self.logger.debug("Found assay name '{0}' in lookup table".format(assay))
+                wrapper.set_my_param(self.ASSAY_DESCRIPTION, assays.get_description(assay))
+            else:
+                msg = "Cannot resolve assay description from config or default lookup: "+msg
+                self.logger.error(msg)
+                raise DjerbaPluginError(msg)
+
+
         return wrapper.get_config()
 
     def extract(self, config):
