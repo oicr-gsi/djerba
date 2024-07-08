@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## UNRELEASED 
+- GCGI-1887: Changed "no effect" fusion reading frame to "unknown"
+
 ## v.1.6.4: 2024-07-04
 - GCGI-1382: Fixed TAR disclaimer text (typos, flow)
 - GCGI-1385: Change Tumour Sample ID to Plasma Sample ID for TAR reports
