@@ -439,117 +439,117 @@ class provenance_reader(logger):
     def parse_arriba_path(self):
         workflow = self.WF_ARRIBA
         mt = self.MT_OCTET_STREAM
-        suffix = '\.fusions\.tsv$'
+        suffix = r'\.fusions\.tsv$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
     def parse_delly_path(self):
         workflows = [self.WF_DELLY, self.WF_DELLY_20231113, self.NIASSA_WF_DELLY]
         mt = self.MT_VCF_GZ
-        suffix = '\.somatic_filtered\.delly\.merged\.vcf\.gz$'
+        suffix = r'\.somatic_filtered\.delly\.merged\.vcf\.gz$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_gep_path(self):
         workflow = self.WF_RSEM
         mt = self.MT_OCTET_STREAM
-        suffix = '\.genes\.results$'
+        suffix = r'\.genes\.results$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
     def parse_gridss_path(self):
         workflows = [self.WF_GRIDSS]
         mt = self.MT_TXT_VCF
-        suffix = '\.allocated\.vcf$'
+        suffix = r'\.allocated\.vcf$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_hrdetect_path(self):
         workflows = [self.WF_HRDETECT]
         mt = self.MT_JSON_TEXT
-        suffix = '\.signatures\.json$'
+        suffix = r'\.signatures\.json$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_immune_path(self):
         workflow = self.WF_IMMUNE
         mt = self.MT_OCTET_STREAM
-        suffix = 'immunedeconv_CIBERSORT-Percentiles\.csv$'
+        suffix = r'immunedeconv_CIBERSORT-Percentiles\.csv$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
     def parse_maf_path(self):
         workflows = [self.WF_VEP, self.WF_VEP_20231113, self.NIASSA_WF_VEP]
         mt = self.MT_TXT_GZ
-        suffix = '\.mutect2\.filtered\.maf\.gz$'
+        suffix = r'\.mutect2\.filtered\.maf\.gz$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_mavis_path(self):
         workflow = self.WF_MAVIS
         mt = self.MT_OCTET_STREAM
-        suffix = 'mavis_summary\.tab$'
+        suffix = r'mavis_summary\.tab$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
     def parse_sequenza_path(self):
         workflows = [self.WF_SEQUENZA, self.NIASSA_WF_SEQUENZA]
         mt = self.MT_ZIP
-        suffix = '_results(\.sequenza)?\.zip$'
+        suffix = r'_results(\.sequenza)?\.zip$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_msi_path(self):
         workflows = [self.WF_MSISENSOR]
         mt = self.MT_OCTET_STREAM
-        suffix = 'recalibrated\.msi\.booted$'
+        suffix = r'recalibrated\.msi\.booted$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_mrdetect_path(self):
         workflows = [self.WF_MRDETECT]
         mt = self.MT_PLAIN_TEXT
-        suffix = 'SNP\.count\.txt$'
+        suffix = r'SNP\.count\.txt$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
     
     def parse_mutect_path(self):
         workflows = [self.WF_MUTECT]
         mt = self.MT_VCF_GZ
-        suffix = '\.mutect2\.filtered\.vcf\.gz$'
+        suffix = r'\.mutect2\.filtered\.vcf\.gz$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_purple_zip_path(self):
         workflow = self.WF_PURPLE
         mt = self.MT_ZIP
-        suffix = 'purple\.zip$'
+        suffix = r'purple\.zip$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
 
     def parse_starfusion_predictions_path(self):
         workflows = [self.WF_STARFUSION, self.NIASSA_WF_STARFUSION]
         mt = self.MT_OCTET_STREAM
-        suffix = 'star-fusion\.fusion_predictions\.tsv$'
+        suffix = r'star-fusion\.fusion_predictions\.tsv$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wt_t)
     
     def parse_virus_path(self):
         workflow = self.WF_VIRUS
         mt = self.MT_OCTET_STREAM
-        suffix = 'virusbreakend\.vcf\.summary\.tsv$'
+        suffix = r'virusbreakend\.vcf\.summary\.tsv$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
     
     def parse_wg_bam_path(self):
         workflows = [self.WF_BMPP, self.WF_BMPP_20231113, self.NIASSA_WF_BMPP]
         mt = self.MT_BAM
-        suffix = '\.filter\.deduped\.realigned\.recalibrated\.bam$'
+        suffix = r'\.filter\.deduped\.realigned\.recalibrated\.bam$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_wg_bam_ref_path(self):
         # find the reference (normal) BAM
         workflows = [self.WF_BMPP, self.WF_BMPP_20231113, self.NIASSA_WF_BMPP]
         mt = self.MT_BAM
-        suffix = '\.filter\.deduped\.realigned\.recalibrated\.bam$'
+        suffix = r'\.filter\.deduped\.realigned\.recalibrated\.bam$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_n)
 
     def parse_wg_index_path(self):
         workflows = [self.WF_BMPP, self.WF_BMPP_20231113, self.NIASSA_WF_BMPP]
         mt = self.MT_BAM_INDEX
-        suffix = '\.filter\.deduped\.realigned\.recalibrated\.bai$'
+        suffix = r'\.filter\.deduped\.realigned\.recalibrated\.bai$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_wg_index_ref_path(self):
         # find the reference (normal) BAM index
         workflows = [self.WF_BMPP, self.WF_BMPP_20231113, self.NIASSA_WF_BMPP]
         mt = self.MT_BAM_INDEX
-        suffix = '\.filter\.deduped\.realigned\.recalibrated\.bai$'
+        suffix = r'\.filter\.deduped\.realigned\.recalibrated\.bai$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_n)
 
     ### WT assay produces only 1 bam file; no need to consider tumour vs. reference
@@ -558,14 +558,14 @@ class provenance_reader(logger):
         # matches *Aligned.sortedByCoord.out.bam if *not* preceded by an index of the form ACGTACGT
         workflows = [self.WF_STAR, self.NIASSA_WF_STAR]
         mt = self.MT_BAM
-        suffix = '('+self.root_sample_name+'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bam$'
+        suffix = '('+self.root_sample_name+r'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bam$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wt_t)
 
     def parse_wt_index_path(self):
         # matches *Aligned.sortedByCoord.out.bam if *not* preceded by an index of the form ACGTACGT
         workflows = [self.WF_STAR, self.NIASSA_WF_STAR]
         mt = self.MT_BAM_INDEX
-        suffix = '('+self.root_sample_name+'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bai$'
+        suffix = '('+self.root_sample_name+r'.+)((?<![ACGT]{8})\.Aligned)\.sortedByCoord\.out\.bai$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wt_t)
 
 class sample_name_container:
