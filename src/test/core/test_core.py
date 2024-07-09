@@ -387,7 +387,6 @@ class TestIniGenerator(TestCore):
     COMPONENT_NAMES = [
         'demo1',
         'demo2',
-        'provenance_helper',
         'gene_information_merger'
     ]
 
