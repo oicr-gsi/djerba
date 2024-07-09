@@ -11,8 +11,6 @@ fi
 # do sanity checking, then export the test variables
 if [ ! -d "${DJERBA_SOURCE_DIR}" ]; then
     echo "DJERBA_SOURCE_DIR '$DJERBA_SOURCE_DIR' does not exist"
-elif [ -z "${DJERBA_BASE_DIR}" ]; then
-    echo "Must load the Djerba environment module; first update MODULEPATH if necessary"
 else
     # export variables for running tests on the source code
     export PYTHONPATH=${DJERBA_SOURCE_DIR}/src/lib:$PYTHONPATH
