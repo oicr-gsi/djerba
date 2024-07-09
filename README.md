@@ -14,9 +14,11 @@ Djerba has a modular structure based on _plugins_. The `djerba-demo` repo has a 
 
 For development history, see the [changelog](./CHANGELOG.md).
 
-## Instructions
+## Installation and FAQs
 
 For detailed instructions on how to install, test and run `djerba-demo`, see [HOWTO.md](./HOWTO.md).
+
+We also have a [Frequently Asked Questions](./FAQ.md) file.
 
 ## Copyright and License
 
