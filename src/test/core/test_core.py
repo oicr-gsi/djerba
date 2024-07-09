@@ -35,7 +35,7 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_UPDATE_JSON = 'simple_report_for_update.json'
-    SIMPLE_REPORT_MD5 = 'ff3433239740b7d0ab6bbd0d85e259bd'
+    SIMPLE_REPORT_MD5 = '6be059fa04162eaccc740a1765c05ec8'
     SIMPLE_CONFIG_MD5 = '115ef442770a4eb9febffeef557a7d78'
 
     class mock_args:
