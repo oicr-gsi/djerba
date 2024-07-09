@@ -374,9 +374,9 @@ class TestDependencies(TestCore):
             with self.assertRaises(DjerbaDependencyError):
                 main(work_dir, log_level=logging.CRITICAL).run(args)
         args.ini = os.path.join(self.test_source_dir, 'depends_extract.ini')
-        question_path = os.path.join(self.tmp_dir, 'question.txt')
-        with open(question_path, 'w') as out_file:
-            out_file.write('What do you get if you multiply six by nine?\n')
+        work_path = os.path.join(self.tmp_dir, 'integer.txt')
+        with open(work_path, 'w') as out_file:
+            out_file.write('5\n')
         main(work_dir, log_level=logging.WARNING).run(args)
         self.assertTrue(os.path.exists(json_path))
 
