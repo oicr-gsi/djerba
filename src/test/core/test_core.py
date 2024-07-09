@@ -268,7 +268,7 @@ class TestConfigWrapper(TestCore):
         cw = config_wrapper(cp, 'demo1')
         self.assertEqual(cw.get_core_string('author'), 'CGI Author')
         self.assertEqual(cw.get_my_int('configure_priority'), 200)
-        self.assertTrue(cw.has_my_param('question'))
+        self.assertTrue(cw.has_my_param('integer'))
         self.assertFalse(cw.has_my_param('noodles'))
         cw.set_my_param('lunch', 'sushi')
         config_1 = cw.get_config()
@@ -285,7 +285,7 @@ class TestConfigWrapper(TestCore):
         ]:
             self.assertEqual(cw.get_my_int(key), 42)
         self.assertEqual(cw.get_int('demo2', 'configure_priority'), 300)
-        self.assertTrue(cw.has_param('demo2', 'demo2_param'))
+        self.assertTrue(cw.has_param('demo2', 'integer_2'))
         self.assertFalse(cw.has_param('demo2', 'noodles'))
         cw.set_param('demo2', 'dinner', 'pizza')
         config_2 = cw.get_config()
