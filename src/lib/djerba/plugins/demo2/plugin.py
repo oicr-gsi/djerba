@@ -1,7 +1,6 @@
 """Simple Djerba plugin for demonstration and testing: Example 2"""
 
 import logging
-from time import strftime
 from djerba.plugins.base import plugin_base
 import djerba.core.constants as core_constants
 
@@ -49,7 +48,6 @@ class main(plugin_base):
                 'integer_2': integer_2,
                 'sum': integer_sum,
                 'diff': integer_diff,
-                'date': strftime('%Y-%m-%d'),
                 'author': wrapper.get_core_string('author')
             }
         }
@@ -61,10 +59,7 @@ class main(plugin_base):
         integer_2 = data['results']['integer_2']
         integer_sum = data['results']['sum']
         integer_diff = data['results']['diff']
-        credit = "Demonstration run by {0} on {1}".format(
-            data['results']['author'],
-            data['results']['date']
-        )
+        credit = "Demonstration run by {0}".format(data['results']['author'])
         output = [
             "<h1>Demonstration: Part 2</h1>",
             "<h2>SECOND INTEGER INPUT: {0}</h2>".format(integer_2),

@@ -10,12 +10,12 @@ class TestDemo2(PluginTester):
 
     def test(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
-        with open(os.path.join(self.tmp_dir, 'question.txt'), 'w') as out_file:
-            out_file.write('What do you get if you multiply six by nine?')
+        with open(os.path.join(self.tmp_dir, 'integer.txt'), 'w') as out_file:
+            out_file.write('5')
         params = {
             self.INI: 'demo_2.ini',
             self.JSON: 'demo_2.json',
-            self.MD5: '512958c2a0af8080b546d43c51797cb3'
+            self.MD5: '43b36554b8332afe4f42447af42192f4'
         }
         self.run_basic_test(test_source_dir, params)
 
