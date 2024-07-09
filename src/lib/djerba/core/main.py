@@ -487,6 +487,13 @@ class main(main_base):
                 'pwgs.analysis',  
                 'supplement.body'
             ]
+        elif assay == 'DEMO':
+            component_list = [
+                'core',
+                'report_title',
+                'demo1',
+                'demo2'
+            ]
         else:
             msg = "Invalid assay name '{0}'".format(assay)
             self.logger.error(msg)
