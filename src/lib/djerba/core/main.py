@@ -490,9 +490,9 @@ class main(main_base):
         elif assay == 'DEMO':
             component_list = [
                 'core',
-                'report_title',
                 'demo1',
-                'demo2'
+                'demo2',
+                'gene_information_merger'
             ]
         else:
             msg = "Invalid assay name '{0}'".format(assay)
