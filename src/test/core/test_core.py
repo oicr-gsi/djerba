@@ -660,8 +660,8 @@ class TestPriority(TestCore):
             data = json.loads(json_file.read())
         output = djerba_main.render(data)
         html = output['documents']['placeholder_report.clinical']
-        pos1 = self.find_line_position(html, 'demo1')
-        pos2 = self.find_line_position(html, 'The Question') # demo2 output
+        pos1 = self.find_line_position(html, 'Part 1')
+        pos2 = self.find_line_position(html, 'Part 2') # demo2 output
         self.assertNotEqual(0, pos1)
         self.assertNotEqual(0, pos2)
         self.assertTrue(pos1 < pos2)
@@ -670,8 +670,8 @@ class TestPriority(TestCore):
         data['plugins']['demo2']['priorities']['render'] = 100
         output = djerba_main.render(data)
         html = output['documents']['placeholder_report.clinical']
-        pos1 = self.find_line_position(html, 'demo1')
-        pos2 = self.find_line_position(html, 'The Question') # demo2 output
+        pos1 = self.find_line_position(html, 'Part 1')
+        pos2 = self.find_line_position(html, 'Part 2') # demo2 output
         self.assertNotEqual(0, pos1)
         self.assertNotEqual(0, pos2)
         self.assertTrue(pos1 > pos2) # <---- changed order
