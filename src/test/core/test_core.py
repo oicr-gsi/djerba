@@ -448,7 +448,7 @@ class TestMainScript(TestCore):
             'djerba.py', mode,
             '--work-dir', work_dir,
             '--ini', ini_path,
-            '--ini-out', out_path,
+            '--ini-out', out_path
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
@@ -464,6 +464,7 @@ class TestMainScript(TestCore):
             '--work-dir', work_dir,
             '--ini', ini_path,
             '--json', json_path,
+            '--no-archive'
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
@@ -476,7 +477,8 @@ class TestMainScript(TestCore):
         cmd = [
             'djerba.py', mode,
             '--json', json_path,
-            '--out-dir', self.tmp_dir
+            '--out-dir', self.tmp_dir,
+            '--no-archive'
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
@@ -494,7 +496,8 @@ class TestMainScript(TestCore):
             'djerba.py', mode,
             '--work-dir', work_dir,
             '--ini', ini_path,
-            '--out-dir', self.tmp_dir
+            '--out-dir', self.tmp_dir,
+            '--no-archive'
         ]
         result = subprocess_runner().run(cmd)
         pattern = os.path.join(self.tmp_dir, '*'+core_constants.REPORT_JSON_SUFFIX)
@@ -522,14 +525,15 @@ class TestMainScript(TestCore):
             '--ini', ini_path,
             '--json', json_path,
             '--out-dir', self.tmp_dir,
-            '--pdf'
+            '--pdf',
+            '--no-archive'
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, 'b11a1d1623af8ae77385994f2f0ab9fa')
+        self.assert_report_MD5(html_string, '3b99ed4434115146521d543c6b33a412')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')
@@ -548,14 +552,15 @@ class TestMainScript(TestCore):
             '--summary', summary_path,
             '--json', json_path,
             '--out-dir', self.tmp_dir,
-            '--pdf'
+            '--pdf',
+            '--no-archive'
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, 'b11a1d1623af8ae77385994f2f0ab9fa')
+        self.assert_report_MD5(html_string, '118c684f88c4891f9bf44bd33fa26dbb')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')
