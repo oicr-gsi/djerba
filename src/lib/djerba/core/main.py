@@ -5,6 +5,8 @@ Main class to:
 - Merge and output results
 """
 from configparser import ConfigParser
+import base64
+import gzip
 import json
 import logging
 import pdfkit
@@ -133,8 +135,8 @@ class main_base(core_base):
         else:
             self.logger.debug("{0} inputs found for merger: {1}".format(total, merger_name))
         merger = self.merger_loader.load(merger_name)
-        self.logger.debug("Loaded merger {0} for rendering".format(merger_name))
-        return merger.render(merger_inputs)
+        self.logger.debug("Loaded merger {0} for rendering".format(merger_name)) 
+        return self.wrap_html(merger_name, merger.render(merger_inputs))
 
     def base_extract(self, config):
         """
@@ -163,9 +165,12 @@ class main_base(core_base):
             component.validate_full_config(config)
             component_data = components[name].extract(config)
             if not self._is_helper_name(name):
-                # only plugins, not helpers, write data in the JSON document
+                # only plugins and mergers, not helpers, write data in the JSON document
                 self.json_validator.validate_data(component_data)
                 data[self.PLUGINS][name] = component_data
+        # 3. Render the HTML; encode and store in data structure
+        self.logger.debug('Generating HTML for cache')
+        data[cc.HTML_CACHE] = base64.b64encode(gzip.compress(self.base_render(data)))
         self.logger.debug('Finished running extraction')
         return data
 
@@ -185,12 +190,12 @@ class main_base(core_base):
         for plugin_name in data[self.PLUGINS]:
             plugin_data = data[self.PLUGINS][plugin_name]
             plugin = self.plugin_loader.load(plugin_name, self.workspace)
-            html[plugin_name] = plugin.render(plugin_data)
+            html[plugin_name] = self.wrap_html(plugin_name, plugin.render(plugin_data))
             self.logger.debug("Ran plugin '{0}' for rendering".format(plugin_name))
             priorities[plugin_name] = self._get_render_priority(plugin_data)
             attributes[plugin_name] = plugin_data[cc.ATTRIBUTES]
         for (merger_name, merger_config) in data[self.MERGERS].items():
-            html[merger_name] = self._run_merger(merger_name, data)
+            html_raw = self._run_merger(merger_name, data)
             self.logger.debug("Ran merger '{0}' for rendering".format(merger_name))
             priorities[merger_name] = merger_config[cc.RENDER_PRIORITY]
             attributes[merger_name] = merger_config[cc.ATTRIBUTES]
@@ -293,6 +298,11 @@ class main_base(core_base):
             self.logger.debug('Updated JSON for plugin {0}'.format(plugin))
         return data
 
+    def wrap_html(self, name, html):
+        # place identifying tags before/after an HTML block, to facilitate later editing
+        start = "<span {0}={1} />".format(cc.COMPONENT_START, name)
+        end = "<span {0}={1} />".format(cc.COMPONENT_END, name)
+        return "{0}\n{1}\n{2}\n".format(start, html, end)
 
 class main(main_base):
 
