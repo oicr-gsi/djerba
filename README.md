@@ -10,7 +10,7 @@ Djerba has been developed at the [Ontario Institute for Cancer Research](https:/
 
 This is a fork of Djerba intended for demonstration. See the [main Djerba repository](https://github.com/oicr-gsi/djerba) and [documentation on ReadTheDocs](https://djerba.readthedocs.io/en/latest/) for additional details.
 
-Djerba has a modular structure based on _plugins_. The `djerba-demo` repo has a reduced set of plugins, and accordingly fewer dependencies. The core Djerba code, which loads and runs plugins, is the same as the version deployed in production at OICR. The intention is for `djerba-demo` to provide an accurate demonstration of how Djerba and its plugins work.
+Djerba has a modular structure based on _plugins_. The `djerba-demo` repo has a reduced set of plugins, and accordingly fewer dependencies. The core Djerba code, which loads and runs plugins, is the same as the version deployed in production at OICR, in order for `djerba-demo` to provide an accurate demonstration of how Djerba and its plugins work.
 
 For development history, see the [changelog](./CHANGELOG.md).
 
