@@ -12,11 +12,14 @@ The Djerba software:
 - is named for an [island](https://en.wikipedia.org/wiki/Djerba) off the coast of North Africa -- the initial letter D is silent, so it is pronounced "jerba";
 - is developed and maintained by the Clinical Genome Informatics (CGI) group at [OICR](https://oicr.on.ca).
 
+## Demonstration
+
+- A demonstration fork of Djerba, with full instructions to install and run, is at [djerba-demo](https://github.com/oicr-gsi/djerba-demo).
+
 ## Documentation
 
 - This document is intended as a very brief introduction to Djerba.
 - The main site for Djerba documentation is [ReadTheDocs](https://djerba.readthedocs.io/en/latest/).
-- A demonstration fork of Djerba, with full instructions to install and run, is at [djerba-demo](https://github.com/oicr-gsi/djerba-demo).
 - Conference talk slides:
     - [CGC 2023](https://www.cancergenomics.org/meetings/2023_scientific_program.php) on 2023-08-14: [Djerba: A Modular System to Generate Clinical Genome Interpretation Reports for Cancer](./doc/Iain_Bancarz_presentation_CGC_2023_Djerba.pdf)
     - [ISMB 2024](https://www.iscb.org/ismb2024/home) on 2024-07-15: [Djerba: Sharing and Updating a Modular System for Clinical Report Generation](./doc/Iain_Bancarz_presentation_ISMB_2024_Djerba.pdf)
