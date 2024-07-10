@@ -1,0 +1,13 @@
+<%
+  import djerba.plugins.supplement.body.versioning as versions 
+  import djerba.core.constants as core_constants
+%>
+
+<p>Whole Transcriptome libraries were prepared using the Illumina TruSeq Stranded Total RNA Library Prep Gold kit. 
+  Paired-end sequencing was performed using the Illumina ${versions.ILLUMINA_VERSION} technology. 
+  Reads were aligned using <a href=${versions.STAR_LINK}>STAR</a> (${versions.STAR_VERSION}) 
+  and gene expression levels quantified using <a href=${versions.RSEM_LINK}>RSEM</a> (${versions.RSEM_VERSION}). 
+  Fusions were called using <a href=${versions.STARFUSION_LINK}>STAR-Fusion</a> (${versions.STARFUSION_VERSION}) 
+  and <a href=${versions.ARRIBA_LINK}>Arriba</a> (${versions.ARRIBA_VERSION}), followed by post processing with 
+  <a href=${versions.MAVIS_LINK}>MAVIS</a> (${versions.MAVIS_VERSION}) and annotation using OncoKB. 
+</p>

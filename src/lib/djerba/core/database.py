@@ -49,7 +49,7 @@ class database(logger):
         except DjerbaEnvDirError as err:
             msg = 'Cannot find archive settings: {0}'.format(err)
             self.logger.error(msg)
-            raise
+            raise RuntimeError(msg) from err
         config_path = os.path.join(private_dir, cc.ARCHIVE_CONFIG)
         path_validator(self.log_level, self.log_path).validate_input_file(config_path)
         config = ConfigParser()
