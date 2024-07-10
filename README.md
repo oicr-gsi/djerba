@@ -18,8 +18,8 @@ The Djerba software:
 - The main site for Djerba documentation is [ReadTheDocs](https://djerba.readthedocs.io/en/latest/).
 - A demonstration fork of Djerba, with full instructions to install and run, is at [djerba-demo](https://github.com/oicr-gsi/djerba-demo).
 - Conference talk slides:
-..- [CGC 2023](https://cancergenomics.org/meetings/cgc_annual_meeting_2023.php) on 2023-08-14: [Djerba: A Modular System to Generate Clinical Genome Interpretation Reports for Cancer](./doc/Iain_Bancarz_presentation_CGC_2023_Djerba.pdf)
-..- [ISMB 2024](https://www.iscb.org/ismb2024/home) on 2024-07-15: [Djerba: Sharing and Updating a Modular System for Clinical Report Generation](./doc/Iain_Bancarz_presentation_ISMB_2024_Djerba.pdf)
+    - [CGC 2023](https://www.cancergenomics.org/meetings/2023_scientific_program.php) on 2023-08-14: [Djerba: A Modular System to Generate Clinical Genome Interpretation Reports for Cancer](./doc/Iain_Bancarz_presentation_CGC_2023_Djerba.pdf)
+    - [ISMB 2024](https://www.iscb.org/ismb2024/home) on 2024-07-15: [Djerba: Sharing and Updating a Modular System for Clinical Report Generation](./doc/Iain_Bancarz_presentation_ISMB_2024_Djerba.pdf)
 
 ## Structure
 
