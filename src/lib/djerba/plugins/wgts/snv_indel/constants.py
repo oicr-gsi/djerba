@@ -1,5 +1,5 @@
 ONCOTREE_CODE = 'oncotree code'
-STUDY_ID = 'study_id' # cbioportal study ID, eg. PASS01
+PROJECT = 'project' # cbioportal study ID, eg. PASS01
 TUMOUR_ID = 'tumour_id'
 NORMAL_ID = 'normal_id'
 MAF_PATH = 'maf_path'
