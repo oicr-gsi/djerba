@@ -1,0 +1,40 @@
+
+<%
+  import djerba.plugins.wgts.snv_indel.constants as constants
+  from djerba.plugins.wgts.snv_indel.html import snv_indel_table_builder
+  from djerba.util.html import html_builder
+%>
+  
+${html_builder().section_cells_begin("<h2>SNVs and in/dels</h2>","main")}
+   
+      <p>
+            <strong>${html_builder().k_comma_format(results.get(constants.SOMATIC_MUTATIONS))}</strong> somatic mutation(s) were detected in exonic or splice regions, 
+            of which <strong>${results.get(constants.CODING_SEQUENCE_MUTATIONS)}</strong> impacted a coding sequence,
+            and <strong>${results.get(constants.ONCOGENIC_MUTATIONS)}</strong> corresponded to an oncogenic mutation, as defined by OncoKB.
+      </p>
+      
+      <img id='VAF' style='width: 100%; object-fit: contain' src="${results.get(constants.VAF_PLOT)}"/>
+
+      % if results.get(constants.ONCOGENIC_MUTATIONS) > 0:
+            <table class="variants" width="100%">
+                  ${snv_indel_table_builder.make_header(results)}
+                  <tbody>
+                  % for row in snv_indel_table_builder.make_rows(results):
+                        ${row}
+                  % endfor
+                  </tbody>
+            </table>
+	    <table class="suppl" width="100%">
+              <tr>
+		<td width="50%" vertical-align="top"><b>Chr.</b>: Chromosome and cytoband</td>
+		% if results.get(constants.HAS_EXPRESSION_DATA):
+		<td width="50%" vertical-align="top"><b>Expr. (%)</b>: Expression Percentile for gene mRNA, or NA if comparison data is not available</td></tr>
+	        % endif
+		% if results.get(constants.HAS_LOH_DATA):
+		<td width="50%" vertical-align="top"><b>LOH</b>: Loss of heterozygosity</td></tr>
+	        % endif
+	    </table>
+      % endif
+
+      
+${html_builder().section_cells_end()}

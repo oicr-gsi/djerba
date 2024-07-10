@@ -17,11 +17,6 @@ class main(plugin_base):
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
-        contents = self.workspace.read_string(wrapper.get_my_string('integer_file'))
-        integer_1 = int(contents.strip())
-        integer_2 = wrapper.get_my_int('integer_2')
-        integer_sum = integer_1 + integer_2
-        integer_diff = integer_1 - integer_2
         data = {
             'plugin_name': self.identifier+' plugin',
             'version': self.PLUGIN_VERSION,
@@ -44,35 +39,24 @@ class main(plugin_base):
                 ]
             },
             'results': {
-                'integer_1': integer_1,
-                'integer_2': integer_2,
-                'sum': integer_sum,
-                'diff': integer_diff,
-                'author': wrapper.get_core_string('author')
+                'answer': wrapper.get_my_string('demo2_param'),
+                'question': self.workspace.read_string(
+                    wrapper.get_my_string('question')
+                )
             }
         }
         return data
 
     def render(self, data):
-        super().render(data)  # validate against schema
-        integer_1 = data['results']['integer_1']
-        integer_2 = data['results']['integer_2']
-        integer_sum = data['results']['sum']
-        integer_diff = data['results']['diff']
-        credit = "Demonstration run by {0}".format(data['results']['author'])
         output = [
-            "<h1>Demonstration: Part 2</h1>",
-            "<h2>SECOND INTEGER INPUT: {0}</h2>".format(integer_2),
-            "<h2>{0}+{1}={2}</h2>".format(integer_1, integer_2, integer_sum),
-            "<h2>{0}-{1}={2}</h2>".format(integer_1, integer_2, integer_diff),
-            "<hr/><h3>{0}</h3>".format(credit),
-            "<hr/>"
-        ]
+            "<h1>The Answer is: {0}</h1>".format(data['results']['answer']),
+            "<h1>The Question is: {0}</h1>".format(data['results']['question'])
+            ]
         return "\n".join(output)
 
     def specify_params(self):
         self.logger.debug("Specifying params for plugin demo2")
-        self.add_ini_required('integer_2')
-        self.set_ini_default('integer_file', 'integer.txt')
+        self.add_ini_required('demo2_param')
+        self.set_ini_default('question', 'question.txt')
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_priority_defaults(self.PRIORITY)
