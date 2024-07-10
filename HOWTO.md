@@ -172,7 +172,7 @@ Djerba writes a machine-readable JSON file which is used to generate the HTML an
 
 We can view the JSON as follows (substituting the unique filename of your report):
 ```
-cat https://github.com/oicr-gsi/djerba-demo/issues | python3 -m json.tool | less
+cat report/OICR-CGI-7421acae21f34612a2fc66a1bd02671e_report.json | python3 -m json.tool | less
 ```
 
 - Example JSON is shown below.
