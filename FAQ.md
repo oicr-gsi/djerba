@@ -2,11 +2,7 @@
 
 ### Can I fork and modify the Djerba software?
 
-Yes -- Djerba is licensed under [GPL 3.0](https://www.gnu.org/licenses/gpl-3.0.en.html) and may be shared and changed accordingly.
-
-### Who is the copyright holder for Djerba?
-
-Djerba is copyright &copy; Genome Systems Informatics, Ontario Institute for Cancer Research; all rights reserved.
+Yes --- Djerba is licensed under [GPL 3.0](https://www.gnu.org/licenses/gpl-3.0.en.html) and may be copied, distributed and modified accordingly.
 
 ### Can I write my own Djerba plugins?
 
@@ -16,9 +12,9 @@ Yes! We have a [Plugin Developer's Guide](https://djerba.readthedocs.io/en/lates
 
 The simplest way of doing so is to give your plugins the attribute `simple`, instead of `clinical` as in the demonstration plugins.
 
-### How can I contact the Djerba developers?
+### Why is the text formatting in my generated report different from your example?
 
-Raise an issue on the [Github page](https://github.com/oicr-gsi/djerba-demo/issues).
+For best results, the Arial font family should be installed (in `$HOME/.local/share/fonts` on a Linux machine).
 
 ### What is "alternate_djerba"?
 
@@ -33,3 +29,12 @@ The `djerba-demo` repository is a fork of production Djerba. In addition to the 
 If you have any issues, contact the developers and we will do our best to help.
 
 Please note that Djerba was developed to generate clinical reports for cancer patients at the Ontario Institute for Cancer Research. Fixes and improvements to clinical report production have the highest priority for developer time. We appreciate your understanding.
+
+### How can I contact the Djerba developers?
+
+Raise an issue on the [Github page](https://github.com/oicr-gsi/djerba-demo/issues).
+
+### Who is the copyright holder for Djerba?
+
+Djerba is copyright &copy; Genome Systems Informatics, Ontario Institute for Cancer Research; all rights reserved.
+
