@@ -24,7 +24,7 @@ class main(plugin_base):
             'attributes': wrapper.get_my_attributes(),
             'merge_inputs': {},
             'results': {
-                'salutation': 'So long and thanks for all the fish!'
+                'salutation': wrapper.get_my_string('salutation')
             }
         }
         return data
@@ -33,7 +33,7 @@ class main(plugin_base):
         return "<h1>Farewell! {0}</h1>".format(data['results']['salutation'])
 
     def specify_params(self):
-        self.logger.debug("Specifying params for plugin demo2")
+        self.logger.debug("Specifying params for plugin demo3")
         self.add_ini_required('salutation')
         self.set_ini_default(core_constants.ATTRIBUTES, core_constants.CLINICAL)
         self.set_priority_defaults(self.PRIORITY)

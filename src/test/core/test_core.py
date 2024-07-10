@@ -35,8 +35,8 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_UPDATE_JSON = 'simple_report_for_update.json'
-    SIMPLE_REPORT_MD5 = 'd8af6dbb0b5b8aca1acd204878c7d9d6'
-    SIMPLE_CONFIG_MD5 = 'fc6265eeb6a9f8f2a5c864a97e07250c'
+    SIMPLE_REPORT_MD5 = '6be059fa04162eaccc740a1765c05ec8'
+    SIMPLE_CONFIG_MD5 = '115ef442770a4eb9febffeef557a7d78'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
@@ -193,7 +193,7 @@ class TestConfigValidation(TestCore):
         with self.assertLogs('djerba.core.configure', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
         msg = 'DEBUG:djerba.core.configure:'+\
-            '8 expected INI param(s) found for component demo1'
+            '7 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
 
     def test_optional(self):
@@ -244,7 +244,7 @@ class TestConfigValidation(TestCore):
         with self.assertLogs('djerba.core.configure', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
         msg = 'DEBUG:djerba.core.configure:'+\
-            '9 expected INI param(s) found for component demo1'
+            '8 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
         # test setting all requirements
         plugin.add_ini_required('bar') # 'foo' is already required
@@ -268,7 +268,7 @@ class TestConfigWrapper(TestCore):
         cw = config_wrapper(cp, 'demo1')
         self.assertEqual(cw.get_core_string('author'), 'CGI Author')
         self.assertEqual(cw.get_my_int('configure_priority'), 200)
-        self.assertTrue(cw.has_my_param('question'))
+        self.assertTrue(cw.has_my_param('integer'))
         self.assertFalse(cw.has_my_param('noodles'))
         cw.set_my_param('lunch', 'sushi')
         config_1 = cw.get_config()
@@ -285,7 +285,7 @@ class TestConfigWrapper(TestCore):
         ]:
             self.assertEqual(cw.get_my_int(key), 42)
         self.assertEqual(cw.get_int('demo2', 'configure_priority'), 300)
-        self.assertTrue(cw.has_param('demo2', 'demo2_param'))
+        self.assertTrue(cw.has_param('demo2', 'integer_2'))
         self.assertFalse(cw.has_param('demo2', 'noodles'))
         cw.set_param('demo2', 'dinner', 'pizza')
         config_2 = cw.get_config()
@@ -374,9 +374,9 @@ class TestDependencies(TestCore):
             with self.assertRaises(DjerbaDependencyError):
                 main(work_dir, log_level=logging.CRITICAL).run(args)
         args.ini = os.path.join(self.test_source_dir, 'depends_extract.ini')
-        question_path = os.path.join(self.tmp_dir, 'question.txt')
-        with open(question_path, 'w') as out_file:
-            out_file.write('What do you get if you multiply six by nine?\n')
+        work_path = os.path.join(self.tmp_dir, 'integer.txt')
+        with open(work_path, 'w') as out_file:
+            out_file.write('5\n')
         main(work_dir, log_level=logging.WARNING).run(args)
         self.assertTrue(os.path.exists(json_path))
 
@@ -387,7 +387,6 @@ class TestIniGenerator(TestCore):
     COMPONENT_NAMES = [
         'demo1',
         'demo2',
-        'provenance_helper',
         'gene_information_merger'
     ]
 
@@ -448,7 +447,7 @@ class TestMainScript(TestCore):
             'djerba.py', mode,
             '--work-dir', work_dir,
             '--ini', ini_path,
-            '--ini-out', out_path,
+            '--ini-out', out_path
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
@@ -464,6 +463,7 @@ class TestMainScript(TestCore):
             '--work-dir', work_dir,
             '--ini', ini_path,
             '--json', json_path,
+            '--no-archive'
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
@@ -476,7 +476,8 @@ class TestMainScript(TestCore):
         cmd = [
             'djerba.py', mode,
             '--json', json_path,
-            '--out-dir', self.tmp_dir
+            '--out-dir', self.tmp_dir,
+            '--no-archive'
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
@@ -494,7 +495,8 @@ class TestMainScript(TestCore):
             'djerba.py', mode,
             '--work-dir', work_dir,
             '--ini', ini_path,
-            '--out-dir', self.tmp_dir
+            '--out-dir', self.tmp_dir,
+            '--no-archive'
         ]
         result = subprocess_runner().run(cmd)
         pattern = os.path.join(self.tmp_dir, '*'+core_constants.REPORT_JSON_SUFFIX)
@@ -522,14 +524,15 @@ class TestMainScript(TestCore):
             '--ini', ini_path,
             '--json', json_path,
             '--out-dir', self.tmp_dir,
-            '--pdf'
+            '--pdf',
+            '--no-archive'
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, 'b11a1d1623af8ae77385994f2f0ab9fa')
+        self.assert_report_MD5(html_string, '3b99ed4434115146521d543c6b33a412')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')
@@ -548,14 +551,15 @@ class TestMainScript(TestCore):
             '--summary', summary_path,
             '--json', json_path,
             '--out-dir', self.tmp_dir,
-            '--pdf'
+            '--pdf',
+            '--no-archive'
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, 'b11a1d1623af8ae77385994f2f0ab9fa')
+        self.assert_report_MD5(html_string, '118c684f88c4891f9bf44bd33fa26dbb')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')
@@ -656,8 +660,8 @@ class TestPriority(TestCore):
             data = json.loads(json_file.read())
         output = djerba_main.render(data)
         html = output['documents']['placeholder_report.clinical']
-        pos1 = self.find_line_position(html, 'demo1')
-        pos2 = self.find_line_position(html, 'The Question') # demo2 output
+        pos1 = self.find_line_position(html, 'Part 1')
+        pos2 = self.find_line_position(html, 'Part 2') # demo2 output
         self.assertNotEqual(0, pos1)
         self.assertNotEqual(0, pos2)
         self.assertTrue(pos1 < pos2)
@@ -666,8 +670,8 @@ class TestPriority(TestCore):
         data['plugins']['demo2']['priorities']['render'] = 100
         output = djerba_main.render(data)
         html = output['documents']['placeholder_report.clinical']
-        pos1 = self.find_line_position(html, 'demo1')
-        pos2 = self.find_line_position(html, 'The Question') # demo2 output
+        pos1 = self.find_line_position(html, 'Part 1')
+        pos2 = self.find_line_position(html, 'Part 2') # demo2 output
         self.assertNotEqual(0, pos1)
         self.assertNotEqual(0, pos2)
         self.assertTrue(pos1 > pos2) # <---- changed order

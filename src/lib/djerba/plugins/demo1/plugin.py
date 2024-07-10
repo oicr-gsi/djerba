@@ -19,6 +19,7 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         attributes = wrapper.get_my_attributes()
         self.check_attributes_known(attributes)
+        my_integer = wrapper.get_my_int('integer')
         data = {
             'plugin_name': self.identifier+' plugin',
             'version': self.PLUGIN_VERSION,
@@ -40,19 +41,25 @@ class main(plugin_base):
                     }
                 ]
             },
-            'results': {},
+            'results': {
+                'integer': my_integer
+            },
         }
-        question = 'What do you get if you multiply six by nine?'
-        self.workspace.write_string('question.txt', question)
+        self.workspace.write_string('integer.txt', str(my_integer))
         return data
 
     def render(self, data):
         super().render(data)  # validate against schema
-        return "<h3>TODO demo1 plugin output goes here</h3>"
+        number = data['results']['integer']
+        output = [
+            "<h1>Demonstration: Part 1</h1>",
+            "<h2>Integer input: {0}</h2>".format(number),
+            "<hr/>"
+        ]
+        return "\n".join(output)
 
     def specify_params(self):
         self.logger.debug("Specifying params for plugin demo1")
-        self.add_ini_required('question')
+        self.add_ini_required('integer')
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
-        self.set_ini_default('dummy_file', None)
         self.set_priority_defaults(self.PRIORITY)

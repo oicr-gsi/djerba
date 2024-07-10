@@ -23,7 +23,7 @@ def get_parser():
     parser.add_argument('--version', action='store_true', help='Print the version number and exit')
     subparsers = parser.add_subparsers(title='subcommands', help='sub-command help', dest='subparser_name')
     setup_parser = subparsers.add_parser(constants.SETUP, help='setup for a Djerba report')
-    setup_parser.add_argument('-a', '--assay', metavar='NAME', required=True, choices=['WGTS', 'WGS', 'TAR', 'PWGS'], help='Name of assay')
+    setup_parser.add_argument('-a', '--assay', metavar='NAME', required=True, choices=['WGTS', 'WGS', 'TAR', 'PWGS', 'DEMO'], help='Name of assay')
     setup_parser.add_argument('-i', '--ini', metavar='PATH', help='Output path for INI file; defaults to config.ini in current directory')
     setup_parser.add_argument('-c', '--compact', action='store_true', help="Output required manual parameters only")
     config_parser = subparsers.add_parser(constants.CONFIGURE, help='get configuration parameters')

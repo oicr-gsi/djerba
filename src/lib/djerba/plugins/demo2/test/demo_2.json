@@ -1,6 +1,7 @@
 {
-    "attributes": ["clinical"],
-    "priorities": {"configure": 300, "extract": 300, "render": 300},
+    "attributes": [
+        "clinical"
+    ],
     "merge_inputs": {
         "gene_information_merger": [
             {
@@ -18,9 +19,17 @@
         ]
     },
     "plugin_name": "demo2 plugin",
+    "priorities": {
+        "configure": 300,
+        "extract": 300,
+        "render": 300
+    },
     "results": {
-        "answer": "42",
-	"question": "What do you get if you multiply six by nine?"
+        "author": "Test Author",
+        "diff": -18,
+        "integer_1": 5,
+        "integer_2": 23,
+        "sum": 28
     },
     "version": "1.0.0"
 }

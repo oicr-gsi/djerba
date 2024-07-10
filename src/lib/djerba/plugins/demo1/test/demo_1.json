@@ -1,6 +1,7 @@
 {
-    "attributes": ["clinical"],
-    "priorities": {"configure": 200, "extract": 200, "render": 200},
+    "attributes": [
+        "clinical"
+    ],
     "merge_inputs": {
         "gene_information_merger": [
             {
@@ -18,6 +19,13 @@
         ]
     },
     "plugin_name": "demo1 plugin",
-    "results": {},
+    "priorities": {
+        "configure": 200,
+        "extract": 200,
+        "render": 200
+    },
+    "results": {
+        "integer": 5
+    },
     "version": "1.0.0"
 }

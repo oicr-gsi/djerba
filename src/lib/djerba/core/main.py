@@ -24,6 +24,7 @@ from djerba.core.loaders import \
 from djerba.core.workspace import workspace
 from djerba.util.args import arg_processor_base
 from djerba.util.logger import logger
+from djerba.util.environment import DjerbaEnvDirError
 from djerba.util.validator import path_validator
 from djerba.version import get_djerba_version
 import djerba.core.constants as cc
@@ -487,6 +488,13 @@ class main(main_base):
                 'pwgs.analysis',  
                 'supplement.body'
             ]
+        elif assay == 'DEMO':
+            component_list = [
+                'core',
+                'demo1',
+                'demo2',
+                'gene_information_merger'
+            ]
         else:
             msg = "Invalid assay name '{0}'".format(assay)
             self.logger.error(msg)
@@ -545,7 +553,13 @@ class main(main_base):
             plugin_data = data[self.PLUGINS][plugin_name]
             plugin = self.plugin_loader.load(plugin_name, self.workspace)
             data[self.PLUGINS][plugin_name] = plugin.redact(plugin_data)
-        uploaded, report_id = database(self.log_level, self.log_path).upload_data(data)
+        try:
+            uploaded, report_id = database(self.log_level, self.log_path).upload_data(data)
+        except DjerbaEnvDirError as err:
+            self.logger.warning("Error finding database settings; proceeding without upload")
+            self.logger.debug("Upload error: {0}".format(err))
+            uploaded = False
+            report_id = data[cc.CORE][cc.REPORT_ID]
         if uploaded:
             self.logger.info(f"Archiving was successful: {report_id}")
         else:
