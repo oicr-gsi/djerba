@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## UNRELEASED
+## v1.6.5: 2024-07-11
 - GCGI-1336: Fixed "cannot resolve assay" issue in case overview plugin
 - GCGI-1887: Changed "no effect" fusion reading frame to "unknown"
 - GCGI-1388: Fixed whizbam_project to default to project instead of study
