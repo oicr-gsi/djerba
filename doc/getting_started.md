@@ -12,9 +12,9 @@ The first step is to run [djerba-demo](https://github.com/oicr-gsi/djerba-demo).
 
 ## Next Steps
 
-Once you have successfully run `djerba-demo`, you are ready to try writing your own plugins.
+Once you have successfully run [djerba-demo](https://github.com/oicr-gsi/djerba-demo), you are ready to try writing your own plugins.
 
-The `djerba-demo` repo contains a fully functional version of the Djerba core code (version 1.6.4), but with a reduced set of plugins. If you wish to write your own plugins, we recommend forking `djerba-demo` and creating packages in the [plugins directory](https://github.com/oicr-gsi/djerba-demo/tree/main/src/lib/djerba/plugins). The [Plugin Developer's Guide](plugin_developers_guide) provides further instructions and tips.
+The [djerba-demo](https://github.com/oicr-gsi/djerba-demo) repo contains a fully functional version of the Djerba core code (version 1.6.4), but with a reduced set of plugins. If you wish to write your own plugins, we recommend forking [djerba-demo](https://github.com/oicr-gsi/djerba-demo) and creating packages in the [plugins directory](https://github.com/oicr-gsi/djerba-demo/tree/main/src/lib/djerba/plugins). The [Plugin Developer's Guide](plugin_developers_guide) provides further instructions and tips.
 
 ## Production Djerba
 
