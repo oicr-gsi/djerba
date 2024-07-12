@@ -380,6 +380,19 @@ class TestDependencies(TestCore):
         main(work_dir, log_level=logging.WARNING).run(args)
         self.assertTrue(os.path.exists(json_path))
 
+class TestHtmlCache(TestCore):
+    """Test the HTML cache"""
+
+    def test_encode_decode(self):
+        string_to_encode = "Hello, world!"
+        djerba_main = main(self.tmp_dir, log_level=logging.ERROR)
+        encoded = djerba_main.encode_to_base64(string_to_encode)
+        decoded_string = djerba_main.decode_from_base64(encoded)
+        self.assertEqual(string_to_encode, decoded_string)
+
+#    def test_html_wrap(self):
+#        djerba_main = main(self.tmp_dir, log_level=logging.ERROR) # suppress author warning
+
 
 class TestIniGenerator(TestCore):
     """Test the INI generator"""

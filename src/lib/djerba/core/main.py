@@ -271,6 +271,12 @@ class main_base(core_base):
         self.logger.info('Finished Djerba config step')
         return config_out
 
+    def decode_from_base64(self, encoded_string):
+        return gzip.decompress(base64.b64decode(encoded_string)).decode(cc.TEXT_ENCODING)
+
+    def encode_to_base64(self, string_to_encode):
+        return base64.b64encode(gzip.compress(string_to_encode.encode(cc.TEXT_ENCODING)))
+
     def update_data_from_file(self, new_data, json_path, force):
         """Read old JSON from a file, and return the updated data structure"""
         with open(json_path) as in_file:
