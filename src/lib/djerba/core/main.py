@@ -170,7 +170,7 @@ class main_base(core_base):
                 data[self.PLUGINS][name] = component_data
         # 3. Render the HTML; encode and store in data structure
         self.logger.debug('Generating HTML for cache')
-        data[cc.HTML_CACHE] = base64.b64encode(gzip.compress(self.base_render(data)))
+        data[cc.HTML_CACHE] = self.encode_to_base64(self.base_render(data))
         self.logger.debug('Finished running extraction')
         return data
 
