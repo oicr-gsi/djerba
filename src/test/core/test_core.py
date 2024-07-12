@@ -390,9 +390,17 @@ class TestHtmlCache(TestCore):
         decoded_string = djerba_main.decode_from_base64(encoded)
         self.assertEqual(string_to_encode, decoded_string)
 
-#    def test_html_wrap(self):
-#        djerba_main = main(self.tmp_dir, log_level=logging.ERROR) # suppress author warning
-
+    def test_html_wrap(self):
+        djerba_main = main(self.tmp_dir, log_level=logging.ERROR) # suppress author warning
+        html_string = "<p>Hello, world!</p>"
+        wrapped = djerba_main.wrap_html('test', html_string)
+        lines = [
+            "<span DJERBA_COMPONENT_START=test />",
+            "<p>Hello, world!</p>",
+            "<span DJERBA_COMPONENT_END=test />",
+            ""
+        ]
+        self.assertEqual(wrapped, '\n'.join(lines))
 
 class TestIniGenerator(TestCore):
     """Test the INI generator"""
