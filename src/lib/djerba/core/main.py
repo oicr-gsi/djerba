@@ -277,6 +277,20 @@ class main_base(core_base):
     def encode_to_base64(self, string_to_encode):
         return base64.b64encode(gzip.compress(string_to_encode.encode(cc.TEXT_ENCODING)))
 
+    def update_cached_html(self, new_html, old_cache):
+        # new_html = dictionary of HTML strings by component name
+        # old_cache = encoded string of old HTML
+        # TODO move cache-related methods into a new class?
+        # TODO attempt to parse as XML before doing string processing?
+        old_html = self.decode_from_base64(old_cache)
+        lines = re.split("\n", old_html)
+        for line in lines:
+            if re.search(cc.COMPONENT_START, line):
+                pass
+                # parse the <span> element and find the component name
+                # scan to the component-end element
+                # output the new HTML block and continue
+
     def update_data_from_file(self, new_data, json_path, force):
         """Read old JSON from a file, and return the updated data structure"""
         with open(json_path) as in_file:
@@ -302,6 +316,7 @@ class main_base(core_base):
                     raise DjerbaVersionMismatchError(msg)
             data[self.PLUGINS][plugin] = new_data[self.PLUGINS][plugin]
             data[constants.CONFIG][plugin] = new_data[constants.CONFIG][plugin]
+            # TODO render the updated plugins only, and update cached HTML
             self.logger.debug('Updated JSON for plugin {0}'.format(plugin))
         return data
 
@@ -541,6 +556,7 @@ class main(main_base):
         else:
             self.logger.info("Omitting archive upload for update")
         if out_dir:
+            # TODO write the HTML cache from JSON instead of calling render()
             self.render(data, out_dir, pdf, archive=False)
             input_name = os.path.basename(json_path)
             # generate an appropriate output filename
