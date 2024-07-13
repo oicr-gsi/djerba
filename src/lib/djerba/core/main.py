@@ -135,7 +135,7 @@ class main_base(core_base):
         else:
             self.logger.debug("{0} inputs found for merger: {1}".format(total, merger_name))
         merger = self.merger_loader.load(merger_name)
-        self.logger.debug("Loaded merger {0} for rendering".format(merger_name)) 
+        self.logger.debug("Loaded merger {0} for rendering".format(merger_name))
         return merger.render(merger_inputs)
 
     def base_extract(self, config):
@@ -322,8 +322,8 @@ class main_base(core_base):
 
     def wrap_html(self, name, html):
         # place identifying tags before/after an HTML block, to facilitate later editing
-        start = "<span {0}={1} />".format(cc.COMPONENT_START, name)
-        end = "<span {0}={1} />".format(cc.COMPONENT_END, name)
+        start = "<span {0}='{1}' />".format(cc.COMPONENT_START, name)
+        end = "<span {0}='{1}' />".format(cc.COMPONENT_END, name)
         return "{0}\n{1}\n{2}\n".format(start, html, end)
 
 class main(main_base):

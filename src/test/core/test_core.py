@@ -395,9 +395,9 @@ class TestHtmlCache(TestCore):
         html_string = "<p>Hello, world!</p>"
         wrapped = djerba_main.wrap_html('test', html_string)
         lines = [
-            "<span DJERBA_COMPONENT_START=test />",
+            "<span DJERBA_COMPONENT_START='test' />",
             "<p>Hello, world!</p>",
-            "<span DJERBA_COMPONENT_END=test />",
+            "<span DJERBA_COMPONENT_END='test' />",
             ""
         ]
         self.assertEqual(wrapped, '\n'.join(lines))
