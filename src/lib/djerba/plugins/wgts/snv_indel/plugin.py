@@ -52,8 +52,8 @@ class main(plugin_base):
         wrapper = self.update_wrapper_if_null(
             wrapper,
             input_params_helper.INPUT_PARAMS_FILE,
-            sic.STUDY_ID,
-            input_params_helper.STUDY,
+            sic.PROJECT,
+            input_params_helper.PROJECT,
             fallback=sic.DEFAULT
         )
         wrapper = self.update_wrapper_if_null(
@@ -64,7 +64,7 @@ class main(plugin_base):
         )
         if wrapper.my_param_is_null(sic.WHIZBAM_PROJECT):
             # if whizbam project not manually configured, default to study id
-            wrapper.set_my_param(sic.WHIZBAM_PROJECT, wrapper.get_my_string(sic.STUDY_ID))
+            wrapper.set_my_param(sic.WHIZBAM_PROJECT, wrapper.get_my_string(sic.PROJECT))
         return wrapper.get_config()
 
     def extract(self, config):
@@ -104,7 +104,7 @@ class main(plugin_base):
             sic.ONCOTREE_CODE,
             sic.TUMOUR_ID,
             sic.NORMAL_ID,
-            sic.STUDY_ID,
+            sic.PROJECT,
             sic.WHIZBAM_PROJECT
         ]
         for key in discovered:
