@@ -1,0 +1,48 @@
+<%
+  from time import strftime
+  import djerba.core.constants as core_constants
+  from djerba.plugins.hla.plugin import main as hla
+%>
+
+<hr class="big-white-line">
+<div class="twocellmain">
+  <div class="oneoftwocellmain"><h2>HLA Analysis</h2></div>
+  <div class="twooftwocellmain"><hr class="big-line">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+    <table>
+        <thead>
+            <tr>
+                <th>Gene name</th>
+                <th>Zygosity</th>
+                <th>Allele</th>
+                <th>Abundance</th>
+                <th>Quality</th>
+            </tr>
+        </thead>
+        <tbody>
+            % for row in hla_data:
+                <tr>
+                    <td>${row['Gene name']}</td>
+                    <td>${row['Zygosity']}</td>
+                    <td>${row['Allele']}</td>
+                    <td>${row['Abundance']}</td>
+                    <td>${row['Quality']}</td>
+                </tr>
+            % endfor
+        </tbody>
+    </table>
+  </div>
+</div>
