@@ -58,8 +58,6 @@ class html_cache(logger):
     def update_cached_html(self, new_html, old_cache):
         # new_html = dictionary of HTML strings by component name
         # old_cache = encoded string of old HTML
-        # TODO move cache-related methods into a new class?
-        # TODO attempt to parse as XML before doing string processing?
         old_html = self.decode_from_base64(old_cache)
         old_lines = re.split("\n", old_html)
         new_lines = []
