@@ -43,10 +43,11 @@ class main_base(core_base):
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.logger.info("Running Djerba version {0}".format(get_djerba_version()))
+        self.work_dir = work_dir
+        # make some utility objects
         self.json_validator = plugin_json_validator(self.log_level, self.log_path)
         self.path_validator = path_validator(self.log_level, self.log_path)
         self.html_cache = html_cache(self.log_level, self.log_path)
-        self.work_dir = work_dir
         # create a workspace in case it's needed (may not be for some modes/plugins)
         self.workspace = workspace(work_dir, self.log_level, self.log_path)
         self.core_config_loader = core_config_loader(self.log_level, self.log_path)
@@ -170,7 +171,7 @@ class main_base(core_base):
                 data[self.PLUGINS][name] = component_data
         # 3. Render the HTML; encode and store in data structure
         self.logger.debug('Generating HTML for cache')
-        data[cc.HTML_CACHE] = self.encode_to_base64(self.base_render(data))
+        data[cc.HTML_CACHE] = self.html_cache.encode_to_base64(self.base_render(data))
         self.logger.debug('Finished running extraction')
         return data
 
@@ -298,6 +299,7 @@ class main_base(core_base):
             data[self.PLUGINS][plugin] = new_data[self.PLUGINS][plugin]
             data[constants.CONFIG][plugin] = new_data[constants.CONFIG][plugin]
             # TODO render the updated plugins only, and update cached HTML
+            # TODO load each updated plugin and call its render method
             self.logger.debug('Updated JSON for plugin {0}'.format(plugin))
         return data
 
