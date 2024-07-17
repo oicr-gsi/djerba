@@ -5,10 +5,6 @@ Main class to:
 - Merge and output results
 """
 from configparser import ConfigParser
-from xml.dom import minidom
-from xml.parsers.expat import ExpatError
-import base64
-import gzip
 import json
 import logging
 import pdfkit
@@ -20,6 +16,7 @@ import djerba.util.ini_fields as ini
 from djerba.core.base import base as core_base
 from djerba.core.database import database
 from djerba.core.extract import extraction_setup
+from djerba.core.html_cache import html_cache, DjerbaHtmlCacheError
 from djerba.core.ini_generator import ini_generator
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.render import html_renderer, pdf_renderer
@@ -48,6 +45,7 @@ class main_base(core_base):
         self.logger.info("Running Djerba version {0}".format(get_djerba_version()))
         self.json_validator = plugin_json_validator(self.log_level, self.log_path)
         self.path_validator = path_validator(self.log_level, self.log_path)
+        self.html_cache = html_cache(self.log_level, self.log_path)
         self.work_dir = work_dir
         # create a workspace in case it's needed (may not be for some modes/plugins)
         self.workspace = workspace(work_dir, self.log_level, self.log_path)
@@ -192,13 +190,14 @@ class main_base(core_base):
         for plugin_name in data[self.PLUGINS]:
             plugin_data = data[self.PLUGINS][plugin_name]
             plugin = self.plugin_loader.load(plugin_name, self.workspace)
-            html[plugin_name] = self.wrap_html(plugin_name, plugin.render(plugin_data))
+            html_raw = plugin.render(plugin_data)
+            html[plugin_name] = self.html_cache.wrap_html(plugin_name, html_raw)
             self.logger.debug("Ran plugin '{0}' for rendering".format(plugin_name))
             priorities[plugin_name] = self._get_render_priority(plugin_data)
             attributes[plugin_name] = plugin_data[cc.ATTRIBUTES]
         for (merger_name, merger_config) in data[self.MERGERS].items():
             html_raw = self._run_merger(merger_name, data)
-            html[merger_name] = self.wrap_html(merger_name, html_raw)
+            html[merger_name] = self.html_cache.wrap_html(merger_name, html_raw)
             self.logger.debug("Ran merger '{0}' for rendering".format(merger_name))
             priorities[merger_name] = merger_config[cc.RENDER_PRIORITY]
             attributes[merger_name] = merger_config[cc.ATTRIBUTES]
@@ -273,80 +272,6 @@ class main_base(core_base):
         self.logger.info('Finished Djerba config step')
         return config_out
 
-    def decode_from_base64(self, encoded_string):
-        return gzip.decompress(base64.b64decode(encoded_string)).decode(cc.TEXT_ENCODING)
-
-    def encode_to_base64(self, string_to_encode):
-        return base64.b64encode(gzip.compress(string_to_encode.encode(cc.TEXT_ENCODING)))
-
-    def parse_name_from_separator(self, separator_line):
-        # attempt to parse the HTML separator line
-        separator_line = separator_line.strip()
-        try:
-            doc = minidom.parseString(separator_line)
-        except ExpatError as err:
-            msg = "Failed to parse component name in HTML cache; improper format "+\
-                "for separator tag line?"
-            self.logger.error("{0}: {1}".format(msg, err))
-            raise DjerbaHtmlCacheError(msg) from err
-        elements = doc.getElementsByTagName('span')
-        if len(elements)!=1:
-            msg = "Failed to parse component name in HTML cache; expected "+\
-                "exactly 1 <span> element, found "+(str(len(elements)))+\
-                ": "+separator_line
-            self.logger.error(msg)
-            raise DjerbaHtmlCacheError(msg)
-        elem = elements[0]
-        if elem.hasAttribute(cc.COMPONENT_START):
-            name = elem.getAttribute(cc.COMPONENT_START)
-        elif elem.hasAttribute(cc.COMPONENT_END):
-            name = elem.getAttribute(cc.COMPONENT_END)
-        else:
-            msg = "Failed to parse component name in HTML cache; no start/end "+\
-                "attribute found in separator tag: "+separator_line
-            self.logger.error(msg)
-            raise DjerbaHtmlCacheError(msg)
-        return name
-
-    def update_cached_html(self, new_html, old_cache):
-        # new_html = dictionary of HTML strings by component name
-        # old_cache = encoded string of old HTML
-        # TODO move cache-related methods into a new class?
-        # TODO attempt to parse as XML before doing string processing?
-        old_html = self.decode_from_base64(old_cache)
-        old_lines = re.split("\n", old_html)
-        new_lines = []
-        replace_name = None
-        for line in old_lines:
-            if re.search(cc.COMPONENT_START, line):
-                name = self.parse_name_from_separator(line)
-                if name in new_html:
-                    self.logger.debug("Updating "+name)
-                    replace_name = name
-                    new_lines.append(new_html[name])
-                else:
-                    self.logger.debug("No update found for "+name)
-                    new_lines.append(line)
-            elif replace_name:
-                if re.search(cc.COMPONENT_END, line):
-                    name = self.parse_name_from_separator(line)
-                    if name != replace_name:
-                        msg = "Mismatched separator names: start = "+replace_name+\
-                            ", end = "+name
-                        self.logger.error(msg)
-                        raise DjerbaHtmlCacheError(msg)
-                    else:
-                        replace_name = None
-            else:
-                new_lines.append(line)
-        if replace_name:
-            msg = "No end tag found for component name '{0}'".format(replace_name)
-            self.logger.error(msg)
-            raise DjerbaHatmlCacheError(msg)
-        self.logger.debug("HTML update done")
-        return "\n".join(new_lines)
-
-
     def update_data_from_file(self, new_data, json_path, force):
         """Read old JSON from a file, and return the updated data structure"""
         with open(json_path) as in_file:
@@ -376,11 +301,6 @@ class main_base(core_base):
             self.logger.debug('Updated JSON for plugin {0}'.format(plugin))
         return data
 
-    def wrap_html(self, name, html):
-        # place identifying tags before/after an HTML block, to facilitate later editing
-        start = "<span {0}='{1}' />".format(cc.COMPONENT_START, name)
-        end = "<span {0}='{1}' />".format(cc.COMPONENT_END, name)
-        return "{0}\n{1}\n{2}\n".format(start, html, end)
 
 class main(main_base):
 
@@ -726,9 +646,6 @@ class arg_processor(arg_processor_base):
         self.logger.info("Command-line path validation finished.")
 
 class DjerbaDependencyError(Exception):
-    pass
-
-class DjerbaHtmlCacheError(Exception):
     pass
 
 class DjerbaSubcommandError(Exception):
