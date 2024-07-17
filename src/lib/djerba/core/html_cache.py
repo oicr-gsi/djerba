@@ -21,10 +21,13 @@ class html_cache(logger):
         self.logger = self.get_logger(log_level, __name__, log_path)
 
     def decode_from_base64(self, encoded_string):
+        # decode b64, decompress, then convert back to string
         return gzip.decompress(base64.b64decode(encoded_string)).decode(cc.TEXT_ENCODING)
 
     def encode_to_base64(self, string_to_encode):
-        return base64.b64encode(gzip.compress(string_to_encode.encode(cc.TEXT_ENCODING)))
+        # convert to bytes, apply gzip and b64encode, then convert back to string
+        compressed = gzip.compress(string_to_encode.encode(cc.TEXT_ENCODING))
+        return base64.b64encode(compressed).decode(cc.TEXT_ENCODING)
 
     def parse_name_from_separator(self, separator_line):
         # attempt to parse the HTML separator line

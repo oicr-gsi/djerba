@@ -171,7 +171,12 @@ class main_base(core_base):
                 data[self.PLUGINS][name] = component_data
         # 3. Render the HTML; encode and store in data structure
         self.logger.debug('Generating HTML for cache')
-        data[cc.HTML_CACHE] = self.html_cache.encode_to_base64(self.base_render(data))
+        data[cc.HTML_CACHE] = {}
+        rendered = self.base_render(data)
+        for prefix in rendered[cc.DOCUMENTS].keys():
+            # cache HTML for each report type -- clinical, research, etc.
+            encoded = self.html_cache.encode_to_base64(rendered[cc.DOCUMENTS][prefix])
+            data[cc.HTML_CACHE][prefix] = encoded
         self.logger.debug('Finished running extraction')
         return data
 
