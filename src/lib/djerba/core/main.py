@@ -5,6 +5,8 @@ Main class to:
 - Merge and output results
 """
 from configparser import ConfigParser
+from xml.dom import minidom
+from xml.parsers.expat import ExpatError
 import base64
 import gzip
 import json
@@ -277,19 +279,67 @@ class main_base(core_base):
     def encode_to_base64(self, string_to_encode):
         return base64.b64encode(gzip.compress(string_to_encode.encode(cc.TEXT_ENCODING)))
 
+    def parse_name_from_separator(self, separator_line):
+        # attempt to parse the HTML separator line
+        separator_line = separator_line.strip()
+        try:
+            doc = minidom.parseString(separator_line)
+        except ExpatError as err:
+            msg = "Failed to parse component name in HTML cache; improper format "+\
+                "for separator tag line?"
+            self.logger.error("{0}: {1}".format(msg, err))
+            raise DjerbaHtmlCacheError(msg) from err
+        elements = doc.getElementsByTagName('span')
+        if len(elements)!=1:
+            msg = "Failed to parse component name in HTML cache; expected "+\
+                "exactly 1 <span> element, found "+(str(len(elements)))+\
+                ": "+separator_line
+            self.logger.error(msg)
+            raise DjerbaHtmlCacheError(msg)
+        elem = elements[0]
+        if elem.hasAttribute(cc.COMPONENT_START):
+            name = elem.getAttribute(cc.COMPONENT_START)
+        elif elem.hasAttribute(cc.COMPONENT_END):
+            name = elem.getAttribute(cc.COMPONENT_END)
+        else:
+            msg = "Failed to parse component name in HTML cache; no start/end "+\
+                "attribute found in separator tag: "+separator_line
+            self.logger.error(msg)
+            raise DjerbaHtmlCacheError(msg)
+        return name
+
     def update_cached_html(self, new_html, old_cache):
         # new_html = dictionary of HTML strings by component name
         # old_cache = encoded string of old HTML
         # TODO move cache-related methods into a new class?
         # TODO attempt to parse as XML before doing string processing?
         old_html = self.decode_from_base64(old_cache)
-        lines = re.split("\n", old_html)
-        for line in lines:
+        old_lines = re.split("\n", old_html)
+        new_lines = []
+        replace_name = None
+        for line in old_lines:
             if re.search(cc.COMPONENT_START, line):
-                pass
-                # parse the <span> element and find the component name
-                # scan to the component-end element
-                # output the new HTML block and continue
+                name = self.parse_name_from_separator(line)
+                if name in new_html:
+                    self.logger.debug("Updating "+name)
+                    replace_name = name
+                    new_lines.append(new_html[name])
+                else:
+                    self.logger.debug("No update found for "+name)
+            elif replace_name:
+                if re.search(cc.COMPONENT_END, line):
+                    name = self.parse_name_from_separator(line)
+                    if name != replace_name:
+                        msg = "Mismatched separator names: start = "+replace_name+\
+                            ", end = "+name
+                        self.logger.error(msg)
+                        raise DjerbaHtmlCacheError(msg)
+                    else:
+                        replace_name = None
+            else:
+                new_lines.append(line)
+        return "".join(new_lines)
+
 
     def update_data_from_file(self, new_data, json_path, force):
         """Read old JSON from a file, and return the updated data structure"""
@@ -670,6 +720,9 @@ class arg_processor(arg_processor_base):
         self.logger.info("Command-line path validation finished.")
 
 class DjerbaDependencyError(Exception):
+    pass
+
+class DjerbaHtmlCacheError(Exception):
     pass
 
 class DjerbaSubcommandError(Exception):

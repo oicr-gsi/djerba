@@ -21,7 +21,7 @@ from djerba.core.configure import config_wrapper, core_configurer, DjerbaConfigE
 from djerba.core.ini_generator import ini_generator
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.loaders import plugin_loader, core_config_loader, DjerbaLoadError
-from djerba.core.main import main, arg_processor, DjerbaDependencyError
+from djerba.core.main import main, arg_processor, DjerbaDependencyError, DjerbaHtmlCacheError
 from djerba.core.workspace import workspace
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.testing.tools import TestBase
@@ -401,6 +401,19 @@ class TestHtmlCache(TestCore):
             ""
         ]
         self.assertEqual(wrapped, '\n'.join(lines))
+
+    def test_name_from_separator(self):
+        # get component name from the start/finish tag
+        good = "<span DJERBA_COMPONENT_START='test'/>"
+        broken1 = "<span DJERBA_COMPONENT_START='test'/>blahblah"
+        broken2 = "blahblah<span DJERBA_COMPONENT_START='test'/>"
+        broken3 = "lorem ipsum dolor"
+        broken4 = "<span DJERBA_COMPONENT_NOWHERE='test'/>"
+        djerba_main = main(self.tmp_dir, log_level=logging.CRITICAL)
+        self.assertEqual(djerba_main.parse_name_from_separator(good), 'test')
+        for tag in [broken1, broken2, broken3, broken4]:
+            with self.assertRaises(DjerbaHtmlCacheError):
+                djerba_main.parse_name_from_separator(tag)
 
 class TestIniGenerator(TestCore):
     """Test the INI generator"""
