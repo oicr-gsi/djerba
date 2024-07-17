@@ -69,6 +69,7 @@ class TestCore(TestBase):
             data_found = json.loads(json_file.read())
             data_found['core']['extract_time'] = '2024-01-01_12:00:00 -0500'
             data_found['core']['core_version'] = 'placeholder'
+            data_found['html_cache']['placeholder_report.clinical'] = 'placeholder'
         self.assertEqual(data_expected, data_found)
 
     def assertSimpleReport(self, json_path, html_path):
@@ -603,7 +604,7 @@ class TestMainScript(TestCore):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, 'b11a1d1623af8ae77385994f2f0ab9fa')
+        self.assert_report_MD5(html_string, '3b99ed4434115146521d543c6b33a412')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')
@@ -612,6 +613,7 @@ class TestMainScript(TestCore):
     def test_update_cli_with_summary(self):
         # run with summary-only input
         mode = 'update'
+        self.tmp_dir = '/u/ibancarz/workspace/djerba/test20240717_02'
         work_dir = self.tmp_dir
         summary_path = os.path.join(self.test_source_dir, 'alternate_summary.txt')
         # run djerba.py and check the results
@@ -629,7 +631,7 @@ class TestMainScript(TestCore):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, 'b11a1d1623af8ae77385994f2f0ab9fa')
+        self.assert_report_MD5(html_string, '273709ddab200f9af131dc589f8abc4b')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')

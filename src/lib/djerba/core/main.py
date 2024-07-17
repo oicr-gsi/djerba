@@ -12,6 +12,7 @@ import os
 import re
 from glob import glob
 from PyPDF2 import PdfMerger
+from time import strftime
 import djerba.util.ini_fields as ini
 from djerba.core.base import base as core_base
 from djerba.core.database import database
@@ -67,6 +68,21 @@ class main_base(core_base):
 
     def _get_render_priority(self, plugin_data):
         return plugin_data[cc.PRIORITIES][cc.RENDER]
+
+    def _get_unique_doc_key(self, data):
+        """
+        Get the unique document key used to index the HTML cache
+        Raise an error unless exactly 1 key is found
+        For now, we only support update mode when report has exactly 1 document type
+        """
+        if len(data[cc.HTML_CACHE])==1:
+            key = list(data[cc.HTML_CACHE].keys())[0]
+        else:
+            msg = "HTML cache update requries exactly 1 report type; "+\
+                "found {0}".format(data[cc.HTML_CACHE].keys())
+            self.logger.error(msg)
+            raise DjerbaUpdateKeyError(msg)
+        return key
 
     def _load_component(self, name):
         if name == ini.CORE:
@@ -278,6 +294,24 @@ class main_base(core_base):
         self.logger.info('Finished Djerba config step')
         return config_out
 
+    def render_from_cache(self, extracted_data, doc_key, out_dir, pdf):
+        """
+        Write HTML and (if required) PDF from the JSON HTML cache for the given doc key
+        """
+        html_str = self.html_cache.decode_from_base64(extracted_data[cc.HTML_CACHE][doc_key])
+        html_path = os.path.join(out_dir, doc_key+'.html')
+        with open(html_path, 'w') as out_file:
+            out_file.write(html_str)
+        if pdf:
+            report_id = extracted_data[cc.CORE][cc.REPORT_ID]
+            # PDF footer here duplicates the clinical report footer format
+            # TODO support other footer types when rendering from cache
+            footer = "{0} - {1}".format(strftime("%Y/%m/%d"), report_id)
+            p_rend = pdf_renderer(self.log_level, self.log_path)
+            pdf_path = os.path.join(out_dir, doc_key+'.pdf')
+            p_rend.render_file(html_path, pdf_path, footer)
+            self.logger.info("Wrote PDF output to {0}".format(pdf_path))
+
     def update_data_from_file(self, new_data, json_path, force):
         """Read old JSON from a file, and return the updated data structure"""
         with open(json_path) as in_file:
@@ -288,11 +322,12 @@ class main_base(core_base):
         # if plugin data did not exist in old JSON, it will be added
         # check plugin version numbers in old/new JSON
         # This updates plugins only; core data (including report timestamp) is not altered
-        for plugin in new_data[self.PLUGINS].keys():
-            old_version = data[self.PLUGINS][plugin][cc.VERSION]
-            new_version = new_data[self.PLUGINS][plugin][cc.VERSION]
+        new_html = {}
+        for plugin_name in new_data[self.PLUGINS].keys():
+            old_version = data[self.PLUGINS][plugin_name][cc.VERSION]
+            new_version = new_data[self.PLUGINS][plugin_name][cc.VERSION]
             if old_version != new_version:
-                msg = "Versions differ for {0} plugin: ".format(plugin)+\
+                msg = "Versions differ for {0} plugin: ".format(plugin_name)+\
                     "Old version = {0}, new version = {1}".format(old_version, new_version)
                 if force:
                     msg += "; --force option in effect, proceeding"
@@ -301,11 +336,19 @@ class main_base(core_base):
                     msg += "; run with --force to proceed"
                     self.logger.error(msg)
                     raise DjerbaVersionMismatchError(msg)
-            data[self.PLUGINS][plugin] = new_data[self.PLUGINS][plugin]
-            data[constants.CONFIG][plugin] = new_data[constants.CONFIG][plugin]
-            # TODO render the updated plugins only, and update cached HTML
-            # TODO load each updated plugin and call its render method
-            self.logger.debug('Updated JSON for plugin {0}'.format(plugin))
+            data[self.PLUGINS][plugin_name] = new_data[self.PLUGINS][plugin_name]
+            data[constants.CONFIG][plugin_name] = new_data[constants.CONFIG][plugin_name]
+            # load the plugin and render HTML for cache update
+            plugin = self.plugin_loader.load(plugin_name, self.workspace)
+            new_html[plugin_name] = plugin.render(new_data[self.PLUGINS][plugin_name])
+            self.logger.debug('Updated JSON for plugin {0}'.format(plugin_name))
+        # now update the HTML cache; TODO support multiple doc types, eg. clinical/research
+        doc_key = self._get_unique_doc_key(data)
+        old_cache = data[cc.HTML_CACHE][doc_key]
+        new_html_string = self.html_cache.update_cached_html(new_html, old_cache)
+        new_cache = self.html_cache.encode_to_base64(new_html_string)
+        data[cc.HTML_CACHE][doc_key] = new_cache
+        self.logger.debug('Updated HTML cache for all plugins')
         return data
 
 
@@ -539,14 +582,14 @@ class main(main_base):
         else:
             self.logger.info("Omitting archive upload for update")
         if out_dir:
-            # TODO write the HTML cache from JSON instead of calling render()
-            self.render(data, out_dir, pdf, archive=False)
+            doc_key = self._get_unique_doc_key(data)
+            self.render_from_cache(data, doc_key, out_dir, pdf)
             input_name = os.path.basename(json_path)
             # generate an appropriate output filename
             if re.search('\.updated\.json$', json_path):
                 output_name = input_name
             elif not re.search('\.json$', json_path):
-                ouptut_name = input_name+'.updated.json'
+                output_name = input_name+'.updated.json'
             else:
                 terms = re.split('\.', input_name)
                 terms.pop()
@@ -656,6 +699,9 @@ class DjerbaDependencyError(Exception):
     pass
 
 class DjerbaSubcommandError(Exception):
+    pass
+
+class DjerbaUpdateKeyError(Exception):
     pass
 
 class DjerbaVersionMismatchError(Exception):
