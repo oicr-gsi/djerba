@@ -21,25 +21,33 @@ class main(plugin_base):
     QUALITY = 'Quality'
 
     def specify_params(self):
-        self.set_priority_defaults(self.PRIORITY)
+
         self.add_ini_discovered(self.T1K_FILE_PATH)
+        self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
+        self.set_priority_defaults(self.PRIORITY)
 
 
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
-        if wrapper.my_param_is_null(self.T1K_FILE_PATH):
-            wrapper.set_my_param(self.T1K_FILE_PATH, "/.mounts/labs/CGI/scratch/ohamza/HLA_plugin/T1K_output_files/OCT_010434_Ly_R_WG_t1k_hla_genotype.tsv")
-        return wrapper.get_config()
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_PATH_INFO,
+            self.T1K_FILE_PATH,
+            fallback=os.path.realpath("/.mounts/labs/CGI/scratch/ohamza/HLA_plugin/T1K_output_files/OCT_010434_Ly_R_WG_t1k_hla_genotype.tsv"))
+
+        return config
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         work_dir = self.workspace.get_work_dir()
-        tsv_path = config[self.identifier]['tsv_file']
+        tsv_path = config[self.identifier][self.T1K_FILE_PATH]
 
         data = {
             'plugin_name': 'HLA Analysis',
             'version': self.PLUGIN_VERSION,
+            'priorities': wrapper.get_my_priorities(),
+            'attributes': wrapper.get_my_attributes(),
             'results': self.build_hla_table(work_dir, tsv_path)
         }
         return data
