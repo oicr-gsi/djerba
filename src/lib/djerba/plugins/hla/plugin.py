@@ -7,9 +7,11 @@ import djerba.core.constants as core_constants
 
 class main(plugin_base):
 
-    PRIORITY = 400
+    PRIORITY = 200
     PLUGIN_VERSION = '0.1.0'
     TEMPLATE_NAME = 'hla_template.html'
+
+    T1K_FILE_PATH= 'tsv_file'
 
     # Constants for TSV columns
     GENE_NAME = 'Gene name'
@@ -19,19 +21,16 @@ class main(plugin_base):
     QUALITY = 'Quality'
 
     def specify_params(self):
-        self.add_ini_discovered('tsv_file')
         self.set_priority_defaults(self.PRIORITY)
+        self.add_ini_discovered(self.T1K_FILE_PATH)
+
 
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
-        wrapper = self.update_wrapper_if_null(
-            wrapper,
-            core_constants.DEFAULT_PATH_INFO,
-            'tsv_file',
-            'hla_analysis'
-        )
-        return config
+        if wrapper.my_param_is_null(self.T1K_FILE_PATH):
+            wrapper.set_my_param(self.T1K_FILE_PATH, "/.mounts/labs/CGI/scratch/ohamza/HLA_plugin/T1K_output_files/OCT_010434_Ly_R_WG_t1k_hla_genotype.tsv")
+        return wrapper.get_config()
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
