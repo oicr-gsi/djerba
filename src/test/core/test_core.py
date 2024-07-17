@@ -415,6 +415,44 @@ class TestHtmlCache(TestCore):
             with self.assertRaises(DjerbaHtmlCacheError):
                 djerba_main.parse_name_from_separator(tag)
 
+    def test_update_cached(self):
+        with open(os.path.join(self.test_source_dir, 'example.html')) as in_file:
+            old_html_string = in_file.read()
+        tmp_log = os.path.join(self.tmp_dir, 'djerba.log')
+        djerba_main = main(self.tmp_dir, log_level=logging.DEBUG, log_path=tmp_log)
+        old_html = djerba_main.encode_to_base64(old_html_string)
+        new_html = {
+            'test': "<span DJERBA_COMPONENT_START='test'/>\n"+\
+            'Duis aute irure dolor in reprehenderit in voluptate velit esse '+\
+            'cillum dolore eu fugiat nulla pariatur. This is a Djerba test.\n'+\
+            "<span DJERBA_COMPONENT_END='test'/>"
+        }
+        with self.assertLogs('djerba.core.main', level=logging.DEBUG) as log_context:
+            updated_html = djerba_main.update_cached_html(new_html, old_html)
+        log_messages = [
+            'DEBUG:djerba.core.main:Updating test',
+            'DEBUG:djerba.core.main:No update found for test_no_update',
+            'DEBUG:djerba.core.main:HTML update done'
+        ]
+        for msg in log_messages:
+            self.assertIn(msg, log_context.output)
+        self.assertTrue('This is a Djerba test.' in updated_html)
+        self.assertFalse('Ut enim ad minim veniam, quis nostrud' in updated_html)
+        self.assertTrue('Excepteur sint occaecat cupidatat non proident' in updated_html)
+        # test if the updated html can be updated again
+        old_html_2 = djerba_main.encode_to_base64(updated_html)
+        new_html_2 = {
+            'test': "<span DJERBA_COMPONENT_START='test2'/>\n"+\
+            'Duis aute irure dolor in reprehenderit in voluptate velit esse '+\
+            "cillum dolore eu fugiat nulla pariatur. This is another Djerba test.\n"+\
+            "<span DJERBA_COMPONENT_END='test2'/>",
+        }
+        updated_html_2 = djerba_main.update_cached_html(new_html_2, old_html_2)
+        self.assertTrue('This is another Djerba test.' in updated_html_2)
+        self.assertFalse('This is a Djerba test.' in updated_html_2)
+        self.assertTrue('Excepteur sint occaecat cupidatat non proident' in updated_html)
+
+
 class TestIniGenerator(TestCore):
     """Test the INI generator"""
 

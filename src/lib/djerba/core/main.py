@@ -326,6 +326,7 @@ class main_base(core_base):
                     new_lines.append(new_html[name])
                 else:
                     self.logger.debug("No update found for "+name)
+                    new_lines.append(line)
             elif replace_name:
                 if re.search(cc.COMPONENT_END, line):
                     name = self.parse_name_from_separator(line)
@@ -338,7 +339,12 @@ class main_base(core_base):
                         replace_name = None
             else:
                 new_lines.append(line)
-        return "".join(new_lines)
+        if replace_name:
+            msg = "No end tag found for component name '{0}'".format(replace_name)
+            self.logger.error(msg)
+            raise DjerbaHatmlCacheError(msg)
+        self.logger.debug("HTML update done")
+        return "\n".join(new_lines)
 
 
     def update_data_from_file(self, new_data, json_path, force):
