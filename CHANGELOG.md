@@ -1,8 +1,15 @@
 # CHANGELOG
 
-## UNRELEASED
+## v1.6.5: 2024-07-11
+- GCGI-1336: Fixed "cannot resolve assay" issue in case overview plugin
+- GCGI-1887: Changed "no effect" fusion reading frame to "unknown"
+- GCGI-1388: Fixed whizbam_project to default to project instead of study
+- GCGI-1390: Update README with new conference slides and demo link
+
+## v.1.6.4: 2024-07-04
 - GCGI-1382: Fixed TAR disclaimer text (typos, flow)
 - GCGI-1385: Change Tumour Sample ID to Plasma Sample ID for TAR reports
+- Modified treatment options merger to deduplicate by gene in addition to oncokb level and alteration name
 
 ## v1.6.3: 2024-06-26
 
