@@ -12,6 +12,7 @@ from djerba.plugins.patient_info.plugin import main as patient_info_plugin
 from djerba.plugins.summary.plugin import main as summary_plugin
 from djerba.plugins.supplement.body.plugin import main as supplement_plugin
 from djerba.util.args import arg_processor_base
+from djerba.util.date import get_todays_date, is_valid_date
 from djerba.util.logger import logger
 from djerba.util.mini.mdc import mdc
 from djerba.util.validator import path_validator
@@ -19,23 +20,17 @@ from djerba.version import get_djerba_version
 
 class main(main_base):
 
+    INI_FILENAME = 'mini_djerba.ini'
     PATIENT_INFO = 'patient_info'
     SUPPLEMENT = 'supplement.body'
     SUMMARY = 'summary'
     SUMMARY_FILENAME = 'summary.txt'
     SUMMARY_DEFAULT = 'Patient summary text; not in use for PWGS'
-
-    def build_config(self, ini_path, summary_path):
-        """
-        Build a ConfigParser from the ini_path and summary_path; either path may be None
-        """
-        config = ConfigParser()
-        if ini_path:
-            config.read(ini_path)
-        if summary_path:
-            config.add_section(constants.SUMMARY)
-            config.set(constants.SUMMARY, 'summary_file', summary_path)
-        return config
+    SUPPLEMENT_KEYS = [
+        supplement_plugin.REPORT_SIGNOFF_DATE,
+        supplement_plugin.GENETICIST,
+        supplement_plugin.GENETICIST_ID
+    ]
 
     def get_supplement_params(self, mdc_supplement, data):
         # want to configure the supplement.body plugin with new keys from MDC:
@@ -48,10 +43,6 @@ class main(main_base):
         for key in mdc_supplement.keys():
             supplement[key] = mdc_supplement.get(key)
         return supplement
-
-    def get_patient_info_data(self, ini_path):
-        config = ConfigParser()
-        config.read(ini_path)
 
     def has_summary(self, data):
         # check if summary plugin is present
@@ -130,12 +121,25 @@ class main(main_base):
             self.logger.debug('No additional config given, rendering existing JSON')
         self.render_from_cache(data, doc_key, out_dir, pdf)
 
-    def setup(self, out_path, json_path):
+    def setup(self, out_dir, json_path):
         """
-        Read an existing JSON file (if any), write an MDC file ready for editing
-        MDC contains placeholder values for PHI, and summary text from the JSON
+        Read an existing JSON file (if any), write INI and summary files ready for editing
+        INI contains placeholder values for PHI; summary file contains text from the JSON
+        All patient info results keys appear in INI; use a subset for supplementary
         """
-        if json_path == None:
+        write_summary = True
+        if json_path:
+            with open(json_path, encoding=cc.TEXT_ENCODING) as in_file:
+                data = json.loads(in_file.read())
+            patient_info = data[cc.PLUGINS][self.PATIENT_INFO][cc.RESULTS]
+            supplement = data[cc.PLUGINS][self.SUMMARY][cc.RESULTS]
+            if self.has_summary(data):
+                text_key = summary_plugin.SUMMARY_TEXT
+                text = data[cc.PLUGINS][self.SUMMARY][cc.RESULTS][text_key]
+            else:
+                # existing JSON without a summary plugin (eg. PWGS); do not write summary
+                write_summary = False
+        else:
             patient_info = patient_info_plugin.PATIENT_DEFAULTS
             text = self.SUMMARY_DEFAULT
             supplement = {
@@ -143,16 +147,26 @@ class main(main_base):
                 supplement_plugin.GENETICIST: supplement_plugin.GENETICIST_DEFAULT,
                 supplement_plugin.GENETICIST_ID: supplement_plugin.GENETICIST_ID_DEFAULT
             }
+        # write the text output, if required
+        if write_summary:
+            summary_path = os.path.join(out_dir, self.SUMMARY_FILENAME)
+            with open(summary_path, 'w', encoding=cc.TEXT_ENCODING) as out_file:
+                out_file.write(text)
+                self.logger.debug('Wrote summary to '+summary_path)
         else:
-            with open(json_path, encoding=cc.TEXT_ENCODING) as in_file:
-                data = json.loads(in_file.read())
-            patient_info = data[cc.PLUGINS][self.PATIENT_INFO][cc.RESULTS]
-            supplement = data[cc.PLUGINS][self.PATIENT_INFO][cc.RESULTS]
-            if self.has_summary(data):
-                text = data[cc.PLUGINS][self.SUMMARY][cc.RESULTS][summary_plugin.SUMMARY_TEXT]
-            else:
-                text = self.SUMMARY_DEFAULT
-        mdc(self.log_level, self.log_path).write(out_path, patient_info, supplement, text)
+            self.logger.debug('No summary text in input JSON; omitting summary file')
+        # write the INI output; patient_info and supplementary sections only
+        config = ConfigParser()
+        config.add_section(self.PATIENT_INFO)
+        for key, value in patient_info.items():
+            config.set(self.PATIENT_INFO, key, value)
+        config.add_section(self.SUPPLEMENT)
+        for key in self.SUPPLEMENT_KEYS:
+            config.set(self.SUPPLEMENT, key, supplement[key])
+        ini_path = os.path.join(out_dir, self.INI_FILENAME) 
+        with open(ini_path, 'w', encoding=cc.TEXT_ENCODING) as out_file:
+            config.write(out_file)
+        self.logger.debug('Wrote INI to '+ini_path)
 
     def update(self, config_path, json_path, out_dir, pdf, write_json, force):
         """
@@ -207,13 +221,53 @@ class main(main_base):
             self.logger.info("Wrote updated JSON to "+json_path)
         self.logger.info("Update complete")
 
-    def validate_ini_input(self, ini_path):
+    def validate_ini(self, ini_path):
         """
-        Validate the mini-Djerba INI file
-        Must have _exactly_ 2 sections: patient_info and supplement.body
+        Validate contents of the mini-Djerba INI file
+        Existence/readability already checked
+        Must have *exactly* 2 sections: patient_info and supplement.body
+        Each section must have *exactly* the user-adjustable params
         (core and summary are added later)
         """
-        pass
+        config = ConfigParser()
+        config.read(ini_path)
+        sections = config.sections()
+        if not (len(sections)==2 and \
+                self.PATIENT_INFO in sections and \
+                self.SUPPLEMENT in sections):
+            expected = [self.PATIENT_INFO, self.SUPPLEMENT]
+            msg = "Bad INI sections; expected {0}, found {1}".format(expected, sections)
+            self.logger.error(msg)
+            raise MiniDjerbaScriptError(msg)
+        self.validate_patient_info(dict(config.items(self.PATIENT_INFO)))
+        self.validate_supplementary(dict(config.items(self.SUPPLEMENT)))
+
+    def validate_patient_info(self, patient_info):
+        found = set(patient_info.keys())
+        expected = set(patient_info_plugin.PATIENT_DEFAULTS.keys())
+        if not found.equals(expected):
+            msg = "Bad patient info fields; expected {0}, found {1}".format(expected, found)
+            self.logger.error(msg)
+            raise MiniDjerbaScriptError(msg)
+        dob = patient_info[patient_info_plugin.PATIENT_DOB]
+        if not is_valid_date(dob):
+            msg = "Patient DOB {0} is not in YYYY-MM-DD format".format(dob)
+            self.logger.error(msg)
+            raise MiniDjerbaScriptError(msg)
+
+    def validate_supplementary(self, supplementary):
+        found = set(supplementary.keys())
+        expected = set(self.SUPPLEMENT_KEYS)
+        if not found.equals(expected):
+            msg = "Bad supplementary fields; expected {0}, found {1}".format(expected, found)
+            self.logger.error(msg)
+            raise MiniDjerbaScriptError(msg)
+        signoff_date = supplementary[supplementary_plugin.REPORT_SIGNOFF_DATE]
+        if not is_valid_date(signoff_date):
+            msg = "Report signoff date {0} is not in YYYY-MM-DD format".format(signoff_date)
+            self.logger.error(msg)
+            raise MiniDjerbaScriptError(msg)
+
 
 class arg_processor(arg_processor_base):
 
