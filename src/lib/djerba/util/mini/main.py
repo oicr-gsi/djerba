@@ -25,6 +25,18 @@ class main(main_base):
     SUMMARY_FILENAME = 'summary.txt'
     SUMMARY_DEFAULT = 'Patient summary text; not in use for PWGS'
 
+    def build_config(self, ini_path, summary_path):
+        """
+        Build a ConfigParser from the ini_path and summary_path; either path may be None
+        """
+        config = ConfigParser()
+        if ini_path:
+            config.read(ini_path)
+        if summary_path:
+            config.add_section(constants.SUMMARY)
+            config.set(constants.SUMMARY, 'summary_file', summary_path)
+        return config
+
     def get_supplement_params(self, mdc_supplement, data):
         # want to configure the supplement.body plugin with new keys from MDC:
         # - report_signoff_date (defaults to current date)
@@ -36,6 +48,10 @@ class main(main_base):
         for key in mdc_supplement.keys():
             supplement[key] = mdc_supplement.get(key)
         return supplement
+
+    def get_patient_info_data(self, ini_path):
+        config = ConfigParser()
+        config.read(ini_path)
 
     def has_summary(self, data):
         # check if summary plugin is present
@@ -79,6 +95,40 @@ class main(main_base):
             msg = "Mode '{0}' is not defined in Djerba mini.main!".format(mode)
             self.logger.error(msg)
             raise RuntimeError(msg)
+
+    def report(self, json_path, out_dir, force, pdf, ini_path=None, summary_path=None):
+        """
+        Generate a report (with optional updates); replaces render and update modes
+        Required: JSON input path, out_dir
+        Optional: Patient info INI path, summary text path, force boolean, pdf boolean
+
+        If given, INI path is validated to contain exactly the parameters needed
+        Update is carried out using the HTML cache in JSON
+        """
+        with open(json_path) as in_file:
+            data = json.loads(in_file.read())
+        doc_key = self._get_unique_doc_key(data)
+        if ini_path or summary_path:
+            # update data for the given parameters
+            config = ConfigParser()
+            if ini_path:
+                self.validate_ini(ini_path)
+                config.read(ini_path)
+            if summary_path:
+                config.add_section(constants.SUMMARY)
+                config.set(constants.SUMMARY, 'summary_file', summary_path)
+            # core params (eg. the CGI author name) are unchanged from the input JSON
+            config.add_section(cc.CORE)
+            core_params = data[cc.CONFIG][cc.CORE]
+            for k in core_params.keys():
+                config.set(cc.CORE, k, core_params[k])
+            new_data = self.base_extract(config)
+            data = self.update_report_data(new_data, data, force)
+            # TODO write updated data as JSON to out_dir
+            self.logger.debug('Updated report JSON data from given config')
+        else:
+            self.logger.debug('No additional config given, rendering existing JSON')
+        self.render_from_cache(data, doc_key, out_dir, pdf)
 
     def setup(self, out_path, json_path):
         """
@@ -156,6 +206,14 @@ class main(main_base):
                 print(json.dumps(data), file=out_file)
             self.logger.info("Wrote updated JSON to "+json_path)
         self.logger.info("Update complete")
+
+    def validate_ini_input(self, ini_path):
+        """
+        Validate the mini-Djerba INI file
+        Must have _exactly_ 2 sections: patient_info and supplement.body
+        (core and summary are added later)
+        """
+        pass
 
 class arg_processor(arg_processor_base):
 
