@@ -312,10 +312,8 @@ class main_base(core_base):
             p_rend.render_file(html_path, pdf_path, footer)
             self.logger.info("Wrote PDF output to {0}".format(pdf_path))
 
-    def update_data_from_file(self, new_data, json_path, force):
-        """Read old JSON from a file, and return the updated data structure"""
-        with open(json_path) as in_file:
-            data = json.loads(in_file.read())
+    def update_report_data(self, new_data, data, force):
+        """Apply updates and return the updated report data structure"""
         # new data overwrites old, on a per-plugin basis
         # ie. overwriting a given plugin is all-or-nothing
         # also overwrite JSON config section for the plugin
@@ -350,6 +348,12 @@ class main_base(core_base):
         data[cc.HTML_CACHE][doc_key] = new_cache
         self.logger.debug('Updated HTML cache for all plugins')
         return data
+
+    def update_data_from_file(self, new_data, json_path, force):
+        """Read old JSON from a file, and return the updated data structure"""
+        with open(json_path) as in_file:
+            data = json.loads(in_file.read())
+        return self.update_report_data(new_data, data, force)
 
 
 class main(main_base):
