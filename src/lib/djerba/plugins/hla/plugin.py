@@ -49,7 +49,7 @@ class main(plugin_base):
             'priorities': wrapper.get_my_priorities(),
             'attributes': wrapper.get_my_attributes(),
             'merge_inputs': {},
-            'results': self.build_hla_table(work_dir, tsv_path)
+            'results': {'hla_data': self.build_hla_table(work_dir, tsv_path)}
         }
         return data
 
