@@ -64,7 +64,7 @@ class main(main_base):
         mode = ap.get_mode()
         if mode == constants.SETUP:
             self.setup(
-                ap.get_out_file(),
+                ap.get_out_dir(),
                 ap.get_json()
             )
         elif mode == constants.RENDER:
@@ -72,6 +72,15 @@ class main(main_base):
                 ap.get_json(),
                 ap.get_out_dir(),
                 ap.is_pdf_enabled()
+            )
+        elif mode == constants.REPORT:
+            self.report(
+                ap.get_json(),
+                ap.get_out_dir(),
+                ap.is_forced(),
+                ap.is_pdf_enabled(),
+                ap.get_ini_path(),
+                ap.get_summary_path()
             )
         elif mode == constants.UPDATE:
             self.update(
@@ -132,7 +141,8 @@ class main(main_base):
             with open(json_path, encoding=cc.TEXT_ENCODING) as in_file:
                 data = json.loads(in_file.read())
             patient_info = data[cc.PLUGINS][self.PATIENT_INFO][cc.RESULTS]
-            supplement = data[cc.PLUGINS][self.SUMMARY][cc.RESULTS]
+            supplement = data[cc.PLUGINS][self.SUPPLEMENT][cc.RESULTS]
+            self.logger.debug("Supplement: {0}".format(supplement))
             if self.has_summary(data):
                 text_key = summary_plugin.SUMMARY_TEXT
                 text = data[cc.PLUGINS][self.SUMMARY][cc.RESULTS][text_key]
@@ -281,7 +291,7 @@ class arg_processor(arg_processor_base):
         if args.subparser_name == constants.SETUP:
             if args.json != None:
                 v.validate_input_file(args.json)
-            v.validate_output_file(args.out)
+            v.validate_output_dir(args.out_dir)
         elif args.subparser_name == constants.RENDER:
             v.validate_input_file(args.json)
             v.validate_output_dir(args.out_dir)
@@ -304,8 +314,12 @@ class arg_processor(arg_processor_base):
     def get_json_path(self):
         return self._get_arg('json')
 
-    def get_out_file(self):
-        return self._get_arg('out')
+    def get_out_dir(self):
+        return self._get_arg('out_dir')
+
+    def get_summary_path(self):
+        return self._get_arg('summary')
+
 
 class MiniDjerbaScriptError(Exception):
     pass
