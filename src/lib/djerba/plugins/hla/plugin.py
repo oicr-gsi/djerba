@@ -93,6 +93,4 @@ class main(plugin_base):
                         self.ABUNDANCE: abundance2,
                         self.QUALITY: quality2
                     })
-
-        data = {'hla_data': rows}
-        return data
+        return rows
