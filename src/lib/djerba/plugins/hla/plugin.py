@@ -48,6 +48,7 @@ class main(plugin_base):
             'version': self.PLUGIN_VERSION,
             'priorities': wrapper.get_my_priorities(),
             'attributes': wrapper.get_my_attributes(),
+            'merge_inputs': {},
             'results': self.build_hla_table(work_dir, tsv_path)
         }
         return data
