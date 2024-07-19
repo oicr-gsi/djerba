@@ -38,9 +38,16 @@ class TestMiniBase(TestBase):
             summary_path = os.path.join(self.tmp_dir, 'summary.txt')
             self.assertFalse(os.path.exists(summary_path))
 
-    def assert_render(self):
+    def assert_report(self):
         html_path = os.path.join(self.tmp_dir, 'PLACEHOLDER_report.clinical.html')
         self.assertTrue(os.path.exists(html_path))
+        with open(html_path) as in_file:
+            html = in_file.read()
+        redacted = self.redact_html(html)
+        self.assertEqual(self.getMD5_of_string(redacted), 'ec3d64a84e2c288c894c7826af5faffa')
+        pdf_path = os.path.join(self.tmp_dir, 'PLACEHOLDER_report.clinical.pdf')
+        self.assertTrue(os.path.exists(html_path))
+
 
 class TestMain(TestMiniBase):
 
@@ -81,7 +88,7 @@ class TestMain(TestMiniBase):
         summary_path = os.path.join(test_dir, 'lorem.txt')
         args = self.mock_args_report(json_path, ini_path, summary_path, self.tmp_dir)
         main(self.tmp_dir).run(args)
-        self.assert_render()
+        self.assert_report()
 
     def test_setup(self):
         ini_file = os.path.join(self.tmp_dir, 'mini_djerba.ini')
