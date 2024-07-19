@@ -52,7 +52,9 @@ class TestMiniBase(TestBase):
         if summary_path:
             self.assertTrue(os.path.exists(summary_path))
             self.assertEqual(self.getMD5(summary_path), 'da141119d7efe1fa8db7c98c177a90e5')
-
+        else:
+            summary_path = os.path.join(self.tmp_dir, 'summary.txt')
+            self.assertFalse(os.path.exists(summary_path))
 
     def assert_update(self, md5):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
@@ -112,7 +114,6 @@ class TestMain(TestMiniBase):
             self.quiet = True
 
     def test_setup(self):
-        self.tmp_dir = '/u/ibancarz/workspace/djerba/test20240719_03'
         ini_file = os.path.join(self.tmp_dir, 'mini_djerba.ini')
         summary_file = os.path.join(self.tmp_dir, 'summary.txt')
         test_dir = os.path.dirname(os.path.realpath(__file__))
@@ -121,14 +122,14 @@ class TestMain(TestMiniBase):
         main(self.tmp_dir).run(args)
         self.assert_setup(ini_file, summary_file)
 
-    def SKIPtest_setup_no_summary(self):
-        out_file = os.path.join(self.tmp_dir, 'config.mdc')
+    def test_setup_no_summary(self):
+        ini_file = os.path.join(self.tmp_dir, 'mini_djerba.ini')
+        summary_file = os.path.join(self.tmp_dir, 'summary.txt')
         test_dir = os.path.dirname(os.path.realpath(__file__))
         json_path = os.path.join(test_dir, self.JSON_NO_SUMMARY)
-        args = self.mock_args_setup(out_file, json_path)
+        args = self.mock_args_setup(self.tmp_dir, json_path)
         main(self.tmp_dir).run(args)
-        self.assert_MDC_without_summary(out_file)
-
+        self.assert_setup(ini_file)
 
 
 class TestMainOBSOLETE(TestMiniBase):
