@@ -72,7 +72,7 @@ class purple_processor(logger):
         ))
         return whizbam
 
-    def convert_purple_to_gistic(self, purple_gene_file, ploidy):
+    def convert_purple_to_gistic(self, purple_gene_file, tumour_id, ploidy):
         dir_location = os.path.dirname(__file__)
         oncolistpath = os.path.join(self.data_dir, pc.ONCOLIST)
         cmd = [
@@ -80,6 +80,7 @@ class purple_processor(logger):
             '--genefile', purple_gene_file,
             '--outdir', self.work_dir,
             '--oncolist', oncolistpath,
+            '--tumourid', tumour_id,
             '--ploidy', str(ploidy)
         ]
         runner = subprocess_runner()
@@ -144,7 +145,7 @@ class purple_processor(logger):
                 purple_files[pc.PURPLE_GENE] = zf.extract(name, self.work_dir)
         return purple_files
 
-    def write_copy_states(self):
+    def write_copy_states(self, tumour_id):
         """
         Write the copy states to JSON for later reference, eg. by snv/indel plugin
         """
@@ -161,7 +162,7 @@ class purple_processor(logger):
             for row in reader:
                 gene = row['Hugo_Symbol']
                 try:
-                    cna = int(row['minCopyNumber'])
+                    cna = int(row[tumour_id])
                     states[gene] = conversion[cna]
                 except (TypeError, KeyError) as err:
                     msg = "Cannot convert unknown CNA code: {0}".format(row[1])
