@@ -38,15 +38,16 @@ class TestMiniBase(TestBase):
             summary_path = os.path.join(self.tmp_dir, 'summary.txt')
             self.assertFalse(os.path.exists(summary_path))
 
-    def assert_report(self):
+    def assert_report(self, pdf=True):
         html_path = os.path.join(self.tmp_dir, 'PLACEHOLDER_report.clinical.html')
         self.assertTrue(os.path.exists(html_path))
         with open(html_path) as in_file:
             html = in_file.read()
         redacted = self.redact_html(html)
         self.assertEqual(self.getMD5_of_string(redacted), 'ec3d64a84e2c288c894c7826af5faffa')
-        pdf_path = os.path.join(self.tmp_dir, 'PLACEHOLDER_report.clinical.pdf')
-        self.assertTrue(os.path.exists(html_path))
+        if pdf:
+            pdf_path = os.path.join(self.tmp_dir, 'PLACEHOLDER_report.clinical.pdf')
+            self.assertTrue(os.path.exists(html_path))
 
 
 class TestMain(TestMiniBase):
@@ -151,9 +152,24 @@ class TestScript(TestMiniBase):
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
-        ini_file = os.path.join(self.tmp_dir, 'mini_djerba.ini')
-        summary_file = os.path.join(self.tmp_dir, 'summary.txt')
         self.assert_report()
+
+    def test_report_no_pdf(self):
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        json_path = os.path.join(test_dir, self.JSON_NAME)
+        ini_path = os.path.join(test_dir, 'mini_djerba.ini')
+        summary_path = os.path.join(test_dir, 'lorem.txt')
+        cmd = [
+            'mini_djerba.py', 'report',
+            '--json', json_path,
+            '--out-dir', self.tmp_dir,
+            '--ini', ini_path,
+            '--summary', summary_path,
+            '--no-pdf'
+        ]
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        self.assert_report(pdf=False)
 
 
 
