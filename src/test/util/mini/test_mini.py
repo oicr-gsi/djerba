@@ -5,15 +5,10 @@ import logging
 import os
 import unittest
 from configparser import ConfigParser
-from copy import deepcopy
 from subprocess import CalledProcessError
-from time import strftime
 
 import djerba.util.mini.constants as constants
-from djerba.core.main import DjerbaVersionMismatchError
-from djerba.plugins.patient_info.plugin import main as patient_info_plugin
-from djerba.plugins.supplement.body.plugin import main as supplement_plugin
-from djerba.util.mini.main import main
+from djerba.util.mini.main import main, MiniDjerbaScriptError
 from djerba.util.testing.tools import TestBase
 from djerba.util.subprocess_runner import subprocess_runner
 
@@ -137,7 +132,16 @@ class TestScript(TestMiniBase):
             'mini_djerba.py', 'report',
             '--json', json_path,
             '--out-dir', self.tmp_dir,
-            '--ini', os.path.join(test_dir, 'mini_djerba_broken.ini'),
+            '--ini', os.path.join(test_dir, 'mini_djerba_broken_1.ini'),
+            '--summary', summary_path
+        ]
+        with self.assertRaises(CalledProcessError):
+            subprocess_runner(log_level=logging.CRITICAL).run(cmd)
+        cmd = [
+            'mini_djerba.py', 'report',
+            '--json', json_path,
+            '--out-dir', self.tmp_dir,
+            '--ini', os.path.join(test_dir, 'mini_djerba_broken_2.ini'),
             '--summary', summary_path
         ]
         with self.assertRaises(CalledProcessError):
@@ -255,6 +259,23 @@ class TestScript(TestMiniBase):
         self.assertEqual(result.returncode, 0)
         ini_file = os.path.join(self.tmp_dir, 'mini_djerba.ini')
         self.assert_setup(ini_file)
+
+    def test_version_mismatch(self):
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        json_path = os.path.join(test_dir, 'version_mismatch_report.json')
+        ini_path = os.path.join(test_dir, 'mini_djerba.ini')
+        cmd = [
+            'mini_djerba.py', 'report',
+            '--json', json_path,
+            '--out-dir', self.tmp_dir,
+            '--ini', ini_path
+        ]
+        with self.assertRaises(CalledProcessError):
+            subprocess_runner(log_level=logging.CRITICAL).run(cmd)
+        cmd.append('--force')
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        self.assert_report('83df7673460f2d07642fe89fb8b8c63d')
 
 
 if __name__ == '__main__':
