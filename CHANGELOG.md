@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## UNRELEASED
+## v1.6.6: 2024-07-19
 - GCGI-1391: Fixed column names in data_CNA_oncoKBgenes_nonDiploid.txt which impacted oncoKB therapy annotation
 
 ## v1.6.5: 2024-07-11
