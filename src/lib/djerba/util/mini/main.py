@@ -298,9 +298,11 @@ class arg_processor(arg_processor_base):
             v.validate_output_dir(args.out_dir)
         elif args.subparser_name == constants.REPORT:
             for in_path in [args.json, args.ini, args.summary]:
-                v.validate_input_file(in_path)
+                if in_path != None:
+                    v.validate_input_file(in_path)
             for dir_path in [args.out_dir, args.work_dir]:
-                v.validate_output_dir(dir_path)
+                if dir_path != None:
+                    v.validate_output_dir(dir_path)
         elif args.subparser_name == constants.RENDER:
             v.validate_input_file(args.json)
             v.validate_output_dir(args.out_dir)
