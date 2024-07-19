@@ -56,6 +56,10 @@ class TestMiniBase(TestBase):
             summary_path = os.path.join(self.tmp_dir, 'summary.txt')
             self.assertFalse(os.path.exists(summary_path))
 
+    def assert_render(self):
+        html_path = os.path.join(self.tmp_dir, 'PLACEHOLDER_report.clinical.html')
+        self.assertTrue(os.path.exists(html_path))
+
     def assert_update(self, md5):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
@@ -102,16 +106,28 @@ class TestMain(TestMiniBase):
     class mock_args_report:
         """Use instead of argparse to store params for testing"""
 
-        def __init__(self, json, out_dir, pdf):
-            self.subparser_name = 'render'
+        def __init__(self, json, ini_path, summary_path, out_dir):
+            self.subparser_name = 'report'
             self.json = json
             self.out_dir = out_dir
-            self.pdf = pdf
+            self.pdf = True
+            self.force = False
+            self.summary = summary_path
+            self.ini = ini_path
             # logging
             self.log_path = None
             self.debug = False
             self.verbose = False
             self.quiet = True
+
+    def test_report(self):
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        json_path = os.path.join(test_dir, self.JSON_NAME)
+        ini_path = os.path.join(test_dir, 'mini_djerba.ini')
+        summary_path = os.path.join(test_dir, 'lorem.txt')
+        args = self.mock_args_report(json_path, ini_path, summary_path, self.tmp_dir)
+        main(self.tmp_dir).run(args)
+        self.assert_render()
 
     def test_setup(self):
         ini_file = os.path.join(self.tmp_dir, 'mini_djerba.ini')
@@ -130,7 +146,6 @@ class TestMain(TestMiniBase):
         args = self.mock_args_setup(self.tmp_dir, json_path)
         main(self.tmp_dir).run(args)
         self.assert_setup(ini_file)
-
 
 class TestMainOBSOLETE(TestMiniBase):
             
