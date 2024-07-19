@@ -4,10 +4,12 @@ import json
 import logging
 import os
 import unittest
+from configparser import ConfigParser
 from copy import deepcopy
 from subprocess import CalledProcessError
 from time import strftime
 
+import djerba.util.mini.constants as constants
 from djerba.core.main import DjerbaVersionMismatchError
 from djerba.plugins.patient_info.plugin import main as patient_info_plugin
 from djerba.plugins.supplement.body.plugin import main as supplement_plugin
@@ -38,9 +40,19 @@ class TestMiniBase(TestBase):
     def assert_render_without_summary(self):
         self.assert_render('ab88d9e5bd8bf4c3f92bb480692518ca')
 
-    def assert_setup(self, ini_path, summary_path):
+    def assert_setup(self, ini_path, summary_path=None):
         self.assertTrue(os.path.exists(ini_path))
-        self.assertTrue(os.path.exists(summary_path))
+        config = ConfigParser()
+        config.read(ini_path)
+        config.set(constants.SUPPLEMENTARY, 'report_signoff_date', 'PLACEHOLDER')
+        redacted = os.path.join(self.tmp_dir, 'redacted.ini')
+        with open(redacted, 'w') as out_file:
+            config.write(out_file)
+        self.assertEqual(self.getMD5(redacted), '258d58e8cdc60e47793790e6c0a7f9f4')
+        if summary_path:
+            self.assertTrue(os.path.exists(summary_path))
+            self.assertEqual(self.getMD5(summary_path), 'da141119d7efe1fa8db7c98c177a90e5')
+
 
     def assert_update(self, md5):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
@@ -100,6 +112,7 @@ class TestMain(TestMiniBase):
             self.quiet = True
 
     def test_setup(self):
+        self.tmp_dir = '/u/ibancarz/workspace/djerba/test20240719_03'
         ini_file = os.path.join(self.tmp_dir, 'mini_djerba.ini')
         summary_file = os.path.join(self.tmp_dir, 'summary.txt')
         test_dir = os.path.dirname(os.path.realpath(__file__))
