@@ -136,7 +136,7 @@ class main(main_base):
             patient_info = patient_info_plugin.PATIENT_DEFAULTS
             text = self.SUMMARY_DEFAULT
             supplement = {
-                supplement_plugin.REPORT_SIGNOFF_DATE: strftime('%Y/%m/%d'),
+                supplement_plugin.REPORT_SIGNOFF_DATE: get_todays_date(),
                 supplement_plugin.GENETICIST: supplement_plugin.GENETICIST_DEFAULT,
                 supplement_plugin.GENETICIST_ID: supplement_plugin.GENETICIST_ID_DEFAULT
             }
