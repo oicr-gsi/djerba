@@ -21,6 +21,8 @@ class TestMiniBase(TestBase):
 
     JSON_NAME = 'simple_report_for_update.json'
     JSON_NO_SUMMARY = 'simple_report_no_summary.json'
+    REPORT_MD5 = 'ec3d64a84e2c288c894c7826af5faffa'
+    REPORT_NO_SUMMARY_MD5 = '9f2f74e9695f371d58774fd454755d0e'
 
     def assert_setup(self, ini_path, summary_path=None):
         self.assertTrue(os.path.exists(ini_path))
@@ -38,13 +40,13 @@ class TestMiniBase(TestBase):
             summary_path = os.path.join(self.tmp_dir, 'summary.txt')
             self.assertFalse(os.path.exists(summary_path))
 
-    def assert_report(self, pdf=True):
+    def assert_report(self, md5, pdf=True):
         html_path = os.path.join(self.tmp_dir, 'PLACEHOLDER_report.clinical.html')
         self.assertTrue(os.path.exists(html_path))
         with open(html_path) as in_file:
             html = in_file.read()
         redacted = self.redact_html(html)
-        self.assertEqual(self.getMD5_of_string(redacted), 'ec3d64a84e2c288c894c7826af5faffa')
+        self.assertEqual(self.getMD5_of_string(redacted), md5)
         if pdf:
             pdf_path = os.path.join(self.tmp_dir, 'PLACEHOLDER_report.clinical.pdf')
             self.assertTrue(os.path.exists(html_path))
@@ -89,7 +91,7 @@ class TestMain(TestMiniBase):
         summary_path = os.path.join(test_dir, 'lorem.txt')
         args = self.mock_args_report(json_path, ini_path, summary_path, self.tmp_dir)
         main(self.tmp_dir).run(args)
-        self.assert_report()
+        self.assert_report(self.REPORT_MD5)
 
     def test_setup(self):
         ini_file = os.path.join(self.tmp_dir, 'mini_djerba.ini')
@@ -152,7 +154,7 @@ class TestScript(TestMiniBase):
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
-        self.assert_report()
+        self.assert_report(self.REPORT_MD5)
 
     def test_report_no_pdf(self):
         test_dir = os.path.dirname(os.path.realpath(__file__))
@@ -169,7 +171,22 @@ class TestScript(TestMiniBase):
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
-        self.assert_report(pdf=False)
+        self.assert_report(self.REPORT_MD5, pdf=False)
+
+    def test_report_no_summary(self):
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        json_path = os.path.join(test_dir, self.JSON_NAME)
+        ini_path = os.path.join(test_dir, 'mini_djerba.ini')
+        summary_path = os.path.join(test_dir, 'lorem.txt')
+        cmd = [
+            'mini_djerba.py', 'report',
+            '--json', json_path,
+            '--out-dir', self.tmp_dir,
+            '--ini', ini_path
+        ]
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        self.assert_report(self.REPORT_NO_SUMMARY_MD5)
 
 
 
