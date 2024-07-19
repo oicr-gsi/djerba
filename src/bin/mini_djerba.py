@@ -28,7 +28,7 @@ def get_parser():
     subparsers = parser.add_subparsers(title='subcommands', help='sub-command help', dest='subparser_name')
     setup_parser = subparsers.add_parser(constants.SETUP, help='Set up config files')
     setup_parser.add_argument('-j', '--json', metavar='PATH', help='Existing report JSON. Optional, if not given will generate a blank config file.')
-    setup_parser.add_argument('-o', '--out_dir', metavar='PATH', default='.', help='Output path. Optional, defaults to the current working directory.')
+    setup_parser.add_argument('-o', '--out-dir', metavar='PATH', default='.', help='Output path. Optional, defaults to the current working directory.')
     report_parser = subparsers.add_parser(constants.REPORT, help='Generate HTML/PDF documents from a report JSON file')
     report_parser.add_argument('-f', '--force', action='store_true', help='Force update of mismatched plugin versions')
     report_parser.add_argument('-i', '--ini', metavar='PATH', help='Path to a mini-Djerba INI config file; optional')

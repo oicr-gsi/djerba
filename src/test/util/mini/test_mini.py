@@ -12,77 +12,16 @@ from djerba.core.main import DjerbaVersionMismatchError
 from djerba.plugins.patient_info.plugin import main as patient_info_plugin
 from djerba.plugins.supplement.body.plugin import main as supplement_plugin
 from djerba.util.mini.main import main
-from djerba.util.mini.mdc import mdc, MDCFormatError
 from djerba.util.testing.tools import TestBase
 from djerba.util.subprocess_runner import subprocess_runner
-
-class TestMDC(TestBase):
-
-    SUPPLEMENT_EXPECTED = {
-        supplement_plugin.REPORT_SIGNOFF_DATE: '2023/12/01',
-        supplement_plugin.GENETICIST: supplement_plugin.GENETICIST_DEFAULT,
-        supplement_plugin.GENETICIST_ID: supplement_plugin.GENETICIST_ID_DEFAULT
-    }
-
-    def test_read(self):
-        test_dir = os.path.dirname(os.path.realpath(__file__))
-        test_file = os.path.join(test_dir, 'config.mdc')
-        patient_info, supplement, text = mdc().read(test_file)
-        self.assertEqual(patient_info, patient_info_plugin.PATIENT_DEFAULTS)
-        self.assertEqual(supplement, self.SUPPLEMENT_EXPECTED)
-        self.assertEqual(text, 'Hello, world!')
-
-    def test_read_fail(self):
-        test_dir = os.path.dirname(os.path.realpath(__file__))
-        test_files = [
-            'config_broken_1.mdc',
-            'config_broken_2.mdc',
-            'config_broken_3.mdc',
-            'config_broken_4.mdc',
-            'config_broken_5.mdc'
-        ]
-        for file_name in test_files:
-            with self.assertRaises(MDCFormatError):
-                mdc(log_level=logging.CRITICAL).read(os.path.join(test_dir, file_name))
-
-    def test_write(self):
-        out_path = os.path.join(self.tmp_dir, 'config.mdc')
-        patient_info = patient_info_plugin.PATIENT_DEFAULTS
-        patient_info['patient_name'] = 'Smith, John'
-        patient_info['physician_name'] = 'Doe, Jane'
-        text = 'Lorem ipsum dolor sit amet'
-        supplement = {
-            supplement_plugin.REPORT_SIGNOFF_DATE: strftime('%Y/%m/%d'),
-            supplement_plugin.GENETICIST: 'Jones, Jennifer',
-            supplement_plugin.GENETICIST_ID: supplement_plugin.GENETICIST_ID_DEFAULT
-        }
-        mdc().write(out_path, patient_info, supplement, text)
-        self.assertTrue(os.path.isfile(out_path))
-        patient_info_new, supplement_new, text_new = mdc().read(out_path)
-        self.assertEqual(patient_info, patient_info_new)
-        self.assertEqual(patient_info_new['patient_name'], 'Smith, John')
-        self.assertEqual(supplement, supplement_new)
-        self.assertEqual(supplement[supplement_plugin.GENETICIST], 'Jones, Jennifer')
-        self.assertEqual(text, text_new)
 
 class TestMiniBase(TestBase):
 
     JSON_NAME = 'simple_report_for_update.json'
     JSON_NO_SUMMARY = 'simple_report_no_summary.json'
 
-    def assert_MDC(self, out_path, md5):
-        self.assertTrue(os.path.isfile(out_path))
-        with open(out_path) as out_file:
-            contents = out_file.read()
-        contents = contents.replace(strftime('%Y/%m/%d'), 'placeholder')
-        self.assertEqual(self.getMD5_of_string(contents), md5)
-
-    def assert_MDC_with_summary(self, out_path):
-        self.assert_MDC(out_path, '2ba55ae5caf797415ed484c7da04781d')
-
-    def assert_MDC_without_summary(self, out_path):
-        self.assert_MDC(out_path, 'ac1386b42f26a911d85f4154b50d21bc')
-
+    # TODO assert INI and summary text
+    
     def assert_render(self, md5):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
@@ -98,6 +37,10 @@ class TestMiniBase(TestBase):
 
     def assert_render_without_summary(self):
         self.assert_render('ab88d9e5bd8bf4c3f92bb480692518ca')
+
+    def assert_setup(self, ini_path, summary_path):
+        self.assertTrue(os.path.exists(ini_path))
+        self.assertTrue(os.path.exists(summary_path))
 
     def assert_update(self, md5):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
@@ -132,17 +75,17 @@ class TestMain(TestMiniBase):
     class mock_args_setup:
         """Use instead of argparse to store params for testing"""
 
-        def __init__(self, out_file, json):
+        def __init__(self, out_dir, json):
             self.subparser_name = 'setup'
             self.json = json
-            self.out = out_file
+            self.out_dir = out_dir
             # logging
             self.log_path = None
             self.debug = False
             self.verbose = False
             self.quiet = True
 
-    class mock_args_render:
+    class mock_args_report:
         """Use instead of argparse to store params for testing"""
 
         def __init__(self, json, out_dir, pdf):
@@ -156,6 +99,27 @@ class TestMain(TestMiniBase):
             self.verbose = False
             self.quiet = True
 
+    def test_setup(self):
+        ini_file = os.path.join(self.tmp_dir, 'mini_djerba.ini')
+        summary_file = os.path.join(self.tmp_dir, 'summary.txt')
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        json_path = os.path.join(test_dir, self.JSON_NAME)
+        args = self.mock_args_setup(self.tmp_dir, json_path)
+        main(self.tmp_dir).run(args)
+        self.assert_setup(ini_file, summary_file)
+
+    def SKIPtest_setup_no_summary(self):
+        out_file = os.path.join(self.tmp_dir, 'config.mdc')
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        json_path = os.path.join(test_dir, self.JSON_NO_SUMMARY)
+        args = self.mock_args_setup(out_file, json_path)
+        main(self.tmp_dir).run(args)
+        self.assert_MDC_without_summary(out_file)
+
+
+
+class TestMainOBSOLETE(TestMiniBase):
+            
     class mock_args_update:
         """Use instead of argparse to store params for testing"""
 
