@@ -122,7 +122,11 @@ class main(main_base):
             core_params = data[cc.CONFIG][cc.CORE]
             for k in core_params.keys():
                 config.set(cc.CORE, k, core_params[k])
-            new_data = self.base_extract(config)
+            # set the assay, if needed
+            if config.has_section(constants.SUPPLEMENTARY):
+                assay = data[cc.CONFIG][constants.SUPPLEMENTARY]['assay']
+                config.set(constants.SUPPLEMENTARY, 'assay', assay)
+            new_data = self.base_extract(self.configure_from_parser(config))
             data = self.update_report_data(new_data, data, force)
             # TODO write updated data as JSON to out_dir
             self.logger.debug('Updated report JSON data from given config')
@@ -255,7 +259,7 @@ class main(main_base):
     def validate_patient_info(self, patient_info):
         found = set(patient_info.keys())
         expected = set(patient_info_plugin.PATIENT_DEFAULTS.keys())
-        if not found.equals(expected):
+        if not found == expected:
             msg = "Bad patient info fields; expected {0}, found {1}".format(expected, found)
             self.logger.error(msg)
             raise MiniDjerbaScriptError(msg)
@@ -268,11 +272,11 @@ class main(main_base):
     def validate_supplementary(self, supplementary):
         found = set(supplementary.keys())
         expected = set(self.SUPPLEMENT_KEYS)
-        if not found.equals(expected):
+        if not found == expected:
             msg = "Bad supplementary fields; expected {0}, found {1}".format(expected, found)
             self.logger.error(msg)
             raise MiniDjerbaScriptError(msg)
-        signoff_date = supplementary[supplementary_plugin.REPORT_SIGNOFF_DATE]
+        signoff_date = supplementary[supplement_plugin.REPORT_SIGNOFF_DATE]
         if not is_valid_date(signoff_date):
             msg = "Report signoff date {0} is not in YYYY-MM-DD format".format(signoff_date)
             self.logger.error(msg)
@@ -292,6 +296,11 @@ class arg_processor(arg_processor_base):
             if args.json != None:
                 v.validate_input_file(args.json)
             v.validate_output_dir(args.out_dir)
+        elif args.subparser_name == constants.REPORT:
+            for in_path in [args.json, args.ini, args.summary]:
+                v.validate_input_file(in_path)
+            for dir_path in [args.out_dir, args.work_dir]:
+                v.validate_output_dir(dir_path)
         elif args.subparser_name == constants.RENDER:
             v.validate_input_file(args.json)
             v.validate_output_dir(args.out_dir)
@@ -310,6 +319,9 @@ class arg_processor(arg_processor_base):
 
     def get_config_path(self):
         return self._get_arg('config')
+
+    def get_ini_path(self):
+        return self._get_arg('ini')
 
     def get_json_path(self):
         return self._get_arg('json')
