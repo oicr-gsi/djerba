@@ -101,7 +101,6 @@ class TestMain(TestMiniBase):
 
     def test_setup_no_summary(self):
         ini_file = os.path.join(self.tmp_dir, 'mini_djerba.ini')
-        summary_file = os.path.join(self.tmp_dir, 'summary.txt')
         test_dir = os.path.dirname(os.path.realpath(__file__))
         json_path = os.path.join(test_dir, self.JSON_NO_SUMMARY)
         args = self.mock_args_setup(self.tmp_dir, json_path)
@@ -114,15 +113,51 @@ class TestScript(TestMiniBase):
     def test_setup(self):
         test_dir = os.path.dirname(os.path.realpath(__file__))
         json_path = os.path.join(test_dir, self.JSON_NAME)
-        out_path = os.path.join(self.tmp_dir, 'config.mdc')
         cmd = [
             'mini_djerba.py', 'setup',
             '--json', json_path,
-            '--out', out_path
+            '--out-dir', self.tmp_dir
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
-        self.assert_MDC_with_summary(out_path)
+        ini_file = os.path.join(self.tmp_dir, 'mini_djerba.ini')
+        summary_file = os.path.join(self.tmp_dir, 'summary.txt')
+        self.assert_setup(ini_file, summary_file)
+
+    def test_setup_no_summary(self):
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        json_path = os.path.join(test_dir, self.JSON_NO_SUMMARY)
+        cmd = [
+            'mini_djerba.py', 'setup',
+            '--json', json_path,
+            '--out-dir', self.tmp_dir
+        ]
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        ini_file = os.path.join(self.tmp_dir, 'mini_djerba.ini')
+        self.assert_setup(ini_file)
+
+    def test_report(self):
+        test_dir = os.path.dirname(os.path.realpath(__file__))
+        json_path = os.path.join(test_dir, self.JSON_NAME)
+        ini_path = os.path.join(test_dir, 'mini_djerba.ini')
+        summary_path = os.path.join(test_dir, 'lorem.txt')
+        cmd = [
+            'mini_djerba.py', 'report',
+            '--json', json_path,
+            '--out-dir', self.tmp_dir,
+            '--ini', ini_path,
+            '--summary', summary_path
+        ]
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        ini_file = os.path.join(self.tmp_dir, 'mini_djerba.ini')
+        summary_file = os.path.join(self.tmp_dir, 'summary.txt')
+        self.assert_report()
+
+
+
+class Obsolete:
 
     def test_render(self):
         test_dir = os.path.dirname(os.path.realpath(__file__))
