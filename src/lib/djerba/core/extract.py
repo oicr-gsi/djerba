@@ -59,7 +59,7 @@ class extraction_setup(core_base):
             cc.PLUGINS: {},
             cc.MERGERS: self._get_merger_params(config),
             cc.CONFIG: {s:dict(config.items(s)) for s in config.sections()},
-            cc.HTML_CACHE: None
+            cc.HTML_CACHE: {}
         }
         return data
 
