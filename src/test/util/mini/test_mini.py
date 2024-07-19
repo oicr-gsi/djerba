@@ -22,24 +22,6 @@ class TestMiniBase(TestBase):
     JSON_NAME = 'simple_report_for_update.json'
     JSON_NO_SUMMARY = 'simple_report_no_summary.json'
 
-    # TODO assert INI and summary text
-    
-    def assert_render(self, md5):
-        html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
-        pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
-        for out_path in [html_path, pdf_path]:
-            self.assertTrue(os.path.isfile(out_path))
-        with open(html_path) as html_file:
-            original = html_file.read()
-        redacted = self.redact_html(original)
-        self.assertEqual(self.getMD5_of_string(redacted), md5)
-
-    def assert_render_with_summary(self):
-        self.assert_render('1493c33d6ebb0a233ca39fdcbab2bcf4')
-
-    def assert_render_without_summary(self):
-        self.assert_render('ab88d9e5bd8bf4c3f92bb480692518ca')
-
     def assert_setup(self, ini_path, summary_path=None):
         self.assertTrue(os.path.exists(ini_path))
         config = ConfigParser()
@@ -59,34 +41,6 @@ class TestMiniBase(TestBase):
     def assert_render(self):
         html_path = os.path.join(self.tmp_dir, 'PLACEHOLDER_report.clinical.html')
         self.assertTrue(os.path.exists(html_path))
-
-    def assert_update(self, md5):
-        html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
-        pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
-        json_out = os.path.join(self.tmp_dir, 'updated_report.json')
-        for out_path in [html_path, pdf_path, json_out]:
-            self.assertTrue(os.path.isfile(out_path))
-        with open(html_path) as html_file:
-            original = html_file.read()
-        redacted = self.redact_html(original)
-        self.assertEqual(self.getMD5_of_string(redacted), md5)
-        with open(json_out) as json_file:
-            json_data = json.loads(json_file.read())
-        self.assertEqual(json_data['core']['extract_time'], '2023-12-20_21:38:10Z')
-        dob = json_data['plugins']['patient_info']['results']['patient_dob']
-        self.assertEqual(dob, '1970/01/01')
-        if 'summary' in json_data['plugins']:
-            text = json_data['plugins']['summary']['results']['summary_text']
-            expected_text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed '+\
-                'do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
-            self.assertEqual(text.strip(), expected_text)
-
-    def assert_update_with_summary(self):
-        self.assert_update('5683d00de0ef51aaced081b3ccd543ad')
-
-    def assert_update_without_summary(self):
-        self.assert_update('88b170c2ca4ca5e06682c67949de4154')
-
 
 class TestMain(TestMiniBase):
 
@@ -146,104 +100,6 @@ class TestMain(TestMiniBase):
         args = self.mock_args_setup(self.tmp_dir, json_path)
         main(self.tmp_dir).run(args)
         self.assert_setup(ini_file)
-
-class TestMainOBSOLETE(TestMiniBase):
-            
-    class mock_args_update:
-        """Use instead of argparse to store params for testing"""
-
-        def __init__(self, config_path, json, out_dir, pdf, write_json, force=False):
-            self.subparser_name = 'update'
-            self.config = config_path
-            self.json = json
-            self.out_dir = out_dir
-            self.pdf = pdf
-            self.write_json = write_json
-            self.force = force
-            # logging
-            self.log_path = None
-            self.debug = False
-            self.verbose = False
-            self.quiet = True
-
-    def test_setup(self):
-        out_file = os.path.join(self.tmp_dir, 'config.mdc')
-        test_dir = os.path.dirname(os.path.realpath(__file__))
-        json_path = os.path.join(test_dir, self.JSON_NAME)
-        args = self.mock_args_setup(out_file, json_path)
-        main(self.tmp_dir).run(args)
-        self.assert_MDC_with_summary(out_file)
-
-    def test_setup_no_summary(self):
-        out_file = os.path.join(self.tmp_dir, 'config.mdc')
-        test_dir = os.path.dirname(os.path.realpath(__file__))
-        json_path = os.path.join(test_dir, self.JSON_NO_SUMMARY)
-        args = self.mock_args_setup(out_file, json_path)
-        main(self.tmp_dir).run(args)
-        self.assert_MDC_without_summary(out_file)
-
-    def test_render(self):
-        out_dir = self.tmp_dir
-        test_dir = os.path.dirname(os.path.realpath(__file__))
-        config_path = os.path.join(test_dir, 'config_for_update.mdc')
-        json_path = os.path.join(test_dir, self.JSON_NAME)
-        pdf = True
-        args = self.mock_args_render(json_path, self.tmp_dir, pdf)
-        main(self.tmp_dir).run(args)
-        self.assert_render_with_summary()
-
-    def test_render_no_summary(self):
-        out_dir = self.tmp_dir
-        test_dir = os.path.dirname(os.path.realpath(__file__))
-        config_path = os.path.join(test_dir, 'config_for_update.mdc')
-        json_path = os.path.join(test_dir, self.JSON_NO_SUMMARY)
-        pdf = True
-        args = self.mock_args_render(json_path, self.tmp_dir, pdf)
-        main(self.tmp_dir).run(args)
-        self.assert_render_without_summary()
-
-    def test_version_fail(self):
-        test_dir = os.path.dirname(os.path.realpath(__file__))
-        config_path = os.path.join(test_dir, 'config_for_update.mdc')
-        json_path = os.path.join(test_dir, 'simple_report_mismatched_version.json')
-        pdf = True
-        write_json = True
-        args = self.mock_args_update(
-            config_path, json_path, self.tmp_dir, pdf, write_json, force=False
-        )
-        with self.assertRaises(DjerbaVersionMismatchError):
-            main(self.tmp_dir, log_level=logging.CRITICAL).run(args)
-        args_force = self.mock_args_update(
-            config_path, json_path, self.tmp_dir, pdf, write_json, force=True
-        )
-        log_tmp = os.path.join(self.tmp_dir, 'test.log')
-        with self.assertLogs(level=logging.WARNING) as cm:
-            main(self.tmp_dir, log_path=log_tmp).run(args_force)
-        self.assertTrue(cm.output[0].find('Old version = bad-version') >= 0)
-        self.assertTrue(cm.output[1].find('Old version = another-bad-version') >= 0)
-        self.assert_update_with_summary()
-
-    def test_update(self):
-        test_dir = os.path.dirname(os.path.realpath(__file__))
-        config_path = os.path.join(test_dir, 'config_for_update.mdc')
-        json_path = os.path.join(test_dir, self.JSON_NAME)
-        pdf = True
-        write_json = True
-        force = False
-        args = self.mock_args_update(config_path, json_path, self.tmp_dir, pdf, write_json)
-        main(self.tmp_dir).run(args)
-        self.assert_update_with_summary()
-
-    def test_update_no_summary(self):
-        test_dir = os.path.dirname(os.path.realpath(__file__))
-        config_path = os.path.join(test_dir, 'config_for_update.mdc')
-        json_path = os.path.join(test_dir, self.JSON_NO_SUMMARY)
-        pdf = True
-        write_json = True
-        force = False
-        args = self.mock_args_update(config_path, json_path, self.tmp_dir, pdf, write_json)
-        main(self.tmp_dir).run(args)
-        self.assert_update_without_summary()
 
 
 class TestScript(TestMiniBase):
