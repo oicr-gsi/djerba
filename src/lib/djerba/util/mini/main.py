@@ -14,7 +14,6 @@ from djerba.plugins.supplement.body.plugin import main as supplement_plugin
 from djerba.util.args import arg_processor_base
 from djerba.util.date import get_todays_date, is_valid_date
 from djerba.util.logger import logger
-from djerba.util.mini.mdc import mdc
 from djerba.util.validator import path_validator
 from djerba.version import get_djerba_version
 
