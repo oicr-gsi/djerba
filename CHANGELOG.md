@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## UNRELEASED
+- GCGI-1391: Fixed column names in data_CNA_oncoKBgenes_nonDiploid.txt which impacted oncoKB therapy annotation
+
 ## v1.6.5: 2024-07-11
 - GCGI-1336: Fixed "cannot resolve assay" issue in case overview plugin
 - GCGI-1887: Changed "no effect" fusion reading frame to "unknown"

@@ -35,12 +35,19 @@ test_that("preProcCNA returns correct gene-level alterations with PURPLE input",
     
     gene_file_path = paste0(testdatadir, "/plugins/cnv-purple/purple.cnv.gene.tsv")
     genefile <- read.delim(gene_file_path, header=TRUE) 
+    tumour_id = "LBR-0242_LCM"
     ploidy=3
     
-    CNAs = preProcCNA(genefile=genefile, oncolist=oncolist, ploidy=ploidy)
+    CNAs = preProcCNA(genefile=genefile, oncolist=oncolist, tumour_id=tumour_id, ploidy=ploidy)
     df_cna_thresh_onco_nondiploid = as.data.frame(CNAs[2])
-    
-    expect_equal(df_cna_thresh_onco_nondiploid$minCopyNumber[df_cna_thresh_onco_nondiploid$gene == "ARID1A"], 2)
+
+    # Convert row names to a proper column
+    df_cna_thresh_onco_nondiploid <- tibble::rownames_to_column(df_cna_thresh_onco_nondiploid, var = "gene")
+
+    # Rename the first column
+    colnames(df_cna_thresh_onco_nondiploid)[2] <- "LBR.0242_LCM" 
+
+    expect_equal(df_cna_thresh_onco_nondiploid$LBR.0242_LCM[df_cna_thresh_onco_nondiploid$gene == "ARID1A"], 2)
   
   }
 )
