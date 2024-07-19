@@ -85,7 +85,8 @@ class main(main_base):
                 msg = "Cannot find Djerba assay from input JSON: {0}".format(err)
                 self.logger.error(msg)
                 raise MiniDjerbaScriptError(msg) from err
-            config.set(constants.SUPPLEMENTARY, 'assay', assay)
+            if config.has_section(constants.SUPPLEMENTARY):
+                config.set(constants.SUPPLEMENTARY, 'assay', assay)
             if summary_path:
                 if self.has_summary(data):
                     config.add_section(constants.SUMMARY)
