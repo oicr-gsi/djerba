@@ -115,11 +115,11 @@ class main(plugin_base):
             self.logger.warning("Unknown sample type in config; assuming non-FFPE sample")
         else:
             self.logger.debug('Non-FFPE sample detected')
-        if purity > 0.5 or (purity > 0.3 and not sample_is_ffpe):
+        if purity >= 0.5 or (purity >= 0.3 and not sample_is_ffpe):
             results[glc.CAN_REPORT_HRD] = True
         else:
             results[glc.CAN_REPORT_HRD] = False
-        if purity > 0.5:
+        if purity >= 0.5:
             results[glc.CAN_REPORT_MSI] = True
         else:
             results[glc.CAN_REPORT_MSI] = False
