@@ -53,7 +53,24 @@ class html_builder:
     def k_comma_format(value):
         value_formatted = f'{value:,}'
         return(value_formatted)
-    
+
+    @staticmethod
+    def make_ordinal(n):
+        '''
+        Convert an integer into its ordinal representation::
+
+            make_ordinal(0)   => '0th'
+            make_ordinal(3)   => '3rd'
+            make_ordinal(122) => '122nd'
+            make_ordinal(213) => '213th'
+        '''
+        n = int(n)
+        if 11 <= (n % 100) <= 13:
+            suffix = 'th'
+        else:
+            suffix = ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]
+        return str(n) + suffix
+
     @staticmethod
     def markdown_to_html(markdown_string):
         return markdown(markdown_string)
