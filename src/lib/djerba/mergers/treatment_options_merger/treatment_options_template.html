@@ -8,11 +8,7 @@
 <!-- treatment -->
 ${html_builder.section_cells_begin("Treatment Options", True)}
 
-    <p>
-		Review identified <strong>${approved_total}</strong> option(s) indicating an FDA Approved and/or NCCN Recommended Biomarker 
-		<strong>${investig_total}</strong> option(s) indicating investigational therapies,
-		and <strong>${prognostic_total}</strong> option(s) indicating NCCN-listed biomarkers.
-	</p>
+    <p>Review identified <strong>${approved_total}</strong> option(s) indicating an FDA Approved and/or NCCN Recommended Biomarker, <strong>${investig_total}</strong> option(s) indicating investigational therapies, and <strong>${prognostic_total}</strong> option(s) indicating NCCN-listed biomarkers.</p>
       
 	% if approved_total > 0:
 		<h3 class="header3">FDA Approved and/or NCCN Recommended Biomarker:</h3>
