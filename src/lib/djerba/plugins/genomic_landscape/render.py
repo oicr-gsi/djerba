@@ -15,9 +15,11 @@ class html_builder:
         rows = []
         for marker, info in biomarkers.items():
             if marker == "HRD" and not can_report_hrd:
+                cells = [
                     hb.td(info[constants.ALT]),
                     hb.td("NA"),
                     hb.td("Cancer cell content below threshold to evaluate HRD; must be &#8805;50&#37; for FFPE samples, &#8805;30&#37; otherwise")
+                ]
             elif marker == "MSI" and not can_report_msi:
                 cells = [
                     hb.td(info[constants.ALT]),
