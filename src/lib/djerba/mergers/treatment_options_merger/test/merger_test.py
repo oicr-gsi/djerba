@@ -28,7 +28,7 @@ class TestTreatmentOptionsMerger(TestBase):
         self.assertEqual(merger.ini_defaults.get(cc.RENDER_PRIORITY), 50)
         html = merger.render(inputs)
         md5_found = self.getMD5_of_string(html)
-        self.assertEqual(md5_found, '49305a222e96535e71c50753c17a58d8')
+        self.assertEqual(md5_found, 'dbc59102763a55e19f446650bf83310d')
 
 if __name__ == '__main__':
     unittest.main()
