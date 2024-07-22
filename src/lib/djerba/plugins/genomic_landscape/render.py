@@ -11,19 +11,24 @@ class html_builder:
         cell = template.format(biomarker,plot)
         return(cell)
 
-    def biomarker_table_rows(self, biomarkers, purity):
+    def biomarker_table_rows(self, biomarkers, can_report_hrd, can_report_msi):
         rows = []
         for marker, info in biomarkers.items():
-            cells = [
-                hb.td(info[constants.ALT]),
-                hb.td(info[constants.METRIC_ALTERATION]),
-                hb.td(self.assemble_biomarker_plot(info[constants.ALT], info[constants.METRIC_PLOT]))
-            ]
-            if marker == "MSI" and purity < 50:
+            if marker == "HRD" and not can_report_hrd:
+                    hb.td(info[constants.ALT]),
+                    hb.td("NA"),
+                    hb.td("Cancer cell content below threshold to evaluate HRD; must be &#8805;50&#37; for FFPE samples, &#8805;30&#37; otherwise")
+            elif marker == "MSI" and not can_report_msi:
                 cells = [
                     hb.td(info[constants.ALT]),
                     hb.td("NA"),
-                    hb.td("Cancer cell content &#8804;50&#37;, below threshold to call MS score")
+                    hb.td("Cancer cell content below threshold to call MS score; must be &#8805;50&#37;")
+                ]
+            else:
+                cells = [
+                    hb.td(info[constants.ALT]),
+                    hb.td(info[constants.METRIC_ALTERATION]),
+                    hb.td(self.assemble_biomarker_plot(info[constants.ALT], info[constants.METRIC_PLOT]))
                 ]
             rows.append(hb.table_row(cells))
         return rows
