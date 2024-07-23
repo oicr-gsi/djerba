@@ -351,7 +351,7 @@ class main_base(core_base):
             # load the plugin and render HTML for cache update
             plugin = self.plugin_loader.load(plugin_name, self.workspace)
             raw_html = plugin.render(new_data[self.PLUGINS][plugin_name])
-            new_html[plugin_name] = self.html_cache.wrap_html(raw_html)
+            new_html[plugin_name] = self.html_cache.wrap_html(plugin_name, raw_html)
             self.logger.debug('Updated JSON for plugin {0}'.format(plugin_name))
         # now update the HTML cache; TODO support multiple doc types, eg. clinical/research
         doc_key = self._get_unique_doc_key(data)
