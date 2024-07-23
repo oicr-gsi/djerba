@@ -11,6 +11,7 @@ import argparse
 import logging
 from tempfile import TemporaryDirectory
 import djerba.util.mini.constants as constants
+from djerba.core.main import DjerbaVersionMismatchError
 from djerba.util.mini.main import main, arg_processor, MiniDjerbaScriptError
 from djerba.version import get_djerba_version
 
@@ -65,6 +66,10 @@ if __name__ == '__main__':
                 main(tmp_dir, ap.get_log_level(), ap.get_log_path()).run(args)
     except MiniDjerbaScriptError as err:
         error_message = "Error running Mini-Djerba: {0}".format(err)
+        if not args.silent:
+            raise
+    except DjerbaVersionMismatchError as err:
+        error_message = "Error from mismatched Djerba versions: {0}".format(err)
         if not args.silent:
             raise
     except OSError as err:

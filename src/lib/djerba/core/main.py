@@ -75,6 +75,7 @@ class main_base(core_base):
         Raise an error unless exactly 1 key is found
         For now, we only support update mode when report has exactly 1 document type
         """
+        self._validate_html_cache_input(data)
         if len(data[cc.HTML_CACHE])==1:
             key = list(data[cc.HTML_CACHE].keys())[0]
         else:
@@ -154,6 +155,15 @@ class main_base(core_base):
         merger = self.merger_loader.load(merger_name)
         self.logger.debug("Loaded merger {0} for rendering".format(merger_name))
         return merger.render(merger_inputs)
+
+    def _validate_html_cache_input(self, data):
+        if not cc.HTML_CACHE in data:
+            self.logger.debug("HTML cache not found in input JSON!")
+            version = data[cc.CORE][cc.CORE_VERSION]
+            msg = "Djerba core version error; input JSON is version {0}, ".format(version)+\
+                "mini-djerba requires version 1.7.0 or higher"
+            self.logger.error(msg)
+            raise DjerbaVersionMismatchError(msg)
 
     def base_extract(self, config):
         """
@@ -298,6 +308,7 @@ class main_base(core_base):
         """
         Write HTML and (if required) PDF from the JSON HTML cache for the given doc key
         """
+        self._validate_html_cache_input(extracted_data)
         html_str = self.html_cache.decode_from_base64(extracted_data[cc.HTML_CACHE][doc_key])
         html_path = os.path.join(out_dir, doc_key+'.html')
         with open(html_path, 'w') as out_file:
@@ -320,6 +331,7 @@ class main_base(core_base):
         # if plugin data did not exist in old JSON, it will be added
         # check plugin version numbers in old/new JSON
         # This updates plugins only; core data (including report timestamp) is not altered
+        self._validate_html_cache_input(data)
         new_html = {}
         for plugin_name in new_data[self.PLUGINS].keys():
             old_version = data[self.PLUGINS][plugin_name][cc.VERSION]
