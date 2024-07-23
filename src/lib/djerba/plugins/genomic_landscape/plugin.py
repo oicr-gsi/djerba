@@ -3,6 +3,7 @@ Plugin for genomic landscape section.
 """
 import csv
 import os
+import re
 
 import djerba.core.constants as core_constants
 import djerba.plugins.genomic_landscape.constants as glc
@@ -44,7 +45,8 @@ class main(plugin_base):
             glc.PURITY_INPUT,
             glc.MSI_FILE,
             glc.CTDNA_FILE,
-            glc.HRDETECT_PATH
+            glc.HRDETECT_PATH,
+            glc.SAMPLE_TYPE
         ]
         for key in discovered:
             self.add_ini_discovered(key)
@@ -75,6 +77,7 @@ class main(plugin_base):
         dpi = core_constants.DEFAULT_PATH_INFO
         oc = oncokb_constants.ONCOTREE_CODE
         w = self.update_wrapper_if_null(w, ipf, glc.TCGA_CODE)
+        w = self.update_wrapper_if_null(w, ipf, glc.SAMPLE_TYPE, fallback=glc.UNKNOWN_SAMPLE_TYPE)
         w = self.update_wrapper_if_null(w, ipf, oc, self.INPUT_PARAMS_ONCOTREE_CODE)
         w = self.update_wrapper_if_null(w, ppf, purple_constants.PURITY)
         w = self.update_wrapper_if_null(w, dsi, glc.TUMOUR_ID)
@@ -96,16 +99,36 @@ class main(plugin_base):
         plugin_dir = os.path.dirname(os.path.realpath(__file__))
         r_script_dir = os.path.join(plugin_dir, 'Rscripts')
 
-        # Make a file where all the (actionable) biomarkers will go
+        # Make a file where all the (actionable) biomarkers will go, and initialize results
         biomarkers_path = self.make_biomarkers_maf(work_dir)
         results = tmb_processor(self.log_level, self.log_path).run(
             work_dir, data_dir, r_script_dir, tcga_code, biomarkers_path, tumour_id
         )
-        results[glc.PURITY] = wrapper.get_my_float(glc.PURITY_INPUT) * 100
+        # evaluate HRD and MSI reportability
+        purity = wrapper.get_my_float(glc.PURITY_INPUT)
+        sample_type = wrapper.get_my_string(glc.SAMPLE_TYPE)
+        sample_is_ffpe = False
+        if re.search('FFPE', sample_type.upper()):
+            sample_is_ffpe = True
+            self.logger.debug('FFPE sample detected')
+        elif sample_type == glc.UNKNOWN_SAMPLE_TYPE:
+            self.logger.warning("Unknown sample type in config; assuming non-FFPE sample")
+        else:
+            self.logger.debug('Non-FFPE sample detected')
+        if purity >= 0.5 or (purity >= 0.3 and not sample_is_ffpe):
+            results[glc.CAN_REPORT_HRD] = True
+        else:
+            results[glc.CAN_REPORT_HRD] = False
+        if purity >= 0.5:
+            results[glc.CAN_REPORT_MSI] = True
+        else:
+            results[glc.CAN_REPORT_MSI] = False
+        # evaluate biomarkers
         results[glc.CTDNA] = ctdna_processor(self.log_level, self.log_path).run(wrapper.get_my_string(glc.CTDNA_FILE))
         hrd = hrd_processor(self.log_level, self.log_path)
         results[glc.BIOMARKERS][glc.HRD] = hrd.run(
-            work_dir, wrapper.get_my_string(glc.HRDETECT_PATH)
+            work_dir,
+            wrapper.get_my_string(glc.HRDETECT_PATH)
         )
         results[glc.BIOMARKERS][glc.MSI] = msi_processor(self.log_level, self.log_path).run(
             work_dir,
