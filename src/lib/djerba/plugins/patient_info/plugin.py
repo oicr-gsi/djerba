@@ -12,7 +12,7 @@ class main(plugin_base):
 
     PRIORITY = 100
     PLUGIN_VERSION = '1.0.0'
-    DOB_DEFAULT = 'yyyy/mm/dd'
+    DOB_DEFAULT = 'YYYY-MM-DD'
     PHONE_DEFAULT = 'nnn-nnn-nnnn'
     TEMPLATE_NAME = 'patient_info_template.html'
 
@@ -58,9 +58,9 @@ class main(plugin_base):
                 self.logger.debug('Validated patient DOB')
             else:
                 msg = "Non-default value for '{0}' must be ".format(self.PATIENT_DOB)+\
-                    "a date in yyyy-mm-dd format, got '{0}': {1}".format(dob, err)
+                    "a date in yyyy-mm-dd format, got '{0}'".format(dob)
                 self.logger.error(msg)
-                raise RuntimeError(msg) from err
+                raise RuntimeError(msg)
         # validating phone numbers is tricky, won't do it here
         # similarly, we will permit patient sex to be any string
         return wrapper.get_config()
