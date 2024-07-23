@@ -92,7 +92,9 @@ class main(main_base):
                     config.add_section(constants.SUMMARY)
                     config.set(constants.SUMMARY, 'summary_file', summary_path)
                 else:
-                    msg = "Mini-Djerba summary not supported for assay '{0}'".format(assay)
+                    self.logger.info("No summary found in report input!")
+                    msg = "Summary not found for mini-Djerba update. Check if summary "+\
+                        "is supported for assay: '{0}'".format(assay)
                     self.logger.error(msg)
                     raise MiniDjerbaScriptError(msg)
             # core params (eg. the CGI author name) are unchanged from the input JSON
@@ -192,7 +194,10 @@ class main(main_base):
             raise MiniDjerbaScriptError(msg)
         dob = patient_info[patient_info_plugin.PATIENT_DOB]
         if not is_valid_date(dob):
-            msg = "Patient DOB {0} is not in YYYY-MM-DD format".format(dob)
+            if dob == "YYYY-MM-DD":
+                msg = "Placeholder date of birth has not been updated"
+            else:
+                msg = "Patient DOB '{0}' is not in YYYY-MM-DD format".format(dob)
             self.logger.error(msg)
             raise MiniDjerbaScriptError(msg)
 
