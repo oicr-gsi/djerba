@@ -17,7 +17,7 @@ class TarInputParamsHelper(TestBase):
 
     CORE = 'core'
     HELPER_NAME = 'tar_input_params_helper'
-    INPUT_PARAMS_MD5 = '4fe078b6765be88b228df06387ec693d'
+    INPUT_PARAMS_MD5 = 'ecbef65c5a702e946667e24bd0b774f1'
 
     def test_extract(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))

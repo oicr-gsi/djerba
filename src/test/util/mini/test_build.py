@@ -21,4 +21,4 @@ if __name__ == '__main__':
     else:
         print("Usage: test_build.py PATH_TO_MINI_DJERBA_BUILD", file=sys.stderr)
         sys.exit(1)
-    unittest.main(argv=[sys.argv[0]], verbosity=2)
+    unittest.main(argv=[sys.argv[0]], defaultTest='TestBuild', verbosity=2)

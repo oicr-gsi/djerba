@@ -12,10 +12,10 @@ import os
 import re
 from glob import glob
 from PyPDF2 import PdfMerger
-from time import strftime
 import djerba.util.ini_fields as ini
 from djerba.core.base import base as core_base
 from djerba.core.database import database
+from djerba.util.date import get_todays_date
 from djerba.core.extract import extraction_setup
 from djerba.core.html_cache import html_cache, DjerbaHtmlCacheError
 from djerba.core.ini_generator import ini_generator
@@ -317,7 +317,7 @@ class main_base(core_base):
             report_id = extracted_data[cc.CORE][cc.REPORT_ID]
             # PDF footer here duplicates the clinical report footer format
             # TODO support other footer types when rendering from cache
-            footer = "{0} - {1}".format(strftime("%Y/%m/%d"), report_id)
+            footer = "{0} - {1}".format(get_todays_date(), report_id)
             p_rend = pdf_renderer(self.log_level, self.log_path)
             pdf_path = os.path.join(out_dir, doc_key+'.pdf')
             p_rend.render_file(html_path, pdf_path, footer)
