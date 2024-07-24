@@ -613,7 +613,6 @@ class TestMainScript(TestCore):
     def test_update_cli_with_summary(self):
         # run with summary-only input
         mode = 'update'
-        self.tmp_dir = '/u/ibancarz/workspace/djerba/test20240717_02'
         work_dir = self.tmp_dir
         summary_path = os.path.join(self.test_source_dir, 'alternate_summary.txt')
         # run djerba.py and check the results

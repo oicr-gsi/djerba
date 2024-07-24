@@ -4,7 +4,6 @@ Plugin to generate the failed report results summary report section
 """
 
 import logging
-from time import strftime
 import csv
 import os
 from djerba.plugins.base import plugin_base, DjerbaPluginError

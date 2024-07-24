@@ -1,7 +1,7 @@
 <%
-  from time import strftime
   import djerba.core.constants as core_constants
   from djerba.plugins.case_overview.plugin import main as case_overview
+  from djerba.util.date import get_todays_date
 %>
 
 <hr class="big-white-line" >
@@ -49,7 +49,7 @@
       </tr>
       <tr>
 	<td width="24%">Date of Report:</td>
-	<td width="13%">${strftime("%Y/%m/%d")}</td>
+	<td width="13%">${get_todays_date()}</td>
 	<td width="20%">Report ID:</td>
 	<td width="36%">${results.get(core_constants.REPORT_ID)}</td>
       </tr>

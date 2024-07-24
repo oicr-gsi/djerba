@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v1.7.0: 2024-07-24
+- Introduces an HTML cache in the JSON. Generate JSON at extract time. Update mode and mini-Djerba re-run only plugins with updated parameters, instead of all plugins, and apply updates to the cached HTML.
+- GCGI-1376, GCGI-1399: Rewrite mini-Djerba. Now more robust, better tested, and requires less frequent updates.
+- GCGI-1393: Adopt ISO-8601 date format; centralize date handling in djerba.util.date
+
 ## v1.6.7: 2024-07-23
 - GCGI-1396: Fixes to report text requested by clinical geneticist
 - Correct threshold for reporting HRD; genomic landscape plugin has new "sample type" parameter

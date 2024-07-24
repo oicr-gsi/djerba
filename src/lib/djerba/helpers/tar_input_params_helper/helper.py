@@ -6,6 +6,7 @@ import djerba.core.constants as core_constants
 import djerba.util.ini_fields as ini  # TODO new module for these constants?
 import djerba.util.provenance_index as index
 from djerba.helpers.base import helper_base
+from djerba.util.date import is_valid_date
 from djerba.util.provenance_reader import provenance_reader, sample_name_container, \
     InvalidConfigurationError
 
@@ -120,13 +121,11 @@ class main(helper_base):
             self.logger.error(msg)
             raise ValueError(msg)
         req_approved = info.get(self.REQUISITION_APPROVED)
-        try:
-            time.strptime(req_approved, '%Y/%m/%d')
-        except ValueError as err:
+        if not is_valid_date(req_approved):
             msg = "Invalid requisition approved date '{0}': ".format(req_approved)+\
-                "Must be in yyyy/mm/dd format"
+                "Must be in yyyy-mm-dd format"
             self.logger.error(msg)
-            raise ValueError(msg) from err
+            raise ValueError(msg)
 
     def write_input_params_info(self, input_params_info):
         self.workspace.write_json(self.INPUT_PARAMS_FILE, input_params_info)
