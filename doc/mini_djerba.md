@@ -8,25 +8,24 @@ Mini-Djerba allows a clinical geneticist to update personal health information (
 Input to mini-djerba is a file in [JSON format](https://en.wikipedia.org/wiki/JSON) containing clinical report data. Filenames are typically of the form `[report_id].json`, eg. `100-009-005_LCM3-v1_report.json`.
 
 Steps are as follows:
-1. Render an initial PDF file for inspection
-2. Generate a config file
-3. Edit the config file with PHI values and summary text
-4. Use the config file to generate a new PDF with the updated PHI and summary
+1. Generate an initial PDF report for inspection
+2. Generate config files
+3. Edit the config files with PHI values and summary text
+4. Use the config files to generate a new PDF with the updated PHI and summary
 
 Mini-Djerba is distributed as a single, executable file. It is a command-line application; run with `-h` for help.
 
-In brief, usage is `mini-djerba [mode] [options]`
+In brief, usage is `mini-djerba [global options] [mode] [options]`
 
 Available modes are:
-- `render`: Make a PDF from JSON input, without any changes
-- `setup`: Generate a config file to be updated by the user
-- `update`: Use the JSON input and config file to generate an *updated* PDF document
+- `setup`: Generate INI and TXT config files, respectively with PHI and summary text, to be edited by the user
+- `report`: Generate a PDF report from JSON input, with desired changes (if any)
 
 ## Usage
 
-### Render initial PDF
+### Initial PDF without changes
 
-The `render` mode converts a JSON document to PDF format. In other words, it goes from the machine-readable format to human-readable.
+We start by rendering the machine-readable JSON to human-readable PDF, without any changes.
 
 Example:
 
@@ -34,37 +33,119 @@ Example:
 mini-djerba render -j report.json
 ```
 
-The default location for output is a PDF file in the current working directory named `[report_id].json`.
+The default location for output is a PDF file in the current working directory named `[report_id].clinical.pdf`. We can write to a different directory with the `-o` option:
 
-### Generate config file
+```
+mini-djerba render -j report.json -o /my/output/directory
+```
 
-The config file is in MDC (mini-Djerba config) format. This is a simple text-based format defined for mini-Djerba. See the [MDC section](mdc_main) for details.
+### Generate config files
 
-The file is generated in `setup` mode. The `-j` option inserts summary text drafted by a genome interpreter, for subsequent editing. Running without `-j` produces a "blank" MDC file.
+Mini-Djerba accepts two config files:
+- INI format, to update PHI
+- TXT (plain text) format, to update summary text
+
+The `setup` mode generates these files.
+- If given a JSON file as input using the `-j` option, it will fill in values from the JSON file
+- Otherwise, it will create files with placeholder values
+
+The config files may be edited and used to generate a new PDF report.
 
 Example:
+```
+mini-djerba setup
+```
+
+This will create two files, `mini_djerba.ini` and `summary.txt`, in the current working directory.
+
+The files we have just created have placeholder values. To fill in values from a JSON report:
 ```
 mini-djerba setup -j report.json
 ```
 
-### Edit config file
+As before, we can change the output directory with `-o`:
+```
+mini-djerba setup  -j report.json -o /my/output/directory
+```
+
+(config=)
+### Editing config files
 
 - This can be done in any text editor, eg. [nano](https://www.nano-editor.org/), [Notepad](https://apps.microsoft.com/detail/9MSMLRH6LZF3?hl=en-US&gl=US) for Windows, [Emacs](https://www.gnu.org/software/emacs/), [Vim](https://www.vim.org/).
-- Using a full-featured word processor such as MS Word is unnecessary; if doing so, output must be saved in plain-text format.
-- See the [MDC section](mdc_main) for details and an example config file.
+- Using a full-featured word processor such as MS Word is unnecessary; if doing so, output _must_ be saved in plain-text format.
+
+#### INI file
+
+The INI config file contains section headers in square brackets, and parameters in the form `key=value`:
+
+```
+[patient_info]
+patient_name = LAST, FIRST
+patient_dob = YYYY-MM-DD
+patient_genetic_sex = SEX
+requisitioner_email = NAME@DOMAIN.COM
+physician_licence_number = nnnnnnnn
+physician_name = LAST, FIRST
+physician_phone_number = nnn-nnn-nnnn
+hospital_name_and_address = HOSPITAL NAME AND ADDRESS
+
+[supplement.body]
+report_signoff_date = 2024-07-24
+clinical_geneticist_name = Trevor Pugh, PhD, FACMG
+clinical_geneticist_licence = 1027812
+```
+
+The parameters may be edited as needed. The section headers, parameter keys, and = signs must not be altered.
+
+A config file with completed PHI will look like this (with mock values, for illustration only):
+```
+[patient_info]
+patient_name = Doe, John
+patient_dob = 1970-01-01
+patient_genetic_sex = M
+requisitioner_email = a.researcher@example.com
+physician_licence_number = 12345678
+physician_name = Smith, Jane
+physician_phone_number = 555-123-4567
+hospital_name_and_address = Central Hospital, Anytown
+
+[supplement.body]
+report_signoff_date = 2024-07-24
+clinical_geneticist_name = Trevor Pugh, PhD, FACMG
+clinical_geneticist_licence = 1027812
+```
+
+Key/value formatting conventions are derived from the Python [ConfigParser](https://docs.python.org/3/library/configparser.html#supported-ini-file-structure) implementation.
+
+#### TXT file
+
+The summary text file is in plain-text format:
+- [Markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet) is supported for simple formatting such as italic text
+- HTML tags such as [hyperlinks](https://www.w3schools.com/tags/tag_a.asp) are supported
+- Special characters (Greek letters, mathematical symbols, etc.) may be included using [HTML character entities](https://www.w3schools.com/html/html_entities.asp)
+- Djerba supports the [UTF-8 character set](https://www.w3schools.com/charsets/default.asp). 
 
 ### Update to produce a new PDF
 
-We now bring the input PDF and config file together, to produce an updated report PDF.
+We now bring the input JSON and config files together, to produce an updated report PDF.
 
 Example:
 ```
-mini-djerba update -j report.json -c config.mdc
+mini-djerba update -j report.json -i mini_djerba.ini -s summary.txt
 ```
 
-This will write a new JSON file with _updated_ PHI and summary text. The default location for output is a PDF file in the current working directory named `[report_id].json`.
+This will write a new PDF report with _updated_ PHI and summary text. The default location for output is a PDF file in the current working directory named `[report_id].clinical.pdf`. As before, an alternate directory may be specified with the `-o` option:
+```
+mini-djerba update -j report.json -i mini_djerba.ini -s summary.txt -o /my/output/directory
+```
 
-Note the default is the same as for the `render` option in Step 1, so it may overwrite the previous output -- but this should not be an issue, as the PDF generated in this step is the version to be uploaded for clinical use.
+If no changes are desired, either of the config files may be omitted. For example:
+Example:
+```
+mini-djerba update -j report.json -i mini_djerba.ini
+```
+
+Note that TAR reports do not include a summary and will not accept the `-s` option.
 
 ### Additional options
 
@@ -72,107 +153,48 @@ For a full listing of command-line options, run with `-h`:
 
 ```
 mini_djerba -h
-mini_djerba render -h
 mini_djerba setup -h
-mini_djerba update -h
+mini_djerba report -h
 ```
 
 ## Troubleshooting
 
+### Types of error
+
 There are 3 main types of error in mini-Djerba:
 
-1. **Incorrectly formatted MDC file:** Check the [MDC documentation](mdc_main) and try again.
-2. **Mismatched plugin versions:** Mini-Djerba is built with a self-contained set of Djerba plugins. A Djerba JSON report may have been generated with _newer_ plugin versions than the ones in mini-Djerba; this is cause for a warning, which can be overridden with the `--force` option. Running with mismatched plugin versions will _usually_ work correctly, but may result in errors. Alternatively, upgrade to a newer version of mini-Djerba.
+1. **Incorrectly formatted config files:** Check the INI and TXT formats, with reference to the [examples and links above](config), and try again.
+2. **Mismatched software versions:** Mini-Djerba is a self-contained build of the Djerba software. The Djerba version used to generate the JSON input may be  _older_ or _newer_ than your copy of Mini-Djerba. If the JSON file is _too old_, Mini-Djerba will not run. If the JSON file is _newer_, it will cause a warning, which can be overridden with the `--force` option.
 3. **Unexpected errors:** Mini-Djerba is tested before release, but unexpected errors may occur from time to time.
 
 In the first two cases, `mini-djerba` will print an informative error message to the command line. In the third, the error is likely to be more technical. If in doubt, consult the Djerba developers.
 
-(mdc_main)=
-## The Mini-Djerba config file
+### Logging
 
-
-MDC files (mini-Djerba config, file extension `.mdc`) specify the PHI and summary in a compact, text-based format. It is a simple, text-based format developed for Mini-Djerba.
-
-This document describes the current MDC format. See [MDC formats](mdc_formats) for previous specifications.
-
-### MDC example
-
-Here is an example MDC file with placeholder values:
+Mini-Djerba has options to write additional output to the terminal, which may be helpful in diagnosing issues. The `--verbose` option provides more output, and `--debug` even more. Either option may be specified. This _must_ be done before the option name, for example:
 
 ```
-patient_name = LAST, FIRST
-patient_dob = yyyy/mm/dd
-patient_genetic_sex = SEX
-requisitioner_email = NAME@domain.com
-physician_licence_number = nnnnnnnn
-physician_name = LAST, FIRST
-physician_phone_number = nnn-nnn-nnnn
-hospital_name_and_address = HOSPITAL NAME AND ADDRESS
-report_signoff_date = 2024/02/13
-clinical_geneticist_name = Trevor Pugh, PhD, FACMG
-clinical_geneticist_licence = 1027812
-
-###
-
-[Lorem ipsum dolor](https://www.lipsum.com/) sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
+mini-djerba --verbose update -j report.json -i mini_djerba.ini -s summary.txt
 ```
 
-### MDC Format Specification: Version 2.0
+Alternatively, for even more detail:
 
-The following elements _must_ appear in this order:
-1. A section with exactly 11 entries of the form `key = value`
-2. A separator consisting of 3 hash marks: `###`
-3. Summary text
-
-The 11 entries correspond to the 8 PHI fields listed above:
-1. `patient_name`
-2. `patient_dob`
-3. `patient_genetic_sex`
-4. `requisitioner_email`
-5. `physician_licence_number`
-6. `physician_name`
-7. `physician_phone_number`
-8. `hospital_name_and_address`
-9. `report_signoff_date`
-10. `clinical_geneticist_name`
-11. `clinical_geneticist_licence`
-
-These entries may occur in any order, but _must_ be present and have non-empty values.
-
-Field 9 is filled in with the current date but can be changed by the user.
-
-Summary text must be non-empty. Leading or trailing whitespace will be removed before the text is inserted into the report; but whitespace, including line breaks, may occur within the text block. Formatting with [Markdown notation](https://www.markdownguide.org/cheat-sheet/) and/or HTML tags is supported. This enables the user to create or edit bold/italic text, hyperlinks, etc.
-
-
-### MDC Version History
-
-The MDC file format is versioned. Each version accompanies a release of the main Djerba software.
-
-| MDC Version | Djerba version | Release date |
-| ------------| ---------------|--------------|
-| `2.0`       | `1.5.0`        | 2024-02-13   |
-| `1.0`       | `1.4.0`        | 2024-01-31   |
+```
+mini-djerba --debug update -j report.json -i mini_djerba.ini -s summary.txt
+```
 
 ## The JSON input file
 
 The Djerba [JSON](https://en.wikipedia.org/wiki/JSON) document is produced as part of the report drafting process by the Clinical Genome Interpretation team. It is a machine-readable file containing the data needed to produce a clinical report.
 
-The JSON is _not_ intended to be edited by hand; mini-Djerba gets the user inputs it needs from the MDC file.
+The JSON is _not_ intended to be edited by hand; mini-Djerba gets the user inputs it needs from its config files.
 
 
 ## For Developers
-
-### Build instructions
 
 Building mini-Djerba is done with [PyInstaller](https://pyinstaller.org/en/stable/).
 
 Detailed instructions are on the [OICR wiki](https://wiki.oicr.on.ca/x/xgBTDw).
 
-### Technical notes
+Mini-Djerba source code is part of the [Djerba repository](https://github.com/oicr-gsi/djerba) on Github.
 
-Key/value parsing is done with the Python [configparser](https://docs.python.org/3/library/configparser.html) package and has similar formatting conventions.
-
-The MDC file format is implemented in Djerba as the [mdc class](https://github.com/oicr-gsi/djerba/blob/main/src/lib/djerba/util/mini/mdc.py#L14).
-
-Tests are in the [TestMDC class](https://github.com/oicr-gsi/djerba/blob/main/src/test/util/mini/test_mini.py#L16).
