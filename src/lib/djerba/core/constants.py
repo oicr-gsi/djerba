@@ -59,6 +59,9 @@ DOCUMENT_CONFIG = 'document_config'
 PLUGINS = 'plugins'
 MERGERS = 'mergers'
 CONFIG = 'config'
+HTML_CACHE = 'html_cache'
+COMPONENT_START = 'DJERBA_COMPONENT_START'
+COMPONENT_END = 'DJERBA_COMPONENT_END'
 CORE_VERSION = 'core_version'
 
 # keys for sample ID file written by provenance helper

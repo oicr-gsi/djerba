@@ -112,6 +112,9 @@ class html_renderer(logger):
             'merged_filename': 'report_id.pdf',
         }
         """
+        # TODO may change output of this function to support more complex HTML cache usage
+        # eg. list of document objects, each with type, ID, and body text
+
         data = {
             cc.DOCUMENTS: {},
             cc.PDF_FOOTERS: {}
@@ -135,7 +138,6 @@ class html_renderer(logger):
                 self.logger.info("Omitting empty report document: {0}".format(doc_type))
         data[cc.MERGE_LIST] = merge_list
         data[cc.MERGED_FILENAME] = "{0}_report.pdf".format(self.report_id)
-        
         return data
 
 class pdf_renderer(logger):
