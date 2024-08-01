@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v1.6.7: 2024-07-23
+- GCGI-1396: Fixes to report text requested by clinical geneticist
+- Correct threshold for reporting HRD; genomic landscape plugin has new "sample type" parameter
+- Improved explanation and links for NCCN compendium
+- Added number of MSI sites
+
+## v1.6.6: 2024-07-19
+- GCGI-1391: Fixed column names in data_CNA_oncoKBgenes_nonDiploid.txt which impacted oncoKB therapy annotation
+
 ## v1.6.5: 2024-07-11
 - GCGI-1336: Fixed "cannot resolve assay" issue in case overview plugin
 - GCGI-1887: Changed "no effect" fusion reading frame to "unknown"
