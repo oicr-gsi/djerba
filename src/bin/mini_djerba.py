@@ -11,8 +11,8 @@ import argparse
 import logging
 from tempfile import TemporaryDirectory
 import djerba.util.mini.constants as constants
+from djerba.core.main import DjerbaVersionMismatchError
 from djerba.util.mini.main import main, arg_processor, MiniDjerbaScriptError
-from djerba.util.mini.mdc import MDCFormatError
 from djerba.version import get_djerba_version
 
 def get_parser():
@@ -27,22 +27,17 @@ def get_parser():
     parser.add_argument('-l', '--log-path', help='Output file for log messages; defaults to STDERR')
     parser.add_argument('--version', action='store_true', help='Print the version number and exit')
     subparsers = parser.add_subparsers(title='subcommands', help='sub-command help', dest='subparser_name')
-    setup_parser = subparsers.add_parser(constants.SETUP, help='Set up an MDC (mini-Djerba config) file')
+    setup_parser = subparsers.add_parser(constants.SETUP, help='Set up config files')
     setup_parser.add_argument('-j', '--json', metavar='PATH', help='Existing report JSON. Optional, if not given will generate a blank config file.')
-    setup_parser.add_argument('-o', '--out', metavar='PATH', default='config.mdc', help='Output path. Optional, defaults to config.mdc in the current directory.')
-    render_parser = subparsers.add_parser(constants.RENDER, help='Render a JSON report file to HTML and optional PDF, with no changes')
-    render_parser.add_argument('-j', '--json', metavar='PATH', required=True, help='Path to the Djerba report JSON file to be updated')
-    render_parser.add_argument('-o', '--out-dir', metavar='DIR', default='.', help='Directory for output files. Optional, defaults to the current directory.')
-    render_parser.add_argument('-w', '--work-dir', metavar='PATH', help='Path to workspace directory; optional, defaults to a temporary directory')
-    render_parser.add_argument('--no-pdf', action='store_true', help='Do not generate PDF output from HTML')
-    update_parser = subparsers.add_parser(constants.UPDATE, help='Render a JSON file to HTML and optional PDF, with updates from an MDC file')
-    update_parser.add_argument('-c', '--config', metavar='PATH', required=True, help='Path to an MDC (mini-Djerba config) file')
-    update_parser.add_argument('-f', '--force', action='store_true', help='Force update of mismatched plugin versions')
-    update_parser.add_argument('-j', '--json', metavar='PATH', required=True, help='Path to the Djerba report JSON file to be updated')
-    update_parser.add_argument('-o', '--out-dir', metavar='DIR', default='.', help='Directory for output files. Optional, defaults to the current directory.')
-    update_parser.add_argument('-u', '--write-json', action='store_true', help='Write updated JSON to the output directory')
-    update_parser.add_argument('-w', '--work-dir', metavar='PATH', help='Path to workspace directory; optional, defaults to a temporary directory')
-    update_parser.add_argument('--no-pdf', action='store_true', help='Do not generate PDF output from HTML')
+    setup_parser.add_argument('-o', '--out-dir', metavar='PATH', default='.', help='Output path. Optional, defaults to the current working directory.')
+    report_parser = subparsers.add_parser(constants.REPORT, help='Generate HTML/PDF documents from a report JSON file')
+    report_parser.add_argument('-f', '--force', action='store_true', help='Force update of mismatched plugin versions')
+    report_parser.add_argument('-i', '--ini', metavar='PATH', help='Path to a mini-Djerba INI config file; optional')
+    report_parser.add_argument('-j', '--json', metavar='PATH', required=True, help='Path to the Djerba report JSON file to be updated')
+    report_parser.add_argument('-o', '--out-dir', metavar='DIR', default='.', help='Directory for output files. Optional, defaults to the current directory.')
+    report_parser.add_argument('-s', '--summary', metavar='PATH', help='Path to a summary text file; optional')
+    report_parser.add_argument('-w', '--work-dir', metavar='PATH', help='Path to workspace directory; optional, defaults to a temporary directory')
+    report_parser.add_argument('--no-pdf', action='store_true', help='Do not generate PDF output from HTML')
     return parser
 
 if __name__ == '__main__':
@@ -69,8 +64,12 @@ if __name__ == '__main__':
         else:
             with TemporaryDirectory(prefix='mini_djerba_') as tmp_dir:
                 main(tmp_dir, ap.get_log_level(), ap.get_log_path()).run(args)
-    except MDCFormatError as err:
-        error_message = "Error reading the -c/--config file: {0}".format(err)
+    except MiniDjerbaScriptError as err:
+        error_message = "Error running Mini-Djerba: {0}".format(err)
+        if not args.silent:
+            raise
+    except DjerbaVersionMismatchError as err:
+        error_message = "Error from mismatched Djerba versions: {0}".format(err)
         if not args.silent:
             raise
     except OSError as err:
@@ -78,7 +77,7 @@ if __name__ == '__main__':
         if not args.silent:
             raise
     except Exception as err:
-        error_message = "Unexpected Mini-Djerba error! Run with --verbose or --debug for details.\n"+\
+        error_message = "Unexpected Mini-Djerba error! Run 'mini_djerba --debug [mode] [options]' for details.\n"+\
             "If errors persist:\n"+\
             "- Email gsi@oicr.on.ca\n"+\
             "- Please DO NOT include personal health information (PHI)"

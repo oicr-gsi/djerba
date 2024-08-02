@@ -1,6 +1,9 @@
 # CHANGELOG
 
-## UNRELEASED
+## v1.7.0: 2024-07-24
+- Introduces an HTML cache in the JSON. Generate JSON at extract time. Update mode and mini-Djerba re-run only plugins with updated parameters, instead of all plugins, and apply updates to the cached HTML.
+- GCGI-1376, GCGI-1399: Rewrite mini-Djerba. Now more robust, better tested, and requires less frequent updates.
+- GCGI-1393: Adopt ISO-8601 date format; centralize date handling in djerba.util.date
 - GCGI-1377: Make report ID default to requisition ID
 - GCGI-1353: Update supplementary for NovaSeq X Plus
 

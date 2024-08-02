@@ -120,5 +120,8 @@
             "configure_priority": "2000",
             "render_priority": "2000"
         }
+    },
+    "html_cache": {
+	"placeholder_report.clinical": "placeholder"
     }
 }
