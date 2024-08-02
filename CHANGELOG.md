@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## UNRELEASED
+- GCGI-1377: Make report ID default to requisition ID
+- GCGI-1353: Update supplementary for NovaSeq X Plus
+
 ## v1.6.7: 2024-07-23
 - GCGI-1396: Fixes to report text requested by clinical geneticist
 - Correct threshold for reporting HRD; genomic landscape plugin has new "sample type" parameter
