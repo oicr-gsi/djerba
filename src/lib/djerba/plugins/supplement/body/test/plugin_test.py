@@ -24,8 +24,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'PWGS.supp.ini',
             self.JSON: json_location,
-            self.MD5: '1c3db11bfe2f5610c3e0fa66b515b6d8'
-            #self.MD5: '489ec6297652c785cb4a805d2d81d042'
+            self.MD5: '1b8ecc19931d0610e6ea571635e869e3'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -55,8 +54,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.supp.ini',
             self.JSON: json_location,
-            self.MD5: '5caf4425a43279d1dd4996456f76933c'
-            #self.MD5: '49678d7e40755f3bbf30707599934b4c'
+            self.MD5: 'c1e33c46e85245bef3344eeacb5fd687'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -66,8 +64,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: '81eba1b88d94002003b9ccc42cc2fe86'
-            #self.MD5: '46c37c626e476185b8dc2238d2aa226e'
+            self.MD5: 'c3167d07933f1b730e00d3be3fe0c58f'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -77,8 +74,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.supp.ini',
             self.JSON: json_location,
-            self.MD5: '37c05736407fbae6b4f56ab8ed9dbaab'
-            #self.MD5: 'cc51428c1e6dc66cac7306a276c2175b'
+            self.MD5: '6436c6e6bd879e8ec98b94599874db4b'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -88,7 +84,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: '29a9a8a6c030739abebb60ee1665fb96'
+            self.MD5: 'e1219cc657f2bceb10a73d2886ef6fe7'
             #self.MD5: '6f3fdb131ecbc0aad17622f34d2c11f8'
         }
         self.run_basic_test(test_source_dir, params)
