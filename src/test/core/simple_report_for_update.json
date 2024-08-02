@@ -59,9 +59,10 @@
             "extract_priority": "100",
             "render_priority": "100",
             "report_version": "1",
+            "input_params": "input_params.json",
+            "author": "CGI Author",
             "archive_name": "djerba",
             "archive_url": "http://${username}:${password}@${address}:${port}",
-            "sample_info": "sample_info.json",
             "document_config": "document_config.json"
         },
         "patient_info": {

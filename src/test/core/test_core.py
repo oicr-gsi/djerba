@@ -36,8 +36,8 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_UPDATE_JSON = 'simple_report_for_update.json'
+    SIMPLE_CONFIG_MD5 = '05870238e8b6a2280a556a8e9341ebc3'
     SIMPLE_REPORT_MD5 = 'e4b491b28457b5b12a320ea11c6c47e5'
-    SIMPLE_CONFIG_MD5 = 'fc6265eeb6a9f8f2a5c864a97e07250c'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
@@ -326,13 +326,12 @@ class TestCoreConfigurer(TestCore):
         config.set('core', 'report_id', 'placeholder')
         self.assert_core_config(config)
 
-    def test_sample_info(self):
-        """Test configuration with sample info file"""
+    def test_input_params(self):
+        """Test configuration with input params file"""
         info = {
-            core_constants.TUMOUR_ID: 'foo',
-            core_constants.NORMAL_ID: 'bar'
+            core_constants.REQUISITION_ID: 'foo'
         }
-        info_path = os.path.join(self.tmp_dir, core_constants.DEFAULT_SAMPLE_INFO)
+        info_path = os.path.join(self.tmp_dir, core_constants.DEFAULT_INPUT_PARAMS)
         with open(info_path, 'w') as out_file:
             print(json.dumps(info), file=out_file)
         config = self.run_core_config()

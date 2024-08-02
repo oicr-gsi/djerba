@@ -301,14 +301,14 @@ class core_configurer(configurable):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         if wrapper.my_param_is_null(cc.REPORT_ID):
-            sample_info_file = wrapper.get_my_string(cc.SAMPLE_INFO)
-            if self.workspace.has_file(sample_info_file):
-                sample_info = self.workspace.read_json(sample_info_file)
+            input_params_file = wrapper.get_my_string(cc.INPUT_PARAMS_FILE)
+            if self.workspace.has_file(input_params_file):
+                input_params = self.workspace.read_json(input_params_file)
                 report_id = "{0}-v{1}".format(
-                    sample_info[cc.TUMOUR_ID],
+                    input_params[cc.REQUISITION_ID],
                     wrapper.get_my_int(cc.REPORT_VERSION)
                 )
-                msg = "Generated report ID {0} from sample info JSON".format(report_id)
+                msg = "Generated report ID {0} from input params JSON".format(report_id)
                 self.logger.debug(msg)
             else:
                 report_id = "OICR-CGI-{0}".format(uuid4().hex)
@@ -326,7 +326,7 @@ class core_configurer(configurable):
             "http://${username}:${password}@${address}:${port}"
         )
         self.set_ini_default(cc.AUTHOR, cc.DEFAULT_AUTHOR)
-        self.set_ini_default(cc.SAMPLE_INFO, cc.DEFAULT_SAMPLE_INFO)
+        self.set_ini_default(cc.INPUT_PARAMS_FILE, cc.DEFAULT_INPUT_PARAMS)
         self.set_ini_default(cc.DOCUMENT_CONFIG, cc.DEFAULT_DOCUMENT_CONFIG)
 
     def set_priority_defaults(self, priority):
