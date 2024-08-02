@@ -53,7 +53,8 @@ ARCHIVE_NAME = 'archive_name'
 ARCHIVE_URL = 'archive_url'
 AUTHOR = 'author'
 EXTRACT_TIME = 'extract_time'
-SAMPLE_INFO = 'sample_info'
+INPUT_PARAMS_FILE = 'input_params'
+REQUISITION_ID = 'requisition_id'
 STYLESHEET = 'stylesheet'
 DOCUMENT_CONFIG = 'document_config'
 PLUGINS = 'plugins'
@@ -74,6 +75,7 @@ NORMAL_ID = 'normal_id'
 
 # core config defaults
 DEFAULT_PATH_INFO = "path_info.json"
+DEFAULT_INPUT_PARAMS = "input_params.json"
 DEFAULT_SAMPLE_INFO = "sample_info.json"
 DEFAULT_CSS = "stylesheet.css"
 DEFAULT_AUTHOR = "CGI Author"
