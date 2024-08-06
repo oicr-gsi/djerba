@@ -54,7 +54,10 @@ class Spinner:
     def __exit__(self, exception, value, tb):
         self.busy = False
         if self.printable:
-            sys.stdout.write('\bfinished.\n')
+            if exception is None:
+                sys.stdout.write('\bfinished.\n')
+            else:
+                sys.stdout.write('\berror!\n')
             sys.stdout.flush()
         time.sleep(self.delay)
         if exception is not None:
