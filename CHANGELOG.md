@@ -7,6 +7,7 @@
 - GCGI-1376, GCGI-1399: Rewrite mini-Djerba. Now more robust, better tested, and requires less frequent updates.
 - GCGI-1377: Make report ID default to requisition ID
 - GCGI-1393: Adopt ISO-8601 date format; centralize date handling in djerba.util.date
+- GCGI-1406: Add a status indicator on STDOUT for mini-Djerba
 
 ## v1.7.0-alpha: 2024-08-01
 - Alpha version of release 1.7.0 for testing
