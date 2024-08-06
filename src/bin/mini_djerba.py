@@ -20,13 +20,13 @@ from djerba.util.mini.main import main, arg_processor, MiniDjerbaScriptError
 from djerba.version import get_djerba_version
 
 class Spinner:
-    # See https://stackoverflow.com/a/39504463 
+    # See https://stackoverflow.com/a/39504463
     busy = False
     delay = 0.1
 
     @staticmethod
     def spinning_cursor():
-        while True: 
+        while True:
             for cursor in '|/-\\': yield cursor
 
     def __init__(self, printable=True, delay=None):
@@ -105,7 +105,10 @@ if __name__ == '__main__':
         if hasattr(args, 'no_pdf'):
             args.pdf = not args.no_pdf
         ap = arg_processor(args)
-        spin_enabled = not log_enabled # log output or spinner, not both
+        if not (args.silent or log_enabled): # log output or spinner, not both
+            spin_enabled = True
+        else:
+            spin_enabled = False
         with Spinner(spin_enabled):
             time.sleep(5) # temporary hack for testing
             #raise ValueError('this is a test')
@@ -133,13 +136,13 @@ if __name__ == '__main__':
     except EmailNotValidError as err:
         error_message = "Incorrectly formatted email address: {0}".format(err)
         if log_enabled:
-            raise        
+            raise
     except Exception as err:
         error_message = "Unexpected Mini-Djerba error! Run 'mini_djerba --debug [mode] [options]' for details.\n"+\
             "If errors persist:\n"+\
             "- Email gsi@oicr.on.ca\n"+\
             "- Please DO NOT include personal health information (PHI)"
-        if not args.silent:
+        if log_enabled:
             raise MiniDjerbaScriptError(error_message) from err
     if error_message:
         # only called if log_enabled is False
