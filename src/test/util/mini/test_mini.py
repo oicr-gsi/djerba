@@ -16,8 +16,8 @@ class TestMiniBase(TestBase):
 
     JSON_NAME = 'simple_report_for_update.json'
     JSON_NO_SUMMARY = 'simple_report_no_summary.json'
-    REPORT_MD5 = 'c73e4d260851ddee6dfd9dca3e37f1d8'
-    REPORT_NO_SUMMARY_MD5 = '744d1d259269739ee6595243ebf7e8a2'
+    REPORT_MD5 = 'a04af4a2777c4bf00255debd1d00ec1e'
+    REPORT_NO_SUMMARY_MD5 = '0600af5ca7eb1ce6850dcf55abbd1296'
 
     def assert_setup(self, ini_path, summary_path=None):
         self.assertTrue(os.path.exists(ini_path))
@@ -119,7 +119,7 @@ class TestScript(TestMiniBase):
         ini_path = os.path.join(test_dir, 'mini_djerba.ini')
         summary_path = os.path.join(test_dir, 'lorem.txt')
         cmd = [
-            self.MINI_DJERBA_EXECUTABLE, 'report',
+            self.MINI_DJERBA_EXECUTABLE, '-v', 'report',
             '--json', json_path,
             '--out-dir', self.tmp_dir,
             '--ini', ini_path,
@@ -134,7 +134,7 @@ class TestScript(TestMiniBase):
         json_path = os.path.join(test_dir, self.JSON_NAME)
         summary_path = os.path.join(test_dir, 'lorem.txt')
         cmd = [
-            self.MINI_DJERBA_EXECUTABLE, 'report',
+            self.MINI_DJERBA_EXECUTABLE, '-v', 'report',
             '--json', json_path,
             '--out-dir', self.tmp_dir,
             '--ini', os.path.join(test_dir, 'mini_djerba_broken_1.ini'),
@@ -143,7 +143,7 @@ class TestScript(TestMiniBase):
         with self.assertRaises(CalledProcessError):
             subprocess_runner(log_level=logging.CRITICAL).run(cmd)
         cmd = [
-            self.MINI_DJERBA_EXECUTABLE, 'report',
+            self.MINI_DJERBA_EXECUTABLE, '-v', 'report',
             '--json', json_path,
             '--out-dir', self.tmp_dir,
             '--ini', os.path.join(test_dir, 'mini_djerba_broken_2.ini'),
@@ -152,7 +152,7 @@ class TestScript(TestMiniBase):
         with self.assertRaises(CalledProcessError):
             subprocess_runner(log_level=logging.CRITICAL).run(cmd)
         cmd = [
-            self.MINI_DJERBA_EXECUTABLE, 'report',
+            self.MINI_DJERBA_EXECUTABLE, '-v', 'report',
             '--json', '/broken/json/path',
             '--out-dir', self.tmp_dir,
             '--ini', os.path.join(test_dir, 'mini_djerba.ini'),
