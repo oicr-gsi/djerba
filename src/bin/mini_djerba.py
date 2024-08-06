@@ -105,18 +105,22 @@ if __name__ == '__main__':
         if hasattr(args, 'no_pdf'):
             args.pdf = not args.no_pdf
         ap = arg_processor(args)
-        if not (args.silent or log_enabled): # log output or spinner, not both
-            spin_enabled = True
-        else:
+        # log output or spinner, maybe neither, not both
+        if args.silent:
             spin_enabled = False
+            log_level = logging.CRITICAL
+        elif log_enabled:
+            spin_enabled = False
+            log_level = ap.get_log_level()
+        else:
+            spin_enabled = True
+            log_level = logging.CRITICAL
         with Spinner(spin_enabled):
-            time.sleep(5) # temporary hack for testing
-            #raise ValueError('this is a test')
             if hasattr(args, 'work_dir') and args.work_dir != None:
-                main(args.work_dir, ap.get_log_level(), ap.get_log_path()).run(args)
+                main(args.work_dir, log_level, ap.get_log_path()).run(args)
             else:
                 with TemporaryDirectory(prefix='mini_djerba_') as tmp_dir:
-                    main(tmp_dir, ap.get_log_level(), ap.get_log_path()).run(args)
+                    main(tmp_dir, log_level, ap.get_log_path()).run(args)
     except MiniDjerbaScriptError as err:
         error_message = "Error running Mini-Djerba: {0}".format(err)
         if log_enabled:
