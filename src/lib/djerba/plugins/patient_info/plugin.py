@@ -6,7 +6,7 @@ from email_validator import validate_email, EmailNotValidError
 from time import strptime
 from djerba.plugins.base import plugin_base
 from djerba.util.render_mako import mako_renderer
-from djerba.util.date import is_valid_date
+from djerba.util.date import is_valid_date, DjerbaDateFormatError
 
 class main(plugin_base):
 
@@ -60,7 +60,7 @@ class main(plugin_base):
                 msg = "Non-default value for '{0}' must be ".format(self.PATIENT_DOB)+\
                     "a date in yyyy-mm-dd format, got '{0}'".format(dob)
                 self.logger.error(msg)
-                raise RuntimeError(msg)
+                raise DjerbaDateFormatError(msg)
         # validating phone numbers is tricky, won't do it here
         # similarly, we will permit patient sex to be any string
         return wrapper.get_config()

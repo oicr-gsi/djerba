@@ -14,3 +14,6 @@ def is_valid_date(date_string):
     except ValueError:
         valid = False
     return valid
+
+class DjerbaDateFormatError(Exception):
+    pass
