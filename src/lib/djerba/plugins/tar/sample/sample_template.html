@@ -3,9 +3,9 @@
 <%
   from djerba.util.html import html_builder
   import djerba.plugins.tar.sample.constants as constants
-  from time import strftime
+  from djerba.util.date import get_todays_date
 %>
-<% date = strftime('%Y/%m/%d') %>
+<% date = get_todays_date() %>
 
 ${html_builder().section_cells_begin("<h2>SAMPLE INFORMATION</h2>","main")}
 

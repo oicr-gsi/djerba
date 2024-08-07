@@ -3,9 +3,9 @@ import logging
 import os
 from djerba.plugins.base import plugin_base, DjerbaPluginError
 import djerba.core.constants as core_constants
+from djerba.util.date import get_todays_date
 from djerba.util.render_mako import mako_renderer
 import djerba.util.assays as assays
-from time import strftime
 
 class main(plugin_base):
 
@@ -55,11 +55,11 @@ class main(plugin_base):
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         if wrapper.get_my_string(self.USER_SUPPLIED_DRAFT_DATE) == self.NONE_SPECIFIED:
-            draft_date = strftime("%Y/%m/%d")
+            draft_date = get_todays_date()
         else:
             draft_date = wrapper.get_my_string(self.USER_SUPPLIED_DRAFT_DATE)
         if wrapper.get_my_string(self.REPORT_SIGNOFF_DATE) == self.NONE_SPECIFIED:
-            report_signoff_date = strftime("%Y/%m/%d")
+            report_signoff_date = get_todays_date()
         else:
             report_signoff_date = wrapper.get_my_string(self.REPORT_SIGNOFF_DATE)
         self.check_assay_name(wrapper)

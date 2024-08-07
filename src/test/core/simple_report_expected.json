@@ -91,7 +91,7 @@
             "archive_name": "djerba",
             "archive_url": "http://${username}:${password}@${address}:${port}",
             "author": "CGI Author",
-            "sample_info": "sample_info.json",
+            "input_params": "input_params.json",
             "document_config": "document_config.json"
         },
         "demo1": {
@@ -120,5 +120,8 @@
             "configure_priority": "2000",
             "render_priority": "2000"
         }
+    },
+    "html_cache": {
+	"placeholder_report.clinical": "placeholder"
     }
 }

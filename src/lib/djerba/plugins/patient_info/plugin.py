@@ -6,12 +6,13 @@ from email_validator import validate_email, EmailNotValidError
 from time import strptime
 from djerba.plugins.base import plugin_base
 from djerba.util.render_mako import mako_renderer
+from djerba.util.date import is_valid_date, DjerbaDateFormatError
 
 class main(plugin_base):
 
     PRIORITY = 100
     PLUGIN_VERSION = '1.0.0'
-    DOB_DEFAULT = 'yyyy/mm/dd'
+    DOB_DEFAULT = 'YYYY-MM-DD'
     PHONE_DEFAULT = 'nnn-nnn-nnnn'
     TEMPLATE_NAME = 'patient_info_template.html'
 
@@ -50,17 +51,16 @@ class main(plugin_base):
         wrapper.set_my_param(self.REQ_EMAIL, email)
         self.logger.debug('Validated requisitioner email')
         dob = wrapper.get_my_string(self.PATIENT_DOB)
-        if dob != self.DOB_DEFAULT:
-            try:
-                strptime(dob, '%Y/%m/%d')
-            except ValueError as err:
-                msg = "Non-default value for '{0}' must be ".format(self.PATIENT_DOB)+\
-                    "a date in yyyy/mm/dd format, got '{0}': {1}".format(dob, err)
-                self.logger.error(msg)
-                raise RuntimeError(msg) from err
-            self.logger.debug('Validated patient DOB')
-        else:
+        if dob == self.DOB_DEFAULT:
             self.logger.debug('Using DOB placeholder: {0}'.format(self.DOB_DEFAULT))
+        else:
+            if is_valid_date(dob):
+                self.logger.debug('Validated patient DOB')
+            else:
+                msg = "Non-default value for '{0}' must be ".format(self.PATIENT_DOB)+\
+                    "a date in yyyy-mm-dd format, got '{0}'".format(dob)
+                self.logger.error(msg)
+                raise DjerbaDateFormatError(msg)
         # validating phone numbers is tricky, won't do it here
         # similarly, we will permit patient sex to be any string
         return wrapper.get_config()

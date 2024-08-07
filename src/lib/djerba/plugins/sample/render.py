@@ -3,7 +3,6 @@
 import djerba.plugins.sample.constants as constants
 import re
 from markdown import markdown
-from time import strftime
 from string import Template
 from djerba.util.image_to_base64 import converter
 

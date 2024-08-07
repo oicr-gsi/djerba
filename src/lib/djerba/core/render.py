@@ -9,8 +9,8 @@ import os
 import pdfkit
 import traceback
 from PyPDF2 import PdfMerger
-from time import strftime
 import djerba.core.constants as cc
+from djerba.util.date import get_todays_date
 from djerba.util.environment import directory_finder, DjerbaEnvDirError
 from djerba.util.image_to_base64 import converter
 from djerba.util.logger import logger
@@ -87,11 +87,11 @@ class html_renderer(logger):
 
     def get_page_footer(self, doc_type):
         if doc_type == cc.CLINICAL:
-            pdf_footer = "{0} - {1}".format(strftime("%Y/%m/%d"), self.report_id)
+            pdf_footer = "{0} - {1}".format(get_todays_date(), self.report_id)
         elif doc_type == cc.RESEARCH:
             pdf_footer = 'For Research Use Only'
         else:
-            pdf_footer = "{0} ".format(strftime("%Y/%m/%d"))
+            pdf_footer = "{0} ".format(get_todays_date())
         return pdf_footer
 
     def run(self, html, priorities, attributes):
@@ -112,6 +112,9 @@ class html_renderer(logger):
             'merged_filename': 'report_id.pdf',
         }
         """
+        # TODO may change output of this function to support more complex HTML cache usage
+        # eg. list of document objects, each with type, ID, and body text
+
         data = {
             cc.DOCUMENTS: {},
             cc.PDF_FOOTERS: {}
@@ -135,7 +138,6 @@ class html_renderer(logger):
                 self.logger.info("Omitting empty report document: {0}".format(doc_type))
         data[cc.MERGE_LIST] = merge_list
         data[cc.MERGED_FILENAME] = "{0}_report.pdf".format(self.report_id)
-        
         return data
 
 class pdf_renderer(logger):

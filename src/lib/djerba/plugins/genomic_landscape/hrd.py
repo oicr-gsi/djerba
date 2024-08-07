@@ -5,7 +5,7 @@ import os
 
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
-
+from djerba.util.validator import path_validator
 
 class hrd_processor(logger):
 
@@ -13,6 +13,7 @@ class hrd_processor(logger):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, log_path)
+        self.validator = path_validator(log_level, log_path)
 
     ONCOTREE_FILE = 'OncoTree.json'
     NCCN_ANNOTATION_FILENAME = 'NCCN_annotations.txt'
@@ -28,6 +29,7 @@ class hrd_processor(logger):
         if hrd_result == 'HRD':
             oncotree_main = self.read_oncotree_main_type(oncotree_code, data_dir)
             nccn_annotation_path = os.path.join(data_dir, self.NCCN_ANNOTATION_FILENAME)
+            self.validator.validate_input_file(nccn_annotation_path)
             with open(nccn_annotation_path) as NCCN_annotation_file:
                 tsv_reader = csv.reader(NCCN_annotation_file, delimiter="\t")
                 for marker_row in tsv_reader:
@@ -111,6 +113,8 @@ class hrd_processor(logger):
         """
         Reads JSON from hrDetect and writes quartiles file for R plotting
         """
+        self.validator.validate_output_dir(work_dir)
+        self.validator.validate_input_file(hrd_path)
         with open(hrd_path) as f:
             hrd_data = json.load(f)
         out_path = os.path.join(work_dir, 'hrd.tmp.txt')
