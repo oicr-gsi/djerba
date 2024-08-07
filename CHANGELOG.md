@@ -1,4 +1,4 @@
-# CHANGELOG
+# v1.7.0: 2024-08-07
 
 ## Unreleased
 - Introduces an HTML cache in the JSON. Generate JSON at extract time. Update mode and mini-Djerba re-run only plugins with updated parameters, instead of all plugins, and apply updates to the cached HTML.
