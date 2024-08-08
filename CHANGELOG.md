@@ -2,6 +2,7 @@
 
 ## UNRELEASED
 - GCGI-1407: Added requisition ID to tar_input_params_helper
+- GCGI-1408: Updated CAPTIV8 plugin to expect output from Purple instead of Sequenza 
 
 ## v1.7.0: 2024-08-02
 - Introduces an HTML cache in the JSON. Generate JSON at extract time. Update mode and mini-Djerba re-run only plugins with updated parameters, instead of all plugins, and apply updates to the cached HTML.
