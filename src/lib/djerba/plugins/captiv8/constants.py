@@ -70,7 +70,7 @@ LYMPH = 'lymph'
 VIRUS = 'virus'
 
 DATA_MUTATIONS_EXTENDED = 'data_mutations_extended.txt'
-DATA_CNA = 'data_CNA.txt'
+DATA_CNA = 'purple.data_CNA.txt'
 TUMOUR_VAF = 'tumour_vaf'
 VAF_CUTOFF = 0.1
 DIVISOR = 3095.978588 # cat $HG38_ROOT/hg38_random.fa | grep -v "^>" | sed s:[^ACGTacgt]::g | tr -d  "\n" | wc -m
