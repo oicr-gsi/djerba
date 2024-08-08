@@ -25,6 +25,7 @@ class main(helper_base):
     SITE_OF_BIOPSY = 'site_of_biopsy'
     SAMPLE_TYPE = 'sample_type'
     KNOWN_VARIANTS = 'known_variants'
+    REQUISITION_ID = 'requisition_id'
     REQUISITION_APPROVED = 'requisition_approved'
     ASSAY = 'assay'
 
@@ -52,6 +53,7 @@ class main(helper_base):
         self.add_ini_required(self.SITE_OF_BIOPSY)
         self.add_ini_required(self.SAMPLE_TYPE)
         self.add_ini_required(self.KNOWN_VARIANTS)
+        self.add_ini_required(self.REQUISITION_ID)
         self.add_ini_required(self.REQUISITION_APPROVED)
         self.add_ini_required(self.ASSAY)
 
@@ -71,6 +73,7 @@ class main(helper_base):
                       self.PRIMARY_CANCER,
                       self.SITE_OF_BIOPSY,
                       self.KNOWN_VARIANTS,
+                      self.REQUISITION_ID,
                       self.REQUISITION_APPROVED,
                       self.SAMPLE_TYPE,
                       self.ASSAY]
@@ -108,6 +111,7 @@ class main(helper_base):
             self.SITE_OF_BIOPSY: config[self.identifier][self.SITE_OF_BIOPSY],
             self.SAMPLE_TYPE: config[self.identifier][self.SAMPLE_TYPE],
             self.KNOWN_VARIANTS: config[self.identifier][self.KNOWN_VARIANTS],
+            self.REQUISITION_ID: config[self.identifier][self.REQUISITION_ID],
             self.REQUISITION_APPROVED: config[self.identifier][self.REQUISITION_APPROVED],
             self.ASSAY: config[self.identifier][self.ASSAY],
         }
