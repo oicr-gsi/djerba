@@ -106,10 +106,16 @@ class snv_indel_processor(logger):
         return factory.get_annotator(self.work_dir, self.config).annotate_maf(maf_path)
 
     def convert_vaf_plot(self):
-        """Read VAF plot from file and return as a base64 string"""
+        """
+        Read VAF plot from file if it exists and return as a base64 string
+        Else, return False
+        """
         image_converter = converter(self.log_level, self.log_path)
         plot_path = os.path.join(self.work_dir, sic.VAF_PLOT_FILENAME)
-        vaf_plot = image_converter.convert_svg(plot_path, 'CNV plot')
+        if self.workspace.has_file(sic.VAF_PLOT_FILENAME):
+            vaf_plot = image_converter.convert_svg(plot_path, 'CNV plot')
+        else:
+            vaf_plot = False
         return vaf_plot
 
     def get_merge_inputs(self):
@@ -283,6 +289,18 @@ class snv_indel_processor(logger):
         vaf = row['tumour_vaf']
         vaf = int(round(float(vaf), 2)*100)
         return vaf
+    
+    def has_somatic_mutations(self):
+        """
+        Checks if data_mutations_extended.txt is empty.
+        This is so we can exclude making a vaf plot if there are no mutations to graph.
+        """
+        has_somatic_mutations = False
+        if self.workspace.has_file(sic.MUTATIONS_ALL):
+            df = pd.read_csv(os.path.join(self.work_dir, sic.MUTATIONS_ALL), sep="\t")
+            if df.shape[0] != 0: # i.e. there is at least one row present
+                has_somatic_mutations = True
+        return has_somatic_mutations
 
     def is_tert_hotspot(self, row, ix):
         """
@@ -408,5 +426,8 @@ class snv_indel_processor(logger):
         maf_path_preprocessed = self.preprocess_maf(maf_path, tumour_id)
         maf_path_annotated = self.annotate_maf(maf_path_preprocessed)
         self.run_data_rscript(whizbam_url, maf_path_annotated)
-        self.write_vaf_plot()
+        # Exclude the plot if there are no somatic mutations
+        has_somatic_mutations = self.has_somatic_mutations()
+        if has_somatic_mutations == True:
+            self.write_vaf_plot()
         self.write_whizbam_files()
