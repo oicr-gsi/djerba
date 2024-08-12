@@ -30,9 +30,13 @@ def preprocess_results(self, results_path):
     tumour_fraction = results_dict[constants.TUMOUR_FRACTION_ZVIRAN]
 
     if p_value > float(constants.DETECTION_ALPHA):
-        significance_text = "Not significantly larger."
-        results_dict[constants.CTDNA_OUTCOME] = "UNDETECTED"
-        results_dict[constants.TUMOUR_FRACTION_ZVIRAN] = 0
+        if tumour_fraction > detection_cutoff:
+            significance_text = "Statistically insignificant p-value but meets the tumour fraction cutoff."
+            results_dict[constants.CTDNA_OUTCOME] = "DETECTED"
+        else:
+            significance_text = "Not Statistically significant and does not meet the tumour fraction cutoff."
+            results_dict[constants.CTDNA_OUTCOME] = "UNDETECTED"
+        #results_dict[constants.TUMOUR_FRACTION_ZVIRAN] = 0
     elif p_value <= float(constants.DETECTION_ALPHA):
         if tumour_fraction > detection_cutoff:
             significance_text = "Statistically significant."
