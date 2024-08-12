@@ -16,24 +16,35 @@ def preprocess_results(self, results_path):
         for row in reader_file:
             try:
                 results_dict = {
-                                constants.TUMOUR_FRACTION_ZVIRAN: float('%.1E' % Decimal(row[7]))*100,
-                                constants.PVALUE:  float('%.3E' % Decimal(row[10])),
-                                constants.DATASET_DETECTION_CUTOFF: float(row[11])
-                                }
+                    constants.TUMOUR_FRACTION_ZVIRAN: float('%.1E' % Decimal(row[7])) * 100,
+                    constants.PVALUE: float('%.3E' % Decimal(row[10])),
+                    constants.DATASET_DETECTION_CUTOFF: float(row[11])
+                }
             except IndexError as err:
-                msg = "Incorrect number of columns in vaf row: '{0}' ".format(row)+\
-                        "read from '{0}'".format(results_path)
+                msg = "Incorrect number of columns in vaf row: '{0}' ".format(row) + \
+                      "read from '{0}'".format(results_path)
                 raise RuntimeError(msg) from err
-    if results_dict[constants.PVALUE] > float(constants.DETECTION_ALPHA) :
-        significance_text = "not significantly larger"
+
+    p_value = results_dict[constants.PVALUE]
+    detection_cutoff = results_dict[constants.DATASET_DETECTION_CUTOFF]
+    tumour_fraction = results_dict[constants.TUMOUR_FRACTION_ZVIRAN]
+
+    if p_value > float(constants.DETECTION_ALPHA):
+        significance_text = "Not significantly larger."
         results_dict[constants.CTDNA_OUTCOME] = "UNDETECTED"
         results_dict[constants.TUMOUR_FRACTION_ZVIRAN] = 0
-    elif results_dict[constants.PVALUE] <= float(constants.DETECTION_ALPHA):
-        significance_text = "significantly larger"
-        results_dict[constants.CTDNA_OUTCOME] = "DETECTED"
+    elif p_value <= float(constants.DETECTION_ALPHA):
+        if tumour_fraction > detection_cutoff:
+            significance_text = "Statistically significant."
+            results_dict[constants.CTDNA_OUTCOME] = "DETECTED"
+        else:
+            significance_text = "Statistically significant p-value but does not meet the tumour fraction cutoff."
+            results_dict[constants.CTDNA_OUTCOME] = "UNDETECTED"
     else:
-        msg = "results pvalue {0} incompatible with detection alpha {1}".format(results_dict[constants.PVALUE], constants.DETECTION_ALPHA)
+        msg = "results pvalue {0} incompatible with detection alpha {1}".format(p_value, constants.DETECTION_ALPHA)
         self.logger.error(msg)
         raise RuntimeError
+
     results_dict[constants.SIGNIFICANCE] = significance_text
     return results_dict
+
