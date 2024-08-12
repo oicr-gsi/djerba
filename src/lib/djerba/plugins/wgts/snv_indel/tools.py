@@ -115,7 +115,7 @@ class snv_indel_processor(logger):
         if self.workspace.has_file(sic.VAF_PLOT_FILENAME):
             vaf_plot = image_converter.convert_svg(plot_path, 'CNV plot')
         else:
-            vaf_plot = False
+            vaf_plot = None
         return vaf_plot
 
     def get_merge_inputs(self):
@@ -427,7 +427,6 @@ class snv_indel_processor(logger):
         maf_path_annotated = self.annotate_maf(maf_path_preprocessed)
         self.run_data_rscript(whizbam_url, maf_path_annotated)
         # Exclude the plot if there are no somatic mutations
-        has_somatic_mutations = self.has_somatic_mutations()
-        if has_somatic_mutations == True:
+        if self.has_somatic_mutations():
             self.write_vaf_plot()
         self.write_whizbam_files()

@@ -73,19 +73,25 @@ if (is.null(cnfile)) {
   cn <- fread(cnfile)
   purity <- as.numeric(purity)
 
-  # Merge dataframes to get only that information needed for the LOH calculation only if there are SNVs.
-  if (calculate_LOH == FALSE ) {
-    # No need to write am empty loh.txt file. 
-    print("No SNVs to calculate LOH for. Ommitting LOH calcualtion.")
-  } else {
-    # Otherwise, calculate LOH for the SNVs that do exist.
+  # Merge dataframes to get only that information needed for the LOH calculation 
+  # Only if there are SNVs.
+  if (calculate_LOH == TRUE ) {
+
+    # Calculate LOH for the SNVs that do exist.
     calc_df = merge(df_filt_oncokb[,c("Hugo_Symbol", "tumour_vaf")], cn, by="Hugo_Symbol")
 
     # Compute LOH
     loh <- computeLOH(calc_df, purity)
-  
+
     # Write output to a table
     write.table(loh, file=paste0(outdir, "/loh.txt"), sep="\t", row.names=FALSE, quote=FALSE, col.names = TRUE)
+  
+  } else {
+    
+    # If no SNVs, no need to calculate LOH.
+    # No need to write am empty loh.txt file.
+    print("No SNVs to calculate LOH for. Ommitting LOH calcualtion.")
+
   }
 }
 
