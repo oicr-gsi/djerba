@@ -5,6 +5,7 @@
 - GCGI-1408: Updated CAPTIV8 plugin to expect output from Purple instead of Sequenza 
 - GCGI-1409: Fixed snv_indel plugin to handle no somatic mutations by omitting vaf plot
 - GCGI-981: Create virus (research) plugin
+- GCGI-1381: Add RUO report capabilities
 
 ## v1.7.0: 2024-08-02
 - Introduces an HTML cache in the JSON. Generate JSON at extract time. Update mode and mini-Djerba re-run only plugins with updated parameters, instead of all plugins, and apply updates to the cached HTML.

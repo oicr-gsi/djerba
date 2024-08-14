@@ -24,27 +24,17 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'PWGS.supp.ini',
             self.JSON: json_location,
-            self.MD5: '1b8ecc19931d0610e6ea571635e869e3'
+            self.MD5: '1403f93c49420da5bdc33e7e1b2e352d'
         }
         self.run_basic_test(test_source_dir, params)
 
-    def testTarSupplementary(self):
+    def testTarResearchSupplementary(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
-        json_location = os.path.join(self.sup_dir ,"plugins/supplement/report_json/tar.supplement.json")
+        json_location = os.path.join(self.sup_dir ,"plugins/supplement/report_json/tar.research.supplement.json")
         params = {
-            self.INI: 'TAR.supp.ini',
+            self.INI: 'TAR.RESEARCH.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'b540cdb9ae1b1602ea5722edd5c2a3ac'
-        }
-        self.run_basic_test(test_source_dir, params)
-   
-    def testTarFailSupplementary(self):
-        test_source_dir = os.path.realpath(os.path.dirname(__file__))
-        json_location = os.path.join(self.sup_dir ,"plugins/supplement/report_json/tar.fail.supplement.json")
-        params = {
-            self.INI: 'TAR.FAIL.supp.ini',
-            self.JSON: json_location,
-            self.MD5: 'c2bd07983474f6bde65f2d538bd9e155'
+            self.MD5: '93dcf07bba1facd7f1da21648a4a8960'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -54,7 +44,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'c1e33c46e85245bef3344eeacb5fd687'
+            self.MD5: '7d94f6243d939779aeb26a6e6e2b489c'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -64,7 +54,17 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'c3167d07933f1b730e00d3be3fe0c58f'
+            self.MD5: 'ebd2feea85da17f7ac2cd80c5dd613b0'
+        }
+        self.run_basic_test(test_source_dir, params)
+
+    def testWgtsResearchSupplementary(self):
+        test_source_dir = os.path.realpath(os.path.dirname(__file__))
+        json_location = os.path.join(self.sup_dir ,"plugins/supplement/report_json/wgts.research.supplement.json")
+        params = {
+            self.INI: 'WGTS.RESEARCH.supp.ini',
+            self.JSON: json_location,
+            self.MD5: 'eb747b1571dfa16511ef8c9507781eea'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -74,9 +74,20 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.supp.ini',
             self.JSON: json_location,
-            self.MD5: '6436c6e6bd879e8ec98b94599874db4b'
+            self.MD5: '999c601460901db71613ba28271847c8'
         }
         self.run_basic_test(test_source_dir, params)
+
+    def testWgts40XResearchSupplementary(self):
+        test_source_dir = os.path.realpath(os.path.dirname(__file__))
+        json_location = os.path.join(self.sup_dir ,"plugins/supplement/report_json/wgts40X.research.supplement.json")
+        params = {
+            self.INI: 'WGTS40X.RESEARCH.supp.ini',
+            self.JSON: json_location,
+            self.MD5: 'b6ab576784f6bbfc180b82331b8e3dab'
+        }
+        self.run_basic_test(test_source_dir, params)
+
 
     def testWgts40XFailSupplementary(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -84,8 +95,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'e1219cc657f2bceb10a73d2886ef6fe7'
-            #self.MD5: '6f3fdb131ecbc0aad17622f34d2c11f8'
+            self.MD5: 'f07eb45426aec64874909ed1e0e88430'
         }
         self.run_basic_test(test_source_dir, params)
     
