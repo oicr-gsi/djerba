@@ -19,6 +19,7 @@ from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.testing.tools import TestBase
 from djerba.util.validator import path_validator
 
+
 class PluginTester(TestBase):
 
     """
@@ -84,6 +85,9 @@ class PluginTester(TestBase):
         self.assertTrue(validator.validate_data(plugin_data_found))
         self.assertEqual(plugin_data_found, plugin_data_expected)
         html = plugin.render(plugin_data_found)
+        ### uncomment this to dump the plugin output HTML to a file
+        #with open('/tmp/foo.html', 'w') as out_file:
+        #    out_file.write(html)
         self.assert_report_MD5(html, expected_md5)
         # !!! Second pass -- run the plugin as part of Djerba main, do JSON check only
         djerba_main = core_main(work_dir, log_level=log_level)

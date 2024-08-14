@@ -36,7 +36,7 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_UPDATE_JSON = 'simple_report_for_update.json'
-    SIMPLE_CONFIG_MD5 = '05870238e8b6a2280a556a8e9341ebc3'
+    SIMPLE_CONFIG_MD5 = '04b749b3ec489ed9c06c1a06eb2dc886'
     SIMPLE_REPORT_MD5 = 'e4b491b28457b5b12a320ea11c6c47e5'
 
     class mock_args:
@@ -314,7 +314,8 @@ class TestCoreConfigurer(TestCore):
         loader = core_config_loader(log_level=logging.WARNING)
         core_configurer = loader.load(workspace(self.tmp_dir))
         config = ConfigParser()
-        config.add_section('core') # empty [core] section is sufficient
+        config.add_section('core')
+        config.set('core', 'author', core_constants.DEFAULT_AUTHOR)
         config = core_configurer.configure(config)
         return config
 
