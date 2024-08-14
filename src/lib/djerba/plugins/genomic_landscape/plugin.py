@@ -3,6 +3,7 @@ Plugin for genomic landscape section.
 """
 import csv
 import os
+import re
 
 import djerba.core.constants as core_constants
 import djerba.plugins.genomic_landscape.constants as glc
@@ -44,7 +45,8 @@ class main(plugin_base):
             glc.PURITY_INPUT,
             glc.MSI_FILE,
             glc.CTDNA_FILE,
-            glc.HRDETECT_PATH
+            glc.HRDETECT_PATH,
+            glc.SAMPLE_TYPE
         ]
         for key in discovered:
             self.add_ini_discovered(key)
@@ -75,6 +77,7 @@ class main(plugin_base):
         dpi = core_constants.DEFAULT_PATH_INFO
         oc = oncokb_constants.ONCOTREE_CODE
         w = self.update_wrapper_if_null(w, ipf, glc.TCGA_CODE)
+        w = self.update_wrapper_if_null(w, ipf, glc.SAMPLE_TYPE, fallback=glc.UNKNOWN_SAMPLE_TYPE)
         w = self.update_wrapper_if_null(w, ipf, oc, self.INPUT_PARAMS_ONCOTREE_CODE)
         w = self.update_wrapper_if_null(w, ppf, purple_constants.PURITY)
         w = self.update_wrapper_if_null(w, dsi, glc.TUMOUR_ID)
@@ -88,24 +91,30 @@ class main(plugin_base):
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         tumour_id = wrapper.get_my_string(glc.TUMOUR_ID)
         tcga_code = wrapper.get_my_string(glc.TCGA_CODE).lower()  # always lowercase
-
         # Get directories
         finder = directory_finder(self.log_level, self.log_path)
         data_dir = finder.get_data_dir()
         work_dir = self.workspace.get_work_dir()
         plugin_dir = os.path.dirname(os.path.realpath(__file__))
         r_script_dir = os.path.join(plugin_dir, 'Rscripts')
-
-        # Make a file where all the (actionable) biomarkers will go
+        # Make a file where all the (actionable) biomarkers will go, and initialize results
         biomarkers_path = self.make_biomarkers_maf(work_dir)
         results = tmb_processor(self.log_level, self.log_path).run(
             work_dir, data_dir, r_script_dir, tcga_code, biomarkers_path, tumour_id
         )
-        results[glc.PURITY] = wrapper.get_my_float(glc.PURITY_INPUT) * 100
+        # evaluate HRD and MSI reportability
+        hrd_ok, msi_ok = self.evaluate_reportability(
+            wrapper.get_my_float(glc.PURITY_INPUT),
+            wrapper.get_my_string(glc.SAMPLE_TYPE)
+        )
+        results[glc.CAN_REPORT_HRD] = hrd_ok
+        results[glc.CAN_REPORT_MSI] = msi_ok
+        # evaluate biomarkers
         results[glc.CTDNA] = ctdna_processor(self.log_level, self.log_path).run(wrapper.get_my_string(glc.CTDNA_FILE))
         hrd = hrd_processor(self.log_level, self.log_path)
         results[glc.BIOMARKERS][glc.HRD] = hrd.run(
-            work_dir, wrapper.get_my_string(glc.HRDETECT_PATH)
+            work_dir,
+            wrapper.get_my_string(glc.HRDETECT_PATH)
         )
         results[glc.BIOMARKERS][glc.MSI] = msi_processor(self.log_level, self.log_path).run(
             work_dir,
@@ -116,14 +125,19 @@ class main(plugin_base):
         )
         # Annotate genomic biomarkers for therapy info/merge inputs
         annotated_maf = self.annotate_oncokb(work_dir, wrapper)
-        merge_inputs = self.get_merge_inputs(annotated_maf)
+        merge_inputs = self.get_oncokb_merge_inputs(annotated_maf, msi_ok)
         hrd_annotation = hrd.annotate_NCCN(
             results[glc.BIOMARKERS][glc.HRD]['Genomic biomarker alteration'],
             wrapper.get_my_string(oncokb_constants.ONCOTREE_CODE),
             data_dir
         )
-        if hrd_annotation != None:
-            merge_inputs.append(hrd_annotation)
+        if hrd_annotation:
+            if hrd_ok:
+                merge_inputs.append(hrd_annotation)
+            else:
+                self.logger.debug('Omitting HRD annotation from therapies')
+        else:
+            self.logger.debug('No actionable annotation for HRD')
         data['merge_inputs']['treatment_options_merger'] = merge_inputs
         data['results'] = results
         return data
@@ -143,7 +157,30 @@ class main(plugin_base):
         annotator.annotate_biomarkers_maf(input_path, output_path)
         return output_path
 
-    def get_merge_inputs(self, annotated_maf_path):
+    def evaluate_reportability(self, purity, sample_type):
+        # evaluate reportability for HRD and MSI metrics
+        self.logger.debug('Evaluating reportability for purity and sample type')
+        sample_is_ffpe = False
+        if re.search('FFPE', sample_type.upper()):
+            sample_is_ffpe = True
+            self.logger.debug('FFPE sample detected')
+        elif sample_type == glc.UNKNOWN_SAMPLE_TYPE:
+            self.logger.warning("Unknown sample type in config; assuming non-FFPE sample")
+        else:
+            self.logger.debug('Non-FFPE sample detected')
+        if purity >= 0.5 or (purity >= 0.3 and not sample_is_ffpe):
+            hrd_ok = True
+        else:
+            hrd_ok = False
+        if purity >= 0.5:
+            msi_ok = True
+        else:
+            msi_ok = False
+        self.logger.debug("HRD reportable: {0}".format(hrd_ok))
+        self.logger.debug("MSI reportable: {0}".format(msi_ok))
+        return (hrd_ok, msi_ok)
+
+    def get_oncokb_merge_inputs(self, annotated_maf_path, msi_ok):
         """
         Read therapy information for merge inputs
         This is derived from the annotated biomarkers file.
@@ -156,6 +193,10 @@ class main(plugin_base):
         with open(annotated_maf_path) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
             for row_input in reader:
+                alteration = row_input['ALTERATION']
+                if re.search('MSI', alteration.upper()) and not msi_ok:
+                    self.logger.debug('Omitting MSI from therapies: {0}'.format(alteration))
+                    continue
                 # record therapy for all actionable alterations (OncoKB level 4 or higher)
                 therapies = oncokb_levels.parse_actionable_therapies(row_input)
                 for level in therapies.keys():
@@ -164,7 +205,7 @@ class main(plugin_base):
                         tier=oncokb_levels.tier(level),
                         level=level,
                         gene=gene,
-                        alteration=row_input['ALTERATION'],
+                        alteration=alteration,
                         alteration_url=self.get_alt_url(row_input['ALTERATION']),
                         treatments=therapies[level]
                     )

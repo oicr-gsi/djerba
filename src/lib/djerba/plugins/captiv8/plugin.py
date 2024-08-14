@@ -215,7 +215,7 @@ class main(plugin_base):
         mut_path = os.path.join(report_dir, constants.DATA_MUTATIONS_EXTENDED)
 
         if not (os.access(cna_path, os.R_OK) and os.access(mut_path, os.R_OK)):
-            print("Expected files data_CNA.txt and data_mutations_extended.txt not readable, check input directory")
+            print("Expected files purple.data_CNA.txt and/or data_mutations_extended.txt not readable, check input directory")
             sys.exit(1)
   
         potential_lof = False
@@ -228,7 +228,7 @@ class main(plugin_base):
                     first = False
                     continue
                 gene = row[0]
-                status = int(row[1])
+                status = int(row[2])
                 if gene in constants.SWISNF_GENES and status <= -2:
                     potential_lof = True
 

@@ -10,6 +10,12 @@ PURITY_INPUT = 'purity'
 DONOR = 'donor'
 MSI_FILE = 'msi_file'
 CTDNA_FILE = 'ctdna_file'
+SAMPLE_TYPE = 'sample_type'
+UNKNOWN_SAMPLE_TYPE = 'Unknown sample type'
+
+# biomarker reportability
+CAN_REPORT_HRD = 'can_report_hrd'
+CAN_REPORT_MSI = 'can_report_msi'
 
 # For MSI file
 MSI_RESULTS_SUFFIX = '.recalibrated.msi.booted'

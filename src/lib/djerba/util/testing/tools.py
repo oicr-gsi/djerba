@@ -69,7 +69,8 @@ class TestBase(unittest.TestCase):
             if not any([re.search(expr, line) for expr in skip_exprs]):
                 redacted_lines.append(line)
         redacted = ''.join(redacted_lines)
-        redacted = re.sub('[0-9]{4}/[0-9]{2}/[0-9]{2}', '0000/00/31', redacted)
+        redacted = re.sub('[0-9]{4}/[0-9]{2}/[0-9]{2}', '2000/01/01', redacted)
+        redacted = re.sub('[0-9]{4}-[0-9]{2}-[0-9]{2}', '2000-01-01', redacted)
         return redacted
 
     def redact_json_data(self, data):

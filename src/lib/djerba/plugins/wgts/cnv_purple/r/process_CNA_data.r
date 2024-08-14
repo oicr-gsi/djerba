@@ -8,6 +8,7 @@ option_list = list(
   make_option(c("-d", "--outdir"), type="character", default=NULL, help="output directory", metavar="character"),
   make_option(c("-g", "--genefile"), type="character", default=NULL, help="seg file", metavar="character"),
   make_option(c("-o", "--oncolist"), type="character", default=NULL, help="oncoKB cancer genes", metavar="character"),
+  make_option(c("-t", "--tumourid"), type="character", default=NULL, help="sample tumour id", metavar="character"),
   make_option(c("-p", "--ploidy"), type="character", default=NULL, help="sample ploidy for CN cutoffs", metavar="character")
 )
 
@@ -19,6 +20,7 @@ opt <- parse_args(opt_parser)
 outdir    <- opt$outdir
 genefile  <- opt$genefile
 oncolist  <- opt$oncolist
+tumour_id <- opt$tumourid
 ploidy    <- as.numeric(opt$ploidy)
 
 # source functions
@@ -34,7 +36,7 @@ if (is.null(genefile)) {
   oncogenes <- read.delim(oncolist, header=TRUE)
   raw_gene_data <- read.delim(genefile, header=TRUE) 
   
-  CNAs <- preProcCNA(raw_gene_data, oncogenes, ploidy)
+  CNAs <- preProcCNA(raw_gene_data, oncogenes, tumour_id, ploidy)
   
   # necessary file to find copy number profile of genes with small mutations
   write.table(data.frame("Hugo_Symbol"=rownames(CNAs[[1]]), CNAs[[1]], check.names=FALSE),

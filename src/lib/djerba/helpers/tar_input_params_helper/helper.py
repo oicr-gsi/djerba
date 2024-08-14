@@ -6,6 +6,7 @@ import djerba.core.constants as core_constants
 import djerba.util.ini_fields as ini  # TODO new module for these constants?
 import djerba.util.provenance_index as index
 from djerba.helpers.base import helper_base
+from djerba.util.date import is_valid_date
 from djerba.util.provenance_reader import provenance_reader, sample_name_container, \
     InvalidConfigurationError
 
@@ -24,6 +25,7 @@ class main(helper_base):
     SITE_OF_BIOPSY = 'site_of_biopsy'
     SAMPLE_TYPE = 'sample_type'
     KNOWN_VARIANTS = 'known_variants'
+    REQUISITION_ID = 'requisition_id'
     REQUISITION_APPROVED = 'requisition_approved'
     ASSAY = 'assay'
 
@@ -51,6 +53,7 @@ class main(helper_base):
         self.add_ini_required(self.SITE_OF_BIOPSY)
         self.add_ini_required(self.SAMPLE_TYPE)
         self.add_ini_required(self.KNOWN_VARIANTS)
+        self.add_ini_required(self.REQUISITION_ID)
         self.add_ini_required(self.REQUISITION_APPROVED)
         self.add_ini_required(self.ASSAY)
 
@@ -70,6 +73,7 @@ class main(helper_base):
                       self.PRIMARY_CANCER,
                       self.SITE_OF_BIOPSY,
                       self.KNOWN_VARIANTS,
+                      self.REQUISITION_ID,
                       self.REQUISITION_APPROVED,
                       self.SAMPLE_TYPE,
                       self.ASSAY]
@@ -107,6 +111,7 @@ class main(helper_base):
             self.SITE_OF_BIOPSY: config[self.identifier][self.SITE_OF_BIOPSY],
             self.SAMPLE_TYPE: config[self.identifier][self.SAMPLE_TYPE],
             self.KNOWN_VARIANTS: config[self.identifier][self.KNOWN_VARIANTS],
+            self.REQUISITION_ID: config[self.identifier][self.REQUISITION_ID],
             self.REQUISITION_APPROVED: config[self.identifier][self.REQUISITION_APPROVED],
             self.ASSAY: config[self.identifier][self.ASSAY],
         }
@@ -120,13 +125,11 @@ class main(helper_base):
             self.logger.error(msg)
             raise ValueError(msg)
         req_approved = info.get(self.REQUISITION_APPROVED)
-        try:
-            time.strptime(req_approved, '%Y/%m/%d')
-        except ValueError as err:
+        if not is_valid_date(req_approved):
             msg = "Invalid requisition approved date '{0}': ".format(req_approved)+\
-                "Must be in yyyy/mm/dd format"
+                "Must be in yyyy-mm-dd format"
             self.logger.error(msg)
-            raise ValueError(msg) from err
+            raise ValueError(msg)
 
     def write_input_params_info(self, input_params_info):
         self.workspace.write_json(self.INPUT_PARAMS_FILE, input_params_info)

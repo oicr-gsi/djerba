@@ -12,7 +12,7 @@ import djerba.plugins.genomic_landscape.constants as constants
 from djerba.util.image_to_base64 import converter
 from djerba.util.logger import logger
 from djerba.util.subprocess_runner import subprocess_runner
-
+from djerba.util.validator import path_validator
 
 class msi_processor(logger):
 
@@ -20,6 +20,7 @@ class msi_processor(logger):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, log_path)
+        self.validator = path_validator(log_level, log_path)
 
     def run(self, work_dir, r_script_dir, msi_file, biomarkers_path, tumour_id):
         """
@@ -31,6 +32,7 @@ class msi_processor(logger):
 
         # Write to genomic biomarkers maf if MSI is actionable
         if msi_data[constants.METRIC_ACTIONABLE]:
+            self.validator.validate_input_file(biomarkers_path)
             with open(biomarkers_path, "a") as biomarkers_file:
                 row = '\t'.join([constants.HUGO_SYMBOL, tumour_id, msi_data[constants.METRIC_ALTERATION]])
                 biomarkers_file.write(row + "\n")
@@ -43,6 +45,8 @@ class msi_processor(logger):
           """
         out_path = os.path.join(work_dir, 'msi.txt')
         msi_boots = []
+        self.validator.validate_output_dir(work_dir)
+        self.validator.validate_input_file(msi_file)
         with open(msi_file, 'r') as msi_file:
             reader_file = csv.reader(msi_file, delimiter="\t")
             for row in reader_file:
@@ -89,10 +93,11 @@ class msi_processor(logger):
             raise RuntimeError(msg)
         return (msi_dict)
 
-    def extract_MSI(self, work_dir, msi_file):
-        if msi_file is None:
-            msi_file = os.path.join(work_dir, constants.MSI_FILE_NAME)
-        with open(msi_file, 'r') as msi_file:
+    def extract_MSI(self, work_dir, msi_path):
+        if msi_path is None:
+            msi_path = os.path.join(work_dir, constants.MSI_FILE_NAME)
+        self.validator.validate_input_file(msi_path)
+        with open(msi_path, 'r') as msi_file:
             reader_file = csv.reader(msi_file, delimiter="\t")
             for row in reader_file:
                 try:

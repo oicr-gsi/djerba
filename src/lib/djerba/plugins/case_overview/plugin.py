@@ -10,7 +10,6 @@ in case assay names are introduced/changed at short notice
 
 import os
 import logging
-from time import strftime
 from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.util.render_mako import mako_renderer
 import djerba.core.constants as core_constants
