@@ -1,23 +1,29 @@
-project_id	project_name	primary_site	cohort_size	oncotree
-acc	Adrenocortical Carcinoma	Adrenal Gland	91	ACC
-blca	Bladder Urothelial Carcinoma	Bladder/Urinary Tract	409	BLCA
-brca	Breast Invasive Carcinoma	Breast	1009	BRCA
-cesc	Cervical Squamous Cell Carcinoma and Endocervical Adenocarcinoma	Cervix,Uterus	281	CESC,ECAD
-chol	Cholangiocarcinoma	Biliary Tract,Liver	36 CHOL,HCCIHCH
-coadread	Colon Adenocarcinoma	Bowel	528	COADREAD
-coadread	Rectum Adenocarcinoma	Bowel	528	COADREAD
-dlbc	Neoplasm Diffuse Large B-cell Lymphoma	Lymphoid	37	MBN
-esca	Esophageal Carcinoma	Esophagus/Stomach	182	ESCA
-gbm	Glioblastoma Multiforme	Brain	87	GBM
-hnsc	Head and Neck Squamous Cell Carcinoma	Head and Neck	502	HNSC
-kich	Kidney Chromophobe	Kidney	65	RCC
-kirc	Kidney Renal Clear Cell Carcinoma	Kidney	356	CCSK
-kirp	Kidney Renal Papillary Cell Carcinoma	Kidney	274	RCC
-laml	Acute Myeloid Leukemia	Myeloid	199	AML
-lgg	Lower Grade Glioma	Brain	510	ENCG
-lihc	Hepatocellular Carcinoma	Biliary Tract,Liver	358	HCC,HCCIHCH
-luad	Lung Adenocarcinoma	Lung	562	LUAD
-lusc	Lung Squamous Cell Carcinoma	Lung	469	LUSC
-meso	Mesothelioma	Peritoneum,Pleura	82	PEMESO,PLMESO
-ov	Ovarian Serous Cystadenocarcinoma	Ovary	409	SOC
-TCGA_ALL_TUMOR	TCGA	NA	6446	TCGA_ALL_TUMOR
+oncotree_code	tcga_code	project_name	primary_site	cohort_size
+ACC	acc	Adrenocortical Carcinoma	Adrenal Gland	91
+BLCA	blca	Bladder Urothelial Carcinoma	Bladder/Urinary Tract	409
+BRCA	brca	Breast Invasive Carcinoma	Breast	1009
+CESC	cesc	Cervical Squamous Cell Carcinoma and Endocervical Adenocarcinoma	"Cervix,Uterus"	281
+ECAD	cesc	Cervical Squamous Cell Carcinoma and Endocervical Adenocarcinoma	"Cervix,Uterus"	281
+CHOL	chol	Cholangiocarcinoma	"Biliary Tract,Liver"	36
+HCCIHCH	chol	Cholangiocarcinoma	"Biliary Tract,Liver"	36
+COADREAD	coadread	"Colon/Rectum Adenocarcinoma, "	Bowel	528
+MBN	dlbc	Neoplasm Diffuse Large B-cell Lymphoma	Lymphoid	37
+ESCA	esca	Esophageal Carcinoma	Esophagus/Stomach	182
+GBM	gbm	Glioblastoma Multiforme	Brain	87
+HNSC	hnsc	Head and Neck Squamous Cell Carcinoma	Head and Neck	502
+RCC	kich	Kidney Chromophobe	Kidney	65
+CCSK	kirc	Kidney Renal Clear Cell Carcinoma	Kidney	356
+RCC	kirp	Kidney Renal Papillary Cell Carcinoma	Kidney	274
+AML	laml	Acute Myeloid Leukemia	Myeloid	199
+ENCG	lgg	Lower Grade Glioma	Brain	510
+HCC	lihc	Hepatocellular Carcinoma	"Biliary Tract,Liver"	358
+HCCIHCH	lihc	Hepatocellular Carcinoma	"Biliary Tract,Liver"	358
+LUAD	luad	Lung Adenocarcinoma	Lung	562
+LUSC	lusc	Lung Squamous Cell Carcinoma	Lung	469
+PEMESO	meso	Mesothelioma	"Peritoneum,Pleura"	82
+PLMESO	meso	Mesothelioma	"Peritoneum,Pleura"	82
+SOC	ov	Ovarian Serous Cystadenocarcinoma	Ovary	409
+EOV	ov	Ovarian Serous Cystadenocarcinoma	Ovary	409
+HGSOC	ov	Ovarian Serous Cystadenocarcinoma	Ovary	409
+LGSOC	ov	Ovarian Serous Cystadenocarcinoma	Ovary	409
+TCGA_ALL_TUMOR	TCGA_ALL_TUMOR	TCGA	NA	6446
