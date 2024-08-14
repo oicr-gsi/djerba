@@ -21,7 +21,7 @@ rangeDF = read.table(file = range_file, sep = "\t", header = T, comment.char = "
 
 purity_plot <- plot_purity_range(rangeDF)
 
-svg(paste0(dir_path,"/purple.range.svg"), width = 8, height = 7)
+png(paste0(dir_path,"/purple.range.png"), width = 8, height = 7)
 print(purity_plot)
 dev.off()
 
