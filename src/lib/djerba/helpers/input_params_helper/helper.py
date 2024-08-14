@@ -21,7 +21,7 @@ class main(helper_base):
     REQUISITION_APPROVED = 'requisition_approved'
     ASSAY = 'assay'    
     REQUISITION_ID = 'requisition_id'
-    TCGACODE = 'tcgacode'
+    TCGA_CODE = 'tcga_code'
     SAMPLE_TYPE = 'sample_type'
 
     # Name for output file
@@ -50,8 +50,10 @@ class main(helper_base):
         self.add_ini_required(self.REQUISITION_APPROVED)
         self.add_ini_required(self.ASSAY)
         self.add_ini_required(self.REQUISITION_ID)
-        self.add_ini_required(self.TCGACODE)
         self.add_ini_required(self.SAMPLE_TYPE)
+        
+        # Allow tcga_code to default to TCGA_ALL_TUMOR if not given
+        self.add_ini_discovered(self.TCGA_CODE)
 
     def configure(self, config):
         """
@@ -69,7 +71,6 @@ class main(helper_base):
                       self.SITE_OF_BIOPSY,
                       self.REQUISITION_APPROVED,
                       self.REQUISITION_ID,
-                      self.TCGACODE,
                       self.SAMPLE_TYPE,
                       self.ASSAY]
 
@@ -79,8 +80,16 @@ class main(helper_base):
                 self.logger.error(msg)
                 raise RuntimeError(msg)
 
-        # Retrieve the parameters from the ini and write them to the workspace
+        # Retrieve the parameters from the ini
         info = self.get_input_params(config)
+
+        # Get tcga_code by converting from oncotree_code
+        if wrapper.my_param_is_null(self.TCGA_CODE):
+            info[self.TCGA_CODE] = self.convert_oncotree_to_tcga(info[self.ONCOTREE_CODE])
+        else:
+            info[self.TCGA_CODE] = wrapper.get_my_string(self.TCGA_CODE)
+        
+        # Write parameters to the workspace
         self.write_input_params_info(info)
         return wrapper.get_config()
 
@@ -100,17 +109,16 @@ class main(helper_base):
         """
         try:
             input_params_info = {
-                self.DONOR: config[self.identifier][self.DONOR],
-                self.STUDY: config[self.identifier][self.STUDY],
-                self.PROJECT: config[self.identifier][self.PROJECT],
-                self.ONCOTREE_CODE: config[self.identifier][self.ONCOTREE_CODE],
-                self.PRIMARY_CANCER: config[self.identifier][self.PRIMARY_CANCER],
-                self.SITE_OF_BIOPSY: config[self.identifier][self.SITE_OF_BIOPSY],
-                self.REQUISITION_APPROVED: config[self.identifier][self.REQUISITION_APPROVED],
-                self.ASSAY: config[self.identifier][self.ASSAY],
-                self.REQUISITION_ID: config[self.identifier][self.REQUISITION_ID],
-                self.TCGACODE: config[self.identifier][self.TCGACODE],
-                self.SAMPLE_TYPE: config[self.identifier][self.SAMPLE_TYPE]
+                self.DONOR: wrapper.get_my_string[self.DONOR],
+                self.STUDY: wrapper.get_my_string[self.STUDY],
+                self.PROJECT: wrapper.get_my_string[self.PROJECT],
+                self.ONCOTREE_CODE: wrapper.get_my_string[self.ONCOTREE_CODE],
+                self.PRIMARY_CANCER: wrapper.get_my_string[self.PRIMARY_CANCER],
+                self.SITE_OF_BIOPSY: wrapper.get_my_string[self.SITE_OF_BIOPSY],
+                self.REQUISITION_APPROVED: wrapper.get_my_string[self.REQUISITION_APPROVED],
+                self.ASSAY: wrapper.get_my_string[self.ASSAY],
+                self.REQUISITION_ID: wrapper.get_my_string[self.REQUISITION_ID],
+                self.SAMPLE_TYPE: wrapper.get_my_string[self.SAMPLE_TYPE]
             }
         except KeyError as err:
             msg = "Required config field for input params helper not found: {0}".format(err)
@@ -140,6 +148,10 @@ class main(helper_base):
                 "Must be in yyyy-mm-dd format"
             self.logger.error(msg)
             raise ValueError(msg)
+
+    def convert_oncotree_to_tcga(self, oncotree_code):
+
+
 
     def write_input_params_info(self, input_params_info):
         self.workspace.write_json(self.INPUT_PARAMS_FILE, input_params_info)
