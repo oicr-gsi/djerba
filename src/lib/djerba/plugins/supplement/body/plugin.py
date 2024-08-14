@@ -4,6 +4,7 @@ import os
 from djerba.plugins.base import plugin_base, DjerbaPluginError
 import djerba.core.constants as core_constants
 from djerba.util.date import get_todays_date
+from djerba.util.date import is_valid_date
 from djerba.util.render_mako import mako_renderer
 import djerba.util.assays as assays
 
@@ -20,7 +21,7 @@ class main(plugin_base):
     GENETICIST = "clinical_geneticist_name"
     GENETICIST_ID = "clinical_geneticist_licence"
     EXTRACT_DATE = "extract_date"
-
+    INCLUDE_SIGNOFFS = "include_signoffs"
     GENETICIST_DEFAULT = 'Trevor Pugh, PhD, FACMG'
     GENETICIST_ID_DEFAULT = '1027812'
 
@@ -45,24 +46,40 @@ class main(plugin_base):
                 msg = "Cannot find assay from input_params.json or manual config"
                 self.logger.error(msg)
                 raise DjerbaPluginError(msg)
-        if wrapper.my_param_is_null(self.USER_SUPPLIED_DRAFT_DATE):
-            wrapper.set_my_param(self.USER_SUPPLIED_DRAFT_DATE, self.NONE_SPECIFIED)
-        if wrapper.my_param_is_null(self.REPORT_SIGNOFF_DATE):
-            wrapper.set_my_param(self.REPORT_SIGNOFF_DATE, self.NONE_SPECIFIED)
+        # If dates not supplied, set as today's date
+        for param in [self.USER_SUPPLIED_DRAFT_DATE, self.REPORT_SIGNOFF_DATE]:
+            if wrapper.my_param_is_null(param):
+                wrapper.set_my_param(param, get_todays_date())
         self.check_assay_name(wrapper)
+
+        # Check if dates are valid
+        user_supplied_date = wrapper.get_my_string(self.USER_SUPPLIED_DRAFT_DATE)
+        report_signoff_date = wrapper.get_my_string(self.REPORT_SIGNOFF_DATE)
+        for date in [user_supplied_date, report_signoff_date]:
+            if not is_valid_date(date):
+                msg = "Invalid requisition approved date '{0}': ".format(date)+\
+                      "Must be in yyyy-mm-dd format"
+                self.logger.error(msg)
+                raise ValueError(msg)
+
         return wrapper.get_config()
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
-        if wrapper.get_my_string(self.USER_SUPPLIED_DRAFT_DATE) == self.NONE_SPECIFIED:
-            draft_date = get_todays_date()
-        else:
-            draft_date = wrapper.get_my_string(self.USER_SUPPLIED_DRAFT_DATE)
-        if wrapper.get_my_string(self.REPORT_SIGNOFF_DATE) == self.NONE_SPECIFIED:
-            report_signoff_date = get_todays_date()
-        else:
-            report_signoff_date = wrapper.get_my_string(self.REPORT_SIGNOFF_DATE)
+        draft_date = wrapper.get_my_string(self.USER_SUPPLIED_DRAFT_DATE)
+        report_signoff_date = wrapper.get_my_string(self.REPORT_SIGNOFF_DATE)
         self.check_assay_name(wrapper)
+       
+        attributes_list = wrapper.get_my_attributes()
+        if "clinical" in attributes_list:
+            include_signoffs = True
+        elif "research" in attributes_list:
+            include_signoffs = False
+        else:
+            include_signoffs = False
+            msg = "Excluding sign-offs for non-clinical attribute: {0}".format(attributes_list)
+            self.logger.warning(msg)
+
         data = {
             'plugin_name': self.identifier+' plugin',
             'priorities': wrapper.get_my_priorities(),
@@ -73,12 +90,18 @@ class main(plugin_base):
                 self.FAILED: wrapper.get_my_boolean(self.FAILED),
                 core_constants.AUTHOR: config['core'][core_constants.AUTHOR],
                 self.EXTRACT_DATE: draft_date,
-                self.REPORT_SIGNOFF_DATE: report_signoff_date,
-                self.GENETICIST: wrapper.get_my_string(self.GENETICIST),
-                self.GENETICIST_ID: wrapper.get_my_string(self.GENETICIST_ID)
+                self.INCLUDE_SIGNOFFS: include_signoffs
             },
             'version': str(self.SUPPLEMENT_DJERBA_VERSION)
         }
+
+        if include_signoffs:
+            data['results'].update({
+                self.REPORT_SIGNOFF_DATE: report_signoff_date,
+                self.GENETICIST: wrapper.get_my_string(self.GENETICIST),
+                self.GENETICIST_ID: wrapper.get_my_string(self.GENETICIST_ID)
+            })
+
         return data
 
     def render(self, data):
