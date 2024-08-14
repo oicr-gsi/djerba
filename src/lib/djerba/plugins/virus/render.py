@@ -6,7 +6,6 @@ from djerba.util.html import html_builder as hb
 class html_builder:
 
   # Header constants
-  #SPECIES = 'Species'
   ASSIGNED = 'Assigned Name'
   NAME = 'Common Name'
   COVERAGE = 'Coverage'
@@ -14,7 +13,6 @@ class html_builder:
   INTEGRATION = 'Integration Breakpoints'
 
   # Extract constants
-  #_SPECIES = 'name_species'
   _ASSIGNED = 'name_assigned'
   _NAME = 'common_name'
   _COVERAGE = 'coverage'
@@ -27,7 +25,6 @@ class html_builder:
     Creates the header for the VIRUSBreakend table.
     """
     names = [
-        #self.SPECIES,
         self.ASSIGNED,
         self.NAME,
         self.LENGTH,
@@ -44,7 +41,6 @@ class html_builder:
     rows = []
     for row in row_fields:
         cells = [
-            #hb.td(row[self._SPECIES]),
             hb.td(row[self._ASSIGNED]),
             hb.td(row[self._NAME]),
             hb.td(row[self._LENGTH]),

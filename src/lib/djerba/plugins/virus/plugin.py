@@ -16,7 +16,7 @@ import djerba.core.constants as core_constants
 
 class main(plugin_base):
 
-  PRIORITY = 1200
+  PRIORITY = 300
   PLUGIN_VERSION = '1.0.0'
   TEMPLATE_NAME = 'virus_template.html'
 
@@ -26,7 +26,6 @@ class main(plugin_base):
   VIRUS_WORKFLOW = 'virusbreakend'
 
   # Extract constants
-  #GENUS = 'name_genus'
   SPECIES = 'name_species'
   ASSIGNED = 'name_assigned'
   NAME = 'common_name'
@@ -61,12 +60,7 @@ class main(plugin_base):
              'LOW_VIRAL_COVERAGE']
 
   def specify_params(self):
-    discovered = [
-        self.DONOR,
-        self.VIRUS_FILE,
-    ]
-    for key in discovered:
-        self.add_ini_discovered(key)
+    self.add_ini_discovered(self.VIRUS_FILE)
     self.set_ini_default(core_constants.ATTRIBUTES, 'research')
     self.set_priority_defaults(self.PRIORITY)
 
@@ -75,14 +69,6 @@ class main(plugin_base):
     
     config = self.apply_defaults(config)
     wrapper = self.get_config_wrapper(config)
-    
-    # Get parameters
-    wrapper = self.update_wrapper_if_null(
-        wrapper,
-        core_constants.DEFAULT_SAMPLE_INFO,
-        self.DONOR,
-        self.DONOR
-    )
 
      # Get virus file from path_info.json
     wrapper = self.update_wrapper_if_null(
@@ -100,7 +86,7 @@ class main(plugin_base):
     virus_path = config[self.identifier][self.VIRUS_FILE]
 
     data = {
-        'plugin_name': 'Virus/VIRUSBreakend',
+        'plugin_name': 'VIRUSBreakend',
         'version': self.PLUGIN_VERSION,
         'priorities': wrapper.get_my_priorities(),
         'attributes': wrapper.get_my_attributes(),
@@ -124,7 +110,6 @@ class main(plugin_base):
             # To be oncogenic, it has to be one of the driver viruses and have more than 0 breakpoints and not fail QC
             if float(input_row[self.INTEGRATION]) > 0 and input_row[self.SPECIES] in self.DRIVER_VIRUSES and input_row[self.QC] not in self.FAIL_QC:
                 row = {
-                    #self.SPECIES: input_row[self.SPECIES],
                     self.ASSIGNED: input_row[self.ASSIGNED],
                     self.NAME: self.DRIVER_VIRUSES[input_row[self.SPECIES]],
                     self.COVERAGE: input_row[self.COVERAGE],
