@@ -298,6 +298,8 @@ class TestCoreConfigurer(TestCore):
     """Test the 'core_configurer' class"""
 
     OUTPUT = 'core_config_test.ini'
+    TEST_USERNAME = 'test'
+    TEST_AUTHOR = 'Test Author'
 
     def assert_core_config(self, config):
         out_path = os.path.join(self.tmp_dir, self.OUTPUT)
@@ -310,14 +312,55 @@ class TestCoreConfigurer(TestCore):
             config_expected = in_file.read().strip()
         self.assertEqual(config_expected, config_found)
 
-    def run_core_config(self):
+    def run_core_config(self, default_author=True):
         loader = core_config_loader(log_level=logging.WARNING)
         core_configurer = loader.load(workspace(self.tmp_dir))
         config = ConfigParser()
         config.add_section('core')
-        config.set('core', 'author', core_constants.DEFAULT_AUTHOR)
+        if default_author:
+            config.set('core', 'author', core_constants.DEFAULT_AUTHOR)
         config = core_configurer.configure(config)
         return config
+
+    def run_core_config_no_author(self):
+        return self.run_core_config(default_author=False)
+
+    def test_author(self):
+        """Test author lookup"""
+        user_orig = os.environ.get('USER')
+        sudo_user_orig = os.environ.get('SUDO_USER')
+        private_dir_orig = os.environ.get('DJERBA_PRIVATE_DIR')
+        # make a temporary lookup file
+        os.environ['DJERBA_PRIVATE_DIR'] = self.tmp_dir
+        lookup = {
+            self.TEST_USERNAME: self.TEST_AUTHOR
+        }
+        with open(os.path.join(self.tmp_dir, 'djerba_users.json'), 'w') as out_file:
+            out_file.write(json.dumps(lookup))
+        # unknown username -> default author
+        os.environ['USER'] = 'nobody'
+        config = self.run_core_config_no_author()
+        self.assertEqual(config.get('core', 'author'), core_constants.DEFAULT_AUTHOR)
+        # known username -> test author
+        os.environ['USER'] = self.TEST_USERNAME
+        config = self.run_core_config_no_author()
+        self.assertEqual(config.get('core', 'author'), self.TEST_AUTHOR)
+        # known sudo username -> test author
+        os.environ['USER'] = 'nobody'
+        os.environ['SUDO_USER'] = self.TEST_USERNAME
+        config = self.run_core_config_no_author()
+        self.assertEqual(config.get('core', 'author'), self.TEST_AUTHOR)        
+        # put environment variables back as they were
+        original = {
+            'USER': user_orig,
+            'SUDO_USER': sudo_user_orig,
+            'DJERBA_PRIVATE_DIR': private_dir_orig
+        }
+        for k,v in original.items():
+            if v != None:
+                os.environ[k] = v
+            else:
+                del os.environ[k]
 
     def test_default(self):
         """Test default configuration with UUID"""
