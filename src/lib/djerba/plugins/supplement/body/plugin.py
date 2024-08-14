@@ -46,10 +46,10 @@ class main(plugin_base):
                 msg = "Cannot find assay from input_params.json or manual config"
                 self.logger.error(msg)
                 raise DjerbaPluginError(msg)
-        if wrapper.my_param_is_null(self.USER_SUPPLIED_DRAFT_DATE):
-            wrapper.set_my_param(self.USER_SUPPLIED_DRAFT_DATE, self.NONE_SPECIFIED)
-        if wrapper.my_param_is_null(self.REPORT_SIGNOFF_DATE):
-            wrapper.set_my_param(self.REPORT_SIGNOFF_DATE, self.NONE_SPECIFIED)
+        # If dates not supplied, set as today's date
+        for param in [self.USER_SUPPLIED_DRAFT_DATE, self.REPORT_SIGNOFF_DATE]:
+            if wrapper.my_param_is_null(param):
+                wrapper.set_my_param(param, get_todays_date())
         self.check_assay_name(wrapper)
 
         # Check if dates are valid
@@ -57,7 +57,7 @@ class main(plugin_base):
         report_signoff_date = wrapper.get_my_string(self.REPORT_SIGNOFF_DATE)
         for date in [user_supplied_date, report_signoff_date]:
             if not is_valid_date(date):
-                msg = "Invalid requisition approved date '{0}': ".format(req_approved)+\
+                msg = "Invalid requisition approved date '{0}': ".format(date)+\
                       "Must be in yyyy-mm-dd format"
                 self.logger.error(msg)
                 raise ValueError(msg)
@@ -66,14 +66,8 @@ class main(plugin_base):
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
-        if wrapper.get_my_string(self.USER_SUPPLIED_DRAFT_DATE) == self.NONE_SPECIFIED:
-            draft_date = get_todays_date()
-        else:
-            draft_date = wrapper.get_my_string(self.USER_SUPPLIED_DRAFT_DATE)
-        if wrapper.get_my_string(self.REPORT_SIGNOFF_DATE) == self.NONE_SPECIFIED:
-            report_signoff_date = get_todays_date()
-        else:
-            report_signoff_date = wrapper.get_my_string(self.REPORT_SIGNOFF_DATE)
+        draft_date = wrapper.get_my_string(self.USER_SUPPLIED_DRAFT_DATE)
+        report_signoff_date = wrapper.get_my_string(self.REPORT_SIGNOFF_DATE)
         self.check_assay_name(wrapper)
        
         attributes_list = wrapper.get_my_attributes()
