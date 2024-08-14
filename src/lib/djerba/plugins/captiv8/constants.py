@@ -45,7 +45,7 @@ DRIVER_VIRUSES = ["Human gammaherpesvirus 4",
                     "Alphapapillomavirus 3",
                     "Alphapapillomavirus 8",
                     "Human polyomavirus 5"]
-SWISNF_GENES = ['SMARCB1', 'SMARCA4', 'ARID1A', 'ARID1B', 'PBRM1']
+SWISNF_GENES = ['SMARCB1', 'SMARCA4', 'ARID1A', 'ARID1B', 'PBRM1', 'ARID2']
 SPECIES = 'name_species'
 BED_FILE_NAME = 'gencode.v31.ensg_annotation_w_entrez.bed'
 TMB_EXCLUDED = [
@@ -70,7 +70,7 @@ LYMPH = 'lymph'
 VIRUS = 'virus'
 
 DATA_MUTATIONS_EXTENDED = 'data_mutations_extended.txt'
-DATA_CNA = 'data_CNA.txt'
+DATA_CNA = 'purple.data_CNA.txt'
 TUMOUR_VAF = 'tumour_vaf'
 VAF_CUTOFF = 0.1
 DIVISOR = 3095.978588 # cat $HG38_ROOT/hg38_random.fa | grep -v "^>" | sed s:[^ACGTacgt]::g | tr -d  "\n" | wc -m

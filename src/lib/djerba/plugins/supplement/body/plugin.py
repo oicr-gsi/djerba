@@ -3,10 +3,9 @@ import logging
 import os
 from djerba.plugins.base import plugin_base, DjerbaPluginError
 import djerba.core.constants as core_constants
+from djerba.util.date import get_todays_date
 from djerba.util.render_mako import mako_renderer
 import djerba.util.assays as assays
-import djerba.util.input_params_tools as input_params_tools
-from time import strftime
 
 class main(plugin_base):
 
@@ -35,10 +34,7 @@ class main(plugin_base):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         # Get input_data.json if it exists; else return None
-        input_data = input_params_tools.get_input_params_json(self)
-        if input_data == None:
-            msg = "File input_params.json does not exist. Parameters must be set manually."
-            self.logger.info(msg)
+        input_data = self.workspace.read_maybe_input_params()
         if wrapper.my_param_is_null(self.ASSAY):
             if input_data:
                 wrapper.set_my_param(self.ASSAY, input_data[self.ASSAY])
@@ -59,11 +55,11 @@ class main(plugin_base):
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         if wrapper.get_my_string(self.USER_SUPPLIED_DRAFT_DATE) == self.NONE_SPECIFIED:
-            draft_date = strftime("%Y/%m/%d")
+            draft_date = get_todays_date()
         else:
             draft_date = wrapper.get_my_string(self.USER_SUPPLIED_DRAFT_DATE)
         if wrapper.get_my_string(self.REPORT_SIGNOFF_DATE) == self.NONE_SPECIFIED:
-            report_signoff_date = strftime("%Y/%m/%d")
+            report_signoff_date = get_todays_date()
         else:
             report_signoff_date = wrapper.get_my_string(self.REPORT_SIGNOFF_DATE)
         self.check_assay_name(wrapper)

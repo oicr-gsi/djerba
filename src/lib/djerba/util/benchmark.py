@@ -30,7 +30,7 @@ class benchmarker(logger):
     MSI_DIR_NAME = 'msi'
     SAMPLES = [
         "GSICAPBENCH_1219",
-        "GSICAPBENCH_1232",
+        #"GSICAPBENCH_1232", # temporarily commented out, sample not in GSICAPBENCH240425
         "GSICAPBENCH_1233",
         "GSICAPBENCH_1273",
         "GSICAPBENCH_1275",
@@ -47,6 +47,7 @@ class benchmarker(logger):
     ARRIBA_FILE = 'arriba_path'
     DONOR = 'donor'
     CTDNA_FILE = 'ctdna_file'
+    HRD_FILE = 'hrd_file'
     MAF_FILE = 'maf_path'
     MAVIS_FILE = 'mavis_path'
     MRDETECT_VCF = 'mrdetect_vcf'
@@ -54,8 +55,8 @@ class benchmarker(logger):
     PLOIDY = 'ploidy'
     PROJECT = 'project'
     PURITY = 'purity'
+    PURPLE_FILE = 'purple_path'
     RSEM_FILE = 'rsem_genes_results'
-    SEQUENZA_FILE = 'sequenza_path'
     TUMOUR_ID = 'tumour_id'
     NORMAL_ID = 'normal_id'
     APPLY_CACHE = 'apply_cache'
@@ -95,7 +96,6 @@ class benchmarker(logger):
         templates = {
             self.MAF_FILE: '{0}/**/{1}_*mutect2.filtered.maf.gz',
             self.MAVIS_FILE: '{0}/**/{1}*.mavis_summary.tab',
-            self.SEQUENZA_FILE: '{0}/**/{1}_*_results.sequenza.zip',
             self.RSEM_FILE: '{0}/**/{1}_*.genes.results',
             self.MSI_FILE: '{0}/**/{1}_*.msi.booted',
             self.MRDETECT_VCF: '{0}/**/{1}_*.SNP.vcf'
@@ -117,7 +117,16 @@ class benchmarker(logger):
                 msg = "Expected arriba path '{0}' is not a file".format(arriba_path)
                 self.logger.error(msg)
                 raise RuntimeError(msg)
+            purple_path = os.path.join(self.private_dir, 'purple', sample+'.purple.zip')
+            hrd_path = os.path.join(self.private_dir, 'hrDetect', sample+'.signatures.json')
+            for in_path in [arriba_path, purple_path, hrd_path]:
+                if not os.path.isfile(in_path):
+                    msg = "Expected input path '{0}' is not a file".format(in_path)
+                    self.logger.error(msg)
+                    raise RuntimeError(msg)
             sample_inputs[self.ARRIBA_FILE] = arriba_path
+            sample_inputs[self.PURPLE_FILE] = purple_path
+            sample_inputs[self.HRD_FILE] = hrd_path
             if None in sample_inputs.values():
                 template = "Skipping {0} as one or more values are missing: {1}"
                 msg = template.format(sample, sample_inputs)
@@ -250,7 +259,7 @@ class report_equivalence_tester(logger):
     Eg. expression comparison will not necessarily work with different plugins
     """
 
-    CNV_NAME = 'cnv'
+    CNV_NAME = 'wgts.cnv_purple'
     FUSION_NAME = 'fusion'
     SNV_INDEL_NAME = 'wgts.snv_indel'
     SUPPLEMENT_NAME = 'supplement.body'
@@ -421,6 +430,7 @@ class report_equivalence_tester(logger):
         Replace variable elements (images, dates) with dummy values
         """
         placeholder = 'redacted for benchmark comparison'
+        self.logger.info("Preprocessing report path {0}".format(report_path))
         with open(report_path) as report_file:
             data = json.loads(report_file.read())
         plugins = data['plugins'] # don't compare config or core elements
@@ -430,7 +440,7 @@ class report_equivalence_tester(logger):
         results = 'results'
         plugins[self.CNV_NAME][results]['cnv plot'] = placeholder
         plugins[self.SNV_INDEL_NAME][results]['vaf_plot'] = placeholder
-        for biomarker in ['MSI', 'TMB']:
+        for biomarker in ['MSI', 'TMB', 'HRD']:
             plugins['genomic_landscape'][results]['genomic_biomarkers'][biomarker]['Genomic biomarker plot'] = placeholder
         for date_key in ['extract_date', 'report_signoff_date']:
             plugins[self.SUPPLEMENT_NAME][results][date_key] = placeholder

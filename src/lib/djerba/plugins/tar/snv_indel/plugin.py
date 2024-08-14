@@ -16,7 +16,6 @@ from djerba.plugins.tar.provenance_tools import subset_provenance
 from djerba.core.workspace import workspace
 from djerba.util.render_mako import mako_renderer
 from djerba.util.html import html_builder as hb
-import djerba.util.input_params_tools as input_params_tools
 from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
 from djerba.util.environment import directory_finder
@@ -57,22 +56,23 @@ class main(plugin_base):
       wrapper = self.get_config_wrapper(config)
 
       # Get input_data.json if it exists; else return None
-      input_data = input_params_tools.get_input_params_json(self)
-
-
+      input_data = self.workspace.read_maybe_input_params()
       # FIRST PASS: get input parameters
-      if wrapper.my_param_is_null('donor'):
-          wrapper.set_my_param('donor', input_data['donor'])
-      if wrapper.my_param_is_null('assay'):
-          wrapper.set_my_param('assay', input_data['assay'])
-      if wrapper.my_param_is_null('oncotree_code'):
-          wrapper.set_my_param('oncotree_code', input_data['oncotree_code'])
-      if wrapper.my_param_is_null('cbio_id'):
-          wrapper.set_my_param('cbio_id', input_data['cbio_id'])
-      if wrapper.my_param_is_null('tumour_id'):
-          wrapper.set_my_param('tumour_id', input_data['tumour_id'])
-      if wrapper.my_param_is_null('normal_id'):
-          wrapper.set_my_param('normal_id', input_data['normal_id'])
+      for key in [
+          'normal_id',
+          'tumour_id',
+          'cbio_id',
+          'oncotree_code',
+          'assay',
+          'donor'
+      ]:
+          if wrapper.my_param_is_null(key):
+              if input_data != None:
+                  wrapper.set_my_param(key, input_data[key])
+              else:
+                  msg = "Cannot find {0} in manual config or input_params.json".format(key)
+                  self.logger.error(msg)
+                  raise RuntimeError(msg)
       
       # SECOND PASS: get files
       if wrapper.my_param_is_null('maf_file'):
@@ -97,10 +97,13 @@ class main(plugin_base):
       # Get starting plugin data
       data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
       
-      # Get purity
-      with open(os.path.join(work_dir, 'purity.txt'), "r") as file:
-            purity = float(file.readlines()[0]) 
-      
+      # Get purity only if the file exists
+      if self.workspace.has_file('purity.txt'):
+          with open(os.path.join(work_dir, 'purity.txt'), "r") as file:
+              purity = float(file.readlines()[0]) 
+      else:
+          purity = 0 # just needs to be anything less than 10% to ignore copy state
+
       # Preprocessing
       maf_file = self.filter_maf_for_tar(work_dir, config[self.identifier]["maf_file"], config[self.identifier]["maf_file_normal"])
       preprocess(config, work_dir, assay, oncotree_code, cbio_id, tumour_id, normal_id, maf_file).run_R_code()
@@ -157,7 +160,16 @@ class main(plugin_base):
       base_dir = directory_finder(self.log_level, self.log_path).get_base_dir()
       df_freq = pd.read_csv(os.path.join(base_dir, tar_constants.FREQUENCY_FILE),
                    sep = "\t")
-       
+
+      # Need to clean up the tumour and normal dataframes
+      for column in tar_constants.CLEAN_COLUMNS:
+          # Convert to numeric, setting errors='coerce' to turn non-numeric values into NaN
+          df_pl[column] = pd.to_numeric(df_pl[column], errors='coerce')
+          df_bc[column] = pd.to_numeric(df_bc[column], errors='coerce')
+          # Replace NaN with 0
+          df_pl[column] = df_pl[column].fillna(0)
+          df_bc[column] = df_bc[column].fillna(0)
+
       for row in df_pl.iterrows():
           hugo_symbol = row[1]['Hugo_Symbol']
           chromosome = row[1]['Chromosome']

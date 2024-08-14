@@ -7,12 +7,11 @@ import json
 from decimal import Decimal
 from mako.lookup import TemplateLookup
 import djerba.plugins.sample.constants as constants
-from djerba.plugins.base import plugin_base
+from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.core.workspace import workspace
 import djerba.core.constants as core_constants
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.render_mako import mako_renderer
-import djerba.util.input_params_tools as input_params_tools
 
 try:
     import gsiqcetl.column
@@ -47,20 +46,19 @@ class main(plugin_base):
         work_dir = self.workspace.get_work_dir()
 
         # Get input_data.json if it exists; else return None
-        input_data = input_params_tools.get_input_params_json(self)
-        if input_data == None:
-            msg = "Input_params.json does not exist. Parameters must be set manually."
-            self.logger.warning(msg)
+        input_data = self.workspace.read_maybe_input_params()
 
         # FIRST PASS: Get the input parameters
-        if wrapper.my_param_is_null(constants.ONCOTREE):
-            wrapper.set_my_param(constants.ONCOTREE, input_data[constants.ONCOTREE])
-        if wrapper.my_param_is_null(constants.SAMPLE_TYPE):
-            wrapper.set_my_param(constants.SAMPLE_TYPE, input_data[constants.SAMPLE_TYPE])
-        if wrapper.my_param_is_null(constants.PURITY):
-            wrapper.set_my_param(constants.PURITY, input_data[constants.PURITY])
-        if wrapper.my_param_is_null(constants.PLOIDY):
-            wrapper.set_my_param(constants.PLOIDY, input_data[constants.PLOIDY])
+        for key in [constants.ONCOTREE, constants.SAMPLE_TYPE]:
+            if wrapper.my_param_is_null(key):
+                if input_data != None:
+                    wrapper.set_my_param(key, input_data[key])
+                else:
+                    msg = "Cannot find {0} in manual config or input_params.json".format(key)
+                    self.logger.error(msg)
+                    raise RuntimeError(msg)
+        wrapper = self.fill_param_if_null(wrapper, constants.PURITY, "purity_ploidy.json")
+        wrapper = self.fill_param_if_null(wrapper, constants.PLOIDY, "purity_ploidy.json")
 
         # Get tumour_id from sample info:
         if wrapper.my_param_is_null(core_constants.TUMOUR_ID):
@@ -131,6 +129,18 @@ class main(plugin_base):
             self.logger.debug(msg)
             raise MissingQCETLError(msg)
 
+    def fill_param_if_null(self, wrapper, param, input_param_file):
+        if wrapper.my_param_is_null(param):
+            if self.workspace.has_file(input_param_file):
+                data = self.workspace.read_json(input_param_file)
+                param_value = data[param]
+                wrapper.set_my_param(param, param_value)
+            else:
+                msg = "Cannot find {0}; must be manually specified or ".format(param)+\
+                        "given in {0}".format(input_param_file)
+                self.logger.error(msg)
+                raise DjerbaPluginError(msg)
+        return(wrapper)
 
 class MissingQCETLError(Exception):
     pass 

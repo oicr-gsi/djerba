@@ -7,13 +7,14 @@ import re
 import csv
 import gzip
 import json
+import pandas as pd
 import logging
 import djerba.core.constants as core_constants
+import djerba.plugins.wgts.common.cnv.constants as cnv_constants
 import djerba.plugins.wgts.snv_indel.constants as sic
 from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
-from djerba.plugins.cnv import constants as cnv_constants
-from djerba.plugins.wgts.tools import wgts_tools
+from djerba.plugins.wgts.common.tools import wgts_tools
 from djerba.util.environment import directory_finder
 from djerba.util.html import html_builder
 from djerba.util.image_to_base64 import converter
@@ -67,6 +68,7 @@ class snv_indel_processor(logger):
         row_t_depth = int(row[ix.get(sic.T_DEPTH)])
         alt_count_raw = row[ix.get(sic.T_ALT_COUNT)]
         gnomad_af_raw = row[ix.get(sic.GNOMAD_AF)]
+        biotype = row[ix.get(sic.BIOTYPE)]
         row_t_alt_count = float(alt_count_raw) if alt_count_raw!='' else 0.0
         row_gnomad_af = float(gnomad_af_raw) if gnomad_af_raw!='' else 0.0
         is_matched = row[ix.get(sic.MATCHED_NORM_SAMPLE_BARCODE)] != 'unmatched'
@@ -77,6 +79,7 @@ class snv_indel_processor(logger):
         if row_t_depth >= 1 and \
            row_t_alt_count/row_t_depth >= vaf_cutoff and \
            (is_matched or row_gnomad_af < self.MAX_UNMATCHED_GNOMAD_AF) and \
+           biotype == "protein_coding" and \
            var_class in sic.MUTATION_TYPES_EXONIC and \
            not any([z in sic.FILTER_FLAGS_EXCLUDE for z in filter_flags]) and \
            not (var_class == "5'Flank" and hugo_symbol != 'TERT'):
@@ -103,10 +106,16 @@ class snv_indel_processor(logger):
         return factory.get_annotator(self.work_dir, self.config).annotate_maf(maf_path)
 
     def convert_vaf_plot(self):
-        """Read VAF plot from file and return as a base64 string"""
+        """
+        Read VAF plot from file if it exists and return as a base64 string
+        Else, return False
+        """
         image_converter = converter(self.log_level, self.log_path)
         plot_path = os.path.join(self.work_dir, sic.VAF_PLOT_FILENAME)
-        vaf_plot = image_converter.convert_svg(plot_path, 'CNV plot')
+        if self.workspace.has_file(sic.VAF_PLOT_FILENAME):
+            vaf_plot = image_converter.convert_svg(plot_path, 'CNV plot')
+        else:
+            vaf_plot = None
         return vaf_plot
 
     def get_merge_inputs(self):
@@ -147,9 +156,9 @@ class snv_indel_processor(logger):
                     if gene == 'TERT':
                         # filtering for TERT hot spot would have already occured so this is a hot spot
                         if row_input[sic.START] == '1295113':
-                            alt = 'p.? (c.-124G>A)'
+                            alt = 'p.? (c.-124C>T)'
                         elif row_input[sic.START] == '1295135':
-                            alt = 'p.? (c.-146G>A)'
+                            alt = 'p.? (c.-146C>T)'
                         alt_url = html_builder.build_alteration_url(
                             gene, "Promoter%20Mutation", oncotree_code
                         )
@@ -195,6 +204,8 @@ class snv_indel_processor(logger):
 
     def get_mutation_type(self, row):
         mutation_type = row[sic.VARIANT_CLASSIFICATION]
+        if row[sic.HUGO_SYMBOL] == 'TERT':
+            mutation_type = 'Promoter'
         mutation_type = mutation_type.replace('_', ' ')
         return mutation_type
 
@@ -212,12 +223,13 @@ class snv_indel_processor(logger):
             self.logger.info("No expression data found")
             expression = {}
         cytobands = wgts_tools(self.log_level, self.log_path).cytoband_lookup()
-        if self.workspace.has_file(cnv_constants.COPY_STATE_FILE):
-            has_copy_states = True
-            copy_states = self.workspace.read_json(cnv_constants.COPY_STATE_FILE)
+        if self.workspace.has_file(sic.LOH_FILE):
+            has_loh = True
+            loh_df = pd.read_csv(os.path.join(self.work_dir, sic.LOH_FILE), sep="\t")
+            loh_dict = dict(zip(loh_df.Hugo_Symbol, loh_df.LOH))
         else:
-            has_copy_states = False
-            copy_states = {}
+            has_loh = False
+            loh_dict = {}
         with open(os.path.join(self.work_dir, sic.MUTATIONS_ONCOGENIC)) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
             for row_input in reader:
@@ -232,7 +244,7 @@ class snv_indel_processor(logger):
                     sic.TYPE: self.get_mutation_type(row_input),
                     sic.VAF: self.get_tumour_vaf(row_input),
                     sic.DEPTH: self.get_mutation_depth(row_input),
-                    sic.COPY_STATE: copy_states.get(gene), # None if copy states not available
+                    sic.LOH: loh_dict.get(gene), # None of LOH not available
                     wgts_tools.CHROMOSOME: cytobands.get(gene, wgts_tools.UNKNOWN),
                     wgts_tools.ONCOKB: oncokb_levels.parse_oncokb_level(row_input)
                 }
@@ -244,7 +256,7 @@ class snv_indel_processor(logger):
             sic.CODING_SEQUENCE_MUTATIONS: coding_seq_total,
             sic.ONCOGENIC_MUTATIONS: len(rows),
             sic.VAF_PLOT: self.convert_vaf_plot(),
-            sic.HAS_COPY_STATE_DATA: has_copy_states,
+            sic.HAS_LOH_DATA: has_loh,
             sic.HAS_EXPRESSION_DATA: is_wgts,
             wgts_tools.BODY: rows
         }
@@ -265,9 +277,9 @@ class snv_indel_processor(logger):
         if gene == 'TERT': 
             # filtering for TERT hot spot would have already occured so this is a hot spot
             if row[sic.START] == '1295113':
-                protein = 'p.? (c.-124G>A)'
+                protein = 'p.? (c.-124C>T)'
             elif row[sic.START] == '1295135':
-                protein = 'p.? (c.-146G>A)'
+                protein = 'p.? (c.-146C>T)'
             protein_url = html_builder.build_alteration_url(
                 gene, "Promoter%20Mutation", oncotree_code
             )
@@ -277,6 +289,18 @@ class snv_indel_processor(logger):
         vaf = row['tumour_vaf']
         vaf = int(round(float(vaf), 2)*100)
         return vaf
+    
+    def has_somatic_mutations(self):
+        """
+        Checks if data_mutations_extended.txt is empty.
+        This is so we can exclude making a vaf plot if there are no mutations to graph.
+        """
+        has_somatic_mutations = False
+        if self.workspace.has_file(sic.MUTATIONS_ALL):
+            df = pd.read_csv(os.path.join(self.work_dir, sic.MUTATIONS_ALL), sep="\t")
+            if df.shape[0] != 0: # i.e. there is at least one row present
+                has_somatic_mutations = True
+        return has_somatic_mutations
 
     def is_tert_hotspot(self, row, ix):
         """
@@ -345,6 +369,12 @@ class snv_indel_processor(logger):
             '--whizbam_url', whizbam_url,
             '--maffile', maf_input_path
         ]
+
+        if self.workspace.has_file("purity_ploidy.json") and self.workspace.has_file("cn.txt"):
+            purity = str(self.workspace.read_json("purity_ploidy.json")["purity"])
+            cn_file = os.path.join(self.work_dir, "cn.txt")
+            cmd.extend(['--purity', purity,
+                        '--cnfile', cn_file])
         runner = subprocess_runner(self.log_level, self.log_path)
         result = runner.run(cmd, "main snv/indel R script")
         return result
@@ -396,5 +426,7 @@ class snv_indel_processor(logger):
         maf_path_preprocessed = self.preprocess_maf(maf_path, tumour_id)
         maf_path_annotated = self.annotate_maf(maf_path_preprocessed)
         self.run_data_rscript(whizbam_url, maf_path_annotated)
-        self.write_vaf_plot()
+        # Exclude the plot if there are no somatic mutations
+        if self.has_somatic_mutations():
+            self.write_vaf_plot()
         self.write_whizbam_files()

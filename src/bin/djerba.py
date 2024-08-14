@@ -6,7 +6,7 @@ import argparse
 import sys
 
 sys.path.pop(0) # do not import from script directory
-from djerba.core.main import main, arg_processor
+from djerba.core.main import main, arg_processor, DjerbaSubcommandError
 from djerba.version import get_djerba_version
 import djerba.util.constants as constants
 
@@ -54,7 +54,6 @@ def get_parser():
     update_parser.add_argument('-j', '--json', metavar='PATH', required=True, help='Path for JSON input')
     update_parser.add_argument('-o', '--out-dir', metavar='DIR', required=True, help='Directory for output files')
     update_parser.add_argument('-p', '--pdf', action='store_true', help='Generate PDF output from HTML')
-    update_parser.add_argument('-u', '--write-json', action='store_true', help='Write updated JSON to the output directory')
     update_parser.add_argument('-w', '--work-dir', metavar='PATH', help='Path to workspace directory; optional, defaults to value of --out-dir')
     update_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
     return parser
@@ -68,5 +67,9 @@ if __name__ == '__main__':
     if args.version:
         print("Djerba core version {0}".format(get_djerba_version()))
         sys.exit(0)
-    ap = arg_processor(args)
+    try:
+        ap = arg_processor(args)
+    except DjerbaSubcommandError as err:
+        print("{0}".format(err), file=sys.stderr)
+        sys.exit(1)
     main(ap.get_work_dir(), ap.get_log_level(), ap.get_log_path()).run(args)

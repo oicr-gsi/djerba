@@ -1,11 +1,116 @@
-# CHANGELOG
+# v1.7.0: 2024-08-07
+
+## UNRELEASED
+- GCGI-1407: Added requisition ID to tar_input_params_helper
+- GCGI-1408: Updated CAPTIV8 plugin to expect output from Purple instead of Sequenza 
+- GCGI-1409: Fixed snv_indel plugin to handle no somatic mutations by omitting vaf plot
+
+## v1.7.0: 2024-08-02
+- Introduces an HTML cache in the JSON. Generate JSON at extract time. Update mode and mini-Djerba re-run only plugins with updated parameters, instead of all plugins, and apply updates to the cached HTML.
+- GCGI-1353: Update supplementary for NovaSeq X Plus
+- GCGI-1355, GCGI-1403, GCGI-1404: Fixes for genomic landscape plugin. Consistently apply reportability of HRD/MSI, check input/output/paths, remove obsolete code.
+- GCGI-1376, GCGI-1399: Rewrite mini-Djerba. Now more robust, better tested, and requires less frequent updates.
+- GCGI-1377: Make report ID default to requisition ID
+- GCGI-1393: Adopt ISO-8601 date format; centralize date handling in djerba.util.date
+- GCGI-1406: Add a status indicator on STDOUT for mini-Djerba
+
+## v1.7.0-alpha: 2024-08-01
+- Alpha version of release 1.7.0 for testing
+
+## v1.6.7: 2024-07-23
+- GCGI-1396: Fixes to report text requested by clinical geneticist
+- Correct threshold for reporting HRD; genomic landscape plugin has new "sample type" parameter
+- Improved explanation and links for NCCN compendium
+- Added number of MSI sites
+
+## v1.6.6: 2024-07-19
+- GCGI-1391: Fixed column names in data_CNA_oncoKBgenes_nonDiploid.txt which impacted oncoKB therapy annotation
+
+## v1.6.5: 2024-07-11
+- GCGI-1336: Fixed "cannot resolve assay" issue in case overview plugin
+- GCGI-1887: Changed "no effect" fusion reading frame to "unknown"
+- GCGI-1388: Fixed whizbam_project to default to project instead of study
+- GCGI-1390: Update README with new conference slides and demo link
+
+## v.1.6.4: 2024-07-04
+- GCGI-1382: Fixed TAR disclaimer text (typos, flow)
+- GCGI-1385: Change Tumour Sample ID to Plasma Sample ID for TAR reports
+- Modified treatment options merger to deduplicate by gene in addition to oncokb level and alteration name
+
+## v1.6.3: 2024-06-26
+
+- GCGI-1365: Fixed TAR plugin to handle input mafs with unclean columns (strings, NaNs, etc)
+- GCGI-1368: Removed dependency of tar.snv_indel on tar.swgs (it will ignore copy state if purity.txt is not available)
+- GCGI-1375: Added "somatic" in "oncogenic somatic mutations" in TAR snv_indel html text for 0 variants
+- GCGI-1379: Use a blank white image as a spacer in the "Report Sign-Offs" section
+- GCGI-1380: Increment pipeline version to 5.0
+- Set exact version for `numpy` in `setup.py` to avoid build conflict with `gsi-qc-etl`
+
+## v1.6.2: 2024-06-03
+
+- GCGI-1362: Remove obsolete `sequenza_explorer.py` script
+- GCGI-1359: Correctly handle missing subcommand in `djerba.py` main script
+- GCGI-1361: Update for new Cardea data structure
+- GCGI-1363: Excluded all but protein coding variants from maf filtering (BIOTYPE = protein_coding)
+
+## v1.5.7: 2024-06-03
+
+- Maintenance release as v1.5.x is still in use for WGTS reports
+- Incorporates GCGI-1363 fix from v1.6.2
+
+## v1.6.1: 2024-05-15
+
+- GCGI-1357: Change 'reads' to 'sites' in PWGS plot label and round cutoff up to nearest integer
+
+## v1.6.0: 2024-05-08
+
+### WGS 4.0
+
+- Removed file list in expression data
+- added HRD to genomic landscape
+- GCGI-1173: genomic landscape plugin uses provenance_helper
+- GCGI-1220: fixed MSI table formatting
+- GCGI-1190: Removed obsolete data values/files
+- GCGI-1012: Moved R testing to formal tests
+- GCGI-1304: Merge updates to genomic landscape plugin and resolve conflicts
+- GCGI-1319: Update genomic landscape plugin to read purity from PURPLE output file
+- GCGI-1349: Update plugin lists for djerba.py setup mode
+- GCGI-1334: Add HRDetect text to Djerba report footer
+- new PURPLE CNV calling plugin
+- removed sequenza support
+- new `djerba.plugins.wgts.common` package for code shared between multiple WGTS/WGS plugins
+- Added "r" directory to setup, bug fix (metrix_cell -> metric_cell)
+- Added ARID2 to SWI/SNF gene list in CAPTIV8 plugin
+- Removed copy state from SNVs and Indels plugin
+- Added LOH to SNVs and Indels plugin
+
+### External plugin support
+
+- GCGI-993: Support for plugins outwith the main `djerba` package
+
+### Other
+
+- GCGI-1257: Fix import of traceback module
+- GCGI-1313: Refactor reading input_params.json
+- GCGI-1322: Warning instead of error if manually configured sample name does not match provenance
+- GCGI-1323: Support PWGS in mini-Djerba by making summary optional
+- GCGI-1325: Rewrite case_overview config method to fix bugs and make it clearer
+- GCGI-1344: Write updated JSON by default, with a more informative name
+- GCGI-1346: Fixes and updates to GSICAPBENCH
+- GCGI-1352: Update WGTS example INI and PDF
+
+## v.1.5.6: 2024-05-06
+
+- Fix to TERT protein annotation (G>A -> C>T)
+- Removed extra white space in gene information section
 
 ## v.1.5.5: 2024-03-05
+
 - Further fixes to pWGS Cardea helper to allow multiple projects for one donor
 
 ## v1.5.4: 2024-03-01
 
-- Fixed pWGS Cardea helper, pWGS provenance helper 
+- Fixed pWGS Cardea helper, pWGS provenance helper
 
 ## v1.5.3: 2024-02-22
 

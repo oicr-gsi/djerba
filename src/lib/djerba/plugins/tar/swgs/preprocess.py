@@ -12,7 +12,6 @@ import logging
 import pandas as pd
 from djerba.util.environment import directory_finder
 from djerba.util.logger import logger
-from djerba.sequenza import sequenza_reader
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.oncokb.annotator import oncokb_annotator
 from shutil import copyfile
@@ -20,7 +19,7 @@ import djerba.plugins.tar.swgs.constants as constants
 
 class preprocess(logger):
 
-  def __init__(self, tumour_id, oncotree_code, work_dir, log_level=logging.DEBUG, log_path=None):
+  def __init__(self, tumour_id, oncotree_code, work_dir, log_level=logging.WARNING, log_path=None):
 
     finder = directory_finder(log_level, log_path)
     # CONSTANTS

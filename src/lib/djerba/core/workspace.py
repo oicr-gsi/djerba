@@ -63,6 +63,22 @@ class workspace(logger):
             data = json.loads(in_file.read())
         return data
 
+    def read_maybe_input_params(self):
+        # convenience method to read the input_params.json (if any)
+        return self.read_maybe_json('input_params.json')
+
+    def read_maybe_json(self, rel_path):
+        # if JSON file exists, read it and return the data; otherwise return None
+        # typically, this is used in plugin config with fallback to manual inputs
+        data = None
+        if self.has_file(rel_path):
+            data = self.read_json(rel_path)
+            self.logger.debug("Read JSON from {0}".format(rel_path))
+        else:
+            msg = "{0} not found; may use manual inputs if available".format(rel_path)
+            self.logger.info(msg)
+        return data
+
     def read_string(self, rel_path):
         in_path = os.path.join(self.dir_path, rel_path)
         self.validator.validate_input_file(in_path)

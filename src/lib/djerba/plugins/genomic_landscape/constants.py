@@ -3,14 +3,29 @@ Constants for the Genomic Landscape plugin.
 """
 
 # Constants for configure
-# ONCOTREE_CODE taken from oncokb.constants
+ONCOTREE_CODE = 'oncotree_code'
 TUMOUR_ID = 'tumour_id'
 TCGA_CODE = 'tcgacode'
 PURITY_INPUT = 'purity'
 DONOR = 'donor'
 MSI_FILE = 'msi_file'
 CTDNA_FILE = 'ctdna_file'
+SAMPLE_TYPE = 'sample_type'
+UNKNOWN_SAMPLE_TYPE = 'Unknown sample type'
 
+# biomarker reportability
+CAN_REPORT_HRD = 'can_report_hrd'
+CAN_REPORT_MSI = 'can_report_msi'
+
+# For MSI file
+MSI_RESULTS_SUFFIX = '.recalibrated.msi.booted'
+MSI_WORKFLOW = 'msisensor'
+
+# For ctDNA file
+CTDNA_RESULTS_SUFFIX = 'SNP.count.txt'
+CTDNA_WORKFLOW = 'mrdetect_filter_only'
+
+HRD_WORKFLOW = 'hrDetect'
 
 # Constants for the rest of the plugin in alphabetical order
 ALT = 'Alteration'
@@ -71,3 +86,9 @@ TMB_TOTAL = 'Tumour Mutation Burden'
 TREATMENT = 'Treatment'
 VARIANT_CLASSIFICATION = 'Variant_Classification'
 V7_TARGET_SIZE = 37.285536 # inherited from CGI-Tools
+
+HRD = 'HRD'
+HRD_short = 'HRD_short'
+HRD_long = 'HRD_long'
+HRD_PLOT = 'hrd_base64'
+HRDETECT_PATH = 'hrd_path'
