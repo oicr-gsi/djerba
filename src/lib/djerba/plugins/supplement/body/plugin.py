@@ -79,13 +79,18 @@ class main(plugin_base):
                 self.FAILED: wrapper.get_my_boolean(self.FAILED),
                 core_constants.AUTHOR: config['core'][core_constants.AUTHOR],
                 self.EXTRACT_DATE: draft_date,
-                self.REPORT_SIGNOFF_DATE: report_signoff_date,
-                self.GENETICIST: wrapper.get_my_string(self.GENETICIST),
-                self.GENETICIST_ID: wrapper.get_my_string(self.GENETICIST_ID),
                 self.INCLUDE_SIGNOFFS: include_signoffs
             },
             'version': str(self.SUPPLEMENT_DJERBA_VERSION)
         }
+
+        if include_signoffs:
+            data['results'].update({
+                self.REPORT_SIGNOFF_DATE: report_signoff_date,
+                self.GENETICIST: wrapper.get_my_string(self.GENETICIST),
+                self.GENETICIST_ID: wrapper.get_my_string(self.GENETICIST_ID)
+            })
+
         return data
 
     def render(self, data):
