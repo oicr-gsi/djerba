@@ -327,7 +327,7 @@ class core_configurer(configurable):
         user_name = os.environ.get('USER')
         sudo_user_name = os.environ.get('SUDO_USER')
         lookup_path = os.path.join(self.finder.get_private_dir(), 'djerba_users.json')
-        author = cc.DEFAULT_AUTHOR
+        author = None
         if os.path.exists(lookup_path):
             with open(lookup_path) as lookup_file:
                 user_lookup = json.load(lookup_file)
