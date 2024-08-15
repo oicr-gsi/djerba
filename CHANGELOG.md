@@ -4,6 +4,8 @@
 - GCGI-1407: Added requisition ID to tar_input_params_helper
 - GCGI-1408: Updated CAPTIV8 plugin to expect output from Purple instead of Sequenza 
 - GCGI-1409: Fixed snv_indel plugin to handle no somatic mutations by omitting vaf plot
+- GCGI-1401: Update Purple plots from svg to png
+- GCGI-1293: Sort fusions by oncoKB heirchy
 - GCGI-1381: Add RUO report capabilities
 
 ## v1.7.0: 2024-08-02
