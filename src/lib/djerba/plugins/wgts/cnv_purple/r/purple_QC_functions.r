@@ -143,7 +143,7 @@ look_at_purity_fit <- function(segment_file, this_purity) {
   # build grid without legends
   pgrid <- plot_grid( sim_penalty_plot, penalty_breakdown_plot,  ncol = 1)
   
-  png(paste0(dir_path,"/purple.segment_QC.png"), width = 1000, height = 1600, res = 300)
+  png(paste0(dir_path,"/purple.segment_QC.png"), width = 1600, height = 1200, res = 150)
 
     print(
       plot_grid(pgrid, legend, ncol = 2, rel_widths = c(.9, .1))
