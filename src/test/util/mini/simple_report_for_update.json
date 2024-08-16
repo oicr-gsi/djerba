@@ -180,8 +180,8 @@
             "extract_priority": "1200",
             "render_priority": "1200",
             "assay": "WGTS",
-            "report_signoff_date": "NONE_SPECIFIED",
-            "user_supplied_draft_date": "NONE_SPECIFIED",
+            "report_signoff_date": "1999-12-31",
+            "user_supplied_draft_date": "1999-12-31",
             "clinical_geneticist_name": "Trevor Pugh, PhD, FACMG",
             "clinical_geneticist_licence": "1027812",
             "failed": "False"

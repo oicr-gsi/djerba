@@ -17,7 +17,6 @@ class main(plugin_base):
     ASSAY = "assay"
     REPORT_SIGNOFF_DATE = "report_signoff_date"
     USER_SUPPLIED_DRAFT_DATE = "user_supplied_draft_date"
-    NONE_SPECIFIED = "NONE_SPECIFIED"
     GENETICIST = "clinical_geneticist_name"
     GENETICIST_ID = "clinical_geneticist_licence"
     EXTRACT_DATE = "extract_date"
@@ -114,8 +113,8 @@ class main(plugin_base):
         ]
         for key in discovered:
             self.add_ini_discovered(key)
-        self.set_ini_default(self.REPORT_SIGNOFF_DATE, self.NONE_SPECIFIED)
-        self.set_ini_default(self.USER_SUPPLIED_DRAFT_DATE, self.NONE_SPECIFIED)
+        self.set_ini_default(self.REPORT_SIGNOFF_DATE, get_todays_date())
+        self.set_ini_default(self.USER_SUPPLIED_DRAFT_DATE, get_todays_date())
         self.set_ini_default(self.GENETICIST, self.GENETICIST_DEFAULT)
         self.set_ini_default(self.GENETICIST_ID, self.GENETICIST_ID_DEFAULT)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
