@@ -1,6 +1,6 @@
-# v1.7.0: 2024-08-07
+# CHANGELOG
 
-## UNRELEASED
+## v1.7.1: 2024-08-16
 - GCGI-1165: Automatically look up author name from user ID
 - GCGI-1407: Added requisition ID to tar_input_params_helper
 - GCGI-1408: Updated CAPTIV8 plugin to expect output from Purple instead of Sequenza 
@@ -8,8 +8,9 @@
 - GCGI-1401: Update Purple plots from svg to png
 - GCGI-1293: Sort fusions by oncoKB heirchy
 - GCGI-1381: Add RUO report capabilities
+- GCGI-1358 Fix clipped text in PWGS plot 
 
-## v1.7.0: 2024-08-02
+## v1.7.0: 2024-08-07
 - Introduces an HTML cache in the JSON. Generate JSON at extract time. Update mode and mini-Djerba re-run only plugins with updated parameters, instead of all plugins, and apply updates to the cached HTML.
 - GCGI-1353: Update supplementary for NovaSeq X Plus
 - GCGI-1355, GCGI-1403, GCGI-1404: Fixes for genomic landscape plugin. Consistently apply reportability of HRD/MSI, check input/output/paths, remove obsolete code.
