@@ -5,9 +5,9 @@ Constants for fusion plugin (WGTS)
 MAKO_TEMPLATE_NAME = 'fusion_template.html'
 
 # INI config keys
-MAVIS_PATH = 'mavis path'
+MAVIS_PATH = 'mavis_path'
 ARRIBA_PATH = 'arriba_path'
-ONCOTREE_CODE = 'oncotree code'
+ONCOTREE_CODE = 'oncotree_code'
 ENTREZ_CONVERSION_PATH = 'entrez conv path'
 MIN_FUSION_READS = 'minimum fusion reads'
 
