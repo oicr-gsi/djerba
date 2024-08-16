@@ -1,6 +1,17 @@
-# v1.7.0: 2024-08-07
+# CHANGELOG
 
-## Unreleased
+## v1.7.1: 2024-08-16
+- GCGI-1165: Automatically look up author name from user ID
+- GCGI-1407: Added requisition ID to tar_input_params_helper
+- GCGI-1408: Updated CAPTIV8 plugin to expect output from Purple instead of Sequenza
+- GCGI-1409: Fixed snv_indel plugin to handle no somatic mutations by omitting vaf plot
+- GCGI-1401: Update Purple plots from svg to png
+- GCGI-1293: Sort fusions by oncoKB heirchy
+- GCGI-1381: Add RUO report capabilities
+- GCGI-1358: Fix clipped text in PWGS plot
+- GCGI-1418: Fix handling of user supplied draft date and mini-Djerba tests
+
+## v1.7.0: 2024-08-07
 - Introduces an HTML cache in the JSON. Generate JSON at extract time. Update mode and mini-Djerba re-run only plugins with updated parameters, instead of all plugins, and apply updates to the cached HTML.
 - GCGI-1353: Update supplementary for NovaSeq X Plus
 - GCGI-1355, GCGI-1403, GCGI-1404: Fixes for genomic landscape plugin. Consistently apply reportability of HRD/MSI, check input/output/paths, remove obsolete code.
@@ -8,6 +19,7 @@
 - GCGI-1377: Make report ID default to requisition ID
 - GCGI-1393: Adopt ISO-8601 date format; centralize date handling in djerba.util.date
 - GCGI-1406: Add a status indicator on STDOUT for mini-Djerba
+- GCGI-1358: Dynamically adjust margin for pwgs plot based on length of annotation text.
 
 ## v1.7.0-alpha: 2024-08-01
 - Alpha version of release 1.7.0 for testing

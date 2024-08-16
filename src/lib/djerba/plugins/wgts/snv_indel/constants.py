@@ -1,4 +1,4 @@
-ONCOTREE_CODE = 'oncotree code'
+ONCOTREE_CODE = 'oncotree_code'
 PROJECT = 'project' # cbioportal study ID, eg. PASS01
 TUMOUR_ID = 'tumour_id'
 NORMAL_ID = 'normal_id'
