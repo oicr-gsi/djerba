@@ -1,6 +1,7 @@
 # v1.7.0: 2024-08-07
 
 ## UNRELEASED
+- GCGI-1165: Automatically look up author name from user ID
 - GCGI-1407: Added requisition ID to tar_input_params_helper
 - GCGI-1408: Updated CAPTIV8 plugin to expect output from Purple instead of Sequenza 
 - GCGI-1409: Fixed snv_indel plugin to handle no somatic mutations by omitting vaf plot

@@ -56,16 +56,6 @@ class main_base(core_base):
         self.merger_loader = merger_loader(self.log_level, self.log_path)
         self.helper_loader = helper_loader(self.log_level, self.log_path)
 
-    def _check_author_name(self, data):
-        if data[cc.CORE][cc.AUTHOR] == cc.DEFAULT_AUTHOR:
-            msg = 'Default author name "{}" is in use; '.format(cc.DEFAULT_AUTHOR)+\
-                "if this is a production report, name MUST be set "+\
-                "to an authorized individual"
-            self.logger.warning(msg)
-        else:
-            msg = "User-configured author name is '{0}'".format(data[cc.CORE][cc.AUTHOR])
-            self.logger.debug(msg)
-
     def _get_render_priority(self, plugin_data):
         return plugin_data[cc.PRIORITIES][cc.RENDER]
 
@@ -211,7 +201,6 @@ class main_base(core_base):
         Base render operation, shared between core and mini Djerba
         Write the HTML and (optional) PDF; no archiving
         """
-        self._check_author_name(data)
         if out_dir:  # do this *before* taking the time to generate output
             self.path_validator.validate_output_dir(out_dir)
         html = {} # HTML strings to make up the report file(s)
