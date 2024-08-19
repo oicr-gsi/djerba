@@ -105,28 +105,30 @@ class snv_indel_processor(logger):
             raise RuntimeError(msg)
         return indices
 
-    def add_vaf_to_maf(maf_df, alt_col, dep_col, vaf_header):
+    def add_vaf_to_maf(self, maf_df, alt_col, dep_col, vaf_header):
         # print a warning if any values are missing (shouldn't happen), but change them to 0
-        if maf_df[alt_col].isna().any() or maf_df[dep_col].isna().any():
+        vaf_df = maf_df.copy()
+        if vaf_df[alt_col].isna().any() or vaf_df[dep_col].isna().any():
             print("Warning! Missing values found in one of the count columns")
-            maf_df[alt_col] = maf_df[alt_col].fillna(0)
-            maf_df[dep_col] = maf_df[dep_col].fillna(0)
+            vaf_df[alt_col] = vaf_df[alt_col].fillna(0)
+            vaf_df[dep_col] = vaf_df[dep_col].fillna(0)
 
         # ensure factors end up as numeric
-        maf_df[alt_col] = pd.to_numeric(maf_df[alt_col])
-        maf_df[dep_col] = pd.to_numeric(maf_df[dep_col])
+        vaf_df[alt_col] = pd.to_numeric(vaf_df[alt_col])
+        vaf_df[dep_col] = pd.to_numeric(vaf_df[dep_col])
 
         # ensure position comes after alternate count field
-        bspot = maf_df.columns.get_loc(alt_col)
-        vaf = pd.Series(maf_df[alt_col]/maf_df[dep_col])
-        maf_df.insert(bspot+1, vaf_header, vaf)
+        bspot = vaf_df.columns.get_loc(alt_col)
+        vaf = pd.Series(vaf_df[alt_col]/vaf_df[dep_col])
+        vaf_df.insert(bspot+1, vaf_header, vaf)
 
         # check for any NAs
-        if maf_df[vaf_header].isna().any():
+        if vaf_df[vaf_header].isna().any():
             print("Warning! Missing values found in the new vaf column")
-            maf_df[vaf_header] = maf_df[vaf_header].fillna(0)
+            vaf_df[vaf_header] = vaf_df[vaf_header].fillna(0)
 
-        return maf_df
+        return vaf_df
+    
     def annotate_maf(self, maf_path):
         factory = annotator_factory(self.log_level, self.log_path)
         return factory.get_annotator(self.work_dir, self.config).annotate_maf(maf_path)
@@ -396,15 +398,14 @@ class snv_indel_processor(logger):
     
     def proc_vep(self, maf_df):
         print("--- adding VAF column ---")
-
         # add vaf columns
-        maf_df = self.add_vaf_to_maf(maf_df=maf_df, alt_col="t_alt_count", dep_col="t_depth", vaf_header="tumour_vaf")
-        maf_df = self.add_vaf_to_maf(maf_df=maf_df, alt_col="n_alt_count", dep_col="n_depth", vaf_header="normal_vaf")
+        vaf_df = self.add_vaf_to_maf(maf_df, alt_col="t_alt_count", dep_col="t_depth", vaf_header="tumour_vaf")
+        vaf_df = self.add_vaf_to_maf(vaf_df, alt_col="n_alt_count", dep_col="n_depth", vaf_header="normal_vaf")
 
         print("--- adding oncogenic binary column ---")
 
         # add oncogenic yes or no columns
-        df_anno = maf_df.copy()
+        df_anno = vaf_df.copy()
         df_anno['oncogenic_binary'] = np.where(df_anno['ONCOGENIC'].isin(["Oncogenic", "Likely Oncogenic"]), "YES", "NO")
 
         print("--- adding common_variant binary column ---")
@@ -462,13 +463,20 @@ class snv_indel_processor(logger):
         print("--- Reading MAF data ---")
         maf_df = pd.read_csv(maf_input_path, sep="\t")
 
-        df_filter = self.proc_vep(maf_df=maf_df)
+        df_filter = self.proc_vep(maf_df)
         df_filt_whizbam = self.construct_whizbam_links(df=df_filter, whizbam_url=whizbam_url)
 
         df_filt_whizbam.to_csv(path_or_buf=os.path.join(self.work_dir, "data_mutations_extended.txt"), sep="\t", index=False)
 
-        # TO DO:
-        # LOH, write data_mutations_extended_oncogenic.txt
+        if df_filter.empty:
+            print("No passed mutations")
+            df_filt_whizbam.to_csv(path_or_buf=os.path.join(self.work_dir, "data_mutations_extended_oncogenic.txt"), sep="\t", index=False)
+        else:
+            # subset to oncokb annotated genes
+            df_filt_oncokb = df_filt_whizbam[(df_filt_whizbam['ONCOGENIC'] == "Oncogenic") | (df_filt_whizbam['ONCOGENIC'] == "Likely Oncogenic")]
+            if df_filt_oncokb.empty:
+                print("no oncogenic mutations")
+            df_filt_oncokb.to_csv(path_or_buf=os.path.join(self.work_dir, "data_mutations_extended_oncogenic.txt"), sep="\t", index=False)
 
     def run_data_rscript(self, whizbam_url, maf_input_path):
         dir_location = os.path.dirname(__file__)
@@ -582,7 +590,8 @@ class snv_indel_processor(logger):
         tumour_id = self.config.get_my_string(sic.TUMOUR_ID)
         maf_path_preprocessed = self.preprocess_maf(maf_path, tumour_id)
         maf_path_annotated = self.annotate_maf(maf_path_preprocessed)
-        self.run_data_rscript(whizbam_url, maf_path_annotated)
+        #self.run_data_rscript(whizbam_url, maf_path_annotated)
+        self.process_snv_data(whizbam_url, maf_path_annotated)
         # Exclude the plot if there are no somatic mutations
         if self.has_somatic_mutations():
             self.write_vaf_plot()
