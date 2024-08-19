@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-1420: Added green line separator to research footer
+
 ## v1.7.1: 2024-08-16
 - GCGI-1165: Automatically look up author name from user ID
 - GCGI-1407: Added requisition ID to tar_input_params_helper
