@@ -80,7 +80,7 @@ class main(plugin_base):
         if wrapper.my_param_is_null(constants.CALLABILITY):
             wrapper.set_my_param(constants.CALLABILITY, self.fetch_callability_etl_data(donor, tumour_id))        
         if wrapper.my_param_is_null(constants.COVERAGE):
-            wrapper.set_my_param(constants.COVERAGE, self.fetch_coverage_etl_data(tumour_id))
+            wrapper.set_my_param(constants.COVERAGE, self.fetch_coverage_etl_data(donor, tumour_id))
 
         return wrapper.get_config()
     
@@ -129,19 +129,27 @@ class main(plugin_base):
             self.logger.error(msg)
             raise MissingQCETLError(msg)
         
-    def fetch_coverage_etl_data(self,tumour_id):
+    def fetch_coverage_etl_data(self, donor, tumour_id):
         etl_cache = QCETLCache(self.QCETL_CACHE)
         cached_coverages = etl_cache.bamqc4merged.bamqc4merged
         columns_of_interest = gsiqcetl.column.BamQc4MergedColumn
+        # Note: donor and tumour ID are both not unique, but together are unique. Filter on both.
+        # One donor can have multiple tumour IDs; one tumour ID can be associated with multiple donors
+        # But one donor will not have a duplicate tumour IDs
         data = cached_coverages.loc[
-            (cached_coverages[columns_of_interest.GroupID] == tumour_id),
-            [columns_of_interest.GroupID, columns_of_interest.CoverageDeduplicated]
+            (cached_coverages[columns_of_interest.GroupID] == tumour_id) &
+            (cached_coverages[columns_of_interest.Donor] == donor),
+            [columns_of_interest.GroupID, columns_of_interest.Donor, columns_of_interest.CoverageDeduplicated]
             ]
-        if len(data) > 0:
+        if len(data) == 1:
             coverage_value = round(data.iloc[0][columns_of_interest.CoverageDeduplicated].item(),1)
             return(coverage_value)
+        elif len(data) > 1:
+            msg = "Djerba found more than one coverage associated with donor {0} and tumour_id {1} in QC-ETL. Double check that the coverage found by Djerba is correct; if not, may have to manually specify the coverage.".format(donor, tumour_id)
+            self.logger.warning(msg)
+
         else:
-            msg = "Djerba couldn't find the coverage associated with tumour_id {0} in QC-ETL. ".format(tumour_id)
+            msg = "Djerba couldn't find the coverage associated with donor {0} and tumour_id {1} in QC-ETL. ".format(donor, tumour_id)
             self.logger.debug(msg)
             raise MissingQCETLError(msg)
 
