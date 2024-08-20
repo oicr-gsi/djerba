@@ -555,7 +555,7 @@ class snv_indel_processor(logger):
         plt.xticks([0, 25, 50, 75, 100], fontsize=8)
         plt.yticks(fontsize=8)
 
-        plt.savefig(output, bbox_inches = 'tight')
+        plt.savefig(output, bbox_inches = 'tight', backend='Cairo')
 
     def whizbam_to_text(self, in_name, out_name):
         in_path = os.path.join(self.work_dir, in_name)
