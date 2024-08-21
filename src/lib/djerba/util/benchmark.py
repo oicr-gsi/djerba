@@ -381,6 +381,13 @@ class report_equivalence_tester(logger):
     def get_diff_text(self):
         return self.diff_text
 
+    def get_status(self):
+        # TODO evaluate and return a more meaningful status
+        if self.is_equivalent():
+            return 'OK'
+        else:
+            return 'NOT OK'
+
     def get_expressions_by_gene(self, data, plugin):
         body_key = self.BODY_KEY[plugin]
         xpct_key = self.XPCT_KEY[plugin]
