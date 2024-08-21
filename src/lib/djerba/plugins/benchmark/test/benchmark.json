@@ -1,0 +1,27 @@
+{
+    "attributes": [
+        "research"
+    ],
+    "merge_inputs": {},
+    "plugin_name": "benchmark plugin",
+    "priorities": {
+        "configure": 10,
+        "extract": 10,
+        "render": 10
+    },
+    "results": {
+        "GSICAPBENCH_1219": {
+            "diff": "NONE",
+            "input_file": "/u/ibancarz/git/djerba_test_data/plugins/benchmark/GSICAPBENCH_1219_input.json",
+            "ref_file": "/u/ibancarz/git/djerba_test_data/plugins/benchmark/GSICAPBENCH_1219_reference.json",
+            "status": "OK"
+        },
+        "GSICAPBENCH_1232": {
+            "diff": "NONE",
+            "input_file": "/u/ibancarz/git/djerba_test_data/plugins/benchmark/GSICAPBENCH_1232_input.json",
+            "ref_file": "/u/ibancarz/git/djerba_test_data/plugins/benchmark/GSICAPBENCH_1232_reference.json",
+            "status": "OK"
+        }
+    },
+    "version": "0.0.1"
+}
