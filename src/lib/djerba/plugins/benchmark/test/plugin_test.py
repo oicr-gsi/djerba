@@ -33,7 +33,7 @@ class TestBenchmark(PluginTester):
         params = {
             self.INI: self.write_ini_file(data_dir),
             self.JSON: json_location,
-            self.MD5: 'e9d2394135940467344ed2b48e6196d2'
+            self.MD5: '477b0cea98d9ab9efec988cded2aac74'
         }
         self.run_basic_test(test_source_dir, params)
 

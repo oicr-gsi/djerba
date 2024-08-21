@@ -40,25 +40,31 @@ class main(plugin_base):
         ref_set = set(ref_paths.keys())
         donors = []
         for donor in sorted(list(input_set.union(ref_set))):
+            donor_ok = False
             if donor in input_set:
                 if donor in ref_set:
-                    donors.append(donor)
                     self.logger.debug("Found inputs and reference for donor "+donor)
+                    donor_ok = True
                 else:
                     self.logger.warning("Input but no reference for donor "+donor)
             else:
                 self.logger.warning("Reference but no input for donor "+donor)
+            donors.append([donor, donor_ok])
         donor_results = []
-        for donor in donors:
+        for [donor, donor_ok] in donors:
             # load the input and reference report JSON files
             # find status (and full-text diff, if any)
             # record for output JSON
             reports = [input_paths[donor], ref_paths[donor]]
-            tester = report_equivalence_tester(
-                reports, delta_path, self.log_level, self.log_path
-            )
-            status = tester.get_status()
-            diff = tester.get_diff_text()
+            if donor_ok:
+                tester = report_equivalence_tester(
+                    reports, delta_path, self.log_level, self.log_path
+                )
+                status = tester.get_status()
+                diff = tester.get_diff_text()
+            else:
+                status = 'INCOMPLETE'
+                diff = 'NA'
             result = {
                 self.DONOR: donor,
                 self.STATUS: status,
