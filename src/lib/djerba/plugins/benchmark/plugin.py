@@ -9,6 +9,7 @@ import logging
 import djerba.core.constants as core_constants
 from djerba.plugins.base import plugin_base
 from djerba.util.benchmark import report_equivalence_tester
+from djerba.util.date import get_timestamp
 from djerba.util.render_mako import mako_renderer
 from djerba.util.environment import directory_finder
 from djerba.util.validator import path_validator
@@ -18,10 +19,15 @@ class main(plugin_base):
     PRIORITY = 10
     PLUGIN_VERSION = '0.0.1'
     TEMPLATE_NAME = 'benchmark_template.html'
+    DONOR = 'donor'
+    DONOR_RESULTS = 'donor_results'
+    BODY = 'body'
     INPUT_FILE = 'input_file'
     REF_FILE = 'ref_file'
     STATUS = 'status'
     DIFF = 'diff'
+    INPUT_NAME = 'input_name'
+    RUN_TIME = 'run_time'
 
     # __init__ is inherited from the parent class
 
@@ -42,7 +48,7 @@ class main(plugin_base):
                     self.logger.warning("Input but no reference for donor "+donor)
             else:
                 self.logger.warning("Reference but no input for donor "+donor)
-        results = {}
+        donor_results = []
         for donor in donors:
             # load the input and reference report JSON files
             # find status (and full-text diff, if any)
@@ -53,17 +59,21 @@ class main(plugin_base):
             )
             status = tester.get_status()
             diff = tester.get_diff_text()
-            results[donor] = {
+            result = {
+                self.DONOR: donor,
                 self.STATUS: status,
                 self.DIFF: diff,
                 self.INPUT_FILE: input_paths[donor],
                 self.REF_FILE: ref_paths[donor]
             }
-        return results
+            donor_results.append(result)
+        return donor_results
 
     def configure(self, config):
         config = self.apply_defaults(config)
-        return config
+        wrapper = self.get_config_wrapper(config)
+        wrapper.set_my_param_if_null(self.INPUT_NAME, 'Unknown')
+        return wrapper.get_config()
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
@@ -82,8 +92,12 @@ class main(plugin_base):
         validator.validate_input_file(input_file)
         validator.validate_input_file(ref_file)
         delta_file = None # TODO make this configurable
-        results = self.compare_reports(input_file, ref_file, delta_file)
-        data['results'] = results
+        donor_results = self.compare_reports(input_file, ref_file, delta_file)
+        data['results'] = {
+            self.INPUT_NAME: wrapper.get_my_string(self.INPUT_NAME),
+            self.RUN_TIME: get_timestamp(),
+            self.DONOR_RESULTS: donor_results
+        }
         return data
 
     def render(self, data):
@@ -95,5 +109,6 @@ class main(plugin_base):
         self.set_priority_defaults(self.PRIORITY)
         self.add_ini_required(self.INPUT_FILE)
         self.add_ini_required(self.REF_FILE)
+        self.add_ini_discovered(self.INPUT_NAME)
         #finder = directory_finder(self.log_level, self.log_path)
         #default_delta_path = 

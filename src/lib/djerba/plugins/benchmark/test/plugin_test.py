@@ -14,6 +14,8 @@ from djerba.util.validator import path_validator
 
 class TestBenchmark(PluginTester):
 
+    PLACEHOLDER = 'PLACEHOLDER'
+
     def setUp(self):
         self.path_validator = path_validator()
         self.maxDiff = None
@@ -31,15 +33,27 @@ class TestBenchmark(PluginTester):
         params = {
             self.INI: self.write_ini_file(data_dir),
             self.JSON: json_location,
-            self.MD5: '858a5524cf16265e70d069d65b2b18b0'
+            self.MD5: 'e9d2394135940467344ed2b48e6196d2'
         }
         self.run_basic_test(test_source_dir, params)
 
     def redact_json_data(self, data):
-        for k,v in data.items():
-            if k in ['input_file', 'ref_file']:
-                file_name = os.path.basename(v)
-                data[k] = os.path.join('PLACEHOLDER', file_name)
+        results = data['results']
+        redacted_donor_results = []
+        for k,v in results.items():
+            if k == 'donor_results':
+                for donor_result in v:
+                    for k2,v2 in donor_result.items():
+                        if k2 in ['input_file', 'ref_file']:
+                            file_name = os.path.basename(v2)
+                            donor_result[k2] = os.path.join(self.PLACEHOLDER, file_name)
+                    redacted_donor_results.append(donor_result)
+            elif k=='run_time':
+                results[k] = self.PLACEHOLDER
+            elif k=='input_name':
+                results[k] = 'Unknown'
+        results['donor_results'] = redacted_donor_results
+        data['results'] = results
         return data
 
     def write_ini_file(self, data_dir):

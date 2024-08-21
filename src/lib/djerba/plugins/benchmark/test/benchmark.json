@@ -10,18 +10,24 @@
         "render": 10
     },
     "results": {
-        "GSICAPBENCH_1219": {
-            "diff": "NONE",
-            "input_file": "/u/ibancarz/git/djerba_test_data/plugins/benchmark/GSICAPBENCH_1219_input.json",
-            "ref_file": "/u/ibancarz/git/djerba_test_data/plugins/benchmark/GSICAPBENCH_1219_reference.json",
-            "status": "OK"
-        },
-        "GSICAPBENCH_1232": {
-            "diff": "NONE",
-            "input_file": "/u/ibancarz/git/djerba_test_data/plugins/benchmark/GSICAPBENCH_1232_input.json",
-            "ref_file": "/u/ibancarz/git/djerba_test_data/plugins/benchmark/GSICAPBENCH_1232_reference.json",
-            "status": "OK"
-        }
+        "donor_results": [
+            {
+                "diff": "NONE",
+                "donor": "GSICAPBENCH_1219",
+                "input_file": "PLACEHOLDER/GSICAPBENCH_1219_input.json",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_1219_reference.json",
+                "status": "OK"
+            },
+            {
+                "diff": "NONE",
+                "donor": "GSICAPBENCH_1232",
+                "input_file": "PLACEHOLDER/GSICAPBENCH_1232_input.json",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_1232_reference.json",
+                "status": "OK"
+            }
+        ],
+        "input_name": "Unknown",
+        "run_time": "PLACEHOLDER"
     },
     "version": "0.0.1"
 }
