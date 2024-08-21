@@ -30,7 +30,7 @@ class benchmarker(logger):
     MSI_DIR_NAME = 'msi'
     SAMPLES = [
         "GSICAPBENCH_1219",
-        #"GSICAPBENCH_1232", # temporarily commented out, sample not in GSICAPBENCH240425
+        "GSICAPBENCH_1232",
         "GSICAPBENCH_1233",
         "GSICAPBENCH_1273",
         "GSICAPBENCH_1275",
