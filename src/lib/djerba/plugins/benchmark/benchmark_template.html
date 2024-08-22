@@ -1,5 +1,6 @@
 
 <%
+  import os
   from djerba.util.html import html_builder
   from djerba.version import get_djerba_version
 %>
@@ -27,8 +28,15 @@
   </tr>
   % for r in results.get('donor_results'):
   <tr>
-    % for k in ['donor', 'status', 'input_file', 'ref_file', 'diff']:
-    <td>${r.get(k, 'TODO')}</td>
+    % for k in ['donor', 'status']:
+    <td>${r.get(k)}</td>
+    % endfor
+    % for k in ['input_file', 'ref_file', 'diff_name']:
+    <%
+      name = os.path.basename(r.get(k))
+      value = "<a href=./{0}>{0}</a>".format(name)
+    %>
+    <td>${value}</td>
     % endfor
   </tr>
   % endfor

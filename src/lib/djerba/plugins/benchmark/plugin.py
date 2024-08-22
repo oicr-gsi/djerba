@@ -26,6 +26,7 @@ class main(plugin_base):
     REF_FILE = 'ref_file'
     STATUS = 'status'
     DIFF = 'diff'
+    DIFF_NAME = 'diff_name'
     INPUT_NAME = 'input_name'
     RUN_TIME = 'run_time'
 
@@ -69,6 +70,7 @@ class main(plugin_base):
                 self.DONOR: donor,
                 self.STATUS: status,
                 self.DIFF: diff,
+                self.DIFF_NAME: donor+"_diff.txt",
                 self.INPUT_FILE: input_paths[donor],
                 self.REF_FILE: ref_paths[donor]
             }
