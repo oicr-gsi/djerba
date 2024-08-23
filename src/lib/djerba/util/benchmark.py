@@ -15,13 +15,16 @@ import djerba.core.constants as core_constants
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 
+from configparser import ConfigParser
 from copy import deepcopy
 from glob import glob
 from shutil import copy
 from string import Template
 from time import strftime
 
+from djerba.core.loaders import plugin_loader
 from djerba.core.main import main
+from djerba.core.workspace import workspace
 from djerba.util.environment import directory_finder
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
@@ -70,6 +73,7 @@ class benchmarker(logger):
         self.log_path = args.log_path
         self.logger = self.get_logger(self.log_level, __name__, self.log_path)
         self.args = args
+        self.plugin_loader = plugin_loader(self.log_level, self.log_path)
         self.validator = path_validator(self.log_level, self.log_path)
         dir_finder = directory_finder(self.log_level, self.log_path)
         self.data_dir = dir_finder.get_data_dir()
@@ -96,6 +100,7 @@ class benchmarker(logger):
         self.work_dir = os.path.join(work_dir_root, dir_name+'_work')
         self.logger.debug("Output directory is "+self.work_dir)
         os.mkdir(self.work_dir) # fails if it already exists
+        self.workspace = workspace(self.work_dir, self.log_level, self.log_path)
         self.output_dir = os.path.join(output_dir_root, dir_name)
         self.logger.debug("Output directory is "+self.output_dir)
         os.mkdir(self.output_dir) # fails if it already exists
@@ -178,9 +183,14 @@ class benchmarker(logger):
             raise RuntimeError(msg)
         return inputs
 
-    def run_comparison(self, report_paths, ref_path):
-        with open(ref_path) as ref_file:
-            ref_paths = json.load(ref_file)
+    def run_comparison(self, reports_path, ref_path):
+        config = ConfigParser()
+        config.add_section('benchmark')
+        plugin = self.plugin_loader.load('benchmark', self.workspace)
+        full_config = plugin.configure(config)
+        data = plugin.extract(full_config)
+        html = plugin.render(data)
+
 
     def run_comparison_OLD(self, report_paths):
         data = []
@@ -221,7 +231,10 @@ class benchmarker(logger):
             data = djerba_main.extract(config, json_path, archive=False)
             self.logger.info("Finished Djerba draft report for {0}".format(sample))
             report_paths[sample] = json_path
-        return report_paths
+        json_path = os.path.join(work_dir, 'report_paths.json')
+        with open(json_path, 'w', encoding=core_constants.TEXT_ENCODING) as json_file:
+            json_file.write(json.dumps(report_paths))
+        return json_path
 
     def run_setup(self, results_dir, work_dir):
         """For each sample, set up working directory and generate config.ini"""
@@ -257,8 +270,9 @@ class benchmarker(logger):
         # load and run plugin to compare reports and generate summary
         # copy JSON/text files and write HTML summary to output directory
         input_samples = self.run_setup(self.input_dir, self.work_dir)
-        report_paths = self.run_reports(input_samples)
-        self.run_comparison(report_paths, self.ref_path)
+        reports_path = self.run_reports(input_samples, self.work_dir)
+        data, html = self.run_comparison(reports_path, self.ref_path)
+        self.write_outputs(data, html)
 
     def run_OLD(self):
         run_ok = True
@@ -293,6 +307,21 @@ class benchmarker(logger):
             raise RuntimeError(msg)
         return run_ok
 
+    def write_reports(self, data, html):
+        # write the HTML output
+        html_path = os.path.join(self.out_dir, self.input_name+'_summary.html')
+        with open(html_path, 'w', encoding=core_constants.TEXT_ENCODING) as html_file:
+            html_file.write(html)
+        # copy JSON files, and write the diff text (if any)
+        for result in data['results']['donor_results']:
+            for json_path in [result['input_file'], result['ref_file']]:
+                copy(json_path, self.out_dir)
+            # TODO put diff link filename in JSON
+            # TODO only write diff if non-empty
+            diff_path = os.path.join(self.out_dir, result['donor']+'_diff.txt')
+            with open(diff_path, 'w', encoding=core_constants.TEXT_ENCODING) as diff_file:
+                diff_file.write(result['diff'])
+        self.logger.info('Finished writing summary to '+self.out_dir)
 
 class report_equivalence_tester(logger):
 
@@ -324,6 +353,10 @@ class report_equivalence_tester(logger):
     }
     PLACEHOLDER = 0
 
+    IDENTICAL_STATUS = 'identical'
+    EQUIVALENT_STATUS = 'equivalent but not identical'
+    NOT_EQUIVALENT_STATUS = 'not equivalent'
+
     def __init__(self, report_paths, delta_path=None,
                  log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
@@ -353,8 +386,10 @@ class report_equivalence_tester(logger):
         self.logger.info("Delta values by metric type: {0}".format(self.deltas))
         diff = ReportDiff(self.data)
         self.diff_text = diff.get_diff()
+        self.identical = False
         if diff.is_identical():
             self.logger.info("EQUIVALENT: Reports are identical")
+            self.identical = True
             self.equivalent = True
         elif self.deltas_are_equivalent():
             # check if metrics without a delta match exactly
@@ -420,15 +455,28 @@ class report_equivalence_tester(logger):
     def is_equivalent(self):
         return self.equivalent
 
+    def is_identical(self):
+        return self.identical
+    
     def get_diff_text(self):
         return self.diff_text
 
     def get_status(self):
-        # TODO evaluate and return a more meaningful status
-        if self.is_equivalent():
-            return 'OK'
+        if self.is_identical():
+            return self.IDENTICAL_STATUS
+        elif self.is_equivalent():
+            return self.EQUIVALENT_STATUS
         else:
-            return 'NOT OK'
+            return self.NOT_EQUIVALENT_STATUS
+
+    def get_status_emoji(self):
+        status = self.get_status()
+        if status == self.IDENTICAL_STATUS:
+            return '\u2705' # white check mark
+        elif status == self.EQUIVALENT_STATUS:
+            return '\u26A0' # warning sign
+        else:
+            return '\u274C' # X mark
 
     def get_expressions_by_gene(self, data, plugin):
         body_key = self.BODY_KEY[plugin]

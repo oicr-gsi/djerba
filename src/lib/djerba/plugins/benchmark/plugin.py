@@ -62,17 +62,20 @@ class main(plugin_base):
                     reports, delta_path, self.log_level, self.log_path
                 )
                 status = tester.get_status()
+                status_emoji = tester.get_status_emoji()
                 diff = tester.get_diff_text()
             else:
                 status = 'INCOMPLETE'
+                status_emoji = '\u2753' # question mark
                 diff = 'NA'
             result = {
                 self.DONOR: donor,
                 self.STATUS: status,
+                self.STATUS_EMOJI: status_emoji,
                 self.DIFF: diff,
                 self.DIFF_NAME: donor+"_diff.txt",
-                self.INPUT_FILE: input_paths[donor],
-                self.REF_FILE: ref_paths[donor]
+                self.INPUT_FILE: input_paths.get(donor, 'Not found'),
+                self.REF_FILE: ref_paths.get(donor, 'Not found')
             }
             donor_results.append(result)
         return donor_results
