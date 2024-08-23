@@ -17,7 +17,8 @@
                 "donor": "GSICAPBENCH_1219",
                 "input_file": "PLACEHOLDER/GSICAPBENCH_1219_input.json",
                 "ref_file": "PLACEHOLDER/GSICAPBENCH_1219_reference.json",
-                "status": "OK"
+                "status": "identical",
+                "status_emoji": "&#x2705;"
             },
             {
                 "diff": "NONE",
@@ -25,7 +26,8 @@
                 "donor": "GSICAPBENCH_1232",
                 "input_file": "PLACEHOLDER/GSICAPBENCH_1232_input.json",
                 "ref_file": "PLACEHOLDER/GSICAPBENCH_1232_reference.json",
-                "status": "OK"
+                "status": "identical",
+                "status_emoji": "&#x2705;"
             }
         ],
         "input_name": "Unknown",

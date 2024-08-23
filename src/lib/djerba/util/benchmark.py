@@ -36,7 +36,7 @@ class benchmarker(logger):
     MSI_DIR_NAME = 'msi'
     SAMPLES = [
         "GSICAPBENCH_1219",
-        "GSICAPBENCH_1232",
+        #"GSICAPBENCH_1232",
         #"GSICAPBENCH_1233",
         #"GSICAPBENCH_1273",
         #"GSICAPBENCH_1275",
@@ -186,11 +186,17 @@ class benchmarker(logger):
     def run_comparison(self, reports_path, ref_path):
         config = ConfigParser()
         config.add_section('benchmark')
+        config.set('benchmark', 'input_name', self.input_name)
+        config.set('benchmark', 'input_file', reports_path)
+        config.set('benchmark', 'ref_file', ref_path)
+        self.logger.info("Loading plugin and running report comparison")
         plugin = self.plugin_loader.load('benchmark', self.workspace)
         full_config = plugin.configure(config)
+        self.logger.debug("Extracting plugin data")
         data = plugin.extract(full_config)
+        self.logger.debug("Rendering plugin HTML")
         html = plugin.render(data)
-
+        return [data, html]
 
     def run_comparison_OLD(self, report_paths):
         data = []
@@ -225,9 +231,8 @@ class benchmarker(logger):
             # run the Djerba "main" class to generate a JSON report file
             djerba_main = main(report_dir, self.log_level, self.log_path)
             config = djerba_main.configure(config_path)
-            pattern = os.path.join(report_dir, '*'+core_constants.REPORT_JSON_SUFFIX)
-            json_path = self.glob_single(pattern)
-            self.logger.debug("Found JSON path: "+json_path)
+            json_path = os.path.join(report_dir, sample+'_report.json')
+            self.logger.debug("Extracting data to JSON path: "+json_path)
             data = djerba_main.extract(config, json_path, archive=False)
             self.logger.info("Finished Djerba draft report for {0}".format(sample))
             report_paths[sample] = json_path
@@ -272,6 +277,7 @@ class benchmarker(logger):
         input_samples = self.run_setup(self.input_dir, self.work_dir)
         reports_path = self.run_reports(input_samples, self.work_dir)
         data, html = self.run_comparison(reports_path, self.ref_path)
+        self.logger.info("Writing data and HTML output")
         self.write_outputs(data, html)
 
     def run_OLD(self):
@@ -307,21 +313,22 @@ class benchmarker(logger):
             raise RuntimeError(msg)
         return run_ok
 
-    def write_reports(self, data, html):
+    def write_outputs(self, data, html):
         # write the HTML output
-        html_path = os.path.join(self.out_dir, self.input_name+'_summary.html')
+        html_path = os.path.join(self.output_dir, self.input_name+'_summary.html')
         with open(html_path, 'w', encoding=core_constants.TEXT_ENCODING) as html_file:
             html_file.write(html)
         # copy JSON files, and write the diff text (if any)
         for result in data['results']['donor_results']:
             for json_path in [result['input_file'], result['ref_file']]:
-                copy(json_path, self.out_dir)
+                if os.path.exists(json_path):
+                    copy(json_path, self.output_dir)
             # TODO put diff link filename in JSON
             # TODO only write diff if non-empty
-            diff_path = os.path.join(self.out_dir, result['donor']+'_diff.txt')
+            diff_path = os.path.join(self.output_dir, result['donor']+'_diff.txt')
             with open(diff_path, 'w', encoding=core_constants.TEXT_ENCODING) as diff_file:
                 diff_file.write(result['diff'])
-        self.logger.info('Finished writing summary to '+self.out_dir)
+        self.logger.info('Finished writing summary to '+self.output_dir)
 
 class report_equivalence_tester(logger):
 
@@ -472,11 +479,11 @@ class report_equivalence_tester(logger):
     def get_status_emoji(self):
         status = self.get_status()
         if status == self.IDENTICAL_STATUS:
-            return '\u2705' # white check mark
+            return '&#x2705;' # white check mark
         elif status == self.EQUIVALENT_STATUS:
-            return '\u26A0' # warning sign
+            return '&#x26A0;' # warning sign
         else:
-            return '\u274C' # X mark
+            return '&#x274C;' # X mark
 
     def get_expressions_by_gene(self, data, plugin):
         body_key = self.BODY_KEY[plugin]

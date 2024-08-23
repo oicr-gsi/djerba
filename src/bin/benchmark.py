@@ -33,7 +33,5 @@ if __name__ == '__main__':
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         sys.exit(1)
-    ok = benchmarker(parser.parse_args()).run()
-    if not ok:
-        sys.exit(1)
+    benchmarker(parser.parse_args()).run()
 

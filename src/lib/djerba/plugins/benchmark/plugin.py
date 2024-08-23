@@ -25,6 +25,7 @@ class main(plugin_base):
     INPUT_FILE = 'input_file'
     REF_FILE = 'ref_file'
     STATUS = 'status'
+    STATUS_EMOJI = 'status_emoji'
     DIFF = 'diff'
     DIFF_NAME = 'diff_name'
     INPUT_NAME = 'input_name'
@@ -32,41 +33,30 @@ class main(plugin_base):
 
     # __init__ is inherited from the parent class
 
-    def compare_reports(self, input_path, ref_path, delta_path):
-        with open(input_path) as in_file:
+    def compare_reports(self, inputs_path, refs_path, delta_path):
+        with open(inputs_path) as in_file:
             input_paths = json.load(in_file)
-        with open(ref_path) as in_file:
+        with open(refs_path) as in_file:
             ref_paths = json.load(in_file)
         input_set = set(input_paths.keys())
         ref_set = set(ref_paths.keys())
-        donors = []
-        for donor in sorted(list(input_set.union(ref_set))):
-            donor_ok = False
-            if donor in input_set:
-                if donor in ref_set:
-                    self.logger.debug("Found inputs and reference for donor "+donor)
-                    donor_ok = True
-                else:
-                    self.logger.warning("Input but no reference for donor "+donor)
-            else:
-                self.logger.warning("Reference but no input for donor "+donor)
-            donors.append([donor, donor_ok])
         donor_results = []
-        for [donor, donor_ok] in donors:
+        for donor in sorted(list(input_set.union(ref_set))):
             # load the input and reference report JSON files
             # find status (and full-text diff, if any)
             # record for output JSON
-            reports = [input_paths[donor], ref_paths[donor]]
-            if donor_ok:
+            input_path = input_paths.get(donor)
+            ref_path = ref_paths.get(donor)
+            if input_path and ref_path:
                 tester = report_equivalence_tester(
-                    reports, delta_path, self.log_level, self.log_path
+                    [input_path, ref_path], delta_path, self.log_level, self.log_path
                 )
                 status = tester.get_status()
                 status_emoji = tester.get_status_emoji()
                 diff = tester.get_diff_text()
             else:
                 status = 'INCOMPLETE'
-                status_emoji = '\u2753' # question mark
+                status_emoji = '&#x2753;' # question mark
                 diff = 'NA'
             result = {
                 self.DONOR: donor,
@@ -104,6 +94,7 @@ class main(plugin_base):
         validator.validate_input_file(ref_file)
         delta_file = None # TODO make this configurable
         donor_results = self.compare_reports(input_file, ref_file, delta_file)
+        self.logger.debug('Found {0} donor results'.format(len(donor_results)))
         data['results'] = {
             self.INPUT_NAME: wrapper.get_my_string(self.INPUT_NAME),
             self.RUN_TIME: get_timestamp(),
