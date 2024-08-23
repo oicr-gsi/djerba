@@ -17,7 +17,10 @@ import djerba.util.ini_fields as ini
 
 from copy import deepcopy
 from glob import glob
+from shutil import copy
 from string import Template
+from time import strftime
+
 from djerba.core.main import main
 from djerba.util.environment import directory_finder
 from djerba.util.logger import logger
@@ -31,10 +34,10 @@ class benchmarker(logger):
     SAMPLES = [
         "GSICAPBENCH_1219",
         "GSICAPBENCH_1232",
-        "GSICAPBENCH_1233",
-        "GSICAPBENCH_1273",
-        "GSICAPBENCH_1275",
-        "GSICAPBENCH_1288"
+        #"GSICAPBENCH_1233",
+        #"GSICAPBENCH_1273",
+        #"GSICAPBENCH_1275",
+        #"GSICAPBENCH_1288"
     ]
     REPORT_DIR_NAME = 'report'
     TEMPLATE = 'benchmark_config.ini'
@@ -73,6 +76,29 @@ class benchmarker(logger):
         self.private_dir = dir_finder.get_private_dir()
         with open(os.path.join(self.data_dir, 'benchmark_params.json')) as in_file:
             self.sample_params = json.loads(in_file.read())
+        if self.args.apply_cache and self.args.update_cache:
+            msg = 'Cannot specify both --apply-cache and --update-cache'
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        self.validator.validate_input_file(args.ref_path)
+        self.ref_path = args.ref_path
+        self.input_dir = os.path.abspath(self.args.input_dir)
+        self.validator.validate_input_dir(self.input_dir)        
+        self.logger.info("GSICAPBENCH input directory is '{0}'".format(self.input_dir))
+        self.input_name = os.path.basename(self.input_dir)
+        work_dir_root =  os.path.abspath(self.args.work_dir)
+        output_dir_root = os.path.abspath(self.args.output_dir)
+        self.validator.validate_output_dir(work_dir_root)
+        self.validator.validate_output_dir(output_dir_root)
+        # make subdirectories in work & output directories
+        runtime = strftime('%Y-%m-%dT%H-%M-%S')
+        dir_name = '{0}_runtime-{1}'.format(self.input_name, runtime)
+        self.work_dir = os.path.join(work_dir_root, dir_name+'_work')
+        self.logger.debug("Output directory is "+self.work_dir)
+        os.mkdir(self.work_dir) # fails if it already exists
+        self.output_dir = os.path.join(output_dir_root, dir_name)
+        self.logger.debug("Output directory is "+self.output_dir)
+        os.mkdir(self.output_dir) # fails if it already exists
 
     def glob_single(self, pattern):
         """Glob recursively for the given pattern; return a single result, or None"""
@@ -152,7 +178,11 @@ class benchmarker(logger):
             raise RuntimeError(msg)
         return inputs
 
-    def run_comparison(self, report_paths):
+    def run_comparison(self, report_paths, ref_path):
+        with open(ref_path) as ref_file:
+            ref_paths = json.load(ref_file)
+
+    def run_comparison_OLD(self, report_paths):
         data = []
         self.logger.info("Comparing reports: {0}".format(report_paths))
         for report_path in report_paths:
@@ -176,6 +206,7 @@ class benchmarker(logger):
 
     def run_reports(self, input_samples, work_dir):
         self.logger.info("Reporting for {0} samples: {1}".format(len(input_samples), input_samples))
+        report_paths = {}
         for sample in input_samples:
             self.logger.info("Generating Djerba draft report for {0}".format(sample))
             config_path = os.path.join(work_dir, sample, self.CONFIG_FILE_NAME)
@@ -186,8 +217,11 @@ class benchmarker(logger):
             config = djerba_main.configure(config_path)
             pattern = os.path.join(report_dir, '*'+core_constants.REPORT_JSON_SUFFIX)
             json_path = self.glob_single(pattern)
+            self.logger.debug("Found JSON path: "+json_path)
             data = djerba_main.extract(config, json_path, archive=False)
             self.logger.info("Finished Djerba draft report for {0}".format(sample))
+            report_paths[sample] = json_path
+        return report_paths
 
     def run_setup(self, results_dir, work_dir):
         """For each sample, set up working directory and generate config.ini"""
@@ -219,6 +253,14 @@ class benchmarker(logger):
         return input_samples
 
     def run(self):
+        # generate Djerba reports
+        # load and run plugin to compare reports and generate summary
+        # copy JSON/text files and write HTML summary to output directory
+        input_samples = self.run_setup(self.input_dir, self.work_dir)
+        report_paths = self.run_reports(input_samples)
+        self.run_comparison(report_paths, self.ref_path)
+
+    def run_OLD(self):
         run_ok = True
         if self.args.subparser_name == self.GENERATE:
             if self.args.apply_cache and self.args.update_cache:
