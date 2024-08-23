@@ -109,7 +109,7 @@ class snv_indel_processor(logger):
         # print a warning if any values are missing (shouldn't happen), but change them to 0
         vaf_df = maf_df.copy()
         if vaf_df[alt_col].isna().any() or vaf_df[dep_col].isna().any():
-            print("Warning! Missing values found in one of the count columns")
+            self.logger.info("Warning! Missing values found in one of the count columns")
             vaf_df[alt_col] = vaf_df[alt_col].fillna(0)
             vaf_df[dep_col] = vaf_df[dep_col].fillna(0)
 
@@ -124,7 +124,7 @@ class snv_indel_processor(logger):
 
         # check for any NAs
         if vaf_df[vaf_header].isna().any():
-            print("Warning! Missing values found in the new vaf column")
+            self.logger.info("Warning! Missing values found in the new vaf column")
             vaf_df[vaf_header] = vaf_df[vaf_header].fillna(0)
 
         return vaf_df
@@ -133,12 +133,22 @@ class snv_indel_processor(logger):
         factory = annotator_factory(self.log_level, self.log_path)
         return factory.get_annotator(self.work_dir, self.config).annotate_maf(maf_path)
 
+    def compute_loh(self, df, cn_file, purity):
+        self.logger.info("Computing LOH")
+        cn = pd.read_csv(cn_file, header=True, sep="\t")
+        calc_df = pd.merge(df[["Hugo_Symbol", "tumour_vaf"]], cn, on="Hugo_Symbol")
+        calc_df["LHS"] = (calc_df["tumour_vaf"] / purity ) * calc_df["CN"]
+        calc_df["RHS"] = calc_df["CN"] - 0.5
+        calc_df["LOH"] = (calc_df['LHS'] > calc_df['RHS']) & (calc_df['MACN'] <= 0.5)
+
+        return calc_df
+
     def construct_whizbam_links(self, df, whizbam_url):
         if not df.empty:
-            print("--- adding Whizbam links ---")
+            self.logger.debug("--- adding Whizbam links ---")
             df['whizbam'] = whizbam_url + df['Chromosome'].str.replace("chr", "") + "&chrloc=" + df['Start_Position'].astype(str) + "-" + df['End_Position'].astype(str)
         else:
-            print("--- No Whizbam links added to empty file ---")
+            self.logger.debug("--- No Whizbam links added to empty file ---")
         
         return df
     
@@ -397,30 +407,22 @@ class snv_indel_processor(logger):
         return tmp_path
     
     def proc_vep(self, maf_df):
-        print("--- adding VAF column ---")
         # add vaf columns
         vaf_df = self.add_vaf_to_maf(maf_df, alt_col="t_alt_count", dep_col="t_depth", vaf_header="tumour_vaf")
         vaf_df = self.add_vaf_to_maf(vaf_df, alt_col="n_alt_count", dep_col="n_depth", vaf_header="normal_vaf")
-
-        print("--- adding oncogenic binary column ---")
 
         # add oncogenic yes or no columns
         df_anno = vaf_df.copy()
         df_anno['oncogenic_binary'] = np.where(df_anno['ONCOGENIC'].isin(["Oncogenic", "Likely Oncogenic"]), "YES", "NO")
 
-        print("--- adding common_variant binary column ---")
-
         # add common_variant yes or no columns
         df_anno['ExAC_common'] = np.where(df_anno['FILTER'].str.contains("common_variant"), "YES", "NO")
-
-        print("--- adding gnomAD_AF_POPMAX binary column ---")
 
         # add POPMAX yes or no columns
         gnomad_cols = ["gnomAD_AFR_AF", "gnomAD_AMR_AF", "gnomAD_ASJ_AF", "gnomAD_EAS_AF", "gnomAD_FIN_AF", "gnomAD_NFE_AF", "gnomAD_OTH_AF", "gnomAD_SAS_AF"]
         df_anno[gnomad_cols] = df_anno[gnomad_cols].fillna(0)
         df_anno['gnomAD_AF_POPMAX'] = df_anno[gnomad_cols].max(axis=1)
 
-        print("--- small change to filters ---")
         # caller artifact filters
         df_anno['FILTER'] = df_anno['FILTER'].replace("^clustered_events$", "PASS", regex=True)
         df_anno['FILTER'] = df_anno['FILTER'].replace("^clustered_events;common_variant$", "PASS", regex=True)
@@ -428,23 +430,18 @@ class snv_indel_processor(logger):
         df_anno['FILTER'] = df_anno['FILTER'].replace(".", "PASS", regex=False)
 
         # Artifact Filter
-        print("--- artifact filter ---")
         df_anno['TGL_FILTER_ARTIFACT'] = np.where(df_anno['FILTER'] == "PASS", "PASS", "Artifact")
 
         # ExAC Filter
-        print("--- exac filter ---")
         df_anno['TGL_FILTER_ExAC'] = np.where((df_anno['ExAC_common'] == "YES") & (df_anno['Matched_Norm_Sample_Barcode'] == "unmatched"), "ExAC_common", "PASS")
 
         # gnomAD_AF_POPMAX Filter
-        print("--- gnomAD filter ---")
         df_anno['TGL_FILTER_gnomAD'] = np.where((df_anno['gnomAD_AF_POPMAX'] > 0.001) & (df_anno['Matched_Norm_Sample_Barcode'] == "unmatched"), "gnomAD_common", "PASS")
 
         # VAF Filter
-        print("--- VAF filter ---")
         df_anno['TGL_FILTER_VAF'] = np.where((df_anno['tumour_vaf'] >= 0.15) | ((df_anno['tumour_vaf'] < 0.15) & (df_anno['oncogenic_binary'] == "YES")), "PASS", "low_VAF")
 
         # Mark filters
-        print("--- printing verdict ---")
         df_anno['TGL_FILTER_VERDICT'] = np.where((df_anno['TGL_FILTER_ARTIFACT'] == "PASS") & (df_anno['TGL_FILTER_ExAC'] == "PASS") & (df_anno['TGL_FILTER_gnomAD'] == "PASS") & (df_anno['TGL_FILTER_VAF'] == "PASS"), 
                                                  "PASS", 
                                                  df_anno['TGL_FILTER_ARTIFACT'] + ";" + df_anno['TGL_FILTER_ExAC'] + ";" + df_anno['TGL_FILTER_gnomAD'] + ";" + df_anno['TGL_FILTER_VAF'])
@@ -455,28 +452,37 @@ class snv_indel_processor(logger):
 
     def process_snv_data(self, whizbam_url, maf_input_path):
         if maf_input_path is None:
-            print("No MAF file input, processing omitted")
+            self.logger.info("No MAF file input, processing omitted")
         else:
-            print("Processing Mutation data")
+            self.logger.info("Processing Mutation data")
 
-        # annotate with filters
-        print("--- Reading MAF data ---")
-        maf_df = pd.read_csv(maf_input_path, sep="\t")
+            # annotate with filters
+            self.logger.debug("--- Reading MAF data ---")
+            maf_df = pd.read_csv(maf_input_path, sep="\t")
 
-        df_filter = self.proc_vep(maf_df)
-        df_filt_whizbam = self.construct_whizbam_links(df=df_filter, whizbam_url=whizbam_url)
+            df_filter = self.proc_vep(maf_df)
+            df_filt_whizbam = self.construct_whizbam_links(df=df_filter, whizbam_url=whizbam_url)
 
-        df_filt_whizbam.to_csv(path_or_buf=os.path.join(self.work_dir, "data_mutations_extended.txt"), sep="\t", index=False)
+            df_filt_whizbam.to_csv(path_or_buf=os.path.join(self.work_dir, "data_mutations_extended.txt"), sep="\t", index=False)
 
-        if df_filter.empty:
-            print("No passed mutations")
-            df_filt_whizbam.to_csv(path_or_buf=os.path.join(self.work_dir, "data_mutations_extended_oncogenic.txt"), sep="\t", index=False)
-        else:
-            # subset to oncokb annotated genes
-            df_filt_oncokb = df_filt_whizbam[(df_filt_whizbam['ONCOGENIC'] == "Oncogenic") | (df_filt_whizbam['ONCOGENIC'] == "Likely Oncogenic")]
-            if df_filt_oncokb.empty:
-                print("no oncogenic mutations")
-            df_filt_oncokb.to_csv(path_or_buf=os.path.join(self.work_dir, "data_mutations_extended_oncogenic.txt"), sep="\t", index=False)
+            if df_filter.empty:
+                self.logger.info("No passed mutations")
+                df_filt_whizbam.to_csv(path_or_buf=os.path.join(self.work_dir, "data_mutations_extended_oncogenic.txt"), sep="\t", index=False)
+            else:
+                # subset to oncokb annotated genes
+                df_filt_oncokb = df_filt_whizbam[(df_filt_whizbam['ONCOGENIC'] == "Oncogenic") | (df_filt_whizbam['ONCOGENIC'] == "Likely Oncogenic")]
+                if df_filt_oncokb.empty:
+                    self.logger.info("no oncogenic mutations")
+                df_filt_oncokb.to_csv(path_or_buf=os.path.join(self.work_dir, "data_mutations_extended_oncogenic.txt"), sep="\t", index=False)
+
+            if self.workspace.has_file("purity_ploidy.json") and self.workspace.has_file("cn.txt"):
+                purity = str(self.workspace.read_json("purity_ploidy.json")["purity"])
+                cn_file = os.path.join(self.work_dir, "cn.txt")
+
+                final_table = self.compute_loh(df_filt_oncokb, cn_file, purity)
+                final_table.to_csv(os.path.join(self.work_dir, "loh.txt"), sep="\t", index=False)
+            else:
+                self.logger.info("No copy number information, LOH omitted")
 
     def run_data_rscript(self, whizbam_url, maf_input_path):
         dir_location = os.path.dirname(__file__)
@@ -520,6 +526,8 @@ class snv_indel_processor(logger):
 
         maf_path = os.path.join(self.work_dir, 'data_mutations_extended.txt')
         output = os.path.join(self.work_dir, sic.VAF_PLOT_FILENAME)
+        self.logger.info(f"Creating VAF plot and saving to file {output}")
+
 
         MAF = pd.read_csv(maf_path, sep="\t")
         MAF = MAF[~MAF['Variant_Classification'].isin(['Silent', 'Splice_Region'])]
