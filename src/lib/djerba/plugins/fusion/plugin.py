@@ -16,9 +16,9 @@ from djerba.util.render_mako import mako_renderer
 import djerba.core.constants as core_constants
 import djerba.util.oncokb.constants as oncokb
 import djerba.plugins.fusion.constants as fc
+import json
 
 class main(plugin_base):
-
     PRIORITY = 900
     PLUGIN_VERSION = '1.1.0'
     CACHE_DEFAULT = '/.mounts/labs/CGI/gsi/tools/djerba/oncokb_cache/scratch'
@@ -37,15 +37,16 @@ class main(plugin_base):
     def extract(self, config):
         def sort_by_actionable_level(row):
             return oncokb_levels.oncokb_order(row[core_constants.ONCOKB])
+
         wrapper = self.get_config_wrapper(config)
-        prepare_fusions( self.workspace.get_work_dir(), self.log_level, self.log_path).process_fusion_files(wrapper)
-        fus_reader = fusion_reader( self.workspace.get_work_dir(), self.log_level, self.log_path )
+        prepare_fusions(self.workspace.get_work_dir(), self.log_level, self.log_path).process_fusion_files(wrapper)
+        fus_reader = fusion_reader(self.workspace.get_work_dir(), self.log_level, self.log_path)
         total_fusion_genes = fus_reader.get_total_fusion_genes()
         gene_pair_fusions = fus_reader.get_fusions()
         if gene_pair_fusions is not None:
             outputs = fus_reader.fusions_to_json(gene_pair_fusions, wrapper.get_my_string(fc.ONCOTREE_CODE))
             [rows, gene_info, treatment_opts] = outputs
-            #sort by OncoKB level
+            # sort by OncoKB level
             rows = sorted(rows, key=sort_by_actionable_level)
             max_actionable = oncokb_levels.oncokb_order('P')
             rows = list(filter(lambda x: oncokb_levels.oncokb_order(x[core_constants.ONCOKB]) <= max_actionable, rows))
@@ -64,6 +65,13 @@ class main(plugin_base):
             }
             gene_info = []
             treatment_opts = []
+
+        # writing rows to the output JSON file
+        work_dir = self.workspace.get_work_dir()
+        output_path = os.path.join(work_dir, 'testing_fusion_output.json')
+        with open(output_path, 'w') as outfile:
+            json.dump(results[fc.BODY], outfile, indent=4)
+
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         data[core_constants.RESULTS] = results
         data[core_constants.MERGE_INPUTS]['gene_information_merger'] = gene_info
@@ -79,7 +87,7 @@ class main(plugin_base):
         ]
         for key in discovered:
             self.add_ini_discovered(key)
-        #set defaults
+        # set defaults
         data_dir = directory_finder(self.log_level, self.log_path).get_data_dir()
         self.set_ini_default(fc.ENTREZ_CONVERSION_PATH, os.path.join(data_dir, fc.ENTRCON_NAME))
         self.set_ini_default(fc.MIN_FUSION_READS, 20)
@@ -103,4 +111,4 @@ class main(plugin_base):
                 self.logger.error(msg)
                 raise RuntimeError(msg)
             wrapper.set_my_param(ini_name, file_path)
-        return(wrapper)
+        return (wrapper)
