@@ -1,7 +1,10 @@
+import os
 import csv
 import gzip
 import logging
+import pandas as pd
 import djerba.core.constants as core_constants
+from djerba.util.environment import directory_finder
 import djerba.util.ini_fields as ini  # TODO new module for these constants?
 import djerba.util.provenance_index as index
 from djerba.helpers.base import helper_base
@@ -21,8 +24,11 @@ class main(helper_base):
     REQUISITION_APPROVED = 'requisition_approved'
     ASSAY = 'assay'    
     REQUISITION_ID = 'requisition_id'
-    TCGA_CODE = 'tcga_code'
     SAMPLE_TYPE = 'sample_type'
+
+    # Discovered parameters for ini
+    # Also a header in tcga_code_key.txt table
+    TCGA_CODE = 'tcga_code' 
 
     # Name for output file
     INPUT_PARAMS_FILE = 'input_params.json'
@@ -35,6 +41,8 @@ class main(helper_base):
 
     # Other
     NA = "NA"
+    TCGA_DEFAULT = "TCGA_ALL_TUMOR"
+    TCGA_CODE_KEY = "tcga_code_key.txt"
 
     def specify_params(self):
         self.logger.debug("Specifying params for input params helper")
@@ -85,10 +93,12 @@ class main(helper_base):
 
         # Get tcga_code by converting from oncotree_code
         if wrapper.my_param_is_null(self.TCGA_CODE):
-            info[self.TCGA_CODE] = self.convert_oncotree_to_tcga(info[self.ONCOTREE_CODE])
+            tcga_code = self.convert_oncotree_to_tcga(info[self.ONCOTREE_CODE])
+            info[self.TCGA_CODE] = tcga_code
+            wrapper.set_my_param(self.TCGA_CODE, tcga_code)
         else:
-            info[self.TCGA_CODE] = wrapper.get_my_string(self.TCGA_CODE)
-        
+            info[self.TCGA_CODE] = wrapper.get_my_string(self.TCGA_CODE).upper()
+
         # Write parameters to the workspace
         self.write_input_params_info(info)
         return wrapper.get_config()
@@ -109,17 +119,18 @@ class main(helper_base):
         """
         try:
             input_params_info = {
-                self.DONOR: wrapper.get_my_string[self.DONOR],
-                self.STUDY: wrapper.get_my_string[self.STUDY],
-                self.PROJECT: wrapper.get_my_string[self.PROJECT],
-                self.ONCOTREE_CODE: wrapper.get_my_string[self.ONCOTREE_CODE],
-                self.PRIMARY_CANCER: wrapper.get_my_string[self.PRIMARY_CANCER],
-                self.SITE_OF_BIOPSY: wrapper.get_my_string[self.SITE_OF_BIOPSY],
-                self.REQUISITION_APPROVED: wrapper.get_my_string[self.REQUISITION_APPROVED],
-                self.ASSAY: wrapper.get_my_string[self.ASSAY],
-                self.REQUISITION_ID: wrapper.get_my_string[self.REQUISITION_ID],
-                self.SAMPLE_TYPE: wrapper.get_my_string[self.SAMPLE_TYPE]
+                self.DONOR: config[self.identifier][self.DONOR],
+                self.STUDY: config[self.identifier][self.STUDY],
+                self.PROJECT: config[self.identifier][self.PROJECT],
+                self.ONCOTREE_CODE: config[self.identifier][self.ONCOTREE_CODE].upper(),
+                self.PRIMARY_CANCER: config[self.identifier][self.PRIMARY_CANCER],
+                self.SITE_OF_BIOPSY: config[self.identifier][self.SITE_OF_BIOPSY],
+                self.REQUISITION_APPROVED: config[self.identifier][self.REQUISITION_APPROVED],
+                self.ASSAY: config[self.identifier][self.ASSAY],
+                self.REQUISITION_ID: config[self.identifier][self.REQUISITION_ID],
+                self.SAMPLE_TYPE: config[self.identifier][self.SAMPLE_TYPE]
             }
+
         except KeyError as err:
             msg = "Required config field for input params helper not found: {0}".format(err)
             self.logger.error(err)
@@ -150,7 +161,22 @@ class main(helper_base):
             raise ValueError(msg)
 
     def convert_oncotree_to_tcga(self, oncotree_code):
+        
+        # Read tcga_code_key.txt as a database
+        data_dir = directory_finder(log_level=logging.WARNING, log_path=None).get_data_dir()
+        df = pd.read_csv(os.path.join(data_dir, self.TCGA_CODE_KEY), sep = "\t", index_col = self.ONCOTREE_CODE)
 
+        # Lookup oncotree_code in the dataframe and get the corresponding tcga_code
+        # Note: the data in the text file should contain no duplicate oncotree code values.
+        # If error occurs (i.e. could not find oncotree_code in table), default to TCGA_ALL_TUMOR with a warning.
+        try:
+            tcga_code = df.loc[oncotree_code.upper(), self.TCGA_CODE]
+        except:
+            tcga_code = self.TCGA_DEFAULT
+            msg = "Could not find ONCOTREE code {0} in tcga_code_key.txt. Defaulting to {1}. If you know the correct corresponding TCGA code, please manually specify it.".format(oncotree_code, self.TCGA_DEFAULT)
+            self.logger.warning(msg)
+
+        return tcga_code.upper()
 
 
     def write_input_params_info(self, input_params_info):
