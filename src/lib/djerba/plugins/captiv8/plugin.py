@@ -15,6 +15,7 @@ from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.render_mako import mako_renderer
 from djerba.helpers.input_params_helper.helper import main as input_params_helper
 from djerba.util.environment import directory_finder
+from djerba.util.validator import path_validator
 
 class main(plugin_base):
 
@@ -214,9 +215,9 @@ class main(plugin_base):
         cna_path = os.path.join(report_dir, constants.DATA_CNA)
         mut_path = os.path.join(report_dir, constants.DATA_MUTATIONS_EXTENDED)
 
-        if not (os.access(cna_path, os.R_OK) and os.access(mut_path, os.R_OK)):
-            print("Expected files purple.data_CNA.txt and/or data_mutations_extended.txt not readable, check input directory")
-            sys.exit(1)
+        validator = path_validator(self.log_level, self.log_path)
+        for input_path in [cna_path, mut_path]:
+            validator.validate_input_file(input_path)
   
         potential_lof = False
 

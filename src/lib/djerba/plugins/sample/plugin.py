@@ -31,6 +31,7 @@ class main(plugin_base):
             constants.SAMPLE_TYPE,
             constants.CALLABILITY,
             constants.COVERAGE,
+            constants.DONOR,
             constants.PURITY,
             constants.PLOIDY,
             core_constants.TUMOUR_ID,
@@ -60,18 +61,26 @@ class main(plugin_base):
         wrapper = self.fill_param_if_null(wrapper, constants.PURITY, "purity_ploidy.json")
         wrapper = self.fill_param_if_null(wrapper, constants.PLOIDY, "purity_ploidy.json")
 
-        # Get tumour_id from sample info:
-        if wrapper.my_param_is_null(core_constants.TUMOUR_ID):
-            info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
-            tumour_id = info[constants.TUMOUR_ID]
-            wrapper.set_my_param(core_constants.TUMOUR_ID, tumour_id)
-        
+
+        # Get tumour_id and donor
+        for key in [core_constants.TUMOUR_ID, constants.DONOR]:
+            if wrapper.my_param_is_null(key):
+                if os.path.exists(os.path.join(work_dir,core_constants.DEFAULT_SAMPLE_INFO)):
+                    info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
+                    wrapper.set_my_param(key, info[key])
+                else:
+                    msg = "Cannot find {0} in manual config or sample_info.json".format(key)
+                    self.logger.error(msg)
+                    raise RuntimeError(msg)
+
+        # Fetch tumour_id and donor
+        donor = config[self.identifier][constants.DONOR]
         tumour_id = config[self.identifier][core_constants.TUMOUR_ID]
         # SECOND PASS: Get files based on input parameters
         if wrapper.my_param_is_null(constants.CALLABILITY):
-            wrapper.set_my_param(constants.CALLABILITY, self.fetch_callability_etl_data(tumour_id))        
+            wrapper.set_my_param(constants.CALLABILITY, self.fetch_callability_etl_data(donor, tumour_id))        
         if wrapper.my_param_is_null(constants.COVERAGE):
-            wrapper.set_my_param(constants.COVERAGE, self.fetch_coverage_etl_data(tumour_id))
+            wrapper.set_my_param(constants.COVERAGE, self.fetch_coverage_etl_data(donor, tumour_id))
 
         return wrapper.get_config()
     
@@ -97,35 +106,50 @@ class main(plugin_base):
         renderer = mako_renderer(self.get_module_dir())
         return renderer.render_name('sample_template.html', data)
 
-    def fetch_callability_etl_data(self,tumour_id):
+    def fetch_callability_etl_data(self, donor, tumour_id):
         etl_cache = QCETLCache(self.QCETL_CACHE)
         cached_callabilities = etl_cache.mutectcallability.mutectcallability
         columns_of_interest = gsiqcetl.column.MutetctCallabilityColumn
+        # Note: donor and tumour ID are both not unique, but together are unique. Filter on both.
+        # One donor can have multiple tumour IDs; one tumour ID can be associated with multiple donors
+        # But one donor will not have a duplicate tumour IDs
         data = cached_callabilities.loc[
-            (cached_callabilities[columns_of_interest.GroupID] == tumour_id),
-            [columns_of_interest.GroupID, columns_of_interest.Callability]
+            (cached_callabilities[columns_of_interest.GroupID] == tumour_id) & # filter on tumour_id
+            (cached_callabilities[columns_of_interest.Donor] == donor), # filter also on donor
+            [columns_of_interest.GroupID, columns_of_interest.Donor, columns_of_interest.Callability]
             ]
-        if len(data) > 0:
+        if len(data) == 1:
             callability = round(data.iloc[0][columns_of_interest.Callability].item() * 100,1)
             return callability
+        elif len(data) > 1:
+            msg = "Djerba found more than one callability associated with donor {0} and tumour_id {1} in QC-ETL. Double check that the callability found by Djerba is correct; if not, may have to manually specify the callability.".format(donor, tumour_id)
+            self.logger.warning(msg)
         else:
-            msg = "Djerba couldn't find the callability associated with tumour_id {0} in QC-ETL. ".format(tumour_id)
+            msg = "Djerba couldn't find the callability associated with donor {0} and tumour_id {1} in QC-ETL.".format(donor, tumour_id)
             self.logger.error(msg)
             raise MissingQCETLError(msg)
         
-    def fetch_coverage_etl_data(self,tumour_id):
+    def fetch_coverage_etl_data(self, donor, tumour_id):
         etl_cache = QCETLCache(self.QCETL_CACHE)
         cached_coverages = etl_cache.bamqc4merged.bamqc4merged
         columns_of_interest = gsiqcetl.column.BamQc4MergedColumn
+        # Note: donor and tumour ID are both not unique, but together are unique. Filter on both.
+        # One donor can have multiple tumour IDs; one tumour ID can be associated with multiple donors
+        # But one donor will not have a duplicate tumour IDs
         data = cached_coverages.loc[
-            (cached_coverages[columns_of_interest.GroupID] == tumour_id),
-            [columns_of_interest.GroupID, columns_of_interest.CoverageDeduplicated]
+            (cached_coverages[columns_of_interest.GroupID] == tumour_id) &
+            (cached_coverages[columns_of_interest.Donor] == donor),
+            [columns_of_interest.GroupID, columns_of_interest.Donor, columns_of_interest.CoverageDeduplicated]
             ]
-        if len(data) > 0:
+        if len(data) == 1:
             coverage_value = round(data.iloc[0][columns_of_interest.CoverageDeduplicated].item(),1)
             return(coverage_value)
+        elif len(data) > 1:
+            msg = "Djerba found more than one coverage associated with donor {0} and tumour_id {1} in QC-ETL. Double check that the coverage found by Djerba is correct; if not, may have to manually specify the coverage.".format(donor, tumour_id)
+            self.logger.warning(msg)
+
         else:
-            msg = "Djerba couldn't find the coverage associated with tumour_id {0} in QC-ETL. ".format(tumour_id)
+            msg = "Djerba couldn't find the coverage associated with donor {0} and tumour_id {1} in QC-ETL. ".format(donor, tumour_id)
             self.logger.debug(msg)
             raise MissingQCETLError(msg)
 

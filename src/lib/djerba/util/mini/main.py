@@ -25,7 +25,7 @@ class main(main_base):
     SUMMARY = 'summary'
     SUMMARY_FILENAME = 'summary.txt'
     SUMMARY_DEFAULT = 'Patient summary text; not in use for PWGS'
-    SUPPLEMENT_KEYS = [
+    SUPPLEMENT_CONFIGURABLE_KEYS = [
         supplement_plugin.REPORT_SIGNOFF_DATE,
         supplement_plugin.GENETICIST,
         supplement_plugin.GENETICIST_ID
@@ -78,15 +78,20 @@ class main(main_base):
             if ini_path:
                 self.validate_ini(ini_path)
                 config.read(ini_path)
-            # set the assay
+            # set the assay and user supplied draft date
+            supplementary_config = data[cc.CONFIG][constants.SUPPLEMENTARY]
+            usdd_key = supplement_plugin.USER_SUPPLIED_DRAFT_DATE # shorter variable name
             try:
-                assay = data[cc.CONFIG][constants.SUPPLEMENTARY]['assay']
+                assay = supplementary_config[supplement_plugin.ASSAY]
+                draft_date = supplementary_config[usdd_key]
             except KeyError as err:
-                msg = "Cannot find Djerba assay from input JSON: {0}".format(err)
+                msg = "Cannot find required parameter from input JSON: {0}".format(err)
                 self.logger.error(msg)
                 raise MiniDjerbaScriptError(msg) from err
-            if config.has_section(constants.SUPPLEMENTARY):
-                config.set(constants.SUPPLEMENTARY, 'assay', assay)
+            if ini_path:
+                # validate_ini() above checks if supplementary section is present
+                config.set(constants.SUPPLEMENTARY, supplement_plugin.ASSAY, assay)
+                config.set(constants.SUPPLEMENTARY, usdd_key, draft_date)
             if summary_path:
                 if self.has_summary(data):
                     config.add_section(constants.SUMMARY)
@@ -156,8 +161,8 @@ class main(main_base):
         for key, value in patient_info.items():
             config.set(self.PATIENT_INFO, key, value)
         config.add_section(self.SUPPLEMENT)
-        for key in self.SUPPLEMENT_KEYS:
-            config.set(self.SUPPLEMENT, key, supplement[key])
+        for k in self.SUPPLEMENT_CONFIGURABLE_KEYS:
+            config.set(self.SUPPLEMENT, k, supplement[k])
         ini_path = os.path.join(out_dir, self.INI_FILENAME) 
         with open(ini_path, 'w', encoding=cc.TEXT_ENCODING) as out_file:
             config.write(out_file)
@@ -203,7 +208,7 @@ class main(main_base):
 
     def validate_supplementary(self, supplementary):
         found = set(supplementary.keys())
-        expected = set(self.SUPPLEMENT_KEYS)
+        expected = set(self.SUPPLEMENT_CONFIGURABLE_KEYS)
         if not found == expected:
             msg = "Bad supplementary fields; expected {0}, found {1}".format(expected, found)
             self.logger.error(msg)

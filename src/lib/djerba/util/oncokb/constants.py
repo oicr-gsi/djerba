@@ -53,7 +53,7 @@ ORDERED_LEVELS = [
 
 ### INI config keys ###
 
-ONCOTREE_CODE = 'oncotree code'
+ONCOTREE_CODE = 'oncotree_code'
 ONCOKB_CACHE = 'oncokb cache'
 APPLY_CACHE = 'apply cache'
 UPDATE_CACHE = 'update cache'

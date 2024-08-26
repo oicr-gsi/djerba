@@ -9,6 +9,7 @@ CALLABILITY = "callability"
 COVERAGE = "mean_coverage"
 PURITY = "purity"
 PLOIDY = "ploidy"
+DONOR = "donor"
 
 # Parameters for rendering
 ONCOTREE_CODE = 'OncoTree code'

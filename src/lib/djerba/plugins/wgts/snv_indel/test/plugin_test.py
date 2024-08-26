@@ -112,7 +112,6 @@ class TestSnvIndelPlugin(PluginTester):
         os.mkdir(input_dir)
         work_dir = os.path.join(tmp_dir, 'work')
         os.mkdir(work_dir)
-        work_dir = '/.mounts/labs/CGI/scratch/aalam/examples/test/'
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
         copy(os.path.join(data_dir, self.JSON_NAME_NO_MUT), input_dir)
