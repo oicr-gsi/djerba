@@ -17,6 +17,8 @@ import djerba.core.constants as core_constants
 import djerba.util.oncokb.constants as oncokb
 import djerba.plugins.fusion.constants as fc
 import json
+import base64
+import pysam
 
 class main(plugin_base):
     PRIORITY = 900
@@ -46,7 +48,7 @@ class main(plugin_base):
         if gene_pair_fusions is not None:
             outputs = fus_reader.fusions_to_json(gene_pair_fusions, wrapper.get_my_string(fc.ONCOTREE_CODE))
             [rows, gene_info, treatment_opts] = outputs
-            # sort by OncoKB level
+            # Sort by OncoKB level
             rows = sorted(rows, key=sort_by_actionable_level)
             max_actionable = oncokb_levels.oncokb_order('P')
             rows = list(filter(lambda x: oncokb_levels.oncokb_order(x[core_constants.ONCOKB]) <= max_actionable, rows))
@@ -66,17 +68,74 @@ class main(plugin_base):
             gene_info = []
             treatment_opts = []
 
-        # writing rows to the output JSON file
-        work_dir = self.workspace.get_work_dir()
-        output_path = os.path.join(work_dir, 'testing_fusion_output.json')
-        with open(output_path, 'w') as outfile:
-            json.dump(results[fc.BODY], outfile, indent=4)
+        # Processing fusions and generating blob URLs
+        tsv_file_path = wrapper.get_my_string(fc.ARRIBA_PATH)
+        json_template_path = 'fusion_template_to_be_compressed.json'
+        output_dir = self.workspace.get_work_dir()
+        unique_fusions = list({item["fusion"] for item in results[fc.BODY]})
+        fusion_url_pairs = []
+
+        for fusion in unique_fusions:
+            try:
+                fusion, blurb_url = self.process_fusion(fusion, tsv_file_path, json_template_path, output_dir)
+                fusion_url_pairs.append([fusion, blurb_url])
+            except ValueError as e:
+                self.logger.error(f"Error processing fusion {fusion}: {e}")
+
+        # Save the fusion-URL pairs to a CSV file
+        output_csv_path = os.path.join(output_dir, 'fusion_blob_urls.csv')
+        with open(output_csv_path, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['Fusion', 'Whizbam URL'])
+            writer.writerows(fusion_url_pairs)
 
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         data[core_constants.RESULTS] = results
         data[core_constants.MERGE_INPUTS]['gene_information_merger'] = gene_info
         data[core_constants.MERGE_INPUTS]['treatment_options_merger'] = treatment_opts
         return data
+
+    def process_fusion(self, fusion, tsv_file_path, json_template_path, output_dir):
+        match = re.match(r"(.+)::(.+)", fusion)
+        if match:
+            gene1 = match.group(1)
+            gene2 = match.group(2)
+        else:
+            raise ValueError(f"No valid fusion found for {fusion}.")
+
+        breakpoint1, breakpoint2 = None, None
+
+        with open(tsv_file_path, mode='r') as file:
+            reader = csv.DictReader(file, delimiter='\t')
+            for row in reader:
+                if row['gene1'] == gene1 and row['gene2'] == gene2:
+                    breakpoint1 = row['breakpoint1']
+                    breakpoint2 = row['breakpoint2']
+                    break
+
+        if not (breakpoint1 and breakpoint2):
+            raise ValueError(f"No matching fusion found in the TSV file for {fusion}.")
+
+        with open(json_template_path, 'r') as json_file:
+            data = json.load(json_file)
+
+        data['locus'] = [breakpoint1, breakpoint2]
+
+        json_str = json.dumps(data, separators=(',', ':'))
+
+        # Binary compressed data stream
+        compressed_data = pysam.bgzip_compress(json_str.encode('utf-8'))
+        # Take binary compressed data and encodes it into a base64 string
+        base64_encoded = base64.b64encode(compressed_data).decode('utf-8')
+
+        blurb_url = f"https://whizbam-dev.gsi.oicr.on.ca/igv?sessionURL=blob:{base64_encoded}"
+
+        output_json_filename = f"{fusion}_details.json"
+        output_json_path = os.path.join(output_dir, output_json_filename)
+        with open(output_json_path, 'w') as output_json_file:
+            json.dump(data, output_json_file, indent=2)
+
+        return fusion, blurb_url
 
     def specify_params(self):
         discovered = [
