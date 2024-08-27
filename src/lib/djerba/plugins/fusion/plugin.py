@@ -18,7 +18,7 @@ import djerba.util.oncokb.constants as oncokb
 import djerba.plugins.fusion.constants as fc
 import json
 import base64
-import pysam
+import gzip
 
 class main(plugin_base):
     PRIORITY = 900
@@ -124,7 +124,7 @@ class main(plugin_base):
         json_str = json.dumps(data, separators=(',', ':'))
 
         # Binary compressed data stream
-        compressed_data = pysam.bgzip_compress(json_str.encode('utf-8'))
+        compressed_data = gzip.compress(json_str.encode('utf-8'))
         # Take binary compressed data and encodes it into a base64 string
         base64_encoded = base64.b64encode(compressed_data).decode('utf-8')
 
