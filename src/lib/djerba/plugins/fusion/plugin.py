@@ -68,6 +68,8 @@ class main(plugin_base):
             gene_info = []
             treatment_opts = []
 
+        print(f"Results: {results}")
+
         # Processing fusions and generating blob URLs
         tsv_file_path = wrapper.get_my_string(fc.ARRIBA_PATH)
         json_template_path = 'fusion_template_to_be_compressed.json'
@@ -75,12 +77,18 @@ class main(plugin_base):
         unique_fusions = list({item["fusion"] for item in results[fc.BODY]})
         fusion_url_pairs = []
 
+        print(f"Unique fusions: {unique_fusions}")
+
         for fusion in unique_fusions:
             try:
                 fusion, blurb_url = self.process_fusion(fusion, tsv_file_path, json_template_path, output_dir)
                 fusion_url_pairs.append([fusion, blurb_url])
+                print(f"Processed fusion: {fusion}, URL: {blurb_url}")
+
             except ValueError as e:
                 self.logger.error(f"Error processing fusion {fusion}: {e}")
+
+        print(f"Final fusion-URL pairs: {fusion_url_pairs}")
 
         # Save the fusion-URL pairs to a CSV file
         output_csv_path = os.path.join(output_dir, 'fusion_blob_urls.csv')
@@ -103,16 +111,23 @@ class main(plugin_base):
         else:
             raise ValueError(f"No valid fusion found for {fusion}.")
 
+        print(f"Processing fusion: {fusion} with genes {gene1} and {gene2}")
+
         breakpoint1, breakpoint2 = None, None
 
         with open(tsv_file_path, mode='r') as file:
             reader = csv.DictReader(file, delimiter='\t')
+            print(f"TSV Columns: {reader.fieldnames}")
+
             for row in reader:
                 print(row)
                 if row['#gene1'] == gene1 and row['gene2'] == gene2:
                     breakpoint1 = row['breakpoint1']
                     breakpoint2 = row['breakpoint2']
                     break
+
+        print(f"Found breakpoints: {breakpoint1}, {breakpoint2}")
+
         if not (breakpoint1 and breakpoint2):
             raise ValueError(f"No matching fusion found in the TSV file for {fusion}.")
 
@@ -131,9 +146,12 @@ class main(plugin_base):
         blurb_url = f"https://whizbam-dev.gsi.oicr.on.ca/igv?sessionURL=blob:{base64_encoded}"
 
         output_json_filename = f"{fusion}_details.json"
-        output_json_path = os.path.join(output_dir, output_json_filename)
+        work_dir = self.workspace.get_work_dir()
+        output_json_path = os.path.join(work_dir, output_json_filename)
         with open(output_json_path, 'w') as output_json_file:
             json.dump(data, output_json_file, indent=2)
+
+        print(f"Generated JSON: {output_json_path}")
 
         return fusion, blurb_url
 
