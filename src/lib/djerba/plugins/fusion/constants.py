@@ -32,6 +32,7 @@ ENTRCON_NAME = 'entrez_conversion.txt'
 DATA_FUSIONS_OLD = 'data_fusions.txt'
 DATA_FUSIONS_ANNOTATED = 'data_fusions_oncokb_annotated.txt'
 DATA_FUSIONS_NCCN_ANNOTATED = 'data_fusions_NCCN.txt'
+JSON_TO_BE_COMPRESSED = 'fusion_template_to_be_compressed.json'
 FUSION_INDEX = 3
 HUGO_SYMBOL = 'Hugo_Symbol'
 NCCN_RELEVANT_VARIANTS = 'nccn_relevant_variants'
