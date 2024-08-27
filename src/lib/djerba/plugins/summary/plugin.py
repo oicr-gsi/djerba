@@ -4,7 +4,6 @@ Plugin to generate the Results Summary report section
 """
 
 import logging
-from time import strftime
 import os
 
 from djerba.plugins.base import plugin_base, DjerbaPluginError

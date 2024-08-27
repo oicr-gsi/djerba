@@ -18,10 +18,11 @@ from glob import glob
 from string import Template
 
 from djerba.core.configure import config_wrapper, core_configurer, DjerbaConfigError
+from djerba.core.html_cache import html_cache, DjerbaHtmlCacheError
 from djerba.core.ini_generator import ini_generator
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.loaders import plugin_loader, core_config_loader, DjerbaLoadError
-from djerba.core.main import main, arg_processor, DjerbaDependencyError
+from djerba.core.main import main, arg_processor, DjerbaDependencyError, DjerbaHtmlCacheError
 from djerba.core.workspace import workspace
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.testing.tools import TestBase
@@ -35,8 +36,8 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_UPDATE_JSON = 'simple_report_for_update.json'
-    SIMPLE_REPORT_MD5 = 'd8af6dbb0b5b8aca1acd204878c7d9d6'
-    SIMPLE_CONFIG_MD5 = 'fc6265eeb6a9f8f2a5c864a97e07250c'
+    SIMPLE_CONFIG_MD5 = '04b749b3ec489ed9c06c1a06eb2dc886'
+    SIMPLE_REPORT_MD5 = 'e4b491b28457b5b12a320ea11c6c47e5'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
@@ -68,6 +69,7 @@ class TestCore(TestBase):
             data_found = json.loads(json_file.read())
             data_found['core']['extract_time'] = '2024-01-01_12:00:00 -0500'
             data_found['core']['core_version'] = 'placeholder'
+            data_found['html_cache']['placeholder_report.clinical'] = 'placeholder'
         self.assertEqual(data_expected, data_found)
 
     def assertSimpleReport(self, json_path, html_path):
@@ -296,6 +298,8 @@ class TestCoreConfigurer(TestCore):
     """Test the 'core_configurer' class"""
 
     OUTPUT = 'core_config_test.ini'
+    TEST_USERNAME = 'test'
+    TEST_AUTHOR = 'Test Author'
 
     def assert_core_config(self, config):
         out_path = os.path.join(self.tmp_dir, self.OUTPUT)
@@ -308,13 +312,55 @@ class TestCoreConfigurer(TestCore):
             config_expected = in_file.read().strip()
         self.assertEqual(config_expected, config_found)
 
-    def run_core_config(self):
+    def run_core_config(self, default_author=True):
         loader = core_config_loader(log_level=logging.WARNING)
         core_configurer = loader.load(workspace(self.tmp_dir))
         config = ConfigParser()
-        config.add_section('core') # empty [core] section is sufficient
+        config.add_section('core')
+        if default_author:
+            config.set('core', 'author', core_constants.DEFAULT_AUTHOR)
         config = core_configurer.configure(config)
         return config
+
+    def run_core_config_no_author(self):
+        return self.run_core_config(default_author=False)
+
+    def test_author(self):
+        """Test author lookup"""
+        user_orig = os.environ.get('USER')
+        sudo_user_orig = os.environ.get('SUDO_USER')
+        private_dir_orig = os.environ.get('DJERBA_PRIVATE_DIR')
+        # make a temporary lookup file
+        os.environ['DJERBA_PRIVATE_DIR'] = self.tmp_dir
+        lookup = {
+            self.TEST_USERNAME: self.TEST_AUTHOR
+        }
+        with open(os.path.join(self.tmp_dir, 'djerba_users.json'), 'w') as out_file:
+            out_file.write(json.dumps(lookup))
+        # unknown username -> default author
+        os.environ['USER'] = 'nobody'
+        config = self.run_core_config_no_author()
+        self.assertEqual(config.get('core', 'author'), core_constants.DEFAULT_AUTHOR)
+        # known username -> test author
+        os.environ['USER'] = self.TEST_USERNAME
+        config = self.run_core_config_no_author()
+        self.assertEqual(config.get('core', 'author'), self.TEST_AUTHOR)
+        # known sudo username -> test author
+        os.environ['USER'] = 'nobody'
+        os.environ['SUDO_USER'] = self.TEST_USERNAME
+        config = self.run_core_config_no_author()
+        self.assertEqual(config.get('core', 'author'), self.TEST_AUTHOR)        
+        # put environment variables back as they were
+        original = {
+            'USER': user_orig,
+            'SUDO_USER': sudo_user_orig,
+            'DJERBA_PRIVATE_DIR': private_dir_orig
+        }
+        for k,v in original.items():
+            if v != None:
+                os.environ[k] = v
+            else:
+                del os.environ[k]
 
     def test_default(self):
         """Test default configuration with UUID"""
@@ -324,13 +370,12 @@ class TestCoreConfigurer(TestCore):
         config.set('core', 'report_id', 'placeholder')
         self.assert_core_config(config)
 
-    def test_sample_info(self):
-        """Test configuration with sample info file"""
+    def test_input_params(self):
+        """Test configuration with input params file"""
         info = {
-            core_constants.TUMOUR_ID: 'foo',
-            core_constants.NORMAL_ID: 'bar'
+            core_constants.REQUISITION_ID: 'foo'
         }
-        info_path = os.path.join(self.tmp_dir, core_constants.DEFAULT_SAMPLE_INFO)
+        info_path = os.path.join(self.tmp_dir, core_constants.DEFAULT_INPUT_PARAMS)
         with open(info_path, 'w') as out_file:
             print(json.dumps(info), file=out_file)
         config = self.run_core_config()
@@ -379,6 +424,79 @@ class TestDependencies(TestCore):
             out_file.write('What do you get if you multiply six by nine?\n')
         main(work_dir, log_level=logging.WARNING).run(args)
         self.assertTrue(os.path.exists(json_path))
+
+class TestHtmlCache(TestCore):
+    """Test the HTML cache"""
+
+    def test_encode_decode(self):
+        # test an encoding/decoding round trip
+        string_to_encode = "Hello, world!"
+        cache = html_cache(log_level=logging.ERROR)
+        encoded = cache.encode_to_base64(string_to_encode)
+        decoded_string = cache.decode_from_base64(encoded)
+        self.assertEqual(string_to_encode, decoded_string)
+
+    def test_html_wrap(self):
+        cache = html_cache(log_level=logging.ERROR)
+        html_string = "<p>Hello, world!</p>"
+        wrapped = cache.wrap_html('test', html_string)
+        lines = [
+            "<span DJERBA_COMPONENT_START='test' />",
+            "<p>Hello, world!</p>",
+            "<span DJERBA_COMPONENT_END='test' />",
+            ""
+        ]
+        self.assertEqual(wrapped, '\n'.join(lines))
+
+    def test_name_from_separator(self):
+        # get component name from the start/finish tag
+        good = "<span DJERBA_COMPONENT_START='test'/>"
+        broken1 = "<span DJERBA_COMPONENT_START='test'/>blahblah"
+        broken2 = "blahblah<span DJERBA_COMPONENT_START='test'/>"
+        broken3 = "lorem ipsum dolor"
+        broken4 = "<span DJERBA_COMPONENT_NOWHERE='test'/>"
+        cache = html_cache(log_level=logging.CRITICAL)
+        self.assertEqual(cache.parse_name_from_separator(good), 'test')
+        for tag in [broken1, broken2, broken3, broken4]:
+            with self.assertRaises(DjerbaHtmlCacheError):
+                cache.parse_name_from_separator(tag)
+
+    def test_update_cached(self):
+        with open(os.path.join(self.test_source_dir, 'example.html')) as in_file:
+            old_html_string = in_file.read()
+        tmp_log = os.path.join(self.tmp_dir, 'djerba.log')
+        cache = html_cache(log_level=logging.DEBUG, log_path=tmp_log)
+        old_html = cache.encode_to_base64(old_html_string)
+        new_html = {
+            'test': "<span DJERBA_COMPONENT_START='test'/>\n"+\
+            'Duis aute irure dolor in reprehenderit in voluptate velit esse '+\
+            'cillum dolore eu fugiat nulla pariatur. This is a Djerba test.\n'+\
+            "<span DJERBA_COMPONENT_END='test'/>"
+        }
+        with self.assertLogs('djerba.core.html_cache', level=logging.DEBUG) as log_context:
+            updated_html = cache.update_cached_html(new_html, old_html)
+        log_messages = [
+            'DEBUG:djerba.core.html_cache:Updating test',
+            'DEBUG:djerba.core.html_cache:No update found for test_no_update',
+            'DEBUG:djerba.core.html_cache:HTML update done'
+        ]
+        for msg in log_messages:
+            self.assertIn(msg, log_context.output)
+        self.assertTrue('This is a Djerba test.' in updated_html)
+        self.assertFalse('Ut enim ad minim veniam, quis nostrud' in updated_html)
+        self.assertTrue('Excepteur sint occaecat cupidatat non proident' in updated_html)
+        # test if the updated html can be updated again
+        old_html_2 = cache.encode_to_base64(updated_html)
+        new_html_2 = {
+            'test': "<span DJERBA_COMPONENT_START='test2'/>\n"+\
+            'Duis aute irure dolor in reprehenderit in voluptate velit esse '+\
+            "cillum dolore eu fugiat nulla pariatur. This is another Djerba test.\n"+\
+            "<span DJERBA_COMPONENT_END='test2'/>",
+        }
+        updated_html_2 = cache.update_cached_html(new_html_2, old_html_2)
+        self.assertTrue('This is another Djerba test.' in updated_html_2)
+        self.assertFalse('This is a Djerba test.' in updated_html_2)
+        self.assertTrue('Excepteur sint occaecat cupidatat non proident' in updated_html)
 
 
 class TestIniGenerator(TestCore):
@@ -529,7 +647,7 @@ class TestMainScript(TestCore):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, 'b11a1d1623af8ae77385994f2f0ab9fa')
+        self.assert_report_MD5(html_string, '5bc52ffc10821f166fed7b3055cc8bad')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')
@@ -555,7 +673,7 @@ class TestMainScript(TestCore):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, 'b11a1d1623af8ae77385994f2f0ab9fa')
+        self.assert_report_MD5(html_string, '285adea0d50933a5da00c6f0452ba045')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')
@@ -682,6 +800,7 @@ class TestSimpleReport(TestCore):
         data_found = djerba_main.extract(config)
         data_found['core']['extract_time'] = '2024-01-01_12:00:00 -0500'
         data_found['core']['core_version'] = 'placeholder'
+        data_found['html_cache']['placeholder_report.clinical'] = 'placeholder'
         with open(json_path) as json_file:
             data_expected = json.loads(json_file.read())
         self.assertEqual(data_expected, data_found)

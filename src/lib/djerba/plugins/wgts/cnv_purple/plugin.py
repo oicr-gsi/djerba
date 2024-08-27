@@ -53,6 +53,7 @@ class main(plugin_base):
         purity_ploidy = self.workspace.read_json(pc.PURITY_PLOIDY)
         self.logger.debug("Read purity/ploidy from workspace: {0}".format(purity_ploidy))
         ploidy = purity_ploidy[pc.PLOIDY]
+        tumour_id = wrapper.get_my_string(core_constants.TUMOUR_ID)
 
         # process purple files
         self.logger.debug("Starting purple data processing")
@@ -62,18 +63,18 @@ class main(plugin_base):
         self.logger.debug("Evaluating purity fit")
         processor.consider_purity_fit(purple_files[pc.PURPLE_PURITY_RANGE])
         self.logger.debug("Converting data format")
-        processor.convert_purple_to_gistic(purple_files[pc.PURPLE_GENE], ploidy)
+        processor.convert_purple_to_gistic(purple_files[pc.PURPLE_GENE], tumour_id, ploidy)
         self.logger.debug("Analyzing genome segments")
         whizbam_link = processor.construct_whizbam_link(
             wrapper.get_my_string(pc.WHIZBAM_PROJECT),
-            wrapper.get_my_string(core_constants.TUMOUR_ID)
+            tumour_id,
         )
         cnv_plot_base64 = processor.analyze_segments(purple_files[pc.PURPLE_CNV],
                                                      purple_files[pc.PURPLE_SEG],
                                                      whizbam_link,
                                                      purity_ploidy[pc.PURITY],
                                                      ploidy)
-        processor.write_copy_states()
+        processor.write_copy_states(tumour_id)
 
         # write alternate solutions launcher JSON
         if os.path.exists(os.path.join(work_dir, core_constants.DEFAULT_PATH_INFO)):

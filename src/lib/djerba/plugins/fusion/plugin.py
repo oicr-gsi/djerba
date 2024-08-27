@@ -35,6 +35,8 @@ class main(plugin_base):
         return wrapper.get_config()
 
     def extract(self, config):
+        def sort_by_actionable_level(row):
+            return oncokb_levels.oncokb_order(row[core_constants.ONCOKB])
         wrapper = self.get_config_wrapper(config)
         prepare_fusions( self.workspace.get_work_dir(), self.log_level, self.log_path).process_fusion_files(wrapper)
         fus_reader = fusion_reader( self.workspace.get_work_dir(), self.log_level, self.log_path )
@@ -43,7 +45,8 @@ class main(plugin_base):
         if gene_pair_fusions is not None:
             outputs = fus_reader.fusions_to_json(gene_pair_fusions, wrapper.get_my_string(fc.ONCOTREE_CODE))
             [rows, gene_info, treatment_opts] = outputs
-            # rows are already sorted by the fusion reader
+            #sort by OncoKB level
+            rows = sorted(rows, key=sort_by_actionable_level)
             max_actionable = oncokb_levels.oncokb_order('P')
             rows = list(filter(lambda x: oncokb_levels.oncokb_order(x[core_constants.ONCOKB]) <= max_actionable, rows))
             results = {

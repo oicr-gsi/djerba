@@ -2,7 +2,6 @@
 
 import re
 from markdown import markdown
-from time import strftime
 from string import Template
 from djerba.util.html import html_builder as hb
 import djerba.plugins.tar.swgs.constants as swgs_constants
