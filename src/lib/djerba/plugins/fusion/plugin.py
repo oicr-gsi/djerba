@@ -72,8 +72,7 @@ class main(plugin_base):
 
         # Processing fusions and generating blob URLs
         tsv_file_path = wrapper.get_my_string(fc.ARRIBA_PATH)
-        finder = directory_finder()
-        base_dir = finder.get_base_dir()
+        base_dir = directory_finder(self.log_level, self.log_path).get_base_dir()
         json_template_path = os.path.join(base_dir, fc.JSON_TO_BE_COMPRESSED)
         output_dir = self.workspace.get_work_dir()
         unique_fusions = list({item["fusion"] for item in results[fc.BODY]})
