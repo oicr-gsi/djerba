@@ -139,6 +139,7 @@ class main(plugin_base):
             data = json.load(json_file)
 
         data['locus'] = [breakpoint1, breakpoint2]
+        print(f"Updated locus in JSON: {data['locus']}")
 
         json_str = json.dumps(data, separators=(',', ':'))
 
