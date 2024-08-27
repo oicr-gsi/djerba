@@ -20,6 +20,7 @@ import json
 import base64
 import gzip
 
+
 class main(plugin_base):
     PRIORITY = 900
     PLUGIN_VERSION = '1.1.0'
@@ -72,8 +73,9 @@ class main(plugin_base):
 
         # Processing fusions and generating blob URLs
         tsv_file_path = wrapper.get_my_string(fc.ARRIBA_PATH)
-        base_dir = directory_finder(self.log_level, self.log_path).get_base_dir()
-        json_template_path = os.path.join(base_dir, fc.JSON_TO_BE_COMPRESSED)
+        base_dir = (directory_finder(self.log_level, self.log_path).get_base_dir())
+        fusion_dir = os.path.join(base_dir, "plugins/fusion")
+        json_template_path = os.path.join(fusion_dir, fc.JSON_TO_BE_COMPRESSED)
         output_dir = self.workspace.get_work_dir()
         unique_fusions = list({item["fusion"] for item in results[fc.BODY]})
         fusion_url_pairs = []
@@ -122,7 +124,8 @@ class main(plugin_base):
 
             for row in reader:
                 print(row)
-                if (row['#gene1'] == gene1 or row['#gene1'] == gene2) and (row['gene2'] == gene1 or row['gene2'] == gene2):
+                if (row['#gene1'] == gene1 or row['#gene1'] == gene2) and (
+                        row['gene2'] == gene1 or row['gene2'] == gene2):
                     breakpoint1 = row['breakpoint1']
                     breakpoint2 = row['breakpoint2']
                     break
