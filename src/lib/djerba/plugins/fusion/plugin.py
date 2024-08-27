@@ -107,10 +107,9 @@ class main(plugin_base):
 
         with open(tsv_file_path, mode='r') as file:
             reader = csv.DictReader(file, delimiter='\t')
-            print("TSV Columns:", reader.fieldnames)  
             for row in reader:
                 print(row)
-                if row['gene1'] == gene1 and row['gene2'] == gene2:
+                if row['#gene1'] == gene1 and row['gene2'] == gene2:
                     breakpoint1 = row['breakpoint1']
                     breakpoint2 = row['breakpoint2']
                     break
