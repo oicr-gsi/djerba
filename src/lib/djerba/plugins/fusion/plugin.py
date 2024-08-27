@@ -107,13 +107,13 @@ class main(plugin_base):
 
         with open(tsv_file_path, mode='r') as file:
             reader = csv.DictReader(file, delimiter='\t')
-            next(reader)
+            print("TSV Columns:", reader.fieldnames)  
             for row in reader:
-                if row[0] == gene1 and row[1] == gene2:
-                    breakpoint1 = row[4] # breakpoint1
-                    breakpoint2 = row[5] # breakpoint2
+                print(row)
+                if row['gene1'] == gene1 and row['gene2'] == gene2:
+                    breakpoint1 = row['breakpoint1']
+                    breakpoint2 = row['breakpoint2']
                     break
-
         if not (breakpoint1 and breakpoint2):
             raise ValueError(f"No matching fusion found in the TSV file for {fusion}.")
 
