@@ -121,7 +121,7 @@ class main(plugin_base):
 
             for row in reader:
                 print(row)
-                if row['#gene1'] == gene1 and row['gene2'] == gene2:
+                if (row['#gene1'] == gene1 or row['#gene1'] == gene2) and (row['gene2'] == gene1 or row['gene2'] == gene2):
                     breakpoint1 = row['breakpoint1']
                     breakpoint2 = row['breakpoint2']
                     break
