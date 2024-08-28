@@ -107,6 +107,7 @@ class main(plugin_base):
         return data
 
     def process_fusion(self, fusion, tsv_file_path, json_template_path, output_dir):
+        # Extract gene names from the fusion string
         match = re.match(r"(.+)::(.+)", fusion)
         if match:
             gene1 = match.group(1)
@@ -116,12 +117,15 @@ class main(plugin_base):
 
         print(f"Processing fusion: {fusion} with genes {gene1} and {gene2}")
 
+        # Initialize breakpoints
         breakpoint1, breakpoint2 = None, None
 
+        # Open and read the ARRIBA TSV file
         with open(tsv_file_path, mode='r') as file:
             reader = csv.DictReader(file, delimiter='\t')
             print(f"TSV Columns: {reader.fieldnames}")
 
+            # Find the correct row based on gene1 and gene2
             for row in reader:
                 print(row)
                 if (row['#gene1'] == gene1 or row['#gene1'] == gene2) and (
@@ -135,24 +139,41 @@ class main(plugin_base):
         if not (breakpoint1 and breakpoint2):
             raise ValueError(f"No matching fusion found in the TSV file for {fusion}.")
 
+        # Function to modify the breakpoint format to "chr:start-end"
+        def format_breakpoint(breakpoint):
+            chrom, pos = breakpoint.split(':')
+            start = int(pos)
+            end = start + 1
+            return f"{chrom}:{start}-{end}"
+
+        formatted_breakpoint1 = format_breakpoint(breakpoint1)
+        formatted_breakpoint2 = format_breakpoint(breakpoint2)
+
         with open(json_template_path, 'r') as json_file:
             data = json.load(json_file)
 
-        data['locus'] = [breakpoint1, breakpoint2]
+        # Update the JSON with the formatted breakpoints
+        print(f"JSON DATA: {data}")
+        data['locus'] = [formatted_breakpoint1, formatted_breakpoint2]
         print(f"Updated locus in JSON: {data['locus']}")
 
+        # Convert the updated JSON data to a string
         json_str = json.dumps(data, separators=(',', ':'))
 
-        # Binary compressed data stream
+        # Compress the JSON string
         compressed_data = gzip.compress(json_str.encode('utf-8'))
-        # Take binary compressed data and encodes it into a base64 string
+
+        # Encode the compressed data to base64
         base64_encoded = base64.b64encode(compressed_data).decode('utf-8')
 
+        # Generate the blurb URL
         blurb_url = f"https://whizbam-dev.gsi.oicr.on.ca/igv?sessionURL=blob:{base64_encoded}"
 
+        # Define the output JSON file name and path
         output_json_filename = f"{fusion}_details.json"
-        work_dir = self.workspace.get_work_dir()
-        output_json_path = os.path.join(work_dir, output_json_filename)
+        output_json_path = os.path.join(output_dir, output_json_filename)
+
+        # Write the updated JSON to a file
         with open(output_json_path, 'w') as output_json_file:
             json.dump(data, output_json_file, indent=2)
 
