@@ -20,11 +20,19 @@ class main(helper_base):
     PRIORITY = 20
     
     ASSAY_MAP = {
+        # Clinical Assays
         "WGS - 80XT/30XN": "WG",
         "WGS - 40XT/30XN": "WG",
         "WGTS - 80XT/30XN": "WG",
         "WGTS - 40XT/30XN": "WG",
         "REVOLVE - cfDNA+BC": "TS",
+
+        # RUO Assays
+        "RUO WGS - 80XT/30XN": "WG",
+        "RUO WGS - 40XT/30XN": "WG",
+        "RUO WGTS - 80XT/30XN": "WG",
+        "RUO WGTS - 40XT/30XN": "WG",
+        "RUO REVOLVE - cfDNA+BC": "TS"
     }
 
 
@@ -44,20 +52,21 @@ class main(helper_base):
         # In order to get information from a research requisition, you'll need to get the case associated with a known donor.
         # So, research cases must specify donors.
         # Clinical cases only have 1 case per requisition, so the donor can be found normally.
-        donor = None
         if 'research' in attributes:
             if wrapper.my_param_is_null(constants.DONOR):
                 msg = "To generate a research report, the donor must be manually specified." 
                 self.logger.error(msg)
                 raise UnknownDonorError(msg)
             else:
-                donor = wrapper.get_my_string(constants.DONOR)                
+                donor = wrapper.get_my_string(constants.DONOR)
+        else:
+            donor = None # Don't need it right now
         
         sample_info = self.get_cardea(requisition_id, cardea_url, attributes, donor)
 
         # Add donor to config (the only manually specifiable parameter aside from requisition_id and attributes, as research reports require it) 
-        if wrapper.my_param_is_null(donor):
-                wrapper.set_my_param(constants.DONOR, sample_info[constants.DONOR])
+        if wrapper.my_param_is_null(constants.DONOR):
+            wrapper.set_my_param(constants.DONOR, sample_info[constants.DONOR])
 
         # Write the sample information
         self.write_sample_info(sample_info)
@@ -83,10 +92,10 @@ class main(helper_base):
             #self.workspace.write_json("test_requisition.json", requisition_json)
 
             # Get the case
-            case = get_case(requisition_json, requisition_id, attributes, donor)
+            case = self.get_case(requisition_json, requisition_id, attributes, donor)
 
             # From the case, get the requisition info.
-            requisition_info = get_requisition_info(case, requisition_id, attributes)
+            requisition_info = self.get_requisition_info(case, requisition_id, attributes)
 
             return(requisition_info)
 
@@ -108,7 +117,7 @@ class main(helper_base):
         elif donor and 'research' in attributes:
             case_found = False
             for requisition_piece in requisition_json:
-                if donor == requisition_piece['donor']['name']:
+                if donor == requisition_piece['donor']['name'] and 'RUO' in requisition_piece['assayName']:
                     case = requisition_piece
                     case_found = True
             if not case_found:
@@ -154,7 +163,7 @@ class main(helper_base):
             constants.NORMAL_ID: normal_id
         }
 
-       return requsition_info
+        return requisition_info
 
     def get_qc_ids(self, qc_group, assay_name, requisition_id):
         """
@@ -236,8 +245,18 @@ class main(helper_base):
             library_count += 1
         # TAR (actually called REVOLVE in Cardea) does not require library IDs.
         if assay == "REVOLVE":
-            # IDs already set to None.
-            library_count += 3
+            for test in case['tests']:
+                # For TAR, expect three tests: Normal TS, Tumour SW, Tumour TS
+                # Unsure if the order of these is preserved. Better not to assume.
+                if test['name'] == "Normal TS":
+                    sample_name_whole_genome_normal = test['fullDepthSequencings'][0]['name']
+                    library_count += 1
+                elif test['name'] == "Tumour SW":
+                    sample_name_whole_genome_tumour = test['fullDepthSequencings'][0]['name']
+                    library_count += 1
+                elif test['name'] == "Tumour TS":
+                    sample_name_whole_transcriptome = test['fullDepthSequencings'][0]['name']
+                    library_count += 1
 
         # There should be 3 libraries (3 for WGTS, 2+1 placeholder for WGS)
         if library_count == 3:
@@ -273,16 +292,16 @@ class main(helper_base):
                 if project['pipeline'] == "Research":
                     project_id = project['name']
                     pipeline_name = project['pipeline']
-                    research.append(project_id) 
+                    research_projects.append(project_id) 
                     project_found = True
         if len(clinical_projects) > 1 or len(research_projects) > 1: # There should only be one project with pipeline "Accredited with Clinical Report"
-            msg = "Found {0} projects associated with the pipeline '{1}' for requisition {2}." /
-                  " Defaulting to the last project: {3}." /
-                  " If this project is incorrect, please manually specify the correct project.".format(num_pipeline, pipeline_name, requisition_id, project)
+            project_id = projects[0]['name']
+            msg = "Found more than one project associated with the pipeline '{0}' for requisition {1}." \
+                  " Defaulting to the first project: {2}." \
+                  " If this project is incorrect, please manually specify the correct project.".format(pipeline_name, requisition_id, project_id)
             self.logger.warning(msg)
         if not project_found:
-            msg = "Could not find pipeline 'Accredited with Clinical Report' in requisition {0}. 1 project in the 'Accredited with Clinical Report' pipeline is required." / 
-                  " You may have to manually specify the project.".format(requisition_id)
+            msg = "Could not find project in requisition {0}. You may have to manually specify the project.".format(requisition_id)
             self.logger.error(msg)
             raise MissingProjectError(msg) 
         return project_id
