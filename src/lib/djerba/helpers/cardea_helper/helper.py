@@ -34,68 +34,129 @@ class main(helper_base):
         """
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
+        
+        # Get parameters from config
         cardea_url = wrapper.get_my_string(constants.CARDEA_URL)
         requisition_id = wrapper.get_my_string(constants.REQ_ID)
-        sample_info = self.get_cardea(requisition_id, cardea_url)
+        attributes = wrapper.get_my_string(core_constants.ATTRIBUTES)
+
+        # Research often crams multiple donors into one requisition.
+        # In order to get information from a research requisition, you'll need to get the case associated with a known donor.
+        # So, research cases must specify donors.
+        # Clinical cases only have 1 case per requisition, so the donor can be found normally.
+        donor = None
+        if 'research' in attributes:
+            if wrapper.my_param_is_null(constants.DONOR):
+                msg = "To generate a research report, the donor must be manually specified." 
+                self.logger.error(msg)
+                raise UnknownDonorError(msg)
+            else:
+                donor = wrapper.get_my_string(constants.DONOR)                
+        
+        sample_info = self.get_cardea(requisition_id, cardea_url, attributes, donor)
+
+        # Add donor to config (the only manually specifiable parameter aside from requisition_id and attributes, as research reports require it) 
+        if wrapper.my_param_is_null(donor):
+                wrapper.set_my_param(constants.DONOR, sample_info[constants.DONOR])
+
+        # Write the sample information
         self.write_sample_info(sample_info)
         return wrapper.get_config()
 
     def extract(self, config):
         self.validate_full_config(config)
 
-    def get_cardea(self, requisition_id, cardea_url):
+    def get_cardea(self, requisition_id, cardea_url, attributes, donor):
         pg_library_found = False
+        
+        
         url = "/".join((cardea_url, requisition_id))
         r = requests.get(url, allow_redirects=True)
         if r.status_code == 404:
             msg = "The requisition {0} was not found on Cardea".format(requisition_id)
             raise MissingCardeaError(msg)
         else:
+            # Get the requisition
             requisition_json = json.loads(r.text)
-
+            
             # Uncomment this when debugging if you want to view the requisition that was printed.
             #self.workspace.write_json("test_requisition.json", requisition_json)
-            
-            if len(requisition_json) != 1: # only one case expected per requisition for clinical 
-                msg = "{0} case(s) were found. Only 1 case is expected".format(len(requisition_json))
-                self.logger.error(msg)
-                raise ValueError(msg)
-            else:
-                case = requisition_json[0]
-                try:
-                    assay_name = case['assayName']
-                    assay = assay_name.split("-")[0].strip().upper() 
-                except (KeyError, IndexError) as err:
-                    msg = "Unexpected format for Cardea results: {0}".format(err)
-                    self.logger.error(msg)
-                    raise ValueError(msg) from err
-                requisition = case['requisition']
-                requisition_approved = case['startDate']
-                projects = case['projects']
-                donor = case['donor']['name']
-                patient_id = case['donor']['externalName'].split(',')[0].strip()
-                tumour_id, normal_id = self.get_tumour_normal_ids(requisition_id, case, assay_name)
-                project_id = self.get_project_id(requisition_id, projects)
-                sample_name_whole_genome_tumour, sample_name_whole_genome_normal, sample_name_whole_transcriptome = self.get_library_ids(requisition_id, case, assay)
 
-            requisition_info = {
-                constants.ASSAY : assay,
-                constants.PROJECT: project_id,
-                constants.DONOR: donor,
-                constants.PATIENT_ID: patient_id,
-                constants.REQ_APPROVED: requisition_approved,
-                constants.REQ_ID: requisition_id,
-                constants.SAMPLE_NAME_WHOLE_GENOME_TUMOUR: sample_name_whole_genome_tumour,
-                constants.SAMPLE_NAME_WHOLE_GENOME_NORMAL: sample_name_whole_genome_normal,
-                constants.SAMPLE_NAME_WHOLE_TRANSCRIPTOME: sample_name_whole_transcriptome,
-                constants.TUMOUR_ID: tumour_id,
-                constants.NORMAL_ID: normal_id
-            }
+            # Get the case
+            case = get_case(requisition_json, requisition_id, attributes, donor)
+
+            # From the case, get the requisition info.
+            requisition_info = get_requisition_info(case, requisition_id, attributes)
 
             return(requisition_info)
 
 
-    def find_qc_ids(self, qc_group, assay_name, requisition_id):
+
+    def get_case(self, requisition_json, requisition_id, attributes, donor):
+        """
+        Retrieves the case.
+        Research: often many cases to one requisition, and require donor to get the correct case.
+        Clinical: exactly 1 case (i.e. 1 donor) per requisition.
+        """
+
+        # Case 1: Regardless of clinical or research, there are no cases.
+        if len(requisition_json) == 0:  
+            msg = "0 cases were found. If this is a clinical report, exactly 1 case is expected. If this is a research report, at least 1 case is expected."
+            self.logger.error(msg)
+            raise RequisitionError(msg)
+        # Case 2: it's a research report, and donor is given (if not given, there will be an error upstream).
+        elif donor and 'research' in attributes:
+            case_found = False
+            for requisition_piece in requisition_json:
+                if donor == requisition_piece['donor']['name']:
+                    case = requisition_piece
+                    case_found = True
+            if not case_found:
+                msg = "Could not find case in research requisition {0} for given donor {1}. Did you misspell the donor name?".format(requisition_id, donor)
+                self.logger.error(msg)
+                raise RequisitionError(msg)
+        # Case 3: it's a clinical report, but there's more than one case.
+        elif 'clinical' in attributes and len(requisition_json) > 1:
+            msg = "{0} cases were found. Only 1 case per requisition is expected for a clinical report.".format(len(requisition_json))
+            self.logger.error(msg)
+            raise RequisitionError(msg)
+        # Case 4: It's a clinical report, and there's exactly 1 case (whether donor is given or not).
+        else:
+            case = requisition_json[0]
+        
+        return case
+
+    def get_requisition_info(self, case, requisition_id, attributes):
+        """
+        Gets the requisition info.
+        """
+        assay_name = case['assayName']
+        assay = assay_name.split("-")[0].strip().upper() 
+        requisition_approved = case['startDate']
+        projects = case['projects']
+        donor = case['donor']['name']
+        patient_id = case['donor']['externalName'].split(',')[0].strip()
+        tumour_id, normal_id = self.get_tumour_normal_ids(requisition_id, case, assay_name)
+        project_id = self.get_project_id(requisition_id, projects, attributes)
+        sample_name_whole_genome_tumour, sample_name_whole_genome_normal, sample_name_whole_transcriptome = self.get_library_ids(requisition_id, case, assay)
+
+        requisition_info = {
+            constants.ASSAY : assay,
+            constants.PROJECT: project_id,
+            constants.DONOR: donor,
+            constants.PATIENT_ID: patient_id,
+            constants.REQ_APPROVED: requisition_approved,
+            constants.REQ_ID: requisition_id,
+            constants.SAMPLE_NAME_WHOLE_GENOME_TUMOUR: sample_name_whole_genome_tumour,
+            constants.SAMPLE_NAME_WHOLE_GENOME_NORMAL: sample_name_whole_genome_normal,
+            constants.SAMPLE_NAME_WHOLE_TRANSCRIPTOME: sample_name_whole_transcriptome,
+            constants.TUMOUR_ID: tumour_id,
+            constants.NORMAL_ID: normal_id
+        }
+
+       return requsition_info
+
+    def get_qc_ids(self, qc_group, assay_name, requisition_id):
         """
         Determine normal and tumour IDs based on assay type and qc_group.
         Returns a tuple: (normal_id, tumour_id) with either normal or tumour ID; other will be None.
@@ -125,7 +186,7 @@ class main(helper_base):
         
         for qc_group in case['qcGroups']:
             # Get the normal and tumour IDs.
-            normal_id, tumour_id = self.find_qc_ids(qc_group, assay_name, requisition_id)
+            normal_id, tumour_id = self.get_qc_ids(qc_group, assay_name, requisition_id)
             # Update IDs as we find them. Don't overwrite the found IDs.
             ids = [
                 tumour_id if tumour_id else ids[0],    
@@ -191,30 +252,53 @@ class main(helper_base):
 
             raise MissingLibraryError(msg)
 
-    def get_project_id(self, requisition_id, projects):
+    def get_project_id(self, requisition_id, projects, attributes):
         """
         There may be more than one project.
         Example: a project can have Accredited with Clinical Report, Accredited, Research
         We only want Accredited with Clinical Report...for now.
         """
 
-        project_found = False
+        project_found = False       
+        clinical_projects = [] # Count how many projects have pipeline "Accredited with Clinical Report"
+        research_projects = []
         for project in projects:
-            if project['pipeline'] == "Accredited with Clinical Report":
-                project_id = project['name']
-                project_found = True
-                return project_id
+            if "clinical" in attributes:
+                if project['pipeline'] == "Accredited with Clinical Report":
+                    project_id = project['name']
+                    pipeline_name = project['pipeline']
+                    clinical_projects.append(project_id) 
+                    project_found = True
+            elif 'research' in attributes:
+                if project['pipeline'] == "Research":
+                    project_id = project['name']
+                    pipeline_name = project['pipeline']
+                    research.append(project_id) 
+                    project_found = True
+        if len(clinical_projects) > 1 or len(research_projects) > 1: # There should only be one project with pipeline "Accredited with Clinical Report"
+            msg = "Found {0} projects associated with the pipeline '{1}' for requisition {2}." /
+                  " Defaulting to the last project: {3}." /
+                  " If this project is incorrect, please manually specify the correct project.".format(num_pipeline, pipeline_name, requisition_id, project)
+            self.logger.warning(msg)
         if not project_found:
-            msg = "Could not find pipeline 'Accredited with Clinical Report' in requisition {0}.".format(requisition_id)
+            msg = "Could not find pipeline 'Accredited with Clinical Report' in requisition {0}. 1 project in the 'Accredited with Clinical Report' pipeline is required." / 
+                  " You may have to manually specify the project.".format(requisition_id)
             self.logger.error(msg)
             raise MissingProjectError(msg) 
+        return project_id
 
 
     def specify_params(self):
         self.logger.debug("Specifying params for provenance helper")
+        # Set defaults
         self.set_priority_defaults(self.PRIORITY)
         self.set_ini_default(constants.CARDEA_URL, self.DEFAULT_CARDEA_URL)
+        self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
+        # You MUST provide a requisition ID.
         self.add_ini_required(constants.REQ_ID)
+        # Donor is the only parameter that can be manually specified if need be.
+        self.add_ini_discovered(constants.DONOR)
+
 
     def write_sample_info(self, sample_info):
         self.workspace.write_json(core_constants.DEFAULT_SAMPLE_INFO, sample_info)
@@ -231,6 +315,12 @@ class MissingLibraryError(Exception):
 
 class MissingProjectError(Exception):
     pass
+    
+class RequisitionError(Exception):
+    pass
 
 class UnknownAssayError(Exception):
+    pass
+    
+class UnknownDonorError(Exception):
     pass
