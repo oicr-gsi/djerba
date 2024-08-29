@@ -20,9 +20,9 @@
    "order": -9007199254740991
   },
   {
-   "name": "100-NH-056_LCM6",
-   "url": "/bams/project/PASS01/RNASEQ/file/100-NH-056_LCM6.bam",
-   "indexURL": "/bams/project/PASS01/RNASEQ/file/100-NH-056_LCM6.bai",
+   "name": "",
+   "url": "",
+   "indexURL": "",
    "format": "bam",
    "type": "alignment",
    "samplingDepth": 1000,

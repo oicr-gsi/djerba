@@ -19,6 +19,7 @@ import djerba.plugins.fusion.constants as fc
 import json
 import base64
 import gzip
+import glob
 
 
 class main(plugin_base):
@@ -127,7 +128,6 @@ class main(plugin_base):
 
             # Find the correct row based on gene1 and gene2
             for row in reader:
-                print(row)
                 if (row['#gene1'] == gene1 or row['#gene1'] == gene2) and (
                         row['gene2'] == gene1 or row['gene2'] == gene2):
                     breakpoint1 = row['breakpoint1']
@@ -153,9 +153,34 @@ class main(plugin_base):
             data = json.load(json_file)
 
         # Update the JSON with the formatted breakpoints
-        print(f"JSON DATA: {data}")
         data['locus'] = [formatted_breakpoint1, formatted_breakpoint2]
         print(f"Updated locus in JSON: {data['locus']}")
+
+        # Update the 'name' field with core_constants.TUMOUR_ID
+        tumour_id = core_constants.TUMOUR_ID
+        data['tracks'][1]['name'] = tumour_id
+        print(f"Updated name: {data['tracks'][1]['name']}")
+
+        # Search for the BAM and BAI files using glob.glob
+        bam_pattern = f"/.mounts/labs/prod/whizbam/*/RNASEQ/{tumour_id}.bam"
+        bai_pattern = f"/.mounts/labs/prod/whizbam/*/RNASEQ/{tumour_id}.bai"
+
+        bam_files = glob.glob(bam_pattern)
+        bai_files = glob.glob(bai_pattern)
+
+        if bam_files:
+            data['tracks'][1]['url'] = bam_files[0]
+        else:
+            raise FileNotFoundError(f"BAM file not found for pattern: {bam_pattern}")
+
+        if bai_files:
+            data['tracks'][1]['indexURL'] = bai_files[0]
+        else:
+            raise FileNotFoundError(f"BAI file not found for pattern: {bai_pattern}")
+
+        # Debugging prints
+        print(f"BAM file URL: {data['tracks'][1]['url']}")
+        print(f"BAI file indexURL: {data['tracks'][1]['indexURL']}")
 
         # Convert the updated JSON data to a string
         json_str = json.dumps(data, separators=(',', ':'))
