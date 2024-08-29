@@ -71,7 +71,6 @@ class main(helper_base):
         # FIRST PASS: BASIC CASE INFORMATION
         params = [
           constants.ASSAY,
-          constants.PROJECT,
           constants.PATIENT_ID,
           constants.REQ_APPROVED,
           constants.REQ_ID
@@ -147,7 +146,6 @@ class main(helper_base):
 
             return case
 
-
     def get_case(self, requisition_json, requisition_id, attributes, donor):
         """
         Retrieves the case.
@@ -182,29 +180,6 @@ class main(helper_base):
         
         return case
 
-    def get_requisition_info(self, case, requisition_id, attributes):
-        """
-        Gets the requisition info.
-        """
-        sample_name_whole_genome_tumour, sample_name_whole_genome_normal, sample_name_whole_transcriptome = self.get_library_ids(requisition_id, case, assay)
-
-        requisition_info = {
-            constants.ASSAY : assay,
-            constants.PROJECT: project_id,
-            constants.DONOR: donor,
-            constants.PATIENT_ID: patient_id,
-            constants.REQ_APPROVED: requisition_approved,
-            constants.REQ_ID: requisition_id,
-            constants.SAMPLE_NAME_WHOLE_GENOME_TUMOUR: sample_name_whole_genome_tumour,
-            constants.SAMPLE_NAME_WHOLE_GENOME_NORMAL: sample_name_whole_genome_normal,
-            constants.SAMPLE_NAME_WHOLE_TRANSCRIPTOME: sample_name_whole_transcriptome,
-            constants.TUMOUR_ID: tumour_id,
-            constants.NORMAL_ID: normal_id
-        }
-
-        return requisition_info
-
-
     # ------------------------- FIRST PASS FUNCTIONS : BASIC INFORMATION -------------------------
 
     def get_assay(self, case):
@@ -220,8 +195,7 @@ class main(helper_base):
         return case['startDate']
 
     # -------------------------------- SECOND PASS FUNCTIONS : IDS --------------------------------
-
-
+        
     def get_project(self, case, requisition_id, attributes):
         """
         There may be more than one project.
@@ -375,6 +349,18 @@ class main(helper_base):
             )
 
             raise MissingLibraryError(msg)
+
+    def get_sample_name_whole_genome_tumour(self):
+        id = self.get_library_ids()[0]
+        return id
+
+    def get_sample_name_whole_genome_normal(self):
+        id = self.get_library_ids()[1]
+        return id
+
+    def get_sample_name_whole_transcriptome(self):
+        id = self.get_library_ids()[2]
+        return id
 
     def get_project_id(self, case, attributes, donor = None):
         """
