@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- - GCGI-981: Create virus (research) plugin
+
 ## v1.7.2: 2024-08-19
 - GCGI-1420: Added green line separator to research footer
 - GCGI-1419: Fixed callability fetching in sample plugin to use donor as well as tumour_id 
