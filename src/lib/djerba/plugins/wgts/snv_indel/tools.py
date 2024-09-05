@@ -135,7 +135,7 @@ class snv_indel_processor(logger):
 
     def compute_loh(self, df, cn_file, purity):
         self.logger.info("Computing LOH")
-        cn = pd.read_csv(cn_file, header=True, sep="\t")
+        cn = pd.read_csv(cn_file, sep="\t")
         calc_df = pd.merge(df[["Hugo_Symbol", "tumour_vaf"]], cn, on="Hugo_Symbol")
         calc_df["LHS"] = (calc_df["tumour_vaf"] / purity ) * calc_df["CN"]
         calc_df["RHS"] = calc_df["CN"] - 0.5
