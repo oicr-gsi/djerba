@@ -19,6 +19,7 @@ class main(plugin_base):
     ALLELE = 'Allele'
     ABUNDANCE = 'Abundance'
     QUALITY = 'Quality'
+    BODY = 'Body'
 
     def specify_params(self):
 
@@ -49,7 +50,7 @@ class main(plugin_base):
             'priorities': wrapper.get_my_priorities(),
             'attributes': wrapper.get_my_attributes(),
             'merge_inputs': {},
-            'results': {'hla_data': self.build_hla_table(work_dir, tsv_path)}
+            'results': self.build_hla_table(work_dir, tsv_path)
         }
         return data
 
@@ -62,6 +63,11 @@ class main(plugin_base):
         with open(os.path.join(work_dir, tsv_path)) as data_file:
             for input_row in csv.reader(data_file, delimiter="\t"):
                 gene_name = input_row[0]
+
+                # Only consider HLA-A, HLA-B, and HLA-C
+                if gene_name not in ['HLA-A', 'HLA-B', 'HLA-C']:
+                    continue
+
                 zygosity = 'Homozygous' if input_row[1] == '1' else 'Heterozygous'
                 allele1 = input_row[2]
                 abundance1 = input_row[3]
@@ -70,7 +76,12 @@ class main(plugin_base):
                 abundance2 = input_row[6]
                 quality2 = input_row[7]
 
-                if zygosity == 'homozygous':
+                # Debugging
+                print(f"Extracted row for gene: {gene_name}")
+                print(f"Zygosity: {zygosity}, Allele1: {allele1}, Abundance1: {abundance1}, Quality1: {quality1}")
+                print(f"Allele2: {allele2}, Abundance2: {abundance2}, Quality2: {quality2}")
+
+                if zygosity == 'Homozygous':
                     rows.append({
                         self.GENE_NAME: gene_name,
                         self.ZYGOSITY: zygosity,
@@ -93,4 +104,13 @@ class main(plugin_base):
                         self.ABUNDANCE: abundance2,
                         self.QUALITY: quality2
                     })
-        return rows
+
+        data = {
+            self.BODY: rows
+        }
+
+        # Print the final data dictionary for debugging
+        print(f"Final data: {data}")
+
+        return data
+
