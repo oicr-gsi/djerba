@@ -12,8 +12,10 @@ ${html_builder().section_cells_begin("<h2>SNVs and in/dels</h2>","main")}
             of which <strong>${results.get(constants.CODING_SEQUENCE_MUTATIONS)}</strong> impacted a coding sequence,
             and <strong>${results.get(constants.ONCOGENIC_MUTATIONS)}</strong> corresponded to an oncogenic mutation, as defined by OncoKB.
       </p>
-      
+     
+% if results.get(constants.VAF_PLOT):
       <img id='VAF' style='width: 100%; object-fit: contain' src="${results.get(constants.VAF_PLOT)}"/>
+% endif
 
       % if results.get(constants.ONCOGENIC_MUTATIONS) > 0:
             <table class="variants" width="100%">

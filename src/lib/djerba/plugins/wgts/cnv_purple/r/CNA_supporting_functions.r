@@ -88,7 +88,7 @@ construct_whizbam_links <- function(segs, whizbam_url) {
   return(segs)
 }
 
-preProcCNA <- function(genefile, oncolist, ploidy=2, ploidy_multiplier=2.4){
+preProcCNA <- function(genefile, oncolist, tumour_id, ploidy=2, ploidy_multiplier=2.4){
   #' take segment-level CNV calls and translate to genes
   
   amp = ploidy_multiplier * ploidy
@@ -97,7 +97,11 @@ preProcCNA <- function(genefile, oncolist, ploidy=2, ploidy_multiplier=2.4){
   oncogenes <- oncolist$Hugo.Symbol[oncolist$OncoKB.Annotated == "Yes"]
   
   df_cna_thresh <-  genefile[,c("gene","minCopyNumber")]
-  
+ 
+  # "minCopyNumber" should actually be the tumour ID instead. 
+  # Rename the column to be tumour ID.
+  names(df_cna_thresh)[2] <- tumour_id
+
   # threshold data
   for (i in 2:ncol(df_cna_thresh))
   {
@@ -117,8 +121,8 @@ preProcCNA <- function(genefile, oncolist, ploidy=2, ploidy_multiplier=2.4){
  df_cna_thresh_onco_nondiploid <- df_cna_thresh_onco[(df_cna_thresh_onco[,2] != 0), ]
 
  df_cna_thresh$Hugo_Symbol <- NULL
- df_cna_thresh_onco_nondiploid$Hugo_Symbol <- NULL
-
+ df_cna_thresh_onco_nondiploid$gene <- NULL
+ 
  # return the list of dfs
  CNAs=list()
  CNAs[[1]] <- df_cna_thresh
