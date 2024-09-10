@@ -13,8 +13,10 @@ GENES_TO_KEEP = ["BRCA2",
                  "MLH1",
                  "MSH2",
                  "MSH6",
-                 "ABCB1",
-                 "CCNE1"]
+                 "CCNE1",
+                 "NF1",
+                 "CDH1",
+                 "VHL"]
 CLEAN_COLUMNS = ["t_depth", 
                  "t_ref_count", 
                  "t_alt_count", 
