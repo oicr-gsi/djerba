@@ -5,15 +5,15 @@ class html_builder:
     GENE_NAME = 'Gene Name'
     ZYGOSITY = 'Zygosity'
     ALLELE = 'Allele'
-    ABUNDANCE = 'Abundance'
-    QUALITY = 'Quality'
+    #ABUNDANCE = 'Abundance'
+    #QUALITY = 'Quality'
 
     # Extract constants
     _GENE_NAME = 'Gene name'
     _ZYGOSITY = 'Zygosity'
     _ALLELE = 'Allele'
-    _ABUNDANCE = 'Abundance'
-    _QUALITY = 'Quality'
+    #_ABUNDANCE = 'Abundance'
+    #_QUALITY = 'Quality'
     _BODY = 'Body'
 
     def hla_header(self):
@@ -24,8 +24,8 @@ class html_builder:
             self.GENE_NAME,
             self.ZYGOSITY,
             self.ALLELE,
-            self.ABUNDANCE,
-            self.QUALITY
+            #self.ABUNDANCE,
+            #self.QUALITY
         ]
         return hb.thead(names)
 
@@ -40,8 +40,8 @@ class html_builder:
                 hb.td(row[self._GENE_NAME]),
                 hb.td(row[self._ZYGOSITY]),
                 hb.td(row[self._ALLELE]),
-                hb.td(row[self._ABUNDANCE]),
-                hb.td(row[self._QUALITY]),
+                #hb.td(row[self._ABUNDANCE]),
+                #hb.td(row[self._QUALITY]),
             ]
             rows.append(hb.table_row(cells))
         return rows

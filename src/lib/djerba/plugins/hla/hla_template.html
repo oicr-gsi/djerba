@@ -3,7 +3,7 @@
   from djerba.plugins.hla.render import html_builder as hb_hla
 %>
 
-${html_builder().section_cells_begin("<h2>HLA Analysis</h2>", "main")}
+${html_builder().section_cells_begin("<h2>HLA  Analysis</h2>", "main")}
 
 <table class="variants" width="100%">
     <!-- Generate table headers for HLA Analysis -->
@@ -17,10 +17,6 @@ ${html_builder().section_cells_begin("<h2>HLA Analysis</h2>", "main")}
 </table>
 
 <br>
-<h3>HLA Analysis Description</h3>
-<p>
-    The HLA analysis detects gene alleles and their respective zygosities, abundances, and qualities. This table provides a detailed view of the identified HLA genes such as HLA-A, HLA-B, and HLA-C.
-</p>
 
 ${html_builder().section_cells_end()}
 

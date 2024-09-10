@@ -17,8 +17,8 @@ class main(plugin_base):
     GENE_NAME = 'Gene name'
     ZYGOSITY = 'Zygosity'
     ALLELE = 'Allele'
-    ABUNDANCE = 'Abundance'
-    QUALITY = 'Quality'
+    #ABUNDANCE = 'Abundance'
+    #QUALITY = 'Quality'
     BODY = 'Body'
 
     def specify_params(self):
@@ -70,39 +70,38 @@ class main(plugin_base):
 
                 zygosity = 'Homozygous' if input_row[1] == '1' else 'Heterozygous'
                 allele1 = input_row[2]
-                abundance1 = input_row[3]
-                quality1 = input_row[4]
+                #abundance1 = input_row[3]
+                #quality1 = input_row[4]
                 allele2 = input_row[5]
-                abundance2 = input_row[6]
-                quality2 = input_row[7]
+                #abundance2 = input_row[6]
+                #quality2 = input_row[7]
 
                 # Debugging
                 print(f"Extracted row for gene: {gene_name}")
-                print(f"Zygosity: {zygosity}, Allele1: {allele1}, Abundance1: {abundance1}, Quality1: {quality1}")
-                print(f"Allele2: {allele2}, Abundance2: {abundance2}, Quality2: {quality2}")
+                print(f"Zygosity: {zygosity}, Allele1: {allele1}, Allele2: {allele2}")
 
                 if zygosity == 'Homozygous':
                     rows.append({
                         self.GENE_NAME: gene_name,
                         self.ZYGOSITY: zygosity,
                         self.ALLELE: allele1,
-                        self.ABUNDANCE: abundance1,
-                        self.QUALITY: quality1
+                        #self.ABUNDANCE: abundance1,
+                        #self.QUALITY: quality1
                     })
                 else:
                     rows.append({
                         self.GENE_NAME: gene_name,
                         self.ZYGOSITY: zygosity,
                         self.ALLELE: allele1,
-                        self.ABUNDANCE: abundance1,
-                        self.QUALITY: quality1
+                        #self.ABUNDANCE: abundance1,
+                        #self.QUALITY: quality1
                     })
                     rows.append({
                         self.GENE_NAME: '',
                         self.ZYGOSITY: '',
                         self.ALLELE: allele2,
-                        self.ABUNDANCE: abundance2,
-                        self.QUALITY: quality2
+                        #self.ABUNDANCE: abundance2,
+                        #self.QUALITY: quality2
                     })
 
         data = {
