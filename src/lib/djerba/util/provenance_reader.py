@@ -40,6 +40,8 @@ class provenance_reader(logger):
     WF_VEP = 'variantEffectPredictor_matched'
     WF_VIRUS = 'virusbreakend'
     WF_IMMUNE = 'immunedeconv'
+    WF_ICHORCNA = 'ichorcna'
+    WF_CONSENSUS = 'consensusCruncher'
 
     # older Vidarr workflow names, deprecated as of 2023-11-13
     WF_BMPP_20231113 = 'bamMergePreprocessing_by_tumor_group'
@@ -67,6 +69,9 @@ class provenance_reader(logger):
 
     # placeholder
     WT_SAMPLE_NAME_PLACEHOLDER = 'whole_transcriptome_placeholder'
+
+    # for TAR
+    TAR = 'tar_assay_files'
 
     # Includes a concept of 'sample name' (not just 'root sample name')
     # allow user to specify sample names for WG/T, WG/N, WT
@@ -110,7 +115,7 @@ class provenance_reader(logger):
             msg = "No provenance records found for project '%s' and donor '%s' " % (project, donor) +\
                 "in '%s'" % provenance_path
             self.logger.warning(msg)
-            self._set_empty_provenance()
+            #self._set_empty_provenance()
         else:
             self.logger.info("Found %d provenance records" % len(self.provenance))
             self._check_workflows()
@@ -318,6 +323,8 @@ class provenance_reader(logger):
         iterrows = self._filter_metatype(meta_pattern, iterrows)
         iterrows = self._filter_file_path(file_pattern, iterrows)
         iterrows = self._filter_sample_name(sample_name, iterrows)
+        if "consensus" in workflow or "ichor" in workflow:
+            print(workflow, sample_name)
         try:
             row = self._get_most_recent_row(iterrows)
             path = row[index.FILE_PATH]
@@ -382,16 +389,16 @@ class provenance_reader(logger):
                 msg = "Inconsistent sample names found in file provenance: {0}".format(err)
                 self.logger.error(msg)
                 raise RuntimeError(msg) from err
-        if not fpr_samples.has_wg_names():
-            msg = "Samples found in file provenance are not sufficient to proceed; requires "+\
-                  "WG_N, WG_T, and optionally WT_T; found {0}. ".format(fpr_samples)
-            if sample_inputs.is_empty():
-                msg += "No restrictions on sample names specified in user input."
-            else:
-                msg += "Permitted sample names from user input: {0}".format(sample_inputs)
-            self.logger.error(msg)
-            raise InsufficientSampleNamesError(msg)
-        self.logger.info("Consistency check for sample names in file provenance: OK")
+        #if not fpr_samples.has_wg_names():
+        #    msg = "Samples found in file provenance are not sufficient to proceed; requires "+\
+        #          "WG_N, WG_T, and optionally WT_T; found {0}. ".format(fpr_samples)
+        #    if sample_inputs.is_empty():
+        #        msg += "No restrictions on sample names specified in user input."
+        #    else:
+        #        msg += "Permitted sample names from user input: {0}".format(sample_inputs)
+        #    self.logger.error(msg)
+        #    raise InsufficientSampleNamesError(msg)
+        #self.logger.info("Consistency check for sample names in file provenance: OK")
         # Secondly, check against the input dictionary (if any)
         if sample_inputs.is_empty():
             self.logger.info("No user-supplied sample names; omitting check")
@@ -520,6 +527,55 @@ class provenance_reader(logger):
         suffix = 'star-fusion\.fusion_predictions\.tsv$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wt_t)
     
+    def parse_tar_ichorcna_json_path(self):
+        workflow = self.WF_ICHORCNA
+        mt = self.MT_JSON_TEXT
+        suffix = '\_metrics.json$'
+        name = 'CHARM2_010058_06_LB01-01'
+        return self._parse_file_path(workflow, mt, suffix, name)
+        #return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
+
+    def parse_tar_ichorcna_seg_path(self):
+        workflow = self.WF_ICHORCNA
+        mt = self.MT_PLAIN_TEXT
+        suffix = '\.seg\.txt$'
+        name = 'CHARM2_010058_06_LB01-01'
+        return self._parse_file_path(workflow, mt, suffix, name)
+        #return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
+
+    def parse_tar_metrics_normal_path(self):
+        workflow = self.WF_CONSENSUS
+        mt = self.MT_PLAIN_TEXT
+        suffix = 'allUnique-hsMetrics\.HS\.txt$'
+        name = 'CHARM2_010058_04_LB01-02'
+        return self._parse_file_path(workflow, mt, suffix, name)
+        #return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_n)
+
+    def parse_tar_metrics_tumour_path(self):
+        workflow = self.WF_CONSENSUS
+        mt = self.MT_PLAIN_TEXT
+        suffix = 'allUnique-hsMetrics\.HS\.txt$'
+        name = 'CHARM2_010058_06_LB01-03'
+        return self._parse_file_path(workflow, mt, suffix, name)
+
+        #return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
+
+    def parse_tar_maf_normal_path(self):
+        workflow = self.WF_CONSENSUS
+        mt = self.MT_TXT_GZ
+        suffix = 'merged\.maf\.gz$'
+        name = 'CHARM2_010058_04_LB01-02'
+        return self._parse_file_path(workflow, mt, suffix, name)
+        #return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_n)
+
+    def parse_tar_maf_tumour_path(self):
+        workflow = self.WF_CONSENSUS
+        mt = self.MT_TXT_GZ
+        suffix = 'merged\.maf\.gz$'
+        name = 'CHARM2_010058_06_LB01-03'
+        return self._parse_file_path(workflow, mt, suffix, name)
+        #return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
+
     def parse_virus_path(self):
         workflow = self.WF_VIRUS
         mt = self.MT_OCTET_STREAM

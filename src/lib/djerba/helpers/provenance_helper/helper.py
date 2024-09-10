@@ -44,6 +44,14 @@ class main(helper_base):
     WT_T_BAM = 'whole transcriptome tumour bam'
     WT_T_IDX = 'whole transcriptome tumour bam index'
 
+    # identifiers for tar files which come from the same workflow
+    WF_CONSENSUS_TUMOUR = 'consensusCruncher_tumour'
+    WF_CONSENSUS_NORMAL = 'consensusCruncher_normal'
+    WF_MAF_TUMOUR = 'maf_tumour'
+    WF_MAF_NORMAL = 'maf_normal'
+    WF_ICHOR_JSON = 'metrics_json'
+    WF_ICHOR_SEG = 'seg'
+
     def configure(self, config):
         """
         Writes a subset of provenance, and informative JSON files, to the workspace
@@ -72,6 +80,18 @@ class main(helper_base):
         else:
             self.logger.info("Writing provenance subset cache to workspace")
             self.write_provenance_subset(study, donor, provenance_path)
+        
+        #samples = []
+        #count = 0
+        #for key in self.SAMPLE_NAME_KEYS:
+        #    if wrapper.my_param_is_not_null(key):
+        #        samples.append(wrapper.get_my_string(key))
+        #        count += 1
+        #if count != 3: # (i.e. all three are missing)
+        #    msg = "If manually specifying the sample name keys, please manually specify all of them. If there is no transcriptome, give it 'whole_transcriptome_placeholder'. Otherwise, defaulting to names found in provenance."
+        #    self.logger.warning(msg)
+        #    samples = self.get_sample_name_container(wrapper)
+
         # write sample_info.json; populate sample names from provenance if needed
         samples = self.get_sample_name_container(wrapper)
         sample_info, path_info = self.read_provenance(study, donor, samples)
@@ -205,7 +225,15 @@ class main(helper_base):
             reader.WF_STARFUSION: reader.parse_starfusion_predictions_path(),
             reader.WF_VEP: reader.parse_maf_path(),
             reader.WF_VIRUS: reader.parse_virus_path(),
-            reader.WF_IMMUNE: reader.parse_immune_path()
+            reader.WF_IMMUNE: reader.parse_immune_path(),
+            # TAR specific files:
+            self.WF_CONSENSUS_TUMOUR: reader.parse_tar_metrics_tumour_path(),
+            self.WF_CONSENSUS_NORMAL: reader.parse_tar_metrics_normal_path(),
+            self.WF_MAF_TUMOUR: reader.parse_tar_maf_tumour_path(),
+            self.WF_MAF_NORMAL: reader.parse_tar_maf_normal_path(),
+            self.WF_ICHOR_JSON: reader.parse_tar_ichorcna_json_path(),
+            self.WF_ICHOR_SEG: reader.parse_tar_ichorcna_seg_path()
+
         }
         return sample_info, path_info
 
