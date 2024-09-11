@@ -145,7 +145,7 @@ class main(helper_base):
             self.logger.info(msg)
         else:
             samples = self.get_sample_name_container(wrapper, assay)
-            sample_info, path_info = self.read_provenance(study, donor, samples)
+            sample_info, path_info = self.read_provenance(study, donor, assay, samples)
             if not self.workspace.has_file(core_constants.DEFAULT_SAMPLE_INFO):
                 self.logger.debug('extract: writing sample info')
                 self.write_sample_info(sample_info)
