@@ -3,8 +3,9 @@
 ## UNRELEASED
 - GCGI-1438: Updated genomic landscape plugin (hrd.py) to handle unknown oncotree codes for treatment options
 - GCGI-1262: Remove ABCB1 from TAR reports
-- Add CDH1, NF1, and VHL to REVOLVE panel (v2.0 -> v3.0)
-
+- Add CDH1, NF1, and VHL to new targeted panel (v2.0 -> v3.0)
+- GCGI-1333/1441: Make TAR depend on provenance helper
+ 
 ## v1.7.2: 2024-08-19
 - GCGI-1420: Added green line separator to research footer
 - GCGI-1419: Fixed callability fetching in sample plugin to use donor as well as tumour_id 
