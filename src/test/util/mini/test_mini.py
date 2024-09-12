@@ -280,7 +280,7 @@ class TestScript(TestMiniBase):
         cmd.append('--force')
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
-        self.assert_report('9ee14ad2eb58d55a5d3db33ec18dab7e')
+        self.assert_report('860a0b0ac19aa1daed9650a7f8b612a8')
 
 
 if __name__ == '__main__':
