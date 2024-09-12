@@ -84,19 +84,6 @@ class main(helper_base):
             self.logger.info("Writing provenance subset cache to workspace")
             self.write_provenance_subset(study, donor, provenance_path)
         
-        #samples = []
-        #count = 0
-        #for key in self.SAMPLE_NAME_KEYS:
-        #    if wrapper.my_param_is_not_null(key):
-        #        samples.append(wrapper.get_my_string(key))
-        #        count += 1
-        #if count != 3: # (i.e. all three are missing)
-        #    msg = "If manually specifying the sample name keys, please manually specify all of them. If there is no transcriptome, give it 'whole_transcriptome_placeholder'. Otherwise, defaulting to names found in provenance."
-        #    self.logger.warning(msg)
-        #    samples = self.get_sample_name_container(wrapper)
-
-        # write sample_info.json; populate sample names from provenance if needed
-        
         samples = self.get_sample_name_container(wrapper, assay)
         sample_info, path_info = self.read_provenance(study, donor, assay, samples)
         self.write_path_info(path_info)
