@@ -18,8 +18,8 @@ class TestProvenanceHelper(TestBase):
     CORE = 'core'
     HELPER_NAME = 'provenance_helper'
     SUBSET_MD5 = '41c9288d5159f960f0193939a411a113'
-    SAMPLE_INFO_MD5 = '6eaf49a1c0e558b6861c328b963e9497'
-    PATH_INFO_MD5 = 'bfbdcdf4c3070e1fb89628577a872d94'
+    SAMPLE_INFO_MD5 = 'd8ca7199822984ad4ec7f0fee5cbb316'
+    PATH_INFO_MD5 = 'fbb9daa1fd1f6d0ef1eaa8e2f587d021'
     
     def test(self):
         self.data_dir_root = directory_finder().get_test_dir()
@@ -32,6 +32,7 @@ class TestProvenanceHelper(TestBase):
         config.add_section(self.CORE)
         config.set(self.HELPER_NAME, 'project', 'PASS01')
         config.set(self.HELPER_NAME, 'donor', 'PANX_1500')
+        config.set(self.HELPER_NAME, 'assay', 'WGTS')
         config.set(self.HELPER_NAME, 'provenance_input_path', provenance_input)
         config = helper_main.configure(config)
         subset_path = os.path.join(self.tmp_dir, helper_main.PROVENANCE_OUTPUT)
