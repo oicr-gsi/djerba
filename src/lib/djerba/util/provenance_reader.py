@@ -101,8 +101,6 @@ class provenance_reader(logger):
                   "Requires {0} and {1} with optional {2}".format(self.wg_n, self.wg_t, self.wt_t)
             self.logger.error(msg)
             raise RuntimeError(msg)
-        if self.assay == self.TAR:
-            self._set_tar_ids(samples)
         self.provenance = []
         # find provenance rows with the required project, root sample, and (if given) sample names
         with gzip.open(provenance_path, 'rt') as infile:
@@ -131,7 +129,9 @@ class provenance_reader(logger):
                 distinct_records.add(columns)
             # parse the 'parent sample attributes' value and get a list of dictionaries
             self.attributes = [self._parse_row_attributes(row) for row in distinct_records]
-            if assay != self.TAR:
+            if assay == self.TAR:
+                self._set_tar_ids(samples)
+            else:
                 self._validate_and_set_sample_names(samples)
             self.patient_id = self._id_patient()
             self.tumour_id = self._id_tumour()
