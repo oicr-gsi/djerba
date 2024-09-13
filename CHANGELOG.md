@@ -5,6 +5,7 @@
 - GCGI-1262: Remove ABCB1 from TAR reports
 - Add CDH1, NF1, and VHL to new targeted panel (v2.0 -> v3.0)
 - GCGI-1333/1441: Make TAR depend on provenance helper
+- GCGI_1439: Changed clinical geneticist's name and number to PLACEHOLDER and XXXXXXX respectively
  
 ## v1.7.2: 2024-08-19
 - GCGI-1420: Added green line separator to research footer

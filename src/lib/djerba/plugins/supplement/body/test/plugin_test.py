@@ -24,7 +24,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'PWGS.supp.ini',
             self.JSON: json_location,
-            self.MD5: '1403f93c49420da5bdc33e7e1b2e352d'
+            self.MD5: '031a9d6fa633006f2422a83a65015536'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -44,7 +44,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'TAR.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: '49e8f1013be6595ece08fa798b28d91c'
+            self.MD5: '99b0b5ecafbf8f2b0bbf169a67d233b8'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -54,7 +54,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.supp.ini',
             self.JSON: json_location,
-            self.MD5: '7d94f6243d939779aeb26a6e6e2b489c'
+            self.MD5: 'f92ca1fbb6bbc2e9cad9d20ecf86dc6a'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -64,7 +64,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'ebd2feea85da17f7ac2cd80c5dd613b0'
+            self.MD5: '4acf9bf2bdb1300f136934527760ffb6'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -84,7 +84,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.supp.ini',
             self.JSON: json_location,
-            self.MD5: '999c601460901db71613ba28271847c8'
+            self.MD5: 'bf44c7af57bbbf8422061def1cf86e58'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -105,7 +105,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'f07eb45426aec64874909ed1e0e88430'
+            self.MD5: '1c8fb9e0c2421644cec16c39823d0e54'
         }
         self.run_basic_test(test_source_dir, params)
     
