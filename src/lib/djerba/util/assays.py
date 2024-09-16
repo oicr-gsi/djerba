@@ -17,8 +17,8 @@ ASSAY_LOOKUP = {
     '-40X Tumour, 30X Normal (v5.0)',
     'WGS40X': 'Whole genome sequencing (WGS)-40X Tumour, 30X Normal (v5.0)',
     # other
-    'TAR': 'Targeted Sequencing - REVOLVE Panel - cfDNA and Buffy Coat (v2.0)',
-    'PWGS': 'Plasma Whole Genome Sequencing (v1.0)'
+    'TAR': 'Targeted Sequencing - REVOLVE Panel - cfDNA and Buffy Coat (v3.0)',
+    'PWGS': 'Plasma Whole Genome Sequencing (v2.0)'
 }
 
 def get_description(name):
