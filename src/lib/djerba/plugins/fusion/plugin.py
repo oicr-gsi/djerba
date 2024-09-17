@@ -16,10 +16,10 @@ from djerba.util.render_mako import mako_renderer
 import djerba.core.constants as core_constants
 import djerba.util.oncokb.constants as oncokb
 import djerba.plugins.fusion.constants as fc
-import json
-import base64
-import gzip
+import subprocess
 import glob
+import os
+import json
 
 
 class main(plugin_base):
@@ -169,12 +169,18 @@ class main(plugin_base):
         bai_files = glob.glob(bai_pattern)
 
         if bam_files:
-            data['tracks'][1]['url'] = bam_files[0]
+            bam_file = bam_files[0]
+            project = os.path.basename(os.path.dirname(os.path.dirname(bam_file)))
+            filename = os.path.basename(bam_file)
+            data['tracks'][1]['url'] = f"/bams/project/{project}/RNASEQ/file/{filename}"
         else:
             raise FileNotFoundError(f"BAM file not found for pattern: {bam_pattern}")
 
         if bai_files:
-            data['tracks'][1]['indexURL'] = bai_files[0]
+            bai_file = bai_files[0]
+            project = os.path.basename(os.path.dirname(os.path.dirname(bai_file)))
+            filename = os.path.basename(bai_file)
+            data['tracks'][1]['indexURL'] = f"/bams/project/{project}/RNASEQ/file/{filename}"
         else:
             raise FileNotFoundError(f"BAI file not found for pattern: {bai_pattern}")
 
@@ -182,17 +188,45 @@ class main(plugin_base):
         print(f"BAM file URL: {data['tracks'][1]['url']}")
         print(f"BAI file indexURL: {data['tracks'][1]['indexURL']}")
 
-        # Convert the updated JSON data to a string
-        json_str = json.dumps(data, separators=(',', ':'))
+        # -------- JavaScript Compression Call via jq and Node.js --------
+        try:
+            # Convert the Python dict to JSON string
+            json_data = json.dumps(data)
 
-        # Compress the JSON string
-        compressed_data = gzip.compress(json_str.encode('utf-8'))
+            # Compact the JSON with jq -c
+            process = subprocess.Popen(
+                ['jq', '-c'],  # First command: compact the JSON
+                stdin=subprocess.PIPE,  # Connect the input pipe for the JSON
+                stdout=subprocess.PIPE,  # Pipe output from jq to node
+                stderr=subprocess.PIPE  # Capture errors
+            )
+            jq_output, jq_error = process.communicate(input=json_data.encode('utf-8'))
+            if jq_error:
+                print(f"Error from jq: {jq_error.decode('utf-8')}")
+                raise RuntimeError("jq failed")
 
-        # Encode the compressed data to base64
-        base64_encoded = base64.b64encode(compressed_data).decode('utf-8')
+            # Pass to second subprocess sessionBlob.js for compression
+            process_node = subprocess.Popen(
+                ['node', 'sessionBlob.js'],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            node_stdout, node_stderr = process_node.communicate(input=jq_output)
+            if node_stderr:
+                print(f"Error from Node.js: {node_stderr.decode('utf-8')}")
+                raise RuntimeError("Node.js compression failed")
 
-        # Generate the blurb URL
-        blurb_url = f"https://whizbam-dev.gsi.oicr.on.ca/igv?sessionURL=blob:{base64_encoded}"
+            # Output the compressed result from Node.js
+            compressed_result = node_stdout.decode('utf-8')
+            print(f"Compressed result: {compressed_result}")
+        except Exception as e:
+            print(f"Error during compression: {e}")
+            raise
+        # -------- End of JavaScript Compression Call --------
+
+        # Generate the blurb URL using the compressed result
+        blurb_url = f"https://whizbam-dev.gsi.oicr.on.ca/igv?sessionURL=blob:{compressed_result}"
 
         # Define the output JSON file name and path
         output_json_filename = f"{fusion}_details.json"
