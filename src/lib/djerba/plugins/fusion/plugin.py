@@ -107,8 +107,9 @@ class main(plugin_base):
         data[core_constants.MERGE_INPUTS]['treatment_options_merger'] = treatment_opts
         return data
 
-    def process_fusion(self, fusion, tsv_file_path, json_template_path, output_dir):
+    def process_fusion(self, config, fusion, tsv_file_path, json_template_path, output_dir):
         # Extract gene names from the fusion string
+        wrapper = self.get_config_wrapper(config)
         match = re.match(r"(.+)::(.+)", fusion)
         if match:
             gene1 = match.group(1)
@@ -156,8 +157,7 @@ class main(plugin_base):
         data['locus'] = [formatted_breakpoint1, formatted_breakpoint2]
         print(f"Updated locus in JSON: {data['locus']}")
 
-        # Update the 'name' field with core_constants.TUMOUR_ID
-        tumour_id = core_constants.TUMOUR_ID
+        tumour_id = wrapper.get_my_string(core_constants.TUMOUR_ID)
         data['tracks'][1]['name'] = tumour_id
         print(f"Updated name: {data['tracks'][1]['name']}")
 
