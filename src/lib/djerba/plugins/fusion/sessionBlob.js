@@ -1,6 +1,5 @@
 // compress.js
-import * as BGZip from './bgzf.js'; // Adjust the path if necessary
-
+const BGZip = require('../src/bgzf.js');
 let input = '';
 
 process.stdin.on('data', function (chunk) {
