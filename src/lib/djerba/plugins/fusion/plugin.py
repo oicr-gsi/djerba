@@ -85,7 +85,7 @@ class main(plugin_base):
 
         for fusion in unique_fusions:
             try:
-                fusion, blurb_url = self.process_fusion(fusion, tsv_file_path, json_template_path, output_dir)
+                fusion, blurb_url = self.process_fusion(config, fusion, tsv_file_path, json_template_path, output_dir)
                 fusion_url_pairs.append([fusion, blurb_url])
                 print(f"Processed fusion: {fusion}, URL: {blurb_url}")
 
