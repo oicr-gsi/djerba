@@ -207,7 +207,7 @@ class main(plugin_base):
 
             # Pass to second subprocess sessionBlob.js for compression
             process_node = subprocess.Popen(
-                ['node', 'sessionBlob.js'],
+                ['node', './sessionBlob.js'],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
