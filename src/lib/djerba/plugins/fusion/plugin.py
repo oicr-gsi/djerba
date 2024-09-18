@@ -108,7 +108,7 @@ class main(plugin_base):
         return data
 
     def process_fusion(self, config, fusion, tsv_file_path, json_template_path, output_dir):
-        # Extract gene names from the fusion string
+        base_dir = (directory_finder(self.log_level, self.log_path).get_base_dir())
         wrapper = self.get_config_wrapper(config)
         match = re.match(r"(.+)::(.+)", fusion)
         if match:
@@ -206,11 +206,13 @@ class main(plugin_base):
                 raise RuntimeError("jq failed")
 
             # Pass to second subprocess sessionBlob.js for compression
+
             process_node = subprocess.Popen(
-                ['node', './sessionBlob.js'],
+                ['node', 'sessionBlob.js'],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
+                stderr=subprocess.PIPE,
+                cwd=os.path.join(base_dir, "plugins/fusion")
             )
             node_stdout, node_stderr = process_node.communicate(input=jq_output)
             if node_stderr:
