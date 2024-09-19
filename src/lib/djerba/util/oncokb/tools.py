@@ -11,8 +11,26 @@ from djerba.util.logger import logger
 
 class levels:
 
+    ALTERNATE_LEVEL_KEY = 'OncoKB level' #  used in TAR SNV/indel
     ACTIONABLE_LEVELS = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'P']
+    REPORTABLE_LEVELS = ACTIONABLE_LEVELS+['N1', 'N2']
     ALL_LEVELS = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'N1', 'N2', 'N3', 'N4', 'P', 'Unknown']
+
+    @staticmethod
+    def filter_reportable(rows):
+        # return a list of rows which are reportable
+        # TODO refactor the TAR SNV/indel plugin to use core constant
+        if len(rows)==0:
+            return rows
+        elif core_constants.ONCOKB in rows[0]:
+            level_key = core_constants.ONCOKB
+        elif levels.ALTERNATE_LEVEL_KEY in rows[0]:
+            level_key = levels.ALTERNATE_LEVEL_KEY
+        else:
+            msg = "No OncoKB level key in filter input: {0}".format(rows[0])
+            raise MissingOncokbLevelError(msg)
+        rows = filter(lambda x: levels.is_reportable(x[level_key]), rows)
+        return list(rows)
 
     @staticmethod
     def is_null_string(value):
@@ -23,24 +41,20 @@ class levels:
             raise ValueError(msg)
 
     @staticmethod
-    def oncokb_filter(row):
-        """True if level passes filter, ie. if row should be kept"""
-        likely_oncogenic_order = levels.oncokb_order('N2')
-        return levels.oncokb_order(row.get(core_constants.ONCOKB)) <= likely_oncogenic_order
+    def is_actionable(level):
+        return level in levels.ACTIONABLE_LEVELS
 
     @staticmethod
-    def oncokb_filter_actionable(row):
-        """True if level passes filter, ie. if row should be kept"""
-        actionable_order = levels.oncokb_order('R2')
-        return levels.oncokb_order(row.get(core_constants.ONCOKB)) <= actionable_order
+    def is_reportable(level):
+        return level in levels.REPORTABLE_LEVELS
 
     @staticmethod
     def oncokb_level_to_html(level):
         if level in ['1', '2', '3A', '3B', '4', 'R1', 'R2']:
             shape = 'circle'
-        elif level in ['N1', 'N2','P']:
+        elif level in ['N1', 'N2', 'N3', 'P']:
             shape = 'square'
-        elif level in ['N3', 'N4']:
+        elif level == 'N4':
             shape = 'square-dark-text'
         else:
             raise UnrecognizedOncokbLevelError("Unrecognized OncoKB level: {0}".format(level))
@@ -95,7 +109,7 @@ class levels:
     def parse_oncokb_level(row_dict):
         # find oncokb level string: eg. "Level 1", "Likely Oncogenic", "None"
         max_level = None
-        for level in oncokb.THERAPY_LEVELS:
+        for level in oncokb.ANNOTATION_THERAPY_LEVELS:
             if not levels.is_null_string(row_dict[level]):
                 max_level = level
                 break
@@ -151,4 +165,7 @@ class gene_summary_reader(logger):
         return self.summaries.get(gene, self.DEFAULT)
 
 class UnrecognizedOncokbLevelError(Exception):
+    pass
+
+class MissingOncokbLevelError(Exception):
     pass
