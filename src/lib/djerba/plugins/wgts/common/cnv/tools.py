@@ -136,7 +136,8 @@ class cnv_processor(logger):
                 rows.append(row_output)
         unfiltered_cnv_total = len(rows)
         self.logger.debug("Sorting and filtering CNV rows")
-        rows = list(filter(oncokb_levels.oncokb_filter, wgts_toolkit.sort_variant_rows(rows)))
+        rows = wgts_toolkit.sort_variant_rows(rows)
+        rows = oncokb_levels.filter_reportable(rows)
         results = {
             cnv.PERCENT_GENOME_ALTERED: self.calculate_percent_genome_altered(),
             cnv.TOTAL_VARIANTS: unfiltered_cnv_total,
