@@ -12,7 +12,6 @@ from djerba.util.logger import logger
 class levels:
 
     ACTIONABLE_LEVELS = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'P']
-    REPORTABLE_LEVELS = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'N1', 'N2', 'P']
     ALL_LEVELS = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'N1', 'N2', 'N3', 'N4', 'P', 'Unknown']
 
     @staticmethod
@@ -21,7 +20,7 @@ class levels:
             return value in ['', 'NA']
         else:
             msg = "Invalid argument to is_null_string(): '{0}' of type '{1}'".format(value, type(value))
-            raise RuntimeError(msg)
+            raise ValueError(msg)
 
     @staticmethod
     def oncokb_filter(row):
@@ -37,31 +36,16 @@ class levels:
 
     @staticmethod
     def oncokb_level_to_html(level):
-        if level == "1" or level == 1:
-            html = '<div class="circle oncokb-level1">1</div>'
-        elif level == "2" or level == 2:
-            html = '<div class="circle oncokb-level2">2</div>'
-        elif level == "3A":
-            html = '<div class="circle oncokb-level3A">3A</div>'
-        elif level == "3B":
-            html = '<div class="circle oncokb-level3B">3B</div>'
-        elif level == "4":
-            html = '<div class="circle oncokb-level4">4</div>'
-        elif level == "R1":
-            html = '<div class="circle oncokb-levelR1">R1</div>'
-        elif level == "R2":
-            html = '<div class="circle oncokb-levelR2">R2</div>'
-        elif level == "N1":
-            html = '<div class="square oncokb-levelN1">N1</div>'
-        elif level == "N2":
-            html = '<div class="square oncokb-levelN2">N2</div>'
-        elif level == "N3":
-            html = '<div class="square oncokb-levelN3">N3</div>'
-        elif level == "P":
-            html = '<div class="square oncokb-levelP">P</div>'
+        if level in ['1', '2', '3A', '3B', '4', 'R1', 'R2']:
+            shape = 'circle'
+        elif level in ['N1', 'N2','P']:
+            shape = 'square'
+        elif level in ['N3', 'N4']:
+            shape = 'square-dark-text'
         else:
-            raise RuntimeError("Unknown OncoKB level: '{0}'".format(level))
-        return html
+            raise UnrecognizedOncokbLevelError("Unrecognized OncoKB level: {0}".format(level))
+        div = '<div class="{0} oncokb-level{1}">{1}</div>'.format(shape, level)
+        return div
 
     @staticmethod
     def oncokb_order(level):
@@ -73,7 +57,7 @@ class levels:
                 order = i
                 break
         if order == None:
-            raise RuntimeError("Unknown OncoKB level: {0}".format(level))
+            raise UnrecognizedOncokbLevelError("Unrecognized OncoKB level: {0}".format(level))
         return order
 
     @staticmethod
@@ -165,3 +149,6 @@ class gene_summary_reader(logger):
 
     def get(self, gene):
         return self.summaries.get(gene, self.DEFAULT)
+
+class UnrecognizedOncokbLevelError(Exception):
+    pass
