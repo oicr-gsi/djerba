@@ -8,6 +8,7 @@ from markdown import markdown
 
 class html_builder:
 
+    ONCOKB_URL_PREFIX = 'https://www.oncokb.org/gene' # TODO move to util.oncokb.tools?
     TABLE_START = '<table border=1>'
     TABLE_END = '</table>'
     TR_START = '<tr style="text-align:left;">'
@@ -15,12 +16,12 @@ class html_builder:
 
     @staticmethod
     def build_alteration_url(gene, alteration, cancer_code):
-        base = 'https://www.oncokb.org/gene'
-        return '/'.join([base, gene, alteration, cancer_code])
+        return '/'.join([html_builder.ONCOKB_URL_PREFIX, gene, alteration, cancer_code])
 
     @staticmethod
     def build_fusion_url(genes, oncotree_code):
-        url = 'https://www.oncokb.org/gene/{0}/Fusion/{1}'.format(
+        url = '{0}/{1}/Fusion/{2}'.format(
+            html_builder.ONCOKB_URL_PREFIX,
             '-'.join(genes),
             oncotree_code
         )
@@ -28,7 +29,8 @@ class html_builder:
     
     @staticmethod
     def build_onefusion_url(gene, oncotree_code):
-        url = 'https://www.oncokb.org/gene/{0}/Fusion/{1}'.format(
+        url = '{0}/{1}/Fusion/{2}'.format(
+            html_builder.ONCOKB_URL_PREFIX,
             gene,
             oncotree_code
         )
@@ -36,7 +38,7 @@ class html_builder:
 
     @staticmethod
     def build_gene_url(gene):
-        return 'https://www.oncokb.org/gene/'+gene
+        return html_builder.ONCOKB_URL_PREFIX+'/'+gene
 
     @staticmethod
     def expression_display(expr):
