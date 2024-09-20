@@ -249,7 +249,8 @@ class snv_indel_processor(logger):
                     wgts_tools.ONCOKB: oncokb_levels.parse_oncokb_level(row_input)
                 }
                 rows.append(row_output)
-        rows = list(filter(oncokb_levels.oncokb_filter, wgts_toolkit.sort_variant_rows(rows)))
+        rows = wgts_toolkit.sort_variant_rows(rows)
+        rows = oncokb_levels.filter_reportable(rows)
         somatic_total, coding_seq_total = self.get_mutation_totals()
         results = {
             sic.SOMATIC_MUTATIONS: somatic_total,
