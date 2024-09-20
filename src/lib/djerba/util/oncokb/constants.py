@@ -26,9 +26,8 @@ LIKELY_ONCOGENIC = 'Likely Oncogenic'
 INCONCLUSIVE = 'Inconclusive'
 UNKNOWN = 'Unknown'
 
-FDA_APPROVED_LEVELS = [LEVEL_1, LEVEL_2, LEVEL_R1]
-INVESTIGATIONAL_LEVELS = [LEVEL_3A, LEVEL_3B, LEVEL_4, LEVEL_R2]
-THERAPY_LEVELS = [
+# used for parsing OncoKB-annotated MAF files
+ANNOTATION_THERAPY_LEVELS = [
     LEVEL_1,
     LEVEL_2,
     LEVEL_3A,
@@ -36,19 +35,6 @@ THERAPY_LEVELS = [
     LEVEL_4,
     LEVEL_R1,
     LEVEL_R2,
-]
-ORDERED_LEVELS = [
-    LEVEL_1,
-    LEVEL_2,
-    LEVEL_3A,
-    LEVEL_3B,
-    LEVEL_4,
-    LEVEL_R1,
-    LEVEL_R2,
-    ONCOGENIC,
-    LIKELY_ONCOGENIC,
-    INCONCLUSIVE,
-    UNKNOWN
 ]
 
 ### INI config keys ###

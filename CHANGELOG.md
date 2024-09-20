@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.7.4: 2024-09-20
+- GCGI-1442: Bugfix for processing OncoKB annotation at level N4; update handling of prognostic (P) annotation
+- Includes refactoring of TAR plugins to remove redundant annotation code
+- GCGI-1443: Correctly handle `NA` values for `seg.mean` in Purple output
+- GCGI-1445: Fix for inconsistent MD5 of gzip output in provenance helper test
+
 ## v1.7.3: 2024-09-16
 - GCGI-1438: Updated genomic landscape plugin (hrd.py) to handle unknown oncotree codes for treatment options
 - GCGI-1262: Remove ABCB1 from TAR reports

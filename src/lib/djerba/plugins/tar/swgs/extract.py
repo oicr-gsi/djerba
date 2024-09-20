@@ -17,7 +17,7 @@ from djerba.plugins.tar.swgs.preprocess import preprocess
 from djerba.util.environment import directory_finder
 from djerba.util.logger import logger
 from djerba.util.image_to_base64 import converter
-import djerba.util.oncokb.constants as oncokb
+from djerba.util.oncokb.tools import levels as oncokb_levels
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.html import html_builder as hb
 
@@ -75,30 +75,14 @@ class data_builder:
                   constants.GENE_URL: hb.build_gene_url(gene),
                   constants.ALTERATION: row[self.ALTERATION_UPPER_CASE],
                   constants.CHROMOSOME: cytoband,
-                  constants.ONCOKB: self.parse_oncokb_level(row)
+                  constants.ONCOKB: oncokb_levels.parse_oncokb_level(row)
               }
               rows.append(row)
-    rows = list(filter(self.oncokb_filter, self.sort_variant_rows(rows)))
-    for row in rows: 
-        row[self.ONCOKB_LEVEL] = self.change_oncokb_level_name(row[self.ONCOKB_LEVEL])
-    
+    rows = self.sort_variant_rows(rows)
+    rows = oncokb_levels.filter_reportable(rows)
     return rows
-
     
    # --------------------------- ALL EXTRA FUNCTIONS ---------------------
-  
-  def change_oncokb_level_name(self, level):
-    onc = 'Oncogenic'
-    l_onc = 'Likely Oncogenic'
-    p_onc = 'Predicted Oncogenic'
-
-    if level == onc:
-        level = 'N1'
-    elif level == l_onc:
-        level = 'N2'
-    elif level == p_onc:
-        level = 'N3'
-    return level
 
   def read_cytoband_map(self):
     input_path = self.cytoband_path
@@ -109,53 +93,6 @@ class data_builder:
             cytobands[row[self.HUGO_SYMBOL_TITLE_CASE]] = row['Chromosome']
     return cytobands
   
-  def parse_oncokb_level(self, row_dict):
-    # find oncokb level string: eg. "1", "Likely Oncogenic", "None"
-    max_level = None
-    for level in oncokb.THERAPY_LEVELS:
-        if not self.is_null_string(row_dict[level]):
-            max_level = level
-            break
-    if max_level:
-        parsed_level = self.reformat_level_string(max_level)
-    elif not self.is_null_string(row_dict[self.ONCOGENIC]):
-        parsed_level = row_dict[self.ONCOGENIC]
-    else:
-        parsed_level = self.NA
-    return parsed_level
-
-  def is_null_string(self, value):
-    if isinstance(value, str):
-        return value in ['', self.NA]
-    else:
-        msg = "Invalid argument to is_null_string(): '{0}' of type '{1}'".format(value, type(value))
-        #self.logger.error(msg)
-        raise RuntimeError(msg)
-        
-  def reformat_level_string(self, level):
-    return re.sub('LEVEL_', "", level)
-  
-  def oncokb_filter(self, row):
-    """True if level passes filter, ie. if row should be kept"""
-    likely_oncogenic_sort_order = self.oncokb_sort_order(oncokb.LIKELY_ONCOGENIC)
-    return self.oncokb_sort_order(row.get(constants.ONCOKB)) <= likely_oncogenic_sort_order
-  
-  def oncokb_sort_order(self, level):
-    oncokb_levels = [self.reformat_level_string(level) for level in oncokb.ORDERED_LEVELS]
-    order = None
-    i = 0
-    for output_level in oncokb_levels:
-        if level == output_level:
-            order = i
-            break
-        i+=1
-    if order == None:
-        #self.logger.warning(
-        #    "Unknown OncoKB level '{0}'; known levels are {1}".format(level, self.oncokb_levels)
-        #)
-        order = len(self.oncokb_levels)+1 # unknown levels go last
-    return order
-
   def sort_variant_rows(self, rows):
     # sort rows oncokb level, then by cytoband, then by gene name
     #self.logger.debug("Sorting rows by gene name")
@@ -163,7 +100,7 @@ class data_builder:
     #self.logger.debug("Sorting rows by cytoband")
     rows = sorted(rows, key=lambda row: self.cytoband_sort_order(row[constants.CHROMOSOME]))
     #self.logger.debug("Sorting rows by oncokb level")
-    rows = sorted(rows, key=lambda row: self.oncokb_sort_order(row[constants.ONCOKB]))
+    rows = sorted(rows, key=lambda row: oncokb_levels.oncokb_order(row[constants.ONCOKB]))
     return rows
 
   def cytoband_sort_order(self, cb_input):
