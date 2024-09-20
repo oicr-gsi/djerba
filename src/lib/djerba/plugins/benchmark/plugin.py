@@ -30,6 +30,7 @@ class main(plugin_base):
     DIFF_NAME = 'diff_name'
     INPUT_NAME = 'input_name'
     RUN_TIME = 'run_time'
+    NOT_FOUND = 'Not found'
 
     # __init__ is inherited from the parent class
 
@@ -58,14 +59,20 @@ class main(plugin_base):
                 status = 'INCOMPLETE'
                 status_emoji = '&#x2753;' # question mark
                 diff = 'NA'
+            input_file = input_paths.get(donor, self.NOT_FOUND)
+            ref_file = ref_paths.get(donor, self.NOT_FOUND)
+            if input_file == self.NOT_FOUND or ref_file == self.NOT_FOUND:
+                diff_name = self.NOT_FOUND
+            else:
+                diff_name = donor+"_diff.txt"
             result = {
                 self.DONOR: donor,
                 self.STATUS: status,
                 self.STATUS_EMOJI: status_emoji,
                 self.DIFF: diff,
-                self.DIFF_NAME: donor+"_diff.txt",
-                self.INPUT_FILE: input_paths.get(donor, 'Not found'),
-                self.REF_FILE: ref_paths.get(donor, 'Not found')
+                self.DIFF_NAME: diff_name,
+                self.INPUT_FILE: input_file,
+                self.REF_FILE: ref_file
             }
             donor_results.append(result)
         return donor_results
