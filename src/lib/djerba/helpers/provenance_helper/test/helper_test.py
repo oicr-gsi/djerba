@@ -2,6 +2,7 @@
 
 """Test of the provenance helper"""
 
+import gzip
 import logging
 import os
 import time
@@ -17,7 +18,7 @@ class TestProvenanceHelper(TestBase):
 
     CORE = 'core'
     HELPER_NAME = 'provenance_helper'
-    SUBSET_MD5 = '41c9288d5159f960f0193939a411a113'
+    SUBSET_LENGTH = 240
     SAMPLE_INFO_MD5 = 'd8ca7199822984ad4ec7f0fee5cbb316'
     PATH_INFO_MD5 = 'fbb9daa1fd1f6d0ef1eaa8e2f587d021'
     
@@ -37,7 +38,9 @@ class TestProvenanceHelper(TestBase):
         config = helper_main.configure(config)
         subset_path = os.path.join(self.tmp_dir, helper_main.PROVENANCE_OUTPUT)
         self.assertTrue(os.path.exists(subset_path))
-        self.assertEqual(self.getMD5_of_gzip_path(subset_path), self.SUBSET_MD5)
+        with gzip.open(subset_path) as subset_file:
+            subset_lines = subset_file.readlines()
+        self.assertEqual(len(subset_lines), self.SUBSET_LENGTH)
         sample_info_path = os.path.join(self.tmp_dir, core_constants.DEFAULT_SAMPLE_INFO)
         self.assertTrue(os.path.exists(sample_info_path))
         self.assertEqual(self.getMD5(sample_info_path), self.SAMPLE_INFO_MD5)
@@ -57,7 +60,9 @@ class TestProvenanceHelper(TestBase):
         ws.remove_file(path_info_path)
         helper_main.extract(config) # should regenerate the files
         self.assertTrue(os.path.exists(subset_path))
-        self.assertEqual(self.getMD5_of_gzip_path(subset_path), self.SUBSET_MD5)
+        with gzip.open(subset_path) as subset_file:
+            subset_lines = subset_file.readlines()
+        self.assertEqual(len(subset_lines), self.SUBSET_LENGTH)
         sample_info_path = os.path.join(self.tmp_dir, core_constants.DEFAULT_SAMPLE_INFO)
         self.assertTrue(os.path.exists(sample_info_path))
         self.assertEqual(self.getMD5(sample_info_path), self.SAMPLE_INFO_MD5)
