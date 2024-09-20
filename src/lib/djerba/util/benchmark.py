@@ -36,11 +36,11 @@ class benchmarker(logger):
     MSI_DIR_NAME = 'msi'
     SAMPLES = [
         "GSICAPBENCH_1219",
-        #"GSICAPBENCH_1232",
-        #"GSICAPBENCH_1233",
-        #"GSICAPBENCH_1273",
-        #"GSICAPBENCH_1275",
-        #"GSICAPBENCH_1288"
+        "GSICAPBENCH_1232",
+        "GSICAPBENCH_1233",
+        "GSICAPBENCH_1273",
+        "GSICAPBENCH_1275",
+        "GSICAPBENCH_1288"
     ]
     REPORT_DIR_NAME = 'report'
     TEMPLATE = 'benchmark_config.ini'
@@ -129,7 +129,7 @@ class benchmarker(logger):
             self.MAVIS_FILE: '{0}/**/{1}*.mavis_summary.tab',
             self.RSEM_FILE: '{0}/**/{1}_*.genes.results',
             self.MSI_FILE: '{0}/**/{1}_*.msi.booted',
-            self.MRDETECT_VCF: '{0}/**/{1}_*.SNP.vcf'
+            self.CTDNA_FILE: '{0}/**/{1}_*.SNP.count.txt'
         }
         for sample in self.SAMPLES:
             sample_inputs = {}
@@ -163,12 +163,6 @@ class benchmarker(logger):
                 msg = template.format(sample, sample_inputs)
                 self.logger.warning(msg)
                 continue
-            # Find the SNP.count.txt file
-            mrdetect_dir = os.path.dirname(sample_inputs[self.MRDETECT_VCF])
-            snp_count_path = os.path.join(mrdetect_dir, 'SNP.count.txt')
-            self.validator.validate_input_file(snp_count_path)
-            sample_inputs[self.CTDNA_FILE] = snp_count_path
-            del sample_inputs[self.MRDETECT_VCF] # not needed for reporting
             self.logger.debug("Sample inputs for {0}: {1}".format(sample, sample_inputs))
             if any([x==None for x in sample_inputs.values()]):
                 # skip samples with missing inputs, eg. for testing
@@ -197,28 +191,6 @@ class benchmarker(logger):
         self.logger.debug("Rendering plugin HTML")
         html = plugin.render(data)
         return [data, html]
-
-    def run_comparison_OLD(self, report_paths):
-        data = []
-        self.logger.info("Comparing reports: {0}".format(report_paths))
-        for report_path in report_paths:
-            self.validator.validate_input_file(report_path)
-        if self.args.delta:
-            self.validator.validate_input_file(self.args.delta)
-        diff = report_equivalence_tester(
-            report_paths,
-            self.args.delta,
-            self.log_level,
-            self.log_path
-        )
-        if diff.is_equivalent():
-            self.logger.info("Reports are equivalent: {0}".format(report_paths))
-        else:
-            self.logger.warning("Reports are NOT equivalent: {0}".format(report_paths))
-            if self.log_level > logging.INFO:
-                self.logger.warning("Run with --debug or --verbose for full report diff")
-        self.logger.info("Report diff: {0}".format(diff.get_diff_text()))
-        return diff.is_equivalent()
 
     def run_reports(self, input_samples, work_dir):
         self.logger.info("Reporting for {0} samples: {1}".format(len(input_samples), input_samples))
@@ -279,39 +251,6 @@ class benchmarker(logger):
         data, html = self.run_comparison(reports_path, self.ref_path)
         self.logger.info("Writing data and HTML output")
         self.write_outputs(data, html)
-
-    def run_OLD(self):
-        run_ok = True
-        if self.args.subparser_name == self.GENERATE:
-            if self.args.apply_cache and self.args.update_cache:
-                msg = 'Cannot specify both --apply-cache and --update-cache'
-                self.logger.error(msg)
-                raise RuntimeError(msg)
-            input_dir = os.path.abspath(self.args.input_dir)
-            output_dir = os.path.abspath(self.args.output_dir)
-            dry_run = self.args.dry_run
-            self.logger.info("GSICAPBENCH input directory is '{0}'".format(input_dir))
-            input_samples = self.run_setup(input_dir, output_dir)
-            if dry_run:
-                self.logger.info("Dry-run mode; omitting report generation")
-            else:
-                self.logger.info("Writing GSICAPBENCH reports to {0}".format(output_dir))
-                self.run_reports(input_samples, output_dir)
-            self.logger.info("Finished '{0}' mode.".format(constants.REPORT))
-        elif self.args.subparser_name == self.COMPARE:
-            reports = self.args.report
-            msg = "Comparing directories {0} and {1}".format(reports[0], reports[1])
-            self.logger.info(msg)
-            run_ok = self.run_comparison(reports)
-            if run_ok:
-                self.logger.info("Djerba reports are equivalent.")
-            else:
-                self.logger.warning("Djerba reports are NOT equivalent!")
-        else:
-            msg = "Unknown subparser name {0}".format(self.args.subparser_name)
-            self.logger.error(msg)
-            raise RuntimeError(msg)
-        return run_ok
 
     def write_outputs(self, data, html):
         # write the HTML output
