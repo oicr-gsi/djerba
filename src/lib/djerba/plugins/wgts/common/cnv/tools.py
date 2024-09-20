@@ -53,7 +53,8 @@ class cnv_processor(logger):
             raise RuntimeError(msg)
         with open(self.seg_path) as input_file:
             for row in csv.DictReader(input_file, delimiter="\t"):
-                if abs(float(row['seg.mean'])) >= self.MINIMUM_MAGNITUDE_SEG_MEAN:
+                seg_mean = row['seg.mean']
+                if seg_mean != 'NA' and abs(float(seg_mean)) >= self.MINIMUM_MAGNITUDE_SEG_MEAN:
                     total += int(row['loc.end']) - int(row['loc.start'])
         # TODO see GCGI-347 for possible updates to genome size
         fga = float(total)/self.GENOME_SIZE

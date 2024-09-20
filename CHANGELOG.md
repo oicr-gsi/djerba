@@ -3,6 +3,7 @@
 ## Unreleased
 - GCGI-1442: Bugfix for processing OncoKB annotation at level N4; update handling of prognostic (P) annotation
 - Includes refactoring of TAR plugins to remove redundant annotation code
+- GCGI-1443: Correctly handle `NA` values for `seg.mean` in Purple output
 
 ## v1.7.3: 2024-09-16
 - GCGI-1438: Updated genomic landscape plugin (hrd.py) to handle unknown oncotree codes for treatment options
