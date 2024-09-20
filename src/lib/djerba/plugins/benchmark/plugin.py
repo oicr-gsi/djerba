@@ -31,6 +31,7 @@ class main(plugin_base):
     INPUT_NAME = 'input_name'
     RUN_TIME = 'run_time'
     NOT_FOUND = 'Not found'
+    NOT_APPLICABLE = 'Not applicable'
 
     # __init__ is inherited from the parent class
 
@@ -63,6 +64,8 @@ class main(plugin_base):
             ref_file = ref_paths.get(donor, self.NOT_FOUND)
             if input_file == self.NOT_FOUND or ref_file == self.NOT_FOUND:
                 diff_name = self.NOT_FOUND
+            elif status == tester.IDENTICAL_STATUS:
+                diff_name = self.NOT_APPLICABLE
             else:
                 diff_name = donor+"_diff.txt"
             result = {
