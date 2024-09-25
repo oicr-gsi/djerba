@@ -34,7 +34,7 @@ class benchmarker(logger):
     CONFIG_FILE_NAME = 'config.ini'
     # TODO set random seed in MSI workflow for consistent outputs
     MSI_DIR_NAME = 'msi'
-    SAMPLES = [
+    DEFAULT_SAMPLES = [
         "GSICAPBENCH_1219",
         "GSICAPBENCH_1232",
         "GSICAPBENCH_1233",
@@ -84,6 +84,7 @@ class benchmarker(logger):
             msg = 'Cannot specify both --apply-cache and --update-cache'
             self.logger.error(msg)
             raise RuntimeError(msg)
+        self.samples = args.sample if args.sample else self.DEFAULT_SAMPLES 
         self.validator.validate_input_file(args.ref_path)
         self.ref_path = args.ref_path
         self.input_dir = os.path.abspath(self.args.input_dir)
@@ -131,7 +132,7 @@ class benchmarker(logger):
             self.MSI_FILE: '{0}/**/{1}_*.msi.booted',
             self.CTDNA_FILE: '{0}/**/{1}_*.SNP.count.txt'
         }
-        for sample in self.SAMPLES:
+        for sample in self.samples:
             sample_inputs = {}
             sample_inputs[self.DONOR] = sample
             sample_inputs[self.PROJECT] = 'placeholder'
@@ -143,6 +144,8 @@ class benchmarker(logger):
             for key in templates.keys():
                 pattern = templates[key].format(results_dir, sample)
                 sample_inputs[key] = self.glob_single(pattern)
+            # Workaround for workflows not yet in weekly cron
+            # TODO get arriba, purple, and hrd values from cron output when available
             arriba_path = os.path.join(self.private_dir, 'arriba', 'arriba.fusions.tsv')
             if not os.path.isfile(arriba_path):
                 msg = "Expected arriba path '{0}' is not a file".format(arriba_path)
