@@ -1,5 +1,5 @@
 // compress.js
-const BGZip = require('../src/bgzf.js');
+const BGZip = require('./bgzf.js');
 let input = '';
 
 process.stdin.on('data', function (chunk) {
