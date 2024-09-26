@@ -6863,5 +6863,14 @@ var ungzip_1 = ungzip;
 var constants_1 = constants$2;
 
 
-export { Deflate_1 as Deflate, Inflate_1 as Inflate, constants_1 as constants, deflate_1 as deflate, deflateRaw_1 as deflateRaw, gzip_1 as gzip, inflate_1 as inflate, inflateRaw_1 as inflateRaw, ungzip_1 as ungzip };
-
+module.exports = {
+  Deflate: Deflate_1,
+  Inflate: Inflate_1,
+  constants: constants_1,
+  deflate: deflate_1,
+  deflateRaw: deflateRaw_1,
+  gzip: gzip_1,
+  inflate: inflate_1,
+  inflateRaw: inflateRaw_1,
+  ungzip: ungzip_1
+}

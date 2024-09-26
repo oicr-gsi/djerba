@@ -190,15 +190,16 @@ function decodeDataURI(dataURI, gzip) {
     }
 }
 
-export {
-    unbgzf,
-    bgzBlockSize,
-    gzip,
-    ungzip_blocks as ungzip,
-    isgzipped,
-    compressString,
-    uncompressString,
-    decodeDataURI,
-    inflate,
-    inflateRaw
+module.exports = {
+  unbgzf,
+  bgzBlockSize,
+  gzip,
+  ungzip: ungzip_blocks,
+  isgzipped,
+  compressString,
+  uncompressString,
+  decodeDataURI,
+  inflate,
+  inflateRaw
 }
+
