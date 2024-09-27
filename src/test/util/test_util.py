@@ -17,7 +17,82 @@ from djerba.util.render_mako import mako_renderer
 from djerba.util.testing.tools import TestBase
 
 
-class TestBenchmark(TestBase):
+class TestBenchmark(TestBase): # obsolete test, delete when new one is ready
+
+    class mock_report_args:
+        """Use instead of argparse to store params for testing"""
+
+        INPUT_DIR_VAR = 'DJERBA_GSICAPBENCH_INPUTS'
+
+        def __init__(self, input_dir, output_dir, work_dir, ref_path):
+            #input_dir = os.environ.get(self.INPUT_DIR_VAR)
+            #if input_dir==None:
+            #    raise RuntimeError("Need to set {0} env var".format(self.INPUT_DIR_VAR))
+            if not os.path.isdir(input_dir):
+                raise OSError("Input dir '{0}' is not a directory".format(input_dir))
+            else:
+                self.input_dir = input_dir
+            if not os.path.isdir(work_dir):
+                raise OSError("Work dir '{0}' is not a directory".format(work_dir))
+            else:
+                self.work_dir = work_dir
+            if not os.path.isdir(output_dir):
+                raise OSError("Output dir '{0}' is not a directory".format(output_dir))
+            else:
+                self.output_dir = output_dir
+            if not os.path.isfile(ref_path):
+                raise OSError("Reference path '{0}' is not a file".format(ref_path))
+            else:
+                self.ref_path = ref_path
+            self.sample = None
+            self.apply_cache = True
+            self.update_cache = False
+            # logging
+            self.log_path = None
+            self.debug = False
+            self.verbose = False
+            self.quiet = True
+
+    def test_inputs(self):
+        input_dir = '/.mounts/labs/CGI/private/djerba/benchmarking/djerba_bench_test_inputs/'
+        ref_path = '/.mounts/labs/CGI/private/djerba/benchmarking/djerba_bench_reference/bench_ref_paths.json'
+        args = self.mock_report_args(input_dir, self.tmp_dir, self.tmp_dir, ref_path)
+        args.sample = ['GSICAPBENCH_1219', 'GSICAPBENCH_1273', 'GSICAPBENCH_1275']
+        bench = benchmarker(args)
+        bench_inputs = bench.find_inputs(input_dir)
+        #import json
+        #with open('/u/ibancarz/tmp/inputs.json', 'w') as out_file:
+        #    data = json.dumps(bench_inputs, sort_keys=True, indent=4)
+        #    print(data, file=out_file)
+        self.assertEqual(sorted(list(bench_inputs.keys())), args.sample)
+        for k in bench_inputs.keys():
+            self.assertEqual(len(bench_inputs[k]), 16)
+
+    def test_setup(self):
+        input_dir = '/.mounts/labs/CGI/private/djerba/benchmarking/djerba_bench_test_inputs/'
+        ref_path = '/.mounts/labs/CGI/private/djerba/benchmarking/djerba_bench_reference/bench_ref_paths.json'
+        args = self.mock_report_args(input_dir, self.tmp_dir, self.tmp_dir, ref_path)
+        args.sample = ['GSICAPBENCH_1219', 'GSICAPBENCH_1273', 'GSICAPBENCH_1275']
+        bench = benchmarker(args)
+        samples = bench.run_setup(args.input_dir, args.work_dir)
+        self.assertEqual(sorted(samples), args.sample)
+        for sample in samples:
+            ini_path = os.path.join(self.tmp_dir, sample, 'config.ini')
+            self.assertTrue(os.path.isfile(ini_path))
+
+    def test_outputs(self):
+        input_dir = '/.mounts/labs/CGI/private/djerba/benchmarking/djerba_bench_test_inputs/'
+        ref_path = '/.mounts/labs/CGI/private/djerba/benchmarking/djerba_bench_reference/bench_ref_paths.json'
+        args = self.mock_report_args(input_dir, self.tmp_dir, self.tmp_dir, ref_path)
+        args.sample = ['GSICAPBENCH_1219', 'GSICAPBENCH_1273', 'GSICAPBENCH_1275']
+        args.verbose = True
+        bench = benchmarker(args)
+        samples = bench.run_setup(args.input_dir, args.work_dir)
+        reports_path = bench.run_reports(samples, args.work_dir)
+        from shutil import copy
+        copy(reports_path, '/u/ibancarz/tmp/reports.test')
+
+class SKIP_TestBenchmark(TestBase): # obsolete test, delete when new one is ready
 
     class mock_report_args:
         """Use instead of argparse to store params for testing"""

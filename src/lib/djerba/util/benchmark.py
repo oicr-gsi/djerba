@@ -77,7 +77,8 @@ class benchmarker(logger):
         self.validator = path_validator(self.log_level, self.log_path)
         dir_finder = directory_finder(self.log_level, self.log_path)
         self.data_dir = dir_finder.get_data_dir()
-        self.private_dir = dir_finder.get_private_dir()
+        self.private_dir = os.path.join(dir_finder.get_private_dir(), 'benchmarking')
+        self.validator.validate_input_dir(self.private_dir)
         with open(os.path.join(self.data_dir, 'benchmark_params.json')) as in_file:
             self.sample_params = json.loads(in_file.read())
         if self.args.apply_cache and self.args.update_cache:
@@ -175,7 +176,7 @@ class benchmarker(logger):
         if len(inputs)==0:
             # require inputs for at least one sample
             msg = "No benchmark inputs found in {0} ".format(results_dir)+\
-                "for any sample in {0}".format(self.SAMPLES)
+                "for any sample in {0}".format(self.samples)
             self.logger.error(msg)
             raise RuntimeError(msg)
         return inputs
