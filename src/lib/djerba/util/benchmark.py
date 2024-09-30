@@ -131,7 +131,10 @@ class benchmarker(logger):
             self.MAVIS_FILE: '{0}/**/{1}*.mavis_summary.tab',
             self.RSEM_FILE: '{0}/**/{1}_*.genes.results',
             self.MSI_FILE: '{0}/**/{1}_*.msi.booted',
-            self.CTDNA_FILE: '{0}/**/{1}_*.SNP.count.txt'
+            self.CTDNA_FILE: '{0}/**/{1}_*.SNP.count.txt',
+            self.ARRIBA_FILE: '{0}/**/{1}*.fusions.tsv',
+            self.PURPLE_FILE: '{0}/**/{1}*.purple.zip',
+            self.HRD_FILE: '{0}/**/{1}*.signatures.json'
         }
         for sample in self.samples:
             sample_inputs = {}
@@ -145,23 +148,16 @@ class benchmarker(logger):
             for key in templates.keys():
                 pattern = templates[key].format(results_dir, sample)
                 sample_inputs[key] = self.glob_single(pattern)
-            # Workaround for workflows not yet in weekly cron
-            # TODO get arriba, purple, and hrd values from cron output when available
-            arriba_path = os.path.join(self.private_dir, 'arriba', 'arriba.fusions.tsv')
-            if not os.path.isfile(arriba_path):
-                msg = "Expected arriba path '{0}' is not a file".format(arriba_path)
-                self.logger.error(msg)
-                raise RuntimeError(msg)
-            purple_path = os.path.join(self.private_dir, 'purple', sample+'.purple.zip')
-            hrd_path = os.path.join(self.private_dir, 'hrDetect', sample+'.signatures.json')
-            for in_path in [arriba_path, purple_path, hrd_path]:
-                if not os.path.isfile(in_path):
-                    msg = "Expected input path '{0}' is not a file".format(in_path)
+            # Workaround for placeholder arriba output
+            if sample_inputs[self.ARRIBA_FILE] == None:
+                arriba_path = os.path.join(self.private_dir, 'arriba', 'arriba.fusions.tsv')
+                if os.path.isfile(arriba_path):
+                    sample_inputs[self.ARRIBA_FILE] = arriba_path
+                else:
+                    msg = "No arriba input found from input directory; "+\
+                        "fallback arriba path '{0}' is not a file".format(arriba_path)
                     self.logger.error(msg)
                     raise RuntimeError(msg)
-            sample_inputs[self.ARRIBA_FILE] = arriba_path
-            sample_inputs[self.PURPLE_FILE] = purple_path
-            sample_inputs[self.HRD_FILE] = hrd_path
             if None in sample_inputs.values():
                 template = "Skipping {0} as one or more values are missing: {1}"
                 msg = template.format(sample, sample_inputs)
