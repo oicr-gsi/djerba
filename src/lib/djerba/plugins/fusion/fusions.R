@@ -25,6 +25,11 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  cat("reading fusion data...\n")
  data <- read.csv(datafile, sep="\t", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
  entr <- read.csv(entrfile, sep="\t", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
+ #DEBUGGING
+ str(data)
+ head(data)
+ str(entr)
+ head(entr)
  
 
  # reformat the filtering columns to split and take the max value within cell
@@ -235,6 +240,7 @@ if(length(num_lines)<=1) {
 
   cat("Headers of fusion_cbio[[1]]: \n")
   print(colnames(fusion_cbio[[1]]))
+  str(fusion_cbio[[1]])
 
   } else {
   cat("fusion_cbio does not exist or is not populated.\n")
@@ -242,8 +248,9 @@ if(length(num_lines)<=1) {
 
 
   # DEBUGGING
-  cat("Printing marker and translocation values for troubleshooting:\n")
+  cat("Printing marker for troubleshooting:\n")
   print(translocation_annotations$marker)
+  cat("Printing translocation for troubleshooting:\n")
   print(fusion_cbio[[1]]$translocation)
 
   cat("Attempting to join on marker and translocation columns...\n")
