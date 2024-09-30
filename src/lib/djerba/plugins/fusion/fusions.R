@@ -229,6 +229,19 @@ if(length(num_lines)<=1) {
   translocation_annotations = read.table(annotation_path, header = T)
 
   # DEBUGGING
+  cat("Fusion file path: ", fusfile, "\n")
+  if (exists("fusion_cbio")) {
+    cat("Dimensions of fusion_cbio[[1]]: ", dim(fusion_cbio[[1]]), "\n")
+
+  cat("Headers of fusion_cbio[[1]]: \n")
+  print(colnames(fusion_cbio[[1]]))
+
+  } else {
+  cat("fusion_cbio does not exist or is not populated.\n")
+  }
+
+
+  # DEBUGGING
   cat("Printing marker and translocation values for troubleshooting:\n")
   print(translocation_annotations$marker)
   print(fusion_cbio[[1]]$translocation)
