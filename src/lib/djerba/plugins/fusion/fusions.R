@@ -6,6 +6,11 @@ library(dplyr)
 
 '%ni%' <- function(x,y)!('%in%'(x,y))
 
+# DEBUGGING
+cat("Entrez conversion file path:", entrfile, "\n")
+cat("Fusion file path:", datafile, "\n")
+cat("Arriba file path:", arribafile, "\n")
+
 # main function to read/write fusion data; was 'preProcFus' in Djerba classic
 processFusions <- function(datafile, readfilt, entrfile, arribafile ){
   
@@ -226,6 +231,14 @@ if(length(num_lines)<=1) {
 
   annotation_path = paste0(data_dir, "/", annotation_file) 
   translocation_annotations = read.table(annotation_path, header = T)
+
+  # DEBUGGING
+  cat("Printing marker and translocation values for troubleshooting:\n")
+  print(translocation_annotations$marker)
+  print(fusion_cbio[[1]]$translocation)
+
+  cat("Attempting to join on marker and translocation columns...\n")
+
   fus_annotated <- inner_join(translocation_annotations, fusion_cbio[[1]],  by=c("marker"="translocation"))
   fus_annotated <- fus_annotated[fus_annotated$oncotree == oncotree,]
   fus_annotated <- fus_annotated[c("Tumor_Sample_Barcode", "Fusion")]
