@@ -6,10 +6,6 @@ library(dplyr)
 
 '%ni%' <- function(x,y)!('%in%'(x,y))
 
-# DEBUGGING
-cat("Entrez conversion file path:", entrfile, "\n")
-cat("Fusion file path:", datafile, "\n")
-cat("Arriba file path:", arribafile, "\n")
 
 # main function to read/write fusion data; was 'preProcFus' in Djerba classic
 processFusions <- function(datafile, readfilt, entrfile, arribafile ){
