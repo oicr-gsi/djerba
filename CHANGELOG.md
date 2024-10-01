@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-1378: Improve benchmarking to write an HTML summary page; update tests
+
 ## 1.7.4: 2024-09-20
 - GCGI-1442: Bugfix for processing OncoKB annotation at level N4; update handling of prognostic (P) annotation
 - Includes refactoring of TAR plugins to remove redundant annotation code
