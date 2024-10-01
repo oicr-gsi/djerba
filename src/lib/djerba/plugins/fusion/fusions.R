@@ -106,11 +106,6 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  
  data_dedup$translocation <- paste0("t(",data_dedup$min,";",data_dedup$max,")")
 
- # DEBUGGING
- cat("Printing break1 chr num...\n")
- print(unique(data_dedup$break1_chromosome_num))
- cat("Printing break2 chr num...\n")
- print(unique(data_dedup$break2_chromosome_num))
 
  data_dedup = data_dedup[,!(names(data_dedup) %in% c("min","max"))]
  data_dedup$translocation <- gsub("23","X",x = data_dedup$translocation)
@@ -119,11 +114,6 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  
  data_dedup$translocation[data_dedup$event_type == "inversion"] <- paste0("inv(",data_dedup$break1_chromosome[data_dedup$event_type == "inversion"],")")
 
- # DEBUGGING
- cat("Printing event type...\n")
- print(unique(data_dedup$event_type))
-
- 
  #####
  cat("Adding Arriba data...\n")
  
@@ -259,27 +249,6 @@ if(length(num_lines)<=1) {
   annotation_path = paste0(data_dir, "/", annotation_file) 
   translocation_annotations = read.table(annotation_path, header = T)
 
-  # DEBUGGING
-  cat("Fusion file path: ", fusfile, "\n")
-  if (exists("fusion_cbio")) {
-    cat("Dimensions of fusion_cbio[[1]]: ", dim(fusion_cbio[[1]]), "\n")
-
-  cat("Headers of fusion_cbio[[1]]: \n")
-  print(colnames(fusion_cbio[[1]]))
-  str(fusion_cbio[[1]])
-
-  } else {
-  cat("fusion_cbio does not exist or is not populated.\n")
-  }
-
-
-  # DEBUGGING
-  cat("Printing marker for troubleshooting:\n")
-  print(translocation_annotations$marker)
-  cat("Printing translocation for troubleshooting:\n")
-  print(fusion_cbio[[1]]$translocation)
-
-  cat("Attempting to join on marker and translocation columns...\n")
 
   fus_annotated <- inner_join(translocation_annotations, fusion_cbio[[1]],  by=c("marker"="translocation"))
   fus_annotated <- fus_annotated[fus_annotated$oncotree == oncotree,]
