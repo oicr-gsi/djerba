@@ -236,15 +236,19 @@ if(length(num_lines)<=1) {
   print(head(fusion_cbio[[1]]$translocation))
 
   # Fix potential NA or empty values
-  data_dedup$translocation[is.na(data_dedup$translocation) | data_dedup$translocation == ""] <- "Unknown"
+  fusion_cbio[[1]]$translocation[is.na(fusion_cbio[[1]]$translocation) | fusion_cbio[[1]]$translocation == ""] <- "Unknown"
 
   # Check again before joining
   cat("Updated translocation values:\n")
   print(unique(fusion_cbio[[1]]$translocation))
 
+  # Data type match before the join
+  fusion_cbio[[1]]$translocation <- as.character(fusion_cbio[[1]]$translocation)
+  translocation_annotations$marker <- as.character(translocation_annotations$marker)
+
   # Perform the join
   cat("Attempting to join on marker and translocation columns...\n")
-  fus_annotated <- inner_join(translocation_annotations, fusion_cbio[[1]],  by=c("marker"="translocation"))
+  fus_annotated <- inner_join(translocation_annotations, fusion_cbio[[1]], by = c("marker" = "translocation"))
 
   fus_annotated <- fus_annotated[fus_annotated$oncotree == oncotree,]
   fus_annotated <- fus_annotated[c("Tumor_Sample_Barcode", "Fusion")]
