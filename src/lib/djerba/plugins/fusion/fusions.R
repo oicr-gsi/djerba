@@ -36,6 +36,11 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  columns <- c("contig_remapped_reads", "flanking_pairs", "break1_split_reads", "break2_split_reads", "linking_split_reads")
  data <- split_column_take_max(data, columns)
 
+ #DEBUGGING
+ cat("Original data after split_column_take_max:\n")
+ str(data)
+ print(head(data))
+
  # add a column which pulls the correct read support columns
  data$read_support <- ifelse(data$call_method == "contig", data$contig_remapped_reads,
                         ifelse(data$call_method == "flanking reads", data$flanking_pairs,
@@ -56,6 +61,11 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  # add index which is sample, tuple
  data$index <- paste0(data$Sample, data$fusion_tuples)
 
+ #DEBUGGING
+ cat("Original data just before deduplicate:\n")
+ str(data)
+ print(head(data))
+
  # deduplicate
  data_dedup <- data[!duplicated(data$index),]
 
@@ -65,6 +75,15 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  # merge in entrez gene ids
  data_dedup <- merge(data_dedup, entr, by.x="gene1_aliases", by.y="Hugo_Symbol", all.x=TRUE)
  data_dedup <- merge(data_dedup, entr, by.x="gene2_aliases", by.y="Hugo_Symbol", all.x=TRUE)
+
+ #DEBUGGING
+ cat("Number of rows after deduplication:\n")
+ print(nrow(data_dedup))
+ cat("Unique values in gene1_aliases:\n")
+ print(unique(data$gene1_aliases))
+ cat("Unique values in gene2_aliases:\n")
+ print(unique(data$gene2_aliases))
+
 
  # add some missing columns
  data_dedup$DNA_support <- ifelse(grepl("delly", data_dedup$tools), "yes", "no")
