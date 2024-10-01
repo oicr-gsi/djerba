@@ -56,23 +56,11 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
 
  # gene1 should not equal gene2
  data_dedup <- data_dedup[data_dedup$gene1_aliases != data_dedup$gene2_aliases, ]
- # DEBUGGING
- cat("data_dedup after removing duplicate genes:\n")
- str(data_dedup)
- print(nrow(data_dedup))
 
  # merge in entrez gene ids
  data_dedup <- merge(data_dedup, entr, by.x="gene1_aliases", by.y="Hugo_Symbol", all.x=TRUE)
  data_dedup <- merge(data_dedup, entr, by.x="gene2_aliases", by.y="Hugo_Symbol", all.x=TRUE)
 
- # DEBUGGING
- cat("data_dedup after merge in entrez gene ids:\n")
- str(data_dedup)
- print(nrow(data_dedup))
- cat("Unique values in gene1_aliases:\n")
- print(unique(data$gene1_aliases))
- cat("Unique values in gene2_aliases:\n")
- print(unique(data$gene2_aliases))
 
 
  # add some missing columns
@@ -243,8 +231,21 @@ if(length(num_lines)<=1) {
   annotation_path = paste0(data_dir, "/", annotation_file) 
   translocation_annotations = read.table(annotation_path, header = T)
 
+  # Check translocation column
+  cat("Preview translocation column:\n")
+  print(head(fusion_cbio[[1]]$translocation))
 
+  # Fix potential NA or empty values
+  data_dedup$translocation[is.na(data_dedup$translocation) | data_dedup$translocation == ""] <- "Unknown"
+
+  # Check again before joining
+  cat("Updated translocation values:\n")
+  print(unique(fusion_cbio[[1]]$translocation))
+
+  # Perform the join
+  cat("Attempting to join on marker and translocation columns...\n")
   fus_annotated <- inner_join(translocation_annotations, fusion_cbio[[1]],  by=c("marker"="translocation"))
+
   fus_annotated <- fus_annotated[fus_annotated$oncotree == oncotree,]
   fus_annotated <- fus_annotated[c("Tumor_Sample_Barcode", "Fusion")]
   write.table(fus_annotated, file=paste0(outdir, "/data_fusions_NCCN.txt"), sep="\t", row.names=FALSE, quote=FALSE)
