@@ -90,13 +90,24 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
           max = max(break1_chromosome_num, break2_chromosome_num))
  
  data_dedup$translocation <- paste0("t(",data_dedup$min,";",data_dedup$max,")")
+
+ #DEBUGGING
+ cat("Printing break1 chr num...\n")
+ print(unique(data_dedup$break1_chromosome_num))
+ cat("Printing break2 chr num...\n")
+ print(unique(data_dedup$break2_chromosome_num))
+
  data_dedup = data_dedup[,!(names(data_dedup) %in% c("min","max"))]
  data_dedup$translocation <- gsub("23","X",x = data_dedup$translocation)
  
  data_dedup$translocation[data_dedup$event_type %ni% c("inverted translocation", "translocation")] <- data_dedup$event_type[data_dedup$event_type %ni% c("inverted translocation", "translocation")]
  
  data_dedup$translocation[data_dedup$event_type == "inversion"] <- paste0("inv(",data_dedup$break1_chromosome[data_dedup$event_type == "inversion"],")")
- 
+
+ #DEBUGGING
+ cat("Printing event type...\n")
+ print(unique(data_dedup$event_type))
+
  
  #####
  cat("Adding Arriba data...\n")
