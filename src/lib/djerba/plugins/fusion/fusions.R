@@ -25,21 +25,10 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  cat("reading fusion data...\n")
  data <- read.csv(datafile, sep="\t", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
  entr <- read.csv(entrfile, sep="\t", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
- #DEBUGGING
- str(data)
- head(data)
- str(entr)
- head(entr)
- 
 
  # reformat the filtering columns to split and take the max value within cell
  columns <- c("contig_remapped_reads", "flanking_pairs", "break1_split_reads", "break2_split_reads", "linking_split_reads")
  data <- split_column_take_max(data, columns)
-
- #DEBUGGING
- cat("Original data after split_column_take_max:\n")
- str(data)
- print(head(data))
 
  # add a column which pulls the correct read support columns
  data$read_support <- ifelse(data$call_method == "contig", data$contig_remapped_reads,
@@ -61,12 +50,13 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  # add index which is sample, tuple
  data$index <- paste0(data$Sample, data$fusion_tuples)
 
- #DEBUGGING
+
+ # deduplicate
+ # DEBUGGING
  cat("Original data just before deduplicate:\n")
  str(data)
  print(head(data))
 
- # deduplicate
  data_dedup <- data[!duplicated(data$index),]
 
  # gene1 should not equal gene2
@@ -76,7 +66,7 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  data_dedup <- merge(data_dedup, entr, by.x="gene1_aliases", by.y="Hugo_Symbol", all.x=TRUE)
  data_dedup <- merge(data_dedup, entr, by.x="gene2_aliases", by.y="Hugo_Symbol", all.x=TRUE)
 
- #DEBUGGING
+ # DEBUGGING
  cat("Number of rows after deduplication:\n")
  print(nrow(data_dedup))
  cat("Unique values in gene1_aliases:\n")
@@ -91,7 +81,7 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
                               ifelse(grepl("star", data_dedup$tools), "yes", "no")
                                 )
 
- #DEBUGGING
+ # DEBUGGING
  cat("Structure of data_dedup:\n")
  str(data_dedup)
  cat("First few rows of data_dedup:\n")
@@ -116,7 +106,7 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  
  data_dedup$translocation <- paste0("t(",data_dedup$min,";",data_dedup$max,")")
 
- #DEBUGGING
+ # DEBUGGING
  cat("Printing break1 chr num...\n")
  print(unique(data_dedup$break1_chromosome_num))
  cat("Printing break2 chr num...\n")
@@ -129,7 +119,7 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  
  data_dedup$translocation[data_dedup$event_type == "inversion"] <- paste0("inv(",data_dedup$break1_chromosome[data_dedup$event_type == "inversion"],")")
 
- #DEBUGGING
+ # DEBUGGING
  cat("Printing event type...\n")
  print(unique(data_dedup$event_type))
 
