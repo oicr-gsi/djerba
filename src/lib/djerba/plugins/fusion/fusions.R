@@ -231,23 +231,15 @@ if(length(num_lines)<=1) {
   annotation_path = paste0(data_dir, "/", annotation_file) 
   translocation_annotations = read.table(annotation_path, header = T)
 
-  # Check translocation column
-  cat("Preview translocation column:\n")
-  print(head(fusion_cbio[[1]]$translocation))
 
-  # Fix potential NA or empty values
+  # Fix potential NA or empty values in translocation column
   fusion_cbio[[1]]$translocation[is.na(fusion_cbio[[1]]$translocation) | fusion_cbio[[1]]$translocation == ""] <- "Unknown"
-
-  # Check again before joining
-  cat("Updated translocation values:\n")
-  print(unique(fusion_cbio[[1]]$translocation))
-
+  
   # Data type match before the join
   fusion_cbio[[1]]$translocation <- as.character(fusion_cbio[[1]]$translocation)
   translocation_annotations$marker <- as.character(translocation_annotations$marker)
 
   # Perform the join
-  cat("Attempting to join on marker and translocation columns...\n")
   fus_annotated <- inner_join(translocation_annotations, fusion_cbio[[1]], by = c("marker" = "translocation"))
 
   fus_annotated <- fus_annotated[fus_annotated$oncotree == oncotree,]
