@@ -13,7 +13,7 @@
         "donor_results": [
             {
                 "diff": "NONE",
-                "diff_name": "GSICAPBENCH_1219_diff.txt",
+                "diff_name": "Not applicable",
                 "donor": "GSICAPBENCH_1219",
                 "input_file": "PLACEHOLDER/GSICAPBENCH_1219_input.json",
                 "ref_file": "PLACEHOLDER/GSICAPBENCH_1219_reference.json",
@@ -22,7 +22,7 @@
             },
             {
                 "diff": "NONE",
-                "diff_name": "GSICAPBENCH_1232_diff.txt",
+                "diff_name": "Not applicable",
                 "donor": "GSICAPBENCH_1232",
                 "input_file": "PLACEHOLDER/GSICAPBENCH_1232_input.json",
                 "ref_file": "PLACEHOLDER/GSICAPBENCH_1232_reference.json",

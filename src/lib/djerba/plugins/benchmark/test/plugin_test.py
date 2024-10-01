@@ -23,7 +23,6 @@ class TestBenchmark(PluginTester):
         self.tmp_dir = self.tmp.name
 
     def testBenchmark(self):
-        self.tmp_dir = '/u/ibancarz/workspace/djerba/test_20240823_02'
         data_dir_root = directory_finder().get_test_dir()
         data_dir = os.path.join(data_dir_root, 'plugins', 'benchmark')
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -33,7 +32,7 @@ class TestBenchmark(PluginTester):
         params = {
             self.INI: self.write_ini_file(data_dir),
             self.JSON: json_location,
-            self.MD5: 'fd0f695b7ea4a76c73bbaa9e193161ff'
+            self.MD5: '50e15adc4e88adae4cdd7ece566e5b91'
         }
         self.run_basic_test(test_source_dir, params)
 
