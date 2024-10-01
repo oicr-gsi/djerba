@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## UNRELEASED
+- GCGI-1477: Removed copy state information from tar.snv_indel as it was not being used
+
 ## 1.7.4: 2024-09-20
 - GCGI-1442: Bugfix for processing OncoKB annotation at level N4; update handling of prognostic (P) annotation
 - Includes refactoring of TAR plugins to remove redundant annotation code

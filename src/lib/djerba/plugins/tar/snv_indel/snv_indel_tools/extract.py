@@ -24,23 +24,10 @@ class data_builder:
         self.assay = assay
         self.cytoband_path = self.data_dir + "/cytoBand.txt"
         self.oncotree_uc = oncotree_uc
-        if os.path.exists(os.path.join(self.work_dir, sic.CNA_SIMPLE)):
-            self.data_CNA_exists = True
-        else:
-            self.data_CNA_exists = False
-        # Get purity only if the file exists
-        if os.path.exists(os.path.join(work_dir, 'purity.txt')):
-            with open(os.path.join(work_dir, 'purity.txt'), "r") as file:
-                self.purity = float(file.readlines()[0])
-        else:
-            self.purity = 0 # just needs to be anything less than 10% to ignore copy state
-
-
+    
     def build_small_mutations_and_indels(self, mutations_file):
         """read in small mutations; output rows for oncogenic mutations"""
         rows = []
-        if self.data_CNA_exists:
-            mutation_copy_states = self.read_mutation_copy_states()
         mutation_expression = {}
         cytobands = self.read_cytoband_map()
         with open(mutations_file) as data_file:
@@ -63,8 +50,6 @@ class data_builder:
                     sic.TUMOUR_ALT_COUNT: int(input_row[sic.TUMOUR_ALT_COUNT]),
                     sic.ONCOKB: oncokb_levels.parse_oncokb_level(input_row)
                 }
-                if self.purity >= 0.1 and self.data_CNA_exists:
-                    row[sic.COPY_STATE] = mutation_copy_states.get(gene, sic.UNKNOWN)
 
                 rows.append(row)
         rows = self.sort_variant_rows(rows)
@@ -120,26 +105,6 @@ class data_builder:
             for row in reader:
                 cytobands[row[sic.HUGO_SYMBOL_TITLE_CASE]] = row['Chromosome']
         return cytobands
-
-    def read_mutation_copy_states(self):
-        # convert copy state to human readable string; return mapping of gene -> copy state
-        copy_state_conversion = {
-            0: "Neutral",
-            1: "Gain",
-            2: "Amplification",
-            -1: "Shallow Deletion",
-            -2: "Deep Deletion"
-        }
-        copy_states = {}
-        with open(os.path.join(self.work_dir, sic.CNA_SIMPLE)) as in_file:
-            first = True
-            for row in csv.reader(in_file, delimiter="\t"):
-                if first:
-                    first = False
-                else:
-                    [gene, category] = [row[0], int(row[1])]
-                    copy_states[gene] = copy_state_conversion.get(category, sic.UNKNOWN)
-        return copy_states
 
     def read_somatic_mutation_totals(self, mutations_file):
         # Count the somatic mutations
