@@ -72,6 +72,12 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
                               ifelse(grepl("star", data_dedup$tools), "yes", "no")
                                 )
 
+ #DEBUGGING
+ cat("Structure of data_dedup:\n")
+ str(data_dedup)
+ cat("First few rows of data_dedup:\n")
+ print(head(data_dedup))
+
  #### add translocation style ####
  
  
