@@ -52,22 +52,22 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
 
 
  # deduplicate
- # DEBUGGING
- cat("Original data just before deduplicate:\n")
- str(data)
- print(head(data))
-
  data_dedup <- data[!duplicated(data$index),]
 
  # gene1 should not equal gene2
  data_dedup <- data_dedup[data_dedup$gene1_aliases != data_dedup$gene2_aliases, ]
+ # DEBUGGING
+ cat("data_dedup after removing duplicate genes:\n")
+ str(data_dedup)
+ print(nrow(data_dedup))
 
  # merge in entrez gene ids
  data_dedup <- merge(data_dedup, entr, by.x="gene1_aliases", by.y="Hugo_Symbol", all.x=TRUE)
  data_dedup <- merge(data_dedup, entr, by.x="gene2_aliases", by.y="Hugo_Symbol", all.x=TRUE)
 
  # DEBUGGING
- cat("Number of rows after deduplication:\n")
+ cat("data_dedup after merge in entrez gene ids:\n")
+ str(data_dedup)
  print(nrow(data_dedup))
  cat("Unique values in gene1_aliases:\n")
  print(unique(data$gene1_aliases))
@@ -80,12 +80,6 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  data_dedup$RNA_support <- ifelse(grepl("arriba", data_dedup$tools), "yes", 
                               ifelse(grepl("star", data_dedup$tools), "yes", "no")
                                 )
-
- # DEBUGGING
- cat("Structure of data_dedup:\n")
- str(data_dedup)
- cat("First few rows of data_dedup:\n")
- print(head(data_dedup))
 
  #### add translocation style ####
  
