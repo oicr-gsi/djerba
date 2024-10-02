@@ -1,6 +1,8 @@
 # CHANGELOG
 
-## UNRELEASED
+## Unreleased
+- GCGI-1378: Improve benchmarking to write an HTML summary page; update tests
+- GCGI-1449: Replace unknown translocations with "Unknown" in the fusion plugin to avoid type mismatch errors
 - GCGI-1477: Removed copy state information from tar.snv_indel as it was not being used
 
 ## 1.7.4: 2024-09-20

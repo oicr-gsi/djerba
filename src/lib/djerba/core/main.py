@@ -231,7 +231,7 @@ class main_base(core_base):
             p_rend = pdf_renderer(self.log_level, self.log_path)
             for prefix in output_data[cc.DOCUMENTS].keys():
                 html_path = os.path.join(out_dir, prefix+'.html')
-                with open(html_path, 'w') as out_file:
+                with open(html_path, 'w', encoding=cc.TEXT_ENCODING) as out_file:
                     out_file.write(output_data[cc.DOCUMENTS][prefix])
                 self.logger.info("Wrote HTML output to {0}".format(html_path))
                 if pdf:
@@ -288,7 +288,7 @@ class main_base(core_base):
             config_out[name] = config_tmp[name]
         if config_path_out:
             self.logger.debug('Writing INI output to {0}'.format(config_path_out))
-            with open(config_path_out, 'w') as out_file:
+            with open(config_path_out, 'w', encoding=cc.TEXT_ENCODING) as out_file:
                 config_out.write(out_file)
         self.logger.info('Finished Djerba config step')
         return config_out
@@ -300,7 +300,7 @@ class main_base(core_base):
         self._validate_html_cache_input(extracted_data)
         html_str = self.html_cache.decode_from_base64(extracted_data[cc.HTML_CACHE][doc_key])
         html_path = os.path.join(out_dir, doc_key+'.html')
-        with open(html_path, 'w') as out_file:
+        with open(html_path, 'w', encoding=cc.TEXT_ENCODING) as out_file:
             out_file.write(html_str)
         if pdf:
             report_id = extracted_data[cc.CORE][cc.REPORT_ID]
@@ -378,7 +378,7 @@ class main(main_base):
         if not json_path:
             json_path = self.get_default_json_output_path(data)
         self.logger.debug('Writing JSON output to {0}'.format(json_path))
-        with open(json_path, 'w') as out_file:
+        with open(json_path, 'w', encoding=cc.TEXT_ENCODING) as out_file:
             out_file.write(json.dumps(data))
         if archive:
             self.upload_archive(data)
@@ -601,7 +601,7 @@ class main(main_base):
                 terms.pop()
                 output_name = '.'.join(terms)+'.updated.json'
             json_path = os.path.join(out_dir, output_name)
-            with open(json_path, 'w') as out_file:
+            with open(json_path, 'w', encoding=cc.TEXT_ENCODING) as out_file:
                 print(json.dumps(data), file=out_file)
 
     def upload_archive(self, data):
