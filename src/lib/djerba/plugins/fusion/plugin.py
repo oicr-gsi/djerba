@@ -187,44 +187,38 @@ class main(plugin_base):
         print(f"BAM file URL: {data['tracks'][1]['url']}")
         print(f"BAI file indexURL: {data['tracks'][1]['indexURL']}")
 
-        # -------- Python Compression with pysam.bgzip --------
-        # Convert the Python dict to JSON string
-        json_data = json.dumps(data)
+        # Write the modified JSON to the output directory
+        output_json_path = os.path.join(output_dir, f"{fusion}.json")
+        with open(output_json_path, 'w') as json_output_file:
+            json.dump(data, json_output_file)
 
-        # Compress using BGZIP (Block GZIP)
-        compressed_result = self.compress_with_bgzip_and_encode(json_data)
+        print(f"Modified JSON written to {output_json_path}")
 
-        # Generate the blurb URL using the compressed result
-        blurb_url = f"https://whizbam-dev.gsi.oicr.on.ca/igv?sessionURL=blob:{compressed_result}"
+        # BGZIP compression and encoding
+        compressed_b64_data = self.compress_with_bgzip_and_encode(output_json_path)
 
-        # Define the output JSON file name and path
-        output_json_filename = f"{fusion}_details.json"
-        output_json_path = os.path.join(output_dir, output_json_filename)
+        # Create the blob URL with data: scheme
+        blob_url = f"data:application/gzip;base64,{compressed_b64_data}"
+        print(f"Generated blob URL for {fusion}: {blob_url}")
 
-        # Write the updated JSON to a file
-        with open(output_json_path, 'w') as output_json_file:
-            json.dump(data, output_json_file, indent=2)
+        return fusion, blob_url
 
-        print(f"Generated JSON: {output_json_path}")
+    def compress_with_bgzip_and_encode(self, input_file_path):
+        # Use zlib for BGZIP compression and base64 encoding
+        with open(input_file_path, 'rb') as input_file:
+            file_data = input_file.read()
 
-        return fusion, blurb_url
+        compressed_data = zlib.compress(file_data)
+        encoded_data = base64.b64encode(compressed_data).decode('utf-8')
 
-    def url_safe_base64_encode(self, data):
-        """Encode data to URL-safe Base64."""
-        encoded = base64.b64encode(data).decode('utf-8')
-        return encoded.replace('+', '.').replace('/', '_').replace('=', '-')
+        # Use URL-safe Base64 encoding to ensure compatibility
+        return self.url_safe_base64_encode(encoded_data)
 
-    def compress_with_bgzip_and_encode(self, session_data):
-        """Compress the given session data with BGZF (Block GZIP) format and encode it as URL-safe Base64."""
-        # Convert the session data to JSON and then to bytes
-        json_data = json.dumps(session_data).encode('utf-8')
-
-        # Compress using zlib with gzip settings
-        compressed_data = zlib.compress(json_data, level=zlib.Z_BEST_COMPRESSION)
-
-        compressed_result = self.url_safe_base64_encode(compressed_data)
-
-        return compressed_result
+    def url_safe_base64_encode(self, b64_string):
+        """
+        Converts base64 to URL-safe format by replacing characters.
+        """
+        return b64_string.replace('+', '-').replace('/', '_').replace('=', '')
 
     def specify_params(self):
         discovered = [
