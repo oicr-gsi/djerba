@@ -6,6 +6,7 @@ library(dplyr)
 
 '%ni%' <- function(x,y)!('%in%'(x,y))
 
+
 # main function to read/write fusion data; was 'preProcFus' in Djerba classic
 processFusions <- function(datafile, readfilt, entrfile, arribafile ){
   
@@ -24,7 +25,6 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  cat("reading fusion data...\n")
  data <- read.csv(datafile, sep="\t", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
  entr <- read.csv(entrfile, sep="\t", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
- 
 
  # reformat the filtering columns to split and take the max value within cell
  columns <- c("contig_remapped_reads", "flanking_pairs", "break1_split_reads", "break2_split_reads", "linking_split_reads")
@@ -50,6 +50,7 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  # add index which is sample, tuple
  data$index <- paste0(data$Sample, data$fusion_tuples)
 
+
  # deduplicate
  data_dedup <- data[!duplicated(data$index),]
 
@@ -59,6 +60,8 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
  # merge in entrez gene ids
  data_dedup <- merge(data_dedup, entr, by.x="gene1_aliases", by.y="Hugo_Symbol", all.x=TRUE)
  data_dedup <- merge(data_dedup, entr, by.x="gene2_aliases", by.y="Hugo_Symbol", all.x=TRUE)
+
+
 
  # add some missing columns
  data_dedup$DNA_support <- ifelse(grepl("delly", data_dedup$tools), "yes", "no")
@@ -84,14 +87,15 @@ processFusions <- function(datafile, readfilt, entrfile, arribafile ){
           max = max(break1_chromosome_num, break2_chromosome_num))
  
  data_dedup$translocation <- paste0("t(",data_dedup$min,";",data_dedup$max,")")
+
+
  data_dedup = data_dedup[,!(names(data_dedup) %in% c("min","max"))]
  data_dedup$translocation <- gsub("23","X",x = data_dedup$translocation)
  
  data_dedup$translocation[data_dedup$event_type %ni% c("inverted translocation", "translocation")] <- data_dedup$event_type[data_dedup$event_type %ni% c("inverted translocation", "translocation")]
  
  data_dedup$translocation[data_dedup$event_type == "inversion"] <- paste0("inv(",data_dedup$break1_chromosome[data_dedup$event_type == "inversion"],")")
- 
- 
+
  #####
  cat("Adding Arriba data...\n")
  
@@ -226,7 +230,18 @@ if(length(num_lines)<=1) {
 
   annotation_path = paste0(data_dir, "/", annotation_file) 
   translocation_annotations = read.table(annotation_path, header = T)
-  fus_annotated <- inner_join(translocation_annotations, fusion_cbio[[1]],  by=c("marker"="translocation"))
+
+
+  # Fix potential NA or empty values in translocation column
+  fusion_cbio[[1]]$translocation[is.na(fusion_cbio[[1]]$translocation) | fusion_cbio[[1]]$translocation == ""] <- "Unknown"
+  
+  # Data type match before the join
+  fusion_cbio[[1]]$translocation <- as.character(fusion_cbio[[1]]$translocation)
+  translocation_annotations$marker <- as.character(translocation_annotations$marker)
+
+  # Perform the join
+  fus_annotated <- inner_join(translocation_annotations, fusion_cbio[[1]], by = c("marker" = "translocation"))
+
   fus_annotated <- fus_annotated[fus_annotated$oncotree == oncotree,]
   fus_annotated <- fus_annotated[c("Tumor_Sample_Barcode", "Fusion")]
   write.table(fus_annotated, file=paste0(outdir, "/data_fusions_NCCN.txt"), sep="\t", row.names=FALSE, quote=FALSE)

@@ -1,0 +1,37 @@
+{
+    "attributes": [
+        "research"
+    ],
+    "merge_inputs": {},
+    "plugin_name": "benchmark plugin",
+    "priorities": {
+        "configure": 10,
+        "extract": 10,
+        "render": 10
+    },
+    "results": {
+        "donor_results": [
+            {
+                "diff": "NONE",
+                "diff_name": "Not applicable",
+                "donor": "GSICAPBENCH_1219",
+                "input_file": "PLACEHOLDER/GSICAPBENCH_1219_input.json",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_1219_reference.json",
+                "status": "identical",
+                "status_emoji": "&#x2705;"
+            },
+            {
+                "diff": "NONE",
+                "diff_name": "Not applicable",
+                "donor": "GSICAPBENCH_1232",
+                "input_file": "PLACEHOLDER/GSICAPBENCH_1232_input.json",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_1232_reference.json",
+                "status": "identical",
+                "status_emoji": "&#x2705;"
+            }
+        ],
+        "input_name": "Unknown",
+        "run_time": "PLACEHOLDER"
+    },
+    "version": "0.0.1"
+}

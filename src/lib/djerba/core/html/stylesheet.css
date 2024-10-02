@@ -211,11 +211,21 @@ hr.lil-line{
     margin: auto;
   }
 
+.square-dark-text {
+    width: 15px;
+    height: 15px;
+    padding: 5px 8px 5px 5px;
+    color: black;
+    text-align: center;
+    line-height: 15px;
+    margin: auto;
+  }
+
 .oncokb-level1 {background: #33a02c;}
 
 .oncokb-level2 {background: #2078b4;}
 
-.oncokb-level3A {background: #984ea3}
+.oncokb-level3A {background: #984ea3;}
 
 .oncokb-level3B {background: #984ea3;}
 
@@ -230,6 +240,10 @@ hr.lil-line{
 .oncokb-levelN2 {background: #808080;}
 
 .oncokb-levelN3 {background: #AEAEAE;}
+
+.oncokb-levelN4 {background: #C5C5C5;}
+
+.oncokb-levelP {background: #FFA500;}
 
 .tar td[rowspan] {
   vertical-align: top;
