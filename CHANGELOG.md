@@ -2,7 +2,8 @@
 
 ## Unreleased
 - GCGI-1378: Improve benchmarking to write an HTML summary page; update tests
-- GCGI-1449 : Correctly handle logical(0) values by replacing them with "Unknown" to avoid type mismatch errors during the join
+- GCGI-1449: Correctly handle logical(0) values by replacing them with "Unknown" to avoid type mismatch errors during the join in the fusion plugin
+- GCGI-1477: Removed copy state information from tar.snv_indel as it was not being used
 
 ## 1.7.4: 2024-09-20
 - GCGI-1442: Bugfix for processing OncoKB annotation at level N4; update handling of prognostic (P) annotation
