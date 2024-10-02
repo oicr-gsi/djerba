@@ -6,20 +6,18 @@ import csv
 import logging
 import os
 import re
+import glob
+import json
+import pysam
 from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.plugins.fusion.tools import fusion_reader, prepare_fusions
 from djerba.util.environment import directory_finder
-from djerba.util.html import html_builder as hb
 from djerba.util.logger import logger
 from djerba.util.oncokb.tools import levels as oncokb_levels
 from djerba.util.render_mako import mako_renderer
 import djerba.core.constants as core_constants
 import djerba.util.oncokb.constants as oncokb
 import djerba.plugins.fusion.constants as fc
-import subprocess
-import glob
-import os
-import json
 
 
 class main(plugin_base):
@@ -149,6 +147,7 @@ class main(plugin_base):
         formatted_breakpoint1 = format_breakpoint(breakpoint1)
         formatted_breakpoint2 = format_breakpoint(breakpoint2)
 
+        # Load the JSON template
         with open(json_template_path, 'r') as json_file:
             data = json.load(json_file)
 
@@ -187,44 +186,12 @@ class main(plugin_base):
         print(f"BAM file URL: {data['tracks'][1]['url']}")
         print(f"BAI file indexURL: {data['tracks'][1]['indexURL']}")
 
-        # -------- JavaScript Compression Call via jq and Node.js --------
-        try:
-            # Convert the Python dict to JSON string
-            json_data = json.dumps(data)
+        # -------- Python Compression with pysam.bgzip --------
+        # Convert the Python dict to JSON string
+        json_data = json.dumps(data)
 
-            # Compact the JSON with jq -c
-            process = subprocess.Popen(
-                ['jq', '-c'],  # First command: compact the JSON
-                stdin=subprocess.PIPE,  # Connect the input pipe for the JSON
-                stdout=subprocess.PIPE,  # Pipe output from jq to node
-                stderr=subprocess.PIPE  # Capture errors
-            )
-            jq_output, jq_error = process.communicate(input=json_data.encode('utf-8'))
-            if jq_error:
-                print(f"Error from jq: {jq_error.decode('utf-8')}")
-                raise RuntimeError("jq failed")
-
-            # Pass to second subprocess sessionBlob.js for compression
-
-            process_node = subprocess.Popen(
-                ['node', 'sessionBlob.js'],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=os.path.join(base_dir, "plugins/fusion")
-            )
-            node_stdout, node_stderr = process_node.communicate(input=jq_output)
-            if node_stderr:
-                print(f"Error from Node.js: {node_stderr.decode('utf-8')}")
-                raise RuntimeError("Node.js compression failed")
-
-            # Output the compressed result from Node.js
-            compressed_result = node_stdout.decode('utf-8')
-            print(f"Compressed result: {compressed_result}")
-        except Exception as e:
-            print(f"Error during compression: {e}")
-            raise
-        # -------- End of JavaScript Compression Call --------
+        # Compress using BGZIP (Block GZIP)
+        compressed_result = self.compress_with_bgzip(json_data)
 
         # Generate the blurb URL using the compressed result
         blurb_url = f"https://whizbam-dev.gsi.oicr.on.ca/igv?sessionURL=blob:{compressed_result}"
@@ -240,6 +207,20 @@ class main(plugin_base):
         print(f"Generated JSON: {output_json_path}")
 
         return fusion, blurb_url
+
+    def compress_with_bgzip(self, json_data):
+        """Compress the given JSON data with BGZF (Block GZIP) format using pysam."""
+        compressed_output = None
+
+        # Write the JSON data to a BGZIP compressed file
+        with pysam.BGZFile('compressed_output.bgzf', 'wb') as bgzf_out:
+            bgzf_out.write(json_data.encode('utf-8'))
+
+        # Read the BGZIP compressed file
+        with open('compressed_output.bgzf', 'rb') as f:
+            compressed_output = f.read()
+
+        return compressed_output
 
     def specify_params(self):
         discovered = [
