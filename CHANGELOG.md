@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## 1.7.5: 2024-10-02
 - GCGI-1378: Improve benchmarking to write an HTML summary page; update tests
 - GCGI-1449: Correctly handle logical(0) values by replacing them with "Unknown" to avoid type mismatch errors during the join in the fusion plugin
 - GCGI-1477: Removed copy state information from tar.snv_indel as it was not being used
