@@ -9,6 +9,7 @@ import re
 import glob
 import json
 import pysam
+import base64
 from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.plugins.fusion.tools import fusion_reader, prepare_fusions
 from djerba.util.environment import directory_finder
@@ -209,16 +210,16 @@ class main(plugin_base):
         return fusion, blurb_url
 
     def compress_with_bgzip(self, json_data):
-        """Compress the given JSON data with BGZF (Block GZIP) format using pysam."""
+        """Compress the given JSON data with BGZF (Block GZIP) format and encode it as Base64."""
         compressed_output = None
 
         # Write the JSON data to a BGZIP compressed file
         with pysam.BGZFile('compressed_output.bgzf', 'wb') as bgzf_out:
             bgzf_out.write(json_data.encode('utf-8'))
 
-        # Read the BGZIP compressed file
+        # Read the BGZIP compressed file and encode it as Base64
         with open('compressed_output.bgzf', 'rb') as f:
-            compressed_output = f.read()
+            compressed_output = base64.b64encode(f.read()).decode('utf-8')
 
         return compressed_output
 
