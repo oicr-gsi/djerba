@@ -8,7 +8,7 @@ import os
 import re
 import glob
 import json
-import pysam
+import zlib
 import base64
 from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.plugins.fusion.tools import fusion_reader, prepare_fusions
@@ -192,7 +192,7 @@ class main(plugin_base):
         json_data = json.dumps(data)
 
         # Compress using BGZIP (Block GZIP)
-        compressed_result = self.compress_with_bgzip(json_data)
+        compressed_result = self.compress_with_bgzip_and_encode(json_data)
 
         # Generate the blurb URL using the compressed result
         blurb_url = f"https://whizbam-dev.gsi.oicr.on.ca/igv?sessionURL=blob:{compressed_result}"
@@ -209,19 +209,22 @@ class main(plugin_base):
 
         return fusion, blurb_url
 
-    def compress_with_bgzip(self, json_data):
-        """Compress the given JSON data with BGZF (Block GZIP) format and encode it as Base64."""
-        compressed_output = None
+    def url_safe_base64_encode(self, data):
+        """Encode data to URL-safe Base64."""
+        encoded = base64.b64encode(data).decode('utf-8')
+        return encoded.replace('+', '.').replace('/', '_').replace('=', '-')
 
-        # Write the JSON data to a BGZIP compressed file
-        with pysam.BGZFile('compressed_output.bgzf', 'wb') as bgzf_out:
-            bgzf_out.write(json_data.encode('utf-8'))
+    def compress_with_bgzip_and_encode(self, session_data):
+        """Compress the given session data with BGZF (Block GZIP) format and encode it as URL-safe Base64."""
+        # Convert the session data to JSON and then to bytes
+        json_data = json.dumps(session_data).encode('utf-8')
 
-        # Read the BGZIP compressed file and encode it as Base64
-        with open('compressed_output.bgzf', 'rb') as f:
-            compressed_output = base64.b64encode(f.read()).decode('utf-8')
+        # Compress using zlib with gzip settings
+        compressed_data = zlib.compress(json_data, level=zlib.Z_BEST_COMPRESSION)
 
-        return compressed_output
+        compressed_result = self.url_safe_base64_encode(compressed_data)
+
+        return compressed_result
 
     def specify_params(self):
         discovered = [
