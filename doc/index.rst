@@ -10,6 +10,7 @@ Djerba documentation
    :maxdepth: 3
 
    about
+   modules
    plugin_howto
    guide
 
