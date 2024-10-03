@@ -194,31 +194,22 @@ class main(plugin_base):
 
         print(f"Modified JSON written to {output_json_path}")
 
-        # BGZIP compression and encoding
-        compressed_b64_data = self.compress_with_bgzip_and_encode(output_json_path)
-
-        # Create the blob URL in the specified format
+        compressed_b64_data = self.compress_string(output_json_path)
         blurb_url = f"https://whizbam-dev.gsi.oicr.on.ca/igv?sessionURL=blob:{compressed_b64_data}"
         print(f"Generated blob URL for {fusion}: {blurb_url}")
 
         return fusion, blurb_url
 
-    def compress_with_bgzip_and_encode(self, input_file_path):
-        # Use zlib for BGZIP compression and base64 encoding
-        with open(input_file_path, 'rb') as input_file:
-            file_data = input_file.read()
+    def compress_string(self, input_string):
+        # Convert string to bytes
+        input_bytes = input_string.encode('utf-8')
+        # Compress using raw deflate (no zlib header)
+        compressed_bytes = zlib.compress(input_bytes, level=9)[2:-4]  # Removing zlib headers and checksum
+        # Encode compressed bytes to base64
+        compressed_base64 = base64.b64encode(compressed_bytes)
+        # Convert the base64 bytes to a string and apply the replacements
+        return compressed_base64.decode('utf-8')
 
-        compressed_data = zlib.compress(file_data)
-        encoded_data = base64.b64encode(compressed_data).decode('utf-8')
-
-        # Use URL-safe Base64 encoding to ensure compatibility
-        return self.url_safe_base64_encode(encoded_data)
-
-    def url_safe_base64_encode(self, b64_string):
-        """
-        Converts base64 to URL-safe format by replacing characters.
-        """
-        return b64_string.replace('+', '-').replace('/', '_').replace('=', '')
 
     def specify_params(self):
         discovered = [
