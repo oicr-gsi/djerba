@@ -11,6 +11,7 @@ Djerba documentation
 
    about
    getting_started
+   modules
    plugin_howto
    plugin_methods
    contact
