@@ -4,6 +4,7 @@ Base class for all components: Plugins, helpers, mergers
 Defines a wide range of methods for common configuration tasks
 """
 
+import json
 import logging
 import os
 import string
@@ -11,6 +12,7 @@ from abc import ABC, abstractmethod
 from configparser import ConfigParser
 from uuid import uuid4
 from djerba.core.base import base as core_base
+from djerba.util.environment import directory_finder
 from djerba.util.logger import logger
 import djerba.core.constants as cc
 import djerba.util.ini_fields as ini
@@ -64,7 +66,9 @@ class configurable(core_base, ABC):
 
     def _raise_null_param_error(self, key):
         msg = "INI section {0}, option {1} is null; ".format(self.identifier, key)+\
-            "null values are not permitted in fully-specified Djerba config"
+            "null values are not permitted in fully-specified Djerba config. "+\
+            "Note that parameter defaults will NOT overwrite a null value "+\
+            "explicitly assigned in the config input."
         self.logger.error(msg)
         raise DjerbaConfigError(msg)
 
@@ -188,12 +192,20 @@ class configurable(core_base, ABC):
         # which priorities are defined depends if plugin, helper, or merger
         self.logger.warning("Abstract set_priority_defaults not intended to be called")
 
-    def update_wrapper_if_null(self, wrapper, file_name, config_key, json_key=None):
-        """If parameter is null, attempt to read from workspace JSON"""
+    def update_wrapper_if_null(self, wrapper, file_name, config_key, json_key=None,
+                               fallback=None):
+        """
+        If parameter is null, attempt to read from workspace JSON.
+        If workspace JSON not present:
+        - If fallback value is defined, use that
+        - Otherwise, raise an error
+        The json_key parameter is used in case JSON and INI keys differ.
+        """
         if json_key == None:
             json_key = config_key
         if wrapper.my_param_is_null(config_key):
             if self.workspace.has_file(file_name):
+                self.logger.debug("Reading {0} from file {1}".format(config_key, file_name))
                 data = self.workspace.read_json(file_name)
                 try:
                     value = data[json_key]
@@ -202,11 +214,17 @@ class configurable(core_base, ABC):
                     self.logger.error(msg)
                     raise DjerbaConfigError(msg) from err
                 wrapper.set_my_param(config_key, value)
+            elif fallback != None:
+                msg = "File {0} not found, setting {1} to fallback value {2}"
+                self.logger.debug(msg.format(file_name, config_key, fallback))
+                wrapper.set_my_param(config_key, fallback)
             else:
-                msg = "Cannot find {0}; must be manually specified ".format(config_key)+\
-                    "or given in workspace {0}".format(file_name)
+                msg = "Cannot find {0}; no fallback defined; ".format(config_key)+\
+                    "must be manually specified or given in workspace {0}".format(file_name)
                 self.logger.error(msg)
                 raise DjerbaConfigError(msg)
+        else:
+            self.logger.debug("Using existing config value for {0}".format(config_key))
         return wrapper
 
     def validate_minimal_config(self, config):
@@ -279,29 +297,58 @@ class core_configurer(configurable):
             cc.RENDER_PRIORITY: self.PRIORITY
         }
         self.specify_params()
+        self.finder = directory_finder(self.log_level, self.log_path)
 
     def configure(self, config):
         """Input/output is a ConfigParser object"""
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         if wrapper.my_param_is_null(cc.REPORT_ID):
-            sample_info_file = wrapper.get_my_string(cc.SAMPLE_INFO)
-            if self.workspace.has_file(sample_info_file):
-                sample_info = self.workspace.read_json(sample_info_file)
+            input_params_file = wrapper.get_my_string(cc.INPUT_PARAMS_FILE)
+            if self.workspace.has_file(input_params_file):
+                input_params = self.workspace.read_json(input_params_file)
                 report_id = "{0}-v{1}".format(
-                    sample_info[cc.TUMOUR_ID],
+                    input_params[cc.REQUISITION_ID],
                     wrapper.get_my_int(cc.REPORT_VERSION)
                 )
-                msg = "Generated report ID {0} from sample info JSON".format(report_id)
+                msg = "Generated report ID {0} from input params JSON".format(report_id)
                 self.logger.debug(msg)
             else:
                 report_id = "OICR-CGI-{0}".format(uuid4().hex)
                 msg = "Generated report ID {0} from UUID hex string".format(report_id)
                 self.logger.debug(msg)
             wrapper.set_my_param(cc.REPORT_ID, report_id)
+        if wrapper.my_param_is_null(cc.AUTHOR):
+            wrapper.set_my_param(cc.AUTHOR, self.find_author())
         return wrapper.get_config()
 
+    def find_author(self):
+        # try to look up name of author from username or sudo username
+        user_name = os.environ.get('USER')
+        sudo_user_name = os.environ.get('SUDO_USER')
+        lookup_path = os.path.join(self.finder.get_private_dir(), 'djerba_users.json')
+        author = None
+        if os.path.exists(lookup_path):
+            with open(lookup_path) as lookup_file:
+                user_lookup = json.load(lookup_file)
+                if user_name in user_lookup:
+                    author = user_lookup.get(user_name)
+                    msg = "Found author '{0}' from username '{1}'".format(author, user_name)
+                    self.logger.info(msg)
+                elif sudo_user_name in user_lookup:
+                    author = user_lookup.get(sudo_user_name)
+                    msg = "Found author "+\
+                        "'{0}' from sudo username '{1}'".format(author, sudo_user_name)
+                    self.logger.info(msg)
+        else:
+            self.logger.warning("Author lookup path not found: "+lookup_path)
+        if author is None:
+            author = cc.DEFAULT_AUTHOR
+            self.logger.info('Using default author name: '+author)
+        return author
+
     def specify_params(self):
+        self.add_ini_discovered(cc.AUTHOR)
         self.add_ini_discovered(cc.REPORT_ID)
         self.set_ini_default(cc.REPORT_VERSION, 1)
         self.set_ini_default(cc.ARCHIVE_NAME, "djerba")
@@ -309,8 +356,7 @@ class core_configurer(configurable):
             cc.ARCHIVE_URL,
             "http://${username}:${password}@${address}:${port}"
         )
-        self.set_ini_default(cc.AUTHOR, cc.DEFAULT_AUTHOR)
-        self.set_ini_default(cc.SAMPLE_INFO, cc.DEFAULT_SAMPLE_INFO)
+        self.set_ini_default(cc.INPUT_PARAMS_FILE, cc.DEFAULT_INPUT_PARAMS)
         self.set_ini_default(cc.DOCUMENT_CONFIG, cc.DEFAULT_DOCUMENT_CONFIG)
 
     def set_priority_defaults(self, priority):
@@ -413,6 +459,11 @@ class config_wrapper(core_base):
 
     def set_my_param(self, param, value):
         self.config.set(self.identifier, param, str(value))
+
+    def set_my_param_if_null(self, param, value):
+        # convenience method; overwrite value if null, otherwise do nothing
+        if self.my_param_is_null(param):
+            self.set_my_param(param, value)
 
     # [get|set|has]_my_* methods for other components
 

@@ -12,6 +12,7 @@ from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 import djerba.plugins.sample.plugin as sample
 from djerba.core.workspace import workspace
+from djerba.util.environment import directory_finder
 
 class TestWgtsSamplePlugin(PluginTester):
 
@@ -20,9 +21,8 @@ class TestWgtsSamplePlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DIR'
-        self.sup_dir = os.environ.get(sup_dir_var)
-         
+        self.sup_dir = directory_finder().get_test_dir()
+        
     def testWgtsSample(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         json_location = os.path.join(self.sup_dir ,"plugins/sample/report_json/sample.json")
@@ -31,7 +31,7 @@ class TestWgtsSamplePlugin(PluginTester):
         params = {
             self.INI: ini_location,
             self.JSON: json_location,
-            self.MD5: 'f23dbf3e5ac417740bcbb990723db0f0'
+            self.MD5: '8d21df38bbfdba551e86b41adf1f0381'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -46,7 +46,7 @@ class TestWgtsSamplePlugin(PluginTester):
         params = {
             self.INI: ini_location,
             self.JSON: json_location,
-            self.MD5: 'c9b5dd13be0f6d947550d93cd165b64f'
+            self.MD5: 'f0d700a1c983b42637a328c08097add6'
         }
         self.run_basic_test(test_source_dir, params)
 

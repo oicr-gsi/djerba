@@ -13,10 +13,13 @@ class logger:
 
     @staticmethod
     def get_args_log_level(args):
-        return logger.get_log_level(args.debug, args.verbose, args.quiet)
+        # the 'silent' attribute is optional; used in mini-Djerba
+        if not hasattr(args, 'silent'):
+            args.silent = False
+        return logger.get_log_level(args.debug, args.verbose, args.quiet, args.silent)
 
     @staticmethod
-    def get_log_level(debug=False, verbose=False, quiet=False):
+    def get_log_level(debug=False, verbose=False, quiet=False, silent=False):
         log_level = logging.WARN
         if debug:
             log_level = logging.DEBUG
@@ -24,6 +27,8 @@ class logger:
             log_level = logging.INFO
         elif quiet:
             log_level = logging.ERROR
+        elif silent:
+            log_level = logging.CRITICAL + 10
         return log_level
     
     def get_logger(self, log_level=logging.WARN, name=None, log_path=None):
@@ -32,6 +37,8 @@ class logger:
         logger = logging.getLogger(log_name)
         logger.setLevel(log_level)
         if len(logger.handlers) > 0: # remove duplicate handlers from previous get_logger() calls
+            for handler in logger.handlers:
+                handler.close()
             logger.handlers.clear()
         handler = None
         if log_path==None:

@@ -9,6 +9,7 @@ from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 import djerba.plugins.tar.sample.plugin as sample
 from djerba.core.workspace import workspace
+from djerba.util.environment import directory_finder
 
 class TestTarSamplePlugin(PluginTester):
     
@@ -19,8 +20,7 @@ class TestTarSamplePlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DIR'
-        self.sup_dir = os.environ.get(sup_dir_var)
+        self.sup_dir = directory_finder().get_test_dir()
 
     def testTarSample(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -38,7 +38,7 @@ class TestTarSamplePlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '34d2d193bde3cd6fb3174c5d559cb736'
+            self.MD5: '56272ce15c0f0acadf7faff781ad950d'
         }
         self.run_basic_test(input_dir, params)
 
@@ -57,12 +57,6 @@ class TestTarSamplePlugin(PluginTester):
         cc_expected_location = os.path.join(self.sup_dir ,"plugins/tar/tar-sample/allUnique-hsMetrics.HS.BC.txt")
         collapsed_coverage_bc = sample.main.process_consensus_cruncher(self, cc_expected_location)
         self.assertEqual(collapsed_coverage_bc, 910)
-
-    def redact_json_data(self, data):
-        """replaces empty method from testing.tools"""
-        for key in ['files']:
-            del data['plugins']['tar.sample']['results'][key]
-        return data
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,10 +1,12 @@
-ONCOTREE_CODE = 'oncotree code'
-STUDY_ID = 'study_id' # cbioportal study ID, eg. PASS01
+ONCOTREE_CODE = 'oncotree_code'
+PROJECT = 'project' # cbioportal study ID, eg. PASS01
 TUMOUR_ID = 'tumour_id'
 NORMAL_ID = 'normal_id'
 MAF_PATH = 'maf_path'
 CNA_PATH = 'cna_path'
+HAS_COPY_STATE_DATA = 'has copy state data'
 HAS_EXPRESSION_DATA = 'has expression data'
+DEFAULT = 'snv_indel_default'
 
 # important MAF headers
 VARIANT_CLASSIFICATION = 'Variant_Classification'
@@ -14,6 +16,7 @@ FILTER = 'FILTER'
 T_DEPTH = 't_depth'
 T_ALT_COUNT = 't_alt_count'
 GNOMAD_AF = 'gnomAD_AF'
+BIOTYPE = 'BIOTYPE'
 HUGO_SYMBOL = 'Hugo_Symbol'
 CHROMOSOME = 'Chromosome'
 START = 'Start_Position'
@@ -27,6 +30,7 @@ MAF_KEYS = [
     T_DEPTH,
     T_ALT_COUNT,
     GNOMAD_AF,
+    BIOTYPE,
     HUGO_SYMBOL,
     CHROMOSOME,
     START,
@@ -35,6 +39,11 @@ MAF_KEYS = [
 ]
 HGVSP_SHORT = 'HGVSp_Short'
 HGVSC = 'HGVSc'
+
+# LOH
+LOH = 'LOH'
+HAS_LOH_DATA = 'has loh data'
+LOH_FILE = 'loh.txt'
 
 # Permitted MAF mutation types
 # `Splice_Region` is *included* here, but *excluded* from TMB computation

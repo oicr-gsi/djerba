@@ -11,13 +11,20 @@ import logging
 import os
 import sys
 import unittest
+import djerba.core.constants as core_constants
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 
+from configparser import ConfigParser
 from copy import deepcopy
 from glob import glob
+from shutil import copy
 from string import Template
+from time import strftime
+
+from djerba.core.loaders import plugin_loader
 from djerba.core.main import main
+from djerba.core.workspace import workspace
 from djerba.util.environment import directory_finder
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
@@ -27,7 +34,7 @@ class benchmarker(logger):
     CONFIG_FILE_NAME = 'config.ini'
     # TODO set random seed in MSI workflow for consistent outputs
     MSI_DIR_NAME = 'msi'
-    SAMPLES = [
+    DEFAULT_SAMPLES = [
         "GSICAPBENCH_1219",
         "GSICAPBENCH_1232",
         "GSICAPBENCH_1233",
@@ -43,8 +50,10 @@ class benchmarker(logger):
     COMPARE = 'compare'
 
     # INI template field names
+    ARRIBA_FILE = 'arriba_path'
     DONOR = 'donor'
     CTDNA_FILE = 'ctdna_file'
+    HRD_FILE = 'hrd_file'
     MAF_FILE = 'maf_path'
     MAVIS_FILE = 'mavis_path'
     MRDETECT_VCF = 'mrdetect_vcf'
@@ -52,8 +61,8 @@ class benchmarker(logger):
     PLOIDY = 'ploidy'
     PROJECT = 'project'
     PURITY = 'purity'
+    PURPLE_FILE = 'purple_path'
     RSEM_FILE = 'rsem_genes_results'
-    SEQUENZA_FILE = 'sequenza_path'
     TUMOUR_ID = 'tumour_id'
     NORMAL_ID = 'normal_id'
     APPLY_CACHE = 'apply_cache'
@@ -64,11 +73,39 @@ class benchmarker(logger):
         self.log_path = args.log_path
         self.logger = self.get_logger(self.log_level, __name__, self.log_path)
         self.args = args
+        self.plugin_loader = plugin_loader(self.log_level, self.log_path)
         self.validator = path_validator(self.log_level, self.log_path)
         dir_finder = directory_finder(self.log_level, self.log_path)
         self.data_dir = dir_finder.get_data_dir()
+        self.private_dir = os.path.join(dir_finder.get_private_dir(), 'benchmarking')
+        self.validator.validate_input_dir(self.private_dir)
         with open(os.path.join(self.data_dir, 'benchmark_params.json')) as in_file:
             self.sample_params = json.loads(in_file.read())
+        if self.args.apply_cache and self.args.update_cache:
+            msg = 'Cannot specify both --apply-cache and --update-cache'
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        self.samples = args.sample if args.sample else self.DEFAULT_SAMPLES 
+        self.validator.validate_input_file(args.ref_path)
+        self.ref_path = args.ref_path
+        self.input_dir = os.path.abspath(self.args.input_dir)
+        self.validator.validate_input_dir(self.input_dir)        
+        self.logger.info("GSICAPBENCH input directory is '{0}'".format(self.input_dir))
+        self.input_name = os.path.basename(self.input_dir)
+        work_dir_root =  os.path.abspath(self.args.work_dir)
+        output_dir_root = os.path.abspath(self.args.output_dir)
+        self.validator.validate_output_dir(work_dir_root)
+        self.validator.validate_output_dir(output_dir_root)
+        # make subdirectories in work & output directories
+        runtime = strftime('%Y-%m-%dT%H-%M-%S')
+        dir_name = '{0}_runtime-{1}'.format(self.input_name, runtime)
+        self.work_dir = os.path.join(work_dir_root, dir_name+'_work')
+        self.logger.debug("Output directory is "+self.work_dir)
+        os.mkdir(self.work_dir) # fails if it already exists
+        self.workspace = workspace(self.work_dir, self.log_level, self.log_path)
+        self.output_dir = os.path.join(output_dir_root, dir_name)
+        self.logger.debug("Output directory is "+self.output_dir)
+        os.mkdir(self.output_dir) # fails if it already exists
 
     def glob_single(self, pattern):
         """Glob recursively for the given pattern; return a single result, or None"""
@@ -92,12 +129,14 @@ class benchmarker(logger):
         templates = {
             self.MAF_FILE: '{0}/**/{1}_*mutect2.filtered.maf.gz',
             self.MAVIS_FILE: '{0}/**/{1}*.mavis_summary.tab',
-            self.SEQUENZA_FILE: '{0}/**/{1}_*_results.sequenza.zip',
             self.RSEM_FILE: '{0}/**/{1}_*.genes.results',
             self.MSI_FILE: '{0}/**/{1}_*.msi.booted',
-            self.MRDETECT_VCF: '{0}/**/{1}_*.SNP.vcf'
+            self.CTDNA_FILE: '{0}/**/{1}_*.SNP.count.txt',
+            self.ARRIBA_FILE: '{0}/**/{1}*.fusions.tsv',
+            self.PURPLE_FILE: '{0}/**/{1}*.purple.zip',
+            self.HRD_FILE: '{0}/**/{1}*.signatures.json'
         }
-        for sample in self.SAMPLES:
+        for sample in self.samples:
             sample_inputs = {}
             sample_inputs[self.DONOR] = sample
             sample_inputs[self.PROJECT] = 'placeholder'
@@ -109,17 +148,21 @@ class benchmarker(logger):
             for key in templates.keys():
                 pattern = templates[key].format(results_dir, sample)
                 sample_inputs[key] = self.glob_single(pattern)
+            # Workaround for placeholder arriba output
+            if sample_inputs[self.ARRIBA_FILE] == None:
+                arriba_path = os.path.join(self.private_dir, 'arriba', 'arriba.fusions.tsv')
+                if os.path.isfile(arriba_path):
+                    sample_inputs[self.ARRIBA_FILE] = arriba_path
+                else:
+                    msg = "No arriba input found from input directory; "+\
+                        "fallback arriba path '{0}' is not a file".format(arriba_path)
+                    self.logger.error(msg)
+                    raise RuntimeError(msg)
             if None in sample_inputs.values():
                 template = "Skipping {0} as one or more values are missing: {1}"
                 msg = template.format(sample, sample_inputs)
                 self.logger.warning(msg)
                 continue
-            # Find the SNP.count.txt file
-            mrdetect_dir = os.path.dirname(sample_inputs[self.MRDETECT_VCF])
-            snp_count_path = os.path.join(mrdetect_dir, 'SNP.count.txt')
-            self.validator.validate_input_file(snp_count_path)
-            sample_inputs[self.CTDNA_FILE] = snp_count_path
-            del sample_inputs[self.MRDETECT_VCF] # not needed for reporting
             self.logger.debug("Sample inputs for {0}: {1}".format(sample, sample_inputs))
             if any([x==None for x in sample_inputs.values()]):
                 # skip samples with missing inputs, eg. for testing
@@ -129,36 +172,29 @@ class benchmarker(logger):
         if len(inputs)==0:
             # require inputs for at least one sample
             msg = "No benchmark inputs found in {0} ".format(results_dir)+\
-                "for any sample in {0}".format(self.SAMPLES)
+                "for any sample in {0}".format(self.samples)
             self.logger.error(msg)
             raise RuntimeError(msg)
         return inputs
 
-    def run_comparison(self, report_paths):
-        name = constants.REPORT_JSON_FILENAME
-        data = []
-        self.logger.info("Comparing reports: {0}".format(report_paths))
-        for report_path in report_paths:
-            self.validator.validate_input_file(report_path)
-        if self.args.delta:
-            self.validator.validate_input_file(self.args.delta)
-        diff = report_equivalence_tester(
-            report_paths,
-            self.args.delta,
-            self.log_level,
-            self.log_path
-        )
-        if diff.is_equivalent():
-            self.logger.info("Reports are equivalent: {0}".format(report_paths))
-        else:
-            self.logger.warning("Reports are NOT equivalent: {0}".format(report_paths))
-            if self.log_level > logging.INFO:
-                self.logger.warning("Run with --debug or --verbose for full report diff")
-        self.logger.info("Report diff: {0}".format(diff.get_diff_text()))
-        return diff.is_equivalent()
+    def run_comparison(self, reports_path, ref_path):
+        config = ConfigParser()
+        config.add_section('benchmark')
+        config.set('benchmark', 'input_name', self.input_name)
+        config.set('benchmark', 'input_file', reports_path)
+        config.set('benchmark', 'ref_file', ref_path)
+        self.logger.info("Loading plugin and running report comparison")
+        plugin = self.plugin_loader.load('benchmark', self.workspace)
+        full_config = plugin.configure(config)
+        self.logger.debug("Extracting plugin data")
+        data = plugin.extract(full_config)
+        self.logger.debug("Rendering plugin HTML")
+        html = plugin.render(data)
+        return [data, html]
 
     def run_reports(self, input_samples, work_dir):
         self.logger.info("Reporting for {0} samples: {1}".format(len(input_samples), input_samples))
+        report_paths = {}
         for sample in input_samples:
             self.logger.info("Generating Djerba draft report for {0}".format(sample))
             config_path = os.path.join(work_dir, sample, self.CONFIG_FILE_NAME)
@@ -167,9 +203,15 @@ class benchmarker(logger):
             # run the Djerba "main" class to generate a JSON report file
             djerba_main = main(report_dir, self.log_level, self.log_path)
             config = djerba_main.configure(config_path)
-            json_path = os.path.join(report_dir, 'djerba_report.json')
+            json_path = os.path.join(report_dir, sample+'_report.json')
+            self.logger.debug("Extracting data to JSON path: "+json_path)
             data = djerba_main.extract(config, json_path, archive=False)
             self.logger.info("Finished Djerba draft report for {0}".format(sample))
+            report_paths[sample] = json_path
+        json_path = os.path.join(work_dir, 'report_paths.json')
+        with open(json_path, 'w', encoding=core_constants.TEXT_ENCODING) as json_file:
+            json_file.write(json.dumps(report_paths))
+        return json_path
 
     def run_setup(self, results_dir, work_dir):
         """For each sample, set up working directory and generate config.ini"""
@@ -201,38 +243,31 @@ class benchmarker(logger):
         return input_samples
 
     def run(self):
-        run_ok = True
-        if self.args.subparser_name == self.GENERATE:
-            if self.args.apply_cache and self.args.update_cache:
-                msg = 'Cannot specify both --apply-cache and --update-cache'
-                self.logger.error(msg)
-                raise RuntimeError(msg)
-            input_dir = os.path.abspath(self.args.input_dir)
-            output_dir = os.path.abspath(self.args.output_dir)
-            dry_run = self.args.dry_run
-            self.logger.info("GSICAPBENCH input directory is '{0}'".format(input_dir))
-            input_samples = self.run_setup(input_dir, output_dir)
-            if dry_run:
-                self.logger.info("Dry-run mode; omitting report generation")
-            else:
-                self.logger.info("Writing GSICAPBENCH reports to {0}".format(output_dir))
-                self.run_reports(input_samples, output_dir)
-            self.logger.info("Finished '{0}' mode.".format(constants.REPORT))
-        elif self.args.subparser_name == self.COMPARE:
-            reports = self.args.report
-            msg = "Comparing directories {0} and {1}".format(reports[0], reports[1])
-            self.logger.info(msg)
-            run_ok = self.run_comparison(reports)
-            if run_ok:
-                self.logger.info("Djerba reports are equivalent.")
-            else:
-                self.logger.warning("Djerba reports are NOT equivalent!")
-        else:
-            msg = "Unknown subparser name {0}".format(self.args.subparser_name)
-            self.logger.error(msg)
-            raise RuntimeError(msg)
-        return run_ok
+        # generate Djerba reports
+        # load and run plugin to compare reports and generate summary
+        # copy JSON/text files and write HTML summary to output directory
+        input_samples = self.run_setup(self.input_dir, self.work_dir)
+        reports_path = self.run_reports(input_samples, self.work_dir)
+        data, html = self.run_comparison(reports_path, self.ref_path)
+        self.logger.info("Writing data and HTML output")
+        self.write_outputs(data, html)
 
+    def write_outputs(self, data, html):
+        # write the HTML output
+        html_path = os.path.join(self.output_dir, self.input_name+'_summary.html')
+        with open(html_path, 'w', encoding=core_constants.TEXT_ENCODING) as html_file:
+            html_file.write(html)
+        # copy JSON files, and write the diff text (if any)
+        for result in data['results']['donor_results']:
+            for json_path in [result['input_file'], result['ref_file']]:
+                if os.path.exists(json_path):
+                    copy(json_path, self.output_dir)
+            # TODO put diff link filename in JSON
+            # TODO only write diff if non-empty
+            diff_path = os.path.join(self.output_dir, result['donor']+'_diff.txt')
+            with open(diff_path, 'w', encoding=core_constants.TEXT_ENCODING) as diff_file:
+                diff_file.write(result['diff'])
+        self.logger.info('Finished writing summary to '+self.output_dir)
 
 class report_equivalence_tester(logger):
 
@@ -241,14 +276,18 @@ class report_equivalence_tester(logger):
     Eg. expression comparison will not necessarily work with different plugins
     """
 
+    CNV_NAME = 'wgts.cnv_purple'
+    FUSION_NAME = 'fusion'
+    SNV_INDEL_NAME = 'wgts.snv_indel'
+    SUPPLEMENT_NAME = 'supplement.body'
     # deal with inconsistent capitalization
     BODY_KEY = {
-        'cnv': 'body',
-        'wgts.snv_indel': 'Body'
+        CNV_NAME: 'body',
+        SNV_INDEL_NAME: 'Body'
     }
     XPCT_KEY = {
-        'cnv': 'Expression Percentile',
-        'wgts.snv_indel': 'Expression percentile'
+        CNV_NAME: 'Expression Percentile',
+        SNV_INDEL_NAME: 'Expression percentile'
     }
     GENE = 'Gene'
     RESULTS = 'results'
@@ -258,6 +297,11 @@ class report_equivalence_tester(logger):
         EXPRESSION: 0.1, # expression is recorded as a number, this delta is 10%
         MSI: 1.0  # MSI is recorded as a percentage, this delta is 1.0%
     }
+    PLACEHOLDER = 0
+
+    IDENTICAL_STATUS = 'identical'
+    EQUIVALENT_STATUS = 'equivalent but not identical'
+    NOT_EQUIVALENT_STATUS = 'not equivalent'
 
     def __init__(self, report_paths, delta_path=None,
                  log_level=logging.WARNING, log_path=None):
@@ -273,7 +317,7 @@ class report_equivalence_tester(logger):
             msg = "Report paths are the same file! {0}".format(report_paths)
         if msg:
             self.logger.error(msg)
-            raise RuntimeError(msg)
+            raise DjerbaReportDiffError(msg)
         self.data = [self.read_and_preprocess_report(x) for x in report_paths]
         if delta_path:
             with open(delta_path) as delta_file:
@@ -281,21 +325,30 @@ class report_equivalence_tester(logger):
             if set(deltas.keys()) != set(self.DELTA_DEFAULTS.keys()):
                 msg = "Bad key set for delta config file '{0}'".format(delta_path)
                 self.logger.error(msg)
-                raise ValueError(msg)
+                raise DjerbaReportDiffError(msg)
             self.deltas = deltas
         else:
             self.deltas = self.DELTA_DEFAULTS
         self.logger.info("Delta values by metric type: {0}".format(self.deltas))
         diff = ReportDiff(self.data)
         self.diff_text = diff.get_diff()
+        self.identical = False
         if diff.is_identical():
             self.logger.info("EQUIVALENT: Reports are identical")
+            self.identical = True
             self.equivalent = True
         elif self.deltas_are_equivalent():
-            msg = "EQUIVALENT: Reports are not identical, "+\
-                "but equivalent within tolerance"
-            self.logger.info(msg)
-            self.equivalent = True
+            # check if metrics without a delta match exactly
+            if self.non_deltas_are_equivalent():
+                msg = "EQUIVALENT: Reports are not identical, "+\
+                    "but equivalent within tolerance"
+                self.logger.info(msg)
+                self.equivalent = True
+            else:
+                msg = "NOT EQUIVALENT: Metrics with non-zero tolerance are within "+\
+                    "permitted range, but other metrics differ."
+                self.logger.info(msg)
+                self.equivalent = False
         else:
             msg = "NOT EQUIVALENT: Reports do not match within tolerance"
             self.logger.info(msg)
@@ -305,12 +358,6 @@ class report_equivalence_tester(logger):
         eq = self.expressions_are_equivalent() and \
             self.msi_values_are_equivalent()
         return eq
-            
-    def is_equivalent(self):
-        return self.equivalent
-
-    def get_diff_text(self):
-        return self.diff_text
 
     def expressions_are_equivalent(self):
         """
@@ -318,7 +365,7 @@ class report_equivalence_tester(logger):
         Expression levels are permitted to differ by +/- delta
         """
         equivalent = True
-        for name in ['cnv', 'wgts.snv_indel']:
+        for name in [self.CNV_NAME, self.SNV_INDEL_NAME]:
             plugin_eq = True
             self.logger.debug("Checking expression levels for plugin: {0}".format(name))
             expr0 = self.get_expressions_by_gene(self.data[0], name)
@@ -351,6 +398,32 @@ class report_equivalence_tester(logger):
             self.logger.info(msg)
         return equivalent
 
+    def is_equivalent(self):
+        return self.equivalent
+
+    def is_identical(self):
+        return self.identical
+    
+    def get_diff_text(self):
+        return self.diff_text
+
+    def get_status(self):
+        if self.is_identical():
+            return self.IDENTICAL_STATUS
+        elif self.is_equivalent():
+            return self.EQUIVALENT_STATUS
+        else:
+            return self.NOT_EQUIVALENT_STATUS
+
+    def get_status_emoji(self):
+        status = self.get_status()
+        if status == self.IDENTICAL_STATUS:
+            return '&#x2705;' # white check mark
+        elif status == self.EQUIVALENT_STATUS:
+            return '&#x26A0;' # warning sign
+        else:
+            return '&#x274C;' # X mark
+
     def get_expressions_by_gene(self, data, plugin):
         body_key = self.BODY_KEY[plugin]
         xpct_key = self.XPCT_KEY[plugin]
@@ -364,13 +437,15 @@ class report_equivalence_tester(logger):
             key = item[self.GENE]
             value = item[xpct_key]
             expr[key] = value
-        return expr            
-    
+        return expr
+
+    def get_msi(self, report_data):
+        return report_data['genomic_landscape']['results']\
+            ['genomic_biomarkers']['MSI']['Genomic biomarker value']
+
     def msi_values_are_equivalent(self):
-        msi0 = self.data[0]['genomic_landscape']['results']\
-            ['genomic_biomarkers']['MSI']['Genomic biomarker value']
-        msi1 = self.data[1]['genomic_landscape']['results']\
-            ['genomic_biomarkers']['MSI']['Genomic biomarker value']
+        msi0 = self.get_msi(self.data[0])
+        msi1 = self.get_msi(self.data[1])
         delta = self.deltas[self.MSI]
         if abs(msi0 - msi1) < delta:
             self.logger.info("MSI values are equivalent")
@@ -380,23 +455,62 @@ class report_equivalence_tester(logger):
             eq = False
         return eq
 
+    def non_deltas_are_equivalent(self):
+        # remove metrics with a non-zero tolerance range; compare the other metrics
+        redacted = []
+        for data_set in self.data:
+            redacted_set = deepcopy(data_set)
+            redacted_set = self.set_msi(redacted_set, self.PLACEHOLDER)
+            for name in [self.CNV_NAME, self.SNV_INDEL_NAME]:
+                redacted_set = self.set_expression(redacted_set, name, self.PLACEHOLDER)
+            redacted.append(redacted_set)
+        diff = ReportDiff(redacted)
+        return diff.is_identical()
+
     def read_and_preprocess_report(self, report_path):
         """
         Read report from a JSON file
         Replace variable elements (images, dates) with dummy values
         """
         placeholder = 'redacted for benchmark comparison'
+        self.logger.info("Preprocessing report path {0}".format(report_path))
         with open(report_path) as report_file:
             data = json.loads(report_file.read())
         plugins = data['plugins'] # don't compare config or core elements
+        # redact plugin versions, plots, dates
         for plugin_name in plugins.keys():
             plugins[plugin_name]['version'] = placeholder
         results = 'results'
-        plugins['cnv'][results]['cnv plot'] = placeholder
-        plugins['wgts.snv_indel'][results]['vaf_plot'] = placeholder
-        for biomarker in ['MSI', 'TMB']:
+        plugins[self.CNV_NAME][results]['cnv plot'] = placeholder
+        plugins[self.SNV_INDEL_NAME][results]['vaf_plot'] = placeholder
+        for biomarker in ['MSI', 'TMB', 'HRD']:
             plugins['genomic_landscape'][results]['genomic_biomarkers'][biomarker]['Genomic biomarker plot'] = placeholder
+        for date_key in ['extract_date', 'report_signoff_date']:
+            plugins[self.SUPPLEMENT_NAME][results][date_key] = placeholder
+        # redact gene descriptions; text encoding issues can cause irrelevant discrepancies
+        for name in [self.CNV_NAME, self.SNV_INDEL_NAME, self.FUSION_NAME]:
+            for item in plugins[name]['merge_inputs']['gene_information_merger']:
+                item['Summary'] = placeholder
         return plugins
+
+    def set_expression(self, data, plugin, value):
+        # set all expressions for the given plugin to the same value
+        # use to redact data and compare without expressions
+        body_key = self.BODY_KEY[plugin]
+        xpct_key = self.XPCT_KEY[plugin]
+        try:
+            body = data[plugin][self.RESULTS][body_key]
+        except KeyError:
+            self.logger.error("{0}: {1}".format(plugin, data.keys()))
+            raise
+        for item in body:
+            item[xpct_key] = value
+        return data
+
+    def set_msi(self, report_data, value):
+        report_data['genomic_landscape']['results']\
+            ['genomic_biomarkers']['MSI']['Genomic biomarker value'] = value
+        return report_data
 
 
 class ReportDiff(unittest.TestCase):
@@ -405,7 +519,7 @@ class ReportDiff(unittest.TestCase):
     def __init__(self, data):
         super().__init__()
         if len(data)!=2:
-            raise RuntimeError("Expected 2 inputs, found {0}".format(len(data)))
+            raise DjerbaReportDiffError("Expected 2 inputs, found {0}".format(len(data)))
         self.maxDiff = None
         try:
             self.assertEqual(data[0], data[1])
@@ -420,3 +534,6 @@ class ReportDiff(unittest.TestCase):
 
     def is_identical(self):
         return self.identical
+
+class DjerbaReportDiffError(Exception):
+    pass

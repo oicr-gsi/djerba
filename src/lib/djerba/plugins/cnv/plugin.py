@@ -4,12 +4,12 @@ Plugin for whole-genome CNV reporting
 
 import os
 import djerba.core.constants as core_constants
-import djerba.plugins.cnv.constants as cnv_constants
+import djerba.plugins.wgts.common.cnv.constants as cnv_constants
 import djerba.util.oncokb.constants as oncokb_constants
 from djerba.helpers.input_params_helper.helper import main as input_params_helper
 from djerba.plugins.base import plugin_base, DjerbaPluginError
-from djerba.plugins.cnv.tools import cnv_processor
-from djerba.sequenza import sequenza_reader # TODO move sequenza.py to util?
+from djerba.plugins.wgts.common.cnv.tools import cnv_processor
+from djerba.util.sequenza import sequenza_reader 
 from djerba.util.render_mako import mako_renderer
 
 class main(plugin_base):

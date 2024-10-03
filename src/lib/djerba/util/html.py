@@ -5,9 +5,11 @@
 import re
 from string import Template
 from markdown import markdown
+from djerba.util.oncokb.tools import levels as oncokb_levels
 
 class html_builder:
 
+    ONCOKB_URL_PREFIX = 'https://www.oncokb.org/gene' # TODO move to util.oncokb.tools?
     TABLE_START = '<table border=1>'
     TABLE_END = '</table>'
     TR_START = '<tr style="text-align:left;">'
@@ -15,20 +17,29 @@ class html_builder:
 
     @staticmethod
     def build_alteration_url(gene, alteration, cancer_code):
-        base = 'https://www.oncokb.org/gene'
-        return '/'.join([base, gene, alteration, cancer_code])
+        return '/'.join([html_builder.ONCOKB_URL_PREFIX, gene, alteration, cancer_code])
 
     @staticmethod
     def build_fusion_url(genes, oncotree_code):
-        url = 'https://www.oncokb.org/gene/{0}/Fusion/{1}'.format(
+        url = '{0}/{1}/Fusion/{2}'.format(
+            html_builder.ONCOKB_URL_PREFIX,
             '-'.join(genes),
+            oncotree_code
+        )
+        return url
+    
+    @staticmethod
+    def build_onefusion_url(gene, oncotree_code):
+        url = '{0}/{1}/Fusion/{2}'.format(
+            html_builder.ONCOKB_URL_PREFIX,
+            gene,
             oncotree_code
         )
         return url
 
     @staticmethod
     def build_gene_url(gene):
-        return 'https://www.oncokb.org/gene/'+gene
+        return html_builder.ONCOKB_URL_PREFIX+'/'+gene
 
     @staticmethod
     def expression_display(expr):
@@ -45,23 +56,44 @@ class html_builder:
     def k_comma_format(value):
         value_formatted = f'{value:,}'
         return(value_formatted)
-    
+
+    @staticmethod
+    def make_ordinal(n):
+        '''
+        Convert an integer into its ordinal representation::
+
+            make_ordinal(0)   => '0th'
+            make_ordinal(3)   => '3rd'
+            make_ordinal(122) => '122nd'
+            make_ordinal(213) => '213th'
+        '''
+        n = int(n)
+        if 11 <= (n % 100) <= 13:
+            suffix = 'th'
+        else:
+            suffix = ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]
+        return str(n) + suffix
+
     @staticmethod
     def markdown_to_html(markdown_string):
         return markdown(markdown_string)
     
     @staticmethod
-    def section_cells_begin(section_title, is_main):
+    def section_cells_begin(section_title, is_main, no_hr_after=False):
         # begin a cell structure with title in left-hand cell, body in right-hand cell
+        template = '<hr class="big-white-line" ><div class="twocell{0}">'+\
+                '<div class="oneoftwocell{0}"><h{1}>{2}</h{1}></div>'+\
+                '<div class="twooftwocell{0}" >'
         if is_main:
             class_suffix = 'main'
             rank = '2'
         else:
             class_suffix = 'supp'
             rank = '3'
-        template = '<hr class="big-white-line" ><div class="twocell{0}">'+\
-            '<div class="oneoftwocell{0}"><h{1}>{2}</h{1}></div>'+\
-            '<div class="twooftwocell{0}" ><hr class="big-line" >'
+        if no_hr_after:
+            pass
+        else:
+            template = template + '<hr class="big-line" >'
         cell_begin = template.format(class_suffix, rank, section_title)
         return cell_begin
 
@@ -88,15 +120,7 @@ class html_builder:
         # make a table cell with an OncoKB level symbol
         # permitted levels must have a format defined in style.css
         level = re.sub('Level ', '', level) # strip off 'Level ' prefix, if any
-        permitted_levels = ['1', '2', '3A', '3B', '4', 'R1', 'R2', 'N1', 'N2', 'N3']
-        if not level in permitted_levels:
-            msg = "Input '{0}' is not a permitted OncoKB level".format(level)
-            raise RuntimeError(msg)
-        if level in ['N1', 'N2', 'N3']:
-            shape = 'square'
-        else:
-            shape = 'circle'
-        div = '<div class="{0} oncokb-level{1}">{2}</div>'.format(shape, level, level)
+        div = oncokb_levels.oncokb_level_to_html(level)
         return html_builder.td(div)
 
     @staticmethod

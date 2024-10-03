@@ -1,17 +1,24 @@
 """Assay names/descriptions for use by multiple plugins"""
 
+# assay name constants, can be imported by plugins if needed
+WGTS = 'WGTS'
+WGS = 'WGS'
+WGTS40X = 'WGTS40X'
+TAR = 'TAR'
+PWGS = 'PWGS'
+
 ASSAY_LOOKUP = {
     # WGTS/WGS default to 80X
     'WGTS': 'Whole genome and transcriptome sequencing (WGTS)'+\
-    '-80X Tumour, 30X Normal (v3.0)',
-    'WGS': 'Whole genome sequencing (WGS)-80X Tumour, 30X Normal (v3.0)',
+    '-80X Tumour, 30X Normal (v5.0)',
+    'WGS': 'Whole genome sequencing (WGS)-80X Tumour, 30X Normal (v5.0)',
     # WGTS/WGS at 40X - seldom done now, but included for completeness
     'WGTS40X': 'Whole genome and transcriptome sequencing (WGTS)'+\
-    '-40X Tumour, 30X Normal (v3.0)',
-    'WGS40X': 'Whole genome sequencing (WGS)-40X Tumour, 30X Normal (v3.0)',
-    # TAR
-    'TAR': 'Targeted Sequencing - REVOLVE Panel - cfDNA and Buffy Coat (v1.0)',
-    'PWGS': 'Plasma Whole Genome Sequencing'
+    '-40X Tumour, 30X Normal (v5.0)',
+    'WGS40X': 'Whole genome sequencing (WGS)-40X Tumour, 30X Normal (v5.0)',
+    # other
+    'TAR': 'Targeted Sequencing - REVOLVE Panel - cfDNA and Buffy Coat (v3.0)',
+    'PWGS': 'Plasma Whole Genome Sequencing (v2.0)'
 }
 
 def get_description(name):

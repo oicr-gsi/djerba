@@ -6,6 +6,7 @@ import os
 import unittest
 import tempfile
 import string
+import shutil
 
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
@@ -13,6 +14,7 @@ from djerba.core.workspace import workspace
 import djerba.plugins.pwgs.constants as constants
 import djerba.plugins.pwgs.analysis.plugin as analysis
 import djerba.plugins.pwgs.pwgs_tools as pwgs_tools
+from djerba.util.environment import directory_finder
 
 class TestPwgAnalysisPlugin(PluginTester):
 
@@ -23,8 +25,7 @@ class TestPwgAnalysisPlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DATA'
-        self.sup_dir = os.environ.get(sup_dir_var)
+        self.sup_dir = directory_finder().get_test_dir()
 
     def testPreprocessHbc(self):
         hbc_expected_location = os.path.join(self.sup_dir ,"plugins/pwgs/HBCs.csv")
@@ -45,7 +46,16 @@ class TestPwgAnalysisPlugin(PluginTester):
         self.assertEqual(results[constants.CTDNA_OUTCOME], 'DETECTED')
         self.assertEqual(results[constants.SIGNIFICANCE], 'significantly larger')
 
-    def testPwgsAnalysis(self):
+    def test_pwgs_analysis_exists(self):
+        # test the scenario where pWGS_case_overview_output.json exist
+        shutil.copyfile(os.path.join(self.sup_dir, f"plugins/pwgs/report_json/pwgs.case.json"), os.path.join(self.get_tmp_dir(), "pWGS_case_overview_output.json"))
+        self.run_test_with_scenario("pwgs.analysis.file.exists.scenario.json", "4524e130d97cad8297af9649f767a1a7")
+
+    def test_pwgs_analysis_not_exists(self):
+        # test the scenario where pWGS_case_overview_output.json doesn't exist
+        self.run_test_with_scenario("pwgs.analysis.file.doesnt.exist.scenario.json", "579bb1ad12226ff0347b9f62b79c5fce")
+
+    def run_test_with_scenario(self, json_filename, md5_checksum):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         with open(os.path.join(test_source_dir, self.INI_NAME)) as in_file:
             template_str = in_file.read()
@@ -55,18 +65,20 @@ class TestPwgAnalysisPlugin(PluginTester):
         os.mkdir(input_dir)
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
-        json_location = os.path.join(self.sup_dir ,"plugins/pwgs/report_json/pwgs.analysis.json")
+
+        json_location = os.path.join(self.sup_dir, f"plugins/pwgs/report_json/{json_filename}")
+
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '065d576ddca0456b40a25c4749f00c96'
+            self.MD5: md5_checksum
         }
         self.run_basic_test(input_dir, params)
 
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""
         for key in ['pwgs_base64','files']:
-            del data['plugins']['pwgs.analysis']['results'][key]
+            del data['results'][key]
         return data        
 
 if __name__ == '__main__':

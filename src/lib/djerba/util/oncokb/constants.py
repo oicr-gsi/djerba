@@ -26,9 +26,8 @@ LIKELY_ONCOGENIC = 'Likely Oncogenic'
 INCONCLUSIVE = 'Inconclusive'
 UNKNOWN = 'Unknown'
 
-FDA_APPROVED_LEVELS = [LEVEL_1, LEVEL_2, LEVEL_R1]
-INVESTIGATIONAL_LEVELS = [LEVEL_3A, LEVEL_3B, LEVEL_4, LEVEL_R2]
-THERAPY_LEVELS = [
+# used for parsing OncoKB-annotated MAF files
+ANNOTATION_THERAPY_LEVELS = [
     LEVEL_1,
     LEVEL_2,
     LEVEL_3A,
@@ -36,24 +35,11 @@ THERAPY_LEVELS = [
     LEVEL_4,
     LEVEL_R1,
     LEVEL_R2,
-]
-ORDERED_LEVELS = [
-    LEVEL_1,
-    LEVEL_2,
-    LEVEL_3A,
-    LEVEL_3B,
-    LEVEL_4,
-    LEVEL_R1,
-    LEVEL_R2,
-    ONCOGENIC,
-    LIKELY_ONCOGENIC,
-    INCONCLUSIVE,
-    UNKNOWN
 ]
 
 ### INI config keys ###
 
-ONCOTREE_CODE = 'oncotree code'
+ONCOTREE_CODE = 'oncotree_code'
 ONCOKB_CACHE = 'oncokb cache'
 APPLY_CACHE = 'apply cache'
 UPDATE_CACHE = 'update cache'
@@ -61,6 +47,6 @@ UPDATE_CACHE = 'update cache'
 
 ### miscellaneous ###
 
-ALL_CURATED_GENES = '20231116-allCuratedGenes.tsv'
+ALL_CURATED_GENES = '20240315-allCuratedGenes.tsv'
 ONCOGENIC_UC = 'ONCOGENIC'
 DEFAULT_CACHE_PATH = '/.mounts/labs/CGI/gsi/tools/djerba/oncokb_cache/scratch'

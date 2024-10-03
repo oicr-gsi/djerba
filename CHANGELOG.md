@@ -1,14 +1,243 @@
 # CHANGELOG
 
+## 1.7.5: 2024-10-02
+- GCGI-1378: Improve benchmarking to write an HTML summary page; update tests
+- GCGI-1449: Correctly handle logical(0) values by replacing them with "Unknown" to avoid type mismatch errors during the join in the fusion plugin
+- GCGI-1477: Removed copy state information from tar.snv_indel as it was not being used
+
+## 1.7.4: 2024-09-20
+- GCGI-1442: Bugfix for processing OncoKB annotation at level N4; update handling of prognostic (P) annotation
+- Includes refactoring of TAR plugins to remove redundant annotation code
+- GCGI-1443: Correctly handle `NA` values for `seg.mean` in Purple output
+- GCGI-1445: Fix for inconsistent MD5 of gzip output in provenance helper test
+
+## v1.7.3: 2024-09-16
+- GCGI-1438: Updated genomic landscape plugin (hrd.py) to handle unknown oncotree codes for treatment options
+- GCGI-1262: Remove ABCB1 from TAR reports
+- Add CDH1, NF1, and VHL to new targeted panel (v2.0 -> v3.0)
+- GCGI-1333/1441: Make TAR depend on provenance helper
+- GCGI_1439: Changed clinical geneticist's name and number to PLACEHOLDER and XXXXXXX respectively
+
+## v1.7.2: 2024-08-19
+- GCGI-1420: Added green line separator to research footer
+- GCGI-1419: Fixed callability fetching in sample plugin to use donor as well as tumour_id
+
+## v1.7.1: 2024-08-16
+- GCGI-1165: Automatically look up author name from user ID
+- GCGI-1407: Added requisition ID to tar_input_params_helper
+- GCGI-1408: Updated CAPTIV8 plugin to expect output from Purple instead of Sequenza
+- GCGI-1409: Fixed snv_indel plugin to handle no somatic mutations by omitting vaf plot
+- GCGI-1401: Update Purple plots from svg to png
+- GCGI-1293: Sort fusions by oncoKB heirchy
+- GCGI-1381: Add RUO report capabilities
+- GCGI-1358: Fix clipped text in PWGS plot
+- GCGI-1418: Fix handling of user supplied draft date and mini-Djerba tests
+
+## v1.7.0: 2024-08-07
+- Introduces an HTML cache in the JSON. Generate JSON at extract time. Update mode and mini-Djerba re-run only plugins with updated parameters, instead of all plugins, and apply updates to the cached HTML.
+- GCGI-1353: Update supplementary for NovaSeq X Plus
+- GCGI-1355, GCGI-1403, GCGI-1404: Fixes for genomic landscape plugin. Consistently apply reportability of HRD/MSI, check input/output/paths, remove obsolete code.
+- GCGI-1376, GCGI-1399: Rewrite mini-Djerba. Now more robust, better tested, and requires less frequent updates.
+- GCGI-1377: Make report ID default to requisition ID
+- GCGI-1393: Adopt ISO-8601 date format; centralize date handling in djerba.util.date
+- GCGI-1406: Add a status indicator on STDOUT for mini-Djerba
+- GCGI-1358: Dynamically adjust margin for pwgs plot based on length of annotation text.
+
+## v1.7.0-alpha: 2024-08-01
+- Alpha version of release 1.7.0 for testing
+
+## v1.6.7: 2024-07-23
+- GCGI-1396: Fixes to report text requested by clinical geneticist
+- Correct threshold for reporting HRD; genomic landscape plugin has new "sample type" parameter
+- Improved explanation and links for NCCN compendium
+- Added number of MSI sites
+
+## v1.6.6: 2024-07-19
+- GCGI-1391: Fixed column names in data_CNA_oncoKBgenes_nonDiploid.txt which impacted oncoKB therapy annotation
+
+## v1.6.5: 2024-07-11
+- GCGI-1336: Fixed "cannot resolve assay" issue in case overview plugin
+- GCGI-1887: Changed "no effect" fusion reading frame to "unknown"
+- GCGI-1388: Fixed whizbam_project to default to project instead of study
+- GCGI-1390: Update README with new conference slides and demo link
+
+## v.1.6.4: 2024-07-04
+- GCGI-1382: Fixed TAR disclaimer text (typos, flow)
+- GCGI-1385: Change Tumour Sample ID to Plasma Sample ID for TAR reports
+- Modified treatment options merger to deduplicate by gene in addition to oncokb level and alteration name
+
+## v1.6.3: 2024-06-26
+
+- GCGI-1365: Fixed TAR plugin to handle input mafs with unclean columns (strings, NaNs, etc)
+- GCGI-1368: Removed dependency of tar.snv_indel on tar.swgs (it will ignore copy state if purity.txt is not available)
+- GCGI-1375: Added "somatic" in "oncogenic somatic mutations" in TAR snv_indel html text for 0 variants
+- GCGI-1379: Use a blank white image as a spacer in the "Report Sign-Offs" section
+- GCGI-1380: Increment pipeline version to 5.0
+- Set exact version for `numpy` in `setup.py` to avoid build conflict with `gsi-qc-etl`
+
+## v1.6.2: 2024-06-03
+
+- GCGI-1362: Remove obsolete `sequenza_explorer.py` script
+- GCGI-1359: Correctly handle missing subcommand in `djerba.py` main script
+- GCGI-1361: Update for new Cardea data structure
+- GCGI-1363: Excluded all but protein coding variants from maf filtering (BIOTYPE = protein_coding)
+
+## v1.5.7: 2024-06-03
+
+- Maintenance release as v1.5.x is still in use for WGTS reports
+- Incorporates GCGI-1363 fix from v1.6.2
+
+## v1.6.1: 2024-05-15
+
+- GCGI-1357: Change 'reads' to 'sites' in PWGS plot label and round cutoff up to nearest integer
+
+## v1.6.0: 2024-05-08
+
+### WGS 4.0
+
+- Removed file list in expression data
+- added HRD to genomic landscape
+- GCGI-1173: genomic landscape plugin uses provenance_helper
+- GCGI-1220: fixed MSI table formatting
+- GCGI-1190: Removed obsolete data values/files
+- GCGI-1012: Moved R testing to formal tests
+- GCGI-1304: Merge updates to genomic landscape plugin and resolve conflicts
+- GCGI-1319: Update genomic landscape plugin to read purity from PURPLE output file
+- GCGI-1349: Update plugin lists for djerba.py setup mode
+- GCGI-1334: Add HRDetect text to Djerba report footer
+- new PURPLE CNV calling plugin
+- removed sequenza support
+- new `djerba.plugins.wgts.common` package for code shared between multiple WGTS/WGS plugins
+- Added "r" directory to setup, bug fix (metrix_cell -> metric_cell)
+- Added ARID2 to SWI/SNF gene list in CAPTIV8 plugin
+- Removed copy state from SNVs and Indels plugin
+- Added LOH to SNVs and Indels plugin
+
+### External plugin support
+
+- GCGI-993: Support for plugins outwith the main `djerba` package
+
+### Other
+
+- GCGI-1257: Fix import of traceback module
+- GCGI-1313: Refactor reading input_params.json
+- GCGI-1322: Warning instead of error if manually configured sample name does not match provenance
+- GCGI-1323: Support PWGS in mini-Djerba by making summary optional
+- GCGI-1325: Rewrite case_overview config method to fix bugs and make it clearer
+- GCGI-1344: Write updated JSON by default, with a more informative name
+- GCGI-1346: Fixes and updates to GSICAPBENCH
+- GCGI-1352: Update WGTS example INI and PDF
+
+## v.1.5.6: 2024-05-06
+
+- Fix to TERT protein annotation (G>A -> C>T)
+- Removed extra white space in gene information section
+
+## v.1.5.5: 2024-03-05
+
+- Further fixes to pWGS Cardea helper to allow multiple projects for one donor
+
+## v1.5.4: 2024-03-01
+
+- Fixed pWGS Cardea helper, pWGS provenance helper
+
+## v1.5.3: 2024-02-22
+
+- GCGI-1280: Allow `wgts.snv_indel` plugin to run as standalone
+- Enable fallback values when updating null parameters from JSON
+
+## v1.5.2: 2024-02-20
+
+- GCGI-1299: Redact gene descriptions in benchmark comparison
+- GCGI-1301: Add report title and patient info to benchmark INI
+
+## v1.5.1: 2024-02-15
+
+- GCGI-1296: Remove unwanted backslash and correctly insert configured sign-off date
+
+## v1.5.0: 2024-02-13
+
+### Report reformatting
+- GCGI-1266: moved clinical footer into supplement plugin
+- supplement.header plugin removed
+- added Geneticist INI parameter to appendix
+- GCGI-1294: Support new supplement.body params in mini-Djerba
+
+### Benchmark and test improvements
+- GCGI-1253: Fix JSON equivalence check and add tests
+- GCGI-1292: Add OncoKB caching to `genomic_landscape` plugin
+- Update `test_env.sh`
+- Add convenience scripts to run tests: `run_all_tests.sh`, `run_quick_tests.sh`
+
+### Update mode bugfix
+- GCGI-1291: Do not overwrite previous JSON before generating updated report
+
+### Minor cleanup actions
+- GCGI-1287: Remove obsolete data files
+- GCGI-1267: Fix copyright date in README
+
+## v1.4.1: 2024-02-02
+
+- fix bug when fusions have multiple possible reading frames
+- GCGI-1251: replaced and automated test dir variables
+
+## v1.4.0: 2024-01-31
+
+- GCGI-611: fix fusion frameshift hardcode
+- GCGI-443: merge duplicate fusion rows
+- fixed bug removing oncogenic fusions
+- GCGI-1217: Remove NORMAL_DEPTH variable
+- GCGI-1194: Research Report PDF Footer says RUO
+- GCGI-1261: Update plugin tester base class, so it is unaffected by changes in core HTML
+- removed "Quality Failure" text in failed report plugin html
+- GCGI-1282: fixed config generation for pWGS in setup mode, and removed automatic generation of failed report sentence
+- GCGI-1278: Fix issues with fusion plugin in benchmark tests; update `test_env.sh`; add convenience test scripts
+
+### Improvements for mini-Djerba
+
+- GCGI-1265: Automatically fill in report dates (preserving date of original report draft)
+- GCGI-1268: Use report ID for name of JSON output file
+- GCGI-1269: Default to user-friendly minimal error text
+- GCGI-1270: `--version` option in `djerba.py` and mini-Djerba
+- GCGI-1271: Mini-Djerba modes changed to setup/render/update
+
+## v1.3.1: 2024-01-19
+
+- Fixed support for 40X assay
+- GCGI-1186: Remove `mavis.py`
+- GCGI-1258: Fix import in args processor base
+- GCGI-1264: Rename mini-djerba link
+
+## v1.3.0: 2024-01-16
+
+- Mini-Djerba: Lightweight application to update patient info/summary in existing reports
+- MDC file format: Mini-Djerba Config, with file extension .mdc
+- New `report_title` plugin
+- Added annotation of translocations eg t(11;14)
+- Fixed issue with reading summary text path (GCGI-1256)
+
+## v1.2.1: 2024-01-12
+
+- Fixes for clinical report header and installation of patient_info plugin
+
+## v1.2.0: 2024-01-11
+
+- Add a `patient_info` plugin
+- Add `update` mode to the main Djerba script, to update and render an existing JSON file
+- New features are a proof-of-concept for enabling the geneticist to edit reports with a portable mini-Djerba
+- Removed the `update_oncokb_cache.py` script; replaced by `djerba.py update --summary=...`
+- Addition of `pwgs_cardea_helper` to pull sample info using a requisition ID
+
 ## v.1.1.3: 2024-01-10
+
 - Fixed unit tests for supplements plugin
 
 ## v.1.1.2: 2024-01-08
 
-- GCGI-1233: allowed support for purity and ploidy to be "NA", changed failed report template text 
+- GCGI-1233: allowed support for purity and ploidy to be "NA", changed failed report template text
 - Fixed unit tests for various plugins
 - Changed sign-offs page break to "auto"
-- GCGI-1240/1241: added filtering for 2 TERT hotspots: -124bp G>A and -146bp G>A 
+- GCGI-1240/1241: added filtering for 2 TERT hotspots: -124bp G>A and -146bp G>A
 
 ## v1.1.1: 2023-12-13
 

@@ -11,6 +11,7 @@ from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 import djerba.plugins.captiv8.plugin as captiv8
 from djerba.core.workspace import workspace
+from djerba.util.environment import directory_finder
 
 class TestCaptiv8Plugin(PluginTester):
 
@@ -21,8 +22,7 @@ class TestCaptiv8Plugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DIR'
-        self.sup_dir = os.environ.get(sup_dir_var)
+        self.sup_dir = directory_finder().get_test_dir()
 
     def testCAPTIV8(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -38,14 +38,14 @@ class TestCaptiv8Plugin(PluginTester):
         params = {
             self.INI: 'input/' + self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '7dd8d8d0c1f005f667d084f1644b21f6'
+            self.MD5: 'c0740ac334677f34d1a9594b3fceb87f'
         }
         self.run_basic_test(self.tmp_dir, params)
 
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""
         for key in ['files','captiv8_base64']:
-            del data['plugins']['captiv8']['results'][key]
+            del data['results'][key]
         return data        
 
 if __name__ == '__main__':

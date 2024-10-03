@@ -52,12 +52,21 @@ class plugin_base(configurable, ABC):
         self.check_attributes_known(attributes)
         data = {
             'plugin_name': self.identifier+' plugin',
-            'version': plugin_version,
+            core_constants.VERSION: plugin_version,
             'priorities': config_wrapper.get_my_priorities(),
             'attributes': config_wrapper.get_my_attributes(),
             'merge_inputs': {},
             'results': {},
         }
+        return data
+
+    def redact(self, data):
+        """
+        Input is a data structure satisfying the plugin schema
+        Output is the same data, but with confidential elements (eg. PHI) redacted
+        Call before database upload to ensure PHI is not transmitted to the database
+        By default, this does nothing; can override for individual plugins as needed
+        """
         return data
 
     def render(self, data):

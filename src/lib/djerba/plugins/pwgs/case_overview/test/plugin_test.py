@@ -13,6 +13,7 @@ from djerba.core.workspace import workspace
 import djerba.plugins.pwgs.constants as constants
 import djerba.plugins.pwgs.case_overview.plugin as case
 import djerba.plugins.pwgs.pwgs_tools as pwgs_tools
+from djerba.util.environment import directory_finder
 
 class TestPwgCasePlugin(PluginTester):
 
@@ -23,8 +24,7 @@ class TestPwgCasePlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DATA'
-        self.sup_dir = os.environ.get(sup_dir_var)
+        self.sup_dir = directory_finder().get_test_dir()
 
     def testPwgsCase(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -40,9 +40,14 @@ class TestPwgCasePlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: 'd7d6fe3e6edeb3db13c85639de221fe2'
+            self.MD5: '3c1176b0c0779c67b4a717690d169de3'
         }
         self.run_basic_test(input_dir, params)
+
+    def redact_json_data(self, data):
+        """replaces empty method from testing.tools"""
+        data['results']['pwgs_report_id'] = 'placeholder'
+        return data        
 
 
 if __name__ == '__main__':

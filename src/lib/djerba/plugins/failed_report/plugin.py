@@ -4,7 +4,6 @@ Plugin to generate the failed report results summary report section
 """
 
 import logging
-from time import strftime
 import csv
 import os
 from djerba.plugins.base import plugin_base, DjerbaPluginError
@@ -27,35 +26,10 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         work_dir = self.workspace.get_work_dir()
 
-        # Parameters for the sentence.
-        wrapper = self.update_wrapper_if_null(
-            wrapper,
-            input_params_helper.INPUT_PARAMS_FILE,
-            input_params_helper.PRIMARY_CANCER,
-            input_params_helper.PRIMARY_CANCER
-        )        
-        wrapper = self.update_wrapper_if_null(
-            wrapper,
-            input_params_helper.INPUT_PARAMS_FILE,
-            input_params_helper.ASSAY,
-            input_params_helper.ASSAY
-        )        
-        wrapper = self.update_wrapper_if_null(
-            wrapper,
-            input_params_helper.INPUT_PARAMS_FILE,
-            input_params_helper.STUDY,
-            input_params_helper.STUDY
-        )        
-          
-        # Get the parameters from the config
-        primary_cancer = config[self.identifier][input_params_helper.PRIMARY_CANCER]
-        assay = config[self.identifier][input_params_helper.ASSAY]
-        study = config[self.identifier][input_params_helper.STUDY]
-
         # Write the failed text if there isn't one already specified.
         if wrapper.my_param_is_null(self.FAILED_FILE):
             failed_template_path = os.path.join(work_dir, self.FAILED_TEMPLATE_FILE)
-            self.write_failed_text(failed_template_path, primary_cancer, assay, study)
+            self.write_failed_text(failed_template_path)
             wrapper.set_my_param(self.FAILED_FILE, failed_template_path)
 
         return wrapper.get_config()
@@ -74,9 +48,6 @@ class main(plugin_base):
     def specify_params(self):
         discovered = [
             self.FAILED_FILE,
-            input_params_helper.PRIMARY_CANCER,
-            input_params_helper.ASSAY,
-            input_params_helper.STUDY
         ]
         for key in discovered:
             self.add_ini_discovered(key)
@@ -87,12 +58,18 @@ class main(plugin_base):
         renderer = mako_renderer(self.get_module_dir())
         return renderer.render_name(self.MAKO_TEMPLATE_NAME, data)
 
-    def write_failed_text(self, failed_template_path, primary_cancer, assay, study):
-        
+    def write_failed_text(self, failed_template_path):
+       
+        primary_cancer = "..."
+        assay = "..."
+        study = "..."
         failed_text = "The patient has been diagnosed with " + primary_cancer +  \
                        " and has been referred for the OICR Genomics " + assay + \
                        " assay through the " + study + " study." + \
-                       " A quality failure report for this sample is being issued due to the informatically inferred tumour purity of ...% which is below the reportable threshold of 30% for the assay / is being issued due to failed extraction..."
+                       " A quality failure report for this sample is being issued due to" + \
+                       " the informatically inferred tumour purity of ...% which is below the reportable threshold of 30% for the assay" + \
+                       " / is being issued due to failed extraction" + \
+                       " / is being issued as the quantity of extracted DNA/RNA from tissue material was below the lower quantifiable range and therefore below the minimum input amount for this assay (minimums of 25ng for DNA and 50ng for RNA)..."
         
         with open(failed_template_path, "w") as failed_file:
             failed_file.write(failed_text)

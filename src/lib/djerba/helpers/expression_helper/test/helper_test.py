@@ -65,8 +65,6 @@ class TestExpressionHelper(TestBase):
         helper_main = loader.load(self.HELPER_NAME, ws)
         # configure the INI
         data_dir = finder.get_data_dir()
-        if not data_dir:
-            raise RuntimeError('DJERBA_DATA_DIR environment variable is not configured')
         enscon = os.path.join(data_dir, 'ensemble_conversion_hg38.txt')
         cp.set(self.HELPER_NAME, helper_main.ENSCON_KEY, enscon)
         gene_list = os.path.join(data_dir, 'targeted_genelist.txt')
@@ -82,11 +80,11 @@ class TestExpressionHelper(TestBase):
         gep_path = ws.abs_path('gep.txt')
         self.assertEqual(self.getMD5(gep_path), '86793b131107a466f72e64811d2b9758')
         expected = {
-            'data_expression_percentile_comparison.txt': 'da9f8c87ad8fd571b1333aa8f8228c16',
-            'data_expression_percentile_tcga.txt': '6078eb231568d104505f763f997b76ca',
-            'data_expression_zscores_comparison.txt': 'b2338b73e5b2ded59f30f069b7f7722a',
-            'data_expression_zscores_tcga.txt': '7a040521c77f9ab1e80eaf23f417f92d',
-            'data_expression_percentile_tcga.json': '6e1dc262c978f4be99d1cc0db57e3d59'
+            'data_expression_percentile_comparison.txt': '1cbe2d84b4ff8030062b260742d1ce8e',
+            'data_expression_percentile_tcga.txt': '2fe160662e3bc49d1972082d177dd610',
+            'data_expression_zscores_comparison.txt': '20757c8b2126137dd05fb064734a9af4',
+            'data_expression_zscores_tcga.txt': '70c92cf67705d0ad3f277a2b79d7c95a',
+            'data_expression_percentile_tcga.json': '326dc17e5248416e7fa7e6b6150de79a'
         }
         for name in expected:
             out_path = os.path.join(self.tmp_dir, name)

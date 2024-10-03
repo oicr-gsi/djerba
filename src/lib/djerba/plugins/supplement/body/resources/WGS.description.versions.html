@@ -14,7 +14,16 @@ SNVs and in/dels were called using <a href=${versions.MUTECT2_LINK}>MuTect2</a> 
 and annotated with <a href=${versions.VARIANTEFFECTPREDICTOR_LINK}>VariantEffectPredictor</a> (v.${versions.VARIANTEFFECTPREDICTOR_VERSION}) 
 using MANE transcripts (MANE Clinical version 1.0 when available, <a href=${versions.MANE_LINK}>MANE Select</a> version ${versions.MANE_VERSION} for all other transcripts).
 Variants were further annotated for oncogenicity and actionability by <a href=${versions.ONCOKB_LINK}>OncoKB</a>. 
-In cases where OncoKB does not use MANE Select, links in annotation use the corresponding alteration in OncoKB.
-Copy number variations were called using <a href=${versions.SEQUENZA_LINK}>Sequenza</a> (${versions.SEQUENZA_VERSION}). 
-Microsatellite (MS) Instability status is called using <a href=${versions.MICROSATELLITE_LINK}>msisensor-pro</a> (${versions.MICROSATELLITE_VERSION}) and a custom list of MS sites created by msisensor-pro for the current reference genome. 
+In cases where OncoKB did not use MANE Select, links in annotation have used the corresponding alteration in OncoKB.
+Copy number variations were called using <a href=${versions.PURPLE_LINK}>Purple</a> (${versions.PURPLE_VERSION}). 
+Microsatellite (MS) Instability status was called using <a href=${versions.MICROSATELLITE_LINK}>msisensor-pro</a> (${versions.MICROSATELLITE_VERSION}) and a custom list of ${versions.MICROSATELLITE_CUSTOM_SITES} MS sites created by msisensor-pro for the current reference genome.
+Homologous recombination deficiency (HRD) status was called using HRDetect <a href="https://pubmed.ncbi.nlm.nih.gov/28288110/">(Davies et al. 2017)</a>, a weighted logistic regression model, using the signature.tools.lib R package <a href="https://pubmed.ncbi.nlm.nih.gov/32118208/">(Degasperi et al. 2020)</a>. HRDetect takes SNVs and in/dels from MuTect2. The proportion of deletions occurring at microhomologous sites has been summarized as "Microhomologous Deletions".
+The counts of SNVs were categorized into exposures based on their trinucleotide context using 
+<a href="https://cran.r-project.org/web/packages/deconstructSigs/index.html">DeconstructSigs</a> (v. 1.8.0) and SBS signatures
+as defined in <a href="https://cancer.sanger.ac.uk/signatures/downloads/">COSMIC version 1</a>. 
+HRDetect also takes in LOH and structural variants. Structural variants were first called by 
+<a href="https://github.com/PapenfussLab/gridss">GRIDSS</a> (v.2.13.2)
+and then passed to PURPLE (v.3.8.1) for integrated LOH calling. Structural variants were then categorized into exposures based on break-end 
+characteristics using <a href="https://github.com/Nik-Zainal-Group/signature.tools.lib">signature.tools.lib</a> (v. 2.1.2) 
+and the rearrangement signature set defined in <a href="https://www.nature.com/articles/nature17676">Nik-Zainal et al. (2016)</a>. 
 </p>
