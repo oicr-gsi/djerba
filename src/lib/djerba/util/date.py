@@ -3,6 +3,10 @@
 import time
 
 DATE_FORMAT = "%Y-%m-%d"
+TIMESTAMP_FORMAT = '%Y-%m-%d_%H:%M:%S %z'
+
+def get_timestamp():
+    return time.strftime(TIMESTAMP_FORMAT, time.localtime())
 
 def get_todays_date():
     return time.strftime(DATE_FORMAT)

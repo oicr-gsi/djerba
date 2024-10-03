@@ -28,6 +28,7 @@ class main(helper_base):
     PROVENANCE_INPUT_KEY = 'provenance_input_path'
     STUDY_TITLE = 'project'
     ROOT_SAMPLE_NAME = 'donor'
+    ASSAY = 'assay'
     PROVENANCE_OUTPUT = 'provenance_subset.tsv.gz'
     PRIORITY = 50
     SAMPLE_NAME_KEYS = [
@@ -35,6 +36,7 @@ class main(helper_base):
         ini.SAMPLE_NAME_WG_T,
         ini.SAMPLE_NAME_WT_T
     ]
+    TAR = 'TAR'
 
     # identifiers for bam/bai files
     WG_N_BAM = 'whole genome normal bam'
@@ -43,6 +45,14 @@ class main(helper_base):
     WG_T_IDX = 'whole genome tumour bam index'
     WT_T_BAM = 'whole transcriptome tumour bam'
     WT_T_IDX = 'whole transcriptome tumour bam index'
+
+    # identifiers for tar files which come from the same workflow
+    WF_CONSENSUS_TUMOUR = 'consensusCruncher_tumour'
+    WF_CONSENSUS_NORMAL = 'consensusCruncher_normal'
+    WF_MAF_TUMOUR = 'maf_tumour'
+    WF_MAF_NORMAL = 'maf_normal'
+    WF_ICHOR_JSON = 'metrics_json'
+    WF_ICHOR_SEG = 'seg'
 
     def configure(self, config):
         """
@@ -56,7 +66,7 @@ class main(helper_base):
             msg = "Input params JSON does not exist. Parameters must be set manually."
             self.logger.warning(msg)
         # Get the study/sample parameters
-        for key in [self.STUDY_TITLE, self.ROOT_SAMPLE_NAME]:
+        for key in [self.STUDY_TITLE, self.ROOT_SAMPLE_NAME, self.ASSAY]:
             if wrapper.my_param_is_null(key):
                 if input_data == None:
                     msg = "Cannot resolve INI parameter '{0}'; ".format(key)+\
@@ -67,14 +77,15 @@ class main(helper_base):
                     wrapper.set_my_param(key, input_data[key])
         study = wrapper.get_my_string(self.STUDY_TITLE)
         donor = wrapper.get_my_string(self.ROOT_SAMPLE_NAME)
+        assay = wrapper.get_my_string(self.ASSAY)
         if self.workspace.has_file(self.PROVENANCE_OUTPUT):
             self.logger.debug("Provenance subset cache exists, will not overwrite")
         else:
             self.logger.info("Writing provenance subset cache to workspace")
             self.write_provenance_subset(study, donor, provenance_path)
-        # write sample_info.json; populate sample names from provenance if needed
-        samples = self.get_sample_name_container(wrapper)
-        sample_info, path_info = self.read_provenance(study, donor, samples)
+        
+        samples = self.get_sample_name_container(wrapper, assay)
+        sample_info, path_info = self.read_provenance(study, donor, assay, samples)
         self.write_path_info(path_info)
         keys = [core_constants.TUMOUR_ID, core_constants.NORMAL_ID]
         keys.extend(self.SAMPLE_NAME_KEYS)
@@ -107,6 +118,7 @@ class main(helper_base):
         provenance_path = wrapper.get_my_string(self.PROVENANCE_INPUT_KEY)
         study = wrapper.get_my_string(self.STUDY_TITLE)
         donor = wrapper.get_my_string(self.ROOT_SAMPLE_NAME)
+        assay = wrapper.get_my_string(self.ASSAY)
         if self.workspace.has_file(self.PROVENANCE_OUTPUT):
             cache_path = self.workspace.abs_path(self.PROVENANCE_OUTPUT)
             msg = "Provenance subset cache {0} exists, will not overwrite".format(cache_path)
@@ -119,8 +131,8 @@ class main(helper_base):
             msg = "extract: sample/path info files already in workspace, will not overwrite"
             self.logger.info(msg)
         else:
-            samples = self.get_sample_name_container(wrapper)
-            sample_info, path_info = self.read_provenance(study, donor, samples)
+            samples = self.get_sample_name_container(wrapper, assay)
+            sample_info, path_info = self.read_provenance(study, donor, assay, samples)
             if not self.workspace.has_file(core_constants.DEFAULT_SAMPLE_INFO):
                 self.logger.debug('extract: writing sample info')
                 self.write_sample_info(sample_info)
@@ -128,7 +140,7 @@ class main(helper_base):
                 self.logger.debug('extract: writing path info')
                 self.write_path_info(path_info)
 
-    def get_sample_name_container(self, config_wrapper):
+    def get_sample_name_container(self, config_wrapper, assay):
         """
         Populate a sample name container for input to the file provenance reader
         Allowed configurations:
@@ -137,14 +149,26 @@ class main(helper_base):
         - WG tumour/normal names specified, WT name null
         """
         samples = sample_name_container()
+        count = 0
         if config_wrapper.my_param_is_not_null(ini.SAMPLE_NAME_WG_N):
             samples.set_wg_n(config_wrapper.get_my_string(ini.SAMPLE_NAME_WG_N))
+            count += 1
         if config_wrapper.my_param_is_not_null(ini.SAMPLE_NAME_WG_T):
             samples.set_wg_t(config_wrapper.get_my_string(ini.SAMPLE_NAME_WG_T))
+            count += 1
         if config_wrapper.my_param_is_not_null(ini.SAMPLE_NAME_WT_T):
             samples.set_wt_t(config_wrapper.get_my_string(ini.SAMPLE_NAME_WT_T))
-        if samples.is_valid():
+            count += 1
+        if samples.is_valid() and assay != self.TAR:
             self.logger.debug("Sample names from INI are valid: {0}".format(samples))
+        elif assay == self.TAR:
+            if count == 3:
+                self.logger.debug("Sample names from INI for TAR assay are valid: {0}".format(samples))
+            else:
+                msg = "Invalid sample name configuration: {0}.".format(samples)
+                msg = msg + " Must manually configure all 3 sample names for TAR assay samples."
+                self.logger.error(msg)
+                raise InvalidConfigurationError(msg)
         else:
             msg = "Invalid sample name configuration: {0}.".format(samples)
             msg = msg + " Must either be empty, or have at least WG tumour/normal names"
@@ -152,7 +176,7 @@ class main(helper_base):
             raise InvalidConfigurationError(msg)
         return samples
 
-    def read_provenance(self, study, donor, samples):
+    def read_provenance(self, study, donor, assay, samples):
         """
         Parse file provenance and populate the sample info data structure
         If the sample names are unknown, get from file provenance given study and donor
@@ -163,6 +187,7 @@ class main(helper_base):
             subset_path,
             study,
             donor,
+            assay,
             samples,
             log_level=self.log_level,
             log_path=self.log_path
@@ -205,7 +230,15 @@ class main(helper_base):
             reader.WF_STARFUSION: reader.parse_starfusion_predictions_path(),
             reader.WF_VEP: reader.parse_maf_path(),
             reader.WF_VIRUS: reader.parse_virus_path(),
-            reader.WF_IMMUNE: reader.parse_immune_path()
+            reader.WF_IMMUNE: reader.parse_immune_path(),
+            # TAR specific files:
+            self.WF_CONSENSUS_TUMOUR: reader.parse_tar_metrics_tumour_path(),
+            self.WF_CONSENSUS_NORMAL: reader.parse_tar_metrics_normal_path(),
+            self.WF_MAF_TUMOUR: reader.parse_tar_maf_tumour_path(),
+            self.WF_MAF_NORMAL: reader.parse_tar_maf_normal_path(),
+            self.WF_ICHOR_JSON: reader.parse_tar_ichorcna_json_path(),
+            self.WF_ICHOR_SEG: reader.parse_tar_ichorcna_seg_path()
+
         }
         return sample_info, path_info
 
@@ -215,6 +248,7 @@ class main(helper_base):
         self.set_ini_default(self.PROVENANCE_INPUT_KEY, self.DEFAULT_PROVENANCE_INPUT)
         self.add_ini_discovered(self.STUDY_TITLE)
         self.add_ini_discovered(self.ROOT_SAMPLE_NAME)
+        self.add_ini_discovered(self.ASSAY)
         self.add_ini_discovered(ini.SAMPLE_NAME_WG_N)
         self.add_ini_discovered(ini.SAMPLE_NAME_WG_T)
         self.add_ini_discovered(ini.SAMPLE_NAME_WT_T)

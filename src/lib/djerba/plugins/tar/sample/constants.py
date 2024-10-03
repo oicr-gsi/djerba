@@ -1,4 +1,13 @@
-# AUTHOR: Felix Beaudry 
+
+# config parameters
+ICHORCNA_FILE = 'ichorcna_file'
+CONSENSUS_FILE = 'consensus_cruncher_file'
+CONSENSUS_NORMAL_FILE = 'consensus_cruncher_file_normal'
+
+# sample file names from path_info.json
+WF_CONSENSUS = 'consensusCruncher_tumour'
+WF_CONSENSUS_NORMAL = 'consensusCruncher_normal' 
+WF_ICHORCNA = 'metrics_json'
 
 # sample variable
 ONCOTREE = 'oncotree_code'
@@ -7,9 +16,10 @@ SAMPLE_TYPE = 'sample_type'
 CANCER_CONTENT = 'cancer_content'
 RAW_COVERAGE = 'raw_coverage'
 UNIQUE_COVERAGE = 'unique_coverage'
-COLLAPSED_COVERAGE_PL = 'collapsed_coverage_pl'
-COLLAPSED_COVERAGE_BC = 'collapsed_coverage_bc'
+COVERAGE_PL = 'collapsed_coverage_pl'
+COVERAGE_BC = 'collapsed_coverage_bc'
 PURITY = 'purity'
+TUMOUR_ID = 'tumour_id'
 
 # sample constants
 ASSAY = 'assay'

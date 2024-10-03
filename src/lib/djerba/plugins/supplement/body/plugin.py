@@ -21,8 +21,8 @@ class main(plugin_base):
     GENETICIST_ID = "clinical_geneticist_licence"
     EXTRACT_DATE = "extract_date"
     INCLUDE_SIGNOFFS = "include_signoffs"
-    GENETICIST_DEFAULT = 'Trevor Pugh, PhD, FACMG'
-    GENETICIST_ID_DEFAULT = '1027812'
+    GENETICIST_DEFAULT = 'PLACEHOLDER'
+    GENETICIST_ID_DEFAULT = 'XXXXXXX'
 
     def check_assay_name(self, wrapper):
         [ok, msg] = assays.name_status(wrapper.get_my_string(self.ASSAY))
