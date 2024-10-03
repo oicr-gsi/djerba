@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Djerba'
-copyright = '2020-2023, OICR-GSI'
+copyright = '2020-2024, OICR-GSI'
 author = 'OICR Genome Systems Informatics'
 
 # -- General configuration ---------------------------------------------------
