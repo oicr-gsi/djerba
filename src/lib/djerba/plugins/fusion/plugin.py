@@ -93,7 +93,7 @@ class main(plugin_base):
         print(f"Final fusion-URL pairs: {fusion_url_pairs}")
 
         # Save the fusion-URL pairs to a CSV file
-        output_csv_path = os.path.join(output_dir, 'fusion_blob_urls.csv')
+        output_csv_path = os.path.join(output_dir, 'fusion_blurb_urls.csv')
         with open(output_csv_path, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(['Fusion', 'Whizbam URL'])
@@ -197,7 +197,7 @@ class main(plugin_base):
         with open(output_json_path, 'r') as json_output_file:
             json_content = json_output_file.read()
         compressed_b64_data = self.compress_string(json_content)
-        blurb_url = f"https://whizbam-dev.gsi.oicr.on.ca/igv?sessionURL=blob:{compressed_b64_data}"
+        blurb_url = f"https://whizbam.oicr.on.ca/igv?sessionURL=blob:{compressed_b64_data}"
         print(f"Generated blob URL for {fusion}: {blurb_url}")
 
         return fusion, blurb_url
