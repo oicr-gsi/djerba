@@ -194,7 +194,9 @@ class main(plugin_base):
 
         print(f"Modified JSON written to {output_json_path}")
 
-        compressed_b64_data = self.compress_string(output_json_path)
+        with open(output_json_path, 'r') as json_output_file:
+            json_content = json_output_file.read()
+        compressed_b64_data = self.compress_string(json_content)
         blurb_url = f"https://whizbam-dev.gsi.oicr.on.ca/igv?sessionURL=blob:{compressed_b64_data}"
         print(f"Generated blob URL for {fusion}: {blurb_url}")
 
