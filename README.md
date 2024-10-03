@@ -4,6 +4,11 @@
 
 Modular system to create reports from metadata and workflow output
 
+[![Release](https://img.shields.io/github/v/release/oicr-gsi/djerba?color=green)](https://github.com/oicr-gsi/djerba/releases)
+[![License](https://img.shields.io/github/license/oicr-gsi/djerba)](https://github.com/oicr-gsi/djerba/blob/main/LICENSE)
+[![Documentation](https://img.shields.io/badge/%F0%9F%93%84-Documentation-blue)](https://djerba.readthedocs.io/en/latest/index.html)
+
+
 ## Introduction
 
 The Djerba software:
