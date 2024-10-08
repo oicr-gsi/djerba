@@ -15,6 +15,7 @@ import djerba.plugins.pwgs.constants as pc
 class main(plugin_base):
     PRIORITY = 100
     PLUGIN_VERSION = '1.0'
+    PWGS_ASSAY_VERSION = '2.0'
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -40,8 +41,10 @@ class main(plugin_base):
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
+        assay = "plasma Whole Genome Sequencing (pWGS) - "+\
+            "30X (v{0})".format(self.PWGS_ASSAY_VERSION)
         results = {
-            pc.ASSAY: "plasma Whole Genome Sequencing (pWGS) - 30X (v1.0)",
+            pc.ASSAY: assay,
             pc.PWGS_REPORT: config['core']['report_id'],
             pc.PRIMARY_CANCER: config[self.identifier][pc.PRIMARY_CANCER],
             pc.REQ_APPROVED: config[self.identifier][pc.REQ_APPROVED],
