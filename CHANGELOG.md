@@ -2,6 +2,8 @@
 
 ## Unreleased
 - GCGI-1156: Merge long-running documentation branch to main
+- GCGI-1452: Update disclaimer with somatic mutation text
+- GCGI-1453: Update pWGS version number
 
 ## 1.7.5: 2024-10-02
 - GCGI-1378: Improve benchmarking to write an HTML summary page; update tests
