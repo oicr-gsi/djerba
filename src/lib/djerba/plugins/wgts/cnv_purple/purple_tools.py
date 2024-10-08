@@ -5,6 +5,7 @@ AUTHOR: Felix Beaudry
 
 import csv
 import json
+import lets_plot as lp
 import logging
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
@@ -15,7 +16,6 @@ import re
 import tempfile
 import zipfile
 from scipy.stats import norm
-from lets_plot import *
 from plotnine import *
 
 import djerba.plugins.wgts.cnv_purple.constants as pc
@@ -56,16 +56,16 @@ class purple_processor(logger):
   #      return result.stdout.split('"')[1]
 
     # rewrite analyze_segments in python
-    def analyze_segements(self, cnvfile, segfile, whizbam_url, purity, ploidy):
+    def analyze_segments(self, cnvfile, segfile, whizbam_url, purity, ploidy):
         centromeres_file = os.path.join(self.data_dir, pc.CENTROMERES)
         genebedpath = os.path.join(self.data_dir, pc.GENEBED)
         self.look_at_purity_fit(segfile, purity = purity)
         segs = pd.read_csv(cnvfile, sep="\t")
         segs_whizbam = self.construct_whizbam_links(segs, whizbam_url)
         segs_whizbam.to_csv(os.path.join(self.work_dir, "purple.segments.txt"), sep="\t", index=False)
-        centromeres = pd.read_csv(centromeres_file)
+        centromeres = pd.read_csv(centromeres_file, sep="\t")
         arm_level_calls = self.arm_level_caller_purple(segs, centromeres)
-        arm_level_calls.write(os.path.join(self.work_dir, "purple.arm_level_calls.txt"), index=False)
+        arm_level_calls.to_csv(os.path.join(self.work_dir, "purple.arm_level_calls.txt"), index=False, header=False)
         
         # Back convert Copy Number profiles to log2 values for plotting in IGV
         segs["ID"] = "purple"
@@ -94,7 +94,7 @@ class purple_processor(logger):
         # Rename the columns
         CN_table.columns = ["Hugo_Symbol", "MACN", "CN"]
         # write to a table
-        CN_table.write(os.path.join(self.work_dir, "cn.txt"), index=False, sep="\t")
+        CN_table.to_csv(os.path.join(self.work_dir, "cn.txt"), index=False, sep="\t")
 
         # segment plot "seg_CNV_plot.svg"
         chromosomes_incl = list(map(str, range(1,23))) + ["X"]
@@ -119,7 +119,7 @@ class purple_processor(logger):
             ggplot(data = fitted_segments_df_plot)
             + geom_hline(yintercept = 2.0 , color="lightgrey", linetype="dotted") 
             + geom_segment(aes(x='start', xend='end', y='copyNumber', yend='copyNumber'), data = fitted_segments_df_plot, color="black",size=2, na_rm = True) 
-            + facet_grid(". ~ Chromosome", scales = 'free', space="free",  )
+            + facet_grid(". ~ Chromosome", scales = 'free', space="free")
             + scale_y_continuous(limits=[-0.11,highCN+0.4],breaks=breaks)
             + geom_vline(aes(xintercept = 'start'),data=fitted_segments_df_plot[fitted_segments_df_plot['cent'] == 1],color="lightgrey")
             + geom_point(aes(x='start',y=highCN+0.35), data=fitted_segments_df_plot[fitted_segments_df_plot['CNt_high'] == 'high'], shape='^', size=1)
@@ -151,7 +151,7 @@ class purple_processor(logger):
             ggplot(data = fitted_segments_df_plot)
             + geom_segment(aes(x='start', xend='end', y='A_adj', yend='A_adj'), data = fitted_segments_df_plot, color="#65bc45",size=2, na_rm = True)
             + geom_segment(aes(x='start', xend='end', y='B_adj', yend='B_adj'), data = fitted_segments_df_plot, color="#0099ad",size=2, na_rm = True)
-            + facet_grid(". ~ Chromosome", scales = 'free', space="free",  )
+            + facet_grid(". ~ Chromosome", scales = 'free', space="free")
             + scale_y_continuous(limits=[-0.11,highCN+0.11],breaks=breaks)
             + geom_vline(aes(xintercept = 'start'),data=fitted_segments_df_plot[fitted_segments_df_plot['cent'] == 1],color="lightgrey")
             + geom_point(aes(x='start',y=highCN+0.1), data=fitted_segments_df_plot[fitted_segments_df_plot['CNt_high'] == 'high'], shape='^', size=1)
@@ -283,7 +283,7 @@ class purple_processor(logger):
 
         return 2 * norm.cdf(ploidy_distance_from_integer * standard_deviations_per_ploidy) - 1 + max(-0.5-ploidy,0)
     
-    def arm_level_caller_purple(segs, centromeres, gain_threshold=6, shallow_deletion_threshold=2, seg_perc_threshold=80, baf_min=50):
+    def arm_level_caller_purple(self, segs, centromeres, gain_threshold=6, shallow_deletion_threshold=2, seg_perc_threshold=80, baf_min=50):
         """
         Take segment information and turn into chromosome arm level AMP/DEL calls, assuming $seg.perc.threshold is AMP'd or DEL'd
         """
@@ -324,7 +324,7 @@ class purple_processor(logger):
             right_on='chrom'
         ).query(
             'start >= arm_start & end <= arm_end & chromosome == chrom'
-            ).loc[:, ['chromosome', 'arm', 'arm_length', 'copyNumber', 'seg_length', 'arm_start', 'arm_end']])
+            ).loc[:, ['chrom', 'arm', 'arm_length', 'copyNumber', 'seg_length', 'arm_start', 'arm_end']])
         segs_armd = segs_armd.rename(columns = {'arm_start':'start', 'arm_end':'end'})
     
         ## use NCCN terminology
@@ -343,7 +343,7 @@ class purple_processor(logger):
 
         return arm_CNA_prop["annotation"].sort_values()
         
-    def construct_whizbam_link(studyid, tumourid):
+    def construct_whizbam_link(self, studyid, tumourid):
         genome = pc.WHIZBAM_GENOME_VERSION
         whizbam_base_url = pc.WHIZBAM_BASE_URL
         seqtype = pc.WHIZBAM_SEQTYPE
@@ -356,7 +356,7 @@ class purple_processor(logger):
         ))
         return whizbam
     
-    def construct_whizbam_links(df, whizbam_url):
+    def construct_whizbam_links(self, df, whizbam_url):
         if not df.empty:
             df["whizbam"] = whizbam_url + "&chr=" + df["chromosome"].str.replace("chr", "") + \
             "&chrloc=" + df["start"].astype(str) + "- " + df["end"].astype(str)
@@ -385,9 +385,7 @@ class purple_processor(logger):
 
         if purple_gene_file:
             self.logger.info("Processing CNA data")
-            oncogenes = pd.read_csv(oncolistpath)
-            raw_gene_data = pd.read_csv(purple_gene_file, sep="\t")
-            cna, cna_nondiploid = self.pre_process_CNA(raw_gene_data, oncogenes, tumour_id, ploidy)
+            cna, cna_nondiploid = self.pre_process_CNA(purple_gene_file, oncolistpath, tumour_id, ploidy)
             
             # write to files
             cna.to_csv(cna_output, sep="\t", index=False)
@@ -419,30 +417,30 @@ class purple_processor(logger):
         fitted_segments_df["whole_genome_doubling_distance"] = self.whole_genome_doubling_distance_calculator(fitted_segments_df["majorAlleleCopyNumber"], fitted_segments_df["minorAlleleCopyNumber"])
 
         # ADD PLOTS
-        LetsPlot.setup_html()
-        p1 = ggplot(data = purity_df) + \
-            geom_tile(aes(x='MajorAllele', y='MinorAllele', fill='Penalty'), width = 3, height = 3) + \
-            geom_point(aes(x='majorAlleleCopyNumber', y='minorAlleleCopyNumber', size='Weight'), data=fitted_segments_df, shape=1, stroke=0.3, color="black") + \
-            geom_abline(slope = 1, color="black") + \
-            scale_x_continuous(limits = [0, min(maxMinorAllelePloidy,4)]) + \
-            scale_y_continuous( limits = [0, min(maxMinorAllelePloidy,3)]) + \
-            scale_fill_gradientn(colors=["#8b0000","red","orange","yellow", "white"], limits = [min_score, max_score], na_value = "white") + coord_fixed() + \
-            theme(panel_grid = element_blank()) + \
-            labs(x="Major Allele Ploidy", y="Minor Allele Ploidy", fill="Aggregate\nPenalty",size="BAF\nSupport")
+        lp.LetsPlot.setup_html()
+        p1 = lp.ggplot(data = purity_df) + \
+            lp.geom_tile(aes(x='MajorAllele', y='MinorAllele', fill='Penalty'), width = 3, height = 3) + \
+            lp.geom_point(aes(x='majorAlleleCopyNumber', y='minorAlleleCopyNumber', size='Weight'), data=fitted_segments_df, shape=1, stroke=0.3, color="black") + \
+            lp.geom_abline(slope = 1, color="black") + \
+            lp.scale_x_continuous(limits = [0, min(maxMinorAllelePloidy,4)]) + \
+            lp.scale_y_continuous( limits = [0, min(maxMinorAllelePloidy,3)]) + \
+            lp.scale_fill_gradientn(colors=["#8b0000","red","orange","yellow", "white"], limits = [min_score, max_score], na_value = "white") + coord_fixed() + \
+            lp.theme(panel_grid = lp.element_blank()) + \
+            lp.labs(x="Major Allele Ploidy", y="Minor Allele Ploidy", fill="Aggregate\nPenalty",size="BAF\nSupport")
         
-        p2 = ggplot() + \
-            geom_abline(slope = 1, intercept=1, linetype = 2, color="black", size = 0.5) + \
-            geom_point(aes(x='whole_genome_doubling_distance', y='single_event_distance', color='Score', size='Weight'), data=fitted_segments_df, shape=1, stroke=0.3) + \
-            scale_color_gradientn(colors=["#8b0000","red","orange","yellow", "white"], limits = [min_score, max_score], na_value = "lightgrey") + \
-            labs(x="Whole Genome Doubling Penalty (log)", y="Single Event Penalty (log)", size="BAF Support") + \
-            guides(size="none", color="none")+ \
-            scale_x_continuous(trans='log10') + \
-            scale_y_continuous(trans='log10')
+        p2 = lp.ggplot() + \
+            lp.geom_abline(slope = 1, intercept=1, linetype = 2, color="black", size = 0.5) + \
+            lp.geom_point(lp.aes(x='whole_genome_doubling_distance', y='single_event_distance', color='Score', size='Weight'), data=fitted_segments_df, shape=1, stroke=0.3) + \
+            lp.scale_color_gradientn(colors=["#8b0000","red","orange","yellow", "white"], limits = [min_score, max_score], na_value = "lightgrey") + \
+            lp.labs(x="Whole Genome Doubling Penalty (log)", y="Single Event Penalty (log)", size="BAF Support") + \
+            lp.guides(size="none", color="none")+ \
+            lp.scale_x_continuous(trans='log10') + \
+            lp.scale_y_continuous(trans='log10')
 
-        bunch = GGBunch()
+        bunch = lp.GGBunch()
         bunch.add_plot(p1, 0, 0, 600, 500)
         bunch.add_plot(p2, 0, 440, 600, 400)
-        ggsave(bunch, "purple.segment_QC.svg", path='.')
+        lp.ggsave(bunch, "purple.segment_QC.svg", path='.')
 
     
     def major_allele_deviation(self, purity, norm_factor, ploidy, baseline_deviation, major_allele_sub_one_penalty_multiplier = 1 ):
@@ -458,8 +456,11 @@ class purple_processor(logger):
 
         return max(deviation, baseline_devitation)
     
-    def pre_process_CNA(raw_gene_data, oncolist, tumour_id, ploidy, ploidy_multiplier=2.4):
-        amp = ploidy_multiplier * ploidy
+    def pre_process_CNA(self, purple_gene_file, oncolistpath, tumour_id, ploidy, ploidy_multiplier=2.4):
+        oncolist = pd.read_csv(oncolistpath, sep="\t")
+        raw_gene_data = pd.read_csv(purple_gene_file, sep="\t")
+        
+        amp = ploidy_multiplier * float(ploidy)
         hmz = 0.5
 
         oncogenes = oncolist[oncolist["OncoKB Annotated"] == "Yes"]["Hugo Symbol"]
@@ -484,27 +485,27 @@ class purple_processor(logger):
 
         return a_allele
     
-    # TMP FUNCTION AND LOCATION. NOT IDENTICAL TO CNtools in R
-    def calculate_max_overlap(row, df1):
+    # TMP FUNCTION AND LOCATION. NOT IDENTICAL TO CNtools in R, very slow
+    def calculate_max_overlap(self, row, df1):
         # Get the relevant rows in df1 for the current chromosome
         matches = df1[df1['chrom'] == row['chrom']]
         max_overlap = 0
         seg_mean = 0
 
-        # Iterate through matching rows to find overlaps
+        # Iterrows is dreadfully slow, find a better way
         for _, match in matches.iterrows():
             # Calculate overlap
             overlap_start = max(row['start'], match['loc_start'])
             overlap_end = min(row['end'], match['loc_end'])
             overlap = max(0, overlap_end - overlap_start)
 
-        if overlap > max_overlap:
-            max_overlap = overlap
-            seg_mean = match['seg_mean']  # Store corresponding seg_mean
+            if overlap > max_overlap:
+                max_overlap = overlap
+                seg_mean = match['seg_mean']
 
         return seg_mean
 
-    def process_centromeres(centromeres):
+    def process_centromeres(self, centromeres):
         """
         Add some columns to the centromere file so it plots pretty in CNV track
         """
@@ -522,7 +523,7 @@ class purple_processor(logger):
 
         return centromeres_sub
 
-    def purity_data_frame(mat, ploidy):
+    def purity_data_frame(self, mat, ploidy):
         df = pd.DataFrame(mat)
         df.insert(0, 'MajorAllele', ploidy)
         column_names = ploidy.tolist()
@@ -587,13 +588,13 @@ class purple_processor(logger):
         tempdir.cleanup()
         return purity_ploidy
 
-    def single_event_distance_calculator(major_allele, minor_allele):
+    def single_event_distance_calculator(self, major_allele, minor_allele):
         single_event_distance = abs(major_allele - 1) + abs(minor_allele - 1)
 
         return single_event_distance
     
-    def sub_minimum_ploidy_penalty(min_ploidy, ploidy, major_allele_sub_one_additional_penalty = 1.5):
-        penalty = - major_allele_sub_one_additional_penalty * (ploidy - min_ploidy)
+    def sub_minimum_ploidy_penalty(self, min_ploidy, ploidy, major_allele_sub_one_additional_penalty = 1.5):
+        penalty = - major_allele_sub_one_additional_penalty * (float(ploidy) - min_ploidy)
 
         return min(major_allele_sub_one_additional_penalty, max(penalty, 0))
     
@@ -612,7 +613,7 @@ class purple_processor(logger):
                 purple_files[pc.PURPLE_GENE] = zf.extract(name, self.work_dir)
         return purple_files
 
-    def whole_genome_doubling_distance_calculator(major_allele, minor_allele):
+    def whole_genome_doubling_distance_calculator(self, major_allele, minor_allele):
         whole_genome_doubling_distance = 1 + abs(major_allele - 2) + abs(minor_allele - 2)
 
         return whole_genome_doubling_distance
