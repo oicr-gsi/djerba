@@ -384,7 +384,7 @@ class purple_processor(logger):
         nondiploid_output = os.path.join(self.work_dir, "data_CNA_oncoKBgenes_nonDiploid.txt")
 
         if purple_gene_file:
-            logger.info("Processing CNA data")
+            self.logger.info("Processing CNA data")
             oncogenes = pd.read_csv(oncolistpath)
             raw_gene_data = pd.read_csv(purple_gene_file, sep="\t")
             cna, cna_nondiploid = self.pre_process_CNA(raw_gene_data, oncogenes, tumour_id, ploidy)
@@ -393,7 +393,7 @@ class purple_processor(logger):
             cna.to_csv(cna_output, sep="\t", index=False)
             cna_nondiploid.to_csv(nondiploid_output, sep="\t", index=False)
         else:
-            logger.info("No SEG file input, processing omitted")
+            self.logger.info("No SEG file input, processing omitted")
 
     def event_penalty(self, major_allele, minor_allele, ploidy_penalty_factor = 0.4):
         whole_genome_doubling_distance = self.whole_genome_doubling_distance_calculator(major_allele, minor_allele)
