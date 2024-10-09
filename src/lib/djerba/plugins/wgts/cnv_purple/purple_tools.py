@@ -440,7 +440,7 @@ class purple_processor(logger):
         bunch = lp.GGBunch()
         bunch.add_plot(p1, 0, 0, 600, 500)
         bunch.add_plot(p2, 0, 440, 600, 400)
-        lp.ggsave(bunch, "purple.segment_QC.svg", path='.')
+        lp.ggsave(bunch, "purple.segment_QC.svg", path=self.work_dir)
 
     
     def major_allele_deviation(self, purity, norm_factor, ploidy, baseline_deviation, major_allele_sub_one_penalty_multiplier = 1 ):
@@ -480,31 +480,11 @@ class purple_processor(logger):
     def pre_proc_loh(self, segments, genebed):
         segments["chrom"] = segments["chrom"].str.replace("chr", "")
         segments["ID"] = "b_allele"
-        genebed["b_allele"] = genebed.apply(lambda row: self.calculate_max_overlap(row, segments), axis=1)
+        genebed["b_allele"] = genebed.apply(lambda row: np.min(segments[(segments['chrom'] == row['chrom']) & (segments['loc_start'] <= row['end']) & (segments['loc_end'] >= row['start'])]["seg_mean"]), axis=1)
         a_allele = genebed[["genename", "b_allele"]].copy()
 
         return a_allele
     
-    # TMP FUNCTION AND LOCATION. NOT IDENTICAL TO CNtools in R, very slow
-    def calculate_max_overlap(self, row, df1):
-        # Get the relevant rows in df1 for the current chromosome
-        matches = df1[df1['chrom'] == row['chrom']]
-        max_overlap = 0
-        seg_mean = 0
-
-        # Iterrows is dreadfully slow, find a better way
-        for _, match in matches.iterrows():
-            # Calculate overlap
-            overlap_start = max(row['start'], match['loc_start'])
-            overlap_end = min(row['end'], match['loc_end'])
-            overlap = max(0, overlap_end - overlap_start)
-
-            if overlap > max_overlap:
-                max_overlap = overlap
-                seg_mean = match['seg_mean']
-
-        return seg_mean
-
     def process_centromeres(self, centromeres):
         """
         Add some columns to the centromere file so it plots pretty in CNV track
