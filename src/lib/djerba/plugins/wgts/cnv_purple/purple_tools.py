@@ -99,12 +99,12 @@ class purple_processor(logger):
         # segment plot "seg_CNV_plot.svg"
         chromosomes_incl = list(map(str, range(1,23))) + ["X"]
         segs[['blank','chr']] = segs['chromosome'].str.split('chr',expand=True)
-        segs["Chromosome"] = np.where(segs["chr"].isin(chromosomes_incl), segs["chr"], np.NaN)
+        segs["Chromosome"] = np.where(segs["chr"].isin(chromosomes_incl), segs["chr"], np.nan)
 
         highCN=6
-        segs["CNt_high"] = np.where(segs["copyNumber"] > highCN, "high", np.NaN)
+        segs["CNt_high"] = np.where(segs["copyNumber"] > highCN, "high", np.nan)
         fitted_segments_df_sub = segs[["start","end","Chromosome","majorAlleleCopyNumber","minorAlleleCopyNumber","copyNumber","CNt_high"]].copy()
-        fitted_segments_df_sub["cent"] = np.NaN
+        fitted_segments_df_sub["cent"] = np.nan
 
         proc_centromeres = self.process_centromeres(centromeres)
         # combine processed centromeres and fitted_segments_df_sub
@@ -139,7 +139,7 @@ class purple_processor(logger):
             )
         )
 
-        pseg.save(pseg_path, height=1.5, width=8)
+        pseg.save(pseg_path, height=1.5, width=8, backend='Cairo')
         image_converter = converter(self.log_level, self.log_path)
         b64txt = image_converter.convert_svg(pseg_path, 'CNV plot')
 
@@ -491,14 +491,14 @@ class purple_processor(logger):
         """
         centromeres[['blank','chr']] = centromeres['chrom'].str.split('chr',expand=True)
         chromosomes_incl = list(map(str, range(1,23))) + ["X"]
-        centromeres["Chr"] = np.where(centromeres["chr"].isin(chromosomes_incl), centromeres["chr"], np.NaN)
+        centromeres["Chr"] = np.where(centromeres["chr"].isin(chromosomes_incl), centromeres["chr"], np.nan)
         centromeres_filter = centromeres.dropna(subset=["Chr"])
         centromeres_sub = centromeres_filter[["chromStart", "chromEnd", "chr"]].copy()
         centromeres_sub.columns = ["start","end","Chromosome"]
-        centromeres_sub["majorAlleleCopyNumber"] = np.NaN
-        centromeres_sub["minorAlleleCopyNumber"] = np.NaN
-        centromeres_sub["CNt_high"] = np.NaN
-        centromeres_sub["copyNumber"] = np.NaN
+        centromeres_sub["majorAlleleCopyNumber"] = np.nan
+        centromeres_sub["minorAlleleCopyNumber"] = np.nan
+        centromeres_sub["CNt_high"] = np.nan
+        centromeres_sub["copyNumber"] = np.nan
         centromeres_sub["cent"] = 1
 
         return centromeres_sub
@@ -532,7 +532,7 @@ class purple_processor(logger):
         name_list = [x for x in zf.namelist() if not re.search('/$', x)]
         purple_purity_path = None
         for name in name_list:
-            if re.search('purple\.purity\.tsv$', name):
+            if re.search(r'purple\.purity\.tsv$', name):
                 purple_purity_path = zf.extract(name, tmp)
                 break
         if purple_purity_path is None:
@@ -583,13 +583,13 @@ class purple_processor(logger):
         name_list = [x for x in zf.namelist() if not re.search('/$', x)]
         purple_files = {}
         for name in name_list:
-            if re.search('purple\.purity\.range\.tsv$', name):
+            if re.search(r'purple\.purity\.range\.tsv$', name):
                 purple_files[pc.PURPLE_PURITY_RANGE] = zf.extract(name, self.work_dir)
-            elif re.search('purple\.cnv\.somatic\.tsv$', name):
+            elif re.search(r'purple\.cnv\.somatic\.tsv$', name):
                 purple_files[pc.PURPLE_CNV] = zf.extract(name, self.work_dir)
-            elif re.search('purple\.segment\.tsv$', name):
+            elif re.search(r'purple\.segment\.tsv$', name):
                 purple_files[pc.PURPLE_SEG] = zf.extract(name, self.work_dir)
-            elif re.search('purple\.cnv\.gene\.tsv$', name):
+            elif re.search(r'purple\.cnv\.gene\.tsv$', name):
                 purple_files[pc.PURPLE_GENE] = zf.extract(name, self.work_dir)
         return purple_files
 
