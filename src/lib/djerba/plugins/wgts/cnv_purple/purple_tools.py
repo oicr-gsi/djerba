@@ -99,12 +99,12 @@ class purple_processor(logger):
         # segment plot "seg_CNV_plot.svg"
         chromosomes_incl = list(map(str, range(1,23))) + ["X"]
         segs[['blank','chr']] = segs['chromosome'].str.split('chr',expand=True)
-        segs["Chromosome"] = np.where(segs["chr"].isin(chromosomes_incl), segs["chr"], np.nan)
+        segs["Chromosome"] = np.where(segs["chr"].isin(chromosomes_incl), segs["chr"], np.NaN)
 
         highCN=6
-        segs["CNt_high"] = np.where(segs["copyNumber"] > highCN, "high", np.nan)
+        segs["CNt_high"] = np.where(segs["copyNumber"] > highCN, "high", np.NaN)
         fitted_segments_df_sub = segs[["start","end","Chromosome","majorAlleleCopyNumber","minorAlleleCopyNumber","copyNumber","CNt_high"]].copy()
-        fitted_segments_df_sub["cent"] = np.nan
+        fitted_segments_df_sub["cent"] = np.NaN
 
         proc_centromeres = self.process_centromeres(centromeres)
         # combine processed centromeres and fitted_segments_df_sub
@@ -419,12 +419,12 @@ class purple_processor(logger):
         # ADD PLOTS
         lp.LetsPlot.setup_html()
         p1 = lp.ggplot(data = purity_df) + \
-            lp.geom_tile(aes(x='MajorAllele', y='MinorAllele', fill='Penalty'), width = 3, height = 3) + \
-            lp.geom_point(aes(x='majorAlleleCopyNumber', y='minorAlleleCopyNumber', size='Weight'), data=fitted_segments_df, shape=1, stroke=0.3, color="black") + \
+            lp.geom_tile(lp.aes(x='MajorAllele', y='MinorAllele', fill='Penalty'), width = 3, height = 3) + \
+            lp.geom_point(lp.aes(x='majorAlleleCopyNumber', y='minorAlleleCopyNumber', size='Weight'), data=fitted_segments_df, shape=1, stroke=0.3, color="black") + \
             lp.geom_abline(slope = 1, color="black") + \
             lp.scale_x_continuous(limits = [0, min(maxMinorAllelePloidy,4)]) + \
             lp.scale_y_continuous( limits = [0, min(maxMinorAllelePloidy,3)]) + \
-            lp.scale_fill_gradientn(colors=["#8b0000","red","orange","yellow", "white"], limits = [min_score, max_score], na_value = "white") + coord_fixed() + \
+            lp.scale_fill_gradientn(colors=["#8b0000","red","orange","yellow", "white"], limits = [min_score, max_score], na_value = "white") + lp.coord_fixed() + \
             lp.theme(panel_grid = lp.element_blank()) + \
             lp.labs(x="Major Allele Ploidy", y="Minor Allele Ploidy", fill="Aggregate\nPenalty",size="BAF\nSupport")
         
@@ -491,8 +491,8 @@ class purple_processor(logger):
         """
         centromeres[['blank','chr']] = centromeres['chrom'].str.split('chr',expand=True)
         chromosomes_incl = list(map(str, range(1,23))) + ["X"]
-        centromeres["Chr"] = np.where(centromeres["chr"].isin(chromosomes_incl), centromeres["chr"], np.nan)
-        centromeres_filter = centromeres[centromeres["Chr"].isna()]
+        centromeres["Chr"] = np.where(centromeres["chr"].isin(chromosomes_incl), centromeres["chr"], np.NaN)
+        centromeres_filter = centromeres.dropna(subset=["Chr"])
         centromeres_sub = centromeres_filter[["chromStart", "chromEnd", "chr"]].copy()
         centromeres_sub.columns = ["start","end","Chromosome"]
         centromeres_sub["majorAlleleCopyNumber"] = np.NaN
