@@ -68,8 +68,6 @@ class main(plugin_base):
             gene_info = []
             treatment_opts = []
 
-        print(f"Results: {results}")
-
         # Processing fusions and generating blob URLs
         tsv_file_path = wrapper.get_my_string(fc.ARRIBA_PATH)
         base_dir = (directory_finder(self.log_level, self.log_path).get_base_dir())
@@ -79,23 +77,18 @@ class main(plugin_base):
         unique_fusions = list({item["fusion"] for item in results[fc.BODY]})
         fusion_url_pairs = []
 
-        print(f"Unique fusions: {unique_fusions}")
-
         for fusion in unique_fusions:
             try:
                 fusion, blurb_url = self.process_fusion(config, fusion, tsv_file_path, json_template_path, output_dir)
                 fusion_url_pairs.append([fusion, blurb_url])
-                print(f"Processed fusion: {fusion}, URL: {blurb_url}")
 
             except ValueError as e:
                 self.logger.error(f"Error processing fusion {fusion}: {e}")
 
-        print(f"Final fusion-URL pairs: {fusion_url_pairs}")
-
         # Save the fusion-URL pairs to a CSV file
-        output_csv_path = os.path.join(output_dir, 'fusion_blurb_urls.csv')
-        with open(output_csv_path, 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile)
+        output_tsv_path = os.path.join(output_dir, 'fusion_blurb_urls.tsv')
+        with open(output_tsv_path, 'w', newline='') as tsvfile:
+            writer = csv.writer(tsvfile, delimiter='\t')
             writer.writerow(['Fusion', 'Whizbam URL'])
             writer.writerows(fusion_url_pairs)
 
@@ -115,15 +108,12 @@ class main(plugin_base):
         else:
             raise ValueError(f"No valid fusion found for {fusion}.")
 
-        print(f"Processing fusion: {fusion} with genes {gene1} and {gene2}")
-
         # Initialize breakpoints
         breakpoint1, breakpoint2 = None, None
 
         # Open and read the ARRIBA TSV file
         with open(tsv_file_path, mode='r') as file:
             reader = csv.DictReader(file, delimiter='\t')
-            print(f"TSV Columns: {reader.fieldnames}")
 
             # Find the correct row based on gene1 and gene2
             for row in reader:
@@ -132,8 +122,6 @@ class main(plugin_base):
                     breakpoint1 = row['breakpoint1']
                     breakpoint2 = row['breakpoint2']
                     break
-
-        print(f"Found breakpoints: {breakpoint1}, {breakpoint2}")
 
         if not (breakpoint1 and breakpoint2):
             raise ValueError(f"No matching fusion found in the TSV file for {fusion}.")
@@ -154,11 +142,9 @@ class main(plugin_base):
 
         # Update the JSON with the formatted breakpoints
         data['locus'] = [formatted_breakpoint1, formatted_breakpoint2]
-        print(f"Updated locus in JSON: {data['locus']}")
 
         tumour_id = wrapper.get_my_string(core_constants.TUMOUR_ID)
         data['tracks'][1]['name'] = tumour_id
-        print(f"Updated name: {data['tracks'][1]['name']}")
 
         # Search for the BAM and BAI files using glob.glob
         bam_pattern = f"/.mounts/labs/prod/whizbam/*/RNASEQ/{tumour_id}.bam"
@@ -183,23 +169,15 @@ class main(plugin_base):
         else:
             raise FileNotFoundError(f"BAI file not found for pattern: {bai_pattern}")
 
-        # Debugging prints
-        print(f"BAM file URL: {data['tracks'][1]['url']}")
-        print(f"BAI file indexURL: {data['tracks'][1]['indexURL']}")
-
         # Write the modified JSON to the output directory
         output_json_path = os.path.join(output_dir, f"{fusion}.json")
         with open(output_json_path, 'w') as json_output_file:
             json.dump(data, json_output_file)
 
-        print(f"Modified JSON written to {output_json_path}")
-
         with open(output_json_path, 'r') as json_output_file:
             json_content = json_output_file.read()
         compressed_b64_data = self.compress_string(json_content)
         blurb_url = f"https://whizbam.oicr.on.ca/igv?sessionURL=blob:{compressed_b64_data}"
-        print(f"Generated blob URL for {fusion}: {blurb_url}")
-
         return fusion, blurb_url
 
     def compress_string(self, input_string):
@@ -211,7 +189,6 @@ class main(plugin_base):
         compressed_base64 = base64.b64encode(compressed_bytes)
         # Convert the base64 bytes to a string and apply the replacements
         return compressed_base64.decode('utf-8')
-
 
     def specify_params(self):
         discovered = [
