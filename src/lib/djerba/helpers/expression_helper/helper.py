@@ -29,6 +29,7 @@ class main(helper_base):
     FPKM = 6
 
     FPR_NAME = 'provenance_helper'
+    WGTS = 'WGTS' # currently only used for WGTS
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -63,7 +64,8 @@ class main(helper_base):
         samples = sample_name_container()
         samples.set_and_validate(sample_wg_n, sample_wg_t, sample_wt_t)
         fpr_path = self.workspace.abs_path(fpr_helper.PROVENANCE_OUTPUT)
-        reader = provenance_reader(fpr_path, project, donor, samples,
+        assay = self.WGTS
+        reader = provenance_reader(fpr_path, project, donor, assay, samples,
                                    log_level=self.log_level, log_path=self.log_path)
         if wrapper.my_param_is_null(self.RSEM_GENES_RESULTS_KEY):
             rsem_genes_results = reader.parse_gep_path()
@@ -81,7 +83,6 @@ class main(helper_base):
             'Rscript',
             os.path.join(self.get_module_dir(), 'find_expression.R'),
             '--enscon', wrapper.get_my_string(self.ENSCON_KEY),
-            '--genelist', wrapper.get_my_string(self.GENE_LIST_KEY),
             '--gepfile', gep_abs_path,
             '--outdir', self.workspace.get_work_dir(),
             '--tcgadata', wrapper.get_my_string(self.TCGA_DATA_KEY),

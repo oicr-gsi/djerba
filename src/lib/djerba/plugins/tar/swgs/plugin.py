@@ -11,12 +11,9 @@ import djerba.plugins.tar.swgs.constants as constants
 from djerba.plugins.tar.swgs.preprocess import preprocess
 from djerba.plugins.tar.swgs.extract import data_builder 
 import djerba.core.constants as core_constants
-from djerba.plugins.tar.provenance_tools import parse_file_path
-from djerba.plugins.tar.provenance_tools import subset_provenance
 import gsiqcetl.column
 from gsiqcetl import QCETLCache
 from djerba.util.render_mako import mako_renderer
-import djerba.util.input_params_tools as input_params_tools
 from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
 from djerba.util.oncokb.tools import levels as oncokb_levels
@@ -26,17 +23,15 @@ class main(plugin_base):
     
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'html/swgs_template.html'
-    RESULTS_SUFFIX = '.seg.txt'
-    WORKFLOW = 'ichorcna'
     CNA_ANNOTATED = "data_CNA_oncoKBgenes_nonDiploid_annotated.txt"
 
     def specify_params(self):
 
       discovered = [
-           'donor',
-           'oncotree_code',
-           'tumour_id',
-           'seg_file'
+           constants.DONOR,
+           constants.ONCOTREE,
+           constants.TUMOUR_ID,
+           constants.SEG_FILE
       ]
       for key in discovered:
           self.add_ini_discovered(key)
@@ -57,17 +52,25 @@ class main(plugin_base):
       wrapper = self.get_config_wrapper(config)
       
       # Get input_data.json if it exists; else return None
-      input_data = input_params_tools.get_input_params_json(self)
+      input_data = self.workspace.read_maybe_input_params()
+      for key in [constants.DONOR, constants.ONCOTREE, constants.TUMOUR_ID]:
+            if wrapper.my_param_is_null(key):
+                if input_data != None:
+                    wrapper.set_my_param(key, input_data[key])
+                else:
+                    msg = "Cannot find {0} in manual config or input_params.json".format(key)
+                    self.logger.error(msg)
+                    raise RuntimeError(msg)
 
-      if wrapper.my_param_is_null('donor'):
-          wrapper.set_my_param('donor', input_data['donor'])
-      if wrapper.my_param_is_null('oncotree_code'):
-          wrapper.set_my_param('oncotree_code', input_data['oncotree_code'])
-      if wrapper.my_param_is_null('tumour_id'):
-          wrapper.set_my_param('tumour_id', input_data['tumour_id'])
-      if wrapper.my_param_is_null('seg_file'):
-          wrapper.set_my_param('seg_file', self.get_seg_file(config[self.identifier]['donor']))
-      return config
+      # Get file from path_info.json
+      wrapper = self.update_wrapper_if_null(
+          wrapper,
+          core_constants.DEFAULT_PATH_INFO,
+          constants.SEG_FILE,
+          constants.WF_ICHOR_SEG
+      )
+
+      return config 
 
     def extract(self, config):
       
@@ -134,18 +137,6 @@ class main(plugin_base):
     def render(self, data):
       renderer = mako_renderer(self.get_module_dir())
       return renderer.render_name(self.TEMPLATE_NAME, data)
-
-    def get_seg_file(self, root_sample_name):
-      """
-      pull data from results file
-      """
-      provenance = subset_provenance(self, self.WORKFLOW, root_sample_name)
-      try:
-          results_path = parse_file_path(self, self.RESULTS_SUFFIX, provenance)
-      except OSError as err:
-          msg = "File with extension {0} not found".format(self.RESULTS_SUFFIX)
-          raise RuntimeError(msg) from err
-      return results_path
 
 
     def get_merge_inputs(self, work_dir):

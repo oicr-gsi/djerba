@@ -3,20 +3,16 @@ import csv
 import pandas as pd
 from djerba.plugins.base import plugin_base
 from mako.lookup import TemplateLookup
-import djerba.plugins.tar.snv_indel.snv_indel_tools.constants as constants
-import djerba.plugins.tar.snv_indel.constants as tar_constants
+import djerba.plugins.tar.snv_indel.constants as constants
 from djerba.plugins.tar.snv_indel.snv_indel_tools.preprocess import preprocess
 from djerba.plugins.tar.snv_indel.snv_indel_tools.extract import data_builder as data_extractor 
 import djerba.core.constants as core_constants
 import djerba.plugins.tar.snv_indel.snv_indel_tools.constants as sic
 from djerba.util.subprocess_runner import subprocess_runner
 import djerba.util.provenance_index as index
-from djerba.plugins.tar.provenance_tools import parse_file_path
-from djerba.plugins.tar.provenance_tools import subset_provenance
 from djerba.core.workspace import workspace
 from djerba.util.render_mako import mako_renderer
 from djerba.util.html import html_builder as hb
-import djerba.util.input_params_tools as input_params_tools
 from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
 from djerba.util.environment import directory_finder
@@ -28,9 +24,6 @@ class main(plugin_base):
     PRIORITY = 600
     PLUGIN_VERSION = '1.0.0'
     TEMPLATE_NAME = 'html/snv_indel_template.html'
-    WORKFLOW = 'consensusCruncher'
-    RESULTS_SUFFIX_Pl = 'Pl.merged.maf.gz'
-    RESULTS_SUFFIX_BC = 'BC.merged.maf.gz'
     
     def __init__(self, **kwargs):
       super().__init__(**kwargs)
@@ -38,14 +31,14 @@ class main(plugin_base):
     def specify_params(self):
 
       discovered = [
-           'donor',
-           'oncotree_code',
-           'assay',
-           'cbio_id',
-           'tumour_id',
-           'normal_id',
-           'maf_file',
-           'maf_file_normal',
+           constants.DONOR,
+           constants.ONCOTREE,
+           constants.ASSAY,
+           constants.CBIO_ID,
+           constants.TUMOUR_ID,
+           constants.NORMAL_ID,
+           constants.MAF_FILE,
+           constants.MAF_NORMAL_FILE,
       ]
       for key in discovered:
           self.add_ini_discovered(key)
@@ -55,30 +48,40 @@ class main(plugin_base):
     def configure(self, config):
       config = self.apply_defaults(config)
       wrapper = self.get_config_wrapper(config)
-
       # Get input_data.json if it exists; else return None
-      input_data = input_params_tools.get_input_params_json(self)
-
-
+      input_data = self.workspace.read_maybe_input_params()
       # FIRST PASS: get input parameters
-      if wrapper.my_param_is_null('donor'):
-          wrapper.set_my_param('donor', input_data['donor'])
-      if wrapper.my_param_is_null('assay'):
-          wrapper.set_my_param('assay', input_data['assay'])
-      if wrapper.my_param_is_null('oncotree_code'):
-          wrapper.set_my_param('oncotree_code', input_data['oncotree_code'])
-      if wrapper.my_param_is_null('cbio_id'):
-          wrapper.set_my_param('cbio_id', input_data['cbio_id'])
-      if wrapper.my_param_is_null('tumour_id'):
-          wrapper.set_my_param('tumour_id', input_data['tumour_id'])
-      if wrapper.my_param_is_null('normal_id'):
-          wrapper.set_my_param('normal_id', input_data['normal_id'])
+      for key in [
+          constants.NORMAL_ID,
+          constants.TUMOUR_ID,
+          constants.CBIO_ID,
+          constants.ONCOTREE,
+          constants.ASSAY,
+          constants.DONOR
+      ]:
+          if wrapper.my_param_is_null(key):
+              if input_data != None:
+                  wrapper.set_my_param(key, input_data[key])
+              else:
+                  msg = "Cannot find {0} in manual config or input_params.json".format(key)
+                  self.logger.error(msg)
+                  raise RuntimeError(msg)
       
-      # SECOND PASS: get files
-      if wrapper.my_param_is_null('maf_file'):
-          wrapper.set_my_param("maf_file", self.get_maf_file(config[self.identifier]['donor'], self.RESULTS_SUFFIX_Pl))
-      if wrapper.my_param_is_null('maf_file_normal'):
-          wrapper.set_my_param("maf_file_normal", self.get_maf_file(config[self.identifier]['donor'], self.RESULTS_SUFFIX_BC))
+
+      # Get files from path_info.json
+      wrapper = self.update_wrapper_if_null(
+          wrapper,
+          core_constants.DEFAULT_PATH_INFO,
+          constants.MAF_FILE,
+          constants.WF_MAF
+      )
+      wrapper = self.update_wrapper_if_null(
+          wrapper,
+          core_constants.DEFAULT_PATH_INFO,
+          constants.MAF_NORMAL_FILE,
+          constants.WF_MAF_NORMAL
+      )
+
       return config  
 
     def extract(self, config):
@@ -88,21 +91,24 @@ class main(plugin_base):
       work_dir = self.workspace.get_work_dir()
 
       # Get any input parameters
-      oncotree_code = config[self.identifier]["oncotree_code"]
-      cbio_id = config[self.identifier]["cbio_id"]
-      tumour_id = config[self.identifier]["tumour_id"]
-      normal_id = config[self.identifier]["normal_id"]
-      assay = config[self.identifier]["assay"]
+      oncotree_code = config[self.identifier][constants.ONCOTREE]
+      cbio_id = config[self.identifier][constants.CBIO_ID]
+      tumour_id = config[self.identifier][constants.TUMOUR_ID]
+      normal_id = config[self.identifier][constants.NORMAL_ID]
+      assay = config[self.identifier][constants.ASSAY]
 
       # Get starting plugin data
       data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
       
-      # Get purity
-      with open(os.path.join(work_dir, 'purity.txt'), "r") as file:
-            purity = float(file.readlines()[0]) 
-      
+      # Get purity only if the file exists
+      if self.workspace.has_file('purity.txt'):
+          with open(os.path.join(work_dir, 'purity.txt'), "r") as file:
+              purity = float(file.readlines()[0]) 
+      else:
+          purity = 0 # just needs to be anything less than 10% to ignore copy state
+
       # Preprocessing
-      maf_file = self.filter_maf_for_tar(work_dir, config[self.identifier]["maf_file"], config[self.identifier]["maf_file_normal"])
+      maf_file = self.filter_maf_for_tar(work_dir, config[self.identifier][constants.MAF_FILE], config[self.identifier][constants.MAF_NORMAL_FILE])
       preprocess(config, work_dir, assay, oncotree_code, cbio_id, tumour_id, normal_id, maf_file).run_R_code()
       
       mutations_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED)
@@ -129,18 +135,6 @@ class main(plugin_base):
       renderer = mako_renderer(self.get_module_dir())
       return renderer.render_name(self.TEMPLATE_NAME, data)
 
-    def get_maf_file(self, donor, results_suffix):
-      """
-      pull data from results file
-      """
-      provenance = subset_provenance(self, self.WORKFLOW, donor)
-      try:
-          results_path = parse_file_path(self, results_suffix, provenance)
-      except OSError as err:
-          msg = "File with extension {0} not found".format(results_suffix)
-          raise RuntimeError(msg) from err
-      return results_path
-
     def filter_maf_for_tar(self, work_dir, maf_path, maf_file_normal):
 
       df_bc = pd.read_csv(maf_file_normal,
@@ -155,9 +149,18 @@ class main(plugin_base):
                       compression='gzip',
                       skiprows=[0])
       base_dir = directory_finder(self.log_level, self.log_path).get_base_dir()
-      df_freq = pd.read_csv(os.path.join(base_dir, tar_constants.FREQUENCY_FILE),
+      df_freq = pd.read_csv(os.path.join(base_dir, constants.FREQUENCY_FILE),
                    sep = "\t")
-       
+
+      # Need to clean up the tumour and normal dataframes
+      for column in constants.CLEAN_COLUMNS:
+          # Convert to numeric, setting errors='coerce' to turn non-numeric values into NaN
+          df_pl[column] = pd.to_numeric(df_pl[column], errors='coerce')
+          df_bc[column] = pd.to_numeric(df_bc[column], errors='coerce')
+          # Replace NaN with 0
+          df_pl[column] = df_pl[column].fillna(0)
+          df_bc[column] = df_bc[column].fillna(0)
+
       for row in df_pl.iterrows():
           hugo_symbol = row[1]['Hugo_Symbol']
           chromosome = row[1]['Chromosome']
@@ -205,7 +208,7 @@ class main(plugin_base):
           frequency = row[1]['Freq']
           n_alt_count = row[1]['n_alt_count']
           gnomAD_AF = row[1]['gnomAD_AF']
-          if hugo_symbol not in tar_constants.GENES_TO_KEEP or frequency > 0.1 or n_alt_count > 4 or gnomAD_AF > 0.001:
+          if hugo_symbol not in constants.GENES_TO_KEEP or frequency > 0.1 or n_alt_count > 4 or gnomAD_AF > 0.001:
               df_pl = df_pl.drop(row[0])  
 
       out_path = os.path.join(work_dir, 'filtered_maf_for_tar.maf.gz')
@@ -223,14 +226,14 @@ class main(plugin_base):
       summaries = gene_summary_reader(self.log_level, self.log_path)
       treatments = []
       treatment_option_factory = tom_factory(self.log_level, self.log_path)
-      input_name = constants.MUTATIONS_EXTENDED_ONCOGENIC
+      input_name = sic.MUTATIONS_EXTENDED_ONCOGENIC
       with open(os.path.join(work_dir, input_name)) as input_file:
           reader = csv.DictReader(input_file, delimiter="\t")
           for row_input in reader:
               # record the gene for all reportable alterations
               level = oncokb_levels.parse_oncokb_level(row_input)
               if level not in ['Unknown', 'NA']:
-                  gene = row_input[constants.HUGO_SYMBOL_TITLE_CASE]
+                  gene = row_input[sic.HUGO_SYMBOL_TITLE_CASE]
                   gene_info_entry = gene_info_factory.get_json(
                       gene=gene,
                       summary=summaries.get(gene)
@@ -239,12 +242,12 @@ class main(plugin_base):
               # record therapy for all actionable alterations (OncoKB level 4 or higher)
               therapies = oncokb_levels.parse_actionable_therapies(row_input)
               for level in therapies.keys():
-                  alteration = row_input[constants.HGVSP_SHORT]
+                  alteration = row_input[sic.HGVSP_SHORT]
                   alteration_url = hb.build_alteration_url(gene, alteration, oncotree_code)
                   if gene == 'BRAF' and alteration == 'p.V640E':
                       alteration = 'p.V600E'
-                  if 'splice' in row_input[constants.VARIANT_CLASSIFICATION].lower():
-                      alteration = 'p.? (' + row_input[constants.HGVSC] + ')'
+                  if 'splice' in row_input[sic.VARIANT_CLASSIFICATION].lower():
+                      alteration = 'p.? (' + row_input[sic.HGVSC] + ')'
                       alteration_url = hb.build_alteration_url(gene, "Truncating%20Mutations", oncotree_code)
                   treatment_entry = treatment_option_factory.get_json(
                       tier = oncokb_levels.tier(level),

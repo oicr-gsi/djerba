@@ -26,14 +26,22 @@ class provenance_reader(logger):
     WF_ARRIBA = 'arriba'
     WF_BMPP = 'bamMergePreprocessing_by_sample'
     WF_DELLY = 'delly_matched'
+    WF_GRIDSS = 'gridss'
+    WF_HRDETECT = 'hrDetect'
     WF_MAVIS = 'mavis'
     WF_MRDETECT = 'mrdetect_filter_only'
     WF_MSISENSOR = 'msisensor'
+    WF_MUTECT = 'mutect2_matched'
+    WF_PURPLE = 'purple'
     WF_RSEM = 'rsem'
     WF_SEQUENZA = 'sequenza_by_tumor_group'
     WF_STAR = 'star_call_ready'
     WF_STARFUSION = 'starfusion'
     WF_VEP = 'variantEffectPredictor_matched'
+    WF_VIRUS = 'virusbreakend'
+    WF_IMMUNE = 'immunedeconv'
+    WF_ICHORCNA = 'ichorcna'
+    WF_CONSENSUS = 'consensusCruncher'
 
     # older Vidarr workflow names, deprecated as of 2023-11-13
     WF_BMPP_20231113 = 'bamMergePreprocessing_by_tumor_group'
@@ -50,8 +58,10 @@ class provenance_reader(logger):
 
     # metatype patterns
     MT_PLAIN_TEXT = 'text/plain$'
+    MT_JSON_TEXT = 'text/json$'
     MT_OCTET_STREAM = 'application/octet-stream$'
     MT_VCF_GZ = 'application/vcf-gz$'
+    MT_TXT_VCF = 'text/vcf$'
     MT_TXT_GZ = 'application/te?xt-gz$' # match text OR txt
     MT_ZIP = 'application/zip-report-bundle$'
     MT_BAM = 'application/bam$'
@@ -59,6 +69,9 @@ class provenance_reader(logger):
 
     # placeholder
     WT_SAMPLE_NAME_PLACEHOLDER = 'whole_transcriptome_placeholder'
+
+    # other
+    TAR = 'TAR'
 
     # Includes a concept of 'sample name' (not just 'root sample name')
     # allow user to specify sample names for WG/T, WG/N, WT
@@ -71,7 +84,7 @@ class provenance_reader(logger):
 
     # if conflicting sample names (eg. for different tumour/normal IDs), should fail as it cannot find a unique tumour ID
 
-    def __init__(self, provenance_path, project, donor, samples,
+    def __init__(self, provenance_path, project, donor, assay, samples,
                  log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
         # set some constants for convenience
@@ -82,7 +95,8 @@ class provenance_reader(logger):
         # read and parse file provenance
         self.logger.info("Reading provenance for project '%s' and donor '%s' " % (project, donor))
         self.root_sample_name = donor
-        if not samples.is_valid():
+        self.assay = assay
+        if not samples.is_valid(): 
             msg = "User-supplied sample names are not valid: {0}. ".format(samples)+\
                   "Requires {0} and {1} with optional {2}".format(self.wg_n, self.wg_t, self.wt_t)
             self.logger.error(msg)
@@ -115,7 +129,10 @@ class provenance_reader(logger):
                 distinct_records.add(columns)
             # parse the 'parent sample attributes' value and get a list of dictionaries
             self.attributes = [self._parse_row_attributes(row) for row in distinct_records]
-            self._validate_and_set_sample_names(samples)
+            if assay == self.TAR:
+                self._set_tar_ids(samples)
+            else:
+                self._validate_and_set_sample_names(samples)
             self.patient_id = self._id_patient()
             self.tumour_id = self._id_tumour()
             self.normal_id = self._id_normal()
@@ -126,7 +143,9 @@ class provenance_reader(logger):
         wgs_to_check = [
             [self.WF_BMPP, self.WF_BMPP_20231113, self.NIASSA_WF_BMPP],
             [self.WF_SEQUENZA, self.NIASSA_WF_SEQUENZA],
-            [self.WF_VEP, self.WF_VEP_20231113, self.NIASSA_WF_VEP]
+            [self.WF_VEP, self.WF_VEP_20231113, self.NIASSA_WF_VEP],
+            [self.WF_VIRUS],
+            [self.WF_IMMUNE]
         ]
         wts_to_check = [
             [self.WF_ARRIBA],
@@ -236,6 +255,17 @@ class provenance_reader(logger):
             value = None
         return value
 
+    def _set_tar_ids(self, samples):
+        """
+        Does not find TAR ids.
+        Only grabs what is manually specified, as a work around.
+        Will become obsolete with Cardea.
+        """
+        samples_dict = samples.__dict__['samples']
+        self.sample_name_wg_n = samples_dict[ini.SAMPLE_NAME_WG_N] # acts as targeted normal
+        self.sample_name_wg_t = samples_dict[ini.SAMPLE_NAME_WG_T] # acts as targeted tumour
+        self.sample_name_wt_t = samples_dict[ini.SAMPLE_NAME_WT_T] # acts as shallow tumour
+    
     def _id_normal(self):
         self.logger.debug("Finding normal ID")
         normal_id = self._id_tumour_normal(self.patient_id, reference=True)
@@ -389,10 +419,9 @@ class provenance_reader(logger):
             self.logger.info("Consistency check between supplied and inferred sample names: OK")
         else:
             msg = "Conflicting sample names: {0} from file provenance, ".format(fpr_samples)+\
-                  "{1} from user input. ".format(sample_inputs)+\
+                  "{0} from user input. ".format(sample_inputs)+\
                   "If INI config has user-supplied sample names, check they are correct."
-            self.logger.error(msg)
-            raise SampleNameConflictError(msg)
+            self.logger.warning(msg)
         # Finally, set relevant instance variables
         self.sample_name_wg_n = fpr_samples.get(self.wg_n)
         self.sample_name_wg_t = fpr_samples.get(self.wg_t)
@@ -445,6 +474,24 @@ class provenance_reader(logger):
         suffix = '\.genes\.results$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
+    def parse_gridss_path(self):
+        workflows = [self.WF_GRIDSS]
+        mt = self.MT_TXT_VCF
+        suffix = '\.allocated\.vcf$'
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
+
+    def parse_hrdetect_path(self):
+        workflows = [self.WF_HRDETECT]
+        mt = self.MT_JSON_TEXT
+        suffix = '\.signatures\.json$'
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
+
+    def parse_immune_path(self):
+        workflow = self.WF_IMMUNE
+        mt = self.MT_OCTET_STREAM
+        suffix = 'immunedeconv_CIBERSORT-Percentiles\.csv$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
+
     def parse_maf_path(self):
         workflows = [self.WF_VEP, self.WF_VEP_20231113, self.NIASSA_WF_VEP]
         mt = self.MT_TXT_GZ
@@ -466,7 +513,7 @@ class provenance_reader(logger):
     def parse_msi_path(self):
         workflows = [self.WF_MSISENSOR]
         mt = self.MT_OCTET_STREAM
-        suffix = 'filter\.deduped\.realigned\.recalibrated\.msi\.booted$'
+        suffix = 'recalibrated\.msi\.booted$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_mrdetect_path(self):
@@ -474,13 +521,67 @@ class provenance_reader(logger):
         mt = self.MT_PLAIN_TEXT
         suffix = 'SNP\.count\.txt$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
+    
+    def parse_mutect_path(self):
+        workflows = [self.WF_MUTECT]
+        mt = self.MT_VCF_GZ
+        suffix = '\.mutect2\.filtered\.vcf\.gz$'
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
+
+    def parse_purple_zip_path(self):
+        workflow = self.WF_PURPLE
+        mt = self.MT_ZIP
+        suffix = 'purple\.zip$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
 
     def parse_starfusion_predictions_path(self):
         workflows = [self.WF_STARFUSION, self.NIASSA_WF_STARFUSION]
         mt = self.MT_OCTET_STREAM
         suffix = 'star-fusion\.fusion_predictions\.tsv$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wt_t)
+    
+    def parse_tar_ichorcna_json_path(self):
+        workflow = self.WF_ICHORCNA
+        mt = self.MT_JSON_TEXT
+        suffix = '\_metrics.json$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
+    def parse_tar_ichorcna_seg_path(self):
+        workflow = self.WF_ICHORCNA
+        mt = self.MT_PLAIN_TEXT
+        suffix = '\.seg\.txt$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
+
+    def parse_tar_metrics_normal_path(self):
+        workflow = self.WF_CONSENSUS
+        mt = self.MT_PLAIN_TEXT
+        suffix = 'allUnique-hsMetrics\.HS\.txt$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_n)
+
+    def parse_tar_metrics_tumour_path(self):
+        workflow = self.WF_CONSENSUS
+        mt = self.MT_PLAIN_TEXT
+        suffix = 'allUnique-hsMetrics\.HS\.txt$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
+
+    def parse_tar_maf_normal_path(self):
+        workflow = self.WF_CONSENSUS
+        mt = self.MT_TXT_GZ
+        suffix = 'merged\.maf\.gz$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_n)
+
+    def parse_tar_maf_tumour_path(self):
+        workflow = self.WF_CONSENSUS
+        mt = self.MT_TXT_GZ
+        suffix = 'merged\.maf\.gz$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
+
+    def parse_virus_path(self):
+        workflow = self.WF_VIRUS
+        mt = self.MT_OCTET_STREAM
+        suffix = 'virusbreakend\.vcf\.summary\.tsv$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
+    
     def parse_wg_bam_path(self):
         workflows = [self.WF_BMPP, self.WF_BMPP_20231113, self.NIASSA_WF_BMPP]
         mt = self.MT_BAM

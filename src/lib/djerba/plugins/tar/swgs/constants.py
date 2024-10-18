@@ -1,7 +1,12 @@
 """
 This file contains a list of constants to be used in the sWGS plugin.
-AUTHOR: Aqsa Alam
 """
+# Configuration
+DONOR = 'donor'
+ONCOTREE = 'oncotree_code'
+TUMOUR_ID = 'tumour_id'
+SEG_FILE = 'seg_file'
+WF_ICHOR_SEG = 'seg'
 
 # For file provenance
 MT_SEG = 'application/seg-txt$'

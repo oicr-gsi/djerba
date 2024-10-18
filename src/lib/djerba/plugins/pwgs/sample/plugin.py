@@ -3,6 +3,7 @@ import os
 import csv
 import logging
 import json
+import requests
 
 from mako.lookup import TemplateLookup
 from djerba.plugins.base import plugin_base
@@ -21,25 +22,25 @@ except ImportError:
 
 class main(plugin_base):
 
-    PRIORITY = 100
-    PLUGIN_VERSION = '1.1'
+    PRIORITY = 160
+    PLUGIN_VERSION = '1.2'
     QCETL_CACHE = "/scratch2/groups/gsi/production/qcetl_v1"
 
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
-        group_id = config[self.identifier][pc.GROUP_ID]
-        qc_dict = self.fetch_coverage_etl_data(group_id, config)
-        if wrapper.my_param_is_null(pc.INSERT_SIZE):
-            wrapper.set_my_param(pc.INSERT_SIZE, int(qc_dict[pc.INSERT_SIZE]))
-        if wrapper.my_param_is_null(pc.COVERAGE):
-            wrapper.set_my_param(pc.COVERAGE, float(qc_dict[pc.COVERAGE]))
-        if wrapper.my_param_is_null(pc.BAMQC):
-            wrapper.set_my_param(pc.BAMQC, pwgs_tools.subset_provenance(self, "dnaSeqQC", group_id, pc.BAMQC_SUFFIX))
-        if wrapper.my_param_is_null(pc.SNV_COUNT):
-            wrapper.set_my_param(pc.SNV_COUNT,  self.preprocess_snv_count(group_id))
-        if wrapper.my_param_is_null(pc.RESULTS_FILE):
-            wrapper.set_my_param(pc.RESULTS_FILE, pwgs_tools.subset_provenance(self, "mrdetect", group_id, pc.RESULTS_SUFFIX))
+
+        qc_metrics =[
+                pc.INSERT_SIZE,
+                pc.COVERAGE 
+            ]
+        for metric in qc_metrics:
+            wrapper = self.fill_qc_if_null(wrapper, config, metric)
+
+        wrapper = self.fill_file_if_null(wrapper, pc.SNV_COUNT, pc.SNV_COUNT_SUFFIX)
+        wrapper = self.fill_file_if_null(wrapper, pc.BAMQC, pc.BAMQC_SUFFIX)
+        wrapper = self.fill_file_if_null(wrapper, pc.RESULTS_FILE, pc.RESULTS_SUFFIX)
+
         return wrapper.get_config()
 
     def extract(self, config):
@@ -54,31 +55,21 @@ class main(plugin_base):
             self.logger.info("PWGS SAMPLE: ctDNA inconclusive")
         self.plot_insert_size(self.preprocess_bamqc(config[self.identifier][pc.BAMQC]), 
                                 output_dir = self.workspace.print_location())
-        patient_data = self.preprocess_wgs_json(config[self.identifier][pc.WGS_JSON])
         self.logger.info("PWGS SAMPLE: All data extracted")
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         results =  {
-                pc.REQ_APPROVED: config[self.identifier][pc.REQ_APPROVED],
-                pc.CTDNA_OUTCOME: mrdetect_results[pc.CTDNA_OUTCOME],
                 pc.INSERT_SIZE: int(config[self.identifier][pc.INSERT_SIZE]),
                 pc.COVERAGE: float(config[self.identifier][pc.COVERAGE]),
-                pc.SNV_COUNT: int(config[self.identifier][pc.SNV_COUNT]),
-                pc.GROUP_ID: config[self.identifier][pc.GROUP_ID],
-                'assay': "plasma Whole Genome Sequencing (pWGS) - 30X (v1.0)",
-                'primary_cancer': patient_data['Primary cancer'],
-                'donor': patient_data['Patient LIMS ID'],
-                'wgs_report_id': patient_data['Report ID'],
-                'Patient Study ID': patient_data[pc.PATIENT_ID],
-                'study_title':  config[self.identifier]['study_id'],
-                'pwgs_report_id': "-".join((config[self.identifier][pc.GROUP_ID],"".join(("v",config['core']['report_version'])))),
-                'ctdna_detection': ctdna_detection
+                pc.SNV_COUNT: int(self.preprocess_snv_count(config[self.identifier][pc.SNV_COUNT])),
+                pc.CTDNA_OUTCOME: mrdetect_results[pc.CTDNA_OUTCOME],
+                pc.CTDNA_DETECTION: ctdna_detection
             }
         data[pc.RESULTS] = results
         return data
 
     def fetch_coverage_etl_data(self, group_id, config):
         '''fetch median insert size and coverage QC metrics from QC-ETL'''
-        self.etl_cache = QCETLCache(config[self.identifier]['qcetl_cache'])
+        self.etl_cache = QCETLCache(config[self.identifier][pc.QCETL_CACHE])
         cached_coverages = self.etl_cache.bamqc4merged.bamqc4merged
         columns_of_interest = gsiqcetl.column.BamQc4MergedColumn
         data = cached_coverages.loc[
@@ -106,6 +97,31 @@ class main(plugin_base):
                 raise ValueError(msg)
         return(qc_dict)
 
+    def fill_file_if_null(self, wrapper, ini_parameter_name, file_suffix):
+        if wrapper.my_param_is_null(ini_parameter_name):
+            path_info = self.workspace.read_json(core_constants.DEFAULT_PATH_INFO)
+            snv_count_path = path_info.get(file_suffix)
+            if snv_count_path == None:
+                msg = 'Cannot find {0} path'.format(ini_parameter_name)
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            wrapper.set_my_param(ini_parameter_name,  snv_count_path)
+        return(wrapper)
+    
+    def fill_qc_if_null(self, wrapper, config, parameter_name):
+        if wrapper.my_param_is_null(parameter_name):
+            work_dir = self.workspace.get_work_dir()
+            if os.path.exists(os.path.join(work_dir,core_constants.DEFAULT_SAMPLE_INFO)):
+                sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
+                group_id = sample_info.get('tumour_id')
+            else:
+                msg = 'tumour_id not found for querying qc-etl, specify QC values in INI'
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            qc_dict = self.fetch_coverage_etl_data(group_id, config)
+            wrapper.set_my_param(parameter_name, int(qc_dict[parameter_name]))
+        return(wrapper)
+    
     def plot_insert_size(self, is_path, output_dir ):
         '''call R to plot insert size distribution'''
         args = [
@@ -129,12 +145,10 @@ class main(plugin_base):
                 csv_out.writerow([i,is_data[i]])
         return(file_location)
     
-    def preprocess_snv_count(self, group_id, snv_count_path = "None" ):
+    def preprocess_snv_count(self, snv_count_path ):
         """
         pull SNV count from file
         """
-        if snv_count_path == "None":
-            snv_count_path = pwgs_tools.subset_provenance(self, "mrdetect", group_id, pc.SNV_COUNT_SUFFIX)
         with open(snv_count_path, 'r') as hbc_file:
             reader_file = csv.reader(hbc_file, delimiter="\t")
             for row in reader_file:
@@ -145,27 +159,12 @@ class main(plugin_base):
                     raise RuntimeError(msg) from err
         return int(snv_count)
     
-    def preprocess_wgs_json(self, wgs_json):
-        '''find patient info from WGS/WGTS djerba report json'''
-        with open(wgs_json, 'r') as wgs_results:
-            data = json.load(wgs_results)
-        patient_data = data["report"]["patient_info"]
-        return(patient_data)
-
     def render(self, data):
         renderer = mako_renderer(self.get_module_dir())
         return renderer.render_name(pc.SAMPLE_TEMPLATE_NAME, data)
     
     def specify_params(self):
-        self.set_ini_default('qcetl_cache', self.QCETL_CACHE)
-        required = [
-            pc.REQ_APPROVED,
-            pc.GROUP_ID,
-            pc.WGS_JSON,
-            'study_id'
-        ]
-        for key in required:
-            self.add_ini_required(key)
+        self.set_ini_default(pc.QCETL_CACHE, self.QCETL_CACHE)
         discovered = [
             pc.BAMQC,
             pc.RESULTS_FILE,

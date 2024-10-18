@@ -8,6 +8,8 @@ import time
 import djerba.core.constants as cc
 from djerba.core.base import base as core_base
 from djerba.core.configure import config_wrapper
+from djerba.util.date import get_timestamp
+from djerba.version import get_djerba_version
 
 class extraction_setup(core_base):
 
@@ -23,8 +25,10 @@ class extraction_setup(core_base):
             cc.REPORT_ID
         ]
         core_params = {x: config.get(cc.CORE, x) for x in core_config_keys}
+        # add the core release version
+        core_params[cc.CORE_VERSION] = get_djerba_version()
         # add the timestamp in UTC
-        core_params[cc.EXTRACT_TIME] = time.strftime('%Y-%m-%d_%H:%M:%SZ', time.gmtime())
+        core_params[cc.EXTRACT_TIME] = get_timestamp()
         return core_params
 
     def _get_merger_params(self, config):
@@ -55,7 +59,8 @@ class extraction_setup(core_base):
             cc.CORE: self._get_core_params(config),
             cc.PLUGINS: {},
             cc.MERGERS: self._get_merger_params(config),
-            cc.CONFIG: {s:dict(config.items(s)) for s in config.sections()}
+            cc.CONFIG: {s:dict(config.items(s)) for s in config.sections()},
+            cc.HTML_CACHE: {}
         }
         return data
 

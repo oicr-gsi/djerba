@@ -1,9 +1,5 @@
 #! /usr/bin/env python3
 
-"""
-Test of the snv_indel plugin
-"""
-
 import os
 import unittest
 import tempfile
@@ -12,6 +8,7 @@ import string
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 from djerba.core.workspace import workspace
+from djerba.util.environment import directory_finder
 
 class TestTarSwgsPlugin(PluginTester):
 
@@ -22,14 +19,13 @@ class TestTarSwgsPlugin(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
-        sup_dir_var = 'DJERBA_TEST_DATA'
-        self.sup_dir = os.environ.get(sup_dir_var)
+        self.sup_dir = directory_finder().get_test_dir()
 
-        self.provenance_output = os.path.join(self.sup_dir, "swgs-plugin/provenance_subset.tsv.gz")
-        self.purity_pass = os.path.join(self.sup_dir, "swgs-plugin/purity_pass/purity.txt")
-        self.purity_fail = os.path.join(self.sup_dir, "swgs-plugin/purity_fail/purity.txt")
-        self.purity_pass_json = os.path.join(self.sup_dir, "swgs-plugin/purity_pass/tar_swgs_purity_pass.json")
-        self.purity_fail_json = os.path.join(self.sup_dir, "swgs-plugin/purity_fail/tar_swgs_purity_fail.json")
+        self.provenance_output = os.path.join(self.sup_dir, "plugins/tar/tar-cnv/provenance_subset.tsv.gz")
+        self.purity_pass = os.path.join(self.sup_dir, "plugins/tar/tar-cnv/purity_pass/purity.txt")
+        self.purity_fail = os.path.join(self.sup_dir, "plugins/tar/tar-cnv/purity_fail/purity.txt")
+        self.purity_pass_json = os.path.join(self.sup_dir, "plugins/tar/tar-cnv/purity_pass/tar_swgs_purity_pass.json")
+        self.purity_fail_json = os.path.join(self.sup_dir, "plugins/tar/tar-cnv/purity_fail/tar_swgs_purity_fail.json")
 
     def testTarSwgsPurityPass(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -47,12 +43,12 @@ class TestTarSwgsPlugin(PluginTester):
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
 
-        json_location = os.path.join(self.sup_dir ,"swgs-plugin/purity_pass/tar_swgs_purity_pass.json")
+        json_location = os.path.join(self.sup_dir ,"plugins/tar/tar-cnv/purity_pass/tar_swgs_purity_pass.json")
 
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: 'ed64edbf5f50a19b856d09789bf35f81'
+            self.MD5: '8915b9530caa30b2b58bbe1a97057cc4'
         }
         self.run_basic_test(input_dir, params)
 
@@ -72,12 +68,12 @@ class TestTarSwgsPlugin(PluginTester):
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
 
-        json_location = os.path.join(self.sup_dir ,"swgs-plugin/purity_fail/tar_swgs_purity_fail.json")
+        json_location = os.path.join(self.sup_dir ,"plugins/tar/tar-cnv/purity_fail/tar_swgs_purity_fail.json")
 
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '04e08becd28fcdbc7fc31bee4fe5d4f4'
+            self.MD5: 'c9a2bfa63dc67c0ca3b9d23126d108df'
         }
         self.run_basic_test(input_dir, params)
     

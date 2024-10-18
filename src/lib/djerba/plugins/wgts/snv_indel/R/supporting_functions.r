@@ -129,3 +129,12 @@ procVEP <- function(maf_df){
   return(df_filt)
 }
 
+computeLOH <- function(data, purity){
+
+  temp_table <- data %>% mutate(LHS = tumour_vaf/purity*CN)
+  final_table <- temp_table %>% mutate(RHS = CN-0.5)
+
+  final_table$LOH <- final_table$LHS > final_table$RHS & final_table$MACN <= 0.5 
+
+  return(final_table)
+}

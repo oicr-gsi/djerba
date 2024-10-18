@@ -1,5 +1,6 @@
 CORE = 'core'
 NULL = '__DJERBA_NULL__'
+VERSION = 'version'
 TEXT_ENCODING = 'utf-8'
 
 # shared constants for core classes
@@ -52,12 +53,17 @@ ARCHIVE_NAME = 'archive_name'
 ARCHIVE_URL = 'archive_url'
 AUTHOR = 'author'
 EXTRACT_TIME = 'extract_time'
-SAMPLE_INFO = 'sample_info'
+INPUT_PARAMS_FILE = 'input_params'
+REQUISITION_ID = 'requisition_id'
 STYLESHEET = 'stylesheet'
 DOCUMENT_CONFIG = 'document_config'
 PLUGINS = 'plugins'
 MERGERS = 'mergers'
 CONFIG = 'config'
+HTML_CACHE = 'html_cache'
+COMPONENT_START = 'DJERBA_COMPONENT_START'
+COMPONENT_END = 'DJERBA_COMPONENT_END'
+CORE_VERSION = 'core_version'
 
 # keys for sample ID file written by provenance helper
 # TODO remove duplicate versions from provenance helper main
@@ -69,6 +75,7 @@ NORMAL_ID = 'normal_id'
 
 # core config defaults
 DEFAULT_PATH_INFO = "path_info.json"
+DEFAULT_INPUT_PARAMS = "input_params.json"
 DEFAULT_SAMPLE_INFO = "sample_info.json"
 DEFAULT_CSS = "stylesheet.css"
 DEFAULT_AUTHOR = "CGI Author"
@@ -93,6 +100,7 @@ FOOTER = 'footer'
 MERGE_LIST = 'merge_list'
 MERGED_FILENAME = 'merged_filename'
 PAGE_FOOTER = 'page_footer'
+PDF_FOOTERS = 'pdf_footers'
 
 # keywords for plugin structure
 RESULTS = 'results'
@@ -101,3 +109,6 @@ SUMMARY = 'Summary'
 
 # keyword for OncoKB level
 ONCOKB = 'OncoKB'
+
+# JSON file suffix
+REPORT_JSON_SUFFIX = '_report.json'

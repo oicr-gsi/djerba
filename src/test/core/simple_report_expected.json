@@ -2,8 +2,9 @@
     "core": {
         "author": "CGI Author",
         "document_config": "document_config.json",
+	"core_version": "placeholder",
         "report_id": "placeholder",
-        "extract_time": "placeholder"
+        "extract_time": "2024-01-01_12:00:00 -0500"
     },
     "plugins": {
         "demo1": {
@@ -70,7 +71,7 @@
     },
     "mergers": {
         "gene_information_merger": {
-            "render_priority": 1100,
+            "render_priority": 2000,
             "attributes": [
                 "clinical",
                 "supplementary"
@@ -90,7 +91,7 @@
             "archive_name": "djerba",
             "archive_url": "http://${username}:${password}@${address}:${port}",
             "author": "CGI Author",
-            "sample_info": "sample_info.json",
+            "input_params": "input_params.json",
             "document_config": "document_config.json"
         },
         "demo1": {
@@ -116,8 +117,11 @@
         "gene_information_merger": {
             "attributes": "clinical,supplementary",
             "depends_configure": "",
-            "configure_priority": "1100",
-            "render_priority": "1100"
+            "configure_priority": "2000",
+            "render_priority": "2000"
         }
+    },
+    "html_cache": {
+	"placeholder_report.clinical": "placeholder"
     }
 }

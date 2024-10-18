@@ -1,6 +1,7 @@
 <%
   import djerba.core.constants as core_constants
   from djerba.plugins.case_overview.plugin import main as case_overview
+  from djerba.util.date import get_todays_date
 %>
 
 <hr class="big-white-line" >
@@ -33,7 +34,11 @@
       <tr>
 	<td width="24%">Patient LIMS ID:</td>
 	<td width="13%">${results.get(core_constants.DONOR)}</td>
-	<td width="20%">Tumour Sample ID:</td>
+	% if results.get(case_overview.ASSAY) == "TAR":
+		<td width="20%">Plasma Sample ID:</td>
+	% else:
+		<td width="20%">Tumour Sample ID:</td>
+	% endif
 	<td width="36%">${results.get(case_overview.TUMOUR_SAMPLE_ID)}</td>
       </tr>
       <tr>
@@ -44,7 +49,7 @@
       </tr>
       <tr>
 	<td width="24%">Date of Report:</td>
-	<td width="13%">yyyy/mm/dd</td>
+	<td width="13%">${get_todays_date()}</td>
 	<td width="20%">Report ID:</td>
 	<td width="36%">${results.get(core_constants.REPORT_ID)}</td>
       </tr>

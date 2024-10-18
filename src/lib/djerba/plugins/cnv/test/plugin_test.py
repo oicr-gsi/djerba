@@ -13,6 +13,7 @@ from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 from djerba.plugins.cnv.plugin import main as cnv
 from djerba.core.workspace import workspace
+from djerba.util.environment import directory_finder
 
 class TestWgtsCnv(PluginTester):
 
@@ -20,7 +21,7 @@ class TestWgtsCnv(PluginTester):
     JSON_NAME = 'cnv.json'
 
     def testWgtsCnv(self):
-        sup_dir = os.environ.get('DJERBA_TEST_DATA')
+        sup_dir = directory_finder().get_test_dir()
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
         data_dir = os.path.join(sup_dir, 'plugins', 'cnv')
         sequenza_filename = 'PANX_1391_Lv_M_WG_100-NH-020_LCM3_results.test.zip'
@@ -43,13 +44,13 @@ class TestWgtsCnv(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: self.JSON_NAME,
-            self.MD5: '317e76fb2baeb7149652ec5782622e79'
+            self.MD5: 'abdd11282b2f3dea6d09daf50bf0b071'
         }
         self.run_basic_test(input_dir, params, work_dir=work_dir)
 
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""
-        del data['plugins']['cnv']['results']['cnv plot']
+        del data['results']['cnv plot']
         return data 
 
 if __name__ == '__main__':

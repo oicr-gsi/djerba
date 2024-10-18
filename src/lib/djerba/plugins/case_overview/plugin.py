@@ -10,11 +10,11 @@ in case assay names are introduced/changed at short notice
 
 import os
 import logging
-from time import strftime
 from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.util.render_mako import mako_renderer
 import djerba.core.constants as core_constants
-import djerba.util.input_params_tools as input_params_tools
+import djerba.util.assays as assays
+
 
 class main(plugin_base):
 
@@ -36,87 +36,69 @@ class main(plugin_base):
     DONOR = "donor"
     TUMOUR_SAMPLE_ID = "tumour_id"
     TUMOUR_DEPTH = 80
-    NORMAL_DEPTH = 40
-
-    ASSAY_LOOKUP = {
-        # WGTS/WGS default to 80X
-        'WGTS': 'Whole genome and transcriptome sequencing (WGTS)'+\
-        '-80X Tumour, 30X Normal (v3.0)',
-        'WGS': 'Whole genome sequencing (WGS)-80X Tumour, 30X Normal (v3.0)',
-        # WGTS/WGS at 40X - seldom done now, but included for completeness
-        'WGTS40X': 'Whole genome and transcriptome sequencing (WGTS)'+\
-        '-40X Tumour, 30X Normal (v3.0)',
-        'WGS40X': 'Whole genome sequencing (WGS)-40X Tumour, 30X Normal (v3.0)',
-        # TAR
-        'TAR': 'Targeted Sequencing - REVOLVE Panel - cfDNA and Buffy Coat (v1.0)'
-    }
 
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         report_id = wrapper.get_core_string(core_constants.REPORT_ID)
         wrapper.set_my_param(core_constants.REPORT_ID, report_id)
-        work_dir = self.workspace.get_work_dir()        
+        # Look up assay long name from assay short name
+        # use manually configured values if available
+        # otherwise, check for JSON file(s):
+        # 1) input_params.json
+        # - written by input_params_helper or tar_input_params_helper
+        # - has general purpose values for all assays
+        # - for TAR only, also has sample IDs and patient study ID
+        # 2) sample_info.json
+        # - written by provenance_helper
+        # - for non-TAR reports only, has sample IDs and patient study ID
+        input_params = self.workspace.read_maybe_input_params()
         
-        # Get input_data.json if it exists; else return None
-        input_data = input_params_tools.get_input_params_json(self)
-        if input_data == None:
-            msg = "Input_params.json does not exist. Parameters must be set manually."
-            self.logger.warning(msg)
+        id_keys = [
+            self.BLOOD_SAMPLE_ID,
+            self.TUMOUR_SAMPLE_ID,
+            core_constants.PATIENT_STUDY_ID
+        ]
+        
+        if input_params:
+            keys = [
+                self.PRIMARY_CANCER,
+                self.REQUISITION_APPROVED,
+                self.SITE_OF_BIOPSY,
+                self.DONOR,
+                self.STUDY,
+                self.ASSAY
+            ]
+            for key in keys:
+                wrapper.set_my_param_if_null(key, input_params[key])
+        
 
-        # Get parameters from input_params.json if not manually specified
-        if wrapper.my_param_is_null(self.PRIMARY_CANCER):
-            wrapper.set_my_param(self.PRIMARY_CANCER, input_data[self.PRIMARY_CANCER])
-        if wrapper.my_param_is_null(self.REQUISITION_APPROVED):
-            wrapper.set_my_param(self.REQUISITION_APPROVED, input_data[self.REQUISITION_APPROVED])
-        if wrapper.my_param_is_null(self.SITE_OF_BIOPSY):
-            wrapper.set_my_param(self.SITE_OF_BIOPSY, input_data[self.SITE_OF_BIOPSY])
-        if wrapper.my_param_is_null(self.DONOR):
-            wrapper.set_my_param(self.DONOR, input_data[self.DONOR])
-        if wrapper.my_param_is_null(self.STUDY):
-            wrapper.set_my_param(self.STUDY, input_data[self.STUDY])
-        if wrapper.my_param_is_null(self.ASSAY):
-            wrapper.set_my_param(self.ASSAY, input_data[self.ASSAY])
-        
-        # Get assay
-        assay = config[self.identifier][self.ASSAY]
-        
+        # Now, get assay, for assay related information.
+        assay = wrapper.get_my_string(self.ASSAY)
+
+        if assay == assays.TAR:
+            if input_params:
+                for key in id_keys:
+                    wrapper.set_my_param_if_null(key, input_params[key])
+       
+        if assay!=assays.TAR and self.workspace.has_file(core_constants.DEFAULT_SAMPLE_INFO):
+            sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
+            for key in id_keys:
+                # non-TAR uses sample_info.json for ID values
+                wrapper.set_my_param_if_null(key, sample_info[key])
+
         # Look up assay long name from assay short name
         if wrapper.my_param_is_null(self.ASSAY_DESCRIPTION):
-            assay_description = self.ASSAY_LOOKUP.get(assay)
-            if assay_description == None:
-                msg = "Assay short name '{0}' not found in lookup table {1}".format(
-                    assay, self.ASSAY_LOOKUP
-                )
+            [ok, msg] = assays.name_status(assay)
+            if ok:
+                self.logger.debug("Found assay name '{0}' in lookup table".format(assay))
+                wrapper.set_my_param(self.ASSAY_DESCRIPTION, assays.get_description(assay))
+            else:
+                msg = "Cannot resolve assay description from config or default lookup: "+msg
                 self.logger.error(msg)
                 raise DjerbaPluginError(msg)
-            else:
-                self.logger.debug("Found assay name in lookup table")
-                wrapper.set_my_param(self.ASSAY_DESCRIPTION, assay_description)
 
-        # Get parameters from default sample info
-        if wrapper.my_param_is_null(core_constants.DEFAULT_SAMPLE_INFO) and assay != "TAR":
-            wrapper.set_my_param(core_constants.DEFAULT_SAMPLE_INFO, os.path.join(work_dir, core_constants.DEFAULT_SAMPLE_INFO))
-            info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
-            try:
-                wrapper.set_my_param(core_constants.PATIENT_STUDY_ID, info[core_constants.PATIENT_STUDY_ID])
-                wrapper.set_my_param(self.BLOOD_SAMPLE_ID, info[core_constants.NORMAL_ID])
-                wrapper.set_my_param(self.TUMOUR_SAMPLE_ID, info[core_constants.TUMOUR_ID])
-            except KeyError as err:
-                msg = "ID not found in sample info {0}: {1}".format(info, err)
-                self.logger.error(msg)
-                raise DjerbaPluginError(msg) from err
 
-        # TAR can use normal and tumour ids from input_params_helper
-        elif assay == "TAR":
-            if wrapper.my_param_is_null(core_constants.DEFAULT_SAMPLE_INFO):
-                wrapper.set_my_param(core_constants.DEFAULT_SAMPLE_INFO, "None")
-            if wrapper.my_param_is_null(self.BLOOD_SAMPLE_ID):
-                wrapper.set_my_param(self.BLOOD_SAMPLE_ID, input_data['normal_id'])
-            if wrapper.my_param_is_null(self.TUMOUR_SAMPLE_ID):
-                wrapper.set_my_param(self.TUMOUR_SAMPLE_ID, input_data['tumour_id'])
-            if wrapper.my_param_is_null(core_constants.PATIENT_STUDY_ID):
-                wrapper.set_my_param(core_constants.PATIENT_STUDY_ID, input_data[core_constants.PATIENT_STUDY_ID])
         return wrapper.get_config()
 
     def extract(self, config):
@@ -152,15 +134,14 @@ class main(plugin_base):
             self.TUMOUR_SAMPLE_ID,
             self.BLOOD_SAMPLE_ID,
             core_constants.REPORT_ID,
-            self.REQUISITION_APPROVED,
-            core_constants.DEFAULT_SAMPLE_INFO
+            self.REQUISITION_APPROVED
         ]
         for key in discovered:
             self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_ini_default(core_constants.DEPENDS_CONFIGURE, 'provenance_helper')
         self.set_priority_defaults(self.PRIORITY)
-        self.set_ini_default('render_priority', 10)
+        self.set_ini_default('render_priority', 40)
 
     def render(self, data):
         renderer = mako_renderer(self.get_module_dir())

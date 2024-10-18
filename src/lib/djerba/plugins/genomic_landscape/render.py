@@ -11,35 +11,27 @@ class html_builder:
         cell = template.format(biomarker,plot)
         return(cell)
 
-    def biomarker_table_rows(self, biomarkers, purity):
+    def biomarker_table_rows(self, biomarkers, can_report_hrd, can_report_msi):
         rows = []
         for marker, info in biomarkers.items():
-            cells = [
-                hb.td(info[constants.ALT]),
-                hb.td(info[constants.METRIC_ALTERATION]),
-                hb.td(self.assemble_biomarker_plot(info[constants.ALT], info[constants.METRIC_PLOT]))
-            ]
-            if marker == "MSI" and purity < 50:
+            if marker == "HRD" and not can_report_hrd:
                 cells = [
                     hb.td(info[constants.ALT]),
                     hb.td("NA"),
-                    hb.td("Cancer cell content &#8804; 50 &#37;, below threshold to call MS score")
+                    hb.td("Cancer cell content below threshold to evaluate HRD; must be &#8805;50&#37; for FFPE samples, &#8805;30&#37; otherwise")
+                ]
+            elif marker == "MSI" and not can_report_msi:
+                cells = [
+                    hb.td(info[constants.ALT]),
+                    hb.td("NA"),
+                    hb.td("Cancer cell content below threshold to call MS score; must be &#8805;50&#37;")
+                ]
+            else:
+                cells = [
+                    hb.td(info[constants.ALT]),
+                    hb.td(info[constants.METRIC_ALTERATION]),
+                    hb.td(self.assemble_biomarker_plot(info[constants.ALT], info[constants.METRIC_PLOT]))
                 ]
             rows.append(hb.table_row(cells))
         return rows
 
-    def make_ordinal(self,n):
-        '''
-        Convert an integer into its ordinal representation::
-
-            make_ordinal(0)   => '0th'
-            make_ordinal(3)   => '3rd'
-            make_ordinal(122) => '122nd'
-            make_ordinal(213) => '213th'
-        '''
-        n = int(n)
-        if 11 <= (n % 100) <= 13:
-            suffix = 'th'
-        else:
-            suffix = ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]
-        return str(n) + suffix

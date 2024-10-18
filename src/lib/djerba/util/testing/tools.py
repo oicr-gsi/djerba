@@ -1,5 +1,5 @@
 """
-Test base class; called 'trial.py' to hide from automated unittest discovery
+Test base class
 """
 
 import gzip
@@ -26,7 +26,7 @@ class TestBase(unittest.TestCase):
     def assert_report_MD5(self, report_string, expected_md5):
         body = self.redact_html(report_string)
         self.assertEqual(self.getMD5_of_string(body), expected_md5)
-    
+
     def getMD5(self, inputPath):
         with open(inputPath, 'r') as f:
             md5sum = self.getMD5_of_string(f.read())
@@ -55,14 +55,22 @@ class TestBase(unittest.TestCase):
         # based on check_report() from original djerba test.py
         # substitute out any date strings and check md5sum of the report body
         contents = re.split("\n", report_string)
-        # crudely parse out the HTML body, omitting <img> tags
+        # crudely parse out the HTML body, omitting unwanted strings
         # could use an XML parser instead, but this way is simpler
         redacted_lines = []
+        skip_exprs = [
+            '<img.* src=',
+            '<script',
+            # IMPORTANT if text in supplement.body plugin is modified, update this expression
+            '<p>Assay results were collated into the report document by '+\
+            '<a href=https://github.com/oicr-gsi/djerba>Djerba</a> .* using pipeline .*</p>'
+        ]
         for line in contents:
-            if not re.search('<img src=', line) and not re.search('<script', line):
+            if not any([re.search(expr, line) for expr in skip_exprs]):
                 redacted_lines.append(line)
         redacted = ''.join(redacted_lines)
-        redacted = redacted.replace(time.strftime("%Y/%m/%d"), '0000/00/31')
+        redacted = re.sub('[0-9]{4}/[0-9]{2}/[0-9]{2}', '2000/01/01', redacted)
+        redacted = re.sub('[0-9]{4}-[0-9]{2}-[0-9]{2}', '2000-01-01', redacted)
         return redacted
 
     def redact_json_data(self, data):
