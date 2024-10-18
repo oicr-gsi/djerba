@@ -13,11 +13,11 @@ import djerba.core.constants as core_constants
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.render_mako import mako_renderer
 
-try:
-    import gsiqcetl.column
-    from gsiqcetl import QCETLCache
-except ImportError as err:
-    raise RuntimeError('QC-ETL import failure! Try checking python versions') from err
+#try:
+#    import gsiqcetl.column
+#    from gsiqcetl import QCETLCache
+#except ImportError as err:
+#    raise RuntimeError('QC-ETL import failure! Try checking python versions') from err
 
 class main(plugin_base):
 
