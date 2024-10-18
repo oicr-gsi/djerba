@@ -280,6 +280,8 @@ class prepare_fusions(logger):
         fus_path = os.path.join(self.input_dir, 'fus.txt') 
         self.logger.info("Processing fusion results from " + mavis_path)
         # prepend a column with the tumour ID to the Mavis .tab output
+        # set the field limit to be slightly larger to avoid field larger than limit issues
+        csv.field_size_limit(300000) 
         with open(mavis_path, 'rt') as in_file, open(fus_path, 'wt') as out_file:
             reader = csv.reader(in_file, delimiter="\t")
             writer = csv.writer(out_file, delimiter="\t")
