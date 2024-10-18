@@ -41,6 +41,9 @@ RUN pip install --upgrade pip setuptools wheel
 # Copy the local Djerba files into the container for building
 COPY . .
 
+# Copy wkhtmltopdf into the container
+COPY wkhtmltopdf .
+
 # install pyyaml==5.4.1; module 'crimson' is incompatible with latest pyyaml
 RUN pip install "cython<3.0.0" wheel && pip install pyyaml==5.4.1 --no-build-isolation
 
@@ -71,6 +74,9 @@ COPY --from=build /djerba /djerba
 
 # Ensure the virtual environment is used for subsequent commands
 ENV PATH="/opt/venv/bin:$PATH"
+
+# Set Djerba environment variables
+ENV DJERBA_RUN_DIR="/opt/venv/lib/python3.10/site-packages/djerba/data"
 
 # Define the entry point to use Djerba as a CLI tool
 ENTRYPOINT ["dumb-init", "--", "python3", "/djerba/src/bin/djerba.py"]
