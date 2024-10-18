@@ -8,12 +8,7 @@ library(optparse)
 # functions originally from convert_rsem_results_zscore.r
 
 # preprocess function
-preProcRNA <- function(gepfile, enscon, genelist = NULL){
-
- # testing:
- #gepfile="T:/gsi/jtorchia/pipeline/data/OCTCAP/cbioportal/cBioWrap_20200204/output/gepdir/input.fpkm.txt"
- #enscon="T:/gsi/jtorchia/git/cBioWrap/files/ensemble_conversion.txt"
- #genelist="T:/gsi/jtorchia/git/cBioWrap/files/targeted_genelist.txt"
+preProcRNA <- function(gepfile, enscon){
 
  # read in data
  gepData <- read.csv(gepfile, sep="\t", header=TRUE, check.names=FALSE)
@@ -27,13 +22,7 @@ preProcRNA <- function(gepfile, enscon, genelist = NULL){
  df <- subset(df[,c(ncol(df),2:(ncol(df)-1))], !duplicated(df[,c(ncol(df),2:(ncol(df)-1))][,1]))
  df <- df[!is.na(df$Hugo_Symbol),]
  row.names(df) <- df[,1]
- df <- df[,-1]
-
- # subset if gene list given
- if (!is.null(genelist)) {
-	keep_genes <- readLines(genelist)
-	df <- df[row.names(df) %in% keep_genes,]
- }
+ df <- df[,-1, drop=FALSE]
 
  # return the data frame
  return(df)
@@ -57,7 +46,6 @@ compZ <- function(df) {
 option_list = list(
   make_option(c("-e", "--enscon"), type="character", default=NULL, help="ensemble conversion file", metavar="character"),
   make_option(c("-g", "--gepfile"), type="character", default=NULL, help="concatenated gep file", metavar="character"),
-  make_option(c("-l", "--genelist"), type="character", default=NULL, help="subset cnas and rnaseq to these", metavar="character"),
   make_option(c("-o", "--outdir"), type="character", default=NULL, help="output directory", metavar="character"),
   make_option(c("-t", "--tcgadata"), type="character", default=NULL, help="tcga datadir", metavar="character"),
   make_option(c("-c", "--tcgacode"), type="character", default=NULL, help="tcga code", metavar="character")
@@ -65,20 +53,19 @@ option_list = list(
 opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
 opt <- parse_args(opt_parser)
 enscon <- opt$enscon
-genelist <- opt$genelist
 gepfile <- opt$gepfile
 outdir <- opt$outdir
 tcgadata <- opt$tcgadata
 tcgacode <- opt$tcgacode
 
-if (is.null(enscon) | is.null(genelist) | is.null(gepfile) | is.null(outdir) | is.null(tcgadata) | is.null(tcgacode)) {
+if (is.null(enscon) |  is.null(gepfile) | is.null(outdir) | is.null(tcgadata) | is.null(tcgacode)) {
     print("ERROR: Missing inputs for find_expression.R")
     quit(status=1)
 } else {
   print("Processing RNASEQ data")
 
   # preprocess the full data frame
-  df <- preProcRNA(gepfile, enscon, genelist)
+  df <- preProcRNA(gepfile, enscon)
   sample <- colnames(df)[1]
 
   print("getting CAP-level data")
@@ -104,8 +91,8 @@ if (is.null(enscon) | is.null(genelist) | is.null(gepfile) | is.null(outdir) | i
   comg <- as.character(intersect(row.names(df_tcga), row.names(df)))
   df_tcga_common <- df_tcga[row.names(df_tcga) %in% comg, ]
   df_tcga_common_sort <- df_tcga_common[ order(row.names(df_tcga_common)), ]
-  df_stud_common <- df[row.names(df) %in% comg, ]
-  df_stud_common_sort <- df_stud_common[ order(row.names(df_stud_common)), ]
+  df_stud_common <- df[row.names(df) %in% comg, , drop=FALSE]
+  df_stud_common_sort <- df_stud_common[ order(row.names(df_stud_common)), , drop=FALSE]
   df_stud_tcga <- merge(df_stud_common_sort, df_tcga_common_sort, by=0, all=TRUE)
   df_stud_tcga[is.na(df_stud_tcga)] <- 0
   rownames(df_stud_tcga) <- df_stud_tcga$Row.names
