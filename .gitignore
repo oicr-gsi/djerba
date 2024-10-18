@@ -16,3 +16,6 @@ djerba.log
 *.vscode
 # Sphinx build files
 _build
+# Docker build files
+docker_demo*
+wkhtmltopdf
