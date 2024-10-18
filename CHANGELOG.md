@@ -2,6 +2,7 @@
 
 ## Unreleased
 - GCGI-1156: Merge long-running documentation branch to main
+- Increase csv field limit in plugins.fusions.tools.py to handle large fields in mavis_summary.txt 
 
 ## 1.7.5: 2024-10-02
 - GCGI-1378: Improve benchmarking to write an HTML summary page; update tests
