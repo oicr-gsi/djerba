@@ -102,7 +102,7 @@ setup(
         'jsonschema',
         'mako',
         'markdown',
-        'numpy==1.23.1', # set exact version to avoid build conflict with gsi-qc-etl
+        'numpy', #==1.23.1', # set exact version to avoid build conflict with gsi-qc-etl
         'pandas',
         'pdfkit',
         'pyinstaller',

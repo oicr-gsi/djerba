@@ -48,7 +48,8 @@ COPY wkhtmltopdf .
 RUN pip install "cython<3.0.0" wheel && pip install pyyaml==5.4.1 --no-build-isolation
 
 # Install Djerba dependencies inside the virtual environment
-RUN pip install . -r djerba_requirements.txt
+# --pre flag to circumvent matplotlib error; see https://stackoverflow.com/a/69982317
+RUN pip install . -r djerba_requirements.txt --pre
 
 # RUNTIME STAGE
 FROM ubuntu:latest AS runtime
