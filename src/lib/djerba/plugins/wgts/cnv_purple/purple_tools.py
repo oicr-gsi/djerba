@@ -114,6 +114,7 @@ class purple_processor(logger):
         #plot
         breaks = list(range(0,highCN+1,2))
 
+        """
         pseg_path = os.path.join(self.work_dir, "seg_CNV_plot.svg")
         pseg = (
             ggplot(data = fitted_segments_df_plot)
@@ -142,7 +143,8 @@ class purple_processor(logger):
         pseg.save(pseg_path, height=1.5, width=8, backend='Cairo')
         image_converter = converter(self.log_level, self.log_path)
         b64txt = image_converter.convert_svg(pseg_path, 'CNV plot')
-
+"""
+        b64txt = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII' # small but valid PNG image
         # allele specific segment plot "purple.seg_allele_plot.svg"
         fitted_segments_df_plot["A_adj"] = fitted_segments_df_plot["majorAlleleCopyNumber"] + 0.1
         fitted_segments_df_plot["B_adj"] = fitted_segments_df_plot["minorAlleleCopyNumber"] - 0.1
@@ -161,7 +163,7 @@ class purple_processor(logger):
             + theme(
                 axis_title_x=element_blank(),
                 axis_text_x=element_blank(),
-                axis_ticks_x=element_blank(),
+                #axis_ticks_x=element_blank(),
                 panel_grid_minor = element_blank(),
                 panel_grid_major = element_blank(),
                 strip_background = element_blank(),
