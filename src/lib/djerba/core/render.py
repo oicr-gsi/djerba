@@ -182,20 +182,23 @@ class pdf_renderer(logger):
                     'footer-right': '[page] of [topage]',
                     'footer-left': footer_text,
                     'quiet': '',
-                    'disable-javascript': ''
+                    'disable-javascript': '',
+                    'enable-local-file-access': ''
                 }
             else:
                 self.logger.debug("Including page numbers but no additional footer text")
                 options = {
                     'footer-right': '[page] of [topage]',
                     'quiet': '',
-                    'disable-javascript': ''
+                    'disable-javascript': '',
+                    'enable-local-file-access': ''
                 }
         else:
             self.logger.info("Omitting PDF footer")
             options = {
                 'quiet': '',
-                'disable-javascript': ''
+                'disable-javascript': '',
+                'enable-local-file-access': ''
             }
         try:
             pdfkit.from_file(in_path, out_path, options=options)
