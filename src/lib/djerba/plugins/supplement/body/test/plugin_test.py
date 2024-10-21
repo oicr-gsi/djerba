@@ -54,7 +54,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.supp.ini',
             self.JSON: json_location,
-            self.MD5: '2d5453bc1bd3b56f608b2b6ba2c7e3a6'
+            self.MD5: '82268dd002317d178e5eb54fb4b67bd6'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -64,7 +64,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: '4acf9bf2bdb1300f136934527760ffb6'
+            self.MD5: '29422e2c5fe58f1befd3c7d38c41a89c'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -74,7 +74,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.RESEARCH.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'f15a1bba4120cdd2d96fe5984df1904b'
+            self.MD5: '01d0f7fe209f166aa6aa0f985c50d7b9'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -84,7 +84,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'bf44c7af57bbbf8422061def1cf86e58'
+            self.MD5: 'b36f3bc537f6bab132758158bae9e9ae'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -94,7 +94,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.RESEARCH.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'b6ab576784f6bbfc180b82331b8e3dab'
+            self.MD5: '2c6284508180c2f428e64d23298d1697'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -105,7 +105,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: '1c8fb9e0c2421644cec16c39823d0e54'
+            self.MD5: 'cff32a47605069b65be9757a493eda2d'
         }
         self.run_basic_test(test_source_dir, params)
     
