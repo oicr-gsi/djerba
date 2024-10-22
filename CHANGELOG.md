@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 1.7.6: 2024-10-22
+- GCGI-1156: Merge long-running documentation branch to main
+- GCGI-1452: Update disclaimer with somatic mutation text and laboratory disclaimer
+- GCGI-1453: Update pWGS version number
+- GCGI-1456: Fix rounding of estimated tumour fraction in tar.sample
+- Increase csv field limit in plugins.fusions.tools.py to handle large fields in mavis_summary.txt 
+
 ## 1.7.5: 2024-10-02
 - GCGI-1378: Improve benchmarking to write an HTML summary page; update tests
 - GCGI-1449: Correctly handle logical(0) values by replacing them with "Unknown" to avoid type mismatch errors during the join in the fusion plugin
