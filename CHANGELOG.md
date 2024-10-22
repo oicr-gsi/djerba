@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 1.7.6: 2024-10-21
+## 1.7.6: 2024-10-22
 - GCGI-1156: Merge long-running documentation branch to main
 - GCGI-1452: Update disclaimer with somatic mutation text and laboratory disclaimer
 - GCGI-1453: Update pWGS version number
