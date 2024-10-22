@@ -91,7 +91,6 @@ class main(plugin_base):
         # If purity is <10%, only report as <10% (not exact number)
         purity = float(purity)
         rounded_purity = round(purity*100, 1)
-        print(rounded_purity)
         if rounded_purity < 10:
             rounded_purity = "<10"
 
