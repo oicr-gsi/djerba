@@ -89,9 +89,10 @@ class main(plugin_base):
         self.write_purity(purity, work_dir)
 
         # If purity is <10%, only report as <10% (not exact number)
-        rounded_purity = float('%.1E' % Decimal(purity*100))
+        purity = float(purity)
+        rounded_purity = round(purity*100, 1)
         if rounded_purity < 10:
-            rounded_purity = "<10%"
+            rounded_purity = "<10"
 
         results =  {
                 constants.ONCOTREE: config[self.identifier][constants.ONCOTREE],
