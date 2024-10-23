@@ -78,15 +78,19 @@ class oncokb_annotator(logger):
         with open(self.info_path, 'w') as info_file:
             print("SAMPLE_ID\tONCOTREE_CODE", file=info_file)
             print("{0}\t{1}".format(*args), file=info_file)
-        # Read the oncokb access token
-        with open(os.environ[self.ONCOKB_TOKEN_VARIABLE]) as token_file:
-            self.oncokb_token = token_file.read().strip()
         # Check cache params and configure caching (if any)
         if cache_params==None:
             self.logger.debug("No OncoKB cache parameters supplied; cache operations omitted")
             cache_params = oncokb_cache_params() # default values
         else:
             self.logger.debug("Using supplied OncoKB cache parameters: {}".format(cache_params))
+        # Read the oncokb access token, if needed
+        if cache_params.get_apply_cache():
+            with open(os.environ[self.ONCOKB_TOKEN_VARIABLE]) as token_file:
+                self.oncokb_token = token_file.read().strip()
+        else:
+            self.logger.debug('Apply-cache enabled, no OncoKB access token required')
+            self.oncokb_token = None
         cache_dir = cache_params.get_cache_dir()
         if cache_dir:
             self.cache = oncokb_cache(cache_dir, oncotree_code, log_level, log_path)
