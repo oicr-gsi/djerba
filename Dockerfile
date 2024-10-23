@@ -16,18 +16,22 @@ RUN apt-get update && \
 
 # Install system build tools and dependencies for building Python wheels
 RUN apt-get update && \
-    apt-get install -y build-essential \
-                       libssl-dev \
-                       libcairo2-dev \
-                       libgif-dev \
-                       libffi-dev \
-                       python3-dev \
-                       zlib1g-dev \
-                       libjpeg-dev \
-                       libpng-dev \
-                       libxml2-dev \
-                       libxslt1-dev \
-                       libpq-dev && \
+    apt-get install -y build-essential \ 
+    fontconfig \
+    xfonts-75dpi \
+    xfonts-base \
+    libssl-dev \
+    libcairo2-dev \
+    libgif-dev \
+    libffi-dev \
+    python3-dev \
+    zlib1g-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    wkhtmltopdf \
+    libpq-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -44,10 +48,16 @@ RUN pip install --upgrade pip setuptools wheel
 COPY . .
 
 # Copy wkhtmltopdf into the container
-COPY wkhtmltopdf .
+#COPY wkhtmltox_0.12.6.1-2.jammy_amd64.deb .
+#RUN dpkg -i wkhtmltox_0.12.6.1-2.jammy_amd64.deb
+RUN wkhtmltopdf -h
 
 # install pyyaml==5.4.1; module 'crimson' is incompatible with latest pyyaml
 RUN pip install "cython<3.0.0" wheel && pip install pyyaml==5.4.1 --no-build-isolation
+
+# install cairo
+RUN pip install cairocffi pycairo
+RUN python3 -c "import cairocffi"
 
 # Install Djerba dependencies inside the virtual environment
 # --pre flag to circumvent matplotlib error; see https://stackoverflow.com/a/69982317
@@ -80,6 +90,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 # Set Djerba environment variables
 ENV DJERBA_RUN_DIR="/opt/venv/lib/python3.10/site-packages/djerba/data"
+ENV ONCOKB_TOKEN="./oncokb_cache/dummy_token.txt"
 
 # Define the entry point to use Djerba as a CLI tool
 ENTRYPOINT ["dumb-init", "--", "python3", "/djerba/src/bin/djerba.py"]

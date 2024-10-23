@@ -274,7 +274,8 @@ class purple_processor(logger):
         ax.grid(False)
 
         plt.tight_layout()
-        plt.savefig(output, bbox_inches='tight', backend='Cairo')
+        #plt.savefig(output, bbox_inches='tight', backend='Cairo')
+        plt.savefig(output)
 
     @staticmethod
     def allele_deviation(purity, norm_factor, ploidy, standard_deviation = 0.05, min_standard_deviation_per_ploidy_point = 1.5):
