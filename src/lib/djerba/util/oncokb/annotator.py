@@ -84,20 +84,21 @@ class oncokb_annotator(logger):
             cache_params = oncokb_cache_params() # default values
         else:
             self.logger.debug("Using supplied OncoKB cache parameters: {}".format(cache_params))
+        self.apply_cache = cache_params.get_apply_cache()
+        self.update_cache = cache_params.get_update_cache()
         # Read the oncokb access token, if needed
-        if cache_params.get_apply_cache():
-            with open(os.environ[self.ONCOKB_TOKEN_VARIABLE]) as token_file:
-                self.oncokb_token = token_file.read().strip()
-        else:
+        if self.apply_cache:
             self.logger.debug('Apply-cache enabled, no OncoKB access token required')
             self.oncokb_token = None
-        cache_dir = cache_params.get_cache_dir()
-        if cache_dir:
+        else:
+            with open(os.environ[self.ONCOKB_TOKEN_VARIABLE]) as token_file:
+                self.oncokb_token = token_file.read().strip()
+        # Set up the cache, if needed
+        if self.apply_cache or self.update_cache:
+            cache_dir = cache_params.get_cache_dir()
             self.cache = oncokb_cache(cache_dir, oncotree_code, log_level, log_path)
         else:
             self.cache = None
-        self.apply_cache = cache_params.get_apply_cache()
-        self.update_cache = cache_params.get_update_cache()
 
     def _run_annotator_script(self, command, description):
         """Redact the OncoKB token (-b argument) from logging"""
