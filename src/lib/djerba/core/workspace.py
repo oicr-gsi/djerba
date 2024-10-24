@@ -10,6 +10,7 @@ import gzip
 import json
 import logging
 import os
+import djerba.core.constants as cc
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
 
@@ -92,9 +93,11 @@ class workspace(logger):
     # no need to validate paths for write_* methods; output dir already validated as writable
 
     def write_json(self, rel_path, data):
-        with open(os.path.join(self.dir_path, rel_path), 'w') as out_file:
+        out_path = os.path.join(self.dir_path, rel_path)
+        with open(out_path, 'w', encoding=cc.TEXT_ENCODING) as out_file:
             out_file.write(json.dumps(data))
 
     def write_string(self, rel_path, output_string):
-        with open(os.path.join(self.dir_path, rel_path), 'w') as out_file:
+        out_path = os.path.join(self.dir_path, rel_path)
+        with open(out_path, 'w', encoding=cc.TEXT_ENCODING) as out_file:
             out_file.write(output_string)
