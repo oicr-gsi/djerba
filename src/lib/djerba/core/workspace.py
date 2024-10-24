@@ -52,7 +52,7 @@ class workspace(logger):
             self.validator.validate_input_file(file_path)
         else:
             self.validator.validate_output_file(file_path)
-        return open(file_path, mode)
+        return open(file_path, mode, encoding=cc.TEXT_ENCODING)
 
     def print_location(self):
         return self.dir_path
@@ -60,7 +60,7 @@ class workspace(logger):
     def read_json(self, rel_path):
         in_path = os.path.join(self.dir_path, rel_path)
         self.validator.validate_input_file(in_path)
-        with open(in_path) as in_file:
+        with open(in_path, encoding=cc.TEXT_ENCODING) as in_file:
             data = json.loads(in_file.read())
         return data
 
@@ -83,7 +83,7 @@ class workspace(logger):
     def read_string(self, rel_path):
         in_path = os.path.join(self.dir_path, rel_path)
         self.validator.validate_input_file(in_path)
-        with open(in_path) as in_file:
+        with open(in_path, encoding=cc.TEXT_ENCODING) as in_file:
             content = in_file.read()
         return content
 
