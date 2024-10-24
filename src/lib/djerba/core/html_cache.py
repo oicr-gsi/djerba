@@ -90,7 +90,7 @@ class html_cache(logger):
         if replace_name:
             msg = "No end tag found for component name '{0}'".format(replace_name)
             self.logger.error(msg)
-            raise DjerbaHatmlCacheError(msg)
+            raise DjerbaHtmlCacheError(msg)
         self.logger.debug("HTML update done")
         return "\n".join(new_lines)
 
