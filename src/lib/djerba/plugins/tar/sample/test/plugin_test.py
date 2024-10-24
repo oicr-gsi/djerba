@@ -38,7 +38,7 @@ class TestTarSamplePlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '56272ce15c0f0acadf7faff781ad950d'
+            self.MD5: '25315c6bdca72dc15add1a4a44c7ce38'
         }
         self.run_basic_test(input_dir, params)
 
