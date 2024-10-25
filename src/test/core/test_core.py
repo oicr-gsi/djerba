@@ -430,7 +430,8 @@ class TestHtmlCache(TestCore):
 
     def test_encode_decode(self):
         # test an encoding/decoding round trip
-        string_to_encode = "Hello, world!"
+        # including non-Latin characters (Greek alpha, beta, gamma, delta)
+        string_to_encode = "Hello, world! \u03b1\u03b2\u03b3\u03b4"
         cache = html_cache(log_level=logging.ERROR)
         encoded = cache.encode_to_base64(string_to_encode)
         decoded_string = cache.decode_from_base64(encoded)
