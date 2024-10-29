@@ -11,7 +11,6 @@ from djerba.core.workspace import workspace
 import djerba.core.constants as core_constants
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.render_mako import mako_renderer
-from djerba.plugins.tar.provenance_tools import subset_provenance_sample as subset_p_s
 try:
     import gsiqcetl.column
     from gsiqcetl import QCETLCache
@@ -30,10 +29,10 @@ class main(plugin_base):
         # Get input_data.json if it exists; else return None
         input_data = self.workspace.read_maybe_input_params()
 
-        # FIRST PASS: Get the input parameters
-        keys = ['normal_id', 'oncotree_code', 'known_variants', 'sample_type']
+        # Get various IDs
+        keys = [constants.ONCOTREE, constants.KNOWN_VARIANTS, constants.SAMPLE_TYPE]
         key_mapping = {k:k for k in keys} # mapping from INI keys to input_params.json keys
-        key_mapping['group_id'] = 'tumour_id'
+        key_mapping[constants.GROUP_ID] = constants.TUMOUR_ID
         for key,val in key_mapping.items():
             if wrapper.my_param_is_null(key):
                 if input_data != None:
@@ -42,22 +41,37 @@ class main(plugin_base):
                     msg = "Cannot find {0} in manual config or input_params.json".format(key)
                     self.logger.error(msg)
                     raise RuntimeError(msg)
-        # SECOND PASS: Get files based on input parameters
-        if wrapper.my_param_is_null('ichorcna_file'):
-            wrapper.set_my_param('ichorcna_file', subset_p_s(self, "ichorcna", config[self.identifier]['group_id'], "metrics\.json$"))
-        if wrapper.my_param_is_null('consensus_cruncher_file'):
-            wrapper.set_my_param('consensus_cruncher_file', subset_p_s(self, "consensusCruncher", config[self.identifier]['group_id'], "allUnique-hsMetrics\.HS\.txt$"))
-        if wrapper.my_param_is_null('consensus_cruncher_file_normal'):
-            wrapper.set_my_param('consensus_cruncher_file_normal', subset_p_s(self, "consensusCruncher", config[self.identifier]['normal_id'], "allUnique-hsMetrics\.HS\.txt$"))
-        if wrapper.my_param_is_null('raw_coverage'):
-            qc_dict = self.fetch_coverage_etl_data(config[self.identifier]['group_id'])
-            wrapper.set_my_param('raw_coverage', qc_dict['raw_coverage'])
+        
+
+        # Get files from path_info.json
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_PATH_INFO,
+            constants.ICHORCNA_FILE,
+            constants.WF_ICHORCNA
+        )
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_PATH_INFO,
+            constants.CONSENSUS_FILE,
+            constants.WF_CONSENSUS
+        )
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_PATH_INFO,
+            constants.CONSENSUS_NORMAL_FILE,
+            constants.WF_CONSENSUS_NORMAL
+        )
+
+        if wrapper.my_param_is_null(constants.RAW_COVERAGE):
+            qc_dict = self.fetch_coverage_etl_data(config[self.identifier][constants.GROUP_ID])
+            wrapper.set_my_param(constants.RAW_COVERAGE, qc_dict[constants.RAW_COVERAGE])
 
         # Get values for collapsed coverage for Pl and BC and put in config for QC reporting
-        if wrapper.my_param_is_null('collapsed_coverage_pl'):
-            wrapper.set_my_param('collapsed_coverage_pl', self.process_consensus_cruncher(config[self.identifier]['consensus_cruncher_file']))
-        if wrapper.my_param_is_null('collapsed_coverage_bc'):
-            wrapper.set_my_param('collapsed_coverage_bc', self.process_consensus_cruncher(config[self.identifier]['consensus_cruncher_file_normal']))
+        if wrapper.my_param_is_null(constants.COVERAGE_PL):
+            wrapper.set_my_param(constants.COVERAGE_PL, self.process_consensus_cruncher(config[self.identifier][constants.CONSENSUS_FILE]))
+        if wrapper.my_param_is_null(constants.COVERAGE_BC):
+            wrapper.set_my_param(constants.COVERAGE_BC, self.process_consensus_cruncher(config[self.identifier][constants.CONSENSUS_NORMAL_FILE]))
         
         return wrapper.get_config()
     
@@ -68,28 +82,25 @@ class main(plugin_base):
         work_dir = self.workspace.get_work_dir()
 
         # Get purity and write it to purity.txt
-        ichorcna_metrics_file = config[self.identifier]['ichorcna_file']
+        ichorcna_metrics_file = config[self.identifier][constants.ICHORCNA_FILE]
         ichor_json = self.process_ichor_json(ichorcna_metrics_file)
         self.workspace.write_json('ichor_metrics.json', ichor_json)
         purity = ichor_json["tumor_fraction"]
         self.write_purity(purity, work_dir)
 
         # If purity is <10%, only report as <10% (not exact number)
-        rounded_purity = float('%.1E' % Decimal(purity*100))
+        purity = float(purity)
+        rounded_purity = round(purity*100, 1)
         if rounded_purity < 10:
-            rounded_purity = "<10%"
+            rounded_purity = "<10"
 
         results =  {
-                "oncotree_code": config[self.identifier]['oncotree_code'],
-                "known_variants" : config[self.identifier][constants.KNOWN_VARIANTS],
-                "sample_type" : config[self.identifier][constants.SAMPLE_TYPE],
-                "cancer_content" : rounded_purity,
-                "raw_coverage" : int(config[self.identifier][constants.RAW_COVERAGE]),
-                "unique_coverage" : int(config[self.identifier][constants.COLLAPSED_COVERAGE_PL]),
-                "files": {
-                    "consensus_cruncher_file": config[self.identifier]['consensus_cruncher_file'],
-                    "ichorcna_file": config[self.identifier]['ichorcna_file']
-                }
+                constants.ONCOTREE: config[self.identifier][constants.ONCOTREE],
+                constants.KNOWN_VARIANTS : config[self.identifier][constants.KNOWN_VARIANTS],
+                constants.SAMPLE_TYPE : config[self.identifier][constants.SAMPLE_TYPE],
+                constants.CANCER_CONTENT : rounded_purity,
+                constants.RAW_COVERAGE : int(config[self.identifier][constants.RAW_COVERAGE]),
+                constants.UNIQUE_COVERAGE : int(config[self.identifier][constants.COVERAGE_PL]),
             }
         data['results'] = results
         return data
@@ -101,7 +112,7 @@ class main(plugin_base):
         data = cached_coverages.loc[ (cached_coverages[columns_of_interest.GroupID] == group_id),  [columns_of_interest.GroupID, columns_of_interest.MeanBaitCoverage] ]
         qc_dict = {}
         if len(data) > 0:
-           qc_dict['raw_coverage'] = int(round(data.iloc[0][columns_of_interest.MeanBaitCoverage].item(),0))
+           qc_dict[constants.RAW_COVERAGE] = int(round(data.iloc[0][columns_of_interest.MeanBaitCoverage].item(),0))
         else:
             msg = "QC metrics associated with group_id {0} not found in QC-ETL and no value found in .ini ".format(group_id)
             raise MissingQCETLError(msg)
@@ -133,17 +144,16 @@ class main(plugin_base):
 
     def specify_params(self):
         discovered = [
-            'group_id',
-            'normal_id',
-            'oncotree_code',
-            'known_variants',
-            'sample_type',
-            'ichorcna_file',
-            'raw_coverage',
-            'consensus_cruncher_file',
-            'consensus_cruncher_file_normal',
-            'collapsed_coverage_pl',
-            'collapsed_coverage_bc'
+            constants.GROUP_ID,
+            constants.ONCOTREE,
+            constants.KNOWN_VARIANTS,
+            constants.SAMPLE_TYPE,
+            constants.ICHORCNA_FILE,
+            constants.RAW_COVERAGE,
+            constants.CONSENSUS_FILE,
+            constants.CONSENSUS_NORMAL_FILE,
+            constants.COVERAGE_PL,
+            constants.COVERAGE_BC
         ]
         for key in discovered:
             self.add_ini_discovered(key)

@@ -47,8 +47,7 @@ class main(plugin_base):
             [rows, gene_info, treatment_opts] = outputs
             #sort by OncoKB level
             rows = sorted(rows, key=sort_by_actionable_level)
-            max_actionable = oncokb_levels.oncokb_order('P')
-            rows = list(filter(lambda x: oncokb_levels.oncokb_order(x[core_constants.ONCOKB]) <= max_actionable, rows))
+            rows = oncokb_levels.filter_reportable(rows)
             results = {
                 fc.TOTAL_VARIANTS: total_fusion_genes,
                 fc.CLINICALLY_RELEVANT_VARIANTS: fus_reader.get_total_oncokb_fusions(),

@@ -27,7 +27,16 @@ class hrd_processor(logger):
         """
         treatment_options = None
         if hrd_result == 'HRD':
-            oncotree_main = self.read_oncotree_main_type(oncotree_code, data_dir)
+            
+            # Catch unknown oncotree code. 
+            try:
+                oncotree_main = self.read_oncotree_main_type(oncotree_code, data_dir)
+            except IndexError:
+                 msg = "Could not find oncotree code {0} in OncoTree.json. Skipping treatment options for HRD.".format(oncotree_code)
+                 self.logger.warning(msg)
+                 return treatment_options 
+            
+            # Otherwise, proceed with known oncotree code.
             nccn_annotation_path = os.path.join(data_dir, self.NCCN_ANNOTATION_FILENAME)
             self.validator.validate_input_file(nccn_annotation_path)
             with open(nccn_annotation_path) as NCCN_annotation_file:
