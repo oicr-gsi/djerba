@@ -32,7 +32,7 @@ PROVENANCE_ID = 'provenance_id'
 PWGS_REPORT = 'pwgs_report_id'
 REQ_APPROVED = 'requisition_approved'
 REQ_ID = 'requisition_id'
-STUDY = 'study_title'
+STUDY = 'study'
 WGS_REPORT = 'wgs_report_id'
 
 # file constants

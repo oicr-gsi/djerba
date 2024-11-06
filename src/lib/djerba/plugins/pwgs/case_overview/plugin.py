@@ -30,9 +30,6 @@ class main(plugin_base):
                 wrapper.set_my_param(pc.GROUP_ID, sample_info[core_constants.TUMOUR_ID])
             if wrapper.my_param_is_null(pc.PATIENT_ID_LOWER):
                 wrapper.set_my_param(pc.PATIENT_ID_LOWER, sample_info[pc.PATIENT_ID_LOWER])
-            if wrapper.my_param_is_null(pc.STUDY):
-                # if study id is unspecifided, default to project id
-                wrapper.set_my_param(pc.STUDY, sample_info[pc.PROJECT])
         else:
             msg = 'sample info file not found, make sure case overview parameters are in INI'
             self.logger.warning(msg)
@@ -66,7 +63,8 @@ class main(plugin_base):
         required = [
             pc.REQ_APPROVED,
             pc.PRIMARY_CANCER,
-            pc.WGS_REPORT
+            pc.WGS_REPORT, 
+            pc.STUDY
         ]
         for key in required:
             self.add_ini_required(key)
@@ -74,7 +72,6 @@ class main(plugin_base):
             pc.DONOR,
             pc.GROUP_ID,
             pc.PATIENT_ID_LOWER,
-            pc.STUDY
         ]
         for key in discovered:
             self.add_ini_discovered(key)

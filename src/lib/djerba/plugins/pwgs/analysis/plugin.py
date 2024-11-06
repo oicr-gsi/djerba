@@ -67,7 +67,7 @@ class main(plugin_base):
                 json_data = json.load(json_file)
                 assay = json_data.get("results", {}).get("assay", "Assay name not found")
                 primary_cancer = json_data.get("results", {}).get("primary_cancer", "Primary cancer not found")
-                study_title = json_data.get("results", {}).get("study_title", "Study title not found")
+                study_title = json_data.get("results", {}).get("study", "Study title not found")
         else:
             assay = "Assay name not found"
             primary_cancer = "Primary cancer not found"
