@@ -35,12 +35,17 @@ class benchmarker(logger):
     # TODO set random seed in MSI workflow for consistent outputs
     MSI_DIR_NAME = 'msi'
     DEFAULT_SAMPLES = [
-        "GSICAPBENCH_1219",
-        "GSICAPBENCH_1232",
-        "GSICAPBENCH_1233",
-        "GSICAPBENCH_1273",
-        "GSICAPBENCH_1275",
-        "GSICAPBENCH_1288"
+        'GSICAPBENCH_0001',
+        'GSICAPBENCH_0002',
+        'GSICAPBENCH_0003',
+        'GSICAPBENCH_011291',
+        'GSICAPBENCH_011303',
+        'GSICAPBENCH_011524',
+        'GSICAPBENCH_011633',
+        'GSICAPBENCH_1248',
+        'GSICAPBENCH_1309',
+        'GSICAPBENCH_1390',
+        'GSICAPBENCH_1391'
     ]
     REPORT_DIR_NAME = 'report'
     TEMPLATE = 'benchmark_config.ini'

@@ -1,32 +1,57 @@
 {
-    "GSICAPBENCH_1219": {
-        "normal_id": "100-009-005_BC",
-        "tumour_id": "100-009-005_LCM3",
-	"purity": 0.74
+    "GSICAPBENCH_0001": {
+        "normal_id": "GSICAPBENCH_0001_N",
+        "purity": 0.74,
+        "tumour_id": "GSICAPBENCH_0001_T"
     },
-    "GSICAPBENCH_1232": {
-        "normal_id": "100-009-006_BC",
-        "tumour_id": "100-009-006_LCM3",
-	"purity": 0.74
+    "GSICAPBENCH_0002": {
+        "normal_id": "GSICAPBENCH_0002_N",
+        "purity": 0.74,
+        "tumour_id": "GSICAPBENCH_0002_T"
     },
-    "GSICAPBENCH_1233": {
-        "normal_id": "100-009-008_BC",
-        "tumour_id": "100-009-008_LCM2",
-	"purity": 0.74
+    "GSICAPBENCH_0003": {
+        "normal_id": "GSICAPBENCH_0003_N",
+        "purity": 0.74,
+        "tumour_id": "GSICAPBENCH_0003_T"
     },
-    "GSICAPBENCH_1273": {
-        "normal_id": "100-PM-018_BC",
-        "tumour_id": "100-PM-018_LCM4",
-	"purity": 0.74
+    "GSICAPBENCH_011291": {
+        "normal_id": "GSICAPBENCH_011291_N",
+        "purity": 0.74,
+        "tumour_id": "GSICAPBENCH_011291_T"
     },
-    "GSICAPBENCH_1275": {
-        "normal_id": "100-PM-019_BC",
-        "tumour_id": "100-PM-019_LCM3",
-	"purity": 0.74
+    "GSICAPBENCH_011303": {
+        "normal_id": "GSICAPBENCH_011303_N",
+        "purity": 0.74,
+        "tumour_id": "GSICAPBENCH_011303_T"
     },
-    "GSICAPBENCH_1288": {
-        "normal_id": "100-JHU-004_BC",
-        "tumour_id": "100_JHU_004_LCM3_6",
-	"purity": 0.74
+    "GSICAPBENCH_011524": {
+        "normal_id": "GSICAPBENCH_011524_N",
+        "purity": 0.74,
+        "tumour_id": "GSICAPBENCH_011524_T"
+    },
+    "GSICAPBENCH_011633": {
+        "normal_id": "GSICAPBENCH_011633_N",
+        "purity": 0.74,
+        "tumour_id": "GSICAPBENCH_011633_T"
+    },
+    "GSICAPBENCH_1248": {
+        "normal_id": "GSICAPBENCH_1248_N",
+        "purity": 0.74,
+        "tumour_id": "GSICAPBENCH_1248_T"
+    },
+    "GSICAPBENCH_1309": {
+        "normal_id": "GSICAPBENCH_1309_N",
+        "purity": 0.74,
+        "tumour_id": "GSICAPBENCH_1309_T"
+    },
+    "GSICAPBENCH_1390": {
+        "normal_id": "GSICAPBENCH_1390_N",
+        "purity": 0.74,
+        "tumour_id": "GSICAPBENCH_1390_T"
+    },
+    "GSICAPBENCH_1391": {
+        "normal_id": "GSICAPBENCH_1391_N",
+        "purity": 0.74,
+        "tumour_id": "GSICAPBENCH_1391_T"
     }
 }
