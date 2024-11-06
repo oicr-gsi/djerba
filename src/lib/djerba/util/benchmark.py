@@ -34,6 +34,7 @@ class benchmarker(logger):
     CONFIG_FILE_NAME = 'config.ini'
     # TODO set random seed in MSI workflow for consistent outputs
     MSI_DIR_NAME = 'msi'
+    DEFAULT_PURITY = 0.74 # arbitrary purity default
     DEFAULT_SAMPLES = [
         'GSICAPBENCH_0001',
         'GSICAPBENCH_0002',
@@ -84,8 +85,6 @@ class benchmarker(logger):
         self.data_dir = dir_finder.get_data_dir()
         self.private_dir = os.path.join(dir_finder.get_private_dir(), 'benchmarking')
         self.validator.validate_input_dir(self.private_dir)
-        with open(os.path.join(self.data_dir, 'benchmark_params.json')) as in_file:
-            self.sample_params = json.loads(in_file.read())
         if self.args.apply_cache and self.args.update_cache:
             msg = 'Cannot specify both --apply-cache and --update-cache'
             self.logger.error(msg)
@@ -148,8 +147,9 @@ class benchmarker(logger):
             sample_inputs[self.PLOIDY] = 2.0
             sample_inputs[self.APPLY_CACHE] = self.args.apply_cache
             sample_inputs[self.UPDATE_CACHE] = self.args.update_cache
-            for key in [self.TUMOUR_ID, self.NORMAL_ID, self.PURITY]:
-                sample_inputs[key] = self.sample_params[sample][key]
+            sample_inputs[self.TUMOUR_ID] = sample+'_T'
+            sample_inputs[self.NORMAL_ID] = sample+'_N'
+            sample_inputs[self.PURITY] = self.DEFAULT_PURITY
             for key in templates.keys():
                 pattern = templates[key].format(results_dir, sample)
                 sample_inputs[key] = self.glob_single(pattern)
