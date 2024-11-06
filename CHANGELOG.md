@@ -1,11 +1,17 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-1424: Fix rendering of non-Latin characters
+- GCGI-1437: Remove unnecessary checks in OncoKB cache
+- GCGI-1460: Make study a required parameter for PWGS
+- GCGI-1459: Update report date for PWGS assay from yyyy/mm/dd to date report was generated
+
 ## 1.7.6: 2024-10-22
 - GCGI-1156: Merge long-running documentation branch to main
 - GCGI-1452: Update disclaimer with somatic mutation text and laboratory disclaimer
 - GCGI-1453: Update pWGS version number
 - GCGI-1456: Fix rounding of estimated tumour fraction in tar.sample
-- Increase csv field limit in plugins.fusions.tools.py to handle large fields in mavis_summary.txt 
+- Increase csv field limit in plugins.fusions.tools.py to handle large fields in mavis_summary.txt
 
 ## 1.7.5: 2024-10-02
 - GCGI-1378: Improve benchmarking to write an HTML summary page; update tests
