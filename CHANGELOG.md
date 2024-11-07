@@ -6,6 +6,7 @@
 - GCGI-1460: Make study a required parameter for PWGS
 - GCGI-1459: Update report date for PWGS assay from yyyy/mm/dd to date report was generated
 - GCGI-1458: Change geneticist sign-off date from date report was generated to yyyy-mm-dd 
+- GCGI-1413: Remove failed report plugin and allow summary plugin to handle failed reports
 
 ## 1.7.6: 2024-10-22
 - GCGI-1156: Merge long-running documentation branch to main
