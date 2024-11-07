@@ -23,6 +23,7 @@ class main(plugin_base):
     INCLUDE_SIGNOFFS = "include_signoffs"
     GENETICIST_DEFAULT = 'PLACEHOLDER'
     GENETICIST_ID_DEFAULT = 'XXXXXXX'
+    REPORT_SIGNOUT_DEFAULT = 'yyyy-mm-dd'
 
     def check_assay_name(self, wrapper):
         [ok, msg] = assays.name_status(wrapper.get_my_string(self.ASSAY))
@@ -113,7 +114,7 @@ class main(plugin_base):
         ]
         for key in discovered:
             self.add_ini_discovered(key)
-        self.set_ini_default(self.REPORT_SIGNOFF_DATE, get_todays_date())
+        self.set_ini_default(self.REPORT_SIGNOFF_DATE, self.REPORT_SIGNOUT_DEFAULT)
         self.set_ini_default(self.USER_SUPPLIED_DRAFT_DATE, get_todays_date())
         self.set_ini_default(self.GENETICIST, self.GENETICIST_DEFAULT)
         self.set_ini_default(self.GENETICIST_ID, self.GENETICIST_ID_DEFAULT)
