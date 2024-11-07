@@ -3,11 +3,17 @@
   from djerba.util.html import html_builder
   from djerba.plugins.summary.plugin import main as summary
   SUMMARY_TEXT = results.get(summary.SUMMARY_TEXT)
+  FAILED = results.get(summary.FAILED)
 %>
 
   <!-- results summary -->
   ${html_builder().section_cells_begin("<h2>Results Summary</h2>","main")}
-
-    ${html_builder().markdown_to_html(SUMMARY_TEXT)}
-
+  
+  % if not FAILED:
+      ${html_builder().markdown_to_html(SUMMARY_TEXT)}
+  % elif FAILED:
+      <p style="border-width:3px; border-style:solid; border-color:#FF0000; padding: 1em;" ${html_builder().markdown_to_html(SUMMARY_TEXT)}</p>
+  % endif
+  
   ${html_builder().section_cells_end()}
+

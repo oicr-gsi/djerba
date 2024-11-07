@@ -25,9 +25,20 @@ class TestSummaryPlugin(PluginTester):
         params = {
             self.INI: 'summary.ini',
             self.JSON: json_location,
-            self.MD5: '155e22cc02a45e04dc9058112354367c'
+            self.MD5: '1599ec66c80c2607e71a1dea9d53aacf'
         }
         self.run_basic_test(test_source_dir, params)
+
+    def testFailedSummary(self):
+        test_source_dir = os.path.realpath(os.path.dirname(__file__))
+        json_location = os.path.join(self.data_dir_root, "plugins", "summary", "report_json", "failed.json")
+        params = {
+            self.INI: 'failed.ini',
+            self.JSON: json_location,
+            self.MD5: 'abf18dc395150bf990a0b24b1cf9b422'
+        }
+        self.run_basic_test(test_source_dir, params)
+
 
     def testSummaryWithCustomText(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -43,7 +54,7 @@ class TestSummaryPlugin(PluginTester):
         params = {
             self.INI: ini_path,
             self.JSON: json_location,
-            self.MD5: 'cebbb53b9b074131e309dca71704a896'
+            self.MD5: 'b58589404184cd4b8d1a88f276f096b7'
         }
         self.run_basic_test(test_source_dir, params)
 
