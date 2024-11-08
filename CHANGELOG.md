@@ -4,6 +4,9 @@
 - GCGI-1424: Fix rendering of non-Latin characters
 - GCGI-1437: Remove unnecessary checks in OncoKB cache
 - GCGI-981: Create virus (research) plugin
+- GCGI-1460: Make study a required parameter for PWGS
+- GCGI-1459: Update report date for PWGS assay from yyyy/mm/dd to date report was generated
+- GCGI-1458: Change geneticist sign-off date from date report was generated to yyyy-mm-dd 
 
 ## 1.7.6: 2024-10-22
 - GCGI-1156: Merge long-running documentation branch to main
@@ -29,7 +32,6 @@
 - Add CDH1, NF1, and VHL to new targeted panel (v2.0 -> v3.0)
 - GCGI-1333/1441: Make TAR depend on provenance helper
 - GCGI_1439: Changed clinical geneticist's name and number to PLACEHOLDER and XXXXXXX respectively
->>>>>>> main
 
 ## v1.7.2: 2024-08-19
 - GCGI-1420: Added green line separator to research footer
