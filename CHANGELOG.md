@@ -3,6 +3,7 @@
 ## Unreleased
 - GCGI-1424: Fix rendering of non-Latin characters
 - GCGI-1437: Remove unnecessary checks in OncoKB cache
+- GCGI-981: Create virus (research) plugin
 - GCGI-1460: Make study a required parameter for PWGS
 - GCGI-1459: Update report date for PWGS assay from yyyy/mm/dd to date report was generated
 - GCGI-1458: Change geneticist sign-off date from date report was generated to yyyy-mm-dd 
