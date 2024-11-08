@@ -41,8 +41,12 @@ RUN pip install --upgrade pip setuptools wheel
 # Copy the local Djerba files into the container for building
 COPY . .
 
+# Install pyyaml==5.4.1; module 'crimson' is incompatible with latest pyyaml
+RUN pip install "cython<3.0.0" wheel && pip install pyyaml==5.4.1 --no-build-isolation
+
+
 # Install Djerba dependencies inside the virtual environment
-RUN pip install .
+RUN pip install . -r djerba_requirements.txt
 
 # RUNTIME STAGE
 FROM ubuntu:latest AS runtime
