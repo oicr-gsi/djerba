@@ -112,3 +112,6 @@ ONCOKB = 'OncoKB'
 
 # JSON file suffix
 REPORT_JSON_SUFFIX = '_report.json'
+
+# root directory pattern for WHIZBAM files
+WHIZBAM_PATTERN_ROOT='/.mounts/labs/prod/whizbam/*/RNASEQ/'

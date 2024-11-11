@@ -7,6 +7,7 @@ import logging
 import os
 import re
 import glob
+import warnings
 import json
 import zlib
 import base64
@@ -71,11 +72,13 @@ class main(plugin_base):
         # Processing fusions and generating blob URLs
         tsv_file_path = wrapper.get_my_string(fc.ARRIBA_PATH)
         base_dir = (directory_finder(self.log_level, self.log_path).get_base_dir())
-        fusion_dir = os.path.join(base_dir, "plugins/fusion")
+        fusion_dir = os.path.join(base_dir, "plugins", "fusion")
         json_template_path = os.path.join(fusion_dir, fc.JSON_TO_BE_COMPRESSED)
         output_dir = self.workspace.get_work_dir()
         unique_fusions = list({item["fusion"] for item in results[fc.BODY]})
         fusion_url_pairs = []
+
+        failed_fusions = 0
 
         for fusion in unique_fusions:
             try:
@@ -83,7 +86,10 @@ class main(plugin_base):
                 fusion_url_pairs.append([fusion, blurb_url])
 
             except ValueError as e:
-                self.logger.error(f"Error processing fusion {fusion}: {e}")
+                self.logger.error(f"Skipping fusion {fusion}: {e}")
+                failed_fusions += 1
+
+            self.logger.warning(f"{failed_fusions} fusions failed out of {len(unique_fusions)}.")
 
         # Save the fusion-URL pairs to a CSV file
         output_tsv_path = os.path.join(output_dir, 'fusion_blurb_urls.tsv')
@@ -106,7 +112,7 @@ class main(plugin_base):
             gene1 = match.group(1)
             gene2 = match.group(2)
         else:
-            raise ValueError(f"No valid fusion found for {fusion}.")
+            raise ValueError(f"No valid fusion found for {fusion}. Ensure the format is gene1::gene2.")
 
         # Initialize breakpoints
         breakpoint1, breakpoint2 = None, None
@@ -117,14 +123,13 @@ class main(plugin_base):
 
             # Find the correct row based on gene1 and gene2
             for row in reader:
-                if (row['#gene1'] == gene1 or row['#gene1'] == gene2) and (
-                        row['gene2'] == gene1 or row['gene2'] == gene2):
+                if (row['#gene1'] == gene1 or row['#gene1'] == gene2) and (row['gene2'] == gene1 or row['gene2'] == gene2):
                     breakpoint1 = row['breakpoint1']
                     breakpoint2 = row['breakpoint2']
                     break
 
         if not (breakpoint1 and breakpoint2):
-            raise ValueError(f"No matching fusion found in the TSV file for {fusion}.")
+            raise ValueError(f"No matching fusion found in the TSV file ({tsv_file_path}) for {fusion}.")
 
         # Function to modify the breakpoint format to "chr:start-end"
         def format_breakpoint(breakpoint):
@@ -147,27 +152,33 @@ class main(plugin_base):
         data['tracks'][1]['name'] = tumour_id
 
         # Search for the BAM and BAI files using glob.glob
-        bam_pattern = f"/.mounts/labs/prod/whizbam/*/RNASEQ/{tumour_id}.bam"
-        bai_pattern = f"/.mounts/labs/prod/whizbam/*/RNASEQ/{tumour_id}.bai"
+        bam_pattern = f"{core_constants.WHIZBAM_PATTERN_ROOT}{tumour_id}.bam"
+        bai_pattern = f"{core_constants.WHIZBAM_PATTERN_ROOT}{tumour_id}.bai"
 
         bam_files = glob.glob(bam_pattern)
         bai_files = glob.glob(bai_pattern)
 
+        # Handle BAM files
         if bam_files:
+            if len(bam_files) > 1:
+                warnings.warn(f"Multiple BAM files found for pattern: {bam_pattern}. Using the first one.")
             bam_file = bam_files[0]
             project = os.path.basename(os.path.dirname(os.path.dirname(bam_file)))
             filename = os.path.basename(bam_file)
             data['tracks'][1]['url'] = f"/bams/project/{project}/RNASEQ/file/{filename}"
         else:
-            raise FileNotFoundError(f"BAM file not found for pattern: {bam_pattern}")
+            warnings.warn(f"BAM file not found for pattern: {bam_pattern}")
 
+        # Handle BAI files
         if bai_files:
+            if len(bai_files) > 1:
+                warnings.warn(f"Multiple BAI files found for pattern: {bai_pattern}. Using the first one.")
             bai_file = bai_files[0]
             project = os.path.basename(os.path.dirname(os.path.dirname(bai_file)))
             filename = os.path.basename(bai_file)
             data['tracks'][1]['indexURL'] = f"/bams/project/{project}/RNASEQ/file/{filename}"
         else:
-            raise FileNotFoundError(f"BAI file not found for pattern: {bai_pattern}")
+            warnings.warn(f"BAI file not found for pattern: {bai_pattern}")
 
         # Write the modified JSON to the output directory
         output_json_path = os.path.join(output_dir, f"{fusion}.json")
@@ -182,13 +193,13 @@ class main(plugin_base):
 
     def compress_string(self, input_string):
         # Convert string to bytes
-        input_bytes = input_string.encode('utf-8')
+        input_bytes = input_string.encode(core_constants.TEXT_ENCODING)
         # Compress using raw deflate (no zlib header)
         compressed_bytes = zlib.compress(input_bytes, level=9)[2:-4]  # Removing zlib headers and checksum
         # Encode compressed bytes to base64
         compressed_base64 = base64.b64encode(compressed_bytes)
         # Convert the base64 bytes to a string and apply the replacements
-        return compressed_base64.decode('utf-8')
+        return compressed_base64.decode(core_constants.TEXT_ENCODING)
 
     def specify_params(self):
         discovered = [
@@ -223,4 +234,4 @@ class main(plugin_base):
                 self.logger.error(msg)
                 raise RuntimeError(msg)
             wrapper.set_my_param(ini_name, file_path)
-        return (wrapper)
+        return wrapper
