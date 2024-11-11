@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-1464: Standalone script to diff two Djerba JSON reports
+
 ## 1.7.7: 2024-11-11
 - GCGI-1424: Fix rendering of non-Latin characters
 - GCGI-1437: Remove unnecessary checks in OncoKB cache
