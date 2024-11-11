@@ -33,9 +33,14 @@ class main(plugin_base):
         wrapper = self.update_file_if_null(wrapper, fc.ARRIBA_PATH, 'arriba')
         wrapper = self.update_file_if_null(wrapper, fc.MAVIS_PATH, 'mavis')
         self.update_wrapper_if_null(wrapper, 'input_params.json', fc.ONCOTREE_CODE, 'oncotree_code')
+
+        sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
+
         if wrapper.my_param_is_null(core_constants.TUMOUR_ID):
-            sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
             wrapper.set_my_param(core_constants.TUMOUR_ID, sample_info.get(core_constants.TUMOUR_ID))
+        if wrapper.my_param_is_null(core_constants.PROJECT):
+            wrapper.set_my_param(core_constants.PROJECT, sample_info.get(core_constants.PROJECT))
+
         return wrapper.get_config()
 
     def extract(self, config):
@@ -89,6 +94,7 @@ class main(plugin_base):
                 self.logger.error(f"Skipping fusion {fusion}: {e}")
                 failed_fusions += 1
 
+        if failed_fusions > 0:
             self.logger.warning(f"{failed_fusions} fusions failed out of {len(unique_fusions)}.")
 
         # Save the fusion-URL pairs to a CSV file
@@ -105,41 +111,22 @@ class main(plugin_base):
         return data
 
     def process_fusion(self, config, fusion, tsv_file_path, json_template_path, output_dir):
-        base_dir = (directory_finder(self.log_level, self.log_path).get_base_dir())
         wrapper = self.get_config_wrapper(config)
+
+        # Validate and parse the fusion format
         match = re.match(r"(.+)::(.+)", fusion)
-        if match:
-            gene1 = match.group(1)
-            gene2 = match.group(2)
-        else:
+        if not match:
             raise ValueError(f"No valid fusion found for {fusion}. Ensure the format is gene1::gene2.")
+        gene1, gene2 = match.groups()
 
-        # Initialize breakpoints
-        breakpoint1, breakpoint2 = None, None
-
-        # Open and read the ARRIBA TSV file
-        with open(tsv_file_path, mode='r') as file:
-            reader = csv.DictReader(file, delimiter='\t')
-
-            # Find the correct row based on gene1 and gene2
-            for row in reader:
-                if (row['#gene1'] == gene1 or row['#gene1'] == gene2) and (row['gene2'] == gene1 or row['gene2'] == gene2):
-                    breakpoint1 = row['breakpoint1']
-                    breakpoint2 = row['breakpoint2']
-                    break
-
+        # Find breakpoints in the ARRIBA TSV file
+        breakpoint1, breakpoint2 = self.find_breakpoints(tsv_file_path, gene1, gene2)
         if not (breakpoint1 and breakpoint2):
             raise ValueError(f"No matching fusion found in the TSV file ({tsv_file_path}) for {fusion}.")
 
-        # Function to modify the breakpoint format to "chr:start-end"
-        def format_breakpoint(breakpoint):
-            chrom, pos = breakpoint.split(':')
-            start = int(pos)
-            end = start + 1
-            return f"{chrom}:{start}-{end}"
-
-        formatted_breakpoint1 = format_breakpoint(breakpoint1)
-        formatted_breakpoint2 = format_breakpoint(breakpoint2)
+        # Format breakpoints
+        formatted_breakpoint1 = self.format_breakpoint(breakpoint1)
+        formatted_breakpoint2 = self.format_breakpoint(breakpoint2)
 
         # Load the JSON template
         with open(json_template_path, 'r') as json_file:
@@ -148,35 +135,30 @@ class main(plugin_base):
         # Update the JSON with the formatted breakpoints
         data['locus'] = [formatted_breakpoint1, formatted_breakpoint2]
 
+        project_id = wrapper.get_my_string(core_constants.PROJECT)
         tumour_id = wrapper.get_my_string(core_constants.TUMOUR_ID)
         data['tracks'][1]['name'] = tumour_id
 
         # Search for the BAM and BAI files using glob.glob
-        bam_pattern = f"{core_constants.WHIZBAM_PATTERN_ROOT}{tumour_id}.bam"
-        bai_pattern = f"{core_constants.WHIZBAM_PATTERN_ROOT}{tumour_id}.bai"
+        bam_pattern = f"{core_constants.WHIZBAM_PATTERN_ROOT}/{project_id}/RNASEQ/{tumour_id}.bam"
+        bai_pattern = f"{core_constants.WHIZBAM_PATTERN_ROOT}/{project_id}/RNASEQ/{tumour_id}.bai"
 
         bam_files = glob.glob(bam_pattern)
         bai_files = glob.glob(bai_pattern)
 
         # Handle BAM files
         if bam_files:
-            if len(bam_files) > 1:
-                warnings.warn(f"Multiple BAM files found for pattern: {bam_pattern}. Using the first one.")
             bam_file = bam_files[0]
-            project = os.path.basename(os.path.dirname(os.path.dirname(bam_file)))
             filename = os.path.basename(bam_file)
-            data['tracks'][1]['url'] = f"/bams/project/{project}/RNASEQ/file/{filename}"
+            data['tracks'][1]['url'] = f"/bams/project/{project_id}/RNASEQ/file/{filename}"
         else:
             warnings.warn(f"BAM file not found for pattern: {bam_pattern}")
 
         # Handle BAI files
         if bai_files:
-            if len(bai_files) > 1:
-                warnings.warn(f"Multiple BAI files found for pattern: {bai_pattern}. Using the first one.")
             bai_file = bai_files[0]
-            project = os.path.basename(os.path.dirname(os.path.dirname(bai_file)))
             filename = os.path.basename(bai_file)
-            data['tracks'][1]['indexURL'] = f"/bams/project/{project}/RNASEQ/file/{filename}"
+            data['tracks'][1]['indexURL'] = f"/bams/project/{project_id}/RNASEQ/file/{filename}"
         else:
             warnings.warn(f"BAI file not found for pattern: {bai_pattern}")
 
@@ -191,6 +173,22 @@ class main(plugin_base):
         blurb_url = f"https://whizbam.oicr.on.ca/igv?sessionURL=blob:{compressed_b64_data}"
         return fusion, blurb_url
 
+    def find_breakpoints(self, tsv_file_path, gene1, gene2):
+        # Find breakpoints for the given fusion genes in the arriba file
+        with open(tsv_file_path, mode='r') as file:
+            reader = csv.DictReader(file, delimiter='\t')
+            for row in reader:
+                if (row['#gene1'] == gene1 or row['#gene1'] == gene2) and (
+                        row['gene2'] == gene1 or row['gene2'] == gene2):
+                    return row['breakpoint1'], row['breakpoint2']
+        return None, None
+
+    def format_breakpoint(self, breakpoint):
+        # Format breakpoint into 'chr:start-end' format
+        chrom, pos = breakpoint.split(':')
+        start = int(pos)
+        return f"{chrom}:{start}-{start + 1}"
+
     def compress_string(self, input_string):
         # Convert string to bytes
         input_bytes = input_string.encode(core_constants.TEXT_ENCODING)
@@ -203,6 +201,7 @@ class main(plugin_base):
 
     def specify_params(self):
         discovered = [
+            core_constants.PROJECT,
             fc.MAVIS_PATH,
             fc.ARRIBA_PATH,
             core_constants.TUMOUR_ID,
