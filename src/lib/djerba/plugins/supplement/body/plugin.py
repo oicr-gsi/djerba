@@ -55,13 +55,15 @@ class main(plugin_base):
         # Check if dates are valid
         user_supplied_date = wrapper.get_my_string(self.USER_SUPPLIED_DRAFT_DATE)
         report_signoff_date = wrapper.get_my_string(self.REPORT_SIGNOFF_DATE)
-        for date in [user_supplied_date, report_signoff_date]:
+        dates_to_check = [user_supplied_date, ]
+        if report_signoff_date != self.REPORT_SIGNOUT_DEFAULT:
+            dates_to_check.append(report_signoff_date)
+        for date in dates_to_check:
             if not is_valid_date(date):
                 msg = "Invalid requisition approved date '{0}': ".format(date)+\
                       "Must be in yyyy-mm-dd format"
                 self.logger.error(msg)
                 raise ValueError(msg)
-
         return wrapper.get_config()
 
     def extract(self, config):
