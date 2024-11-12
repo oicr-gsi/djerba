@@ -1,6 +1,5 @@
 """
 Process the GSICAPBENCH samples for benchmarking/validation:
-- Detect new GSICAPBENCH runs (TODO)
 - Generate config and make working directories
 - Run main class to generate reports
 - Compare with previous runs
@@ -34,6 +33,7 @@ class benchmarker(logger):
     CONFIG_FILE_NAME = 'config.ini'
     # TODO set random seed in MSI workflow for consistent outputs
     MSI_DIR_NAME = 'msi'
+    DEFAULT_PLOIDY = 2.0  # arbitrary ploidy default
     DEFAULT_PURITY = 0.74 # arbitrary purity default
     DEFAULT_SAMPLES = [
         'GSICAPBENCH_0001',
@@ -49,11 +49,15 @@ class benchmarker(logger):
         'GSICAPBENCH_1391'
     ]
     REPORT_DIR_NAME = 'report'
-    TEMPLATE = 'benchmark_config.ini'
+    TEMPLATE_PWGS = 'benchmark_pwgs.ini'
+    TEMPLATE_TAR = 'benchmark_tar.ini'
+    TEMPLATE_WGTS = 'benchmark_wgts.ini'
 
-    # script modes
-    GENERATE = 'generate'
-    COMPARE = 'compare'
+    # Assay identifiers
+    ASSAY = 'assay'
+    WGTS = 'WGTS'
+    TAR = 'TAR'
+    PWGS = 'PWGS'
 
     # INI template field names
     ARRIBA_FILE = 'arriba_path'
@@ -153,25 +157,20 @@ class benchmarker(logger):
             for key in templates.keys():
                 pattern = templates[key].format(results_dir, sample)
                 sample_inputs[key] = self.glob_single(pattern)
-            # Workaround for placeholder arriba output
-            if sample_inputs[self.ARRIBA_FILE] == None:
-                arriba_path = os.path.join(self.private_dir, 'arriba', 'arriba.fusions.tsv')
-                if os.path.isfile(arriba_path):
-                    sample_inputs[self.ARRIBA_FILE] = arriba_path
-                else:
-                    msg = "No arriba input found from input directory; "+\
-                        "fallback arriba path '{0}' is not a file".format(arriba_path)
-                    self.logger.error(msg)
-                    raise RuntimeError(msg)
-            if None in sample_inputs.values():
-                template = "Skipping {0} as one or more values are missing: {1}"
-                msg = template.format(sample, sample_inputs)
-                self.logger.warning(msg)
-                continue
+            # For each sample, check if inputs are consistent with WGTS, PWGS, or TAR
+            if self.ok_for_wgts(sample_inputs):
+                sample_inputs[self.ASSAY] = self.WGTS
+            elif self.ok_for_tar(sample_inputs):
+                sample_inputs[self.ASSAY] = self.TAR
+            elif self.ok_for_pwgs(sample_inputs):
+                sample_inputs[self.ASSAY] = self.PWGS
+            else:
+                sample_inputs[self.ASSAY] = None
             self.logger.debug("Sample inputs for {0}: {1}".format(sample, sample_inputs))
-            if any([x==None for x in sample_inputs.values()]):
-                # skip samples with missing inputs, eg. for testing
-                self.logger.info("Omitting {0}, one or more inputs missing".format(sample))
+            if sample_inputs[self.ASSAY] == None:
+                template = "Skipping {0} as inputs do not match any supported assay: {1}"
+                self.logger.warning(template.format(sample, sample_inputs))
+                continue
             else:
                 inputs[sample] = sample_inputs
         if len(inputs)==0:
@@ -181,6 +180,51 @@ class benchmarker(logger):
             self.logger.error(msg)
             raise RuntimeError(msg)
         return inputs
+
+    def get_template_path(self, sample_inputs):
+        assay = sample_inputs[self.ASSAY]
+        if assay == self.WGTS:
+            filename = self.TEMPLATE_WGTS
+        elif assay == self.PWGS:
+            filename = self.TEMPLATE_PWGS
+        elif assay == self.TAR:
+            filename = self.TEMPLATE_PWGS
+        else:
+            msg = "No template INI supported for assay '{0}'"
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        return os.path.join(self.data_dir, filename)
+
+    def ok_for_pwgs(self, sample_inputs):
+        # TODO check against list of names
+        return False
+
+    def ok_for_tar(self, sample_inputs):
+        # TODO check against list of names
+        return False
+
+    def ok_for_wgts(self, sample_inputs):
+        expected = [
+            self.MAF_FILE,
+            self.MAVIS_FILE,
+            self.RSEM_FILE,
+            self.MSI_FILE,
+            self.CTDNA_FILE,
+            self.ARRIBA_FILE,
+            self.PURPLE_FILE,
+            self.HRD_FILE
+        ]
+        return self.inputs_ok(sample_inputs, expected)
+
+    def inputs_ok(self, sample_inputs, expected_input_names):
+        # arguments: dictionary of sample inputs, list of expected input names
+        # check if dictionary has non-null values for all names in list
+        ok = True
+        for name in expected_input_names:
+            if sample_inputs[name] == None:
+                ok = False
+                break
+        return ok
 
     def run_comparison(self, reports_path, ref_path):
         config = ConfigParser()
@@ -224,7 +268,6 @@ class benchmarker(logger):
         inputs = self.find_inputs(results_dir)
         input_samples = sorted(inputs.keys())
         self.validator.validate_output_dir(work_dir)
-        template_path = os.path.join(self.data_dir, self.TEMPLATE)
         for sample in input_samples:
             self.logger.debug("Setting up working directory for sample {0}".format(sample))
             sample_dir = os.path.join(work_dir, sample)
@@ -235,6 +278,8 @@ class benchmarker(logger):
             report_dir = os.path.join(sample_dir, self.REPORT_DIR_NAME)
             if not os.path.isdir(report_dir):
                 os.mkdir(report_dir)
+            # Complete the appropriate INI template for report type: WGTS, TAR, PWGS
+            template_path = self.get_template_path(inputs.get(sample))
             self.logger.debug("Reading INI template: {0}".format(template_path))
             with open(template_path) as template_file:
                 template_ini = Template(template_file.read())
