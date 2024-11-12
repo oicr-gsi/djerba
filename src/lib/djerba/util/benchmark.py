@@ -65,6 +65,8 @@ class benchmarker(logger):
     CTDNA_FILE = 'ctdna_file'
     HRD_FILE = 'hrd_file'
     MAF_FILE = 'maf_path'
+    MAF_TAR_T = 'maf_path_tar_tumour'
+    MAF_TAR_N = 'maf_path_tar_normal'
     MAVIS_FILE = 'mavis_path'
     MRDETECT_VCF = 'mrdetect_vcf'
     MSI_FILE = 'msi_file'
@@ -73,6 +75,10 @@ class benchmarker(logger):
     PURITY = 'purity'
     PURPLE_FILE = 'purple_path'
     RSEM_FILE = 'rsem_genes_results'
+    SEG_FILE = 'seg_file'
+    CC_T = 'consensus_cruncher_tumour'
+    CC_N = 'consensus_cruncher_normal'
+    ICHORCNA_FILE = 'ichorcna_file'
     TUMOUR_ID = 'tumour_id'
     NORMAL_ID = 'normal_id'
     APPLY_CACHE = 'apply_cache'
@@ -132,6 +138,22 @@ class benchmarker(logger):
             self.logger.debug(msg)
         return result
 
+    def find_cc_metrics(self, maf_path):
+        # find consensus cruncher metrics -- in same directory as MAF file (if any)
+        if maf_path == None:
+            metric_path = None
+        else:
+            cc_dir = os.path.dirname(maf_path)
+            metric_path = os.path.join(cc_dir, 'allUnique-hsMetrics.HS.txt')
+            try:
+                self.validator.validate_input_file(metric_path)
+            except OSError as err:
+                msg = "Cannot find expected metrics path {0} ".format(metric_path)+\
+                    "from MAF path {0}".format(maf_path)
+                self.logger.error(msg)
+                raise OSError(msg) from err
+        return metric_path
+
     def find_inputs(self, results_dir):
         inputs = {}
         templates = {
@@ -142,13 +164,17 @@ class benchmarker(logger):
             self.CTDNA_FILE: '{0}/**/{1}_*.SNP.count.txt',
             self.ARRIBA_FILE: '{0}/**/{1}*.fusions.tsv',
             self.PURPLE_FILE: '{0}/**/{1}*.purple.zip',
-            self.HRD_FILE: '{0}/**/{1}*.signatures.json'
+            self.HRD_FILE: '{0}/**/{1}*.signatures.json',
+            self.MAF_TAR_T: '{0}/**/{1}_*_T_*.merged.maf.gz',
+            self.MAF_TAR_N: '{0}/**/{1}_*_R_*.merged.maf.gz',
+            self.SEG_FILE: '{0}/**/{1}*.seg.txt',
+            self.ICHORCNA_FILE: '{0}/**/{1}*_metrics.json'
         }
         for sample in self.samples:
             sample_inputs = {}
             sample_inputs[self.DONOR] = sample
             sample_inputs[self.PROJECT] = 'placeholder'
-            sample_inputs[self.PLOIDY] = 2.0
+            sample_inputs[self.PLOIDY] = self.DEFAULT_PLOIDY
             sample_inputs[self.APPLY_CACHE] = self.args.apply_cache
             sample_inputs[self.UPDATE_CACHE] = self.args.update_cache
             sample_inputs[self.TUMOUR_ID] = sample+'_T'
@@ -157,6 +183,8 @@ class benchmarker(logger):
             for key in templates.keys():
                 pattern = templates[key].format(results_dir, sample)
                 sample_inputs[key] = self.glob_single(pattern)
+            sample_inputs[self.CC_T] = self.find_cc_metrics(sample_inputs[self.MAF_TAR_T])
+            sample_inputs[self.CC_N] = self.find_cc_metrics(sample_inputs[self.MAF_TAR_N])
             # For each sample, check if inputs are consistent with WGTS, PWGS, or TAR
             if self.ok_for_wgts(sample_inputs):
                 sample_inputs[self.ASSAY] = self.WGTS
@@ -188,7 +216,7 @@ class benchmarker(logger):
         elif assay == self.PWGS:
             filename = self.TEMPLATE_PWGS
         elif assay == self.TAR:
-            filename = self.TEMPLATE_PWGS
+            filename = self.TEMPLATE_TAR
         else:
             msg = "No template INI supported for assay '{0}'"
             self.logger.error(msg)
@@ -200,8 +228,15 @@ class benchmarker(logger):
         return False
 
     def ok_for_tar(self, sample_inputs):
-        # TODO check against list of names
-        return False
+        expected = [
+            self.ICHORCNA_FILE,
+            self.CC_T,
+            self.CC_N,
+            self.SEG_FILE,
+            self.MAF_TAR_T,
+            self.MAF_TAR_N
+        ]
+        return self.inputs_ok(sample_inputs, expected)
 
     def ok_for_wgts(self, sample_inputs):
         expected = [
