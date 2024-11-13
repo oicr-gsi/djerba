@@ -62,13 +62,17 @@ class benchmarker(logger):
     # INI template field names
     ARRIBA_FILE = 'arriba_path'
     DONOR = 'donor'
+    BAMQC_FILE = 'bamqc_file'
     CTDNA_FILE = 'ctdna_file'
     HRD_FILE = 'hrd_file'
     MAF_FILE = 'maf_path'
     MAF_TAR_T = 'maf_path_tar_tumour'
     MAF_TAR_N = 'maf_path_tar_normal'
     MAVIS_FILE = 'mavis_path'
-    MRDETECT_VCF = 'mrdetect_vcf'
+    MRDETECT_HBC = 'mrdetect_hbc'
+    MRDETECT_SNP = 'mrdetect_snp'
+    MRDETECT_TXT = 'mrdetect_txt'
+    MRDETECT_VAF = 'mrdetect_vaf'
     MSI_FILE = 'msi_file'
     PLOIDY = 'ploidy'
     PROJECT = 'project'
@@ -83,6 +87,25 @@ class benchmarker(logger):
     NORMAL_ID = 'normal_id'
     APPLY_CACHE = 'apply_cache'
     UPDATE_CACHE = 'update_cache'
+    GLOB_TEMPLATES = {
+        MAF_FILE: '{0}/**/{1}_*mutect2.filtered.maf.gz',
+        MAVIS_FILE: '{0}/**/{1}*.mavis_summary.tab',
+        RSEM_FILE: '{0}/**/{1}_*.genes.results',
+        MSI_FILE: '{0}/**/{1}_*.msi.booted',
+        CTDNA_FILE: '{0}/**/{1}_*.SNP.count.txt',
+        ARRIBA_FILE: '{0}/**/{1}*.fusions.tsv',
+        PURPLE_FILE: '{0}/**/{1}*.purple.zip',
+        HRD_FILE: '{0}/**/{1}*.signatures.json',
+        MAF_TAR_T: '{0}/**/{1}_*_T_*.merged.maf.gz',
+        MAF_TAR_N: '{0}/**/{1}_*_R_*.merged.maf.gz',
+        SEG_FILE: '{0}/**/{1}*.seg.txt',
+        ICHORCNA_FILE: '{0}/**/{1}*_metrics.json',
+        BAMQC_FILE: '{0}/**/{1}*.bamQC_results.json',
+        MRDETECT_HBC: '{0}/**/{1}*.HBCs.csv',
+        MRDETECT_SNP: '{0}/**/{1}*.SNP.count.txt',
+        MRDETECT_TXT: '{0}/**/{1}*.mrdetect.txt',
+        MRDETECT_VAF: '{0}/**/{1}*.mrdetect.vaf.txt',
+    }
 
     def __init__(self, args):
         self.log_level = self.get_args_log_level(args)
@@ -156,20 +179,6 @@ class benchmarker(logger):
 
     def find_inputs(self, results_dir):
         inputs = {}
-        templates = {
-            self.MAF_FILE: '{0}/**/{1}_*mutect2.filtered.maf.gz',
-            self.MAVIS_FILE: '{0}/**/{1}*.mavis_summary.tab',
-            self.RSEM_FILE: '{0}/**/{1}_*.genes.results',
-            self.MSI_FILE: '{0}/**/{1}_*.msi.booted',
-            self.CTDNA_FILE: '{0}/**/{1}_*.SNP.count.txt',
-            self.ARRIBA_FILE: '{0}/**/{1}*.fusions.tsv',
-            self.PURPLE_FILE: '{0}/**/{1}*.purple.zip',
-            self.HRD_FILE: '{0}/**/{1}*.signatures.json',
-            self.MAF_TAR_T: '{0}/**/{1}_*_T_*.merged.maf.gz',
-            self.MAF_TAR_N: '{0}/**/{1}_*_R_*.merged.maf.gz',
-            self.SEG_FILE: '{0}/**/{1}*.seg.txt',
-            self.ICHORCNA_FILE: '{0}/**/{1}*_metrics.json'
-        }
         for sample in self.samples:
             sample_inputs = {}
             sample_inputs[self.DONOR] = sample
@@ -180,8 +189,8 @@ class benchmarker(logger):
             sample_inputs[self.TUMOUR_ID] = sample+'_T'
             sample_inputs[self.NORMAL_ID] = sample+'_N'
             sample_inputs[self.PURITY] = self.DEFAULT_PURITY
-            for key in templates.keys():
-                pattern = templates[key].format(results_dir, sample)
+            for key in self.GLOB_TEMPLATES.keys():
+                pattern = self.GLOB_TEMPLATES[key].format(results_dir, sample)
                 sample_inputs[key] = self.glob_single(pattern)
             sample_inputs[self.CC_T] = self.find_cc_metrics(sample_inputs[self.MAF_TAR_T])
             sample_inputs[self.CC_N] = self.find_cc_metrics(sample_inputs[self.MAF_TAR_N])
@@ -224,8 +233,14 @@ class benchmarker(logger):
         return os.path.join(self.data_dir, filename)
 
     def ok_for_pwgs(self, sample_inputs):
-        # TODO check against list of names
-        return False
+        expected = [
+            self.BAMQC_FILE,
+            self.MRDETECT_HBC,
+            self.MRDETECT_SNP,
+            self.MRDETECT_TXT,
+            self.MRDETECT_VAF
+        ]
+        return self.inputs_ok(sample_inputs, expected)
 
     def ok_for_tar(self, sample_inputs):
         expected = [
