@@ -52,10 +52,12 @@ class benchmarker(logger):
     TEMPLATE_PWGS = 'benchmark_pwgs.ini'
     TEMPLATE_TAR = 'benchmark_tar.ini'
     TEMPLATE_WGTS = 'benchmark_wgts.ini'
+    TEMPLATE_WGS = 'benchmark_wgs.ini'
 
     # Assay identifiers
     ASSAY = 'assay'
     WGTS = 'WGTS'
+    WGS = 'WGS'
     TAR = 'TAR'
     PWGS = 'PWGS'
 
@@ -194,22 +196,25 @@ class benchmarker(logger):
                 sample_inputs[key] = self.glob_single(pattern)
             sample_inputs[self.CC_T] = self.find_cc_metrics(sample_inputs[self.MAF_TAR_T])
             sample_inputs[self.CC_N] = self.find_cc_metrics(sample_inputs[self.MAF_TAR_N])
-            # For each sample, check if inputs are consistent with WGTS, PWGS, or TAR
+            # Check which assay(s) have inputs available; run all which apply
+            assays = []
             if self.ok_for_wgts(sample_inputs):
-                sample_inputs[self.ASSAY] = self.WGTS
-            elif self.ok_for_tar(sample_inputs):
-                sample_inputs[self.ASSAY] = self.TAR
-            elif self.ok_for_pwgs(sample_inputs):
-                sample_inputs[self.ASSAY] = self.PWGS
-            else:
-                sample_inputs[self.ASSAY] = None
-            self.logger.debug("Sample inputs for {0}: {1}".format(sample, sample_inputs))
-            if sample_inputs[self.ASSAY] == None:
+                assays.append(self.WGTS)
+            elif self.ok_for_wgs(sample_inputs):
+                assays.append(self.WGS) # WGS/WGTS are mutually exclusive
+            if self.ok_for_tar(sample_inputs):
+                assays.append(self.TAR)
+            if self.ok_for_pwgs(sample_inputs):
+                assays.append(self.PWGS)
+            for assay in assays:
+                identifier = sample+"_"+assay
+                sample_inputs[self.ASSAY] = assay
+                inputs[identifier] = sample_inputs
+                msg = "Sample inputs for {0}: {1}".format(identifier, sample_inputs)
+                self.logger.debug(msg)
+            if len(assays)==0:
                 template = "Skipping {0} as inputs do not match any supported assay: {1}"
                 self.logger.warning(template.format(sample, sample_inputs))
-                continue
-            else:
-                inputs[sample] = sample_inputs
         if len(inputs)==0:
             # require inputs for at least one sample
             msg = "No benchmark inputs found in {0} ".format(results_dir)+\
@@ -253,6 +258,16 @@ class benchmarker(logger):
         ]
         return self.inputs_ok(sample_inputs, expected)
 
+    def ok_for_wgs(self, sample_inputs):
+        expected = [
+            self.MAF_FILE,
+            self.MSI_FILE,
+            self.CTDNA_FILE,
+            self.PURPLE_FILE,
+            self.HRD_FILE
+        ]
+        return self.inputs_ok(sample_inputs, expected)
+
     def ok_for_wgts(self, sample_inputs):
         expected = [
             self.MAF_FILE,
@@ -291,22 +306,22 @@ class benchmarker(logger):
         html = plugin.render(data)
         return [data, html]
 
-    def run_reports(self, input_samples, work_dir):
-        self.logger.info("Reporting for {0} samples: {1}".format(len(input_samples), input_samples))
+    def run_reports(self, inputs, work_dir):
+        self.logger.info("Reporting for {0} inputs: {1}".format(len(inputs), inputs))
         report_paths = {}
-        for sample in input_samples:
-            self.logger.info("Generating Djerba draft report for {0}".format(sample))
-            config_path = os.path.join(work_dir, sample, self.CONFIG_FILE_NAME)
-            report_dir = os.path.join(work_dir, sample, self.REPORT_DIR_NAME)
+        for name in inputs:
+            self.logger.info("Generating Djerba draft report for {0}".format(name))
+            config_path = os.path.join(work_dir, name, self.CONFIG_FILE_NAME)
+            report_dir = os.path.join(work_dir, name, self.REPORT_DIR_NAME)
             self.validator.validate_output_dir(report_dir)
             # run the Djerba "main" class to generate a JSON report file
             djerba_main = main(report_dir, self.log_level, self.log_path)
             config = djerba_main.configure(config_path)
-            json_path = os.path.join(report_dir, sample+'_report.json')
+            json_path = os.path.join(report_dir, name+'_report.json')
             self.logger.debug("Extracting data to JSON path: "+json_path)
             data = djerba_main.extract(config, json_path, archive=False)
-            self.logger.info("Finished Djerba draft report for {0}".format(sample))
-            report_paths[sample] = json_path
+            self.logger.info("Finished Djerba draft report for {0}".format(name))
+            report_paths[name] = json_path
         json_path = os.path.join(work_dir, 'report_paths.json')
         with open(json_path, 'w', encoding=core_constants.TEXT_ENCODING) as json_file:
             json_file.write(json.dumps(report_paths))
@@ -316,38 +331,39 @@ class benchmarker(logger):
         """For each sample, set up working directory and generate config.ini"""
         self.validator.validate_input_dir(results_dir)
         inputs = self.find_inputs(results_dir)
-        input_samples = sorted(inputs.keys())
+        input_names = sorted(inputs.keys())
         self.validator.validate_output_dir(work_dir)
-        for sample in input_samples:
-            self.logger.debug("Setting up working directory for sample {0}".format(sample))
-            sample_dir = os.path.join(work_dir, sample)
-            if os.path.isdir(sample_dir):
-                self.logger.warning("{0} exists, will overwrite".format(sample_dir))
+        for name in input_names:
+            # names incorporate sample and assay, eg. GSICAPBENCH_0001_WGS
+            self.logger.debug("Setting up working directory for name {0}".format(name))
+            work_subdir = os.path.join(work_dir, name)
+            if os.path.isdir(work_subdir):
+                self.logger.warning("{0} exists, will overwrite".format(work_subdir))
             else:
-                os.mkdir(sample_dir)
-            report_dir = os.path.join(sample_dir, self.REPORT_DIR_NAME)
+                os.mkdir(work_subdir)
+            report_dir = os.path.join(work_subdir, self.REPORT_DIR_NAME)
             if not os.path.isdir(report_dir):
                 os.mkdir(report_dir)
             # Complete the appropriate INI template for report type: WGTS, TAR, PWGS
-            template_path = self.get_template_path(inputs.get(sample))
+            template_path = self.get_template_path(inputs.get(name))
             self.logger.debug("Reading INI template: {0}".format(template_path))
             with open(template_path) as template_file:
                 template_ini = Template(template_file.read())
-            self.logger.debug("Substituting with: {0}".format(inputs.get(sample)))
-            config = template_ini.substitute(inputs.get(sample))
-            out_path = os.path.join(sample_dir, self.CONFIG_FILE_NAME)
+            self.logger.debug("Substituting with: {0}".format(inputs.get(name)))
+            config = template_ini.substitute(inputs.get(name))
+            out_path = os.path.join(work_subdir, self.CONFIG_FILE_NAME)
             with open(out_path, 'w') as out_file:
                 out_file.write(config)
-            self.logger.info("Created working directory {0}".format(sample_dir))
+            self.logger.info("Created working directory {0}".format(work_subdir))
         self.logger.info("GSICAPBENCH setup complete.")
-        return input_samples
+        return input_names
 
     def run(self):
         # generate Djerba reports
         # load and run plugin to compare reports and generate summary
         # copy JSON/text files and write HTML summary to output directory
-        input_samples = self.run_setup(self.input_dir, self.work_dir)
-        reports_path = self.run_reports(input_samples, self.work_dir)
+        input_names = self.run_setup(self.input_dir, self.work_dir)
+        reports_path = self.run_reports(input_names, self.work_dir)
         data, html = self.run_comparison(reports_path, self.ref_path)
         self.logger.info("Writing data and HTML output")
         self.write_outputs(data, html)
