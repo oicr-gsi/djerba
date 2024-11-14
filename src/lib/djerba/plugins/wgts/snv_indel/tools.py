@@ -8,6 +8,10 @@ import csv
 import gzip
 import json
 import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.ticker import PercentFormatter
+import seaborn as sns
+import numpy as np
 import logging
 import djerba.core.constants as core_constants
 import djerba.plugins.wgts.common.cnv.constants as cnv_constants
@@ -101,10 +105,53 @@ class snv_indel_processor(logger):
             raise RuntimeError(msg)
         return indices
 
+    def add_vaf_to_maf(self, maf_df, alt_col, dep_col, vaf_header):
+        # print a warning if any values are missing (shouldn't happen), but change them to 0
+        vaf_df = maf_df.copy()
+        if vaf_df[alt_col].isna().any() or vaf_df[dep_col].isna().any():
+            self.logger.info("Warning! Missing values found in one of the count columns")
+            vaf_df[alt_col] = vaf_df[alt_col].fillna(0)
+            vaf_df[dep_col] = vaf_df[dep_col].fillna(0)
+
+        # ensure factors end up as numeric
+        vaf_df[alt_col] = pd.to_numeric(vaf_df[alt_col])
+        vaf_df[dep_col] = pd.to_numeric(vaf_df[dep_col])
+
+        # ensure position comes after alternate count field
+        bspot = vaf_df.columns.get_loc(alt_col)
+        vaf = pd.Series(vaf_df[alt_col]/vaf_df[dep_col])
+        vaf_df.insert(bspot+1, vaf_header, vaf)
+
+        # check for any NAs
+        if vaf_df[vaf_header].isna().any():
+            self.logger.info("Warning! Missing values found in the new vaf column")
+            vaf_df[vaf_header] = vaf_df[vaf_header].fillna(0)
+
+        return vaf_df
+    
     def annotate_maf(self, maf_path):
         factory = annotator_factory(self.log_level, self.log_path)
         return factory.get_annotator(self.work_dir, self.config).annotate_maf(maf_path)
 
+    def compute_loh(self, df, cn_file, purity):
+        self.logger.info("Computing LOH")
+        cn = pd.read_csv(cn_file, sep="\t")
+        calc_df = pd.merge(df[["Hugo_Symbol", "tumour_vaf"]], cn, on="Hugo_Symbol")
+        calc_df["LHS"] = (calc_df["tumour_vaf"] / float(purity) ) * calc_df["CN"]
+        calc_df["RHS"] = calc_df["CN"] - 0.5
+        calc_df["LOH"] = (calc_df['LHS'] > calc_df['RHS']) & (calc_df['MACN'] <= 0.5)
+
+        return calc_df
+
+    def construct_whizbam_links(self, df, whizbam_url):
+        if not df.empty:
+            self.logger.debug("--- adding Whizbam links ---")
+            df['whizbam'] = whizbam_url + df['Chromosome'].str.replace("chr", "") + "&chrloc=" + df['Start_Position'].astype(str) + "-" + df['End_Position'].astype(str)
+        else:
+            self.logger.debug("--- No Whizbam links added to empty file ---")
+        
+        return df
+    
     def convert_vaf_plot(self):
         """
         Read VAF plot from file if it exists and return as a base64 string
@@ -358,6 +405,84 @@ class snv_indel_processor(logger):
                         kept += 1
         self.logger.info("Kept {0} of {1} MAF data rows".format(kept, total))
         return tmp_path
+    
+    def proc_vep(self, maf_df):
+        # add vaf columns
+        vaf_df = self.add_vaf_to_maf(maf_df, alt_col="t_alt_count", dep_col="t_depth", vaf_header="tumour_vaf")
+        vaf_df = self.add_vaf_to_maf(vaf_df, alt_col="n_alt_count", dep_col="n_depth", vaf_header="normal_vaf")
+
+        # add oncogenic yes or no columns
+        df_anno = vaf_df.copy()
+        df_anno['oncogenic_binary'] = np.where(df_anno['ONCOGENIC'].isin(["Oncogenic", "Likely Oncogenic"]), "YES", "NO")
+
+        # add common_variant yes or no columns
+        df_anno['ExAC_common'] = np.where(df_anno['FILTER'].str.contains("common_variant"), "YES", "NO")
+
+        # add POPMAX yes or no columns
+        gnomad_cols = ["gnomAD_AFR_AF", "gnomAD_AMR_AF", "gnomAD_ASJ_AF", "gnomAD_EAS_AF", "gnomAD_FIN_AF", "gnomAD_NFE_AF", "gnomAD_OTH_AF", "gnomAD_SAS_AF"]
+        df_anno[gnomad_cols] = df_anno[gnomad_cols].fillna(0)
+        df_anno['gnomAD_AF_POPMAX'] = df_anno[gnomad_cols].max(axis=1)
+
+        # caller artifact filters
+        df_anno['FILTER'] = df_anno['FILTER'].replace("^clustered_events$", "PASS", regex=True)
+        df_anno['FILTER'] = df_anno['FILTER'].replace("^clustered_events;common_variant$", "PASS", regex=True)
+        df_anno['FILTER'] = df_anno['FILTER'].replace("^common_variant$", "PASS", regex=True)
+        df_anno['FILTER'] = df_anno['FILTER'].replace(".", "PASS", regex=False)
+
+        # Artifact Filter
+        df_anno['TGL_FILTER_ARTIFACT'] = np.where(df_anno['FILTER'] == "PASS", "PASS", "Artifact")
+
+        # ExAC Filter
+        df_anno['TGL_FILTER_ExAC'] = np.where((df_anno['ExAC_common'] == "YES") & (df_anno['Matched_Norm_Sample_Barcode'] == "unmatched"), "ExAC_common", "PASS")
+
+        # gnomAD_AF_POPMAX Filter
+        df_anno['TGL_FILTER_gnomAD'] = np.where((df_anno['gnomAD_AF_POPMAX'] > 0.001) & (df_anno['Matched_Norm_Sample_Barcode'] == "unmatched"), "gnomAD_common", "PASS")
+
+        # VAF Filter
+        df_anno['TGL_FILTER_VAF'] = np.where((df_anno['tumour_vaf'] >= 0.15) | ((df_anno['tumour_vaf'] < 0.15) & (df_anno['oncogenic_binary'] == "YES")), "PASS", "low_VAF")
+
+        # Mark filters
+        df_anno['TGL_FILTER_VERDICT'] = np.where((df_anno['TGL_FILTER_ARTIFACT'] == "PASS") & (df_anno['TGL_FILTER_ExAC'] == "PASS") & (df_anno['TGL_FILTER_gnomAD'] == "PASS") & (df_anno['TGL_FILTER_VAF'] == "PASS"), 
+                                                 "PASS", 
+                                                 df_anno['TGL_FILTER_ARTIFACT'] + ";" + df_anno['TGL_FILTER_ExAC'] + ";" + df_anno['TGL_FILTER_gnomAD'] + ";" + df_anno['TGL_FILTER_VAF'])
+        
+        df_filt = df_anno[df_anno['TGL_FILTER_VERDICT'] == "PASS"]
+
+        return df_filt
+
+    def process_snv_data(self, whizbam_url, maf_input_path):
+        if maf_input_path is None:
+            self.logger.info("No MAF file input, processing omitted")
+        else:
+            self.logger.info("Processing Mutation data")
+
+            # annotate with filters
+            self.logger.debug("--- Reading MAF data ---")
+            maf_df = pd.read_csv(maf_input_path, sep="\t")
+
+            df_filter = self.proc_vep(maf_df)
+            df_filt_whizbam = self.construct_whizbam_links(df=df_filter, whizbam_url=whizbam_url)
+
+            df_filt_whizbam.to_csv(path_or_buf=os.path.join(self.work_dir, "data_mutations_extended.txt"), sep="\t", index=False)
+
+            if df_filter.empty:
+                self.logger.info("No passed mutations")
+                df_filt_whizbam.to_csv(path_or_buf=os.path.join(self.work_dir, "data_mutations_extended_oncogenic.txt"), sep="\t", index=False)
+            else:
+                # subset to oncokb annotated genes
+                df_filt_oncokb = df_filt_whizbam[(df_filt_whizbam['ONCOGENIC'] == "Oncogenic") | (df_filt_whizbam['ONCOGENIC'] == "Likely Oncogenic")]
+                if df_filt_oncokb.empty:
+                    self.logger.info("no oncogenic mutations")
+                df_filt_oncokb.to_csv(path_or_buf=os.path.join(self.work_dir, "data_mutations_extended_oncogenic.txt"), sep="\t", index=False)
+
+            if self.workspace.has_file("purity_ploidy.json") and self.workspace.has_file("cn.txt"):
+                purity = str(self.workspace.read_json("purity_ploidy.json")["purity"])
+                cn_file = os.path.join(self.work_dir, "cn.txt")
+
+                final_table = self.compute_loh(df_filt_oncokb, cn_file, purity)
+                final_table.to_csv(os.path.join(self.work_dir, "loh.txt"), sep="\t", index=False)
+            else:
+                self.logger.info("No copy number information, LOH omitted")
 
     def run_data_rscript(self, whizbam_url, maf_input_path):
         dir_location = os.path.dirname(__file__)
@@ -380,18 +505,65 @@ class snv_indel_processor(logger):
         result = runner.run(cmd, "main snv/indel R script")
         return result
 
+#    def write_vaf_plot(self):
+#        """Run the R script to write the VAF plot"""
+#        dir_location = os.path.dirname(__file__)
+#        # TODO make the ensembl conversion file specific to this plugin?
+#        cmd = [
+#            'Rscript', os.path.join(dir_location, 'R', 'vaf_plot.r'),
+#            '--dir', self.work_dir,
+#            '--output', os.path.join(self.work_dir, sic.VAF_PLOT_FILENAME)
+#        ]
+#        runner = subprocess_runner(self.log_level, self.log_path)
+#        result = runner.run(cmd, "VAF plot R script")
+#        return result
+    
     def write_vaf_plot(self):
-        """Run the R script to write the VAF plot"""
-        dir_location = os.path.dirname(__file__)
-        # TODO make the ensembl conversion file specific to this plugin?
-        cmd = [
-            'Rscript', os.path.join(dir_location, 'R', 'vaf_plot.r'),
-            '--dir', self.work_dir,
-            '--output', os.path.join(self.work_dir, sic.VAF_PLOT_FILENAME)
-        ]
-        runner = subprocess_runner(self.log_level, self.log_path)
-        result = runner.run(cmd, "VAF plot R script")
-        return result
+        """"Create VAF plot with matplotlib"""
+        data_directory = self.data_dir
+        cyto_band = os.path.join(data_directory, 'cytoBand.txt')
+        cytoBand = pd.read_csv(cyto_band, sep="\t")
+
+        maf_path = os.path.join(self.work_dir, 'data_mutations_extended.txt')
+        output = os.path.join(self.work_dir, sic.VAF_PLOT_FILENAME)
+        self.logger.info(f"Creating VAF plot and saving to file {output}")
+
+
+        MAF = pd.read_csv(maf_path, sep="\t")
+        MAF = MAF[~MAF['Variant_Classification'].isin(['Silent', 'Splice_Region'])]
+        MAF = MAF.drop(columns=['Chromosome'])
+        MAF = MAF.merge(cytoBand, how='inner')
+        MAF['OncoKB'] = np.where(MAF['HIGHEST_LEVEL'].isna(), MAF['ONCOGENIC'], MAF['HIGHEST_LEVEL'])
+        MAF['tumour_vaf_perc'] = MAF['tumour_vaf'] * 100
+
+        plt.figure(figsize=(7, 1.5))
+
+        sns.kdeplot(data=MAF, 
+                    x='tumour_vaf_perc', 
+                    fill=True, 
+                    color='darkgrey', 
+                    alpha=0.5)
+        plt.scatter(MAF['tumour_vaf_perc'], 
+                    np.zeros_like(MAF['tumour_vaf_perc']), 
+                    color='black', 
+                    marker='|',
+                    linewidths=0.4)
+
+        plt.xlim(0, 100)
+        plt.ylim(0, plt.ylim()[1])
+        plt.xlabel("Variant Allele Frequency (%)")
+        plt.ylabel("% of mutations")
+
+        plt.gca().set_facecolor('white')
+        plt.gca().spines[['top', 'right', 'left', 'bottom']].set_visible(False)
+        plt.gca().yaxis.set_major_formatter(PercentFormatter(xmax=1, decimals=1))
+
+        plt.grid(False)
+        plt.tick_params(left = False, bottom = False)
+        plt.xticks([0, 25, 50, 75, 100], fontsize=8)
+        plt.yticks(fontsize=8)
+
+        plt.savefig(output, bbox_inches = 'tight', backend='Cairo')
 
     def whizbam_to_text(self, in_name, out_name):
         in_path = os.path.join(self.work_dir, in_name)
@@ -426,7 +598,8 @@ class snv_indel_processor(logger):
         tumour_id = self.config.get_my_string(sic.TUMOUR_ID)
         maf_path_preprocessed = self.preprocess_maf(maf_path, tumour_id)
         maf_path_annotated = self.annotate_maf(maf_path_preprocessed)
-        self.run_data_rscript(whizbam_url, maf_path_annotated)
+        #self.run_data_rscript(whizbam_url, maf_path_annotated)
+        self.process_snv_data(whizbam_url, maf_path_annotated)
         # Exclude the plot if there are no somatic mutations
         if self.has_somatic_mutations():
             self.write_vaf_plot()
