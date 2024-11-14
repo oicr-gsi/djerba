@@ -97,7 +97,6 @@ setup(
         'alternate_djerba.plugins.demo4': install_wildcards,
     },
     install_requires=[
-        'cairo',
         'configparse',
         'email_validator',
         'jsonschema',
@@ -107,6 +106,7 @@ setup(
         'numpy==1.23.1', # set exact version to avoid build conflict with gsi-qc-etl
         'pandas',
         'pdfkit',
+        'pycairo',
         'pyinstaller',
         'PyPDF2',
         'requests',
