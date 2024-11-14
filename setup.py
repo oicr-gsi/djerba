@@ -97,6 +97,7 @@ setup(
         'alternate_djerba.plugins.demo4': install_wildcards,
     },
     install_requires=[
+        'cairo',
         'configparse',
         'email_validator',
         'jsonschema',
