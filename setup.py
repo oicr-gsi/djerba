@@ -107,7 +107,6 @@ setup(
         'numpy==1.23.1', # set exact version to avoid build conflict with gsi-qc-etl
         'pandas',
         'pdfkit',
-        'plotnine',
         'pycairo',
         'pyinstaller',
         'PyPDF2',
