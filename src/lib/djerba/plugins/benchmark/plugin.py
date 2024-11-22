@@ -8,7 +8,7 @@ import logging
 
 import djerba.core.constants as core_constants
 from djerba.plugins.base import plugin_base
-from djerba.util.benchmark import report_equivalence_tester
+from djerba.util.benchmark_tools import report_equivalence_tester
 from djerba.util.date import get_timestamp
 from djerba.util.render_mako import mako_renderer
 from djerba.util.environment import directory_finder

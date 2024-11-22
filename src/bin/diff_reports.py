@@ -7,7 +7,7 @@ import sys
 
 sys.path.pop(0) # do not import from script directory
 
-from djerba.util.benchmark import report_equivalence_tester
+from djerba.util.benchmark_tools import report_equivalence_tester
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
 

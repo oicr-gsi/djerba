@@ -110,6 +110,40 @@ class benchmarker(logger):
         MRDETECT_VAF: '{0}/**/{1}*.mrdetect.vaf.txt',
     }
 
+    # expected inputs by assay
+    EXPECTED_PWGS = [
+        BAMQC_FILE,
+        MRDETECT_HBC,
+        MRDETECT_SNP,
+        MRDETECT_TXT,
+        MRDETECT_VAF
+    ]
+    EXPECTED_TAR = [
+        ICHORCNA_FILE,
+        CC_T,
+        CC_N,
+        SEG_FILE,
+        MAF_TAR_T,
+        MAF_TAR_N
+    ]
+    EXPECTED_WGS = [
+        MAF_FILE,
+        MSI_FILE,
+        CTDNA_FILE,
+        PURPLE_FILE,
+        HRD_FILE
+    ]
+    EXPECTED_WGTS = [
+        MAF_FILE,
+        MAVIS_FILE,
+        RSEM_FILE,
+        MSI_FILE,
+        CTDNA_FILE,
+        ARRIBA_FILE,
+        PURPLE_FILE,
+        HRD_FILE
+    ]
+
     def __init__(self, args):
         self.log_level = self.get_args_log_level(args)
         self.log_path = args.log_path
@@ -155,7 +189,7 @@ class benchmarker(logger):
         initial_len = len(results)
         results = list(filter(lambda x: not re.search('[ACGT]{8}-[ACGT]{8}', x), results))
         omitted = initial_len - len(results)
-        if removed > 0:
+        if omitted > 0:
             self.logger.debug('Omitting {0} un-merged results for {1}'.format(omitted, pattern))
         if len(results)==0:
             result = None
@@ -217,11 +251,7 @@ class benchmarker(logger):
                 identifier = sample+"_"+assay
                 sample_inputs[self.ASSAY] = assay
                 inputs[identifier] = sample_inputs
-                msg = "Sample inputs for {0}: {1}".format(identifier, sample_inputs)
-                self.logger.debug(msg)
-            if len(assays)==0:
-                template = "Skipping {0} as inputs do not match any supported assay: {1}"
-                self.logger.warning(template.format(sample, sample_inputs))
+            self.log_inputs(assays, sample, sample_inputs)
         if len(inputs)==0:
             # require inputs for at least one sample
             msg = "No benchmark inputs found in {0} ".format(results_dir)+\
@@ -234,59 +264,57 @@ class benchmarker(logger):
         assay = sample_inputs[self.ASSAY]
         if assay == self.WGTS:
             filename = self.TEMPLATE_WGTS
+        elif assay == self.WGS:
+            filename = self.TEMPLATE_WGS
         elif assay == self.PWGS:
             filename = self.TEMPLATE_PWGS
         elif assay == self.TAR:
             filename = self.TEMPLATE_TAR
         else:
-            msg = "No template INI supported for assay '{0}'"
+            msg = "No template INI supported for assay '{0}'".format(assay)
             self.logger.error(msg)
             raise RuntimeError(msg)
         return os.path.join(self.data_dir, filename)
 
+    def log_inputs(self, assays, sample, sample_inputs):
+        # summarize the available sample inputs in log output:
+        # - list the viable assays as INFO
+        # - warn if no assays are viable as WARNING
+        # - list the missing inputs for non-viable assays as DEBUG
+        self.logger.debug("Inputs for sample {0}: {1}".format(sample, sample_inputs))
+        if len(assays)==0:
+            template = "Skipping {0} as inputs do not match any supported assay"
+            self.logger.warning(template.format(sample))
+        else:
+            template = "Found {0} assays for sample {1}: {2}"
+            self.logger.info(template.format(len(assays), sample, assays))
+        expected = {
+            self.PWGS: self.EXPECTED_PWGS,
+            self.TAR: self.EXPECTED_TAR,
+            self.WGS: self.EXPECTED_WGS,
+            self.WGTS: self.EXPECTED_WGTS
+        }
+        for assay, inputs in expected.items():
+            if assay == self.WGS and self.WGTS in assays:
+                # WGTS takes precedence over WGS; WGS inputs are a subset of WGTS
+                continue
+            elif assay not in assays:
+                not_found = sorted(list(filter(lambda x: sample_inputs[x]==None, inputs)))
+                template = "The following inputs are not available "+\
+                    "for sample {0}, assay {1}: {2}"
+                self.logger.debug(template.format(sample, assay, not_found))
+
     def ok_for_pwgs(self, sample_inputs):
-        expected = [
-            self.BAMQC_FILE,
-            self.MRDETECT_HBC,
-            self.MRDETECT_SNP,
-            self.MRDETECT_TXT,
-            self.MRDETECT_VAF
-        ]
-        return self.inputs_ok(sample_inputs, expected)
+        return self.inputs_ok(sample_inputs, self.EXPECTED_PWGS)
 
     def ok_for_tar(self, sample_inputs):
-        expected = [
-            self.ICHORCNA_FILE,
-            self.CC_T,
-            self.CC_N,
-            self.SEG_FILE,
-            self.MAF_TAR_T,
-            self.MAF_TAR_N
-        ]
-        return self.inputs_ok(sample_inputs, expected)
+        return self.inputs_ok(sample_inputs, self.EXPECTED_TAR)
 
     def ok_for_wgs(self, sample_inputs):
-        expected = [
-            self.MAF_FILE,
-            self.MSI_FILE,
-            self.CTDNA_FILE,
-            self.PURPLE_FILE,
-            self.HRD_FILE
-        ]
-        return self.inputs_ok(sample_inputs, expected)
+        return self.inputs_ok(sample_inputs, self.EXPECTED_WGS)
 
     def ok_for_wgts(self, sample_inputs):
-        expected = [
-            self.MAF_FILE,
-            self.MAVIS_FILE,
-            self.RSEM_FILE,
-            self.MSI_FILE,
-            self.CTDNA_FILE,
-            self.ARRIBA_FILE,
-            self.PURPLE_FILE,
-            self.HRD_FILE
-        ]
-        return self.inputs_ok(sample_inputs, expected)
+        return self.inputs_ok(sample_inputs, self.EXPECTED_WGTS)
 
     def inputs_ok(self, sample_inputs, expected_input_names):
         # arguments: dictionary of sample inputs, list of expected input names

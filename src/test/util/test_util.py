@@ -11,7 +11,7 @@ import unittest
 from configparser import ConfigParser
 from glob import glob
 
-from djerba.util.benchmark import benchmarker, report_equivalence_tester, \
+from djerba.util.benchmark_tools import benchmarker, report_equivalence_tester, \
     DjerbaReportDiffError
 from djerba.util.environment import directory_finder
 from djerba.util.render_mako import mako_renderer
@@ -62,20 +62,21 @@ class TestBenchmark(TestBase):
             private_dir, 'benchmarking', 'djerba_bench_reference', 'bench_ref_paths.json'
         )
         self.samples = ['GSICAPBENCH_1219', 'GSICAPBENCH_1273', 'GSICAPBENCH_1275']
+        self.reports = [sam+'_WGS' for sam in self.samples]
 
     def test_inputs(self):
         args = self.mock_report_args(self.input_dir, self.tmp_dir, self.ref_path, self.samples)
         bench = benchmarker(args)
         bench_inputs = bench.find_inputs(self.input_dir)
-        self.assertEqual(sorted(list(bench_inputs.keys())), args.sample)
+        self.assertEqual(sorted(list(bench_inputs.keys())), self.reports)
         for k in bench_inputs.keys():
-            self.assertEqual(len(bench_inputs[k]), 16)
+            self.assertEqual(len(bench_inputs[k]), 28)
 
     def test_setup(self):
         args = self.mock_report_args(self.input_dir, self.tmp_dir, self.ref_path, self.samples)
         bench = benchmarker(args)
         samples = bench.run_setup(args.input_dir, args.work_dir)
-        self.assertEqual(sorted(samples), args.sample)
+        self.assertEqual(sorted(samples), self.reports)
         for sample in samples:
             ini_path = os.path.join(self.tmp_dir, sample, 'config.ini')
             self.assertTrue(os.path.isfile(ini_path))
