@@ -8,6 +8,7 @@ Process the GSICAPBENCH samples for benchmarking/validation:
 import json
 import logging
 import os
+import re
 import sys
 import unittest
 import djerba.core.constants as core_constants
@@ -150,6 +151,12 @@ class benchmarker(logger):
         """Glob recursively for the given pattern; return a single result, or None"""
         self.logger.debug("Recursive glob for files matching {0}".format(pattern))
         results = sorted(glob(pattern, recursive=True))
+        # omit files pertaining to un-merged BAMs, eg. foo-bar_TACGCTAC-CGTGTGAT.bamQC_results.json
+        initial_len = len(results)
+        results = list(filter(lambda x: not re.search('[ACGT]{8}-[ACGT]{8}', x), results))
+        omitted = initial_len - len(results)
+        if removed > 0:
+            self.logger.debug('Omitting {0} un-merged results for {1}'.format(omitted, pattern))
         if len(results)==0:
             result = None
             self.logger.debug("No glob results for pattern '{0}'".format(pattern))
