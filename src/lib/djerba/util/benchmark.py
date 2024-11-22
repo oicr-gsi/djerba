@@ -495,7 +495,7 @@ class report_equivalence_tester(logger):
             expr1 = self.get_expressions_by_gene(self.data[1], name)
             delta = self.deltas[self.EXPRESSION]
             if set(expr0.keys()) != set(expr1.keys()):
-                self.logger.warning("Gene sets differ, expressions are not equivalent")
+                self.logger.info("Gene sets differ, expressions are not equivalent")
                 plugin_eq = False
             else:
                 for gene in expr0.keys():
@@ -598,7 +598,14 @@ class report_equivalence_tester(logger):
         placeholder = 'redacted for benchmark comparison'
         self.logger.info("Preprocessing report path {0}".format(report_path))
         with open(report_path) as report_file:
-            data = json.loads(report_file.read())
+            try:
+                data = json.loads(report_file.read())
+            except json.decoder.JSONDecodeError as err:
+                msg = "Unable to process data from {0}; ".format(report_path)+\
+                    "incorrectly formatted JSON?"
+                self.logger.error(msg)
+                self.logger.error("JSON error: {0}".format(err))
+                raise DjerbaReportDiffError(msg) from err
         plugins = data['plugins'] # don't compare config or core elements
         # redact plugin versions, plots, dates
         for plugin_name in plugins.keys():

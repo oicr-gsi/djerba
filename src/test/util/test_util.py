@@ -5,6 +5,7 @@ import logging
 import mako
 import os
 import re
+import tempfile
 import unittest
 
 from configparser import ConfigParser
@@ -14,6 +15,7 @@ from djerba.util.benchmark import benchmarker, report_equivalence_tester, \
     DjerbaReportDiffError
 from djerba.util.environment import directory_finder
 from djerba.util.render_mako import mako_renderer
+from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.testing.tools import TestBase
 
 
@@ -127,6 +129,39 @@ class TestBenchmark(TestBase):
         ]
         # TODO update list and uncomment this assertion
         #self.assertEqual(output_files, expected_files)
+
+class TestDiffScript(TestBase):
+
+    def get_diff_cmd(self, report1, report2):
+        cmd = [
+            'diff_reports.py',
+            '--verbose',
+            '--report', report1,
+            '--report', report2
+        ]
+        return cmd
+
+    def test(self):
+        test_root = directory_finder().get_test_dir()
+        test_dir = os.path.join(test_root, 'util', 'compare')
+        report_basic = os.path.join(test_dir, '100-009-005_LCM3-v1_report.json')
+        report_copy = os.path.join(test_dir, '100-009-005_LCM3-v1_report.copy.json')
+        report_broken = os.path.join(test_dir, '100-009-005_LCM3-v1_report.broken.json')
+        report_other_sample = os.path.join(test_dir, '100-009-008_LCM2-v1_report.json')
+        report_modified = os.path.join(test_dir, '100-009-005_LCM3-v1_report.modified.json')
+        # suppress error logs; subprocess_runner needs a valid logfile, not /dev/null
+        tmp = tempfile.mkdtemp(prefix='djerba_diff_test_')
+        runner = subprocess_runner(log_path=os.path.join(tmp, 'diff.log'))
+        result = runner.run(self.get_diff_cmd(report_basic, report_copy))
+        self.assertEqual(result.returncode, 0)
+        result = runner.run(self.get_diff_cmd(report_basic, report_modified))
+        self.assertEqual(result.returncode, 0) # equivalent within tolerance
+        cmd = self.get_diff_cmd(report_basic, report_other_sample)
+        result = runner.run(cmd, raise_err=False)
+        self.assertEqual(result.returncode, 1)
+        cmd = self.get_diff_cmd(report_basic, report_broken)
+        result = runner.run(cmd, raise_err=False)
+        self.assertEqual(result.returncode, 1)
 
 
 class TestReportEquivalence(TestBase):
