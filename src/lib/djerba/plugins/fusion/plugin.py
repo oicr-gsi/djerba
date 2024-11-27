@@ -21,6 +21,8 @@ import djerba.core.constants as core_constants
 import djerba.util.oncokb.constants as oncokb
 import djerba.plugins.fusion.constants as fc
 
+class FusionProcessingError(Exception):
+    pass
 
 class main(plugin_base):
     PRIORITY = 900
@@ -90,7 +92,7 @@ class main(plugin_base):
                 fusion, blurb_url = self.process_fusion(config, fusion, tsv_file_path, json_template_path, output_dir)
                 fusion_url_pairs.append([fusion, blurb_url])
 
-            except ValueError as e:
+            except FusionProcessingError as e:
                 self.logger.error(f"Skipping fusion {fusion}: {e}")
                 failed_fusions += 1
 
@@ -116,13 +118,13 @@ class main(plugin_base):
         # Validate and parse the fusion format
         match = re.match(r"(.+)::(.+)", fusion)
         if not match:
-            raise ValueError(f"No valid fusion found for {fusion}. Ensure the format is gene1::gene2.")
+            raise FusionProcessingError(f"No valid fusion found for {fusion}. Ensure the format is gene1::gene2.")
         gene1, gene2 = match.groups()
 
         # Find breakpoints in the ARRIBA TSV file
         breakpoint1, breakpoint2 = self.find_breakpoints(tsv_file_path, gene1, gene2)
         if not (breakpoint1 and breakpoint2):
-            raise ValueError(f"No matching fusion found in the TSV file ({tsv_file_path}) for {fusion}.")
+            raise FusionProcessingError(f"No matching fusion found in the TSV file ({tsv_file_path}) for {fusion}.")
 
         # Format breakpoints
         formatted_breakpoint1 = self.format_breakpoint(breakpoint1)
