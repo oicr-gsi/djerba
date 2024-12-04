@@ -2,6 +2,7 @@
 
 ## Unreleased
 - GCGI-1464: Standalone script to diff two Djerba JSON reports
+- GCGI-1454: Added OncoKB definitions to WGTS40X and WGS40X assays
 - GCGI-1469: Prevent provenance_helper from overwriting manually provided tumour and normal IDs
 - GCGI-1472: Add all patient IDs to case_overview (not just the initial ID)
 
