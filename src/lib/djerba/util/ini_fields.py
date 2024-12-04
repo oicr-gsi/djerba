@@ -39,6 +39,7 @@ ONCOTREE_DATA = 'oncotree_data'
 ONCOTREE_CODE = 'oncotree_code' # was CANCER_TYPE_DETAILED
 PATIENT = 'patient'
 PATIENT_ID = 'patientid'
+PATIENT_ID_RAW = 'patientid_raw'
 PCT_V7_ABOVE_80X = 'pct_v7_above_80x'
 PINERY_URL = 'pinery_url'
 PIPELINE_VERSION = 'pipeline_version'
