@@ -2,6 +2,7 @@
 
 ## Unreleased
 - GCGI-1464: Standalone script to diff two Djerba JSON reports
+- GCGI-1454: Added OncoKB definitions to WGTS40X and WGS40X assays
 
 ## 1.7.7: 2024-11-11
 - GCGI-1424: Fix rendering of non-Latin characters
