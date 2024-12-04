@@ -99,12 +99,12 @@ class main(helper_base):
                     raise DjerbaProvenanceError(msg)
                 else:
                     wrapper.set_my_param(key, value)
-            elif value == None:
-                value = wrapper.get_my_string(key)
-                msg = "Overwriting null value for '{0}' in sample info ".format(key)+\
-                    "with user-defined value '{0}'".format(value)
-                self.logger.debug(msg)
-                sample_info[key] = value
+            elif wrapper.my_param_is_not_null(key):
+                user_value = wrapper.get_my_string(key)
+                msg = "Overwriting found value '{0}' for '{1}' in sample info with user-defined value '{2}'".format(value, key, user_value)
+                self.logger.warning(msg)
+                sample_info[key] = user_value
+ 
         # Write updated sample info as JSON
         self.write_sample_info(sample_info)
         return wrapper.get_config()

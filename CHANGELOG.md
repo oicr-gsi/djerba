@@ -2,6 +2,7 @@
 
 ## Unreleased
 - GCGI-1464: Standalone script to diff two Djerba JSON reports
+- GCGI-1469: Prevent provenance_helper from overwriting manually provided tumour and normal IDs
 
 ## 1.7.7: 2024-11-11
 - GCGI-1424: Fix rendering of non-Latin characters
