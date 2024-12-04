@@ -43,11 +43,23 @@ class main(plugin_base):
         total_fusion_genes = fus_reader.get_total_fusion_genes()
         gene_pair_fusions = fus_reader.get_fusions()
         if gene_pair_fusions is not None:
+
+            # DEBUG print for initial fusions
+            self.logger.debug(f"Initial gene_pair_fusions: {gene_pair_fusions}")
+
             outputs = fus_reader.fusions_to_json(gene_pair_fusions, wrapper.get_my_string(fc.ONCOTREE_CODE))
             [rows, gene_info, treatment_opts] = outputs
+
+            # DEBUG print the fusions before sorting and filtering
+            self.logger.debug(f"Fusion rows before sorting: {rows}")
+
             #sort by OncoKB level
             rows = sorted(rows, key=sort_by_actionable_level)
             rows = oncokb_levels.filter_reportable(rows)
+
+            # DEBUG print after applying OncoKB filter
+            self.logger.debug(f"Fusion rows after OncoKB filter: {rows}")
+
             results = {
                 fc.TOTAL_VARIANTS: total_fusion_genes,
                 fc.CLINICALLY_RELEVANT_VARIANTS: fus_reader.get_total_oncokb_fusions(),
