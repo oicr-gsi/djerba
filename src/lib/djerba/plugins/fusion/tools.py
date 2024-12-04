@@ -117,13 +117,6 @@ class fusion_reader(logger):
                         fusion_data[fusion_id][0]['translocation']
                     )
                 )
-
-        # Print/log the content of fusions, length of fusions, total_fusion_genes, and fusion_genes
-        self.logger.debug("Fusions list: {0}".format(fusions))  # Log the list of fusions
-        self.logger.debug("Number of fusions: {0}".format(len(fusions)))  # Log the length of fusions
-        self.logger.debug("Total fusion genes: {0}".format(len(fusion_genes)))  # Log total fusion genes count
-        self.logger.debug("Fusion genes set: {0}".format(fusion_genes))  # Log the set of fusion genes
-
         total = len(fusions) - nccn_fusion_total
         total_fusion_genes = len(fusion_genes)  # Count distinct genes
 
