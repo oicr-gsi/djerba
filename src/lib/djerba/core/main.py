@@ -353,7 +353,7 @@ class main_base(core_base):
 
     def update_data_from_file(self, new_data, json_path, force):
         """Read old JSON from a file, and return the updated data structure"""
-        with open(json_path) as in_file:
+        with open(json_path, encoding=cc.TEXT_ENCODING) as in_file:
             data = json.loads(in_file.read())
         return self.update_report_data(new_data, data, force)
 
@@ -579,7 +579,7 @@ class main(main_base):
             config = self.configure_from_parser(config_in)
         else:
             config = self.configure(config_path)
-        with open(json_path) as in_file:
+        with open(json_path, encoding=cc.TEXT_ENCODING) as in_file:
             data = json.loads(in_file.read())
         data_new = self.base_extract(config)
         data = self.update_data_from_file(data_new, json_path, force)

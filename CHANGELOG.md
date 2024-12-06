@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## Unreleased: v1.8.0
+- GCGI-1473: Remove R code from wgts.snv_indel and wgts.cnv_purple plugins
+
+## Unreleased: v1.7.8
+- GCGI-1464: Standalone script to diff two Djerba JSON reports
+- GCGI-1454: Added OncoKB definitions to WGTS40X and WGS40X assays
+- GCGI-1469: Prevent provenance_helper from overwriting manually provided tumour and normal IDs
+- GCGI-1472: Add all patient IDs to case_overview (not just the initial ID)
+
+## 1.7.7: 2024-11-11
+- GCGI-1424: Fix rendering of non-Latin characters
+- GCGI-1437: Remove unnecessary checks in OncoKB cache
+- GCGI-981: Create virus (research) plugin
+- GCGI-1460: Make study a required parameter for PWGS
+- GCGI-1459: Update report date for PWGS assay from yyyy/mm/dd to date report was generated
+- GCGI-1458: Change geneticist sign-off date from date report was generated to yyyy-mm-dd
+- GCGI-1465: Fix for overzealous date format check from implementation of GCGI-1458
+
+## 1.7.6: 2024-10-22
+- GCGI-1156: Merge long-running documentation branch to main
+- GCGI-1452: Update disclaimer with somatic mutation text and laboratory disclaimer
+- GCGI-1453: Update pWGS version number
+- GCGI-1456: Fix rounding of estimated tumour fraction in tar.sample
+- Increase csv field limit in plugins.fusions.tools.py to handle large fields in mavis_summary.txt
+
 ## 1.7.5: 2024-10-02
 - GCGI-1378: Improve benchmarking to write an HTML summary page; update tests
 - GCGI-1449: Correctly handle logical(0) values by replacing them with "Unknown" to avoid type mismatch errors during the join in the fusion plugin
