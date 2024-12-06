@@ -99,12 +99,12 @@ class main(helper_base):
                     raise DjerbaProvenanceError(msg)
                 else:
                     wrapper.set_my_param(key, value)
-            elif value == None:
-                value = wrapper.get_my_string(key)
-                msg = "Overwriting null value for '{0}' in sample info ".format(key)+\
-                    "with user-defined value '{0}'".format(value)
-                self.logger.debug(msg)
-                sample_info[key] = value
+            elif wrapper.my_param_is_not_null(key):
+                user_value = wrapper.get_my_string(key)
+                msg = "Overwriting found value '{0}' for '{1}' in sample info with user-defined value '{2}'".format(value, key, user_value)
+                self.logger.warning(msg)
+                sample_info[key] = user_value
+ 
         # Write updated sample info as JSON
         self.write_sample_info(sample_info)
         return wrapper.get_config()
@@ -194,10 +194,11 @@ class main(helper_base):
         )
         names = reader.get_sample_names()
         ids = reader.get_identifiers()
+        
         sample_info = {
             self.STUDY_TITLE: study,
             self.ROOT_SAMPLE_NAME: donor,
-            core_constants.PATIENT_STUDY_ID: ids.get(ini.PATIENT_ID),
+            core_constants.PATIENT_STUDY_ID: ids.get(ini.PATIENT_ID_RAW),
             core_constants.TUMOUR_ID: ids.get(ini.TUMOUR_ID),
             core_constants.NORMAL_ID: ids.get(ini.NORMAL_ID),
             ini.SAMPLE_NAME_WG_T: names.get(ini.SAMPLE_NAME_WG_T),
