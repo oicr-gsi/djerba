@@ -34,6 +34,7 @@ setup(
     version=__version__,
     scripts=[
         'src/bin/benchmark.py',
+        'src/bin/diff_reports.py',
         'src/bin/djerba.py',
         'src/bin/generate_ini.py',
         'src/bin/mini_djerba.py',
