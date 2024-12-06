@@ -105,7 +105,7 @@ setup(
         'mako',
         'markdown',
         'matplotlib',
-        'numpy==1.23.1', # set exact version to avoid build conflict with gsi-qc-etl
+        'numpy',
         'pandas',
         'pdfkit',
         'plotnine',
