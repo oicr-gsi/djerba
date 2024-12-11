@@ -2,6 +2,8 @@
 
 """
 Test of the WGTS CNV plugin
+This plugin is now obsolete and the test is deprecated
+Removal of plugin and test is TODO
 """
 
 import os
