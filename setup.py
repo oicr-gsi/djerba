@@ -105,7 +105,7 @@ setup(
         'mako',
         'markdown',
         'matplotlib',
-        'numpy>=1.26.4,<2',
+        'numpy>2',
         'pandas',
         'pdfkit',
         'plotnine',
