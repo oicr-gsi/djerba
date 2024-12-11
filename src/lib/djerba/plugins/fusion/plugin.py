@@ -34,6 +34,7 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         wrapper = self.update_file_if_null(wrapper, fc.ARRIBA_PATH, 'arriba')
         wrapper = self.update_file_if_null(wrapper, fc.MAVIS_PATH, 'mavis')
+        wrapper = self.update_wrapper_if_null(wrapper, 'input_params.json', fc.WHIZBAM_PROJECT, 'whizbam_project')
         self.update_wrapper_if_null(wrapper, 'input_params.json', fc.ONCOTREE_CODE, 'oncotree_code')
 
         sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
@@ -50,6 +51,7 @@ class main(plugin_base):
             return oncokb_levels.oncokb_order(row[core_constants.ONCOKB])
 
         wrapper = self.get_config_wrapper(config)
+        whizbam_project_id = wrapper.get_my_string(fc.WHIZBAM_PROJECT)
         prepare_fusions(self.workspace.get_work_dir(), self.log_level, self.log_path).process_fusion_files(wrapper)
         fus_reader = fusion_reader(self.workspace.get_work_dir(), self.log_level, self.log_path)
         total_fusion_genes = fus_reader.get_total_fusion_genes()
@@ -93,7 +95,7 @@ class main(plugin_base):
 
         for fusion in unique_fusions:
             try:
-                fusion, blurb_url = self.process_fusion(config, fusion, tsv_file_path, json_template_path, output_dir)
+                fusion, blurb_url = self.process_fusion(config, fusion, tsv_file_path, json_template_path, output_dir, whizbam_project_id)
                 fusion_url_pairs.append([fusion, blurb_url])
 
             except FusionProcessingError as e:
@@ -116,7 +118,7 @@ class main(plugin_base):
         data[core_constants.MERGE_INPUTS]['treatment_options_merger'] = treatment_opts
         return data
 
-    def process_fusion(self, config, fusion, tsv_file_path, json_template_path, output_dir):
+    def process_fusion(self, config, fusion, tsv_file_path, json_template_path, output_dir, whizbam_project_id):
         wrapper = self.get_config_wrapper(config)
 
         # Validate and parse the fusion format
@@ -151,6 +153,14 @@ class main(plugin_base):
 
         bam_files = glob.glob(bam_pattern)
         bai_files = glob.glob(bai_pattern)
+
+        # Fallback to whizbam_project_id if path doesn't exist
+        if not bam_files:
+            bam_pattern = f"{core_constants.WHIZBAM_PATTERN_ROOT}/{whizbam_project_id}/RNASEQ/{tumour_id}.bam"
+            bam_files = glob.glob(bam_pattern)
+        if not bai_files:
+            bai_pattern = f"{core_constants.WHIZBAM_PATTERN_ROOT}/{whizbam_project_id}/RNASEQ/{tumour_id}.bai"
+            bai_files = glob.glob(bai_pattern)
 
         # Handle BAM files
         if bam_files:
@@ -211,7 +221,8 @@ class main(plugin_base):
             fc.MAVIS_PATH,
             fc.ARRIBA_PATH,
             core_constants.TUMOUR_ID,
-            fc.ONCOTREE_CODE
+            fc.ONCOTREE_CODE,
+            fc.WHIZBAM_PROJECT
         ]
         for key in discovered:
             self.add_ini_discovered(key)
