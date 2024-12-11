@@ -34,7 +34,7 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         wrapper = self.update_file_if_null(wrapper, fc.ARRIBA_PATH, 'arriba')
         wrapper = self.update_file_if_null(wrapper, fc.MAVIS_PATH, 'mavis')
-        wrapper = self.update_wrapper_if_null(wrapper, 'input_params.json', fc.WHIZBAM_PROJECT, 'whizbam_project')
+        self.update_wrapper_if_null(wrapper, core_constants.DEFAULT_SAMPLE_INFO, fc.WHIZBAM_PROJECT, 'project')
         self.update_wrapper_if_null(wrapper, 'input_params.json', fc.ONCOTREE_CODE, 'oncotree_code')
 
         sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
@@ -51,7 +51,6 @@ class main(plugin_base):
             return oncokb_levels.oncokb_order(row[core_constants.ONCOKB])
 
         wrapper = self.get_config_wrapper(config)
-        whizbam_project_id = wrapper.get_my_string(fc.WHIZBAM_PROJECT)
         prepare_fusions(self.workspace.get_work_dir(), self.log_level, self.log_path).process_fusion_files(wrapper)
         fus_reader = fusion_reader(self.workspace.get_work_dir(), self.log_level, self.log_path)
         total_fusion_genes = fus_reader.get_total_fusion_genes()
@@ -95,7 +94,7 @@ class main(plugin_base):
 
         for fusion in unique_fusions:
             try:
-                fusion, blurb_url = self.process_fusion(config, fusion, tsv_file_path, json_template_path, output_dir, whizbam_project_id)
+                fusion, blurb_url = self.process_fusion(config, fusion, tsv_file_path, json_template_path, output_dir)
                 fusion_url_pairs.append([fusion, blurb_url])
 
             except FusionProcessingError as e:
@@ -118,7 +117,7 @@ class main(plugin_base):
         data[core_constants.MERGE_INPUTS]['treatment_options_merger'] = treatment_opts
         return data
 
-    def process_fusion(self, config, fusion, tsv_file_path, json_template_path, output_dir, whizbam_project_id):
+    def process_fusion(self, config, fusion, tsv_file_path, json_template_path, output_dir):
         wrapper = self.get_config_wrapper(config)
 
         # Validate and parse the fusion format
@@ -145,44 +144,47 @@ class main(plugin_base):
 
         project_id = wrapper.get_my_string(core_constants.PROJECT)
         tumour_id = wrapper.get_my_string(core_constants.TUMOUR_ID)
+        whizbam_project_id = wrapper.get_my_string(fc.WHIZBAM_PROJECT)
         data['tracks'][1]['name'] = tumour_id
 
-        # Search for the BAM and BAI files using glob.glob
-        bam_pattern = f"{core_constants.WHIZBAM_PATTERN_ROOT}/{project_id}/RNASEQ/{tumour_id}.bam"
-        bai_pattern = f"{core_constants.WHIZBAM_PATTERN_ROOT}/{project_id}/RNASEQ/{tumour_id}.bai"
+        # Define file patterns
+        bam_project_path = f"{core_constants.WHIZBAM_PATTERN_ROOT}/{project_id}/RNASEQ/{tumour_id}.bam"
+        bai_project_path = f"{core_constants.WHIZBAM_PATTERN_ROOT}/{project_id}/RNASEQ/{tumour_id}.bai"
+        bam_whizbam_path = f"{core_constants.WHIZBAM_PATTERN_ROOT}/{whizbam_project_id}/RNASEQ/{tumour_id}.bam"
+        bai_whizbam_path = f"{core_constants.WHIZBAM_PATTERN_ROOT}/{whizbam_project_id}/RNASEQ/{tumour_id}.bai"
 
-        bam_files = glob.glob(bam_pattern)
-        bai_files = glob.glob(bai_pattern)
-
-        # Fallback to whizbam_project_id if path doesn't exist
-        if not bam_files:
-            bam_pattern = f"{core_constants.WHIZBAM_PATTERN_ROOT}/{whizbam_project_id}/RNASEQ/{tumour_id}.bam"
-            bam_files = glob.glob(bam_pattern)
-        if not bai_files:
-            bai_pattern = f"{core_constants.WHIZBAM_PATTERN_ROOT}/{whizbam_project_id}/RNASEQ/{tumour_id}.bai"
-            bai_files = glob.glob(bai_pattern)
-
-        # Handle BAM files
-        if bam_files:
-            bam_file = bam_files[0]
-            filename = os.path.basename(bam_file)
-            data['tracks'][1]['url'] = f"/bams/project/{project_id}/RNASEQ/file/{filename}"
+        # Resolve BAM file
+        bam_file, bam_project = None, None
+        if os.path.isfile(bam_project_path):
+            bam_file, bam_project = bam_project_path, project_id
+        elif os.path.isfile(bam_whizbam_path):
+            bam_file, bam_project = bam_whizbam_path, whizbam_project_id
         else:
-            warnings.warn(f"BAM file not found for pattern: {bam_pattern}")
+            warnings.warn(f"BAM file not found for {project_id}. Try adjusting whizbam_project_id in config file")
 
-        # Handle BAI files
-        if bai_files:
-            bai_file = bai_files[0]
-            filename = os.path.basename(bai_file)
-            data['tracks'][1]['indexURL'] = f"/bams/project/{project_id}/RNASEQ/file/{filename}"
+        if bam_file:
+            bam_filename = os.path.basename(bam_file)
+            data['tracks'][1]['url'] = f"/bams/project/{bam_project}/RNASEQ/file/{bam_filename}"
+
+        # Resolve BAI file
+        bai_file, bai_project = None, None
+        if os.path.isfile(bai_project_path):
+            bai_file, bai_project = bai_project_path, project_id
+        elif os.path.isfile(bai_whizbam_path):
+            bai_file, bai_project = bai_whizbam_path, whizbam_project_id
         else:
-            warnings.warn(f"BAI file not found for pattern: {bai_pattern}")
+            warnings.warn(f"BAI file not found for {project_id}. Try adjusting whizbam_project_id in config file")
+
+        if bai_file:
+            bai_filename = os.path.basename(bai_file)
+            data['tracks'][1]['indexURL'] = f"/bams/project/{bai_project}/RNASEQ/file/{bai_filename}"
 
         # Write the modified JSON to the output directory
         output_json_path = os.path.join(output_dir, f"{fusion}.json")
         with open(output_json_path, 'w') as json_output_file:
             json.dump(data, json_output_file)
 
+        # Compress JSON and generate blurb URL
         with open(output_json_path, 'r') as json_output_file:
             json_content = json_output_file.read()
         compressed_b64_data = self.compress_string(json_content)
