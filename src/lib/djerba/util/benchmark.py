@@ -34,13 +34,19 @@ class benchmarker(logger):
     CONFIG_FILE_NAME = 'config.ini'
     # TODO set random seed in MSI workflow for consistent outputs
     MSI_DIR_NAME = 'msi'
+    DEFAULT_PURITY = 0.74 # arbitrary purity default
     DEFAULT_SAMPLES = [
-        "GSICAPBENCH_1219",
-        "GSICAPBENCH_1232",
-        "GSICAPBENCH_1233",
-        "GSICAPBENCH_1273",
-        "GSICAPBENCH_1275",
-        "GSICAPBENCH_1288"
+        'GSICAPBENCH_0001',
+        'GSICAPBENCH_0002',
+        'GSICAPBENCH_0003',
+        'GSICAPBENCH_011291',
+        'GSICAPBENCH_011303',
+        'GSICAPBENCH_011524',
+        'GSICAPBENCH_011633',
+        'GSICAPBENCH_1248',
+        'GSICAPBENCH_1309',
+        'GSICAPBENCH_1390',
+        'GSICAPBENCH_1391'
     ]
     REPORT_DIR_NAME = 'report'
     TEMPLATE = 'benchmark_config.ini'
@@ -79,8 +85,6 @@ class benchmarker(logger):
         self.data_dir = dir_finder.get_data_dir()
         self.private_dir = os.path.join(dir_finder.get_private_dir(), 'benchmarking')
         self.validator.validate_input_dir(self.private_dir)
-        with open(os.path.join(self.data_dir, 'benchmark_params.json')) as in_file:
-            self.sample_params = json.loads(in_file.read())
         if self.args.apply_cache and self.args.update_cache:
             msg = 'Cannot specify both --apply-cache and --update-cache'
             self.logger.error(msg)
@@ -143,8 +147,9 @@ class benchmarker(logger):
             sample_inputs[self.PLOIDY] = 2.0
             sample_inputs[self.APPLY_CACHE] = self.args.apply_cache
             sample_inputs[self.UPDATE_CACHE] = self.args.update_cache
-            for key in [self.TUMOUR_ID, self.NORMAL_ID, self.PURITY]:
-                sample_inputs[key] = self.sample_params[sample][key]
+            sample_inputs[self.TUMOUR_ID] = sample+'_T'
+            sample_inputs[self.NORMAL_ID] = sample+'_N'
+            sample_inputs[self.PURITY] = self.DEFAULT_PURITY
             for key in templates.keys():
                 pattern = templates[key].format(results_dir, sample)
                 sample_inputs[key] = self.glob_single(pattern)
@@ -372,7 +377,7 @@ class report_equivalence_tester(logger):
             expr1 = self.get_expressions_by_gene(self.data[1], name)
             delta = self.deltas[self.EXPRESSION]
             if set(expr0.keys()) != set(expr1.keys()):
-                self.logger.warning("Gene sets differ, expressions are not equivalent")
+                self.logger.info("Gene sets differ, expressions are not equivalent")
                 plugin_eq = False
             else:
                 for gene in expr0.keys():
@@ -475,7 +480,14 @@ class report_equivalence_tester(logger):
         placeholder = 'redacted for benchmark comparison'
         self.logger.info("Preprocessing report path {0}".format(report_path))
         with open(report_path) as report_file:
-            data = json.loads(report_file.read())
+            try:
+                data = json.loads(report_file.read())
+            except json.decoder.JSONDecodeError as err:
+                msg = "Unable to process data from {0}; ".format(report_path)+\
+                    "incorrectly formatted JSON?"
+                self.logger.error(msg)
+                self.logger.error("JSON error: {0}".format(err))
+                raise DjerbaReportDiffError(msg) from err
         plugins = data['plugins'] # don't compare config or core elements
         # redact plugin versions, plots, dates
         for plugin_name in plugins.keys():

@@ -42,51 +42,68 @@ class fusion_reader(logger):
         [fusions, self.total_fusion_genes, self.total_oncokb_fusions, self.total_nccn_fusions] = self._collate_row_data(fusion_data, annotations)
         # sort the fusions by fusion ID
         self.fusions = sorted(fusions, key=lambda f: f.get_fusion_id_new())
-        
+
     def _collate_row_data(self, fusion_data, annotations):
-        fusions = []
-        fusion_genes = set()
+        fusions = []  # List to store valid fusion entries
+        fusion_genes = set()  # Set to track distinct genes involved in fusions
         self.logger.debug("Starting to collate fusion table data.")
-        intragenic = 0
-        nccn_fusion_total = 0
-        NCCN_fusions = set()
+        intragenic = 0  # Counter for intragenic fusions
+        nccn_fusion_total = 0  # Counter for fusions rescued by NCCN annotation
+        NCCN_fusions = set()  # Set to store NCCN-annotated fusions
+
+        # Read NCCN-annotated fusions from a file
         with open(os.path.join(self.input_dir, fc.DATA_FUSIONS_NCCN_ANNOTATED)) as data_file:
             for row in csv.DictReader(data_file, delimiter="\t"):
-                NCCN_fusions.add(row['Fusion'])
+                NCCN_fusions.add(row['Fusion'])  # Add each fusion ID to the set
+
+        # Iterate over all fusion IDs in fusion_data
         for fusion_id in fusion_data.keys():
-            gene2_exists = True
-            if len(fusion_data[fusion_id])==1:
-                # skip intragenic fusions, but add to the gene count
+            gene2_exists = True  # Assume a second gene exists initially
+            # Case: Intragenic fusions (only one gene involved)
+            if len(fusion_data[fusion_id]) == 1:
+                # Skip intragenic fusions, but add to the gene count
                 fusion_genes.add(fusion_data[fusion_id][0][fc.HUGO_SYMBOL])
                 if fusion_id in NCCN_fusions:
-                    self.logger.debug("Fusion {0} rescued by NCCN annotation".format(fusion))
-                    gene2_exists = False
+                    # If the fusion is in the NCCN-annotated list, it's "rescued"
+                    self.logger.debug("Fusion {0} rescued by NCCN annotation".format(fusion_id))
+                    gene2_exists = False  # No second gene; marked as "Intergenic"
                     gene2 = "Intergenic"
-                    nccn_fusion_total += 1
+                    nccn_fusion_total += 1  # Increment NCCN-rescued fusion count
                 else:
-                    intragenic += 1
+                    intragenic += 1  # Increment intragenic count and skip processing
                     continue
             elif len(fusion_data[fusion_id]) >= 3:
+                # Error case: More than two genes for a single fusion ID
                 msg = "More than 2 fusions with the same name: {0}".format(fusion_id)
                 self.logger.error(msg)
                 raise RuntimeError(msg)
+
+            # Normal case: Valid fusion data with one or two genes
             gene1 = fusion_data[fusion_id][0][fc.HUGO_SYMBOL]
             if gene2_exists:
+                # If a second gene exists, retrieve it
                 gene2 = fusion_data[fusion_id][1][fc.HUGO_SYMBOL]
+                # Add both genes to the set
                 fusion_genes.add(gene1)
                 fusion_genes.add(gene2)
+
+            # Case: Two genes exist for the fusion
             if gene2_exists:
                 for row_input in annotations[fusion_id]:
-                    effect = row_input['MUTATION_EFFECT']
-                level = oncokb_levels.parse_oncokb_level(row_input)
+                    effect = row_input['MUTATION_EFFECT']  # Get mutation effect
+                level = oncokb_levels.parse_oncokb_level(row_input)  # Parse oncokb level
             else:
+                # Case: No second gene (rescued by NCCN)
                 effect = "Undetermined"
                 level = "P"
+
+            # If the level is valid, add therapies information
             if level not in ['Unknown', 'NA']:
                 if gene2_exists:
                     therapies = oncokb_levels.parse_actionable_therapies(row_input)
                 else:
                     therapies = {"P": "Prognostic"}
+                # Append a new fusion object to the list
                 fusions.append(
                     fusion(
                         fusion_id,
@@ -101,13 +118,16 @@ class fusion_reader(logger):
                     )
                 )
         total = len(fusions) - nccn_fusion_total
-        total_fusion_genes = len(fusion_genes)
-        msg = "Finished collating fusion table data. "+\
-              "Found {0} fusion rows for {1} distinct genes; ".format(total, total_fusion_genes)+\
+        total_fusion_genes = len(fusion_genes)  # Count distinct genes
+
+        msg = "Finished collating fusion table data. " + \
+              "Found {0} fusion rows for {1} distinct genes; ".format(total, total_fusion_genes) + \
               "excluded {0} intragenic rows.".format(intragenic)
         self.logger.info(msg)
+
         for fusion_row in fusions:
             self.logger.debug("Fusions: {0}".format(fusion_row.get_genes()))
+
         return [fusions, total_fusion_genes, total, nccn_fusion_total]
 
     def build_treatment_entries(self, fusion, therapies, oncotree_code):

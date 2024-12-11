@@ -55,14 +55,18 @@ class main(plugin_base):
         total_fusion_genes = fus_reader.get_total_fusion_genes()
         gene_pair_fusions = fus_reader.get_fusions()
         if gene_pair_fusions is not None:
+
             outputs = fus_reader.fusions_to_json(gene_pair_fusions, wrapper.get_my_string(fc.ONCOTREE_CODE))
             [rows, gene_info, treatment_opts] = outputs
+            
             # Sort by OncoKB level
             rows = sorted(rows, key=sort_by_actionable_level)
             rows = oncokb_levels.filter_reportable(rows)
+            unique_rows = set(map(lambda x: x['fusion'], rows))
+
             results = {
                 fc.TOTAL_VARIANTS: total_fusion_genes,
-                fc.CLINICALLY_RELEVANT_VARIANTS: fus_reader.get_total_oncokb_fusions(),
+                fc.CLINICALLY_RELEVANT_VARIANTS: len(unique_rows),
                 fc.NCCN_RELEVANT_VARIANTS: fus_reader.get_total_nccn_fusions(),
                 fc.BODY: rows
             }
