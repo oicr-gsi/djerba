@@ -102,7 +102,8 @@ class purple_processor(logger):
         segs["Chromosome"] = np.where(segs["chr"].isin(chromosomes_incl), segs["chr"], np.nan)
 
         highCN=6
-        segs["CNt_high"] = np.where(segs["copyNumber"] > highCN, "high", np.nan)
+        highCN_marker = True # use boolean instead of string, to avoid numpy.exceptions.DTypePromotionError
+        segs["CNt_high"] = np.where(segs["copyNumber"] > highCN, highCN_marker, np.nan)
         fitted_segments_df_sub = segs[["start","end","Chromosome","majorAlleleCopyNumber","minorAlleleCopyNumber","copyNumber","CNt_high"]].copy()
         fitted_segments_df_sub["cent"] = np.nan
 
@@ -122,7 +123,7 @@ class purple_processor(logger):
             + facet_grid(". ~ Chromosome", scales = 'free', space="free")
             + scale_y_continuous(limits=[-0.11,highCN+0.4],breaks=breaks)
             + geom_vline(aes(xintercept = 'start'),data=fitted_segments_df_plot[fitted_segments_df_plot['cent'] == 1],color="lightgrey")
-            + geom_point(aes(x='start',y=highCN+0.35), data=fitted_segments_df_plot[fitted_segments_df_plot['CNt_high'] == 'high'], shape='^', size=1)
+            + geom_point(aes(x='start',y=highCN+0.35), data=fitted_segments_df_plot[fitted_segments_df_plot['CNt_high'] == highCN_marker], shape='^', size=1)
             + guides(shape='none',alpha='none',linetype='none')
             + labs(y="Copy Number")
             + theme_bw()
@@ -154,7 +155,7 @@ class purple_processor(logger):
             + facet_grid(". ~ Chromosome", scales = 'free', space="free")
             + scale_y_continuous(limits=[-0.11,highCN+0.11],breaks=breaks)
             + geom_vline(aes(xintercept = 'start'),data=fitted_segments_df_plot[fitted_segments_df_plot['cent'] == 1],color="lightgrey")
-            + geom_point(aes(x='start',y=highCN+0.1), data=fitted_segments_df_plot[fitted_segments_df_plot['CNt_high'] == 'high'], shape='^', size=1)
+            + geom_point(aes(x='start',y=highCN+0.1), data=fitted_segments_df_plot[fitted_segments_df_plot['CNt_high'] == highCN_marker], shape='^', size=1)
             + guides(shape='none',alpha='none',linetype='none')
             + labs(y="Copy Number")
             + theme_bw()
