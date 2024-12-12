@@ -6,8 +6,6 @@ import csv
 import logging
 import os
 import re
-import glob
-import warnings
 import json
 import zlib
 import base64
@@ -98,7 +96,7 @@ class main(plugin_base):
                 fusion_url_pairs.append([fusion, blurb_url])
 
             except FusionProcessingError as e:
-                self.logger.error(f"Skipping fusion {fusion}: {e}")
+                self.logger.warning(f"Skipping fusion {fusion}: {e}")
                 failed_fusions += 1
 
         if failed_fusions > 0:
@@ -123,13 +121,17 @@ class main(plugin_base):
         # Validate and parse the fusion format
         match = re.match(r"(.+)::(.+)", fusion)
         if not match:
-            raise FusionProcessingError(f"No valid fusion found for {fusion}. Ensure the format is gene1::gene2.")
+            msg = f"No valid fusion found for {fusion}. Ensure the format is gene1::gene2."
+            self.logger.error(msg)
+            raise FusionProcessingError(msg)
         gene1, gene2 = match.groups()
 
         # Find breakpoints in the ARRIBA TSV file
         breakpoint1, breakpoint2 = self.find_breakpoints(tsv_file_path, gene1, gene2)
         if not (breakpoint1 and breakpoint2):
-            raise FusionProcessingError(f"No matching fusion found in the TSV file ({tsv_file_path}) for {fusion}.")
+            msg = f"No matching fusion found in the TSV file ({tsv_file_path}) for {fusion}."
+            self.logger.error(msg)
+            raise FusionProcessingError(msg)
 
         # Format breakpoints
         formatted_breakpoint1 = self.format_breakpoint(breakpoint1)
@@ -160,7 +162,7 @@ class main(plugin_base):
         elif os.path.isfile(bam_whizbam_path):
             bam_file, bam_project = bam_whizbam_path, whizbam_project_id
         else:
-            warnings.warn(f"BAM file not found for {project_id}. Try adjusting whizbam_project_id in config file")
+            self.logger.warning(f"BAM file not found for {project_id}. Try adjusting whizbam_project_id in config file")
 
         if bam_file:
             bam_filename = os.path.basename(bam_file)
@@ -173,7 +175,7 @@ class main(plugin_base):
         elif os.path.isfile(bai_whizbam_path):
             bai_file, bai_project = bai_whizbam_path, whizbam_project_id
         else:
-            warnings.warn(f"BAI file not found for {project_id}. Try adjusting whizbam_project_id in config file")
+            self.logger.warning(f"BAI file not found for {project_id}. Try adjusting whizbam_project_id in config file")
 
         if bai_file:
             bai_filename = os.path.basename(bai_file)
