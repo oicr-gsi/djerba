@@ -42,11 +42,9 @@ class html_builder():
       snv_constants.PROTEIN,
       snv_constants.MUTATION_TYPE,
       snv_constants.VAF_NOPERCENT,
-      snv_constants.DEPTH
-    ]
-    if mutation_info[snv_constants.PASS_TAR_PURITY]:
-        names.append(snv_constants.COPY_STATE)
-    names.append(snv_constants.ONCOKB)
+      snv_constants.DEPTH,
+      snv_constants.ONCOKB
+      ]
     return hb.thead(names)
 
 
@@ -61,11 +59,9 @@ class html_builder():
             hb.td(hb.href(row[snv_constants.PROTEIN_URL], row[snv_constants.PROTEIN])),
             hb.td(row[snv_constants.MUTATION_TYPE]),
             hb.td(row[snv_constants.VAF_PERCENT]),
-            hb.td(depth)
+            hb.td(depth),
+            hb.td_oncokb(row[snv_constants.ONCOKB])
         ]
-        if mutation_info[snv_constants.PASS_TAR_PURITY]:
-            cells.append(hb.td(row[snv_constants.COPY_STATE]))
-        cells.append(hb.td_oncokb(row[snv_constants.ONCOKB]))
         rows.append(hb.table_row(cells))
     return rows
 

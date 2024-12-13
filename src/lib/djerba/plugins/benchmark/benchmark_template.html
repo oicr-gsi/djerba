@@ -1,0 +1,63 @@
+
+<%
+  import os
+  from djerba.util.html import html_builder
+  from djerba.version import get_djerba_version
+%>
+
+<HTML>
+
+<HEAD>
+
+<TITLE>${results.get('input_name')}: Benchmark evaluation</TITLE>
+
+</HEAD>
+
+<BODY>
+
+  <h1>Djerba benchmark evaluation</h1>
+
+  <h2>Inputs: ${results.get('input_name')}</h2>
+  <h2>Run time: ${results.get('run_time')}</h2>
+
+<table border=1, cellpadding=2>
+  <tr>
+    % for name in ['Donor', 'Status', 'Input JSON', 'Reference JSON', 'Diff']:
+    <th>${name}</th>
+    % endfor
+  </tr>
+  % for r in results.get('donor_results'):
+  <tr>
+    % for k in ['donor', 'status_emoji']:
+    <td>${r.get(k)}</td>
+    % endfor
+    % for k in ['input_file', 'ref_file', 'diff_name']:
+    <%
+      name = os.path.basename(r.get(k))
+      value = name if name in ['Not found', 'Not applicable'] else "<a href=./{0}>{0}</a>".format(name) 
+    %>
+    <td>${value}</td>
+    % endfor
+  </tr>
+  % endfor
+
+
+</table>
+
+<ul>
+  <li>Djerba core version: ${get_djerba_version()}</li>
+  <li>Status key:
+    <ul>
+      <li>&#x2705;: Reports are identical</li>
+      <li>&#x26A0;: Reports are equivalent, but not identical</li>
+      <li>&#x274C;: Reports are not equivalent</li>
+      <li>&#x2753;: Missing report data</li>
+    </ul>
+  </li>
+
+</ul>
+
+
+</BODY>
+
+</HTML>

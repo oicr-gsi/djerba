@@ -40,6 +40,8 @@ class provenance_reader(logger):
     WF_VEP = 'variantEffectPredictor_matched'
     WF_VIRUS = 'virusbreakend'
     WF_IMMUNE = 'immunedeconv'
+    WF_ICHORCNA = 'ichorcna'
+    WF_CONSENSUS = 'consensusCruncher'
 
     # older Vidarr workflow names, deprecated as of 2023-11-13
     WF_BMPP_20231113 = 'bamMergePreprocessing_by_tumor_group'
@@ -68,6 +70,9 @@ class provenance_reader(logger):
     # placeholder
     WT_SAMPLE_NAME_PLACEHOLDER = 'whole_transcriptome_placeholder'
 
+    # other
+    TAR = 'TAR'
+
     # Includes a concept of 'sample name' (not just 'root sample name')
     # allow user to specify sample names for WG/T, WG/N, WT
     # use to disambiguate multiple samples from the same donor (eg. at different times)
@@ -79,7 +84,7 @@ class provenance_reader(logger):
 
     # if conflicting sample names (eg. for different tumour/normal IDs), should fail as it cannot find a unique tumour ID
 
-    def __init__(self, provenance_path, project, donor, samples,
+    def __init__(self, provenance_path, project, donor, assay, samples,
                  log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
         # set some constants for convenience
@@ -90,7 +95,8 @@ class provenance_reader(logger):
         # read and parse file provenance
         self.logger.info("Reading provenance for project '%s' and donor '%s' " % (project, donor))
         self.root_sample_name = donor
-        if not samples.is_valid():
+        self.assay = assay
+        if not samples.is_valid(): 
             msg = "User-supplied sample names are not valid: {0}. ".format(samples)+\
                   "Requires {0} and {1} with optional {2}".format(self.wg_n, self.wg_t, self.wt_t)
             self.logger.error(msg)
@@ -123,8 +129,12 @@ class provenance_reader(logger):
                 distinct_records.add(columns)
             # parse the 'parent sample attributes' value and get a list of dictionaries
             self.attributes = [self._parse_row_attributes(row) for row in distinct_records]
-            self._validate_and_set_sample_names(samples)
-            self.patient_id = self._id_patient()
+            if assay == self.TAR:
+                self._set_tar_ids(samples)
+            else:
+                self._validate_and_set_sample_names(samples)
+            self.patient_id_raw = self._id_patient_raw()
+            self.patient_id = re.split(',', self.patient_id_raw).pop(0)
             self.tumour_id = self._id_tumour()
             self.normal_id = self._id_normal()
 
@@ -246,20 +256,31 @@ class provenance_reader(logger):
             value = None
         return value
 
+    def _set_tar_ids(self, samples):
+        """
+        Does not find TAR ids.
+        Only grabs what is manually specified, as a work around.
+        Will become obsolete with Cardea.
+        """
+        samples_dict = samples.__dict__['samples']
+        self.sample_name_wg_n = samples_dict[ini.SAMPLE_NAME_WG_N] # acts as targeted normal
+        self.sample_name_wg_t = samples_dict[ini.SAMPLE_NAME_WG_T] # acts as targeted tumour
+        self.sample_name_wt_t = samples_dict[ini.SAMPLE_NAME_WT_T] # acts as shallow tumour
+    
     def _id_normal(self):
         self.logger.debug("Finding normal ID")
         normal_id = self._id_tumour_normal(self.patient_id, reference=True)
         self.logger.debug("Found normal ID: {0}".format(normal_id))
         return normal_id
 
-    def _id_patient(self):
+    def _id_patient_raw(self):
         # parse the external name to get patient ID
         patient_id_raw = self._get_unique_value(self.GEO_EXTERNAL_NAME, check=False)
         if patient_id_raw == None:
             msg = "Cannot initialize file provenance reader: No value found for metadata field '{0}'".format(self.GEO_EXTERNAL_NAME)
             self.logger.error(msg)
             raise RuntimeError(msg)
-        return re.split(',', patient_id_raw).pop(0)
+        return patient_id_raw
 
     def _id_tumour(self):
         self.logger.debug("Finding tumour ID")
@@ -350,6 +371,7 @@ class provenance_reader(logger):
         # - all reader attributes are null/empty
         # - can proceed if and only if a fully-specified config is input
         self.attributes = []
+        self.patient_id_raw = None
         self.patient_id = None
         self.tumour_id = None
         self.normal_id = None
@@ -416,7 +438,8 @@ class provenance_reader(logger):
         identifiers = {
             ini.TUMOUR_ID: self.tumour_id,
             ini.NORMAL_ID: self.normal_id,
-            ini.PATIENT_ID: self.patient_id
+            ini.PATIENT_ID: self.patient_id,
+            ini.PATIENT_ID_RAW: self.patient_id_raw
         }
         self.logger.debug("Got identifiers: {0}".format(identifiers))
         return identifiers
@@ -520,6 +543,42 @@ class provenance_reader(logger):
         suffix = 'star-fusion\.fusion_predictions\.tsv$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wt_t)
     
+    def parse_tar_ichorcna_json_path(self):
+        workflow = self.WF_ICHORCNA
+        mt = self.MT_JSON_TEXT
+        suffix = '\_metrics.json$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
+
+    def parse_tar_ichorcna_seg_path(self):
+        workflow = self.WF_ICHORCNA
+        mt = self.MT_PLAIN_TEXT
+        suffix = '\.seg\.txt$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
+
+    def parse_tar_metrics_normal_path(self):
+        workflow = self.WF_CONSENSUS
+        mt = self.MT_PLAIN_TEXT
+        suffix = 'allUnique-hsMetrics\.HS\.txt$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_n)
+
+    def parse_tar_metrics_tumour_path(self):
+        workflow = self.WF_CONSENSUS
+        mt = self.MT_PLAIN_TEXT
+        suffix = 'allUnique-hsMetrics\.HS\.txt$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
+
+    def parse_tar_maf_normal_path(self):
+        workflow = self.WF_CONSENSUS
+        mt = self.MT_TXT_GZ
+        suffix = 'merged\.maf\.gz$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_n)
+
+    def parse_tar_maf_tumour_path(self):
+        workflow = self.WF_CONSENSUS
+        mt = self.MT_TXT_GZ
+        suffix = 'merged\.maf\.gz$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
+
     def parse_virus_path(self):
         workflow = self.WF_VIRUS
         mt = self.MT_OCTET_STREAM

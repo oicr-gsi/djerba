@@ -15,10 +15,16 @@ import djerba.core.constants as core_constants
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 
+from configparser import ConfigParser
 from copy import deepcopy
 from glob import glob
+from shutil import copy
 from string import Template
+from time import strftime
+
+from djerba.core.loaders import plugin_loader
 from djerba.core.main import main
+from djerba.core.workspace import workspace
 from djerba.util.environment import directory_finder
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
@@ -28,13 +34,19 @@ class benchmarker(logger):
     CONFIG_FILE_NAME = 'config.ini'
     # TODO set random seed in MSI workflow for consistent outputs
     MSI_DIR_NAME = 'msi'
-    SAMPLES = [
-        "GSICAPBENCH_1219",
-        #"GSICAPBENCH_1232", # temporarily commented out, sample not in GSICAPBENCH240425
-        "GSICAPBENCH_1233",
-        "GSICAPBENCH_1273",
-        "GSICAPBENCH_1275",
-        "GSICAPBENCH_1288"
+    DEFAULT_PURITY = 0.74 # arbitrary purity default
+    DEFAULT_SAMPLES = [
+        'GSICAPBENCH_0001',
+        'GSICAPBENCH_0002',
+        'GSICAPBENCH_0003',
+        'GSICAPBENCH_011291',
+        'GSICAPBENCH_011303',
+        'GSICAPBENCH_011524',
+        'GSICAPBENCH_011633',
+        'GSICAPBENCH_1248',
+        'GSICAPBENCH_1309',
+        'GSICAPBENCH_1390',
+        'GSICAPBENCH_1391'
     ]
     REPORT_DIR_NAME = 'report'
     TEMPLATE = 'benchmark_config.ini'
@@ -67,12 +79,37 @@ class benchmarker(logger):
         self.log_path = args.log_path
         self.logger = self.get_logger(self.log_level, __name__, self.log_path)
         self.args = args
+        self.plugin_loader = plugin_loader(self.log_level, self.log_path)
         self.validator = path_validator(self.log_level, self.log_path)
         dir_finder = directory_finder(self.log_level, self.log_path)
         self.data_dir = dir_finder.get_data_dir()
-        self.private_dir = dir_finder.get_private_dir()
-        with open(os.path.join(self.data_dir, 'benchmark_params.json')) as in_file:
-            self.sample_params = json.loads(in_file.read())
+        self.private_dir = os.path.join(dir_finder.get_private_dir(), 'benchmarking')
+        self.validator.validate_input_dir(self.private_dir)
+        if self.args.apply_cache and self.args.update_cache:
+            msg = 'Cannot specify both --apply-cache and --update-cache'
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        self.samples = args.sample if args.sample else self.DEFAULT_SAMPLES 
+        self.validator.validate_input_file(args.ref_path)
+        self.ref_path = args.ref_path
+        self.input_dir = os.path.abspath(self.args.input_dir)
+        self.validator.validate_input_dir(self.input_dir)        
+        self.logger.info("GSICAPBENCH input directory is '{0}'".format(self.input_dir))
+        self.input_name = os.path.basename(self.input_dir)
+        work_dir_root =  os.path.abspath(self.args.work_dir)
+        output_dir_root = os.path.abspath(self.args.output_dir)
+        self.validator.validate_output_dir(work_dir_root)
+        self.validator.validate_output_dir(output_dir_root)
+        # make subdirectories in work & output directories
+        runtime = strftime('%Y-%m-%dT%H-%M-%S')
+        dir_name = '{0}_runtime-{1}'.format(self.input_name, runtime)
+        self.work_dir = os.path.join(work_dir_root, dir_name+'_work')
+        self.logger.debug("Output directory is "+self.work_dir)
+        os.mkdir(self.work_dir) # fails if it already exists
+        self.workspace = workspace(self.work_dir, self.log_level, self.log_path)
+        self.output_dir = os.path.join(output_dir_root, dir_name)
+        self.logger.debug("Output directory is "+self.output_dir)
+        os.mkdir(self.output_dir) # fails if it already exists
 
     def glob_single(self, pattern):
         """Glob recursively for the given pattern; return a single result, or None"""
@@ -98,46 +135,39 @@ class benchmarker(logger):
             self.MAVIS_FILE: '{0}/**/{1}*.mavis_summary.tab',
             self.RSEM_FILE: '{0}/**/{1}_*.genes.results',
             self.MSI_FILE: '{0}/**/{1}_*.msi.booted',
-            self.MRDETECT_VCF: '{0}/**/{1}_*.SNP.vcf'
+            self.CTDNA_FILE: '{0}/**/{1}_*.SNP.count.txt',
+            self.ARRIBA_FILE: '{0}/**/{1}*.fusions.tsv',
+            self.PURPLE_FILE: '{0}/**/{1}*.purple.zip',
+            self.HRD_FILE: '{0}/**/{1}*.signatures.json'
         }
-        for sample in self.SAMPLES:
+        for sample in self.samples:
             sample_inputs = {}
             sample_inputs[self.DONOR] = sample
             sample_inputs[self.PROJECT] = 'placeholder'
             sample_inputs[self.PLOIDY] = 2.0
             sample_inputs[self.APPLY_CACHE] = self.args.apply_cache
             sample_inputs[self.UPDATE_CACHE] = self.args.update_cache
-            for key in [self.TUMOUR_ID, self.NORMAL_ID, self.PURITY]:
-                sample_inputs[key] = self.sample_params[sample][key]
+            sample_inputs[self.TUMOUR_ID] = sample+'_T'
+            sample_inputs[self.NORMAL_ID] = sample+'_N'
+            sample_inputs[self.PURITY] = self.DEFAULT_PURITY
             for key in templates.keys():
                 pattern = templates[key].format(results_dir, sample)
                 sample_inputs[key] = self.glob_single(pattern)
-            arriba_path = os.path.join(self.private_dir, 'arriba', 'arriba.fusions.tsv')
-            if not os.path.isfile(arriba_path):
-                msg = "Expected arriba path '{0}' is not a file".format(arriba_path)
-                self.logger.error(msg)
-                raise RuntimeError(msg)
-            purple_path = os.path.join(self.private_dir, 'purple', sample+'.purple.zip')
-            hrd_path = os.path.join(self.private_dir, 'hrDetect', sample+'.signatures.json')
-            for in_path in [arriba_path, purple_path, hrd_path]:
-                if not os.path.isfile(in_path):
-                    msg = "Expected input path '{0}' is not a file".format(in_path)
+            # Workaround for placeholder arriba output
+            if sample_inputs[self.ARRIBA_FILE] == None:
+                arriba_path = os.path.join(self.private_dir, 'arriba', 'arriba.fusions.tsv')
+                if os.path.isfile(arriba_path):
+                    sample_inputs[self.ARRIBA_FILE] = arriba_path
+                else:
+                    msg = "No arriba input found from input directory; "+\
+                        "fallback arriba path '{0}' is not a file".format(arriba_path)
                     self.logger.error(msg)
                     raise RuntimeError(msg)
-            sample_inputs[self.ARRIBA_FILE] = arriba_path
-            sample_inputs[self.PURPLE_FILE] = purple_path
-            sample_inputs[self.HRD_FILE] = hrd_path
             if None in sample_inputs.values():
                 template = "Skipping {0} as one or more values are missing: {1}"
                 msg = template.format(sample, sample_inputs)
                 self.logger.warning(msg)
                 continue
-            # Find the SNP.count.txt file
-            mrdetect_dir = os.path.dirname(sample_inputs[self.MRDETECT_VCF])
-            snp_count_path = os.path.join(mrdetect_dir, 'SNP.count.txt')
-            self.validator.validate_input_file(snp_count_path)
-            sample_inputs[self.CTDNA_FILE] = snp_count_path
-            del sample_inputs[self.MRDETECT_VCF] # not needed for reporting
             self.logger.debug("Sample inputs for {0}: {1}".format(sample, sample_inputs))
             if any([x==None for x in sample_inputs.values()]):
                 # skip samples with missing inputs, eg. for testing
@@ -147,35 +177,29 @@ class benchmarker(logger):
         if len(inputs)==0:
             # require inputs for at least one sample
             msg = "No benchmark inputs found in {0} ".format(results_dir)+\
-                "for any sample in {0}".format(self.SAMPLES)
+                "for any sample in {0}".format(self.samples)
             self.logger.error(msg)
             raise RuntimeError(msg)
         return inputs
 
-    def run_comparison(self, report_paths):
-        data = []
-        self.logger.info("Comparing reports: {0}".format(report_paths))
-        for report_path in report_paths:
-            self.validator.validate_input_file(report_path)
-        if self.args.delta:
-            self.validator.validate_input_file(self.args.delta)
-        diff = report_equivalence_tester(
-            report_paths,
-            self.args.delta,
-            self.log_level,
-            self.log_path
-        )
-        if diff.is_equivalent():
-            self.logger.info("Reports are equivalent: {0}".format(report_paths))
-        else:
-            self.logger.warning("Reports are NOT equivalent: {0}".format(report_paths))
-            if self.log_level > logging.INFO:
-                self.logger.warning("Run with --debug or --verbose for full report diff")
-        self.logger.info("Report diff: {0}".format(diff.get_diff_text()))
-        return diff.is_equivalent()
+    def run_comparison(self, reports_path, ref_path):
+        config = ConfigParser()
+        config.add_section('benchmark')
+        config.set('benchmark', 'input_name', self.input_name)
+        config.set('benchmark', 'input_file', reports_path)
+        config.set('benchmark', 'ref_file', ref_path)
+        self.logger.info("Loading plugin and running report comparison")
+        plugin = self.plugin_loader.load('benchmark', self.workspace)
+        full_config = plugin.configure(config)
+        self.logger.debug("Extracting plugin data")
+        data = plugin.extract(full_config)
+        self.logger.debug("Rendering plugin HTML")
+        html = plugin.render(data)
+        return [data, html]
 
     def run_reports(self, input_samples, work_dir):
         self.logger.info("Reporting for {0} samples: {1}".format(len(input_samples), input_samples))
+        report_paths = {}
         for sample in input_samples:
             self.logger.info("Generating Djerba draft report for {0}".format(sample))
             config_path = os.path.join(work_dir, sample, self.CONFIG_FILE_NAME)
@@ -184,10 +208,15 @@ class benchmarker(logger):
             # run the Djerba "main" class to generate a JSON report file
             djerba_main = main(report_dir, self.log_level, self.log_path)
             config = djerba_main.configure(config_path)
-            pattern = os.path.join(report_dir, '*'+core_constants.REPORT_JSON_SUFFIX)
-            json_path = self.glob_single(pattern)
+            json_path = os.path.join(report_dir, sample+'_report.json')
+            self.logger.debug("Extracting data to JSON path: "+json_path)
             data = djerba_main.extract(config, json_path, archive=False)
             self.logger.info("Finished Djerba draft report for {0}".format(sample))
+            report_paths[sample] = json_path
+        json_path = os.path.join(work_dir, 'report_paths.json')
+        with open(json_path, 'w', encoding=core_constants.TEXT_ENCODING) as json_file:
+            json_file.write(json.dumps(report_paths))
+        return json_path
 
     def run_setup(self, results_dir, work_dir):
         """For each sample, set up working directory and generate config.ini"""
@@ -219,38 +248,31 @@ class benchmarker(logger):
         return input_samples
 
     def run(self):
-        run_ok = True
-        if self.args.subparser_name == self.GENERATE:
-            if self.args.apply_cache and self.args.update_cache:
-                msg = 'Cannot specify both --apply-cache and --update-cache'
-                self.logger.error(msg)
-                raise RuntimeError(msg)
-            input_dir = os.path.abspath(self.args.input_dir)
-            output_dir = os.path.abspath(self.args.output_dir)
-            dry_run = self.args.dry_run
-            self.logger.info("GSICAPBENCH input directory is '{0}'".format(input_dir))
-            input_samples = self.run_setup(input_dir, output_dir)
-            if dry_run:
-                self.logger.info("Dry-run mode; omitting report generation")
-            else:
-                self.logger.info("Writing GSICAPBENCH reports to {0}".format(output_dir))
-                self.run_reports(input_samples, output_dir)
-            self.logger.info("Finished '{0}' mode.".format(constants.REPORT))
-        elif self.args.subparser_name == self.COMPARE:
-            reports = self.args.report
-            msg = "Comparing directories {0} and {1}".format(reports[0], reports[1])
-            self.logger.info(msg)
-            run_ok = self.run_comparison(reports)
-            if run_ok:
-                self.logger.info("Djerba reports are equivalent.")
-            else:
-                self.logger.warning("Djerba reports are NOT equivalent!")
-        else:
-            msg = "Unknown subparser name {0}".format(self.args.subparser_name)
-            self.logger.error(msg)
-            raise RuntimeError(msg)
-        return run_ok
+        # generate Djerba reports
+        # load and run plugin to compare reports and generate summary
+        # copy JSON/text files and write HTML summary to output directory
+        input_samples = self.run_setup(self.input_dir, self.work_dir)
+        reports_path = self.run_reports(input_samples, self.work_dir)
+        data, html = self.run_comparison(reports_path, self.ref_path)
+        self.logger.info("Writing data and HTML output")
+        self.write_outputs(data, html)
 
+    def write_outputs(self, data, html):
+        # write the HTML output
+        html_path = os.path.join(self.output_dir, self.input_name+'_summary.html')
+        with open(html_path, 'w', encoding=core_constants.TEXT_ENCODING) as html_file:
+            html_file.write(html)
+        # copy JSON files, and write the diff text (if any)
+        for result in data['results']['donor_results']:
+            for json_path in [result['input_file'], result['ref_file']]:
+                if os.path.exists(json_path):
+                    copy(json_path, self.output_dir)
+            # TODO put diff link filename in JSON
+            # TODO only write diff if non-empty
+            diff_path = os.path.join(self.output_dir, result['donor']+'_diff.txt')
+            with open(diff_path, 'w', encoding=core_constants.TEXT_ENCODING) as diff_file:
+                diff_file.write(result['diff'])
+        self.logger.info('Finished writing summary to '+self.output_dir)
 
 class report_equivalence_tester(logger):
 
@@ -282,6 +304,10 @@ class report_equivalence_tester(logger):
     }
     PLACEHOLDER = 0
 
+    IDENTICAL_STATUS = 'identical'
+    EQUIVALENT_STATUS = 'equivalent but not identical'
+    NOT_EQUIVALENT_STATUS = 'not equivalent'
+
     def __init__(self, report_paths, delta_path=None,
                  log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
@@ -311,8 +337,10 @@ class report_equivalence_tester(logger):
         self.logger.info("Delta values by metric type: {0}".format(self.deltas))
         diff = ReportDiff(self.data)
         self.diff_text = diff.get_diff()
+        self.identical = False
         if diff.is_identical():
             self.logger.info("EQUIVALENT: Reports are identical")
+            self.identical = True
             self.equivalent = True
         elif self.deltas_are_equivalent():
             # check if metrics without a delta match exactly
@@ -349,7 +377,7 @@ class report_equivalence_tester(logger):
             expr1 = self.get_expressions_by_gene(self.data[1], name)
             delta = self.deltas[self.EXPRESSION]
             if set(expr0.keys()) != set(expr1.keys()):
-                self.logger.warning("Gene sets differ, expressions are not equivalent")
+                self.logger.info("Gene sets differ, expressions are not equivalent")
                 plugin_eq = False
             else:
                 for gene in expr0.keys():
@@ -378,8 +406,28 @@ class report_equivalence_tester(logger):
     def is_equivalent(self):
         return self.equivalent
 
+    def is_identical(self):
+        return self.identical
+    
     def get_diff_text(self):
         return self.diff_text
+
+    def get_status(self):
+        if self.is_identical():
+            return self.IDENTICAL_STATUS
+        elif self.is_equivalent():
+            return self.EQUIVALENT_STATUS
+        else:
+            return self.NOT_EQUIVALENT_STATUS
+
+    def get_status_emoji(self):
+        status = self.get_status()
+        if status == self.IDENTICAL_STATUS:
+            return '&#x2705;' # white check mark
+        elif status == self.EQUIVALENT_STATUS:
+            return '&#x26A0;' # warning sign
+        else:
+            return '&#x274C;' # X mark
 
     def get_expressions_by_gene(self, data, plugin):
         body_key = self.BODY_KEY[plugin]
@@ -432,7 +480,14 @@ class report_equivalence_tester(logger):
         placeholder = 'redacted for benchmark comparison'
         self.logger.info("Preprocessing report path {0}".format(report_path))
         with open(report_path) as report_file:
-            data = json.loads(report_file.read())
+            try:
+                data = json.loads(report_file.read())
+            except json.decoder.JSONDecodeError as err:
+                msg = "Unable to process data from {0}; ".format(report_path)+\
+                    "incorrectly formatted JSON?"
+                self.logger.error(msg)
+                self.logger.error("JSON error: {0}".format(err))
+                raise DjerbaReportDiffError(msg) from err
         plugins = data['plugins'] # don't compare config or core elements
         # redact plugin versions, plots, dates
         for plugin_name in plugins.keys():

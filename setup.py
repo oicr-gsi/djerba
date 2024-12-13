@@ -34,6 +34,7 @@ setup(
     version=__version__,
     scripts=[
         'src/bin/benchmark.py',
+        'src/bin/diff_reports.py',
         'src/bin/djerba.py',
         'src/bin/generate_ini.py',
         'src/bin/mini_djerba.py',
@@ -68,6 +69,7 @@ setup(
         'djerba.helpers.tar_input_params_helper': install_wildcards,
         'djerba.mergers.gene_information_merger': install_wildcards,
         'djerba.mergers.treatment_options_merger': install_wildcards,
+        'djerba.plugins.benchmark': install_wildcards,
         'djerba.plugins.captiv8': install_wildcards,
         'djerba.plugins.case_overview': install_wildcards,
         'djerba.plugins.cnv': install_wildcards,

@@ -21,8 +21,9 @@ class main(plugin_base):
     GENETICIST_ID = "clinical_geneticist_licence"
     EXTRACT_DATE = "extract_date"
     INCLUDE_SIGNOFFS = "include_signoffs"
-    GENETICIST_DEFAULT = 'Trevor Pugh, PhD, FACMG'
-    GENETICIST_ID_DEFAULT = '1027812'
+    GENETICIST_DEFAULT = 'PLACEHOLDER'
+    GENETICIST_ID_DEFAULT = 'XXXXXXX'
+    REPORT_SIGNOUT_DEFAULT = 'yyyy-mm-dd'
 
     def check_assay_name(self, wrapper):
         [ok, msg] = assays.name_status(wrapper.get_my_string(self.ASSAY))
@@ -54,13 +55,15 @@ class main(plugin_base):
         # Check if dates are valid
         user_supplied_date = wrapper.get_my_string(self.USER_SUPPLIED_DRAFT_DATE)
         report_signoff_date = wrapper.get_my_string(self.REPORT_SIGNOFF_DATE)
-        for date in [user_supplied_date, report_signoff_date]:
+        dates_to_check = [user_supplied_date, ]
+        if report_signoff_date != self.REPORT_SIGNOUT_DEFAULT:
+            dates_to_check.append(report_signoff_date)
+        for date in dates_to_check:
             if not is_valid_date(date):
                 msg = "Invalid requisition approved date '{0}': ".format(date)+\
                       "Must be in yyyy-mm-dd format"
                 self.logger.error(msg)
                 raise ValueError(msg)
-
         return wrapper.get_config()
 
     def extract(self, config):
@@ -113,7 +116,7 @@ class main(plugin_base):
         ]
         for key in discovered:
             self.add_ini_discovered(key)
-        self.set_ini_default(self.REPORT_SIGNOFF_DATE, get_todays_date())
+        self.set_ini_default(self.REPORT_SIGNOFF_DATE, self.REPORT_SIGNOUT_DEFAULT)
         self.set_ini_default(self.USER_SUPPLIED_DRAFT_DATE, get_todays_date())
         self.set_ini_default(self.GENETICIST, self.GENETICIST_DEFAULT)
         self.set_ini_default(self.GENETICIST_ID, self.GENETICIST_ID_DEFAULT)

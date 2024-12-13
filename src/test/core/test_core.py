@@ -37,7 +37,7 @@ class TestCore(TestBase):
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_UPDATE_JSON = 'simple_report_for_update.json'
     SIMPLE_CONFIG_MD5 = '04b749b3ec489ed9c06c1a06eb2dc886'
-    SIMPLE_REPORT_MD5 = 'e4b491b28457b5b12a320ea11c6c47e5'
+    SIMPLE_REPORT_MD5 = 'ab049488c58758e26b0ad1c480c28c99'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
@@ -430,7 +430,8 @@ class TestHtmlCache(TestCore):
 
     def test_encode_decode(self):
         # test an encoding/decoding round trip
-        string_to_encode = "Hello, world!"
+        # including non-Latin characters (Greek alpha, beta, gamma, delta)
+        string_to_encode = "Hello, world! \u03b1\u03b2\u03b3\u03b4"
         cache = html_cache(log_level=logging.ERROR)
         encoded = cache.encode_to_base64(string_to_encode)
         decoded_string = cache.decode_from_base64(encoded)
