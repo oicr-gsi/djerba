@@ -21,7 +21,6 @@ class TestFusion(PluginTester):
 
     def setUp(self):
         """Set up directories and paths required for the test."""
-        self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
         self.data_dir_root = directory_finder().get_test_dir()
