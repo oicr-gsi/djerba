@@ -371,6 +371,7 @@ class provenance_reader(logger):
         # - all reader attributes are null/empty
         # - can proceed if and only if a fully-specified config is input
         self.attributes = []
+        self.patient_id_raw = None
         self.patient_id = None
         self.tumour_id = None
         self.normal_id = None
