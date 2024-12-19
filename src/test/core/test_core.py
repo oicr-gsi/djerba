@@ -182,9 +182,9 @@ class TestConfigValidation(TestCore):
         self.assertTrue(plugin.check_attributes_known(attributes))
         config.set('demo1', 'attributes', 'clinical,awesome')
         attributes = plugin.get_config_wrapper(config).get_my_attributes()
-        with self.assertLogs('djerba.core.configure', level=logging.WARNING) as log_context:
+        with self.assertLogs('djerba:demo1', level=logging.WARNING) as log_context:
             self.assertFalse(plugin.check_attributes_known(attributes))
-        msg = "WARNING:djerba.core.configure:Unknown attribute 'awesome' in config"
+        msg = "WARNING:djerba:demo1:Unknown attribute 'awesome' in config"
         self.assertIn(msg, log_context.output)
 
     def test_simple(self):
@@ -192,9 +192,9 @@ class TestConfigValidation(TestCore):
         config = self.read_demo1_config(plugin)
         # test a simple plugin
         self.assertTrue(plugin.validate_minimal_config(config))
-        with self.assertLogs('djerba.core.configure', level=logging.DEBUG) as log_context:
+        with self.assertLogs('djerba:demo1', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
-        msg = 'DEBUG:djerba.core.configure:'+\
+        msg = 'DEBUG:djerba:demo1:'+\
             '8 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
 
@@ -243,9 +243,9 @@ class TestConfigValidation(TestCore):
         # now give foo a config value
         config.set('demo1', 'foo', 'snark')
         self.assertTrue(plugin.validate_minimal_config(config))
-        with self.assertLogs('djerba.core.configure', level=logging.DEBUG) as log_context:
+        with self.assertLogs('djerba:demo1', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
-        msg = 'DEBUG:djerba.core.configure:'+\
+        msg = 'DEBUG:djerba:demo1:'+\
             '9 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
         # test setting all requirements
