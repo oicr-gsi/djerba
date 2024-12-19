@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-1461: Fix output paths in calls to get_logger
+
 ## 1.7.8: 2024-12-12
 - GCGI-1464: Standalone script to diff two Djerba JSON reports
 - GCGI-1454: Added OncoKB definitions to WGTS40X and WGS40X assays
