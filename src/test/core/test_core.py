@@ -621,6 +621,26 @@ class TestMainScript(TestCore):
         self.assertEqual(result.returncode, 0)
         self.assertSimpleReport(json_path, html)
 
+    def test_setup_cli(self):
+        mode = 'setup'
+        ini_path = os.path.join(self.tmp_dir, 'config.ini')
+        html = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
+        cmd = [
+            'djerba.py', mode,
+            '--assay', 'wgts',
+            '--ini', ini_path,
+            '--compact'
+        ]
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(self.getMD5(ini_path), 'a211144356b5ec200e1c31ecd3128b45')
+        os.remove(ini_path)
+        prepop_path = os.path.join(self.test_source_dir, 'prepop.ini')
+        cmd.extend(['--pre-populate', prepop_path])
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(self.getMD5(ini_path), '2387e66d783b1deb0fe5361e7770ec7a')
+
     def test_update_cli_with_ini(self):
         mode = 'update'
         work_dir = self.tmp_dir
