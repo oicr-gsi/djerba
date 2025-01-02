@@ -57,6 +57,7 @@ def get_parser():
     update_parser.add_argument('-p', '--pdf', action='store_true', help='Generate PDF output from HTML')
     update_parser.add_argument('-w', '--work-dir', metavar='PATH', help='Path to workspace directory; optional, defaults to value of --out-dir')
     update_parser.add_argument('--no-archive', action='store_true', help='Do not archive the JSON report file')
+    update_parser.add_argument('--no-html-cache', action='store_true', help='Do not use the HTML cache for JSON update')
     return parser
 
 if __name__ == '__main__':

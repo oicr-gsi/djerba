@@ -477,10 +477,11 @@ class main(main_base):
                 summary_only = False
             jp = self.get_json_input_path(ap.get_json())
             out_dir = ap.get_out_dir()
-            archive = ap.is_archive_enabled()
+            arch = ap.is_archive_enabled()
             pdf = ap.is_pdf_enabled()
             force = ap.is_forced()
-            self.update(config_path, jp, out_dir, archive, pdf, summary_only, force)
+            use_cache = ap.is_html_cache_enabled()
+            self.update(config_path, jp, out_dir, arch, pdf, summary_only, force, use_cache)
         else:
             msg = "Mode '{0}' is not defined in Djerba core.main!".format(mode)
             self.logger.error(msg)
@@ -565,7 +566,8 @@ class main(main_base):
             self.write_pre_population(ini_path, pre_populate)
         self.logger.info("Wrote config for {0} to {1}".format(assay, ini_path))
 
-    def update(self, config_path, json_path, out_dir, archive, pdf, summary_only, force):
+    def update(self, config_path, json_path, out_dir, archive,
+               pdf, summary_only, force, use_cache):
         # update procedure:
         # 1. run plugins from user-supplied config to get 'new' (updated) JSON
         # 2. update the 'old' (user-supplied) JSON
@@ -594,8 +596,13 @@ class main(main_base):
         else:
             self.logger.info("Omitting archive upload for update")
         if out_dir:
-            doc_key = self._get_unique_doc_key(data)
-            self.render_from_cache(data, doc_key, out_dir, pdf)
+            if use_cache:
+                self.logger.debug('Applying HTML cache to update')
+                doc_key = self._get_unique_doc_key(data)
+                self.render_from_cache(data, doc_key, out_dir, pdf)
+            else:
+                self.logger.debug('--no-html-cache in effect, updating without cache')
+                self.render(data, out_dir, pdf)
             input_name = os.path.basename(json_path)
             # generate an appropriate output filename
             if re.search('\.updated\.json$', json_path):
@@ -683,6 +690,9 @@ class arg_processor(arg_processor_base):
     def is_cleanup_enabled(self):
         # use to auto-populate INI in 'setup' mode
         return not self._get_arg('no_cleanup')
+
+    def is_html_cache_enabled(self):
+        return not self._get_arg('no_html_cache')
 
     def validate_args(self, args):
         """
