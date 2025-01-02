@@ -61,6 +61,8 @@ class html_cache(logger):
     def update_cached_html(self, new_html, old_cache):
         # new_html = dictionary of HTML strings by component name
         # old_cache = encoded string of old HTML
+        # blocks of HTML are identified by start/end tags with the component name
+        # HTML can be replaced on a per-block basis
         old_html = self.decode_from_base64(old_cache)
         old_lines = re.split("\n", old_html)
         new_lines = []
@@ -69,13 +71,17 @@ class html_cache(logger):
             if re.search(cc.COMPONENT_START, line):
                 name = self.parse_name_from_separator(line)
                 if name in new_html:
+                    # start of block to be replaced
+                    # output the new HTML block, which includes start/end tags
                     self.logger.debug("Updating "+name)
                     replace_name = name
                     new_lines.append(new_html[name])
                 else:
+                    # start of block to leave as-is; output the tag line without change
                     self.logger.debug("No update found for "+name)
                     new_lines.append(line)
             elif replace_name:
+                # within a block to replace; check line for end tag, and do not output
                 if re.search(cc.COMPONENT_END, line):
                     name = self.parse_name_from_separator(line)
                     if name != replace_name:
@@ -85,6 +91,13 @@ class html_cache(logger):
                         raise DjerbaHtmlCacheError(msg)
                     else:
                         replace_name = None
+                elif re.search(cc.COMPONENT_START, line):
+                    unexpected_name = self.parse_name_from_separator(line)
+                    msg = "Found a component start tag for {0}".format(unexpected_name)+\
+                        " within existing tag for {0};".format(name)+\
+                        " nested start/end tags are not supported"
+                    self.logger.error(msg)
+                    raise DjerbaHtmlCacheError(msg)
             else:
                 new_lines.append(line)
         if replace_name:
