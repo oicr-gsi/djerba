@@ -5,6 +5,7 @@ Main class to:
 - Merge and output results
 """
 from configparser import ConfigParser
+from copy import deepcopy
 import json
 import logging
 import pdfkit
@@ -618,12 +619,13 @@ class main(main_base):
                 print(json.dumps(data), file=out_file)
 
     def upload_archive(self, data):
-        for plugin_name in data[self.PLUGINS]:
+        data_copy = deepcopy(data) # do not redact the original input data structure
+        for plugin_name in data_copy[self.PLUGINS]:
             # load each plugin and redact PHI (if any)
-            plugin_data = data[self.PLUGINS][plugin_name]
+            plugin_data = data_copy[self.PLUGINS][plugin_name]
             plugin = self.plugin_loader.load(plugin_name, self.workspace)
-            data[self.PLUGINS][plugin_name] = plugin.redact(plugin_data)
-        uploaded, report_id = database(self.log_level, self.log_path).upload_data(data)
+            data_copy[self.PLUGINS][plugin_name] = plugin.redact(plugin_data)
+        uploaded, report_id = database(self.log_level, self.log_path).upload_data(data_copy)
         if uploaded:
             self.logger.info(f"Archiving was successful: {report_id}")
         else:

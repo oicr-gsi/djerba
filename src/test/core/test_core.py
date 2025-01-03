@@ -36,6 +36,7 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_UPDATE_JSON = 'simple_report_for_update.json'
+    SIMPLE_REPORT_UPDATE_EDITED_JSON = 'simple_report_for_update_with_edits.json'
     SIMPLE_CONFIG_MD5 = '04b749b3ec489ed9c06c1a06eb2dc886'
     SIMPLE_REPORT_MD5 = 'ab049488c58758e26b0ad1c480c28c99'
 
@@ -698,6 +699,42 @@ class TestMainScript(TestCore):
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')
+        self.assertTrue(os.path.isfile(updated_path))
+
+    def test_update_cli_with_summary_and_edits(self):
+        # run with summary-only input
+        mode = 'update'
+        work_dir = self.tmp_dir
+        summary_path = os.path.join(self.test_source_dir, 'alternate_summary.txt')
+        # run with --no-html-cache and check that manual edits to the JSON persist
+        json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_UPDATE_EDITED_JSON)
+        cmd = [
+            'djerba.py',
+            '--debug',
+             mode,
+            '--work-dir', work_dir,
+            '--summary', summary_path,
+            '--json', json_path,
+            '--out-dir', self.tmp_dir,
+            '--pdf',
+            '--no-archive',
+            '--no-html-cache'
+        ]
+        result = subprocess_runner().run(cmd)
+        message = '--no-html-cache in effect, updating without cache'
+        self.assertEqual(result.returncode, 0)
+        self.assertTrue(message in result.stderr)
+        html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
+        self.assertTrue(os.path.isfile(html_path))
+        with open(html_path) as html_file:
+            html_string = html_file.read()
+        self.assertTrue('Kirk, James T' in html_string)
+        self.assertTrue('McCoy, Leonard' in html_string)
+        self.assert_report_MD5(html_string, '7616f2a0864872930f698dd000ecf299')
+        pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
+        self.assertTrue(os.path.isfile(pdf_path))
+        updated_path = os.path.join(self.tmp_dir,
+                                    'simple_report_for_update_with_edits.updated.json')
         self.assertTrue(os.path.isfile(updated_path))
 
 
