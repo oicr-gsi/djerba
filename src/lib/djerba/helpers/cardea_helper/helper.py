@@ -36,7 +36,6 @@ class main(helper_base):
         "RUO REVOLVE - cfDNA+BC": "TS"
     }
 
-
     def configure(self, config):
         """
         Writes a subset of provenance, and informative JSON files, to the workspace
@@ -48,7 +47,6 @@ class main(helper_base):
         cardea_url = wrapper.get_my_string(constants.CARDEA_URL)
         requisition_id = wrapper.get_my_string(constants.REQ_ID)
         attributes = wrapper.get_my_string(core_constants.ATTRIBUTES)
-
         # Research often crams multiple donors into one requisition.
         # In order to get information from a research requisition, you'll need to get the case associated with a known donor.
         # So, research cases must specify donors.
@@ -79,6 +77,7 @@ class main(helper_base):
           constants.ASSAY,
           constants.PATIENT_ID,
           constants.REQ_APPROVED,
+          constants.DONOR,
           constants.PROJECT,
           constants.SAMPLE_NAME_TUMOUR,
           constants.SAMPLE_NAME_NORMAL,
@@ -135,14 +134,13 @@ class main(helper_base):
         Research: often many cases to one requisition, and require donor to get the correct case.
         Clinical: exactly 1 case (i.e. 1 donor) per requisition.
         """
-
         # Case 1: Regardless of clinical or research, there are no cases.
         if len(requisition_json) == 0:  
             msg = "0 cases were found. If this is a clinical report, exactly 1 case is expected. If this is a research report, at least 1 case is expected."
             self.logger.error(msg)
             raise RequisitionError(msg)
         # Case 2: it's a research report, and donor is given (if not given, there will be an error upstream).
-        elif donor and 'research' in attributes:
+        elif 'research' in attributes and donor:
             case_found = False
             for requisition_piece in requisition_json:
                 if donor == requisition_piece['donor']['name'] and 'RUO' in requisition_piece['assayName']:
@@ -169,7 +167,7 @@ class main(helper_base):
     def get_donor(self, case, sample_info=None):
         return case['donor']['name']
 
-    def get_patient_id(self, case, sample_info=None):
+    def get_patient_study_id(self, case, sample_info=None):
         return case['donor']['externalName'].split(',')[0].strip()
     
     def get_requisition_approved(self, case, sample_info=None):
@@ -183,24 +181,21 @@ class main(helper_base):
         """
         requisition_id = sample_info[constants.REQ_ID]
         attributes = sample_info[core_constants.ATTRIBUTES]
-
         projects = case['projects']
         project_found = False
         clinical_projects = [] # Count how many projects have pipeline "Accredited with Clinical Report"
         research_projects = []
         for project in projects:
-            if "clinical" in attributes:
-                if project['pipeline'] == "Accredited with Clinical Report":
-                    project_id = project['name']
-                    pipeline_name = project['pipeline']
-                    clinical_projects.append(project_id)
-                    project_found = True
-            elif 'research' in attributes:
-                if project['pipeline'] == "Research":
-                    project_id = project['name']
-                    pipeline_name = project['pipeline']
-                    research_projects.append(project_id)
-                    project_found = True
+            if "clinical" in attributes and project['pipeline'] == "Accredited with Clinical Report":
+                project_id = project['name']
+                pipeline_name = project['pipeline']
+                clinical_projects.append(project_id)
+                project_found = True
+            elif 'research' in attributes and project['pipeline'] == "Research":
+                project_id = project['name']
+                pipeline_name = project['pipeline']
+                research_projects.append(project_id)
+                project_found = True
         if len(clinical_projects) > 1 or len(research_projects) > 1: # There should only be one project with pipeline "Accredited with Clinical Report"
             project_id = projects[0]['name']
             msg = "Found more than one project associated with the pipeline '{0}' for requisition {1}." \
@@ -245,7 +240,7 @@ class main(helper_base):
         assay_name = case['assayName'] 
         for qc_group in case['qcGroups']:
             # Get the normal and tumour IDs.
-            normal_id, tumour_id = self.get_qc_ids(qc_group, assay_name, requisition_id)
+            tumour_id, normal_id = self.get_qc_ids(qc_group, assay_name, requisition_id)
             # Update IDs as we find them. Don't overwrite the found IDs.
             ids = [
                 tumour_id if tumour_id else ids[0],    
@@ -255,7 +250,7 @@ class main(helper_base):
         tumour_id, normal_id = ids
         return tumour_id, normal_id 
 
-    def get_tumour_id(case, sample_info):
+    def get_tumour_id(self, case, sample_info):
         requisition_id = sample_info[constants.REQ_ID]
         tumour_id = self.get_tumour_normal_ids(case, requisition_id)[0]
         if not tumour_id:
@@ -264,7 +259,7 @@ class main(helper_base):
             raise MissingIdError(msg)
         return tumour_id
     
-    def get_normal_id(case, sample_info):
+    def get_normal_id(self, case, sample_info):
         requisition_id = sample_info[constants.REQ_ID]
         normal_id = self.get_tumour_normal_ids(case, requisition_id)[1]
         if not normal_id:
@@ -287,7 +282,7 @@ class main(helper_base):
 
         requisition_id = sample_info[constants.REQ_ID]
         assay = sample_info[constants.ASSAY]
-
+        
         sample_name_normal = "None"
         sample_name_tumour = "None"
         sample_name_aux = "None"
@@ -317,21 +312,21 @@ class main(helper_base):
                 if test['name'] == "Normal TS":
                     sample_name_normal = test['fullDepthSequencings'][0]['name']
                     library_count += 1
-                elif test['name'] == "Tumour SW":
+                elif test['name'] == "Tumour TS":
                     sample_name_tumour = test['fullDepthSequencings'][0]['name']
                     library_count += 1
-                elif test['name'] == "Tumour TS":
+                elif test['name'] == "Tumour SW":
                     sample_name_aux = test['fullDepthSequencings'][0]['name']
                     library_count += 1
 
         # There should be 3 libraries (3 for WGTS, 2+1 placeholder for WGS)
         if library_count == 3:
-            return sample_name_normal, sample_name_tumour, sample_name_aux
+            return sample_name_tumour, sample_name_normal, sample_name_aux
         else:
             msg = "One of the following libraries was not found in requisition {0}: sample_name_tumour ({1}), sample_name_normal ({2}), sample_name_aux ({3}).".format(
                     requisition_id,
-                    sample_name_normal,
                     sample_name_tumour,
+                    sample_name_normal,
                     sample_name_aux
             )
 
@@ -385,7 +380,18 @@ class main(helper_base):
             self.logger.error(msg)
             raise MissingProjectError(msg) 
         return project_id
+    
+    def get_sample_name_tumour(self, case, sample_info):
+        id = self.get_library_ids(case, sample_info)[0]
+        return id
 
+    def get_sample_name_normal(self, case, sample_info):
+        id = self.get_library_ids(case, sample_info)[1]
+        return id
+
+    def get_sample_name_aux(self, case, sample_info):
+        id = self.get_library_ids(case, sample_info)[2]
+        return id
 
     def specify_params(self):
         self.logger.debug("Specifying params for provenance helper")
@@ -397,7 +403,20 @@ class main(helper_base):
         self.add_ini_required(constants.REQ_ID)
         # All other parameters are discovered and can be manually specified if need be.
         self.add_ini_discovered(constants.DONOR)
-
+        params = [
+            constants.ASSAY,
+            constants.PATIENT_ID,
+            constants.REQ_APPROVED,
+            constants.PROJECT,
+            constants.SAMPLE_NAME_TUMOUR,
+            constants.SAMPLE_NAME_NORMAL,
+            constants.SAMPLE_NAME_AUX,
+            constants.TUMOUR_ID,
+            constants.NORMAL_ID,
+            constants.DONOR
+        ]
+        for param in params:
+            self.add_ini_discovered(param)
 
     def write_sample_info(self, sample_info):
         self.workspace.write_json(core_constants.DEFAULT_SAMPLE_INFO, sample_info)
