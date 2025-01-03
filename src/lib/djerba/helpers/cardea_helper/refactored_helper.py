@@ -20,6 +20,7 @@ class main(helper_base):
     PRIORITY = 20
 
     ASSAY_MAP = {
+
         # Clinical Assays
         "WGS - 80XT/30XN": "WG",
         "WGS - 40XT/30XN": "WG",
@@ -63,17 +64,28 @@ class main(helper_base):
             donor = None # Don't need it right now
        
         # Get the case
-        case = self.get_cardea_case(requisition_id, cardea_url)
+        case = self.get_cardea_case(requisition_id, cardea_url, attributes, donor)
         
-        # Define sample_info dictionary to fill
-        sample_info = {}
+        # Define sample_info dictionary to fill. 
+        # Fill with manually given required requisition ID.
+        # Fill with attributes 
+        sample_info = {
+                constants.REQ_ID: requisition_id,
+                core_constants.ATTRIBUTES: attributes 
+        }
 
-        # FIRST PASS: BASIC CASE INFORMATION
+        # Get parameters 
         params = [
           constants.ASSAY,
           constants.PATIENT_ID,
           constants.REQ_APPROVED,
-          constants.REQ_ID
+          constants.PROJECT,
+          constants.SAMPLE_NAME_TUMOUR,
+          constants.SAMPLE_NAME_NORMAL,
+          constants.SAMPLE_NAME_AUX,
+          constants.TUMOUR_ID,
+          constants.NORMAL_ID
+
         ]
 
         for param in params:
@@ -82,7 +94,7 @@ class main(helper_base):
                 function_name = f'get_{param}'
                 get_my_param = getattr(self, function_name)
                 # Call the function to get the value from cardea
-                value = get_my_param(case)
+                value = get_my_param(case, sample_info)
                 # Set it in the config
                 wrapper.set_my_param(param, value)
                 # Add it to sample_info.json
@@ -90,41 +102,12 @@ class main(helper_base):
             else:
                 sample_info[param] = wrapper.get_my_string(param)
         
-        # SECOND PASS: VARIOUS IDS
-        params = [
-          constants.PROJECT, 
-          constants.SAMPLE_NAME_WHOLE_GENOME_TUMOUR,
-          constants.SAMPLE_NAME_WHOLE_GENOME_NORMAL,
-          constants.SAMPLE_NAME_WHOLE_TRANSCRIPTOME,
-          constants.TUMOUR_ID,
-          constants.NORMAL_ID
-        ]
-
-        assay = sample_info[constants.ASSAY]
-        for param in params:
-            if wrapper.my_param_is_null(param):
-                # All functions to get parameters are of the format get_${param}()
-                function_name = f'get_{param}'
-                get_my_param = getattr(self, function_name)
-                # Call the function to get the value from cardea
-                value = get_my_param(case, attributes, requisition_id, assay)
-                # Set it in the config
-                wrapper.set_my_param(param, value)
-                # Add it to sample_info.json
-                sample_info[param] = value
-            else:
-                sample_info[param] = wrapper.get_my_string(param)
-
-
         # Write the sample information
         self.write_sample_info(sample_info)
         return wrapper.get_config()
 
     def extract(self, config):
         self.validate_full_config(config)
-
-
-    # ------------------------- ZEROTH PASS FUNCTIONS : RETRIEVE CASE INFO ------------------------
 
     def get_cardea_case(self, requisition_id, cardea_url, attributes, donor):
         
@@ -180,28 +163,27 @@ class main(helper_base):
         
         return case
 
-    # ------------------------- FIRST PASS FUNCTIONS : BASIC INFORMATION -------------------------
-
-    def get_assay(self, case):
+    def get_assay(self, case, sample_info=None):
         return case['assayName'].split("-")[0].strip().upper()
     
-    def get_donor(self, case):
+    def get_donor(self, case, sample_info=None):
         return case['donor']['name']
 
-    def get_patient_id(self, case):
-        return patient_id = case['donor']['externalName'].split(',')[0].strip()
+    def get_patient_id(self, case, sample_info=None):
+        return case['donor']['externalName'].split(',')[0].strip()
     
-    def get_requisition_approved(self, case):
+    def get_requisition_approved(self, case, sample_info=None):
         return case['startDate']
 
-    # -------------------------------- SECOND PASS FUNCTIONS : IDS --------------------------------
-        
-    def get_project(self, case, requisition_id, attributes):
+    def get_project(self, case, sample_info):
         """
         There may be more than one project.
         Example: a project can have Accredited with Clinical Report, Accredited, Research
         We only want Accredited with Clinical Report...for now.
         """
+        requisition_id = sample_info[constants.REQ_ID]
+        attributes = sample_info[core_constants.ATTRIBUTES]
+
         projects = case['projects']
         project_found = False
         clinical_projects = [] # Count how many projects have pipeline "Accredited with Clinical Report"
@@ -251,11 +233,11 @@ class main(helper_base):
             self.logger.error(msg)
             raise UnknownAssayError(msg)
 
-    def get_tumour_normal_ids(self, case, requisition_id, assay_name):
+    def get_tumour_normal_ids(self, case, requisition_id):
         """
         Returns tumor and normal IDs.
         """
-         
+        assay_name = case['assayName']
         ids = [None, None] # tumour_id, normal_id
 
         self.logger.info("Finding tumour and normal IDs for assay {0}".format(assay_name))
@@ -273,16 +255,18 @@ class main(helper_base):
         tumour_id, normal_id = ids
         return tumour_id, normal_id 
 
-    def get_tumour_id(case, requisition_id):
-        tumour_id = get_tumour_normal_ids[0]
+    def get_tumour_id(case, sample_info):
+        requisition_id = sample_info[constants.REQ_ID]
+        tumour_id = self.get_tumour_normal_ids(case, requisition_id)[0]
         if not tumour_id:
             msg = "Could not find tumour ID for requisition {0}. You may have to manually specify it.".format(requisition_id)
             self.logger.error(msg)
             raise MissingIdError(msg)
         return tumour_id
     
-    def get_normal_id(case, requisition_id):
-        normal_id = get_tumour_normal_ids[1]
+    def get_normal_id(case, sample_info):
+        requisition_id = sample_info[constants.REQ_ID]
+        normal_id = self.get_tumour_normal_ids(case, requisition_id)[1]
         if not normal_id:
             msg = "Could not find normal ID for requisition {0}. You may have to manually specify it.".format(requisition_id)
             self.logger.error(msg)
@@ -290,37 +274,40 @@ class main(helper_base):
         return normal_id
 
 
-    def get_library_ids(self, requisition_id, case, assay):
+    def get_library_ids(self, case, sample_info):
         """
         Gets the following IDs:
-        - sample_name_whole_genome_normal
-        - sample_name_whole_genome_tumour
-        - sample_name_whole_transcriptome
+        - sample_name_normal
+        - sample_name_tumour
+        - sample_name_aux
         """
         # Sometimes, a library can fail.
         # If a library fails, under libraryQualifications, there will be more than one entry.
         # Only take the entry in which qcPassed = 'true', or qcReason = 'Passed'
 
-        sample_name_whole_genome_normal = "None"
-        sample_name_whole_genome_tumour = "None"
-        sample_name_whole_transcriptome = "None"
+        requisition_id = sample_info[constants.REQ_ID]
+        assay = sample_info[constants.ASSAY]
+
+        sample_name_normal = "None"
+        sample_name_tumour = "None"
+        sample_name_aux = "None"
         
         library_count = 0
         for test in case['tests']:
             # For WGTS and WGS, expect three tests: 0 (WG normal), 1 (WT), 2 (WG tumour)
             # Unsure if the order of these is preserved. Better not to assume.
             if test['name'] == "Normal WG":
-                sample_name_whole_genome_normal = test['fullDepthSequencings'][0]['name']
+                sample_name_normal = test['fullDepthSequencings'][0]['name']
                 library_count += 1
             elif test['name'] == "Tumour WG":
-                sample_name_whole_genome_tumour = test['fullDepthSequencings'][0]['name']
+                sample_name_tumour = test['fullDepthSequencings'][0]['name']
                 library_count += 1
             elif test['name'] == "Tumour WT":
-                sample_name_whole_transcriptome = test['fullDepthSequencings'][0]['name']
+                sample_name_aux = test['fullDepthSequencings'][0]['name']
                 library_count += 1
         # WGS will not have a Tumour WT. Manually assign it a placeholder.
         if assay == "WGS":
-            sample_name_whole_transcriptome = "whole_transcriptome_placeholder"
+            sample_name_aux = "whole_transcriptome_placeholder"
             library_count += 1
         # TAR (actually called REVOLVE in Cardea) does not require library IDs.
         if assay == "REVOLVE":
@@ -328,46 +315,48 @@ class main(helper_base):
                 # For TAR, expect three tests: Normal TS, Tumour SW, Tumour TS
                 # Unsure if the order of these is preserved. Better not to assume.
                 if test['name'] == "Normal TS":
-                    sample_name_whole_genome_normal = test['fullDepthSequencings'][0]['name']
+                    sample_name_normal = test['fullDepthSequencings'][0]['name']
                     library_count += 1
                 elif test['name'] == "Tumour SW":
-                    sample_name_whole_genome_tumour = test['fullDepthSequencings'][0]['name']
+                    sample_name_tumour = test['fullDepthSequencings'][0]['name']
                     library_count += 1
                 elif test['name'] == "Tumour TS":
-                    sample_name_whole_transcriptome = test['fullDepthSequencings'][0]['name']
+                    sample_name_aux = test['fullDepthSequencings'][0]['name']
                     library_count += 1
 
         # There should be 3 libraries (3 for WGTS, 2+1 placeholder for WGS)
         if library_count == 3:
-            return sample_name_whole_genome_normal, sample_name_whole_genome_tumour, sample_name_whole_transcriptome
+            return sample_name_normal, sample_name_tumour, sample_name_aux
         else:
-            msg = "One of the following libraries was not found in requisition {0}: sample_name_whole_genome_tumour ({1}), sample_name_whole_genome_normal ({2}), sample_name_whole_transcriptome ({3}).".format(
+            msg = "One of the following libraries was not found in requisition {0}: sample_name_tumour ({1}), sample_name_normal ({2}), sample_name_aux ({3}).".format(
                     requisition_id,
-                    sample_name_whole_genome_normal,
-                    sample_name_whole_genome_tumour,
-                    sample_name_whole_transcriptome
+                    sample_name_normal,
+                    sample_name_tumour,
+                    sample_name_aux
             )
 
             raise MissingLibraryError(msg)
 
-    def get_sample_name_whole_genome_tumour(self):
-        id = self.get_library_ids()[0]
+    def get_sample_name_tumour(self, case, sample_info):
+        id = self.get_library_ids(case, sample_info)[0]
         return id
 
-    def get_sample_name_whole_genome_normal(self):
-        id = self.get_library_ids()[1]
+    def get_sample_name_normal(self, case, sample_info):
+        id = self.get_library_ids(case, sample_info)[1]
         return id
 
-    def get_sample_name_whole_transcriptome(self):
-        id = self.get_library_ids()[2]
+    def get_sample_name_aux(self, case, sample_info):
+        id = self.get_library_ids(case, sample_info)[2]
         return id
 
-    def get_project_id(self, case, attributes, donor = None):
+    def get_project_id(self, case, sample_info):
         """
         There may be more than one project.
         Example: a project can have Accredited with Clinical Report, Accredited, Research
         We only want Accredited with Clinical Report...for now.
         """
+        requisition_id = sample_info[constants.REQ_ID]
+        attributes = sample_info[core_constants.ATTRIBUTES]
         projects = case['projects']
         project_found = False       
         clinical_projects = [] # Count how many projects have pipeline "Accredited with Clinical Report"
