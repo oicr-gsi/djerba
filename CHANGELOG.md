@@ -1,6 +1,7 @@
 # CHANGELOG
 
 ## Unreleased
+- CCGI-1411: Add `--no-html-cache` option for `djerba.py update`
 - GCGI-1461: Fix output paths in calls to get_logger
 - GCGI-1478: More informative logger name for plugin/helper/merger components
 - GCGI-1479: New `--pre-populate` option in `djerba.py` setup mode
