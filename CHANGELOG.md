@@ -1,6 +1,9 @@
 # CHANGELOG
 
 ## Unreleased
+- GCGI-1461: Fix output paths in calls to get_logger
+- GCGI-1478: More informative logger name for plugin/helper/merger components
+- GCGI-1479: New `--pre-populate` option in `djerba.py` setup mode
 - GCGI-1413: Remove failed report plugin and allow summary plugin to handle failed reports
 
 ## 1.7.8: 2024-12-12
