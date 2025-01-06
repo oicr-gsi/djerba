@@ -2,7 +2,7 @@
 
 ## Unreleased
 - GCGI-1413: Remove failed report plugin and allow summary plugin to handle failed reports
-
+- 
 ## 1.7.8: 2024-12-12
 - GCGI-1464: Standalone script to diff two Djerba JSON reports
 - GCGI-1454: Added OncoKB definitions to WGTS40X and WGS40X assays
