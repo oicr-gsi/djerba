@@ -152,7 +152,7 @@ class main(plugin_base):
             ichor_json = json.load(ichor_results)
         return (ichor_json)
 
-    def process_consensus_cruncher(self, git ):
+    def process_consensus_cruncher(self, consensus_cruncher_file ):
         header_line = False
         with open(consensus_cruncher_file, 'r') as cc_file:
             reader_file = csv.reader(cc_file, delimiter="\t")
