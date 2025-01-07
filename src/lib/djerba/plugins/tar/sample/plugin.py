@@ -126,9 +126,14 @@ class main(plugin_base):
             filtered_data = data[data[columns_of_interest.TissueType] != 'R']
 
             if len(filtered_data) > 0:
-                # Take the first row of the filtered data
-                selected_value = filtered_data.iloc[0][columns_of_interest.MeanBaitCoverage]
-                qc_dict[constants.RAW_COVERAGE] = int(round(selected_value, 0))
+                # Check if coverage values are unique
+                coverage = filtered_data[columns_of_interest.MeanBaitCoverage].unique()
+                if len(coverage) != 1:
+                    msg = f"Multiple coverage values found for group_id {group_id}: {coverage}."
+                    raise ValueError(msg)
+                else:
+                    selected_value = coverage[0]
+                    qc_dict[constants.RAW_COVERAGE] = int(round(selected_value, 0))
             else:
                 msg = f"No valid QC metrics found for group_id {group_id} after filtering out the normal."
                 raise MissingQCETLError(msg)
@@ -147,7 +152,7 @@ class main(plugin_base):
             ichor_json = json.load(ichor_results)
         return (ichor_json)
 
-    def process_consensus_cruncher(self, consensus_cruncher_file):
+    def process_consensus_cruncher(self, git ):
         header_line = False
         with open(consensus_cruncher_file, 'r') as cc_file:
             reader_file = csv.reader(cc_file, delimiter="\t")
