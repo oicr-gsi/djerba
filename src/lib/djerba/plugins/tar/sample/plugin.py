@@ -130,15 +130,18 @@ class main(plugin_base):
                 coverage = filtered_data[columns_of_interest.MeanBaitCoverage].unique()
                 if len(coverage) != 1:
                     msg = f"Multiple coverage values found for group_id {group_id}: {coverage}."
+                    self.logger.error(msg)
                     raise ValueError(msg)
                 else:
                     selected_value = coverage[0]
                     qc_dict[constants.RAW_COVERAGE] = int(round(selected_value, 0))
             else:
                 msg = f"No valid QC metrics found for group_id {group_id} after filtering out the normal."
+                self.logger.error(msg)
                 raise MissingQCETLError(msg)
         else:
             msg = f"QC metrics associated with group_id {group_id} not found in QC-ETL and no value found in .ini."
+            self.logger.error(msg)
             raise MissingQCETLError(msg)
 
         return qc_dict
@@ -150,7 +153,7 @@ class main(plugin_base):
     def process_ichor_json(self, ichor_metrics):
         with open(ichor_metrics, 'r') as ichor_results:
             ichor_json = json.load(ichor_results)
-        return (ichor_json)
+        return ichor_json
 
     def process_consensus_cruncher(self, consensus_cruncher_file ):
         header_line = False
@@ -165,7 +168,7 @@ class main(plugin_base):
                         header_line = False
                     else:
                         next
-        return (int(round(unique_coverage, 0)))
+        return int(round(unique_coverage, 0))
 
     def specify_params(self):
         discovered = [
