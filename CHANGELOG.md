@@ -5,6 +5,8 @@
 - GCGI-1481: Fix raw coverage auto-population to exclude normal samples before selection in TAR assay
 - GCGI-1478: More informative logger name for plugin/helper/merger components
 - GCGI-1479: New `--pre-populate` option in `djerba.py` setup mode
+- GCGI-1482: Updated total genome segment length constant in percent genome altered calculation
+- GCGI-1480: Updated CGI manager name and email
 
 
 ## 1.7.8: 2024-12-12
