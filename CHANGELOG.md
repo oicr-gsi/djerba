@@ -3,6 +3,9 @@
 ## Unreleased
 - GCGI-1461: Fix output paths in calls to get_logger
 - GCGI-1481: Fix raw coverage auto-population to exclude normal samples before selection in TAR assay
+- GCGI-1478: More informative logger name for plugin/helper/merger components
+- GCGI-1479: New `--pre-populate` option in `djerba.py` setup mode
+
 
 ## 1.7.8: 2024-12-12
 - GCGI-1464: Standalone script to diff two Djerba JSON reports
