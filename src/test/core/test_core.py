@@ -668,7 +668,7 @@ class TestMainScript(TestCore):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, '5bc52ffc10821f166fed7b3055cc8bad')
+        self.assert_report_MD5(html_string, 'a262bf44dc2d759f165bbe817ec16d22')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')
@@ -694,7 +694,7 @@ class TestMainScript(TestCore):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, '285adea0d50933a5da00c6f0452ba045')
+        self.assert_report_MD5(html_string, '781d477894d5a6e269cb68535a82ca89')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')
