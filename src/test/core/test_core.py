@@ -36,6 +36,7 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_UPDATE_JSON = 'simple_report_for_update.json'
+    SIMPLE_REPORT_UPDATE_FAILED_JSON = 'simple_report_for_update_failed.json'
     SIMPLE_CONFIG_MD5 = '04b749b3ec489ed9c06c1a06eb2dc886'
     SIMPLE_REPORT_MD5 = 'ab049488c58758e26b0ad1c480c28c99'
 
@@ -681,14 +682,14 @@ class TestMainScript(TestCore):
         summary_path = os.path.join(self.test_source_dir, 'alternate_summary.txt')
         # run djerba.py and check the results
         json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_UPDATE_JSON)
-        cmd = [
+        cmd_base = [
             'djerba.py', mode,
             '--work-dir', work_dir,
             '--summary', summary_path,
-            '--json', json_path,
             '--out-dir', self.tmp_dir,
             '--pdf'
         ]
+        cmd = cmd_base + ['--json', json_path]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
@@ -698,6 +699,21 @@ class TestMainScript(TestCore):
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')
+        self.assertTrue(os.path.isfile(updated_path))
+        # test again with a failed report
+        for output in [html_path, pdf_path, updated_path]:
+            os.remove(output)
+        json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_UPDATE_FAILED_JSON)
+        cmd_failed = cmd_base + ['--json', json_path]
+        result = subprocess_runner().run(cmd_failed)
+        self.assertEqual(result.returncode, 0)
+        html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
+        with open(html_path) as html_file:
+            html_string = html_file.read()
+        self.assert_report_MD5(html_string, '093ca0030bcb2a69d9ac4d784a19b147')
+        pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
+        self.assertTrue(os.path.isfile(pdf_path))
+        updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update_failed.updated.json')
         self.assertTrue(os.path.isfile(updated_path))
 
 
