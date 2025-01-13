@@ -6,7 +6,7 @@ import argparse
 import sys
 
 sys.path.pop(0) # do not import from script directory
-from djerba.core.main import main, arg_processor, DjerbaSubcommandError
+from djerba.core.main import main, arg_processor, DjerbaInvalidNameError
 from djerba.version import get_djerba_version
 import djerba.util.constants as constants
 
@@ -23,9 +23,10 @@ def get_parser():
     parser.add_argument('--version', action='store_true', help='Print the version number and exit')
     subparsers = parser.add_subparsers(title='subcommands', help='sub-command help', dest='subparser_name')
     setup_parser = subparsers.add_parser(constants.SETUP, help='setup for a Djerba report')
-    setup_parser.add_argument('-a', '--assay', metavar='NAME', required=True, choices=['WGTS', 'WGS', 'TAR', 'PWGS'], help='Name of assay')
+    setup_parser.add_argument('-a', '--assay', metavar='NAME', required=True, help='Name of assay (case-insensitive)')
     setup_parser.add_argument('-i', '--ini', metavar='PATH', help='Output path for INI file; defaults to config.ini in current directory')
     setup_parser.add_argument('-c', '--compact', action='store_true', help="Output required manual parameters only")
+    setup_parser.add_argument('-p', '--pre-populate', metavar='PATH', help='INI file with key/value pairs to pre-populate config')
     config_parser = subparsers.add_parser(constants.CONFIGURE, help='get configuration parameters')
     config_parser.add_argument('-i', '--ini', metavar='PATH', required=True, help='INI config file with user inputs')
     config_parser.add_argument('-o', '--ini-out', metavar='PATH', required=True, help='Path for output of fully specified INI config file')
@@ -69,7 +70,8 @@ if __name__ == '__main__':
         sys.exit(0)
     try:
         ap = arg_processor(args)
-    except DjerbaSubcommandError as err:
+        main(ap.get_work_dir(), ap.get_log_level(), ap.get_log_path()).run(args)
+    except DjerbaInvalidNameError as err:
         print("{0}".format(err), file=sys.stderr)
         sys.exit(1)
-    main(ap.get_work_dir(), ap.get_log_level(), ap.get_log_path()).run(args)
+

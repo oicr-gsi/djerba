@@ -1,7 +1,20 @@
 # CHANGELOG
 
 ## Unreleased
+- GCGI-1461: Fix output paths in calls to get_logger
+- GCGI-1462: Extend GSICAPBENCH report to TAR/PWGS
+- GCGI-1481: Fix raw coverage auto-population to exclude normal samples before selection in TAR assay
+- GCGI-1478: More informative logger name for plugin/helper/merger components
+- GCGI-1479: New `--pre-populate` option in `djerba.py` setup mode
+- GCGI-1482: Updated total genome segment length constant in percent genome altered calculation
+- GCGI-1480: Updated CGI manager name and email
+
+## 1.7.8: 2024-12-12
 - GCGI-1464: Standalone script to diff two Djerba JSON reports
+- GCGI-1454: Added OncoKB definitions to WGTS40X and WGS40X assays
+- GCGI-1469: Prevent provenance_helper from overwriting manually provided tumour and normal IDs
+- GCGI-1472: Add all patient IDs to case_overview (not just the initial ID)
+- GCGI-1326: Generate whizbam links to view fusions in split-view
 
 ## 1.7.7: 2024-11-11
 - GCGI-1424: Fix rendering of non-Latin characters

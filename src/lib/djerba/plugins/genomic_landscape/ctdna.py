@@ -10,7 +10,7 @@ class ctdna_processor(logger):
     def __init__(self, log_level, log_path):
         self.log_level = log_level
         self.log_path = log_path
-        self.logger = self.get_logger(log_level, log_path)
+        self.logger = self.get_logger(log_level, __name__, log_path)
 
     def run(self, candidate_sites_path):
         candidates = self.extract_ctDNA_candidates(candidate_sites_path)

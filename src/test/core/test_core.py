@@ -37,7 +37,7 @@ class TestCore(TestBase):
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_UPDATE_JSON = 'simple_report_for_update.json'
     SIMPLE_CONFIG_MD5 = '04b749b3ec489ed9c06c1a06eb2dc886'
-    SIMPLE_REPORT_MD5 = 'ab049488c58758e26b0ad1c480c28c99'
+    SIMPLE_REPORT_MD5 = 'cfa53b636c7e8ae0f78fff698c4f76b7'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
@@ -182,9 +182,9 @@ class TestConfigValidation(TestCore):
         self.assertTrue(plugin.check_attributes_known(attributes))
         config.set('demo1', 'attributes', 'clinical,awesome')
         attributes = plugin.get_config_wrapper(config).get_my_attributes()
-        with self.assertLogs('djerba.core.configure', level=logging.WARNING) as log_context:
+        with self.assertLogs('djerba:demo1', level=logging.WARNING) as log_context:
             self.assertFalse(plugin.check_attributes_known(attributes))
-        msg = "WARNING:djerba.core.configure:Unknown attribute 'awesome' in config"
+        msg = "WARNING:djerba:demo1:Unknown attribute 'awesome' in config"
         self.assertIn(msg, log_context.output)
 
     def test_simple(self):
@@ -192,9 +192,9 @@ class TestConfigValidation(TestCore):
         config = self.read_demo1_config(plugin)
         # test a simple plugin
         self.assertTrue(plugin.validate_minimal_config(config))
-        with self.assertLogs('djerba.core.configure', level=logging.DEBUG) as log_context:
+        with self.assertLogs('djerba:demo1', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
-        msg = 'DEBUG:djerba.core.configure:'+\
+        msg = 'DEBUG:djerba:demo1:'+\
             '8 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
 
@@ -243,9 +243,9 @@ class TestConfigValidation(TestCore):
         # now give foo a config value
         config.set('demo1', 'foo', 'snark')
         self.assertTrue(plugin.validate_minimal_config(config))
-        with self.assertLogs('djerba.core.configure', level=logging.DEBUG) as log_context:
+        with self.assertLogs('djerba:demo1', level=logging.DEBUG) as log_context:
             self.assertTrue(plugin.validate_full_config(config))
-        msg = 'DEBUG:djerba.core.configure:'+\
+        msg = 'DEBUG:djerba:demo1:'+\
             '9 expected INI param(s) found for component demo1'
         self.assertIn(msg, log_context.output)
         # test setting all requirements
@@ -620,6 +620,26 @@ class TestMainScript(TestCore):
         json_path = glob(pattern).pop(0)
         self.assertEqual(result.returncode, 0)
         self.assertSimpleReport(json_path, html)
+
+    def test_setup_cli(self):
+        mode = 'setup'
+        ini_path = os.path.join(self.tmp_dir, 'config.ini')
+        html = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
+        cmd = [
+            'djerba.py', mode,
+            '--assay', 'wgts',
+            '--ini', ini_path,
+            '--compact'
+        ]
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(self.getMD5(ini_path), 'a211144356b5ec200e1c31ecd3128b45')
+        os.remove(ini_path)
+        prepop_path = os.path.join(self.test_source_dir, 'prepop.ini')
+        cmd.extend(['--pre-populate', prepop_path])
+        result = subprocess_runner().run(cmd)
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(self.getMD5(ini_path), '2387e66d783b1deb0fe5361e7770ec7a')
 
     def test_update_cli_with_ini(self):
         mode = 'update'
