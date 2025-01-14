@@ -160,8 +160,8 @@ class benchmarker(logger):
             self.logger.error(msg)
             raise RuntimeError(msg)
         self.samples = args.sample if args.sample else self.DEFAULT_SAMPLES 
-        self.validator.validate_input_file(args.ref_path)
-        self.ref_path = args.ref_path
+        self.validator.validate_input_dir(args.ref_dir)
+        self.ref_dir = args.ref_dir
         self.input_dir = os.path.abspath(self.args.input_dir)
         self.validator.validate_input_dir(self.input_dir)        
         self.logger.info("GSICAPBENCH input directory is '{0}'".format(self.input_dir))
@@ -326,12 +326,12 @@ class benchmarker(logger):
                 break
         return ok
 
-    def run_comparison(self, reports_path, ref_path):
+    def run_comparison(self, reports_path, ref_dir):
         config = ConfigParser()
         config.add_section('benchmark')
         config.set('benchmark', 'input_name', self.input_name)
         config.set('benchmark', 'input_file', reports_path)
-        config.set('benchmark', 'ref_file', ref_path)
+        config.set('benchmark', 'ref_dir', ref_dir)
         self.logger.info("Loading plugin and running report comparison")
         plugin = self.plugin_loader.load('benchmark', self.workspace)
         full_config = plugin.configure(config)
@@ -399,7 +399,7 @@ class benchmarker(logger):
         # copy JSON/text files and write HTML summary to output directory
         input_names = self.run_setup(self.input_dir, self.work_dir)
         reports_path = self.run_reports(input_names, self.work_dir)
-        data, html = self.run_comparison(reports_path, self.ref_path)
+        data, html = self.run_comparison(reports_path, self.ref_dir)
         self.logger.info("Writing data and HTML output")
         self.write_outputs(data, html)
 

@@ -12,22 +12,76 @@
     "results": {
         "donor_results": [
             {
+                "diff": "NA",
+                "diff_name": "Not found",
+                "donor": "GSICAPBENCH_0001_TAR",
+                "input_file": "PLACEHOLDER/Not found",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_0001_TAR_ref.json",
+                "status": "INCOMPLETE",
+                "status_emoji": "&#x2753;"
+            },
+            {
+                "diff": "NA",
+                "diff_name": "Not found",
+                "donor": "GSICAPBENCH_0001_WGS",
+                "input_file": "PLACEHOLDER/Not found",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_0001_WGS_ref.json",
+                "status": "INCOMPLETE",
+                "status_emoji": "&#x2753;"
+            },
+            {
+                "diff": "NA",
+                "diff_name": "Not found",
+                "donor": "GSICAPBENCH_0002_TAR",
+                "input_file": "PLACEHOLDER/Not found",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_0002_TAR_ref.json",
+                "status": "INCOMPLETE",
+                "status_emoji": "&#x2753;"
+            },
+            {
+                "diff": "NA",
+                "diff_name": "Not found",
+                "donor": "GSICAPBENCH_0003_TAR",
+                "input_file": "PLACEHOLDER/Not found",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_0003_TAR_ref.json",
+                "status": "INCOMPLETE",
+                "status_emoji": "&#x2753;"
+            },
+            {
                 "diff": "NONE",
                 "diff_name": "Not applicable",
-                "donor": "GSICAPBENCH_1219",
-                "input_file": "PLACEHOLDER/GSICAPBENCH_1219_input.json",
-                "ref_file": "PLACEHOLDER/GSICAPBENCH_1219_reference.json",
+                "donor": "GSICAPBENCH_1248_WGTS",
+                "input_file": "PLACEHOLDER/GSICAPBENCH_1248_WGTS_report.json",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_1248_WGTS_ref.json",
                 "status": "identical",
                 "status_emoji": "&#x2705;"
             },
             {
                 "diff": "NONE",
                 "diff_name": "Not applicable",
-                "donor": "GSICAPBENCH_1232",
-                "input_file": "PLACEHOLDER/GSICAPBENCH_1232_input.json",
-                "ref_file": "PLACEHOLDER/GSICAPBENCH_1232_reference.json",
+                "donor": "GSICAPBENCH_1309_WGTS",
+                "input_file": "PLACEHOLDER/GSICAPBENCH_1309_WGTS_report.json",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_1309_WGTS_ref.json",
                 "status": "identical",
                 "status_emoji": "&#x2705;"
+            },
+            {
+                "diff": "NA",
+                "diff_name": "Not found",
+                "donor": "GSICAPBENCH_1390_WGTS",
+                "input_file": "PLACEHOLDER/Not found",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_1390_WGTS_ref.json",
+                "status": "INCOMPLETE",
+                "status_emoji": "&#x2753;"
+            },
+            {
+                "diff": "NA",
+                "diff_name": "Not found",
+                "donor": "GSICAPBENCH_1391_WGTS",
+                "input_file": "PLACEHOLDER/Not found",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_1391_WGTS_ref.json",
+                "status": "INCOMPLETE",
+                "status_emoji": "&#x2753;"
             }
         ],
         "input_name": "Unknown",

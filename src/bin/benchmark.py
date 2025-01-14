@@ -21,7 +21,7 @@ def get_parser():
     # operations
     parser.add_argument('-i', '--input-dir', metavar='DIR', required=True, help='Directory to scan for workflow outputs, eg. ./GSICAPBENCHyymmdd/seqware-results/')
     parser.add_argument('-o', '--output-dir', metavar='DIR', required=True, help='Directory in which to generate HTML output')
-    parser.add_argument('-r', '--ref-path', metavar='FILE', required=True, help='Path to JSON file listing reference reports')
+    parser.add_argument('-r', '--ref-dir', metavar='DIR', required=True, help='Directory with reference index and reports')
     parser.add_argument('-s', '--sample', metavar='NAME', action='append', help='Sample names for directory scan; may be supplied more than once')
     parser.add_argument('-w', '--work-dir', metavar='DIR', required=True, help='Working directory in which to generate Djerba reports')
     cache_group = parser.add_mutually_exclusive_group()

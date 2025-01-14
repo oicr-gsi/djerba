@@ -5,6 +5,7 @@ Generate an HTML summary
 
 import json
 import logging
+import os
 
 import djerba.core.constants as core_constants
 from djerba.plugins.base import plugin_base
@@ -23,7 +24,9 @@ class main(plugin_base):
     DONOR_RESULTS = 'donor_results'
     BODY = 'body'
     INPUT_FILE = 'input_file'
+    REF_DIR = 'ref_dir'
     REF_FILE = 'ref_file'
+    REF_FILE_NAME = 'bench_ref_paths.json'
     STATUS = 'status'
     STATUS_EMOJI = 'status_emoji'
     DIFF = 'diff'
@@ -35,11 +38,7 @@ class main(plugin_base):
 
     # __init__ is inherited from the parent class
 
-    def compare_reports(self, inputs_path, refs_path, delta_path):
-        with open(inputs_path) as in_file:
-            input_paths = json.load(in_file)
-        with open(refs_path) as in_file:
-            ref_paths = json.load(in_file)
+    def compare_reports(self, input_paths, ref_paths, delta_path):
         input_set = set(input_paths.keys())
         ref_set = set(ref_paths.keys())
         donor_results = []
@@ -88,8 +87,15 @@ class main(plugin_base):
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
+        # validate the inputs
         attributes = wrapper.get_my_attributes()
         self.check_attributes_known(attributes)
+        validator = path_validator(self.log_level, self.log_path)
+        in_path = wrapper.get_my_string(self.INPUT_FILE)
+        validator.validate_input_file(in_path)
+        ref_dir = wrapper.get_my_string(self.REF_DIR)
+        validator.validate_input_dir(ref_dir)
+        # extract the data
         data = {
             'plugin_name': self.identifier+' plugin',
             'version': self.PLUGIN_VERSION,
@@ -97,13 +103,11 @@ class main(plugin_base):
             'attributes': attributes,
             'merge_inputs': {}
         }
-        input_file = wrapper.get_my_string(self.INPUT_FILE)
-        ref_file = wrapper.get_my_string(self.REF_FILE)
-        validator = path_validator(self.log_level, self.log_path)
-        validator.validate_input_file(input_file)
-        validator.validate_input_file(ref_file)
+        with open(in_path) as in_file:
+            input_paths = json.load(in_file)
+        ref_paths = self.get_ref_paths(ref_dir, validator)
         delta_file = None # TODO make this configurable
-        donor_results = self.compare_reports(input_file, ref_file, delta_file)
+        donor_results = self.compare_reports(input_paths, ref_paths, delta_file)
         self.logger.debug('Found {0} donor results'.format(len(donor_results)))
         data['results'] = {
             self.INPUT_NAME: wrapper.get_my_string(self.INPUT_NAME),
@@ -111,6 +115,19 @@ class main(plugin_base):
             self.DONOR_RESULTS: donor_results
         }
         return data
+
+    def get_ref_paths(self, ref_dir, validator):
+        # ref_dir contains an index file, listing relative paths to the reference files
+        ref_index_path = os.path.join(ref_dir, self.REF_FILE_NAME)
+        validator.validate_input_file(ref_index_path)
+        with open(ref_index_path) as index_file:
+            ref_index = json.loads(index_file.read())
+        ref_index_full_paths = {}
+        for key, val in ref_index.items():
+            full_path = os.path.join(ref_dir, val)
+            validator.validate_input_file(full_path)
+            ref_index_full_paths[key] = full_path
+        return ref_index_full_paths
 
     def render(self, data):
         renderer = mako_renderer(self.get_module_dir())
@@ -120,7 +137,7 @@ class main(plugin_base):
         self.set_ini_default(core_constants.ATTRIBUTES, 'research')
         self.set_priority_defaults(self.PRIORITY)
         self.add_ini_required(self.INPUT_FILE)
-        self.add_ini_required(self.REF_FILE)
+        self.add_ini_required(self.REF_DIR)
         self.add_ini_discovered(self.INPUT_NAME)
         #finder = directory_finder(self.log_level, self.log_path)
         #default_delta_path = 
