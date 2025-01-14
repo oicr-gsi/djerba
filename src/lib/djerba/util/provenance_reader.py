@@ -133,7 +133,8 @@ class provenance_reader(logger):
                 self._set_tar_ids(samples)
             else:
                 self._validate_and_set_sample_names(samples)
-            self.patient_id = self._id_patient()
+            self.patient_id_raw = self._id_patient_raw()
+            self.patient_id = re.split(',', self.patient_id_raw).pop(0)
             self.tumour_id = self._id_tumour()
             self.normal_id = self._id_normal()
 
@@ -272,14 +273,14 @@ class provenance_reader(logger):
         self.logger.debug("Found normal ID: {0}".format(normal_id))
         return normal_id
 
-    def _id_patient(self):
+    def _id_patient_raw(self):
         # parse the external name to get patient ID
         patient_id_raw = self._get_unique_value(self.GEO_EXTERNAL_NAME, check=False)
         if patient_id_raw == None:
             msg = "Cannot initialize file provenance reader: No value found for metadata field '{0}'".format(self.GEO_EXTERNAL_NAME)
             self.logger.error(msg)
             raise RuntimeError(msg)
-        return re.split(',', patient_id_raw).pop(0)
+        return patient_id_raw
 
     def _id_tumour(self):
         self.logger.debug("Finding tumour ID")
@@ -370,6 +371,7 @@ class provenance_reader(logger):
         # - all reader attributes are null/empty
         # - can proceed if and only if a fully-specified config is input
         self.attributes = []
+        self.patient_id_raw = None
         self.patient_id = None
         self.tumour_id = None
         self.normal_id = None
@@ -436,7 +438,8 @@ class provenance_reader(logger):
         identifiers = {
             ini.TUMOUR_ID: self.tumour_id,
             ini.NORMAL_ID: self.normal_id,
-            ini.PATIENT_ID: self.patient_id
+            ini.PATIENT_ID: self.patient_id,
+            ini.PATIENT_ID_RAW: self.patient_id_raw
         }
         self.logger.debug("Got identifiers: {0}".format(identifiers))
         return identifiers

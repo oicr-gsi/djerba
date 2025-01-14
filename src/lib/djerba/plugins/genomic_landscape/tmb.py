@@ -13,7 +13,7 @@ class tmb_processor(logger):
     def __init__(self, log_level, log_path):
         self.log_level = log_level
         self.log_path = log_path
-        self.logger = self.get_logger(log_level, log_path)
+        self.logger = self.get_logger(log_level, __name__, log_path)
 
     def run(self, work_dir, data_dir, r_script_dir, tcga_code, biomarkers_path, tumour_id, tmb_value=None):
         genomic_landscape_info = self.build_genomic_landscape_info(work_dir, data_dir, tcga_code)

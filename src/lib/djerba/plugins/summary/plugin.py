@@ -32,7 +32,7 @@ class main(plugin_base):
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         summary_path = wrapper.get_my_string(self.SUMMARY_FILE)
-        with open(summary_path) as in_file:
+        with open(summary_path, encoding=core_constants.TEXT_ENCODING) as in_file:
             summary_text = in_file.read()
         self.logger.debug('Read summary from {0}: "{1}"'.format(summary_path, summary_text))
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
