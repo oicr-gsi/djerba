@@ -117,7 +117,10 @@ class main(plugin_base):
         return data
 
     def get_ref_paths(self, ref_dir, validator):
-        # ref_dir contains an index file, listing relative paths to the reference files
+        # The ref_dir contains an index file, listing relative paths to Djerba JSON reports.
+        # The index file contains a list of identifiers we expect to see.
+        # Some identifiers from the index may be absent from the input data, eg. because of
+        # workflow failures. This is shown in the HTML output.
         ref_index_path = os.path.join(ref_dir, self.REF_FILE_NAME)
         validator.validate_input_file(ref_index_path)
         with open(ref_index_path) as index_file:
