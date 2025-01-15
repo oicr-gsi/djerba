@@ -583,9 +583,9 @@ class report_equivalence_tester(logger):
     def get_status_emoji(self):
         status = self.get_status()
         if status == self.IDENTICAL_STATUS:
-            return '&#x2705;' # white check mark
+            return '&#x9734;' # yellow star
         elif status == self.EQUIVALENT_STATUS:
-            return '&#x26A0;' # warning sign
+            return '&#x2705;' # white check mark on green
         else:
             return '&#x274C;' # X mark
 
