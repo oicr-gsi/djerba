@@ -467,6 +467,7 @@ class report_equivalence_tester(logger):
     WGTS = 'WGTS'
     WGS = 'WGS'
     TAR = 'TAR'
+    PWGS = 'PWGS'
 
     def __init__(self, report_paths, delta_path=None,
                  log_level=logging.WARNING, log_path=None):
@@ -583,9 +584,9 @@ class report_equivalence_tester(logger):
     def get_status_emoji(self):
         status = self.get_status()
         if status == self.IDENTICAL_STATUS:
-            return '&#x9734;' # yellow star
-        elif status == self.EQUIVALENT_STATUS:
             return '&#x2705;' # white check mark on green
+        elif status == self.EQUIVALENT_STATUS:
+            return '&#x1F7E9;' # green circle
         else:
             return '&#x274C;' # X mark
 

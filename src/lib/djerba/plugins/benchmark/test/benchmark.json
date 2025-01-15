@@ -54,7 +54,7 @@
                 "input_file": "PLACEHOLDER/GSICAPBENCH_1248_WGTS_report.json",
                 "ref_file": "PLACEHOLDER/GSICAPBENCH_1248_WGTS_ref.json",
                 "status": "identical",
-                "status_emoji": "&#x9734;"
+                "status_emoji": "&#x2705;"
             },
             {
                 "diff": "NONE",
@@ -63,7 +63,7 @@
                 "input_file": "PLACEHOLDER/GSICAPBENCH_1309_WGTS_report.json",
                 "ref_file": "PLACEHOLDER/GSICAPBENCH_1309_WGTS_ref.json",
                 "status": "identical",
-                "status_emoji": "&#x9734;"
+                "status_emoji": "&#x2705;"
             },
             {
                 "diff": "NA",
