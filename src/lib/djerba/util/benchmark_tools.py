@@ -429,19 +429,20 @@ class report_equivalence_tester(logger):
 
     CNV_NAME = 'wgts.cnv_purple'
     FUSION_NAME = 'fusion'
-    SNV_INDEL_NAME = 'wgts.snv_indel'
+    WGTS_SNV_INDEL_NAME = 'wgts.snv_indel'
+    TAR_SNV_INDEL_NAME = 'tar.snv_indel'
     SUPPLEMENT_NAME = 'supplement.body'
+    CASE_OVERVIEW_NAME = 'case_overview'
+    PWGS_ANALYSIS_NAME = 'pwgs.analysis'
     # deal with inconsistent capitalization
     BODY_KEY = {
         CNV_NAME: 'body',
-        SNV_INDEL_NAME: 'Body'
+        WGTS_SNV_INDEL_NAME: 'Body'
     }
     XPCT_KEY = {
         CNV_NAME: 'Expression Percentile',
-        SNV_INDEL_NAME: 'Expression percentile'
+        WGTS_SNV_INDEL_NAME: 'Expression percentile'
     }
-    GENE = 'Gene'
-    RESULTS = 'results'
     EXPRESSION = 'expression'
     MSI = 'msi'
     DELTA_DEFAULTS = {
@@ -453,6 +454,17 @@ class report_equivalence_tester(logger):
     IDENTICAL_STATUS = 'identical'
     EQUIVALENT_STATUS = 'equivalent but not identical'
     NOT_EQUIVALENT_STATUS = 'not equivalent'
+
+    # additional plugin keys
+    ASSAY = 'assay'
+    GENE = 'Gene'
+    RESULTS = 'results'
+    GL = 'genomic_landscape'
+    GB = 'genomic_biomarkers'
+    GBP = 'Genomic biomarker plot'
+    WGTS = 'WGTS'
+    WGS = 'WGS'
+    TAR = 'TAR'
 
     def __init__(self, report_paths, delta_path=None,
                  log_level=logging.WARNING, log_path=None):
@@ -635,20 +647,34 @@ class report_equivalence_tester(logger):
                 self.logger.error("JSON error: {0}".format(err))
                 raise DjerbaReportDiffError(msg) from err
         plugins = data['plugins'] # don't compare config or core elements
-        # redact plugin versions, plots, dates
+        # redact plugin versions
         for plugin_name in plugins.keys():
             plugins[plugin_name]['version'] = placeholder
-        results = 'results'
-        plugins[self.CNV_NAME][results]['cnv plot'] = placeholder
-        plugins[self.SNV_INDEL_NAME][results]['vaf_plot'] = placeholder
-        for biomarker in ['MSI', 'TMB', 'HRD']:
-            plugins['genomic_landscape'][results]['genomic_biomarkers'][biomarker]['Genomic biomarker plot'] = placeholder
-        for date_key in ['extract_date', 'report_signoff_date']:
-            plugins[self.SUPPLEMENT_NAME][results][date_key] = placeholder
-        # redact gene descriptions; text encoding issues can cause irrelevant discrepancies
-        for name in [self.CNV_NAME, self.SNV_INDEL_NAME, self.FUSION_NAME]:
-            for item in plugins[name]['merge_inputs']['gene_information_merger']:
-                item['Summary'] = placeholder
+        # redact base64-encoded images
+        if self.CASE_OVERVIEW_NAME in plugins:
+            assay = plugins[self.CASE_OVERVIEW_NAME][self.RESULTS][self.ASSAY]
+            if assay in [self.WGTS, self.WGS]:
+                plugins[self.CNV_NAME][self.RESULTS]['cnv plot'] = placeholder
+                plugins[self.SNV_INDEL_NAME][self.RESULTS]['vaf_plot'] = placeholder
+                for biomarker in ['MSI', 'TMB', 'HRD']:
+                    plugins[self.GL][self.RESULTS][self.GB][biomarker][self.GBP] = \
+                        placeholder
+            # TAR assay does not have images to redact
+        elif self.PWGS_ANALYSIS_NAME in plugins:
+            plugins[self.PWGS_ANALYSIS_NAME][self.RESULTS]['pwgs_base64'] = placeholder
+        # redact dates
+        if self.SUPPLEMENT_NAME in plugins:
+            for date_key in ['extract_date', 'report_signoff_date']:
+                plugins[self.SUPPLEMENT_NAME][self.RESULTS][date_key] = placeholder
+        else:
+            msg = 'Plugin {0} not found for {1}'.format(self.SUPPLEMENT_NAME, report_path)
+            self.logger.warning(msg)
+        # redact gene descriptions; text encoding issues can cause discrepancies
+        for name in [self.CNV_NAME, self.WGTS_SNV_INDEL_NAME, self.TAR_SNV_INDEL_NAME,
+                     self.FUSION_NAME]:
+            if name in plugins:
+                for item in plugins[name]['merge_inputs']['gene_information_merger']:
+                    item['Summary'] = placeholder
         return plugins
 
     def set_expression(self, data, plugin, value):
