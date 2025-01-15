@@ -249,8 +249,10 @@ class benchmarker(logger):
                 assays.append(self.PWGS)
             for assay in assays:
                 identifier = sample+"_"+assay
-                sample_inputs[self.ASSAY] = assay
-                inputs[identifier] = sample_inputs
+                inputs_for_report = deepcopy(sample_inputs)
+                inputs_for_report[self.ASSAY] = assay
+                inputs[identifier] = inputs_for_report
+                self.logger.debug("Found {0} inputs: {1}".format(identifier, sample_inputs))
             self.log_inputs(assays, sample, sample_inputs)
         if len(inputs)==0:
             # require inputs for at least one sample
@@ -481,7 +483,7 @@ class report_equivalence_tester(logger):
         if msg:
             self.logger.error(msg)
             raise DjerbaReportDiffError(msg)
-        self.data = [self.read_and_preprocess_report(x) for x in report_paths]
+        self.data, self.apply_deltas = self.read_reports(report_paths)
         if delta_path:
             with open(delta_path) as delta_file:
                 deltas = json.loads(delta_file.read())
@@ -500,7 +502,7 @@ class report_equivalence_tester(logger):
             self.logger.info("EQUIVALENT: Reports are identical")
             self.identical = True
             self.equivalent = True
-        elif self.deltas_are_equivalent():
+        elif self.apply_deltas and self.deltas_are_equivalent():
             # check if metrics without a delta match exactly
             if self.non_deltas_are_equivalent():
                 msg = "EQUIVALENT: Reports are not identical, "+\
@@ -528,7 +530,7 @@ class report_equivalence_tester(logger):
         Expression levels are permitted to differ by +/- delta
         """
         equivalent = True
-        for name in [self.CNV_NAME, self.SNV_INDEL_NAME]:
+        for name in [self.CNV_NAME, self.WGTS_SNV_INDEL_NAME]:
             plugin_eq = True
             self.logger.debug("Checking expression levels for plugin: {0}".format(name))
             expr0 = self.get_expressions_by_gene(self.data[0], name)
@@ -624,16 +626,36 @@ class report_equivalence_tester(logger):
         for data_set in self.data:
             redacted_set = deepcopy(data_set)
             redacted_set = self.set_msi(redacted_set, self.PLACEHOLDER)
-            for name in [self.CNV_NAME, self.SNV_INDEL_NAME]:
+            for name in [self.CNV_NAME, self.WGTS_SNV_INDEL_NAME]:
                 redacted_set = self.set_expression(redacted_set, name, self.PLACEHOLDER)
             redacted.append(redacted_set)
         diff = ReportDiff(redacted)
         return diff.is_identical()
 
+    def read_reports(self, report_paths):
+        plugins0, assay0 = self.read_and_preprocess_report(report_paths[0])
+        plugins1, assay1 = self.read_and_preprocess_report(report_paths[0])
+        data = [plugins0, plugins1]
+        msg = None
+        if assay0 != assay1:
+            msg = "Mismatched assays [{0}, {1}] in {2}".format(assay0, assay1, report_paths)
+        elif assay0 == None:
+            msg = "Cannot find assays for {0}".format(report_paths)
+        if msg:
+            self.logger.error(msg)
+            raise DjerbaReportDiffError(msg)
+        # apply_deltas is true iff non-zero tolerance is defined for the assay
+        if assay0 in [self.WGTS, self.WGS]:
+            apply_deltas = True
+        else:
+            apply_deltas = False
+        return [data, apply_deltas]
+
     def read_and_preprocess_report(self, report_path):
         """
         Read report from a JSON file
         Replace variable elements (images, dates) with dummy values
+        Also find the assay type
         """
         placeholder = 'redacted for benchmark comparison'
         self.logger.info("Preprocessing report path {0}".format(report_path))
@@ -650,17 +672,19 @@ class report_equivalence_tester(logger):
         # redact plugin versions
         for plugin_name in plugins.keys():
             plugins[plugin_name]['version'] = placeholder
-        # redact base64-encoded images
+        # redact base64-encoded images; also check assay type
+        assay = None
         if self.CASE_OVERVIEW_NAME in plugins:
             assay = plugins[self.CASE_OVERVIEW_NAME][self.RESULTS][self.ASSAY]
             if assay in [self.WGTS, self.WGS]:
                 plugins[self.CNV_NAME][self.RESULTS]['cnv plot'] = placeholder
-                plugins[self.SNV_INDEL_NAME][self.RESULTS]['vaf_plot'] = placeholder
+                plugins[self.WGTS_SNV_INDEL_NAME][self.RESULTS]['vaf_plot'] = placeholder
                 for biomarker in ['MSI', 'TMB', 'HRD']:
                     plugins[self.GL][self.RESULTS][self.GB][biomarker][self.GBP] = \
                         placeholder
             # TAR assay does not have images to redact
         elif self.PWGS_ANALYSIS_NAME in plugins:
+            assay = self.PWGS
             plugins[self.PWGS_ANALYSIS_NAME][self.RESULTS]['pwgs_base64'] = placeholder
         # redact dates
         if self.SUPPLEMENT_NAME in plugins:
@@ -675,7 +699,7 @@ class report_equivalence_tester(logger):
             if name in plugins:
                 for item in plugins[name]['merge_inputs']['gene_information_merger']:
                     item['Summary'] = placeholder
-        return plugins
+        return plugins, assay
 
     def set_expression(self, data, plugin, value):
         # set all expressions for the given plugin to the same value
