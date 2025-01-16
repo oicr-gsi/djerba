@@ -635,7 +635,7 @@ class report_equivalence_tester(logger):
 
     def read_reports(self, report_paths):
         plugins0, assay0 = self.read_and_preprocess_report(report_paths[0])
-        plugins1, assay1 = self.read_and_preprocess_report(report_paths[0])
+        plugins1, assay1 = self.read_and_preprocess_report(report_paths[1])
         data = [plugins0, plugins1]
         msg = None
         if assay0 != assay1:
