@@ -17,6 +17,7 @@ from djerba.util.environment import directory_finder
 from djerba.util.render_mako import mako_renderer
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.testing.tools import TestBase
+from djerba.util.validator import path_validator
 
 
 class TestBenchmark(TestBase):
@@ -24,25 +25,19 @@ class TestBenchmark(TestBase):
     class mock_report_args:
         """Use instead of argparse to store params for testing"""
 
-        def __init__(self, input_dir, output_dir, ref_path, samples, work_dir=None):
-            if not os.path.isdir(input_dir):
-                raise OSError("Input dir '{0}' is not a directory".format(input_dir))
-            else:
-                self.input_dir = input_dir
-            if not os.path.isdir(output_dir):
-                raise OSError("Output dir '{0}' is not a directory".format(output_dir))
-            else:
-                self.output_dir = output_dir
+        def __init__(self, input_dir, output_dir, ref_dir, samples, work_dir=None):
+            v = path_validator()
+            v.validate_input_dir(input_dir)
+            v.validate_output_dir(output_dir)
+            v.validate_input_dir(ref_dir)
+            self.input_dir = input_dir
+            self.output_dir = output_dir
+            self.ref_dir = ref_dir
             if work_dir==None:
                 self.work_dir = output_dir
-            elif not os.path.isdir(work_dir):
-                raise OSError("Work dir '{0}' is not a directory".format(work_dir))
             else:
+                v.validate_output_dir(work_dir)
                 self.work_dir = work_dir
-            if not os.path.isfile(ref_path):
-                raise OSError("Reference path '{0}' is not a file".format(ref_path))
-            else:
-                self.ref_path = ref_path
             self.sample = samples
             self.apply_cache = True
             self.update_cache = False
@@ -58,14 +53,14 @@ class TestBenchmark(TestBase):
         self.input_dir = os.path.join(
             private_dir, 'benchmarking', 'djerba_bench_test_inputs'
         )
-        self.ref_path = os.path.join(
-            private_dir, 'benchmarking', 'djerba_bench_reference', 'bench_ref_paths.json'
+        self.ref_dir = os.path.join(
+            private_dir, 'benchmarking', 'djerba_bench_reference'
         )
         self.samples = ['GSICAPBENCH_1219', 'GSICAPBENCH_1273', 'GSICAPBENCH_1275']
         self.reports = [sam+'_WGS' for sam in self.samples]
 
     def test_inputs(self):
-        args = self.mock_report_args(self.input_dir, self.tmp_dir, self.ref_path, self.samples)
+        args = self.mock_report_args(self.input_dir, self.tmp_dir, self.ref_dir, self.samples)
         bench = benchmarker(args)
         bench_inputs = bench.find_inputs(self.input_dir)
         self.assertEqual(sorted(list(bench_inputs.keys())), self.reports)
@@ -73,7 +68,7 @@ class TestBenchmark(TestBase):
             self.assertEqual(len(bench_inputs[k]), 28)
 
     def test_setup(self):
-        args = self.mock_report_args(self.input_dir, self.tmp_dir, self.ref_path, self.samples)
+        args = self.mock_report_args(self.input_dir, self.tmp_dir, self.ref_dir, self.samples)
         bench = benchmarker(args)
         samples = bench.run_setup(args.input_dir, args.work_dir)
         self.assertEqual(sorted(samples), self.reports)
@@ -87,9 +82,9 @@ class TestBenchmark(TestBase):
         os.mkdir(out_dir)
         os.mkdir(work_dir)
         args = self.mock_report_args(
-            self.input_dir, out_dir, self.ref_path, self.samples, work_dir
+            self.input_dir, out_dir, self.ref_dir, self.samples, work_dir
         )
-        #args.verbose = True # uncomment to view progress of report generation
+        args.verbose = True # uncomment to view progress of report generation
         bench = benchmarker(args)
         samples = bench.run_setup(args.input_dir, args.work_dir)
         reports_path = bench.run_reports(samples, args.work_dir)
