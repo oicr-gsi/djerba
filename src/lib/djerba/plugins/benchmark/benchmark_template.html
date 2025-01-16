@@ -26,9 +26,9 @@
     <th>${name}</th>
     % endfor
   </tr>
-  % for r in results.get('donor_results'):
+  % for r in results.get('report_results'):
   <tr>
-    % for k in ['donor', 'status_emoji']:
+    % for k in ['report', 'status_emoji']:
     <td>${r.get(k)}</td>
     % endfor
     % for k in ['input_file', 'ref_file', 'diff_name']:

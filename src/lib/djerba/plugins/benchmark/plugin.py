@@ -20,8 +20,8 @@ class main(plugin_base):
     PRIORITY = 10
     PLUGIN_VERSION = '0.0.1'
     TEMPLATE_NAME = 'benchmark_template.html'
-    DONOR = 'donor'
-    DONOR_RESULTS = 'donor_results'
+    REPORT = 'report'
+    REPORT_RESULTS = 'report_results'
     BODY = 'body'
     INPUT_FILE = 'input_file'
     REF_DIR = 'ref_dir'
@@ -41,13 +41,13 @@ class main(plugin_base):
     def compare_reports(self, input_paths, ref_paths, delta_path):
         input_set = set(input_paths.keys())
         ref_set = set(ref_paths.keys())
-        donor_results = []
-        for donor in sorted(list(input_set.union(ref_set))):
+        report_results = []
+        for report in sorted(list(input_set.union(ref_set))):
             # load the input and reference report JSON files
             # find status (and full-text diff, if any)
             # record for output JSON
-            input_path = input_paths.get(donor)
-            ref_path = ref_paths.get(donor)
+            input_path = input_paths.get(report)
+            ref_path = ref_paths.get(report)
             if input_path and ref_path:
                 tester = report_equivalence_tester(
                     [input_path, ref_path], delta_path, self.log_level, self.log_path
@@ -59,16 +59,16 @@ class main(plugin_base):
                 status = 'INCOMPLETE'
                 status_emoji = '&#x2753;' # question mark
                 diff = 'NA'
-            input_file = input_paths.get(donor, self.NOT_FOUND)
-            ref_file = ref_paths.get(donor, self.NOT_FOUND)
+            input_file = input_paths.get(report, self.NOT_FOUND)
+            ref_file = ref_paths.get(report, self.NOT_FOUND)
             if input_file == self.NOT_FOUND or ref_file == self.NOT_FOUND:
                 diff_name = self.NOT_FOUND
             elif status == tester.IDENTICAL_STATUS:
                 diff_name = self.NOT_APPLICABLE
             else:
-                diff_name = donor+"_diff.txt"
+                diff_name = report+"_diff.txt"
             result = {
-                self.DONOR: donor,
+                self.REPORT: report,
                 self.STATUS: status,
                 self.STATUS_EMOJI: status_emoji,
                 self.DIFF: diff,
@@ -76,8 +76,8 @@ class main(plugin_base):
                 self.INPUT_FILE: input_file,
                 self.REF_FILE: ref_file
             }
-            donor_results.append(result)
-        return donor_results
+            report_results.append(result)
+        return report_results
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -107,12 +107,12 @@ class main(plugin_base):
             input_paths = json.load(in_file)
         ref_paths = self.get_ref_paths(ref_dir, validator)
         delta_file = None # TODO make this configurable
-        donor_results = self.compare_reports(input_paths, ref_paths, delta_file)
-        self.logger.debug('Found {0} donor results'.format(len(donor_results)))
+        report_results = self.compare_reports(input_paths, ref_paths, delta_file)
+        self.logger.debug('Found {0} report results'.format(len(report_results)))
         data['results'] = {
             self.INPUT_NAME: wrapper.get_my_string(self.INPUT_NAME),
             self.RUN_TIME: get_timestamp(),
-            self.DONOR_RESULTS: donor_results
+            self.REPORT_RESULTS: report_results
         }
         return data
 
