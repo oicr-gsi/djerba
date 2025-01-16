@@ -32,7 +32,7 @@ class TestBenchmark(PluginTester):
         params = {
             self.INI: self.write_ini_file(data_dir),
             self.JSON: json_location,
-            self.MD5: '7050c5ecba6b2e82e6d639b8a56f2e46'
+            self.MD5: 'ec86829e6323daf6a87c71cfa5931dde'
         }
         self.run_basic_test(self.test_source_dir, params)
 
@@ -58,17 +58,18 @@ class TestBenchmark(PluginTester):
     def write_ini_file(self, data_dir):
         # write input/ref JSON on the fly, using individual report JSONs in data dir
         names = [
-            'GSICAPBENCH_0001',
-            'GSICAPBENCH_0002',
-            'GSICAPBENCH_0003',
-            'GSICAPBENCH_011291',
-            'GSICAPBENCH_011303',
-            'GSICAPBENCH_011524',
-            'GSICAPBENCH_011633',
-            'GSICAPBENCH_1248',
-            'GSICAPBENCH_1309',
-            'GSICAPBENCH_1390',
-            'GSICAPBENCH_1391'
+            'GSICAPBENCH_0001_WGS',
+            'GSICAPBENCH_0001_TAR',
+            'GSICAPBENCH_0002_TAR',
+            'GSICAPBENCH_0003_TAR',
+            'GSICAPBENCH_011291_PWGS',
+            'GSICAPBENCH_011303_PWGS',
+            'GSICAPBENCH_011524_PWGS',
+            'GSICAPBENCH_011633_PWGS',
+            'GSICAPBENCH_1248_WGTS',
+            'GSICAPBENCH_1309_WGTS',
+            'GSICAPBENCH_1390_WGTS',
+            'GSICAPBENCH_1391_WGTS'
         ]
         inputs = {}
         refs = {}
