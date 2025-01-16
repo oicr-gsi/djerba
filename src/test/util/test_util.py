@@ -47,6 +47,38 @@ class TestBenchmark(TestBase):
             self.verbose = False
             self.quiet = True
 
+    EXPECTED_OUTPUTS = [
+        'GSICAPBENCH_0001_TAR_diff.txt',
+        'GSICAPBENCH_0001_TAR_ref.json',
+        'GSICAPBENCH_0001_TAR_report.json',
+        'GSICAPBENCH_0001_WGS_diff.txt',
+        'GSICAPBENCH_0001_WGS_ref.json',
+        'GSICAPBENCH_0001_WGS_report.json',
+        'GSICAPBENCH_0002_TAR_diff.txt',
+        'GSICAPBENCH_0002_TAR_ref.json',
+        'GSICAPBENCH_0003_TAR_diff.txt',
+        'GSICAPBENCH_0003_TAR_ref.json',
+        'GSICAPBENCH_011291_PWGS_diff.txt',
+        'GSICAPBENCH_011291_PWGS_ref.json',
+        'GSICAPBENCH_011291_PWGS_report.json',
+        'GSICAPBENCH_011303_PWGS_diff.txt',
+        'GSICAPBENCH_011303_PWGS_ref.json',
+        'GSICAPBENCH_011524_PWGS_diff.txt',
+        'GSICAPBENCH_011524_PWGS_ref.json',
+        'GSICAPBENCH_011633_PWGS_diff.txt',
+        'GSICAPBENCH_011633_PWGS_ref.json',
+        'GSICAPBENCH_1248_WGTS_diff.txt',
+        'GSICAPBENCH_1248_WGTS_ref.json',
+        'GSICAPBENCH_1248_WGTS_report.json',
+        'GSICAPBENCH_1309_WGTS_diff.txt',
+        'GSICAPBENCH_1309_WGTS_ref.json',
+        'GSICAPBENCH_1390_WGTS_diff.txt',
+        'GSICAPBENCH_1390_WGTS_ref.json',
+        'GSICAPBENCH_1391_WGTS_diff.txt',
+        'GSICAPBENCH_1391_WGTS_ref.json',
+        'djerba_bench_test_inputs_summary.html'
+    ]
+
     def setUp(self):
         super().setUp() # includes tmp_dir
         private_dir = directory_finder().get_private_dir()
@@ -56,8 +88,14 @@ class TestBenchmark(TestBase):
         self.ref_dir = os.path.join(
             private_dir, 'benchmarking', 'djerba_bench_reference'
         )
-        self.samples = ['GSICAPBENCH_1219', 'GSICAPBENCH_1273', 'GSICAPBENCH_1275']
-        self.reports = [sam+'_WGS' for sam in self.samples]
+        # use a reduced set of samples for greater speed
+        self.samples = ['GSICAPBENCH_0001', 'GSICAPBENCH_011291', 'GSICAPBENCH_1248']
+        self.reports = [
+            self.samples[0]+'_TAR',
+            self.samples[0]+'_WGS',
+            self.samples[1]+'_PWGS',
+            self.samples[2]+'_WGTS'
+        ]
 
     def test_inputs(self):
         args = self.mock_report_args(self.input_dir, self.tmp_dir, self.ref_dir, self.samples)
@@ -88,9 +126,9 @@ class TestBenchmark(TestBase):
         bench = benchmarker(args)
         samples = bench.run_setup(args.input_dir, args.work_dir)
         reports_path = bench.run_reports(samples, args.work_dir)
-        [data, html] = bench.run_comparison(reports_path, self.ref_path)
+        [data, html] = bench.run_comparison(reports_path, self.ref_dir)
         # check the JSON output
-        self.assertEqual(len(data['results']['donor_results']), 7)
+        self.assertEqual(len(data['results']['report_results']), 12)
         # check the HTML output
         exclude = ['Run time:', 'Djerba core version:']
         html_lines = []
@@ -98,33 +136,13 @@ class TestBenchmark(TestBase):
             if not any([re.search(x, line) for x in exclude]):
                 html_lines.append(line)
         html_md5 = self.getMD5_of_string("\n".join(html_lines))
-        # TODO update the md5 and output files; assertions commented out for now
-        # self.assertEqual(html_md5, 'a5cd7ccd3c717975b12f8d2b2d06ff56')
+        self.assertEqual(html_md5, '60c9fabf58ee6495e4ecc2633aeac0ef')
         # check output files
         bench.write_outputs(data, html)
         run_dir_name = os.listdir(out_dir)[0]
         self.assertTrue(re.match('djerba_bench_test_inputs_runtime-', run_dir_name))
         output_files = sorted(os.listdir(os.path.join(out_dir, run_dir_name)))
-        expected_files = [
-            '100-009-005_LCM3-v1_report.json',
-            '100-009-006_LCM3-v1_report.json',
-            '100-009-008_LCM2-v1_report.json',
-            '100-PM-018_LCM4-v1_report.json',
-            '100-PM-019_LCM3-v1_report.json',
-            '100_JHU_004_LCM3_6-v1_report.json',
-            'GSICAPBENCH_1219_diff.txt',
-            'GSICAPBENCH_1219_report.json',
-            'GSICAPBENCH_1232_diff.txt',
-            'GSICAPBENCH_1233_diff.txt',
-            'GSICAPBENCH_1273_diff.txt',
-            'GSICAPBENCH_1273_report.json',
-            'GSICAPBENCH_1275_diff.txt',
-            'GSICAPBENCH_1275_report.json',
-            'GSICAPBENCH_1288_diff.txt',
-            'djerba_bench_test_inputs_summary.html'
-        ]
-        # TODO update list and uncomment this assertion
-        #self.assertEqual(output_files, expected_files)
+        self.assertEqual(output_files, self.EXPECTED_OUTPUTS)
 
 class TestDiffScript(TestBase):
 

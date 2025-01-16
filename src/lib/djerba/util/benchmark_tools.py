@@ -411,13 +411,13 @@ class benchmarker(logger):
         with open(html_path, 'w', encoding=core_constants.TEXT_ENCODING) as html_file:
             html_file.write(html)
         # copy JSON files, and write the diff text (if any)
-        for result in data['results']['donor_results']:
+        for result in data['results']['report_results']:
             for json_path in [result['input_file'], result['ref_file']]:
                 if os.path.exists(json_path):
                     copy(json_path, self.output_dir)
             # TODO put diff link filename in JSON
             # TODO only write diff if non-empty
-            diff_path = os.path.join(self.output_dir, result['donor']+'_diff.txt')
+            diff_path = os.path.join(self.output_dir, result['report']+'_diff.txt')
             with open(diff_path, 'w', encoding=core_constants.TEXT_ENCODING) as diff_file:
                 diff_file.write(result['diff'])
         self.logger.info('Finished writing summary to '+self.output_dir)
