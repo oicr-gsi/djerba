@@ -1,6 +1,7 @@
 # CHANGELOG
 
 ## Unreleased
+- CCGI-1411: Add `--no-html-cache` option for `djerba.py update`
 - GCGI-1461: Fix output paths in calls to get_logger
 - GCGI-1481: Fix raw coverage auto-population to exclude normal samples before selection in TAR assay
 - GCGI-1478: More informative logger name for plugin/helper/merger components
