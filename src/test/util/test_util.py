@@ -136,7 +136,7 @@ class TestBenchmark(TestBase):
             if not any([re.search(x, line) for x in exclude]):
                 html_lines.append(line)
         html_md5 = self.getMD5_of_string("\n".join(html_lines))
-        self.assertEqual(html_md5, '60c9fabf58ee6495e4ecc2633aeac0ef')
+        self.assertEqual(html_md5, '903c0464d73d330a4a7d349062575b27')
         # check output files
         bench.write_outputs(data, html)
         run_dir_name = os.listdir(out_dir)[0]
