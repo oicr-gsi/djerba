@@ -77,8 +77,7 @@ class TestPwgAnalysisPlugin(PluginTester):
 
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""
-        for key in ['pwgs_base64','files']:
-            del data['results'][key]
+        del data['results']['pwgs_base64']
         return data        
 
 if __name__ == '__main__':

@@ -8,6 +8,7 @@
 - GCGI-1479: New `--pre-populate` option in `djerba.py` setup mode
 - GCGI-1482: Updated total genome segment length constant in percent genome altered calculation
 - GCGI-1480: Updated CGI manager name and email
+- GCGI-1490: Remove input paths from pwgs.analysis results
 - GCGI-1492: Remove the Sequenza CNV plugin
 
 ## 1.7.8: 2024-12-12
