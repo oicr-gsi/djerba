@@ -122,7 +122,7 @@ class TestBenchmark(TestBase):
         args = self.mock_report_args(
             self.input_dir, out_dir, self.ref_dir, self.samples, work_dir
         )
-        args.verbose = True # uncomment to view progress of report generation
+        #args.verbose = True # uncomment to view progress of report generation
         bench = benchmarker(args)
         samples = bench.run_setup(args.input_dir, args.work_dir)
         reports_path = bench.run_reports(samples, args.work_dir)
