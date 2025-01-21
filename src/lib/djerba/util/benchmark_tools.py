@@ -439,17 +439,26 @@ class report_equivalence_tester(logger):
     # deal with inconsistent capitalization
     BODY_KEY = {
         CNV_NAME: 'body',
-        WGTS_SNV_INDEL_NAME: 'Body'
+        WGTS_SNV_INDEL_NAME: 'Body',
+        TAR_SNV_INDEL_NAME: 'Body'
     }
     XPCT_KEY = {
         CNV_NAME: 'Expression Percentile',
         WGTS_SNV_INDEL_NAME: 'Expression percentile'
     }
     EXPRESSION = 'expression'
-    MSI = 'msi'
+    MSI = 'MSI'
+    HRD = 'HRD'
+    T_DEPTH = 't_depth'
+    T_ALT_COUNT = 't_alt_count'
     DELTA_DEFAULTS = {
+        # WGS/WGTS deltas
         EXPRESSION: 0.1, # expression is recorded as a number, this delta is 10%
-        MSI: 1.0  # MSI is recorded as a percentage, this delta is 1.0%
+        MSI: 2.0,  # MSI is recorded as a percentage, this delta is 2.0%
+        HRD: 0.01,
+        # TAR deltas, both are counts of reads
+        T_DEPTH: 25,
+        T_ALT_COUNT: 5
     }
     PLACEHOLDER = 0
 
@@ -464,6 +473,7 @@ class report_equivalence_tester(logger):
     GL = 'genomic_landscape'
     GB = 'genomic_biomarkers'
     GBP = 'Genomic biomarker plot'
+    GBV = 'Genomic biomarker value'
     WGTS = 'WGTS'
     WGS = 'WGS'
     TAR = 'TAR'
@@ -484,7 +494,8 @@ class report_equivalence_tester(logger):
         if msg:
             self.logger.error(msg)
             raise DjerbaReportDiffError(msg)
-        self.data, self.apply_deltas = self.read_reports(report_paths)
+        self.data, assay = self.read_reports(report_paths)
+        apply_deltas = assay in [self.TAR, self.WGTS, self.WGS]
         if delta_path:
             with open(delta_path) as delta_file:
                 deltas = json.loads(delta_file.read())
@@ -503,9 +514,9 @@ class report_equivalence_tester(logger):
             self.logger.info("EQUIVALENT: Reports are identical")
             self.identical = True
             self.equivalent = True
-        elif self.apply_deltas and self.deltas_are_equivalent():
+        elif apply_deltas and self.deltas_are_equivalent(assay):
             # check if metrics without a delta match exactly
-            if self.non_deltas_are_equivalent():
+            if self.non_deltas_are_equivalent(assay):
                 msg = "EQUIVALENT: Reports are not identical, "+\
                     "but equivalent within tolerance"
                 self.logger.info(msg)
@@ -520,9 +531,17 @@ class report_equivalence_tester(logger):
             self.logger.info(msg)
             self.equivalent = False
 
-    def deltas_are_equivalent(self):
-        eq = self.expressions_are_equivalent() and \
-            self.msi_values_are_equivalent()
+    def deltas_are_equivalent(self, assay):
+        if assay in [self.WGTS, self.WGS]:
+            eq = self.expressions_are_equivalent() and \
+                self.msi_values_are_equivalent() and \
+                self.hrd_values_are_equivalent()
+        elif assay == self.TAR:
+            eq = self.t_counts_are_equivalent()
+        else:
+            msg = "Deltas are not defined for assay '{0}'".format(assay)
+            self.logger.error(msg)
+            raise DjerbaReportDiffError(msg)
         return eq
 
     def expressions_are_equivalent(self):
@@ -605,30 +624,44 @@ class report_equivalence_tester(logger):
             expr[key] = value
         return expr
 
-    def get_msi(self, report_data):
-        return report_data['genomic_landscape']['results']\
-            ['genomic_biomarkers']['MSI']['Genomic biomarker value']
+    ### Start: Methods to evaluate biomarkers (HRD, MSI)
 
-    def msi_values_are_equivalent(self):
-        msi0 = self.get_msi(self.data[0])
-        msi1 = self.get_msi(self.data[1])
-        delta = self.deltas[self.MSI]
-        if abs(msi0 - msi1) < delta:
-            self.logger.info("MSI values are equivalent")
+    def get_biomarker(self, report_data, key):
+        return report_data['genomic_landscape']['results']\
+            ['genomic_biomarkers'][key]['Genomic biomarker value']
+
+    def biomarker_values_are_equivalent(self, key):
+        bio0 = self.get_biomarker(self.data[0], key)
+        bio1 = self.get_biomarker(self.data[1], key)
+        delta = self.deltas[key]
+        if abs(bio0 - bio1) < delta:
+            self.logger.info("{0} values are equivalent".format(key))
             eq = True
         else:
-            self.logger.info("MSI values are NOT equivalent")
+            self.logger.info("{1} values are NOT equivalent".format(key))
             eq = False
         return eq
 
-    def non_deltas_are_equivalent(self):
+    def hrd_values_are_equivalent(self):
+        return self.biomarker_values_are_equivalent(self.HRD)
+
+    def msi_values_are_equivalent(self):
+        return self.biomarker_values_are_equivalent(self.MSI)
+
+    ### End: Methods to evaluate biomarkers (HRD, MSI)
+
+    def non_deltas_are_equivalent(self, assay):
         # remove metrics with a non-zero tolerance range; compare the other metrics
         redacted = []
         for data_set in self.data:
             redacted_set = deepcopy(data_set)
-            redacted_set = self.set_msi(redacted_set, self.PLACEHOLDER)
-            for name in [self.CNV_NAME, self.WGTS_SNV_INDEL_NAME]:
-                redacted_set = self.set_expression(redacted_set, name, self.PLACEHOLDER)
+            if assay in [self.WGTS, self.WGS]:
+                redacted_set = self.set_hrd(redacted_set, self.PLACEHOLDER)
+                redacted_set = self.set_msi(redacted_set, self.PLACEHOLDER)
+                for name in [self.CNV_NAME, self.WGTS_SNV_INDEL_NAME]:
+                    redacted_set = self.set_expression(redacted_set, name, self.PLACEHOLDER)
+            elif assay == self.TAR:
+                redacted_set = self.set_t_counts(redacted_set, self.PLACEHOLDER)
             redacted.append(redacted_set)
         diff = ReportDiff(redacted)
         return diff.is_identical()
@@ -645,12 +678,7 @@ class report_equivalence_tester(logger):
         if msg:
             self.logger.error(msg)
             raise DjerbaReportDiffError(msg)
-        # apply_deltas is true iff non-zero tolerance is defined for the assay
-        if assay0 in [self.WGTS, self.WGS]:
-            apply_deltas = True
-        else:
-            apply_deltas = False
-        return [data, apply_deltas]
+        return [data, assay0]
 
     def read_and_preprocess_report(self, report_path):
         """
@@ -716,11 +744,53 @@ class report_equivalence_tester(logger):
             item[xpct_key] = value
         return data
 
-    def set_msi(self, report_data, value):
-        report_data['genomic_landscape']['results']\
-            ['genomic_biomarkers']['MSI']['Genomic biomarker value'] = value
-        return report_data
+    def set_hrd(self, data, value):
+        data[self.GL][self.RESULTS][self.GB][self.HRD][self.GBV] = value
+        return data
 
+    def set_msi(self, data, value):
+        data[self.GL][self.RESULTS][self.GB][self.MSI][self.GBV] = value
+        return data
+
+    def set_t_counts(self, data, value):
+        body_key = self.BODY_KEY[self.TAR_SNV_INDEL_NAME]
+        body = data[self.TAR_SNV_INDEL_NAME][self.RESULTS][body_key]
+        for item in body:
+            for key in [self.T_DEPTH, self.T_ALT_COUNT]:
+                item[key] = value
+        return data
+
+    ### Start: Methods to evaluate TAR metrics (t_depth, t_alt_count)
+
+    def get_tar_results_by_gene(self, data):
+        results = {}
+        body_key = self.BODY_KEY[self.TAR_SNV_INDEL_NAME]
+        for item in data[self.TAR_SNV_INDEL_NAME][self.RESULTS][body_key]:
+            results[item['Gene']] = item
+        return results
+
+    def t_counts_are_equivalent(self):
+        tar0 = self.get_tar_results_by_gene(self.data[0])
+        tar1 = self.get_tar_results_by_gene(self.data[1])
+        if set(tar0.keys()) != set(tar1.keys()):
+            self.logger.info("Gene sets differ, TAR metrics are not equivalent")
+            eq = False
+        else:
+            eq = True
+            for gene in tar0.keys():
+                t_depth_diff = abs(tar0[gene][self.T_DEPTH] - tar1[gene][self.T_DEPTH])
+                t_alt_diff = abs(tar0[gene][self.T_ALT_COUNT] - tar1[gene][self.T_ALT_COUNT])
+                if t_depth_diff > self.deltas.get(self.T_DEPTH):
+                    self.logger.info(self.T_DEPTH+' not equivalent for gene '+gene)
+                    eq = False
+                elif t_alt_diff > self.deltas.get(self.T_ALT_COUNT):
+                    self.logger.info(self.T_ALT_COUNT+' not equivalent for gene '+gene)
+                    eq = False
+                if not eq:
+                    break
+        return eq
+
+    ### End: Methods to evaluate TAR metrics (t_depth, t_alt_count)
 
 class ReportDiff(unittest.TestCase):
     """Use a test assertion to diff two data structures"""
