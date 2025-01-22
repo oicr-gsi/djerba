@@ -23,7 +23,8 @@ install_wildcards = [
     'resources/*',
     'R/*',
     'r/*',
-    'Rscripts/*'
+    'Rscripts/*',
+    'templates/*'
 ]
 
 with open("README.md", "r") as fh:
