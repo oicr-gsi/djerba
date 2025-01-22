@@ -88,10 +88,6 @@ class main(plugin_base):
             pc.DATASET_DETECTION_CUTOFF: math.ceil(mrdetect_results[pc.DATASET_DETECTION_CUTOFF]),
             pc.COHORT_N: hbc_results[pc.COHORT_N],
             'pwgs_base64': pwgs_base64,
-            'files': {
-                'hbc_results': wrapper.get_my_string(pc.HBC_FILE),
-                'vaf_results': wrapper.get_my_string(pc.VAF_FILE)
-            }
         }
         data[pc.RESULTS] = results
         self.workspace.write_json('hbc_results.json', hbc_results)
