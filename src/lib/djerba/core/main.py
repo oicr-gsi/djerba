@@ -576,17 +576,22 @@ class main(main_base):
         # 1. INI config with core + plugins to update
         # 2. Text file to update summary only
         # The 'summary_only' argument controls which one is used
+        with open(json_path, encoding=cc.TEXT_ENCODING) as in_file:
+            data = json.loads(in_file.read())
         if summary_only:
+            # get failed/not-failed status from input data
+            failed = data[cc.PLUGINS]['summary'][cc.RESULTS]['failed']
+            failed_opt = 'true' if failed else 'false'
+            self.logger.debug('Found report failure status: '+failed_opt)
             # make an appropriate ConfigParser on-the-fly
             config_in = ConfigParser()
             config_in.add_section(cc.CORE)
             config_in.add_section('summary')
             config_in.set('summary', 'summary_file', config_path)
+            config_in.set('summary', 'failed', failed_opt)
             config = self.configure_from_parser(config_in)
         else:
             config = self.configure(config_path)
-        with open(json_path, encoding=cc.TEXT_ENCODING) as in_file:
-            data = json.loads(in_file.read())
         data_new = self.base_extract(config)
         data = self.update_data_from_file(data_new, json_path, force)
         if archive:

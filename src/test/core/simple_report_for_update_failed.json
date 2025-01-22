@@ -43,7 +43,7 @@
             ],
             "merge_inputs": {},
             "results": {
-		"failed": false,
+		"failed": true,
                 "summary_text": "Summary text goes here"
             }
         }
