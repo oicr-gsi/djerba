@@ -38,20 +38,20 @@ class TestBenchmark(PluginTester):
 
     def redact_json_data(self, data):
         results = data['results']
-        redacted_donor_results = []
+        redacted_report_results = []
         for k,v in results.items():
-            if k == 'donor_results':
-                for donor_result in v:
-                    for k2,v2 in donor_result.items():
+            if k == 'report_results':
+                for report_result in v:
+                    for k2,v2 in report_result.items():
                         if k2 in ['input_file', 'ref_file']:
                             file_name = os.path.basename(v2)
-                            donor_result[k2] = os.path.join(self.PLACEHOLDER, file_name)
-                    redacted_donor_results.append(donor_result)
+                            report_result[k2] = os.path.join(self.PLACEHOLDER, file_name)
+                    redacted_report_results.append(report_result)
             elif k=='run_time':
                 results[k] = self.PLACEHOLDER
             elif k=='input_name':
                 results[k] = 'Unknown'
-        results['donor_results'] = redacted_donor_results
+        results['report_results'] = redacted_report_results
         data['results'] = results
         return data
 
