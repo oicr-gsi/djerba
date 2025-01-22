@@ -5,8 +5,10 @@ import json
 import logging
 import unittest
 import tempfile
-import djerba.core.constants as constants
 from configparser import ConfigParser
+from shutil import copy
+
+import djerba.core.constants as constants
 from djerba.plugins.plugin_tester import PluginTester
 from djerba.plugins.benchmark.plugin import main as BenchmarkPlugin
 from djerba.util.environment import directory_finder
@@ -21,20 +23,18 @@ class TestBenchmark(PluginTester):
         self.maxDiff = None
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
+        self.test_source_dir = os.path.realpath(os.path.dirname(__file__))
 
     def testBenchmark(self):
-        data_dir_root = directory_finder().get_test_dir()
-        data_dir = os.path.join(data_dir_root, 'plugins', 'benchmark')
-        test_source_dir = os.path.realpath(os.path.dirname(__file__))
-        json_location = os.path.join(test_source_dir, "benchmark.json")
+        json_location = os.path.join(self.test_source_dir, "benchmark.json")
         data_dir_root = directory_finder().get_test_dir()
         data_dir = os.path.join(data_dir_root, 'plugins', 'benchmark')
         params = {
             self.INI: self.write_ini_file(data_dir),
             self.JSON: json_location,
-            self.MD5: 'e3b67a025a395ea38a649959d2c099be'
+            self.MD5: 'ec86829e6323daf6a87c71cfa5931dde'
         }
-        self.run_basic_test(test_source_dir, params)
+        self.run_basic_test(self.test_source_dir, params)
 
     def redact_json_data(self, data):
         results = data['results']
@@ -57,12 +57,25 @@ class TestBenchmark(PluginTester):
 
     def write_ini_file(self, data_dir):
         # write input/ref JSON on the fly, using individual report JSONs in data dir
-        donors = ['GSICAPBENCH_1219', 'GSICAPBENCH_1232']
+        names = [
+            'GSICAPBENCH_0001_WGS',
+            'GSICAPBENCH_0001_TAR',
+            'GSICAPBENCH_0002_TAR',
+            'GSICAPBENCH_0003_TAR',
+            'GSICAPBENCH_011291_PWGS',
+            'GSICAPBENCH_011303_PWGS',
+            'GSICAPBENCH_011524_PWGS',
+            'GSICAPBENCH_011633_PWGS',
+            'GSICAPBENCH_1248_WGTS',
+            'GSICAPBENCH_1309_WGTS',
+            'GSICAPBENCH_1390_WGTS',
+            'GSICAPBENCH_1391_WGTS'
+        ]
         inputs = {}
         refs = {}
-        for donor in donors:
-            inputs[donor] = os.path.join(data_dir, donor+'_input.json')
-            refs[donor] = os.path.join(data_dir, donor+'_reference.json')
+        for name in names:
+            inputs[name] = os.path.join(data_dir, name+'_report.json')
+            refs[name] = os.path.join(data_dir, name+'_report.json')
         input_path = os.path.join(self.tmp_dir, 'inputs.json')
         with open(input_path, 'w') as input_file:
             input_file.write(json.dumps(inputs))
@@ -73,7 +86,9 @@ class TestBenchmark(PluginTester):
         cp.add_section('core')
         cp.add_section('benchmark')
         cp.set('benchmark', BenchmarkPlugin.INPUT_FILE, input_path)
-        cp.set('benchmark', BenchmarkPlugin.REF_FILE, ref_path)
+        private_dir = directory_finder().get_private_dir()
+        ref_dir = os.path.join(private_dir, 'benchmarking', 'djerba_bench_reference')
+        cp.set('benchmark', BenchmarkPlugin.REF_DIR, ref_dir)
         ini_path = os.path.join(self.tmp_dir, 'benchmark.ini')
         with open(ini_path, 'w') as ini_file:
             cp.write(ini_file)

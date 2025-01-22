@@ -11,12 +11,13 @@ import unittest
 from configparser import ConfigParser
 from glob import glob
 
-from djerba.util.benchmark import benchmarker, report_equivalence_tester, \
+from djerba.util.benchmark_tools import benchmarker, report_equivalence_tester, \
     DjerbaReportDiffError
 from djerba.util.environment import directory_finder
 from djerba.util.render_mako import mako_renderer
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.testing.tools import TestBase
+from djerba.util.validator import path_validator
 
 
 class TestBenchmark(TestBase):
@@ -24,25 +25,19 @@ class TestBenchmark(TestBase):
     class mock_report_args:
         """Use instead of argparse to store params for testing"""
 
-        def __init__(self, input_dir, output_dir, ref_path, samples, work_dir=None):
-            if not os.path.isdir(input_dir):
-                raise OSError("Input dir '{0}' is not a directory".format(input_dir))
-            else:
-                self.input_dir = input_dir
-            if not os.path.isdir(output_dir):
-                raise OSError("Output dir '{0}' is not a directory".format(output_dir))
-            else:
-                self.output_dir = output_dir
+        def __init__(self, input_dir, output_dir, ref_dir, samples, work_dir=None):
+            v = path_validator()
+            v.validate_input_dir(input_dir)
+            v.validate_output_dir(output_dir)
+            v.validate_input_dir(ref_dir)
+            self.input_dir = input_dir
+            self.output_dir = output_dir
+            self.ref_dir = ref_dir
             if work_dir==None:
                 self.work_dir = output_dir
-            elif not os.path.isdir(work_dir):
-                raise OSError("Work dir '{0}' is not a directory".format(work_dir))
             else:
+                v.validate_output_dir(work_dir)
                 self.work_dir = work_dir
-            if not os.path.isfile(ref_path):
-                raise OSError("Reference path '{0}' is not a file".format(ref_path))
-            else:
-                self.ref_path = ref_path
             self.sample = samples
             self.apply_cache = True
             self.update_cache = False
@@ -52,30 +47,69 @@ class TestBenchmark(TestBase):
             self.verbose = False
             self.quiet = True
 
+    EXPECTED_OUTPUTS = [
+        'GSICAPBENCH_0001_TAR_diff.txt',
+        'GSICAPBENCH_0001_TAR_ref.json',
+        'GSICAPBENCH_0001_TAR_report.json',
+        'GSICAPBENCH_0001_WGS_diff.txt',
+        'GSICAPBENCH_0001_WGS_ref.json',
+        'GSICAPBENCH_0001_WGS_report.json',
+        'GSICAPBENCH_0002_TAR_diff.txt',
+        'GSICAPBENCH_0002_TAR_ref.json',
+        'GSICAPBENCH_0003_TAR_diff.txt',
+        'GSICAPBENCH_0003_TAR_ref.json',
+        'GSICAPBENCH_011291_PWGS_diff.txt',
+        'GSICAPBENCH_011291_PWGS_ref.json',
+        'GSICAPBENCH_011291_PWGS_report.json',
+        'GSICAPBENCH_011303_PWGS_diff.txt',
+        'GSICAPBENCH_011303_PWGS_ref.json',
+        'GSICAPBENCH_011524_PWGS_diff.txt',
+        'GSICAPBENCH_011524_PWGS_ref.json',
+        'GSICAPBENCH_011633_PWGS_diff.txt',
+        'GSICAPBENCH_011633_PWGS_ref.json',
+        'GSICAPBENCH_1248_WGTS_diff.txt',
+        'GSICAPBENCH_1248_WGTS_ref.json',
+        'GSICAPBENCH_1248_WGTS_report.json',
+        'GSICAPBENCH_1309_WGTS_diff.txt',
+        'GSICAPBENCH_1309_WGTS_ref.json',
+        'GSICAPBENCH_1390_WGTS_diff.txt',
+        'GSICAPBENCH_1390_WGTS_ref.json',
+        'GSICAPBENCH_1391_WGTS_diff.txt',
+        'GSICAPBENCH_1391_WGTS_ref.json',
+        'djerba_bench_test_inputs_summary.html'
+    ]
+
     def setUp(self):
         super().setUp() # includes tmp_dir
         private_dir = directory_finder().get_private_dir()
         self.input_dir = os.path.join(
             private_dir, 'benchmarking', 'djerba_bench_test_inputs'
         )
-        self.ref_path = os.path.join(
-            private_dir, 'benchmarking', 'djerba_bench_reference', 'bench_ref_paths.json'
+        self.ref_dir = os.path.join(
+            private_dir, 'benchmarking', 'djerba_bench_reference'
         )
-        self.samples = ['GSICAPBENCH_1219', 'GSICAPBENCH_1273', 'GSICAPBENCH_1275']
+        # use a reduced set of samples for greater speed
+        self.samples = ['GSICAPBENCH_0001', 'GSICAPBENCH_011291', 'GSICAPBENCH_1248']
+        self.reports = [
+            self.samples[0]+'_TAR',
+            self.samples[0]+'_WGS',
+            self.samples[1]+'_PWGS',
+            self.samples[2]+'_WGTS'
+        ]
 
     def test_inputs(self):
-        args = self.mock_report_args(self.input_dir, self.tmp_dir, self.ref_path, self.samples)
+        args = self.mock_report_args(self.input_dir, self.tmp_dir, self.ref_dir, self.samples)
         bench = benchmarker(args)
         bench_inputs = bench.find_inputs(self.input_dir)
-        self.assertEqual(sorted(list(bench_inputs.keys())), args.sample)
+        self.assertEqual(sorted(list(bench_inputs.keys())), self.reports)
         for k in bench_inputs.keys():
-            self.assertEqual(len(bench_inputs[k]), 16)
+            self.assertEqual(len(bench_inputs[k]), 28)
 
     def test_setup(self):
-        args = self.mock_report_args(self.input_dir, self.tmp_dir, self.ref_path, self.samples)
+        args = self.mock_report_args(self.input_dir, self.tmp_dir, self.ref_dir, self.samples)
         bench = benchmarker(args)
         samples = bench.run_setup(args.input_dir, args.work_dir)
-        self.assertEqual(sorted(samples), args.sample)
+        self.assertEqual(sorted(samples), self.reports)
         for sample in samples:
             ini_path = os.path.join(self.tmp_dir, sample, 'config.ini')
             self.assertTrue(os.path.isfile(ini_path))
@@ -86,15 +120,15 @@ class TestBenchmark(TestBase):
         os.mkdir(out_dir)
         os.mkdir(work_dir)
         args = self.mock_report_args(
-            self.input_dir, out_dir, self.ref_path, self.samples, work_dir
+            self.input_dir, out_dir, self.ref_dir, self.samples, work_dir
         )
         #args.verbose = True # uncomment to view progress of report generation
         bench = benchmarker(args)
         samples = bench.run_setup(args.input_dir, args.work_dir)
         reports_path = bench.run_reports(samples, args.work_dir)
-        [data, html] = bench.run_comparison(reports_path, self.ref_path)
+        [data, html] = bench.run_comparison(reports_path, self.ref_dir)
         # check the JSON output
-        self.assertEqual(len(data['results']['donor_results']), 7)
+        self.assertEqual(len(data['results']['report_results']), 12)
         # check the HTML output
         exclude = ['Run time:', 'Djerba core version:']
         html_lines = []
@@ -102,33 +136,13 @@ class TestBenchmark(TestBase):
             if not any([re.search(x, line) for x in exclude]):
                 html_lines.append(line)
         html_md5 = self.getMD5_of_string("\n".join(html_lines))
-        # TODO update the md5 and output files; assertions commented out for now
-        # self.assertEqual(html_md5, 'a5cd7ccd3c717975b12f8d2b2d06ff56')
+        self.assertEqual(html_md5, '903c0464d73d330a4a7d349062575b27')
         # check output files
         bench.write_outputs(data, html)
         run_dir_name = os.listdir(out_dir)[0]
         self.assertTrue(re.match('djerba_bench_test_inputs_runtime-', run_dir_name))
         output_files = sorted(os.listdir(os.path.join(out_dir, run_dir_name)))
-        expected_files = [
-            '100-009-005_LCM3-v1_report.json',
-            '100-009-006_LCM3-v1_report.json',
-            '100-009-008_LCM2-v1_report.json',
-            '100-PM-018_LCM4-v1_report.json',
-            '100-PM-019_LCM3-v1_report.json',
-            '100_JHU_004_LCM3_6-v1_report.json',
-            'GSICAPBENCH_1219_diff.txt',
-            'GSICAPBENCH_1219_report.json',
-            'GSICAPBENCH_1232_diff.txt',
-            'GSICAPBENCH_1233_diff.txt',
-            'GSICAPBENCH_1273_diff.txt',
-            'GSICAPBENCH_1273_report.json',
-            'GSICAPBENCH_1275_diff.txt',
-            'GSICAPBENCH_1275_report.json',
-            'GSICAPBENCH_1288_diff.txt',
-            'djerba_bench_test_inputs_summary.html'
-        ]
-        # TODO update list and uncomment this assertion
-        #self.assertEqual(output_files, expected_files)
+        self.assertEqual(output_files, self.EXPECTED_OUTPUTS)
 
 class TestDiffScript(TestBase):
 
