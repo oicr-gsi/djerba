@@ -10,27 +10,117 @@
         "render": 10
     },
     "results": {
-        "donor_results": [
+        "input_name": "Unknown",
+        "report_results": [
             {
                 "diff": "NONE",
                 "diff_name": "Not applicable",
-                "donor": "GSICAPBENCH_1219",
-                "input_file": "PLACEHOLDER/GSICAPBENCH_1219_input.json",
-                "ref_file": "PLACEHOLDER/GSICAPBENCH_1219_reference.json",
+                "input_file": "PLACEHOLDER/GSICAPBENCH_0001_TAR_report.json",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_0001_TAR_ref.json",
+                "report": "GSICAPBENCH_0001_TAR",
                 "status": "identical",
                 "status_emoji": "&#x2705;"
             },
             {
                 "diff": "NONE",
                 "diff_name": "Not applicable",
-                "donor": "GSICAPBENCH_1232",
-                "input_file": "PLACEHOLDER/GSICAPBENCH_1232_input.json",
-                "ref_file": "PLACEHOLDER/GSICAPBENCH_1232_reference.json",
+                "input_file": "PLACEHOLDER/GSICAPBENCH_0001_WGS_report.json",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_0001_WGS_ref.json",
+                "report": "GSICAPBENCH_0001_WGS",
+                "status": "identical",
+                "status_emoji": "&#x2705;"
+            },
+            {
+                "diff": "NONE",
+                "diff_name": "Not applicable",
+                "input_file": "PLACEHOLDER/GSICAPBENCH_0002_TAR_report.json",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_0002_TAR_ref.json",
+                "report": "GSICAPBENCH_0002_TAR",
+                "status": "identical",
+                "status_emoji": "&#x2705;"
+            },
+            {
+                "diff": "NONE",
+                "diff_name": "Not applicable",
+                "input_file": "PLACEHOLDER/GSICAPBENCH_0003_TAR_report.json",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_0003_TAR_ref.json",
+                "report": "GSICAPBENCH_0003_TAR",
+                "status": "identical",
+                "status_emoji": "&#x2705;"
+            },
+            {
+                "diff": "NONE",
+                "diff_name": "Not applicable",
+                "input_file": "PLACEHOLDER/GSICAPBENCH_011291_PWGS_report.json",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_011291_PWGS_ref.json",
+                "report": "GSICAPBENCH_011291_PWGS",
+                "status": "identical",
+                "status_emoji": "&#x2705;"
+            },
+            {
+                "diff": "NONE",
+                "diff_name": "Not applicable",
+                "input_file": "PLACEHOLDER/GSICAPBENCH_011303_PWGS_report.json",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_011303_PWGS_ref.json",
+                "report": "GSICAPBENCH_011303_PWGS",
+                "status": "identical",
+                "status_emoji": "&#x2705;"
+            },
+            {
+                "diff": "NONE",
+                "diff_name": "Not applicable",
+                "input_file": "PLACEHOLDER/GSICAPBENCH_011524_PWGS_report.json",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_011524_PWGS_ref.json",
+                "report": "GSICAPBENCH_011524_PWGS",
+                "status": "identical",
+                "status_emoji": "&#x2705;"
+            },
+            {
+                "diff": "NONE",
+                "diff_name": "Not applicable",
+                "input_file": "PLACEHOLDER/GSICAPBENCH_011633_PWGS_report.json",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_011633_PWGS_ref.json",
+                "report": "GSICAPBENCH_011633_PWGS",
+                "status": "identical",
+                "status_emoji": "&#x2705;"
+            },
+            {
+                "diff": "NONE",
+                "diff_name": "Not applicable",
+                "input_file": "PLACEHOLDER/GSICAPBENCH_1248_WGTS_report.json",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_1248_WGTS_ref.json",
+                "report": "GSICAPBENCH_1248_WGTS",
+                "status": "identical",
+                "status_emoji": "&#x2705;"
+            },
+            {
+                "diff": "NONE",
+                "diff_name": "Not applicable",
+                "input_file": "PLACEHOLDER/GSICAPBENCH_1309_WGTS_report.json",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_1309_WGTS_ref.json",
+                "report": "GSICAPBENCH_1309_WGTS",
+                "status": "identical",
+                "status_emoji": "&#x2705;"
+            },
+            {
+                "diff": "NONE",
+                "diff_name": "Not applicable",
+                "input_file": "PLACEHOLDER/GSICAPBENCH_1390_WGTS_report.json",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_1390_WGTS_ref.json",
+                "report": "GSICAPBENCH_1390_WGTS",
+                "status": "identical",
+                "status_emoji": "&#x2705;"
+            },
+            {
+                "diff": "NONE",
+                "diff_name": "Not applicable",
+                "input_file": "PLACEHOLDER/GSICAPBENCH_1391_WGTS_report.json",
+                "ref_file": "PLACEHOLDER/GSICAPBENCH_1391_WGTS_ref.json",
+                "report": "GSICAPBENCH_1391_WGTS",
                 "status": "identical",
                 "status_emoji": "&#x2705;"
             }
         ],
-        "input_name": "Unknown",
         "run_time": "PLACEHOLDER"
     },
     "version": "0.0.1"

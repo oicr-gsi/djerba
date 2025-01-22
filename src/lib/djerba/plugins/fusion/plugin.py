@@ -56,8 +56,7 @@ class main(plugin_base):
         if gene_pair_fusions is not None:
 
             outputs = fus_reader.fusions_to_json(gene_pair_fusions, wrapper.get_my_string(fc.ONCOTREE_CODE))
-            [rows, gene_info, treatment_opts] = outputs            
-
+            [rows, gene_info, treatment_opts] = outputs
             # Sort by OncoKB level
             rows = sorted(rows, key=sort_by_actionable_level)
             rows = oncokb_levels.filter_reportable(rows)

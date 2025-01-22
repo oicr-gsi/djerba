@@ -437,9 +437,10 @@ class main(main_base):
             assay = ap.get_assay()
             compact = ap.get_compact()
             ini_path = ap.get_ini_path()
+            pre_populate = ap.get_pre_populate()
             if ini_path == None:
                 ini_path = os.path.join(os.getcwd(), 'config.ini')
-            self.setup(assay, ini_path, compact)
+            self.setup(assay, ini_path, compact, pre_populate)
         elif mode == constants.CONFIGURE:
             ini_path = ap.get_ini_path()
             ini_path_out = ap.get_ini_out_path() # may be None
@@ -485,9 +486,9 @@ class main(main_base):
             self.logger.error(msg)
             raise RuntimeError(msg)
 
-    def setup(self, assay, ini_path, compact):
-        if assay == 'WGTS':
-            component_list = [
+    def setup(self, assay, ini_path, compact, pre_populate=None):
+        components_by_assay = {
+            'WGTS': [
                 'core',
                 'input_params_helper',
                 'provenance_helper',
@@ -504,9 +505,8 @@ class main(main_base):
                 'fusion',
                 'gene_information_merger',
                 'supplement.body',
-            ]
-        elif assay == 'WGS':
-            component_list = [
+            ],
+            'WGS': [
                 'core',
                 'input_params_helper',
                 'provenance_helper',
@@ -521,9 +521,8 @@ class main(main_base):
                 'wgts.cnv_purple',
                 'gene_information_merger',
                 'supplement.body',
-            ]
-        elif assay == 'TAR':
-            component_list = [
+            ],
+            'TAR': [
                 'core',
                 'tar_input_params_helper',
                 'provenance_helper',
@@ -537,9 +536,8 @@ class main(main_base):
                 'tar.swgs',
                 'gene_information_merger',
                 'supplement.body',
-            ]
-        elif assay == 'PWGS':
-            component_list = [
+            ],
+            'PWGS': [
                 'core',
                 'report_title',
                 'patient_info',
@@ -551,12 +549,20 @@ class main(main_base):
                 'pwgs.analysis',  
                 'supplement.body'
             ]
+        }
+        assay = assay.upper()
+        if assay in components_by_assay:
+            component_list = components_by_assay[assay]
         else:
-            msg = "Invalid assay name '{0}'".format(assay)
+            names = sorted(list(components_by_assay.keys()))
+            msg = "Invalid assay name '{0}'. ".format(assay)+\
+                "Assay names are not case-sensitive; valid names are {0}".format(names)
             self.logger.error(msg)
-            raise ValueError(msg)
+            raise DjerbaInvalidNameError(msg)
         generator = ini_generator(self.log_level, self.log_path)
         generator.write_config(component_list, ini_path, compact)
+        if pre_populate is not None:
+            self.write_pre_population(ini_path, pre_populate)
         self.logger.info("Wrote config for {0} to {1}".format(assay, ini_path))
 
     def update(self, config_path, json_path, out_dir, archive, pdf, summary_only, force):
@@ -570,17 +576,22 @@ class main(main_base):
         # 1. INI config with core + plugins to update
         # 2. Text file to update summary only
         # The 'summary_only' argument controls which one is used
+        with open(json_path, encoding=cc.TEXT_ENCODING) as in_file:
+            data = json.loads(in_file.read())
         if summary_only:
+            # get failed/not-failed status from input data
+            failed = data[cc.PLUGINS]['summary'][cc.RESULTS]['failed']
+            failed_opt = 'true' if failed else 'false'
+            self.logger.debug('Found report failure status: '+failed_opt)
             # make an appropriate ConfigParser on-the-fly
             config_in = ConfigParser()
             config_in.add_section(cc.CORE)
             config_in.add_section('summary')
             config_in.set('summary', 'summary_file', config_path)
+            config_in.set('summary', 'failed', failed_opt)
             config = self.configure_from_parser(config_in)
         else:
             config = self.configure(config_path)
-        with open(json_path, encoding=cc.TEXT_ENCODING) as in_file:
-            data = json.loads(in_file.read())
         data_new = self.base_extract(config)
         data = self.update_data_from_file(data_new, json_path, force)
         if archive:
@@ -616,6 +627,24 @@ class main(main_base):
         else:
             self.logger.warning(f"Archiving was NOT successful: {report_id}")
 
+    def write_pre_population(self, config_path, prepop_path):
+        # write pre-population values from one INI into another
+        # sections in prepop_path not present in config_path are silently ignored
+        cp_config = ConfigParser()
+        cp_prepop = ConfigParser()
+        cp_config.read(config_path)
+        cp_prepop.read(prepop_path)
+        total = 0
+        for section in cp_config.sections():
+            if section in cp_prepop.sections():
+                for option in cp_prepop.options(section):
+                    cp_config.set(section, option, cp_prepop.get(section, option))
+                    total += 1
+        with open(config_path, 'w') as config_file:
+            cp_config.write(config_file)
+        template = "Pre-populated {0} value(s) in {1} from {2}"
+        self.logger.debug(template.format(total, config_path, prepop_path))
+
 
 class arg_processor(arg_processor_base):
     # class to process command-line args for creating a main object
@@ -631,6 +660,9 @@ class arg_processor(arg_processor_base):
 
     def get_ini_out_path(self):
         return self._get_arg('ini_out')
+
+    def get_pre_populate(self):
+        return self._get_arg('pre_populate')
 
     def get_summary_path(self):
         return self._get_arg('summary')
@@ -667,6 +699,8 @@ class arg_processor(arg_processor_base):
         if args.subparser_name == constants.SETUP:
             if args.ini!=None:
                 v.validate_output_file(args.ini)
+            if args.pre_populate!=None:
+                v.validate_input_file(args.pre_populate)
         elif args.subparser_name == constants.CONFIGURE:
             v.validate_input_file(args.ini)
             v.validate_output_file(args.ini_out)
@@ -695,16 +729,16 @@ class arg_processor(arg_processor_base):
                 v.validate_output_dir(args.work_dir)
         elif args.subparser_name == None:
             msg = "No subcommand name given; run with -h/--help for valid names"
-            raise DjerbaSubcommandError(msg)
+            raise DjerbaInvalidNameError(msg)
         else:
             # shouldn't happen, but handle this case for completeness
-            raise DjerbaSubcommandError("Unknown subcommand: " + args.subparser_name)
+            raise DjerbaInvalidNameError("Unknown subcommand: " + args.subparser_name)
         self.logger.info("Command-line path validation finished.")
 
 class DjerbaDependencyError(Exception):
     pass
 
-class DjerbaSubcommandError(Exception):
+class DjerbaInvalidNameError(Exception):
     pass
 
 class DjerbaUpdateKeyError(Exception):
