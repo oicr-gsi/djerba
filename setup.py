@@ -23,7 +23,8 @@ install_wildcards = [
     'resources/*',
     'R/*',
     'r/*',
-    'Rscripts/*'
+    'Rscripts/*',
+    'templates/*'
 ]
 
 with open("README.md", "r") as fh:
@@ -49,7 +50,10 @@ setup(
             'data/20240315-allCuratedGenes.tsv',
             'data/OncoTree.json',
             'data/NCCN_annotations.txt',
-            'data/benchmark_config.ini',
+            'data/benchmark_pwgs.ini',
+            'data/benchmark_tar.ini',
+            'data/benchmark_wgs.ini',
+            'data/benchmark_wgts.ini',
             'data/benchmark_params.json',
             'data/cytoBand.txt',
             'data/ensemble_conversion_hg38.txt',

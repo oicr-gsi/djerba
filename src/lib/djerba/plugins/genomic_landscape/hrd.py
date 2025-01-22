@@ -12,7 +12,7 @@ class hrd_processor(logger):
     def __init__(self, log_level, log_path):
         self.log_level = log_level
         self.log_path = log_path
-        self.logger = self.get_logger(log_level, log_path)
+        self.logger = self.get_logger(log_level, __name__, log_path)
         self.validator = path_validator(log_level, log_path)
 
     ONCOTREE_FILE = 'OncoTree.json'

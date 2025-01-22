@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## 1.7.9: 2025-01-22
+- GCGI-1461: Fix output paths in calls to get_logger
+- GCGI-1462: Extend GSICAPBENCH report to TAR/PWGS
+- GCGI-1481: Fix raw coverage auto-population to exclude normal samples before selection in TAR assay
+- GCGI-1478: More informative logger name for plugin/helper/merger components
+- GCGI-1479: New `--pre-populate` option in `djerba.py` setup mode
+- GCGI-1413: Remove failed report plugin and allow summary plugin to handle failed reports
+- GCGI-1482: Updated total genome segment length constant in percent genome altered calculation
+- GCGI-1480: Updated CGI manager name and email
+- GCGI-1490: Remove input paths from pwgs.analysis results
+- GCGI-1492: Remove the Sequenza CNV plugin
+
 ## 1.7.8: 2024-12-12
 - GCGI-1464: Standalone script to diff two Djerba JSON reports
 - GCGI-1454: Added OncoKB definitions to WGTS40X and WGS40X assays
