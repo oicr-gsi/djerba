@@ -31,7 +31,7 @@ class cnv_processor(logger):
     ONCOLIST = "20200818-oncoKBcancerGeneList.tsv"
     PLOT_FILENAME = 'seg_CNV_plot.svg' # this name is hard-coded in the R plot script
     MINIMUM_MAGNITUDE_SEG_MEAN = 0.2
-    GENOME_SIZE = 3*10**9 # TODO use more accurate value
+    GENOME_SIZE = 3095978931 # comes from https://www.ncbi.nlm.nih.gov/grc/human/data?asm=GRCh38.p12. Non-N bases. 
     SEG_FILENAME = 'seg.txt'
 
     def __init__(self, work_dir, config_wrapper, log_level=logging.WARNING, log_path=None):
@@ -53,9 +53,9 @@ class cnv_processor(logger):
             raise RuntimeError(msg)
         with open(self.seg_path) as input_file:
             for row in csv.DictReader(input_file, delimiter="\t"):
-                seg_mean = row['seg.mean']
+                seg_mean = row['seg_mean']
                 if seg_mean != 'NA' and abs(float(seg_mean)) >= self.MINIMUM_MAGNITUDE_SEG_MEAN:
-                    total += int(row['loc.end']) - int(row['loc.start'])
+                    total += int(row['loc_end']) - int(row['loc_start'])
         # TODO see GCGI-347 for possible updates to genome size
         fga = float(total)/self.GENOME_SIZE
         return int(round(fga*100, 0))

@@ -23,7 +23,8 @@ install_wildcards = [
     'resources/*',
     'R/*',
     'r/*',
-    'Rscripts/*'
+    'Rscripts/*',
+    'templates/*'
 ]
 
 with open("README.md", "r") as fh:
@@ -34,6 +35,7 @@ setup(
     version=__version__,
     scripts=[
         'src/bin/benchmark.py',
+        'src/bin/diff_reports.py',
         'src/bin/djerba.py',
         'src/bin/generate_ini.py',
         'src/bin/mini_djerba.py',
@@ -48,7 +50,10 @@ setup(
             'data/20240315-allCuratedGenes.tsv',
             'data/OncoTree.json',
             'data/NCCN_annotations.txt',
-            'data/benchmark_config.ini',
+            'data/benchmark_pwgs.ini',
+            'data/benchmark_tar.ini',
+            'data/benchmark_wgs.ini',
+            'data/benchmark_wgts.ini',
             'data/benchmark_params.json',
             'data/cytoBand.txt',
             'data/ensemble_conversion_hg38.txt',
@@ -100,14 +105,19 @@ setup(
         'configparse',
         'email_validator',
         'jsonschema',
+        'lets-plot',
         'mako',
         'markdown',
-        'numpy==1.23.1', # set exact version to avoid build conflict with gsi-qc-etl
+        'matplotlib',
+        'numpy>2',
         'pandas',
         'pdfkit',
+        'plotnine',
+        'pycairo',
         'pyinstaller',
         'PyPDF2',
         'requests',
+        'seaborn',
         'statsmodels',
     ],
     python_requires='>=3.10.6',
