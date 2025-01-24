@@ -28,13 +28,14 @@ class purple_processor(logger):
 
     COPY_STATE_FILE = 'purple_copy_states.json'
 
-    def __init__(self, work_dir, log_level=logging.WARNING, log_path=None):
+    def __init__(self, work_dir, log_level=logging.WARNING, log_path=None, plot9_verbose=False):
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.work_dir = work_dir
         self.r_script_dir = os.path.join(os.path.dirname(__file__), 'r')
         self.data_dir = directory_finder(log_level, log_path).get_data_dir()
+        self.plot9_verbose = plot9_verbose
 
   #  def analyze_segments(self, cnvfile, segfile, whizbam_url, purity, ploidy):
   #      dir_location = os.path.dirname(__file__)
@@ -140,7 +141,7 @@ class purple_processor(logger):
             )
         )
 
-        pseg.save(pseg_path, height=1.5, width=8, backend='Cairo')
+        pseg.save(pseg_path, height=1.5, width=8, backend='Cairo', verbose=self.plot9_verbose)
         image_converter = converter(self.log_level, self.log_path)
         b64txt = image_converter.convert_svg(pseg_path, 'CNV plot')
 
@@ -171,8 +172,8 @@ class purple_processor(logger):
                 axis_title_y = element_text(size = 10)
             )
         )
-
-        pseg_allele.save(os.path.join(self.work_dir, "purple.seg_allele_plot.svg"), height=2, width=8)
+        out_path = os.path.join(self.work_dir, "purple.seg_allele_plot.svg")
+        pseg_allele.save(out_path, height=2, width=8, verbose=self.plot9_verbose)
 
         return b64txt
 
@@ -426,7 +427,7 @@ class purple_processor(logger):
             lp.scale_x_continuous(limits = [0, min(maxMinorAllelePloidy,4)]) + \
             lp.scale_y_continuous( limits = [0, min(maxMinorAllelePloidy,3)]) + \
             lp.scale_fill_gradientn(colors=["#8b0000","red","orange","yellow", "white"], limits = [min_score, max_score], na_value = "white") + lp.coord_fixed() + \
-            lp.theme(panel_grid = lp.element_blank()) + \
+            lp.theme(panel_grid = lp.element_blank(), plot_message=lp.element_blank()) + \
             lp.labs(x="Major Allele Ploidy", y="Minor Allele Ploidy", fill="Aggregate\nPenalty",size="BAF\nSupport")
         
         p2 = lp.ggplot() + \
@@ -436,7 +437,8 @@ class purple_processor(logger):
             lp.labs(x="Whole Genome Doubling Penalty (log)", y="Single Event Penalty (log)", size="BAF Support") + \
             lp.guides(size="none", color="none")+ \
             lp.scale_x_continuous(trans='log10') + \
-            lp.scale_y_continuous(trans='log10')
+            lp.scale_y_continuous(trans='log10') +\
+            lp.theme(plot_message=lp.element_blank())
 
         bunch = lp.GGBunch()
         bunch.add_plot(p1, 0, 0, 600, 500)
