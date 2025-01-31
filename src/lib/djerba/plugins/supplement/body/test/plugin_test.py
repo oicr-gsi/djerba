@@ -5,12 +5,19 @@
 import os
 import unittest
 import tempfile
+from copy import deepcopy
 
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 from djerba.util.environment import directory_finder
 
 class TestSupplementaryPluginBody(PluginTester):
+
+    def redact_json_data(self, data):
+        redacted = deepcopy(data)
+        redacted['results']['template_dir'] = 'PLACEHOLDER'
+        return redacted
+
     def setUp(self):
         self.path_validator = path_validator()
         self.maxDiff = None
