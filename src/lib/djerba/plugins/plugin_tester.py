@@ -81,10 +81,12 @@ class PluginTester(TestBase):
         ### uncomment this to dump the plugin output JSON to a file
         #with open('/tmp/foo.json', 'w', encoding=core_constants.TEXT_ENCODING) as out_file:
         #    out_file.write(json.dumps(plugin_data_found, sort_keys=True, indent=4))
+        #with open('/tmp/bar.json', 'w', encoding=core_constants.TEXT_ENCODING) as out_file:
+        #    out_file.write(json.dumps(self.redact_json_data(plugin_data_found), sort_keys=True, indent=4))
         validator = plugin_json_validator(log_level=log_level)
         self.assertTrue(validator.validate_data(plugin_data_found))
         self.assertEqual(self.redact_json_data(plugin_data_found), plugin_data_expected)
-        html = plugin.render(plugin_data_found)
+        html = plugin.render(self.redact_json_for_html(plugin_data_found))
         ### uncomment this to dump the plugin output HTML to a file
         #with open('/tmp/foo.html', 'w', encoding=core_constants.TEXT_ENCODING) as out_file:
         #    out_file.write(html)

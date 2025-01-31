@@ -80,3 +80,9 @@ class TestBase(unittest.TestCase):
         IMPORTANT: If we return the input data object, changes to data will persist for downstream testing code. If this is not desired, use deepcopy to create a new instance of the data structure. https://docs.python.org/3/library/copy.html and the supplement.body plugin.
         """
         return data
+
+    def redact_json_for_html(self, data):
+        """
+        Similar to redact_json_data, but applied before generating HTML with render()
+        """
+        return data
