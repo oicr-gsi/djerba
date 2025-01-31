@@ -542,7 +542,9 @@ class snv_indel_processor(logger):
                     x='tumour_vaf_perc', 
                     fill=True, 
                     color='darkgrey', 
-                    alpha=0.5)
+                    alpha=0.5,
+                    warn_singular=False
+        )
         plt.scatter(MAF['tumour_vaf_perc'], 
                     np.zeros_like(MAF['tumour_vaf_perc']), 
                     color='black', 
