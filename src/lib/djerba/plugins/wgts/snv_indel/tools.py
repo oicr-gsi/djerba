@@ -504,19 +504,6 @@ class snv_indel_processor(logger):
         runner = subprocess_runner(self.log_level, self.log_path)
         result = runner.run(cmd, "main snv/indel R script")
         return result
-
-#    def write_vaf_plot(self):
-#        """Run the R script to write the VAF plot"""
-#        dir_location = os.path.dirname(__file__)
-#        # TODO make the ensembl conversion file specific to this plugin?
-#        cmd = [
-#            'Rscript', os.path.join(dir_location, 'R', 'vaf_plot.r'),
-#            '--dir', self.work_dir,
-#            '--output', os.path.join(self.work_dir, sic.VAF_PLOT_FILENAME)
-#        ]
-#        runner = subprocess_runner(self.log_level, self.log_path)
-#        result = runner.run(cmd, "VAF plot R script")
-#        return result
     
     def write_vaf_plot(self):
         """"Create VAF plot with matplotlib"""
