@@ -638,7 +638,7 @@ class report_equivalence_tester(logger):
             self.logger.info("{0} values are equivalent".format(key))
             eq = True
         else:
-            self.logger.info("{1} values are NOT equivalent".format(key))
+            self.logger.info("{0} values are NOT equivalent".format(key))
             eq = False
         return eq
 
