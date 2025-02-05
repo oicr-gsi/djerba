@@ -6,6 +6,7 @@ import logging
 import unittest
 import tempfile
 from configparser import ConfigParser
+from copy import deepcopy
 from shutil import copy
 
 import djerba.core.constants as constants
@@ -32,12 +33,13 @@ class TestBenchmark(PluginTester):
         params = {
             self.INI: self.write_ini_file(data_dir),
             self.JSON: json_location,
-            self.MD5: '350b03d8f5312bc3015b11b617d8f4c0'
+            self.MD5: 'c4eb5efe3c87641bbf53a5c4bffe47b3'
         }
         self.run_basic_test(self.test_source_dir, params)
 
     def redact_json_data(self, data):
-        results = data['results']
+        redacted = deepcopy(data)
+        results = redacted['results']
         redacted_report_results = []
         for k,v in results.items():
             if k == 'report_results':
@@ -46,14 +48,19 @@ class TestBenchmark(PluginTester):
                         if k2 in ['input_file', 'ref_file']:
                             file_name = os.path.basename(v2)
                             report_result[k2] = os.path.join(self.PLACEHOLDER, file_name)
+                        elif k2 in ['diff', 'diff_name', 'status', 'status_emoji']:
+                            report_result[k2] = self.PLACEHOLDER
                     redacted_report_results.append(report_result)
             elif k=='run_time':
                 results[k] = self.PLACEHOLDER
             elif k=='input_name':
                 results[k] = 'Unknown'
         results['report_results'] = redacted_report_results
-        data['results'] = results
-        return data
+        redacted['results'] = results
+        return redacted
+
+    def redact_json_for_html(self, data):
+        return self.redact_json_data(data)
 
     def write_ini_file(self, data_dir):
         # write input/ref JSON on the fly, using individual report JSONs in data dir

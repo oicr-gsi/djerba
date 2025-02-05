@@ -13,112 +13,112 @@
         "input_name": "Unknown",
         "report_results": [
             {
-                "diff": "NONE",
-                "diff_name": "Not applicable",
+                "diff": "PLACEHOLDER",
+                "diff_name": "PLACEHOLDER",
                 "input_file": "PLACEHOLDER/GSICAPBENCH_0001_TAR_report.json",
                 "ref_file": "PLACEHOLDER/GSICAPBENCH_0001_TAR_ref.json",
                 "report": "GSICAPBENCH_0001_TAR",
-                "status": "identical",
-                "status_emoji": "&#x2705;"
+                "status": "PLACEHOLDER",
+                "status_emoji": "PLACEHOLDER"
             },
             {
-                "diff": "NONE",
-                "diff_name": "Not applicable",
+                "diff": "PLACEHOLDER",
+                "diff_name": "PLACEHOLDER",
                 "input_file": "PLACEHOLDER/GSICAPBENCH_0001_WGS_report.json",
                 "ref_file": "PLACEHOLDER/GSICAPBENCH_0001_WGS_ref.json",
                 "report": "GSICAPBENCH_0001_WGS",
-                "status": "identical",
-                "status_emoji": "&#x2705;"
+                "status": "PLACEHOLDER",
+                "status_emoji": "PLACEHOLDER"
             },
             {
-                "diff": "NONE",
-                "diff_name": "Not applicable",
+                "diff": "PLACEHOLDER",
+                "diff_name": "PLACEHOLDER",
                 "input_file": "PLACEHOLDER/GSICAPBENCH_0002_TAR_report.json",
                 "ref_file": "PLACEHOLDER/GSICAPBENCH_0002_TAR_ref.json",
                 "report": "GSICAPBENCH_0002_TAR",
-                "status": "identical",
-                "status_emoji": "&#x2705;"
+                "status": "PLACEHOLDER",
+                "status_emoji": "PLACEHOLDER"
             },
             {
-                "diff": "NONE",
-                "diff_name": "Not applicable",
+                "diff": "PLACEHOLDER",
+                "diff_name": "PLACEHOLDER",
                 "input_file": "PLACEHOLDER/GSICAPBENCH_0003_TAR_report.json",
                 "ref_file": "PLACEHOLDER/GSICAPBENCH_0003_TAR_ref.json",
                 "report": "GSICAPBENCH_0003_TAR",
-                "status": "identical",
-                "status_emoji": "&#x2705;"
+                "status": "PLACEHOLDER",
+                "status_emoji": "PLACEHOLDER"
             },
             {
-                "diff": "NONE",
-                "diff_name": "Not applicable",
+                "diff": "PLACEHOLDER",
+                "diff_name": "PLACEHOLDER",
                 "input_file": "PLACEHOLDER/GSICAPBENCH_011291_PWGS_report.json",
                 "ref_file": "PLACEHOLDER/GSICAPBENCH_011291_PWGS_ref.json",
                 "report": "GSICAPBENCH_011291_PWGS",
-                "status": "identical",
-                "status_emoji": "&#x2705;"
+                "status": "PLACEHOLDER",
+                "status_emoji": "PLACEHOLDER"
             },
             {
-                "diff": "NONE",
-                "diff_name": "Not applicable",
+                "diff": "PLACEHOLDER",
+                "diff_name": "PLACEHOLDER",
                 "input_file": "PLACEHOLDER/GSICAPBENCH_011303_PWGS_report.json",
                 "ref_file": "PLACEHOLDER/GSICAPBENCH_011303_PWGS_ref.json",
                 "report": "GSICAPBENCH_011303_PWGS",
-                "status": "identical",
-                "status_emoji": "&#x2705;"
+                "status": "PLACEHOLDER",
+                "status_emoji": "PLACEHOLDER"
             },
             {
-                "diff": "NONE",
-                "diff_name": "Not applicable",
+                "diff": "PLACEHOLDER",
+                "diff_name": "PLACEHOLDER",
                 "input_file": "PLACEHOLDER/GSICAPBENCH_011524_PWGS_report.json",
                 "ref_file": "PLACEHOLDER/GSICAPBENCH_011524_PWGS_ref.json",
                 "report": "GSICAPBENCH_011524_PWGS",
-                "status": "identical",
-                "status_emoji": "&#x2705;"
+                "status": "PLACEHOLDER",
+                "status_emoji": "PLACEHOLDER"
             },
             {
-                "diff": "NONE",
-                "diff_name": "Not applicable",
+                "diff": "PLACEHOLDER",
+                "diff_name": "PLACEHOLDER",
                 "input_file": "PLACEHOLDER/GSICAPBENCH_011633_PWGS_report.json",
                 "ref_file": "PLACEHOLDER/GSICAPBENCH_011633_PWGS_ref.json",
                 "report": "GSICAPBENCH_011633_PWGS",
-                "status": "identical",
-                "status_emoji": "&#x2705;"
+                "status": "PLACEHOLDER",
+                "status_emoji": "PLACEHOLDER"
             },
             {
-                "diff": "NONE",
-                "diff_name": "Not applicable",
+                "diff": "PLACEHOLDER",
+                "diff_name": "PLACEHOLDER",
                 "input_file": "PLACEHOLDER/GSICAPBENCH_1248_WGTS_report.json",
                 "ref_file": "PLACEHOLDER/GSICAPBENCH_1248_WGTS_ref.json",
                 "report": "GSICAPBENCH_1248_WGTS",
-                "status": "identical",
-                "status_emoji": "&#x2705;"
+                "status": "PLACEHOLDER",
+                "status_emoji": "PLACEHOLDER"
             },
             {
-                "diff": "NONE",
-                "diff_name": "Not applicable",
+                "diff": "PLACEHOLDER",
+                "diff_name": "PLACEHOLDER",
                 "input_file": "PLACEHOLDER/GSICAPBENCH_1309_WGTS_report.json",
                 "ref_file": "PLACEHOLDER/GSICAPBENCH_1309_WGTS_ref.json",
                 "report": "GSICAPBENCH_1309_WGTS",
-                "status": "identical",
-                "status_emoji": "&#x2705;"
+                "status": "PLACEHOLDER",
+                "status_emoji": "PLACEHOLDER"
             },
             {
-                "diff": "NONE",
-                "diff_name": "Not applicable",
+                "diff": "PLACEHOLDER",
+                "diff_name": "PLACEHOLDER",
                 "input_file": "PLACEHOLDER/GSICAPBENCH_1390_WGTS_report.json",
                 "ref_file": "PLACEHOLDER/GSICAPBENCH_1390_WGTS_ref.json",
                 "report": "GSICAPBENCH_1390_WGTS",
-                "status": "identical",
-                "status_emoji": "&#x2705;"
+                "status": "PLACEHOLDER",
+                "status_emoji": "PLACEHOLDER"
             },
             {
-                "diff": "NONE",
-                "diff_name": "Not applicable",
+                "diff": "PLACEHOLDER",
+                "diff_name": "PLACEHOLDER",
                 "input_file": "PLACEHOLDER/GSICAPBENCH_1391_WGTS_report.json",
                 "ref_file": "PLACEHOLDER/GSICAPBENCH_1391_WGTS_ref.json",
                 "report": "GSICAPBENCH_1391_WGTS",
-                "status": "identical",
-                "status_emoji": "&#x2705;"
+                "status": "PLACEHOLDER",
+                "status_emoji": "PLACEHOLDER"
             }
         ],
         "run_time": "PLACEHOLDER"

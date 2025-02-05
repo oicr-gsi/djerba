@@ -37,25 +37,6 @@ class purple_processor(logger):
         self.data_dir = directory_finder(log_level, log_path).get_data_dir()
         self.plot9_verbose = plot9_verbose
 
-  #  def analyze_segments(self, cnvfile, segfile, whizbam_url, purity, ploidy):
-  #      dir_location = os.path.dirname(__file__)
-  #      centromeres_file = os.path.join(self.data_dir, pc.CENTROMERES)
-  #      genebedpath = os.path.join(self.data_dir, pc.GENEBED)
-  #      cmd = [
-  #          'Rscript', os.path.join(self.r_script_dir, "process_segment_data.r"),
-  #          '--outdir', self.work_dir,
-  #          '--cnvfile', cnvfile,
-  #          '--segfile', segfile,
-  #          '--centromeres', centromeres_file,
-  #          '--purity', str(purity),
-  #          '--ploidy', str(ploidy),
-  #          '--whizbam_url', whizbam_url,
-  #          '--genefile', genebedpath
-  #      ]
-  #      runner = subprocess_runner()
-  #      result = runner.run(cmd, "segments R script")
-  #      return result.stdout.split('"')[1]
-
     # rewrite analyze_segments in python
     def analyze_segments(self, cnvfile, segfile, whizbam_url, purity, ploidy):
         centromeres_file = os.path.join(self.data_dir, pc.CENTROMERES)
@@ -177,17 +158,6 @@ class purple_processor(logger):
 
         return b64txt
 
-   # def consider_purity_fit(self, purple_range_file):
-   #     dir_location = os.path.dirname(__file__)
-   #     cmd = [
-   #         'Rscript', os.path.join(self.r_script_dir, "process_fit.r"),
-   #         '--range_file', purple_range_file,
-   #         '--outdir', self.work_dir
-   #     ]
-   #     runner = subprocess_runner()
-   #     result = runner.run(cmd, "fit R script")
-   #     return result
-    # rewrite in python
     def consider_purity_fit(self, purple_range_file):
         range_df = pd.read_csv(purple_range_file, sep="\t", comment='!')
         output = os.path.join(self.work_dir, "purple.range.png")
@@ -365,21 +335,6 @@ class purple_processor(logger):
 
         return df
 
-  #  def convert_purple_to_gistic(self, purple_gene_file, tumour_id, ploidy):
-  #      dir_location = os.path.dirname(__file__)
-  #      oncolistpath = os.path.join(self.data_dir, pc.ONCOLIST)
-  #      cmd = [
-  #          'Rscript', os.path.join(self.r_script_dir, "process_CNA_data.r"),
-  #          '--genefile', purple_gene_file,
-  #          '--outdir', self.work_dir,
-  #          '--oncolist', oncolistpath,
-  #          '--tumourid', tumour_id,
-  #          '--ploidy', str(ploidy)
-  #      ]
-  #      runner = subprocess_runner()
-  #      result = runner.run(cmd, "CNA R script")
-  #      return result
-    # rewrite in python
     def convert_purple_to_gistic(self, purple_gene_file, tumour_id, ploidy):
         oncolistpath = os.path.join(self.data_dir, pc.ONCOLIST)
         cna_output = os.path.join(self.work_dir, "purple.data_CNA.txt")

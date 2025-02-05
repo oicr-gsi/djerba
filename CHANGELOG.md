@@ -2,6 +2,8 @@
 
 ## Unreleased: v1.8.0
 - GCGI-1473: Remove R code from wgts.snv_indel and wgts.cnv_purple plugins
+- GCGI-1499: Fixes to tests, including finer control of JSON/HTML redaction
+- Add a new `template_dir` parameter to the `supplement.body` plugin
 
 ## 1.7.9: 2025-01-22
 - GCGI-1461: Fix output paths in calls to get_logger

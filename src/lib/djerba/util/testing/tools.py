@@ -77,5 +77,12 @@ class TestBase(unittest.TestCase):
         """
         Placeholder method -- does nothing
         Can be overridden in subclasses to preprocess JSON data before test comparison
+        IMPORTANT: If we return the input data object, changes to data will persist for downstream testing code. If this is not desired, use deepcopy to create a new instance of the data structure. See https://docs.python.org/3/library/copy.html and the supplement.body plugin in v1.8.0.
+        """
+        return data
+
+    def redact_json_for_html(self, data):
+        """
+        Similar to redact_json_data, but applied before generating HTML with render()
         """
         return data
