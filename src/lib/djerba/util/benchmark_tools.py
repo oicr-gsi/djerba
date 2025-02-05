@@ -719,6 +719,8 @@ class report_equivalence_tester(logger):
         if self.SUPPLEMENT_NAME in plugins:
             for date_key in ['extract_date', 'report_signoff_date']:
                 plugins[self.SUPPLEMENT_NAME][self.RESULTS][date_key] = placeholder
+            # redact HTML template path
+            plugins[self.SUPPLEMENT_NAME][self.RESULTS]['template_dir'] = placeholder
         else:
             msg = 'Plugin {0} not found for {1}'.format(self.SUPPLEMENT_NAME, report_path)
             self.logger.warning(msg)
