@@ -16,8 +16,8 @@ class TestMiniBase(TestBase):
 
     JSON_NAME = 'simple_report_for_update.json'
     JSON_NO_SUMMARY = 'simple_report_no_summary.json'
-    REPORT_MD5 = 'd74c65f217a96361d81bc1837542a74b'
-    REPORT_NO_SUMMARY_MD5 = '6c6f367792bee295f32ccac87d1401ab'
+    REPORT_MD5 = 'dfc3e2b9acaca24b7823180dcc6da61d'
+    REPORT_NO_SUMMARY_MD5 = 'bd65c5921155b261d549fd3b32855fd9'
 
     def assert_setup(self, ini_path, summary_path=None):
         self.assertTrue(os.path.exists(ini_path))
