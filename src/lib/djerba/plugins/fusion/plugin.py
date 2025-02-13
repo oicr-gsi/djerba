@@ -10,7 +10,8 @@ import json
 import zlib
 import base64
 from djerba.plugins.base import plugin_base, DjerbaPluginError
-from djerba.plugins.fusion.tools import fusion_reader, prepare_fusions
+from djerba.plugins.fusion.tools import fusion_reader
+from djerba.plugins.fusion.preprocess import prepare_fusions
 from djerba.util.environment import directory_finder
 from djerba.util.logger import logger
 from djerba.util.oncokb.tools import levels as oncokb_levels
@@ -49,7 +50,9 @@ class main(plugin_base):
             return oncokb_levels.oncokb_order(row[core_constants.ONCOKB])
 
         wrapper = self.get_config_wrapper(config)
+        
         prepare_fusions(self.workspace.get_work_dir(), self.log_level, self.log_path).process_fusion_files(wrapper)
+        #prepare_fusions(self.workspace.get_work_dir(), self.log_level, self.log_path).process_fusion_files(wrapper)
         fus_reader = fusion_reader(self.workspace.get_work_dir(), self.log_level, self.log_path)
         total_fusion_genes = fus_reader.get_total_fusion_genes()
         gene_pair_fusions = fus_reader.get_fusions()

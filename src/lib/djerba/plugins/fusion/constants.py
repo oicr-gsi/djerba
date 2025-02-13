@@ -30,7 +30,8 @@ ENTRCON_NAME = 'entrez_conversion.txt'
 
 # read files from an input directory and gather information on fusions
 
-DATA_FUSIONS_OLD = 'data_fusions.txt'
+DATA_FUSIONS = 'data_fusions.txt'
+DATA_FUSIONS_ONCOKB = 'data_fusions_oncokb.txt'
 DATA_FUSIONS_ANNOTATED = 'data_fusions_oncokb_annotated.txt'
 DATA_FUSIONS_NCCN_ANNOTATED = 'data_fusions_NCCN.txt'
 JSON_TO_BE_COMPRESSED = 'fusion_template_to_be_compressed.json'
