@@ -170,6 +170,10 @@ class main_base(core_base):
         self.logger.debug('Configuring components in priority order')
         ordered_names = sorted(priorities.keys(), key=lambda x: priorities[x])
         self._resolve_extract_dependencies(config, components, ordered_names)
+        # !!!
+        # TODO write the names/versions of the components we have loaded to a JSON file here
+        # self.write_component_versions(ordered_names, components)
+        # !!!
         # 2. Validate and run configuration for each component; store in data structure
         self.logger.debug('Generating core data structure')
         data = extraction_setup(self.log_level, self.log_path).run(config)
@@ -356,6 +360,20 @@ class main_base(core_base):
         with open(json_path, encoding=cc.TEXT_ENCODING) as in_file:
             data = json.loads(in_file.read())
         return self.update_report_data(new_data, data, force)
+
+    def write_component_versions(self, ordered_names, components):
+        # TODO fix this to run with names, plugin objects instead of final report data
+        component_versions = {
+            cc.CORE: get_djerba_version()
+        }
+        for name in ordered_names:
+            component_versions[name] = components[name].foo() # get version from plugin
+        with self.workspace.open_file(
+                cc.VERSIONS_FILENAME, mode='w', encoding=cc.TEXT_ENCODING
+        ) as out_file:
+            out_file.write(json.dumps(component_versions, sort_keys=True, indent=4))
+        self.logger.debug("Wrote plugin versions: {0}".format(component_versions))
+
 
 
 class main(main_base):

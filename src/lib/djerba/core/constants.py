@@ -115,3 +115,6 @@ REPORT_JSON_SUFFIX = '_report.json'
 
 # root directory pattern for WHIZBAM files
 WHIZBAM_PATTERN_ROOT='/.mounts/labs/prod/whizbam'
+
+# plugin versions file name
+VERSIONS_FILENAME = 'plugin_versions.json'
