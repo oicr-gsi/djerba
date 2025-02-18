@@ -158,7 +158,8 @@ class main_base(core_base):
     def base_extract(self, config):
         """
         Base extract operation, shared between core and mini Djerba
-        Just get the data structure; no additional write/archive actions
+        Only get the data structure and record plugin names/versions
+        No additional write/archive actions
         """
         components = {}
         priorities = {}
@@ -170,11 +171,7 @@ class main_base(core_base):
         self.logger.debug('Configuring components in priority order')
         ordered_names = sorted(priorities.keys(), key=lambda x: priorities[x])
         self._resolve_extract_dependencies(config, components, ordered_names)
-        # !!!
-        # TODO write the names/versions of the components we have loaded to a JSON file here
-        # self.write_component_versions(ordered_names, components)
-        # !!!
-        # 2. Validate and run configuration for each component; store in data structure
+        self.write_component_versions(ordered_names, components)
         self.logger.debug('Generating core data structure')
         data = extraction_setup(self.log_level, self.log_path).run(config)
         self.logger.debug('Running extraction for plugins and mergers in priority order')
@@ -362,12 +359,12 @@ class main_base(core_base):
         return self.update_report_data(new_data, data, force)
 
     def write_component_versions(self, ordered_names, components):
-        # TODO fix this to run with names, plugin objects instead of final report data
+        # Write component names/versions to a JSON file
         component_versions = {
             cc.CORE: get_djerba_version()
         }
         for name in ordered_names:
-            component_versions[name] = components[name].foo() # get version from plugin
+            component_versions[name] = components[name].get_version()
         with self.workspace.open_file(
                 cc.VERSIONS_FILENAME, mode='w', encoding=cc.TEXT_ENCODING
         ) as out_file:

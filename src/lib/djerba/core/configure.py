@@ -29,7 +29,11 @@ class configurable(core_base, ABC):
     - Get special directory paths from environment variables
     - Handle component priorities
     - Get/set/query INI params (other than priority levels)
+
+    Each such object has a version number -- see the get_version() method
     """
+
+    VERSION = cc.UNDEFINED_VERSION
 
     # default list of known attributes -- may override in subclasses
     KNOWN_ATTRIBUTES = [
@@ -109,6 +113,19 @@ class configurable(core_base, ABC):
             self.logger.error(msg)
             raise DjerbaConfigError(msg)
         return self.ini_defaults[param]
+
+    def get_version(self):
+        # get the component version string
+        # this is in the PLUGIN_VERSION class variable (if defined), VERSION otherwise
+        if hasattr(self, 'PLUGIN_VERSION'):
+            return self.PLUGIN_VERSION
+        elif hasattr(self, 'VERSION'):
+            return self.VERSION
+        else:
+            # should not happen, unless a subclass does something weird to self.VERSION
+            msg = "Component {0} has no version".format(self.identifier)
+            self.logger.error(msg)
+            raise ValueError(msg)
 
     def set_log_level(self, level):
         # use to change the log level set by the component loader, eg. for testing
