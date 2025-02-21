@@ -365,9 +365,7 @@ class main_base(core_base):
         }
         for name in ordered_names:
             component_versions[name] = components[name].get_version()
-        with self.workspace.open_file(
-                cc.VERSIONS_FILENAME, mode='w', encoding=cc.TEXT_ENCODING
-        ) as out_file:
+        with self.workspace.open_file(cc.VERSIONS_FILENAME, mode='w') as out_file:
             out_file.write(json.dumps(component_versions, sort_keys=True, indent=4))
         self.logger.debug("Wrote plugin versions: {0}".format(component_versions))
 
