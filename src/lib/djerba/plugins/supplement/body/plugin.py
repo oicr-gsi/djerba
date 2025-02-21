@@ -13,7 +13,7 @@ class main(plugin_base):
     DEFAULT_CONFIG_PRIORITY = 1200
     MAKO_TEMPLATE_NAME = 'supplementary_materials_template.html'
     TEMPLATE_DIR = "template_dir"
-    SUPPLEMENT_DJERBA_VERSION = 0.1
+    PLUGIN_VERSION = '0.1'
     FAILED = "failed"
     ASSAY = "assay"
     REPORT_SIGNOFF_DATE = "report_signoff_date"
@@ -98,7 +98,7 @@ class main(plugin_base):
                 self.INCLUDE_SIGNOFFS: include_signoffs,
                 self.TEMPLATE_DIR: wrapper.get_my_string(self.TEMPLATE_DIR)
             },
-            'version': str(self.SUPPLEMENT_DJERBA_VERSION),
+            'version': self.PLUGIN_VERSION,
         }
         if include_signoffs:
             data['results'].update({
