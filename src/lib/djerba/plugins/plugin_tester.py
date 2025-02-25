@@ -75,16 +75,18 @@ class PluginTester(TestBase):
         config.set(core_constants.CORE, core_constants.REPORT_ID, 'placeholder')
         plugin_config = plugin.configure(config)
         self.assertTrue(plugin_config.has_section(plugin_name))
-        plugin_data_found = self.redact_json_data(plugin.extract(plugin_config))
+        plugin_data_found = plugin.extract(plugin_config)
         with open(expected_json_path) as json_file:
             plugin_data_expected = json.loads(json_file.read())
         ### uncomment this to dump the plugin output JSON to a file
         #with open('/tmp/foo.json', 'w', encoding=core_constants.TEXT_ENCODING) as out_file:
         #    out_file.write(json.dumps(plugin_data_found, sort_keys=True, indent=4))
+        #with open('/tmp/bar.json', 'w', encoding=core_constants.TEXT_ENCODING) as out_file:
+        #    out_file.write(json.dumps(self.redact_json_data(plugin_data_found), sort_keys=True, indent=4))
         validator = plugin_json_validator(log_level=log_level)
         self.assertTrue(validator.validate_data(plugin_data_found))
-        self.assertEqual(plugin_data_found, plugin_data_expected)
-        html = plugin.render(plugin_data_found)
+        self.assertEqual(self.redact_json_data(plugin_data_found), plugin_data_expected)
+        html = plugin.render(self.redact_json_for_html(plugin_data_found))
         ### uncomment this to dump the plugin output HTML to a file
         #with open('/tmp/foo.html', 'w', encoding=core_constants.TEXT_ENCODING) as out_file:
         #    out_file.write(html)
@@ -95,9 +97,10 @@ class PluginTester(TestBase):
         self.assertTrue(main_config.has_section(plugin_name))
         main_data = djerba_main.extract(main_config)
         self.assertTrue(plugin_name in main_data['plugins'])
-        main_plugin_data = self.redact_json_data(main_data['plugins'][plugin_name])
-        self.assertEqual(main_plugin_data, plugin_data_expected)
+        main_plugin_data = main_data['plugins'][plugin_name]
+        self.assertEqual(self.redact_json_data(main_plugin_data), plugin_data_expected)
         main_html = djerba_main.render(main_data)
         self.assertTrue(len(main_html)>0)
+
 
     # TODO add standalone tests for configure, extract, render steps

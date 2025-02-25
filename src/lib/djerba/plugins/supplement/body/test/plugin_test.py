@@ -5,12 +5,19 @@
 import os
 import unittest
 import tempfile
+from copy import deepcopy
 
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 from djerba.util.environment import directory_finder
 
 class TestSupplementaryPluginBody(PluginTester):
+
+    def redact_json_data(self, data):
+        redacted = deepcopy(data)
+        redacted['results']['template_dir'] = 'PLACEHOLDER'
+        return redacted
+
     def setUp(self):
         self.path_validator = path_validator()
         self.maxDiff = None
@@ -24,7 +31,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'PWGS.supp.ini',
             self.JSON: json_location,
-            self.MD5: '031a9d6fa633006f2422a83a65015536'
+            self.MD5: 'f808bc34cb7f88c48c4451d96f60ef9b'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -54,7 +61,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'e18c7bbaeb0c9e6ae1e99bee58373d6a'
+            self.MD5: '604b876c3d0e8666c68a5255bf5b032d'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -64,7 +71,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: '2c9089645ef9d5c8fc57fb0c8d674c8c'
+            self.MD5: '00aba2543b096835c79b18272b30da09'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -74,7 +81,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.RESEARCH.supp.ini',
             self.JSON: json_location,
-            self.MD5: '1e39711add20e562074ce474f8441bdf'
+            self.MD5: 'ae4e88e8bd275963bff07083c0c86479'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -84,7 +91,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.supp.ini',
             self.JSON: json_location,
-            self.MD5: '991e4420d5e4e5118a0ee0ffaf79ac13'
+            self.MD5: '687b8775387ed1682c9c3abcbda39b05'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -94,7 +101,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.RESEARCH.supp.ini',
             self.JSON: json_location,
-            self.MD5: '60b95d17513ba34fc01f072eb1b2a386'
+            self.MD5: '7eb82799614be10e683e55813e9e45f9'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -105,7 +112,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: '191a66ec002cb3203238c546711fee64'
+            self.MD5: '72cc97d67cd7eb4445ed2cabab21b8ad'
         }
         self.run_basic_test(test_source_dir, params)
     

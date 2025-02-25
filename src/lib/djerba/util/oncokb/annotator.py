@@ -144,8 +144,6 @@ class oncokb_annotator(logger):
         else:
             msg = "Read {0} lines of fusion input, running Fusion annotator".format(total)
             self.logger.debug(msg)
-            cmd = ['which', 'FusionAnnotator.py']
-            self.runner.run(cmd)
             cmd = [
                 'FusionAnnotator.py',
                 '-i', in_path,
