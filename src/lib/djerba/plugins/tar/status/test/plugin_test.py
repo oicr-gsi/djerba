@@ -38,7 +38,30 @@ class TestTarStatus(PluginTester):
             self.MD5: 'cfba59ac799700366c8639a067b65e7a'
         }
         self.run_basic_test(test_source_dir, params)
-        
+        # CNV = False, SNV = True
+        cp.set('tar.status', 'copy_number_ctdna_detected', 'False')
+        cp.set('tar.status', 'small_mutation_ctdna_detected', 'True')
+        ini_path_ft = os.path.join(tmp, self.INI_NAME_FT)
+        with open(ini_path_ft, 'w') as out_file:
+            cp.write(out_file)
+        params = {
+            self.INI: ini_path_ft,
+            self.JSON: os.path.join(test_source_dir, 'status_FT.json'),
+            self.MD5: 'f8d13830aa491263e30b41c1ade0e9f2'
+        }
+        self.run_basic_test(test_source_dir, params)
+        # CNV = True, SNV = True
+        cp.set('tar.status', 'copy_number_ctdna_detected', 'True')
+        cp.set('tar.status', 'small_mutation_ctdna_detected', 'True')
+        ini_path_tt = os.path.join(tmp, self.INI_NAME_TT)
+        with open(ini_path_tt, 'w') as out_file:
+            cp.write(out_file)
+        params = {
+            self.INI: ini_path_tt,
+            self.JSON: os.path.join(test_source_dir, 'status_TT.json'),
+            self.MD5: '31ea829e0139e59e7c184b06382be539'
+        }
+        self.run_basic_test(test_source_dir, params)
 
 
         
