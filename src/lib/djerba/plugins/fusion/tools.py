@@ -31,26 +31,29 @@ class fusion_reader(logger):
         self.df_fusions = self.get_fusions_df()
         self.df_fusions_indexed = self.df_fusions.copy().set_index('fusion_pairs')
         self.df_oncokb = self.get_oncokb_annotated_df()
-        #annotations = self.read_annotation_data()
 
 
     def assemble_data(self, oncotree_code):
         """
+        Assemble the results for plugin.py/extract 
+        Also returns gene info and treatment options 
         For every oncogenic entry in oncokb df, get the information from fusions df
         """
+        
         def sort_by_actionable_level(row):
             return oncokb_levels.oncokb_order(row[core_constants.ONCOKB]) 
 
         results = {}
         results[fc.CLINICALLY_RELEVANT_VARIANTS] = len(self.df_oncokb)
-        self.clinically_relevant_variants = len(self.df_oncokb)
+        self.clinically_relevant_variants = len(self.df_oncokb) # value used by self.get_fusion_objects()
         results[fc.TOTAL_VARIANTS] = self.get_total_variants()
         results[fc.NCCN_VARIANTS] = 0
 
-
+        # Get all fusions
         fusions = self.get_fusion_objects()
-        if len(fusions) > 0:
 
+        # If there are fusions...
+        if len(fusions) > 0:
             outputs = self.fusions_to_json(fusions, oncotree_code)
             [rows, gene_info, treatment_opts] = outputs
 
@@ -66,16 +69,7 @@ class fusion_reader(logger):
             gene_info = []
             treatment_opts = []
 
-        return results
-
-        #print(fusion_object.fusion_id)
-        #print(fusion_object.gene1)
-        #print(fusion_object.gene2)
-        #print(fusion_object.reading_frame)
-        #print(fusion_object.effect)
-        #print(fusion_object.level)
-        #print(fusion_object.therapies)
-        #print(fusion_object.event_type)
+        return results, gene_info, treatment_opts 
     
     def get_oncokb_annotated_df(self):
         """
@@ -170,119 +164,6 @@ class fusion_reader(logger):
         fusions = sorted(fusions, key=lambda f: f.get_fusion_id())
         return fusions
 
-    def get_fusion_object(self, row):
-        """
-        """
-        
-        fusion_id_hyphen = row["Fusion"]
-        gene1 = fusion_id_hyphen.split("-", 1)[0]
-        gene2 = fusion_id_hyphen.split("-", 1)[1]
-        fusion_id = "::".join([gene1, gene2])
-        reading_frame = self.df_fusions_indexed.loc[fusion_id_hyphen, "reading_frame_simple"]
-        event_type = self.df_fusions_indexed.loc[fusion_id_hyphen, "event_type"]
-        level = oncokb_levels.parse_oncokb_level(row)
-        therapies = oncokb_levels.parse_actionable_therapies(row)
-        effect =  row['MUTATION_EFFECT']  
-        
-        fusion_object = fusion(
-                fusion_id,
-                gene1,
-                gene2,
-                reading_frame,
-                effect,
-                event_type,
-                level,
-                therapies
-        )
-       
-        return fusion_object
-
-    def _collate_row_data(self, fusion_data, annotations):
-        fusions = []  # List to store valid fusion entries
-        fusion_genes = set()  # Set to track distinct genes involved in fusions
-        self.logger.debug("Starting to collate fusion table data.")
-        intragenic = 0  # Counter for intragenic fusions
-        nccn_fusion_total = 0  # Counter for fusions rescued by NCCN annotation
-        NCCN_fusions = set()  # Set to store NCCN-annotated fusions
-
-        # Read NCCN-annotated fusions from a file
-        with open(os.path.join(self.input_dir, fc.DATA_FUSIONS_NCCN_ANNOTATED)) as data_file:
-            for row in csv.DictReader(data_file, delimiter="\t"):
-                NCCN_fusions.add(row['Fusion'])  # Add each fusion ID to the set
-
-        # Iterate over all fusion IDs in fusion_data
-        for fusion_id in fusion_data.keys():
-            gene2_exists = True  # Assume a second gene exists initially
-            # Case: Intragenic fusions (only one gene involved)
-            if len(fusion_data[fusion_id]) == 1:
-                # Skip intragenic fusions, but add to the gene count
-                fusion_genes.add(fusion_data[fusion_id][0][fc.HUGO_SYMBOL])
-                if fusion_id in NCCN_fusions:
-                    # If the fusion is in the NCCN-annotated list, it's "rescued"
-                    self.logger.debug("Fusion {0} rescued by NCCN annotation".format(fusion_id))
-                    gene2_exists = False  # No second gene; marked as "Intergenic"
-                    gene2 = "Intergenic"
-                    nccn_fusion_total += 1  # Increment NCCN-rescued fusion count
-                else:
-                    intragenic += 1  # Increment intragenic count and skip processing
-                    continue
-            elif len(fusion_data[fusion_id]) >= 3:
-                # Error case: More than two genes for a single fusion ID
-                msg = "More than 2 fusions with the same name: {0}".format(fusion_id)
-                self.logger.error(msg)
-                raise RuntimeError(msg)
-
-            # Normal case: Valid fusion data with one or two genes
-            gene1 = fusion_data[fusion_id][0][fc.HUGO_SYMBOL]
-            if gene2_exists:
-                # If a second gene exists, retrieve it
-                gene2 = fusion_data[fusion_id][1][fc.HUGO_SYMBOL]
-                # Add both genes to the set
-                fusion_genes.add(gene1)
-                fusion_genes.add(gene2)
-
-            # Case: Two genes exist for the fusion
-            if gene2_exists:
-                for row_input in annotations[fusion_id]:
-                    effect = row_input['MUTATION_EFFECT']  # Get mutation effect
-                level = oncokb_levels.parse_oncokb_level(row_input)  # Parse oncokb level
-            else:
-                # Case: No second gene (rescued by NCCN)
-                effect = "Undetermined"
-                level = "P"
-
-            # If the level is valid, add therapies information
-            if level not in ['Unknown', 'NA']:
-                if gene2_exists:
-                    therapies = oncokb_levels.parse_actionable_therapies(row_input)
-                else:
-                    therapies = {"P": "Prognostic"}
-                # Append a new fusion object to the list
-                fusions.append(
-                    fusion(
-                        fusion_id,
-                        fusion_data[fusion_id][0]['Fusion_newStyle'],
-                        gene1,
-                        gene2,
-                        fusion_data[fusion_id][0]['Frame'],
-                        effect,
-                        level,
-                        therapies,
-                        fusion_data[fusion_id][0]['translocation']
-                    )
-                )
-        total = len(fusions) - nccn_fusion_total
-        total_fusion_genes = len(fusion_genes)  # Count distinct genes
-
-        msg = "Finished collating fusion table data. " + \
-              "Found {0} fusion rows for {1} distinct genes; ".format(total, total_fusion_genes) + \
-              "excluded {0} intragenic rows.".format(intragenic)
-        self.logger.info(msg)
-
-        for fusion_row in fusions:
-            self.logger.debug("Fusions: {0}".format(fusion_row.get_genes()))
-
-        return [fusions, total_fusion_genes, total, nccn_fusion_total]
 
     def build_treatment_entries(self, fusion, therapies, oncotree_code):
         """Make an entry for the treatment options merger"""
@@ -379,13 +260,8 @@ class fusion_reader(logger):
         return self.total_nccn_fusions
 
 
-
-
-
-
 class fusion:
     # container for data relevant to reporting a fusion
-
     def __init__(
             self,
             fusion_id,
