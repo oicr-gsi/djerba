@@ -354,6 +354,14 @@ class prepare_fusions(logger):
         df["fusion_pairs"] = df.apply(lambda row: "-".join(sorted([str(row[column1]), str(row[column2])])), axis=1)
         return df 
 
+
+
+    def process_nccn(self)
+        """
+        Looks only at the following NCCN translocations:
+        """
+        return None
+
     def process_mavis(self, mavis_path, tumour_id, min_reads):
         """
         Process mavis information via pandas dataframe operations.
