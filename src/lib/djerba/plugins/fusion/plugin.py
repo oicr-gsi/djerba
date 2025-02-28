@@ -51,14 +51,14 @@ class main(plugin_base):
         
         prepare_fusions(self.workspace.get_work_dir(), self.log_level, self.log_path).process_fusion_files(wrapper)
         fus_tools = fusion_tools(self.workspace.get_work_dir(), self.log_level, self.log_path)
-        results, gene_info, treatment_ops = fus_tools.assemble_data(wrapper.get_my_string(fc.ONCOTREE_CODE))
+        results, gene_info, treatment_opts = fus_tools.assemble_data(wrapper.get_my_string(fc.ONCOTREE_CODE))
         #self.workspace.write_json("test_fusions_results.json", results)
 
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         data[core_constants.RESULTS] = results
         data[core_constants.MERGE_INPUTS]['gene_information_merger'] = gene_info
         data[core_constants.MERGE_INPUTS]['treatment_options_merger'] = treatment_opts
-
+       
         # Generating whizbam links for fusions
         arriba_path = wrapper.get_my_string(fc.ARRIBA_PATH)
         base_dir = (directory_finder(self.log_level, self.log_path).get_base_dir())
@@ -67,8 +67,8 @@ class main(plugin_base):
         output_dir = self.workspace.get_work_dir()
         unique_fusions = list({item["fusion"] for item in results[fc.BODY]})
         wrapper = self.get_config_wrapper(config)
-        fus_tools.construct_whizbam_links(arriba_path, base_dir, fusion_dir, output_dir, json_template_path, unique_fusions, wrapper)
-        
+        fus_tools.construct_whizbam_links(arriba_path, base_dir, fusion_dir, output_dir, json_template_path, unique_fusions, config, wrapper)
+        return data  
 
     def specify_params(self):
         discovered = [

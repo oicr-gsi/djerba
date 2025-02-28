@@ -15,6 +15,7 @@ MIN_FUSION_READS = 'minimum fusion reads'
 # JSON results keys
 TOTAL_VARIANTS = "Total variants"
 CLINICALLY_RELEVANT_VARIANTS = "Clinically relevant variants"
+NCCN_RELEVANT_VARIANTS = "NCCN relevant variants"
 BODY = 'body'
 FRAME = 'frame'
 GENE = 'gene'

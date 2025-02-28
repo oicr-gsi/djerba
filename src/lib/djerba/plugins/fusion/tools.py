@@ -8,6 +8,7 @@ import os
 import re
 import zlib
 import base64
+import json
 import pandas as pd
 from djerba.util.logger import logger
 from djerba.util.oncokb.tools import levels as oncokb_levels
@@ -22,7 +23,7 @@ import djerba.plugins.fusion.constants as fc
 import djerba.core.constants as core_constants
 from djerba.util.subprocess_runner import subprocess_runner
 
-class fusion_reader(logger):
+class fusion_tools(logger):
 
     def __init__(self, work_dir, log_level=logging.WARNING, log_path=None):
         super().__init__()
@@ -73,14 +74,14 @@ class fusion_reader(logger):
 
         return results, gene_info, treatment_opts 
 
-    def construct_whizbam_links(self, tsv_file_path, base_dir, output_dir, fusion_dir, json_template_path, unique_fusions, wrapper):
+    def construct_whizbam_links(self, tsv_file_path, base_dir, fusion_dir, output_dir, json_template_path, unique_fusions, config, wrapper):
 
         failed_fusions = 0
         fusion_url_pairs = []
 
         for fusion in unique_fusions:
             try:
-                fusion, blurb_url = self.process_fusion(config, fusion, tsv_fule_path, json_template_path, output_dir, wrapper)
+                fusion, blurb_url = self.process_fusion(config, fusion, tsv_file_path, json_template_path, output_dir, wrapper)
                 fusion_url_pairs.append([fusion, blurb_url])
 
             except FusionProcessingError as e:
@@ -97,11 +98,6 @@ class fusion_reader(logger):
             writer.writerow(['Fusion', 'Whizbam URL'])
             writer.writerows(fusion_url_pairs)
 
-        return data
-
-
-    
-    
     def get_oncokb_annotated_df(self):
         """
         Get the oncokb df and turn it into a dataframe
@@ -266,22 +262,20 @@ class fusion_reader(logger):
                         summary=summaries.get(gene)
                     )
                     gene_info.append(gene_info_entry)
-                    therapies = fusion.get_therapies()
-                    for level in therapies.keys():
-                        if oncokb_order != oncokb_levels.oncokb_order('P'):
-                            entries = self.build_treatment_entries(
-                                fusion,
-                                therapies,
-                                oncotree_code.lower()
-                            )
-                            treatment_opts.extend(entries)
-                        else:
-                            entries = self.build_treatment_entries_nccn(
-                                fusion,
-                                therapies,
-                                oncotree_code.lower()
-                            )
-                            treatment_opts.extend(entries)
+                therapies = fusion.get_therapies()
+                if oncokb_order != oncokb_levels.oncokb_order('P'):
+                    treatment_opts = self.build_treatment_entries(
+                            fusion, 
+                            therapies, 
+                            oncotree_code
+                    )
+                else:
+                    treatment_opts = self.build_treatment_entries_nccn(
+                            fusion,
+                            therapies,
+                            oncotree_code
+                    )
+
         return rows, gene_info, treatment_opts
     
     def get_fusions(self):
@@ -448,7 +442,5 @@ class fusion:
     def get_therapies(self):
         return self.therapies
 
-
-
-
-
+class FusionProcessingError(Exception):
+    pass
