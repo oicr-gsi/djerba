@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-1455: New `tar.status` plugin to add a display box for ctDNA status
+
 ## 1.8.0: 2025-02-25
 - GCGI-1473: Remove R code from wgts.snv_indel and wgts.cnv_purple plugins
 - GCGI-1499: Fixes to tests, including finer control of JSON/HTML redaction
