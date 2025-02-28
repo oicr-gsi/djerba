@@ -59,8 +59,8 @@ class main(plugin_base):
         data[core_constants.MERGE_INPUTS]['gene_information_merger'] = gene_info
         data[core_constants.MERGE_INPUTS]['treatment_options_merger'] = treatment_opts
        
-        # Generating whizbam links for fusions
-        arriba_path = wrapper.get_my_string(fc.ARRIBA_PATH)
+        # Processing fusions and generating blob URLs
+        tsv_file_path = wrapper.get_my_string(fc.ARRIBA_PATH)
         base_dir = (directory_finder(self.log_level, self.log_path).get_base_dir())
         fusion_dir = os.path.join(base_dir, "plugins", "fusion")
         json_template_path = os.path.join(fusion_dir, fc.JSON_TO_BE_COMPRESSED)

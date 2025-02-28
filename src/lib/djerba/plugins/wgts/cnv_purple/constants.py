@@ -1,6 +1,7 @@
 CNV_PLOT = 'cnv plot'
 PURITY = 'purity'
 PLOIDY = 'ploidy'
+PLOTNINE_VERBOSE = 'plotnine_verbose'
 
 # FILE NAMES
 PURPLE_PURITY_RANGE = "purple_purity_file"
