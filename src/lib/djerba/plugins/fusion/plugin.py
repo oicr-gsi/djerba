@@ -52,35 +52,10 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         
         prepare_fusions(self.workspace.get_work_dir(), self.log_level, self.log_path).process_fusion_files(wrapper)
-        #prepare_fusions(self.workspace.get_work_dir(), self.log_level, self.log_path).process_fusion_files(wrapper)
         fus_reader = fusion_reader(self.workspace.get_work_dir(), self.log_level, self.log_path)
-        total_fusion_genes = fus_reader.get_total_fusion_genes()
-        gene_pair_fusions = fus_reader.get_fusions()
-        if gene_pair_fusions is not None:
+        results = fus_reader.assemble_data(wrapper.get_my_string(fc.ONCOTREE_CODE))
+        self.workspace.write_json("test_fusions_results.json", results)
 
-            outputs = fus_reader.fusions_to_json(gene_pair_fusions, wrapper.get_my_string(fc.ONCOTREE_CODE))
-            [rows, gene_info, treatment_opts] = outputs
-            
-            # Sort by OncoKB level
-            rows = sorted(rows, key=sort_by_actionable_level)
-            rows = oncokb_levels.filter_reportable(rows)
-            unique_rows = set(map(lambda x: x['fusion'], rows))
-
-            results = {
-                fc.TOTAL_VARIANTS: total_fusion_genes,
-                fc.CLINICALLY_RELEVANT_VARIANTS: len(unique_rows),
-                fc.NCCN_RELEVANT_VARIANTS: fus_reader.get_total_nccn_fusions(),
-                fc.BODY: rows
-            }
-        else:
-            results = {
-                fc.TOTAL_VARIANTS: 0,
-                fc.CLINICALLY_RELEVANT_VARIANTS: 0,
-                fc.NCCN_RELEVANT_VARIANTS: 0,
-                fc.BODY: []
-            }
-            gene_info = []
-            treatment_opts = []
 
         # Processing fusions and generating blob URLs
         tsv_file_path = wrapper.get_my_string(fc.ARRIBA_PATH)
