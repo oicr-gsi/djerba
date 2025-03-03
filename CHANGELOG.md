@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased: v1.8.1
+- GCGI-1518: Rounding down callability to match Dimsum instead of rounding up to one decimal place
+
 ## 1.8.0: 2025-02-25
 - GCGI-1473: Remove R code from wgts.snv_indel and wgts.cnv_purple plugins
 - GCGI-1499: Fixes to tests, including finer control of JSON/HTML redaction
