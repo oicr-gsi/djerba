@@ -2,6 +2,7 @@
 
 ## Unreleased: v1.8.1
 - GCGI-1455: New `tar.status` plugin to add a display box for ctDNA status
+- GCGI-1517: Remove obsolete R scripts and tests
 - GCGI-1518: Rounding down callability to match Dimsum instead of rounding up to one decimal place
 - GCGI-1519: Fixing whizbam link for SNVs to include chromosome number
 
