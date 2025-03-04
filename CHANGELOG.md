@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased: v1.8.1
+## v1.8.1: 2025-03-04
 - GCGI-1455: New `tar.status` plugin to add a display box for ctDNA status
 - GCGI-1517: Remove obsolete R scripts and tests
 - GCGI-1518: Rounding down callability to match Dimsum instead of rounding up to one decimal place
