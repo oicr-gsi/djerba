@@ -146,7 +146,7 @@ class snv_indel_processor(logger):
     def construct_whizbam_links(self, df, whizbam_url):
         if not df.empty:
             self.logger.debug("--- adding Whizbam links ---")
-            df['whizbam'] = whizbam_url + df['Chromosome'].str.replace("chr", "") + "&chrloc=" + df['Start_Position'].astype(str) + "-" + df['End_Position'].astype(str)
+            df['whizbam'] = whizbam_url + "&chr=" + df['Chromosome'].str.replace("chr", "") + "&chrloc=" + df['Start_Position'].astype(str) + "-" + df['End_Position'].astype(str)
         else:
             self.logger.debug("--- No Whizbam links added to empty file ---")
         
