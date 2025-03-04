@@ -1,7 +1,9 @@
 # CHANGELOG
 
-## Unreleased
+## Unreleased: v1.8.1
 - GCGI-1455: New `tar.status` plugin to add a display box for ctDNA status
+- GCGI-1518: Rounding down callability to match Dimsum instead of rounding up to one decimal place
+- GCGI-1519: Fixing whizbam link for SNVs to include chromosome number
 
 ## 1.8.0: 2025-02-25
 - GCGI-1473: Remove R code from wgts.snv_indel and wgts.cnv_purple plugins

@@ -1,6 +1,7 @@
 """
 Sample plugin for WGTS
 """
+import math
 import os
 import logging
 import json
@@ -119,7 +120,8 @@ class main(plugin_base):
             [columns_of_interest.GroupID, columns_of_interest.Donor, columns_of_interest.Callability]
             ]
         if len(data) == 1:
-            callability = round(data.iloc[0][columns_of_interest.Callability].item() * 100,1)
+            # Round down to one decimal place
+            callability = math.floor(data.iloc[0][columns_of_interest.Callability].item() * 1000) / 10
             return callability
         elif len(data) > 1:
             msg = "Djerba found more than one callability associated with donor {0} and tumour_id {1} in QC-ETL. Double check that the callability found by Djerba is correct; if not, may have to manually specify the callability.".format(donor, tumour_id)
