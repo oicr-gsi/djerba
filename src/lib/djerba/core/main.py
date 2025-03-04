@@ -543,6 +543,7 @@ class main(main_base):
                 'patient_info',
                 'case_overview',
                 'treatment_options_merger',
+                'tar.status',
                 'summary',
                 'tar.sample',
                 'tar.snv_indel',

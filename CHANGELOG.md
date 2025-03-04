@@ -1,10 +1,17 @@
 # CHANGELOG
 
-## Unreleased: v1.8.0
+## v1.8.1: 2025-03-04
+- GCGI-1455: New `tar.status` plugin to add a display box for ctDNA status
+- GCGI-1517: Remove obsolete R scripts and tests
+- GCGI-1518: Rounding down callability to match Dimsum instead of rounding up to one decimal place
+- GCGI-1519: Fixing whizbam link for SNVs to include chromosome number
+
+## 1.8.0: 2025-02-25
 - GCGI-1473: Remove R code from wgts.snv_indel and wgts.cnv_purple plugins
 - GCGI-1499: Fixes to tests, including finer control of JSON/HTML redaction
 - Add a new `template_dir` parameter to the `supplement.body` plugin
-- GCGI-1500: Add Novaseq X Plus version v1.2 
+- GCGI-1500: Add Novaseq X Plus version v1.2
+- GCGI-1502: Update contact email address in report header
 
 ## 1.7.9: 2025-01-22
 - GCGI-1461: Fix output paths in calls to get_logger
