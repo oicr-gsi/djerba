@@ -50,6 +50,7 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         
         prepare_fusions(self.workspace.get_work_dir(), self.log_level, self.log_path).process_fusion_files(wrapper)
+    
         fus_tools = fusion_tools(self.workspace.get_work_dir(), self.log_level, self.log_path)
         results, gene_info, treatment_opts = fus_tools.assemble_data(wrapper.get_my_string(fc.ONCOTREE_CODE))
         #self.workspace.write_json("test_fusions_results.json", results)
@@ -67,7 +68,7 @@ class main(plugin_base):
         output_dir = self.workspace.get_work_dir()
         unique_fusions = list({item["fusion"] for item in results[fc.BODY]})
         wrapper = self.get_config_wrapper(config)
-        fus_tools.construct_whizbam_links(arriba_path, base_dir, fusion_dir, output_dir, json_template_path, unique_fusions, config, wrapper)
+        fus_tools.construct_whizbam_links(tsv_file_path, base_dir, fusion_dir, output_dir, json_template_path, unique_fusions, config, wrapper)
         return data  
 
     def specify_params(self):

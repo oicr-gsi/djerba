@@ -34,6 +34,7 @@ class fusion_tools(logger):
         self.df_fusions = self.get_fusions_df()
         self.df_fusions_indexed = self.df_fusions.copy().set_index('fusion_pairs')
         self.df_oncokb = self.get_oncokb_annotated_df()
+        self.df_nccn = self.get_nccn_df()
 
 
     def assemble_data(self, oncotree_code):
@@ -49,8 +50,9 @@ class fusion_tools(logger):
         results = {}
         results[fc.CLINICALLY_RELEVANT_VARIANTS] = len(self.df_oncokb)
         self.clinically_relevant_variants = len(self.df_oncokb) # value used by self.get_fusion_objects()
+        results[fc.NCCN_RELEVANT_VARIANTS] = self.get_nccn_variants()
+        self.nccn_relevant_variants = len(self.df_nccn) # value used by self.get_fusion_objects()
         results[fc.TOTAL_VARIANTS] = self.get_total_variants()
-        results[fc.NCCN_VARIANTS] = 0
 
         # Get all fusions
         fusions = self.get_fusion_objects()
@@ -66,9 +68,8 @@ class fusion_tools(logger):
             unique_rows = set(map(lambda x: x['fusion'], rows))
 
             results[fc.BODY] = rows
-        
         else:
-            results[fc.body] = 0
+            results[fc.BODY] = []
             gene_info = []
             treatment_opts = []
 
@@ -114,6 +115,13 @@ class fusion_tools(logger):
         df = pd.read_csv(os.path.join(self.work_dir, fc.DATA_FUSIONS), sep = "\t")
         return df
 
+    def get_nccn_df(self):
+        """
+        Get the NCCN df and turn it into a dataframe
+        """
+        df = pd.read_csv(os.path.join(self.work_dir, fc.DATA_FUSIONS_NCCN), sep = "\t")
+        df = df[~df["Fusion"].str.contains("None")]
+        return df
 
     def get_total_variants(self):
         """
@@ -149,12 +157,22 @@ class fusion_tools(logger):
         return total_variants
 
 
+    def get_nccn_variants(self):
+        """
+        Counts the number of fusion PAIRS as NCCN number is reported as a pair.
+        Deduplication was done in preprocess.py
+        """
+        # Get nccn variants
+        nccn_variants = len(self.df_nccn)
+        return nccn_variants
+
     def get_fusion_objects(self):
         """
         """
 
-        def get_fusion_object(row):
+        def get_fusion_object(row, nccn=False):
             """
+            If nccn = True, use prognostic level.
             """
 
             fusion_id_hyphen = row["Fusion"]
@@ -162,10 +180,16 @@ class fusion_tools(logger):
             gene2 = fusion_id_hyphen.split("-", 1)[1]
             fusion_id = "::".join([gene1, gene2])
             reading_frame = self.df_fusions_indexed.loc[fusion_id_hyphen, "reading_frame_simple"]
-            event_type = self.df_fusions_indexed.loc[fusion_id_hyphen, "event_type"]
-            level = oncokb_levels.parse_oncokb_level(row)
-            therapies = oncokb_levels.parse_actionable_therapies(row)
-            effect =  row['MUTATION_EFFECT']
+            event_type = self.df_fusions_indexed.loc[fusion_id_hyphen, "event_type_simple"]
+            
+            if nccn == True:
+                effect = "Undetermined"
+                level = "P"
+                therapies = {"P": "Prognostic"}
+            else:
+                level = oncokb_levels.parse_oncokb_level(row)
+                therapies = oncokb_levels.parse_actionable_therapies(row)
+                effect = row['MUTATION_EFFECT']
 
             fusion_object = fusion(
                     fusion_id,
@@ -186,9 +210,14 @@ class fusion_tools(logger):
             for row in self.df_oncokb.iterrows():
                 fusion_object = get_fusion_object(row[1].fillna(""))
                 fusions.append(fusion_object)
+        if self.nccn_relevant_variants != 0:
+            for row in self.df_nccn.iterrows():
+                fusion_object = get_fusion_object(row[1].fillna(""), nccn=True)
+                fusions.append(fusion_object)
 
         # Sort them
         fusions = sorted(fusions, key=lambda f: f.get_fusion_id())
+
         return fusions
 
 
