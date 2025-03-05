@@ -1,4 +1,5 @@
 from djerba import __version__
+import djerba.core.constants as core_constants
 
 ##LINKS
 ARRIBA_LINK="https://github.com/suhrig/arriba"
@@ -51,8 +52,17 @@ SUPPLEMENT_DJERBA_VERSION="0.1"
 VARIANTEFFECTPREDICTOR_VERSION="105.0"
 PIPELINE_VERSION = "5.0"
 
-def make_component_versions_string(versions):
+def make_component_info_string(components):
     # convenience method to stringify the versions dictionary at Mako render time
-    components = sorted(list(versions.keys()))
-    version_list = ['{0} ({1})'.format(c, versions[c]) for c in components]
-    return ', '.join(version_list)
+    # also insert URLs if available
+    component_names = sorted(list(components.keys()))
+    info_list = []
+    for name in component_names:
+        url = components[name][core_constants.URL_KEY]
+        version = components[name][core_constants.VERSION_KEY]
+        if url == None:
+            entry = '{0} ({1})'.format(name, version)
+        else:
+            entry = '<a href={0}>{1}</a> ({2})'.format(url, name, version)
+        info_list.append(entry)
+    return ', '.join(info_list)

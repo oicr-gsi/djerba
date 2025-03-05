@@ -29,6 +29,9 @@ class main(plugin_base):
     GENETICIST_ID_DEFAULT = 'XXXXXXX'
     REPORT_SIGNOUT_DEFAULT = 'yyyy-mm-dd'
 
+    # example URL for testing purposes, change to plugin repo when available
+    URL = 'https://example.com/'
+
     def check_assay_name(self, wrapper):
         [ok, msg] = assays.name_status(wrapper.get_my_string(self.ASSAY))
         if not ok:
@@ -89,8 +92,8 @@ class main(plugin_base):
             msg = "Excluding sign-offs for non-clinical attribute: {0}".format(attributes_list)
             self.logger.warning(msg)
         # read component version JSON written by core
-        with self.workspace.open_file(core_constants.VERSIONS_FILENAME) as component_file:
-            component_versions = json.loads(component_file.read())
+        with self.workspace.open_file(core_constants.COMPONENT_FILENAME) as component_file:
+            component_info = json.loads(component_file.read())
         data = {
             'plugin_name': self.identifier+' plugin',
             'priorities': wrapper.get_my_priorities(),
@@ -98,7 +101,7 @@ class main(plugin_base):
             'merge_inputs': {},
             'results': {
                 self.ASSAY: wrapper.get_my_string(self.ASSAY),
-                self.COMPONENTS: component_versions,
+                self.COMPONENTS: component_info,
                 self.FAILED: wrapper.get_my_boolean(self.FAILED),
                 core_constants.AUTHOR: config['core'][core_constants.AUTHOR],
                 self.EXTRACT_DATE: draft_date,
