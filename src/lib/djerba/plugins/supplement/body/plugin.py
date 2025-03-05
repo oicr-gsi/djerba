@@ -108,6 +108,7 @@ class main(plugin_base):
                 self.INCLUDE_SIGNOFFS: include_signoffs,
                 self.TEMPLATE_DIR: wrapper.get_my_string(self.TEMPLATE_DIR)
             },
+            core_constants.URL_KEY: self.URL,
             'version': self.PLUGIN_VERSION,
         }
         if include_signoffs:
