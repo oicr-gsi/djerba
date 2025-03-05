@@ -50,3 +50,9 @@ STARFUSION_VERSION="1.8.1"
 SUPPLEMENT_DJERBA_VERSION="0.1"
 VARIANTEFFECTPREDICTOR_VERSION="105.0"
 PIPELINE_VERSION = "5.0"
+
+def make_component_versions_string(versions):
+    # convenience method to stringify the versions dictionary at Mako render time
+    components = sorted(list(versions.keys()))
+    version_list = ['{0} ({1})'.format(c, versions[c]) for c in components]
+    return ', '.join(version_list)

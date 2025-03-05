@@ -1,4 +1,6 @@
-"""Djerba plugin for pwgs supplement"""
+"""Djerba plugin for supplementary report section"""
+
+import json
 import logging
 import os
 from djerba.plugins.base import plugin_base, DjerbaPluginError
@@ -16,6 +18,7 @@ class main(plugin_base):
     PLUGIN_VERSION = '0.1'
     FAILED = "failed"
     ASSAY = "assay"
+    COMPONENTS = 'components'
     REPORT_SIGNOFF_DATE = "report_signoff_date"
     USER_SUPPLIED_DRAFT_DATE = "user_supplied_draft_date"
     GENETICIST = "clinical_geneticist_name"
@@ -85,6 +88,9 @@ class main(plugin_base):
             include_signoffs = False
             msg = "Excluding sign-offs for non-clinical attribute: {0}".format(attributes_list)
             self.logger.warning(msg)
+        # read component version JSON written by core
+        with self.workspace.open_file(core_constants.VERSIONS_FILENAME) as component_file:
+            component_versions = json.loads(component_file.read())
         data = {
             'plugin_name': self.identifier+' plugin',
             'priorities': wrapper.get_my_priorities(),
@@ -92,6 +98,7 @@ class main(plugin_base):
             'merge_inputs': {},
             'results': {
                 self.ASSAY: wrapper.get_my_string(self.ASSAY),
+                self.COMPONENTS: component_versions,
                 self.FAILED: wrapper.get_my_boolean(self.FAILED),
                 core_constants.AUTHOR: config['core'][core_constants.AUTHOR],
                 self.EXTRACT_DATE: draft_date,
