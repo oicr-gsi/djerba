@@ -214,6 +214,8 @@ class prepare_fusions(logger):
                 
                 if chrom1 == "X" or chrom2 == "X":
                     return f"t({min(chrom1, chrom2)};X)" 
+                elif chrom1 == "Y" or chrom2 == "Y":
+                    return f"t({min(chrom1, chrom2)};Y)"
                 else:
                     chrom1_num = int(chrom1)
                     chrom2_num = int(chrom2)
