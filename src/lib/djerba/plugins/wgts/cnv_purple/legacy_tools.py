@@ -7,7 +7,7 @@ import json
 import logging
 import os
 import djerba.core.constants as core_constants
-import djerba.plugins.wgts.common.cnv.constants as cnv
+import djerba.plugins.wgts.cnv_purple.legacy_constants as cnv
 import djerba.util.oncokb.constants as oncokb_constants
 from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
