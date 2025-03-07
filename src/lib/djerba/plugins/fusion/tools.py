@@ -323,8 +323,8 @@ class fusion_tools(logger):
             raise FusionProcessingError(msg)
 
         # Format breakpoints
-        formatted_breakpoint1 = self.format_breakpoint(breakpoint1)
-        formatted_breakpoint2 = self.format_breakpoint(breakpoint2)
+        formatted_breakpoint1 = whizbam_tools.format_breakpoint(breakpoint1)
+        formatted_breakpoint2 = whizbam_tools.format_breakpoint(breakpoint2)
 
         # Load the JSON template
         with open(json_template_path, 'r') as json_file:
@@ -378,7 +378,7 @@ class fusion_tools(logger):
         # Compress JSON and generate blurb URL
         with open(output_json_path, 'r') as json_output_file:
             json_content = json_output_file.read()
-        compressed_b64_data = self.compress_string(json_content)
+        compressed_b64_data = whizbam_tools.compress_string(json_content)
         blurb_url = f"https://whizbam.oicr.on.ca/igv?sessionURL=blob:{compressed_b64_data}"
         return fusion, blurb_url
 
@@ -392,13 +392,17 @@ class fusion_tools(logger):
                     return row['breakpoint1'], row['breakpoint2']
         return None, None
 
-    def format_breakpoint(self, breakpoint):
+class whizbam_tools:
+
+    @staticmethod
+    def format_breakpoint(breakpoint):
         # Format breakpoint into 'chr:start-end' format
         chrom, pos = breakpoint.split(':')
         start = int(pos)
         return f"{chrom}:{start}-{start + 1}"
-
-    def compress_string(self, input_string):
+    
+    @staticmethod
+    def compress_string(input_string):
         # Convert string to bytes
         input_bytes = input_string.encode(core_constants.TEXT_ENCODING)
         # Compress using raw deflate (no zlib header)
