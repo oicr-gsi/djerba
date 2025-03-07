@@ -58,15 +58,15 @@ class prepare_fusions(logger):
             raise FileNotFoundError(msg)
 
         tumour_id = config_wrapper.get_my_string(core_constants.TUMOUR_ID)
-        oncotree = config_wrapper.get_my_string(fc.ONCOTREE_CODE)
-        oncotree = oncotree.upper()
-        entrez_conv_path = config_wrapper.get_my_string(fc.ENTREZ_CONVERSION_PATH)
+        oncotree_code = config_wrapper.get_my_string(fc.ONCOTREE_CODE)
+        oncotree_code = oncotree_code.upper()
+        #entrez_conv_path = config_wrapper.get_my_string(fc.ENTREZ_CONVERSION_PATH)
         min_reads = config_wrapper.get_my_int(fc.MIN_FUSION_READS)
         
         self.logger.info("Processing fusion (mavis and arriba) results and writing fusion files")
         df_mavis = self.process_mavis(mavis_path, tumour_id, min_reads)
         df_arriba = self.process_arriba(arriba_path)
-        self.write_fusion_files(df_mavis, df_arriba)
+        self.write_fusion_files(df_mavis, df_arriba, oncotree_code)
         self.annotate_fusion_files(config_wrapper)
         self.logger.info("Finished writing fusion files")
 
@@ -107,7 +107,7 @@ class prepare_fusions(logger):
             Filters those entries for which read support is less than 20.
             Returns a sorted dfframe
             """
-            df = df[df["read_support"] >= min_reads]
+            df = df[df["read_support"] > min_reads] # > min_reads (as opposed to >= min_reads) was taken from legacy code. 
             df = df.sort_values(by=["read_support"], ascending=False)
             return df
                 
@@ -249,7 +249,7 @@ class prepare_fusions(logger):
         new_df = self.drop_duplicates(new_df, ["fusion_pairs"])
         new_df = new_df[~new_df["fusion_pairs"].str.contains("None")]
         # Change headers
-        new_df.rename(columns={'Sample': 'Tumour_Sample_Barcode', 'fusion_pairs': 'Fusion'}, inplace=True)
+        new_df.rename(columns={'Sample': 'Tumor_Sample_Barcode', 'fusion_pairs': 'Fusion'}, inplace=True)
 
         return new_df
       
@@ -341,6 +341,14 @@ class prepare_fusions(logger):
             df["translocation"],
             df["event_type"]
         )
+
+        # Replace "inversion" with the corresponding inversion
+        df["event_type_simple"] = np.where(
+            df["event_type"].str.contains("inversion"),
+            "inv(" + df["break1_chromosome"].astype(str) + ")",
+            df["event_type_simple"]
+        )
+
         return df
 
     def split_column_take_max(self, df):
@@ -397,7 +405,7 @@ class prepare_fusions(logger):
         df["fusion_pairs"] = df.apply(lambda row: "-".join(sorted([str(row[column1]), str(row[column2])])), axis=1)
         return df 
 
-    def process_nccn(self, df_merged):
+    def process_nccn(self, df_merged, oncotree_code):
         """
         Looks only at the NCCN translocations in djerba/data/NCCN_annotations.txt
         Makes the nccn dataframe that will be ready for input into the oncokb annotator.
@@ -409,17 +417,18 @@ class prepare_fusions(logger):
         """
 
         df_annotations = pd.read_csv(os.path.join(self.data_dir, fc.NCCN_ANNOTATION_FILE), sep = '\t')
-        marker_list = df_annotations["marker"].tolist()
+        
+        marker_dict = dict(zip(df_annotations["marker"], df_annotations["oncotree"]))
+        #marker_list = df_annotations["marker"].tolist()
 
-        dict_nccn = {"Tumour_Sample_Barcode":[], "Fusion": []}
+        dict_nccn = {"Tumor_Sample_Barcode":[], "Fusion": []}
         for row in df_merged.iterrows():
-            if row[1]["translocation"] in marker_list:
+            translocation = row[1]["translocation"]
+            if translocation in marker_dict and oncotree_code == marker_dict[translocation]:
                 dict_nccn["Fusion"].append(row[1]["fusion_pairs"])
-                dict_nccn["Tumour_Sample_Barcode"].append(row[1]["Sample"])
+                dict_nccn["Tumor_Sample_Barcode"].append(row[1]["Sample"])
 
         df_nccn = pd.DataFrame(dict_nccn)
-        # Remove duplicates
-        #df_nccn = self.drop_duplicates(df_nccn, ["Fusion"])
         return df_nccn
         
 
@@ -504,7 +513,7 @@ class prepare_fusions(logger):
 
         return df_merged
 
-    def write_fusion_files(self, df_mavis, df_arriba):
+    def write_fusion_files(self, df_mavis, df_arriba, oncotree_code):
         """
         Writes data_fusions.txt to the workspace.
         It also writes data_fusions_oncokb.txt to the workspace.
@@ -522,7 +531,7 @@ class prepare_fusions(logger):
         df_merged = self.merge_mavis_arriba(df_mavis, df_arriba)
 
         # Get the NCCN calls
-        df_nccn = self.process_nccn(df_merged)
+        df_nccn = self.process_nccn(df_merged, oncotree_code)
 
         # Make the dataframe for oncokb annotation
         df_oncokb = self.df_for_oncokb_annotator(df_merged)

@@ -105,7 +105,8 @@ class fusion_tools(logger):
         Only return those for which the mutation effect is not Unknown
         """
         df = pd.read_csv(os.path.join(self.work_dir, fc.DATA_FUSIONS_ANNOTATED), sep = "\t")
-        df = df[df.MUTATION_EFFECT != "Unknown"]
+        if len(df) > 0:
+            df = df[df.MUTATION_EFFECT != "Unknown"]
         return df
 
     def get_fusions_df(self):
@@ -250,7 +251,7 @@ class fusion_tools(logger):
                 level=level,
                 treatments=therapies[level],
                 gene=fusion.get_event_type(),
-                alteration='Fusion',
+                alteration='Fusions and structural variants',
                 #TODO: pull URL from NCCN_annotation.txt
                 alteration_url="https://www.nccn.org/professionals/physician_gls/pdf/myeloma_blocks.pdf"
             )
@@ -307,11 +308,11 @@ class fusion_tools(logger):
 
         return rows, gene_info, treatment_opts
     
-    def get_fusions(self):
-        return self.fusions
+    #def get_fusions(self):
+    #    return self.fusions
 
-    def get_total_nccn_fusions(self):
-        return self.total_nccn_fusions
+    #def get_total_nccn_fusions(self):
+    #    return self.total_nccn_fusions
     
     def process_fusion(self, config, fusion, tsv_file_path, json_template_path, output_dir, wrapper):
 
