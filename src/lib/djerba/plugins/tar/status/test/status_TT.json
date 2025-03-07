@@ -1,0 +1,18 @@
+{
+    "attributes": [
+        "clinical"
+    ],
+    "merge_inputs": {},
+    "plugin_name": "tar.status plugin",
+    "priorities": {
+        "configure": 300,
+        "extract": 300,
+        "render": 300
+    },
+    "results": {
+        "any_ctdna_detected": "Detected",
+        "copy_number_ctdna_detected": "ctDNA detected",
+        "small_mutation_ctdna_detected": "ctDNA detected"
+    },
+    "version": "1.0.0"
+}

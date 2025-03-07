@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## Unreleased: v1.8.2
+- GCGI-1484: Refactor the `plugins/wgts/common` directory, moving code to better locations
+- GCGI-1515: Make `mrdetect_filter_only` inputs optional for non-clinical reports
+- Fix issue with benchmark plugin; test no longer breaks when Djerba core version is changed
+
+## v1.8.1: 2025-03-04
+- GCGI-1455: New `tar.status` plugin to add a display box for ctDNA status
+- GCGI-1517: Remove obsolete R scripts and tests
+- GCGI-1518: Rounding down callability to match Dimsum instead of rounding up to one decimal place
+- GCGI-1519: Fixing whizbam link for SNVs to include chromosome number
+
 ## 1.8.0: 2025-02-25
 - GCGI-1473: Remove R code from wgts.snv_indel and wgts.cnv_purple plugins
 - GCGI-1499: Fixes to tests, including finer control of JSON/HTML redaction

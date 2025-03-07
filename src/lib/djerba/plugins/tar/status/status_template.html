@@ -1,0 +1,29 @@
+<%
+  from djerba.plugins.tar.status.plugin import main as plugin
+%>
+
+<div>&nbsp;</div>
+<hr class="big-white-line">
+<div class="twocellmain">
+  <div class="oneoftwocellmain">
+    <h2>ctDNA<br>Status</h2>
+  </div>
+  <div class="twooftwocellmain">
+    <hr class="big-line">
+    <div>&nbsp;</div>
+    <div class="twooftwocellmain" style="height: auto; padding: 10px; background-color:rgba(194,194,194,.5); border: 3px solid; border-radius: 12px; margin-bottom: 20px;">
+      <h3 style="margin-top: 20px;">Cell-free DNA tumour burden: ${results.get(plugin.ANY_CTDNA_DETECTED)}</h3>
+      <table class="info" style="margin-bottom: 20px;">
+        <tr>
+          <td>Copy number analysis:</td>
+          <td>${results.get(plugin.COPY_NUMBER_CTDNA_DETECTED)}</td>
+        </tr>
+        <tr>
+          <td>Small mutation analysis:</td>
+          <td>${results.get(plugin.SMALL_MUTATION_CTDNA_DETECTED)}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
