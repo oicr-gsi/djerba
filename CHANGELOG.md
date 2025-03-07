@@ -4,6 +4,7 @@
 - GCGI-1484: Refactor the `plugins/wgts/common` directory, moving code to better locations
 - GCGI-1515: Make `mrdetect_filter_only` inputs optional for non-clinical reports
 - Fix issue with benchmark plugin; test no longer breaks when Djerba core version is changed
+- GCGI-1506: Replace fusions.R with preprocess.py and refactor fusions plugin 
 
 ## v1.8.1: 2025-03-04
 - GCGI-1455: New `tar.status` plugin to add a display box for ctDNA status
