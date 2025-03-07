@@ -36,12 +36,11 @@ class fusion_tools(logger):
         self.df_oncokb = self.get_oncokb_annotated_df()
         self.df_nccn = self.get_nccn_df()
 
-
     def assemble_data(self, oncotree_code):
         """
-        Assemble the results for plugin.py/extract 
+        MAIN FUNCTION, called by Extract 
         Also returns gene info and treatment options 
-        For every oncogenic entry in oncokb df, get the information from fusions df
+        For every oncogenic entry in df_oncokb_annotated.txt, get the information from df_fusions.txt.
         """
         
         def sort_by_actionable_level(row):
@@ -54,7 +53,7 @@ class fusion_tools(logger):
         self.nccn_relevant_variants = len(self.df_nccn) # value used by self.get_fusion_objects()
         results[fc.TOTAL_VARIANTS] = self.get_total_variants()
 
-        # Get all fusions
+        # Get all fusions, both OncoKB and NCCN fusions 
         fusions = self.get_fusion_objects()
 
         # If there are fusions...
@@ -124,51 +123,10 @@ class fusion_tools(logger):
         df = df[~df["Fusion"].str.contains("None")]
         return df
 
-    def get_total_variants(self):
-        """
-        Counts the number of UNIQUE genes in the fusions.
-        Excludes Nones.
-        Ex:
-            NEMF-None
-            DAZAP1-SBNO2
-            MALRD1-MLLT10 
-            KLK6-LDHB
-            None-SLC25A3
-            ANO1-None
-            None-SBNO2
-        This list should return a total of 9. 
-        
-        Code explanation:
-            Gets a list of fusions by breaking up the separator -
-            Some genes are hyphenated (ex. Gene1-Gene2-alpha is actually Gene1::Gene2-alpha).
-            We should only split on the first hyphen. 
-            Split will do 'KRAS-FGFR2' --> ['KRAS', 'FGFR2']
-            Then, df.explode will make 'KRAS' and 'FGFR2' into two new rows for easy counting
-        """
-        # Get a unique list of fusions
-        fusions = self.df_fusions['fusion_pairs'].str.split("-", n=1).explode('fusion_pairs')
-        unique_fusions = list(set(fusions.to_list()))
-        
-        # We don't want to count Nones
-        if "None" in unique_fusions:
-            unique_fusions.remove("None")
-        
-        # Get total variants
-        total_variants = len(unique_fusions)
-        return total_variants
-
-
-    def get_nccn_variants(self):
-        """
-        Counts the number of fusion PAIRS as NCCN number is reported as a pair.
-        Deduplication was done in preprocess.py
-        """
-        # Get nccn variants
-        nccn_variants = len(self.df_nccn)
-        return nccn_variants
-
     def get_fusion_objects(self):
         """
+        Returns a list of fusion objects.
+        The fusion "object" is defined by the fusion class.
         """
 
         def get_fusion_object(row, nccn=False):
@@ -177,14 +135,9 @@ class fusion_tools(logger):
             """
 
             fusion_id_hyphen = row["Fusion"]
-            #gene1 = fusion_id_hyphen.split("-", 1)[0]
-            #gene2 = fusion_id_hyphen.split("-", 1)[1]
-            #fusion_id = "::".join([gene1, gene2])
-            
             fusion_id = self.df_fusions_indexed.loc[fusion_id_hyphen, "fusion_pairs_reordered"]
             gene1 = fusion_id.split("::", 1)[0]
             gene2 = fusion_id.split("::", 1)[1]
-
             reading_frame = self.df_fusions_indexed.loc[fusion_id_hyphen, "reading_frame_simple"]
             event_type = self.df_fusions_indexed.loc[fusion_id_hyphen, "event_type_simple"]
             
@@ -226,6 +179,46 @@ class fusion_tools(logger):
 
         return fusions
 
+    def get_nccn_variants(self):
+        """
+        Counts the number of fusion PAIRS as NCCN number is reported as a pair.
+        Deduplication was done in preprocess.py
+        """
+        # Get nccn variants
+        nccn_variants = len(self.df_nccn)
+        return nccn_variants
+
+    def get_total_variants(self):
+        """
+        Counts the number of UNIQUE genes in the fusions.
+        Excludes Nones.
+        Ex:
+            NEMF-None
+            DAZAP1-SBNO2
+            MALRD1-MLLT10 
+            KLK6-LDHB
+            None-SLC25A3
+            ANO1-None
+            None-SBNO2
+        This list should return a total of 9. 
+        
+        Code explanation:
+            Gets a list of fusions by breaking up the separator -
+            Some genes are hyphenated (ex. Gene1-Gene2-alpha is actually Gene1::Gene2-alpha). We should only split on the first hyphen. 
+            Split will do 'KRAS-FGFR2' --> ['KRAS', 'FGFR2'] for every row.
+            Then, df.explode will make open these lists into new rows (ex. 'KRAS' and 'FGFR2' into two new rows) for easy counting.
+        """
+        # Get a unique list of fusions
+        fusions = self.df_fusions['fusion_pairs'].str.split("-", n=1).explode('fusion_pairs')
+        unique_fusions = list(set(fusions.to_list()))
+        
+        # We don't want to count Nones
+        if "None" in unique_fusions:
+            unique_fusions.remove("None")
+        
+        # Get total variants
+        total_variants = len(unique_fusions)
+        return total_variants
 
     def build_treatment_entries(self, fusion, therapies, oncotree_code):
         """Make an entry for the treatment options merger"""
@@ -262,7 +255,6 @@ class fusion_tools(logger):
             )
             entries.append(entry)
         return entries
-
 
     def fusions_to_json(self, gene_pair_fusions, oncotree_code):
         rows = []
