@@ -31,6 +31,8 @@ class main(helper_base):
     FPR_NAME = 'provenance_helper'
     WGTS = 'WGTS' # currently only used for WGTS
 
+    VERSION = '1.0.0'
+
     def configure(self, config):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)

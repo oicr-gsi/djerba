@@ -21,6 +21,7 @@
 	},
 	"merge_inputs": {"type": "object"},
 	"results": {"type": "object"},
+	"url": {"type": "string"},
 	"version": {"type": "string"}
     },
     "required": [

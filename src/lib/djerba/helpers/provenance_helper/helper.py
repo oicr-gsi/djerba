@@ -54,6 +54,8 @@ class main(helper_base):
     WF_ICHOR_JSON = 'metrics_json'
     WF_ICHOR_SEG = 'seg'
 
+    VERSION = '1.0.0'
+
     def configure(self, config):
         """
         Writes a subset of provenance, and informative JSON files, to the workspace

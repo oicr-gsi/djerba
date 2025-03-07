@@ -29,7 +29,20 @@ class configurable(core_base, ABC):
     - Get special directory paths from environment variables
     - Handle component priorities
     - Get/set/query INI params (other than priority levels)
+
+    Each subclass has a version string -- see the get_version() method.
+    There are 3 ways to define the version number of a subclass of "configurable":
+    1. Override the PLUGIN_VERSION class variable (plugins only)
+    2. Override the VERSION class variable
+    3. Override the get_version() method -- deprecated, but possible if additional logic is needed to evaluate version
+
+    Each subclass also has an optional URL, which can be set as follows:
+    1. Override the URL class variable
+    2. Override the get_url() method -- again, deprecated, but can be used if necessary
     """
+
+    VERSION = cc.UNDEFINED_VERSION
+    URL = cc.UNDEFINED_URL
 
     # default list of known attributes -- may override in subclasses
     KNOWN_ATTRIBUTES = [
@@ -109,6 +122,29 @@ class configurable(core_base, ABC):
             self.logger.error(msg)
             raise DjerbaConfigError(msg)
         return self.ini_defaults[param]
+
+    def get_url(self):
+        # get the component URL, or None if it is not defined
+        if hasattr(self, 'URL'):
+            if self.URL == cc.UNDEFINED_URL:
+                return None
+            else:
+                return self.URL
+        else:
+            return None
+
+    def get_version(self):
+        # get the component version string
+        # this is in the PLUGIN_VERSION class variable (if defined), VERSION otherwise
+        if hasattr(self, 'PLUGIN_VERSION'):
+            return self.PLUGIN_VERSION
+        elif hasattr(self, 'VERSION'):
+            return self.VERSION
+        else:
+            # should not happen, unless a subclass does something weird to self.VERSION
+            msg = "Component {0} has no version".format(self.identifier)
+            self.logger.error(msg)
+            raise ValueError(msg)
 
     def set_log_level(self, level):
         # use to change the log level set by the component loader, eg. for testing
