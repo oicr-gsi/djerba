@@ -1,5 +1,6 @@
 """
-Utility classes for the fusions plugin
+Fusion pre-processing of mavis and arriba files, as well as annotation.
+Replaces legacy R script: fusions.R
 """
 
 import csv
@@ -35,6 +36,8 @@ class prepare_fusions(logger):
 
     def process_fusion_files(self, config_wrapper): 
         """
+        MAIN FUNCTION, called by Extract.
+        
         Inputs:
         - mavis file
         - arriba file
@@ -317,7 +320,115 @@ class prepare_fusions(logger):
         """
         df1 = df1.merge(df2, on=column, how="left")
         return df1
+        
+    def merge_mavis_arriba(self, df_mavis, df_arriba):
+        """
+        This function merges mavis and arriba information and does some additional processing
+        This is for CGI to be able to review mavis and arriba information for called fusions.
+        Processing includes replacing unknown reading frames, removing duplicates, merging columns, etc.
 
+        """
+
+        # Merge df_arriba information into df_mavis
+        df_merged = self.left_join(df_mavis, df_arriba, "fusion_pairs")
+        # If reading frame is anything except in-frame, out-of-frame, or stop-codon, make it nan
+        df_merged = self.fix_reading_frames(df_merged)
+        # Remove duplicate fusions (but keep if they are different event types)
+        df_merged = self.drop_duplicates_merge_columns(df_merged)
+        # Remove fusions that are self-self pairs
+        df_merged = self.remove_self_fusions(df_merged)
+        # All nan reading frame columns should be Unknown
+        df_merged = self.add_unknown_reading_frame(df_merged)
+        # Simplify event type
+        df_merged = self.simplify_event_type(df_merged)
+        # Re-order fusions to be in 5'::3' order.
+        df_merged = self.reorder_fusions(df_merged)
+        # Delete all delly-only calls
+        # NOTE: this is supposedly because structural variants were not validated.
+        # NOTE: the old version of the fusion plugin also excluded delly-only calls.
+        df_merged = self.delete_delly_only_calls(df_merged)
+
+        return df_merged
+        
+    def process_arriba(self, arriba_path):
+        """
+        Process arriba information via pandas dataframe operations.
+        Processing includes changing column names and writing fusion pairs for merging with mavis.
+        Returns a processed arriba dataframe.
+        """
+        # Get the data_frame if the arriba path is not completely empty:
+        # Note: the code should work even if there is only a header.
+        if os.path.getsize(arriba_path) != 0:
+            df_arriba = pd.read_csv(arriba_path, sep = '\t')
+            # First two columns are called "#gene1" and "gene2". Rename first to "gene1" for convenience.
+            df_arriba = self.change_column_name(df_arriba, "#gene1", "gene1")    
+            # Add fusion tuples as well, for merging with mavis
+            df_arriba = self.write_fusion_pairs(df_arriba, "gene1", "gene2")
+        else:
+            msg = "Arriba file is completely empty (no header)."
+            self.logger.info(msg)
+            df_arriba = pd.DataFrame()
+
+        return df_arriba
+
+    def process_mavis(self, mavis_path, tumour_id, min_reads):
+        """
+        Process mavis information via pandas dataframe operations.
+        Processing includes fixing column formats, filtering by read support, adding translocation notation, etc.
+        Returns a processed mavis dataframe.
+        """
+        # Get the data_frame if the mavis path is not completely empty:
+        # Note: the code should work even if there is only a header 
+        if os.path.getsize(mavis_path) != 0:
+            df_mavis = pd.read_csv(mavis_path, sep = '\t')
+            # Add a column with tumour id
+            df_mavis = self.add_tumour_id(df_mavis, tumour_id)
+            # Preprocess the columns containing read information (Nones to 0, semi-colon entries, strings to floats, etc.)
+            df_mavis = self.split_column_take_max(df_mavis)
+            # Add a column with read support based on the call method
+            df_mavis = self.add_filter_sortby_read_support(df_mavis, min_reads)
+            # Only keep rows for which read support is greater than or equal to min_reads (20)
+            # df_mavis = self.filter_and_sort_read_support(df_mavis, min_reads)
+            # Add a column describing translocations if it's a translocation event (i.e. t(x;y) notation)
+            # Otherwise use None
+            df_mavis = self.add_translocation_notation(df_mavis)
+            # Add DNA_suppot and RNA_support columns
+            df_mavis = self.add_dna_rna_support(df_mavis) 
+            # Add a column with fusion pairs
+            df_mavis = self.write_fusion_pairs(df_mavis, "gene1_aliases", "gene2_aliases")
+        else:
+            msg = "Mavis file is completely empty (no header)."
+            self.logger.info(msg)
+            df_mavis = pd.DataFrame()
+        
+        return df_mavis
+        
+    def process_nccn(self, df_merged, oncotree_code):
+        """
+        Looks only at the NCCN translocations in djerba/data/NCCN_annotations.txt
+        Makes the nccn dataframe that will be ready for input into the oncokb annotator.
+        The annotator only requires two columns:
+            1. Tumor_Sample_Barcode     (ex. OCT2-01-0014-ARC_SE24-0335)
+            2. Fusion (ex. KRAS-FGFR2)
+        It is deduplicated further as the oncokb annotator does not care about event types.
+        We also remove any fusion pairs with None as they will not be reported in Djerba.
+        """
+
+        df_annotations = pd.read_csv(os.path.join(self.data_dir, fc.NCCN_ANNOTATION_FILE), sep = '\t')
+        
+        marker_dict = dict(zip(df_annotations["marker"], df_annotations["oncotree"]))
+        #marker_list = df_annotations["marker"].tolist()
+
+        dict_nccn = {"Tumor_Sample_Barcode":[], "Fusion": []}
+        for row in df_merged.iterrows():
+            translocation = row[1]["translocation"]
+            if translocation in marker_dict and oncotree_code == marker_dict[translocation]:
+                dict_nccn["Fusion"].append(row[1]["fusion_pairs"])
+                dict_nccn["Tumor_Sample_Barcode"].append(row[1]["Sample"])
+
+        df_nccn = pd.DataFrame(dict_nccn)
+        return df_nccn
+        
     def remove_self_fusions(self, df):
         """
         Removes fusions of the nature Fusion1-Fusion1
@@ -399,141 +510,6 @@ class prepare_fusions(logger):
                 [float(i) if i not in ["None", "nan"] else 0 for i in x.split(';')]  
             )))
         return df
-    
-    def write_fusion_pairs(self, df, column1, column2):
-        """
-        Takes genes in gene1_aliases and gene2_aliases and concatonates with ::
-        Ex. 
-    
-        gene1_aliases    gene2_aliases
-        FGFR2            KRAS
-        
-        Will make a third column
-        
-        gene1_aliases    gene2_aliases      fusion_pairs
-        FGFR2            KRAS               FGFR2-KRAS
-        
-        The new delimiter is ::, but - is used for now as OncoKB requires it.
-        It always orders it alphabetically.
-        """
-        # First change all nans to the string None
-        df[column1] = df[column1].replace({np.nan: None})
-        df[column2] = df[column2].replace({np.nan: None})
-    
-        
-        # Make fusion tuples 
-        df["fusion_pairs"] = df.apply(lambda row: "-".join(sorted([str(row[column1]), str(row[column2])])), axis=1)
-        return df 
-
-    def process_nccn(self, df_merged, oncotree_code):
-        """
-        Looks only at the NCCN translocations in djerba/data/NCCN_annotations.txt
-        Makes the nccn dataframe that will be ready for input into the oncokb annotator.
-        The annotator only requires two columns:
-            1. Tumor_Sample_Barcode     (ex. OCT2-01-0014-ARC_SE24-0335)
-            2. Fusion (ex. KRAS-FGFR2)
-        It is deduplicated further as the oncokb annotator does not care about event types.
-        We also remove any fusion pairs with None as they will not be reported in Djerba.
-        """
-
-        df_annotations = pd.read_csv(os.path.join(self.data_dir, fc.NCCN_ANNOTATION_FILE), sep = '\t')
-        
-        marker_dict = dict(zip(df_annotations["marker"], df_annotations["oncotree"]))
-        #marker_list = df_annotations["marker"].tolist()
-
-        dict_nccn = {"Tumor_Sample_Barcode":[], "Fusion": []}
-        for row in df_merged.iterrows():
-            translocation = row[1]["translocation"]
-            if translocation in marker_dict and oncotree_code == marker_dict[translocation]:
-                dict_nccn["Fusion"].append(row[1]["fusion_pairs"])
-                dict_nccn["Tumor_Sample_Barcode"].append(row[1]["Sample"])
-
-        df_nccn = pd.DataFrame(dict_nccn)
-        return df_nccn
-        
-
-    def process_mavis(self, mavis_path, tumour_id, min_reads):
-        """
-        Process mavis information via pandas dataframe operations.
-        Processing includes fixing column formats, filtering by read support, adding translocation notation, etc.
-        Returns a processed mavis dataframe.
-        """
-        # Get the data_frame if the mavis path is not completely empty:
-        # Note: the code should work even if there is only a header 
-        if os.path.getsize(mavis_path) != 0:
-            df_mavis = pd.read_csv(mavis_path, sep = '\t')
-            # Add a column with tumour id
-            df_mavis = self.add_tumour_id(df_mavis, tumour_id)
-            # Preprocess the columns containing read information (Nones to 0, semi-colon entries, strings to floats, etc.)
-            df_mavis = self.split_column_take_max(df_mavis)
-            # Add a column with read support based on the call method
-            df_mavis = self.add_filter_sortby_read_support(df_mavis, min_reads)
-            # Only keep rows for which read support is greater than or equal to min_reads (20)
-            # df_mavis = self.filter_and_sort_read_support(df_mavis, min_reads)
-            # Add a column describing translocations if it's a translocation event (i.e. t(x;y) notation)
-            # Otherwise use None
-            df_mavis = self.add_translocation_notation(df_mavis)
-            # Add DNA_suppot and RNA_support columns
-            df_mavis = self.add_dna_rna_support(df_mavis) 
-            # Add a column with fusion pairs
-            df_mavis = self.write_fusion_pairs(df_mavis, "gene1_aliases", "gene2_aliases")
-        else:
-            msg = "Mavis file is completely empty (no header)."
-            self.logger.info(msg)
-            df_mavis = pd.DataFrame()
-        
-        return df_mavis
-  
-  
-    def process_arriba(self, arriba_path):
-        """
-        Process arriba information via pandas dataframe operations.
-        Processing includes changing column names and writing fusion pairs for merging with mavis.
-        Returns a processed arriba dataframe.
-        """
-        # Get the data_frame if the arriba path is not completely empty:
-        # Note: the code should work even if there is only a header.
-        if os.path.getsize(arriba_path) != 0:
-            df_arriba = pd.read_csv(arriba_path, sep = '\t')
-            # First two columns are called "#gene1" and "gene2". Rename first to "gene1" for convenience.
-            df_arriba = self.change_column_name(df_arriba, "#gene1", "gene1")    
-            # Add fusion tuples as well, for merging with mavis
-            df_arriba = self.write_fusion_pairs(df_arriba, "gene1", "gene2")
-        else:
-            msg = "Arriba file is completely empty (no header)."
-            self.logger.info(msg)
-            df_arriba = pd.DataFrame()
-
-        return df_arriba
-
-    def merge_mavis_arriba(self, df_mavis, df_arriba):
-        """
-        This function merges mavis and arriba information and does some additional processing
-        This is for CGI to be able to review mavis and arriba information for called fusions.
-        Processing includes replacing unknown reading frames, removing duplicates, merging columns, etc.
-
-        """
-
-        # Merge df_arriba information into df_mavis
-        df_merged = self.left_join(df_mavis, df_arriba, "fusion_pairs")
-        # If reading frame is anything except in-frame, out-of-frame, or stop-codon, make it nan
-        df_merged = self.fix_reading_frames(df_merged)
-        # Remove duplicate fusions (but keep if they are different event types)
-        df_merged = self.drop_duplicates_merge_columns(df_merged)
-        # Remove fusions that are self-self pairs
-        df_merged = self.remove_self_fusions(df_merged)
-        # All nan reading frame columns should be Unknown
-        df_merged = self.add_unknown_reading_frame(df_merged)
-        # Simplify event type
-        df_merged = self.simplify_event_type(df_merged)
-        # Re-order fusions to be in 5'::3' order.
-        df_merged = self.reorder_fusions(df_merged)
-        # Delete all delly-only calls
-        # NOTE: this is supposedly because structural variants were not validated.
-        # NOTE: the old version of the fusion plugin also excluded delly-only calls.
-        df_merged = self.delete_delly_only_calls(df_merged)
-
-        return df_merged
 
     def write_fusion_files(self, df_mavis, df_arriba, oncotree_code):
         """
@@ -564,6 +540,31 @@ class prepare_fusions(logger):
         df_oncokb.to_csv(os.path.join(self.work_dir, fc.DATA_FUSIONS_ONCOKB), index = False, sep = "\t")
 
         df_nccn.to_csv(os.path.join(self.work_dir, fc.DATA_FUSIONS_NCCN), index = False, sep = "\t")
+
+    def write_fusion_pairs(self, df, column1, column2):
+        """
+        Takes genes in gene1_aliases and gene2_aliases and concatonates with ::
+        Ex. 
+    
+        gene1_aliases    gene2_aliases
+        FGFR2            KRAS
+        
+        Will make a third column
+        
+        gene1_aliases    gene2_aliases      fusion_pairs
+        FGFR2            KRAS               FGFR2-KRAS
+        
+        The new delimiter is ::, but - is used for now as OncoKB requires it.
+        It always orders it alphabetically.
+        """
+        # First change all nans to the string None
+        df[column1] = df[column1].replace({np.nan: None})
+        df[column2] = df[column2].replace({np.nan: None})
+    
+        
+        # Make fusion tuples 
+        df["fusion_pairs"] = df.apply(lambda row: "-".join(sorted([str(row[column1]), str(row[column2])])), axis=1)
+        return df 
 
 class FileNotFoundError(Exception):
     pass
