@@ -3,6 +3,7 @@
 import os
 import json
 import logging
+import re
 import unittest
 import tempfile
 from configparser import ConfigParser
@@ -33,9 +34,20 @@ class TestBenchmark(PluginTester):
         params = {
             self.INI: self.write_ini_file(data_dir),
             self.JSON: json_location,
-            self.MD5: '1a0c2362a66a098a607d5beebd378de4'
+            self.MD5: '69ba91305a05b193eff415afde9249f4'
         }
         self.run_basic_test(self.test_source_dir, params)
+
+    def redact_html(self, report_string):
+        # extends method of parent class
+        import sys
+        print("Calling redact_html", file=sys.stderr)
+        report_string = super().redact_html(report_string)
+        pattern = '<li>Djerba core version: .+</li>'
+        replacement = '<li>Djerba core version: PLACEHOLDER</li>'
+        report_string = re.sub(pattern, replacement, report_string)
+        print(re.search('1\.8\.1', report_string), file=sys.stderr)
+        return report_string
 
     def redact_json_data(self, data):
         redacted = deepcopy(data)
