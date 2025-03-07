@@ -40,13 +40,10 @@ class TestBenchmark(PluginTester):
 
     def redact_html(self, report_string):
         # extends method of parent class
-        import sys
-        print("Calling redact_html", file=sys.stderr)
         report_string = super().redact_html(report_string)
         pattern = '<li>Djerba core version: .+</li>'
         replacement = '<li>Djerba core version: PLACEHOLDER</li>'
         report_string = re.sub(pattern, replacement, report_string)
-        print(re.search('1\.8\.1', report_string), file=sys.stderr)
         return report_string
 
     def redact_json_data(self, data):
