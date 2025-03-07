@@ -177,9 +177,14 @@ class fusion_tools(logger):
             """
 
             fusion_id_hyphen = row["Fusion"]
-            gene1 = fusion_id_hyphen.split("-", 1)[0]
-            gene2 = fusion_id_hyphen.split("-", 1)[1]
-            fusion_id = "::".join([gene1, gene2])
+            #gene1 = fusion_id_hyphen.split("-", 1)[0]
+            #gene2 = fusion_id_hyphen.split("-", 1)[1]
+            #fusion_id = "::".join([gene1, gene2])
+            
+            fusion_id = self.df_fusions_indexed.loc[fusion_id_hyphen, "fusion_pairs_reordered"]
+            gene1 = fusion_id.split("::", 1)[0]
+            gene2 = fusion_id.split("::", 1)[1]
+
             reading_frame = self.df_fusions_indexed.loc[fusion_id_hyphen, "reading_frame_simple"]
             event_type = self.df_fusions_indexed.loc[fusion_id_hyphen, "event_type_simple"]
             
@@ -307,12 +312,6 @@ class fusion_tools(logger):
                     )
 
         return rows, gene_info, treatment_opts
-    
-    #def get_fusions(self):
-    #    return self.fusions
-
-    #def get_total_nccn_fusions(self):
-    #    return self.total_nccn_fusions
     
     def process_fusion(self, config, fusion, tsv_file_path, json_template_path, output_dir, wrapper):
 

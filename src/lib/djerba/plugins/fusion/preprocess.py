@@ -329,6 +329,26 @@ class prepare_fusions(logger):
         ]
         return df
 
+    def reorder_fusions(self, df):
+        """
+        Fusions must be in the order ${5_Prime_Fusion}::${3_Prime_Fusion}
+        Mavis contains information about which gene is 5' and which is 3'
+        but Mavis is not consistent with the order.
+        Re-order fusions so it's always 5' first.
+        Don't care how reordering impacts Nones; these get filtered out later anyways
+        """
+        # First change all nans to the string None
+        #df["gene1_aliases"] = df["gene1_aliases"].replace({np.nan: None})
+        #df["gene2_aliases"] = df["gene2_aliases"].replace({np.nan: None})
+
+        # Make fusion_pairs but ensure 5' always comes first
+        df["fusion_pairs_reordered"] = np.where(
+            df["gene1_direction"] > df["gene2_direction"], # 5 > 3
+            df["gene1_aliases"] + "::" + df["gene2_aliases"], # Write 5'::3' gene
+            df["gene2_aliases"] + "::" + df["gene1_aliases"] # Write 3'::5' gene
+        )
+        return df
+
     def simplify_event_type(self, df):
         """
         Changes any event type with "translocation" to the actual translocation event.
@@ -506,6 +526,8 @@ class prepare_fusions(logger):
         df_merged = self.add_unknown_reading_frame(df_merged)
         # Simplify event type
         df_merged = self.simplify_event_type(df_merged)
+        # Re-order fusions to be in 5'::3' order.
+        df_merged = self.reorder_fusions(df_merged)
         # Delete all delly-only calls
         # NOTE: this is supposedly because structural variants were not validated.
         # NOTE: the old version of the fusion plugin also excluded delly-only calls.
