@@ -11,7 +11,8 @@ class main(plugin_base):
     PLUGIN_VERSION = '0.1.0'
     TEMPLATE_NAME = 'hla_template.html'
 
-    T1K_FILE_PATH= 'tsv_file'
+    HLA_FILE_PATH= 'tsv_file'
+    HLA_WORKFLOW = 't1k'
 
     # Constants for TSV columns
     GENE_NAME = 'Gene name'
@@ -23,7 +24,7 @@ class main(plugin_base):
 
     def specify_params(self):
 
-        self.add_ini_discovered(self.T1K_FILE_PATH)
+        self.add_ini_discovered(self.HLA_FILE_PATH)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_priority_defaults(self.PRIORITY)
 
@@ -34,15 +35,16 @@ class main(plugin_base):
         wrapper = self.update_wrapper_if_null(
             wrapper,
             core_constants.DEFAULT_PATH_INFO,
-            self.T1K_FILE_PATH,
-            fallback=os.path.realpath("/.mounts/labs/CGI/scratch/ohamza/HLA_plugin/T1K_output_files/OCT_010434_Ly_R_WG_t1k_hla_genotype.tsv"))
+            self.HLA_FILE_PATH,
+            self.HLA_WORKFLOW)
+            #fallback=os.path.realpath("/.mounts/labs/CGI/scratch/ohamza/HLA_plugin/T1K_output_files/OCT_010434_Ly_R_WG_t1k_hla_genotype.tsv"))
 
         return config
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         work_dir = self.workspace.get_work_dir()
-        tsv_path = config[self.identifier][self.T1K_FILE_PATH]
+        tsv_path = config[self.identifier][self.HLA_FILE_PATH]
 
         data = {
             'plugin_name': 'HLA Analysis',
