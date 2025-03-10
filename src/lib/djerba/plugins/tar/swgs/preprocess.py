@@ -23,8 +23,9 @@ class preprocess(logger):
 
     finder = directory_finder(log_level, log_path)
     # CONSTANTS
-    self.GENECODE_PATH = os.path.join(finder.get_data_dir(), 'gencode_v33_hg38_genes.bed')
-    self.ONCOLIST_PATH = "/20200818-oncoKBcancerGeneList.tsv"
+    data_dir = finder.get_data_dir()
+    self.GENECODE_PATH = os.path.join(data_dir, 'gencode_v33_hg38_genes.bed')
+    self.ONCOLIST_PATH = os.path.join(data_dir, "20200818-oncoKBcancerGeneList.tsv")
 
     # DIRECTORIES
     self.logger = self.get_logger(log_level, __name__, log_path)
@@ -58,7 +59,7 @@ class preprocess(logger):
         '--outdir', self.work_dir,
         '--segfile', seg_path,
         '--genebed', self.GENECODE_PATH,
-        '--oncolist', self.data_dir + self.ONCOLIST_PATH
+        '--oncolist', self.ONCOLIST_PATH
     ]
 
     runner = subprocess_runner()

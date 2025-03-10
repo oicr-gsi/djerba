@@ -483,28 +483,7 @@ class snv_indel_processor(logger):
                 final_table.to_csv(os.path.join(self.work_dir, "loh.txt"), sep="\t", index=False)
             else:
                 self.logger.info("No copy number information, LOH omitted")
-
-    def run_data_rscript(self, whizbam_url, maf_input_path):
-        dir_location = os.path.dirname(__file__)
-        # TODO make the ensembl conversion file specific to this plugin?
-        cmd = [
-            'Rscript', os.path.join(dir_location, 'R', 'process_snv_data.r'),
-            '--basedir', dir_location,
-            '--enscon', os.path.join(self.data_dir, sic.ENSEMBL_CONVERSION), 
-            '--outdir', self.work_dir,
-            '--whizbam_url', whizbam_url,
-            '--maffile', maf_input_path
-        ]
-
-        if self.workspace.has_file("purity_ploidy.json") and self.workspace.has_file("cn.txt"):
-            purity = str(self.workspace.read_json("purity_ploidy.json")["purity"])
-            cn_file = os.path.join(self.work_dir, "cn.txt")
-            cmd.extend(['--purity', purity,
-                        '--cnfile', cn_file])
-        runner = subprocess_runner(self.log_level, self.log_path)
-        result = runner.run(cmd, "main snv/indel R script")
-        return result
-    
+   
     def write_vaf_plot(self):
         """"Create VAF plot with matplotlib"""
         data_directory = self.data_dir
@@ -587,7 +566,6 @@ class snv_indel_processor(logger):
         tumour_id = self.config.get_my_string(sic.TUMOUR_ID)
         maf_path_preprocessed = self.preprocess_maf(maf_path, tumour_id)
         maf_path_annotated = self.annotate_maf(maf_path_preprocessed)
-        #self.run_data_rscript(whizbam_url, maf_path_annotated)
         self.process_snv_data(whizbam_url, maf_path_annotated)
         # Exclude the plot if there are no somatic mutations
         if self.has_somatic_mutations():
