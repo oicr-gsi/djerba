@@ -25,7 +25,6 @@ from djerba.util.wgts.tools import wgts_tools
 class cnv_processor(logger):
 
     ALTERATION_UPPER_CASE = 'ALTERATION'
-    CENTROMERES = "hg38_centromeres.txt"
     HUGO_SYMBOL_UPPER_CASE = 'HUGO_SYMBOL'
     PLOT_FILENAME = 'seg_CNV_plot.svg'
     MINIMUM_MAGNITUDE_SEG_MEAN = 0.2
