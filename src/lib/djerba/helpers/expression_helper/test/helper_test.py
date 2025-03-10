@@ -37,11 +37,11 @@ class TestExpressionHelper(TestBase):
         ws = workspace(work_dir)
         helper_main = loader.load(self.HELPER_NAME, ws)
         config = helper_main.configure(cp)
-        data_dir = directory_finder().get_data_dir()
-        expected_enscon = os.path.join(data_dir, 'ensemble_conversion_hg38.txt')
+        plugin_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # go 2 directories up
+        expected_enscon = os.path.join(plugin_dir, 'ensemble_conversion_hg38.txt')
         configured_enscon = config.get(self.HELPER_NAME, helper_main.ENSCON_KEY)
         self.assertEqual(configured_enscon, expected_enscon)
-        expected_gene_list = os.path.join(data_dir, 'targeted_genelist.txt')
+        expected_gene_list = os.path.join(plugin_dir, 'targeted_genelist.txt')
         configured_gene_list = config.get(self.HELPER_NAME, helper_main.GENE_LIST_KEY)
         self.assertEqual(configured_gene_list, expected_gene_list)
         tcga_code = config.get(self.HELPER_NAME, helper_main.TCGA_CODE_KEY)
@@ -64,10 +64,10 @@ class TestExpressionHelper(TestBase):
         ws = workspace(self.tmp_dir)
         helper_main = loader.load(self.HELPER_NAME, ws)
         # configure the INI
-        data_dir = finder.get_data_dir()
-        enscon = os.path.join(data_dir, 'ensemble_conversion_hg38.txt')
+        plugin_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # go 2 directories up
+        enscon = os.path.join(plugin_dir, 'ensemble_conversion_hg38.txt')
         cp.set(self.HELPER_NAME, helper_main.ENSCON_KEY, enscon)
-        gene_list = os.path.join(data_dir, 'targeted_genelist.txt')
+        gene_list = os.path.join(plugin_dir, 'targeted_genelist.txt')
         cp.set(self.HELPER_NAME, helper_main.GENE_LIST_KEY, gene_list)
         rsem = os.path.join(test_data_dir, 'PANX_1547_Lv_M_WT_100-PM-061_LCM6.genes.results')
         cp.set(self.HELPER_NAME, helper_main.RSEM_GENES_RESULTS_KEY, rsem)

@@ -55,10 +55,11 @@ class main(helper_base):
             ref_path = os.path.join(data_dir, 'results', 'gep_reference.txt.gz')
             wrapper.set_my_param(self.GEP_REFERENCE_KEY, ref_path)
         if wrapper.my_param_is_null(self.ENSCON_KEY):
-            ref_path = os.path.join(data_dir, 'ensemble_conversion_hg38.txt')
+            helper_dir = os.path.dirname(os.path.realpath(__file__))
+            ref_path = os.path.join(helper_dir, 'ensemble_conversion_hg38.txt')
             wrapper.set_my_param(self.ENSCON_KEY, ref_path)
         if wrapper.my_param_is_null(self.GENE_LIST_KEY):
-            ref_path = os.path.join(data_dir, 'targeted_genelist.txt')
+            ref_path = os.path.join(helper_dir, 'targeted_genelist.txt')
             wrapper.set_my_param(self.GENE_LIST_KEY, ref_path)
         # set up and run the provenance reader
         samples = sample_name_container()
