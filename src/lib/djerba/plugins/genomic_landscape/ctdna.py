@@ -10,7 +10,7 @@ class ctdna_processor(logger):
     def __init__(self, log_level, log_path):
         self.log_level = log_level
         self.log_path = log_path
-        self.logger = self.get_logger(log_level, log_path)
+        self.logger = self.get_logger(log_level, __name__, log_path)
 
     def run(self, candidate_sites_path):
         candidates = self.extract_ctDNA_candidates(candidate_sites_path)
@@ -18,11 +18,7 @@ class ctdna_processor(logger):
             eligibility = "eligible"
         else:
             eligibility = "ineligible"
-        ctdna = {
-            constants.CTDNA_CANDIDATES: candidates,
-            constants.CTDNA_ELIGIBILITY: eligibility
-        }
-        return ctdna
+        return self.get_results(candidates, eligibility)
 
     def extract_ctDNA_candidates(self, candidate_sites_path):
         rows = 0
@@ -47,3 +43,16 @@ class ctdna_processor(logger):
         elif rows > 1:
             self.logger.warning("Expected 1 row in CTDNA file, found {0}".format(rows))
         return candidates_sites_value
+
+    def get_dummy_results(self):
+        # return placeholder values for when inputs are not available
+        return self.get_results(0, 'eligibility unknown')
+
+    def get_results(self, candidates, eligibility):
+        # get a simple results data structure
+        ctdna = {
+            constants.CTDNA_CANDIDATES: candidates,
+            constants.CTDNA_ELIGIBILITY: eligibility
+        }
+        return ctdna
+

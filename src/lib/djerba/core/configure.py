@@ -43,7 +43,8 @@ class configurable(core_base, ABC):
         self.module_dir = kwargs[cc.MODULE_DIR]
         self.log_level = kwargs[cc.LOG_LEVEL]
         self.log_path = kwargs[cc.LOG_PATH]
-        self.logger = self.get_logger(self.log_level, __name__, self.log_path)
+        logger_name = 'djerba:'+self.identifier
+        self.logger = self.get_logger(self.log_level, logger_name, self.log_path)
         self.ini_required = set() # names of INI parameters the user must supply
         self.ini_defaults = {} # names and default values for other INI parameters
 
@@ -373,7 +374,8 @@ class config_wrapper(core_base):
         # identifier is the component identifier, used to retrieve INI params
         self.config = config
         self.identifier = identifier
-        self.logger = self.get_logger(log_level, __name__, log_path)
+        logger_name = 'djerba:'+self.identifier+':config_wrapper'
+        self.logger = self.get_logger(log_level, logger_name, log_path)
 
     def get_config(self):
         return self.config

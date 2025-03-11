@@ -38,7 +38,7 @@ class TestTarSamplePlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '56272ce15c0f0acadf7faff781ad950d'
+            self.MD5: '25315c6bdca72dc15add1a4a44c7ce38'
         }
         self.run_basic_test(input_dir, params)
 
@@ -57,12 +57,6 @@ class TestTarSamplePlugin(PluginTester):
         cc_expected_location = os.path.join(self.sup_dir ,"plugins/tar/tar-sample/allUnique-hsMetrics.HS.BC.txt")
         collapsed_coverage_bc = sample.main.process_consensus_cruncher(self, cc_expected_location)
         self.assertEqual(collapsed_coverage_bc, 910)
-
-    def redact_json_data(self, data):
-        """replaces empty method from testing.tools"""
-        for key in ['files']:
-            del data['results'][key]
-        return data
 
 if __name__ == '__main__':
     unittest.main()

@@ -10,7 +10,7 @@ from djerba.util.logger import logger
 class factory(logger, ABC):
 
     def __init__(self, log_level=logging.WARNING, log_path=None):
-        self.logger = self.get_logger(log_level, log_path)
+        self.logger = self.get_logger(log_level, __name__, log_path)
 
     def get_json(**kwargs):
         """

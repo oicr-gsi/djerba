@@ -12,6 +12,7 @@ class main(plugin_base):
 
     DEFAULT_CONFIG_PRIORITY = 1200
     MAKO_TEMPLATE_NAME = 'supplementary_materials_template.html'
+    TEMPLATE_DIR = "template_dir"
     SUPPLEMENT_DJERBA_VERSION = 0.1
     FAILED = "failed"
     ASSAY = "assay"
@@ -21,8 +22,9 @@ class main(plugin_base):
     GENETICIST_ID = "clinical_geneticist_licence"
     EXTRACT_DATE = "extract_date"
     INCLUDE_SIGNOFFS = "include_signoffs"
-    GENETICIST_DEFAULT = 'Trevor Pugh, PhD, FACMG'
-    GENETICIST_ID_DEFAULT = '1027812'
+    GENETICIST_DEFAULT = 'PLACEHOLDER'
+    GENETICIST_ID_DEFAULT = 'XXXXXXX'
+    REPORT_SIGNOUT_DEFAULT = 'yyyy-mm-dd'
 
     def check_assay_name(self, wrapper):
         [ok, msg] = assays.name_status(wrapper.get_my_string(self.ASSAY))
@@ -51,16 +53,22 @@ class main(plugin_base):
                 wrapper.set_my_param(param, get_todays_date())
         self.check_assay_name(wrapper)
 
+        # Check if custom template dir is supplied, if not default to module dir
+        if wrapper.my_param_is_null(self.TEMPLATE_DIR):
+            wrapper.set_my_param(self.TEMPLATE_DIR, self.get_module_dir())
+
         # Check if dates are valid
         user_supplied_date = wrapper.get_my_string(self.USER_SUPPLIED_DRAFT_DATE)
         report_signoff_date = wrapper.get_my_string(self.REPORT_SIGNOFF_DATE)
-        for date in [user_supplied_date, report_signoff_date]:
+        dates_to_check = [user_supplied_date, ]
+        if report_signoff_date != self.REPORT_SIGNOUT_DEFAULT:
+            dates_to_check.append(report_signoff_date)
+        for date in dates_to_check:
             if not is_valid_date(date):
                 msg = "Invalid requisition approved date '{0}': ".format(date)+\
                       "Must be in yyyy-mm-dd format"
                 self.logger.error(msg)
                 raise ValueError(msg)
-
         return wrapper.get_config()
 
     def extract(self, config):
@@ -68,7 +76,6 @@ class main(plugin_base):
         draft_date = wrapper.get_my_string(self.USER_SUPPLIED_DRAFT_DATE)
         report_signoff_date = wrapper.get_my_string(self.REPORT_SIGNOFF_DATE)
         self.check_assay_name(wrapper)
-       
         attributes_list = wrapper.get_my_attributes()
         if "clinical" in attributes_list:
             include_signoffs = True
@@ -78,7 +85,6 @@ class main(plugin_base):
             include_signoffs = False
             msg = "Excluding sign-offs for non-clinical attribute: {0}".format(attributes_list)
             self.logger.warning(msg)
-
         data = {
             'plugin_name': self.identifier+' plugin',
             'priorities': wrapper.get_my_priorities(),
@@ -89,22 +95,22 @@ class main(plugin_base):
                 self.FAILED: wrapper.get_my_boolean(self.FAILED),
                 core_constants.AUTHOR: config['core'][core_constants.AUTHOR],
                 self.EXTRACT_DATE: draft_date,
-                self.INCLUDE_SIGNOFFS: include_signoffs
+                self.INCLUDE_SIGNOFFS: include_signoffs,
+                self.TEMPLATE_DIR: wrapper.get_my_string(self.TEMPLATE_DIR)
             },
-            'version': str(self.SUPPLEMENT_DJERBA_VERSION)
+            'version': str(self.SUPPLEMENT_DJERBA_VERSION),
         }
-
         if include_signoffs:
             data['results'].update({
                 self.REPORT_SIGNOFF_DATE: report_signoff_date,
                 self.GENETICIST: wrapper.get_my_string(self.GENETICIST),
                 self.GENETICIST_ID: wrapper.get_my_string(self.GENETICIST_ID)
             })
-
         return data
 
     def render(self, data):
-        renderer = mako_renderer(self.get_module_dir())
+        template_dir = data[core_constants.RESULTS][self.TEMPLATE_DIR]
+        renderer = mako_renderer(template_dir)
         return renderer.render_name(self.MAKO_TEMPLATE_NAME, data)
 
     def specify_params(self):
@@ -113,10 +119,11 @@ class main(plugin_base):
         ]
         for key in discovered:
             self.add_ini_discovered(key)
-        self.set_ini_default(self.REPORT_SIGNOFF_DATE, get_todays_date())
+        self.set_ini_default(self.REPORT_SIGNOFF_DATE, self.REPORT_SIGNOUT_DEFAULT)
         self.set_ini_default(self.USER_SUPPLIED_DRAFT_DATE, get_todays_date())
         self.set_ini_default(self.GENETICIST, self.GENETICIST_DEFAULT)
         self.set_ini_default(self.GENETICIST_ID, self.GENETICIST_ID_DEFAULT)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_ini_default(self.FAILED, "False")
+        self.set_ini_default(self.TEMPLATE_DIR, self.get_module_dir())
         self.set_priority_defaults(self.DEFAULT_CONFIG_PRIORITY)

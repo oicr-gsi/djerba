@@ -1,0 +1,31 @@
+<%
+  from djerba.util.html import html_builder 
+  from djerba.plugins.virus.render import html_builder as hb_virus
+  TOTAL_VARIANTS = 'Total variants'
+%>
+  
+${html_builder().section_cells_begin("<h2>VIRUS Breakend</h2>","main")}
+      
+      <p >
+            <strong>${results.get(TOTAL_VARIANTS)}</strong> virus(es) were identified. 
+      </p>
+
+      % if results.get(TOTAL_VARIANTS) > 0:
+            <table class="variants" width="100%">
+            ${hb_virus().virusbreakend_header()}
+            <tbody>
+            % for row in hb_virus().virusbreakend_rows(results):
+                  ${row}
+            % endfor
+            </tbody>
+            </table>
+      % endif
+
+<br>
+<h3>VIRUSBreakend description</h3>
+     <p><a href="https://github.com/PapenfussLab/gridss/blob/master/VIRUSBreakend_Readme.md">VIRUSBreakend</a> is a high-speed viral integration detection tool which is part of GRIDSS - the Genomic Rearrangement IDentification Software Suite. Driver viruses retrieved from <a href="https://github.com/hartwigmedical/hmftools/blob/master/virus-interpreter/src/test/resources/virus_interpreter/real_virus_reporting_db.tsv">Virus Interpreter</a>, which is a post-process algorithm for VIRUSBreakend.
+    </p>
+  ${html_builder().section_cells_end()}
+
+</body>
+</html>

@@ -16,8 +16,8 @@ class TestMiniBase(TestBase):
 
     JSON_NAME = 'simple_report_for_update.json'
     JSON_NO_SUMMARY = 'simple_report_no_summary.json'
-    REPORT_MD5 = '4e40169d5ba33d4509681a7ee8831893'
-    REPORT_NO_SUMMARY_MD5 = '8c8b57ed19c35ee6dd1782656691c867'
+    REPORT_MD5 = 'dfc3e2b9acaca24b7823180dcc6da61d'
+    REPORT_NO_SUMMARY_MD5 = 'bd65c5921155b261d549fd3b32855fd9'
 
     def assert_setup(self, ini_path, summary_path=None):
         self.assertTrue(os.path.exists(ini_path))
@@ -224,7 +224,7 @@ class TestScript(TestMiniBase):
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
-        self.assert_report('5d483a2283fce6ec3f92d60eac5185eb')
+        self.assert_report('bdf747ef1156a4600e3402656fca68dc')
 
     def test_report_no_change(self):
         test_dir = os.path.dirname(os.path.realpath(__file__))
@@ -280,7 +280,7 @@ class TestScript(TestMiniBase):
         cmd.append('--force')
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
-        self.assert_report('2e1afe881c423b8dac8077a22764c427')
+        self.assert_report('3e3c704a124d880aa7356b533f1cc184')
 
 
 if __name__ == '__main__':
