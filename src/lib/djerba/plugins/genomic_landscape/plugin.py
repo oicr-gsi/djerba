@@ -94,15 +94,14 @@ class main(plugin_base):
         tumour_id = wrapper.get_my_string(glc.TUMOUR_ID)
         tcga_code = wrapper.get_my_string(glc.TCGA_CODE).lower()  # always lowercase
         # Get directories
-        finder = directory_finder(self.log_level, self.log_path)
-        data_dir = finder.get_data_dir()
+        plugin_data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
         work_dir = self.workspace.get_work_dir()
         plugin_dir = os.path.dirname(os.path.realpath(__file__))
         r_script_dir = os.path.join(plugin_dir, 'Rscripts')
         # Make a file where all the (actionable) biomarkers will go, and initialize results
         biomarkers_path = self.make_biomarkers_maf(work_dir)
         results = tmb_processor(self.log_level, self.log_path).run(
-            work_dir, data_dir, r_script_dir, tcga_code, biomarkers_path, tumour_id
+            work_dir, plugin_data_dir, r_script_dir, tcga_code, biomarkers_path, tumour_id
         )
         # evaluate HRD and MSI reportability
         hrd_ok, msi_ok = self.evaluate_reportability(
@@ -136,7 +135,8 @@ class main(plugin_base):
         hrd_annotation = hrd.annotate_NCCN(
             results[glc.BIOMARKERS][glc.HRD]['Genomic biomarker alteration'],
             wrapper.get_my_string(oncokb_constants.ONCOTREE_CODE),
-            data_dir
+            plugin_data_dir,
+            directory_finder(self.log_level, self.log_path).get_data_dir()
         )
         if hrd_annotation:
             if hrd_ok:
