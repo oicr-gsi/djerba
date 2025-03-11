@@ -84,8 +84,22 @@ if (is.null(enscon) |  is.null(gepfile) | is.null(outdir) | is.null(tcgadata) | 
   print("getting TCGA-level data")
 
   # get TCGA comparitor
-  load(file=paste(tcgadata, "/", tcgacode,".PANCAN.matrix.rdf", sep=""))
-  df_tcga <- get(tcgacode)
+#  load(file=paste(tcgadata, "/", tcgacode,".PANCAN.matrix.rdf", sep=""))
+#  df_tcga <- get(tcgacode)
+
+
+  # get TCGA comparator
+  file_path <- paste(tcgadata, "/", tcgacode, ".PANCAN.matrix.rdf", sep="")
+  if (file.exists(file_path)) {
+      load(file=file_path)
+      df_tcga <- get(tcgacode)
+} else {
+      # default to TCGA_ALL_TUMOR if the file doesn't exist
+      print("Could not find RODiC data with given oncotree code. Defaulting to TCGA_ALL_TUMOR.PANCAN.matrix.rdf")
+      load(file=paste(tcgadata, "/TCGA_ALL_TUMOR.PANCAN.matrix.rdf", sep=""))
+      df_tcga <- get("TCGA_ALL_TUMOR")
+}
+
 
   # equalize dfs (get common genes)
   comg <- as.character(intersect(row.names(df_tcga), row.names(df)))

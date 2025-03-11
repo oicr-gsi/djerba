@@ -6,6 +6,7 @@
 - GCGI-1515: Make `mrdetect_filter_only` inputs optional for non-clinical reports
 - Fix issue with benchmark plugin; test no longer breaks when Djerba core version is changed
 - GCGI-1412: Automatically generate TCGA code from oncotree code
+- GCGI-1134: If TCGA code does not correspond to an existing RODiC file, defaults to TCGA_ALL_TUMOR
 
 ## v1.8.1: 2025-03-04
 - GCGI-1455: New `tar.status` plugin to add a display box for ctDNA status

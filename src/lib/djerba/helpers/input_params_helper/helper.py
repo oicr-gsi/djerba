@@ -163,8 +163,8 @@ class main(helper_base):
     def convert_oncotree_to_tcga(self, oncotree_code):
         
         # Read tcga_code_key.txt as a database
-        data_dir = directory_finder(log_level=logging.WARNING, log_path=None).get_data_dir()
-        df = pd.read_csv(os.path.join(data_dir, self.TCGA_CODE_KEY), sep = "\t", index_col = self.ONCOTREE_CODE)
+        plugin_dir = os.path.dirname(os.path.realpath(__file__))
+        df = pd.read_csv(os.path.join(plugin_dir, self.TCGA_CODE_KEY), sep = "\t", index_col = self.ONCOTREE_CODE)
 
         # Lookup oncotree_code in the dataframe and get the corresponding tcga_code
         # Note: the data in the text file should contain no duplicate oncotree code values.
