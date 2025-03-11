@@ -83,11 +83,6 @@ if (is.null(enscon) |  is.null(gepfile) | is.null(outdir) | is.null(tcgadata) | 
 
   print("getting TCGA-level data")
 
-  # get TCGA comparitor
-#  load(file=paste(tcgadata, "/", tcgacode,".PANCAN.matrix.rdf", sep=""))
-#  df_tcga <- get(tcgacode)
-
-
   # get TCGA comparator
   file_path <- paste(tcgadata, "/", tcgacode, ".PANCAN.matrix.rdf", sep="")
   if (file.exists(file_path)) {
