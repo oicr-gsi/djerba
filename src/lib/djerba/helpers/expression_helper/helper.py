@@ -139,6 +139,8 @@ class main(helper_base):
         defaults = {
             core_constants.DEPENDS_CONFIGURE: 'provenance_helper',
             core_constants.EXTRACT_PRIORITY: 100, # run before cnv & snv plugins
+            # RODiC is cloned from https://github.com/translational-genomics-laboratory/RODiC
+            # repo also forked to https://github.com/oicr-gsi/RODiC
             self.TCGA_DATA_KEY: '/.mounts/labs/CGI/gsi/tools/RODiC/data',
             self.GEP_REFERENCE_KEY: '/.mounts/labs/CGI/gsi/tools/djerba/gep_reference.txt.gz'
         }
