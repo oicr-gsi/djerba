@@ -16,7 +16,6 @@ from djerba.util.subprocess_runner import subprocess_runner
 class main(helper_base):
 
     ENSCON_KEY = 'enscon'
-    GENE_LIST_KEY = 'gene_list'
     GEP_REFERENCE_KEY = 'gep_reference'
     RSEM_GENES_RESULTS_KEY = 'rsem_genes_results'
     TCGA_CODE_KEY = 'tcga_code'
@@ -58,9 +57,6 @@ class main(helper_base):
             helper_dir = os.path.dirname(os.path.realpath(__file__))
             ref_path = os.path.join(helper_dir, 'ensemble_conversion_hg38.txt')
             wrapper.set_my_param(self.ENSCON_KEY, ref_path)
-        if wrapper.my_param_is_null(self.GENE_LIST_KEY):
-            ref_path = os.path.join(helper_dir, 'targeted_genelist.txt')
-            wrapper.set_my_param(self.GENE_LIST_KEY, ref_path)
         # set up and run the provenance reader
         samples = sample_name_container()
         samples.set_and_validate(sample_wg_n, sample_wg_t, sample_wt_t)
@@ -149,7 +145,6 @@ class main(helper_base):
         for key in defaults.keys():
             self.set_ini_default(key, defaults[key])
         self.add_ini_discovered(self.ENSCON_KEY)
-        self.add_ini_discovered(self.GENE_LIST_KEY)
         self.add_ini_discovered(self.RSEM_GENES_RESULTS_KEY)
         self.add_ini_discovered(self.TCGA_CODE_KEY) # use PAAD for testing
         self.add_ini_discovered(core_constants.TUMOUR_ID)

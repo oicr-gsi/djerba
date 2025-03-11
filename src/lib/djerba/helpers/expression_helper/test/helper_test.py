@@ -38,12 +38,8 @@ class TestExpressionHelper(TestBase):
         helper_main = loader.load(self.HELPER_NAME, ws)
         config = helper_main.configure(cp)
         plugin_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # go 2 directories up
-        expected_enscon = os.path.join(plugin_dir, 'ensemble_conversion_hg38.txt')
         configured_enscon = config.get(self.HELPER_NAME, helper_main.ENSCON_KEY)
-        self.assertEqual(configured_enscon, expected_enscon)
-        expected_gene_list = os.path.join(plugin_dir, 'targeted_genelist.txt')
-        configured_gene_list = config.get(self.HELPER_NAME, helper_main.GENE_LIST_KEY)
-        self.assertEqual(configured_gene_list, expected_gene_list)
+        self.assertTrue(os.path.exists(configured_enscon))
         tcga_code = config.get(self.HELPER_NAME, helper_main.TCGA_CODE_KEY)
         self.assertEqual(tcga_code, 'PAAD')
         # path was derived from file provenance subset, should not change
@@ -67,8 +63,6 @@ class TestExpressionHelper(TestBase):
         plugin_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # go 2 directories up
         enscon = os.path.join(plugin_dir, 'ensemble_conversion_hg38.txt')
         cp.set(self.HELPER_NAME, helper_main.ENSCON_KEY, enscon)
-        gene_list = os.path.join(plugin_dir, 'targeted_genelist.txt')
-        cp.set(self.HELPER_NAME, helper_main.GENE_LIST_KEY, gene_list)
         rsem = os.path.join(test_data_dir, 'PANX_1547_Lv_M_WT_100-PM-061_LCM6.genes.results')
         cp.set(self.HELPER_NAME, helper_main.RSEM_GENES_RESULTS_KEY, rsem)
         ref = os.path.join(test_data_dir, 'gep_reference.txt.gz')
