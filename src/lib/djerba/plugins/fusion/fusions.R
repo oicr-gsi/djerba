@@ -228,7 +228,7 @@ if(length(num_lines)<=1) {
   print("writing fus file for oncokb annotator")
   write.table(fusion_cbio[[2]], file=paste0(outdir, "/data_fusions_oncokb.txt"), sep="\t", row.names=FALSE, quote=FALSE)
 
-  annotation_path = paste0(Sys.getenv(c("DJERBA_BASE_DIR")), "/", annotation_file)
+  annotation_path = paste0(Sys.getenv(c("DJERBA_RUN_DIR")), "/", annotation_file)
   translocation_annotations = read.table(annotation_path, header = T)
 
 
