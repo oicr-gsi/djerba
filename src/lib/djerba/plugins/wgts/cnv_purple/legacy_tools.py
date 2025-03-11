@@ -25,11 +25,8 @@ from djerba.util.wgts.tools import wgts_tools
 class cnv_processor(logger):
 
     ALTERATION_UPPER_CASE = 'ALTERATION'
-    CENTROMERES = "hg38_centromeres.txt"
-    GENEBED =  "gencode_v33_hg38_genes.bed"
     HUGO_SYMBOL_UPPER_CASE = 'HUGO_SYMBOL'
-    ONCOLIST = "20200818-oncoKBcancerGeneList.tsv"
-    PLOT_FILENAME = 'seg_CNV_plot.svg' # this name is hard-coded in the R plot script
+    PLOT_FILENAME = 'seg_CNV_plot.svg'
     MINIMUM_MAGNITUDE_SEG_MEAN = 0.2
     GENOME_SIZE = 3095978931 # comes from https://www.ncbi.nlm.nih.gov/grc/human/data?asm=GRCh38.p12. Non-N bases. 
     SEG_FILENAME = 'seg.txt'
