@@ -93,7 +93,6 @@ WHIZBAM_ONCOGENIC = 'whizbam_oncogenic.txt'
 MUTATIONS_ALL = 'data_mutations_extended.txt'
 MUTATIONS_ONCOGENIC = 'data_mutations_extended_oncogenic.txt'
 WHIZBAM_TEMPLATE = 'whizbam_template.html'
-ENSEMBL_CONVERSION = 'ensemble_conversion_hg38.txt'
 
 # output keys
 TYPE = 'type'

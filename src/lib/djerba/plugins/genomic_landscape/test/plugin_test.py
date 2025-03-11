@@ -33,11 +33,14 @@ class TestGenomicLandscapePlugin(PluginTester):
         self.sample_info = os.path.join(self.plugin_test_dir, "sample_info.json")
 
     def testNCCNAnnotation(self):
-        data_dir = directory_finder().get_data_dir()
+        # contains oncotree file
+        dir1 = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'data'))
+        # contains nccn annotations
+        dir2 = directory_finder().get_data_dir()
         hrd = hrd_processor(log_level=logging.ERROR, log_path=None)
-        self.assertEqual(hrd.annotate_NCCN("HRD", "PAAD", data_dir), None)
-        self.assertEqual(hrd.annotate_NCCN("HR Proficient", "HGSOC", data_dir), None)
-        HRD_annotated = hrd.annotate_NCCN("HRD", "HGSOC", data_dir)
+        self.assertEqual(hrd.annotate_NCCN("HRD", "PAAD", dir1, dir2), None)
+        self.assertEqual(hrd.annotate_NCCN("HR Proficient", "HGSOC", dir1, dir2), None)
+        HRD_annotated = hrd.annotate_NCCN("HRD", "HGSOC", dir1, dir2)
         self.assertEqual(HRD_annotated['Tier'], "Prognostic")
 
     def testGenomicLandscapeLowTmbStableMsi(self):

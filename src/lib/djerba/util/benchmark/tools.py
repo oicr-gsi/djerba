@@ -152,7 +152,6 @@ class benchmarker(logger):
         self.plugin_loader = plugin_loader(self.log_level, self.log_path)
         self.validator = path_validator(self.log_level, self.log_path)
         dir_finder = directory_finder(self.log_level, self.log_path)
-        self.data_dir = dir_finder.get_data_dir()
         self.private_dir = os.path.join(dir_finder.get_private_dir(), 'benchmarking')
         self.validator.validate_input_dir(self.private_dir)
         if self.args.apply_cache and self.args.update_cache:
@@ -276,7 +275,7 @@ class benchmarker(logger):
             msg = "No template INI supported for assay '{0}'".format(assay)
             self.logger.error(msg)
             raise RuntimeError(msg)
-        return os.path.join(self.data_dir, filename)
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), filename)
 
     def log_inputs(self, assays, sample, sample_inputs):
         # summarize the available sample inputs in log output:

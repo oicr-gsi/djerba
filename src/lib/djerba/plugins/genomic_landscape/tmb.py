@@ -164,7 +164,8 @@ class tmb_processor(logger):
         out_path = os.path.join(work_dir, marker + '.svg')
         args = [
             os.path.join(r_script_dir, 'tmb_plot.R'),
-            '-d', work_dir,
+            '-w', work_dir,
+            '-d', os.path.realpath(os.path.join(os.path.dirname(__file__), 'data')),
             '-c', tcga_code,
             '-m', marker,
             '-t', str(tmb)

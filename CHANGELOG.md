@@ -2,6 +2,7 @@
 
 ## Unreleased: v1.8.2
 - GCGI-1484: Refactor the `plugins/wgts/common` directory, moving code to better locations
+- GCGI-1512: Clean up `lib/djerba/data`, moving files to specific plugins where possible, `lib/djerba/util/data` otherwise
 - GCGI-1515: Make `mrdetect_filter_only` inputs optional for non-clinical reports
 - Fix issue with benchmark plugin; test no longer breaks when Djerba core version is changed
 - GCGI-1412: Automatically generate TCGA code from oncotree code
@@ -71,7 +72,6 @@
 - Add CDH1, NF1, and VHL to new targeted panel (v2.0 -> v3.0)
 - GCGI-1333/1441: Make TAR depend on provenance helper
 - GCGI_1439: Changed clinical geneticist's name and number to PLACEHOLDER and XXXXXXX respectively
->>>>>>> release-1.8.2
 
 ## v1.7.2: 2024-08-19
 - GCGI-1420: Added green line separator to research footer
