@@ -14,11 +14,10 @@ import seaborn as sns
 import numpy as np
 import logging
 import djerba.core.constants as core_constants
-import djerba.plugins.wgts.common.cnv.constants as cnv_constants
+import djerba.plugins.wgts.cnv_purple.legacy_constants as cnv_constants
 import djerba.plugins.wgts.snv_indel.constants as sic
 from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
-from djerba.plugins.wgts.common.tools import wgts_tools
 from djerba.util.environment import directory_finder
 from djerba.util.html import html_builder
 from djerba.util.image_to_base64 import converter
@@ -27,6 +26,7 @@ from djerba.util.oncokb.annotator import annotator_factory
 from djerba.util.oncokb.tools import levels as oncokb_levels
 from djerba.util.oncokb.tools import gene_summary_reader
 from djerba.util.subprocess_runner import subprocess_runner
+from djerba.util.wgts.tools import wgts_tools
 
 class whizbam:
 
@@ -483,28 +483,7 @@ class snv_indel_processor(logger):
                 final_table.to_csv(os.path.join(self.work_dir, "loh.txt"), sep="\t", index=False)
             else:
                 self.logger.info("No copy number information, LOH omitted")
-
-    def run_data_rscript(self, whizbam_url, maf_input_path):
-        dir_location = os.path.dirname(__file__)
-        # TODO make the ensembl conversion file specific to this plugin?
-        cmd = [
-            'Rscript', os.path.join(dir_location, 'R', 'process_snv_data.r'),
-            '--basedir', dir_location,
-            '--enscon', os.path.join(self.data_dir, sic.ENSEMBL_CONVERSION), 
-            '--outdir', self.work_dir,
-            '--whizbam_url', whizbam_url,
-            '--maffile', maf_input_path
-        ]
-
-        if self.workspace.has_file("purity_ploidy.json") and self.workspace.has_file("cn.txt"):
-            purity = str(self.workspace.read_json("purity_ploidy.json")["purity"])
-            cn_file = os.path.join(self.work_dir, "cn.txt")
-            cmd.extend(['--purity', purity,
-                        '--cnfile', cn_file])
-        runner = subprocess_runner(self.log_level, self.log_path)
-        result = runner.run(cmd, "main snv/indel R script")
-        return result
-    
+   
     def write_vaf_plot(self):
         """"Create VAF plot with matplotlib"""
         data_directory = self.data_dir
@@ -587,7 +566,6 @@ class snv_indel_processor(logger):
         tumour_id = self.config.get_my_string(sic.TUMOUR_ID)
         maf_path_preprocessed = self.preprocess_maf(maf_path, tumour_id)
         maf_path_annotated = self.annotate_maf(maf_path_preprocessed)
-        #self.run_data_rscript(whizbam_url, maf_path_annotated)
         self.process_snv_data(whizbam_url, maf_path_annotated)
         # Exclude the plot if there are no somatic mutations
         if self.has_somatic_mutations():

@@ -7,11 +7,10 @@ import json
 import logging
 import os
 import djerba.core.constants as core_constants
-import djerba.plugins.wgts.common.cnv.constants as cnv
+import djerba.plugins.wgts.cnv_purple.legacy_constants as cnv
 import djerba.util.oncokb.constants as oncokb_constants
 from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
-from djerba.plugins.wgts.common.tools import wgts_tools
 from djerba.util.sequenza import sequenza_reader 
 from djerba.util.environment import directory_finder
 from djerba.util.html import html_builder
@@ -21,15 +20,13 @@ from djerba.util.oncokb.annotator import annotator_factory
 from djerba.util.oncokb.tools import levels as oncokb_levels
 from djerba.util.oncokb.tools import gene_summary_reader
 from djerba.util.subprocess_runner import subprocess_runner
+from djerba.util.wgts.tools import wgts_tools
 
 class cnv_processor(logger):
 
     ALTERATION_UPPER_CASE = 'ALTERATION'
-    CENTROMERES = "hg38_centromeres.txt"
-    GENEBED =  "gencode_v33_hg38_genes.bed"
     HUGO_SYMBOL_UPPER_CASE = 'HUGO_SYMBOL'
-    ONCOLIST = "20200818-oncoKBcancerGeneList.tsv"
-    PLOT_FILENAME = 'seg_CNV_plot.svg' # this name is hard-coded in the R plot script
+    PLOT_FILENAME = 'seg_CNV_plot.svg'
     MINIMUM_MAGNITUDE_SEG_MEAN = 0.2
     GENOME_SIZE = 3095978931 # comes from https://www.ncbi.nlm.nih.gov/grc/human/data?asm=GRCh38.p12. Non-N bases. 
     SEG_FILENAME = 'seg.txt'
@@ -107,7 +104,7 @@ class cnv_processor(logger):
         return merge_inputs
 
     def get_results(self):
-        """Read the R script output into the JSON serializable results structure"""
+        """Read previous output into the JSON serializable results structure"""
         image_converter = converter(self.log_level, self.log_path)
         cnv_plot = image_converter.convert_svg(self.plot_path, 'CNV plot')
         rows = []
@@ -148,43 +145,6 @@ class cnv_processor(logger):
             cnv.BODY: rows
         }
         return results
-
-    def run_main_r_script(self):
-        """Run the main process_CNA_data.R script"""
-        r_script_dir = os.path.join(os.path.dirname(__file__), 'R')
-        genebed_path = os.path.join(self.data_dir, self.GENEBED)
-        oncolist_path = os.path.join(self.data_dir, self.ONCOLIST)
-        centromeres_path = os.path.join(self.data_dir, self.CENTROMERES)
-        purity = self.config.get_my_float(cnv.PURITY)
-        cmd = [
-            'Rscript', os.path.join(r_script_dir, "process_CNA_data.r"),
-            '--outdir', self.work_dir,
-            '--segfile', self.seg_path,
-            '--genebed', genebed_path,
-            '--oncolist', oncolist_path,
-            '--purity', purity,
-            '--centromeres', centromeres_path,
-            '--import', r_script_dir
-        ]
-        subprocess_runner().run([str(x) for x in cmd], "main R script")
-
-    def write_cnv_plot(self):
-        """Generate the CNV plot in SVG format and return as a base64-encoded string"""
-        reader = sequenza_reader(self.config.get_my_string(cnv.SEQUENZA_PATH))
-        segment_file = reader.extract_segments_text_file(
-            self.work_dir,
-            gamma=self.config.get_my_int(cnv.SEQUENZA_GAMMA),
-            solution=self.config.get_my_string(cnv.SEQUENZA_SOLUTION)
-        )
-        dir_location = os.path.dirname(__file__)
-        args = [
-            os.path.join(dir_location, 'R/cnv_plot.R'),
-            '--segfile', segment_file,
-            '--segfiletype', 'sequenza',
-            '-d', self.work_dir
-        ]
-        subprocess_runner(self.log_level, self.log_path).run(args)
-        self.logger.info("Wrote CNV plot to {0}".format(self.plot_path))
 
     def write_copy_states(self):
         """

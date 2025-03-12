@@ -156,8 +156,8 @@ class gene_summary_reader(logger):
 
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.summaries = {}
-        data_dir = directory_finder(log_level, log_path).get_data_dir()
-        with open(os.path.join(data_dir, oncokb.ALL_CURATED_GENES)) as in_file:
+        oncokb_dir = os.path.dirname(os.path.realpath(__file__))
+        with open(os.path.join(oncokb_dir, oncokb.ALL_CURATED_GENES)) as in_file:
             for row in csv.DictReader(in_file, delimiter="\t"):
                 self.summaries[row['hugoSymbol']] = row['summary']
 

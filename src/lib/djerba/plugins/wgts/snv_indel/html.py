@@ -2,8 +2,8 @@
 
 import djerba.core.constants as core_constants
 import djerba.plugins.wgts.snv_indel.constants as sic
-from djerba.plugins.wgts.common.tools import wgts_tools
 from djerba.util.html import html_builder as hb
+from djerba.util.wgts.tools import wgts_tools
 
 class snv_indel_table_builder:
 

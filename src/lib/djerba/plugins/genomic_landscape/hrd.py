@@ -21,7 +21,7 @@ class hrd_processor(logger):
     ONCOTREE_INDEX = 3
     URL_INDEX = 4
 
-    def annotate_NCCN(self, hrd_result, oncotree_code, data_dir):
+    def annotate_NCCN(self, hrd_result, oncotree_code, oncotree_dir, nccn_dir):
         """
         Use NCCN Annotation file to filter by oncotree code and add NCCN URL
         """
@@ -30,14 +30,14 @@ class hrd_processor(logger):
             
             # Catch unknown oncotree code. 
             try:
-                oncotree_main = self.read_oncotree_main_type(oncotree_code, data_dir)
+                oncotree_main = self.read_oncotree_main_type(oncotree_code, oncotree_dir)
             except IndexError:
                  msg = "Could not find oncotree code {0} in OncoTree.json. Skipping treatment options for HRD.".format(oncotree_code)
                  self.logger.warning(msg)
                  return treatment_options 
             
             # Otherwise, proceed with known oncotree code.
-            nccn_annotation_path = os.path.join(data_dir, self.NCCN_ANNOTATION_FILENAME)
+            nccn_annotation_path = os.path.join(nccn_dir, self.NCCN_ANNOTATION_FILENAME)
             self.validator.validate_input_file(nccn_annotation_path)
             with open(nccn_annotation_path) as NCCN_annotation_file:
                 tsv_reader = csv.reader(NCCN_annotation_file, delimiter="\t")

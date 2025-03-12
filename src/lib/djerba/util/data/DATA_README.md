@@ -1,5 +1,12 @@
 # Updating Djerba reference files
 
+## Update: Djerba release v.1.8.2, March 2025
+
+This document refers to files formerly in the `src/lib/djerba/data` directory, which have been relocated as follows:
+- oncoKBcancerGeneList.tsv: `src/lib/djerba/util/data`
+- hg38_centromeres.txt: `wgts.cnv_purple` plugin
+- font installation is unchanged
+
 ## Introduction
 
 The Djerba repository contains reference files which describe cancer gene terminology and known oncogenic variants.

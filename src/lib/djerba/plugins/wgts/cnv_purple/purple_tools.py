@@ -20,7 +20,6 @@ from plotnine import *
 
 import djerba.plugins.wgts.cnv_purple.constants as pc
 from djerba.util.logger import logger
-#from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.environment import directory_finder
 from djerba.util.image_to_base64 import converter
 
@@ -39,7 +38,7 @@ class purple_processor(logger):
 
     # rewrite analyze_segments in python
     def analyze_segments(self, cnvfile, segfile, whizbam_url, purity, ploidy):
-        centromeres_file = os.path.join(self.data_dir, pc.CENTROMERES)
+        centromeres_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), pc.CENTROMERES)
         genebedpath = os.path.join(self.data_dir, pc.GENEBED)
         self.look_at_purity_fit(segfile, purity = purity)
         segs = pd.read_csv(cnvfile, sep="\t")

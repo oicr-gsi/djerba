@@ -36,6 +36,7 @@ class main(plugin_base):
     # For ctDNA file
     CTDNA_RESULTS_SUFFIX = 'SNP.count.txt'
     CTDNA_WORKFLOW = 'mrdetect_filter_only'
+    CTDNA_FILE_NOT_FOUND = 'ctDNA file not available'
 
     def specify_params(self):
         discovered = [
@@ -84,6 +85,7 @@ class main(plugin_base):
         w = self.update_wrapper_if_null(w, dpi, glc.MSI_FILE, glc.MSI_WORKFLOW)
         w = self.update_wrapper_if_null(w, dpi, glc.CTDNA_FILE, glc.CTDNA_WORKFLOW)
         w = self.update_wrapper_if_null(w, dpi, glc.HRDETECT_PATH, glc.HRD_WORKFLOW)
+        w = self.set_ctdna_file(w, dpi)
         return w.get_config()
 
     def extract(self, config):
@@ -92,15 +94,14 @@ class main(plugin_base):
         tumour_id = wrapper.get_my_string(glc.TUMOUR_ID)
         tcga_code = wrapper.get_my_string(glc.TCGA_CODE).lower()  # always lowercase
         # Get directories
-        finder = directory_finder(self.log_level, self.log_path)
-        data_dir = finder.get_data_dir()
+        plugin_data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
         work_dir = self.workspace.get_work_dir()
         plugin_dir = os.path.dirname(os.path.realpath(__file__))
         r_script_dir = os.path.join(plugin_dir, 'Rscripts')
         # Make a file where all the (actionable) biomarkers will go, and initialize results
         biomarkers_path = self.make_biomarkers_maf(work_dir)
         results = tmb_processor(self.log_level, self.log_path).run(
-            work_dir, data_dir, r_script_dir, tcga_code, biomarkers_path, tumour_id
+            work_dir, plugin_data_dir, r_script_dir, tcga_code, biomarkers_path, tumour_id
         )
         # evaluate HRD and MSI reportability
         hrd_ok, msi_ok = self.evaluate_reportability(
@@ -110,7 +111,12 @@ class main(plugin_base):
         results[glc.CAN_REPORT_HRD] = hrd_ok
         results[glc.CAN_REPORT_MSI] = msi_ok
         # evaluate biomarkers
-        results[glc.CTDNA] = ctdna_processor(self.log_level, self.log_path).run(wrapper.get_my_string(glc.CTDNA_FILE))
+        ctdna_file = wrapper.get_my_string(glc.CTDNA_FILE)
+        ctdna_proc = ctdna_processor(self.log_level, self.log_path)
+        if ctdna_file == self.CTDNA_FILE_NOT_FOUND:
+            results[glc.CTDNA] = ctdna_proc.get_dummy_results()
+        else:
+            results[glc.CTDNA] = ctdna_proc.run(ctdna_file)
         hrd = hrd_processor(self.log_level, self.log_path)
         results[glc.BIOMARKERS][glc.HRD] = hrd.run(
             work_dir,
@@ -129,7 +135,8 @@ class main(plugin_base):
         hrd_annotation = hrd.annotate_NCCN(
             results[glc.BIOMARKERS][glc.HRD]['Genomic biomarker alteration'],
             wrapper.get_my_string(oncokb_constants.ONCOTREE_CODE),
-            data_dir
+            plugin_data_dir,
+            directory_finder(self.log_level, self.log_path).get_data_dir()
         )
         if hrd_annotation:
             if hrd_ok:
@@ -232,3 +239,21 @@ class main(plugin_base):
             self.logger.error(msg)
             raise RuntimeError(msg)
         return alt_url
+
+    def set_ctdna_file(self, cw, info_name):
+        # ctDNA file is required for clinical reports, optional otherwise
+        # cw is a config_wrapper object; info name is name of the path info JSON file
+        cw = self.update_wrapper_if_null(cw, info_name, glc.CTDNA_FILE, glc.CTDNA_WORKFLOW)
+        ctdna_file = cw.get_my_string(glc.CTDNA_FILE)
+        if ctdna_file == 'None':
+            self.logger.debug('ctDNA file not found in provenance or manual inputs')
+            if core_constants.CLINICAL in cw.get_my_attributes():
+                msg = "Clinical report cannot proceed without mrdetect ctDNA file"
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            else:
+                cw.set_my_param(glc.CTDNA_FILE, self.CTDNA_FILE_NOT_FOUND)
+                self.logger.debug('Non-clinical research report, ctDNA file is not required')
+        else:
+            self.logger.debug("Found ctDNA file: '{0}'".format(ctdna_file))
+        return cw
