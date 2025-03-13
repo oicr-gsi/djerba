@@ -30,7 +30,7 @@ class workspace(logger):
         """Return the absolute path of a file in the workspace"""
         return os.path.abspath(os.path.join(self.dir_path, rel_path))
 
-    def copy_path(self, rel_path):
+    def copy_to_workspace(self, rel_path):
         """Copies the path to the workspace. Returns None."""
         shutil.copy(rel_path, self.dir_path)
 
