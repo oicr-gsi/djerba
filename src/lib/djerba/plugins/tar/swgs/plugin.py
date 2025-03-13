@@ -31,7 +31,8 @@ class main(plugin_base):
            constants.DONOR,
            constants.ONCOTREE,
            constants.TUMOUR_ID,
-           constants.SEG_FILE
+           constants.SEG_FILE,
+           constants.PLOTS_FILE
       ]
       for key in discovered:
           self.add_ini_discovered(key)
@@ -62,12 +63,20 @@ class main(plugin_base):
                     self.logger.error(msg)
                     raise RuntimeError(msg)
 
-      # Get file from path_info.json
+      # Get seg file from path_info.json
       wrapper = self.update_wrapper_if_null(
           wrapper,
           core_constants.DEFAULT_PATH_INFO,
           constants.SEG_FILE,
-          constants.WF_ICHOR_SEG
+          constants.WF_ICHOR_SEG,
+      )
+      
+      # Get plots file from path_info.json
+      wrapper = self.update_wrapper_if_null(
+          wrapper,
+          core_constants.DEFAULT_PATH_INFO,
+          constants.PLOTS_FILE,
+          constants.WF_ICHOR_PLOTS,
       )
 
       return config 
@@ -80,11 +89,15 @@ class main(plugin_base):
       work_dir = self.workspace.get_work_dir()
 
       # Get any input parameters
-      tumour_id = config[self.identifier]['tumour_id']
-      oncotree_code = config[self.identifier]['oncotree_code']
+      tumour_id = config[self.identifier][constants.TUMOUR_ID]
+      oncotree_code = config[self.identifier][constants.ONCOTREE]
 
-      # Get the seg file from the config
-      seg_file = wrapper.get_my_string('seg_file')
+      # Get the seg and plots files from the config
+      seg_file = wrapper.get_my_string(constants.SEG_FILE)
+      plots_file = wrapper.get_my_string(constants.PLOTS_FILE)
+
+      # Copy the plots file to the workspace for manual review
+      self.workspace.copy_to_workspace(plots_file)
       
       # Filter the seg_file only for amplifications (returns None if there are no amplifications)
       amp_path = preprocess(tumour_id, oncotree_code, work_dir).preprocess_seg(seg_file)
