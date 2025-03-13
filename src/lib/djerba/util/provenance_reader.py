@@ -66,6 +66,7 @@ class provenance_reader(logger):
     MT_ZIP = 'application/zip-report-bundle$'
     MT_BAM = 'application/bam$'
     MT_BAM_INDEX = 'application/bam-index$'
+    MT_PDF = 'application/pdf$'
 
     # placeholder
     WT_SAMPLE_NAME_PLACEHOLDER = 'whole_transcriptome_placeholder'
@@ -547,6 +548,12 @@ class provenance_reader(logger):
         workflow = self.WF_ICHORCNA
         mt = self.MT_JSON_TEXT
         suffix = '\_metrics.json$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
+
+    def parse_tar_ichorcna_plots_path(self):
+        workflow = self.WF_ICHORCNA
+        mt = self.MT_PDF
+        suffix = '\_genomeWide_all_sols\.pdf$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
     def parse_tar_ichorcna_seg_path(self):
