@@ -43,7 +43,7 @@ class TestSupplementaryPluginBody(PluginTester):
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
 
-    def SKIPtestTarResearchSupplementary(self):
+    def testTarResearchSupplementary(self):
         json_location = os.path.join(self.ref_dir, "tar.research.supplement.json")
         params = {
             self.INI: 'TAR.RESEARCH.supp.ini',
@@ -52,7 +52,7 @@ class TestSupplementaryPluginBody(PluginTester):
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
    
-    def SKIPtestTarFailSupplementary(self):
+    def testTarFailSupplementary(self):
         json_location = os.path.join(self.ref_dir, "tar.fail.supplement.json")
         params = {
             self.INI: 'TAR.FAIL.supp.ini',
@@ -61,7 +61,7 @@ class TestSupplementaryPluginBody(PluginTester):
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
 
-    def SKIPtestWgtsSupplementary(self):
+    def testWgtsSupplementary(self):
         json_location = os.path.join(self.ref_dir, "wgts.supplement.json")
         params = {
             self.INI: 'WGTS.supp.ini',
@@ -70,7 +70,7 @@ class TestSupplementaryPluginBody(PluginTester):
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
 
-    def SKIPtestWgtsFailSupplementary(self):
+    def testWgtsFailSupplementary(self):
         json_location = os.path.join(self.ref_dir, "wgts.fail.supplement.json")
         params = {
             self.INI: 'WGTS.FAIL.supp.ini',
@@ -79,7 +79,7 @@ class TestSupplementaryPluginBody(PluginTester):
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
 
-    def SKIPtestWgtsResearchSupplementary(self):
+    def testWgtsResearchSupplementary(self):
         json_location = os.path.join(self.ref_dir, "wgts.research.supplement.json")
         params = {
             self.INI: 'WGTS.RESEARCH.supp.ini',
@@ -88,7 +88,7 @@ class TestSupplementaryPluginBody(PluginTester):
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
 
-    def SKIPtestWgts40XSupplementary(self):
+    def testWgts40XSupplementary(self):
         json_location = os.path.join(self.ref_dir, "wgts40X.supplement.json")
         params = {
             self.INI: 'WGTS40X.supp.ini',
@@ -97,7 +97,7 @@ class TestSupplementaryPluginBody(PluginTester):
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
 
-    def SKIPtestWgts40XResearchSupplementary(self):
+    def testWgts40XResearchSupplementary(self):
         json_location = os.path.join(self.ref_dir, "wgts40X.research.supplement.json")
         params = {
             self.INI: 'WGTS40X.RESEARCH.supp.ini',
@@ -106,7 +106,7 @@ class TestSupplementaryPluginBody(PluginTester):
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
 
-    def SKIPtestWgts40XFailSupplementary(self):
+    def testWgts40XFailSupplementary(self):
         json_location = os.path.join(self.ref_dir, "wgts40X.fail.supplement.json")
         params = {
             self.INI: 'WGTS40X.FAIL.supp.ini',
