@@ -10,6 +10,7 @@ import gzip
 import json
 import logging
 import os
+import shutil
 import djerba.core.constants as cc
 from djerba.util.logger import logger
 from djerba.util.validator import path_validator
@@ -28,6 +29,10 @@ class workspace(logger):
     def abs_path(self, rel_path):
         """Return the absolute path of a file in the workspace"""
         return os.path.abspath(os.path.join(self.dir_path, rel_path))
+
+    def copy_path(self, rel_path):
+        """Copies the path to the workspace. Returns None."""
+        shutil.copy(rel_path, self.dir_path)
 
     def get_work_dir(self):
         return self.dir_path

@@ -7,6 +7,8 @@ ONCOTREE = 'oncotree_code'
 TUMOUR_ID = 'tumour_id'
 SEG_FILE = 'seg_file'
 WF_ICHOR_SEG = 'seg'
+PLOTS_FILE = 'plots_file'
+WF_ICHOR_PLOTS = 'plots'
 
 # For file provenance
 MT_SEG = 'application/seg-txt$'
