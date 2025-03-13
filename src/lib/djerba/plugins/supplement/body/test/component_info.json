@@ -1,0 +1,10 @@
+{
+    "core": {
+        "url": "https://github.com/oicr-gsi/djerba",
+        "version": "PLACEHOLDER"
+    },
+    "supplement.body": {
+        "url": "https://example.com/",
+        "version": "0.1"
+    }
+}
