@@ -115,3 +115,11 @@ REPORT_JSON_SUFFIX = '_report.json'
 
 # root directory pattern for WHIZBAM files
 WHIZBAM_PATTERN_ROOT='/.mounts/labs/prod/whizbam'
+
+# component versions/URLs
+COMPONENT_FILENAME = 'component_info.json'
+UNDEFINED_VERSION = 'version_not_defined'
+UNDEFINED_URL = 'url_not_defined'
+VERSION_KEY = 'version'
+URL_KEY = 'url'
+DJERBA_CORE_URL = 'https://github.com/oicr-gsi/djerba'

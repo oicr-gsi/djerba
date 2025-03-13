@@ -44,6 +44,8 @@ class main(helper_base):
     TCGA_DEFAULT = "TCGA_ALL_TUMOR"
     TCGA_CODE_KEY = "tcga_code_key.txt"
 
+    VERSION = "1.0.0"
+
     def specify_params(self):
         self.logger.debug("Specifying params for input params helper")
         self.set_priority_defaults(self.PRIORITY)
