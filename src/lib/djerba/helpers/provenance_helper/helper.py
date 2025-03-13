@@ -55,6 +55,8 @@ class main(helper_base):
     WF_ICHOR_SEG = 'seg'
     WF_ICHOR_PLOTS = 'plots'
 
+    VERSION = '1.0.0'
+
     def configure(self, config):
         """
         Writes a subset of provenance, and informative JSON files, to the workspace

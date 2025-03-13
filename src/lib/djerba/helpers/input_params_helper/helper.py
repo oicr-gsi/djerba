@@ -36,6 +36,8 @@ class main(helper_base):
     # Other
     NA = "NA"
 
+    VERSION = "1.0.0"
+
     def specify_params(self):
         self.logger.debug("Specifying params for input params helper")
         self.set_priority_defaults(self.PRIORITY)
