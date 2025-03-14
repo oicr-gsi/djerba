@@ -8,6 +8,9 @@
 - GCGI-1486: Copies ichorcna genomeWide_all_sols.pdf file to the workspace for manual review
 - GCGI-1412: Automatically generate TCGA code from oncotree code
 - GCGI-1134: If TCGA code does not correspond to an existing RODiC file, defaults to TCGA_ALL_TUMOR
+- GCGI-1527: Deprecating tube_ID and switching to group_ID
+- GCGI-1530: Update test_env.sh for new data directory
+- GCGI-1474: Additional Debug logs for tissue type filtering conditions
 
 ## v1.8.1: 2025-03-04
 - GCGI-1455: New `tar.status` plugin to add a display box for ctDNA status

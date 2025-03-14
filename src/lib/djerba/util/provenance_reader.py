@@ -20,7 +20,7 @@ class provenance_reader(logger):
     GEO_LIBRARY_SOURCE_TEMPLATE_TYPE = 'geo_library_source_template_type'
     GEO_TISSUE_ORIGIN_ID = 'geo_tissue_origin'
     GEO_TISSUE_TYPE_ID = 'geo_tissue_type'
-    GEO_TUBE_ID = 'geo_tube_id'
+
 
     # relevant workflow names
     WF_ARRIBA = 'arriba'
@@ -97,7 +97,7 @@ class provenance_reader(logger):
         self.logger.info("Reading provenance for project '%s' and donor '%s' " % (project, donor))
         self.root_sample_name = donor
         self.assay = assay
-        if not samples.is_valid(): 
+        if not samples.is_valid():
             msg = "User-supplied sample names are not valid: {0}. ".format(samples)+\
                   "Requires {0} and {1} with optional {2}".format(self.wg_n, self.wg_t, self.wt_t)
             self.logger.error(msg)
@@ -236,9 +236,12 @@ class provenance_reader(logger):
         value_set = set()
         for row in self.attributes:
             if check:
-                if reference and row.get(self.GEO_TISSUE_TYPE_ID)!='R':
+                tissue_type = row.get(self.GEO_TISSUE_TYPE_ID)
+                if reference and tissue_type!='R':
+                    self.logger.debug(f"Skipping row because reference is set to True but GEO_TISSUE_TYPE_ID is {tissue_type}")
                     continue
-                elif not reference and row.get(self.GEO_TISSUE_TYPE_ID)=='R':
+                elif not reference and tissue_type=='R':
+                    self.logger.debug(f"Skipping row because reference is set to False but GEO_TISSUE_TYPE_ID is {tissue_type}")
                     continue
             value = row.get(key)
             if value:
@@ -267,7 +270,7 @@ class provenance_reader(logger):
         self.sample_name_wg_n = samples_dict[ini.SAMPLE_NAME_WG_N] # acts as targeted normal
         self.sample_name_wg_t = samples_dict[ini.SAMPLE_NAME_WG_T] # acts as targeted tumour
         self.sample_name_wt_t = samples_dict[ini.SAMPLE_NAME_WT_T] # acts as shallow tumour
-    
+
     def _id_normal(self):
         self.logger.debug("Finding normal ID")
         normal_id = self._id_tumour_normal(self.patient_id, reference=True)
@@ -294,7 +297,6 @@ class provenance_reader(logger):
         Find the tumour or normal ID -- process differs only by value of the 'reference' flag
         tube ID > group_ID > constructed, in order of preference
         """
-        tube_id = self._get_unique_value(self.GEO_TUBE_ID, check=True, reference=reference)
         group_id = self._get_unique_value(self.GEO_GROUP_ID, check=True, reference=reference)
         tissue_origin = self._get_unique_value(self.GEO_TISSUE_ORIGIN_ID, check=True, reference=reference)
         if reference:
@@ -305,16 +307,12 @@ class provenance_reader(logger):
             constructed_id = "{0}_{1}_{2}".format(patient_id, tissue_origin, tissue_type)
         else:
             constructed_id = None
-        self.logger.debug("ID candidates: {0}, {1}, {2}".format(tube_id, group_id, constructed_id))
-        if tube_id:
-            chosen_id = tube_id
-            self.logger.debug("Using {0} value for ID: {1}".format(self.GEO_TUBE_ID, tube_id))
-        elif group_id:
-            msg = "Could not find {0}, using {1} for ID: {2}".format(self.GEO_TUBE_ID, self.GEO_GROUP_ID, group_id)
-            self.logger.warning(msg)
+        self.logger.debug("ID candidates: {0}, {1}".format(group_id, constructed_id))
+        if group_id:
             chosen_id = group_id
+            self.logger.debug("Using {0} value for ID: {1}".format(self.GEO_GROUP_ID, group_id))
         elif constructed_id:
-            msg = "Could not find {0} or {1}, constructing alternate ID: {2}".format(self.GEO_TUBE_ID, self.GEO_GROUP_ID, constructed_id)
+            msg = "Could not find {0}, constructing alternate ID: {1}".format(self.GEO_GROUP_ID, constructed_id)
             self.logger.warning(msg)
             chosen_id = constructed_id
         else:
