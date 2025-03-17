@@ -5,9 +5,9 @@
 
 ${html_builder().section_cells_begin("<h2>GERMLINE<br>HLA Analysis</h2>", "main")}
 <p>
-Germline HLA analysis was restricted to the class I loci (<strong>HLA‑A, HLA‑B, and HLA‑C</strong>). The table presents the detected alleles.
+Detected alleles for class I loci (<strong>HLA‑A, HLA‑B, and HLA‑C</strong>).
 </p>
-<table class="variants" width="100%">
+<table class="variants" width="100%" style="margin-bottom: 0;">
     <!-- Generate table headers for HLA Analysis -->
     ${hb_hla().hla_header()}
     <tbody>
@@ -18,4 +18,4 @@ Germline HLA analysis was restricted to the class I loci (<strong>HLA‑A, HLA�
     </tbody>
 </table>
 ${html_builder().section_cells_end()}
-<hr class="big-white-line">
+<hr class="big-white-line" style="margin-top: 5px;">
