@@ -3,8 +3,10 @@
   from djerba.plugins.hla.render import html_builder as hb_hla
 %>
 
-${html_builder().section_cells_begin("<h2>HLA  Analysis</h2>", "main")}
-
+${html_builder().section_cells_begin("<h2>GERMLINE<br>HLA Analysis</h2>", "main")}
+<p>
+Germline HLA analysis was restricted to the class I loci (<strong>HLA‑A, HLA‑B, and HLA‑C</strong>). The table presents the detected alleles.
+</p>
 <table class="variants" width="100%">
     <!-- Generate table headers for HLA Analysis -->
     ${hb_hla().hla_header()}

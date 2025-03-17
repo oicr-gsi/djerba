@@ -7,7 +7,7 @@ import djerba.core.constants as core_constants
 
 class main(plugin_base):
 
-    PRIORITY = 200
+    PRIORITY = 1000
     PLUGIN_VERSION = '0.1.0'
     TEMPLATE_NAME = 'hla_template.html'
 

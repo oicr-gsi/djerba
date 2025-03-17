@@ -50,7 +50,7 @@ class main(helper_base):
             wrapper,
             'input_params.json',
             self.TCGA_CODE_KEY,
-            'tcgacode'
+            'tcga_code'
         )
         if wrapper.my_param_is_null(self.GEP_REFERENCE_KEY):
             ref_path = os.path.join(data_dir, 'results', 'gep_reference.txt.gz')

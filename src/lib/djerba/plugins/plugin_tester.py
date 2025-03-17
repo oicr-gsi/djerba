@@ -90,7 +90,7 @@ class PluginTester(TestBase):
         ### uncomment this to dump the plugin output HTML to a file
         #with open('/tmp/foo.html', 'w', encoding=core_constants.TEXT_ENCODING) as out_file:
         #    out_file.write(self.redact_html(html)) # redaction is done in assert_report_MD5
-        #self.assert_report_MD5(html, expected_md5)
+        self.assert_report_MD5(html, expected_md5)
         # !!! Second pass -- run the plugin as part of Djerba main, do JSON check only
         djerba_main = core_main(work_dir, log_level=log_level)
         main_config = djerba_main.configure(ini_path)
