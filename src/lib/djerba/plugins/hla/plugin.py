@@ -37,7 +37,6 @@ class main(plugin_base):
             core_constants.DEFAULT_PATH_INFO,
             self.HLA_FILE_PATH,
             self.HLA_WORKFLOW)
-            #fallback=os.path.realpath("/.mounts/labs/CGI/scratch/ohamza/HLA_plugin/T1K_output_files/OCT_010434_Ly_R_WG_t1k_hla_genotype.tsv"))
 
         return config
 
@@ -47,7 +46,7 @@ class main(plugin_base):
         tsv_path = config[self.identifier][self.HLA_FILE_PATH]
 
         data = {
-            'plugin_name': 'HLA Analysis',
+            'plugin_name': 'Germline HLA Analysis',
             'version': self.PLUGIN_VERSION,
             'priorities': wrapper.get_my_priorities(),
             'attributes': wrapper.get_my_attributes(),
@@ -78,10 +77,6 @@ class main(plugin_base):
                 #abundance2 = input_row[6]
                 #quality2 = input_row[7]
 
-                # Debugging
-                print(f"Extracted row for gene: {gene_name}")
-                print(f"Zygosity: {zygosity}, Allele1: {allele1}, Allele2: {allele2}")
-
                 if zygosity == 'Homozygous':
                     rows.append({
                         self.GENE_NAME: gene_name,
@@ -109,9 +104,6 @@ class main(plugin_base):
         data = {
             self.BODY: rows
         }
-
-        # Print the final data dictionary for debugging
-        print(f"Final data: {data}")
 
         return data
 
