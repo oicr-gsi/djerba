@@ -11,6 +11,7 @@
 - GCGI-1527: Deprecating tube_ID and switching to group_ID
 - GCGI-1530: Update test_env.sh for new data directory
 - GCGI-1474: Additional Debug logs for tissue type filtering conditions
+- GCGI-1534: Fix issues with plugin tester; output test reports to working directory
 
 ## v1.8.1: 2025-03-04
 - GCGI-1455: New `tar.status` plugin to add a display box for ctDNA status
