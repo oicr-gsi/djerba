@@ -64,8 +64,7 @@ class PluginTester(TestBase):
         # report_dir contains report files in case needed for troubleshooting
         # if work_dir is not None, report_dir will persist for later viewing
         report_dir = os.path.join(work_dir, 'test_reports')
-        if not os.path.isdir(report_dir):
-            os.mkdir(report_dir)
+        os.makedirs(report_dir, exist_ok=True)
         ini_path = os.path.join(test_source_dir, params[self.INI])
         expected_json_path = os.path.join(test_source_dir, params[self.JSON])
         expected_md5 = params[self.MD5]
