@@ -2,7 +2,6 @@
 
 ## v1.8.2: 2025-03-20
 - Adjusted smoothing parameter (`bw_adjust`) to 2 for mutation counts &le; 10 and to 1 for mutation counts &gt; 10 in `wgts.snv_indel`
-- Fixed smoothing in wgts.snv_indel VAF plot for plots with &le;10 variants 
  
 ## v1.8.1: 2025-03-04
 - GCGI-1455: New `tar.status` plugin to add a display box for ctDNA status
