@@ -522,6 +522,12 @@ class snv_indel_processor(logger):
         MAF = MAF.merge(cytoBand, how='inner')
         MAF['OncoKB'] = np.where(MAF['HIGHEST_LEVEL'].isna(), MAF['ONCOGENIC'], MAF['HIGHEST_LEVEL'])
         MAF['tumour_vaf_perc'] = MAF['tumour_vaf'] * 100
+        
+        # Adjust the smoothing of the plot if there are too few mutations (<10).
+        if len(MAF['tumour_vaf_perc'].unique()) <= 10:
+            bw_adjust = 2
+        else:
+            bw_adjust = 1 # the default
 
         plt.figure(figsize=(7, 1.5))
 
@@ -530,6 +536,7 @@ class snv_indel_processor(logger):
                     fill=True, 
                     color='darkgrey', 
                     alpha=0.5,
+                    bw_adjust=bw_adjust,
                     warn_singular=False
         )
         plt.scatter(MAF['tumour_vaf_perc'], 
