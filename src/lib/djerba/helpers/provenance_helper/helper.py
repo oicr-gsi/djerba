@@ -53,6 +53,9 @@ class main(helper_base):
     WF_MAF_NORMAL = 'maf_normal'
     WF_ICHOR_JSON = 'metrics_json'
     WF_ICHOR_SEG = 'seg'
+    WF_ICHOR_PLOTS = 'plots'
+
+    VERSION = '1.0.0'
 
     def configure(self, config):
         """
@@ -238,6 +241,7 @@ class main(helper_base):
             self.WF_MAF_TUMOUR: reader.parse_tar_maf_tumour_path(),
             self.WF_MAF_NORMAL: reader.parse_tar_maf_normal_path(),
             self.WF_ICHOR_JSON: reader.parse_tar_ichorcna_json_path(),
+            self.WF_ICHOR_PLOTS: reader.parse_tar_ichorcna_plots_path(),
             self.WF_ICHOR_SEG: reader.parse_tar_ichorcna_seg_path()
 
         }
