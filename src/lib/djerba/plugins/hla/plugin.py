@@ -11,7 +11,7 @@ class main(plugin_base):
     PLUGIN_VERSION = '0.1.0'
     TEMPLATE_NAME = 'hla_template.html'
 
-    HLA_FILE_PATH= 'tsv_file'
+    HLA_FILE_PATH= 't1k_file'
     HLA_WORKFLOW = 't1k'
 
     # Constants for TSV columns

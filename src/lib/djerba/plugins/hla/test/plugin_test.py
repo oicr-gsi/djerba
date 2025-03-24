@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 import os
 import unittest
 import tempfile
@@ -16,7 +18,7 @@ class TestHLAPlugin(PluginTester):
         self.tmp_dir = self.tmp.name
         self.sup_dir = directory_finder().get_test_dir()
         # Expected output file
-        self.json = os.path.join(self.sup_dir, "plugins/hla/GSICAPBENCH_1391_Ly_R_HLA_alleles.json")
+        self.json = os.path.join(self.sup_dir, "plugins", "hla", "GSICAPBENCH_1391_Ly_R_HLA_alleles.json")
 
     def testHLAPlugin(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -35,7 +37,7 @@ class TestHLAPlugin(PluginTester):
         params = {
             self.INI: os.path.join('input', self.INI_NAME),
             self.JSON: self.json,
-            self.MD5: '8bd907a1186f5e04eb3ecefcf990b5cd'
+            self.MD5: 'd9c55683253d6a4a97140133aab46880'
         }
         self.run_basic_test(self.tmp_dir, params)
 
