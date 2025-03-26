@@ -1,17 +1,20 @@
 # CHANGELOG
 
-## Unreleased: v1.8.2
+## v1.8.3: 2025-03-26
+- GCGI-1134: If TCGA code does not correspond to an existing RODiC file, defaults to TCGA_ALL_TUMOR
+- GCGI-1412: Automatically generate TCGA code from oncotree code
+- GCGI-1474: Additional Debug logs for tissue type filtering conditions
 - GCGI-1484: Refactor the `plugins/wgts/common` directory, moving code to better locations
+- GCGI-1486: Copies ichorcna genomeWide_all_sols.pdf file to the workspace for manual review
 - GCGI-1512: Clean up `lib/djerba/data`, moving files to specific plugins where possible, `lib/djerba/util/data` otherwise
 - GCGI-1515: Make `mrdetect_filter_only` inputs optional for non-clinical reports
-- Fix issue with benchmark plugin; test no longer breaks when Djerba core version is changed
-- GCGI-1486: Copies ichorcna genomeWide_all_sols.pdf file to the workspace for manual review
-- GCGI-1412: Automatically generate TCGA code from oncotree code
-- GCGI-1134: If TCGA code does not correspond to an existing RODiC file, defaults to TCGA_ALL_TUMOR
 - GCGI-1527: Deprecating tube_ID and switching to group_ID
 - GCGI-1530: Update test_env.sh for new data directory
-- GCGI-1474: Additional Debug logs for tissue type filtering conditions
 - GCGI-1534: Fix issues with plugin tester; output test reports to working directory
+- Fix issue with benchmark plugin; test no longer breaks when Djerba core version is changed
+
+## v1.8.2: 2025-03-20
+- Adjusted smoothing parameter (`bw_adjust`) to 2 for mutation counts &le; 10 and to 1 for mutation counts &gt; 10 in `wgts.snv_indel`
 
 ## v1.8.1: 2025-03-04
 - GCGI-1455: New `tar.status` plugin to add a display box for ctDNA status
