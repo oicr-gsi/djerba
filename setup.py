@@ -73,6 +73,7 @@ setup(
         'djerba.plugins.failed_report': install_wildcards,
         'djerba.plugins.fusion': install_wildcards,
         'djerba.plugins.genomic_landscape': install_wildcards,
+        'djerba.plugins.hla': install_wildcards,
         'djerba.plugins.patient_info': install_wildcards,
         'djerba.plugins.pwgs.analysis': install_wildcards,
         'djerba.plugins.pwgs.case_overview': install_wildcards,

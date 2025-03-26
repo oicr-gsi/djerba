@@ -1,0 +1,27 @@
+<%
+  from djerba.util.html import html_builder
+  from djerba.plugins.hla.render import html_builder as hb_hla
+%>
+
+${html_builder().section_cells_begin("<h2>GERMLINE<br>HLA Analysis</h2>", "main")}
+<p>
+Detected alleles for class I loci (<strong>HLA‑A, HLA‑B, and HLA‑C</strong>).
+</p>
+<table class="variants" width="100%" style="margin-bottom: 0;">
+    <!-- Generate table headers for HLA Analysis -->
+    ${hb_hla().hla_header()}
+    <tbody>
+        <!-- Iterate through the rows of HLA data -->
+        % for row in hb_hla().hla_rows(results):
+            ${row}
+        % endfor
+    </tbody>
+</table>
+
+<!-- Add the HLA definition below the table -->
+<p style="margin-top: 10px;">
+    <strong>HLA</strong>: Human Leukocyte Antigens
+</p>
+
+${html_builder().section_cells_end()}
+<hr class="big-white-line" style="margin-top: 5px;">
