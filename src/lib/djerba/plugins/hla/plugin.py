@@ -60,6 +60,11 @@ class main(plugin_base):
         return renderer.render_name(self.TEMPLATE_NAME, data)
 
     def build_hla_table(self, work_dir, tsv_path):
+        # T1K HLA output also includes:
+        # - "Abundance": Proportion of reads supporting an allele.
+        # - "Quality": Confidence score based on depth, base quality, and alignment.
+        # Uncomment these variables if you want them included in the table.
+
         rows = []
         with open(os.path.join(work_dir, tsv_path)) as data_file:
             for input_row in csv.reader(data_file, delimiter="\t"):
