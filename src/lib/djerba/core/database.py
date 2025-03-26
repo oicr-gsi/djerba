@@ -34,33 +34,16 @@ class database(logger):
         doc = {**couch_info, **data}
         return doc
     
-    def get_upload_params(self, report_data):
-        try:
-            core_config = report_data[cc.CONFIG][cc.CORE]
-            base = core_config[cc.ARCHIVE_URL]
-            db = core_config[cc.ARCHIVE_NAME]
-        except KeyError as err:
-            msg = "Cannot read required upload param(s) from config: {0}".format(err)
-            self.logger.error(msg)
-            raise
-        # read parameters from private dir
-        try:
-            private_dir = directory_finder(self.log_level, self.log_path).get_private_dir()
-        except DjerbaEnvDirError as err:
-            msg = 'Cannot find archive settings: {0}'.format(err)
-            self.logger.error(msg)
-            raise RuntimeError(msg) from err
-        config_path = os.path.join(private_dir, cc.ARCHIVE_CONFIG)
+    def get_upload_params(self):
+        config_path = os.environ.get(cc.ARCHIVE_CONFIG_VAR)
         path_validator(self.log_level, self.log_path).validate_input_file(config_path)
         config = ConfigParser()
         config.read(config_path)
-        keys = [cc.USERNAME, cc.PASSWORD, cc.ADDRESS, cc.PORT]
+        keys = [cc.USERNAME, cc.PASSWORD, cc.ADDRESS, cc.PORT, cc.DATABASE_NAME]
         args = {key : config[cc.ARCHIVE_HEADER][key] for key in keys}
-        base = string.Template(base).substitute(args)
-        url = posixjoin(base, db)
-        # find report ID from "core" (not to be confused with "config.core")
-        report_id = report_data[cc.CORE][cc.REPORT_ID]
-        return report_id, db, url
+        template_str = "http://${username}:${password}@${address}:${port}/${database_name}"
+        url = string.Template(template_str).substitute(args)
+        return args[cc.DATABASE_NAME], url
 
     def get_revision_and_url(self, report_id, url):
         url_with_id = posixjoin(url, report_id)
@@ -82,7 +65,8 @@ class database(logger):
         Upload the report data structure to couchdb
         Full upload URL is intentionally not logged, as it contains the DB username/password
         """
-        report_id, db, url = self.get_upload_params(report_data)
+        report_id = report_data[cc.CORE][cc.REPORT_ID]
+        db, url = self.get_upload_params()
         headers = {'Content-Type': 'application/json'}
         attempts = 0
         http_post = True
