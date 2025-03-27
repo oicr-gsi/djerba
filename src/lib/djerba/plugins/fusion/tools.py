@@ -13,7 +13,7 @@ from djerba.util.html import html_builder as hb
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
 from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.util.oncokb.annotator import annotator_factory
-from djerba.plugins.wgts.common.tools import wgts_tools
+from djerba.util.wgts.tools import wgts_tools
 from djerba.util.oncokb.tools import gene_summary_reader
 import djerba.plugins.fusion.constants as fc
 import djerba.core.constants as core_constants

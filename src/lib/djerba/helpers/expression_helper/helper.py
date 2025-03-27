@@ -16,7 +16,6 @@ from djerba.util.subprocess_runner import subprocess_runner
 class main(helper_base):
 
     ENSCON_KEY = 'enscon'
-    GENE_LIST_KEY = 'gene_list'
     GEP_REFERENCE_KEY = 'gep_reference'
     RSEM_GENES_RESULTS_KEY = 'rsem_genes_results'
     TCGA_CODE_KEY = 'tcga_code'
@@ -30,6 +29,8 @@ class main(helper_base):
 
     FPR_NAME = 'provenance_helper'
     WGTS = 'WGTS' # currently only used for WGTS
+
+    VERSION = '1.0.0'
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -49,17 +50,15 @@ class main(helper_base):
             wrapper,
             'input_params.json',
             self.TCGA_CODE_KEY,
-            'tcgacode'
+            'tcga_code'
         )
         if wrapper.my_param_is_null(self.GEP_REFERENCE_KEY):
             ref_path = os.path.join(data_dir, 'results', 'gep_reference.txt.gz')
             wrapper.set_my_param(self.GEP_REFERENCE_KEY, ref_path)
         if wrapper.my_param_is_null(self.ENSCON_KEY):
-            ref_path = os.path.join(data_dir, 'ensemble_conversion_hg38.txt')
+            helper_dir = os.path.dirname(os.path.realpath(__file__))
+            ref_path = os.path.join(helper_dir, 'ensemble_conversion_hg38.txt')
             wrapper.set_my_param(self.ENSCON_KEY, ref_path)
-        if wrapper.my_param_is_null(self.GENE_LIST_KEY):
-            ref_path = os.path.join(data_dir, 'targeted_genelist.txt')
-            wrapper.set_my_param(self.GENE_LIST_KEY, ref_path)
         # set up and run the provenance reader
         samples = sample_name_container()
         samples.set_and_validate(sample_wg_n, sample_wg_t, sample_wt_t)
@@ -142,13 +141,16 @@ class main(helper_base):
         defaults = {
             core_constants.DEPENDS_CONFIGURE: 'provenance_helper',
             core_constants.EXTRACT_PRIORITY: 100, # run before cnv & snv plugins
+            # RODiC is cloned from https://github.com/translational-genomics-laboratory/RODiC
+            # repo also forked to https://github.com/oicr-gsi/RODiC
             self.TCGA_DATA_KEY: '/.mounts/labs/CGI/gsi/tools/RODiC/data',
+            # the GEP reference file is in Bitbucket for safekeeping
+            # https://bitbucket.oicr.on.ca/projects/GSI/repos/djerba_test_data/browse/reference/gep_reference.txt.gz
             self.GEP_REFERENCE_KEY: '/.mounts/labs/CGI/gsi/tools/djerba/gep_reference.txt.gz'
         }
         for key in defaults.keys():
             self.set_ini_default(key, defaults[key])
         self.add_ini_discovered(self.ENSCON_KEY)
-        self.add_ini_discovered(self.GENE_LIST_KEY)
         self.add_ini_discovered(self.RSEM_GENES_RESULTS_KEY)
         self.add_ini_discovered(self.TCGA_CODE_KEY) # use PAAD for testing
         self.add_ini_discovered(core_constants.TUMOUR_ID)

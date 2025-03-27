@@ -634,13 +634,13 @@ class TestMainScript(TestCore):
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
-        self.assertEqual(self.getMD5(ini_path), 'a211144356b5ec200e1c31ecd3128b45')
+        self.assertEqual(self.getMD5(ini_path), 'e350cdda6a46d4f58647d172067a2d29')
         os.remove(ini_path)
         prepop_path = os.path.join(self.test_source_dir, 'prepop.ini')
         cmd.extend(['--pre-populate', prepop_path])
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
-        self.assertEqual(self.getMD5(ini_path), '2387e66d783b1deb0fe5361e7770ec7a')
+        self.assertEqual(self.getMD5(ini_path), 'a32e075e861539b68ab510cdb61733fb')
 
     def test_update_cli_with_ini(self):
         mode = 'update'

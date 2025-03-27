@@ -5,7 +5,7 @@ Constants for the Genomic Landscape plugin.
 # Constants for configure
 ONCOTREE_CODE = 'oncotree_code'
 TUMOUR_ID = 'tumour_id'
-TCGA_CODE = 'tcgacode'
+TCGA_CODE = 'tcga_code'
 PURITY_INPUT = 'purity'
 DONOR = 'donor'
 MSI_FILE = 'msi_file'

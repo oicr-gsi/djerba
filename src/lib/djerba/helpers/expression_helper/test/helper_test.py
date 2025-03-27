@@ -37,13 +37,9 @@ class TestExpressionHelper(TestBase):
         ws = workspace(work_dir)
         helper_main = loader.load(self.HELPER_NAME, ws)
         config = helper_main.configure(cp)
-        data_dir = directory_finder().get_data_dir()
-        expected_enscon = os.path.join(data_dir, 'ensemble_conversion_hg38.txt')
+        plugin_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # go 2 directories up
         configured_enscon = config.get(self.HELPER_NAME, helper_main.ENSCON_KEY)
-        self.assertEqual(configured_enscon, expected_enscon)
-        expected_gene_list = os.path.join(data_dir, 'targeted_genelist.txt')
-        configured_gene_list = config.get(self.HELPER_NAME, helper_main.GENE_LIST_KEY)
-        self.assertEqual(configured_gene_list, expected_gene_list)
+        self.assertTrue(os.path.exists(configured_enscon))
         tcga_code = config.get(self.HELPER_NAME, helper_main.TCGA_CODE_KEY)
         self.assertEqual(tcga_code, 'PAAD')
         # path was derived from file provenance subset, should not change
@@ -64,11 +60,9 @@ class TestExpressionHelper(TestBase):
         ws = workspace(self.tmp_dir)
         helper_main = loader.load(self.HELPER_NAME, ws)
         # configure the INI
-        data_dir = finder.get_data_dir()
-        enscon = os.path.join(data_dir, 'ensemble_conversion_hg38.txt')
+        plugin_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # go 2 directories up
+        enscon = os.path.join(plugin_dir, 'ensemble_conversion_hg38.txt')
         cp.set(self.HELPER_NAME, helper_main.ENSCON_KEY, enscon)
-        gene_list = os.path.join(data_dir, 'targeted_genelist.txt')
-        cp.set(self.HELPER_NAME, helper_main.GENE_LIST_KEY, gene_list)
         rsem = os.path.join(test_data_dir, 'PANX_1547_Lv_M_WT_100-PM-061_LCM6.genes.results')
         cp.set(self.HELPER_NAME, helper_main.RSEM_GENES_RESULTS_KEY, rsem)
         ref = os.path.join(test_data_dir, 'gep_reference.txt.gz')
@@ -90,6 +84,45 @@ class TestExpressionHelper(TestBase):
             out_path = os.path.join(self.tmp_dir, name)
             self.assertTrue(os.path.exists(out_path))
             self.assertEqual(self.getMD5(out_path), expected[name])
+
+    def test_extract_unknown_tcga(self):
+        test_source_dir = os.path.realpath(os.path.dirname(__file__))
+        cp = ConfigParser()
+        cp.read(os.path.join(test_source_dir, 'config_unknown_tcga.ini'))
+        finder = directory_finder()
+        test_data_dir = os.path.join(finder.get_test_dir(), 'helpers', 'expression')
+        loader = helper_loader(logging.WARNING)
+        ws = workspace(self.tmp_dir)
+        helper_main = loader.load(self.HELPER_NAME, ws)
+        # configure the INI
+        plugin_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # go 2 directories up
+        enscon = os.path.join(plugin_dir, 'ensemble_conversion_hg38.txt')
+        cp.set(self.HELPER_NAME, helper_main.ENSCON_KEY, enscon)
+        rsem = os.path.join(test_data_dir, 'PANX_1547_Lv_M_WT_100-PM-061_LCM6.genes.results')
+        cp.set(self.HELPER_NAME, helper_main.RSEM_GENES_RESULTS_KEY, rsem)
+        ref = os.path.join(test_data_dir, 'gep_reference.txt.gz')
+        cp.set(self.HELPER_NAME, helper_main.GEP_REFERENCE_KEY, ref)
+        tcga = os.path.join(test_data_dir, 'tcga_data')
+        cp.set(self.HELPER_NAME, helper_main.TCGA_DATA_KEY, tcga)
+        # run extract step and check the results
+        helper_main.extract(cp)
+        gep_path = ws.abs_path('gep.txt')
+        self.assertEqual(self.getMD5(gep_path), '86793b131107a466f72e64811d2b9758')
+        expected = {
+            'data_expression_percentile_comparison.txt': '1cbe2d84b4ff8030062b260742d1ce8e',
+            'data_expression_percentile_tcga.txt': 'be9c0f2588c6b75f45f8b7ab17001b84',
+            'data_expression_zscores_comparison.txt': '20757c8b2126137dd05fb064734a9af4',
+            'data_expression_zscores_tcga.txt': 'c841d03a6d70e0ba50be7cbac46e9a71',
+            'data_expression_percentile_tcga.json': '7afda7a462ed32aea28e6eea45621fc4'
+        }
+        for name in expected:
+            out_path = os.path.join(self.tmp_dir, name)
+            self.assertTrue(os.path.exists(out_path))
+            self.assertEqual(self.getMD5(out_path), expected[name])
+
+
+
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -20,7 +20,7 @@ else
     export PYTHONPATH=${DJERBA_SOURCE_DIR}/src/lib:$PYTHONPATH
     export PATH=${DJERBA_SOURCE_DIR}/src/bin:$PATH
     export DJERBA_BASE_DIR=${DJERBA_SOURCE_DIR}/src/lib/djerba
-    export DJERBA_RUN_DIR=${DJERBA_BASE_DIR}/data
+    export DJERBA_RUN_DIR=${DJERBA_BASE_DIR}/util/data
     # DJERBA_TEST_DIR is set by the environment module
     export DJERBA_TEST_DATA=$DJERBA_TEST_DIR # deprecated, but still used in some tests
     # DJERBA_PRIVATE_DIR is set by the environment module
