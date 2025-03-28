@@ -67,18 +67,18 @@ class main(plugin_base):
 
         if tsv_path is None:
             self.logger.warning("HLA Analysis: 't1k_file' is missing or set to None. No HLA data will be displayed.")
-            return []
+            return {self.BODY: []}  # Return object with empty data
 
         tsv_full_path = os.path.join(work_dir, tsv_path)
 
         if not os.path.exists(tsv_full_path):
             self.logger.warning(
                 f"HLA Analysis: Expected TSV file not found: {tsv_full_path}. No HLA data will be displayed.")
-            return []
+            return {self.BODY: []}
 
         if os.path.getsize(tsv_full_path) == 0:
             self.logger.warning(f"HLA Analysis: TSV file {tsv_full_path} is empty. No HLA data will be displayed.")
-            return []
+            return {self.BODY: []}
 
         rows = []
         with open(tsv_full_path) as data_file:
@@ -91,34 +91,34 @@ class main(plugin_base):
 
                 zygosity = 'Homozygous' if input_row[1] == '1' else 'Heterozygous'
                 allele1 = input_row[2]
-                #abundance1 = input_row[3]
-                #quality1 = input_row[4]
+                # abundance1 = input_row[3]
+                # quality1 = input_row[4]
                 allele2 = input_row[5]
-                #abundance2 = input_row[6]
-                #quality2 = input_row[7]
+                # abundance2 = input_row[6]
+                # quality2 = input_row[7]
 
                 if zygosity == 'Homozygous':
                     rows.append({
                         self.GENE_NAME: gene_name,
                         self.ZYGOSITY: zygosity,
                         self.ALLELE: allele1,
-                        #self.ABUNDANCE: abundance1,
-                        #self.QUALITY: quality1
+                        # self.ABUNDANCE: abundance1,
+                        # self.QUALITY: quality1
                     })
                 else:
                     rows.append({
                         self.GENE_NAME: gene_name,
                         self.ZYGOSITY: zygosity,
                         self.ALLELE: allele1,
-                        #self.ABUNDANCE: abundance1,
-                        #self.QUALITY: quality1
+                        # self.ABUNDANCE: abundance1,
+                        # self.QUALITY: quality1
                     })
                     rows.append({
                         self.GENE_NAME: '',
                         self.ZYGOSITY: '',
                         self.ALLELE: allele2,
-                        #self.ABUNDANCE: abundance2,
-                        #self.QUALITY: quality2
+                        # self.ABUNDANCE: abundance2,
+                        # self.QUALITY: quality2
                     })
 
         data = {
