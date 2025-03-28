@@ -65,8 +65,23 @@ class main(plugin_base):
         # - "Quality": Confidence score based on depth, base quality, and alignment.
         # Uncomment these variables if you want them included in the table.
 
+        if tsv_path is None:
+            self.logger.warning("HLA Analysis: 't1k_file' is missing or set to None. No HLA data will be displayed.")
+            return []
+
+        tsv_full_path = os.path.join(work_dir, tsv_path)
+
+        if not os.path.exists(tsv_full_path):
+            self.logger.warning(
+                f"HLA Analysis: Expected TSV file not found: {tsv_full_path}. No HLA data will be displayed.")
+            return []
+
+        if os.path.getsize(tsv_full_path) == 0:
+            self.logger.warning(f"HLA Analysis: TSV file {tsv_full_path} is empty. No HLA data will be displayed.")
+            return []
+
         rows = []
-        with open(os.path.join(work_dir, tsv_path)) as data_file:
+        with open(tsv_full_path) as data_file:
             for input_row in csv.reader(data_file, delimiter="\t"):
                 gene_name = input_row[0]
 
