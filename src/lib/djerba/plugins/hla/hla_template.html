@@ -5,8 +5,16 @@
 
 ${html_builder().section_cells_begin("<h2>GERMLINE<br>HLA Analysis</h2>", "main")}
 
-% if results:  # If we have data
-    <p>Detected alleles for class I loci (<strong>HLA‑A, HLA‑B, and HLA‑C</strong>).</p>
+<%
+    # "results" is typically a dict like { "body": [...] }
+    # We only want to display the table if results["body"] has one or more items.
+    has_data = results and results.get('body') and len(results['body']) > 0
+%>
+
+% if has_data:
+    <p>
+      Detected alleles for class I loci (<strong>HLA‑A, HLA‑B, and HLA‑C</strong>).
+    </p>
     <table class="variants" width="100%" style="margin-bottom: 0;">
         ${hb_hla().hla_header()}
         <tbody>
@@ -15,8 +23,10 @@ ${html_builder().section_cells_begin("<h2>GERMLINE<br>HLA Analysis</h2>", "main"
             % endfor
         </tbody>
     </table>
-% else:  # No data case
-    <p><strong>No detected alleles for class I loci (HLA‑A, HLA‑B, and HLA‑C).</strong></p>
+% else:
+    <p>
+      No detected alleles for class I loci (<strong>HLA‑A, HLA‑B, and HLA‑C</strong>).
+    </p>
 % endif
 
 <p style="margin-top: 10px;">
