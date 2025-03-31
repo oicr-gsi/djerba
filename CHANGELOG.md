@@ -2,6 +2,7 @@
 
 ## unreleased
 - GCGI-1109: Update "Patient Genetic Sex" to "Patient sex assigned at birth"
+- GCGI-1544: Handle missing or empty HLA data
 
 
 ## v1.8.3: 2025-03-27
