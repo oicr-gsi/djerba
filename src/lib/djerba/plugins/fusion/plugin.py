@@ -63,7 +63,7 @@ class main(plugin_base):
         data[core_constants.RESULTS] = results
         data[core_constants.MERGE_INPUTS]['gene_information_merger'] = gene_info
         data[core_constants.MERGE_INPUTS]['treatment_options_merger'] = treatment_opts
-       
+
         # Processing fusions and generating blob URLs
         tsv_file_path = wrapper.get_my_string(fc.ARRIBA_PATH)
         base_dir = (directory_finder(self.log_level, self.log_path).get_base_dir())

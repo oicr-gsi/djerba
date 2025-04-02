@@ -291,18 +291,19 @@ class fusion_tools(logger):
                     gene_info.append(gene_info_entry)
                 therapies = fusion.get_therapies()
                 if oncokb_order != oncokb_levels.oncokb_order('P'):
-                    treatment_opts = self.build_treatment_entries(
+                    treatment_opt = self.build_treatment_entries(
                             fusion, 
                             therapies, 
                             oncotree_code
                     )
+                    treatment_opts.extend(treatment_opt)
                 else:
-                    treatment_opts = self.build_treatment_entries_nccn(
+                    treatment_opt = self.build_treatment_entries_nccn(
                             fusion,
                             therapies,
                             oncotree_code
                     )
-
+                    treatment_opts.extend(treatment_opt)
         return rows, gene_info, treatment_opts
     
     def process_fusion(self, config, fusion, tsv_file_path, json_template_path, output_dir, wrapper):
