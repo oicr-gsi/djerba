@@ -95,6 +95,7 @@ class database(logger):
                     self.logger.debug('Attempting PUT for {0}'.format(report_id))
                     result = requests.put(url=url_with_id, headers=headers, json=upload_doc)
             status = result.status_code
+            self.logger.debug("HTTP result: {0}, {1}".format(status, result.reason))
             if status == 201:
                 uploaded = True
             elif status == 409:
