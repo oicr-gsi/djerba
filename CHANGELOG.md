@@ -5,6 +5,7 @@
 - GCGI-1544: Handle missing or empty HLA data
 - GCGI-1539: Environment variable for CouchDB credentials
 - GCGI-1546: Fix installation of INI templates for benchmark script
+- Added SETD2 to Captiv8 SWISNF genes
 
 ## v1.8.3: 2025-03-27
 
