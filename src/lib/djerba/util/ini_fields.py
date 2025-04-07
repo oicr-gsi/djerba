@@ -8,8 +8,6 @@ VERSIONS = 'versions'
 
 # parameter names
 ASSAY_VERSION = 'assay_version'
-ARCHIVE_NAME = 'archive_name'
-ARCHIVE_URL = 'archive_url'
 BED_PATH = 'bed_path'
 CBIO_STUDY_ID = 'cbio_study_id'
 CBIO_PROJECT_PATH = 'cbio_studies_path'
@@ -125,8 +123,6 @@ SCHEMA_CORE = {
     ],
     SETTINGS: [
         ASSAY_VERSION,
-        ARCHIVE_NAME,
-        ARCHIVE_URL,
         BED_PATH,
         GEP_REFERENCE,
         MIN_FUSION_READS,
@@ -195,8 +191,6 @@ SCHEMA_DEFAULT = {
     ],
     SETTINGS: [
         ASSAY_VERSION,
-        ARCHIVE_NAME,
-        ARCHIVE_URL,
         BED_PATH,
         CBIO_PROJECT_PATH,
         GEP_REFERENCE,
@@ -292,8 +286,6 @@ SCHEMA_WGS_ONLY = {
     ],
     SETTINGS: [
         ASSAY_VERSION,
-        ARCHIVE_NAME,
-        ARCHIVE_URL,
         BED_PATH,
         CBIO_PROJECT_PATH,
         GEP_REFERENCE,
@@ -377,8 +369,6 @@ SCHEMA_FAILED = {
     ],
     SETTINGS: [
         ASSAY_VERSION,
-        ARCHIVE_NAME,
-        ARCHIVE_URL,
         BED_PATH,
         CBIO_PROJECT_PATH,
         GEP_REFERENCE,
