@@ -48,12 +48,16 @@ setup(
     package_dir={'' : package_root},
     package_data={
         'djerba': [
+            'util/benchmark/benchmark_pwgs.ini',
+            'util/benchmark/benchmark_tar.ini',
+            'util/benchmark/benchmark_wgs.ini',
+            'util/benchmark/benchmark_wgts.ini',
             'util/data/20200818-oncoKBcancerGeneList.tsv',
-            'util/oncokb/20240315-allCuratedGenes.tsv',
             'util/data/NCCN_annotations.txt',
             'util/data/cytoBand.txt',
             'util/data/entrez_conversion.txt',
             'util/data/gencode_v33_hg38_genes.bed',
+            'util/oncokb/20240315-allCuratedGenes.tsv'
         ],
         'djerba.core': install_wildcards,
         'djerba.helpers.expression_helper': install_wildcards,

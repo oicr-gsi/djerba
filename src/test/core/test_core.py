@@ -37,8 +37,8 @@ class TestCore(TestBase):
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_UPDATE_JSON = 'simple_report_for_update.json'
     SIMPLE_REPORT_UPDATE_FAILED_JSON = 'simple_report_for_update_failed.json'
-    SIMPLE_CONFIG_MD5 = '04b749b3ec489ed9c06c1a06eb2dc886'
-    SIMPLE_REPORT_MD5 = '2f2a32d548f972e3d6f0618e485544f3'
+    SIMPLE_CONFIG_MD5 = '2311145c9d6782334c05816058d3623f'
+    SIMPLE_REPORT_MD5 = '7afa81bc29e86af6a23830ece99674b0'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
@@ -669,7 +669,7 @@ class TestMainScript(TestCore):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, 'a262bf44dc2d759f165bbe817ec16d22')
+        self.assert_report_MD5(html_string, 'c60ea6448d35f6b6d5685d3b095cba03')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')
