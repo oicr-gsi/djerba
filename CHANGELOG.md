@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## unreleased
+## v1.8.4: 2024-04-10
 - GCGI-1109: Update "Patient Genetic Sex" to "Patient sex assigned at birth"
 - GCGI-1544: Handle missing or empty HLA data
 - GCGI-1539: Environment variable for CouchDB credentials
@@ -9,7 +9,6 @@
 - Added SETD2 to Captiv8 SWISNF genes
 
 ## v1.8.3: 2025-03-27
-
 ### Added:
 - New HLA (human leukocyte antigen) plugin
 - GCGI-1486: Copy ichorcna genomeWide_all_sols.pdf file to the workspace for manual review
