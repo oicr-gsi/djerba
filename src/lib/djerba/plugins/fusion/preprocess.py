@@ -188,21 +188,6 @@ class prepare_fusions(logger):
         df["Sample"] = tumour_id
         return df
 
-    def add_unknown_reading_frame(self, df):
-        """
-        Replaces all nan reading frame with Unknown.
-        Also adds a new column that simplifies entries that have multiple reading frames (ex. "in-frame;out-of-frame") with just "Mutliple Frames"
-        Chose to keep it as a second column so the more informative column can be kept and reviewed by CGI if needed.
-        """
-        df["reading_frame"] = df["reading_frame"].replace([".", ""], np.nan)
-        df["reading_frame"] = df["reading_frame"].fillna("Unknown")
-
-        # New column that simplifies entries that have multiple reading frames (ex. "in-frame;out-of-frame") with just "Mutliple Frames"
-        df["reading_frame_simple"] = np.where(
-            df["reading_frame"].str.contains(";"), "Multiple Frames", df["reading_frame"]
-        )
-        return df
-
     def change_column_name(self, df, old_column, new_column):
         """
         Changes column name from old_column to new_column
@@ -351,7 +336,7 @@ class prepare_fusions(logger):
         # Remove fusions that are self-self pairs
         df_merged = self.remove_self_fusions(df_merged)
         # All nan reading frame columns should be Unknown
-        df_merged = self.add_unknown_reading_frame(df_merged)
+        df_merged = self.simplify_reading_frame(df_merged)
         # Simplify event type
         df_merged = self.simplify_event_type(df_merged)
         # Re-order fusions to be in 5'::3' order.
@@ -475,9 +460,15 @@ class prepare_fusions(logger):
 
     def simplify_event_type(self, df):
         """
+        Changes multiple event types to "Undetermined".
         Changes any event type with "translocation" to the actual translocation event.
-        Ex. translocation --> t(4;10)
+        Changes any event type with "inversion" to the actual inversion event.
         """
+
+        # New column that simplifies entries that have multiple event types (ex. "inversion;duplication") with just "Undetermined"
+        df["reading_frame_simple"] = np.where(
+            df["reading_frame"].str.contains(";"), "Undetermined", df["reading_frame"]
+        )
 
         # Replace "translocation" with the corresponding translocation entry
         df["event_type_simple"] = np.where(
@@ -493,6 +484,21 @@ class prepare_fusions(logger):
             df["event_type_simple"]
         )
 
+        return df
+
+    def simplify_reading_frame(self, df):
+        """
+        Replaces all nan reading frame with Unknown.
+        Also adds a new column that simplifies entries that have multiple reading frames (ex. "in-frame;out-of-frame") with just "Mutliple Frames"
+        Chose to keep it as a second column so the more informative column can be kept and reviewed by CGI if needed.
+        """
+        df["reading_frame"] = df["reading_frame"].replace([".", ""], np.nan)
+        df["reading_frame"] = df["reading_frame"].fillna("Unknown")
+
+        # New column that simplifies entries that have multiple reading frames (ex. "in-frame;out-of-frame") with just "Mutliple Frames"
+        df["reading_frame_simple"] = np.where(
+            df["reading_frame"].str.contains(";"), "Multiple Frames", df["reading_frame"]
+        )
         return df
 
     def split_column_take_max(self, df):
