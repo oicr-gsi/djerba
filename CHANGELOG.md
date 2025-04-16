@@ -1,18 +1,38 @@
 # CHANGELOG
 
-## Unreleased: v1.8.3
+## Unreleased: v1.8.5
+- GCGI-1506: Replace fusions.R with preprocess.py and refactor fusions plugin
+
+## v1.8.4: 2024-04-10
+- GCGI-1109: Update "Patient Genetic Sex" to "Patient sex assigned at birth"
+- GCGI-1544: Handle missing or empty HLA data
+- GCGI-1539: Environment variable for CouchDB credentials
+- GCGI-1546: Fix installation of INI templates for benchmark script
+- GCGI-1551: Update "main contact" name in report header
+- Added SETD2 to Captiv8 SWISNF genes
+
+## v1.8.3: 2025-03-27
+### Added:
+- New HLA (human leukocyte antigen) plugin
+- GCGI-1486: Copy ichorcna genomeWide_all_sols.pdf file to the workspace for manual review
+- GCGI-1412: Automatically generate TCGA code from oncotree code
+
+### Changed:
+- GCGI-1134: If TCGA code does not correspond to an existing RODiC file, defaults to TCGA_ALL_TUMOR
+- GCGI-1474: Additional debug logs for tissue type filtering conditions
 - GCGI-1484: Refactor the `plugins/wgts/common` directory, moving code to better locations
 - GCGI-1512: Clean up `lib/djerba/data`, moving files to specific plugins where possible, `lib/djerba/util/data` otherwise
+
+### Fixed:
 - GCGI-1515: Make `mrdetect_filter_only` inputs optional for non-clinical reports
-- Fix issue with benchmark plugin; test no longer breaks when Djerba core version is changed
-- GCGI-1486: Copies ichorcna genomeWide_all_sols.pdf file to the workspace for manual review
-- GCGI-1412: Automatically generate TCGA code from oncotree code
-- GCGI-1134: If TCGA code does not correspond to an existing RODiC file, defaults to TCGA_ALL_TUMOR
 - GCGI-1527: Deprecating tube_ID and switching to group_ID
 - GCGI-1530: Update test_env.sh for new data directory
-- GCGI-1474: Additional Debug logs for tissue type filtering conditions
 - GCGI-1534: Fix issues with plugin tester; output test reports to working directory
-- GCGI-1506: Replace fusions.R with preprocess.py and refactor fusions plugin
+- Fix issue with benchmark plugin; test no longer breaks when Djerba core version is changed
+
+## v1.8.2: 2025-03-20
+- Adjusted smoothing parameter (`bw_adjust`) to 2 for mutation counts &le; 10 and to 1 for mutation counts &gt; 10 in `wgts.snv_indel`
+>>>>>>> main
 
 ## v1.8.1: 2025-03-04
 - GCGI-1455: New `tar.status` plugin to add a display box for ctDNA status

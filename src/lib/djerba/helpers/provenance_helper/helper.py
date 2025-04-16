@@ -235,6 +235,8 @@ class main(helper_base):
             reader.WF_VEP: reader.parse_maf_path(),
             reader.WF_VIRUS: reader.parse_virus_path(),
             reader.WF_IMMUNE: reader.parse_immune_path(),
+            reader.WF_HLA: reader.parse_hla_path(),
+
             # TAR specific files:
             self.WF_CONSENSUS_TUMOUR: reader.parse_tar_metrics_tumour_path(),
             self.WF_CONSENSUS_NORMAL: reader.parse_tar_metrics_normal_path(),

@@ -388,11 +388,6 @@ class core_configurer(configurable):
         self.add_ini_discovered(cc.AUTHOR)
         self.add_ini_discovered(cc.REPORT_ID)
         self.set_ini_default(cc.REPORT_VERSION, 1)
-        self.set_ini_default(cc.ARCHIVE_NAME, "djerba")
-        self.set_ini_default(
-            cc.ARCHIVE_URL,
-            "http://${username}:${password}@${address}:${port}"
-        )
         self.set_ini_default(cc.INPUT_PARAMS_FILE, cc.DEFAULT_INPUT_PARAMS)
         self.set_ini_default(cc.DOCUMENT_CONFIG, cc.DEFAULT_DOCUMENT_CONFIG)
 
