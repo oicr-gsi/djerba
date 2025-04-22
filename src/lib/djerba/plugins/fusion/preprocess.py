@@ -333,6 +333,7 @@ class prepare_fusions(logger):
         df_merged = self.fix_reading_frames(df_merged)
         # Remove duplicate fusions (but keep if they are different event types)
         df_merged = self.drop_duplicates_merge_columns(df_merged)
+        df_merged.to_csv(os.path.join(self.work_dir, "after_drop_duplicates.txt"), sep = "\t")
         # Remove fusions that are self-self pairs
         df_merged = self.remove_self_fusions(df_merged)
         # All nan reading frame columns should be Unknown
@@ -466,8 +467,8 @@ class prepare_fusions(logger):
         """
 
         # New column that simplifies entries that have multiple event types (ex. "inversion;duplication") with just "Undetermined"
-        df["reading_frame_simple"] = np.where(
-            df["reading_frame"].str.contains(";"), "Undetermined", df["reading_frame"]
+        df["event_type_simple"] = np.where(
+            df["event_type"].str.contains(";"), "Undetermined", df["event_type"]
         )
 
         # Replace "translocation" with the corresponding translocation entry
