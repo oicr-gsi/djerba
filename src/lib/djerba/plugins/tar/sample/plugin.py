@@ -94,6 +94,13 @@ class main(plugin_base):
         if rounded_purity < 10:
             rounded_purity = "<10"
 
+        # Plot insert size
+        test_path = '/.mounts/labs/prod/vidarr/output-clinical/341a/908f/fbdb/341a908ffbdbb6b960e3d6dc7e0f2af25dffe6b8b76f973ab31e5d29e8c88b24/CHARM2_010238_16_LB01-01.bamQC_results.json'
+        #test_path = os.path.join(work_dir, 'CHARM2_010238_Pl_T_TS_CHM2-01-0238-02_bamQC.bamQC_results.json')
+        #test_path = '/.mounts/labs/prod/vidarr/output-clinical/c66c/d5ce/9de2/c66cd5ce9de28d34b37215b8d96029a7caaed0a55d4f353d0fb145411e22ae2e/CHARM2_010207_15_LB01-01.bamQC_results.json' 
+        self.plot_insert_size(self.preprocess_bamqc(test_path),
+                                output_dir = self.workspace.print_location())
+
         results = {
             constants.ONCOTREE: config[self.identifier][constants.ONCOTREE],
             constants.KNOWN_VARIANTS: config[self.identifier][constants.KNOWN_VARIANTS],
@@ -149,6 +156,29 @@ class main(plugin_base):
     def render(self, data):
         renderer = mako_renderer(self.get_module_dir())
         return renderer.render_name('sample_template.html', data)
+
+    def plot_insert_size(self, is_path, output_dir ):
+        '''call R to plot insert size distribution'''
+        args = [
+            os.path.join(os.path.dirname(__file__),'insert_size_plot.R'),
+            '--insert_size_file', is_path,
+            '--output_directory', output_dir
+        ]
+        subprocess_runner().run(args)
+
+    def preprocess_bamqc(self, bamqc_file):
+        '''parse bam-qc json for insert size distribution and return histogram-ready'''
+        output_dir = self.workspace.print_location()
+        with open(bamqc_file, 'r') as bamqc_results:
+            data = json.load(bamqc_results)
+        is_data = data['insert size histogram']
+        file_location = os.path.join(output_dir, 'insert_size_distribution.csv')
+        with open(file_location,'w') as out:
+            csv_out = csv.writer(out)
+            csv_out.writerow(['size','count'])
+            for i in is_data:
+                csv_out.writerow([i,is_data[i]])
+        return(file_location)
 
     def process_ichor_json(self, ichor_metrics):
         with open(ichor_metrics, 'r') as ichor_results:
