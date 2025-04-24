@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased: v1.8.5
+## Unreleased: v1.9.0
 - GCGI-1506: Replace fusions.R with preprocess.py and refactor fusions plugin
 
 ## v1.8.4: 2024-04-10
@@ -32,7 +32,6 @@
 
 ## v1.8.2: 2025-03-20
 - Adjusted smoothing parameter (`bw_adjust`) to 2 for mutation counts &le; 10 and to 1 for mutation counts &gt; 10 in `wgts.snv_indel`
->>>>>>> main
 
 ## v1.8.1: 2025-03-04
 - GCGI-1455: New `tar.status` plugin to add a display box for ctDNA status
