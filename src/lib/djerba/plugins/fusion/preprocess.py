@@ -127,21 +127,6 @@ class prepare_fusions(logger):
 
         df = filter_and_sortby_read_support(df, min_reads)
 
-        #call_methods = [
-        #    df["call_method"] == "contig",
-        #    df["call_method"] == "flanking reads",
-        #    df["call_method"] == "split reads"
-        #]
-        # 
-        # read_columns = [
-        #     df["contig_remapped_reads"],
-        #     df["flanking_pairs"],
-        #     df["break1_split_reads"] + df["break2_split_reads"] + df["linking_split_reads"]
-        # ]
-        
-        #df["read_support"] = np.select(call_methods, read_columns, default = 0) # Defaults to 0 if something else
-        #df = filter_and_sortby_read_support(df, min_reads)
-        
         return df
       
     def add_translocation_notation(self, df):
