@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-1571: Update example report in Github repository
+
 ## v1.8.4: 2024-04-10
 - GCGI-1109: Update "Patient Genetic Sex" to "Patient sex assigned at birth"
 - GCGI-1544: Handle missing or empty HLA data
