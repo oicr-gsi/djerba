@@ -2,6 +2,9 @@
 
 ## Unreleased: v1.9.0
 - GCGI-1509: Add warning for callability below the 75% threshold.
+- GCGI-1401: Convert purple output from Let's-Plot SVG to Matplotlib PNG.
+
+
 
 ## v1.8.4: 2024-04-10
 - GCGI-1109: Update "Patient Genetic Sex" to "Patient sex assigned at birth"
