@@ -17,6 +17,11 @@ import tempfile
 import zipfile
 from scipy.stats import norm
 from plotnine import *
+from matplotlib import gridspec
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
 
 import djerba.plugins.wgts.cnv_purple.constants as pc
 from djerba.util.logger import logger
@@ -356,48 +361,128 @@ class purple_processor(logger):
         return 1 + ploidy_penalty_factor * min(single_event_distance, whole_genome_doubling_distance)
     
     def look_at_purity_fit(self, segment_file, purity):
+
         fitted_segments_df = pd.read_csv(segment_file, sep="\t", comment="!")
-        fitted_segments_df = fitted_segments_df[(fitted_segments_df["germlineStatus"] == "DIPLOID") & (fitted_segments_df["bafCount"] > 0)].sort_values("majorAlleleCopyNumber")
+        fitted_segments_df = fitted_segments_df[
+            (fitted_segments_df["germlineStatus"] == "DIPLOID") &
+            (fitted_segments_df["bafCount"] > 0)
+        ].sort_values("majorAlleleCopyNumber")
+
         fitted_segments_df["Score"] = fitted_segments_df["deviationPenalty"] * fitted_segments_df["eventPenalty"]
         fitted_segments_df["Weight"] = fitted_segments_df["bafCount"]
 
+        # Set min/max values for scaling
         max_data = fitted_segments_df[["majorAlleleCopyNumber", "Score"]].loc[fitted_segments_df['majorAlleleCopyNumber'] < 5]
         max_score = np.ceil(max_data["Score"].max())
         min_score = np.floor(max_data["Score"].min())
         maxMajorAllelePloidy = np.ceil(max_data["majorAlleleCopyNumber"].max())
-        maxMinorAllelePloidy = maxMajorAllelePloidy - 1 
-        sim_ploidy_series = np.round(np.arange(-1, maxMajorAllelePloidy+0.01, 0.01),2)
+        maxMinorAllelePloidy = maxMajorAllelePloidy - 1
 
+        sim_ploidy_series = np.round(np.arange(-1, maxMajorAllelePloidy + 0.01, 0.01), 2)
         purity_df = self.purity_data_frame(self.purity_matrix(purity, sim_ploidy_series), sim_ploidy_series)
-        fitted_segments_df["single_event_distance"] = self.single_event_distance_calculator(fitted_segments_df["majorAlleleCopyNumber"], fitted_segments_df["minorAlleleCopyNumber"])
-        fitted_segments_df["whole_genome_doubling_distance"] = self.whole_genome_doubling_distance_calculator(fitted_segments_df["majorAlleleCopyNumber"], fitted_segments_df["minorAlleleCopyNumber"])
 
-        # ADD PLOTS
-        lp.LetsPlot.setup_html()
-        p1 = lp.ggplot(data = purity_df) + \
-            lp.geom_tile(lp.aes(x='MajorAllele', y='MinorAllele', fill='Penalty'), width = 3, height = 3) + \
-            lp.geom_point(lp.aes(x='majorAlleleCopyNumber', y='minorAlleleCopyNumber', size='Weight'), data=fitted_segments_df, shape=1, stroke=0.3, color="black") + \
-            lp.geom_abline(slope = 1, color="black") + \
-            lp.scale_x_continuous(limits = [0, min(maxMinorAllelePloidy,4)]) + \
-            lp.scale_y_continuous( limits = [0, min(maxMinorAllelePloidy,3)]) + \
-            lp.scale_fill_gradientn(colors=["#8b0000","red","orange","yellow", "white"], limits = [min_score, max_score], na_value = "white") + lp.coord_fixed() + \
-            lp.theme(panel_grid = lp.element_blank(), plot_message=lp.element_blank()) + \
-            lp.labs(x="Major Allele Ploidy", y="Minor Allele Ploidy", fill="Aggregate\nPenalty",size="BAF\nSupport")
-        
-        p2 = lp.ggplot() + \
-            lp.geom_abline(slope = 1, intercept=1, linetype = 2, color="black", size = 0.5) + \
-            lp.geom_point(lp.aes(x='whole_genome_doubling_distance', y='single_event_distance', color='Score', size='Weight'), data=fitted_segments_df, shape=1, stroke=0.3) + \
-            lp.scale_color_gradientn(colors=["#8b0000","red","orange","yellow", "white"], limits = [min_score, max_score], na_value = "lightgrey") + \
-            lp.labs(x="Whole Genome Doubling Penalty (log)", y="Single Event Penalty (log)", size="BAF Support") + \
-            lp.guides(size="none", color="none")+ \
-            lp.scale_x_continuous(trans='log10') + \
-            lp.scale_y_continuous(trans='log10') +\
-            lp.theme(plot_message=lp.element_blank())
+        # Calculate penalties
+        fitted_segments_df["single_event_distance"] = self.single_event_distance_calculator(
+            fitted_segments_df["majorAlleleCopyNumber"],
+            fitted_segments_df["minorAlleleCopyNumber"]
+        )
+        fitted_segments_df["whole_genome_doubling_distance"] = self.whole_genome_doubling_distance_calculator(
+            fitted_segments_df["majorAlleleCopyNumber"],
+            fitted_segments_df["minorAlleleCopyNumber"]
+        )
 
-        bunch = lp.GGBunch()
-        bunch.add_plot(p1, 0, 0, 600, 500)
-        bunch.add_plot(p2, 0, 440, 600, 400)
-        lp.ggsave(bunch, "purple.segment_QC.svg", path=self.work_dir)
+        # Marker size scaling
+        max_weight = fitted_segments_df['Weight'].max()
+        marker_scale = 2000
+        marker_sizes = (fitted_segments_df['Weight'] / max_weight) * marker_scale
+
+        # Custom colormap
+        smooth_cmap = LinearSegmentedColormap.from_list(
+            "smooth_penalty", ["#8b0000", "red", "orange", "yellow", "white"]
+        )
+
+        # Create figure
+        fig = plt.figure(figsize=(10, 12))
+        gs = gridspec.GridSpec(2, 1, height_ratios=[5, 4], hspace=0.4)
+        ax1 = fig.add_subplot(gs[0])
+        ax2 = fig.add_subplot(gs[1])
+
+        # Top Plot: Aggregate Penalty Heatmap
+        pivot = purity_df.pivot(index='MinorAllele', columns='MajorAllele', values='Penalty')
+        im = ax1.imshow(
+            pivot.values,
+            origin='lower',
+            aspect='equal',
+            extent=[pivot.columns.min(), pivot.columns.max(), pivot.index.min(), pivot.index.max()],
+            vmin=min_score,
+            vmax=max_score,
+            cmap=smooth_cmap,
+            interpolation='bicubic'
+        )
+
+        scatter_top = ax1.scatter(
+            fitted_segments_df['majorAlleleCopyNumber'],
+            fitted_segments_df['minorAlleleCopyNumber'],
+            s=marker_sizes,
+            facecolors='none',
+            edgecolors='black',
+            linewidths=0.5
+        )
+
+        # Diagonal line and limits
+        diag_limit = min(maxMinorAllelePloidy, 4)
+        ax1.plot([0, diag_limit], [0, diag_limit], color='black')
+        ax1.set_xlim(0, 4)
+        ax1.set_ylim(0, 3)
+        ax1.set_xlabel("Major Allele Ploidy")
+        ax1.set_ylabel("Minor Allele Ploidy")
+        ax1.set_title("Aggregate Penalty Heatmap")
+        ax1.grid(False)
+
+        # Colorbar and BAF legend
+        cbar = fig.colorbar(im, ax=ax1, label="Aggregate Penalty", fraction=0.046, pad=0.04)
+        handles, labels = scatter_top.legend_elements(prop="sizes", num=5, alpha=0.6)
+        legend_baf = ax1.legend(handles, labels, title="BAF Support", loc="upper left", bbox_to_anchor=(1.02, -0.05), borderaxespad=0., markerscale=0.4)
+        ax1.add_artist(legend_baf)
+
+        # Bottom Plot: Penalty Comparison
+        mask = (fitted_segments_df['whole_genome_doubling_distance'] > 0) & (fitted_segments_df['single_event_distance'] > 0)
+        x_vals = fitted_segments_df.loc[mask, 'whole_genome_doubling_distance']
+        y_vals = fitted_segments_df.loc[mask, 'single_event_distance']
+        filtered_scores = fitted_segments_df.loc[mask, 'Score']
+        filtered_weights = fitted_segments_df.loc[mask, 'Weight']
+
+        # Plot points
+        scatter_bottom = ax2.scatter(
+            x_vals,
+            y_vals,
+            s=(filtered_weights / max_weight) * marker_scale,
+            facecolors='none',
+            edgecolors=smooth_cmap((filtered_scores - min_score) / (max_score - min_score)),
+            linewidths=0.6
+        )
+
+        # Set log scales
+        ax2.set_xscale('log')
+        ax2.set_yscale('log')
+
+        # Set limits
+        ax2.set_xlim(x_vals.min(), x_vals.max())
+        ax2.set_ylim(y_vals.min(), y_vals.max())
+
+        # Labels and title
+        ax2.set_xlabel("Whole Genome Doubling Penalty (log)")
+        ax2.set_ylabel("Single Event Penalty (log)")
+        ax2.set_title("Penalty Comparison")
+        ax2.grid(True, linestyle=':', alpha=0.5)
+
+        # Diagonal line
+        x_line = np.linspace(x_vals.min(), x_vals.max(), 100)
+        ax2.plot(x_line, x_line, linestyle='--', color='black', linewidth=0.5)
+
+        plt.savefig(f"{self.work_dir}/purple.segment_QC.png", dpi=300, bbox_inches='tight')
+        plt.close(fig)
+
 
     
     def major_allele_deviation(self, purity, norm_factor, ploidy, baseline_deviation, major_allele_sub_one_penalty_multiplier = 1 ):
