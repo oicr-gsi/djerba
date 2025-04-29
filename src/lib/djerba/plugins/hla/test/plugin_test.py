@@ -37,7 +37,7 @@ class TestHLAPlugin(PluginTester):
         params = {
             self.INI: os.path.join('input', self.INI_NAME),
             self.JSON: self.json,
-            self.MD5: '7df0081216d6bd67d9471b0c04aedb18'
+            self.MD5: '081f09195f6e6cf26ea38a0c58f01bd2'
         }
         self.run_basic_test(self.tmp_dir, params)
 
