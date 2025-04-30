@@ -88,7 +88,6 @@ class main(plugin_base):
             self.add_ini_discovered(key)
         # set defaults
         data_dir = directory_finder(self.log_level, self.log_path).get_data_dir()
-        self.set_ini_default(fc.ENTREZ_CONVERSION_PATH, os.path.join(data_dir, fc.ENTRCON_NAME))
         self.set_ini_default(fc.MIN_FUSION_READS, 20)
         self.set_ini_default(oncokb.APPLY_CACHE, False)
         self.set_ini_default(oncokb.UPDATE_CACHE, False)

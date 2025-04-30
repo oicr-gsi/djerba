@@ -63,7 +63,6 @@ class prepare_fusions(logger):
         tumour_id = config_wrapper.get_my_string(core_constants.TUMOUR_ID)
         oncotree_code = config_wrapper.get_my_string(fc.ONCOTREE_CODE)
         oncotree_code = oncotree_code.upper()
-        #entrez_conv_path = config_wrapper.get_my_string(fc.ENTREZ_CONVERSION_PATH)
         min_reads = config_wrapper.get_my_int(fc.MIN_FUSION_READS)
         
         self.logger.info("Processing fusion (mavis and arriba) results and writing fusion files")
@@ -207,8 +206,6 @@ class prepare_fusions(logger):
                     chrom2_num = int(chrom2)
                     return f"t({min(chrom1_num, chrom2_num)};{max(chrom1_num, chrom2_num)})"
 
-                #return f"t({min(chrom1, chrom2)};{max(chrom1, chrom2)})"
-            
             return entry  
     
         df["translocation"] = df["translocation"].apply(format_translocation)
@@ -292,13 +289,13 @@ class prepare_fusions(logger):
         A-B	            Y1
         D-E	            Y2
         D-F	            Y3
-        D-F             Y4
+        D-F                 Y4
         
         OUTPUT
         fusion_pairs	Other_col1	Extra_info
         A-B	            X1	        Y1
         D-F	            X2	        Y3
-        D-F             X2          Y4
+        D-F                 X2          Y4
         Q-R	            X3	        NaN
         """
         df1 = df1.merge(df2, on=column, how="left")
@@ -318,7 +315,6 @@ class prepare_fusions(logger):
         df_merged = self.fix_reading_frames(df_merged)
         # Remove duplicate fusions (but keep if they are different event types)
         df_merged = self.drop_duplicates_merge_columns(df_merged)
-        df_merged.to_csv(os.path.join(self.work_dir, "after_drop_duplicates.txt"), sep = "\t")
         # Remove fusions that are self-self pairs
         df_merged = self.remove_self_fusions(df_merged)
         # All nan reading frame columns should be Unknown
@@ -371,8 +367,6 @@ class prepare_fusions(logger):
             df_mavis = self.split_column_take_max(df_mavis)
             # Add a column with read support based on the call method
             df_mavis = self.add_filter_sortby_read_support(df_mavis, min_reads)
-            # Only keep rows for which read support is greater than or equal to min_reads (20)
-            # df_mavis = self.filter_and_sort_read_support(df_mavis, min_reads)
             # Add a column describing translocations if it's a translocation event (i.e. t(x;y) notation)
             # Otherwise use None
             df_mavis = self.add_translocation_notation(df_mavis)
@@ -401,7 +395,6 @@ class prepare_fusions(logger):
         df_annotations = pd.read_csv(os.path.join(self.data_dir, fc.NCCN_ANNOTATION_FILE), sep = '\t')
         
         marker_dict = dict(zip(df_annotations["marker"], df_annotations["oncotree"]))
-        #marker_list = df_annotations["marker"].tolist()
 
         dict_nccn = {"Tumor_Sample_Barcode":[], "Fusion": []}
         for row in df_merged.iterrows():
@@ -432,10 +425,6 @@ class prepare_fusions(logger):
         Re-order fusions so it's always 5' first.
         Don't care how reordering impacts Nones; these get filtered out later anyways
         """
-        # First change all nans to the string None
-        #df["gene1_aliases"] = df["gene1_aliases"].replace({np.nan: None})
-        #df["gene2_aliases"] = df["gene2_aliases"].replace({np.nan: None})
-
         # Make fusion_pairs but ensure 5' always comes first
         df["fusion_pairs_reordered"] = np.where(
             df["gene1_direction"] > df["gene2_direction"], # 5 > 3
@@ -541,6 +530,7 @@ class prepare_fusions(logger):
 
         # Write data_fusions.txt to the workspace for main reporting task
         df_merged.to_csv(os.path.join(self.work_dir, fc.DATA_FUSIONS), index = False, sep = "\t")
+        
         # Write data_fusions_oncokb.txt to the workspace for annotation task
         df_oncokb.to_csv(os.path.join(self.work_dir, fc.DATA_FUSIONS_ONCOKB), index = False, sep = "\t")
 

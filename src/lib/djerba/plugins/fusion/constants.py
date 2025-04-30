@@ -9,7 +9,6 @@ MAVIS_PATH = 'mavis_path'
 ARRIBA_PATH = 'arriba_path'
 ONCOTREE_CODE = 'oncotree_code'
 WHIZBAM_PROJECT = 'whizbam_project'
-ENTREZ_CONVERSION_PATH = 'entrez conv path'
 MIN_FUSION_READS = 'minimum fusion reads'
 
 # JSON results keys
