@@ -13,6 +13,8 @@ from djerba.core.workspace import workspace
 import djerba.core.constants as core_constants
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.render_mako import mako_renderer
+from djerba.util.logger import logger
+
 
 try:
     import gsiqcetl.column
@@ -122,6 +124,10 @@ class main(plugin_base):
         if len(data) == 1:
             # Round down to one decimal place
             callability = math.floor(data.iloc[0][columns_of_interest.Callability].item() * 1000) / 10
+            callability_threshold = 75
+            if callability < callability_threshold:
+                msg = f"Callability is below the reportable threshold: {callability:.1f}% < {callability_threshold}%"
+            self.logger.warning(msg)
             return callability
         elif len(data) > 1:
             msg = "Djerba found more than one callability associated with donor {0} and tumour_id {1} in QC-ETL. Double check that the callability found by Djerba is correct; if not, may have to manually specify the callability.".format(donor, tumour_id)
