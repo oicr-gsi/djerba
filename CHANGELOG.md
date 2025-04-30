@@ -1,6 +1,8 @@
 # CHANGELOG
 
 ## Unreleased: v1.9.0
+<<<<<<< HEAD
+- GCGI-1506: Replace fusions.R with preprocess.py and refactor fusions plugin
 - GCGI-1509: Add warning for callability below the 75% threshold.
 - GCGI-1401: Convert purple output from Let's-Plot SVG to Matplotlib PNG.
 - GCGI-1504: Remove provenance helper dependency in `case_overview` plugin
