@@ -1,13 +1,12 @@
 # CHANGELOG
 
-## Unreleased: v1.9.0
-<<<<<<< HEAD
+## v1.9.0: 2025-05-01
 - GCGI-1506: Replace fusions.R with preprocess.py and refactor fusions plugin
 - GCGI-1509: Add warning for callability below the 75% threshold.
 - GCGI-1401: Convert purple output from Let's-Plot SVG to Matplotlib PNG.
 - GCGI-1504: Remove provenance helper dependency in `case_overview` plugin
 
-## v1.8.4: 2024-04-10
+## v1.8.4: 2025-04-10
 - GCGI-1109: Update "Patient Genetic Sex" to "Patient sex assigned at birth"
 - GCGI-1544: Handle missing or empty HLA data
 - GCGI-1539: Environment variable for CouchDB credentials
