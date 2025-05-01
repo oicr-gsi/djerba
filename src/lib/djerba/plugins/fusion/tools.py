@@ -6,6 +6,10 @@ import csv
 import logging
 import os
 import re
+import zlib
+import base64
+import json
+import pandas as pd
 from djerba.util.logger import logger
 from djerba.util.oncokb.tools import levels as oncokb_levels
 import djerba.util.oncokb.constants as oncokb
@@ -19,116 +23,202 @@ import djerba.plugins.fusion.constants as fc
 import djerba.core.constants as core_constants
 from djerba.util.subprocess_runner import subprocess_runner
 
-class fusion_reader(logger):
+class fusion_tools(logger):
 
-    def __init__(self, input_dir, log_level=logging.WARNING, log_path=None):
+    def __init__(self, work_dir, log_level=logging.WARNING, log_path=None):
         super().__init__()
         self.log_level = log_level
         self.log_path = log_path
         self.logger = self.get_logger(log_level, __name__, log_path)
-        self.input_dir = input_dir
-        fusion_data = self.read_fusion_data()
-        annotations = self.read_annotation_data()
-        # delly results have been removed from fusion data; also remove delly from annotations
-        for key in [k for k in annotations.keys() if k not in fusion_data]:
-            del annotations[key]
-        # now check the key sets match
-        if set(fusion_data.keys()) != set(annotations.keys()):
-            msg = "Distinct fusion identifiers and annotations do not match. "+\
-                  "Fusion data: {0}; ".format(sorted(list(set(fusion_data.keys()))))+\
-                  "Annotations: {0}".format(sorted(list(set(annotations.keys()))))
-            self.logger.error(msg)
-            raise RuntimeError(msg)
-        [fusions, self.total_fusion_genes, self.total_oncokb_fusions, self.total_nccn_fusions] = self._collate_row_data(fusion_data, annotations)
-        # sort the fusions by fusion ID
-        self.fusions = sorted(fusions, key=lambda f: f.get_fusion_id_new())
+        self.work_dir = work_dir
+        self.df_fusions = self.get_fusions_df()
+        self.df_fusions_indexed = self.df_fusions.copy().set_index('fusion_pairs')
+        self.df_oncokb = self.get_oncokb_annotated_df()
+        self.df_nccn = self.get_nccn_df()
 
-    def _collate_row_data(self, fusion_data, annotations):
-        fusions = []  # List to store valid fusion entries
-        fusion_genes = set()  # Set to track distinct genes involved in fusions
-        self.logger.debug("Starting to collate fusion table data.")
-        intragenic = 0  # Counter for intragenic fusions
-        nccn_fusion_total = 0  # Counter for fusions rescued by NCCN annotation
-        NCCN_fusions = set()  # Set to store NCCN-annotated fusions
+    def assemble_data(self, oncotree_code):
+        """
+        MAIN FUNCTION, called by Extract 
+        Also returns gene info and treatment options 
+        For every oncogenic entry in df_oncokb_annotated.txt, get the information from df_fusions.txt.
+        """
+        
+        def sort_by_actionable_level(row):
+            return oncokb_levels.oncokb_order(row[core_constants.ONCOKB]) 
 
-        # Read NCCN-annotated fusions from a file
-        with open(os.path.join(self.input_dir, fc.DATA_FUSIONS_NCCN_ANNOTATED)) as data_file:
-            for row in csv.DictReader(data_file, delimiter="\t"):
-                NCCN_fusions.add(row['Fusion'])  # Add each fusion ID to the set
+        results = {}
+        results[fc.CLINICALLY_RELEVANT_VARIANTS] = len(self.df_oncokb)
+        self.clinically_relevant_variants = len(self.df_oncokb) # value used by self.get_fusion_objects()
+        results[fc.NCCN_RELEVANT_VARIANTS] = self.get_nccn_variants()
+        self.nccn_relevant_variants = len(self.df_nccn) # value used by self.get_fusion_objects()
+        results[fc.TOTAL_VARIANTS] = self.get_total_variants()
 
-        # Iterate over all fusion IDs in fusion_data
-        for fusion_id in fusion_data.keys():
-            gene2_exists = True  # Assume a second gene exists initially
-            # Case: Intragenic fusions (only one gene involved)
-            if len(fusion_data[fusion_id]) == 1:
-                # Skip intragenic fusions, but add to the gene count
-                fusion_genes.add(fusion_data[fusion_id][0][fc.HUGO_SYMBOL])
-                if fusion_id in NCCN_fusions:
-                    # If the fusion is in the NCCN-annotated list, it's "rescued"
-                    self.logger.debug("Fusion {0} rescued by NCCN annotation".format(fusion_id))
-                    gene2_exists = False  # No second gene; marked as "Intergenic"
-                    gene2 = "Intergenic"
-                    nccn_fusion_total += 1  # Increment NCCN-rescued fusion count
-                else:
-                    intragenic += 1  # Increment intragenic count and skip processing
-                    continue
-            elif len(fusion_data[fusion_id]) >= 3:
-                # Error case: More than two genes for a single fusion ID
-                msg = "More than 2 fusions with the same name: {0}".format(fusion_id)
-                self.logger.error(msg)
-                raise RuntimeError(msg)
+        # Get all fusions, both OncoKB and NCCN fusions 
+        fusions = self.get_fusion_objects()
 
-            # Normal case: Valid fusion data with one or two genes
-            gene1 = fusion_data[fusion_id][0][fc.HUGO_SYMBOL]
-            if gene2_exists:
-                # If a second gene exists, retrieve it
-                gene2 = fusion_data[fusion_id][1][fc.HUGO_SYMBOL]
-                # Add both genes to the set
-                fusion_genes.add(gene1)
-                fusion_genes.add(gene2)
+        # If there are fusions...
+        if len(fusions) > 0:
+            outputs = self.fusions_to_json(fusions, oncotree_code)
+            [rows, gene_info, treatment_opts] = outputs
 
-            # Case: Two genes exist for the fusion
-            if gene2_exists:
-                for row_input in annotations[fusion_id]:
-                    effect = row_input['MUTATION_EFFECT']  # Get mutation effect
-                level = oncokb_levels.parse_oncokb_level(row_input)  # Parse oncokb level
-            else:
-                # Case: No second gene (rescued by NCCN)
+            # Sort by OncoKB level
+            rows = sorted(rows, key=sort_by_actionable_level)
+            rows = oncokb_levels.filter_reportable(rows)
+            unique_rows = set(map(lambda x: x['fusion'], rows))
+
+            results[fc.BODY] = rows
+        else:
+            results[fc.BODY] = []
+            gene_info = []
+            treatment_opts = []
+
+        return results, gene_info, treatment_opts 
+
+    def construct_whizbam_links(self, tsv_file_path, base_dir, fusion_dir, output_dir, json_template_path, unique_fusions, config, wrapper):
+
+        failed_fusions = 0
+        fusion_url_pairs = []
+
+        for fusion in unique_fusions:
+            try:
+                fusion, blurb_url = self.process_fusion(config, fusion, tsv_file_path, json_template_path, output_dir, wrapper)
+                fusion_url_pairs.append([fusion, blurb_url])
+
+            except FusionProcessingError as e:
+                self.logger.warning(f"Skipping fusion {fusion}: {e}")
+                failed_fusions += 1
+
+        if failed_fusions > 0:
+            self.logger.warning(f"{failed_fusions} fusions failed out of {len(unique_fusions)}.")
+
+        # Save the fusion-URL pairs to a CSV file
+        output_tsv_path = os.path.join(output_dir, 'fusion_blurb_urls.tsv')
+        with open(output_tsv_path, 'w', newline='') as tsvfile:
+            writer = csv.writer(tsvfile, delimiter='\t')
+            writer.writerow(['Fusion', 'Whizbam URL'])
+            writer.writerows(fusion_url_pairs)
+
+    def get_oncokb_annotated_df(self):
+        """
+        Get the oncokb df and turn it into a dataframe
+        Only return those for which the mutation effect is not Unknown
+        """
+        df = pd.read_csv(os.path.join(self.work_dir, fc.DATA_FUSIONS_ANNOTATED), sep = "\t")
+        if len(df) > 0:
+            df = df[df.MUTATION_EFFECT != "Unknown"]
+        return df
+
+    def get_fusions_df(self):
+        """
+        Get the fusions df and turn it into a dataframe
+        """
+        df = pd.read_csv(os.path.join(self.work_dir, fc.DATA_FUSIONS), sep = "\t")
+        return df
+
+    def get_nccn_df(self):
+        """
+        Get the NCCN df and turn it into a dataframe
+        """
+        df = pd.read_csv(os.path.join(self.work_dir, fc.DATA_FUSIONS_NCCN), sep = "\t")
+        df = df[~df["Fusion"].str.contains("None")]
+        return df
+
+    def get_fusion_objects(self):
+        """
+        Returns a list of fusion objects.
+        The fusion "object" is defined by the fusion class.
+        """
+
+        def get_fusion_object(row, nccn=False):
+            """
+            If nccn = True, use prognostic level.
+            """
+
+            fusion_id_hyphen = row["Fusion"]
+            fusion_id = self.df_fusions_indexed.loc[fusion_id_hyphen, "fusion_pairs_reordered"]
+            gene1 = fusion_id.split("::", 1)[0]
+            gene2 = fusion_id.split("::", 1)[1]
+            reading_frame = self.df_fusions_indexed.loc[fusion_id_hyphen, "reading_frame_simple"]
+            event_type = self.df_fusions_indexed.loc[fusion_id_hyphen, "event_type_simple"]
+            
+            if nccn == True:
                 effect = "Undetermined"
                 level = "P"
+                therapies = {"P": "Prognostic"}
+            else:
+                level = oncokb_levels.parse_oncokb_level(row)
+                therapies = oncokb_levels.parse_actionable_therapies(row)
+                effect = row['MUTATION_EFFECT']
 
-            # If the level is valid, add therapies information
-            if level not in ['Unknown', 'NA']:
-                if gene2_exists:
-                    therapies = oncokb_levels.parse_actionable_therapies(row_input)
-                else:
-                    therapies = {"P": "Prognostic"}
-                # Append a new fusion object to the list
-                fusions.append(
-                    fusion(
-                        fusion_id,
-                        fusion_data[fusion_id][0]['Fusion_newStyle'],
-                        gene1,
-                        gene2,
-                        fusion_data[fusion_id][0]['Frame'],
-                        effect,
-                        level,
-                        therapies,
-                        fusion_data[fusion_id][0]['translocation']
-                    )
-                )
-        total = len(fusions) - nccn_fusion_total
-        total_fusion_genes = len(fusion_genes)  # Count distinct genes
+            fusion_object = fusion(
+                    fusion_id,
+                    gene1,
+                    gene2,
+                    reading_frame,
+                    effect,
+                    event_type,
+                    level,
+                    therapies
+            )
 
-        msg = "Finished collating fusion table data. " + \
-              "Found {0} fusion rows for {1} distinct genes; ".format(total, total_fusion_genes) + \
-              "excluded {0} intragenic rows.".format(intragenic)
-        self.logger.info(msg)
+            return fusion_object
 
-        for fusion_row in fusions:
-            self.logger.debug("Fusions: {0}".format(fusion_row.get_genes()))
 
-        return [fusions, total_fusion_genes, total, nccn_fusion_total]
+        fusions = [] # Full list of all fusion results
+        if self.clinically_relevant_variants != 0:
+            for row in self.df_oncokb.iterrows():
+                fusion_object = get_fusion_object(row[1].fillna(""))
+                fusions.append(fusion_object)
+        if self.nccn_relevant_variants != 0:
+            for row in self.df_nccn.iterrows():
+                fusion_object = get_fusion_object(row[1].fillna(""), nccn=True)
+                fusions.append(fusion_object)
+
+        # Sort them
+        fusions = sorted(fusions, key=lambda f: f.get_fusion_id())
+
+        return fusions
+
+    def get_nccn_variants(self):
+        """
+        Counts the number of fusion PAIRS as NCCN number is reported as a pair.
+        Deduplication was done in preprocess.py
+        """
+        # Get nccn variants
+        nccn_variants = len(self.df_nccn)
+        return nccn_variants
+
+    def get_total_variants(self):
+        """
+        Counts the number of UNIQUE genes in the fusions.
+        Excludes Nones.
+        Ex:
+            NEMF-None
+            DAZAP1-SBNO2
+            MALRD1-MLLT10 
+            KLK6-LDHB
+            None-SLC25A3
+            ANO1-None
+            None-SBNO2
+        This list should return a total of 9. 
+        
+        Code explanation:
+            Gets a list of fusions by breaking up the separator -
+            Some genes are hyphenated (ex. Gene1-Gene2-alpha is actually Gene1::Gene2-alpha). We should only split on the first hyphen. 
+            Split will do 'KRAS-FGFR2' --> ['KRAS', 'FGFR2'] for every row.
+            Then, df.explode will make open these lists into new rows (ex. 'KRAS' and 'FGFR2' into two new rows) for easy counting.
+        """
+        # Get a unique list of fusions
+        fusions = self.df_fusions['fusion_pairs'].str.split("-", n=1).explode('fusion_pairs')
+        unique_fusions = list(set(fusions.to_list()))
+        
+        # We don't want to count Nones
+        if "None" in unique_fusions:
+            unique_fusions.remove("None")
+        
+        # Get total variants
+        total_variants = len(unique_fusions)
+        return total_variants
 
     def build_treatment_entries(self, fusion, therapies, oncotree_code):
         """Make an entry for the treatment options merger"""
@@ -158,14 +248,13 @@ class fusion_reader(logger):
                 tier=oncokb_levels.tier(level),
                 level=level,
                 treatments=therapies[level],
-                gene=fusion.get_translocation(),
-                alteration='Fusion',
+                gene=fusion.get_event_type(),
+                alteration='Fusions and structural variants',
                 #TODO: pull URL from NCCN_annotation.txt
                 alteration_url="https://www.nccn.org/professionals/physician_gls/pdf/myeloma_blocks.pdf"
             )
             entries.append(entry)
         return entries
-
 
     def fusions_to_json(self, gene_pair_fusions, oncotree_code):
         rows = []
@@ -188,9 +277,9 @@ class fusion_reader(logger):
                         fc.GENE_URL: gene_url,
                         fc.CHROMOSOME: chromosome,
                         fc.ONCOKB_LINK: fusion.get_oncokb_link(oncotree_code),
-                        fc.FRAME: fusion.get_frame(),
-                        fc.TRANSLOCATION: fusion.get_translocation(),
-                        fc.FUSION: fusion.get_fusion_id_new(),
+                        fc.FRAME: fusion.get_reading_frame(),
+                        fc.TRANSLOCATION: fusion.get_event_type(),
+                        fc.FUSION: fusion.get_fusion_id(),
                         fc.MUTATION_EFFECT: fusion.get_mutation_effect(),
                         core_constants.ONCOKB: fusion.get_oncokb_level()
                     }
@@ -200,175 +289,164 @@ class fusion_reader(logger):
                         summary=summaries.get(gene)
                     )
                     gene_info.append(gene_info_entry)
-                    therapies = fusion.get_therapies()
-                    for level in therapies.keys():
-                        if oncokb_order != oncokb_levels.oncokb_order('P'):
-                            entries = self.build_treatment_entries(
-                                fusion,
-                                therapies,
-                                oncotree_code.lower()
-                            )
-                            treatment_opts.extend(entries)
-                        else:
-                            entries = self.build_treatment_entries_nccn(
-                                fusion,
-                                therapies,
-                                oncotree_code.lower()
-                            )
-                            treatment_opts.extend(entries)
+                therapies = fusion.get_therapies()
+                if oncokb_order != oncokb_levels.oncokb_order('P'):
+                    treatment_opt = self.build_treatment_entries(
+                            fusion, 
+                            therapies, 
+                            oncotree_code
+                    )
+                    treatment_opts.extend(treatment_opt)
+                else:
+                    treatment_opt = self.build_treatment_entries_nccn(
+                            fusion,
+                            therapies,
+                            oncotree_code
+                    )
+                    treatment_opts.extend(treatment_opt)
         return rows, gene_info, treatment_opts
     
-    def get_fusions(self):
-        return self.fusions
+    def process_fusion(self, config, fusion, tsv_file_path, json_template_path, output_dir, wrapper):
 
-    def get_total_fusion_genes(self):
-        return self.total_fusion_genes
- 
-    def get_total_nccn_fusions(self):
-        return self.total_nccn_fusions
+        # Validate and parse the fusion format
+        match = re.match(r"(.+)::(.+)", fusion)
+        if not match:
+            msg = f"No valid fusion found for {fusion}. Ensure the format is gene1::gene2."
+            self.logger.error(msg)
+            raise FusionProcessingError(msg)
+        gene1, gene2 = match.groups()
 
-    def get_total_oncokb_fusions(self):
-        return self.total_oncokb_fusions
+        # Find breakpoints in the ARRIBA TSV file
+        breakpoint1, breakpoint2 = self.find_breakpoints(tsv_file_path, gene1, gene2)
+        if not (breakpoint1 and breakpoint2):
+            msg = f"No matching fusion found in the TSV file ({tsv_file_path}) for {fusion}."
+            self.logger.error(msg)
+            raise FusionProcessingError(msg)
 
-    def read_annotation_data(self):
-        # annotation file has exactly 1 line per fusion
-        annotations_by_fusion = {}
-        with open(os.path.join(self.input_dir, fc.DATA_FUSIONS_ANNOTATED)) as data_file:
-            for row in csv.DictReader(data_file, delimiter="\t"):
-                fusion = row['Fusion']
-                if fusion in annotations_by_fusion:
-                    annotations_by_fusion[fusion].append(row)
-                else:
-                    annotations_by_fusion[fusion] = [row,]
-        with open(os.path.join(self.input_dir, fc.DATA_FUSIONS_NCCN_ANNOTATED)) as data_file:
-            for row in csv.DictReader(data_file, delimiter="\t"):
-                fusion = row['Fusion']
-                if fusion in annotations_by_fusion:
-                    annotations_by_fusion[fusion].append(row)
-                else:
-                    annotations_by_fusion[fusion] = [row,]
-        return annotations_by_fusion
+        # Format breakpoints
+        formatted_breakpoint1 = whizbam_tools.format_breakpoint(breakpoint1)
+        formatted_breakpoint2 = whizbam_tools.format_breakpoint(breakpoint2)
 
-    def read_fusion_data(self):
-        # data file has 1 or 2 lines per fusion (1 if it has an intragenic component, 2 otherwise)
-        data_by_fusion = {}
-        with open(os.path.join(self.input_dir, fc.DATA_FUSIONS_OLD)) as data_file:
-            delly_count = 0
-            total = 0
-            for row in csv.DictReader(data_file, delimiter="\t"):
-                total += 1
-                if row['Method']=='delly':
-                    # omit delly structural variants (which are not yet validated)
-                    delly_count += 1
-                else:
-                    # make fusion ID consistent with format in annotated file
-                    fusion_id = re.sub('None', 'intragenic', row['Fusion'])
-                    if fusion_id in data_by_fusion:
-                        data_by_fusion[fusion_id].append(row)
-                    else:
-                        data_by_fusion[fusion_id] = [row,]
-        self.logger.debug("Read {0} rows of fusion input; excluded {1} delly rows".format(total, delly_count))
-        return data_by_fusion
+        # Load the JSON template
+        with open(json_template_path, 'r') as json_file:
+            data = json.load(json_file)
 
-class prepare_fusions(logger):
+        # Update the JSON with the formatted breakpoints
+        data['locus'] = [formatted_breakpoint1, formatted_breakpoint2]
 
-    def __init__(self, input_dir, log_level=logging.WARNING, log_path=None):
-        super().__init__()
-        self.log_level = log_level
-        self.log_path = log_path
-        self.logger = self.get_logger(log_level, __name__, log_path)
-        self.input_dir = input_dir
+        project_id = wrapper.get_my_string(core_constants.PROJECT)
+        tumour_id = wrapper.get_my_string(core_constants.TUMOUR_ID)
+        whizbam_project_id = wrapper.get_my_string(fc.WHIZBAM_PROJECT)
+        data['tracks'][1]['name'] = tumour_id
 
-    def annotate_fusion_files(self, config_wrapper):
-        # annotate from OncoKB
-        # TODO check if fusions are non empty
-        factory = annotator_factory(self.log_level, self.log_path)
-        factory.get_annotator(self.input_dir, config_wrapper).annotate_fusion()
+        # Define file patterns
+        bam_project_path = f"{core_constants.WHIZBAM_PATTERN_ROOT}/{project_id}/RNASEQ/{tumour_id}.bam"
+        bai_project_path = f"{core_constants.WHIZBAM_PATTERN_ROOT}/{project_id}/RNASEQ/{tumour_id}.bai"
+        bam_whizbam_path = f"{core_constants.WHIZBAM_PATTERN_ROOT}/{whizbam_project_id}/RNASEQ/{tumour_id}.bam"
+        bai_whizbam_path = f"{core_constants.WHIZBAM_PATTERN_ROOT}/{whizbam_project_id}/RNASEQ/{tumour_id}.bai"
 
-    def process_fusion_files(self, config_wrapper):
-        """
-        Preprocess fusion inputs and run R scripts; write outputs to the workspace
-        Inputs assumed to be in Mavis .tab format; .zip format is no longer in use
-        """
-        mavis_path = config_wrapper.get_my_string(fc.MAVIS_PATH)
-        arriba_path = config_wrapper.get_my_string(fc.ARRIBA_PATH)
-        tumour_id = config_wrapper.get_my_string(core_constants.TUMOUR_ID)
-        oncotree = config_wrapper.get_my_string(fc.ONCOTREE_CODE)
-        oncotree = oncotree.upper()
-        entrez_conv_path = config_wrapper.get_my_string(fc.ENTREZ_CONVERSION_PATH)
-        min_reads = config_wrapper.get_my_int(fc.MIN_FUSION_READS)
-        fus_path = os.path.join(self.input_dir, 'fus.txt') 
-        self.logger.info("Processing fusion results from " + mavis_path)
-        # prepend a column with the tumour ID to the Mavis .tab output
-        # set the field limit to be slightly larger to avoid field larger than limit issues
-        csv.field_size_limit(300000) 
-        with open(mavis_path, 'rt') as in_file, open(fus_path, 'wt') as out_file:
-            reader = csv.reader(in_file, delimiter="\t")
-            writer = csv.writer(out_file, delimiter="\t")
-            in_header = True
+        # Resolve BAM file
+        bam_file, bam_project = None, None
+        if os.path.isfile(bam_project_path):
+            bam_file, bam_project = bam_project_path, project_id
+        elif os.path.isfile(bam_whizbam_path):
+            bam_file, bam_project = bam_whizbam_path, whizbam_project_id
+        else:
+            self.logger.warning(f"BAM file not found for {project_id}. Try adjusting whizbam_project_id in config file")
+
+        if bam_file:
+            bam_filename = os.path.basename(bam_file)
+            data['tracks'][1]['url'] = f"/bams/project/{bam_project}/RNASEQ/file/{bam_filename}"
+
+        # Resolve BAI file
+        bai_file, bai_project = None, None
+        if os.path.isfile(bai_project_path):
+            bai_file, bai_project = bai_project_path, project_id
+        elif os.path.isfile(bai_whizbam_path):
+            bai_file, bai_project = bai_whizbam_path, whizbam_project_id
+        else:
+            self.logger.warning(f"BAI file not found for {project_id}. Try adjusting whizbam_project_id in config file")
+
+        if bai_file:
+            bai_filename = os.path.basename(bai_file)
+            data['tracks'][1]['indexURL'] = f"/bams/project/{bai_project}/RNASEQ/file/{bai_filename}"
+
+        # Write the modified JSON to the output directory
+        output_json_path = os.path.join(output_dir, f"{fusion}.json")
+        with open(output_json_path, 'w') as json_output_file:
+            json.dump(data, json_output_file)
+
+        # Compress JSON and generate blurb URL
+        with open(output_json_path, 'r') as json_output_file:
+            json_content = json_output_file.read()
+        compressed_b64_data = whizbam_tools.compress_string(json_content)
+        blurb_url = f"https://whizbam.oicr.on.ca/igv?sessionURL=blob:{compressed_b64_data}"
+        return fusion, blurb_url
+
+    def find_breakpoints(self, tsv_file_path, gene1, gene2):
+        # Find breakpoints for the given fusion genes in the arriba file
+        with open(tsv_file_path, mode='r') as file:
+            reader = csv.DictReader(file, delimiter='\t')
             for row in reader:
-                if in_header:
-                    value = 'Sample'
-                    in_header = False
-                else:
-                    value = tumour_id
-                new_row = [value] + row
-                writer.writerow(new_row)
-        # run the R script
-        plugin_dir = os.path.dirname(os.path.realpath(__file__))
-        script_path = os.path.join(plugin_dir, 'fusions.R')
-        cmd = [
-            'Rscript', script_path,
-            '--entcon', entrez_conv_path,
-            '--fusfile', fus_path,
-            '--arriba', arriba_path,
-            '--minfusionreads', min_reads,
-            '--workdir', self.input_dir,
-            '--oncotree', oncotree
-        ]
-        subprocess_runner(self.log_level, self.log_path).run([str(x) for x in cmd])
-        self.annotate_fusion_files(config_wrapper)
-        self.logger.info("Finished writing fusion files")
+                if (row['#gene1'] == gene1 or row['#gene1'] == gene2) and (
+                        row['gene2'] == gene1 or row['gene2'] == gene2):
+                    return row['breakpoint1'], row['breakpoint2']
+        return None, None
+
+class whizbam_tools:
+
+    @staticmethod
+    def format_breakpoint(breakpoint):
+        # Format breakpoint into 'chr:start-end' format
+        chrom, pos = breakpoint.split(':')
+        start = int(pos)
+        return f"{chrom}:{start}-{start + 1}"
+    
+    @staticmethod
+    def compress_string(input_string):
+        # Convert string to bytes
+        input_bytes = input_string.encode(core_constants.TEXT_ENCODING)
+        # Compress using raw deflate (no zlib header)
+        compressed_bytes = zlib.compress(input_bytes, level=9)[2:-4]  # Removing zlib headers and checksum
+        # Encode compressed bytes to base64
+        compressed_base64 = base64.b64encode(compressed_bytes)
+        # Convert the base64 bytes to a string and apply the replacements
+        return compressed_base64.decode(core_constants.TEXT_ENCODING)
+
 
 class fusion:
     # container for data relevant to reporting a fusion
-
     def __init__(
             self,
-            fusion_id_old,
-            fusion_id_new,
+            fusion_id,
             gene1,
             gene2,
-            frame,
+            reading_frame,
             effect,
+            event_type,
             level,
             therapies,
-            translocation
     ):
-        self.fusion_id_old = fusion_id_old
-        self.fusion_id_new = fusion_id_new
+        self.fusion_id = fusion_id
         self.gene1 = gene1
         self.gene2 = gene2
-        self.frame = frame
-        self.translocation = translocation
+        self.reading_frame = reading_frame
+        self.event_type = event_type
         self.effect = effect
         self.therapies = therapies
         self.level = level
 
-    def get_fusion_id_old(self):
-        return self.fusion_id_old
-
-    def get_fusion_id_new(self):
-        return self.fusion_id_new
+    def get_fusion_id(self):
+        return self.fusion_id
 
     def get_genes(self):
         return [self.gene1, self.gene2]
 
-    def get_translocation(self):
-        return self.translocation
+    def get_event_type(self):
+        return self.event_type
 
-    def get_frame(self):
-        return self.frame
+    def get_reading_frame(self):
+        return self.reading_frame
 
     def get_oncokb_link(self, oncotree):
         #need to both make the URL and then make the HTML for the URL
@@ -390,7 +468,5 @@ class fusion:
     def get_therapies(self):
         return self.therapies
 
-
-
-
-
+class FusionProcessingError(Exception):
+    pass
