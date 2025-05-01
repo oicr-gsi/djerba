@@ -127,7 +127,7 @@ class main(plugin_base):
             callability_threshold = 75
             if callability < callability_threshold:
                 msg = f"Callability is below the reportable threshold: {callability:.1f}% < {callability_threshold}%"
-            self.logger.warning(msg)
+                self.logger.warning(msg)
             return callability
         elif len(data) > 1:
             msg = "Djerba found more than one callability associated with donor {0} and tumour_id {1} in QC-ETL. Double check that the callability found by Djerba is correct; if not, may have to manually specify the callability.".format(donor, tumour_id)
