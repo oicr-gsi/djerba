@@ -139,7 +139,6 @@ class main(helper_base):
 
     def specify_params(self):
         defaults = {
-            core_constants.DEPENDS_CONFIGURE: 'provenance_helper',
             core_constants.EXTRACT_PRIORITY: 100, # run before cnv & snv plugins
             # RODiC is cloned from https://github.com/translational-genomics-laboratory/RODiC
             # repo also forked to https://github.com/oicr-gsi/RODiC

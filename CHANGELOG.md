@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## UNRELEASED
+- GCGI-1574: Removed provenance helper dependency in `expression_helper.py`
+
 ## v1.9.0: 2025-05-01
 - GCGI-1506: Replace fusions.R with preprocess.py and refactor fusions plugin
 - GCGI-1509: Add warning for callability below the 75% threshold.
