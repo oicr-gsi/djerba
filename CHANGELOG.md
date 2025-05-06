@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## UNRELEASED
+## v1.9.1: 2025-05-06
 - GCGI-1574: Removed provenance helper dependency in `expression_helper.py`
 - GCGI-1576: Fixed fusion plugin to handle situations where all fusions in mavis get filtered out (ex. by reading frame) 
 
