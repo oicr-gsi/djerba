@@ -520,8 +520,6 @@ class prepare_fusions(logger):
         else:
             df_merged = self.merge_mavis_arriba(df_mavis, df_arriba)
 
-        #df_merged = self.merge_mavis_arriba(df_mavis, df_arriba)
-
         # Get the NCCN calls
         df_nccn = self.process_nccn(df_merged, oncotree_code)
 
