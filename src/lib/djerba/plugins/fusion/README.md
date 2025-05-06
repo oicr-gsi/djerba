@@ -67,13 +67,12 @@ The function that merges mavis and arriba data and writes the fusion files is pr
 
 The following steps occur in **self.merge_mavis_arriba**:
 1. **self.left_join**: Mavis and arriba data are merged using a **left join** (if a mavis entry matches an arriba entry, the arriba data is added to the mavis data).
-2. **self.fix_reading_frames**: If a reading frame is 
-3. **self.drop_duplicates_merge_columns**: Drops duplicate fusions (ex. if FGFR2-KRAS appears twice) but merge the event type and reading frame columns (sometimes the same fusion can have multiple event types and frames; we want to preserve that information)
-4. **self.remove_self_fusions**: Removes fusion pairs of genes with themselves (ex. "CDKN2A-CDKN2A")
-5. **self.simplify_reading_frame**: Replaces "." reading frame with the word "Unknown". Also creates a new column called "reading frame simple" where if a fusion has multiple reading frames (ex. "out-of-frame;in-frame"), it will replace it will "Multiple Frames"
-6. **self.simplify_event_type**: Creates a new column called "event_type_simple". If there are multiple event types (mavis and arriba can't determine which one is correct, ex. "inversion;duplication"), it will replace it with "Undetermined". If the event type contains translocation or inverted translocation, it will replace it with the translocation notation. If the event type contains "inversion", it will replace it with the inversion notation (ex. inv(17)). 
-7. **self.reorder_fusions**: Fusions are re-ordered in 5'-3' order based on the "gene1_direction" and "gene2_direction" columns
-8. **self.delete_delly_only_calls**: Deletes delly only calls, as structural variants are not validated (according to legacy R code)
+2. **self.drop_duplicates_merge_columns**: Drops duplicate fusions (ex. if FGFR2-KRAS appears twice) but merge the event type and reading frame columns (sometimes the same fusion can have multiple event types and frames; we want to preserve that information)
+3. **self.remove_self_fusions**: Removes fusion pairs of genes with themselves (ex. "CDKN2A-CDKN2A")
+4. **self.simplify_reading_frame**: Replaces "." reading frame with the word "Unknown". Also creates a new column called "reading frame simple" where if a fusion has multiple reading frames (ex. "out-of-frame;in-frame"), it will replace it will "Multiple Frames"
+5. **self.simplify_event_type**: Creates a new column called "event_type_simple". If there are multiple event types (mavis and arriba can't determine which one is correct, ex. "inversion;duplication"), it will replace it with "Undetermined". If the event type contains translocation or inverted translocation, it will replace it with the translocation notation. If the event type contains "inversion", it will replace it with the inversion notation (ex. inv(17)). 
+6. **self.reorder_fusions**: Fusions are re-ordered in 5'-3' order based on the "gene1_direction" and "gene2_direction" columns
+7. **self.delete_delly_only_calls**: Deletes delly only calls, as structural variants are not validated (according to legacy R code)
    
 ### Annotating OncoKB and NCCN variants 
 
