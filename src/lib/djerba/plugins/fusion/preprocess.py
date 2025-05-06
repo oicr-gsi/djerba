@@ -255,12 +255,6 @@ class prepare_fusions(logger):
         df = self.drop_duplicates(df, "fusion_pairs")
         return df
     
-    def fix_reading_frames(self, df):
-        """
-        """
-        df["reading_frame"] = df["reading_frame"].replace(".", np.nan)
-        return df
-
     def left_join(self, df1, df2, column):
         """
         Performs a left join of df2 into df1 on a column.
@@ -301,13 +295,12 @@ class prepare_fusions(logger):
 
         # Merge df_arriba information into df_mavis
         df_merged = self.left_join(df_mavis, df_arriba, "fusion_pairs")
-        # If reading frame is anything except in-frame, out-of-frame, or stop-codon, make it nan
-        df_merged = self.fix_reading_frames(df_merged)
         # Remove duplicate fusions (but keep if they are different event types)
         df_merged = self.drop_duplicates_merge_columns(df_merged)
         # Remove fusions that are self-self pairs
         df_merged = self.remove_self_fusions(df_merged)
         # All nan reading frame columns should be Unknown
+        # If reading frame is anything except in-frame, out-of-frame, or stop-codon, make it nan
         df_merged = self.simplify_reading_frame(df_merged)
         # Simplify event type
         df_merged = self.simplify_event_type(df_merged)
@@ -456,7 +449,19 @@ class prepare_fusions(logger):
         Replaces all nan reading frame with Unknown.
         Also adds a new column that simplifies entries that have multiple reading frames (ex. "in-frame;out-of-frame") with just "Mutliple Frames"
         Chose to keep it as a second column so the more informative column can be kept and reviewed by CGI if needed.
+        Valid reading frames are in-frame, out-of-frame, and stop-codon.
+        According to the arriba documentation:
+
+            reading_frame : This column states whether the gene at the 3' end of the fusion is fused in-frame or out-of-frame.
+            The value stop-codon indicates that there is a stop codon prior to the fusion junction, such that the 3' end is not translated,
+            even if the reading frame is preserved across the junction. The prediction of the reading frame builds on the prediction of the
+            peptide sequence. A dot (.) indicates that the peptide sequence cannot be predicted, for example, because the transcript sequence
+            could not be determined or because the breakpoint of the 5' gene does not overlap a coding region
+
+        Anything else should be left as nan.
+
         """
+        
         df["reading_frame"] = df["reading_frame"].replace([".", ""], np.nan)
         df["reading_frame"] = df["reading_frame"].fillna("Unknown")
 
