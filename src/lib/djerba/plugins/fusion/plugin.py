@@ -34,16 +34,8 @@ class main(plugin_base):
         work_dir = self.workspace.get_work_dir()
         self.update_wrapper_if_null(wrapper, core_constants.DEFAULT_SAMPLE_INFO, fc.WHIZBAM_PROJECT, 'project')
         self.update_wrapper_if_null(wrapper, 'input_params.json', fc.ONCOTREE_CODE, 'oncotree_code')
-
-        if os.path.exists(os.path.join(work_dir, core_constants.DEFAULT_SAMPLE_INFO)):
-            sample_info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
-            if wrapper.my_param_is_null(core_constants.TUMOUR_ID):
-                wrapper.set_my_param(core_constants.TUMOUR_ID, sample_info.get(core_constants.TUMOUR_ID))
-            if wrapper.my_param_is_null(core_constants.PROJECT):
-                wrapper.set_my_param(core_constants.PROJECT, sample_info.get(core_constants.PROJECT))
-        else:
-            msg = 'Sample info file not found, make sure fusion parameters are in INI'
-            self.logger.warning(msg)
+        self.update_wrapper_if_null(wrapper, core_constants.DEFAULT_SAMPLE_INFO, core_constants.TUMOUR_ID, core_constants.TUMOUR_ID)
+        self.update_wrapper_if_null(wrapper, core_constants.DEFAULT_SAMPLE_INFO, core_constants.PROJECT, core_constants.PROJECT)
 
         return wrapper.get_config()
 
@@ -57,7 +49,6 @@ class main(plugin_base):
     
         fus_tools = fusion_tools(self.workspace.get_work_dir(), self.log_level, self.log_path)
         results, gene_info, treatment_opts = fus_tools.assemble_data(wrapper.get_my_string(fc.ONCOTREE_CODE))
-        #self.workspace.write_json("test_fusions_results.json", results)
 
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         data[core_constants.RESULTS] = results
