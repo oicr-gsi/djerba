@@ -139,7 +139,6 @@ class main(plugin_base):
         for key in discovered:
             self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
-        self.set_ini_default(core_constants.DEPENDS_CONFIGURE, 'provenance_helper')
         self.set_priority_defaults(self.PRIORITY)
         self.set_ini_default('render_priority', 40)
 

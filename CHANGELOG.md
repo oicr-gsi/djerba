@@ -1,9 +1,21 @@
 # CHANGELOG
 
-## Unreleased
+## UNRELEASED
 - GCGI-1571: Update example report in Github repository
+- GCGI-1577: Removed implicit dependency on `provenance_helper` in `fusion plugin`
 
-## v1.8.4: 2024-04-10
+## v1.9.1: 2025-05-06
+- GCGI-1574: Removed provenance helper dependency in `expression_helper.py`
+- GCGI-1576: Fixed fusion plugin to handle situations where all fusions in mavis get filtered out (ex. by reading frame)
+
+## v1.9.0: 2025-05-01
+- GCGI-1506: Replace fusions.R with preprocess.py and refactor fusions plugin
+- GCGI-1509: Add warning for callability below the 75% threshold.
+- GCGI-1401: Convert purple output from Let's-Plot SVG to Matplotlib PNG.
+- GCGI-1504: Remove provenance helper dependency in `case_overview` plugin
+
+## v1.8.4: 2025-04-10
+>>>>>>> release-1.9.2
 - GCGI-1109: Update "Patient Genetic Sex" to "Patient sex assigned at birth"
 - GCGI-1544: Handle missing or empty HLA data
 - GCGI-1539: Environment variable for CouchDB credentials
