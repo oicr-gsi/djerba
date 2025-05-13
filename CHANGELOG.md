@@ -1,9 +1,9 @@
 # CHANGELOG
 
-## UNRELEASED
+## v1.9.2: 2025-05-13
 - GCGI-1571: Update example report in Github repository
 - GCGI-1572: Remove overly detailed plugin list
-- GCGI-1577: Removed implicit dependency on `provenance_helper` in `fusion plugin`
+- GCGI-1577: Removed implicit dependency on `provenance_helper` in `fusion` plugin
 
 ## v1.9.1: 2025-05-06
 - GCGI-1574: Removed provenance helper dependency in `expression_helper.py`
@@ -16,7 +16,6 @@
 - GCGI-1504: Remove provenance helper dependency in `case_overview` plugin
 
 ## v1.8.4: 2025-04-10
->>>>>>> release-1.9.2
 - GCGI-1109: Update "Patient Genetic Sex" to "Patient sex assigned at birth"
 - GCGI-1544: Handle missing or empty HLA data
 - GCGI-1539: Environment variable for CouchDB credentials
