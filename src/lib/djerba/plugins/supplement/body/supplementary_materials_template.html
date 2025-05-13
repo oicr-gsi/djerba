@@ -35,9 +35,6 @@ ${html_builder().section_cells_begin("<h2>Assay description</h2>",True, no_hr_af
 ## !!! IMPORTANT !!! If this paragraph is modified, update redact_html in util.testing.tools
 <p>Assay results were collated into the report document by <a href=${versions.DJERBA_LINK}>Djerba</a> (${versions.DJERBA_VERSION}) using pipeline ${versions.PIPELINE_VERSION}.</p>
 
-## !!! IMPORTANT !!! If this paragraph is modified, update redact_html in util.testing.tools
-<p>Djerba component versions were: ${versions.make_component_info_string(results.get(supplement.COMPONENTS))}.</p>
-
 ${html_builder().section_cells_end()}
 
 % if ASSAY == 'TAR' :

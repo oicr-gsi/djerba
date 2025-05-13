@@ -2,6 +2,7 @@
 
 ## UNRELEASED
 - GCGI-1571: Update example report in Github repository
+- GCGI-1572: Remove overly detailed plugin list
 - GCGI-1577: Removed implicit dependency on `provenance_helper` in `fusion plugin`
 
 ## v1.9.1: 2025-05-06
