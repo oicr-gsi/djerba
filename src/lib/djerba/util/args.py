@@ -12,13 +12,14 @@ class arg_processor_base(logger):
         if logger:
             # do not call 'get_logger' if one has already been configured
             # this way, we can preserve the level/path of an existing logger
+            # also set self.log_level, self.log_path for later object creation
+            # too difficult to get log path from logger, so fall back to value in args
             self.logger = logger
+            self.log_level = logger.level
+            self.log_path = self._get_validated_log_path(args)
         else:
             self.log_level = self.get_args_log_level(self.args)
-            self.log_path = self.args.log_path
-            if self.log_path:
-                # we are verifying the log path, so don't write output there yet
-                path_validator(self.log_level).validate_output_file(self.log_path)
+            self.log_path = self._get_validated_log_path(args)
             self.logger = self.get_logger(self.log_level, __name__, self.log_path)
         if validate:
             self.validate_args(self.args)  # checks subparser and args are valid
@@ -32,6 +33,13 @@ class arg_processor_base(logger):
             self.logger.error(msg)
             raise ArgumentNameError(msg) from err
         return value
+
+    def _get_validated_log_path(self, args):
+        # return a validated log output path, or None
+        # we are verifying the log path, so don't write output there yet
+        if args.log_path != None:
+            path_validator(self.log_level).validate_output_file(args.log_path)
+        return args.log_path
 
     def get_json(self):
         return self._get_arg('json')
