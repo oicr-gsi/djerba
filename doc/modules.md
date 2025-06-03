@@ -72,6 +72,7 @@ purity_check
 tumour_id
 oncotree_code 
 ```
+- [Test CNV Plugin](oumaima_cnv.md)
 
 
 ### core
