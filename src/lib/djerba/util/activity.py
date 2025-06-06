@@ -198,15 +198,54 @@ class activity_tracker(logger):
 
     def update_identifiers_from_json(self, identifiers, json_path):
         # TODO check compatibility with TAR/PWGS JSON files
+
+        def update_from_input_params_helper(identifiers, config, assay):
+            if assay=='TAR':
+                section = 'tar_input_params_helper'
+            else:
+                section = 'input_params_helper'
+            if section in config:
+                for key in [self.DONOR, self.PROJECT, self.STUDY, self.REQUISITION_ID]:
+                    identifiers[key] = config[section][key]
+            return identifiers
+
         self.validator.validate_input_file(json_path)
         identifiers[self.JSON_PATH] = json_path
         with open(json_path, encoding=constants.TEXT_ENCODING) as json_file:
             data = json.load(json_file)
+        # first identify assay
         config = data['config']
-        for key in [self.DONOR, self.PROJECT, self.STUDY, self.REQUISITION_ID]:
-            identifiers[key] = config['input_params_helper'][key]
-        identifiers[self.ASSAY] = config['case_overview'][self.ASSAY]
-        identifiers[self.REPORT_ID] = config['case_overview'][self.REPORT_ID]
+        if 'tar_input_params_helper' in config:
+            assay = 'TAR'
+        elif 'pwgs.case_overview' in config:
+            assay = 'PWGS'
+        elif 'expression_helper' in config:
+            assay = 'WGTS'
+        elif 'sample' in config:
+            assay = 'WGS'
+        else:
+            assay = None
+        if assay:
+            identifiers[self.ASSAY] = assay
+        # now parse the other identifiers, depending on JSON structure
+        if assay in ['WGS', 'WGTS', 'TAR']:
+            update_from_input_params_helper(identifiers, config, assay)
+            overview = 'case_overview'
+            if overview in config:
+                identifiers[self.REPORT_ID] = config[overview][self.REPORT_ID]
+        elif assay == 'PWGS':
+            overview = 'pwgs.case_overview'
+            plugins = data['plugins']
+            if overview in plugins:
+                results = plugins[overview]['results']
+                identifiers[self.REPORT_ID] = results['pwgs_report_id']
+                identifiers[self.DONOR] = results[self.DONOR]
+                identifiers[self.STUDY] = results[self.STUDY]
+            if 'pwgs_cardea_helper' in config:
+                identifiers[self.REQUISITION_ID] = \
+                    config['pwgs_cardea_helper'][self.REQUISITION_ID]
+            if 'pwgs_provenance_helper' in config:
+                identifiers[self.PROJECT] = config['pwgs_provenance_helper'][self.PROJECT]
         return identifiers
 
 class DjerbaActivityTrackerError(Exception):
