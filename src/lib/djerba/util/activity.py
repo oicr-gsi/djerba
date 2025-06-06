@@ -16,11 +16,10 @@ class activity_tracker(logger):
     """
     Djerba Activity Tracker
 
-    If the DJERBA_TRACKING_DIR environment variable is configured,
-    we write a one-line file to that directory, with details of this particular usage of the
-    Djerba script. (We write a tiny file, instead of appending to a larger one, to ensure
-    there are no collisions between update attempts.) These values can then be collated to 
-    get a picture of Djerba usage over time.
+    If the DJERBA_TRACKING_DIR environment variable is configured, we append to a file
+    in that directory, with details of this particular usage of the djerba.py script.
+
+    The file is named for the current date, 'djerba_activity_YYYY-MM-DD.tsv'.
 
     Output fields are:
     1. Timestamp
@@ -31,15 +30,24 @@ class activity_tracker(logger):
     6. Donor
     7. Requisition ID
     8. Report ID
-    9. Working directory name
-    10. Working directory parent name
-    11. Working directory full path
+    9. INI path
+    10. JSON path
+    11. Working directory name
+    12. Working directory parent name
+    13. Working directory full path
+
+    The output file has a header line with the field names, prefixed by '#'.
 
     Fields are set to the empty string '' if data is not available, eg. in setup mode
     the report ID is not known.
 
-    Note that the working directory and parent (fields 9 and 10) are conventionally named for
+    The working directory and parent (fields 9 and 10) are conventionally named for
     the donor and requisition ID (fields 6 and 7), and can be used as fallback values.
+
+    Usage of `djerba.py` with the `-h` or `--help` option is not recorded.
+
+    Tracking is done before the main Djerba functions start -- so if `djerba.py` exits
+    with an error, it has still been recorded by activity tracking.
     """
 
     DJERBA_TRACKING_DIR_VAR = 'DJERBA_TRACKING_DIR'
@@ -51,7 +59,12 @@ class activity_tracker(logger):
     STUDY = 'study'
     REQUISITION_ID = 'requisition_id'
     REPORT_ID = 'report_id'
-    IDENTIFIER_KEYS = [PROJECT, STUDY, DONOR, REQUISITION_ID, REPORT_ID]
+    INI_PATH = 'ini_path'
+    JSON_PATH = 'json_path'
+    IDENTIFIER_KEYS = [PROJECT, STUDY, DONOR, REQUISITION_ID, REPORT_ID, INI_PATH, JSON_PATH]
+    HEADERS = ['#time', 'user', 'mode', 'project', 'study', 'donor',
+               'requisition_id', 'report_id', 'ini', 'json',
+               'cwd_name', 'cwd_parent_name', 'cwd']
 
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
@@ -91,18 +104,26 @@ class activity_tracker(logger):
         # make the lock file and append to the output file
         open(lock_path, 'a').close()
         time.sleep(short_delay)
+        if os.path.exists(out_path):
+            write_header = False
+        else:
+            write_header = True
         with open(out_path, 'a') as out_file:
+            if write_header:
+                out_file.write('\t'.join(self.HEADERS)+"\n")
             out_file.write(out_string)
         time.sleep(short_delay)
         os.remove(lock_path)
 
     def get_fields(self, ap):
+        # get timestamp, username, script mode
         mode = ap.get_mode()
         fields = [
             time.strftime('%Y-%m-%d_%H:%M:%S_%z'),
             self.get_user(),
             mode
         ]
+        # get project, study, donor, requisition id, report id (if available)
         identifiers = {name: '' for name in self.IDENTIFIER_KEYS}
         if mode in [constants.CONFIGURE, constants.EXTRACT, constants.REPORT]:
             ini_path = ap.get_ini_path()
@@ -111,6 +132,7 @@ class activity_tracker(logger):
             json_path = ap.get_json()
             identifiers = self.update_identifiers_from_json(identifiers, json_path)
         fields.extend([identifiers[k] for k in self.IDENTIFIER_KEYS])
+        # get directory names and path
         cwd = os.getcwd()
         directory = os.path.basename(cwd)
         parent = os.path.basename(os.path.dirname(cwd))
@@ -131,7 +153,7 @@ class activity_tracker(logger):
         Output is a tab-delimited set of fields
         """
         # get path for output
-        out_file_name = self.OUTPUT_FILE_PREFIX+time.strftime('%Y-%m-%d')
+        out_file_name = self.OUTPUT_FILE_PREFIX+time.strftime('%Y-%m-%d')+'.tsv'
         out_path = os.path.join(self.tracking_dir, out_file_name)
         # generate the output fields
         ap = arg_processor(args, logger=self.logger)
@@ -143,6 +165,7 @@ class activity_tracker(logger):
     def update_identifiers_from_ini(self, identifiers, ini_path):
         # TODO check compatibility with TAR/PWGS INI files
         self.validator.validate_input_file(ini_path)
+        identifiers[self.INI_PATH] = ini_path
         cp = ConfigParser()
         cp.read(ini_path)
         if cp.has_section('input_params_helper'):
@@ -157,6 +180,7 @@ class activity_tracker(logger):
     def update_identifiers_from_json(self, identifiers, json_path):
         # TODO check compatibility with TAR/PWGS JSON files
         self.validator.validate_input_file(json_path)
+        identifiers[self.JSON_PATH] = json_path
         with open(json_path, encoding=constants.TEXT_ENCODING) as json_file:
             data = json.load(json_file)
         config = data['config']
