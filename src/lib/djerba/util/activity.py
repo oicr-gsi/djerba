@@ -25,16 +25,17 @@ class activity_tracker(logger):
     1. Timestamp
     2. Username
     3. Script mode (setup, report, update, etc.)
-    4. Project
-    5. Study
-    6. Donor
-    7. Requisition ID
-    8. Report ID
-    9. INI path
-    10. JSON path
-    11. Working directory name
-    12. Working directory parent name
-    13. Working directory full path
+    4. Assay
+    5. Project
+    6. Study
+    7. Donor
+    8. Requisition ID
+    9. Report ID
+    10. INI path
+    11. JSON path
+    12. Working directory name
+    13. Working directory parent name
+    14. Working directory full path
 
     The output file has a header line with the field names, prefixed by '#'.
 
@@ -54,6 +55,7 @@ class activity_tracker(logger):
     LOCK_FILE_NAME = 'djerba_activity_tracker.lock'
     OUTPUT_FILE_PREFIX = 'djerba_activity_'
 
+    ASSAY = 'assay'
     DONOR = 'donor'
     PROJECT = 'project'
     STUDY = 'study'
@@ -61,8 +63,9 @@ class activity_tracker(logger):
     REPORT_ID = 'report_id'
     INI_PATH = 'ini_path'
     JSON_PATH = 'json_path'
-    IDENTIFIER_KEYS = [PROJECT, STUDY, DONOR, REQUISITION_ID, REPORT_ID, INI_PATH, JSON_PATH]
-    HEADERS = ['#time', 'user', 'mode', 'project', 'study', 'donor',
+    IDENTIFIER_KEYS = [ASSAY, PROJECT, STUDY, DONOR, REQUISITION_ID,
+                       REPORT_ID, INI_PATH, JSON_PATH]
+    HEADERS = ['#time', 'user', 'mode', 'assay', 'project', 'study', 'donor',
                'requisition_id', 'report_id', 'ini', 'json',
                'cwd_name', 'cwd_parent_name', 'cwd']
 
@@ -123,9 +126,11 @@ class activity_tracker(logger):
             self.get_user(),
             mode
         ]
-        # get project, study, donor, requisition id, report id (if available)
+        # get assay, project, study, donor, requisition id, report id (if available)
         identifiers = {name: '' for name in self.IDENTIFIER_KEYS}
-        if mode in [constants.CONFIGURE, constants.EXTRACT, constants.REPORT]:
+        if mode == constants.SETUP:
+            identifiers[self.ASSAY] = ap.get_assay()
+        elif mode in [constants.CONFIGURE, constants.EXTRACT, constants.REPORT]:
             ini_path = ap.get_ini_path()
             identifiers = self.update_identifiers_from_ini(identifiers, ini_path)
         elif mode in [constants.RENDER, constants.UPDATE]:
@@ -171,7 +176,8 @@ class activity_tracker(logger):
         if cp.has_section('input_params_helper'):
             # if input_params_helper absent, we could also get from case_overview
             # but for simplicity, we just use input_params_helper
-            for key in [self.DONOR, self.PROJECT, self.STUDY, self.REQUISITION_ID]:
+            ip_keys = [self.ASSAY, self.DONOR, self.PROJECT, self.STUDY, self.REQUISITION_ID]
+            for key in ip_keys:
                 identifiers[key] = cp.get('input_params_helper', key)
         if cp.has_option('case_overview', self.REPORT_ID):
             identifiers[self.REPORT_ID] = cp.get('case_overview', self.REPORT_ID)
@@ -186,6 +192,7 @@ class activity_tracker(logger):
         config = data['config']
         for key in [self.DONOR, self.PROJECT, self.STUDY, self.REQUISITION_ID]:
             identifiers[key] = config['input_params_helper'][key]
+        identifiers[self.ASSAY] = config['case_overview'][self.ASSAY]
         identifiers[self.REPORT_ID] = config['case_overview'][self.REPORT_ID]
         return identifiers
 
