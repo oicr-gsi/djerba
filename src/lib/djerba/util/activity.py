@@ -169,19 +169,31 @@ class activity_tracker(logger):
         self.logger.info("Activity tracking written to "+out_path)
 
     def update_identifiers_from_ini(self, identifiers, ini_path):
-        # TODO check compatibility with TAR/PWGS INI files
+        # This is compatible with TAR/PWGS INI files
         self.validator.validate_input_file(ini_path)
         identifiers[self.INI_PATH] = ini_path
         cp = ConfigParser()
         cp.read(ini_path)
-        if cp.has_section('input_params_helper'):
-            # if input_params_helper absent, we could also get from case_overview
-            # but for simplicity, we just use input_params_helper
-            ip_keys = [self.ASSAY, self.DONOR, self.PROJECT, self.STUDY, self.REQUISITION_ID]
-            for key in ip_keys:
-                identifiers[key] = cp.get('input_params_helper', key)
-        if cp.has_option('case_overview', self.REPORT_ID):
-            identifiers[self.REPORT_ID] = cp.get('case_overview', self.REPORT_ID)
+        if cp.has_section('tar.sample'):
+            identifiers[self.ASSAY] = 'TAR'
+        elif cp.has_section('pwgs.sample'):
+            identifiers[self.ASSAY] = 'PWGS'
+        elif cp.has_section('expression_helper'):
+            identifiers[self.ASSAY] = 'WGTS'
+        elif cp.has_section('sample'):
+            identifiers[self.ASSAY] = 'WGS'
+        # no input params helper for PWGS
+        for section in ['input_params_helper', 'tar_input_params_helper']:
+            if cp.has_section(section):
+                ip_keys = [self.DONOR, self.PROJECT, self.STUDY, self.REQUISITION_ID]
+                for key in ip_keys:
+                    identifiers[key] = cp.get(section, key)
+                break
+        # TAR uses same case overview plugin as WGTS
+        for section in ['case_overview', 'pwgs.case_overview']:
+            if cp.has_option(section, self.REPORT_ID):
+                identifiers[self.REPORT_ID] = cp.get(section, self.REPORT_ID)
+                break
         return identifiers
 
     def update_identifiers_from_json(self, identifiers, json_path):
