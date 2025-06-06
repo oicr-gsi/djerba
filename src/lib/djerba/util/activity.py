@@ -69,10 +69,11 @@ class activity_tracker(logger):
                'requisition_id', 'report_id', 'ini', 'json',
                'cwd_name', 'cwd_parent_name', 'cwd']
 
-    def __init__(self, log_level=logging.WARNING, log_path=None):
+    def __init__(self, log_level=logging.WARNING, log_path=None, timeout_multiplier=1):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.log_level = log_level
         self.log_path = log_path
+        self.timeout_multiplier = float(timeout_multiplier) # use to modify timeout duration
         self.tracking_dir = os.getenv(self.DJERBA_TRACKING_DIR_VAR)
         if self.tracking_dir == None:
             msg = "Variable "+DJERBA_TRACKING_DIR_VAR+" not set, omitting activity tracking"
@@ -90,7 +91,7 @@ class activity_tracker(logger):
         # safely append with a lock file to avoid collision between updates
         out_string = "\t".join([str(x) for x in fields])+"\n"
         lock_path = os.path.join(self.tracking_dir, self.LOCK_FILE_NAME)
-        delays = [0.01, 0.1, 1, 5]
+        delays = [x*self.timeout_multiplier for x in [0.01, 0.1, 1, 5]]
         short_delay = 0.01
         if os.path.exists(lock_path):
             for delay in delays:
