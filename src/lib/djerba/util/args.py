@@ -9,17 +9,17 @@ class arg_processor_base(logger):
 
     def __init__(self, args, logger=None, validate=True):
         self.args = args
+        # set self.log_level, self.log_path in case we need to make a new logger object
+        # TODO see if log path can be extracted from existing logger (if any)
+        # for now, use value in args as a fallback
+        self.log_path = self._get_validated_log_path(args)
         if logger:
             # do not call 'get_logger' if one has already been configured
             # this way, we can preserve the level/path of an existing logger
-            # also set self.log_level, self.log_path for later object creation
-            # too difficult to get log path from logger, so fall back to value in args
             self.logger = logger
             self.log_level = logger.level
-            self.log_path = self._get_validated_log_path(args)
         else:
             self.log_level = self.get_args_log_level(self.args)
-            self.log_path = self._get_validated_log_path(args)
             self.logger = self.get_logger(self.log_level, __name__, self.log_path)
         if validate:
             self.validate_args(self.args)  # checks subparser and args are valid
