@@ -197,7 +197,7 @@ class activity_tracker(logger):
         return identifiers
 
     def update_identifiers_from_json(self, identifiers, json_path):
-        # TODO check compatibility with TAR/PWGS JSON files
+        # compatible with TAR/PWGS JSON files
 
         def update_from_input_params_helper(identifiers, config, assay):
             if assay=='TAR':
