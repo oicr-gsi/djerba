@@ -22,16 +22,17 @@ class TestWgtsSamplePlugin(PluginTester):
         self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
         self.tmp_dir = self.tmp.name
         self.sup_dir = directory_finder().get_test_dir()
+        self.sample_dir = os.path.join(self.sup_dir, "plugins", "sample")
         
     def testWgtsSample(self):
+        # This test currently does not query GSI-QC-ETL; see GCGI-1554
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
-        json_location = os.path.join(self.sup_dir ,"plugins/sample/report_json/sample.json")
-        ini_location = os.path.join(self.sup_dir ,"plugins/sample/sample.ini") 
-
+        json_location = os.path.join(self.sample_dir, "report_json", "sample.json")
+        ini_location = os.path.join(self.sample_dir, "sample.ini")
         params = {
             self.INI: ini_location,
             self.JSON: json_location,
-            self.MD5: '8d21df38bbfdba551e86b41adf1f0381'
+            self.MD5: '4db83864537ac7b6fb6133dcc1d5d460'
         }
         self.run_basic_test(test_source_dir, params)
 
@@ -40,8 +41,8 @@ class TestWgtsSamplePlugin(PluginTester):
         Purity, ploidy, callability, and coverage are NA
         """
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
-        json_location = os.path.join(self.sup_dir ,"plugins/sample/report_json/sample_na.json")
-        ini_location = os.path.join(self.sup_dir ,"plugins/sample/sample_na.ini")
+        json_location = os.path.join(self.sample_dir, "report_json", "sample_na.json")
+        ini_location = os.path.join(self.sample_dir, "sample_na.ini")
 
         params = {
             self.INI: ini_location,
