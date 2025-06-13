@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v1.10.0: 2025-06-13
 - GCGI-1554: Patch for GSI-QC-ETL test failure. Refactoring GSI-QC-ETL handling is still TODO.
 - GCGI-1586: Option to track activity with the main `djerba.py` script
 
