@@ -46,7 +46,6 @@ SEX = 'SEX'
 # mode names for djerba.py
 SETUP = 'setup'
 CONFIGURE = 'configure'
-DRAFT = 'draft'
 EXTRACT = 'extract'
 RENDER = 'render'
 UPDATE = 'update'

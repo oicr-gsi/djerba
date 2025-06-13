@@ -24,6 +24,7 @@ from djerba.core.json_validator import plugin_json_validator
 from djerba.core.loaders import plugin_loader, core_config_loader, DjerbaLoadError
 from djerba.core.main import main, arg_processor, DjerbaDependencyError, DjerbaHtmlCacheError
 from djerba.core.workspace import workspace
+from djerba.util.activity import activity_tracker, DjerbaActivityTrackerError
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.testing.tools import TestBase
 from djerba.util.validator import path_validator
@@ -43,7 +44,7 @@ class TestCore(TestBase):
     class mock_args:
         """Use instead of argparse to store params for testing"""
 
-        def __init__(self, mode, work_dir, ini, ini_out, json, out_dir, pdf):
+        def __init__(self, mode, work_dir, ini, ini_out, json, out_dir, pdf, assay='WGTS'):
             self.subparser_name = mode
             self.work_dir = work_dir
             self.ini = ini
@@ -51,7 +52,9 @@ class TestCore(TestBase):
             self.json = json
             self.out_dir = out_dir
             self.no_archive = True
+            self.pre_populate = None # used in setup mode
             self.pdf = pdf
+            self.assay = assay
             # logging
             self.log_path = None
             self.debug = False
@@ -90,6 +93,56 @@ class TestCore(TestBase):
         config.read(ini_path)
         config = plugin.apply_defaults(config)
         return config
+
+class TestActivityTracker(TestCore):
+
+    def setUp(self):
+        super().setUp()
+        self.original_track_dir = os.environ.get(activity_tracker.DJERBA_TRACKING_DIR_VAR)
+
+    def tearDown(self):
+        super().tearDown()
+        if self.original_track_dir:
+            os.environ[activity_tracker.DJERBA_TRACKING_DIR_VAR] = self.original_track_dir
+
+    def test_tracker_class(self):
+        # standalone test of the tracker class
+        # use some convenient input values and spot-check the outputs
+        # TODO test tracking when called from djerba.py, eg. in script tests
+        work_dir = self.tmp_dir
+        os.environ[activity_tracker.DJERBA_TRACKING_DIR_VAR] = work_dir
+        tracker = activity_tracker()
+        ini_input = os.path.join(self.test_source_dir, 'config.ini')
+        mock_arg_inputs = [
+            ['setup', work_dir, 'config.ini', None, None, work_dir, False, 'WGTS'],
+            ['setup', work_dir, 'config.ini', None, None, work_dir, False, 'PWGS'],
+            ['configure', work_dir, ini_input, 'demo.ini', None, work_dir, False, 'demo']
+        ]
+        filename = tracker.OUTPUT_FILE_PREFIX+time.strftime('%Y-%m-%d')+'.tsv'
+        output_path = os.path.join(work_dir, filename)
+        for input_args in mock_arg_inputs:
+            args = self.mock_args(*input_args)
+            tracker.run(args)
+        self.assertTrue(os.path.exists(output_path))
+        with open(output_path) as tsv_file:
+            tsv_lines = tsv_file.readlines()
+        data = [ re.split("\t", line.strip()) for line in tsv_lines]
+        for row in data:
+            self.assertEqual(len(row), 14)
+        self.assertEqual(len(data), 4)
+        self.assertEqual(data[0][0], '#time')
+        self.assertEqual(data[1][3], 'WGTS')
+        self.assertEqual(data[2][2], 'setup')
+        self.assertEqual(data[2][3], 'PWGS')
+        self.assertEqual(data[3][2], 'configure')
+        # test the file locking
+        lock_path = os.path.join(work_dir, 'djerba_activity_tracker.lock')
+        open(lock_path, 'w').close() # write an empty file
+        tracker2 = activity_tracker(log_level=logging.CRITICAL, timeout_multiplier=0.01)
+        with self.assertRaises(DjerbaActivityTrackerError):
+            tracker2.run(args)
+        os.remove(lock_path)
+
 
 class TestArgs(TestCore):
 
