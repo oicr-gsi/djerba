@@ -578,7 +578,7 @@ requisition_id = OMGA-567
 sample_type = Methanol Fixed
 site_of_biopsy = Bone marrow
 study = OMGA
-tcgacode = TCGA_ALL_TUMOR
+tcga_code = TCGA_ALL_TUMOR
 
 [provenance_helper]
 
@@ -587,7 +587,6 @@ tcgacode = TCGA_ALL_TUMOR
 [patient_info]
 
 [case_overview]
-assay = WGTS
 
 [treatment_options_merger]
 
@@ -636,9 +635,9 @@ requisition_id = CTDLEFT-761
 [provenance_helper]
 tumour_id = PTHN-1-23-01
 normal_id = PTHN-1-23-01
-sample_name_whole_genome_tumour = None
-sample_name_whole_genome_normal = None
-sample_name_whole_transcriptome = None
+sample_name_tumour = PTHN_45_LB01-01
+sample_name_normal = PTHN_18_LB02-04
+sample_name_aux = PTHN_23_LB01-02
 
 [report_title]
 
@@ -665,5 +664,126 @@ maf_file_normal = CTDL_123_Ly_R_TS_PTHN-1-23-01.merged.maf.gz
 
 [supplement.body]
 ```
+
+# Examples of configuration files for failed reports
+
+The configuration files above can be modified to generate reports for samples that fail.
+
+## PWGS configuration example for failed sample
+
+```
+[core]
+author = Jane Sheppard
+
+[report_title]
+failed = True
+
+[patient_info]
+
+[pwgs.case_overview]
+primary_cancer = Pancreatic Adenocarcinoma
+requisition_approved = 2185-05-23
+wgs_report_id = MASS-672
+donor = MASS_0672
+group_id = MASS-672_BL-PLAS
+patient_study_id = MA-672
+study = STUDY_NAME
+
+[pwgs.summary]
+failed = True
+
+[supplement.body]
+assay = PWGS
+failed = True
+```
+
+## WGTS configuration example for failed sample
+
+```
+[core]
+
+[input_params_helper]
+assay = WGTS
+donor = OMGA_234
+oncotree_code = PCM
+primary_cancer = Multiple myeloma
+project = OMGA
+requisition_approved = 2185-06-13
+requisition_id = OMGA-567
+sample_type = Methanol Fixed
+site_of_biopsy = Bone marrow
+study = OMGA
+tcga_code = TCGA_ALL_TUMOR
+
+[provenance_helper]
+
+[report_title]
+failed = True
+
+[patient_info]
+
+[case_overview]
+
+[summary]
+failed = True
+
+[sample]
+purity = 0.13
+ploidy = 2.93
+callability = NA
+mean_coverage = NA
+
+[supplement.body]
+failed = True
+```
+
+## TAR configuration example for failed sample
+(Note: currently unable to generate a failed TAR report without some manual edits to the HTML. Work in progress).
+
+(The configuration file below will get the user halfway there).
+```
+[core]
+author = John Sheppard
+
+[tar_input_params_helper]
+assay = TAR
+cbio_id = REVOLVE
+donor = CTDL_123
+known_variants = <em>BRCA2</em> (p.S1982Rfs*22)
+normal_id = PTHN-1-23-01
+oncotree_code = None
+patient_study_id = PTHN-1-23
+primary_cancer = None
+project = CTDLEFT
+requisition_approved = 2185-07-18
+sample_type = cfDNA
+site_of_biopsy = cfDNA
+study = CTDL
+tumour_id = PTHN-1-23-01
+requisition_id = CTDLEFT-761
+
+[provenance_helper]
+tumour_id = PTHN-1-23-01
+normal_id = PTHN-1-23-01
+sample_name_tumour = PTHN_45_LB01-01
+sample_name_normal = PTHN_18_LB02-04
+sample_name_aux = PTHN_23_LB01-02
+
+[report_title]
+failed = True
+
+[patient_info]
+
+[case_overview]
+
+[summary]
+failed = True
+
+[tar.sample]
+consensus_cruncher_file = Tumor_allUnique-hsMetrics.HS.txt
+consensus_cruncher_file_normal = Normal_allUnique-hsMetrics.HS.txt
+
+[supplement.body]
+failed = True
 
 
