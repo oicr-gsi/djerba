@@ -104,14 +104,6 @@ tcga_code = TCGA_ALL_TUMOR
 tumour_id = OMGA-234-T0-OZ
 ```
 
-### failed_report
-
-Creates a failed report section.
-
-```
-
-```
-
 ### fusion
 
 Plugin to generate the Fusions and Structural Variant report section using results from MAVIS and Arriva, as well as OncoKB.
