@@ -97,8 +97,12 @@ class main(plugin_base):
       plots_file = wrapper.get_my_string(constants.PLOTS_FILE)
 
       # Copy the plots file to the workspace for manual review
-      self.workspace.copy_to_workspace(plots_file)
-      
+      if plots_file in [None, 'None']:
+        # this is expected for eg. benchmarking against cron output
+        self.logger.debug("ichorCNA plots file not specified")
+      else:
+        self.workspace.copy_to_workspace(plots_file)
+
       # Filter the seg_file only for amplifications (returns None if there are no amplifications)
       amp_path = preprocess(tumour_id, oncotree_code, work_dir).preprocess_seg(seg_file)
 
