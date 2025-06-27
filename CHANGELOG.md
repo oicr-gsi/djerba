@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v1.10.1: 2025-06-27
+- GCGI-1597: Fixes for benchmarking script. Omit copying ichorCNA file if not available. Update or remove outdated INI parameters.
+- As of this release, benchmarking code has been forked into a new repo: [djerba-benchmark](https://github.com/oicr-gsi/djerba-benchmark)
+- Removing the benchmark code from the main Djerba repository is TODO. Meanwhile that code is deprecated and tests have been removed. Use [djerba-benchmark](https://github.com/oicr-gsi/djerba-benchmark) instead if possible.
+
 ## v1.10.0: 2025-06-13
 - GCGI-1554: Patch for GSI-QC-ETL test failure. Refactoring GSI-QC-ETL handling is still TODO.
 - GCGI-1586: Option to track activity with the main `djerba.py` script
