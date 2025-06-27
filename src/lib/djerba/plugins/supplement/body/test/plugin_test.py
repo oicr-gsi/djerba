@@ -66,7 +66,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.supp.ini',
             self.JSON: json_location,
-            self.MD5: '075c4e5b37369ebdbadcb8c7e17bc7de'
+            self.MD5: '0b68660bdf3d6219523a47091d478a07'
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
 
@@ -75,7 +75,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: '66528ae63f7fea11e7a8c891f25838cb'
+            self.MD5: '578b7a1cfb582fa08348a2f590624540'
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
 
@@ -84,7 +84,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.RESEARCH.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'f5321dd97599e69717ecd1aed5111dd4'
+            self.MD5: 'be5a16def980767f16ac88830a638c61'
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
 
@@ -93,7 +93,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.supp.ini',
             self.JSON: json_location,
-            self.MD5: '4c2039342cec6c7897883f2a5d1566a6'
+            self.MD5: '194c0e2bc8ee0246ead3a641da173fd0'
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
 
@@ -102,7 +102,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.RESEARCH.supp.ini',
             self.JSON: json_location,
-            self.MD5: '2cba8af4f8c43b752113219e7860bc42'
+            self.MD5: '1f57484f5f838cf65a9dc464a3eec5b5'
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
 
@@ -111,7 +111,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'e1b1e4f249f30c5c7c0c6180704d25f7'
+            self.MD5: '2fa07641efe5896ead662bc23d63d0df'
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
     
