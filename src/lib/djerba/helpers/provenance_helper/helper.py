@@ -193,16 +193,25 @@ class main(helper_base):
         subset_path = self.workspace.abs_path(self.PROVENANCE_OUTPUT)
         with self.workspace.open_gzip_file(subset_path) as in_file:
                 reader = csv.reader(in_file, delimiter="\t")
+                xplus = False
                 for row in reader:
                     if row[index.SEQUENCER_RUN_PLATFORM_NAME] == "Illumina_NovaSeq_X_Plus":
+                        xplus = True
                         if "instrument_name=lh00130" in row[index.SEQUENCER_RUN_ATTRIBUTES].lower():
-                            msg = "This case uses the Illumina NovaSeq X Plus sequencing instrument v1.2"
+                            msg = "This case was sequenced on the Illumina NovaSeq X Plus sequencing instrument v1.2"
                             self.logger.warning(msg)
                             break
                         elif "instrument_name=lh00224" in row[index.SEQUENCER_RUN_ATTRIBUTES].lower():
-                            msg = "This case uses the Illumina NovaSeq X Plus sequencing instrument v1.3"
+                            msg = "This case was sequenced on the Illumina NovaSeq X Plus sequencing instrument v1.3"
                             self.logger.warning(msg)
                             break
+                        else:
+                            msg = "This case was sequenced on some other version of the Illumina NovaSeq X Plus sequencing instrument (neither v1.2 nor v1.3)."
+                            self.logger.warning(msg)
+                            break
+                if not xplus:
+                    msg = "This case was not sequenced on the Illumina NovaSeq X Plus. It may have been sequenced on the NovaSeq 6000."
+                    self.logger.warning(msg)
 
     def read_provenance(self, study, donor, assay, samples):
         """

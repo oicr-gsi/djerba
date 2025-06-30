@@ -2,6 +2,7 @@
 
 ## UNRELEASED
 - GCGI-1599: Update NCCN guidelines versions for ovarian (2023 to 2025) and PCM (2023 to 2026)
+- GCGI-1598: Updated Illumina version to v1.3 and assay version to 6.0, and added warning to inform user which instrument the sample was sequenced on
 
 ## v1.10.1: 2025-06-27
 - GCGI-1597: Fixes for benchmarking script. Omit copying ichorCNA file if not available. Update or remove outdated INI parameters.
