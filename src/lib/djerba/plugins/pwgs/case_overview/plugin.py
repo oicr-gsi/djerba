@@ -15,7 +15,7 @@ import djerba.plugins.pwgs.constants as pc
 class main(plugin_base):
     PRIORITY = 100
     PLUGIN_VERSION = '1.0'
-    PWGS_ASSAY_VERSION = '2.0'
+    PWGS_ASSAY_VERSION = '3.0'
 
     def configure(self, config):
         config = self.apply_defaults(config)
