@@ -185,7 +185,7 @@ class main(plugin_base):
             self.logger.debug('Non-FFPE sample detected')
         if (purity >= 0.5 or (purity >= 0.3 and not sample_is_ffpe)) and coverage <= 115:
             hrd_ok = True
-            cant_report_hrd_reason = None
+            cant_report_hrd_reason = False
         elif coverage > 115:
             hrd_ok = False
             cant_report_hrd_reason = "coverage"
