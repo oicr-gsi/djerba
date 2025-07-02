@@ -16,6 +16,7 @@ UNKNOWN_SAMPLE_TYPE = 'Unknown sample type'
 # biomarker reportability
 CAN_REPORT_HRD = 'can_report_hrd'
 CAN_REPORT_MSI = 'can_report_msi'
+CANT_REPORT_HRD_REASON = 'cant_report_hrd_reason'
 
 # For MSI file
 MSI_RESULTS_SUFFIX = '.recalibrated.msi.booted'
