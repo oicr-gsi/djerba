@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## UNRELEASED
+- GCGI-1599: Update NCCN guidelines versions for ovarian (2023 to 2025) and PCM (2023 to 2026)
+- GCGI-1598: Updated Illumina version to v1.3, pipeline version to 6.0, WGTS assay versions to 6.0, PWGS assay version to 3.0, and added warning to inform user which instrument the sample was sequenced on
+- GCGI-1548: update the fusion summary count after the filtering has been applied to ensure the summary and the table are always in sync.
+
 ## v1.10.1: 2025-06-27
 - GCGI-1597: Fixes for benchmarking script. Omit copying ichorCNA file if not available. Update or remove outdated INI parameters.
 - As of this release, benchmarking code has been forked into a new repo: [djerba-benchmark](https://github.com/oicr-gsi/djerba-benchmark)
