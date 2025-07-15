@@ -94,9 +94,9 @@ class main(plugin_base):
         purity = config[self.identifier][constants.PURITY]
         if purity not in ["NA", "N/A", "na", "n/a", "N/a", "Na"]:
             purity = float(purity)
-            # check purity is within the valid range (0 < purity < 1)
-            if not (0 < purity < 1):
-                raise ValueError(f"Invalid purity value: {purity}. Must be between 0 and 1 (exclusive).")
+            # check purity is within the valid range (0 <= purity <= 1)
+            if not (0 <= purity <= 1):
+                raise ValueError(f"Invalid purity value: {purity}. Must be between 0 and 1 (inclusive).")
             purity = int(round(purity*100, 0))
         results = {
                 constants.ONCOTREE_CODE: config[self.identifier][constants.ONCOTREE],
