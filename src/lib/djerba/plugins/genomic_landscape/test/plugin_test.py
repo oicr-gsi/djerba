@@ -31,6 +31,8 @@ class TestGenomicLandscapePlugin(PluginTester):
         self.data_mut_ex = os.path.join(self.plugin_test_dir, "data_mutations_extended.txt")
         self.data_seg = os.path.join(self.plugin_test_dir, "data.seg")
         self.sample_info = os.path.join(self.plugin_test_dir, "sample_info.json")
+        self.sample_qc = os.path.join(self.plugin_test_dir, "sample_qcs.json")
+        self.sample_qc_high_cov = os.path.join(self.plugin_test_dir, "sample_qcs_high_cov.json")
 
     def testNCCNAnnotation(self):
         # contains oncotree file
@@ -50,6 +52,7 @@ class TestGenomicLandscapePlugin(PluginTester):
         shutil.copy(self.data_mut_ex, self.tmp_dir)
         shutil.copy(self.data_seg, self.tmp_dir)
         shutil.copy(self.sample_info, self.tmp_dir)
+        shutil.copy(self.sample_qc, self.tmp_dir)
 
         with open(os.path.join(test_source_dir, self.INI_NAME)) as in_file:
             template_str = in_file.read()
@@ -66,6 +69,32 @@ class TestGenomicLandscapePlugin(PluginTester):
             self.MD5: '690242139aab0153348e7a4634d2f17c'
         }
         self.run_basic_test(input_dir, params)
+
+    def testGenomicLandscapeLowTmbStableMsiHighCoverage(self):
+        test_source_dir = os.path.realpath(os.path.dirname(__file__))
+
+        # Copy files into the temporary directory
+        shutil.copy(self.data_mut_ex, self.tmp_dir)
+        shutil.copy(self.data_seg, self.tmp_dir)
+        shutil.copy(self.sample_info, self.tmp_dir)
+        shutil.copy(self.sample_qc_high_cov, f"{self.tmp_dir}/sample_qcs.json")
+
+        with open(os.path.join(test_source_dir, self.INI_NAME)) as in_file:
+            template_str = in_file.read()
+        template = string.Template(template_str)
+        ini_str = template.substitute({'DJERBA_TEST_DIR': self.sup_dir})
+        input_dir = os.path.join(self.get_tmp_dir(), 'input')
+        os.mkdir(input_dir)
+        with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
+            ini_file.write(ini_str)
+        json_location = os.path.join(self.plugin_test_dir, "report_json", "genomic_landscape_high_cov.json")
+        params = {
+            self.INI: self.INI_NAME,
+            self.JSON: json_location,
+            self.MD5: '2851dc05b9e92514e1eff82f8c992663'
+        }
+        self.run_basic_test(input_dir, params)
+
 
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""

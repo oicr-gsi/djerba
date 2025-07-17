@@ -31,7 +31,7 @@ ${html_builder().section_cells_begin("<h2>Genomic Landscape</h2>","main")}
                   <th style="width:80%">Score & Confidence</th>
             </thead>
             <tbody>
-                  % for row in gl_html_builder().biomarker_table_rows(results.get(constants.BIOMARKERS), results.get(constants.CAN_REPORT_HRD), results.get(constants.CAN_REPORT_MSI)):
+                  % for row in gl_html_builder().biomarker_table_rows(results.get(constants.BIOMARKERS), results.get(constants.CAN_REPORT_HRD), results.get(constants.CANT_REPORT_HRD_REASON), results.get(constants.CAN_REPORT_MSI)):
                   ${row}
                   % endfor 
             </tbody>

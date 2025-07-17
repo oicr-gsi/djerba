@@ -3,6 +3,7 @@
 ## UNRELEASED
 - GCGI-1599: Update NCCN guidelines versions for ovarian (2023 to 2025) and PCM (2023 to 2026)
 - GCGI-1598: Updated Illumina version to v1.3, pipeline version to 6.0, WGTS assay versions to 6.0, PWGS assay version to 3.0, and added warning to inform user which instrument the sample was sequenced on
+- GCGI-1607: Limited HRD reporting above 115X corresponding to Illumina version update to v1.3
 - GCGI-1548: update the fusion summary count after the filtering has been applied to ensure the summary and the table are always in sync.
 - GCGI-1612: Ensure chromosome labels are processed as strings in `wgts.snv_indel` plugin
 

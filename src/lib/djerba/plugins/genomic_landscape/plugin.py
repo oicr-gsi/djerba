@@ -6,6 +6,7 @@ import os
 import re
 
 import djerba.core.constants as core_constants
+import djerba.plugins.sample.constants as sample_constants
 import djerba.plugins.genomic_landscape.constants as glc
 import djerba.plugins.wgts.cnv_purple.constants as purple_constants
 import djerba.util.oncokb.constants as oncokb_constants
@@ -20,7 +21,7 @@ from djerba.util.environment import directory_finder
 from djerba.util.oncokb.annotator import annotator_factory
 from djerba.util.oncokb.tools import levels as oncokb_levels
 from djerba.util.render_mako import mako_renderer
-
+from djerba.core.workspace import workspace
 
 class main(plugin_base):
     PLUGIN_VERSION = '2.0.0'
@@ -60,7 +61,7 @@ class main(plugin_base):
         self.set_ini_default(oncokb_constants.UPDATE_CACHE, False)
 
         # Default parameters for priorities
-        self.set_ini_default('configure_priority', 100)
+        self.set_ini_default('configure_priority', 500)
         self.set_ini_default('extract_priority', 1000)
         self.set_ini_default('render_priority', 500)
 
@@ -103,13 +104,20 @@ class main(plugin_base):
         results = tmb_processor(self.log_level, self.log_path).run(
             work_dir, plugin_data_dir, r_script_dir, tcga_code, biomarkers_path, tumour_id
         )
+        
+        # Get coverage for reporting HRD
+        coverage = float(self.workspace.read_maybe_json(sample_constants.QC_SAMPLE_INFO)[sample_constants.COVERAGE_MEAN])
+
         # evaluate HRD and MSI reportability
-        hrd_ok, msi_ok = self.evaluate_reportability(
+        hrd_ok, msi_ok, cant_report_hrd_reason = self.evaluate_reportability(
             wrapper.get_my_float(glc.PURITY_INPUT),
+            coverage,
             wrapper.get_my_string(glc.SAMPLE_TYPE)
         )
         results[glc.CAN_REPORT_HRD] = hrd_ok
         results[glc.CAN_REPORT_MSI] = msi_ok
+        results[glc.CANT_REPORT_HRD_REASON] = cant_report_hrd_reason
+
         # evaluate biomarkers
         ctdna_file = wrapper.get_my_string(glc.CTDNA_FILE)
         ctdna_proc = ctdna_processor(self.log_level, self.log_path)
@@ -164,7 +172,7 @@ class main(plugin_base):
         annotator.annotate_biomarkers_maf(input_path, output_path)
         return output_path
 
-    def evaluate_reportability(self, purity, sample_type):
+    def evaluate_reportability(self, purity, coverage, sample_type):
         # evaluate reportability for HRD and MSI metrics
         self.logger.debug('Evaluating reportability for purity and sample type')
         sample_is_ffpe = False
@@ -175,17 +183,22 @@ class main(plugin_base):
             self.logger.warning("Unknown sample type in config; assuming non-FFPE sample")
         else:
             self.logger.debug('Non-FFPE sample detected')
-        if purity >= 0.5 or (purity >= 0.3 and not sample_is_ffpe):
+        if (purity >= 0.5 or (purity >= 0.3 and not sample_is_ffpe)) and coverage <= 115:
             hrd_ok = True
+            cant_report_hrd_reason = False
+        elif coverage > 115:
+            hrd_ok = False
+            cant_report_hrd_reason = glc.COVERAGE_REASON
         else:
             hrd_ok = False
+            cant_report_hrd_reason = glc.PURITY_REASON
         if purity >= 0.5:
             msi_ok = True
         else:
             msi_ok = False
         self.logger.debug("HRD reportable: {0}".format(hrd_ok))
         self.logger.debug("MSI reportable: {0}".format(msi_ok))
-        return (hrd_ok, msi_ok)
+        return (hrd_ok, msi_ok, cant_report_hrd_reason)
 
     def get_oncokb_merge_inputs(self, annotated_maf_path, msi_ok):
         """

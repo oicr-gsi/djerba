@@ -25,7 +25,6 @@ except ImportError as err:
 class main(plugin_base):
 
     PLUGIN_VERSION = '1.0.0'
-    PRIORITY = 500
     QCETL_CACHE = "/scratch2/groups/gsi/production/qcetl_v1"
     
     def specify_params(self):
@@ -42,7 +41,12 @@ class main(plugin_base):
         for key in discovered:
             self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
-        self.set_priority_defaults(self.PRIORITY)
+        
+        # Default parameters for priorities
+        self.set_ini_default('configure_priority', 100)
+        self.set_ini_default('extract_priority', 500)
+        self.set_ini_default('render_priority', 500)
+
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -107,6 +111,7 @@ class main(plugin_base):
                 constants.COVERAGE_MEAN: config[self.identifier][constants.COVERAGE]    
         }
         data['results'] = results
+        self.workspace.write_json(constants.QC_SAMPLE_INFO, results)
         return data
 
     def render(self, data):
