@@ -5,7 +5,7 @@ from markdown import markdown
 from string import Template
 
 class html_builder:
-
+    
     def assemble_biomarker_plot(self,biomarker,plot):
         template='<img id="{0}" style="width: 100%; " src="{1}"'
         cell = template.format(biomarker,plot)
@@ -15,13 +15,13 @@ class html_builder:
         rows = []
         for marker, info in biomarkers.items():
             if marker == "HRD" and not can_report_hrd and cant_report_hrd_reason:
-                if cant_report_hrd_reason == "purity":
+                if cant_report_hrd_reason == constants.PURITY_REASON:
                     cells = [
                         hb.td(info[constants.ALT]),
                         hb.td("NA"),
                         hb.td("Cancer cell content below threshold to evaluate HRD; must be &#8805;50&#37; for FFPE samples, &#8805;30&#37; otherwise")
                     ]
-                elif cant_report_hrd_reason == "coverage":
+                elif cant_report_hrd_reason == constants.COVERAGE_REASON:
                     cells = [
                         hb.td(info[constants.ALT]),
                         hb.td("NA"),

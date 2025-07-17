@@ -13,6 +13,10 @@ CTDNA_FILE = 'ctdna_file'
 SAMPLE_TYPE = 'sample_type'
 UNKNOWN_SAMPLE_TYPE = 'Unknown sample type'
 
+# Constants for render
+PURITY_REASON = 'purity'
+COVERAGE_REASON = 'coverage'
+
 # biomarker reportability
 CAN_REPORT_HRD = 'can_report_hrd'
 CAN_REPORT_MSI = 'can_report_msi'

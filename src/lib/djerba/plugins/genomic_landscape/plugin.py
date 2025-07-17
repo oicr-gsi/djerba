@@ -188,10 +188,10 @@ class main(plugin_base):
             cant_report_hrd_reason = False
         elif coverage > 115:
             hrd_ok = False
-            cant_report_hrd_reason = "coverage"
+            cant_report_hrd_reason = glc.COVERAGE_REASON
         else:
             hrd_ok = False
-            cant_report_hrd_reason = "purity"
+            cant_report_hrd_reason = glc.PURITY_REASON
         if purity >= 0.5:
             msi_ok = True
         else:
