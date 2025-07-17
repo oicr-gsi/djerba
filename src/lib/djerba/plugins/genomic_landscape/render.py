@@ -30,6 +30,8 @@ class html_builder:
                 else:
                     msg = "Cannot report HRD reason: {0}. The only valid reasons for HRD to not be reported are purity and coverage".format(cant_report_hrd_reason)
                     self.logger.error(msg)
+                    raise ValueError(msg)
+                    
             elif marker == "MSI" and not can_report_msi:
                 cells = [
                     hb.td(info[constants.ALT]),
@@ -44,4 +46,3 @@ class html_builder:
                 ]
             rows.append(hb.table_row(cells))
         return rows
-
