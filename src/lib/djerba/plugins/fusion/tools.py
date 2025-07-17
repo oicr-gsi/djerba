@@ -64,7 +64,10 @@ class fusion_tools(logger):
             # Sort by OncoKB level
             rows = sorted(rows, key=sort_by_actionable_level)
             rows = oncokb_levels.filter_reportable(rows)
-            unique_rows = set(map(lambda x: x['fusion'], rows))
+            unique_fusions_in_body = set(map(lambda x: x['fusion'], rows))
+
+            # Update the count to reflect what's actually in the table body.
+            results[fc.CLINICALLY_RELEVANT_VARIANTS] = len(unique_fusions_in_body)
 
             results[fc.BODY] = rows
         else:

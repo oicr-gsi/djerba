@@ -90,14 +90,18 @@ class main(plugin_base):
             wrapper.set_my_param(constants.COVERAGE, self.fetch_coverage_etl_data(donor, tumour_id))
 
         return wrapper.get_config()
-    
+
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         # multiply purity by 100 to get a percentage, and round to the nearest integer
         purity = config[self.identifier][constants.PURITY]
         if purity not in ["NA", "N/A", "na", "n/a", "N/a", "Na"]:
-            purity = int(round(float(purity)*100, 0))
+            purity = float(purity)
+            # check purity is within the valid range (0 <= purity <= 1)
+            if not (0 <= purity <= 1):
+                raise ValueError(f"Invalid purity value: {purity}. Must be between 0 and 1 (inclusive).")
+            purity = int(round(purity*100, 0))
         results = {
                 constants.ONCOTREE_CODE: config[self.identifier][constants.ONCOTREE],
                 constants.TUMOUR_SAMPLE_TYPE : config[self.identifier][constants.SAMPLE_TYPE],
