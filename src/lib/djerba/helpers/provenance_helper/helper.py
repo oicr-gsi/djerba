@@ -182,12 +182,12 @@ class main(helper_base):
 
     def print_illumina_instrument_version(self):
         """
-        Starting 2025-07-03, the Illumina NovaSeq X Plus insturment version will change from v1.2 to v1.3.
+        Starting 2025-07-03, the Illumina NovaSeq X Plus instrument version will change from v1.2 to v1.3.
         There will be a transition period in which the last of the v1.2 samples will be processed and newer samples will be done on the v1.3 instrument.
         After the transition period, some v1.2 reports might still need reprocessing.
-        This function will print out the Illumina sequencing instrument version.
+        This function will print out the Illumina sequencing instrument and its possible software version.
         Legend:
-            LH00130 is v1.2
+            LH00130 is v1.2 (until upgrade is complete, timeline TBD)
             LH00224 is v1.3
         """
         subset_path = self.workspace.abs_path(self.PROVENANCE_OUTPUT)
@@ -198,19 +198,23 @@ class main(helper_base):
                     if row[index.SEQUENCER_RUN_PLATFORM_NAME] == "Illumina_NovaSeq_X_Plus":
                         xplus = True
                         if "instrument_name=lh00130" in row[index.SEQUENCER_RUN_ATTRIBUTES].lower():
-                            msg = "This case was sequenced on the Illumina NovaSeq X Plus sequencing instrument v1.2"
+                            msg = "This case was sequenced on Illumina NovaSeq X Plus instrument lh00130 "+\
+                                "and *MAY* have used Illumina software v1.2 or v1.3"
                             self.logger.warning(msg)
                             break
                         elif "instrument_name=lh00224" in row[index.SEQUENCER_RUN_ATTRIBUTES].lower():
-                            msg = "This case was sequenced on the Illumina NovaSeq X Plus sequencing instrument v1.3"
+                            msg = "This case was sequenced on Illumina NovaSeq X Plus instrument lh00224 "+\
+                                "which transitioned *EARLY* to Illumina software v1.3"
                             self.logger.warning(msg)
                             break
                         else:
-                            msg = "This case was sequenced on some other version of the Illumina NovaSeq X Plus sequencing instrument (neither v1.2 nor v1.3)."
+                            msg = "This case was sequenced on an unknown Illumina NovaSeq X Plus instrument "+\
+                                "and software version."
                             self.logger.warning(msg)
                             break
                 if not xplus:
-                    msg = "This case was not sequenced on the Illumina NovaSeq X Plus. It may have been sequenced on the NovaSeq 6000."
+                    msg = "This case was not sequenced on the Illumina NovaSeq X Plus. "+\
+                        "It may have been sequenced on the NovaSeq 6000."
                     self.logger.warning(msg)
 
     def read_provenance(self, study, donor, assay, samples):
