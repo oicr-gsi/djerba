@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v1.10.2: 2025-07-18
+## v1.10.2: 2025-07-22
 - GCGI-1624: Revert version numbers to Illumina v1.3, pipeline 5.0 for Djerba v1.10.2 release
 - GCGI-1599: Update NCCN guidelines versions for ovarian (2023 to 2025) and PCM (2023 to 2026)
 - GCGI-1598: Updated Illumina version to v1.3, pipeline version to 6.0, WGTS assay versions to 6.0, PWGS assay version to 3.0, and added warning to inform user which instrument the sample was sequenced on
