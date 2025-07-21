@@ -32,7 +32,7 @@ class TestCaseOverview(PluginTester):
         params = {
             self.INI: 'case_overview_WGTS.ini',
             self.JSON: json_location,
-            self.MD5: 'de40b030750867c6a70c1f498bc8645b'
+            self.MD5: '09bf73811c265362e010a92e1d833de5'
         }
         self.run_basic_test(test_source_dir, params)
 
