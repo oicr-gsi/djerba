@@ -25,7 +25,6 @@ except ImportError as err:
 class main(plugin_base):
 
     PLUGIN_VERSION = '1.0.0'
-    PRIORITY = 500
     QCETL_CACHE = "/scratch2/groups/gsi/production/qcetl_v1"
     
     def specify_params(self):
@@ -42,7 +41,12 @@ class main(plugin_base):
         for key in discovered:
             self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
-        self.set_priority_defaults(self.PRIORITY)
+        
+        # Default parameters for priorities
+        self.set_ini_default('configure_priority', 100)
+        self.set_ini_default('extract_priority', 500)
+        self.set_ini_default('render_priority', 500)
+
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -86,14 +90,18 @@ class main(plugin_base):
             wrapper.set_my_param(constants.COVERAGE, self.fetch_coverage_etl_data(donor, tumour_id))
 
         return wrapper.get_config()
-    
+
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         # multiply purity by 100 to get a percentage, and round to the nearest integer
         purity = config[self.identifier][constants.PURITY]
         if purity not in ["NA", "N/A", "na", "n/a", "N/a", "Na"]:
-            purity = int(round(float(purity)*100, 0))
+            purity = float(purity)
+            # check purity is within the valid range (0 <= purity <= 1)
+            if not (0 <= purity <= 1):
+                raise ValueError(f"Invalid purity value: {purity}. Must be between 0 and 1 (inclusive).")
+            purity = int(round(purity*100, 0))
         results = {
                 constants.ONCOTREE_CODE: config[self.identifier][constants.ONCOTREE],
                 constants.TUMOUR_SAMPLE_TYPE : config[self.identifier][constants.SAMPLE_TYPE],
@@ -103,6 +111,7 @@ class main(plugin_base):
                 constants.COVERAGE_MEAN: config[self.identifier][constants.COVERAGE]    
         }
         data['results'] = results
+        self.workspace.write_json(constants.QC_SAMPLE_INFO, results)
         return data
 
     def render(self, data):
