@@ -39,6 +39,11 @@ class main(plugin_base):
     CTDNA_WORKFLOW = 'mrdetect_filter_only'
     CTDNA_FILE_NOT_FOUND = 'ctDNA file not available'
 
+    # thresholds to evaluate HRD
+    MIN_HRD_PURITY = 0.5
+    MIN_HRD_PURITY_NOT_FFPE = 0.3
+    MAX_HRD_COVERAGE = 5000 # was 115, will reinstate for Djerba v1.11.0
+
     def specify_params(self):
         discovered = [
             glc.TUMOUR_ID,
@@ -183,10 +188,11 @@ class main(plugin_base):
             self.logger.warning("Unknown sample type in config; assuming non-FFPE sample")
         else:
             self.logger.debug('Non-FFPE sample detected')
-        if (purity >= 0.5 or (purity >= 0.3 and not sample_is_ffpe)) and coverage <= 115:
+        hrd_purity_ok = purity>=self.MIN_HRD_PURITY or (purity>=self.MIN_HRD_PURITY_NOT_FFPE and not sample_is_ffpe)
+        if hrd_purity_ok and coverage <= self.MAX_HRD_COVERAGE:
             hrd_ok = True
             cant_report_hrd_reason = False
-        elif coverage > 115:
+        elif coverage > self.MAX_HRD_COVERAGE:
             hrd_ok = False
             cant_report_hrd_reason = glc.COVERAGE_REASON
         else:
