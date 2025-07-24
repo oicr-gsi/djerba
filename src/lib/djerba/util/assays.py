@@ -1,5 +1,7 @@
 """Assay names/descriptions for use by multiple plugins"""
 
+import djerba.util.constants as constants
+
 # assay name constants, can be imported by plugins if needed
 WGTS = 'WGTS'
 WGS = 'WGS'
@@ -7,18 +9,22 @@ WGTS40X = 'WGTS40X'
 TAR = 'TAR'
 PWGS = 'PWGS'
 
+WGTS_SUFFIX = '({0})'.format(constants.WGTS_ASSAY_VERSION)
+TAR_SUFFIX =  '({0})'.format(constants.TAR_ASSAY_VERSION)
+PWGS_SUFFIX =  '({0})'.format(constants.PWGS_ASSAY_VERSION)
+
 ASSAY_LOOKUP = {
     # WGTS/WGS default to 80X
     'WGTS': 'Whole genome and transcriptome sequencing (WGTS)'+\
-    '-80X Tumour, 30X Normal (v5.0)',
-    'WGS': 'Whole genome sequencing (WGS)-80X Tumour, 30X Normal (v5.0)',
+    '-80X Tumour, 30X Normal '+WGTS_SUFFIX,
+    'WGS': 'Whole genome sequencing (WGS)-80X Tumour, 30X Normal '+WGTS_SUFFIX,
     # WGTS/WGS at 40X - seldom done now, but included for completeness
     'WGTS40X': 'Whole genome and transcriptome sequencing (WGTS)'+\
-    '-40X Tumour, 30X Normal (v5.0)',
-    'WGS40X': 'Whole genome sequencing (WGS)-40X Tumour, 30X Normal (v5.0)',
+    '-40X Tumour, 30X Normal '+WGTS_SUFFIX,
+    'WGS40X': 'Whole genome sequencing (WGS)-40X Tumour, 30X Normal '+WGTS_SUFFIX,
     # other
-    'TAR': 'Targeted Sequencing - REVOLVE Panel - cfDNA and Buffy Coat (v3.0)',
-    'PWGS': 'Plasma Whole Genome Sequencing (v2.0)'
+    'TAR': 'Targeted Sequencing - REVOLVE Panel - cfDNA and Buffy Coat '+TAR_SUFFIX,
+    'PWGS': 'Plasma Whole Genome Sequencing '+PWGS_SUFFIX
 }
 
 def get_description(name):
