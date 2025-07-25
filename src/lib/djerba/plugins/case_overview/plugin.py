@@ -92,7 +92,7 @@ class main(plugin_base):
             [ok, msg] = assays.name_status(assay)
             if ok:
                 self.logger.debug("Found assay name '{0}' in lookup table".format(assay))
-                wrapper.set_my_param(self.ASSAY_DESCRIPTION, assays.get_description(assay))
+                wrapper.set_my_param(self.ASSAY_DESCRIPTION, assays.get_case_overview_description(assay))
             else:
                 msg = "Cannot resolve assay description from config or default lookup: "+msg
                 self.logger.error(msg)

@@ -2,6 +2,7 @@
   from djerba.util.html import html_builder
   import djerba.core.constants as core_constants
   import djerba.plugins.supplement.body.versioning as versions
+  import djerba.util.assays as assays
   from djerba.plugins.supplement.body.plugin import main as supplement
   ASSAY = results.get(supplement.ASSAY)
   FAILED = results.get(supplement.FAILED)
@@ -19,25 +20,25 @@
 
 ${html_builder().section_cells_begin("<h2>Assay description</h2>",True, no_hr_after=True)}
 
-% if ASSAY in ['WGTS', 'WGTS40X']:
+% if ASSAY in [assays.WGTS, assays.WGTS40X]:
   <p> This assay combines two comprehensive next generation sequencing assays: a DNA-based whole genome sequencing (WGS) assay and an RNA-based whole transcriptome sequencing (WTS) assay.</p>
   <%include file="resources/WGS.description.versions.html"/>
   <%include file="resources/WTS.description.versions.html"/>
-% elif ASSAY in ['WGS', 'WGS40X']:
+% elif ASSAY in [assays.WGS, assays.WGS40X]:
   <p>This assay is a comprehensive next generation sequencing assay, specifically DNA-based whole genome sequencing (WGS). </p>
   <%include file="resources/WGS.description.versions.html"/>
-% elif ASSAY == 'TAR':
+% elif ASSAY == assays.TAR:
   <%include file="resources/TAR.description.versions.html"/>
-% elif ASSAY == 'PWGS':
+% elif ASSAY == assays.PWGS:
   <%include file="resources/PWGS.description.versions.html"/>
 % endif
 
 ## !!! IMPORTANT !!! If this paragraph is modified, update redact_html in util.testing.tools
-<p>Assay results were collated into the report document by <a href=${versions.DJERBA_LINK}>Djerba</a> (${versions.DJERBA_VERSION}) using pipeline ${versions.PIPELINE_VERSION}.</p>
+<p>Assay results were collated into the report document by <a href=${versions.DJERBA_LINK}>Djerba</a> (${versions.DJERBA_VERSION}) using ${assays.get_supplementary_description(ASSAY)}.</p>
 
 ${html_builder().section_cells_end()}
 
-% if ASSAY == 'TAR' :
+% if ASSAY == assays.TAR :
 
     ${html_builder().section_cells_begin("<h2>Target Group Information</h2>",True)}
       <%include file="resources/TAR.genes.html"/>
@@ -47,13 +48,13 @@ ${html_builder().section_cells_end()}
 
   ${html_builder().section_cells_begin("<h2>Disclaimer</h2>",True)}
 
-% if ASSAY in ('WGTS','WGS'):
+% if ASSAY in (assays.WGTS,assays.WGS):
   <%include file="resources/WGS.disclaimer.html"/>
-% elif ASSAY in ('WGTS40X','WGS40X'):
+% elif ASSAY in (assays.WGTS40X,assays.WGS40X):
   <%include file="resources/WGS40X.disclaimer.html"/>
-% elif ASSAY == 'TAR':
+% elif ASSAY == assays.TAR:
   <%include file="resources/TAR.disclaimer.html"/>
-% elif ASSAY == 'PWGS':
+% elif ASSAY == assays.PWGS:
   <%include file="resources/PWGS.disclaimer.html"/>
 % endif
 
@@ -81,12 +82,12 @@ ${html_builder().section_cells_end()}
 
 % endif
 
-  <hr class="big-line" style="width: 100%; ${'page-break-after: always;' if ASSAY != 'PWGS' else ''}" >
+  <hr class="big-line" style="width: 100%; ${'page-break-after: always;' if ASSAY != assays.PWGS else ''}" >
   <hr class="header-big-line" style="width:100%; align:right">
 
 <h2 >APPENDIX</h2>
 
-  % if ASSAY in ('WGTS','TAR','WGS', 'WGS40X', 'WGTS40X') and not FAILED:
+  % if ASSAY in (assays.WGTS,assays.TAR,assays.WGS, assays.WGS40X, assays.WGTS40X) and not FAILED:
 
     ${html_builder().section_cells_begin("<h3>Actionability Definitions</h3>","supp")}
       <%include file="resources/oncokb.definition.html"/>
@@ -103,25 +104,25 @@ ${html_builder().section_cells_end()}
 
 
   % if not FAILED:
-      % if ASSAY in ['WGTS', 'WGTS40X']:
+      % if ASSAY in [assays.WGTS, assays.WGTS40X]:
         <%include file="resources/WGTS.FAIL.definitions.html"/>
         <%include file="resources/WGS.definitions.html"/>
         <%include file="resources/WTS.definitions.html"/>
-      % elif ASSAY in ['WGS', 'WGS40X']:
+      % elif ASSAY in [assays.WGS, assays.WGS40X]:
         <%include file="resources/WGTS.FAIL.definitions.html"/>
         <%include file="resources/WGS.definitions.html"/>
-      % elif ASSAY == 'TAR':
+      % elif ASSAY == assays.TAR:
         <%include file="resources/TAR.FAIL.definitions.html"/>
         <%include file="resources/TAR.definitions.html"/>
-      % elif ASSAY == 'PWGS':
+      % elif ASSAY == assays.PWGS:
         <%include file="resources/PWGS.definitions.html"/>
       % endif
   % else:
-      % if ASSAY == 'WGTS' or ASSAY == "WGS" or ASSAY == 'WGTS40X' or ASSAY == 'WGS40X':
+      % if ASSAY == assays.WGTS or ASSAY == assays.WGS or ASSAY == assays.WGTS40X or ASSAY == assays.WGS40X:
         <%include file="resources/WGTS.FAIL.definitions.html"/>
-      % elif ASSAY == 'TAR':
+      % elif ASSAY == assays.TAR:
         <%include file="resources/TAR.FAIL.definitions.html"/>
-      % elif ASSAY == 'PWGS':
+      % elif ASSAY == assays.PWGS:
         <%include file="resources/PWGS.definitions.html"/>
       % endif
   % endif

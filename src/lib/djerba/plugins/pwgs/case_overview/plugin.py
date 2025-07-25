@@ -10,12 +10,11 @@ import djerba.core.constants as core_constants
 from djerba.util.render_mako import mako_renderer
 import djerba.plugins.pwgs.pwgs_tools as pwgs_tools
 import djerba.plugins.pwgs.constants as pc
-
+import djerba.util.constants as uc
 
 class main(plugin_base):
     PRIORITY = 100
     PLUGIN_VERSION = '1.0'
-    PWGS_ASSAY_VERSION = '2.0'
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -39,7 +38,7 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         assay = "plasma Whole Genome Sequencing (pWGS) - "+\
-            "30X (v{0})".format(self.PWGS_ASSAY_VERSION)
+            "30X (v{0})".format(uc.PWGS_ASSAY_VERSION)
         results = {
             pc.ASSAY: assay,
             pc.PWGS_REPORT: config['core']['report_id'],

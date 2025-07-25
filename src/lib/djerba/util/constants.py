@@ -79,4 +79,11 @@ SMALL_MUTATIONS_AND_INDELS = 'small_mutations_and_indels'
 GENE = 'Gene'
 EXPRESSION_METRIC = 'Expression Percentile'
 
-
+# assay and analysis pipeline versions
+# placed here for use in locations:
+# - src/lib/djerba/util/assays.py
+# - src/lib/djerba/plugins/supplement/body/versioning.py
+# - src/lib/djerba/plugins/pwgs/case_overview/plugin.py
+WGTS_ASSAY_VERSION = '6.0'
+TAR_ASSAY_VERSION = '2.0'
+PWGS_ASSAY_VERSION = '3.0'
