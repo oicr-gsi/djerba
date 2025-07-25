@@ -9,9 +9,9 @@ WGTS40X = 'WGTS40X'
 TAR = 'TAR'
 PWGS = 'PWGS'
 
-WGTS_SUFFIX = '({0})'.format(constants.WGTS_ASSAY_VERSION)
-TAR_SUFFIX =  '({0})'.format(constants.TAR_ASSAY_VERSION)
-PWGS_SUFFIX =  '({0})'.format(constants.PWGS_ASSAY_VERSION)
+WGTS_SUFFIX = '(v{0})'.format(constants.WGTS_ASSAY_VERSION)
+TAR_SUFFIX = '(v{0})'.format(constants.TAR_ASSAY_VERSION)
+PWGS_SUFFIX = '(v{0})'.format(constants.PWGS_ASSAY_VERSION)
 
 ASSAY_LOOKUP = {
     # WGTS/WGS default to 80X
