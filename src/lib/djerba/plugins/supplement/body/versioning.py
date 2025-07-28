@@ -1,6 +1,5 @@
 from djerba import __version__
 import djerba.core.constants as core_constants
-import djerba.util.constants as util_constants
 
 ##LINKS
 ARRIBA_LINK="https://github.com/suhrig/arriba"
@@ -51,7 +50,6 @@ STAR_VERSION="2.7.10b"
 STARFUSION_VERSION="1.8.1"
 SUPPLEMENT_DJERBA_VERSION="0.1"
 VARIANTEFFECTPREDICTOR_VERSION="105.0"
-PIPELINE_VERSION = util_constants.WGTS_ASSAY_VERSION
 
 def make_component_info_string(components):
     # convenience method to stringify the versions dictionary at Mako render time

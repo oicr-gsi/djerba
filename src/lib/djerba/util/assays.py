@@ -1,7 +1,5 @@
 """Assay names/descriptions for use by multiple plugins"""
 
-import djerba.util.constants as constants
-
 # assay name constants, can be imported by plugins if needed
 WGTS = 'WGTS'
 WGS = 'WGS'
@@ -10,9 +8,18 @@ WGS40X = 'WGS40X'
 TAR = 'TAR'
 PWGS = 'PWGS'
 
-WGTS_SUFFIX = '(v{0})'.format(constants.WGTS_ASSAY_VERSION)
-TAR_SUFFIX = '(v{0})'.format(constants.TAR_ASSAY_VERSION)
-PWGS_SUFFIX = '(v{0})'.format(constants.PWGS_ASSAY_VERSION)
+# assay and analysis pipeline versions
+# placed here for use in locations:
+# - src/lib/djerba/plugins/supplement/body/supplementary_materials_template.html
+# - src/lib/djerba/plugins/supplement/body/plugin.py
+# - src/lib/djerba/plugins/pwgs/case_overview/plugin.py
+WGTS_ASSAY_VERSION = '6.0'
+TAR_ASSAY_VERSION = '2.0'
+PWGS_ASSAY_VERSION = '3.0'
+
+WGTS_SUFFIX = '(v{0})'.format(WGTS_ASSAY_VERSION)
+TAR_SUFFIX = '(v{0})'.format(TAR_ASSAY_VERSION)
+PWGS_SUFFIX = '(v{0})'.format(PWGS_ASSAY_VERSION)
 
 ASSAY_CASE_OVERVIEW = {
     # WGTS/WGS default to 80X
@@ -29,12 +36,12 @@ ASSAY_CASE_OVERVIEW = {
 }
 
 ASSAY_SUPPLEMENTARY = {
-    WGTS: 'WGTS pipeline '+constants.WGTS_ASSAY_VERSION,
-    WGS: 'WGS pipeline '+constants.WGTS_ASSAY_VERSION,
-    WGTS40X: 'WGTS pipeline '+constants.WGTS_ASSAY_VERSION,
-    WGS40X: 'WGS pipeline '+constants.WGTS_ASSAY_VERSION,
-    TAR: 'TAR pipeline '+constants.TAR_ASSAY_VERSION,
-    PWGS: 'PWGS pipeline '+constants.PWGS_ASSAY_VERSION
+    WGTS: 'WGTS pipeline '+WGTS_ASSAY_VERSION,
+    WGS: 'WGS pipeline '+WGTS_ASSAY_VERSION,
+    WGTS40X: 'WGTS pipeline '+WGTS_ASSAY_VERSION,
+    WGS40X: 'WGS pipeline '+WGTS_ASSAY_VERSION,
+    TAR: 'TAR pipeline '+TAR_ASSAY_VERSION,
+    PWGS: 'PWGS pipeline '+PWGS_ASSAY_VERSION
 }
 
 def get_case_overview_description(name):
