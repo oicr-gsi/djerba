@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v1.11.0: 2025-07-30
 - GCGI-1624: Reinstate version numbers and HRD max coverage threshold for Illumina v1.3
 - GCGI-1627: Remove obsolete 'INI schema' code
 
