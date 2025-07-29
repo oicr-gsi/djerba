@@ -31,7 +31,7 @@ CONSENSUSCRUNCHER_VERSION=""
 DJERBA_VERSION=__version__
 GATK_VERSION="4.1.6.0"
 ICHORCNA_VERSION=""
-ILLUMINA_VERSION="NovaSeq X Plus v1.2"
+ILLUMINA_VERSION="NovaSeq X Plus v1.3"
 TAR_ILLUMINA_VERSION="NextSeq 2000"
 MANE_VERSION="1.0"
 MAVIS_VERSION="2.2.6"
@@ -50,7 +50,6 @@ STAR_VERSION="2.7.10b"
 STARFUSION_VERSION="1.8.1"
 SUPPLEMENT_DJERBA_VERSION="0.1"
 VARIANTEFFECTPREDICTOR_VERSION="105.0"
-PIPELINE_VERSION = "5.0"
 
 def make_component_info_string(components):
     # convenience method to stringify the versions dictionary at Mako render time

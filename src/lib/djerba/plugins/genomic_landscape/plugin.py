@@ -42,7 +42,7 @@ class main(plugin_base):
     # thresholds to evaluate HRD
     MIN_HRD_PURITY = 0.5
     MIN_HRD_PURITY_NOT_FFPE = 0.3
-    MAX_HRD_COVERAGE = 5000 # was 115, will reinstate for Djerba v1.11.0
+    MAX_HRD_COVERAGE = 115
 
     def specify_params(self):
         discovered = [

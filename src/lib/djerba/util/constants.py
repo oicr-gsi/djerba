@@ -79,4 +79,3 @@ SMALL_MUTATIONS_AND_INDELS = 'small_mutations_and_indels'
 GENE = 'Gene'
 EXPRESSION_METRIC = 'Expression Percentile'
 
-
