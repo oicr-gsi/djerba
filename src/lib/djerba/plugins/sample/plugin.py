@@ -40,7 +40,7 @@ class main(plugin_base):
         ]
         for key in discovered:
             self.add_ini_discovered(key)
-        self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
+
         
         # Default parameters for priorities
         self.set_ini_default('configure_priority', 100)
