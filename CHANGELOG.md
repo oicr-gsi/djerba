@@ -3,6 +3,7 @@
 ## v1.11.0: 2025-07-30
 - GCGI-1624: Reinstate version numbers and HRD max coverage threshold for Illumina v1.3
 - GCGI-1627: Remove obsolete 'INI schema' code
+- GCGI-1628: Run sample plugin for RUO to avoid downstream failures in the genomic_landscape.
 
 ## v1.10.2: 2025-07-22
 - GCGI-1624: Revert version numbers to Illumina v1.2, pipeline 5.0 for Djerba v1.10.2 release
