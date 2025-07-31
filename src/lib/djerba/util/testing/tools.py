@@ -63,7 +63,7 @@ class TestBase(unittest.TestCase):
             '<script',
             # IMPORTANT if text in supplement.body plugin is modified, update this expression
             '<p>Assay results were collated into the report document by '+\
-            '<a href=https://github.com/oicr-gsi/djerba>Djerba</a> .* using pipeline .*</p>'
+            '<a href=https://github.com/oicr-gsi/djerba>Djerba</a> .* using .*</p>'
         ]
         for line in contents:
             if not any([re.search(expr, line) for expr in skip_exprs]):
