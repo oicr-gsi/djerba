@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v1.11.0: 2025-07-30
+## v1.11.0: 2025-07-31
 - GCGI-1624: Reinstate version numbers and HRD max coverage threshold for Illumina v1.3
 - GCGI-1627: Remove obsolete 'INI schema' code
 - GCGI-1628: Run sample plugin for RUO to avoid downstream failures in the genomic_landscape.
