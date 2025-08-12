@@ -6,7 +6,7 @@
 <p>
 Whole Genome libraries were prepared using the KAPA Hyper Prep kit with DNA extracted from FFPE or fresh frozen tissue (for tumour samples) 
 or buffy coat blood specimens (for matched normal blood samples). Paired-end sequencing was performed using the Illumina ${versions.ILLUMINA_VERSION} technology. 
-Reads were aligned using <a href=${versions.BWAMEM_LINK}>bwa mem</a> (${versions.BWAMEM_VERSION}) against
+Reads were aligned using <a href=${versions.BWAMEM_LINK}>bwa mem2</a> (${versions.BWAMEM_VERSION}) against
 reference genome <a href=${versions.REFERENCE_GENOME_LINK}>${versions.REFERENCE_GENOME_VERSION}</a> and processed according to GATK best practices, 
 including duplicate marking with <a href=${versions.PICARD_LINK}>Picard</a> (${versions.PICARD_VERSION}), 
 realignment around small insertions and deletions (in/dels), and base recalibration with <a href=${versions.GATK_LINK}>GATK</a> (v.${versions.GATK_VERSION}). 

@@ -8,13 +8,13 @@ This assay combines two comprehensive next generation sequencing assays: a targe
 
 Shallow whole genome sequencing (sWGS) libraries were prepared using the KAPA Hyper Prep kit with DNA extracted from FFPE, cfDNA, fresh frozen tissue (for tumour samples). 
 Paired-end sequencing was performed using the ${versions.TAR_ILLUMINA_VERSION} illumina technology to a minimum target coverage of 0.1x. 
-Alignments were performed using <a href=${versions.BWAMEM_LINK}>bwa mem</a> (${versions.BWAMEM_VERSION})
+Alignments were performed using <a href=${versions.BWAMEM_LINK}>bwa mem</a> (v.0.7.17)
 against reference genome <a href=${versions.REFERENCE_GENOME_LINK}>${versions.REFERENCE_GENOME_VERSION}</a>.
 Copy number amplifications were called using <a href=${versions.ICHORCNA_LINK}>ichorCNA</a>.
 
 TAR libraries were prepared using the KAPA Hyper Prep kit with DNA extracted from FFPE, cfDNA, fresh frozen tissue (for tumour samples) or buffy coat blood specimens (for matched normal blood samples). 
 Paired-end sequencing was performed using the ${versions.TAR_ILLUMINA_VERSION} illumina technology. 
-Alignments were performed using <a href=${versions.BWAMEM_LINK}>bwa mem</a> (${versions.BWAMEM_VERSION})
+Alignments were performed using <a href=${versions.BWAMEM_LINK}>bwa mem</a> (v.0.7.17)
 against reference genome <a href=${versions.REFERENCE_GENOME_LINK}>${versions.REFERENCE_GENOME_VERSION}</a>. 
 Unique molecule based error suppression was completed with <a href=${versions.CONSENSUSCRUNCHER_LINK}>ConsensusCruncher</a>. 
 SNVs and INDELs were called using <a href=${versions.MUTECT2_LINK}>MuTect2</a> (GATK ${versions.MUTECT2_VERSION}).
