@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-1635: Software versions update in the assay description section of the report.
+- 
+
+
 ## v1.11.0: 2025-07-31
 - GCGI-1624: Reinstate version numbers and HRD max coverage threshold for Illumina v1.3
 - GCGI-1627: Remove obsolete 'INI schema' code
