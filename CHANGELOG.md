@@ -1,9 +1,9 @@
 # CHANGELOG
 
 ## Unreleased
+- GCGI-1634: Correct TAR assay version to 3.0
 - GCGI-1635: Software versions update in the assay description section of the report.
 - GCGI-1637: Set default attributes to "clinical" in render step when empty, to fix HTML rendering.
-
 
 ## v1.11.0: 2025-07-31
 - GCGI-1624: Reinstate version numbers and HRD max coverage threshold for Illumina v1.3
