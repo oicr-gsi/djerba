@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v1.11.1: 2025-08-20
 - GCGI-1634: Correct TAR assay version to 3.0
 - GCGI-1635: Software versions update in the assay description section of the report.
 - GCGI-1637: Set default attributes to "clinical" in render step when empty, to fix HTML rendering.
