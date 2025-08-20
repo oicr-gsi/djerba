@@ -40,7 +40,6 @@ class main(plugin_base):
         ]
         for key in discovered:
             self.add_ini_discovered(key)
-
         
         # Default parameters for priorities
         self.set_ini_default('configure_priority', 100)
@@ -115,6 +114,8 @@ class main(plugin_base):
         return data
 
     def render(self, data):
+        if not data.get('attributes') or data['attributes'] == ['']:
+            data['attributes'] = ['clinical']
         renderer = mako_renderer(self.get_module_dir())
         return renderer.render_name('sample_template.html', data)
 

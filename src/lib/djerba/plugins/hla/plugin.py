@@ -69,7 +69,7 @@ class main(plugin_base):
             self.logger.warning("HLA Analysis: 't1k_file' is missing or set to None. No HLA data will be displayed.")
             return {self.BODY: []}  # Return object with empty data
 
-        tsv_full_path = os.path.join(work_dir, tsv_path)
+        tsv_full_path = tsv_path
 
         if not os.path.exists(tsv_full_path):
             self.logger.warning(
