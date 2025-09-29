@@ -227,7 +227,7 @@ class fusion_tools(logger):
         """Make an entry for the treatment options merger"""
         # TODO fix the treatment options merger to display 2 genes for fusions
         genes = fusion.get_genes()
-        gene = genes[0]
+        gene = '::'.join(genes)
         factory = tom_factory(self.log_level, self.log_path)
         entries = []
         for level in therapies.keys():
@@ -237,7 +237,7 @@ class fusion_tools(logger):
                 treatments=therapies[level],
                 gene=gene,
                 alteration='Fusion',
-                alteration_url=hb.build_fusion_url(genes, oncotree_code.lower())
+                alteration_url=fusion.get_oncokb_link(oncotree_code.lower())
             )
             entries.append(entry)
         return entries
