@@ -12,9 +12,10 @@ class factory(factory_base):
     def get_json(self, **kwargs):
         try:
             gene = kwargs['gene']
-
-            # Check if gene is a fusion (contains "::")
-            if "::" in gene:
+            alteration = kwargs['alteration']
+            
+            # Check if the alteration is a fusion
+            if alteration == "Fusion":
                 gene_url = "NA" # We do not need gene_url for fusions
             else:
                 gene_url = html_builder.build_gene_url(gene)
@@ -25,7 +26,7 @@ class factory(factory_base):
                 merger.TREATMENTS: kwargs['treatments'],
                 merger.GENE: gene,
                 merger.GENE_URL: gene_url,
-                merger.ALTERATION: kwargs['alteration'],
+                merger.ALTERATION: alteration,
                 merger.ALTERATION_URL: kwargs['alteration_url']
             }
         except KeyError as err:
