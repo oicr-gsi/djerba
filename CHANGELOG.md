@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v1.11.2: 2025-10-07
+- GCGI-1587: Code Undetermined fusion types.
+- GCGI-1602: Remove obsolete benchmarking code.
+- GCGI-1609: Update the fusion treatment option section format.
+- GCGI-1638: Delete captive8 plugin
+
 ## v1.11.1: 2025-08-20
 - GCGI-1634: Correct TAR assay version to 3.0
 - GCGI-1635: Software versions update in the assay description section of the report.
