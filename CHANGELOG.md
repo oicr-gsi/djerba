@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v1.11.2: 2025-10-07
+## v1.11.2: 2025-10-08
 - GCGI-1587: Code Undetermined fusion types.
 - GCGI-1602: Remove obsolete benchmarking code.
 - GCGI-1609: Update the fusion treatment option section format.
