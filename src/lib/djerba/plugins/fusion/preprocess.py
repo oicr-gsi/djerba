@@ -430,14 +430,14 @@ class prepare_fusions(logger):
 
         # Replace "translocation" with the corresponding translocation entry
         df["event_type_simple"] = np.where(
-            df["event_type"].str.contains("translocation"),
+            df["event_type_simple"].str.contains("translocation"),
             df["translocation"],
-            df["event_type"]
+            df["event_type_simple"]
         )
 
         # Replace "inversion" with the corresponding inversion
         df["event_type_simple"] = np.where(
-            df["event_type"].str.contains("inversion"),
+            df["event_type_simple"].str.contains("inversion"),
             "inv(" + df["break1_chromosome"].astype(str) + ")",
             df["event_type_simple"]
         )
