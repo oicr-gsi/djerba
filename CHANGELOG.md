@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-1658: Update TAR assay to version 4.0 and two static OncoKB files.
+
 ## v1.11.2: 2025-10-08
 - GCGI-1587: Code Undetermined fusion types.
 - GCGI-1602: Remove obsolete benchmarking code.
