@@ -1,5 +1,16 @@
 # Data Readme
 
+## Djerba release v1.11.3
+- oncoKBcancerGeneList.tsv file update
+  - Latest date: Oct 08, 2025 
+  - By Oumaima Hamza
+  - From [OncoKB Cancer Gene List](https://www.oncokb.org/cancer-genes)
+- allCuratedGenes.tsv file update
+  - Latest date: Oct 08, 2025 
+  - By Oumaima Hamza
+  - `curl -H "Authorization: Bearer [your token]" https://www.oncokb.org/api/v1/utils/allCuratedGenes > allCuratedGenes.tsv` 
+  - Run script in **djerba_prototypes** to load the JSON string from the .tsv file and align it with the previous TSV format
+  
 ## Update: Djerba release v.1.8.2, March 2025
 
 This document refers to files formerly in the `src/lib/djerba/data` directory, which have been relocated as follows:
