@@ -101,7 +101,7 @@ class main(plugin_base):
 
       # Preprocessing
       # The maf file no longer needs to be filtered as it's done upstream.
-      maf_file = config[self.identifier][constants.MAF_FILE]
+      maf_file = self.filter_for_panel_genes(work_dir, config[self.identifier][constants.MAF_FILE])
       preprocess(config, work_dir, assay, oncotree_code, cbio_id, tumour_id, normal_id, maf_file).run_R_code()
       
       mutations_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED)
@@ -127,6 +127,34 @@ class main(plugin_base):
     def render(self, data):
       renderer = mako_renderer(self.get_module_dir())
       return renderer.render_name(self.TEMPLATE_NAME, data)
+
+
+    def filter_for_panel_genes(self, work_dir, maf_path):
+      """
+      Mutect2Consensus does NOT filter for the list of genes in tar constants.py
+      We still need to filter for just the genes on the panel.
+      """
+      df_pl = pd.read_csv(maf_path,
+                      sep = "\t",
+                      on_bad_lines="error",
+                      compression='gzip')
+
+      # Need to clean up the tumour and normal dataframes
+      #for column in constants.CLEAN_COLUMNS:
+          # Convert to numeric, setting errors='coerce' to turn non-numeric values into NaN
+      #    df_pl[column] = pd.to_numeric(df_pl[column], errors='coerce')
+          # Replace NaN with 0
+      #    df_pl[column] = df_pl[column].fillna(0)
+
+      for row in df_pl.iterrows():
+          hugo_symbol = row[1]['Hugo_Symbol']
+          if hugo_symbol not in constants.GENES_TO_KEEP:
+              df_pl = df_pl.drop(row[0])  
+
+      out_path = os.path.join(work_dir, 'panel_genes_only.maf.gz')
+      #out_path = '/.mounts/labs/CGI/scratch/aalam/panel_genes_only.maf.gz'
+      df_pl.to_csv(out_path, sep = "\t", compression='gzip', index=False)
+      return out_path
 
     def get_merge_inputs(self, work_dir, oncotree_code):
       """

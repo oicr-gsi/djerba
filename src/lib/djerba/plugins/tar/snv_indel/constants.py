@@ -10,7 +10,7 @@ CBIO_ID = 'cbio_id'
 TUMOUR_ID = 'tumour_id'
 NORMAL_ID = 'normal_id'
 MAF_FILE = 'maf_file' 
-WF_MAF = 'maf_tumour' 
+WF_MAF = 'maf_filtered' 
 
 FREQUENCY_FILE = "plugins/tar/snv_indel/data/TGL.frequency.20210609.annot.txt"
 GENES_TO_KEEP = ["BRCA2", 
