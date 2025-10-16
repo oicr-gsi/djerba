@@ -1,7 +1,8 @@
 # CHANGELOG
 
-## v1.11.3: 2025-XX-XX
-- GCGI-1620: Support the change from consensusCruncher to mutect2Consensus 
+## Unreleased
+- GCGI-1658: Update TAR assay to version 4.0 and two static OncoKB files.
+- GCGI-1620: Support the change from consensusCruncher to mutect2Consensus
 
 ## v1.11.2: 2025-10-08
 - GCGI-1587: Code Undetermined fusion types.

@@ -29,7 +29,7 @@ TOTAL_VARIANTS = 'total variants'
 # data files
 CENTROMERES = "hg38_centromeres.txt"
 GENEBED =  "gencode_v33_hg38_genes.bed"
-ONCOLIST =  "20200818-oncoKBcancerGeneList.tsv"
+ONCOLIST =  "20251008-oncoKBcancerGeneList.tsv"
 
 # whizbam
 WHIZBAM_BASE_URL = 'https://whizbam.oicr.on.ca'
