@@ -49,7 +49,7 @@ class TestPwgAnalysisPlugin(PluginTester):
     def test_pwgs_analysis_exists(self):
         # test the scenario where pWGS_case_overview_output.json exist
         shutil.copyfile(os.path.join(self.sup_dir, f"plugins/pwgs/report_json/pwgs.case.json"), os.path.join(self.get_tmp_dir(), "pWGS_case_overview_output.json"))
-        self.run_test_with_scenario("pwgs.analysis.file.exists.scenario.json", "8c09f6d69ccf2c92339f45c9d8f369b9")
+        self.run_test_with_scenario("pwgs.analysis.file.exists.scenario.json", "713518f5ff66b6d2b72df5f53f9f8b61")
 
     def test_pwgs_analysis_not_exists(self):
         # test the scenario where pWGS_case_overview_output.json doesn't exist
@@ -77,8 +77,7 @@ class TestPwgAnalysisPlugin(PluginTester):
 
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""
-        for key in ['pwgs_base64','files']:
-            del data['results'][key]
+        del data['results']['pwgs_base64']
         return data        
 
 if __name__ == '__main__':

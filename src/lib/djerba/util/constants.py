@@ -46,7 +46,6 @@ SEX = 'SEX'
 # mode names for djerba.py
 SETUP = 'setup'
 CONFIGURE = 'configure'
-DRAFT = 'draft'
 EXTRACT = 'extract'
 RENDER = 'render'
 UPDATE = 'update'
@@ -79,5 +78,4 @@ TOP_ONCOGENIC_SOMATIC_CNVS = 'oncogenic_somatic_CNVs'
 SMALL_MUTATIONS_AND_INDELS = 'small_mutations_and_indels'
 GENE = 'Gene'
 EXPRESSION_METRIC = 'Expression Percentile'
-
 

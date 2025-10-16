@@ -63,7 +63,7 @@ class TestBase(unittest.TestCase):
             '<script',
             # IMPORTANT if text in supplement.body plugin is modified, update this expression
             '<p>Assay results were collated into the report document by '+\
-            '<a href=https://github.com/oicr-gsi/djerba>Djerba</a> .* using pipeline .*</p>'
+            '<a href=https://github.com/oicr-gsi/djerba>Djerba</a> .* using .*</p>'
         ]
         for line in contents:
             if not any([re.search(expr, line) for expr in skip_exprs]):
@@ -77,5 +77,12 @@ class TestBase(unittest.TestCase):
         """
         Placeholder method -- does nothing
         Can be overridden in subclasses to preprocess JSON data before test comparison
+        IMPORTANT: If we return the input data object, changes to data will persist for downstream testing code. If this is not desired, use deepcopy to create a new instance of the data structure. See https://docs.python.org/3/library/copy.html and the supplement.body plugin in v1.8.0.
+        """
+        return data
+
+    def redact_json_for_html(self, data):
+        """
+        Similar to redact_json_data, but applied before generating HTML with render()
         """
         return data

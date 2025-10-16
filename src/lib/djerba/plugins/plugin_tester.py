@@ -11,6 +11,7 @@ import unittest
 import djerba.core.constants as core_constants
 
 from configparser import ConfigParser
+from copy import deepcopy
 from djerba.core.json_validator import plugin_json_validator
 from djerba.core.loaders import plugin_loader
 from djerba.core.main import main as core_main
@@ -60,6 +61,10 @@ class PluginTester(TestBase):
         """
         if work_dir == None:
             work_dir = self.get_tmp_dir()
+        # report_dir contains report files in case needed for troubleshooting
+        # if work_dir is not None, report_dir will persist for later viewing
+        report_dir = os.path.join(work_dir, 'test_reports')
+        os.makedirs(report_dir, exist_ok=True)
         ini_path = os.path.join(test_source_dir, params[self.INI])
         expected_json_path = os.path.join(test_source_dir, params[self.JSON])
         expected_md5 = params[self.MD5]
@@ -75,19 +80,26 @@ class PluginTester(TestBase):
         config.set(core_constants.CORE, core_constants.REPORT_ID, 'placeholder')
         plugin_config = plugin.configure(config)
         self.assertTrue(plugin_config.has_section(plugin_name))
-        plugin_data_found = self.redact_json_data(plugin.extract(plugin_config))
+        plugin_data_found = plugin.extract(plugin_config)
         with open(expected_json_path) as json_file:
             plugin_data_expected = json.loads(json_file.read())
-        ### uncomment this to dump the plugin output JSON to a file
-        #with open('/tmp/foo.json', 'w', encoding=core_constants.TEXT_ENCODING) as out_file:
-        #    out_file.write(json.dumps(plugin_data_found, sort_keys=True, indent=4))
+        # dump the plugin output JSON to files, in case needed for troubleshooting
+        unredacted_json = os.path.join(report_dir, 'unredacted_report.json')
+        with open(unredacted_json, 'w', encoding=core_constants.TEXT_ENCODING) as out_file:
+            out_file.write(json.dumps(plugin_data_found, sort_keys=True, indent=4))
+        # copy data before redacting, as plugin_data_found is used again downstream
+        redacted_json = os.path.join(report_dir, 'redacted_report.json')
+        with open(redacted_json, 'w', encoding=core_constants.TEXT_ENCODING) as out_file:
+            out_file.write(json.dumps(self.redact_json_data(deepcopy(plugin_data_found)), sort_keys=True, indent=4))
+        # check the JSON contents
         validator = plugin_json_validator(log_level=log_level)
         self.assertTrue(validator.validate_data(plugin_data_found))
-        self.assertEqual(plugin_data_found, plugin_data_expected)
-        html = plugin.render(plugin_data_found)
-        ### uncomment this to dump the plugin output HTML to a file
-        #with open('/tmp/foo.html', 'w', encoding=core_constants.TEXT_ENCODING) as out_file:
-        #    out_file.write(html)
+        self.assertEqual(self.redact_json_data(plugin_data_found), plugin_data_expected)
+        html = plugin.render(self.redact_json_for_html(plugin_data_found))
+        # similarly, dump the plugin output HTML to a file
+        redacted_html = os.path.join(report_dir, 'redacted_report.html')
+        with open(redacted_html, 'w', encoding=core_constants.TEXT_ENCODING) as out_file:
+            out_file.write(self.redact_html(html)) # redaction is done in assert_report_MD5
         self.assert_report_MD5(html, expected_md5)
         # !!! Second pass -- run the plugin as part of Djerba main, do JSON check only
         djerba_main = core_main(work_dir, log_level=log_level)
@@ -95,9 +107,10 @@ class PluginTester(TestBase):
         self.assertTrue(main_config.has_section(plugin_name))
         main_data = djerba_main.extract(main_config)
         self.assertTrue(plugin_name in main_data['plugins'])
-        main_plugin_data = self.redact_json_data(main_data['plugins'][plugin_name])
-        self.assertEqual(main_plugin_data, plugin_data_expected)
+        main_plugin_data = main_data['plugins'][plugin_name]
+        self.assertEqual(self.redact_json_data(main_plugin_data), plugin_data_expected)
         main_html = djerba_main.render(main_data)
         self.assertTrue(len(main_html)>0)
+
 
     # TODO add standalone tests for configure, extract, render steps

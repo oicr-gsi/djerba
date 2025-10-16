@@ -49,8 +49,6 @@ WORKSPACE = 'workspace'
 # keys for core config/extract
 REPORT_ID = 'report_id'
 REPORT_VERSION = 'report_version'
-ARCHIVE_NAME = 'archive_name'
-ARCHIVE_URL = 'archive_url'
 AUTHOR = 'author'
 EXTRACT_TIME = 'extract_time'
 INPUT_PARAMS_FILE = 'input_params'
@@ -82,12 +80,15 @@ DEFAULT_AUTHOR = "CGI Author"
 DEFAULT_DOCUMENT_CONFIG = "document_config.json"
 
 # archive config
-ARCHIVE_CONFIG = 'archive_config.ini'
 ARCHIVE_HEADER = 'archive'
 USERNAME = 'username'
 PASSWORD = 'password'
 ADDRESS = 'address'
 PORT = 'port'
+DATABASE_NAME = 'database_name'
+# environment variable for database config
+ARCHIVE_CONFIG_VAR = 'DJERBA_ARCHIVE_CONFIG'
+
 
 # keywords for document rendering
 BODY = 'body'
@@ -115,3 +116,11 @@ REPORT_JSON_SUFFIX = '_report.json'
 
 # root directory pattern for WHIZBAM files
 WHIZBAM_PATTERN_ROOT='/.mounts/labs/prod/whizbam'
+
+# component versions/URLs
+COMPONENT_FILENAME = 'component_info.json'
+UNDEFINED_VERSION = 'version_not_defined'
+UNDEFINED_URL = 'url_not_defined'
+VERSION_KEY = 'version'
+URL_KEY = 'url'
+DJERBA_CORE_URL = 'https://github.com/oicr-gsi/djerba'

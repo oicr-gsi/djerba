@@ -1,4 +1,6 @@
-"""Djerba plugin for pwgs supplement"""
+"""Djerba plugin for supplementary report section"""
+
+import json
 import logging
 import os
 from djerba.plugins.base import plugin_base, DjerbaPluginError
@@ -12,9 +14,11 @@ class main(plugin_base):
 
     DEFAULT_CONFIG_PRIORITY = 1200
     MAKO_TEMPLATE_NAME = 'supplementary_materials_template.html'
-    SUPPLEMENT_DJERBA_VERSION = 0.1
+    TEMPLATE_DIR = "template_dir"
+    PLUGIN_VERSION = '0.1'
     FAILED = "failed"
     ASSAY = "assay"
+    COMPONENTS = 'components'
     REPORT_SIGNOFF_DATE = "report_signoff_date"
     USER_SUPPLIED_DRAFT_DATE = "user_supplied_draft_date"
     GENETICIST = "clinical_geneticist_name"
@@ -24,6 +28,9 @@ class main(plugin_base):
     GENETICIST_DEFAULT = 'PLACEHOLDER'
     GENETICIST_ID_DEFAULT = 'XXXXXXX'
     REPORT_SIGNOUT_DEFAULT = 'yyyy-mm-dd'
+
+    # example URL for testing purposes, change to plugin repo when available
+    URL = 'https://example.com/'
 
     def check_assay_name(self, wrapper):
         [ok, msg] = assays.name_status(wrapper.get_my_string(self.ASSAY))
@@ -52,6 +59,10 @@ class main(plugin_base):
                 wrapper.set_my_param(param, get_todays_date())
         self.check_assay_name(wrapper)
 
+        # Check if custom template dir is supplied, if not default to module dir
+        if wrapper.my_param_is_null(self.TEMPLATE_DIR):
+            wrapper.set_my_param(self.TEMPLATE_DIR, self.get_module_dir())
+
         # Check if dates are valid
         user_supplied_date = wrapper.get_my_string(self.USER_SUPPLIED_DRAFT_DATE)
         report_signoff_date = wrapper.get_my_string(self.REPORT_SIGNOFF_DATE)
@@ -71,7 +82,6 @@ class main(plugin_base):
         draft_date = wrapper.get_my_string(self.USER_SUPPLIED_DRAFT_DATE)
         report_signoff_date = wrapper.get_my_string(self.REPORT_SIGNOFF_DATE)
         self.check_assay_name(wrapper)
-       
         attributes_list = wrapper.get_my_attributes()
         if "clinical" in attributes_list:
             include_signoffs = True
@@ -81,7 +91,9 @@ class main(plugin_base):
             include_signoffs = False
             msg = "Excluding sign-offs for non-clinical attribute: {0}".format(attributes_list)
             self.logger.warning(msg)
-
+        # read component version JSON written by core
+        with self.workspace.open_file(core_constants.COMPONENT_FILENAME) as component_file:
+            component_info = json.loads(component_file.read())
         data = {
             'plugin_name': self.identifier+' plugin',
             'priorities': wrapper.get_my_priorities(),
@@ -89,25 +101,27 @@ class main(plugin_base):
             'merge_inputs': {},
             'results': {
                 self.ASSAY: wrapper.get_my_string(self.ASSAY),
+                self.COMPONENTS: component_info,
                 self.FAILED: wrapper.get_my_boolean(self.FAILED),
                 core_constants.AUTHOR: config['core'][core_constants.AUTHOR],
                 self.EXTRACT_DATE: draft_date,
-                self.INCLUDE_SIGNOFFS: include_signoffs
+                self.INCLUDE_SIGNOFFS: include_signoffs,
+                self.TEMPLATE_DIR: wrapper.get_my_string(self.TEMPLATE_DIR)
             },
-            'version': str(self.SUPPLEMENT_DJERBA_VERSION)
+            core_constants.URL_KEY: self.URL,
+            'version': self.PLUGIN_VERSION,
         }
-
         if include_signoffs:
             data['results'].update({
                 self.REPORT_SIGNOFF_DATE: report_signoff_date,
                 self.GENETICIST: wrapper.get_my_string(self.GENETICIST),
                 self.GENETICIST_ID: wrapper.get_my_string(self.GENETICIST_ID)
             })
-
         return data
 
     def render(self, data):
-        renderer = mako_renderer(self.get_module_dir())
+        template_dir = data[core_constants.RESULTS][self.TEMPLATE_DIR]
+        renderer = mako_renderer(template_dir)
         return renderer.render_name(self.MAKO_TEMPLATE_NAME, data)
 
     def specify_params(self):
@@ -122,4 +136,5 @@ class main(plugin_base):
         self.set_ini_default(self.GENETICIST_ID, self.GENETICIST_ID_DEFAULT)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_ini_default(self.FAILED, "False")
+        self.set_ini_default(self.TEMPLATE_DIR, self.get_module_dir())
         self.set_priority_defaults(self.DEFAULT_CONFIG_PRIORITY)

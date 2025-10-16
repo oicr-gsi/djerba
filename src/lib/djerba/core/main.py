@@ -158,7 +158,8 @@ class main_base(core_base):
     def base_extract(self, config):
         """
         Base extract operation, shared between core and mini Djerba
-        Just get the data structure; no additional write/archive actions
+        Only get the data structure and record plugin names/versions/URLs
+        No additional write/archive actions
         """
         components = {}
         priorities = {}
@@ -170,7 +171,7 @@ class main_base(core_base):
         self.logger.debug('Configuring components in priority order')
         ordered_names = sorted(priorities.keys(), key=lambda x: priorities[x])
         self._resolve_extract_dependencies(config, components, ordered_names)
-        # 2. Validate and run configuration for each component; store in data structure
+        self.write_component_info(ordered_names, components)
         self.logger.debug('Generating core data structure')
         data = extraction_setup(self.log_level, self.log_path).run(config)
         self.logger.debug('Running extraction for plugins and mergers in priority order')
@@ -357,6 +358,25 @@ class main_base(core_base):
             data = json.loads(in_file.read())
         return self.update_report_data(new_data, data, force)
 
+    def write_component_info(self, ordered_names, components):
+        # Write component names/versions/URLs to a JSON file
+        # "components" input is a dictionary of plugin/helper/merger objects already loaded
+        component_info = {
+            cc.CORE: {
+                cc.VERSION_KEY: get_djerba_version(),
+                cc.URL_KEY: cc.DJERBA_CORE_URL
+            }
+        }
+        for name in ordered_names:
+            component_info[name] = {
+                cc.VERSION_KEY: components[name].get_version(),
+                cc.URL_KEY: components[name].get_url()
+            }
+        with self.workspace.open_file(cc.COMPONENT_FILENAME, mode='w') as out_file:
+            out_file.write(json.dumps(component_info, sort_keys=True, indent=4))
+        self.logger.debug("Wrote component_info: {0}".format(component_info))
+
+
 
 class main(main_base):
 
@@ -498,6 +518,7 @@ class main(main_base):
                 'treatment_options_merger',
                 'summary',
                 'sample',
+                'hla',
                 'genomic_landscape',
                 'expression_helper',
                 'wgts.snv_indel',
@@ -516,6 +537,7 @@ class main(main_base):
                 'treatment_options_merger',
                 'summary',
                 'sample',
+                'hla',
                 'genomic_landscape',
                 'wgts.snv_indel',
                 'wgts.cnv_purple',
@@ -530,6 +552,7 @@ class main(main_base):
                 'patient_info',
                 'case_overview',
                 'treatment_options_merger',
+                'tar.status',
                 'summary',
                 'tar.sample',
                 'tar.snv_indel',
@@ -576,17 +599,22 @@ class main(main_base):
         # 1. INI config with core + plugins to update
         # 2. Text file to update summary only
         # The 'summary_only' argument controls which one is used
+        with open(json_path, encoding=cc.TEXT_ENCODING) as in_file:
+            data = json.loads(in_file.read())
         if summary_only:
+            # get failed/not-failed status from input data
+            failed = data[cc.PLUGINS]['summary'][cc.RESULTS]['failed']
+            failed_opt = 'true' if failed else 'false'
+            self.logger.debug('Found report failure status: '+failed_opt)
             # make an appropriate ConfigParser on-the-fly
             config_in = ConfigParser()
             config_in.add_section(cc.CORE)
             config_in.add_section('summary')
             config_in.set('summary', 'summary_file', config_path)
+            config_in.set('summary', 'failed', failed_opt)
             config = self.configure_from_parser(config_in)
         else:
             config = self.configure(config_path)
-        with open(json_path, encoding=cc.TEXT_ENCODING) as in_file:
-            data = json.loads(in_file.read())
         data_new = self.base_extract(config)
         data = self.update_data_from_file(data_new, json_path, force)
         if archive:

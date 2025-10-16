@@ -24,6 +24,7 @@ from djerba.core.json_validator import plugin_json_validator
 from djerba.core.loaders import plugin_loader, core_config_loader, DjerbaLoadError
 from djerba.core.main import main, arg_processor, DjerbaDependencyError, DjerbaHtmlCacheError
 from djerba.core.workspace import workspace
+from djerba.util.activity import activity_tracker, DjerbaActivityTrackerError
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.testing.tools import TestBase
 from djerba.util.validator import path_validator
@@ -36,13 +37,14 @@ class TestCore(TestBase):
     LOREM_FILENAME = 'lorem.txt'
     SIMPLE_REPORT_JSON = 'simple_report_expected.json'
     SIMPLE_REPORT_UPDATE_JSON = 'simple_report_for_update.json'
-    SIMPLE_CONFIG_MD5 = '04b749b3ec489ed9c06c1a06eb2dc886'
-    SIMPLE_REPORT_MD5 = 'ab049488c58758e26b0ad1c480c28c99'
+    SIMPLE_REPORT_UPDATE_FAILED_JSON = 'simple_report_for_update_failed.json'
+    SIMPLE_CONFIG_MD5 = '2311145c9d6782334c05816058d3623f'
+    SIMPLE_REPORT_MD5 = '7afa81bc29e86af6a23830ece99674b0'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
 
-        def __init__(self, mode, work_dir, ini, ini_out, json, out_dir, pdf):
+        def __init__(self, mode, work_dir, ini, ini_out, json, out_dir, pdf, assay='WGTS'):
             self.subparser_name = mode
             self.work_dir = work_dir
             self.ini = ini
@@ -50,7 +52,9 @@ class TestCore(TestBase):
             self.json = json
             self.out_dir = out_dir
             self.no_archive = True
+            self.pre_populate = None # used in setup mode
             self.pdf = pdf
+            self.assay = assay
             # logging
             self.log_path = None
             self.debug = False
@@ -89,6 +93,56 @@ class TestCore(TestBase):
         config.read(ini_path)
         config = plugin.apply_defaults(config)
         return config
+
+class TestActivityTracker(TestCore):
+
+    def setUp(self):
+        super().setUp()
+        self.original_track_dir = os.environ.get(activity_tracker.DJERBA_TRACKING_DIR_VAR)
+
+    def tearDown(self):
+        super().tearDown()
+        if self.original_track_dir:
+            os.environ[activity_tracker.DJERBA_TRACKING_DIR_VAR] = self.original_track_dir
+
+    def test_tracker_class(self):
+        # standalone test of the tracker class
+        # use some convenient input values and spot-check the outputs
+        # TODO test tracking when called from djerba.py, eg. in script tests
+        work_dir = self.tmp_dir
+        os.environ[activity_tracker.DJERBA_TRACKING_DIR_VAR] = work_dir
+        tracker = activity_tracker()
+        ini_input = os.path.join(self.test_source_dir, 'config.ini')
+        mock_arg_inputs = [
+            ['setup', work_dir, 'config.ini', None, None, work_dir, False, 'WGTS'],
+            ['setup', work_dir, 'config.ini', None, None, work_dir, False, 'PWGS'],
+            ['configure', work_dir, ini_input, 'demo.ini', None, work_dir, False, 'demo']
+        ]
+        filename = tracker.OUTPUT_FILE_PREFIX+time.strftime('%Y-%m-%d')+'.tsv'
+        output_path = os.path.join(work_dir, filename)
+        for input_args in mock_arg_inputs:
+            args = self.mock_args(*input_args)
+            tracker.run(args)
+        self.assertTrue(os.path.exists(output_path))
+        with open(output_path) as tsv_file:
+            tsv_lines = tsv_file.readlines()
+        data = [ re.split("\t", line.strip()) for line in tsv_lines]
+        for row in data:
+            self.assertEqual(len(row), 14)
+        self.assertEqual(len(data), 4)
+        self.assertEqual(data[0][0], '#time')
+        self.assertEqual(data[1][3], 'WGTS')
+        self.assertEqual(data[2][2], 'setup')
+        self.assertEqual(data[2][3], 'PWGS')
+        self.assertEqual(data[3][2], 'configure')
+        # test the file locking
+        lock_path = os.path.join(work_dir, 'djerba_activity_tracker.lock')
+        open(lock_path, 'w').close() # write an empty file
+        tracker2 = activity_tracker(log_level=logging.CRITICAL, timeout_multiplier=0.01)
+        with self.assertRaises(DjerbaActivityTrackerError):
+            tracker2.run(args)
+        os.remove(lock_path)
+
 
 class TestArgs(TestCore):
 
@@ -633,13 +687,13 @@ class TestMainScript(TestCore):
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
-        self.assertEqual(self.getMD5(ini_path), 'a211144356b5ec200e1c31ecd3128b45')
+        self.assertEqual(self.getMD5(ini_path), 'e350cdda6a46d4f58647d172067a2d29')
         os.remove(ini_path)
         prepop_path = os.path.join(self.test_source_dir, 'prepop.ini')
         cmd.extend(['--pre-populate', prepop_path])
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
-        self.assertEqual(self.getMD5(ini_path), '2387e66d783b1deb0fe5361e7770ec7a')
+        self.assertEqual(self.getMD5(ini_path), 'a32e075e861539b68ab510cdb61733fb')
 
     def test_update_cli_with_ini(self):
         mode = 'update'
@@ -668,7 +722,7 @@ class TestMainScript(TestCore):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, '5bc52ffc10821f166fed7b3055cc8bad')
+        self.assert_report_MD5(html_string, 'c60ea6448d35f6b6d5685d3b095cba03')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')
@@ -681,23 +735,38 @@ class TestMainScript(TestCore):
         summary_path = os.path.join(self.test_source_dir, 'alternate_summary.txt')
         # run djerba.py and check the results
         json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_UPDATE_JSON)
-        cmd = [
+        cmd_base = [
             'djerba.py', mode,
             '--work-dir', work_dir,
             '--summary', summary_path,
-            '--json', json_path,
             '--out-dir', self.tmp_dir,
             '--pdf'
         ]
+        cmd = cmd_base + ['--json', json_path]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, '285adea0d50933a5da00c6f0452ba045')
+        self.assert_report_MD5(html_string, '781d477894d5a6e269cb68535a82ca89')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')
+        self.assertTrue(os.path.isfile(updated_path))
+        # test again with a failed report
+        for output in [html_path, pdf_path, updated_path]:
+            os.remove(output)
+        json_path = os.path.join(self.test_source_dir, self.SIMPLE_REPORT_UPDATE_FAILED_JSON)
+        cmd_failed = cmd_base + ['--json', json_path]
+        result = subprocess_runner().run(cmd_failed)
+        self.assertEqual(result.returncode, 0)
+        html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
+        with open(html_path) as html_file:
+            html_string = html_file.read()
+        self.assert_report_MD5(html_string, '093ca0030bcb2a69d9ac4d784a19b147')
+        pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
+        self.assertTrue(os.path.isfile(pdf_path))
+        updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update_failed.updated.json')
         self.assertTrue(os.path.isfile(updated_path))
 
 

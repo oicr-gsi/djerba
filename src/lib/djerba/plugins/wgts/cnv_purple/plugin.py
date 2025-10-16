@@ -10,7 +10,7 @@ import djerba.plugins.wgts.cnv_purple.constants as pc
 import djerba.util.oncokb.constants as oc
 from djerba.helpers.input_params_helper.helper import main as iph
 from djerba.plugins.base import plugin_base, DjerbaPluginError
-from djerba.plugins.wgts.common.cnv.tools import cnv_processor
+from djerba.plugins.wgts.cnv_purple.legacy_tools import cnv_processor
 from djerba.plugins.wgts.cnv_purple.purple_tools import purple_processor
 from djerba.util.oncokb.annotator import annotator_factory
 from djerba.util.render_mako import mako_renderer
@@ -57,7 +57,8 @@ class main(plugin_base):
 
         # process purple files
         self.logger.debug("Starting purple data processing")
-        processor = purple_processor(work_dir, self.log_level, self.log_path)
+        plot9_verbose = wrapper.get_my_boolean(pc.PLOTNINE_VERBOSE)
+        processor = purple_processor(work_dir, self.log_level, self.log_path, plot9_verbose)
         self.logger.debug("Extracting files from ZIP archive")
         purple_files = processor.unzip_purple(wrapper.get_my_string(pc.PURPLE_ZIP))
         self.logger.debug("Evaluating purity fit")
@@ -119,6 +120,7 @@ class main(plugin_base):
         )
         self.set_ini_default(oc.APPLY_CACHE, False)
         self.set_ini_default(oc.UPDATE_CACHE, False)
+        self.set_ini_default(pc.PLOTNINE_VERBOSE, False)
         self.set_ini_default(core_constants.ATTRIBUTES, core_constants.CLINICAL)
         self.set_ini_default(core_constants.CONFIGURE_PRIORITY, self.CONFIGURE)
         self.set_ini_default(core_constants.EXTRACT_PRIORITY, self.EXTRACT)

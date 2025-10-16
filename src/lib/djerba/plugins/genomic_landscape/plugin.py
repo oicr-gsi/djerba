@@ -6,6 +6,7 @@ import os
 import re
 
 import djerba.core.constants as core_constants
+import djerba.plugins.sample.constants as sample_constants
 import djerba.plugins.genomic_landscape.constants as glc
 import djerba.plugins.wgts.cnv_purple.constants as purple_constants
 import djerba.util.oncokb.constants as oncokb_constants
@@ -20,7 +21,7 @@ from djerba.util.environment import directory_finder
 from djerba.util.oncokb.annotator import annotator_factory
 from djerba.util.oncokb.tools import levels as oncokb_levels
 from djerba.util.render_mako import mako_renderer
-
+from djerba.core.workspace import workspace
 
 class main(plugin_base):
     PLUGIN_VERSION = '2.0.0'
@@ -36,6 +37,12 @@ class main(plugin_base):
     # For ctDNA file
     CTDNA_RESULTS_SUFFIX = 'SNP.count.txt'
     CTDNA_WORKFLOW = 'mrdetect_filter_only'
+    CTDNA_FILE_NOT_FOUND = 'ctDNA file not available'
+
+    # thresholds to evaluate HRD
+    MIN_HRD_PURITY = 0.5
+    MIN_HRD_PURITY_NOT_FFPE = 0.3
+    MAX_HRD_COVERAGE = 115
 
     def specify_params(self):
         discovered = [
@@ -59,7 +66,7 @@ class main(plugin_base):
         self.set_ini_default(oncokb_constants.UPDATE_CACHE, False)
 
         # Default parameters for priorities
-        self.set_ini_default('configure_priority', 100)
+        self.set_ini_default('configure_priority', 500)
         self.set_ini_default('extract_priority', 1000)
         self.set_ini_default('render_priority', 500)
 
@@ -84,6 +91,7 @@ class main(plugin_base):
         w = self.update_wrapper_if_null(w, dpi, glc.MSI_FILE, glc.MSI_WORKFLOW)
         w = self.update_wrapper_if_null(w, dpi, glc.CTDNA_FILE, glc.CTDNA_WORKFLOW)
         w = self.update_wrapper_if_null(w, dpi, glc.HRDETECT_PATH, glc.HRD_WORKFLOW)
+        w = self.set_ctdna_file(w, dpi)
         return w.get_config()
 
     def extract(self, config):
@@ -92,25 +100,36 @@ class main(plugin_base):
         tumour_id = wrapper.get_my_string(glc.TUMOUR_ID)
         tcga_code = wrapper.get_my_string(glc.TCGA_CODE).lower()  # always lowercase
         # Get directories
-        finder = directory_finder(self.log_level, self.log_path)
-        data_dir = finder.get_data_dir()
+        plugin_data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
         work_dir = self.workspace.get_work_dir()
         plugin_dir = os.path.dirname(os.path.realpath(__file__))
         r_script_dir = os.path.join(plugin_dir, 'Rscripts')
         # Make a file where all the (actionable) biomarkers will go, and initialize results
         biomarkers_path = self.make_biomarkers_maf(work_dir)
         results = tmb_processor(self.log_level, self.log_path).run(
-            work_dir, data_dir, r_script_dir, tcga_code, biomarkers_path, tumour_id
+            work_dir, plugin_data_dir, r_script_dir, tcga_code, biomarkers_path, tumour_id
         )
+        
+        # Get coverage for reporting HRD
+        coverage = float(self.workspace.read_maybe_json(sample_constants.QC_SAMPLE_INFO)[sample_constants.COVERAGE_MEAN])
+
         # evaluate HRD and MSI reportability
-        hrd_ok, msi_ok = self.evaluate_reportability(
+        hrd_ok, msi_ok, cant_report_hrd_reason = self.evaluate_reportability(
             wrapper.get_my_float(glc.PURITY_INPUT),
+            coverage,
             wrapper.get_my_string(glc.SAMPLE_TYPE)
         )
         results[glc.CAN_REPORT_HRD] = hrd_ok
         results[glc.CAN_REPORT_MSI] = msi_ok
+        results[glc.CANT_REPORT_HRD_REASON] = cant_report_hrd_reason
+
         # evaluate biomarkers
-        results[glc.CTDNA] = ctdna_processor(self.log_level, self.log_path).run(wrapper.get_my_string(glc.CTDNA_FILE))
+        ctdna_file = wrapper.get_my_string(glc.CTDNA_FILE)
+        ctdna_proc = ctdna_processor(self.log_level, self.log_path)
+        if ctdna_file == self.CTDNA_FILE_NOT_FOUND:
+            results[glc.CTDNA] = ctdna_proc.get_dummy_results()
+        else:
+            results[glc.CTDNA] = ctdna_proc.run(ctdna_file)
         hrd = hrd_processor(self.log_level, self.log_path)
         results[glc.BIOMARKERS][glc.HRD] = hrd.run(
             work_dir,
@@ -129,7 +148,8 @@ class main(plugin_base):
         hrd_annotation = hrd.annotate_NCCN(
             results[glc.BIOMARKERS][glc.HRD]['Genomic biomarker alteration'],
             wrapper.get_my_string(oncokb_constants.ONCOTREE_CODE),
-            data_dir
+            plugin_data_dir,
+            directory_finder(self.log_level, self.log_path).get_data_dir()
         )
         if hrd_annotation:
             if hrd_ok:
@@ -157,7 +177,7 @@ class main(plugin_base):
         annotator.annotate_biomarkers_maf(input_path, output_path)
         return output_path
 
-    def evaluate_reportability(self, purity, sample_type):
+    def evaluate_reportability(self, purity, coverage, sample_type):
         # evaluate reportability for HRD and MSI metrics
         self.logger.debug('Evaluating reportability for purity and sample type')
         sample_is_ffpe = False
@@ -168,17 +188,23 @@ class main(plugin_base):
             self.logger.warning("Unknown sample type in config; assuming non-FFPE sample")
         else:
             self.logger.debug('Non-FFPE sample detected')
-        if purity >= 0.5 or (purity >= 0.3 and not sample_is_ffpe):
+        hrd_purity_ok = purity>=self.MIN_HRD_PURITY or (purity>=self.MIN_HRD_PURITY_NOT_FFPE and not sample_is_ffpe)
+        if hrd_purity_ok and coverage <= self.MAX_HRD_COVERAGE:
             hrd_ok = True
+            cant_report_hrd_reason = False
+        elif coverage > self.MAX_HRD_COVERAGE:
+            hrd_ok = False
+            cant_report_hrd_reason = glc.COVERAGE_REASON
         else:
             hrd_ok = False
+            cant_report_hrd_reason = glc.PURITY_REASON
         if purity >= 0.5:
             msi_ok = True
         else:
             msi_ok = False
         self.logger.debug("HRD reportable: {0}".format(hrd_ok))
         self.logger.debug("MSI reportable: {0}".format(msi_ok))
-        return (hrd_ok, msi_ok)
+        return (hrd_ok, msi_ok, cant_report_hrd_reason)
 
     def get_oncokb_merge_inputs(self, annotated_maf_path, msi_ok):
         """
@@ -232,3 +258,21 @@ class main(plugin_base):
             self.logger.error(msg)
             raise RuntimeError(msg)
         return alt_url
+
+    def set_ctdna_file(self, cw, info_name):
+        # ctDNA file is required for clinical reports, optional otherwise
+        # cw is a config_wrapper object; info name is name of the path info JSON file
+        cw = self.update_wrapper_if_null(cw, info_name, glc.CTDNA_FILE, glc.CTDNA_WORKFLOW)
+        ctdna_file = cw.get_my_string(glc.CTDNA_FILE)
+        if ctdna_file == 'None':
+            self.logger.debug('ctDNA file not found in provenance or manual inputs')
+            if core_constants.CLINICAL in cw.get_my_attributes():
+                msg = "Clinical report cannot proceed without mrdetect ctDNA file"
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            else:
+                cw.set_my_param(glc.CTDNA_FILE, self.CTDNA_FILE_NOT_FOUND)
+                self.logger.debug('Non-clinical research report, ctDNA file is not required')
+        else:
+            self.logger.debug("Found ctDNA file: '{0}'".format(ctdna_file))
+        return cw

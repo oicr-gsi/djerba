@@ -99,9 +99,8 @@ class main(plugin_base):
         # Get directories
         finder = directory_finder(self.log_level, self.log_path)
         work_dir = self.workspace.get_work_dir()
-        data_dir = finder.get_data_dir()
         r_script_dir = os.path.join(finder.get_base_dir(), "plugins/captiv8/Rscripts")
-        bed_file = os.path.join(data_dir, constants.BED_FILE_NAME)
+        bed_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), constants.BED_FILE_NAME)
         
         # ------------------- Create the file that will be input into the CAPTIV-8 script ------------------- #
 
@@ -124,7 +123,7 @@ class main(plugin_base):
         # ------------ Run the CAPTIV-8 script to get the output path for input into the graphing ------------ #
         
         # Output path is captiv8_output.txt
-        self.run_captiv8(r_script_dir, data_dir, work_dir, bed_file, os.path.join(work_dir, constants.CAPTIV8_INPUT)) 
+        self.run_captiv8(r_script_dir, work_dir, bed_file, os.path.join(work_dir, constants.CAPTIV8_INPUT))
         
         # ------------------- Graph the data  ------------------- #
         captiv8_results = os.path.join(work_dir, constants.CAPTIV8_OUTPUT)
@@ -166,7 +165,7 @@ class main(plugin_base):
         self.set_priority_defaults(self.PRIORITY)
 
 
-    def run_captiv8(self, r_script_dir, data_dir, work_dir, bed_file, captiv8_input):
+    def run_captiv8(self, r_script_dir, work_dir, bed_file, captiv8_input):
   
       cmd = [
           'Rscript', r_script_dir + "/captiv8.R",

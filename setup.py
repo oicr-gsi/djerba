@@ -13,6 +13,8 @@ package_root = 'src/lib'
 # list of wildcards, intended to capture ancillary files for plugins/helpers/mergers
 # TODO make this neater and/or introduce stronger naming conventions
 install_wildcards = [
+    '*.bed',
+    '*.ini',
     '*.json',
     '*.html',
     '*.txt',
@@ -23,7 +25,8 @@ install_wildcards = [
     'resources/*',
     'R/*',
     'r/*',
-    'Rscripts/*'
+    'Rscripts/*',
+    'templates/*'
 ]
 
 with open("README.md", "r") as fh:
@@ -45,21 +48,16 @@ setup(
     package_dir={'' : package_root},
     package_data={
         'djerba': [
-            'data/20200818-oncoKBcancerGeneList.tsv',
-            'data/20240315-allCuratedGenes.tsv',
-            'data/OncoTree.json',
-            'data/NCCN_annotations.txt',
-            'data/benchmark_config.ini',
-            'data/benchmark_params.json',
-            'data/cytoBand.txt',
-            'data/ensemble_conversion_hg38.txt',
-            'data/entrez_conversion.txt',
-            'data/gencode_v33_hg38_genes.bed',
-            'data/gencode.v31.ensg_annotation_w_entrez.bed',
-            'data/hg38_centromeres.txt',
-            'data/tcga_code_key.txt',
-            'data/tmbcomp-externaldata.txt',
-            'data/tmbcomp-tcga.txt',
+            'util/benchmark/benchmark_pwgs.ini',
+            'util/benchmark/benchmark_tar.ini',
+            'util/benchmark/benchmark_wgs.ini',
+            'util/benchmark/benchmark_wgts.ini',
+            'util/data/20200818-oncoKBcancerGeneList.tsv',
+            'util/data/NCCN_annotations.txt',
+            'util/data/cytoBand.txt',
+            'util/data/entrez_conversion.txt',
+            'util/data/gencode_v33_hg38_genes.bed',
+            'util/oncokb/20240315-allCuratedGenes.tsv'
         ],
         'djerba.core': install_wildcards,
         'djerba.helpers.expression_helper': install_wildcards,
@@ -79,6 +77,7 @@ setup(
         'djerba.plugins.failed_report': install_wildcards,
         'djerba.plugins.fusion': install_wildcards,
         'djerba.plugins.genomic_landscape': install_wildcards,
+        'djerba.plugins.hla': install_wildcards,
         'djerba.plugins.patient_info': install_wildcards,
         'djerba.plugins.pwgs.analysis': install_wildcards,
         'djerba.plugins.pwgs.case_overview': install_wildcards,
@@ -92,6 +91,7 @@ setup(
         'djerba.plugins.tar.snv_indel': install_wildcards,
         'djerba.plugins.tar.snv_indel.snv_indel_tools': install_wildcards,
         'djerba.plugins.tar.swgs': install_wildcards,
+        'djerba.plugins.tar.status': install_wildcards,
         'djerba.plugins.wgts.cnv_purple': install_wildcards,
         'djerba.plugins.wgts.common.cnv': install_wildcards,
         'djerba.plugins.wgts.snv_indel': install_wildcards,
@@ -101,14 +101,19 @@ setup(
         'configparse',
         'email_validator',
         'jsonschema',
+        'lets-plot',
         'mako',
         'markdown',
-        'numpy==1.23.1', # set exact version to avoid build conflict with gsi-qc-etl
+        'matplotlib',
+        'numpy>2',
         'pandas',
         'pdfkit',
+        'plotnine',
+        'pycairo',
         'pyinstaller',
         'PyPDF2',
         'requests',
+        'seaborn',
         'statsmodels',
     ],
     python_requires='>=3.10.6',

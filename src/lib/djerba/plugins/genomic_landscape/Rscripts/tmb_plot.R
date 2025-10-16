@@ -7,7 +7,8 @@ library(scales)
 
 
 option_list = list(
-  make_option(c("-d", "--dir"), type="character", default=NULL, help="Input report directory path", metavar="character"),
+  make_option(c("-w", "--work"), type="character", default=NULL, help="Input report directory path", metavar="character"),
+  make_option(c("-d", "--data"), type="character", default=NULL, help="Data directory path", metavar="character"),
   make_option(c("-m", "--marker"), type="character", default=NULL, help="msi", metavar="character"),
   make_option(c("-c", "--code"), type="character", default=NULL, help="TCGA code", metavar="character"),
   make_option(c("-t", "--tmb"), type="numeric", default=NULL, help="TMB per Mb", metavar="numeric")
@@ -19,12 +20,11 @@ opt <- parse_args(opt_parser)
 biomarker <- opt$marker
 sampleTMB <- opt$tmb
 sample_tcga <- opt$code
-work_dir <- opt$dir
+work_dir <- opt$work
+data_dir <- opt$data # only needed for TMB
 
 
 if(biomarker=="tmb"){
-  
-  data_dir <- paste(Sys.getenv(c("DJERBA_BASE_DIR")), 'data', sep='/')
   
   external_tmb_file <- paste(data_dir, 'tmbcomp-externaldata.txt', sep='/')
   external_tmb_data <- read.delim(external_tmb_file, header = TRUE, stringsAsFactors = F)

@@ -1,11 +1,101 @@
 # CHANGELOG
 
-## Unreleased
+## v1.11.1: 2025-08-20
+- GCGI-1634: Correct TAR assay version to 3.0
+- GCGI-1635: Software versions update in the assay description section of the report.
+- GCGI-1637: Set default attributes to "clinical" in render step when empty, to fix HTML rendering.
+
+## v1.11.0: 2025-07-31
+- GCGI-1624: Reinstate version numbers and HRD max coverage threshold for Illumina v1.3
+- GCGI-1627: Remove obsolete 'INI schema' code
+- GCGI-1628: Run sample plugin for RUO to avoid downstream failures in the genomic_landscape.
+
+## v1.10.2: 2025-07-22
+- GCGI-1624: Revert version numbers to Illumina v1.2, pipeline 5.0 for Djerba v1.10.2 release
+- GCGI-1599: Update NCCN guidelines versions for ovarian (2023 to 2025) and PCM (2023 to 2026)
+- GCGI-1598: Updated Illumina version to v1.3, pipeline version to 6.0, WGTS assay versions to 6.0, PWGS assay version to 3.0, and added warning to inform user which instrument the sample was sequenced on
+- GCGI-1607: Code to cancel HRD reporting above a fixed threshold for sequencing depth; threshold set to 5000X so it will not take effect in this release; will set threshold to 115X for release v1.11.0 to support Illumina v1.3
+- GCGI-1548: update the fusion summary count after the filtering has been applied to ensure the summary and the table are always in sync.
+- GCGI-1612: Ensure chromosome labels are processed as strings in `wgts.snv_indel` plugin
+
+## v1.10.1: 2025-06-27
+- GCGI-1597: Fixes for benchmarking script. Omit copying ichorCNA file if not available. Update or remove outdated INI parameters.
+- As of this release, benchmarking code has been forked into a new repo: [djerba-benchmark](https://github.com/oicr-gsi/djerba-benchmark)
+- Removing the benchmark code from the main Djerba repository is TODO. Meanwhile that code is deprecated and tests have been removed. Use [djerba-benchmark](https://github.com/oicr-gsi/djerba-benchmark) instead if possible.
+
+## v1.10.0: 2025-06-13
+- GCGI-1554: Patch for GSI-QC-ETL test failure. Refactoring GSI-QC-ETL handling is still TODO.
+- GCGI-1586: Option to track activity with the main `djerba.py` script
+
+## v1.9.2: 2025-05-13
+- GCGI-1571: Update example report in Github repository
+- GCGI-1572: Remove overly detailed plugin list
+- GCGI-1577: Removed implicit dependency on `provenance_helper` in `fusion` plugin
+
+## v1.9.1: 2025-05-06
+- GCGI-1574: Removed provenance helper dependency in `expression_helper.py`
+- GCGI-1576: Fixed fusion plugin to handle situations where all fusions in mavis get filtered out (ex. by reading frame)
+
+## v1.9.0: 2025-05-01
+- GCGI-1506: Replace fusions.R with preprocess.py and refactor fusions plugin
+- GCGI-1509: Add warning for callability below the 75% threshold.
+- GCGI-1401: Convert purple output from Let's-Plot SVG to Matplotlib PNG.
+- GCGI-1504: Remove provenance helper dependency in `case_overview` plugin
+
+## v1.8.4: 2025-04-10
+- GCGI-1109: Update "Patient Genetic Sex" to "Patient sex assigned at birth"
+- GCGI-1544: Handle missing or empty HLA data
+- GCGI-1539: Environment variable for CouchDB credentials
+- GCGI-1546: Fix installation of INI templates for benchmark script
+- GCGI-1551: Update "main contact" name in report header
+- Added SETD2 to Captiv8 SWISNF genes
+
+## v1.8.3: 2025-03-27
+### Added:
+- New HLA (human leukocyte antigen) plugin
+- GCGI-1486: Copy ichorcna genomeWide_all_sols.pdf file to the workspace for manual review
+- GCGI-1412: Automatically generate TCGA code from oncotree code
+
+### Changed:
+- GCGI-1134: If TCGA code does not correspond to an existing RODiC file, defaults to TCGA_ALL_TUMOR
+- GCGI-1474: Additional debug logs for tissue type filtering conditions
+- GCGI-1484: Refactor the `plugins/wgts/common` directory, moving code to better locations
+- GCGI-1512: Clean up `lib/djerba/data`, moving files to specific plugins where possible, `lib/djerba/util/data` otherwise
+
+### Fixed:
+- GCGI-1515: Make `mrdetect_filter_only` inputs optional for non-clinical reports
+- GCGI-1527: Deprecating tube_ID and switching to group_ID
+- GCGI-1530: Update test_env.sh for new data directory
+- GCGI-1534: Fix issues with plugin tester; output test reports to working directory
+- Fix issue with benchmark plugin; test no longer breaks when Djerba core version is changed
+
+## v1.8.2: 2025-03-20
+- Adjusted smoothing parameter (`bw_adjust`) to 2 for mutation counts &le; 10 and to 1 for mutation counts &gt; 10 in `wgts.snv_indel`
+
+## v1.8.1: 2025-03-04
+- GCGI-1455: New `tar.status` plugin to add a display box for ctDNA status
+- GCGI-1517: Remove obsolete R scripts and tests
+- GCGI-1518: Rounding down callability to match Dimsum instead of rounding up to one decimal place
+- GCGI-1519: Fixing whizbam link for SNVs to include chromosome number
+
+## 1.8.0: 2025-02-25
+- GCGI-1473: Remove R code from wgts.snv_indel and wgts.cnv_purple plugins
+- GCGI-1499: Fixes to tests, including finer control of JSON/HTML redaction
+- Add a new `template_dir` parameter to the `supplement.body` plugin
+- GCGI-1500: Add Novaseq X Plus version v1.2
+- GCGI-1502: Update contact email address in report header
+
+## 1.7.9: 2025-01-22
 - GCGI-1461: Fix output paths in calls to get_logger
+- GCGI-1462: Extend GSICAPBENCH report to TAR/PWGS
 - GCGI-1481: Fix raw coverage auto-population to exclude normal samples before selection in TAR assay
 - GCGI-1478: More informative logger name for plugin/helper/merger components
 - GCGI-1479: New `--pre-populate` option in `djerba.py` setup mode
-
+- GCGI-1413: Remove failed report plugin and allow summary plugin to handle failed reports
+- GCGI-1482: Updated total genome segment length constant in percent genome altered calculation
+- GCGI-1480: Updated CGI manager name and email
+- GCGI-1490: Remove input paths from pwgs.analysis results
+- GCGI-1492: Remove the Sequenza CNV plugin
 
 ## 1.7.8: 2024-12-12
 - GCGI-1464: Standalone script to diff two Djerba JSON reports
