@@ -51,6 +51,7 @@ class main(helper_base):
     WF_CONSENSUS_NORMAL = 'consensusCruncher_normal'
     WF_MAF_TUMOUR = 'maf_tumour'
     WF_MAF_NORMAL = 'maf_normal'
+    WF_MAF_FILTERED = 'maf_filtered' # tumour maf
     WF_ICHOR_JSON = 'metrics_json'
     WF_ICHOR_SEG = 'seg'
 
@@ -237,6 +238,7 @@ class main(helper_base):
             self.WF_CONSENSUS_NORMAL: reader.parse_tar_metrics_normal_path(),
             self.WF_MAF_TUMOUR: reader.parse_tar_maf_tumour_path(),
             self.WF_MAF_NORMAL: reader.parse_tar_maf_normal_path(),
+            self.WF_MAF_FILTERED: reader.parse_tar_maf_tumour_filtered_path(),
             self.WF_ICHOR_JSON: reader.parse_tar_ichorcna_json_path(),
             self.WF_ICHOR_SEG: reader.parse_tar_ichorcna_seg_path()
 
