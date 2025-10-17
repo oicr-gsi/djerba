@@ -600,6 +600,9 @@ class TestLoader(TestCore):
         self.assertTrue(isinstance(plugin, djerba.plugins.base.plugin_base))
         plugin = loader.load('demo2', workspace(self.tmp_dir))
         self.assertTrue(isinstance(plugin, djerba.plugins.base.plugin_base))
+        # test loading a plugin with a compound name; TODO make a 'demo' plugin for this
+        plugin = loader.load('wgts.snv_indel', workspace(self.tmp_dir))
+        self.assertTrue(isinstance(plugin, djerba.plugins.base.plugin_base))
         # remove the alternate package; make a loader with new environment
         os.environ[var] = 'djerba'
         new_loader = plugin_loader(log_level=logging.CRITICAL)

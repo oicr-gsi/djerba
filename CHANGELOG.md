@@ -1,6 +1,7 @@
 # CHANGELOG
 
 ## Unreleased
+- GCGI-1660: Bugfix for loading plugins with compunt names (eg. `tar.sample`)
 - GCGI-1658: Update TAR assay to version 4.0 and two static OncoKB files.
 
 ## v1.11.2: 2025-10-08
