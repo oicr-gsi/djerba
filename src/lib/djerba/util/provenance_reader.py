@@ -25,13 +25,18 @@ class provenance_reader(logger):
     # relevant workflow names
     WF_ARRIBA = 'arriba'
     WF_BMPP = 'bamMergePreprocessing_by_sample'
+    WF_CONSENSUS = 'consensusCruncher'
     WF_DELLY = 'delly_matched'
     WF_GRIDSS = 'gridss'
+    WF_HLA = 't1k'
     WF_HRDETECT = 'hrDetect'
+    WF_ICHORCNA = 'ichorcna'
+    WF_IMMUNE = 'immunedeconv'
     WF_MAVIS = 'mavis'
     WF_MRDETECT = 'mrdetect_filter_only'
     WF_MSISENSOR = 'msisensor'
     WF_MUTECT = 'mutect2_matched'
+    WF_MUTECT2 = 'mutect2Consensus'
     WF_PURPLE = 'purple'
     WF_RSEM = 'rsem'
     WF_SEQUENZA = 'sequenza_by_tumor_group'
@@ -39,10 +44,6 @@ class provenance_reader(logger):
     WF_STARFUSION = 'starfusion'
     WF_VEP = 'variantEffectPredictor_matched'
     WF_VIRUS = 'virusbreakend'
-    WF_IMMUNE = 'immunedeconv'
-    WF_ICHORCNA = 'ichorcna'
-    WF_CONSENSUS = 'consensusCruncher'
-    WF_HLA = 't1k'
 
     # older Vidarr workflow names, deprecated as of 2023-11-13
     WF_BMPP_20231113 = 'bamMergePreprocessing_by_tumor_group'
@@ -584,6 +585,12 @@ class provenance_reader(logger):
         workflow = self.WF_CONSENSUS
         mt = self.MT_TXT_GZ
         suffix = 'merged\.maf\.gz$'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
+
+    def parse_tar_maf_tumour_filtered_path(self):
+        workflow = self.WF_MUTECT2
+        mt = self.MT_TXT_GZ
+        suffix = '\_filtered_maf\.gz$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
 
     def parse_virus_path(self):

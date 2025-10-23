@@ -38,7 +38,6 @@ class main(plugin_base):
            constants.TUMOUR_ID,
            constants.NORMAL_ID,
            constants.MAF_FILE,
-           constants.MAF_NORMAL_FILE,
       ]
       for key in discovered:
           self.add_ini_discovered(key)
@@ -75,13 +74,6 @@ class main(plugin_base):
           constants.MAF_FILE,
           constants.WF_MAF
       )
-      wrapper = self.update_wrapper_if_null(
-          wrapper,
-          core_constants.DEFAULT_PATH_INFO,
-          constants.MAF_NORMAL_FILE,
-          constants.WF_MAF_NORMAL
-      )
-
       return config  
 
     def extract(self, config):
@@ -107,8 +99,7 @@ class main(plugin_base):
       else:
           purity = 0 # just needs to be anything less than 10% to ignore copy state
 
-      # Preprocessing
-      maf_file = self.filter_maf_for_tar(work_dir, config[self.identifier][constants.MAF_FILE], config[self.identifier][constants.MAF_NORMAL_FILE])
+      maf_file = self.filter_for_panel_genes(work_dir, config[self.identifier][constants.MAF_FILE])
       preprocess(config, work_dir, assay, oncotree_code, cbio_id, tumour_id, normal_id, maf_file).run_R_code()
       
       mutations_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED)
@@ -135,86 +126,26 @@ class main(plugin_base):
       renderer = mako_renderer(self.get_module_dir())
       return renderer.render_name(self.TEMPLATE_NAME, data)
 
-    def filter_maf_for_tar(self, work_dir, maf_path, maf_file_normal):
 
-      df_bc = pd.read_csv(maf_file_normal,
-                      sep = "\t",
-                      on_bad_lines="error",
-                      compression='gzip',
-                      skiprows=[0])
-
+    def filter_for_panel_genes(self, work_dir, maf_path):
+      """
+      Mutect2Consensus does NOT filter for the list of genes in tar constants.py
+      We still need to filter for just the genes on the panel.
+      """
       df_pl = pd.read_csv(maf_path,
                       sep = "\t",
                       on_bad_lines="error",
-                      compression='gzip',
-                      skiprows=[0])
-      base_dir = directory_finder(self.log_level, self.log_path).get_base_dir()
-      df_freq = pd.read_csv(os.path.join(base_dir, constants.FREQUENCY_FILE),
-                   sep = "\t")
-
-      # Need to clean up the tumour and normal dataframes
-      for column in constants.CLEAN_COLUMNS:
-          # Convert to numeric, setting errors='coerce' to turn non-numeric values into NaN
-          df_pl[column] = pd.to_numeric(df_pl[column], errors='coerce')
-          df_bc[column] = pd.to_numeric(df_bc[column], errors='coerce')
-          # Replace NaN with 0
-          df_pl[column] = df_pl[column].fillna(0)
-          df_bc[column] = df_bc[column].fillna(0)
+                      compression='gzip')
 
       for row in df_pl.iterrows():
           hugo_symbol = row[1]['Hugo_Symbol']
-          chromosome = row[1]['Chromosome']
-          start_position = row[1]['Start_Position']
-          reference_allele = row[1]['Reference_Allele']
-          allele = row[1]['Allele']
-
-          """"For normal values"""
-
-          # Lookup the entry in the BC
-          row_lookup = df_bc[(df_bc['Hugo_Symbol'] == hugo_symbol) & 
-                                 (df_bc['Chromosome'] == chromosome) & 
-                                 (df_bc['Start_Position'] == start_position) &
-                                 (df_bc['Reference_Allele'] == reference_allele) &
-                                 (df_bc['Allele'] == allele)]
-
-          # If there's only one entry, take its normal values
-          if len(row_lookup) == 1:
-              df_pl.at[row[0], "n_depth"] = row_lookup['n_depth'].item()
-              df_pl.at[row[0], "n_ref_count"] = row_lookup['n_ref_count'].item()
-              df_pl.at[row[0], "n_alt_count"] = row_lookup['n_alt_count'].item()
-          
-          # If the entry isn't in the table, 
-          # or if there is more than one value and so you can't choose which normal values to take, 
-          # set them as 0
-          else:
-              df_pl.at[row[0], "n_depth"] = 0
-              df_pl.at[row[0], "n_ref_count"] = 0
-              df_pl.at[row[0], "n_alt_count"] = 0
-
-          """"For frequency values"""    
-          
-          row_lookup = df_freq[(df_freq['Start_Position'] == row[1]['Start_Position']) &
-                            (df_freq['Reference_Allele'] == row[1]['Reference_Allele']) &
-                            ((df_freq['Tumor_Seq_Allele'] == row[1]['Tumor_Seq_Allele1']) |
-                            (df_freq['Tumor_Seq_Allele'] == row[1]['Tumor_Seq_Allele2']))]
-
-          if len(row_lookup) > 0:
-              df_pl.at[row[0], 'Freq'] = row_lookup['Freq'].item()
-          else:
-              df_pl.at[row[0], 'Freq'] = 0
-    
-      for row in df_pl.iterrows():
-          hugo_symbol = row[1]['Hugo_Symbol']
-          frequency = row[1]['Freq']
-          n_alt_count = row[1]['n_alt_count']
-          gnomAD_AF = row[1]['gnomAD_AF']
-          if hugo_symbol not in constants.GENES_TO_KEEP or frequency > 0.1 or n_alt_count > 4 or gnomAD_AF > 0.001:
+          if hugo_symbol not in constants.GENES_TO_KEEP:
               df_pl = df_pl.drop(row[0])  
 
-      out_path = os.path.join(work_dir, 'filtered_maf_for_tar.maf.gz')
+      out_path = os.path.join(work_dir, 'panel_genes_only.maf.gz')
       df_pl.to_csv(out_path, sep = "\t", compression='gzip', index=False)
       return out_path
-   
+
     def get_merge_inputs(self, work_dir, oncotree_code):
       """
       Read gene and therapy information for merge inputs

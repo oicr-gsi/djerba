@@ -97,7 +97,6 @@ class preprocess(logger):
       self.tumour_id = tumour_id
       self.normal_id = normal_id
       self.maf_file = maf_file
-      self.maf_file_normal = self.config['tar.snv_indel']['maf_file_normal']
 
   
   def run_R_code(self):
