@@ -25,7 +25,7 @@ class preprocess(logger):
     # CONSTANTS
     data_dir = finder.get_data_dir()
     self.GENECODE_PATH = os.path.join(data_dir, 'gencode_v33_hg38_genes.bed')
-    self.ONCOLIST_PATH = os.path.join(data_dir, "20200818-oncoKBcancerGeneList.tsv")
+    self.ONCOLIST_PATH = os.path.join(data_dir, "20251008-oncoKBcancerGeneList.tsv")
 
     # DIRECTORIES
     self.logger = self.get_logger(log_level, __name__, log_path)

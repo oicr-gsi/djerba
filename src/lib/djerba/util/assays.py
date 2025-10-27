@@ -14,7 +14,7 @@ PWGS = 'PWGS'
 # - src/lib/djerba/plugins/supplement/body/plugin.py
 # - src/lib/djerba/plugins/pwgs/case_overview/plugin.py
 WGTS_ASSAY_VERSION = '6.0'
-TAR_ASSAY_VERSION = '3.0'
+TAR_ASSAY_VERSION = '4.0'
 PWGS_ASSAY_VERSION = '3.0'
 
 WGTS_SUFFIX = '(v{0})'.format(WGTS_ASSAY_VERSION)

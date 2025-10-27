@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-1660: Bugfix for loading plugins with compunt names (eg. `tar.sample`)
+- GCGI-1658: Update TAR assay to version 4.0 and two static OncoKB files.
+- GCGI-1620: Support the change from consensusCruncher to mutect2Consensus
+
 ## v1.11.2: 2025-10-08
 - GCGI-1587: Code Undetermined fusion types.
 - GCGI-1602: Remove obsolete benchmarking code.
