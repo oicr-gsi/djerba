@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v1.11.3: 2025-10-27
+## v1.11.3: 2025-10-28
 - GCGI-1660: Bugfix for loading plugins with component names (eg. `tar.sample`)
 - GCGI-1658: Update TAR assay to version 4.0 and two static OncoKB files.
 - GCGI-1620: Support the change from consensusCruncher to mutect2Consensus
