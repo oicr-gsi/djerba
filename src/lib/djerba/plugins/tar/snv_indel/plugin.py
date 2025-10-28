@@ -135,7 +135,8 @@ class main(plugin_base):
       df_pl = pd.read_csv(maf_path,
                       sep = "\t",
                       on_bad_lines="error",
-                      compression='gzip')
+                      compression='gzip',
+                      comment='#')
 
       for row in df_pl.iterrows():
           hugo_symbol = row[1]['Hugo_Symbol']
