@@ -42,7 +42,7 @@ class TestCaseOverview(PluginTester):
         params = {
             self.INI: 'case_overview_TAR.ini',
             self.JSON: json_location,
-            self.MD5: '1a32247a76f34ff50efe5e4ae98dfea4'
+            self.MD5: '22b3671964076207828e8030c7e395a7'
         }
         self.run_basic_test(test_source_dir, params)
 

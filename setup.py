@@ -50,12 +50,12 @@ setup(
             'util/benchmark/benchmark_tar.ini',
             'util/benchmark/benchmark_wgs.ini',
             'util/benchmark/benchmark_wgts.ini',
-            'util/data/20200818-oncoKBcancerGeneList.tsv',
+            'util/data/20251008-oncoKBcancerGeneList.tsv',
             'util/data/NCCN_annotations.txt',
             'util/data/cytoBand.txt',
             'util/data/entrez_conversion.txt',
             'util/data/gencode_v33_hg38_genes.bed',
-            'util/oncokb/20240315-allCuratedGenes.tsv'
+            'util/oncokb/20251008-allCuratedGenes.tsv'
         ],
         'djerba.core': install_wildcards,
         'djerba.helpers.expression_helper': install_wildcards,
