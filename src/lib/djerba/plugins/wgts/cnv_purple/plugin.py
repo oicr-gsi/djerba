@@ -41,7 +41,7 @@ class main(plugin_base):
         )
         work_dir = self.workspace.get_work_dir()
         processor = purple_processor(work_dir, self.log_level, self.log_path)
-        purity_ploidy = processor.read_purity_ploidy(wrapper.get_my_string(pc.PURPLE_ZIP))
+        purity_ploidy = processor.read_purity_ploidy(wrapper.get_my_string(pc.PURPLE_DIR))
         self.workspace.write_json(pc.PURITY_PLOIDY, purity_ploidy)
         self.logger.debug("Wrote purity/ploidy to workspace: {0}".format(purity_ploidy))
         return wrapper.get_config()
