@@ -4,6 +4,7 @@ import csv
 import gzip
 import logging
 import os
+import glob
 import djerba.util.constants as constants
 import djerba.util.ini_fields as ini
 import djerba.core.constants as core_constants
@@ -31,6 +32,10 @@ class main(helper_base):
     WGTS = 'WGTS' # currently only used for WGTS
 
     VERSION = '1.0.0'
+
+    def _get_stable_gene_id(self, gene_id_with_version):
+        # Removes the version suffix (e.g., ".14") from a gene ID
+        return gene_id_with_version.split('.')[0]
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -94,23 +99,36 @@ class main(helper_base):
     def preprocess_gep(self, gep_path, gep_reference, tumour_id):
         """
         Apply preprocessing to a GEP file; write results to tmp_dir
-        CGI-Tools constructs the GEP file from scratch, but only one column actually varies
-        As a shortcut, we insert the first column into a ready-made file
-        TODO This is a legacy CGI-Tools method, is there a cleaner way to do it?
-        TODO Should GEP_REFERENCE (list of past GEP results) be updated on a regular basis?
+        This version is modified to read a CSV file and use TPM instead of FPKM.
+        It also handles gene_ids with version suffixes.
         """
-        # read the gene id and FPKM metric from the GEP file for this report
-        fkpm = {}
+        # read the gene id and TPM metric from the GEP file for this report
+        tpm_values = {}
         with open(gep_path) as gep_file:
-            reader = csv.reader(gep_file, delimiter="\t")
+            # Use comma as the delimiter for CSV
+            reader = csv.reader(gep_file, delimiter=",")
+            header = next(reader) # Skip header row
+
+            # Find the indices for GeneId and AdjTPM from the header
+            try:
+                gene_id_index = header.index('GeneId')
+                tpm_index = header.index('AdjTPM')
+            except ValueError as err:
+                msg = "Required column not found in GEP file header: {0}".format(err)
+                self.logger.error(msg)
+                raise RuntimeError(msg) from err
+
             for row in reader:
                 try:
-                    fkpm[row[self.GENE_ID]] = row[self.FPKM]
+                    # Extract gene_id and remove version suffix
+                    gene_id = self._get_stable_gene_id(row[gene_id_index])
+                    tpm_values[gene_id] = row[tpm_index]
                 except IndexError as err:
                     msg = "Incorrect number of columns in GEP row: '{0}'".format(row)+\
                           "read from '{0}'".format(gep_path)
                     self.logger.error(msg)
                     raise RuntimeError(msg) from err
+        
         # insert as the second column in the generic GEP file
         ref_path = gep_reference
         out_file_name = 'gep.txt'
@@ -126,9 +144,10 @@ class main(helper_base):
                     row.insert(1, tumour_id)
                     first = False
                 else:
-                    gene_id = row[0]
+                    # Extract gene_id from reference and remove version suffix
+                    gene_id_from_ref = self._get_stable_gene_id(row[0])
                     try:
-                        row.insert(1, fkpm[gene_id])
+                        row.insert(1, tpm_values[gene_id_from_ref])
                     except KeyError as err:
                         msg = 'Reference gene ID {0} from {1} '.format(gene_id, ref_path) +\
                             'not found in gep results path {0}'.format(gep_path)

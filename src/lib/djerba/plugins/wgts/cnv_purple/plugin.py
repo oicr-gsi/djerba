@@ -37,7 +37,7 @@ class main(plugin_base):
             wrapper, core_constants.DEFAULT_SAMPLE_INFO, core_constants.TUMOUR_ID
         )
         wrapper = self.update_wrapper_if_null(
-            wrapper, core_constants.DEFAULT_PATH_INFO, pc.PURPLE_ZIP, pc.PURPLE
+            wrapper, core_constants.DEFAULT_PATH_INFO, pc.PURPLE_DIR, pc.PURPLE
         )
         work_dir = self.workspace.get_work_dir()
         processor = purple_processor(work_dir, self.log_level, self.log_path)
@@ -59,8 +59,8 @@ class main(plugin_base):
         self.logger.debug("Starting purple data processing")
         plot9_verbose = wrapper.get_my_boolean(pc.PLOTNINE_VERBOSE)
         processor = purple_processor(work_dir, self.log_level, self.log_path, plot9_verbose)
-        self.logger.debug("Extracting files from ZIP archive")
-        purple_files = processor.unzip_purple(wrapper.get_my_string(pc.PURPLE_ZIP))
+        self.logger.debug("Finding PURPLE files in directory")
+        purple_files = processor.find_purple_files(wrapper.get_my_string(pc.PURPLE_DIR))
         self.logger.debug("Evaluating purity fit")
         processor.consider_purity_fit(purple_files[pc.PURPLE_PURITY_RANGE])
         self.logger.debug("Converting data format")
@@ -110,7 +110,7 @@ class main(plugin_base):
             core_constants.TUMOUR_ID,
             oc.ONCOTREE_CODE,
             pc.WHIZBAM_PROJECT,
-            pc.PURPLE_ZIP
+            pc.PURPLE_DIR
         ]
         for key in discovered:
             self.add_ini_discovered(key)

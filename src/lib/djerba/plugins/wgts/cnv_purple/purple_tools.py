@@ -4,6 +4,7 @@ AUTHOR: Felix Beaudry
 """
 
 import csv
+import glob
 import json
 import lets_plot as lp
 import logging
@@ -15,6 +16,7 @@ import pandas as pd
 import re
 import tempfile
 import zipfile
+import glob
 from scipy.stats import norm
 from plotnine import *
 from matplotlib import gridspec
@@ -567,26 +569,22 @@ class purple_processor(logger):
 
         return result_matrix
 
-    def read_purity_ploidy(self, purple_zip):
-        tempdir = tempfile.TemporaryDirectory()
-        tmp = tempdir.name
-        zf = zipfile.ZipFile(purple_zip)
-        name_list = [x for x in zf.namelist() if not re.search('/$', x)]
-        purple_purity_path = None
-        for name in name_list:
-            if re.search(r'purple\.purity\.tsv$', name):
-                purple_purity_path = zf.extract(name, tmp)
-                break
-        if purple_purity_path is None:
-            msg = 'Cannot find purity file in ZIP archive {0}'.format(purple_zip)
+    def read_purity_ploidy(self, purple_dir): # Renamed input from purple_zip to purple_dir
+        # Find the purity file in the provided directory
+        purity_files = glob.glob(os.path.join(purple_dir, '*.purple.purity.tsv'))
+        if not purity_files:
+            msg = 'Cannot find purity file in directory {0}'.format(purple_dir)
             self.logger.error(msg)
             raise RuntimeError(msg)
-        self.logger.debug('Extracted purity/ploidy to {0}'.format(purple_purity_path))
+    
+        purple_purity_path = purity_files[0] # Assume there is only one
+        self.logger.debug('Reading purity/ploidy from {0}'.format(purple_purity_path))
+    
         with open(purple_purity_path, 'r') as purple_purity_file:
             lines = purple_purity_file.readlines()
         if len(lines) != 2:
             msg = "Data format error: Expected 2 lines in purity/ploidy "+\
-                "file {0}, found {1}".format(purple_purity_path, len(lines))
+                  "file {0}, found {1}".format(purple_purity_path, len(lines))
             self.logger.error(msg)
             raise RuntimeError(msg)
         reader = csv.DictReader(lines, delimiter="\t")
@@ -600,14 +598,14 @@ class purple_processor(logger):
             raise RuntimeError(msg) from err
         except KeyError as err:
             msg = "Cannot find purity and/or ploidy column in "+\
-                "PURPLE purity file: {0}".format(err)
+                  "PURPLE purity file: {0}".format(err)
             self.logger.error(msg)
             raise RuntimeError(msg) from err
+    
         purity_ploidy = {
             pc.PURITY: purity,
             pc.PLOIDY: ploidy
         }
-        tempdir.cleanup()
         return purity_ploidy
 
     def single_event_distance_calculator(self, major_allele, minor_allele):
@@ -620,19 +618,24 @@ class purple_processor(logger):
 
         return min(major_allele_sub_one_additional_penalty, max(penalty, 0))
     
-    def unzip_purple(self, purple_zip):
-        zf = zipfile.ZipFile(purple_zip)
-        name_list = [x for x in zf.namelist() if not re.search('/$', x)]
+    def find_purple_files(self, purple_dir): # Renamed from unzip_purple
         purple_files = {}
-        for name in name_list:
-            if re.search(r'purple\.purity\.range\.tsv$', name):
-                purple_files[pc.PURPLE_PURITY_RANGE] = zf.extract(name, self.work_dir)
-            elif re.search(r'purple\.cnv\.somatic\.tsv$', name):
-                purple_files[pc.PURPLE_CNV] = zf.extract(name, self.work_dir)
-            elif re.search(r'purple\.segment\.tsv$', name):
-                purple_files[pc.PURPLE_SEG] = zf.extract(name, self.work_dir)
-            elif re.search(r'purple\.cnv\.gene\.tsv$', name):
-                purple_files[pc.PURPLE_GENE] = zf.extract(name, self.work_dir)
+    
+        file_patterns = {
+            pc.PURPLE_PURITY_RANGE: '*.purple.purity.range.tsv',
+            pc.PURPLE_CNV: '*.purple.cnv.somatic.tsv',
+            pc.PURPLE_SEG: '*.purple.segment.tsv',
+            pc.PURPLE_GENE: '*.purple.cnv.gene.tsv'
+        }
+    
+        for key, pattern in file_patterns.items():
+            files = glob.glob(os.path.join(purple_dir, pattern))
+            if not files:
+                msg = 'Cannot find {0} file in directory {1}'.format(pattern, purple_dir)
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            purple_files[key] = files[0] # Assume there is only one
+        
         return purple_files
 
     def whole_genome_doubling_distance_calculator(self, major_allele, minor_allele):
