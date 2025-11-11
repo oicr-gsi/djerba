@@ -42,12 +42,24 @@ class main(plugin_base):
             sic.ONCOTREE_CODE,
             input_params_helper.ONCOTREE_CODE
         )
+        # tumour ID is required for MAF update and OncoKB annotation
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_SAMPLE_INFO,
+            sic.TUMOUR_ID
+        )
         # optional params with fallback value -- used only for constructing Whizbam links
         wrapper = self.update_wrapper_if_null(
             wrapper,
             input_params_helper.INPUT_PARAMS_FILE,
             sic.PROJECT,
             input_params_helper.PROJECT,
+            fallback=sic.DEFAULT
+        )
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_SAMPLE_INFO,
+            sic.NORMAL_ID,
             fallback=sic.DEFAULT
         )
         if wrapper.my_param_is_null(sic.WHIZBAM_PROJECT):
@@ -91,6 +103,8 @@ class main(plugin_base):
         discovered = [
             sic.MAF_PATH,
             sic.ONCOTREE_CODE,
+            sic.TUMOUR_ID,
+            sic.NORMAL_ID,
             sic.PROJECT,
             sic.WHIZBAM_PROJECT
         ]

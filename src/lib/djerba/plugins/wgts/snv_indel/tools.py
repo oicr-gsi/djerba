@@ -61,129 +61,36 @@ class snv_indel_processor(logger):
         self.config = config_wrapper
         self.data_dir = directory_finder(log_level, log_path).get_data_dir()
 
-    def _parse_purple_vcf(self, vcf_path):
+    def _maf_body_row_ok(self, row, ix, vaf_cutoff):
         """
-        Parses a Purple VCF file and yields rows as dictionaries.
-        Parses annotation data from the VCF INFO field.
-        Identifies tumor/normal samples by position in the VCF (-1 and -2 in the header).
+        Should a MAF row be kept for output?
+        Implements logic from functions.sh -> hard_filter_maf() in CGI-Tools
+        Expected to filter out >99.9% of input reads
+        ix is a dictionary of column indices
         """
-        self.logger.info("Parsing Purple VCF input")
-        with open(vcf_path, 'r') as vcf_file:
-            for line in vcf_file:
-                if line.startswith('#'):
-                    if line.startswith('#CHROM'):
-                        header = line.strip().split('\t')
-                        # Assume tumor is last and normal is second-to-last
-                        if len(header) < 10:
-                            raise ValueError("VCF file does not have enough columns for tumor/normal samples.")
-                        tumour_id = header[-1]
-                        normal_id = header[-2]
-                        tumor_idx = len(header) - 1
-                        normal_idx = len(header) - 2
-                    continue
-
-                fields = line.strip().split('\t')
-                info_dict = {item.split('=')[0]: item.split('=')[1] if '=' in item else True for item in fields[7].split(';')}
-                format_fields = fields[8].split(':')
-                tumor_formats = dict(zip(format_fields, fields[tumor_idx].split(':')))
-                normal_formats = dict(zip(format_fields, fields[normal_idx].split(':')))
-
-                # Annotation Parsing
-                hugo_symbol = ''
-                variant_classification = ''
-                hgvsp_short = ''
-                if 'IMPACT' in info_dict:
-                    # IMPACT=[Gene,Transcript,CanonicalEffect,CanonicalCodingEffect,SpliceRegion,HgvsCodingImpact,HgvsProteinImpact,OtherReportableEffects,WorstCodingEffect,GenesAffected]
-                    impact_fields = info_dict['IMPACT'].split(',')
-                    if len(impact_fields) >= 7:
-                        hugo_symbol = impact_fields[0]
-                        variant_classification = impact_fields[2]
-                        hgvsp_short = impact_fields[6]
-
-                # Allele depths from tumor and normal
-                try:
-                    t_ref_count, t_alt_count = map(int, tumor_formats['AD'].split(',')[:2])
-                    t_depth = t_ref_count + t_alt_count
-                except (ValueError, KeyError):
-                    t_depth, t_alt_count = 0, 0
-                
-                try:
-                    n_ref_count, n_alt_count = map(int, normal_formats['AD'].split(',')[:2])
-                    n_depth = n_ref_count + n_alt_count
-                except (ValueError, KeyError):
-                    n_depth, n_alt_count = 0, 0
-
-                yield {
-                    sic.CHROMOSOME: fields[0],
-                    sic.START: fields[1],
-                    'End_Position': int(fields[1]) + len(fields[3]) - 1, # Simple assumption
-                    sic.REF_ALLELE: fields[3],
-                    sic.TUM_ALLELE: fields[4],
-                    sic.FILTER: fields[6],
-                    'TIER': info_dict.get('TIER', ''),
-                    sic.T_DEPTH: t_depth,
-                    sic.T_ALT_COUNT: t_alt_count,
-                    sic.N_DEPTH: n_depth,
-                    sic.N_ALT_COUNT: n_alt_count,
-                    sic.TUMOUR_SAMPLE_BARCODE: tumour_id,
-                    sic.MATCHED_NORM_SAMPLE_BARCODE: normal_id,
-                    
-                    # Fields now parsed from IMPACT
-                    sic.HUGO_SYMBOL: hugo_symbol,
-                    sic.VARIANT_CLASSIFICATION: variant_classification,
-                    sic.HGVSP_SHORT: hgvsp_short,
-                    
-                    # These fields are still missing and need to be handled
-                    sic.BIOTYPE: 'protein_coding' if hgvsp_short else '', # Assumption based on protein impact
-                    sic.GNOMAD_AF: '0',
-                    'ONCOGENIC': '',
-                    'HGVSc': '',
-                }
-
-    def _maf_body_row_ok(self, row, vaf_cutoff):
-        """
-        Should a variant row (from VCF) be kept for output?
-        This is an adapted version of the original MAF filter, now with more advanced checks.
-        """
-        # --- Start Filtering ---
-
-        # 1. Check for PASS status
-        if row.get(sic.FILTER, '') != 'PASS':
-            return False
-
-        # 2. Check for TIER confidence
-        if row.get('TIER', '') == 'LOW_CONFIDENCE':
-            return False
-
-        # 3. Check for Protein Impact (must have a value in HGVSp_Short)
-        if not row.get(sic.HGVSP_SHORT, ' '):
-            return False
-
-        # 4. Check VAF and Depth
-        row_t_depth = int(row.get(sic.T_DEPTH, 0))
-        if row_t_depth == 0:
-            return False
-        row_t_alt_count = float(row.get(sic.T_ALT_COUNT, 0.0))
-        if (row_t_alt_count / row_t_depth) < vaf_cutoff:
-            return False
-
-        # 5. Check against excluded filter flags from original MAF logic
-        filter_flags = re.split(';', row.get(sic.FILTER, ''))
-        if any([z in sic.FILTER_FLAGS_EXCLUDE for z in filter_flags]):
-            return False
-
-        # 6. Check Variant Classification (re-enabled from previous step)
-        var_class = row.get(sic.VARIANT_CLASSIFICATION, '')
-        hugo_symbol = row.get(sic.HUGO_SYMBOL, '')
-        if var_class not in sic.MUTATION_TYPES_EXONIC:
-            return False
-        if var_class == "5'Flank" and hugo_symbol != 'TERT':
-            return False
-        if hugo_symbol == 'TERT' and not (hugo_symbol == 'TERT'): # Simplified TERT logic
-            return False
-
-        # If all checks pass:
-        return True
+        ok = False
+        row_t_depth = int(row[ix.get(sic.T_DEPTH)])
+        alt_count_raw = row[ix.get(sic.T_ALT_COUNT)]
+        gnomad_af_raw = row[ix.get(sic.GNOMAD_AF)]
+        biotype = row[ix.get(sic.BIOTYPE)]
+        row_t_alt_count = float(alt_count_raw) if alt_count_raw!='' else 0.0
+        row_gnomad_af = float(gnomad_af_raw) if gnomad_af_raw!='' else 0.0
+        is_matched = row[ix.get(sic.MATCHED_NORM_SAMPLE_BARCODE)] != 'unmatched'
+        filter_flags = re.split(';', row[ix.get(sic.FILTER)])
+        var_class = row[ix.get(sic.VARIANT_CLASSIFICATION)]
+        tert_hotspot = self.is_tert_hotspot(row, ix)
+        hugo_symbol = row[ix.get(sic.HUGO_SYMBOL)]
+        if row_t_depth >= 1 and \
+           row_t_alt_count/row_t_depth >= vaf_cutoff and \
+           (is_matched or row_gnomad_af < self.MAX_UNMATCHED_GNOMAD_AF) and \
+           biotype == "protein_coding" and \
+           var_class in sic.MUTATION_TYPES_EXONIC and \
+           not any([z in sic.FILTER_FLAGS_EXCLUDE for z in filter_flags]) and \
+           not (var_class == "5'Flank" and hugo_symbol != 'TERT'):
+            ok = True
+            if hugo_symbol == 'TERT' and not tert_hotspot:
+                ok = False
+        return ok
 
     def _read_maf_indices(self, row):
         indices = {}
