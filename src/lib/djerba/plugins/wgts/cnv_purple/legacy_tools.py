@@ -120,18 +120,23 @@ class cnv_processor(logger):
         input_name = oncokb_constants.DATA_CNA_ONCOKB_GENES_NON_DIPLOID_ANNOTATED
         with open(os.path.join(self.work_dir, input_name)) as input_file:
             reader = csv.DictReader(input_file, delimiter="\t")
+            seen_entries = set()
             for row_input in reader:
                 gene = row_input[self.HUGO_SYMBOL_UPPER_CASE]
-                # if gene not found in cytoBands.txt, default to 'Unknown'
-                row_output = {
-                    cnv.EXPRESSION_PERCENTILE: mutation_expression.get(gene), # None for WGS
-                    wgts_tools.GENE: gene,
-                    cnv.GENE_URL: html_builder.build_gene_url(gene),
-                    cnv.ALTERATION: row_input[self.ALTERATION_UPPER_CASE],
-                    wgts_tools.CHROMOSOME: cytobands.get(gene, wgts_tools.UNKNOWN),
-                    wgts_tools.ONCOKB: oncokb_levels.parse_oncokb_level(row_input)
-                }
-                rows.append(row_output)
+                alteration = row_input[self.ALTERATION_UPPER_CASE]
+                entry = (gene, alteration)
+                if entry not in seen_entries:
+                    seen_entries.add(entry)
+                    # if gene not found in cytoBands.txt, default to 'Unknown'
+                    row_output = {
+                        cnv.EXPRESSION_PERCENTILE: mutation_expression.get(gene), # None for WGS
+                        wgts_tools.GENE: gene,
+                        cnv.GENE_URL: html_builder.build_gene_url(gene),
+                        cnv.ALTERATION: alteration,
+                        wgts_tools.CHROMOSOME: cytobands.get(gene, wgts_tools.UNKNOWN),
+                        wgts_tools.ONCOKB: oncokb_levels.parse_oncokb_level(row_input)
+                    }
+                    rows.append(row_output)
         unfiltered_cnv_total = len(rows)
         self.logger.debug("Sorting and filtering CNV rows")
         rows = wgts_toolkit.sort_variant_rows(rows)

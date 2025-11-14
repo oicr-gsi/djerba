@@ -132,6 +132,7 @@ class main(helper_base):
         # insert as the second column in the generic GEP file
         ref_path = gep_reference
         out_file_name = 'gep.txt'
+        missing_gene_ids = []
         with \
              gzip.open(ref_path, 'rt', encoding=constants.TEXT_ENCODING) as in_file, \
              self.workspace.open_file(out_file_name, 'wt') as out_file:
@@ -148,12 +149,16 @@ class main(helper_base):
                     gene_id_from_ref = self._get_stable_gene_id(row[0])
                     try:
                         row.insert(1, tpm_values[gene_id_from_ref])
-                    except KeyError as err:
-                        msg = 'Reference gene ID {0} from {1} '.format(gene_id, ref_path) +\
-                            'not found in gep results path {0}'.format(gep_path)
-                        self.logger.warn(msg)
+                    except KeyError:
+                        missing_gene_ids.append(gene_id_from_ref)
                         row.insert(1, '0.0')
                 writer.writerow(row)
+        if missing_gene_ids:
+            msg = '{0} reference gene IDs not found in {1}.'.format(
+                len(set(missing_gene_ids)),
+                gep_path
+            )
+            self.logger.warn(msg)
         return self.workspace.abs_path(out_file_name)
 
     def specify_params(self):
