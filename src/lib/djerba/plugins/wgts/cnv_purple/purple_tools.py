@@ -669,24 +669,44 @@ class purple_processor(logger):
         with open(os.path.join(self.work_dir, self.COPY_STATE_FILE), 'w') as out_file:
             out_file.write(json.dumps(states, sort_keys=True, indent=4))
 
-    def write_purple_alternate_launcher(self, path_info):
-        bam_files = path_info.get(pc.BMPP)
-        if not path_info.get(pc.MUTECT2) == None:
-            vcf_index = ".".join((path_info.get(pc.MUTECT2), "tbi"))
-        else:
-            vcf_index = None
+    def write_purple_alternate_launcher(self, path_info, purple_dir, normal_id, tumour_id):
+        # input_bucket is derived from purple_dir
+        if not purple_dir:
+            self.logger.warning("Purple directory is not valid")
+            return {}
+        if not normal_id:
+            self.logger.warning("Normal ID is not valid")
+            return {}
+        if not tumour_id:
+            self.logger.warning("Tumor ID is not valid")
+            return {}
+
+        input_bucket = os.path.dirname(purple_dir)
+        self.logger.debug(f"path_info received: {path_info}, purple_dir received: {purple_dir}")
+        self.logger.debug(f"normalID received: {normal_id}, tumorID received: {tumour_id}")
+
+        def find_unique_file(pattern):
+            files = glob.glob(pattern)
+            if not files:
+                self.logger.warning(f"No file found for pattern: {pattern}")
+                return None
+            if len(files) > 1:
+                self.logger.warning(f"Multiple files found for pattern {pattern}, using first: {files[0]}")
+            return files[0]
+
         purple_paths = {
-            "purple.normal_bam": bam_files["whole genome normal bam"],
-            "purple.normal_bai": bam_files["whole genome normal bam index"],
-            "purple.tumour_bam": bam_files["whole genome tumour bam"],
-            "purple.tumour_bai": bam_files["whole genome tumour bam index"],
-            "purple.filterSV.vcf": path_info.get(pc.GRIDSS),
-            "purple.filterSMALL.vcf": path_info.get(pc.MUTECT2),
-            "purple.filterSMALL.vcf_index": vcf_index,
-            "purple.runPURPLE.min_ploidy": 0,
-            "purple.runPURPLE.max_ploidy": 8,
-            "purple.runPURPLE.min_purity": 0,
-            "purple.runPURPLE.max_purity": 1
+            "purple.normal_bam": find_unique_file(os.path.join(input_bucket, normal_id, "aligner", "*.bam")),
+            "purple.normal_bai": find_unique_file(os.path.join(input_bucket, normal_id, "aligner", "*.bam.bai")),
+            "purple.tumour_bam": find_unique_file(os.path.join(input_bucket, tumour_id, "aligner", "*.bam")),
+            "purple.tumour_bai": find_unique_file(os.path.join(input_bucket, tumour_id, "aligner", "*.bam.bai")),
+            "purple.filterSMALL.vcf": find_unique_file(os.path.join(purple_dir, '*purple.somatic.vcf.gz')),
+            "purple.filterSMALL.vcf_index": find_unique_file(os.path.join(purple_dir, '*purple.somatic.vcf.gz.tbi')),
+            "purple.filterSV.vcf": find_unique_file(os.path.join(purple_dir, '*purple.sv.vcf.gz')),
+            "purple.filterSV.vcf_index": find_unique_file(os.path.join(purple_dir, '*purple.sv.vcf.gz.tbi')),
+            "purple.runPURPLE.min_ploidy": str(0),
+            "purple.runPURPLE.max_ploidy": str(8),
+            "purple.runPURPLE.min_purity": str(0),
+            "purple.runPURPLE.max_purity": str(1)
         }
         return purple_paths
 

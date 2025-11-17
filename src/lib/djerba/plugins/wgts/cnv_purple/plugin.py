@@ -37,6 +37,9 @@ class main(plugin_base):
             wrapper, core_constants.DEFAULT_SAMPLE_INFO, core_constants.TUMOUR_ID
         )
         wrapper = self.update_wrapper_if_null(
+            wrapper, core_constants.DEFAULT_SAMPLE_INFO, core_constants.NORMAL_ID)
+
+        wrapper = self.update_wrapper_if_null(
             wrapper, core_constants.DEFAULT_PATH_INFO, pc.PURPLE_DIR, pc.PURPLE
         )
         work_dir = self.workspace.get_work_dir()
@@ -54,6 +57,7 @@ class main(plugin_base):
         self.logger.debug("Read purity/ploidy from workspace: {0}".format(purity_ploidy))
         ploidy = purity_ploidy[pc.PLOIDY]
         tumour_id = wrapper.get_my_string(core_constants.TUMOUR_ID)
+        normal_id = wrapper.get_my_string(core_constants.NORMAL_ID)
 
         # process purple files
         self.logger.debug("Starting purple data processing")
@@ -81,7 +85,10 @@ class main(plugin_base):
         if os.path.exists(os.path.join(work_dir, core_constants.DEFAULT_PATH_INFO)):
             self.logger.debug("Writing alternate solutions JSON")
             purple_alternate = processor.write_purple_alternate_launcher(
-                self.workspace.read_json(core_constants.DEFAULT_PATH_INFO))
+                self.workspace.read_json(core_constants.DEFAULT_PATH_INFO),
+                wrapper.get_my_string(pc.PURPLE_DIR),
+                normal_id,
+                tumour_id)
             self.workspace.write_json(pc.PURPLE_ALT, purple_alternate)
         else:
             self.logger.debug("Omitting alternate solutions (path info not available)")
@@ -108,6 +115,7 @@ class main(plugin_base):
         discovered = [
             iph.ASSAY,
             core_constants.TUMOUR_ID,
+            core_constants.NORMAL_ID,
             oc.ONCOTREE_CODE,
             pc.WHIZBAM_PROJECT,
             pc.PURPLE_DIR
