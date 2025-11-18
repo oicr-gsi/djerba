@@ -702,7 +702,6 @@ class purple_processor(logger):
             "purple.filterSMALL.vcf": find_unique_file(os.path.join(purple_dir, '*purple.somatic.vcf.gz')),
             "purple.filterSMALL.vcf_index": find_unique_file(os.path.join(purple_dir, '*purple.somatic.vcf.gz.tbi')),
             "purple.filterSV.vcf": find_unique_file(os.path.join(purple_dir, '*purple.sv.vcf.gz')),
-            "purple.filterSV.vcf_index": find_unique_file(os.path.join(purple_dir, '*purple.sv.vcf.gz.tbi')),
             "purple.input_amber_directory": os.path.join(input_bucket,"amber"),
             "purple.input_cobalt_directory": os.path.join(input_bucket, "cobalt"),
             "purple.runPURPLE.min_ploidy": str(0),
