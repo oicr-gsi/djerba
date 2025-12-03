@@ -566,36 +566,17 @@ class snv_indel_processor(logger):
         """
         self.whizbam_to_text(sic.MUTATIONS_ALL, sic.WHIZBAM_ALL)
         self.whizbam_to_text(sic.MUTATIONS_ONCOGENIC, sic.WHIZBAM_ONCOGENIC)
-        
+       
     def write_working_files(self, whizbam_url):
         """
         Preprocess inputs, including OncoKB annotation
         Run the main scripts for data processing and VAF plot
         """
-        vcf_path = self.config.get_my_string(sic.MAF_PATH) # Re-using the config key for the new VCF path
-
-        # 1. Parse VCF and apply Stage 1 filters
-        vcf_generator = self._parse_purple_vcf(vcf_path)
-        vaf_cutoff_stage1 = sic.MIN_VAF # This is 0.10 or 10%
-        
-        filtered_rows = []
-        for row in vcf_generator:
-            if self._maf_body_row_ok(row, vaf_cutoff_stage1):
-                filtered_rows.append(row)
-
-        if not filtered_rows:
-            self.logger.info("No variants passed the initial Stage 1 filtering.")
-            # Ensure empty files are created to prevent downstream errors
-            self.process_snv_data(whizbam_url, None)
-            return
-
-        # 2. Create DataFrame and proceed with Stage 2
-        filtered_df = pd.DataFrame(filtered_rows)
-        
-        processed_path = os.path.join(self.work_dir, 'preprocessed_from_vcf.tsv')
-        filtered_df.to_csv(processed_path, sep='\t', index=False)
-
-        self.process_snv_data(whizbam_url, processed_path)
+        maf_path = self.config.get_my_string(sic.MAF_PATH)
+        tumour_id = self.config.get_my_string(sic.TUMOUR_ID)
+        maf_path_preprocessed = self.preprocess_maf(maf_path, tumour_id)
+        maf_path_annotated = self.annotate_maf(maf_path_preprocessed)
+        self.process_snv_data(whizbam_url, maf_path_annotated)
         # Exclude the plot if there are no somatic mutations
         if self.has_somatic_mutations():
             self.write_vaf_plot()
