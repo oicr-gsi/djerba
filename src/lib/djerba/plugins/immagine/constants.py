@@ -1,6 +1,18 @@
 """
-Constants for the PARPi table plugin.
+Constants for the IMMAGINE table plugin.
 """
+
+# Cytogenetic Alterations
+MONOSOMY_13 = 'monosomy_chr_13'
+MONOSOMY_14 = 'monosomy_chr_14'
+MONOSOMY_17 = 'monosomy_chr_17'
+DEL_1P = 'chr_1p_deletion'
+DEL_17P = 'chr_17p_deletion'
+AMP_1P = 'chr_1p_gain_or_amp'
+HYPERDIPLOIDY = 'hyperdiploidy'
+CYTOGEN_ALTS = 'cytogenetic_alterations'
+
+
 
 # Parameter names
 DATA_MUTATIONS_FILE = 'mutations_file'

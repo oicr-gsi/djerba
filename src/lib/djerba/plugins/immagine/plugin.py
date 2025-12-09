@@ -6,9 +6,12 @@ import gzip
 import logging
 import json
 import subprocess
+import pandas as pd
+import numpy as np
 from djerba.core.workspace import workspace
 import djerba.core.constants as core_constants
 import djerba.plugins.immagine.constants as constants
+import djerba.plugins.immagine.cytogen_alts as cytogen_alts
 from djerba.plugins.base import plugin_base
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.render_mako import mako_renderer
@@ -40,28 +43,39 @@ class main(plugin_base):
        
         # Get paths to files.
         work_dir = self.workspace.get_work_dir()
-        mutations_file = os.path.join(work_dir, constants.DATA_MUTATIONS_TXT)
-        cna_file = os.path.join(work_dir, constants.DATA_CNA_TXT)
-        expression_file = os.path.join(work_dir, constants.DATA_EXPRESSION_TXT)
+        #mutations_file = os.path.join(work_dir, constants.DATA_MUTATIONS_TXT)
+        seg_file = '/.mounts/labs/CGI/scratch/aalam/immagine/test.purple.segment.tsv'
+        #os.path.join(work_dir, 'test.txt')
+        seg_df = pd.read_csv(seg_file, sep = '\t')
+        #cna_file = os.path.join(work_dir, constants.DATA_CNA_TXT)
+        #expression_file = os.path.join(work_dir, constants.DATA_EXPRESSION_TXT)
 
         # Initialize the results dictionary that will contain information about all the genes.
         results = {}
-        for gene in constants.PARPI_GENES:
-            results[gene] = {}
+    
+        # Update results with cytogenetic alterations table information.
+        results = self.get_cytogenetic_alterations(seg_df, results)
+
+        #for gene in constants.PARPI_GENES:
+        #    results[gene] = {}
         
         # Update results with mutation type.
-        results = self.get_mutation_type(mutations_file, results)
+        #results = self.get_mutation_type(mutations_file, results)
 
         # Update results with copy number.
-        results = self.get_copy_number(cna_file, results)
+        #results = self.get_copy_number(cna_file, results)
 
         # Update results with expression.
-        results = self.get_expression(expression_file, results)
+        #results = self.get_expression(expression_file, results)
 
         # Add an extra column that puts an X if it is to be brought to attention.
-        results = self.add_X_marker(results)
+        #results = self.add_X_marker(results)
 
         data['results'] = results
+
+
+
+
         return data
 
     def render(self, data):
@@ -72,6 +86,33 @@ class main(plugin_base):
         self.logger.debug("Specifying params for PARPi table plugin.")
         self.set_ini_default(core_constants.ATTRIBUTES, 'research')
         self.set_priority_defaults(self.PRIORITY)
+
+
+    def get_cytogenetic_alterations(self, seg_df, results):
+        """
+        Returns a dictionary like:
+
+        {monosomy_17: true
+        monosomy_13: false
+        hyperdiploidy: false}
+
+        etc...
+        """
+
+        data = {}
+
+        data[constants.MONOSOMY_13] = cytogen_alts.monosomy("chr13", seg_df)
+        data[constants.MONOSOMY_14] = cytogen_alts.monosomy("chr14", seg_df)
+        data[constants.MONOSOMY_17] = cytogen_alts.monosomy("chr17", seg_df)
+        data[constants.DEL_1P] = cytogen_alts.chromosome_1p_deletion(seg_df)
+        data[constants.DEL_17P] = cytogen_alts.chromosome_17p_deletion(seg_df)
+        data[constants.AMP_1P] = cytogen_alts.chromosome_1p_gain_or_amp(seg_df)
+        data[constants.HYPERDIPLOIDY] = cytogen_alts.hyperdiploidy(seg_df)
+
+        results[constants.CYTOGEN_ALTS] = data
+
+
+        return results
 
 
     def get_copy_number(self, cna_path, results):
