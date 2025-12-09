@@ -590,7 +590,7 @@ class provenance_reader(logger):
     def parse_tar_maf_tumour_filtered_path(self):
         workflow = self.WF_MUTECT2
         mt = self.MT_TXT_GZ
-        suffix = '\_filtered_maf\.gz$'
+        suffix = '{}\_filtered_maf\.gz$'.format(self.tumour_id)
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
 
     def parse_virus_path(self):
