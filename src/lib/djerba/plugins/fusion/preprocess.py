@@ -55,7 +55,7 @@ class prepare_fusions(logger):
             raise FileNotFoundError(msg)
 
         arriba_path = config_wrapper.get_my_string(fc.ARRIBA_PATH)
-        if not mavis_path:
+        if not arriba_path:
             msg = "Could not find arriba file. Perhaps you need to manually specify it?"
             self.logger.error(msg)
             raise FileNotFoundError(msg)

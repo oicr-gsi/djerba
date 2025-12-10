@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.11.4: 2025-12-10
+- Update TAR assay version description to refer to umiconsensus and mutect2consensus
+- Fix TAR maf file finding in provenance reader 
+
 ## v1.11.3: 2025-10-28
 - GCGI-1660: Bugfix for loading plugins with compound names (eg. `tar.sample`)
 - GCGI-1658: Update TAR assay to version 4.0 and two static OncoKB files.
