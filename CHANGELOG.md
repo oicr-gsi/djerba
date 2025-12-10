@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v.11.4: 2025-12-09
+## v1.11.4: 2025-12-10
 - Update TAR assay version description to refer to umiconsensus and mutect2consensus
 - Fix TAR maf file finding in provenance reader 
 
