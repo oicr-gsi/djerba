@@ -462,11 +462,11 @@ class snv_indel_processor(logger):
 
             df_filter = self.proc_vep(maf_df)
             df_filt_whizbam = self.construct_whizbam_links(df=df_filter, whizbam_url=whizbam_url)
-
             df_filt_whizbam.to_csv(path_or_buf=os.path.join(self.work_dir, "data_mutations_extended.txt"), sep="\t", index=False)
 
             if df_filter.empty:
                 self.logger.info("No passed mutations")
+                df_filt_oncokb = df_filt_whizbam
                 df_filt_whizbam.to_csv(path_or_buf=os.path.join(self.work_dir, "data_mutations_extended_oncogenic.txt"), sep="\t", index=False)
             else:
                 # subset to oncokb annotated genes
