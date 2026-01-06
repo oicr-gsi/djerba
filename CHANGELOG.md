@@ -1,6 +1,7 @@
 # CHANGELOG
 
 ## Unreleased
+- GCGI-1668, GCGI-1670: Remove references to the inactive HLA plugin
 - GCGI-1669: Bugfix for empty mutation dataframe
 
 ## v1.11.4: 2025-12-10
