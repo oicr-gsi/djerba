@@ -5,6 +5,7 @@ import unittest
 import tempfile
 import shutil
 import string
+from copy import deepcopy
 from djerba.util.validator import path_validator
 from djerba.plugins.plugin_tester import PluginTester
 from djerba.core.workspace import workspace
@@ -15,10 +16,13 @@ class TestTarSwgsPlugin(PluginTester):
     INI_NAME = 'tar_swgs.ini'
 
     def setUp(self):
-        self.path_validator = path_validator()
+        super().setUp()
+        # superlcass sets path_validator, tmp_dir
+        # set maxDiff locally so we can override
+        #self.path_validator = path_validator()
+        #self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
+        #self.tmp_dir = self.tmp.name
         self.maxDiff = None
-        self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
-        self.tmp_dir = self.tmp.name
         self.sup_dir = directory_finder().get_test_dir()
 
         self.provenance_output = os.path.join(self.sup_dir, "plugins/tar/tar-cnv/provenance_subset.tsv.gz")
@@ -26,6 +30,13 @@ class TestTarSwgsPlugin(PluginTester):
         self.purity_fail = os.path.join(self.sup_dir, "plugins/tar/tar-cnv/purity_fail/purity.txt")
         self.purity_pass_json = os.path.join(self.sup_dir, "plugins/tar/tar-cnv/purity_pass/tar_swgs_purity_pass.json")
         self.purity_fail_json = os.path.join(self.sup_dir, "plugins/tar/tar-cnv/purity_fail/tar_swgs_purity_fail.json")
+
+    def redact_json_data(self, data):
+        redacted = deepcopy(data)
+        # do not redact if empty
+        if 'gene_information_merger' in redacted['merge_inputs']:
+            redacted['merge_inputs']['gene_information_merger'] = self.PLACEHOLDER
+        return redacted
 
     def testTarSwgsPurityPass(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -39,7 +50,8 @@ class TestTarSwgsPlugin(PluginTester):
         template = string.Template(template_str)
         ini_str = template.substitute({'DJERBA_TEST_DATA': self.sup_dir})
         input_dir = os.path.join(self.get_tmp_dir(), 'input')
-        os.mkdir(input_dir)
+        if not os.path.isdir(input_dir):
+            os.mkdir(input_dir)
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
 
@@ -64,7 +76,8 @@ class TestTarSwgsPlugin(PluginTester):
         template = string.Template(template_str)
         ini_str = template.substitute({'DJERBA_TEST_DATA': self.sup_dir})
         input_dir = os.path.join(self.get_tmp_dir(), 'input')
-        os.mkdir(input_dir)
+        if not os.path.isdir(input_dir):
+            os.mkdir(input_dir)
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
 
