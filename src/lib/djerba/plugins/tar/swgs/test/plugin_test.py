@@ -17,19 +17,18 @@ class TestTarSwgsPlugin(PluginTester):
 
     def setUp(self):
         super().setUp()
-        # superlcass sets path_validator, tmp_dir
+        # superclass sets path_validator, tmp_dir
         # set maxDiff locally so we can override
-        #self.path_validator = path_validator()
-        #self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
-        #self.tmp_dir = self.tmp.name
         self.maxDiff = None
         self.sup_dir = directory_finder().get_test_dir()
-
-        self.provenance_output = os.path.join(self.sup_dir, "plugins/tar/tar-cnv/provenance_subset.tsv.gz")
-        self.purity_pass = os.path.join(self.sup_dir, "plugins/tar/tar-cnv/purity_pass/purity.txt")
-        self.purity_fail = os.path.join(self.sup_dir, "plugins/tar/tar-cnv/purity_fail/purity.txt")
-        self.purity_pass_json = os.path.join(self.sup_dir, "plugins/tar/tar-cnv/purity_pass/tar_swgs_purity_pass.json")
-        self.purity_fail_json = os.path.join(self.sup_dir, "plugins/tar/tar-cnv/purity_fail/tar_swgs_purity_fail.json")
+        tar_cnv_dir = os.path.join(os.path.join(self.sup_dir, "plugins", "tar", "tar-cnv"))
+        purity_fail_dir = os.path.join(self.tar_cnv_dir, "purity_fail")
+        purity_pass_dir = os.path.join(self.tar_cnv_dir, "purity_pass")
+        self.provenance_output = os.path.join(tar_cnv_dir, "provenance_subset.tsv.gz")
+        self.purity_pass = os.path.join(purity_pass_dir, "purity.txt")
+        self.purity_fail = os.path.join(purity_fail_dir, "purity.txt")
+        self.purity_pass_json = os.path.join(purity_pass_dir, "tar_swgs_purity_pass.json")
+        self.purity_fail_json = os.path.join(purity_fail_dir, "tar_swgs_purity_fail.json")
 
     def redact_json_data(self, data):
         redacted = deepcopy(data)

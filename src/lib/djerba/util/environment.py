@@ -77,7 +77,7 @@ class directory_finder(logger):
         return self.has_valid_directory(self.DJERBA_TEST_DIR_VAR)
 
     def has_valid_test_output_dir(self):
-        return self.has_valid_directory(self.DJERBA_TEST_OUTPUT_DIR_VAR)    
+        return self.has_valid_directory(self.DJERBA_TEST_OUTPUT_DIR_VAR)
 
 
 class DjerbaEnvDirError(Exception):
