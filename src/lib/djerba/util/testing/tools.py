@@ -22,8 +22,10 @@ class TestBase(unittest.TestCase):
         self.maxDiff = None
         finder = directory_finder()
         if finder.has_valid_test_output_dir():
-            self.tmp = None # temporary directory object is not needed
             out_dir = finder.get_test_output_dir()
+            # directory exists and is readable, now check if it is writable
+            self.path_validator.validate_output_dir(out_dir)
+            self.tmp = None # temporary directory object is not needed
             # define a subdirectory for this test, and create it if needed
             self.tmp_dir = os.path.join(out_dir, self.id())
             if not os.path.isdir(self.tmp_dir):
