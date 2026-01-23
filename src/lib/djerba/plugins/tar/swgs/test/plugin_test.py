@@ -22,8 +22,8 @@ class TestTarSwgsPlugin(PluginTester):
         self.maxDiff = None
         self.sup_dir = directory_finder().get_test_dir()
         tar_cnv_dir = os.path.join(os.path.join(self.sup_dir, "plugins", "tar", "tar-cnv"))
-        purity_fail_dir = os.path.join(self.tar_cnv_dir, "purity_fail")
-        purity_pass_dir = os.path.join(self.tar_cnv_dir, "purity_pass")
+        purity_fail_dir = os.path.join(tar_cnv_dir, "purity_fail")
+        purity_pass_dir = os.path.join(tar_cnv_dir, "purity_pass")
         self.provenance_output = os.path.join(tar_cnv_dir, "provenance_subset.tsv.gz")
         self.purity_pass = os.path.join(purity_pass_dir, "purity.txt")
         self.purity_fail = os.path.join(purity_fail_dir, "purity.txt")
@@ -59,7 +59,7 @@ class TestTarSwgsPlugin(PluginTester):
         params = {
             self.INI: self.INI_NAME,
             self.JSON: json_location,
-            self.MD5: '0c1cd57b50dc4b69f20cef6a3a732026'
+            self.MD5: '039ca07ea0537ec5edd6a6715b17d77c'
         }
         self.run_basic_test(input_dir, params)
 
