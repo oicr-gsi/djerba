@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-1671: Fixes for outdated OncoKB test data. Adds DJERBA_TEST_OUTPUT_DIR hook.
+
 ## v1.11.5: 2026-01-06
 - GCGI-1668, GCGI-1670: Remove references to the inactive HLA plugin
 - GCGI-1669: Bugfix for empty mutation dataframe
