@@ -9,6 +9,7 @@ import re
 import tempfile
 import time
 import unittest
+from shutil import rmtree
 import djerba.util.constants as constants
 from djerba.util.environment import directory_finder
 from djerba.util.validator import path_validator
@@ -26,10 +27,13 @@ class TestBase(unittest.TestCase):
             # directory exists and is readable, now check if it is writable
             self.path_validator.validate_output_dir(out_dir)
             self.tmp = None # temporary directory object is not needed
-            # define a subdirectory for this test, and create it if needed
+            # define a subdirectory for this test
+            # - create it if needed
+            # - !!!IMPORTANT!!! subdirectory is deleted if it already exists
             self.tmp_dir = os.path.join(out_dir, self.id())
-            if not os.path.isdir(self.tmp_dir):
-                os.mkdir(self.tmp_dir)
+            if os.path.exists(self.tmp_dir):
+                rmtree(self.tmp_dir)
+            os.mkdir(self.tmp_dir)
         else:
             self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
             self.tmp_dir = self.tmp.name

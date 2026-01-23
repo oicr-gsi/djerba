@@ -49,8 +49,7 @@ class TestTarSwgsPlugin(PluginTester):
         template = string.Template(template_str)
         ini_str = template.substitute({'DJERBA_TEST_DATA': self.sup_dir})
         input_dir = os.path.join(self.get_tmp_dir(), 'input')
-        if not os.path.isdir(input_dir):
-            os.mkdir(input_dir)
+        os.mkdir(input_dir)
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
 
@@ -75,8 +74,7 @@ class TestTarSwgsPlugin(PluginTester):
         template = string.Template(template_str)
         ini_str = template.substitute({'DJERBA_TEST_DATA': self.sup_dir})
         input_dir = os.path.join(self.get_tmp_dir(), 'input')
-        if not os.path.isdir(input_dir):
-            os.mkdir(input_dir)
+        os.mkdir(input_dir)
         with open(os.path.join(input_dir, self.INI_NAME), 'w') as ini_file:
             ini_file.write(ini_str)
 
