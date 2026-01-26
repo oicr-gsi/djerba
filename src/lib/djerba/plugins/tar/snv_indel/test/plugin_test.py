@@ -16,15 +16,20 @@ class TestTarSNVIndelPlugin(PluginTester):
     INI_NAME = 'tar_snv_indel.ini'
 
     def setUp(self):
+        super().setUp()
         self.path_validator = path_validator()
         self.maxDiff = None
-        self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
-        self.tmp_dir = self.tmp.name
         self.sup_dir = directory_finder().get_test_dir()
-        
-        self.provenance_output = os.path.join(self.sup_dir, "plugins/tar/tar-snv-indel/provenance_subset.tsv.gz")
-        self.purity = os.path.join(self.sup_dir, "plugins/tar/tar-snv-indel/purity.txt")
-        self.purity_json = os.path.join(self.sup_dir, "plugins/tar/tar-snv-indel/tar_snv_indel.json")
+        tar_snv_indel_dir = os.path.join(self.sup_dir, 'plugins', 'tar', 'tar-snv-indel')
+        self.provenance_output = os.path.join(tar_snv_indel_dir, "provenance_subset.tsv.gz")
+        self.purity = os.path.join(tar_snv_indel_dir, "purity.txt")
+        self.purity_json = os.path.join(tar_snv_indel_dir, "tar_snv_indel.json")
+
+    def redact_json_data(self, data):
+        """replaces empty method from testing.tools"""
+        if 'gene_information_merger' in data['merge_inputs']:
+            data['merge_inputs']['gene_information_merger'] = self.PLACEHOLDER
+        return data
 
     def testTarSNVIndel(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
