@@ -45,7 +45,7 @@ class main(plugin_base):
         self.set_ini_default('configure_priority', 100)
         self.set_ini_default('extract_priority', 500)
         self.set_ini_default('render_priority', 500)
-
+        self.set_ini_default(constants.CALLABILITY_WARNING, False)
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -82,9 +82,11 @@ class main(plugin_base):
         # Fetch tumour_id and donor
         donor = config[self.identifier][constants.DONOR]
         tumour_id = config[self.identifier][core_constants.TUMOUR_ID]
+        ignore_warning = wrapper.get_my_boolean(constants.CALLABILITY_WARNING)
+
         # SECOND PASS: Get files based on input parameters
         if wrapper.my_param_is_null(constants.CALLABILITY):
-            wrapper.set_my_param(constants.CALLABILITY, self.fetch_callability_etl_data(donor, tumour_id))        
+            wrapper.set_my_param(constants.CALLABILITY, self.fetch_callability_etl_data(donor, tumour_id, ignore_warning))        
         if wrapper.my_param_is_null(constants.COVERAGE):
             wrapper.set_my_param(constants.COVERAGE, self.fetch_coverage_etl_data(donor, tumour_id))
 
@@ -119,7 +121,7 @@ class main(plugin_base):
         renderer = mako_renderer(self.get_module_dir())
         return renderer.render_name('sample_template.html', data)
 
-    def fetch_callability_etl_data(self, donor, tumour_id):
+    def fetch_callability_etl_data(self, donor, tumour_id, ignore_warning):
         etl_cache = QCETLCache(self.QCETL_CACHE)
         cached_callabilities = etl_cache.mutectcallability.mutectcallability
         columns_of_interest = gsiqcetl.column.MutetctCallabilityColumn
@@ -135,9 +137,10 @@ class main(plugin_base):
             # Round down to one decimal place
             callability = math.floor(data.iloc[0][columns_of_interest.Callability].item() * 1000) / 10
             callability_threshold = 75
-            if callability < callability_threshold:
-                msg = f"Callability is below the reportable threshold: {callability:.1f}% < {callability_threshold}%"
-                self.logger.warning(msg)
+            if callability < callability_threshold and not ignore_warning:
+                msg = f"Callability is below the reportable threshold: {callability:.1f}% < {callability_threshold}%. This may be overridden at the user's discretion by setting ignore_warning=True."
+                self.logger.error(msg)
+                raise LowCallabilityError(msg)
             return callability
         elif len(data) > 1:
             msg = "Djerba found more than one callability associated with donor {0} and tumour_id {1} in QC-ETL. Double check that the callability found by Djerba is correct; if not, may have to manually specify the callability.".format(donor, tumour_id)
@@ -185,4 +188,6 @@ class main(plugin_base):
         return(wrapper)
 
 class MissingQCETLError(Exception):
-    pass 
+    pass
+class LowCallabilityError(Exception):
+    pass
