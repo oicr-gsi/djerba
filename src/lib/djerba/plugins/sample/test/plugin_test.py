@@ -59,6 +59,20 @@ class TestWgtsSamplePlugin(PluginTester):
         }
         self.run_basic_test(test_source_dir, params)
 
+    def testWgtsSampleWithLowCallability(self):
+        """
+        Callability is below 75%, but ignore_warning is set to True in the config.
+        """
+        test_source_dir = os.path.realpath(os.path.dirname(__file__))
+        json_location = os.path.join(self.sample_dir, "report_json", "sample_low-callability.json")
+        ini_location = os.path.join(self.sample_dir, "sample_low-callability.ini")
+
+        params = {
+            self.INI: ini_location,
+            self.JSON: json_location,
+            self.MD5: '1afea000703f3969982eaf04092c6f61'
+        }
+        self.run_basic_test(test_source_dir, params)
 
 if __name__ == '__main__':
     unittest.main()
