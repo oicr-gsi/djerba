@@ -120,7 +120,6 @@ class fusion_tools(logger):
         """
         df = pd.read_csv(os.path.join(self.work_dir, fc.DATA_FUSIONS_ANNOTATED), sep = "\t")
         if len(df) > 0:
-            #df = df[~df.MUTATION_EFFECT.isin(["Unknown", "Inconclusive"])]
             df = df[df.MUTATION_EFFECT != "Unknown"]
         return df
 
