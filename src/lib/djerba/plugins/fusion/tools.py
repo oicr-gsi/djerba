@@ -69,6 +69,18 @@ class fusion_tools(logger):
             # Update the count to reflect what's actually in the table body.
             results[fc.CLINICALLY_RELEVANT_VARIANTS] = len(unique_fusions_in_body)
 
+            # Filter gene_info to only include reportable rows
+            reportable_genes = set(    
+                gene
+                for fusion in unique_fusions_in_body
+                for gene in fusion.split("::")
+            )
+            gene_info = [
+                gene_dict 
+                for gene_dict in gene_info
+                if gene_dict["Gene"] in reportable_genes
+            ]
+
             results[fc.BODY] = rows
         else:
             results[fc.BODY] = []
@@ -108,6 +120,7 @@ class fusion_tools(logger):
         """
         df = pd.read_csv(os.path.join(self.work_dir, fc.DATA_FUSIONS_ANNOTATED), sep = "\t")
         if len(df) > 0:
+            #df = df[~df.MUTATION_EFFECT.isin(["Unknown", "Inconclusive"])]
             df = df[df.MUTATION_EFFECT != "Unknown"]
         return df
 
