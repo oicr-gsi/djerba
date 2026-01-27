@@ -69,6 +69,18 @@ class fusion_tools(logger):
             # Update the count to reflect what's actually in the table body.
             results[fc.CLINICALLY_RELEVANT_VARIANTS] = len(unique_fusions_in_body)
 
+            # Filter gene_info to only include reportable genes 
+            reportable_genes = set(    
+                gene
+                for fusion in unique_fusions_in_body
+                for gene in fusion.split("::")
+            )
+            gene_info = [
+                gene_dict 
+                for gene_dict in gene_info
+                if gene_dict["Gene"] in reportable_genes
+            ]
+
             results[fc.BODY] = rows
         else:
             results[fc.BODY] = []
