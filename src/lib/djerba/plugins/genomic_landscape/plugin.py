@@ -43,6 +43,7 @@ class main(plugin_base):
     MIN_HRD_PURITY = 0.5
     MIN_HRD_PURITY_NOT_FFPE = 0.3
     MAX_HRD_COVERAGE = 115
+    HRDETECT_PATH_NOT_FOUND = 'HRD file not available'
 
     def specify_params(self):
         discovered = [
@@ -53,7 +54,8 @@ class main(plugin_base):
             glc.MSI_FILE,
             glc.CTDNA_FILE,
             glc.HRDETECT_PATH,
-            glc.SAMPLE_TYPE
+            glc.SAMPLE_TYPE,
+            glc.COVERAGE_MEAN
         ]
         for key in discovered:
             self.add_ini_discovered(key)
@@ -92,6 +94,7 @@ class main(plugin_base):
         w = self.update_wrapper_if_null(w, dpi, glc.CTDNA_FILE, glc.CTDNA_WORKFLOW)
         w = self.update_wrapper_if_null(w, dpi, glc.HRDETECT_PATH, glc.HRD_WORKFLOW)
         w = self.set_ctdna_file(w, dpi)
+        w = self.set_hrdetect_path(w, dpi)
         return w.get_config()
 
     def extract(self, config):
@@ -111,7 +114,10 @@ class main(plugin_base):
         )
         
         # Get coverage for reporting HRD
-        coverage = float(self.workspace.read_maybe_json(sample_constants.QC_SAMPLE_INFO)[sample_constants.COVERAGE_MEAN])
+        try:
+            coverage = float(self.workspace.read_maybe_json(sample_constants.QC_SAMPLE_INFO)[sample_constants.COVERAGE_MEAN])
+        except:
+            coverage = float(wrapper.get_my_string(glc.COVERAGE_MEAN))
 
         # evaluate HRD and MSI reportability
         hrd_ok, msi_ok, cant_report_hrd_reason = self.evaluate_reportability(
@@ -127,14 +133,20 @@ class main(plugin_base):
         ctdna_file = wrapper.get_my_string(glc.CTDNA_FILE)
         ctdna_proc = ctdna_processor(self.log_level, self.log_path)
         if ctdna_file == self.CTDNA_FILE_NOT_FOUND:
+            print("ctdna file not found")
             results[glc.CTDNA] = ctdna_proc.get_dummy_results()
         else:
             results[glc.CTDNA] = ctdna_proc.run(ctdna_file)
+        hrd_file = wrapper.get_my_string(glc.HRDETECT_PATH)
         hrd = hrd_processor(self.log_level, self.log_path)
-        results[glc.BIOMARKERS][glc.HRD] = hrd.run(
-            work_dir,
-            wrapper.get_my_string(glc.HRDETECT_PATH)
-        )
+        if hrd_file == self.HRDETECT_PATH_NOT_FOUND:
+            results[glc.CAN_REPORT_HRD] = False
+            results[glc.CANT_REPORT_HRD_REASON] = glc.AVAILABILITY_REASON
+        else:
+            results[glc.BIOMARKERS][glc.HRD] = hrd.run(
+                    work_dir,
+                    wrapper.get_my_string(glc.HRDETECT_PATH)
+                    )
         results[glc.BIOMARKERS][glc.MSI] = msi_processor(self.log_level, self.log_path).run(
             work_dir,
             r_script_dir,
@@ -145,12 +157,15 @@ class main(plugin_base):
         # Annotate genomic biomarkers for therapy info/merge inputs
         annotated_maf = self.annotate_oncokb(work_dir, wrapper)
         merge_inputs = self.get_oncokb_merge_inputs(annotated_maf, msi_ok)
-        hrd_annotation = hrd.annotate_NCCN(
-            results[glc.BIOMARKERS][glc.HRD]['Genomic biomarker alteration'],
-            wrapper.get_my_string(oncokb_constants.ONCOTREE_CODE),
-            plugin_data_dir,
-            directory_finder(self.log_level, self.log_path).get_data_dir()
-        )
+        if hrd_file == self.HRDETECT_PATH_NOT_FOUND:
+            hrd_annotation = None
+        else:
+            hrd_annotation = hrd.annotate_NCCN(
+                results[glc.BIOMARKERS][glc.HRD]['Genomic biomarker alteration'],
+                wrapper.get_my_string(oncokb_constants.ONCOTREE_CODE),
+                plugin_data_dir,
+                directory_finder(self.log_level, self.log_path).get_data_dir()
+            )
         if hrd_annotation:
             if hrd_ok:
                 merge_inputs.append(hrd_annotation)
@@ -275,4 +290,21 @@ class main(plugin_base):
                 self.logger.debug('Non-clinical research report, ctDNA file is not required')
         else:
             self.logger.debug("Found ctDNA file: '{0}'".format(ctdna_file))
+        return cw
+
+    def set_hrdetect_path(self, cw, info_name):
+        # make HRD results optional for research use
+        cw = self.update_wrapper_if_null(cw, info_name, glc.HRDETECT_PATH, glc.HRD_WORKFLOW)
+        hrdetect_path = cw.get_my_string(glc.HRDETECT_PATH)
+        if hrdetect_path == 'None':
+            self.logger.debug('HRD path not found in provenance or manual inputs')
+            if core_constants.CLINICAL in cw.get_my_attributes():
+                msg = "Clinical report cannot proceed without HRDetect file"
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            else:
+                cw.set_my_param(glc.HRDETECT_PATH, self.HRDETECT_PATH_NOT_FOUND)
+                self.logger.debug('Non-clinical research report, HRDetect file is not required')
+        else:
+            self.logger.debug("Found HRDetect file: '{0}'".format(hrdetect_path))
         return cw

@@ -1,5 +1,8 @@
 import csv
 import os
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 
 import djerba.plugins.genomic_landscape.constants as constants
 from djerba.util.image_to_base64 import converter
@@ -20,7 +23,7 @@ class tmb_processor(logger):
         if tmb_value == None:
             tmb_value = genomic_landscape_info[constants.TMB_PER_MB]
         tmb_dict = self.call_TMB(tmb_value)
-        tmb_plot_location = self.write_biomarker_plot(work_dir, r_script_dir, tcga_code, "tmb", tmb=tmb_value)
+        tmb_plot_location = self.write_biomarker_plot(work_dir, tcga_code, "tmb", tmb=tmb_value)
         tmb_dict[constants.METRIC_PLOT] = converter().convert_svg(tmb_plot_location, 'TMB plot')
 
         data = {
@@ -160,16 +163,70 @@ class tmb_processor(logger):
         self.logger.debug(msg)
         return tmb_count
 
-    def write_biomarker_plot(self, work_dir, r_script_dir, tcga_code, marker, tmb):
+    def write_biomarker_plot(self, work_dir, tcga_code, marker, tmb):
         out_path = os.path.join(work_dir, marker + '.svg')
-        args = [
-            os.path.join(r_script_dir, 'tmb_plot.R'),
-            '-w', work_dir,
-            '-d', os.path.realpath(os.path.join(os.path.dirname(__file__), 'data')),
-            '-c', tcga_code,
-            '-m', marker,
-            '-t', str(tmb)
-        ]
-        subprocess_runner(self.log_level, self.log_path).run(args)
+        data_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), 'data'))
+        external_tmb_file = os.path.join(data_dir, 'tmbcomp-externaldata.txt')
+        external_tmb_data = pd.read_csv(external_tmb_file, sep = '\t')
+        tcga_tmb_file = os.path.join(data_dir, 'tmbcomp-tcga.txt')
+        tcga_tmb_data = pd.read_csv(tcga_tmb_file, sep = '\t')
+
+        external_tmb_data_type = external_tmb_data[external_tmb_data["CANCER.TYPE"].eq(tcga_code)] if tcga_code in external_tmb_data["CANCER.TYPE"].values else external_tmb_data.iloc[0:0]
+
+        tcga_tmb_data_type = tcga_tmb_data[tcga_tmb_data["CANCER.TYPE"].eq(tcga_code)] if tcga_code in tcga_tmb_data["CANCER.TYPE"].values else tcga_tmb_data.iloc[0:0]
+
+        if tcga_code in external_tmb_data_type['CANCER.TYPE'].values:
+            median_tmb = external_tmb_data_type['tmb'].median()
+            cohort_label = f"{tcga_code.upper()} Cohort"
+            plot_data = external_tmb_data_type
+        elif tcga_code in tcga_tmb_data_type['CANCER.TYPE'].values:
+            median_tmb = tcga_tmb_data_type['tmb'].median()
+            cohort_label = f"TCGA {tcga_code.upper()} Cohort"
+            plot_data = tcga_tmb_data_type
+        else:
+            median_tmb = tcga_tmb_data['tmb'].median()
+            cohort_label = "All TCGA"
+            plot_data = tcga_tmb_data
+
+        fig, ax = plt.subplots(figsize=(8, 1.6))
+
+        ax.boxplot(
+            plot_data["tmb"],
+            vert=False,
+            widths=0.3,
+            showfliers=False,
+            showcaps=False,
+            patch_artist=True,
+            boxprops={"facecolor": "white", "edgecolor": "black"},
+            medianprops={"color": "black"}
+                )
+
+        # Threshold line (TMB = 10)
+        ax.axvline(10, color="lightgray")
+        ax.text(5, 1.5, "TMB-L", color="#4d4d4d", va="bottom", ha="center", fontsize=10)
+        ax.text((10 + max(tmb, 15)) / 2, 1.5, "TMB-H",
+                color="#4d4d4d", va="bottom", ha="center", fontsize=10)
+        ax.text(median_tmb, 1.3, cohort_label,
+                color="#000000", va="top", ha="center", fontsize=10)
+        ax.text(tmb, 1, "This Sample",
+                color="#ff0000", va="top", ha="left", fontsize=10)
+
+        ax.scatter(tmb, 1, facecolors='none', edgecolors='#ff0000', s=200)
+        ax.scatter(tmb, 1, color='red', s=30)
+
+        ax.set_xlim(0, max(tmb, 15))
+        ax.set_yticks([])
+        ax.set_xlabel("coding mutations per Mb")
+        ax.set_ylabel("")
+
+        for spine in ax.spines.values():
+            spine.set_visible(False)
+        ax.grid(False)
+        ax.set_facecolor("none")
+        fig.patch.set_alpha(0)
+
+        plt.savefig(out_path, dpi=300, bbox_inches="tight", transparent=True)
+        plt.close(fig)
+
         self.logger.info("Wrote tmb plot to {0}".format(out_path))
         return out_path

@@ -12,10 +12,12 @@ MSI_FILE = 'msi_file'
 CTDNA_FILE = 'ctdna_file'
 SAMPLE_TYPE = 'sample_type'
 UNKNOWN_SAMPLE_TYPE = 'Unknown sample type'
+COVERAGE_MEAN = 'coverage'
 
 # Constants for render
 PURITY_REASON = 'purity'
 COVERAGE_REASON = 'coverage'
+AVAILABILITY_REASON = 'hrd_unavailable'
 
 # biomarker reportability
 CAN_REPORT_HRD = 'can_report_hrd'

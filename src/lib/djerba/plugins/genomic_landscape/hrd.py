@@ -1,10 +1,14 @@
 """Djerba plugin for pwgs reporting"""
 import csv
 import json
+import matplotlib.pyplot as plt
+import numpy as np
 import os
+import pandas as pd
+
 
 from djerba.util.logger import logger
-from djerba.util.subprocess_runner import subprocess_runner
+from djerba.util.image_to_base64 import converter
 from djerba.util.validator import path_validator
 
 class hrd_processor(logger):
@@ -74,13 +78,99 @@ class hrd_processor(logger):
         return mainType
 
     def make_HRD_plot(self, output_dir):
-        args = [
-            os.path.join(os.path.dirname(__file__),'Rscripts/hrd_plot.R'),
-            '--dir', output_dir,
-            '--cutoff', str(self.HRD_CUTOFF)
-        ]
-        pwgs_results = subprocess_runner(self.log_level, self.log_path).run(args)
-        return pwgs_results.stdout.split('"')[1]
+        """
+        Create plot for HRD probability. 
+        """
+        boot = pd.read_csv(os.path.join(output_dir, 'hrd.tmp.txt'), sep = "\t", header=None, names = ["var", "q1", "median_value", "q3"])
+        boot["Sample"] = "Sample"
+        weights_df = boot[boot["var"].isin(["del.mh.prop.w", "SNV3.w", "SV3.w", "SV5.w", "hrd.w"])].copy()
+
+        #equation [4] in Davies et al. 2017
+        intercept = boot.loc[boot["var"] == "intercept.w", "median_value"].iloc[0]
+        weights_df["probability"] = 1 / (1 + np.exp(-(intercept + weights_df["median_value"])))
+
+        #rename variables
+        var_map = {
+                "SV5.w": "Large Deletions",
+                "SV3.w": "Tandem Duplications",
+                "SNV3.w": "COSMIC SBS3",
+                "hrd.w": "LOH",
+                "del.mh.prop.w": "Microhomologous Deletions"                    
+                }
+        weights_df["var_long"] = weights_df["var"].map(var_map)
+        weights_df["var_longer"] = (weights_df["var_long"] + ": " + weights_df["probability"].round(2).map(lambda x: f"{x:.2f}"))
+        weights_df = weights_df.sort_values("var_long", ascending=False)
+
+        #adjust position of "This sample" label to score
+        adjust_label_w_position = 0.25
+        probability_value = boot.loc[boot["var"] == "Probability.w", "median_value"].iloc[0]
+        if probability_value > 0.5:
+            adjust_label_w_position = 0.5
+
+        out_path = os.path.join(output_dir, "hrd.svg")
+        fig, ax = plt.subplots(figsize=(8, 1.6))
+        fig.patch.set_alpha(0)
+        ax.set_facecolor("none")
+
+        bottom = 0
+        for _, row in weights_df.iterrows():
+            ax.barh(
+                y="Sample",
+                width=row["probability"],
+                left=bottom,
+                height=0.5,
+                color="#FFFFFF",
+                edgecolor="#FFFFFF",
+                label=row["var_longer"]
+                                                                                
+                    )
+            bottom += row["probability"]
+
+        ax.hlines(y = weights_df["Sample"],
+                xmin = boot.loc[boot["var"] == "Probability.w", "q1"].iloc[0], 
+                xmax = boot.loc[boot["var"] == "Probability.w", "q3"].iloc[0],
+                colors = "#FF0000")
+
+        ax.axvline(self.HRD_CUTOFF, color="lightgray")
+        ax.text(self.HRD_CUTOFF / 2, 0.3, "HR-P", color="#4d4d4d", ha="center", fontsize=14)
+        ax.text(0.85, 0.3, "HR-D", color="#4d4d4d", ha="center", fontsize=14)
+        
+        ax.scatter(probability_value, "Sample", s=200, facecolors="none", edgecolors="#FF0000")
+        ax.scatter(probability_value, "Sample", s=30, color="#FF0000")
+
+        ax.text(
+            probability_value,
+            "Sample",
+            "This Sample",
+            color="#FF0000",
+            fontsize=14,
+            ha="right",
+            va="top"                                
+            )
+
+        ax.set_xlabel("HRD probability", fontsize=14)
+        ax.set_ylabel("")
+        ax.set_yticks([])
+        ax.set_xlim(0, max(probability_value, 1))
+        ax.set_title("")
+
+        for spine in ax.spines.values():
+            spine.set_visible(False)
+
+        plt.subplots_adjust(right=0.7)
+
+        ax.legend(
+            title="",
+            frameon=False,
+            bbox_to_anchor=(1.02, 1),
+            loc="upper left",
+            fontsize=12
+            )
+
+        plt.savefig(out_path, bbox_inches="tight", transparent=True)
+        plt.close()
+
+        return converter().convert_svg(out_path, 'HRD plot')
 
     def read_oncotree_main_type(self, oncotree_code, data_dir):
         """
@@ -120,7 +210,7 @@ class hrd_processor(logger):
 
     def write_hrd_quartiles(self, work_dir, hrd_path):
         """
-        Reads JSON from hrDetect and writes quartiles file for R plotting
+        Reads JSON from hrDetect and writes quartiles file for plotting
         """
         self.validator.validate_output_dir(work_dir)
         self.validator.validate_input_file(hrd_path)
@@ -132,5 +222,3 @@ class hrd_processor(logger):
                 quartiles = hrd_data["hrdetect_call"][row]
                 print("\t".join((row,"\t".join([str(item) for item in list(quartiles)]))), file=out_file)
         return hrd_data
-
-

@@ -5,13 +5,14 @@ List of functions to convert MSI information into json format.
 # IMPORTS
 import csv
 import os
+import pandas as pd
+import matplotlib.pyplot as plt
 
 import numpy
 
 import djerba.plugins.genomic_landscape.constants as constants
 from djerba.util.image_to_base64 import converter
 from djerba.util.logger import logger
-from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.validator import path_validator
 
 class msi_processor(logger):
@@ -59,7 +60,7 @@ class msi_processor(logger):
     def assemble_MSI(self, work_dir, r_script_dir, msi_summary):
         msi_value = self.extract_MSI(work_dir, msi_summary)
         msi_dict = self.call_MSI(msi_value)
-        msi_plot_location = self.write_biomarker_plot(work_dir, r_script_dir, "msi")
+        msi_plot_location = self.write_biomarker_plot(work_dir, "msi")
         msi_dict[constants.METRIC_PLOT] = converter().convert_svg(msi_plot_location, 'MSI plot')
         return msi_dict
 
@@ -109,12 +110,56 @@ class msi_processor(logger):
                     raise RuntimeError(msg) from err
         return msi_value
 
-    def write_biomarker_plot(self, work_dir, r_script_dir, marker):
+    def write_biomarker_plot(self, work_dir, marker):
         out_path = os.path.join(work_dir, marker + '.svg')
-        args = [
-            os.path.join(r_script_dir, 'msi_plot.R'),
-            '-d', work_dir
-        ]
-        subprocess_runner(self.log_level, self.log_path).run(args)
+        cutoff_MSS = 5
+        cutoff_MSI = 15
+
+        boot = pd.read_csv(os.path.join(work_dir, f"{marker}.txt"), sep = "\t",
+                names = ["q0","q1","median_value","q3","q4"])
+        boot["Sample"] = "Sample"
+
+        msi_median = pd.to_numeric(boot["median_value"][0])
+
+        fig, ax = plt.subplots(figsize=(8, 1.6))
+        fig.patch.set_alpha(0)
+        ax.set_facecolor("none")
+
+        ax.hlines(y = boot["Sample"],
+                xmin = boot["q1"], 
+                xmax = boot["q3"],
+                colors = "#FF0000")
+
+        ax.axvline(cutoff_MSS, color="lightgray")
+        ax.text(cutoff_MSS / 2, 0.05, "MSS", color="#4d4d4d", ha="right", va="top", fontsize=10)
+        ax.axvline(cutoff_MSI, color="lightgray")
+        ax.text((cutoff_MSI + max(msi_median, 40))/2, 0.05, "MSI", color="#4d4d4d", ha="right", va="top", fontsize=10)
+        ax.text(cutoff_MSS + cutoff_MSI/2, 0.05, "Inconclusive", color="#4d4d4d", ha="right", va="top", fontsize=10)
+        
+        ax.scatter(msi_median, boot["Sample"], s=200, facecolors="none", edgecolors="#FF0000")
+        ax.scatter(msi_median, boot["Sample"], s=30, color="#FF0000")
+
+        ax.text(
+            msi_median,
+            0,
+            "This Sample",
+            color="#FF0000",
+            fontsize=10,
+            ha="left",
+            va="bottom"                                
+            )
+
+        ax.set_xlabel("unstable microsatellites (%)")
+        ax.set_ylabel("")
+        ax.set_yticks([])
+        ax.set_xlim(0, max(msi_median, 40))
+        ax.set_title("")
+       
+        for spine in ax.spines.values():
+            spine.set_visible(False)
+
+        plt.savefig(out_path, bbox_inches="tight", transparent=True)
+        plt.close()
+
         self.logger.info("Wrote msi plot to {0}".format(out_path))
         return out_path

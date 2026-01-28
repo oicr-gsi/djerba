@@ -27,6 +27,13 @@ class html_builder:
                         hb.td("NA"),
                         hb.td("Coverage above threshold to evaluate HRD; must be &#8804;115X")
                     ]
+                
+                elif cant_report_hrd_reason == constants.AVAILABILITY_REASON:
+                    cells = [
+                        hb.td(info[constants.ALT]),
+                        hb.td("NA"),
+                        hb.td("hrDetect results not available.")
+                        ]
                 else:
                     msg = "Cannot report HRD reason: {0}. The only valid reasons for HRD to not be reported are purity and coverage".format(cant_report_hrd_reason)
                     self.logger.error(msg)
