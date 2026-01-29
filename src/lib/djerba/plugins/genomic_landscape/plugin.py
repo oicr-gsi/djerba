@@ -133,7 +133,6 @@ class main(plugin_base):
         ctdna_file = wrapper.get_my_string(glc.CTDNA_FILE)
         ctdna_proc = ctdna_processor(self.log_level, self.log_path)
         if ctdna_file == self.CTDNA_FILE_NOT_FOUND:
-            print("ctdna file not found")
             results[glc.CTDNA] = ctdna_proc.get_dummy_results()
         else:
             results[glc.CTDNA] = ctdna_proc.run(ctdna_file)
