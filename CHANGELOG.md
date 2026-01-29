@@ -1,10 +1,12 @@
 # CHANGELOG
 
 ## Unreleased
+
 - GCGI-1671: Fixes for outdated OncoKB test data. Adds DJERBA_TEST_OUTPUT_DIR hook.
 - GCGI-1661: Filter out SNVs/Indels that don't have at least 3 supporting tumour alt reads
 - GCGI-1673: Bugfix in the `fusion` plugin so that non-reportable genes do not get rendered in the gene information section
-- GCGI-1677: Make low callability warning impossible to ignore by adding an ignore_warning parameter to the `sample` plugin that must be manually specified by the user to bypass 
+- GCGI-1677: Make low callability warning impossible to ignore by adding an ignore_warning parameter to the `sample` plugin that must be manually specified by the user to bypass
+- GCGI-1678: Remove obsolete warnings related to outdated workflows and instrument version changes.
 
 ## v1.11.5: 2026-01-06
 - GCGI-1668, GCGI-1670: Remove references to the inactive HLA plugin

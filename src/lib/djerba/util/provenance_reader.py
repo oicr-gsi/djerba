@@ -58,6 +58,14 @@ class provenance_reader(logger):
     NIASSA_WF_STARFUSION = 'starFusion'
     NIASSA_WF_VEP = 'variantEffectPredictor'
 
+    # Warnings for these obsolete workflows still running in pipeline will be suppressed
+    OBSOLETE_WORKFLOWS = [
+        'sequenza_by_tumor_group',
+        'sequenza',
+        'immunedeconv',
+        't1k'
+    ]
+
     # metatype patterns
     MT_PLAIN_TEXT = 'text/plain$'
     MT_JSON_TEXT = 'text/json$'
@@ -172,8 +180,10 @@ class provenance_reader(logger):
         self.logger.debug("Beginning check on workflows in file provenance")
         for wf_list in wgs_to_check:
             total = sum([counts[x] for x in wf_list])
-            if total==0:
-                self.logger.warning("No file provenance records for workflows {0}".format(wf_list))
+            if total == 0:
+                workflows_to_warn = [wf for wf in wf_list if wf not in self.OBSOLETE_WORKFLOWS]
+                if workflows_to_warn:
+                    self.logger.warning("No file provenance records for workflows {0}".format(workflows_to_warn))
             else:
                 msg = "Found {0} file provenance records for workflows {1}".format(total, wf_list)
                 self.logger.debug(msg)
@@ -187,8 +197,10 @@ class provenance_reader(logger):
             # second pass -- check individual WTS workflows
             for wf_list in wts_to_check:
                 total = sum([counts[x] for x in wf_list])
-                if sum([counts[x] for x in wf_list])==0:
-                    self.logger.warning("No file provenance records for workflows {0}".format(wf_list))
+                if sum([counts[x] for x in wf_list]) == 0:
+                    workflows_to_warn = [wf for wf in wf_list if wf not in self.OBSOLETE_WORKFLOWS]
+                    if workflows_to_warn:
+                        self.logger.warning("No file provenance records for workflows {0}".format(workflows_to_warn))
                 else:
                     msg = "Found {0} file provenance records for workflows {1}".format(total, wf_list)
                     self.logger.debug(msg)
