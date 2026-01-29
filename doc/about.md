@@ -10,7 +10,7 @@
 
 Djerba inputs a config file and outputs a report.
 
-The config file is in the widely-used INI format.
+The config file is in the widely-used [INI format](https://docs.python.org/3/library/configparser.html).
 
 The report contains equivalent information in three different formats: JSON, HTML, and PDF.
 - JSON is a machine-readable format for the report data.
@@ -19,7 +19,7 @@ The report contains equivalent information in three different formats: JSON, HTM
 
 ## Documentation
 
-- [](how_djerba_works): Outline of basic concepts 
+- [](how_djerba_works): Key concepts and terminology
 - [](user_guide): How to run Djerba and produce reports
 - [](developer_guide): How to write Djerba plugins
 - [](component_reference): Detailed reference for Djerba plugins and other components
@@ -27,8 +27,6 @@ The report contains equivalent information in three different formats: JSON, HTM
 
 ## Copyright and Licensing
 
-Djerba was developed by the Clinical Genome Interpretation group, part of Genome Sequence Informatics at the [Ontario Institute for Cancer Research](https://oicr.on.ca/).
-
-Copyright &copy; 2020-2026 by Genome Sequence Informatics, Ontario Institute for Cancer Research. All rights reserved.
+Copyright &copy; 2020-2026 by Genome Sequence Informatics, [Ontario Institute for Cancer Research](https://oicr.on.ca/). All rights reserved.
 
 Licensed under the [GPL 3.0 license](https://www.gnu.org/licenses/gpl-3.0.en.html).
