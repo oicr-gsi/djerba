@@ -2,17 +2,16 @@
 
 # How Djerba Works
 
-## File Formats
-
-Djerba uses four main file formats:
-- INI: simple plain-text configuration file
-- JSON: Machine-readable file with report data
-- HTML: Data transformed into a human-readable format
-- PDF: Self-contained document for sharing and archiving
+In this section we describe key concepts used by Djerba to direct the reporting process.
 
 ## Production Steps
 
-Report production in Djerba has three basic steps: Configure, Extract, and Render.
+Report production in Djerba has three basic steps:
+1. Configure
+2. Extract
+3. Render
+
+These are described in more detail in Table 1 below.
 
 | Step | Input | Output | Description |
 | :---- | :---- | :---- | :---- |
@@ -21,6 +20,12 @@ Report production in Djerba has three basic steps: Configure, Extract, and Rende
 | Render | JSON | HTML, PDF | Use the JSON data to write a human-readable HTML document, which is then converted to PDF |
 
 **Table 1:** Steps of Djerba report generation
+
+The use of each file format is as follows:
+- INI: simple plain-text configuration file
+- JSON: Machine-readable file with report data
+- HTML: Data transformed into a human-readable format
+- PDF: Self-contained document for sharing and archiving
 
 ## The `djerba.py` Script
 
@@ -40,6 +45,8 @@ The `djerba.py` script has a number of subcommands or *modes* to set up and run 
 **Table 2**: Modes of the `djerba.py` command-line script
 
 See the [user guide](user_guide_FIXME) for command-line syntax and options.
+
+The user guide also details more specialized [command-line scripts](link_FIXME) used for report production.
 
 ## Modular Components
 

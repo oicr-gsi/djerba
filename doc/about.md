@@ -6,7 +6,7 @@
 
 [Djerba](https://github.com/oicr-gsi/djerba) is a system for generating [clinical report documents](https://github.com/oicr-gsi/djerba/blob/main/examples/WGTS/PLACEHOLDER-v1_report.clinical.pdf) from pipeline data, with a modular structure based on plugins. It is named after a [Mediterranean island](https://en.wikipedia.org/wiki/Djerba) and pronounced "jerba" (the initial letter D is silent).
 
-## What does Djerba do?
+## What Does Djerba Do?
 
 Djerba inputs a config file and outputs a report.
 
@@ -17,13 +17,17 @@ The report contains equivalent information in three different formats: JSON, HTM
 - HTML is used for typesetting, to specify the report appearance.
 - PDF is shared with clinical practicioners.
 
-## Documentation
+## How To Use This Documentation
 
-- [](how_djerba_works): Key concepts and terminology
-- [](user_guide): How to run Djerba and produce reports
-- [](developer_guide): How to write Djerba plugins
-- [](component_reference): Detailed reference for Djerba plugins and other components
-- [](contact): Contact the Djerba developers
+The [How Djerba Works](how_djerba_works) section briefly covers key concepts and terminology. We recommend it as a starting point for all Djerba users.
+
+The [User Guide](user_guide) describes how to install Djerba, and run existing plugins to produce reports.
+
+The [Component Reference](component_reference) has detailed descriptions of plugins and other components of Djerba, used for clinical reporting at OICR.
+
+We encourage users to write their own plugins, as described in the [Developer Guide](developer_guide).
+
+Finally, the [Contact](contact) section has contact links for the Djerba developers, and some brief notes on development policy.
 
 ## Copyright and Licensing
 
