@@ -59,21 +59,12 @@ class main_base(core_base):
     def _get_render_priority(self, plugin_data):
         return plugin_data[cc.PRIORITIES][cc.RENDER]
 
-    def _get_unique_doc_key(self, data):
+    def _get_doc_keys(self, data):
         """
-        Get the unique document key used to index the HTML cache
-        Raise an error unless exactly 1 key is found
-        For now, we only support update mode when report has exactly 1 document type
+        Get the document keys used to index the HTML cache
         """
         self._validate_html_cache_input(data)
-        if len(data[cc.HTML_CACHE])==1:
-            key = list(data[cc.HTML_CACHE].keys())[0]
-        else:
-            msg = "HTML cache update requries exactly 1 report type; "+\
-                "found {0}".format(data[cc.HTML_CACHE].keys())
-            self.logger.error(msg)
-            raise DjerbaUpdateKeyError(msg)
-        return key
+        return list(data[cc.HTML_CACHE].keys())
 
     def _load_component(self, name):
         if name == ini.CORE:
@@ -344,11 +335,12 @@ class main_base(core_base):
             new_html[plugin_name] = self.html_cache.wrap_html(plugin_name, raw_html)
             self.logger.debug('Updated JSON for plugin {0}'.format(plugin_name))
         # now update the HTML cache; TODO support multiple doc types, eg. clinical/research
-        doc_key = self._get_unique_doc_key(data)
-        old_cache = data[cc.HTML_CACHE][doc_key]
-        new_html_string = self.html_cache.update_cached_html(new_html, old_cache)
-        new_cache = self.html_cache.encode_to_base64(new_html_string)
-        data[cc.HTML_CACHE][doc_key] = new_cache
+        doc_keys = self._get_doc_keys(data)
+        for doc_key in doc_keys:
+            old_cache = data[cc.HTML_CACHE][doc_key]
+            new_html_string = self.html_cache.update_cached_html(new_html, old_cache)
+            new_cache = self.html_cache.encode_to_base64(new_html_string)
+            data[cc.HTML_CACHE][doc_key] = new_cache
         self.logger.debug('Updated HTML cache for all plugins')
         return data
 
@@ -620,8 +612,9 @@ class main(main_base):
         else:
             self.logger.info("Omitting archive upload for update")
         if out_dir:
-            doc_key = self._get_unique_doc_key(data)
-            self.render_from_cache(data, doc_key, out_dir, pdf)
+            doc_keys = self._get_doc_keys(data)
+            for doc_key in doc_keys:
+                self.render_from_cache(data, doc_key, out_dir, pdf)
             input_name = os.path.basename(json_path)
             # generate an appropriate output filename
             if re.search('\.updated\.json$', json_path):
