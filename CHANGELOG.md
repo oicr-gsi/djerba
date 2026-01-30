@@ -1,7 +1,7 @@
 # CHANGELOG
 
 ## Unreleased
-
+- GCGI-1596: Fix to allow `--log-path` command-line option to work
 - GCGI-1671: Fixes for outdated OncoKB test data. Adds DJERBA_TEST_OUTPUT_DIR hook.
 - GCGI-1661: Filter out SNVs/Indels that don't have at least 3 supporting tumour alt reads
 - GCGI-1673: Bugfix in the `fusion` plugin so that non-reportable genes do not get rendered in the gene information section
