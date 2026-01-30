@@ -66,7 +66,7 @@ If `DJERBA_CORE_HTML_DIR` is not set, it defaults to an appropriate directory in
 
 `DJERBA_TEST_DIR` and `DJERBA_TEST_DATA` are needed for testing only, not production.
 
-The `DJERBA_PRIVATE_DIR`
+### The `DJERBA_PRIVATE_DIR`
 
 This is a catch-all location where Djerba can read and write reference files.
 
