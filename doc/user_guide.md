@@ -52,6 +52,7 @@ Djerba uses a number of [environment variables](https://help.ubuntu.com/communit
 | `DJERBA_BASE_DIR`       | Directory | Base directory where Djerba was installed |
 | `DJERBA_CORE_HTML_DIR`  | Directory  | Location of templates and stylesheets for core HTML rendering  |
 | `DJERBA_RUN_DIR`        | Directory  | Location of the `util/data` subdirectory of the Djerba installation |
+| `DJERBA_PACKAGES`       | Colon-separated list | Names of top-level Djerba packages; see [external plugins](FIXME)  |
 | `DJERBA_PRIVATE_DIR`    | Directory  | Location of "private" files. |
 | `DJERBA_TEST_DIR`       | Directory  | Location of data for unit tests  |
 | `DJERBA_TEST_DATA`      | Directory  | Synonym for `DJERBA_TEST_DIR`. Deprecated, but still used by some plugins. | 
@@ -63,6 +64,8 @@ The `DJERBA_BASE_DIR`, `DJERBA_RUN_DIR`, and `DJERBA_PRIVATE_DIR` variables must
 `DJERBA_ARCHIVE_CONFIG` is required unless the `--no-archive` command-line option is in effect.
 
 If `DJERBA_CORE_HTML_DIR` is not set, it defaults to an appropriate directory in the Djerba installation.
+
+If `DJERBA_PACKAGES` is not set, it defaults to the Djerba installation directory.
 
 `DJERBA_TEST_DIR` and `DJERBA_TEST_DATA` are needed for testing only, not production.
 
