@@ -81,6 +81,7 @@ class snv_indel_processor(logger):
         tert_hotspot = self.is_tert_hotspot(row, ix)
         hugo_symbol = row[ix.get(sic.HUGO_SYMBOL)]
         if row_t_depth >= 1 and \
+           row_t_alt_count >= 3 and \
            row_t_alt_count/row_t_depth >= vaf_cutoff and \
            (is_matched or row_gnomad_af < self.MAX_UNMATCHED_GNOMAD_AF) and \
            biotype == "protein_coding" and \

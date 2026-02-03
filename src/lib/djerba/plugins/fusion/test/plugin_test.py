@@ -22,8 +22,7 @@ class TestFusion(PluginTester):
 
     def setUp(self):
         """Set up directories and paths required for the test."""
-        self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
-        self.tmp_dir = self.tmp.name
+        super().setUp()
         self.data_dir_root = directory_finder().get_test_dir()
         self.data_dir = os.path.join(self.data_dir_root, constants.PLUGINS, 'fusion')
         self.test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -35,6 +34,12 @@ class TestFusion(PluginTester):
         copy(os.path.join(self.data_dir, self.JSON_NAME), self.input_dir)
         copy(os.path.join(self.data_dir, 'sample_info.json'), self.work_dir)
         self.write_ini_file()
+
+    def redact_json_data(self, data):
+        """replaces empty method from testing.tools"""
+        if 'gene_information_merger' in data['merge_inputs']:
+            data['merge_inputs']['gene_information_merger'] = self.PLACEHOLDER
+        return data
 
     def test_process_fusion_compression(self):
         # Load the plugin

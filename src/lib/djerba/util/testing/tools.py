@@ -4,24 +4,43 @@ Test base class
 
 import gzip
 import hashlib
+import os
 import re
 import tempfile
 import time
 import unittest
+from shutil import rmtree
 import djerba.util.constants as constants
+from djerba.util.environment import directory_finder
 from djerba.util.validator import path_validator
 
 
 class TestBase(unittest.TestCase):
 
     def setUp(self):
+        # output is in DJERBA_TEST_OUTPUT_DIR if available, a throwaway dir otherwise
         self.path_validator = path_validator()
         self.maxDiff = None
-        self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
-        self.tmp_dir = self.tmp.name
+        finder = directory_finder()
+        if finder.has_valid_test_output_dir():
+            out_dir = finder.get_test_output_dir()
+            # directory exists and is readable, now check if it is writable
+            self.path_validator.validate_output_dir(out_dir)
+            self.tmp = None # temporary directory object is not needed
+            # define a subdirectory for this test
+            # - create it if needed
+            # - !!!IMPORTANT!!! subdirectory is deleted if it already exists
+            self.tmp_dir = os.path.join(out_dir, self.id())
+            if os.path.exists(self.tmp_dir):
+                rmtree(self.tmp_dir)
+            os.mkdir(self.tmp_dir)
+        else:
+            self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
+            self.tmp_dir = self.tmp.name
 
     def tearDown(self):
-        self.tmp.cleanup()
+        if self.tmp != None:
+            self.tmp.cleanup()
 
     def assert_report_MD5(self, report_string, expected_md5):
         body = self.redact_html(report_string)

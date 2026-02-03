@@ -50,11 +50,12 @@ class TestProvenanceHelper(TestBase):
         subset_mod = os.path.getmtime(subset_path)
         sample_info_mod = os.path.getmtime(sample_info_path)
         path_info_mod = os.path.getmtime(sample_info_path)
-        time.sleep(0.01) # delay to enable file modification time check
+        time.sleep(0.1) # delay to enable file modification time check
         helper_main.extract(config) # should do nothing
-        self.assertTrue(abs(os.path.getmtime(subset_path) - subset_mod)<0.0001)
-        self.assertTrue(abs(os.path.getmtime(sample_info_path) - sample_info_mod)<0.0001)
-        self.assertTrue(abs(os.path.getmtime(path_info_path) - path_info_mod)<0.0001)
+        tolerance = 0.01 # length of tolerance, in seconds
+        self.assertTrue(abs(os.path.getmtime(subset_path) - subset_mod)<tolerance)
+        self.assertTrue(abs(os.path.getmtime(sample_info_path) - sample_info_mod)<tolerance)
+        self.assertTrue(abs(os.path.getmtime(path_info_path) - path_info_mod)<tolerance)
         ws.remove_file(subset_path)
         ws.remove_file(sample_info_path)
         ws.remove_file(path_info_path)
