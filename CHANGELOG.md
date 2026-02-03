@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v1.11.6: 2026-02-04
 - GCGI-1596: Fix to allow `--log-path` command-line option to work
 - GCGI-1671: Fixes for outdated OncoKB test data. Adds DJERBA_TEST_OUTPUT_DIR hook.
 - GCGI-1661: Filter out SNVs/Indels that don't have at least 3 supporting tumour alt reads
