@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v1.11.7: 2026-02-19
+- GCGI-1683: Remove date from page footer and change "Date of Report" to "Date Report Prepared" in the `case_overview` plugin.
+
 ## v1.11.6: 2026-02-04
 - GCGI-1596: Fix to allow `--log-path` command-line option to work
 - GCGI-1671: Fixes for outdated OncoKB test data. Adds DJERBA_TEST_OUTPUT_DIR hook.
