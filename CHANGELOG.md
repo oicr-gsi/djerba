@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-1662: Update Python dependency to 3.13.0 or greater
+
 ## v1.11.6: 2026-02-04
 - GCGI-1596: Fix to allow `--log-path` command-line option to work
 - GCGI-1671: Fixes for outdated OncoKB test data. Adds DJERBA_TEST_OUTPUT_DIR hook.
