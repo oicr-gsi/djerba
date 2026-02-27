@@ -6,6 +6,7 @@ import os
 import logging
 import json
 from decimal import Decimal
+from importlib.util import find_spec
 from mako.lookup import TemplateLookup
 import djerba.plugins.sample.constants as constants
 from djerba.plugins.base import plugin_base, DjerbaPluginError
@@ -16,17 +17,29 @@ from djerba.util.render_mako import mako_renderer
 from djerba.util.logger import logger
 
 
-try:
-    import gsiqcetl.column
-    from gsiqcetl import QCETLCache
-except ImportError as err:
-    raise RuntimeError('QC-ETL import failure! Try checking python versions') from err
-
 class main(plugin_base):
 
     PLUGIN_VERSION = '1.0.0'
     QCETL_CACHE = "/scratch2/groups/gsi/production/qcetl_v1"
-    
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if find_spec('gsiqcetl')==None:
+            msg = "GSI-QC-ETL not found: Coverage and callability must "+\
+                "be specified manually. GSI-QC_ETL is developed and run "+\
+                "internally at OICR; it is not available externally."
+            self.logger.warn(msg)
+            self.gsiqcetl_OK = False
+        else:
+            try:
+                import gsiqcetl.column
+                from gsiqcetl import QCETLCache
+                self.gsiqcetl_OK = True
+            except ImportError as err:
+                msg = 'QC-ETL import failure! Try checking python versions'
+                raise RuntimeError(msg) from err
+
+
     def specify_params(self):
         discovered = [
             constants.ONCOTREE,
@@ -85,11 +98,16 @@ class main(plugin_base):
         ignore_warning = wrapper.get_my_boolean(constants.CALLABILITY_WARNING)
 
         # SECOND PASS: Get files based on input parameters
-        if wrapper.my_param_is_null(constants.CALLABILITY):
-            wrapper.set_my_param(constants.CALLABILITY, self.fetch_callability_etl_data(donor, tumour_id, ignore_warning))        
-        if wrapper.my_param_is_null(constants.COVERAGE):
-            wrapper.set_my_param(constants.COVERAGE, self.fetch_coverage_etl_data(donor, tumour_id))
-
+        if self.gsiqcetl_OK:
+            if wrapper.my_param_is_null(constants.CALLABILITY):
+                self.logger.debug("Fetching callability from GSI-QC_ETL")
+                wrapper.set_my_param(constants.CALLABILITY, self.fetch_callability_etl_data(donor, tumour_id, ignore_warning))
+            if wrapper.my_param_is_null(constants.COVERAGE):
+                self.logger.debug("Fetching coverage from GSI-QC_ETL")
+                wrapper.set_my_param(constants.COVERAGE, self.fetch_coverage_etl_data(donor, tumour_id))
+        else:
+            msg = "GSI-QC-ETL not available, omitting coverage/callability fetch"
+            self.logger.debug(msg)
         return wrapper.get_config()
 
     def extract(self, config):
