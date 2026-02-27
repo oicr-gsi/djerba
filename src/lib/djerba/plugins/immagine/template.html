@@ -16,6 +16,71 @@
 </head>
 <body>
 
+
+<!-- The mutation table -->
+<hr class="big-white-line" ><div class="twocellmain"><div class="oneoftwocellmain"><h2><h2>ALTERATIONS</h2></h2></div><div class="twooftwocellmain" ><hr class="big-line" >
+
+
+<%
+categories = [
+    {
+        "name": "Hallmark Cancer Genes",
+        "rowspan": 11,
+        "colour": "#ffffff",
+        "genes": ["TP53", "MYC", "NRAS", "KRAS", "CDK2NC", "NFKB1", "NFKB2", "RB1", "BRAF", "CDK6", "ATM"]
+    },
+    {
+        "name": "Myeloma Associated Genes",
+        "rowspan": 6,
+        "colour": "#f2f2f2",
+        "genes": ["TNFRSF17", "CD38", "CRBN", "FCRH5", "FGFR3", "GPRC5D"]
+    }
+]
+%>
+
+<table class="tar" width="100%">
+    <thead>
+        <tr>
+          <th width="20%">Categories</th>
+          <th width="15%">Gene</th>
+          <th width="20%">Mutation Alteration</th>
+          <th width="20%">Mutation Type</th>
+          <th width="20%">Copy Number</th>
+          <th width="20%">Expression Percentile</th>
+          <!--<th witdh="12%">Matches Criteria</th>-->
+        </tr>
+    </thead>
+
+    <tbody>
+    % for category in categories:
+        % for i, gene in enumerate(category["genes"]):
+            <tr ${'style="background-color: %s;"' % category["colour"]}>
+                % if i == 0:
+                    <td rowspan="${category['rowspan']}">${category["name"]}</td>
+                % endif
+
+                <td style="font-style: italic;">${gene}</td>
+                <td>${results.get(gene).get(constants.MUTATION_ALT)}</td>
+                <td>${results.get(gene).get(constants.MUTATION_TYPE)}</td>
+                <td>${results.get(gene).get(constants.COPY_NUMBER)}</td>
+                <td>${results.get(gene).get(constants.EXPRESSION_PERCENTILE, 'NA')}</td>
+                <!--<td>${results.get(gene).get(constants.CHECKMARK)}</td>-->
+            </tr>
+        % endfor
+    % endfor
+    </tbody>
+</table>
+
+<p> <strong>NA:</strong> Not tested. </p>
+<p> <strong>None:</strong> Not uncovered. </p>
+
+</div></div>
+
+<!-- The Cytogenic Alterations Table -->
+
+<hr class="big-white-line" ><div class="twocellmain"><div class="oneoftwocellmain"><h2><h2>CYTOGENIC ALTERATIONS</h2></h2></div><div class="twooftwocellmain" ><hr class="big-line" >
+
+
 <style type="text/css">
 .tg  {border-collapse:collapse;border-spacing:0;}
 .tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
@@ -73,3 +138,70 @@
     </tr>
   </tbody>
 </table>
+
+</div></div>
+
+<hr class="big-white-line" ><div class="twocellmain"><div class="oneoftwocellmain"><h2><h2>HIGH RISK MYELOMA</h2></h2></div><div class="twooftwocellmain" ><hr class="big-line" >
+
+<!-- The High Risk Myeloma Table -->
+
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-0r18{border-color:inherit;font-size:14px;text-align:center;vertical-align:top}
+.tg .tg-baqh{text-align:center;vertical-align:top}
+.tg .tg-0lax{text-align:left;vertical-align:top}
+</style>
+<table class="tg" style="undefined;table-layout: fixed; width: 599px"><colgroup>
+<col style="width: 298px">
+<col style="width: 301px">
+</colgroup>
+<thead>
+  <tr>
+    <th class="tg-baqh" colspan="2">High Risk Myeloma</th>
+  </tr></thead>
+<tbody>
+  <tr>
+    <td class="tg-baqh">Alteration</td>
+    <td class="tg-baqh">Present</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax" colspan="2">High Risk Multiple Myeloma - Any one of</td>
+  </tr>
+  <tr>
+    <td class="tg-baqh">Chromosome 17p deletion</td>
+    <td class="tg-0r18">${'X' if results[constants.CYTOGEN_ALTS].get(constants.DEL_17P) else ''}</td>
+  </tr>
+  <tr>
+    <td class="tg-baqh">Mutation of p53</td>
+    <td class="tg-0r18">${'X' if results[constants.P53_ALT] else ''}</td>
+  </tr>
+  <tr>
+    <td class="tg-baqh">Biallelic deletion of 1p32</td>
+    <td class="tg-0r18">${'X' if results[constants.CYTOGEN_ALTS].get(constants.BI_DEL_1P32) else ''}</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax" colspan="2">High Risk Multiple Myeloma - Any two of</td>
+  </tr>
+  <tr>
+    <td class="tg-baqh">Any one of: t(4;14), t(14;16) or t(14;20)</td>
+    <td class="tg-0r18"></td>
+  </tr>
+  <tr>
+    <td class="tg-baqh">Gain or amplification of Chromosome 1q</td>
+    <td class="tg-0r18"></td>
+  </tr>
+  <tr>
+    <td class="tg-baqh">Monoallelic deletion of 1p32</td>
+    <td class="tg-baqh">${'X' if results[constants.CYTOGEN_ALTS].get(constants.MONO_DEL_1P32) else ''}</td>
+  </tr>
+  <tr>
+	  <td class="tg-baqh" colspan="2">High risk: ${results[constants.HIGH_RISK]}. Given the presence/absence of (Alteration(s)) this patient does/not fit the criteria for high-risk myeloma as defined by the IMWG</td>
+  </tr>
+</tbody></table>
+
+</div></div>
+
