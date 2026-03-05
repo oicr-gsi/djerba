@@ -48,30 +48,14 @@ class main(plugin_base):
             constants.ICHORCNA_FILE,
             constants.WF_ICHORCNA
         )
-        wrapper = self.update_wrapper_if_null(
-            wrapper,
-            core_constants.DEFAULT_PATH_INFO,
-            constants.CONSENSUS_FILE,
-            constants.WF_CONSENSUS
-        )
-        wrapper = self.update_wrapper_if_null(
-            wrapper,
-            core_constants.DEFAULT_PATH_INFO,
-            constants.CONSENSUS_NORMAL_FILE,
-            constants.WF_CONSENSUS_NORMAL
-        )
 
         if wrapper.my_param_is_null(constants.RAW_COVERAGE):
             qc_dict = self.fetch_coverage_etl_data(config[self.identifier][constants.GROUP_ID])
             wrapper.set_my_param(constants.RAW_COVERAGE, qc_dict[constants.RAW_COVERAGE])
 
-        # Get values for collapsed coverage for Pl and BC and put in config for QC reporting
         if wrapper.my_param_is_null(constants.COVERAGE_PL):
-            wrapper.set_my_param(constants.COVERAGE_PL,
-                                 self.process_consensus_cruncher(config[self.identifier][constants.CONSENSUS_FILE]))
-        if wrapper.my_param_is_null(constants.COVERAGE_BC):
-            wrapper.set_my_param(constants.COVERAGE_BC, self.process_consensus_cruncher(
-                config[self.identifier][constants.CONSENSUS_NORMAL_FILE]))
+            qc_dict = self.fetch_collapsed_coverage_etl_data(config[self.identifier][constants.GROUP_ID])
+            wrapper.set_my_param(constants.COVERAGE_PL, qc_dict[constants.COVERAGE_PL])
 
         return wrapper.get_config()
 
@@ -105,11 +89,53 @@ class main(plugin_base):
         data['results'] = results
         return data
 
+
+    def fetch_collapsed_coverage_etl_data(self, group_id):
+        etl_cache = QCETLCache(self.QCETL_CACHE)
+        cached_coverages = etl_cache.hsmetrics_umiconsensus.metrics
+        columns_of_interest = gsiqcetl.column.HsMetricsColumn
+        # Filter data for the group_id
+        data = cached_coverages.loc[
+            (cached_coverages[columns_of_interest.GroupID] == group_id),
+            [
+                columns_of_interest.GroupID,
+                columns_of_interest.MeanBaitCoverage,
+                columns_of_interest.TissueType,
+            ]
+        ]
+
+        qc_dict = {}
+
+        if len(data) > 0:
+            # Exclude the reference
+            filtered_data = data[data[columns_of_interest.TissueType] != 'R']
+
+            if len(filtered_data) > 0:
+                # Check if coverage values are unique
+                coverage = filtered_data[columns_of_interest.MeanBaitCoverage].unique()
+                if len(coverage) != 1:
+                    msg = f"Multiple coverage values found for group_id {group_id}: {coverage}."
+                    self.logger.error(msg)
+                    raise ValueError(msg)
+                else:
+                    selected_value = coverage[0]
+                    qc_dict[constants.COVERAGE_PL] = int(round(selected_value, 0))
+            else:
+                msg = f"No valid QC metrics found for group_id {group_id} after filtering out the normal."
+                self.logger.error(msg)
+                raise MissingQCETLError(msg)
+        else:
+            msg = f"QC metrics associated with group_id {group_id} not found in QC-ETL and no value found in .ini."
+            self.logger.error(msg)
+            raise MissingQCETLError(msg)
+
+        return qc_dict
+
+
     def fetch_coverage_etl_data(self, group_id):
         etl_cache = QCETLCache(self.QCETL_CACHE)
         cached_coverages = etl_cache.hsmetrics.metrics
         columns_of_interest = gsiqcetl.column.HsMetricsColumn
-
         # Filter data for the group_id
         data = cached_coverages.loc[
             (cached_coverages[columns_of_interest.GroupID] == group_id),
@@ -178,10 +204,7 @@ class main(plugin_base):
             constants.SAMPLE_TYPE,
             constants.ICHORCNA_FILE,
             constants.RAW_COVERAGE,
-            constants.CONSENSUS_FILE,
-            constants.CONSENSUS_NORMAL_FILE,
-            constants.COVERAGE_PL,
-            constants.COVERAGE_BC
+            constants.COVERAGE_PL
         ]
         for key in discovered:
             self.add_ini_discovered(key)
