@@ -298,7 +298,7 @@ class main_base(core_base):
             report_id = extracted_data[cc.CORE][cc.REPORT_ID]
             # PDF footer here duplicates the clinical report footer format
             # TODO support other footer types when rendering from cache
-            footer = "{0} - {1}".format(get_todays_date(), report_id)
+            footer = "{0}".format(report_id)
             p_rend = pdf_renderer(self.log_level, self.log_path)
             pdf_path = os.path.join(out_dir, doc_key+'.pdf')
             p_rend.render_file(html_path, pdf_path, footer)

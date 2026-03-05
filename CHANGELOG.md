@@ -1,7 +1,13 @@
 # CHANGELOG
 
 ## Unreleased
-- GCGI-1662: Update Python dependency to 3.13.0 or greater
+- GCGI-1662: Update Python dependency in `setup.py` to 3.13.0 or greater
+
+## v1.11.8: 2026-02-20
+- Remove dates from page footers when rendering from cache.
+
+## v1.11.7: 2026-02-19
+- GCGI-1683: Remove date from page footer and change "Date of Report" to "Date Report Prepared" in the `case_overview` plugin.
 
 ## v1.11.6: 2026-02-04
 - GCGI-1596: Fix to allow `--log-path` command-line option to work
