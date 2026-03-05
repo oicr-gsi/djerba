@@ -104,13 +104,20 @@ class main(helper_base):
         with open(gep_path) as gep_file:
             reader = csv.reader(gep_file, delimiter="\t")
             for row in reader:
+                # IGNORE any row in the input file that has the "_PAR_Y" suffix
+                if "_PAR_Y" in row[self.GENE_ID]:
+                    continue
+
                 try:
-                    fkpm[row[self.GENE_ID]] = row[self.FPKM]
+                    # Strip version number from ensembl IDs
+                    stable_key = row[self.GENE_ID].split('.')[0]
+                    fkpm[stable_key] = row[self.FPKM]
                 except IndexError as err:
                     msg = "Incorrect number of columns in GEP row: '{0}'".format(row)+\
                           "read from '{0}'".format(gep_path)
                     self.logger.error(msg)
                     raise RuntimeError(msg) from err
+
         # insert as the second column in the generic GEP file
         ref_path = gep_reference
         out_file_name = 'gep.txt'
@@ -126,11 +133,17 @@ class main(helper_base):
                     row.insert(1, tumour_id)
                     first = False
                 else:
-                    gene_id = row[0]
+                    # Skip ensembl IDs with "_PAR_Y" suffix and remove version numbers in reference file
+                    gene_id_full = row[0]
+                    if "_PAR_Y" in gene_id_full:
+                        continue
+                    stable_ref_id = gene_id_full.split('.')[0]
+                    row[0] = stable_ref_id
+
                     try:
-                        row.insert(1, fkpm[gene_id])
+                        row.insert(1, fkpm[stable_ref_id])
                     except KeyError as err:
-                        msg = 'Reference gene ID {0} from {1} '.format(gene_id, ref_path) +\
+                        msg = 'Reference gene ID {0} from {1} '.format(gene_id_full, ref_path) +\
                             'not found in gep results path {0}'.format(gep_path)
                         self.logger.warn(msg)
                         row.insert(1, '0.0')
