@@ -114,7 +114,7 @@ setup(
         'seaborn',
         'statsmodels',
     ],
-    python_requires='>=3.10.6',
+    python_requires='>=3.13.0',
     author="Iain Bancarz",
     author_email="ibancarz [at] oicr [dot] on [dot] ca",
     description="Create reports from metadata and workflow output",
