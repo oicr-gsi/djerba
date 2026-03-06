@@ -1,8 +1,5 @@
 # CHANGELOG
 
-## Unreleased
-- GCGI-1662: Update Python dependency in `setup.py` to 3.13.0 or greater
-
 ## v1.11.8: 2026-02-20
 - Remove dates from page footers when rendering from cache.
 
