@@ -1,7 +1,7 @@
 # CHANGELOG
 
 ## Unreleased
-- GCGI-1570: Make import of `gsiqcetl` package optional
+- GCGI-1570: Make import of `gsiqcetl` package optional. Make `qcetl_cache` path an INI parameter with appropriate default.
 
 ## v1.11.8: 2026-02-20
 - Remove dates from page footers when rendering from cache.
