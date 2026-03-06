@@ -1,6 +1,7 @@
 # CHANGELOG
 
 ## Unreleased
+- GCGI-1570: Make import of `gsiqcetl` package optional
 - GCGI-1662: Update Python dependency in `setup.py` to 3.13.0 or greater
 
 ## v1.11.8: 2026-02-20
