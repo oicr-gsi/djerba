@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-1471: Generate default Whizbam links when no mutations are reported in TAR reports, and apply minor fixes to library and file names.
+
 ## v1.11.8: 2026-02-20
 - Remove dates from page footers when rendering from cache.
 
