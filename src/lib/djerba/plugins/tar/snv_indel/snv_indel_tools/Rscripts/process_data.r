@@ -60,8 +60,27 @@ if (is.null(maffile)) {
    df_cbio_filt <- subset(df_cbio_anno_whizbam, TGL_FILTER_VERDICT == "PASS")
    if ( dim(df_cbio_filt)[[1]] == 0 ) {
      print("No passed mutations, shooting blanks")
-     write.table(df_cbio_filt, file=paste0(outdir, "/data_mutations_extended.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-     write.table(df_cbio_filt, file=paste0(outdir, "/data_mutations_extended_oncogenic.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+     # construct a dummy row for data_mutations_extended.txt and data_mutations_extended_oncogenic.txt
+     # this ensures a whizbam link is always present even if there are no reportable mutations
+     tumor_lib <- paste0(tumourid, "_Pl")
+     tumor_file <- paste0(tumourid, "_Pl.bam")
+     normal_lib <- paste0(normalid, "_BC")
+     normal_file <- paste0(normalid, "_BC.bam")
+     default_whizbam <- paste0(whizbam_url,
+                        "/igv?project1=", cbio_study,
+                        "&library1=", tumor_lib,
+                        "&file1=", tumor_file,
+                        "&seqtype1=", seqtype,
+                        "&project2=", cbio_study,
+                        "&library2=", normal_lib,
+                        "&file2=", normal_file,
+                        "&seqtype2=", seqtype,
+                        "&chr=13&chrloc=32340212-32340213&genome=", genome)
+     df_dummy <- df_cbio_filt
+     df_dummy[1, ] <- NA
+     df_dummy$whizbam[1] <- default_whizbam
+     write.table(df_dummy, file=paste0(outdir, "/data_mutations_extended.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+     write.table(df_dummy, file=paste0(outdir, "/data_mutations_extended_oncogenic.txt"), sep="\t", row.names=FALSE, quote=FALSE)
    } else {
 
     # for cbioportal input
@@ -71,7 +90,26 @@ if (is.null(maffile)) {
     df_cbio_filt_oncokb <- subset(df_cbio_filt, ONCOGENIC == "Oncogenic" | ONCOGENIC == "Likely Oncogenic")
     if ( dim(df_cbio_filt_oncokb)[[1]] == 0 ) {
       print("no oncogenic mutations, shooting a blank")
-      write.table(df_cbio_filt_oncokb, file=paste0(outdir, "/data_mutations_extended_oncogenic.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+      # construct a dummy row for data_mutations_extended_oncogenic.txt
+      # this ensures a whizbam link is always present even if there are no reportable mutations
+      tumor_lib <- paste0(tumourid, "_Pl")
+      tumor_file <- paste0(tumourid, "_Pl.bam")
+      normal_lib <- paste0(normalid, "_BC")
+      normal_file <- paste0(normalid, "_BC.bam")
+      default_whizbam <- paste0(whizbam_url,
+                        "/igv?project1=", cbio_study,
+                        "&library1=", tumor_lib,
+                        "&file1=", tumor_file,
+                        "&seqtype1=", seqtype,
+                        "&project2=", cbio_study,
+                        "&library2=", normal_lib,
+                        "&file2=", normal_file,
+                        "&seqtype2=", seqtype,
+                        "&chr=13&chrloc=32340212-32340213&genome=", genome)
+      df_dummy <- df_cbio_filt[1, ]
+      df_dummy[1, ] <- NA
+      df_dummy$whizbam[1] <- default_whizbam
+      write.table(df_dummy, file=paste0(outdir, "/data_mutations_extended_oncogenic.txt"), sep="\t", row.names=FALSE, quote=FALSE)
     } else {
 
       # write the oncogenic table

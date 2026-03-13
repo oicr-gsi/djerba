@@ -1,6 +1,7 @@
 # CHANGELOG
 
 ## Unreleased
+- GCGI-1471: Generate default Whizbam links when no mutations are reported in TAR reports, and apply minor fixes to library and file names.
 - GCGI-1570: Make import of `gsiqcetl` package optional. Make `qcetl_cache` path an INI parameter with appropriate default.
 
 ## v1.11.8: 2026-02-20
