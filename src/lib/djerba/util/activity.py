@@ -6,6 +6,7 @@ import logging
 import os
 import time
 from configparser import ConfigParser
+from pathlib import Path
 import djerba.util.constants as constants
 from djerba.core.main import arg_processor
 from djerba.util.logger import logger
@@ -76,9 +77,9 @@ class activity_tracker(logger):
         self.timeout_multiplier = float(timeout_multiplier) # use to modify timeout duration
         self.tracking_dir = os.getenv(self.DJERBA_TRACKING_DIR_VAR)
         if self.tracking_dir == None:
-            msg = "Variable "+DJERBA_TRACKING_DIR_VAR+" not set, omitting activity tracking"
-            self.logger.info(msg)
+            self.tracking_enabled = False
         else:
+            self.tracking_enabled = True
             self.validator = path_validator(log_level, log_path)
             try:
                 self.validator.validate_output_dir(self.tracking_dir)
@@ -93,20 +94,27 @@ class activity_tracker(logger):
         lock_path = os.path.join(self.tracking_dir, self.LOCK_FILE_NAME)
         delays = [x*self.timeout_multiplier for x in [0.01, 0.1, 1, 5]]
         short_delay = 0.01
-        if os.path.exists(lock_path):
-            for delay in delays:
+        i = 0
+        while os.path.exists(lock_path):
+            if i<len(delays):
+                delay = delays[i]
+                i += 1
                 msg = "Lock path {0} exists, delaying {1}s".format(lock_path, delay) 
                 self.logger.debug(msg)
                 time.sleep(delay)
-                if not os.path.exists(lock_path):
-                    break
-            # lock path still exists after delays
-            msg = "Lock path '{0}' exists after maximum delay; ".format(lock_path)+\
-                "may need manual deletion"
-            self.logger.error(msg)
-            raise DjerbaActivityTrackerError(msg)
+            else:
+                # lock path still exists after delays
+                msg = "Lock path '{0}' exists after maximum delay; ".format(lock_path)+\
+                    "may need manual deletion"
+                self.logger.error(msg)
+                raise DjerbaActivityTrackerError(msg)                
         # make the lock file and append to the output file
-        open(lock_path, 'a').close()
+        try:
+            Path(lock_path).touch(exist_ok=False)
+        except FileExistsError as err:
+            msg = "Unexpectedly found lock path '{0}': {1}".format(lock_path, err)
+            self.logger.error(msg)
+            raise DjerbaActivityTrackerError(msg) from err
         time.sleep(short_delay)
         if os.path.exists(out_path):
             write_header = False
@@ -117,7 +125,13 @@ class activity_tracker(logger):
                 out_file.write('\t'.join(self.HEADERS)+"\n")
             out_file.write(out_string)
         time.sleep(short_delay)
-        os.remove(lock_path)
+        try:
+            os.remove(lock_path)
+        except OSError:
+            msg = "Unexpected error deleting lock file '{0}': {1}".format(lock_path, err)
+            self.logger.error(msg)
+            raise DjerbaActivityTrackerError(msg) from err
+            
 
     def get_fields(self, ap):
         # get timestamp, username, script mode
@@ -158,15 +172,20 @@ class activity_tracker(logger):
         Input is the arguments supplied to the djerba.py script
         Output is a tab-delimited set of fields
         """
-        # get path for output
-        out_file_name = self.OUTPUT_FILE_PREFIX+time.strftime('%Y-%m-%d')+'.tsv'
-        out_path = os.path.join(self.tracking_dir, out_file_name)
-        # generate the output fields
-        ap = arg_processor(args, logger=self.logger)
-        fields = self.get_fields(ap)
-        # append to file
-        self.append_with_lock(fields, out_path)
-        self.logger.info("Activity tracking written to "+out_path)
+        if self.tracking_enabled:
+            self.logger.info("Writing activity tracking to {0}".format(self.tracking_dir))
+            # get path for output
+            out_file_name = self.OUTPUT_FILE_PREFIX+time.strftime('%Y-%m-%d')+'.tsv'
+            out_path = os.path.join(self.tracking_dir, out_file_name)
+            # generate the output fields
+            ap = arg_processor(args, logger=self.logger)
+            fields = self.get_fields(ap)
+            # append to file
+            self.append_with_lock(fields, out_path)
+            self.logger.debug("Activity tracking written to "+out_path)
+        else:
+            msg = "Variable "+DJERBA_TRACKING_DIR_VAR+" not set, omitting activity tracking"
+            self.logger.info(msg)
 
     def update_identifiers_from_ini(self, identifiers, ini_path):
         # This is compatible with TAR/PWGS INI files

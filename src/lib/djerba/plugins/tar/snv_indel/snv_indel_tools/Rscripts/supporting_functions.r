@@ -122,14 +122,40 @@ procVEP <- function(datafile){
  }
 
 construct_whizbam_links <- function(df, whizbam_url, studyid, tumourid, normalid, seqtype, genome) {
+
+   tumor_lib <- paste0(tumourid, "_Pl")
+   tumor_file <- paste0(tumourid, "_Pl.bam")
+   normal_lib <- paste0(normalid, "_BC")
+   normal_file <- paste0(normalid, "_BC.bam")
+
+   if (nrow(df) == 0) {
+     # if df is empty create a dummy row to generate a default whizbam link
+     df[1, ] <- NA
+     df$Hugo_Symbol[1] <- "NA"
+     df$Chromosome[1] <- "chr13"
+     df$Start_Position[1] <- 32340212
+     df$End_Position[1] <- 32340213
+     df$TGL_FILTER_VERDICT[1] <- "PASS"
+     df$ONCOGENIC[1] <- "NA"
+     df$tumour_vaf[1] <- 0
+     df$normal_vaf[1] <- 0
+     df$oncogenic_binary[1] <- "NO"
+     df$ExAC_common[1] <- "NO"
+     df$gnomAD_AF_POPMAX[1] <- 0
+     df$TGL_FILTER_ARTIFACT[1] <- "PASS"
+     df$TGL_FILTER_ExAC[1] <- "PASS"
+     df$TGL_FILTER_gnomAD[1] <- "PASS"
+     df$TGL_FILTER_VAF[1] <- "PASS"
+   }
+
    df$whizbam <- paste0(whizbam_url,
                         "/igv?project1=", studyid,
-                        "&library1=", tumourid,
-                        "&file1=", tumourid, ".bam",
+                        "&library1=", tumor_lib,
+                        "&file1=", tumor_file,
                         "&seqtype1=", seqtype,
                         "&project2=", studyid,
-                        "&library2=", normalid,
-                        "&file2=", normalid, ".bam",
+                        "&library2=", normal_lib,
+                        "&file2=", normal_file,
                         "&seqtype2=", seqtype,
                         "&chr=", gsub("chr", "", df$Chromosome),
                         "&chrloc=", paste0(df$Start_Position, "-", df$End_Position),

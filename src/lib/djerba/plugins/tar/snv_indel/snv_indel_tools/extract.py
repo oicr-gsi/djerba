@@ -33,6 +33,8 @@ class data_builder:
         with open(mutations_file) as data_file:
             for input_row in csv.DictReader(data_file, delimiter="\t"):
                 gene = input_row[sic.HUGO_SYMBOL_TITLE_CASE]
+                if gene in ['', 'NA', 'None']:
+                    continue
                 cytoband = cytobands.get(gene, 'Unknown')
                 protein = input_row[sic.HGVSP_SHORT]
                 if 'splice' in input_row[sic.VARIANT_CLASSIFICATION].lower():
@@ -115,6 +117,8 @@ class data_builder:
         total = 0
         with open(mutations_file) as data_file:
             for row in csv.DictReader(data_file, delimiter="\t"):
+                if row[sic.HUGO_SYMBOL_TITLE_CASE] in ['', 'NA', 'None']:
+                    continue
                 total += 1
         return total
 

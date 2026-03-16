@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-1471: Generate default Whizbam links when no mutations are reported in TAR reports, and apply minor fixes to library and file names.
+- GCGI-1570: Make import of `gsiqcetl` package optional. Make `qcetl_cache` path an INI parameter with appropriate default.
+- GCGI-1696: Refactor activity tracker; take no action when tracking directory not configured; do not exit main Djerba script on tracker error
+- Added some oncotree_code  to tcga_code converstions to tcga_code_key.txt
+
+## v1.11.8: 2026-02-20
+- Remove dates from page footers when rendering from cache.
+
+## v1.11.7: 2026-02-19
+- GCGI-1683: Remove date from page footer and change "Date of Report" to "Date Report Prepared" in the `case_overview` plugin.
+
 ## v1.11.6: 2026-02-04
 - GCGI-1596: Fix to allow `--log-path` command-line option to work
 - GCGI-1671: Fixes for outdated OncoKB test data. Adds DJERBA_TEST_OUTPUT_DIR hook.
