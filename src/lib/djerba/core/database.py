@@ -76,7 +76,7 @@ class database(logger):
                 .get("case_overview", {})
                 .get("attributes", [])
             )
-            analysis_type = "_".join(attributes) if attributes else None
+            analysis_type = "_".join.sorted((attributes)) if attributes else None
 
             if analysis_type:
                 # Match everything before v<number>
