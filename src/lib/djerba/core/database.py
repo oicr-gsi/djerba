@@ -76,7 +76,9 @@ class database(logger):
                 .get("case_overview", {})
                 .get("attributes", [])
             )
-            analysis_type = "_".join.sorted((attributes)) if attributes else None
+            if not isinstance(attributes, list):
+                attributes = []
+            analysis_type = "_".join(sorted(attributes)) if attributes else None
 
             if analysis_type:
                 # Match everything before v<number>
@@ -84,19 +86,19 @@ class database(logger):
 
                 if match:
                     base_id, version = match.groups()
-                    report_id = f"{base_id}-{version}_{analysis_type}"
+                    report_id = f"{base_id}{version}_{analysis_type}"
                 else:
                     # Fallback if no version pattern is found
                     report_id = f"{original_report_id}_{analysis_type}"
             else:
                 report_id = original_report_id
 
-        except (KeyError, AttributeError, TypeError):
+        except (KeyError, AttributeError, TypeError) as e:
+            self.logger.warning('Error extracting attributes for report_id "%s": "%s"', original_report_id, str(e))
             report_id = original_report_id
 
         db, url = self.get_upload_params()
         headers = {'Content-Type': 'application/json'}
-        attempts = 0
         http_post = True
         uploaded = False
         max_attempts = 5
