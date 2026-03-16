@@ -3,6 +3,7 @@
 ## Unreleased
 - GCGI-1471: Generate default Whizbam links when no mutations are reported in TAR reports, and apply minor fixes to library and file names.
 - GCGI-1570: Make import of `gsiqcetl` package optional. Make `qcetl_cache` path an INI parameter with appropriate default.
+- GCGI-1696: Refactor activity tracker; take no action when tracking directory not configured; do not exit main Djerba script on tracker error
 
 ## v1.11.8: 2026-02-20
 - Remove dates from page footers when rendering from cache.
