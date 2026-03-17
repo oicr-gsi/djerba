@@ -1,12 +1,12 @@
 # CHANGELOG
 
-## Unreleased
+## v1.11.9: 2026-03-17
 - GCGI-1471: Generate default Whizbam links when no mutations are reported in TAR reports, and apply minor fixes to library and file names.
 - GCGI-1570: Make import of `gsiqcetl` package optional. Make `qcetl_cache` path an INI parameter with appropriate default.
 - GCGI-1696: Refactor activity tracker; take no action when tracking directory not configured; do not exit main Djerba script on tracker error
 - GCGI-1682: Remove version number in gene ensembl_ids when matching to Hugo_Symbols.
-- Added some oncotree_code  to tcga_code converstions to tcga_code_key.txt
-- Update gencode_v33_hg38_genes.bed to gencode_v44_hg38_genes.bed.
+- Added some `oncotree_code` to `tcga_code` conversions to `tcga_code_key.txt`
+- Update `gencode_v33_hg38_genes.bed` to `gencode_v44_hg38_genes.bed`.
 
 ## v1.11.8: 2026-02-20
 - Remove dates from page footers when rendering from cache.
