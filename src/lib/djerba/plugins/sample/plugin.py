@@ -6,6 +6,8 @@ import os
 import logging
 import json
 from decimal import Decimal
+from importlib import import_module
+from importlib.util import find_spec
 from mako.lookup import TemplateLookup
 import djerba.plugins.sample.constants as constants
 from djerba.plugins.base import plugin_base, DjerbaPluginError
@@ -14,19 +16,41 @@ import djerba.core.constants as core_constants
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.render_mako import mako_renderer
 from djerba.util.logger import logger
+from djerba.util.validator import path_validator
 
-
-try:
-    import gsiqcetl.column
-    from gsiqcetl import QCETLCache
-except ImportError as err:
-    raise RuntimeError('QC-ETL import failure! Try checking python versions') from err
 
 class main(plugin_base):
 
     PLUGIN_VERSION = '1.0.0'
-    QCETL_CACHE = "/scratch2/groups/gsi/production/qcetl_v1"
-    
+    QCETL_CACHE_DEFAULT = "/scratch2/groups/gsi/production/qcetl_v1"
+    QCETL_CACHE_KEY = 'qcetl_cache'
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if find_spec('gsiqcetl')==None:
+            # gsiqcetl Python package is not on the PYTHONPATH
+            warning = "GSI-QC-ETL API not found: Coverage and callability must "+\
+                "be specified manually in the INI file. (The GSI-QC-ETL cache and "+\
+                "associated Python package are "+\
+                "internal to OICR and not available externally.)"
+            self.logger.warn(warning)
+            self.gsiqcetl_column = None
+            self.QCETLCache = None
+            self.gsiqcetl_OK = False
+        else:
+            try:
+                # Import the required classes/modules and assign to instance variables.
+                # We do it this way because for a simple 'import' statement,
+                # the imported names are in scope for the local context only.
+                # So inside a function like this, 'import' does not
+                # make the names available to the rest of the plugin.
+                self.gsiqcetl_column = import_module('gsiqcetl.column')
+                self.QCETLCache = import_module('gsiqcetl.api').QCETLCache
+                self.gsiqcetl_OK = True
+            except ImportError as err:
+                msg = 'QC-ETL import failure! Try checking python versions'
+                raise RuntimeError(msg) from err
+
     def specify_params(self):
         discovered = [
             constants.ONCOTREE,
@@ -41,11 +65,12 @@ class main(plugin_base):
         for key in discovered:
             self.add_ini_discovered(key)
         
-        # Default parameters for priorities
+        # Default parameters
         self.set_ini_default('configure_priority', 100)
         self.set_ini_default('extract_priority', 500)
         self.set_ini_default('render_priority', 500)
         self.set_ini_default(constants.CALLABILITY_WARNING, False)
+        self.set_ini_default(self.QCETL_CACHE_KEY, self.QCETL_CACHE_DEFAULT)
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -67,7 +92,6 @@ class main(plugin_base):
         wrapper = self.fill_param_if_null(wrapper, constants.PURITY, "purity_ploidy.json")
         wrapper = self.fill_param_if_null(wrapper, constants.PLOIDY, "purity_ploidy.json")
 
-
         # Get tumour_id and donor
         for key in [core_constants.TUMOUR_ID, constants.DONOR]:
             if wrapper.my_param_is_null(key):
@@ -79,17 +103,26 @@ class main(plugin_base):
                     self.logger.error(msg)
                     raise RuntimeError(msg)
 
-        # Fetch tumour_id and donor
-        donor = config[self.identifier][constants.DONOR]
-        tumour_id = config[self.identifier][core_constants.TUMOUR_ID]
+        # Store config parameters as variables for convenience
+        donor = wrapper.get_my_string(constants.DONOR)
+        tumour_id = wrapper.get_my_string(core_constants.TUMOUR_ID)
         ignore_warning = wrapper.get_my_boolean(constants.CALLABILITY_WARNING)
+        cache_path = wrapper.get_my_string(self.QCETL_CACHE_KEY)
 
         # SECOND PASS: Get files based on input parameters
-        if wrapper.my_param_is_null(constants.CALLABILITY):
-            wrapper.set_my_param(constants.CALLABILITY, self.fetch_callability_etl_data(donor, tumour_id, ignore_warning))        
-        if wrapper.my_param_is_null(constants.COVERAGE):
-            wrapper.set_my_param(constants.COVERAGE, self.fetch_coverage_etl_data(donor, tumour_id))
-
+        if self.gsiqcetl_OK:
+            etl_cache = self.get_qcetl_cache(cache_path)
+            if wrapper.my_param_is_null(constants.CALLABILITY):
+                self.logger.debug("Fetching callability from GSI-QC-ETL")
+                callability = self.fetch_callability_etl_data(etl_cache, donor, tumour_id, ignore_warning)
+                wrapper.set_my_param(constants.CALLABILITY, callability)
+            if wrapper.my_param_is_null(constants.COVERAGE):
+                self.logger.debug("Fetching coverage from GSI-QC-ETL")
+                coverage = self.fetch_coverage_etl_data(etl_cache, donor, tumour_id)
+                wrapper.set_my_param(constants.COVERAGE, coverage)
+        else:
+            msg = "GSI-QC-ETL not available, omitting coverage/callability fetch"
+            self.logger.info(msg)
         return wrapper.get_config()
 
     def extract(self, config):
@@ -121,10 +154,15 @@ class main(plugin_base):
         renderer = mako_renderer(self.get_module_dir())
         return renderer.render_name('sample_template.html', data)
 
-    def fetch_callability_etl_data(self, donor, tumour_id, ignore_warning):
-        etl_cache = QCETLCache(self.QCETL_CACHE)
+    def get_qcetl_cache(self, cache_path):
+        val = path_validator(self.log_level, self.log_path)
+        val.validate_input_dir(cache_path)
+        etl_cache = self.QCETLCache(cache_path)
+        return etl_cache
+
+    def fetch_callability_etl_data(self, etl_cache, donor, tumour_id, ignore_warning):
         cached_callabilities = etl_cache.mutectcallability.mutectcallability
-        columns_of_interest = gsiqcetl.column.MutetctCallabilityColumn
+        columns_of_interest = self.gsiqcetl_column.MutetctCallabilityColumn
         # Note: donor and tumour ID are both not unique, but together are unique. Filter on both.
         # One donor can have multiple tumour IDs; one tumour ID can be associated with multiple donors
         # But one donor will not have a duplicate tumour IDs
@@ -150,10 +188,9 @@ class main(plugin_base):
             self.logger.error(msg)
             raise MissingQCETLError(msg)
         
-    def fetch_coverage_etl_data(self, donor, tumour_id):
-        etl_cache = QCETLCache(self.QCETL_CACHE)
+    def fetch_coverage_etl_data(self, etl_cache, donor, tumour_id):
         cached_coverages = etl_cache.bamqc4merged.bamqc4merged
-        columns_of_interest = gsiqcetl.column.BamQc4MergedColumn
+        columns_of_interest = self.gsiqcetl_column.BamQc4MergedColumn
         # Note: donor and tumour ID are both not unique, but together are unique. Filter on both.
         # One donor can have multiple tumour IDs; one tumour ID can be associated with multiple donors
         # But one donor will not have a duplicate tumour IDs
