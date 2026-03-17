@@ -6,6 +6,7 @@ import os
 import logging
 import json
 from decimal import Decimal
+from importlib import import_module
 from importlib.util import find_spec
 from mako.lookup import TemplateLookup
 import djerba.plugins.sample.constants as constants
@@ -33,11 +34,18 @@ class main(plugin_base):
                 "associated Python package are "+\
                 "internal to OICR and not available externally.)"
             self.logger.warn(warning)
+            self.gsiqcetl_column = None
+            self.QCETLCache = None
             self.gsiqcetl_OK = False
         else:
             try:
-                import gsiqcetl.column
-                from gsiqcetl import QCETLCache
+                # Import the required classes/modules and assign to instance variables.
+                # We do it this way because for a simple 'import' statement,
+                # the imported names are in scope for the local context only.
+                # So inside a function like this, 'import' does not
+                # make the names available to the rest of the plugin.
+                self.gsiqcetl_column = import_module('gsiqcetl.column')
+                self.QCETLCache = import_module('gsiqcetl.api').QCETLCache
                 self.gsiqcetl_OK = True
             except ImportError as err:
                 msg = 'QC-ETL import failure! Try checking python versions'
@@ -149,12 +157,12 @@ class main(plugin_base):
     def get_qcetl_cache(self, cache_path):
         val = path_validator(self.log_level, self.log_path)
         val.validate_input_dir(cache_path)
-        etl_cache = QCETLCache(cache_path)
+        etl_cache = self.QCETLCache(cache_path)
         return etl_cache
 
     def fetch_callability_etl_data(self, etl_cache, donor, tumour_id, ignore_warning):
         cached_callabilities = etl_cache.mutectcallability.mutectcallability
-        columns_of_interest = gsiqcetl.column.MutetctCallabilityColumn
+        columns_of_interest = self.gsiqcetl_column.MutetctCallabilityColumn
         # Note: donor and tumour ID are both not unique, but together are unique. Filter on both.
         # One donor can have multiple tumour IDs; one tumour ID can be associated with multiple donors
         # But one donor will not have a duplicate tumour IDs
@@ -182,7 +190,7 @@ class main(plugin_base):
         
     def fetch_coverage_etl_data(self, etl_cache, donor, tumour_id):
         cached_coverages = etl_cache.bamqc4merged.bamqc4merged
-        columns_of_interest = gsiqcetl.column.BamQc4MergedColumn
+        columns_of_interest = self.gsiqcetl_column.BamQc4MergedColumn
         # Note: donor and tumour ID are both not unique, but together are unique. Filter on both.
         # One donor can have multiple tumour IDs; one tumour ID can be associated with multiple donors
         # But one donor will not have a duplicate tumour IDs
