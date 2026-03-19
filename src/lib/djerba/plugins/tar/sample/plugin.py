@@ -77,7 +77,6 @@ class main(plugin_base):
         
         if purity not in constants.ALLOWED_NA:
             try:
-                # Round and clean purity for report aesthetic
                 purity = float(purity)
 
             except ValueError:
@@ -90,6 +89,7 @@ class main(plugin_base):
                 self.logger.error(msg)
                 raise ValueError(msg)
 
+            # Round and clean purity for report aesthetic
             # If purity is <10%, only report as <10% (not exact number)
             purity = round(purity*100, 1)
             self.write_purity(purity, work_dir)
