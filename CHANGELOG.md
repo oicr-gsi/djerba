@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased 
+- GCGI-1697: Compute major and minor allele copy numbers internally due to their removal in Purple v4.3+ from the segments output file.
+
 ## v1.11.9: 2026-03-17
 - GCGI-1471: Generate default Whizbam links when no mutations are reported in TAR reports, and apply minor fixes to library and file names.
 - GCGI-1570: Make import of `gsiqcetl` package optional. Make `qcetl_cache` path an INI parameter with appropriate default.
