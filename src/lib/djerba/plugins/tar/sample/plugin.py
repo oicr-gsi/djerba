@@ -49,6 +49,13 @@ class main(plugin_base):
             constants.WF_ICHORCNA
         )
 
+        # Have to extract purity here in order for purity to be supplied manually if needed
+        # Purity needs to be supplied manually when making failed reports 
+
+        ichorcna_file = wrapper.get_my_string(constants.ICHORCNA_FILE)
+        purity = self.get_purity(wrapper, ichorcna_file)
+        wrapper.set_my_param(constants.PURITY, purity)
+
         if wrapper.my_param_is_null(constants.RAW_COVERAGE):
             qc_dict = self.fetch_qc_etl_data(config[self.identifier][constants.GROUP_ID], constants.CACHE_COVERAGE, constants.RAW_COVERAGE)
             wrapper.set_my_param(constants.RAW_COVERAGE, qc_dict[constants.RAW_COVERAGE])
@@ -65,37 +72,86 @@ class main(plugin_base):
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
         work_dir = self.workspace.get_work_dir()
 
-        # Get purity and write it to purity.txt
-        ichorcna_metrics_file = config[self.identifier][constants.ICHORCNA_FILE]
-        ichor_json = self.process_ichor_json(ichorcna_metrics_file)
-        self.workspace.write_json('ichor_metrics.json', ichor_json)
-        purity = ichor_json["tumor_fraction"]
-        self.write_purity(purity, work_dir)
+        # Processing of purity and writing purity to purity.txt
+        purity = wrapper.get_my_string(constants.PURITY)
+        
+        if purity not in constants.ALLOWED_NA:
+            try:
+                # Round and clean purity for report aesthetic
+                purity = float(purity)
 
-        # If purity is <10%, only report as <10% (not exact number)
-        purity = float(purity)
-        rounded_purity = round(purity * 100, 1)
-        if rounded_purity < 10:
-            rounded_purity = "<10"
+            except ValueError:
+                msg = f"Manually supplied purity should be one of {constants.ALLOWED_NA} or a float or integer."
+                self.logger.error(msg)
+                raise ValueError(msg)
 
-        print((config[self.identifier][constants.RAW_COVERAGE]))
-        print(type((config[self.identifier][constants.RAW_COVERAGE])))
-        print((config[self.identifier][constants.COVERAGE_PL]))
-        print(type((config[self.identifier][constants.COVERAGE_PL])))
+            if not (0 <= purity <= 1):
+                msg = f"Invalid purity value: {purity}. Must be between 0 and 1 (inclusive)."
+                self.logger.error(msg)
+                raise ValueError(msg)
+
+            # If purity is <10%, only report as <10% (not exact number)
+            purity = round(purity*100, 1)
+            self.write_purity(purity, work_dir)
+            if purity < 10:
+                purity = "<10"
+
+        # Account for other QCs being NA for failed reports 
+        raw_coverage = config[self.identifier][constants.RAW_COVERAGE]
+        collapsed_coverage = config[self.identifier][constants.COVERAGE_PL]
+        if raw_coverage not in constants.ALLOWED_NA:
+            try:
+                raw_coverage = round(float(raw_coverage))
+            except ValueError:
+                msg = f"Manually supplied raw_coverage should be one of {constants.ALLOWED_NA} or a float or integer."
+                self.logger.error(msg)
+                raise ValueError(msg)
+        if collapsed_coverage not in constants.ALLOWED_NA:
+            try:
+                collapsed_coverage = round(float(collapsed_coverage))
+            except ValueError:
+                msg = f"Manually supplied collapsed_coverage should be one of {constants.ALLOWED_NA} or a float or integer."
+                self.logger.error(msg)
+                raise ValueError(msg)
 
         results = {
             constants.ONCOTREE: config[self.identifier][constants.ONCOTREE],
             constants.KNOWN_VARIANTS: config[self.identifier][constants.KNOWN_VARIANTS],
             constants.SAMPLE_TYPE: config[self.identifier][constants.SAMPLE_TYPE],
-            constants.CANCER_CONTENT: rounded_purity,
-            constants.RAW_COVERAGE: round(float(config[self.identifier][constants.RAW_COVERAGE])),
-            constants.UNIQUE_COVERAGE: round(float(config[self.identifier][constants.COVERAGE_PL])),
+            constants.CANCER_CONTENT: purity,
+            constants.RAW_COVERAGE: raw_coverage,
+            constants.UNIQUE_COVERAGE: collapsed_coverage,
         }
         data['results'] = results
         return data
 
     def get_cached_coverages(self, etl_cache, cache_name):
         return getattr(etl_cache, cache_name).metrics
+
+
+    def get_purity(self, wrapper, ichorcna_path):
+        # Get purity and write it to purity.txt
+        ichorcna_path_exists = os.path.exists(ichorcna_path)
+        
+        if ichorcna_path_exists:
+            if wrapper.my_param_is_not_null(constants.PURITY):
+                msg = "Both a valid ichorcna file and purity were supplied. Prioritizing extraction of purity from the ichorcna file."
+                self.logger.warning(msg)
+
+            ichor_json = self.process_ichor_json(ichorcna_path)
+            self.workspace.write_json('ichor_metrics.json', ichor_json)
+            purity = ichor_json["tumor_fraction"]
+            return purity
+
+        elif not ichorcna_path_exists and wrapper.my_param_is_not_null(constants.PURITY):
+            purity = wrapper.get_my_string(constants.PURITY)
+            return purity
+
+        elif not ichorcna_path_exists and wrapper.my_param_is_null(constants.PURITY):
+            msg = "Both a valid ichorcna file and purity were not specified. If you have the ichorcna file, specify it so purity can be extracted. If not, set ichorcna_file=None and supply purity manually."
+            self.logger.error(msg)
+            raise ValueError(msg)
+
 
     def fetch_qc_etl_data(self, group_id, cache_name, qc_metric):
         etl_cache = QCETLCache(self.QCETL_CACHE)
@@ -169,7 +225,8 @@ class main(plugin_base):
             constants.SAMPLE_TYPE,
             constants.ICHORCNA_FILE,
             constants.RAW_COVERAGE,
-            constants.COVERAGE_PL
+            constants.COVERAGE_PL,
+            constants.PURITY
         ]
         for key in discovered:
             self.add_ini_discovered(key)

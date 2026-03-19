@@ -575,30 +575,6 @@ class provenance_reader(logger):
         suffix = '\.seg\.txt$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
-    def parse_tar_metrics_normal_path(self):
-        workflow = self.WF_CONSENSUS
-        mt = self.MT_PLAIN_TEXT
-        suffix = 'allUnique-hsMetrics\.HS\.txt$'
-        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_n)
-
-    def parse_tar_metrics_tumour_path(self):
-        workflow = self.WF_CONSENSUS
-        mt = self.MT_PLAIN_TEXT
-        suffix = 'allUnique-hsMetrics\.HS\.txt$'
-        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
-
-    def parse_tar_maf_normal_path(self):
-        workflow = self.WF_CONSENSUS
-        mt = self.MT_TXT_GZ
-        suffix = 'merged\.maf\.gz$'
-        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_n)
-
-    def parse_tar_maf_tumour_path(self):
-        workflow = self.WF_CONSENSUS
-        mt = self.MT_TXT_GZ
-        suffix = 'merged\.maf\.gz$'
-        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
-
     def parse_tar_maf_tumour_filtered_path(self):
         workflow = self.WF_MUTECT2
         mt = self.MT_TXT_GZ

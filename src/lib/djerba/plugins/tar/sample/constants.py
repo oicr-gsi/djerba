@@ -19,6 +19,7 @@ UNIQUE_COVERAGE = 'unique_coverage'
 COVERAGE_PL = 'collapsed_coverage'
 PURITY = 'purity'
 TUMOUR_ID = 'tumour_id'
+ALLOWED_NA = ["NA", "N/A", "na", "n/a", "N/a", "Na", "None", "none", "NONE"]
 
 # sample constants
 ASSAY = 'assay'

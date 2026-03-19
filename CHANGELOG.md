@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## UNRELEASED
+- GCGI-1691: Moved TAR QCs from taking from the consensusCruncher hsmetrics file to taking form the umiconsensus cache
+- Allowed `tar.sample` to be able to handle N/A, NA, None, etc. values for raw coverage, collapsed coverage, and purity
+
 ## v1.11.9: 2026-03-17
 - GCGI-1471: Generate default Whizbam links when no mutations are reported in TAR reports, and apply minor fixes to library and file names.
 - GCGI-1570: Make import of `gsiqcetl` package optional. Make `qcetl_cache` path an INI parameter with appropriate default.
