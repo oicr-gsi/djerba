@@ -4,6 +4,7 @@
 - GCGI-1697: Compute major and minor allele copy numbers internally due to their removal in Purple v4.3+ from the segments output file.
 - GCGI-1691: Moved TAR QCs from taking from the consensusCruncher hsmetrics file to taking form the umiconsensus cache
 - Allowed `tar.sample` to be able to handle N/A, NA, None, etc. values for raw coverage, collapsed coverage, and purity
+- GCGI-1690: Change bwamem to bwamem2 in the targeted sequencing assay supplement plugin
 
 ## v1.11.9: 2026-03-17
 - GCGI-1471: Generate default Whizbam links when no mutations are reported in TAR reports, and apply minor fixes to library and file names.
