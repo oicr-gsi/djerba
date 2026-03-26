@@ -33,7 +33,6 @@ class provenance_reader(logger):
     WF_ICHORCNA = 'ichorcna'
     WF_IMMUNE = 'immunedeconv'
     WF_MAVIS = 'mavis'
-    WF_MRDETECT = 'mrdetect_filter_only'
     WF_MSISENSOR = 'msisensor'
     WF_MUTECT = 'mutect2_matched'
     WF_MUTECT2 = 'mutect2Consensus'
@@ -531,12 +530,6 @@ class provenance_reader(logger):
         workflows = [self.WF_MSISENSOR]
         mt = self.MT_OCTET_STREAM
         suffix = 'recalibrated\.msi\.booted$'
-        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
-
-    def parse_mrdetect_path(self):
-        workflows = [self.WF_MRDETECT]
-        mt = self.MT_PLAIN_TEXT
-        suffix = 'SNP\.count\.txt$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
     def parse_mutect_path(self):
