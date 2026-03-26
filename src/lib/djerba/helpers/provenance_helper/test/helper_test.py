@@ -20,7 +20,7 @@ class TestProvenanceHelper(TestBase):
     HELPER_NAME = 'provenance_helper'
     SUBSET_LENGTH = 240
     SAMPLE_INFO_MD5 = 'd8ca7199822984ad4ec7f0fee5cbb316'
-    PATH_INFO_MD5 = '81150543eff44c8525f70967ba466d2c'
+    PATH_INFO_MD5 = 'd8aff1dcf5873af59655f9c806beb67d'
     
     def test(self):
         self.data_dir_root = directory_finder().get_test_dir()
