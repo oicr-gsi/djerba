@@ -13,7 +13,6 @@ import djerba.util.oncokb.constants as oncokb_constants
 from djerba.helpers.input_params_helper.helper import main as input_params_helper
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
 from djerba.plugins.base import plugin_base
-from djerba.plugins.genomic_landscape.ctdna import ctdna_processor
 from djerba.plugins.genomic_landscape.hrd import hrd_processor
 from djerba.plugins.genomic_landscape.msi import msi_processor
 from djerba.plugins.genomic_landscape.tmb import tmb_processor
@@ -34,11 +33,6 @@ class main(plugin_base):
     MSI_RESULTS_SUFFIX = '.recalibrated.msi.booted'
     MSI_WORKFLOW = 'msisensor'
 
-    # For ctDNA file
-    CTDNA_RESULTS_SUFFIX = 'SNP.count.txt'
-    CTDNA_WORKFLOW = 'mrdetect_filter_only'
-    CTDNA_FILE_NOT_FOUND = 'ctDNA file not available'
-
     # thresholds to evaluate HRD
     MIN_HRD_PURITY = 0.5
     MIN_HRD_PURITY_NOT_FFPE = 0.3
@@ -51,7 +45,6 @@ class main(plugin_base):
             glc.TCGA_CODE,
             glc.PURITY_INPUT,
             glc.MSI_FILE,
-            glc.CTDNA_FILE,
             glc.HRDETECT_PATH,
             glc.SAMPLE_TYPE
         ]
@@ -89,9 +82,7 @@ class main(plugin_base):
         w = self.update_wrapper_if_null(w, ppf, purple_constants.PURITY)
         w = self.update_wrapper_if_null(w, dsi, glc.TUMOUR_ID)
         w = self.update_wrapper_if_null(w, dpi, glc.MSI_FILE, glc.MSI_WORKFLOW)
-        w = self.update_wrapper_if_null(w, dpi, glc.CTDNA_FILE, glc.CTDNA_WORKFLOW)
         w = self.update_wrapper_if_null(w, dpi, glc.HRDETECT_PATH, glc.HRD_WORKFLOW)
-        w = self.set_ctdna_file(w, dpi)
         return w.get_config()
 
     def extract(self, config):
@@ -124,12 +115,6 @@ class main(plugin_base):
         results[glc.CANT_REPORT_HRD_REASON] = cant_report_hrd_reason
 
         # evaluate biomarkers
-        ctdna_file = wrapper.get_my_string(glc.CTDNA_FILE)
-        ctdna_proc = ctdna_processor(self.log_level, self.log_path)
-        if ctdna_file == self.CTDNA_FILE_NOT_FOUND:
-            results[glc.CTDNA] = ctdna_proc.get_dummy_results()
-        else:
-            results[glc.CTDNA] = ctdna_proc.run(ctdna_file)
         hrd = hrd_processor(self.log_level, self.log_path)
         results[glc.BIOMARKERS][glc.HRD] = hrd.run(
             work_dir,
@@ -258,21 +243,3 @@ class main(plugin_base):
             self.logger.error(msg)
             raise RuntimeError(msg)
         return alt_url
-
-    def set_ctdna_file(self, cw, info_name):
-        # ctDNA file is required for clinical reports, optional otherwise
-        # cw is a config_wrapper object; info name is name of the path info JSON file
-        cw = self.update_wrapper_if_null(cw, info_name, glc.CTDNA_FILE, glc.CTDNA_WORKFLOW)
-        ctdna_file = cw.get_my_string(glc.CTDNA_FILE)
-        if ctdna_file == 'None':
-            self.logger.debug('ctDNA file not found in provenance or manual inputs')
-            if core_constants.CLINICAL in cw.get_my_attributes():
-                msg = "Clinical report cannot proceed without mrdetect ctDNA file"
-                self.logger.error(msg)
-                raise RuntimeError(msg)
-            else:
-                cw.set_my_param(glc.CTDNA_FILE, self.CTDNA_FILE_NOT_FOUND)
-                self.logger.debug('Non-clinical research report, ctDNA file is not required')
-        else:
-            self.logger.debug("Found ctDNA file: '{0}'".format(ctdna_file))
-        return cw
