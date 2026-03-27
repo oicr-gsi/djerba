@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased 
+## v1.11.10: 2026-03-30
 - GCGI-1697: Compute major and minor allele copy numbers internally due to their removal in Purple v4.3+ from the segments output file.
 - GCGI-1691: Moved TAR QCs from taking from the consensusCruncher hsmetrics file to taking form the umiconsensus cache
 - Allowed `tar.sample` to be able to handle N/A, NA, None, etc. values for raw coverage, collapsed coverage, and purity
