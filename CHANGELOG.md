@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v1.11.10: 2026-04-01
+- GCGI-1697: Compute major and minor allele copy numbers internally due to their removal in Purple v4.3+ from the segments output file.
+- GCGI-1691: Moved TAR QCs from taking from the consensusCruncher hsmetrics file to taking form the umiconsensus cache
+- Allowed `tar.sample` to be able to handle N/A, NA, None, etc. values for raw coverage, collapsed coverage, and purity
+- GCGI-1698: Added GENECODE version in the `supplement` plugin
+- GCGI-1690: Change bwamem to bwamem2 in the targeted sequencing assay supplement plugin
+- GCGI-1681: Remove candidate number of sites from the `genomic_landscape` plugin
+
 ## v1.11.9: 2026-03-17
 - GCGI-1471: Generate default Whizbam links when no mutations are reported in TAR reports, and apply minor fixes to library and file names.
 - GCGI-1570: Make import of `gsiqcetl` package optional. Make `qcetl_cache` path an INI parameter with appropriate default.

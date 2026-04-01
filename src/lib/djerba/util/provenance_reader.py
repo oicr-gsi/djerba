@@ -33,7 +33,6 @@ class provenance_reader(logger):
     WF_ICHORCNA = 'ichorcna'
     WF_IMMUNE = 'immunedeconv'
     WF_MAVIS = 'mavis'
-    WF_MRDETECT = 'mrdetect_filter_only'
     WF_MSISENSOR = 'msisensor'
     WF_MUTECT = 'mutect2_matched'
     WF_MUTECT2 = 'mutect2Consensus'
@@ -533,12 +532,6 @@ class provenance_reader(logger):
         suffix = 'recalibrated\.msi\.booted$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
-    def parse_mrdetect_path(self):
-        workflows = [self.WF_MRDETECT]
-        mt = self.MT_PLAIN_TEXT
-        suffix = 'SNP\.count\.txt$'
-        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
-
     def parse_mutect_path(self):
         workflows = [self.WF_MUTECT]
         mt = self.MT_VCF_GZ
@@ -574,30 +567,6 @@ class provenance_reader(logger):
         mt = self.MT_PLAIN_TEXT
         suffix = '\.seg\.txt$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
-
-    def parse_tar_metrics_normal_path(self):
-        workflow = self.WF_CONSENSUS
-        mt = self.MT_PLAIN_TEXT
-        suffix = 'allUnique-hsMetrics\.HS\.txt$'
-        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_n)
-
-    def parse_tar_metrics_tumour_path(self):
-        workflow = self.WF_CONSENSUS
-        mt = self.MT_PLAIN_TEXT
-        suffix = 'allUnique-hsMetrics\.HS\.txt$'
-        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
-
-    def parse_tar_maf_normal_path(self):
-        workflow = self.WF_CONSENSUS
-        mt = self.MT_TXT_GZ
-        suffix = 'merged\.maf\.gz$'
-        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_n)
-
-    def parse_tar_maf_tumour_path(self):
-        workflow = self.WF_CONSENSUS
-        mt = self.MT_TXT_GZ
-        suffix = 'merged\.maf\.gz$'
-        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
 
     def parse_tar_maf_tumour_filtered_path(self):
         workflow = self.WF_MUTECT2

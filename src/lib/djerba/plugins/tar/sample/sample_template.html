@@ -6,6 +6,10 @@
   from djerba.util.date import get_todays_date
 %>
 <% date = get_todays_date() %>
+<% 
+raw_coverage = results.get(constants.RAW_COVERAGE)
+collapsed_coverage = results.get(constants.UNIQUE_COVERAGE)
+%>
 
 ${html_builder().section_cells_begin("<h2>SAMPLE INFORMATION</h2>","main")}
 
@@ -30,9 +34,9 @@ ${html_builder().section_cells_begin("<h2>SAMPLE INFORMATION</h2>","main")}
     </tr>
     <tr>
       <td>Raw Coverage (mean):</td>
-      <td>${html_builder().k_comma_format(results.get(constants.RAW_COVERAGE))}</td>
+      <td>${html_builder().k_comma_format(raw_coverage) if raw_coverage not in constants.ALLOWED_NA else raw_coverage}</td>
       <td>Unique Molecular Coverage (mean):</td>
-      <td>${html_builder().k_comma_format(results.get(constants.UNIQUE_COVERAGE))}</td>
+      <td>${html_builder().k_comma_format(collapsed_coverage) if collapsed_coverage not in constants.ALLOWED_NA else collapsed_coverage}</td>
     </tr>
 
   </table>
