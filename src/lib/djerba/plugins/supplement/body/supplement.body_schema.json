@@ -1,0 +1,444 @@
+{
+    "$id":"https://https://github.com/oicr-gsi/djerba/tree/main/src/lib/djerba/plugins/supplement/body/supplement.body_schema.json",
+    "title": "Results Structure for supplement.body Plugin",
+    "description": "Schema documentation of results structure for case_overview plugin.",
+    "type": "object",
+
+    "properties":{
+        "case_overview":{
+            "description": "Djerba plugin for supplementary report section",
+            "type": "object",
+            "properties":{
+
+                "plugin_name":{
+                    "description": "supplement.body plugin",
+                    "type": "string"
+                },
+
+                "version":{
+                    "description": "Plugin version (0.1)",
+                    "type": "string"
+                },
+
+                "results":{
+                    "description": "Results from supplement.body plugin",
+                    "type": "object",
+                    "properties":{
+
+                        "assay": {
+                            "description": "Type of assay used for sequencing",
+                            "type": "string"
+                        },
+
+                        "components":{
+                            "description": "Components of report as objects stored in arrays",
+                            "type": "array",
+                            "properties":{
+
+                                "case_overview":{
+                                    "description": "Case overview components",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "core":{
+                                    "description": "Case overview components",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "patient_info":{
+                                    "description": "Patient info components",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "provenance_helper":{
+                                    "description": "Provenance helper",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "report_title":{
+                                    "description": "Report title",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "summary":{
+                                    "description": "Report summary components",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "supplement.body":{
+                                    "description": "Variant allele frequency",
+                                    "type": "integer",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "tar.sample":{
+                                    "description": "tar.sample components",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "tar.snv_indel":{
+                                    "description": "tar.snv_indel components",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "tar.status":{
+                                    "description": "tar.status components",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "tar.swgs":{
+                                    "description": "tar.swgs components",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "tar_input_params_helper":{
+                                    "description": "Input params helper for tar plugin",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "wgts.cnv_purple":{
+                                    "description": "wgts.cnv_purple components",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "wgts.snv_indel":{
+                                    "description": "wgts.snv_indel components",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "pwgs.analysis":{
+                                    "description": "pwgs.analysis components",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "pwgs.case_overview":{
+                                    "description": "pwgs.case_overview components",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "pwgs.sample":{
+                                    "description": "pwgs.sample components",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "pwgs.summary":{
+                                    "description": "pwgs.summary components",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "pwgs_cardea_helper":{
+                                    "description": "pwgs cardea helper",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "pwgs_provenance_helper":{
+                                    "description": "Provenance helper for pwgs reports",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "hla":{
+                                    "description": "hla components",
+                                    "type": "array",
+                                    "properties":{
+
+                                        "url":{
+                                            "description": "URL",
+                                            "type": "string"
+                                        },
+
+                                        "version":{
+                                            "description": "Plugin version",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+
+                        "failed": {
+                            "description": "Passed (false) vs failed (true) report",
+                            "type": "string"
+                        },
+
+                        "author": {
+                            "description": "Author name",
+                            "type": "string"
+                        },
+                        
+                        "extract_date":{
+                            "description": "Date of sample extraction (YYYY-MM-DD)",
+                            "type": "string"
+                        },
+
+                        "include_signoffs":{
+                            "description": "Inclusion of sign-offs",
+                            "type": "boolean"
+                        },
+
+                        "template_dir":{
+                            "description": "Path to template direcory",
+                            "type": "string"
+                        },
+
+                        "report_signoff_date":{
+                            "description": "Date of report sign-off",
+                            "type": "string",
+                            "enum": ["yyyy-mm-dd"]
+                        },
+
+                        "clinical_geneticist_name":{
+                            "description": "Clinical geneticist name",
+                            "type": "string",
+                            "enum": ["PLACEHOLDER"]
+                        },
+
+                        "clinical_geneticist_license":{
+                            "description": "Clinical geneticist license",
+                            "type": "string",
+                            "enum": ["XXXXXXX"]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
