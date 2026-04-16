@@ -98,6 +98,8 @@ setup(
     install_requires=[
         'configparse',
         'email_validator',
+        'gcsfs',
+        'google-cloud-storage',
         'jsonschema',
         'lets-plot',
         'mako',
