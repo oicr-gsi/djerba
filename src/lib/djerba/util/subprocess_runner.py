@@ -5,14 +5,27 @@ import subprocess
 from collections.abc import Iterable
 from djerba.util.logger import logger
 import djerba.util.constants as constants
+from djerba.util.cloud_storage_helper import cloud_storage_helper
 
 class subprocess_runner(logger):
 
     def __init__(self, log_level=logging.WARNING, log_path=None):
         self.logger = self.get_logger(log_level, __name__, log_path)
+        self.cloud_helper = cloud_storage_helper(log_level, log_path)
 
     def run(self, command, description='subprocess', redact=[], stdin=None, raise_err=True,
-            truncate=True):
+            truncate=True, gcs_stdin_path=None):
+        """
+        Run a subprocess. 
+        If gcs_stdin_path is provided, it takes precedence over stdin.
+        """
+        if gcs_stdin_path:
+            with self.cloud_helper.open(gcs_stdin_path) as f:
+                return self._execute(command, description, redact, f, raise_err, truncate)
+        else:
+            return self._execute(command, description, redact, stdin, raise_err, truncate)
+
+    def _execute(self, command, description, redact, stdin, raise_err, truncate):
         msg = None
         if isinstance(command, str) or not isinstance(command, Iterable):
             msg = "Command must be a non-string iterable: Received {0}".format(command)
