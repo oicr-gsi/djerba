@@ -24,7 +24,7 @@ class FusionProcessingError(Exception):
 class main(plugin_base):
     PRIORITY = 900
     PLUGIN_VERSION = '1.1.0'
-    CACHE_DEFAULT = '/.mounts/labs/CGI/gsi/tools/djerba/oncokb_cache/scratch'
+    CACHE_DEFAULT = os.environ.get('ONCOKB_CACHE_PATH', '/.mounts/labs/CGI/gsi/tools/djerba/oncokb_cache/scratch')
 
     def configure(self, config):
         config = self.apply_defaults(config)

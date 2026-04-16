@@ -47,6 +47,7 @@ UPDATE_CACHE = 'update cache'
 
 ### miscellaneous ###
 
+import os
 ALL_CURATED_GENES = '20251008-allCuratedGenes.tsv'
 ONCOGENIC_UC = 'ONCOGENIC'
-DEFAULT_CACHE_PATH = '/.mounts/labs/CGI/gsi/tools/djerba/oncokb_cache/scratch'
+DEFAULT_CACHE_PATH = os.environ.get('ONCOKB_CACHE_PATH', '/.mounts/labs/CGI/gsi/tools/djerba/oncokb_cache/scratch')

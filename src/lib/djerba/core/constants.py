@@ -115,7 +115,8 @@ ONCOKB = 'OncoKB'
 REPORT_JSON_SUFFIX = '_report.json'
 
 # root directory pattern for WHIZBAM files
-WHIZBAM_PATTERN_ROOT='/.mounts/labs/prod/whizbam'
+import os
+WHIZBAM_PATTERN_ROOT=os.environ.get('WHIZBAM_PATTERN_ROOT', '/.mounts/labs/prod/whizbam')
 
 # component versions/URLs
 COMPONENT_FILENAME = 'component_info.json'
