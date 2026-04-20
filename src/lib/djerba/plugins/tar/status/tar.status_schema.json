@@ -1,0 +1,50 @@
+{
+    "$id":"https://https://github.com/oicr-gsi/djerba/tree/main/src/lib/djerba/plugins/tar/status/tar.status_schema.json",
+    "title": "Results Structure for tar.status Plugin",
+    "description": "Schema documentation of results structure for tar.status plugin.",
+    "type": "object",
+
+    "properties":{
+        "report_title":{
+            "description": "Djerba plugin for tar reporting",
+            "type": "object",
+            "properties":{
+
+                "plugin_name":{
+                    "description": "tar.status plugin",
+                    "type": "string"
+                },
+
+                "version":{
+                    "description": "Plugin version (1.0.0)",
+                    "type": "string"
+                },
+
+                "results":{
+                    "description": "Results from tar.status plugin",
+                    "type": "object",
+                    "properties":{
+
+                        "copy_number_ctdna_detected":{
+                            "description": "Detection of CN ctDNA",
+                            "type": "string",
+                            "enum": ["ctDNA not detected", "ctDNA detected"]
+                        },
+
+                        "small_mutation_ctdna_detected":{
+                            "description": "Detection of SM ctDNA",
+                            "type": "string",
+                            "enum": ["ctDNA not detected", "ctDNA detected"]
+                        },
+
+                        "any_ctdna_detected":{
+                            "description": "Detection of ctDNA (detected if either CN/SM show detection)",
+                            "type": "string",
+                            "enum": ["Not Detected", "Detected"]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
