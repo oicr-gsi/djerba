@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- CGCI-1705: Write the ichorCNA purity in decimal instead of percentage format into purity.txt 
+
 ## v1.11.10: 2026-04-01
 - GCGI-1697: Compute major and minor allele copy numbers internally due to their removal in Purple v4.3+ from the segments output file.
 - GCGI-1691: Moved TAR QCs from taking from the consensusCruncher hsmetrics file to taking form the umiconsensus cache

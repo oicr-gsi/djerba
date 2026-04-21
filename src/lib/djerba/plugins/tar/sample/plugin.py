@@ -91,8 +91,8 @@ class main(plugin_base):
 
             # Round and clean purity for report aesthetic
             # If purity is <10%, only report as <10% (not exact number)
-            purity = round(purity*100, 1)
             self.write_purity(purity, work_dir)
+            purity = round(purity*100, 1)
             if purity < 10:
                 purity = "<10"
 
