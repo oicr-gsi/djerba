@@ -1,22 +1,18 @@
-"""General-purpose functions for WGTS plugins"""
+"""Names and sorting methods for variant fields"""
 
 import csv
-import json
 import logging
 import os
 import re
 import djerba.core.constants as core_constants
-from djerba.helpers.expression_helper.helper import main as expr_helper
 from djerba.util.environment import directory_finder
 from djerba.util.logger import logger
 from djerba.util.oncokb.tools import levels as oncokb_levels
-from djerba.util.validator import waiting_path_validator
 
-class wgts_tools(logger):
+
+class variant_sorter(logger):
 
     CHROMOSOME = 'Chromosome'
-    EXPRESSION_PERCENTILE = 'Expression percentile'
-    HAS_EXPRESSION_DATA = 'Has expression data'
     BODY = 'Body'
     GENE = 'Gene'
     GENE_URL = 'Gene URL'
@@ -91,26 +87,11 @@ class wgts_tools(logger):
                 (chromosome, arm, band) = end
         return (chromosome, arm, band)
 
-    def has_expression(self, work_dir):
-        in_path = os.path.join(work_dir, expr_helper.TCGA_EXPR_PCT_JSON)
-        validator = waiting_path_validator(self.log_level, self.log_path)
-        return validator.input_path_exists(in_path)
-
-    @staticmethod
-    def read_expression(work_dir):
-        # read the expression metric from JSON written by the expression helper
-        in_path = os.path.join(work_dir, expr_helper.TCGA_EXPR_PCT_JSON)
-        with open(in_path) as in_file:
-            expr = json.loads(in_file.read())
-        # convert from strings to floats
-        for key in expr.keys():
-            expr[key] = float(expr[key])
-        return expr
-
     def sort_variant_rows(self, rows):
         # sort rows oncokb level, then by cytoband, then by gene name
         rows = sorted(rows, key=lambda row: row[self.GENE])
         rows = sorted(rows, key=lambda row: self.cytoband_sort_order(row[self.CHROMOSOME]))
-        rows = sorted(rows, key=lambda row: oncokb_levels.oncokb_order(row[self.ONCOKB]))
+        if len(rows)>0 and self.ONCOKB in rows[0]: # absent for tar.snv_indel
+            rows = sorted(rows, key=lambda row: oncokb_levels.oncokb_order(row[self.ONCOKB]))
         return rows
 

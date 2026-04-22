@@ -19,6 +19,7 @@ import djerba.plugins.wgts.snv_indel.constants as sic
 from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
 from djerba.util.environment import directory_finder
+from djerba.util.expression_reader import expression_reader
 from djerba.util.html import html_builder
 from djerba.util.image_to_base64 import converter
 from djerba.util.logger import logger
@@ -26,7 +27,8 @@ from djerba.util.oncokb.annotator import annotator_factory
 from djerba.util.oncokb.tools import levels as oncokb_levels
 from djerba.util.oncokb.tools import gene_summary_reader
 from djerba.util.subprocess_runner import subprocess_runner
-from djerba.util.wgts.tools import wgts_tools
+from djerba.util.variant_sorter import variant_sorter
+
 
 class whizbam:
 
@@ -262,15 +264,16 @@ class snv_indel_processor(logger):
         self.logger.debug("Collating SNV/indel results for JSON output")
         oncotree_code = self.config.get_my_string(sic.ONCOTREE_CODE)
         rows = []
-        wgts_toolkit = wgts_tools(self.log_level, self.log_path)
-        is_wgts = wgts_toolkit.has_expression(self.work_dir)
+        xreader = expression_reader(self.log_level, self.log_path)
+        is_wgts = xreader.has_expression(self.work_dir)
         if is_wgts:
             self.logger.info("Reading expression from {0}".format(self.work_dir))
-            expression = wgts_tools.read_expression(self.work_dir)
+            expression = xreader.read_expression(self.work_dir)
         else:
             self.logger.info("No expression data found")
             expression = {}
-        cytobands = wgts_tools(self.log_level, self.log_path).cytoband_lookup()
+        var_sorter = variant_sorter(self.log_level, self.log_path)
+        cytobands = var_sorter.cytoband_lookup()
         if self.workspace.has_file(sic.LOH_FILE):
             has_loh = True
             loh_df = pd.read_csv(os.path.join(self.work_dir, sic.LOH_FILE), sep="\t")
@@ -284,20 +287,20 @@ class snv_indel_processor(logger):
                 gene = row_input[sic.HUGO_SYMBOL]
                 [protein, protein_url] = self.get_protein_info(row_input, oncotree_code)
                 row_output = {
-                    wgts_tools.EXPRESSION_PERCENTILE: expression.get(gene), # None for WGS
-                    wgts_tools.GENE: gene,
-                    wgts_tools.GENE_URL: html_builder.build_gene_url(gene),
+                    xreader.EXPRESSION_PERCENTILE: expression.get(gene), # None if WGS
+                    var_sorter.GENE: gene,
+                    var_sorter.GENE_URL: html_builder.build_gene_url(gene),
                     sic.PROTEIN: protein,
                     sic.PROTEIN_URL: protein_url,
                     sic.TYPE: self.get_mutation_type(row_input),
                     sic.VAF: self.get_tumour_vaf(row_input),
                     sic.DEPTH: self.get_mutation_depth(row_input),
                     sic.LOH: loh_dict.get(gene), # None of LOH not available
-                    wgts_tools.CHROMOSOME: cytobands.get(gene, wgts_tools.UNKNOWN),
-                    wgts_tools.ONCOKB: oncokb_levels.parse_oncokb_level(row_input)
+                    var_sorter.CHROMOSOME: cytobands.get(gene, var_sorter.UNKNOWN),
+                    var_sorter.ONCOKB: oncokb_levels.parse_oncokb_level(row_input)
                 }
                 rows.append(row_output)
-        rows = wgts_toolkit.sort_variant_rows(rows)
+        rows = var_sorter.sort_variant_rows(rows)
         rows = oncokb_levels.filter_reportable(rows)
         somatic_total, coding_seq_total = self.get_mutation_totals()
         results = {
@@ -307,7 +310,7 @@ class snv_indel_processor(logger):
             sic.VAF_PLOT: self.convert_vaf_plot(),
             sic.HAS_LOH_DATA: has_loh,
             sic.HAS_EXPRESSION_DATA: is_wgts,
-            wgts_tools.BODY: rows
+            var_sorter.BODY: rows
         }
         return results
 
