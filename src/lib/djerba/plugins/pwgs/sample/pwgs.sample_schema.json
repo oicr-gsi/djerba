@@ -1,0 +1,57 @@
+{
+    "$id":"https://https://github.com/oicr-gsi/djerba/tree/main/src/lib/djerba/plugins/pwgs/sample/pwgs.sample_schema.json",
+    "title": "Results Structure for pwgs.sample Plugin",
+    "description": "Schema documentation of results structure for pwgs.sample plugin.",
+    "type": "object",
+
+    "properties":{
+        "report_title":{
+            "description": "Djerba plugin for pwgs case overview reporting",
+            "type": "object",
+            "properties":{
+
+                "plugin_name":{
+                    "description": "pwgs.sample plugin",
+                    "type": "string"
+                },
+
+                "version":{
+                    "description": "Plugin version (1.2)",
+                    "type": "string"
+                },
+
+                "results":{
+                    "description": "Results from pwgs.sample plugin",
+                    "type": "object",
+                    "properties":{
+
+                        "median_insert_size": {
+                            "description": "Median insert size",
+                            "type": "integer"
+                        },
+
+                        "coverage": {
+                            "description": "Average coverage",
+                            "type": "float"
+                        },
+
+                        "candidate_snv_count": {
+                            "description": "Number of candidate SNVs",
+                            "type": "integer"
+                        },
+
+                        "outcome": {
+                            "description": "Detection outcome (i.e., UNDETECTED, DETECTED)",
+                            "type": "string"
+                        },
+
+                        "ctdna_detection": {
+                            "description": "Status of ctDNA detection (i.e., Undetected, Detected)",
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
