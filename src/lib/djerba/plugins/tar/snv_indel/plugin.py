@@ -104,11 +104,11 @@ class main(plugin_base):
       
       mutations_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED)
       mutations_extended_file = os.path.join(work_dir, sic.MUTATIONS_EXTENDED_ONCOGENIC)
-      
-      output_data = data_extractor(work_dir, assay, oncotree_code).build_small_mutations_and_indels(mutations_extended_file)
+      extractor = data_extractor(work_dir, assay, oncotree_code, self.log_level, self.log_path)
+      output_data = extractor.build_small_mutations_and_indels(mutations_extended_file)
       results = {
            sic.CLINICALLY_RELEVANT_VARIANTS: len(output_data),
-           sic.TOTAL_VARIANTS: data_extractor(work_dir, assay, oncotree_code).read_somatic_mutation_totals(mutations_file),
+           sic.TOTAL_VARIANTS: extractor.read_somatic_mutation_totals(mutations_file),
            sic.HAS_EXPRESSION_DATA: False,
            sic.BODY: output_data
       }

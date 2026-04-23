@@ -17,7 +17,7 @@ from djerba.util.html import html_builder as hb
 from djerba.mergers.treatment_options_merger.factory import factory as tom_factory
 from djerba.mergers.gene_information_merger.factory import factory as gim_factory
 from djerba.util.oncokb.annotator import annotator_factory
-from djerba.util.wgts.tools import wgts_tools
+from djerba.util.variant_sorter import variant_sorter
 from djerba.util.oncokb.tools import gene_summary_reader
 import djerba.plugins.fusion.constants as fc
 import djerba.core.constants as core_constants
@@ -275,7 +275,7 @@ class fusion_tools(logger):
         rows = []
         gene_info = []
         treatment_opts = []
-        cytobands = wgts_tools(self.log_level, self.log_path).cytoband_lookup()
+        cytobands = variant_sorter(self.log_level, self.log_path).cytoband_lookup()
         summaries = gene_summary_reader(self.log_level, self.log_path)
         gene_info_factory = gim_factory(self.log_level, self.log_path)
         # table has 2 rows for each oncogenic fusion

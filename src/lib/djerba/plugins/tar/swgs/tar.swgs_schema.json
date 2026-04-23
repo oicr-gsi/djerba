@@ -1,0 +1,37 @@
+{
+    "$id":"https://https://github.com/oicr-gsi/djerba/tree/main/src/lib/djerba/plugins/tar/swgs/tar.swgs_schema.json",
+    "title": "Results Structure for tar.swgs Plugin",
+    "description": "Schema documentation of results structure for tar.swgs plugin.",
+    "type": "object",
+
+    "properties":{
+        "report_title":{
+            "description": "Djerba plugin for tar reporting",
+            "type": "object",
+            "properties":{
+
+                "plugin_name":{
+                    "description": "Shallow Whole Genome Sequencing (sWGS)",
+                    "type": "string"
+                },
+
+                "version":{
+                    "description": "Plugin version (1.0.0)",
+                    "type": "string"
+                },
+
+                "results":{
+                    "description": "Results from tar.swgs plugin",
+                    "type": "object",
+                    "properties":{
+
+                        "Above_Purity_Threshold":{
+                            "description": "Whether sample falls above purity threshold (0.3)",
+                            "type": "boolean"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
