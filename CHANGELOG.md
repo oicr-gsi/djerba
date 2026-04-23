@@ -1,8 +1,9 @@
 # CHANGELOG
 
-## Unreleased
-- CGCI-1703: Split `djerba.util.wgts.tools` into new modules `expression_reader` and `variant_sorter`. Use the new modules for TAR as well as WGTS, removing duplicated code in the TAR plugins.
-- CGCI-1705: Write the ichorCNA purity in decimal instead of percentage format into purity.txt
+## v1.11.11: 2026-04-23
+- GCGI-1521: More detailed JSON schemas for plugin results
+- GCGI-1703: Split `djerba.util.wgts.tools` into new modules `expression_reader` and `variant_sorter`. Use the new modules for TAR as well as WGTS, removing duplicated code in the TAR plugins.
+- GCGI-1705: Write the ichorCNA purity in decimal instead of percentage format into purity.txt
 
 ## v1.11.10: 2026-04-01
 - GCGI-1697: Compute major and minor allele copy numbers internally due to their removal in Purple v4.3+ from the segments output file.
