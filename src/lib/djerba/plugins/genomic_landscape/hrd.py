@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
-
+import djerba.plugins.genomic_landscape.constants as glc
 
 from djerba.util.logger import logger
 from djerba.util.image_to_base64 import converter
@@ -77,100 +77,47 @@ class hrd_processor(logger):
         mainType = tree_info_on_this_code.pop()['mainType']
         return mainType
 
-    def make_HRD_plot(self, output_dir):
+    def make_HRD_plot(self, work_dir, hrd_score):
         """
-        Create plot for HRD probability. 
+        Takes the HRD probability score as input.
+        This will plot a red dot.
+        Potentially to-do: add BRCA1/BRCA2 probability scores?
+        Writes the graph to a png; does not return anything.
         """
-        boot = pd.read_csv(os.path.join(output_dir, 'hrd.tmp.txt'), sep = "\t", header=None, names = ["var", "q1", "median_value", "q3"])
-        boot["Sample"] = "Sample"
-        weights_df = boot[boot["var"].isin(["del.mh.prop.w", "SNV3.w", "SV3.w", "SV5.w", "hrd.w"])].copy()
 
-        #equation [4] in Davies et al. 2017
-        intercept = boot.loc[boot["var"] == "intercept.w", "median_value"].iloc[0]
-        weights_df["probability"] = 1 / (1 + np.exp(-(intercept + weights_df["median_value"])))
+        # Get output name
+        output = os.path.join(work_dir, glc.HRD_PLOT_FILENAME)
 
-        #rename variables
-        var_map = {
-                "SV5.w": "Large Deletions",
-                "SV3.w": "Tandem Duplications",
-                "SNV3.w": "COSMIC SBS3",
-                "hrd.w": "LOH",
-                "del.mh.prop.w": "Microhomologous Deletions"                    
-                }
-        weights_df["var_long"] = weights_df["var"].map(var_map)
-        weights_df["var_longer"] = (weights_df["var_long"] + ": " + weights_df["probability"].round(2).map(lambda x: f"{x:.2f}"))
-        weights_df = weights_df.sort_values("var_long", ascending=False)
+        # Set up plot aesthetics
+        fig, ax = plt.subplots(figsize=(4, 1.1))
+        ax.set_xlabel("Probability of HRD", fontsize=7, color='black', labelpad=1)
 
-        #adjust position of "This sample" label to score
-        adjust_label_w_position = 0.25
-        probability_value = boot.loc[boot["var"] == "Probability.w", "median_value"].iloc[0]
-        if probability_value > 0.5:
-            adjust_label_w_position = 0.5
+        x_ticks = [hrd_score, 0.25, 0.50, 0.75, 1.00]
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.set_xticks(x_ticks)
+        ax.xaxis.set_minor_locator(plt.NullLocator())
+        ax.set_xticklabels([f"{v:.2f}" for v in x_ticks], fontsize=6)
+        ax.get_yaxis().set_visible(False)
 
-        out_path = os.path.join(output_dir, "hrd.svg")
-        fig, ax = plt.subplots(figsize=(8, 1.6))
-        fig.patch.set_alpha(0)
-        ax.set_facecolor("none")
+        # Plot red dot
+        ax.plot(hrd_score, 0.5, marker='o', markersize=9.5, color='red', markeredgewidth=0.5, markerfacecolor='none', clip_on=False)
+        ax.plot(hrd_score, 0.5, marker='o', markersize=2.2, color='red', clip_on=False)
+        ax.text(hrd_score, 0.3, "This Sample", color='red', fontsize=5.5, ha='center', va='top', clip_on=False)
 
-        bottom = 0
-        for _, row in weights_df.iterrows():
-            ax.barh(
-                y="Sample",
-                width=row["probability"],
-                left=bottom,
-                height=0.5,
-                color="#FFFFFF",
-                edgecolor="#FFFFFF",
-                label=row["var_longer"]
-                                                                                
-                    )
-            bottom += row["probability"]
+        # Plot basics: threshold, HR-P and HR-D labels
+        ax.axvline(x=0.50, color='grey', linestyle='--', linewidth=0.8)
+        ax.text(0.25, 0.85, 'HR-P', color='gray', fontsize=6, ha='center')
+        ax.text(0.75, 0.85, 'HR-D', color='gray', fontsize=6, ha='center')
 
-        ax.hlines(y = weights_df["Sample"],
-                xmin = boot.loc[boot["var"] == "Probability.w", "q1"].iloc[0], 
-                xmax = boot.loc[boot["var"] == "Probability.w", "q3"].iloc[0],
-                colors = "#FF0000")
+        # Get rid of borders (matches old Rscript plot look)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_visible(False)
+        ax.spines['bottom'].set_visible(False)
 
-        ax.axvline(self.HRD_CUTOFF, color="lightgray")
-        ax.text(self.HRD_CUTOFF / 2, 0.3, "HR-P", color="#4d4d4d", ha="center", fontsize=14)
-        ax.text(0.85, 0.3, "HR-D", color="#4d4d4d", ha="center", fontsize=14)
-        
-        ax.scatter(probability_value, "Sample", s=200, facecolors="none", edgecolors="#FF0000")
-        ax.scatter(probability_value, "Sample", s=30, color="#FF0000")
-
-        ax.text(
-            probability_value,
-            "Sample",
-            "This Sample",
-            color="#FF0000",
-            fontsize=14,
-            ha="right",
-            va="top"                                
-            )
-
-        ax.set_xlabel("HRD probability", fontsize=14)
-        ax.set_ylabel("")
-        ax.set_yticks([])
-        ax.set_xlim(0, max(probability_value, 1))
-        ax.set_title("")
-
-        for spine in ax.spines.values():
-            spine.set_visible(False)
-
-        plt.subplots_adjust(right=0.7)
-
-        ax.legend(
-            title="",
-            frameon=False,
-            bbox_to_anchor=(1.02, 1),
-            loc="upper left",
-            fontsize=12
-            )
-
-        plt.savefig(out_path, bbox_inches="tight", transparent=True)
-        plt.close()
-
-        return converter().convert_svg(out_path, 'HRD plot')
+        plt.tight_layout()
+        plt.savefig(output, format="png", dpi=300, bbox_inches='tight', backend='Cairo')
 
     def read_oncotree_main_type(self, oncotree_code, data_dir):
         """
@@ -181,21 +128,78 @@ class hrd_processor(logger):
         mainType = self.find_main_value_from_tree(oncotree_code, json_as_text)
         return(mainType)
 
+    def get_hrd_results(self, hrd_path):
+        """
+        Takes in CHORD results
+        Outputs the HRD probability score and the status as defined by CHORD
+        """
+
+        df = pd.read_csv(hrd_path, sep = '\t')
+        hrd_score = float(df["p_hrd"].iloc[0])
+        hrd_status = df["hr_status"].iloc[0]
+        hrd_remarks = str(df["remarks_hr_status"].iloc[0])
+
+        return hrd_score, hrd_status, hrd_remarks
+
+    def convert_hrd_plot(self, work_dir):
+        """
+        Read VAF plot from file if it exists and return as a base64 string
+        Else, return False
+        """
+        image_converter = converter(self.log_level, self.log_path)
+        plot_path = os.path.join(work_dir, glc.HRD_PLOT_FILENAME)
+        if os.path.exists(os.path.join(work_dir, glc.HRD_PLOT_FILENAME)):
+            hrd_plot = image_converter.convert_png(plot_path, 'HRD plot')
+        else:
+            hrd_plot = None
+        return hrd_plot
+
+    def convert_hrd_remarks(self, hrd_remarks):
+        """
+        HRD remarks for the undetermined HRD case are given as:
+        
+        CHORD requires >=100 indels to accurately determine whether a sample is HRD. If this criterion is not met, hr_status will be cannot_be_determined and remarks_hr_status will be "<50 indels".
+    
+        CHORD cannot be applied to MSI samples. If an MSI sample is detected, hr_status will be cannot_be_determined and remarks_hr_status will be "Has MSI (>14000 indel.rep)"
+    
+        CHORD requires >=30 SVs to accurately determine HRD subtype. If this criterion is not met, hrd_type will be cannot_be_determined, and remarks_hr_status will be "<30 SVs."
+
+        So this function will take the text given and convert it to text that's appropriate to display.
+
+        """
+
+        dictionary = {"<50 indels": "sample has <50 indels", \
+                      "Has MSI (>14000 indel.rep)": "sample has MSI", \
+                      "<30 SVs": "sample has <30 SVs"}
+
+        # Default to "Unknown" as a reason if it's something else:
+        conversion = dictionary.get(hrd_remarks, "Unknown")
+        return conversion
+
     def run(self, work_dir, hrd_path):
         """
         Main HRD function, makes biomarker according to biomarker schema
         TODO: make official schema for biomarkers (with schema checks)
         """
-        hrd_data = self.write_hrd_quartiles(work_dir, hrd_path)
-        hrd_base64 = self.make_HRD_plot(work_dir)
-        if hrd_data["hrdetect_call"]["Probability.w"][1] > self.HRD_CUTOFF:
-            HRD_long = "Homologous Recombination Deficiency (HRD)"
-            HRD_short = "HRD"
-            actionable = True
+        hrd_score, hrd_status, hrd_remarks = self.get_hrd_results(hrd_path)
+
+        if hrd_status in [glc.HR_DEFICIENT, glc.HR_PROFICIENT]:
+            if hrd_status == glc.HR_DEFICIENT:
+                HRD_long = "Homologous Recombination Deficiency (HRD)"
+                HRD_short = "HRD"
+                actionable = True
+            elif hrd_status == glc.HR_PROFICIENT:
+                HRD_long = "Homologous Recombination Proficiency"
+                HRD_short = "HR Proficient"
+                actionable = False
+            self.make_HRD_plot(work_dir, hrd_score)
+            hrd_base64 = self.convert_hrd_plot(work_dir)
         else:
-            HRD_long = "Homologous Recombination Proficiency"
-            HRD_short = "HR Proficient"
+            HRD_long = self.convert_hrd_remarks(hrd_remarks)
+            HRD_short = "Undetermined"
             actionable = False
+            hrd_base64 = "Not Applicable"
+
         results =  {
                 'Alteration': 'HRD',
                 'Alteration_URL': '',
@@ -203,22 +207,7 @@ class hrd_processor(logger):
                 'Genomic biomarker alteration': HRD_short,
                 'Genomic biomarker plot': hrd_base64,
                 'Genomic biomarker text': HRD_long,
-                'Genomic biomarker value': hrd_data["hrdetect_call"]["Probability.w"][1],
-                'QC' : hrd_data["QC"],
+                'Genomic biomarker value': hrd_score,
             }
         return results
 
-    def write_hrd_quartiles(self, work_dir, hrd_path):
-        """
-        Reads JSON from hrDetect and writes quartiles file for plotting
-        """
-        self.validator.validate_output_dir(work_dir)
-        self.validator.validate_input_file(hrd_path)
-        with open(hrd_path) as f:
-            hrd_data = json.load(f)
-        out_path = os.path.join(work_dir, 'hrd.tmp.txt')
-        with open(out_path, 'w') as out_file:
-            for row in hrd_data["hrdetect_call"]:
-                quartiles = hrd_data["hrdetect_call"][row]
-                print("\t".join((row,"\t".join([str(item) for item in list(quartiles)]))), file=out_file)
-        return hrd_data

@@ -24,7 +24,7 @@ class tmb_processor(logger):
             tmb_value = genomic_landscape_info[constants.TMB_PER_MB]
         tmb_dict = self.call_TMB(tmb_value)
         tmb_plot_location = self.write_biomarker_plot(work_dir, tcga_code, "tmb", tmb=tmb_value)
-        tmb_dict[constants.METRIC_PLOT] = converter().convert_svg(tmb_plot_location, 'TMB plot')
+        tmb_dict[constants.METRIC_PLOT] = converter().convert_png(tmb_plot_location, 'TMB plot')
 
         data = {
             constants.GENOMIC_LANDSCAPE_INFO: genomic_landscape_info,
@@ -164,7 +164,7 @@ class tmb_processor(logger):
         return tmb_count
 
     def write_biomarker_plot(self, work_dir, tcga_code, marker, tmb):
-        out_path = os.path.join(work_dir, marker + '.svg')
+        out_path = os.path.join(work_dir, marker + '.png')
         data_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), 'data'))
         external_tmb_file = os.path.join(data_dir, 'tmbcomp-externaldata.txt')
         external_tmb_data = pd.read_csv(external_tmb_file, sep = '\t')

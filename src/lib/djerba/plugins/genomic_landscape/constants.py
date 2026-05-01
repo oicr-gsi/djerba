@@ -25,8 +25,8 @@ CAN_REPORT_MSI = 'can_report_msi'
 CANT_REPORT_HRD_REASON = 'cant_report_hrd_reason'
 
 # For MSI file
-MSI_RESULTS_SUFFIX = '.recalibrated.msi.booted'
-MSI_WORKFLOW = 'msisensor'
+MSI_RESULTS_SUFFIX = '.purple.purity.tsv'
+MSI_WORKFLOW = 'purple'
 
 # For ctDNA file
 CTDNA_RESULTS_SUFFIX = 'SNP.count.txt'
@@ -98,4 +98,8 @@ HRD = 'HRD'
 HRD_short = 'HRD_short'
 HRD_long = 'HRD_long'
 HRD_PLOT = 'hrd_base64'
-HRDETECT_PATH = 'hrd_path'
+CHORD_PATH = 'hrd_path'
+HR_DEFICIENT = 'HR_deficient'
+HR_PROFICIENT = 'HR_proficient'
+HRD_PLOT_FILENAME = 'HRD_plot.png'
+
