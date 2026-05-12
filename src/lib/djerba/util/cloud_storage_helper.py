@@ -21,13 +21,15 @@ class cloud_storage_helper(logger):
         return isinstance(path, str) and path.startswith('gs://')
 
     def open(self, path, mode='rb'):
-        # Opens file directly from GCS (returns a gcsfs object) or locally
+        """Open a file directly from GCS (returns a gcsfs object) or local filesystem"""
         if self.is_gcs_path(path):
             self.logger.info(f"Opening GCS stream: {path}")
             return self._get_fs().open(path, mode=mode)
         else:
             self.logger.info(f"Opening local file: {path}")
-            return open(path, mode=mode)
+            # Ensure local path is absolute if it's not already
+            abs_path = os.path.abspath(os.path.expanduser(path))
+            return open(abs_path, mode=mode)
 
     def run_with_stdin(self, command, gcs_path, **kwargs):
         # Launch external program
