@@ -1,7 +1,7 @@
 # CHANGELOG
 
 ## Unreleased
-- GCGI-1721: Update main contact name in clinical report header
+- GCGI-1712: Update main contact name in clinical report header
 
 ## v1.11.11: 2026-04-23
 - GCGI-1521: More detailed JSON schemas for plugin results
