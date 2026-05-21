@@ -2,27 +2,129 @@
   from djerba.plugins.patient_info.plugin import main as plugin
 %>
 
-
 <!-- Patient & Physician -->
-<hr class="big-white-line" ><div class="twocellmain"><div class="oneoftwocellmain"><h2>Patient & Physician</h2></div><div class="twooftwocellmain" ><hr class="big-line" >
+<hr class="big-white-line">
 
-    <table  class="info">
+<div class="twocellmain">
+
+  <div class="oneoftwocellmain">
+    <h2>Patient & Physician</h2>
+  </div>
+
+  <div class="twooftwocellmain">
+    <hr class="big-line">
+
+    <table class="info" style="line-height:1.1; border-collapse:collapse;">
+
+      <!-- Section headers -->
       <tr>
-	<td width="22%">Patient Name:</td><td width="21%"> ${results.get(plugin.PATIENT_NAME)}</td>
-	<td width="22%">Patient DOB:</td><td width="36%"> ${results.get(plugin.PATIENT_DOB)}</td>
+        <td colspan="2">
+          <h3>Patient Information</h3>
+        </td>
+
+        <td style="width:160px;"></td>
+
+        <td colspan="2">
+          <h3>Physician Information</h3>
+        </td>
       </tr>
+
+      <!-- Row 1 -->
       <tr>
-	<td width="22%">Patient sex assigned at birth:</td><td width="21%"> ${results.get(plugin.PATIENT_SEX)}</td>
-	<td width="22%">Requisitioner Email:</td><td width="36%"> <a href="mailto:${results.get(plugin.REQ_EMAIL)}">${results.get(plugin.REQ_EMAIL)}</a></td>
+        <td style="font-weight:bold; padding-right:6px; white-space:nowrap;">
+          Name:
+        </td>
+
+        <td style="font-weight:normal; white-space:nowrap;">
+          ${results.get(plugin.PATIENT_NAME)}
+        </td>
+
+        <td></td>
+
+        <td style="font-weight:bold; padding-right:6px; white-space:nowrap;">
+          Name:
+        </td>
+
+        <td style="font-weight:normal;">
+          ${results.get(plugin.PHYSICIAN_NAME)}
+        </td>
       </tr>
+
+      <!-- Row 2 -->
       <tr>
-	<td width="22%">Physician Licence #:</td><td width="21%"> ${results.get(plugin.PHYSICIAN_LICENCE)}</td>
-	<td width="22%">Physician:</td><td width="36%"> ${results.get(plugin.PHYSICIAN_NAME)}</td>
+        <td style="font-weight:bold; padding-right:6px; white-space:nowrap;">
+          Sex At Birth:
+        </td>
+
+        <td style="font-weight:normal; white-space:nowrap;">
+          ${results.get(plugin.PATIENT_SEX)}
+        </td>
+
+        <td></td>
+
+        <td style="font-weight:bold; padding-right:6px; white-space:nowrap;">
+          Hospital:
+        </td>
+
+        <td style="font-weight:normal;">
+          ${results.get(plugin.PHYSICIAN_HOSPITAL)}
+        </td>
       </tr>
+
+      <!-- Row 3 -->
       <tr>
-	<td width="22%">Physician Phone #:</td><td width="21%"> ${results.get(plugin.PHYSICIAN_PHONE)}</td>
-	<td width="22%">Physician Hospital:</td><td width="36%"> ${results.get(plugin.PHYSICIAN_HOSPITAL)}</td>
+        <td style="font-weight:bold; padding-right:6px; white-space:nowrap;">
+          DOB:
+        </td>
+
+        <td style="font-weight:normal; white-space:nowrap;">
+          ${results.get(plugin.PATIENT_DOB)}
+        </td>
+
+        <td></td>
+
+        <td style="font-weight:bold; padding-right:6px; white-space:nowrap;">
+          Licence #:
+        </td>
+
+        <td style="font-weight:normal;">
+          ${results.get(plugin.PHYSICIAN_LICENCE)}
+        </td>
       </tr>
+
+      <!-- Row 4: Requisitioner Header + Physician Phone -->
+      <tr>
+        <td colspan="2">
+          <h3 style="margin:0;">
+            Requisitioner Information
+          </h3>
+        </td>
+
+        <td></td>
+
+        <td style="font-weight:bold; padding-right:6px; white-space:nowrap;">
+          Phone #:
+        </td>
+
+        <td style="font-weight:normal;">
+          ${results.get(plugin.PHYSICIAN_PHONE)}
+        </td>
+      </tr>
+
+      <!-- Row 5: Requisitioner Email -->
+      <tr>
+        <td style="font-weight:bold; padding-right:6px;">
+          Email:
+        </td>
+
+        <td colspan="4" style="font-weight:normal;">
+          <a href="mailto:${results.get(plugin.REQ_EMAIL)}">
+            ${results.get(plugin.REQ_EMAIL)}
+          </a>
+        </td>
+      </tr>
+
     </table>
+  </div>
 
-</div></div>
+</div>
