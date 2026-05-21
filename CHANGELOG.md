@@ -2,6 +2,7 @@
 
 ## Unreleased
 - GCGI-1712: Update main contact name in clinical report header
+- GCGI-1708: Separate patient and physician information into two distinct sections.
 
 ## v1.11.11: 2026-04-23
 - GCGI-1521: More detailed JSON schemas for plugin results
