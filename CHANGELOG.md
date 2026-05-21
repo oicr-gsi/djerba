@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-1721: Update main contact name in clinical report header
+
 ## v1.11.11: 2026-04-23
 - GCGI-1521: More detailed JSON schemas for plugin results
 - GCGI-1703: Split `djerba.util.wgts.tools` into new modules `expression_reader` and `variant_sorter`. Use the new modules for TAR as well as WGTS, removing duplicated code in the TAR plugins.
