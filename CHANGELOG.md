@@ -3,6 +3,7 @@
 ## Unreleased
 - GCGI-1712: Update main contact name in clinical report header
 - GCGI-1708: Separate patient and physician information into two distinct sections and update the director contact details.
+- GCGI-1709: Simplified RUO Header and added watermark to research reports.
 
 ## v1.11.11: 2026-04-23
 - GCGI-1521: More detailed JSON schemas for plugin results
