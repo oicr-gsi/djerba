@@ -184,7 +184,7 @@ class activity_tracker(logger):
             self.append_with_lock(fields, out_path)
             self.logger.debug("Activity tracking written to "+out_path)
         else:
-            msg = "Variable "+DJERBA_TRACKING_DIR_VAR+" not set, omitting activity tracking"
+            msg = "Variable "+self.DJERBA_TRACKING_DIR_VAR+" not set, omitting activity tracking"
             self.logger.info(msg)
 
     def update_identifiers_from_ini(self, identifiers, ini_path):
