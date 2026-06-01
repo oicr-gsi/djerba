@@ -1,8 +1,9 @@
 # CHANGELOG
 
-## Unreleased
-- GCGI-1712: Update main contact name in clinical report header
+## v1.11.12: 2026-06-01
 - GCGI-1708: Separate patient and physician information into two distinct sections and update the director contact details.
+- GCGI-1712: Update main contact name in clinical report header
+- GCGI-1715: Update Ensembl conversion file to v44
 
 ## v1.11.11: 2026-04-23
 - GCGI-1521: More detailed JSON schemas for plugin results
