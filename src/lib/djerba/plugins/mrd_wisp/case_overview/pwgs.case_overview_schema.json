@@ -1,0 +1,77 @@
+{
+    "$id":"https://https://github.com/oicr-gsi/djerba/tree/main/src/lib/djerba/plugins/pwgs/case_overview/pwgs.case_overview_schema.json",
+    "title": "Results Structure for pwgs.case_overview Plugin",
+    "description": "Schema documentation of results structure for pwgs.case_overview plugin.",
+    "type": "object",
+
+    "properties":{
+        "report_title":{
+            "description": "Djerba plugin for pwgs case overview reporting",
+            "type": "object",
+            "properties":{
+
+                "plugin_name":{
+                    "description": "pwgs.case_overview plugin",
+                    "type": "string"
+                },
+
+                "version":{
+                    "description": "Plugin version (1.0)",
+                    "type": "string"
+                },
+
+                "results":{
+                    "description": "Results from pwgs.case_overview plugin plugin",
+                    "type": "object",
+                    "properties":{
+
+                        "assay": {
+                            "description": "Type of assay used for sequencing",
+                            "type": "string"
+                        },
+
+                        "pwgs_report_id": {
+                            "description": "Report ID for pwgs case",
+                            "type": "string"
+                        },
+
+                        "primary_cancer": {
+                            "description": "Cancer type",
+                            "type": "string"
+                        },
+                        
+                        "requisition_approved":{
+                            "definition": "Date of requisition approval (YYYY-MM-DD)",
+                            "type": "string"
+                        },
+
+                        "donor":{
+                            "description": "Donor ID",
+                            "type": "string"
+                        },
+
+                        "group_id":{
+                            "description": "Group ID",
+                            "type": "string"
+                        },
+
+                        "Patient Study ID":{
+                            "description": "Patient study ID",
+                            "type": "string"
+                        },
+
+                        "study":{
+                            "description": "Study name",
+                            "type": "string"
+                        },
+
+                        "wgs_report_id":{
+                            "description": "Report ID for wgs",
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
