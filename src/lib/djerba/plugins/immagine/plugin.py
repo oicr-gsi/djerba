@@ -44,7 +44,8 @@ class main(plugin_base):
         # Get paths to files.
         work_dir = self.workspace.get_work_dir()
         mutations_file = os.path.join(work_dir, constants.DATA_MUTATIONS_TXT)
-        seg_file = '/.mounts/labs/CGI/scratch/aalam/immagine/MYC_0342_Bm_P_MyC-342-T0-OZ.purple.cnv.somatic.tsv'
+        seg_file = "/.mounts/labs/CGI/scratch/aalam/immagine/MYC-3242/report/MYC_0359_Bm_P_MyC-359-T0-OZ.solPrimary.purple/MYC_0359_Bm_P_MyC-359-T0-OZ.purple.cnv.somatic.tsv"
+        #seg_file = "/.mounts/labs/CGI/scratch/aalam/immagine/MYC-3171/report/MYC_0358_Bm_P_MyC-358-T0-OZ.solPrimary.purple/MYC_0358_Bm_P_MyC-358-T0-OZ.purple.cnv.somatic.tsv"
         #os.path.join(work_dir, 'test.txt')
         seg_df = pd.read_csv(seg_file, sep = '\t')
         cna_file = os.path.join(work_dir, constants.DATA_CNA_TXT)
