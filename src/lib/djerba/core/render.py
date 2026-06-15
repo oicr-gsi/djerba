@@ -4,11 +4,13 @@ Includes merge/deduplicate for shared tables, eg. gene info
 """
 
 import json
+import io
 import logging
 import os
 import pdfkit
 import traceback
-from PyPDF2 import PdfMerger
+from PyPDF2 import PdfMerger, PdfReader, PdfWriter
+from reportlab.pdfgen import canvas
 import djerba.core.constants as cc
 from djerba.util.date import get_todays_date
 from djerba.util.environment import directory_finder, DjerbaEnvDirError
@@ -147,6 +149,45 @@ class pdf_renderer(logger):
     RESEARCH_SUFFIX = '.research.pdf'
     RESEARCH_FOOTER_TEXT = 'For Research Use Only'
 
+    def add_watermark(self, input_pdf, output_pdf):
+        """
+        Add a diagonal text watermark to every page of a PDF.
+        """
+
+        reader = PdfReader(input_pdf)
+        writer = PdfWriter()
+
+        for page in reader.pages:
+            width = float(page.mediabox.width)
+            height = float(page.mediabox.height)
+            packet = io.BytesIO()
+            c = canvas.Canvas(
+                packet,
+                pagesize=(width, height)
+            )
+            c.saveState()
+            c.translate(width / 2, height / 2)
+            c.rotate(45)
+            c.setFont("Helvetica-Bold", 52)
+            c.setFillGray(0.95)
+            c.drawCentredString(
+                0,
+                0,
+                "FOR RESEARCH USE ONLY"
+            )
+            c.restoreState()
+            c.save()
+            packet.seek(0)
+            
+            watermark_pdf = PdfReader(packet)
+            watermark_page = watermark_pdf.pages[0]
+
+            watermark_page.merge_page(page)
+            writer.add_page(watermark_page)
+
+        with open(output_pdf, "wb") as output_stream:
+            writer.write(output_stream)
+
     def __init__(self, log_level=logging.WARNING, log_path=None):
         super().__init__()
         self.logger = self.get_logger(log_level, __name__, log_path)
@@ -199,6 +240,17 @@ class pdf_renderer(logger):
             }
         try:
             pdfkit.from_file(in_path, out_path, options=options)
+            if out_path.endswith(self.RESEARCH_SUFFIX):
+                self.logger.info(
+                    "Applying research watermark to {0}".format(out_path)
+                )
+                temp_pdf = out_path + ".tmp"
+                os.rename(out_path, temp_pdf)
+                try:
+                    self.add_watermark(temp_pdf, out_path)
+                finally:
+                    if os.path.exists(temp_pdf):
+                        os.remove(temp_pdf)
         except Exception as err:
             msg = "Unexpected error of type "+\
                 "{0} in PDF rendering: {1}".format(type(err).__name__, err)
