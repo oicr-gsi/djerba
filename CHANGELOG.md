@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+- Dockerized Djerba by adding a Dockerfile, Docker Compose setup, `.env.example`, and an end-to-end test that validates report generation using an example `config.ini` input and expected output report.
+
+
 ## v1.11.12: 2026-06-01
 - GCGI-1708: Separate patient and physician information into two distinct sections and update the director contact details.
 - GCGI-1712: Update main contact name in clinical report header
