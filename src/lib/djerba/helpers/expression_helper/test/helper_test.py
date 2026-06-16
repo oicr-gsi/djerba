@@ -61,11 +61,11 @@ class TestExpressionHelper(TestBase):
         helper_main = loader.load(self.HELPER_NAME, ws)
         # configure the INI
         plugin_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # go 2 directories up
-        enscon = os.path.join(plugin_dir, 'ensemble_conversion_hg38.txt')
+        enscon = os.path.join(plugin_dir, helper_main.ENSCON_DEFAULT)
         cp.set(self.HELPER_NAME, helper_main.ENSCON_KEY, enscon)
         rsem = os.path.join(test_data_dir, 'PANX_1547_Lv_M_WT_100-PM-061_LCM6.genes.results')
         cp.set(self.HELPER_NAME, helper_main.RSEM_GENES_RESULTS_KEY, rsem)
-        ref = os.path.join(test_data_dir, 'gep_reference.txt.gz')
+        ref = os.path.join(test_data_dir, helper_main.GEP_REFERENCE_DEFAULT)
         cp.set(self.HELPER_NAME, helper_main.GEP_REFERENCE_KEY, ref)
         tcga = os.path.join(test_data_dir, 'tcga_data')
         cp.set(self.HELPER_NAME, helper_main.TCGA_DATA_KEY, tcga)
@@ -74,11 +74,11 @@ class TestExpressionHelper(TestBase):
         gep_path = ws.abs_path('gep.txt')
         self.assertEqual(self.getMD5(gep_path), '3d0186b90ef4a9aa9c8592a45b62f151')
         expected = {
-            'data_expression_percentile_comparison.txt': '1cbe2d84b4ff8030062b260742d1ce8e',
-            'data_expression_percentile_tcga.txt': '2fe160662e3bc49d1972082d177dd610',
-            'data_expression_zscores_comparison.txt': '20757c8b2126137dd05fb064734a9af4',
-            'data_expression_zscores_tcga.txt': '70c92cf67705d0ad3f277a2b79d7c95a',
-            'data_expression_percentile_tcga.json': '326dc17e5248416e7fa7e6b6150de79a'
+            'data_expression_percentile_comparison.txt': 'b80bff26dfe4996b9dab2a1dbdc727be',
+            'data_expression_percentile_tcga.txt': 'e820ef9a2d005feefa92887d6728180b',
+            'data_expression_zscores_comparison.txt': '406d32739e9c61f490d67005d914babc',
+            'data_expression_zscores_tcga.txt': '4d646d0fa4065d12c9c97e3b38f8896e',
+            'data_expression_percentile_tcga.json': '68379be6cd9b6cfdc27972ee03738b26'
         }
         for name in expected:
             out_path = os.path.join(self.tmp_dir, name)
@@ -96,11 +96,11 @@ class TestExpressionHelper(TestBase):
         helper_main = loader.load(self.HELPER_NAME, ws)
         # configure the INI
         plugin_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # go 2 directories up
-        enscon = os.path.join(plugin_dir, 'ensemble_conversion_hg38.txt')
+        enscon = os.path.join(plugin_dir, helper_main.ENSCON_DEFAULT)
         cp.set(self.HELPER_NAME, helper_main.ENSCON_KEY, enscon)
         rsem = os.path.join(test_data_dir, 'PANX_1547_Lv_M_WT_100-PM-061_LCM6.genes.results')
         cp.set(self.HELPER_NAME, helper_main.RSEM_GENES_RESULTS_KEY, rsem)
-        ref = os.path.join(test_data_dir, 'gep_reference.txt.gz')
+        ref = os.path.join(test_data_dir, helper_main.GEP_REFERENCE_DEFAULT)
         cp.set(self.HELPER_NAME, helper_main.GEP_REFERENCE_KEY, ref)
         tcga = os.path.join(test_data_dir, 'tcga_data')
         cp.set(self.HELPER_NAME, helper_main.TCGA_DATA_KEY, tcga)
@@ -109,11 +109,11 @@ class TestExpressionHelper(TestBase):
         gep_path = ws.abs_path('gep.txt')
         self.assertEqual(self.getMD5(gep_path), '3d0186b90ef4a9aa9c8592a45b62f151')
         expected = {
-            'data_expression_percentile_comparison.txt': '1cbe2d84b4ff8030062b260742d1ce8e',
-            'data_expression_percentile_tcga.txt': 'be9c0f2588c6b75f45f8b7ab17001b84',
-            'data_expression_zscores_comparison.txt': '20757c8b2126137dd05fb064734a9af4',
-            'data_expression_zscores_tcga.txt': 'c841d03a6d70e0ba50be7cbac46e9a71',
-            'data_expression_percentile_tcga.json': '7afda7a462ed32aea28e6eea45621fc4'
+            'data_expression_percentile_comparison.txt': 'b80bff26dfe4996b9dab2a1dbdc727be',
+            'data_expression_percentile_tcga.txt': '35781f07b63bc72470610f27c105f9cb',
+            'data_expression_zscores_comparison.txt': '406d32739e9c61f490d67005d914babc',
+            'data_expression_zscores_tcga.txt': '912a5a7fc4cf3da67676ae440920e807',
+            'data_expression_percentile_tcga.json': '3bc60aeb284205418e3f8d27b92f9a88'
         }
         for name in expected:
             out_path = os.path.join(self.tmp_dir, name)
