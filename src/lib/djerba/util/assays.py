@@ -7,6 +7,7 @@ WGTS40X = 'WGTS40X'
 WGS40X = 'WGS40X'
 TAR = 'TAR'
 PWGS = 'PWGS'
+RUOPWGS = 'RUOPWGS'
 
 # assay and analysis pipeline versions
 # placed here for use in locations:
@@ -16,10 +17,12 @@ PWGS = 'PWGS'
 WGTS_ASSAY_VERSION = '6.0'
 TAR_ASSAY_VERSION = '4.0'
 PWGS_ASSAY_VERSION = '3.0'
+RUOPWGS_ASSAY_VERSION = '2.0'
 
 WGTS_SUFFIX = '(v{0})'.format(WGTS_ASSAY_VERSION)
 TAR_SUFFIX = '(v{0})'.format(TAR_ASSAY_VERSION)
 PWGS_SUFFIX = '(v{0})'.format(PWGS_ASSAY_VERSION)
+RUOPWGS_SUFFIX = '(v{0})'.format(RUOPWGS_ASSAY_VERSION)
 
 ASSAY_CASE_OVERVIEW = {
     # WGTS/WGS default to 80X
@@ -33,6 +36,7 @@ ASSAY_CASE_OVERVIEW = {
     # other
     TAR: 'Targeted Sequencing - REVOLVE Panel - cfDNA and Buffy Coat '+TAR_SUFFIX,
     PWGS: 'Plasma Whole Genome Sequencing '+PWGS_SUFFIX
+    RUOPWGS: 'RUO Plasma Whole Genome Sequencing '+RUOPWGS_SUFFIX
 }
 
 ASSAY_SUPPLEMENTARY = {

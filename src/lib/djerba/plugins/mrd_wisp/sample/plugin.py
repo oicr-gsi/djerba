@@ -21,7 +21,7 @@ except ImportError:
 
 class main(plugin_base):
 
-    PRIORITY = 160
+    PRIORITY = 300
     PLUGIN_VERSION = '1.2'
     QCETL_CACHE = "/scratch2/groups/gsi/production/qcetl_v1"
 

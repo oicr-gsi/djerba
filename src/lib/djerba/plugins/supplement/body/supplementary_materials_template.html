@@ -31,6 +31,8 @@ ${html_builder().section_cells_begin("<h2>Assay description</h2>",True, no_hr_af
   <%include file="resources/TAR.description.versions.html"/>
 % elif ASSAY == assays.PWGS:
   <%include file="resources/PWGS.description.versions.html"/>
+% elif ASSAY == assays.RUOPWGS:
+  <%include file="resources/RUOPWGS.description.versions.html"/>
 % endif
 
 ## !!! IMPORTANT !!! If this paragraph is modified, update redact_html in util.testing.tools
@@ -56,6 +58,8 @@ ${html_builder().section_cells_end()}
   <%include file="resources/TAR.disclaimer.html"/>
 % elif ASSAY == assays.PWGS:
   <%include file="resources/PWGS.disclaimer.html"/>
+% elif ASSAY == assays.RUOPWGS:
+  <%include file="resources/RUOPWGS.disclaimer.html"/>
 % endif
 
 ${html_builder().section_cells_end()}
@@ -124,6 +128,8 @@ ${html_builder().section_cells_end()}
         <%include file="resources/TAR.FAIL.definitions.html"/>
       % elif ASSAY == assays.PWGS:
         <%include file="resources/PWGS.definitions.html"/>
+      % elif ASSAY == assays.RUOPWGS:
+        <%include file="resources/RUOPWGS.definitions.html"/>
       % endif
   % endif
 

@@ -24,7 +24,7 @@ import djerba.plugins.mrd_wisp.constants as pc
 from djerba.util.image_to_base64 import converter
 
 class main(plugin_base):
-    PRIORITY = 200
+    PRIORITY = 100
     PLUGIN_VERSION = '1.0'
     DICT = {True: "significantly larger", False: "not significantly larger"}
 

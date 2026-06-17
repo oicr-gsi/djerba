@@ -22,7 +22,7 @@ except ImportError:
 
 class main(plugin_base):
 
-    PRIORITY = 130
+    PRIORITY = 200
     PLUGIN_NAME = 'mrd_wisp.summary'
     PLUGIN_VERSION = '1.0'
     BOOL_DICT = {True:"Detected", False:"Undetected"}

@@ -12,7 +12,6 @@ ICHORCNA_LINK="https://github.com/broadinstitute/ichorCNA"
 MANE_LINK="https://www.ncbi.nlm.nih.gov/refseq/MANE/#Select"
 MAVIS_LINK="https://github.com/bcgsc/mavis"
 MICROSATELLITE_LINK="https://www.sciencedirect.com/science/article/pii/S1672022920300218"
-MRDETECT_LINK="https://pubmed.ncbi.nlm.nih.gov/32483360/"
 MUTECT2_LINK="https://gatk.broadinstitute.org/hc/en-us/articles/5358911630107-Mutect2"
 NCCN_OVARIAN_LINK="https://www.nccn.org/professionals/physician_gls/pdf/ovarian.pdf"
 NCCN_PCM_LINK="https://www.nccn.org/professionals/physician_gls/pdf/myeloma.pdf"
@@ -24,7 +23,12 @@ RSEM_LINK="https://github.com/deweylab/RSEM"
 STAR_LINK="https://github.com/alexdobin/STAR"
 STARFUSION_LINK="https://github.com/STAR-Fusion/STAR-Fusion/wiki"
 VARIANTEFFECTPREDICTOR_LINK="https://useast.ensembl.org/info/docs/tools/vep/index.html"
-
+# PWGS
+REDUX_LINK="https://github.com/hartwigmedical/hmftools/tree/master/redux"
+SAGE_PWGS_LINK="https://github.com/hartwigmedical/hmftools/blob/master/sage/README.md"
+PURPLE_PWGS_LINK="https://github.com/hartwigmedical/hmftools/tree/master/purple"
+WISP_LINK="https://github.com/hartwigmedical/hmftools/tree/master/wisp"
+ONCOANALYZER_LINK="https://github.com/nf-core/oncoanalyser"
 ##VERSIONS
 ARRIBA_VERSION="2.4.0"
 BWAMEM2_VERSION="2.2.1"
@@ -39,19 +43,20 @@ MANE_VERSION="1.0"
 MAVIS_VERSION="2.2.6"
 MICROSATELLITE_VERSION="1.2.0"
 MICROSATELLITE_CUSTOM_SITES="1,900,495"
-MRDETECT_VERSION="1.0"
 MUTECT2_VERSION="4.1.6.0"
 NCCN_OVARIAN_VERSION="2025.2"
 NCCN_PCM_VERSION="2026.1"
 PICARD_VERSION="2.21.2"
 PURPLE_VERSION="3.8.1"
-# see pwgs.case_overview plugin for PWGS assay version
 REFERENCE_GENOME_VERSION="GRCh38.p12"
 RSEM_VERSION="1.3.3"
 STAR_VERSION="2.7.10b"
 STARFUSION_VERSION="1.8.1"
 SUPPLEMENT_DJERBA_VERSION="0.1"
 VARIANTEFFECTPREDICTOR_VERSION="105.0"
+# PWGS
+# see pwgs.case_overview plugin for PWGS assay version
+ONCOANALYZER_VERSION="v2.3" 
 
 def make_component_info_string(components):
     # convenience method to stringify the versions dictionary at Mako render time

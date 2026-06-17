@@ -1,0 +1,16 @@
+<%
+  import djerba.plugins.supplement.body.versioning as versions 
+  import djerba.core.constants as core_constants
+%>
+
+<p>
+  Plasma whole genome sequencing (pWGS) is a comprehensive next generation sequencing assay for the detection of minimal residual disease that had previously been characterized in the tumour. 
+  Plasma libraries were prepared using the KAPA Hyper Prep kit with DNA extracted from cfDNA. 
+  Paired-end sequencing was performed using the illumina ${versions.ILLUMINA_VERSION} technology. 
+  Reads from the tumour sample, a matched normal, and the pWGS sample were each mapped against reference genome <a href=${versions.REFERENCE_GENOME_LINK}>>${versions.REFERENCE_GENOME_VERSION}</a>.
+  Mapped reads from the T/N were processed for duplicate marking and preprocessing through <a href=${versions.REDUX_LINK}>REDUX</a> before generating somatic variant calls with <a href=${versions.SAGE_PWGS_LINK}>SAGE</a> and <a href=${versions.PURPLE_PWGS_LINK}>PURPLE</a>. 
+  Mapped reads from the pWGS sample were preprocessed in the same way, filtered, then co-processed with the tumour somatic calls using SAGE-append.
+  Tumour content and likelihood of MRD were assessed using <a href=${versions.WISP_LINK}>WISP</a>.
+  REDUX, SAGE, PURPLE, and WISP were all run through the <a href=${versions.ONCOANALYZER_LINK}>Hartwig Oncoanalyzer Nextflow</a> workflow (${versions.ONCOANALYZER_VERSION}).
+  Results from the pWGS sample are compared against a control cohort of Healthy Blood Controls (HBCs) sequenced and processed at OICR using the same procedure as the plasma sample.
+</p>
