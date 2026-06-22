@@ -37,7 +37,7 @@ class main(helper_base):
     PRIORITY = 10
 
     # Permitted assay names
-    VALID_ASSAYS = ['WGTS', 'WGS', 'PWGS', 'WGS40X', 'WGTS40X']
+    VALID_ASSAYS = ['WGTS', 'WGS', 'PWGS', 'WGS40X', 'WGTS40X', 'RUOWGTS', 'RUOWGS']
 
     # Other
     NA = "NA"
