@@ -53,13 +53,14 @@ docker run --rm \
     -w /workspace \
     -j /output/report.json \
     -o /output \
-    -p
+    -p \
+    --no-archive
 
 # Just render from existing JSON
 docker run --rm \
   -v /path/to/output:/output \
   djerba:latest \
-  render -j /output/report.json -o /output -p
+  render -j /output/report.json -o /output -p --no-archive
 ```
 
 ### Environment variables in container
@@ -95,6 +96,7 @@ services:
         -j /output/report.json
         -o /output
         -p
+        --no-archive
 ```
 
 Create `.env` from `.env.example`:
