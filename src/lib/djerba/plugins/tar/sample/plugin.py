@@ -27,6 +27,7 @@ class main(plugin_base):
 
         # Get input_data.json if it exists; else return None
         input_data = self.workspace.read_maybe_input_params()
+        work_dir = self.workspace.get_work_dir()
 
         # Get various IDs
         keys = [constants.ONCOTREE, constants.KNOWN_VARIANTS, constants.SAMPLE_TYPE]
@@ -40,6 +41,15 @@ class main(plugin_base):
                     msg = "Cannot find {0} in manual config or input_params.json".format(key)
                     self.logger.error(msg)
                     raise RuntimeError(msg)
+        
+        # Get lims_ids
+        if os.path.exists(os.path.join(work_dir,core_constants.DEFAULT_SAMPLE_INFO)):
+            info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
+            lims_ids = info["lims_ids"]
+        else:
+            msg = f"Cannot find {core_constants.DEFAULT_SAMPLE_INFO}"
+            self.logger.error(msg)
+            raise RuntimeError(msg)
 
         # Get files from path_info.json
         wrapper = self.update_wrapper_if_null(
@@ -57,11 +67,11 @@ class main(plugin_base):
         wrapper.set_my_param(constants.PURITY, purity)
 
         if wrapper.my_param_is_null(constants.RAW_COVERAGE):
-            qc_dict = self.fetch_qc_etl_data(config[self.identifier][constants.GROUP_ID], constants.CACHE_COVERAGE, constants.RAW_COVERAGE)
+            qc_dict = self.fetch_qc_etl_data(lims_ids, config[self.identifier][constants.GROUP_ID], constants.CACHE_COVERAGE, constants.RAW_COVERAGE)
             wrapper.set_my_param(constants.RAW_COVERAGE, qc_dict[constants.RAW_COVERAGE])
 
         if wrapper.my_param_is_null(constants.COVERAGE_PL):
-            qc_dict = self.fetch_qc_etl_data(config[self.identifier][constants.GROUP_ID], constants.CACHE_COLLAPSED, constants.COVERAGE_PL)
+            qc_dict = self.fetch_qc_etl_data(lims_ids, config[self.identifier][constants.GROUP_ID], constants.CACHE_COLLAPSED, constants.COVERAGE_PL)
             wrapper.set_my_param(constants.COVERAGE_PL, qc_dict[constants.COVERAGE_PL])
 
         return wrapper.get_config()
@@ -153,15 +163,20 @@ class main(plugin_base):
             raise ValueError(msg)
 
 
-    def fetch_qc_etl_data(self, group_id, cache_name, qc_metric):
+    def fetch_qc_etl_data(self, lims_ids, group_id, cache_name, qc_metric):
         etl_cache = QCETLCache(self.QCETL_CACHE)
         cached_coverages = self.get_cached_coverages(etl_cache, cache_name)
         columns_of_interest = gsiqcetl.column.HsMetricsColumn
-        # Filter data for the group_id
+
+         # Filter data for the lims_ids
         data = cached_coverages.loc[
-            (cached_coverages[columns_of_interest.GroupID] == group_id),
+            (cached_coverages[columns_of_interest.GroupID] == group_id) &
+            cached_coverages[columns_of_interest.MergedPineryLimsID].apply(
+                lambda x: bool(set(x) & set(lims_ids))
+            ),
             [
                 columns_of_interest.GroupID,
+                columns_of_interest.MergedPineryLimsID,
                 columns_of_interest.MeanBaitCoverage,
                 columns_of_interest.TissueType,
             ]
@@ -176,18 +191,18 @@ class main(plugin_base):
                 # Check if coverage values are unique
                 coverage = filtered_data[columns_of_interest.MeanBaitCoverage].unique()
                 if len(coverage) != 1:
-                    msg = f"Multiple {qc_metric} values found for group_id {group_id}: {coverage}."
+                    msg = f"Multiple {qc_metric} values found for group_id {group_id} and lims_ids {lims_ids}: {coverage}."
                     self.logger.error(msg)
                     raise ValueError(msg)
                 else:
                     selected_value = coverage[0]
                     qc_dict[qc_metric] = int(round(selected_value, 0))
             else:
-                msg = f"No valid {qc_metric} found for group_id {group_id} after filtering out the normal."
+                msg = f"No valid {qc_metric} found for group_id {group_id} and lims {lims_ids} after filtering out the normal."
                 self.logger.error(msg)
                 raise MissingQCETLError(msg)
         else:
-            msg = f"{qc_metric} associated with group_id {group_id} not found in QC-ETL and no value found in .ini."
+            msg = f"{qc_metric} associated with group_id {group_id} and lims {lims_ids} not found in QC-ETL and no value found in .ini."
             self.logger.error(msg)
             raise MissingQCETLError(msg)
 

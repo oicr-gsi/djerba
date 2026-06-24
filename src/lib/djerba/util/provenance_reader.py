@@ -147,6 +147,7 @@ class provenance_reader(logger):
             self.patient_id = re.split(',', self.patient_id_raw).pop(0)
             self.tumour_id = self._id_tumour()
             self.normal_id = self._id_normal()
+            self.lims_ids = self.get_lims_ids()
 
     def _check_workflows(self):
         # check that provenance has all recommended workflows (Niassa or Vidarr); warn if not
@@ -456,6 +457,19 @@ class provenance_reader(logger):
         }
         self.logger.debug("Got identifiers: {0}".format(identifiers))
         return identifiers
+    
+    def get_lims_ids(self):
+        """
+        Get the lims identifiers, for querying the qc-etl caches
+        """
+        lims = sorted({
+            row[index.LIMS_ID]
+            for row in self.provenance
+            if row[index.LIMS_ID] and row[index.SAMPLE_NAME] == self.sample_name_wg_t
+        })
+        self.logger.debug("Got lims identifiers: %s", lims)
+        return lims
+
 
     def get_sample_names(self):
         """

@@ -206,7 +206,8 @@ class main(helper_base):
             core_constants.NORMAL_ID: ids.get(ini.NORMAL_ID),
             ini.SAMPLE_NAME_WG_T: names.get(ini.SAMPLE_NAME_WG_T),
             ini.SAMPLE_NAME_WG_N: names.get(ini.SAMPLE_NAME_WG_N),
-            ini.SAMPLE_NAME_WT_T: names.get(ini.SAMPLE_NAME_WT_T)
+            ini.SAMPLE_NAME_WT_T: names.get(ini.SAMPLE_NAME_WT_T),
+            "lims_ids": reader.lims_ids
         }
         # find paths of workflow outputs; values may be None
         path_info = {

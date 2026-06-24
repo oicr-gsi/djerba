@@ -33,6 +33,7 @@ class subprocess_runner(logger):
             input = stdin,
             capture_output=True,
             encoding=constants.TEXT_ENCODING,
+            errors='replace',
         )
         stdout = str(result.stdout)
         stderr = str(result.stderr)

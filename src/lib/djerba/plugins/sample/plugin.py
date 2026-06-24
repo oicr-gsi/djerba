@@ -97,6 +97,7 @@ class main(plugin_base):
             if wrapper.my_param_is_null(key):
                 if os.path.exists(os.path.join(work_dir,core_constants.DEFAULT_SAMPLE_INFO)):
                     info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
+                    lims_ids = info.get("lims_ids", [])
                     wrapper.set_my_param(key, info[key])
                 else:
                     msg = "Cannot find {0} in manual config or sample_info.json".format(key)
@@ -114,11 +115,11 @@ class main(plugin_base):
             etl_cache = self.get_qcetl_cache(cache_path)
             if wrapper.my_param_is_null(constants.CALLABILITY):
                 self.logger.debug("Fetching callability from GSI-QC-ETL")
-                callability = self.fetch_callability_etl_data(etl_cache, donor, tumour_id, ignore_warning)
+                callability = self.fetch_callability_etl_data(etl_cache, lims_ids, tumour_id, ignore_warning)
                 wrapper.set_my_param(constants.CALLABILITY, callability)
             if wrapper.my_param_is_null(constants.COVERAGE):
                 self.logger.debug("Fetching coverage from GSI-QC-ETL")
-                coverage = self.fetch_coverage_etl_data(etl_cache, donor, tumour_id)
+                coverage = self.fetch_coverage_etl_data(etl_cache, lims_ids, tumour_id)
                 wrapper.set_my_param(constants.COVERAGE, coverage)
         else:
             msg = "GSI-QC-ETL not available, omitting coverage/callability fetch"
@@ -160,16 +161,18 @@ class main(plugin_base):
         etl_cache = self.QCETLCache(cache_path)
         return etl_cache
 
-    def fetch_callability_etl_data(self, etl_cache, donor, tumour_id, ignore_warning):
+    def fetch_callability_etl_data(self, etl_cache, lims_ids, tumour_id, ignore_warning):
         cached_callabilities = etl_cache.mutectcallability.mutectcallability
         columns_of_interest = self.gsiqcetl_column.MutetctCallabilityColumn
         # Note: donor and tumour ID are both not unique, but together are unique. Filter on both.
         # One donor can have multiple tumour IDs; one tumour ID can be associated with multiple donors
         # But one donor will not have a duplicate tumour IDs
         data = cached_callabilities.loc[
-            (cached_callabilities[columns_of_interest.GroupID] == tumour_id) & # filter on tumour_id
-            (cached_callabilities[columns_of_interest.Donor] == donor), # filter also on donor
-            [columns_of_interest.GroupID, columns_of_interest.Donor, columns_of_interest.Callability]
+            cached_callabilities[columns_of_interest.MergedPineryLimsID].apply(
+                lambda x: bool(set(x) & set(lims_ids))
+            ) &
+            (cached_callabilities[columns_of_interest.GroupID] == tumour_id),
+            [columns_of_interest.MergedPineryLimsID, columns_of_interest.GroupID, columns_of_interest.Callability]
             ]
         if len(data) == 1:
             # Round down to one decimal place
@@ -181,33 +184,36 @@ class main(plugin_base):
                 raise LowCallabilityError(msg)
             return callability
         elif len(data) > 1:
-            msg = "Djerba found more than one callability associated with donor {0} and tumour_id {1} in QC-ETL. Double check that the callability found by Djerba is correct; if not, may have to manually specify the callability.".format(donor, tumour_id)
+            msg = "Djerba found more than one callability associated with lims_id {0} and tumour_id {1} in QC-ETL. Double check that the callability found by Djerba is correct; if not, may have to manually specify the callability.".format(lims_ids, tumour_id)
             self.logger.warning(msg)
+            raise ValueError(msg)
         else:
-            msg = "Djerba couldn't find the callability associated with donor {0} and tumour_id {1} in QC-ETL.".format(donor, tumour_id)
+            msg = "Djerba couldn't find the callability associated with lims_id {0} and tumour_id {1} in QC-ETL.".format(lims_ids, tumour_id)
             self.logger.error(msg)
             raise MissingQCETLError(msg)
         
-    def fetch_coverage_etl_data(self, etl_cache, donor, tumour_id):
+    def fetch_coverage_etl_data(self, etl_cache, lims_ids, tumour_id):
         cached_coverages = etl_cache.bamqc4merged.bamqc4merged
         columns_of_interest = self.gsiqcetl_column.BamQc4MergedColumn
         # Note: donor and tumour ID are both not unique, but together are unique. Filter on both.
         # One donor can have multiple tumour IDs; one tumour ID can be associated with multiple donors
         # But one donor will not have a duplicate tumour IDs
         data = cached_coverages.loc[
-            (cached_coverages[columns_of_interest.GroupID] == tumour_id) &
-            (cached_coverages[columns_of_interest.Donor] == donor),
-            [columns_of_interest.GroupID, columns_of_interest.Donor, columns_of_interest.CoverageDeduplicated]
+            cached_coverages[columns_of_interest.MergedPineryLimsID].apply(
+                lambda x: bool(set(x) & set(lims_ids))
+            ) &
+            (cached_coverages[columns_of_interest.GroupID] == tumour_id),
+            [columns_of_interest.MergedPineryLimsID, columns_of_interest.GroupID, columns_of_interest.CoverageDeduplicated]
             ]
         if len(data) == 1:
             coverage_value = round(data.iloc[0][columns_of_interest.CoverageDeduplicated].item(),1)
             return(coverage_value)
         elif len(data) > 1:
-            msg = "Djerba found more than one coverage associated with donor {0} and tumour_id {1} in QC-ETL. Double check that the coverage found by Djerba is correct; if not, may have to manually specify the coverage.".format(donor, tumour_id)
+            msg = "Djerba found more than one coverage associated with lims_id {0} and tumour_id {1} in QC-ETL. Double check that the coverage found by Djerba is correct; if not, may have to manually specify the coverage.".format(lims_ids, tumour_id)
             self.logger.warning(msg)
-
+            raise ValueError(msg)
         else:
-            msg = "Djerba couldn't find the coverage associated with donor {0} and tumour_id {1} in QC-ETL. ".format(donor, tumour_id)
+            msg = "Djerba couldn't find the coverage associated with lims_id {0} and tumour_id {1} in QC-ETL. ".format(lims_ids, tumour_id)
             self.logger.debug(msg)
             raise MissingQCETLError(msg)
 
