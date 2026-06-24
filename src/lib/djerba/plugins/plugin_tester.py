@@ -36,7 +36,8 @@ class PluginTester(TestBase):
     INI = 'ini'
     JSON = 'json'
     MD5 = 'md5'
-    
+    PLACEHOLDER = 'PLACEHOLDER'
+
     def read_plugin_name(self, ini_path):
         """Check for exactly one plugin name in config; raise an error if unsuccessful"""
         path_validator().validate_input_file(ini_path)

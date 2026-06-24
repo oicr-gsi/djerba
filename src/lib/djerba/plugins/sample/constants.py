@@ -10,6 +10,8 @@ COVERAGE = "mean_coverage"
 PURITY = "purity"
 PLOIDY = "ploidy"
 DONOR = "donor"
+QC_SAMPLE_INFO = "sample_qcs.json"
+CALLABILITY_WARNING = "ignore_warning"
 
 # Parameters for rendering
 ONCOTREE_CODE = 'OncoTree code'

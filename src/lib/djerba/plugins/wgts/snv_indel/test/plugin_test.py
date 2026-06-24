@@ -23,14 +23,12 @@ class TestSnvIndelPlugin(PluginTester):
     JSON_NAME_NO_MUT = 'snv_indel_no_somatic_mutations.json'
     
     def setUp(self):
+        super().setUp()
         self.path_validator = path_validator()
         self.maxDiff = None
-        self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
-        self.tmp_dir = self.tmp.name
         self.sup_dir = directory_finder().get_test_dir()
 
     def testSnvIndelWithCNV(self):
-
         data_dir_root = directory_finder().get_test_dir()
         data_dir = os.path.join(data_dir_root, 'plugins', 'wgts', 'snv_indel')
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -63,7 +61,6 @@ class TestSnvIndelPlugin(PluginTester):
         self.run_basic_test(input_dir, params, work_dir=work_dir)
 
     def testSnvIndelNoCNV(self):
-
         data_dir_root = directory_finder().get_test_dir()
         data_dir = os.path.join(data_dir_root, 'plugins', 'wgts', 'snv_indel')
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -125,6 +122,8 @@ class TestSnvIndelPlugin(PluginTester):
     def redact_json_data(self, data):
         """replaces empty method from testing.tools"""
         del data['results']['vaf_plot']
+        if 'gene_information_merger' in data['merge_inputs']:
+            data['merge_inputs']['gene_information_merger'] = self.PLACEHOLDER
         return data 
 
 if __name__ == '__main__':

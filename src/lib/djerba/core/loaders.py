@@ -87,9 +87,15 @@ class loader_base(core_base, ABC):
         # use the first one with a valid import spec; if none found, raise an error
         package_for_import = None
         for package in self.packages:
-            # work down the hierarchy of package names
-            # do it this way to avoid an ImportError when checking non-existent package
-            hierarchy = [package, module_type+'s', name, module_type]
+            # We use importlib.util.find_spec to check if a package exists.
+            # find_spec('foo.bar.baz') tries to import foo and bar before checking baz.
+            # This causes an ImportError if foo or bar doesn't exist. So, we work down
+            # the hierarchy of package names, checking each level in turn. We also
+            # split the component name, which may itself contain dots representing a
+            # package hierarchy (eg. tar.sample, snv.indel).
+            hierarchy = [package, module_type+'s']
+            hierarchy.extend(re.split('\.', name))
+            hierarchy.append(module_type)
             levels = []
             package_ok = True
             for level in hierarchy:

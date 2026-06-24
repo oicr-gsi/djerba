@@ -1,0 +1,96 @@
+{
+    "$id":"https://https://github.com/oicr-gsi/djerba/tree/main/src/lib/djerba/plugins/wgts/cnv_purple/wgts.cnv_purple_schema.json",
+    "title": "Results Structure for wgts.cnv_purple Plugin",
+    "description": "Schema documentation of results structure for wgts.cnv_purple plugin.",
+    "type": "object",
+
+    "properties":{
+        "wgts.cnv_purple":{
+            "description": "Plugin for WGTS CNV, based on PURPLE",
+            "type": "object",
+            "properties":{
+
+                "plugin_name":{
+                    "description": "wgts.cnv_purple plugin",
+                    "type": "string"
+                },
+
+                "version":{
+                    "description": "Plugin version (0.1.0)",
+                    "type": "string"
+                },
+
+                "results":{
+                    "description": "Results from wgts.cnv_purple plugin",
+                    "type": "object",
+                    "properties":{
+
+                        "percent genome altered":{
+                            "description": "Percent genome altered",
+                            "type": "integer"
+                        },
+
+                        "total variants":{
+                            "description": "Total number of copy-number variants",
+                            "type": "integer"
+                        },
+
+                        "clinically relevant variants":{
+                            "description": "Total number of clinically relevant copy-number variants",
+                            "type": "integer"
+                        },
+                        
+                        "cnv plot":{
+                            "description": "CNV plot (base64 encoded SVG)",
+                            "type": "string"
+                        },
+
+                        "has expression data":{
+                            "description": "Presence of expression data",
+                            "type": "boolean"
+                        },
+
+                        "body":{
+                            "description": "Variant-specific information as objects stored in arrays",
+                            "type": "array",
+                            "properties":{
+
+                                "Expression Percentile":{
+                                    "description": "Expression percentile",
+                                    "type": "float"
+                                },
+
+                                "Gene":{
+                                    "description": "Name of gene contianing CNV (i.e., JAZF1)",
+                                    "type": "string"
+                                },
+
+                                "Gene_URL":{
+                                    "description": "OncoKB url to gene",
+                                    "type": "string"
+                                },
+
+                                "Alteration":{
+                                    "description": "CNV type",
+                                    "type": "string",
+                                    "enum": ["Amplification", "Deletion"]
+                                },
+                                
+                                "Chromosome":{
+                                    "description": "Chromosomal position (i.e., 3q26.2)",
+                                    "type": "string"
+                                },
+                                
+                                "OncoKB":{
+                                    "description": "OncoKB level of evidence",
+                                    "type": "string",
+                                    "enum": ["1", "2", "3A", "3B", "4", "N1", "N2", "N3", "N4"]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

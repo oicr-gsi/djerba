@@ -1,0 +1,62 @@
+{
+    "$id":"https://https://github.com/oicr-gsi/djerba/tree/main/src/lib/djerba/plugins/sample/sample_schema.json",
+    "title": "Results Structure for sample Plugin",
+    "description": "Schema documentation of results structure for sample plugin.",
+    "type": "object",
+
+    "properties":{
+        "sample":{
+            "description": "Plugin for sample section",
+            "type": "object",
+            "properties":{
+
+                "plugin_name":{
+                    "description": "sample plugin",
+                    "type": "string"
+                },
+
+                "version":{
+                    "description": "Plugin version (1.0.0)",
+                    "type": "string"
+                },
+
+                "results":{
+                    "description": "Results from sample plugin",
+                    "type": "object",
+                    "properties":{
+
+                        "OncoTree code":{
+                            "description": "OncoTree-standardized code for cancer identification",
+                            "type": "string"
+                        },
+
+                        "Sample Type":{
+                            "description": "Type of sample",
+                            "type": "string"
+                        },
+
+                        "Estimated Cancer Cell Content (%)":{
+                            "description": "Estimated percentage of cancer cell content",
+                            "type": "integer"
+                        },
+
+                        "Estimated Ploidy":{
+                            "description": "Estimated ploidy value",
+                            "type": "string"
+                        },
+
+                        "Callability (%)":{
+                            "description": "Call quality",
+                            "type": "string"
+                        },
+
+                        "Coverage (mean)":{
+                            "description": "Average coverage",
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

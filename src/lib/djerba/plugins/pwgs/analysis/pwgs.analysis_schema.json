@@ -1,0 +1,97 @@
+{
+    "$id":"https://https://github.com/oicr-gsi/djerba/tree/main/src/lib/djerba/plugins/pwgs/analysis/pwgs.analysis_schema.json",
+    "title": "Results Structure for pwgs.analysis Plugin",
+    "description": "Schema documentation of results structure for pwgs.analysis plugin.",
+    "type": "object",
+
+    "properties":{
+        "report_title":{
+            "description": "Djerba plugin for pwgs.analysis reporting",
+            "type": "object",
+            "properties":{
+
+                "plugin_name":{
+                    "description": "pwgs.analysis plugin",
+                    "type": "string"
+                },
+
+                "version":{
+                    "description": "Plugin version (1.1)",
+                    "type": "string"
+                },
+
+                "results":{
+                    "description": "Results from pwgs.analysis plugin plugin",
+                    "type": "object",
+                    "properties":{
+
+                        "assay": {
+                            "description": "Type of assay used for sequencing",
+                            "type": "string"
+                        },
+
+                        "study":{
+                            "description": "Study name",
+                            "type": "string"
+                        },
+
+                        "primary_cancer": {
+                            "description": "Cancer type",
+                            "type": "string"
+                        },
+
+                        "outcome": {
+                            "description": "Detection outcome (i.e., UNDETECTED, DETECTED)",
+                            "type": "string"
+                        },
+
+                        "significant_text": {
+                            "description": "Significance (i.e., significantly larger, not significantly larger)",
+                            "type": "string"
+                        },
+                        
+                        "TFR":{
+                            "definition": "Tumour fraction reads",
+                            "type": "float"
+                        },
+
+                        "site_checked":{
+                            "description": "Number of sites checked",
+                            "type": "integer"
+                        },
+
+                        "reads_checked":{
+                            "description": "Number of reads checked",
+                            "type": "integer"
+                        },
+
+                        "site_detected":{
+                            "description": "Number of sites detected",
+                            "type": "integer"
+                        },
+
+                        "reads_detected":{
+                            "description": "Number of reads detected",
+                            "type": "integer"
+                        },
+
+                        "p-value":{
+                            "description": "P-value",
+                            "type": "float"
+                        },
+
+                        "dataset_detection_cutoff":{
+                            "description": "Cutoff for detection",
+                            "type": "integer"
+                        },
+
+                        "hbc_n":{
+                            "description": "HBC normal",
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

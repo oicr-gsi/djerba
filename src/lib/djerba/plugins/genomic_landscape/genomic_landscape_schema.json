@@ -1,0 +1,247 @@
+{
+    "$id":"https://https://github.com/oicr-gsi/djerba/tree/main/src/lib/djerba/plugins/genomic_landscape/genomic_landscape_schema.json",
+    "title": "Results Structure for genomic_landscape Plugin",
+    "description": "Schema documentation of results structure for genomic_landscape plugin.",
+    "type": "object",
+
+    "properties":{
+        "genomic_landscape":{
+            "description": "Plugin for genomic landscape section",
+            "type": "object",
+            "properties":{
+
+                "plugin_name":{
+                    "description": "genomic_landscape plugin",
+                    "type": "string"
+                },
+                
+                "version":{
+                    "description": "Plguin version (2.0.0)",
+                    "type": "string"
+                },
+
+                "results":{
+                    "description": "Results from genomic_landscape plugin",
+                    "type": "object",
+                    "properties":{
+
+                        "genomic_landscape_info":{
+                            "description": "Genomic landscape",
+                            "type": "object",
+                            "properties":{
+                                
+                                "Tumour Mutation Burden":{
+                                    "description": "Total TMB value",
+                                    "type": "integer"
+                                },
+
+                                "TMB per megabase":{
+                                    "description": "TMB per megabase",
+                                    "type": "float"
+                                },
+
+                                "Cancer-specific Percentile":{
+                                    "description": "Cancer-specific percentile",
+                                    "type": "integer"
+                                },
+
+                                "Cancer-specific Cohort":{
+                                    "description": "Cancer-specific cohort",
+                                    "type": "string"
+                                },
+
+                                "Pan-cancer Percentile":{
+                                    "description": "Pan-cancer percentile",
+                                    "type": "integer"
+                                },
+
+                                "Pan-cancer Cohort":{
+                                    "description": "Pan-cancer cohort",
+                                    "type": "string"
+                                }
+                            }
+                        },
+
+                        "genomic_biomarkers":{
+                            "description": "Genomic biomarkers (TMB, MSI, HRD)",
+                            "type": "object",
+                            "properties":{
+
+                                "TMB":{
+                                    "description": "Tumour Mutation Burden",
+                                    "type": "object",
+                                    "properties":{
+
+                                        "Alteration":{
+                                            "description": "Biomarker name",
+                                            "type": "string",
+                                            "enum": ["TMB"]
+                                        },
+
+                                        "Alteration_URL":{
+                                            "description": "OncoKB URL to biomarker alteration",
+                                            "type": "string"
+                                        },
+
+                                        "Genomic biomarker value":{
+                                            "description": "TMB per megabase",
+                                            "type": "float"
+                                        },
+
+                                        "Genomic biomarker actionable":{
+                                            "description": "Actionability of biomarker",
+                                            "type": "boolean"
+                                        },
+
+                                        "Genomic biomarker alteration":{
+                                            "description": "Biomarker alteration",
+                                            "type": "string",
+                                            "enum": ["TMB-L", "TMB-H"]
+                                        },
+
+                                        "Genomic biomarker text":{
+                                            "description": "Biomarker alteration description",
+                                            "type": "string"
+                                        },
+
+                                        "Genomic biomarker plot":{
+                                            "description": "Biomarker plot (base64 encoded SVG)",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "MSI":{
+                                    "description": "Microsatellite Instability",
+                                    "type": "object",
+                                    "properties":{
+
+                                        "Alteration":{
+                                            "description": "Biomarker name",
+                                            "type": "string",
+                                            "enum": ["MSI"]
+                                        },
+
+                                        "Alteration_URL":{
+                                            "description": "OncoKB URL to biomarker alteration",
+                                            "type": "string"
+                                        },
+
+                                        "Genomic biomarker value":{
+                                            "description": "MSI per megabase",
+                                            "type": "integer"
+                                        },
+
+                                        "Genomic biomarker actionable":{
+                                            "description": "Actionability of biomarker",
+                                            "type": "boolean"
+                                        },
+
+                                        "Genomic biomarker alteration":{
+                                            "description": "Biomarker title",
+                                            "type": "string",
+                                            "enum": ["MSS", "MSI"]
+                                        },
+
+                                        "Genomic biomarker text":{
+                                            "description": "Biomarker alteration description",
+                                            "type": "string"
+                                        },
+
+                                        "Genomic biomarker plot":{
+                                            "description": "Biomarker plot (base64 encoded SVG)",
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+
+                                "HRD":{
+                                    "description": "Homologous Recombination Deficiency",
+                                    "type": "object",
+                                    "properties":{
+
+                                        "Alteration":{
+                                            "description": "Biomarker name",
+                                            "type": "string",
+                                            "enum": ["HRD"]
+                                        },
+
+                                        "Alteration_URL":{
+                                            "description": "OncoKB URL to biomarker alteration",
+                                            "type": "string"
+                                        },
+
+                                        "Genomic biomarker actionable":{
+                                            "description": "Actionability of biomarker",
+                                            "type": "boolean"
+                                        },
+
+                                        "Genomic biomarker alteration":{
+                                            "description": "Biomarker title",
+                                            "type": "string",
+                                            "enum": ["HR Proficient", "HR Deficient", "HRP", "HRD"]
+                                        },
+
+                                        "Genomic biomarker plot":{
+                                            "description": "Biomarker plot (base64 encoded SVG)",
+                                            "type": "string"
+                                        },
+
+                                        "Genomic biomarker text":{
+                                            "description": "Biomarker alteration description",
+                                            "type": "string"
+                                        },
+
+                                        "Genomic biomarker value":{
+                                            "description": "HRD per megabase",
+                                            "type": "integer"
+                                        },
+
+                                        "QC":{
+                                            "description": "Quality control",
+                                            "type": "string",
+                                            "enum": ["Pass", "Fail"]
+                                        }
+                                    }
+                                }
+                            }
+                        },
+
+                        "can_report_hrd":{
+                            "description": "Ability to report HRD",
+                            "type": "boolean"
+                        },
+
+                        "can_report_msi":{
+                            "description": "Ability to report MSI",
+                            "type": "boolean"
+                        },
+
+                        "cant_report_hrd_reason":{
+                            "description": "Reason to not report HRD. Typically appears in failed reports. Most clinical reports list a boolean (false) if can_report_hrd is true).",
+                            "type": "string"
+                        },
+
+                        "ctDNA":{
+                            "description": "ctDNA information",
+                            "type": "object",
+                            "properties":{
+                                
+                                "ctDNA_candidate_sites":{
+                                    "description": "Number of ctDNA sites",
+                                    "type": "integer"
+                                },
+
+                                "ctDNA_eligibility":{
+                                    "description": "Eligibility of ctDNA",
+                                    "type": "string",
+                                    "enum": ["eligible", "not eligible"]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

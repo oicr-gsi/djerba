@@ -25,13 +25,17 @@ class provenance_reader(logger):
     # relevant workflow names
     WF_ARRIBA = 'arriba'
     WF_BMPP = 'bamMergePreprocessing_by_sample'
+    WF_CONSENSUS = 'consensusCruncher'
     WF_DELLY = 'delly_matched'
     WF_GRIDSS = 'gridss'
+    WF_HLA = 't1k'
     WF_HRDETECT = 'hrDetect'
+    WF_ICHORCNA = 'ichorcna'
+    WF_IMMUNE = 'immunedeconv'
     WF_MAVIS = 'mavis'
-    WF_MRDETECT = 'mrdetect_filter_only'
     WF_MSISENSOR = 'msisensor'
     WF_MUTECT = 'mutect2_matched'
+    WF_MUTECT2 = 'mutect2Consensus'
     WF_PURPLE = 'purple'
     WF_RSEM = 'rsem'
     WF_SEQUENZA = 'sequenza_by_tumor_group'
@@ -39,10 +43,6 @@ class provenance_reader(logger):
     WF_STARFUSION = 'starfusion'
     WF_VEP = 'variantEffectPredictor_matched'
     WF_VIRUS = 'virusbreakend'
-    WF_IMMUNE = 'immunedeconv'
-    WF_ICHORCNA = 'ichorcna'
-    WF_CONSENSUS = 'consensusCruncher'
-    WF_HLA = 't1k'
 
     # older Vidarr workflow names, deprecated as of 2023-11-13
     WF_BMPP_20231113 = 'bamMergePreprocessing_by_tumor_group'
@@ -56,6 +56,14 @@ class provenance_reader(logger):
     NIASSA_WF_STAR = 'STAR'
     NIASSA_WF_STARFUSION = 'starFusion'
     NIASSA_WF_VEP = 'variantEffectPredictor'
+
+    # Warnings for these obsolete workflows still running in pipeline will be suppressed
+    OBSOLETE_WORKFLOWS = [
+        'sequenza_by_tumor_group',
+        'sequenza',
+        'immunedeconv',
+        't1k'
+    ]
 
     # metatype patterns
     MT_PLAIN_TEXT = 'text/plain$'
@@ -171,8 +179,10 @@ class provenance_reader(logger):
         self.logger.debug("Beginning check on workflows in file provenance")
         for wf_list in wgs_to_check:
             total = sum([counts[x] for x in wf_list])
-            if total==0:
-                self.logger.warning("No file provenance records for workflows {0}".format(wf_list))
+            if total == 0:
+                workflows_to_warn = [wf for wf in wf_list if wf not in self.OBSOLETE_WORKFLOWS]
+                if workflows_to_warn:
+                    self.logger.warning("No file provenance records for workflows {0}".format(workflows_to_warn))
             else:
                 msg = "Found {0} file provenance records for workflows {1}".format(total, wf_list)
                 self.logger.debug(msg)
@@ -186,8 +196,10 @@ class provenance_reader(logger):
             # second pass -- check individual WTS workflows
             for wf_list in wts_to_check:
                 total = sum([counts[x] for x in wf_list])
-                if sum([counts[x] for x in wf_list])==0:
-                    self.logger.warning("No file provenance records for workflows {0}".format(wf_list))
+                if sum([counts[x] for x in wf_list]) == 0:
+                    workflows_to_warn = [wf for wf in wf_list if wf not in self.OBSOLETE_WORKFLOWS]
+                    if workflows_to_warn:
+                        self.logger.warning("No file provenance records for workflows {0}".format(workflows_to_warn))
                 else:
                     msg = "Found {0} file provenance records for workflows {1}".format(total, wf_list)
                     self.logger.debug(msg)
@@ -520,12 +532,6 @@ class provenance_reader(logger):
         suffix = 'recalibrated\.msi\.booted$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
-    def parse_mrdetect_path(self):
-        workflows = [self.WF_MRDETECT]
-        mt = self.MT_PLAIN_TEXT
-        suffix = 'SNP\.count\.txt$'
-        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
-
     def parse_mutect_path(self):
         workflows = [self.WF_MUTECT]
         mt = self.MT_VCF_GZ
@@ -562,28 +568,10 @@ class provenance_reader(logger):
         suffix = '\.seg\.txt$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
 
-    def parse_tar_metrics_normal_path(self):
-        workflow = self.WF_CONSENSUS
-        mt = self.MT_PLAIN_TEXT
-        suffix = 'allUnique-hsMetrics\.HS\.txt$'
-        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_n)
-
-    def parse_tar_metrics_tumour_path(self):
-        workflow = self.WF_CONSENSUS
-        mt = self.MT_PLAIN_TEXT
-        suffix = 'allUnique-hsMetrics\.HS\.txt$'
-        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
-
-    def parse_tar_maf_normal_path(self):
-        workflow = self.WF_CONSENSUS
+    def parse_tar_maf_tumour_filtered_path(self):
+        workflow = self.WF_MUTECT2
         mt = self.MT_TXT_GZ
-        suffix = 'merged\.maf\.gz$'
-        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_n)
-
-    def parse_tar_maf_tumour_path(self):
-        workflow = self.WF_CONSENSUS
-        mt = self.MT_TXT_GZ
-        suffix = 'merged\.maf\.gz$'
+        suffix = '{}\_filtered_maf\.gz$'.format(self.tumour_id)
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
 
     def parse_virus_path(self):

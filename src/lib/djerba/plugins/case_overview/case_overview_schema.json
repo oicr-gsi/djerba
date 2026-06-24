@@ -1,0 +1,87 @@
+{
+    "$id":"https://https://github.com/oicr-gsi/djerba/tree/main/src/lib/djerba/plugins/case_overview/case_overview_schema.json",
+    "title": "Results Structure for case_overview Plugin",
+    "description": "Schema documentation of results structure for case_overview plugin.",
+    "type": "object",
+
+    "properties":{
+        "case_overview":{
+            "description": "Plugin for Case Overview report section",
+            "type": "object",
+            "properties":{
+
+                "plugin_name":{
+                    "description": "case_overview plugin",
+                    "type": "string"
+                },
+
+                "version":{
+                    "description": "Plugin version (1.0.0)",
+                    "type": "string"
+                },
+
+                "results":{
+                    "description": "Results from case_overview plugin",
+                    "type": "object",
+                    "properties":{
+
+                        "assay": {
+                            "description": "Type of assay used for sequencing. Short name typically used.",
+                            "type": "string"
+                        },
+
+                        "assay_description": {
+                            "description": "Description of assay",
+                            "type": "string"
+                        },
+
+                        "primary_cancer": {
+                            "description": "Cancer type.",
+                            "type": "string"
+                        },
+                        
+                        "site_of_biopsy":{
+                            "description": "Biopsy type/location",
+                            "type": "string"
+                        },
+
+                        "donor":{
+                            "description": "Donor ID",
+                            "type": "string"
+                        },
+
+                        "study":{
+                            "description": "Research study",
+                            "type": "string"
+                        },
+
+                        "patient_study_id":{
+                            "description": "Patient study ID",
+                            "type": "string"
+                        },
+
+                        "tumour_id":{
+                            "description": "Tumour ID",
+                            "type": "string"
+                        },
+
+                        "normal_id":{
+                            "description": "Normal ID",
+                            "type": "string"
+                        },
+
+                        "report_id":{
+                            "description": "Report ID",
+                            "type": "string"
+                        },
+
+                        "requisition_approved":{
+                            "definition": "Date of requisition approval (YYYY-MM-DD)",
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

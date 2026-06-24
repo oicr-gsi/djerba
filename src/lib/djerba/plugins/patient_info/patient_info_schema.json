@@ -1,0 +1,80 @@
+{
+    "$id":"https://https://github.com/oicr-gsi/djerba/tree/main/src/lib/djerba/plugins/patient_info/patient_info_schema.json",
+    "title": "Results Structure for patient_info Plugin",
+    "description": "Schema documentation of results structure for patient_info plugin.",
+    "type": "object",
+
+    "properties":{
+        "patient_info":{
+            "description": "Plugin for patient_info section",
+            "type": "object",
+            "properties":{
+
+                "plugin_name":{
+                    "description": "patient_info plugin",
+                    "type": "string"
+                },
+
+                "version":{
+                    "description": "Plugin version (1.0.0)",
+                    "type": "string"
+                },
+
+                "results":{
+                    "description": "Results from patient_info plugin",
+                    "type": "object",
+                    "properties":{
+
+                        "patient_name":{
+                            "description": "Patient name",
+                            "type": "string",
+                            "enum": ["LAST, FIRST"]
+                        },
+
+                        "patient_dob":{
+                            "description": "Patient date of birth",
+                            "type": "string",
+                            "enum": ["YYYY-MM-DD"]
+                        },
+
+                        "patient_genetic_sex":{
+                            "description": "Patient genetic sex",
+                            "type": "string",
+                            "enum": ["SEX"]
+                        },
+
+                        "requesitioner_email":{
+                            "description": "Requesitioner email",
+                            "type": "string",
+                            "enum": ["NAME@DOMAIN.COM"]
+                        },
+
+                        "physician_license_number":{
+                            "description": "Physician license number",
+                            "type": "string",
+                            "enum": ["nnnnnnnn"]
+                        },
+
+                        "physician_name":{
+                            "description": "Physician name",
+                            "type": "string",
+                            "enum": ["LAST, FIRST"]
+                        },
+
+                        "physician_phone_number":{
+                            "description": "Physician phone number",
+                            "type": "string",
+                            "enum": ["nnn-nnn-nnnn"]
+                        },
+
+                        "hospital_name_and_address":{
+                            "description": "Hospital name and address",
+                            "type": "string",
+                            "enum": ["HOSPITAL NAME AND ADDRESS"]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

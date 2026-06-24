@@ -1,0 +1,56 @@
+{
+    "$id":"https://https://github.com/oicr-gsi/djerba/tree/main/src/lib/djerba/plugins/hla/hla_schema.json",
+    "title": "Results Structure for hla Plugin",
+    "description": "Schema documentation of results structure for hla plugin.",
+    "type": "object",
+
+    "properties":{
+        "wgts.snv_indel":{
+            "description": "Plugin for HLA reporting",
+            "type": "object",
+            "properties":{
+                
+                "plugin_name":{
+                    "description": "Germline HLA Analysis",
+                    "type": "string"
+                },
+
+                "version":{
+                    "description": "Plguin version (0.1.0)",
+                    "type": "string"
+                },
+
+                "results":{
+                    "description": "Results from wgts.snv_indel plugin",
+                    "type": "object",
+                    "properties":{
+
+                        "Body":{
+                            "description": "HLA-specific information as objects stored in arrays",
+                            "type": "array",
+                            "properties":{
+
+                                "Gene name":{
+                                    "description": "HLA Gene name",
+                                    "type": "string",
+                                    "enum": ["HLA-A", "HLA-B", "HLA-C"]
+                                },
+
+                                "Zygosity":{
+                                    "description": "Zygosity",
+                                    "type": "string",
+                                    "enum": ["Heterozygous", "Homozygous"]
+                                },
+                                
+                                "Allele":{
+                                    "description": "Allele (i.e., HLA-B*07:02:01)",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

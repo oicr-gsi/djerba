@@ -97,8 +97,12 @@ class main(plugin_base):
       plots_file = wrapper.get_my_string(constants.PLOTS_FILE)
 
       # Copy the plots file to the workspace for manual review
-      self.workspace.copy_to_workspace(plots_file)
-      
+      if plots_file in [None, 'None']:
+        # this is expected for eg. benchmarking against cron output
+        self.logger.debug("ichorCNA plots file not specified")
+      else:
+        self.workspace.copy_to_workspace(plots_file)
+
       # Filter the seg_file only for amplifications (returns None if there are no amplifications)
       amp_path = preprocess(tumour_id, oncotree_code, work_dir).preprocess_seg(seg_file)
 
@@ -123,7 +127,7 @@ class main(plugin_base):
           preprocess(tumour_id, oncotree_code, work_dir).run_R_code(amp_path)
           
           # Get the table rows
-          rows = data_builder(work_dir).build_swgs_rows()
+          rows = data_builder(work_dir, self.log_level, self.log_path).build_swgs_rows()
           
           # Put the information in the results section
           cnv_data['results'][constants.BODY] = rows
@@ -132,9 +136,7 @@ class main(plugin_base):
 
           # Merge treatments (if there are any)
           cna_annotated_path = os.path.join(work_dir, self.CNA_ANNOTATED)
-          cnv = data_builder(work_dir)
           cnv_data['merge_inputs'] = self.get_merge_inputs(work_dir)
-          #cnv_data['merge_inputs']['treatment_options_merger'] =  cnv.build_therapy_info(cna_annotated_path, oncotree_code)
       
       elif purity >= 0.1 and not amp_path:
           

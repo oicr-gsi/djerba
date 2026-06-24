@@ -48,9 +48,7 @@ class main(helper_base):
 
     # identifiers for tar files which come from the same workflow
     WF_CONSENSUS_TUMOUR = 'consensusCruncher_tumour'
-    WF_CONSENSUS_NORMAL = 'consensusCruncher_normal'
-    WF_MAF_TUMOUR = 'maf_tumour'
-    WF_MAF_NORMAL = 'maf_normal'
+    WF_MAF_FILTERED = 'maf_filtered' # tumour maf
     WF_ICHOR_JSON = 'metrics_json'
     WF_ICHOR_SEG = 'seg'
     WF_ICHOR_PLOTS = 'plots'
@@ -86,7 +84,8 @@ class main(helper_base):
         else:
             self.logger.info("Writing provenance subset cache to workspace")
             self.write_provenance_subset(study, donor, provenance_path)
-        
+
+
         samples = self.get_sample_name_container(wrapper, assay)
         sample_info, path_info = self.read_provenance(study, donor, assay, samples)
         self.write_path_info(path_info)
@@ -179,6 +178,7 @@ class main(helper_base):
             raise InvalidConfigurationError(msg)
         return samples
 
+
     def read_provenance(self, study, donor, assay, samples):
         """
         Parse file provenance and populate the sample info data structure
@@ -221,7 +221,6 @@ class main(helper_base):
             reader.WF_GRIDSS: reader.parse_gridss_path(),
             reader.WF_HRDETECT: reader.parse_hrdetect_path(),
             reader.WF_MAVIS: reader.parse_mavis_path(),
-            reader.WF_MRDETECT: reader.parse_mrdetect_path(),
             reader.WF_MSISENSOR: reader.parse_msi_path(),
             reader.WF_MUTECT: reader.parse_mutect_path(),
             reader.WF_PURPLE: reader.parse_purple_zip_path(),
@@ -238,10 +237,7 @@ class main(helper_base):
             reader.WF_HLA: reader.parse_hla_path(),
 
             # TAR specific files:
-            self.WF_CONSENSUS_TUMOUR: reader.parse_tar_metrics_tumour_path(),
-            self.WF_CONSENSUS_NORMAL: reader.parse_tar_metrics_normal_path(),
-            self.WF_MAF_TUMOUR: reader.parse_tar_maf_tumour_path(),
-            self.WF_MAF_NORMAL: reader.parse_tar_maf_normal_path(),
+            self.WF_MAF_FILTERED: reader.parse_tar_maf_tumour_filtered_path(),
             self.WF_ICHOR_JSON: reader.parse_tar_ichorcna_json_path(),
             self.WF_ICHOR_PLOTS: reader.parse_tar_ichorcna_plots_path(),
             self.WF_ICHOR_SEG: reader.parse_tar_ichorcna_seg_path()

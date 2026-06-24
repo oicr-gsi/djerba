@@ -87,7 +87,7 @@ class html_renderer(logger):
 
     def get_page_footer(self, doc_type):
         if doc_type == cc.CLINICAL:
-            pdf_footer = "{0} - {1}".format(get_todays_date(), self.report_id)
+            pdf_footer = "{0} ".format(self.report_id)
         elif doc_type == cc.RESEARCH:
             pdf_footer = 'For Research Use Only'
         else:

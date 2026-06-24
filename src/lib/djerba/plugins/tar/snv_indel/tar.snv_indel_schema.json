@@ -1,0 +1,116 @@
+{
+    "$id":"https://https://github.com/oicr-gsi/djerba/tree/main/src/lib/djerba/plugins/tar/snv_indel/tar.snv_indel_schema.json",
+    "title": "Results Structure for tar.snv_indel Plugin",
+    "description": "Schema documentation of results structure for tar.snv_indel plugin.",
+    "type": "object",
+
+    "properties":{
+        "report_title":{
+            "description": "Djerba plugin for tar reporting",
+            "type": "object",
+            "properties":{
+
+                "plugin_name":{
+                    "description": "tar.snv_indel plugin",
+                    "type": "string"
+                },
+
+                "version":{
+                    "description": "Plugin version (1.0.0)",
+                    "type": "string"
+                },
+
+                "results":{
+                    "description": "Results from tar.snv_indel plugin",
+                    "type": "object",
+                    "properties":{
+
+                        "Clinically relevant variants":{
+                            "description": "Number of clinically relevant variants",
+                            "type": "integer"
+                        },
+
+                        "Total variants":{
+                            "description": "Number of variants in total",
+                            "type": "integer"
+                        },
+
+                        "Has expression data":{
+                            "description": "Presence of expression data",
+                            "type": "boolean"
+                        },
+
+                        "Body":{
+                            "description": "Variant-specific information as objects stored in arrays",
+                            "type": "array",
+                            "properties":{
+
+                                "Gene":{
+                                    "description": "Name of gene contianing SNV (i.e., TP53)",
+                                    "type": "string"
+                                },
+
+                                "Gene_URL":{
+                                    "description": "OncoKB url to gene",
+                                    "type": "string"
+                                },
+
+                                "Chromosome":{
+                                    "description": "Chromosomal position (i.e., 17p13.1)",
+                                    "type": "string"
+                                },
+
+                                "Protein":{
+                                    "description": "Resulting protein (i.e., p.R196*)",
+                                    "type": "string"
+                                },
+
+                                "Protein_URL":{
+                                    "description": "OncoKB url to protein",
+                                    "type": "string"
+                                },
+
+                                "Type":{
+                                    "description": "SNV type",
+                                    "type": "string",
+                                    "enum": ["Missense Mutation", "Nonsense Mutation", "Frame Shift Del", "Frame Shift Ins", "Splice Site", "Splice Region", "5' Flank"]
+                                },
+
+                                "Expression Percentile":{
+                                    "description": "Expression percentile",
+                                    "type": "float"
+                                },
+
+                                "VAF (%)":{
+                                    "description": "Variant allele frequency",
+                                    "type": "integer"
+                                },
+
+                                "t_depth":{
+                                    "description": "Read depth",
+                                    "type": "integer"
+                                },
+
+                                "t_alt_count":{
+                                    "description": "Alternate count",
+                                    "type": "integer"
+                                },
+                                
+                                "OncoKB level":{
+                                    "description": "OncoKB level of evidence",
+                                    "type": "string",
+                                    "enum": ["1", "2", "3A", "3B", "4", "N1", "N2", "N3", "N4"]
+                                }
+                            }
+                        },
+
+                        "Above_Purity_Threshold":{
+                            "description": "Whether sample falls above purity threshold (0.3)",
+                            "type": "boolean"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

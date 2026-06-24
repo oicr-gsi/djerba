@@ -71,7 +71,7 @@ class main(main_base):
         """
         with open(json_path) as in_file:
             data = json.loads(in_file.read())
-        doc_key = self._get_unique_doc_key(data)
+        
         if ini_path or summary_path:
             # update data for the given parameters
             config = ConfigParser()
@@ -117,7 +117,10 @@ class main(main_base):
             self.logger.debug('Wrote updated JSON data to {0}'.format(out_path))
         else:
             self.logger.debug('No additional config given, rendering existing JSON')
-        self.render_from_cache(data, doc_key, out_dir, pdf)
+        
+        doc_keys = self._get_doc_keys(data)
+        for doc_key in doc_keys:
+            self.render_from_cache(data, doc_key, out_dir, pdf)
         self.logger.info('Mini-Djerba report mode complete')
 
     def setup(self, out_dir, json_path):

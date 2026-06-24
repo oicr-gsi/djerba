@@ -3,11 +3,16 @@ ACC	acc	Adrenocortical Carcinoma	Adrenal Gland	91
 PAAD	paad	Pancreatic Adenocarcinoma	"Pancreas, Liver"	NA
 BLCA	blca	Bladder Urothelial Carcinoma	Bladder/Urinary Tract	409
 BRCA	brca	Breast Invasive Carcinoma	Breast	1009
+IDC	brca	Invasive Ductal Adenocarcinoma	Breast	1009
+BRCNOS	brca	Breast Invasive Carcinoma	Breast	1009
 CESC	cesc	Cervical Squamous Cell Carcinoma and Endocervical Adenocarcinoma	"Cervix,Uterus"	281
 ECAD	cesc	Cervical Squamous Cell Carcinoma and Endocervical Adenocarcinoma	"Cervix,Uterus"	281
 CHOL	chol	Cholangiocarcinoma	"Biliary Tract,Liver"	36
 HCCIHCH	chol	Cholangiocarcinoma	"Biliary Tract,Liver"	36
-COADREAD	coadread	"Colon/Rectum Adenocarcinoma, "	Bowel	528
+IHCH	chol	Cholangiocarcinoma	"Biliary Tract,Liver"	36
+COADREAD	coadread	Colon/Rectum Adenocarcinoma	Bowel	528
+COAD	coadread	Colon Adenocarcinoma	Bowel	528
+READ	coadread	Rectum Adenocarcinoma	Bowel	528
 MBN	dlbc	Neoplasm Diffuse Large B-cell Lymphoma	Lymphoid	37
 ESCA	esca	Esophageal Carcinoma	Esophagus/Stomach	182
 GBM	gbm	Glioblastoma Multiforme	Brain	87
@@ -26,6 +31,7 @@ CCOV	ov	Ovarian Serous Cystadenocarcinoma	Ovary	409
 SOC	ov	Ovarian Serous Cystadenocarcinoma	Ovary	409
 EOV	ov	Endometrioid Ovarian Cancer	Ovary	409
 MOV	ov	Mucinous Ovarian Cancer	Ovary	409
+MXOV	ov	Mixed Ovarian Cancer	Ovary	409
 HGSOC	ov	Ovarian Serous Cystadenocarcinoma	Ovary	409
 LGSOC	ov	Ovarian Serous Cystadenocarcinoma	Ovary	409
 TCGA_ALL_TUMOR	TCGA_ALL_TUMOR	TCGA	NA	6446

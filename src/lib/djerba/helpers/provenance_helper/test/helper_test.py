@@ -20,7 +20,7 @@ class TestProvenanceHelper(TestBase):
     HELPER_NAME = 'provenance_helper'
     SUBSET_LENGTH = 240
     SAMPLE_INFO_MD5 = 'd8ca7199822984ad4ec7f0fee5cbb316'
-    PATH_INFO_MD5 = '058599a4b42d39f83a915f538b8172b7'
+    PATH_INFO_MD5 = 'a3818df23afc99d65fc0c41ba5836354'
     
     def test(self):
         self.data_dir_root = directory_finder().get_test_dir()
@@ -50,11 +50,12 @@ class TestProvenanceHelper(TestBase):
         subset_mod = os.path.getmtime(subset_path)
         sample_info_mod = os.path.getmtime(sample_info_path)
         path_info_mod = os.path.getmtime(sample_info_path)
-        time.sleep(0.01) # delay to enable file modification time check
+        time.sleep(0.1) # delay to enable file modification time check
         helper_main.extract(config) # should do nothing
-        self.assertTrue(abs(os.path.getmtime(subset_path) - subset_mod)<0.0001)
-        self.assertTrue(abs(os.path.getmtime(sample_info_path) - sample_info_mod)<0.0001)
-        self.assertTrue(abs(os.path.getmtime(path_info_path) - path_info_mod)<0.0001)
+        tolerance = 0.01 # length of tolerance, in seconds
+        self.assertTrue(abs(os.path.getmtime(subset_path) - subset_mod)<tolerance)
+        self.assertTrue(abs(os.path.getmtime(sample_info_path) - sample_info_mod)<tolerance)
+        self.assertTrue(abs(os.path.getmtime(path_info_path) - path_info_mod)<tolerance)
         ws.remove_file(subset_path)
         ws.remove_file(sample_info_path)
         ws.remove_file(path_info_path)

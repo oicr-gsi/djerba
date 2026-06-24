@@ -1,6 +1,105 @@
 # CHANGELOG
 
-## v1.8.4: 2024-04-10
+## v1.11.11: 2026-04-23
+- GCGI-1521: More detailed JSON schemas for plugin results
+- GCGI-1703: Split `djerba.util.wgts.tools` into new modules `expression_reader` and `variant_sorter`. Use the new modules for TAR as well as WGTS, removing duplicated code in the TAR plugins.
+- GCGI-1705: Write the ichorCNA purity in decimal instead of percentage format into purity.txt
+
+## v1.11.10: 2026-04-01
+- GCGI-1697: Compute major and minor allele copy numbers internally due to their removal in Purple v4.3+ from the segments output file.
+- GCGI-1691: Moved TAR QCs from taking from the consensusCruncher hsmetrics file to taking form the umiconsensus cache
+- Allowed `tar.sample` to be able to handle N/A, NA, None, etc. values for raw coverage, collapsed coverage, and purity
+- GCGI-1698: Added GENECODE version in the `supplement` plugin
+- GCGI-1690: Change bwamem to bwamem2 in the targeted sequencing assay supplement plugin
+- GCGI-1681: Remove candidate number of sites from the `genomic_landscape` plugin
+
+## v1.11.9: 2026-03-17
+- GCGI-1471: Generate default Whizbam links when no mutations are reported in TAR reports, and apply minor fixes to library and file names.
+- GCGI-1570: Make import of `gsiqcetl` package optional. Make `qcetl_cache` path an INI parameter with appropriate default.
+- GCGI-1679: Generate distinct CouchDB archive filenames for reports with different attributes (eg. clinical vs. research)
+- GCGI-1696: Refactor activity tracker; take no action when tracking directory not configured; do not exit main Djerba script on tracker error
+- GCGI-1682: Remove version number in gene ensembl_ids when matching to Hugo_Symbols.
+- Added some `oncotree_code` to `tcga_code` conversions to `tcga_code_key.txt`
+- Update `gencode_v33_hg38_genes.bed` to `gencode_v44_hg38_genes.bed`.
+
+## v1.11.8: 2026-02-20
+- Remove dates from page footers when rendering from cache.
+
+## v1.11.7: 2026-02-19
+- GCGI-1683: Remove date from page footer and change "Date of Report" to "Date Report Prepared" in the `case_overview` plugin.
+
+## v1.11.6: 2026-02-04
+- GCGI-1596: Fix to allow `--log-path` command-line option to work
+- GCGI-1671: Fixes for outdated OncoKB test data. Adds DJERBA_TEST_OUTPUT_DIR hook.
+- GCGI-1661: Filter out SNVs/Indels that don't have at least 3 supporting tumour alt reads
+- GCGI-1673: Bugfix in the `fusion` plugin so that non-reportable genes do not get rendered in the gene information section
+- GCGI-1677: Make low callability warning impossible to ignore by adding an ignore_warning parameter to the `sample` plugin that must be manually specified by the user to bypass
+- GCGI-1678: Remove obsolete warnings related to outdated workflows and instrument version changes.
+- GCGI-1423: Modify update function to handle multiple report types.
+- GCGI-1495: Update RUO disclaimer in the research footer.
+
+## v1.11.5: 2026-01-06
+- GCGI-1668, GCGI-1670: Remove references to the inactive HLA plugin
+- GCGI-1669: Bugfix for empty mutation dataframe
+
+## v1.11.4: 2025-12-10
+- Update TAR assay version description to refer to umiconsensus and mutect2consensus
+- Fix TAR maf file finding in provenance reader
+
+## v1.11.3: 2025-10-28
+- GCGI-1660: Bugfix for loading plugins with compound names (eg. `tar.sample`)
+- GCGI-1658: Update TAR assay to version 4.0 and two static OncoKB files.
+- GCGI-1620: Support the change from consensusCruncher to mutect2Consensus
+
+## v1.11.2: 2025-10-08
+- GCGI-1587: Code Undetermined fusion types.
+- GCGI-1602: Remove obsolete benchmarking code.
+- GCGI-1609: Update the fusion treatment option section format.
+- GCGI-1638: Delete captive8 plugin
+
+## v1.11.1: 2025-08-20
+- GCGI-1634: Correct TAR assay version to 3.0
+- GCGI-1635: Software versions update in the assay description section of the report.
+- GCGI-1637: Set default attributes to "clinical" in render step when empty, to fix HTML rendering.
+
+## v1.11.0: 2025-07-31
+- GCGI-1624: Reinstate version numbers and HRD max coverage threshold for Illumina v1.3
+- GCGI-1627: Remove obsolete 'INI schema' code
+- GCGI-1628: Run sample plugin for RUO to avoid downstream failures in the genomic_landscape.
+
+## v1.10.2: 2025-07-22
+- GCGI-1624: Revert version numbers to Illumina v1.2, pipeline 5.0 for Djerba v1.10.2 release
+- GCGI-1599: Update NCCN guidelines versions for ovarian (2023 to 2025) and PCM (2023 to 2026)
+- GCGI-1598: Updated Illumina version to v1.3, pipeline version to 6.0, WGTS assay versions to 6.0, PWGS assay version to 3.0, and added warning to inform user which instrument the sample was sequenced on
+- GCGI-1607: Code to cancel HRD reporting above a fixed threshold for sequencing depth; threshold set to 5000X so it will not take effect in this release; will set threshold to 115X for release v1.11.0 to support Illumina v1.3
+- GCGI-1548: update the fusion summary count after the filtering has been applied to ensure the summary and the table are always in sync.
+- GCGI-1612: Ensure chromosome labels are processed as strings in `wgts.snv_indel` plugin
+
+## v1.10.1: 2025-06-27
+- GCGI-1597: Fixes for benchmarking script. Omit copying ichorCNA file if not available. Update or remove outdated INI parameters.
+- As of this release, benchmarking code has been forked into a new repo: [djerba-benchmark](https://github.com/oicr-gsi/djerba-benchmark)
+- Removing the benchmark code from the main Djerba repository is TODO. Meanwhile that code is deprecated and tests have been removed. Use [djerba-benchmark](https://github.com/oicr-gsi/djerba-benchmark) instead if possible.
+
+## v1.10.0: 2025-06-13
+- GCGI-1554: Patch for GSI-QC-ETL test failure. Refactoring GSI-QC-ETL handling is still TODO.
+- GCGI-1586: Option to track activity with the main `djerba.py` script
+
+## v1.9.2: 2025-05-13
+- GCGI-1571: Update example report in Github repository
+- GCGI-1572: Remove overly detailed plugin list
+- GCGI-1577: Removed implicit dependency on `provenance_helper` in `fusion` plugin
+
+## v1.9.1: 2025-05-06
+- GCGI-1574: Removed provenance helper dependency in `expression_helper.py`
+- GCGI-1576: Fixed fusion plugin to handle situations where all fusions in mavis get filtered out (ex. by reading frame)
+
+## v1.9.0: 2025-05-01
+- GCGI-1506: Replace fusions.R with preprocess.py and refactor fusions plugin
+- GCGI-1509: Add warning for callability below the 75% threshold.
+- GCGI-1401: Convert purple output from Let's-Plot SVG to Matplotlib PNG.
+- GCGI-1504: Remove provenance helper dependency in `case_overview` plugin
+
+## v1.8.4: 2025-04-10
 - GCGI-1109: Update "Patient Genetic Sex" to "Patient sex assigned at birth"
 - GCGI-1544: Handle missing or empty HLA data
 - GCGI-1539: Environment variable for CouchDB credentials

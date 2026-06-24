@@ -13,6 +13,7 @@ import djerba.core.constants as constants
 from shutil import copy
 from djerba.plugins.plugin_tester import PluginTester
 from djerba.util.environment import directory_finder
+from djerba.plugins.fusion.tools import whizbam_tools
 
 class TestFusion(PluginTester):
 
@@ -21,8 +22,7 @@ class TestFusion(PluginTester):
 
     def setUp(self):
         """Set up directories and paths required for the test."""
-        self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
-        self.tmp_dir = self.tmp.name
+        super().setUp()
         self.data_dir_root = directory_finder().get_test_dir()
         self.data_dir = os.path.join(self.data_dir_root, constants.PLUGINS, 'fusion')
         self.test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -34,6 +34,12 @@ class TestFusion(PluginTester):
         copy(os.path.join(self.data_dir, self.JSON_NAME), self.input_dir)
         copy(os.path.join(self.data_dir, 'sample_info.json'), self.work_dir)
         self.write_ini_file()
+
+    def redact_json_data(self, data):
+        """replaces empty method from testing.tools"""
+        if 'gene_information_merger' in data['merge_inputs']:
+            data['merge_inputs']['gene_information_merger'] = self.PLACEHOLDER
+        return data
 
     def test_process_fusion_compression(self):
         # Load the plugin
@@ -51,7 +57,7 @@ class TestFusion(PluginTester):
         json_string = json.dumps(json_data)
 
         expected_compressed_output = ("rZRtT9swEMe/ShXxYpOoE6eFtEjTxJNgEmOs1aQ9CCE3uSTeEjvELgGqfvfdXVsEfbdBVf3l+Pz/5XzxeRHcQeu0NcFBL4iF3BNSBru9wJW2m6q6qeBS1eAwmqvKAUZayKEFkwLOLQKdkbEsBiNyGVxLz+fzWpneu7PJcTkYhRR9T+FcOa++TS7Y4n3jDsJQF3f9Agw0yntoTd+2hXADoWr1aI3qnEhtHeICi1mEDm6ZxiJyRVBtMrh/Syj+NYHTB29nymSvYTOXQEcI+pSBFf7ei+KR+KrSyr0aTnLDKOHVjPMuW1tP9SNsw8sis52prMqEsyDmqUsFZPOwsFUG5kr5coWc6eKnblZ8wTThCEdw39kj7d8CHM+0f0rXOtzRlzaDlrg4JXdRYpIByZBkj2SfJCEZkYxJZMTKHskmyS7JNsk+yUbJTslWyd6YvfHqfez9TvIjWGJulU3ndPZ/UUrJgYyTJJbDKOpvRnK9A4wNo2Qk98eD/mY0DK6pXawmAA19q9I/jFsE/qHhTsHDN+dmwrhd778/jqJEjsfx3jAZRuOxxFQWT70l8fWX5/0ojm4ujj8PyDhvK4qEM1W7sGntb0h9eHU4nUYynFweTk+/hrmuINyyCly/3UH/weBmyW1bK0+ENXSzQTyahanB8Ld2dKNoU5xA40uMIiyiadt6vk0a67RfXUY0b5v1Q3CECRAg0y3mtZ48OZ0e82faFO5loSaQY3V7Z9hO7mWKeIVRkz0r3b+e5ExhsykHoUlnGl80hdtnnc0FhezZpfmUYUQ/yWtyu9VGXdcJ4glT1cLoUhT2jpodwo94GdQfdnZeFNYY6xXXAmdL0EVJm0ui5fXyLw==")
-        compressed_output = plugin.compress_string(json_string)
+        compressed_output = whizbam_tools.compress_string(json_string)
         self.assertEqual(compressed_output, expected_compressed_output,
                          f"Compression output does not match expected result.\nExpected: {expected_compressed_output}\nGot: {compressed_output}")
 
