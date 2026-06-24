@@ -22,7 +22,17 @@ class main(plugin_base):
     PRIORITY = 2000
     PLUGIN_VERSION = '1.0'
     TEMPLATE_NAME = 'template.html'
- 
+
+
+    def specify_params(self):
+        discovered = [
+            'seg_file',
+        ]
+        for key in discovered:
+            self.add_ini_discovered(key)
+        self.set_ini_default(core_constants.ATTRIBUTES, 'research')
+        self.set_priority_defaults(self.PRIORITY)
+
     def configure(self, config):
 
         config = self.apply_defaults(config)
@@ -32,7 +42,9 @@ class main(plugin_base):
         # - data_mutations_extended.txt
         # - purple.data_CNA.txt
         # - data_expression_percentile_tcga.txt
-        
+
+        wrapper = self.update_wrapper_if_null(wrapper, 'seg_file_immagine', 'seg_file')
+
         return wrapper.get_config()
 
     def extract(self, config):
@@ -44,9 +56,9 @@ class main(plugin_base):
         # Get paths to files.
         work_dir = self.workspace.get_work_dir()
         mutations_file = os.path.join(work_dir, constants.DATA_MUTATIONS_TXT)
-        seg_file = "/.mounts/labs/CGI/scratch/aalam/immagine/MYC-3242/report/MYC_0359_Bm_P_MyC-359-T0-OZ.solPrimary.purple/MYC_0359_Bm_P_MyC-359-T0-OZ.purple.cnv.somatic.tsv"
+        seg_file = config[self.identifier]['seg_file']
         #seg_file = "/.mounts/labs/CGI/scratch/aalam/immagine/MYC-3171/report/MYC_0358_Bm_P_MyC-358-T0-OZ.solPrimary.purple/MYC_0358_Bm_P_MyC-358-T0-OZ.purple.cnv.somatic.tsv"
-        #os.path.join(work_dir, 'test.txt')
+        
         seg_df = pd.read_csv(seg_file, sep = '\t')
         cna_file = os.path.join(work_dir, constants.DATA_CNA_TXT)
         expression_file = os.path.join(work_dir, constants.DATA_EXPRESSION_TXT)
@@ -87,11 +99,6 @@ class main(plugin_base):
         renderer = mako_renderer(self.get_module_dir())
         return renderer.render_name(self.TEMPLATE_NAME, data)
     
-    def specify_params(self):
-        self.logger.debug("Specifying params for PARPi table plugin.")
-        self.set_ini_default(core_constants.ATTRIBUTES, 'research')
-        self.set_priority_defaults(self.PRIORITY)
-
     def get_high_risk_myeloma(self, results):
         """
         A patient meets the definition for high risk myeloma if they have any one of:

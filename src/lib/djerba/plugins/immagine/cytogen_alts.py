@@ -48,20 +48,31 @@ def hyperdiploidy(segment_df):
     for chromosome in canonical_hyperdiploid_chroms:
         # Make a copy of the segment data that's JUST one chromosome of interest
         chr_df = segment_df[segment_df['chromosome'] == chromosome].copy()
+
+        # Get the lengths of each segment as well as the total length
+        chr_df['length'] = chr_df['end'] - chr_df['start'] + 1
+        total_length = chr_df['length'].sum()
+
         # Apply True/False to those segments that meet/don't meet the condition
-        bool_CN = chr_df['copyNumber'] >= 3
+        bool_CN = chr_df['copyNumber'] >= 2.8 # small tolerance below 3.0
+        #bool_CN = chr_df['copyNumber'] >= 3
         #bool_CN = chr_df['majorAlleleCopyNumber'] >= 3
-        # Count it as part of the total chromosome count if there is at least one gain in the chromosome
-        if bool_CN.any():
+        
+        ## Count it as part of the total chromosome count if there is at least one gain in the chromosome
+        # Count it as part of the total chromosome count if at least 80% of the chromosome has copy number >=3
+        perc_CN = chr_df.loc[bool_CN, 'length'].sum() / total_length * 100
+        print(perc_CN)
+        if perc_CN > 80:
             count += 1
-
+        #if bool_CN.any():
+        #    count += 1
+    print(count)
     return bool(count >= 4)
-
 
 def chromosome_1p_deletion(segment_df):
     """
     Chromosome p deletion is defined as:
-    ≥50% of 1p length has corrected Total Copy Number ≤1.5 and median minor allele copy number indicates
+    ≥50%�of 1p length has corrected Total Copy Number ≤1.5 and median minor allele copy number indicates
     loss (minor ≤0.5) for the affected span
 
     Start of centromere (1p acen) is 121700000.
