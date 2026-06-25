@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-1710: Modify sample plugins to ensure cache querying uses lims ids instead of donor.
+
 ## v1.11.12: 2026-06-01
 - GCGI-1708: Separate patient and physician information into two distinct sections and update the director contact details.
 - GCGI-1712: Update main contact name in clinical report header
