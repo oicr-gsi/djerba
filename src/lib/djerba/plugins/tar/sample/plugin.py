@@ -49,6 +49,14 @@ class main(plugin_base):
             constants.WF_ICHORCNA
         )
 
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_PATH_INFO,
+            constants.BAMQC_FILE,
+            constants.WF_BAMQC
+        )
+
+
         # Have to extract purity here in order for purity to be supplied manually if needed
         # Purity needs to be supplied manually when making failed reports 
 
@@ -115,10 +123,8 @@ class main(plugin_base):
                 raise ValueError(msg)
 
         # Plot insert size
-        test_path = '/.mounts/labs/prod/vidarr/output-clinical/341a/908f/fbdb/341a908ffbdbb6b960e3d6dc7e0f2af25dffe6b8b76f973ab31e5d29e8c88b24/CHARM2_010238_16_LB01-01.bamQC_results.json'
-        #test_path = os.path.join(work_dir, 'CHARM2_010238_Pl_T_TS_CHM2-01-0238-02_bamQC.bamQC_results.json')
-        #test_path = '/.mounts/labs/prod/vidarr/output-clinical/c66c/d5ce/9de2/c66cd5ce9de28d34b37215b8d96029a7caaed0a55d4f353d0fb145411e22ae2e/CHARM2_010207_15_LB01-01.bamQC_results.json' 
-        self.plot_insert_size(self.preprocess_bamqc(test_path),
+        bamqc_path = config[self.identifier][constants.BAMQC_FILE]
+        self.plot_insert_size(self.preprocess_bamqc(bamqc_path),
                                 output_dir = self.workspace.print_location())
 
         results = {
@@ -254,6 +260,7 @@ class main(plugin_base):
             constants.KNOWN_VARIANTS,
             constants.SAMPLE_TYPE,
             constants.ICHORCNA_FILE,
+            constants.BAMQC_FILE,
             constants.RAW_COVERAGE,
             constants.COVERAGE_PL,
             constants.PURITY
