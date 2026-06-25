@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- GCGI-1709: Update title of research report and add watermark to the pdf.
+
 ## v1.11.12: 2026-06-01
 - GCGI-1708: Separate patient and physician information into two distinct sections and update the director contact details.
 - GCGI-1712: Update main contact name in clinical report header
