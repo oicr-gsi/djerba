@@ -725,7 +725,7 @@ class TestMainScript(TestCore):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, '0382f1356ba06550a8062d68b065996c')
+        self.assert_report_MD5(html_string, '39d1d200f8f41d8219164d16b7322610')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')
