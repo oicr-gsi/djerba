@@ -21,7 +21,7 @@ def monosomy(chromosome, segment_df):
     # First, calculate percentage that total copy number < 1.2
 
     # True if < 1.2, False if >= 1.2
-    bool_CN = chr_df['copyNumber'] < 1.2
+    bool_CN = chr_df['copyNumber'] < 1.2 
     #bool_CN = chr_df['majorAlleleCopyNumber'] < 1.2
     # Gets sum of the length for those segments that are True for the above condition
     perc_CN = chr_df.loc[bool_CN, 'length'].sum() / total_length * 100
@@ -61,24 +61,21 @@ def hyperdiploidy(segment_df):
         ## Count it as part of the total chromosome count if there is at least one gain in the chromosome
         # Count it as part of the total chromosome count if at least 80% of the chromosome has copy number >=3
         perc_CN = chr_df.loc[bool_CN, 'length'].sum() / total_length * 100
-        print(perc_CN)
         if perc_CN > 80:
             count += 1
         #if bool_CN.any():
         #    count += 1
-    print(count)
     return bool(count >= 4)
 
 def chromosome_1p_deletion(segment_df):
     """
     Chromosome p deletion is defined as:
-    ≥50%�of 1p length has corrected Total Copy Number ≤1.5 and median minor allele copy number indicates
-    loss (minor ≤0.5) for the affected span
+    50%of 1p length has corrected Total Copy Number 1.5 and median minor allele copy number indicates
+    loss (minor 0.5) for the affected span
 
     Start of centromere (1p acen) is 121700000.
     Let the span of the 1p arm be 0-121700000 (or 1-121700001). Let the length of the 1p-arm be 121700000 bp.
     We'll calculate the percentage with a fixed length as sometimes the segment overlaps the centromere.
-
     """
     # Slice the segment dataframe so it's only the 1p arm, using 121700001 as the cutoff for the p-arm
     # (The segment file starts numbering at 1, that's why there's a +1)

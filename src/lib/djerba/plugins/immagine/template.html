@@ -60,10 +60,10 @@ categories = [
                 % endif
 
                 <td style="font-style: italic;">${gene}</td>
-                <td>${results.get(gene).get(constants.MUTATION_ALT)}</td>
-                <td>${results.get(gene).get(constants.MUTATION_TYPE)}</td>
-                <td>${results.get(gene).get(constants.COPY_NUMBER)}</td>
-                <td>${results.get(gene).get(constants.EXPRESSION_PERCENTILE, 'NA')}</td>
+                <td>${results.get(gene).get(constants.MUTATION_ALT) or ""}</td>
+                <td>${results.get(gene).get(constants.MUTATION_TYPE) or ""}</td>
+                <td>${results.get(gene).get(constants.COPY_NUMBER) or ""}</td>
+                <td>${results.get(gene).get(constants.EXPRESSION_PERCENTILE, 'NA') or ""}</td>
                 <!--<td>${results.get(gene).get(constants.CHECKMARK)}</td>-->
             </tr>
         % endfor
