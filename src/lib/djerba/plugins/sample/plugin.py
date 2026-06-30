@@ -185,7 +185,7 @@ class main(plugin_base):
             return callability
         elif len(data) > 1:
             msg = "Djerba found more than one callability associated with lims_id {0} and tumour_id {1} in QC-ETL. Double check that the callability found by Djerba is correct; if not, may have to manually specify the callability.".format(lims_ids, tumour_id)
-            self.logger.warning(msg)
+            self.logger.error(msg)
             raise ValueError(msg)
         else:
             msg = "Djerba couldn't find the callability associated with lims_id {0} and tumour_id {1} in QC-ETL.".format(lims_ids, tumour_id)
@@ -210,7 +210,7 @@ class main(plugin_base):
             return(coverage_value)
         elif len(data) > 1:
             msg = "Djerba found more than one coverage associated with lims_id {0} and tumour_id {1} in QC-ETL. Double check that the coverage found by Djerba is correct; if not, may have to manually specify the coverage.".format(lims_ids, tumour_id)
-            self.logger.warning(msg)
+            self.logger.error(msg)
             raise ValueError(msg)
         else:
             msg = "Djerba couldn't find the coverage associated with lims_id {0} and tumour_id {1} in QC-ETL. ".format(lims_ids, tumour_id)
