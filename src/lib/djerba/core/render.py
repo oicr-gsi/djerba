@@ -149,7 +149,7 @@ class pdf_renderer(logger):
     RESEARCH_SUFFIX = '.research.pdf'
     RESEARCH_FOOTER_TEXT = 'For Research Use Only'
 
-    def add_watermark(self, input_pdf, output_pdf):
+    def add_ruo_watermark(self, input_pdf, output_pdf):
         """
         Add a diagonal text watermark to every page of a PDF.
         """
@@ -247,7 +247,7 @@ class pdf_renderer(logger):
                 temp_pdf = out_path + ".tmp"
                 os.rename(out_path, temp_pdf)
                 try:
-                    self.add_watermark(temp_pdf, out_path)
+                    self.add_ruo_watermark(temp_pdf, out_path)
                 finally:
                     if os.path.exists(temp_pdf):
                         os.remove(temp_pdf)
