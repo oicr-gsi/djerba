@@ -2,12 +2,14 @@
 # config parameters
 ICHORCNA_FILE = 'ichorcna_file'
 CONSENSUS_FILE = 'consensus_cruncher_file'
-BAMQC_FILE = 'bamqc_file'
+BAMQC_FILE_SW = 'bamqc_file_sw'
+BAMQC_FILE_TS = 'bamqc_file_ts'
 
 # sample file names from path_info.json
 WF_CONSENSUS = 'consensusCruncher_tumour'
 WF_ICHORCNA = 'metrics_json'
-WF_BAMQC = 'bamqc'
+WF_BAMQC_SW = 'bamqc_sw'
+WF_BAMQC_TS = 'bamqc_ts'
 CACHE_COVERAGE = 'hsmetrics'
 CACHE_COLLAPSED = 'hsmetrics_umiconsensus'
 

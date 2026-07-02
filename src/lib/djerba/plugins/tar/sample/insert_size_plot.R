@@ -9,7 +9,8 @@ options(scipen=0.1)
 
 option_list = list(
   make_option(c("-i", "--insert_size_file"), type="character", default=NULL, help="input file", metavar="character"),
-  make_option(c("-o", "--output_directory"), type="character", default=NULL, help="output directory", metavar="character")
+  make_option(c("-o", "--output_directory"), type="character", default=NULL, help="output directory", metavar="character"),
+  make_option(c("-l", "--lib_type"), type="character", default=NULL, help="SW or TS, to differentiate insert size plots", metavar="character")
 )
 
 # get options
@@ -19,6 +20,7 @@ opt <- parse_args(opt_parser)
 # set better variable names
 insert_size_file <- opt$insert_size_file
 output_directory <- opt$output_directory
+lib_type <- opt$lib_type
 
 insert_size <- fread(insert_size_file)
 
@@ -26,7 +28,12 @@ insert_size <- insert_size %>%
   summarise(insert_size=size,count=count,read_freq=(count/sum(count))*100)
 
 options(bitmapType='cairo')
-svg(paste(output_directory,"insert_size_distribution.svg",sep="/"), width = 7, height = 4)
+
+svg(
+  paste0(output_directory, "/insert_size_distribution_", lib_type, ".svg"),
+  width = 7,
+  height = 4,
+)
 
 plot_grid(
 ggplot(insert_size,aes(x=insert_size)) + 
@@ -46,7 +53,7 @@ ggplot(insert_size,aes(x=insert_size)) +
       axis.text.x=element_blank(),
       axis.ticks.x=element_blank()
       
-    ) + scale_x_continuous(breaks = c(0,50,167,250,334,501,1000), limits = c(0,1000)) 
+    ) + scale_x_continuous(breaks = c(0,50,167,250,334,501,800), limits = c(0,800)) 
   
 ,
 ggplot(insert_size,aes(x="",y=insert_size,fill=read_freq)) + 
@@ -64,7 +71,7 @@ ggplot(insert_size,aes(x="",y=insert_size,fill=read_freq)) +
     axis.title.y=element_blank(),
     axis.text.y=element_blank(),
     axis.ticks.y=element_blank()
-  ) +  scale_y_continuous(breaks = c(0,50,167,250,334,501,1000), limits = c(0,1000)) +
+  ) +  scale_y_continuous(breaks = c(0,50,167,250,334,501,800), limits = c(0,800)) +
   coord_flip(clip = "off") 
 , ncol = 1, align = 'v',axis = 'tbrl',labels = c("",""),rel_heights = c(0.7,0.3))
 

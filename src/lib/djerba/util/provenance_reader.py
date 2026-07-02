@@ -24,7 +24,7 @@ class provenance_reader(logger):
 
     # relevant workflow names
     WF_ARRIBA = 'arriba'
-    WF_BAMQC = 'bamqc_call_ready'
+    WF_BAMQC_TS = 'bamqc_call_ready'
     WF_BMPP = 'bamMergePreprocessing_by_sample'
     WF_CONSENSUS = 'consensusCruncher'
     WF_DELLY = 'delly_matched'
@@ -479,12 +479,6 @@ class provenance_reader(logger):
         suffix = '\.fusions\.tsv$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
     
-    def parse_bamqc_path(self):
-        workflow = self.WF_BAMQC
-        mt = self.MT_JSON_TEXT
-        suffix = '_bamQC\.bamQC_results\.json' 
-        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
-
     def parse_delly_path(self):
         workflows = [self.WF_DELLY, self.WF_DELLY_20231113, self.NIASSA_WF_DELLY]
         mt = self.MT_VCF_GZ
@@ -556,6 +550,18 @@ class provenance_reader(logger):
         mt = self.MT_OCTET_STREAM
         suffix = 'star-fusion\.fusion_predictions\.tsv$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wt_t)
+
+    def parse_tar_bamqc_sw_path(self):
+        workflow = self.WF_ICHORCNA
+        mt = self.MT_JSON_TEXT
+        suffix = '.bamQC_results\.json'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)
+
+    def parse_tar_bamqc_ts_path(self):
+        workflow = self.WF_BAMQC_TS
+        mt = self.MT_JSON_TEXT
+        suffix = '_bamQC\.bamQC_results\.json'
+        return self._parse_file_path(workflow, mt, suffix, self.sample_name_wg_t)
 
     def parse_tar_ichorcna_json_path(self):
         workflow = self.WF_ICHORCNA

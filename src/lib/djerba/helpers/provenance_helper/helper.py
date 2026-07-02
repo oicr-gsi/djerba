@@ -52,7 +52,8 @@ class main(helper_base):
     WF_ICHOR_JSON = 'metrics_json'
     WF_ICHOR_SEG = 'seg'
     WF_ICHOR_PLOTS = 'plots'
-    WF_BAMQC = 'bamqc'
+    WF_BAMQC_SW = 'bamqc_sw'
+    WF_BAMQC_TS = 'bamqc_ts'
 
     VERSION = '1.0.0'
 
@@ -242,7 +243,8 @@ class main(helper_base):
             self.WF_ICHOR_JSON: reader.parse_tar_ichorcna_json_path(),
             self.WF_ICHOR_PLOTS: reader.parse_tar_ichorcna_plots_path(),
             self.WF_ICHOR_SEG: reader.parse_tar_ichorcna_seg_path(),
-            self.WF_BAMQC: reader.parse_bamqc_path()
+            self.WF_BAMQC_SW: reader.parse_tar_bamqc_sw_path(),
+            self.WF_BAMQC_TS: reader.parse_tar_bamqc_ts_path()
 
         }
         return sample_info, path_info

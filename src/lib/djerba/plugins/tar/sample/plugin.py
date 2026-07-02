@@ -48,12 +48,17 @@ class main(plugin_base):
             constants.ICHORCNA_FILE,
             constants.WF_ICHORCNA
         )
-
         wrapper = self.update_wrapper_if_null(
             wrapper,
             core_constants.DEFAULT_PATH_INFO,
-            constants.BAMQC_FILE,
-            constants.WF_BAMQC
+            constants.BAMQC_FILE_SW,
+            constants.WF_BAMQC_SW
+        )
+        wrapper = self.update_wrapper_if_null(
+            wrapper,
+            core_constants.DEFAULT_PATH_INFO,
+            constants.BAMQC_FILE_TS,
+            constants.WF_BAMQC_TS
         )
 
 
@@ -122,10 +127,13 @@ class main(plugin_base):
                 self.logger.error(msg)
                 raise ValueError(msg)
 
-        # Plot insert size
-        bamqc_path = config[self.identifier][constants.BAMQC_FILE]
-        self.plot_insert_size(self.preprocess_bamqc(bamqc_path),
-                                output_dir = self.workspace.print_location())
+        # Plot insert size plots for tumour TS and tumour SW 
+        bamqc_paths = {"SW": config[self.identifier][constants.BAMQC_FILE_SW], \
+                       "TS": config[self.identifier][constants.BAMQC_FILE_TS]}
+        for lib_type, bamqc_path in bamqc_paths.items():
+            self.plot_insert_size(self.preprocess_bamqc(bamqc_path), \
+                                  output_dir = self.workspace.print_location(), \
+                                  lib_type = lib_type)
 
         results = {
             constants.ONCOTREE: config[self.identifier][constants.ONCOTREE],
@@ -210,12 +218,13 @@ class main(plugin_base):
         renderer = mako_renderer(self.get_module_dir())
         return renderer.render_name('sample_template.html', data)
 
-    def plot_insert_size(self, is_path, output_dir ):
+    def plot_insert_size(self, is_path, output_dir, lib_type):
         '''call R to plot insert size distribution'''
         args = [
             os.path.join(os.path.dirname(__file__),'insert_size_plot.R'),
             '--insert_size_file', is_path,
-            '--output_directory', output_dir
+            '--output_directory', output_dir,
+            '--lib_type', lib_type
         ]
         subprocess_runner().run(args)
 
@@ -260,7 +269,8 @@ class main(plugin_base):
             constants.KNOWN_VARIANTS,
             constants.SAMPLE_TYPE,
             constants.ICHORCNA_FILE,
-            constants.BAMQC_FILE,
+            constants.BAMQC_FILE_SW,
+            constants.BAMQC_FILE_TS,
             constants.RAW_COVERAGE,
             constants.COVERAGE_PL,
             constants.PURITY
