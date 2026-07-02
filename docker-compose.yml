@@ -1,0 +1,29 @@
+# Local development setup for djerba.
+#
+# Usage:
+#   cp .env.example .env && nano .env  # fill in your paths and API keys
+#   docker-compose run djerba report -i /data/config.ini -w /workspace -o /output -p --no-archive
+
+
+services:
+  djerba:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    volumes:
+      # Workspace: temporary files written during configure/extract
+      - ${WORKSPACE_DIR:-./workspace}:/workspace
+      # Input data: MAF, VCF, expression counts, provenance report (read-only)
+      - ${DATA_DIR:-./data}:/data:ro
+      # Reference data: gene beds, OncoKB cache (read-only)
+      - ${REFERENCE_DIR:-./reference}:/reference:ro
+      # Output: JSON report, HTML, PDF
+      - ${OUTPUT_DIR:-./output}:/output
+    # Override the default --help command when running interactively
+    # e.g.: docker-compose run djerba report -i /data/config.ini ...
+    entrypoint: ["/entrypoint.sh", "djerba.py"]
+    command: ["--help"]
+    # Resource limits — adjust based on assay (WGTS needs more memory)
+    mem_limit: "8g"
+    cpus: "4"

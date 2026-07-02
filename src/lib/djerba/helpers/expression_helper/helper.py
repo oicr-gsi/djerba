@@ -16,7 +16,10 @@ from djerba.util.subprocess_runner import subprocess_runner
 class main(helper_base):
 
     ENSCON_KEY = 'enscon'
+    ENSCON_VERSION = 44
+    ENSCON_DEFAULT = 'ensembl_conversion_hg38_v{0}.txt'.format(ENSCON_VERSION)
     GEP_REFERENCE_KEY = 'gep_reference'
+    GEP_REFERENCE_DEFAULT = 'gep_reference.txt.gz'
     RSEM_GENES_RESULTS_KEY = 'rsem_genes_results'
     TCGA_CODE_KEY = 'tcga_code'
     TCGA_DATA_KEY = 'tcga_data'
@@ -53,11 +56,11 @@ class main(helper_base):
             'tcga_code'
         )
         if wrapper.my_param_is_null(self.GEP_REFERENCE_KEY):
-            ref_path = os.path.join(data_dir, 'results', 'gep_reference.txt.gz')
+            ref_path = os.path.join(data_dir, 'results', self.GEP_REFERENCE_DEFAULT)
             wrapper.set_my_param(self.GEP_REFERENCE_KEY, ref_path)
         if wrapper.my_param_is_null(self.ENSCON_KEY):
             helper_dir = os.path.dirname(os.path.realpath(__file__))
-            ref_path = os.path.join(helper_dir, 'ensemble_conversion_hg38.txt')
+            ref_path = os.path.join(helper_dir, self.ENSCON_DEFAULT)
             wrapper.set_my_param(self.ENSCON_KEY, ref_path)
         # set up and run the provenance reader
         samples = sample_name_container()

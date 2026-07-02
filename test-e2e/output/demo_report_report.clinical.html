@@ -5,7 +5,272 @@
 <head>
   <meta charset="utf-8" />
   <style type="text/css">
-    ${stylesheet}
+    /* ---------------Whole page attributes---------------------     */
+
+* {font-family: Arial !important;}
+
+body {
+  max-width:  8.5in;
+  min-width:  8.5in;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media print {
+  div {
+      vertical-align: top;
+      page-break-inside: avoid;
+  }
+}
+
+p {
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
+}
+
+sup {
+    font-size: 8px;
+}
+
+/* report header */
+h1 {
+  font-size: 28px;
+  margin: 1.5px 1px 1px 1px;
+  padding: 0px 1px 0px 0px;
+}
+
+/* section header */
+h2 {
+  font-size: 22px;
+  text-transform: uppercase;
+  font-weight: normal;
+  margin: 5px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
+}
+
+/* sub-section header */
+h3 {
+  font-size: 18px;
+  margin:2px;
+  padding:0;
+  
+}
+
+/*----------------#section-delimiting lines--------------------*/
+
+hr.header-big-line{
+  border-top: 4px solid #65bc45;
+  width: 100%;
+}
+
+hr.big-line{
+  border-top: 1px solid #65bc45;
+  width: 100%;
+  margin: 5px 0px 5px 0px;
+  padding: 0px 0px 0px 0px;
+}
+
+hr.big-white-line{
+  border: none;
+  width: 80%;
+  margin-left: 20%;
+  margin: 0px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
+}
+
+hr.lil-line{
+  border-top: 1px solid #65bc45;
+  width: 100%;
+}
+
+.twocellmain {
+  page-break-inside: avoid;
+  vertical-align: top;
+  width: 8.5in
+}
+
+.oneoftwocellmain  {
+  page-break-inside: avoid;
+  float: left;
+  width: 1.75in;
+}
+
+.twooftwocellmain  {
+  page-break-inside: avoid;
+  float: right;
+  width: 6.75in;
+}
+
+.twocellsupp {
+  page-break-inside: avoid;
+  vertical-align: top;
+  width: 8.5in
+}
+
+.oneoftwocellsupp  {
+  page-break-inside: avoid;
+  float: left;
+  width: 1.25in;
+}
+
+.twooftwocellsupp  {
+  page-break-inside: avoid;
+  float: right;
+  width: 7.20in;
+}
+
+
+/*----------------#section attributes--------------------*/  
+
+/* style for letterhead */
+
+
+.letterhead-column {
+  width: 30%;
+  float: right;
+}
+
+.letterhead-text-left {
+  font-size: 10px;
+  line-height: 8px;
+  text-align: left;
+  padding: 30px 0px 0px 0px;
+}
+
+.letterhead-text-right {
+  font-size: 10px;
+  line-height: 8px;
+  text-align: right;
+  padding: 30px 0px 0px 0px;
+}
+
+.letterhead-table td:nth-child(odd) {
+  font-weight: bold; 
+}
+
+/* style for tables of genomic variants */
+
+/* no underline for links */
+.variants {
+  text-align: left;
+  font-size: 14px;
+}
+
+.variants a {
+  text-decoration: none
+}
+
+/* variant table header */
+.variants th {
+  background-color: white;
+  padding: 8px
+}
+
+/* variant table column */
+.variants td {
+  padding: 8px
+}
+
+/* variant table alt-row */
+.variants tr:nth-child(odd) {
+  background-color: #f2f2f2;
+}
+
+/* style for tables of other information */
+
+.info {
+  font-size: 14px;
+  text-align: left;
+  padding: 0px 0px 0px 0px;
+}
+
+.suppl {
+  font-size: 14px;
+  text-align: left;
+  padding: 0px 0px 0px 0px;
+  line-height: 20px;
+}
+
+.info td:nth-child(odd) {
+  font-weight: bold;
+}
+
+.circle {
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    padding: 5px;
+    color: white;
+    text-align: center;
+    line-height: 15px;
+    margin: auto;
+  }
+
+.square {
+    width: 15px;
+    height: 15px;
+    padding: 5px 8px 5px 5px;
+    color: white;
+    text-align: center;
+    line-height: 15px;
+    margin: auto;
+  }
+
+.square-dark-text {
+    width: 15px;
+    height: 15px;
+    padding: 5px 8px 5px 5px;
+    color: black;
+    text-align: center;
+    line-height: 15px;
+    margin: auto;
+  }
+
+.oncokb-level1 {background: #33a02c;}
+
+.oncokb-level2 {background: #2078b4;}
+
+.oncokb-level3A {background: #984ea3;}
+
+.oncokb-level3B {background: #984ea3;}
+
+.oncokb-level4 {background: #424242;}
+
+.oncokb-levelR1 {background: #ee3425;}
+
+.oncokb-levelR2 {background: #f79a92;}
+
+.oncokb-levelN1 {background: #525252;}
+
+.oncokb-levelN2 {background: #808080;}
+
+.oncokb-levelN3 {background: #AEAEAE;}
+
+.oncokb-levelN4 {background: #C5C5C5;}
+
+.oncokb-levelP {background: #FFA500;}
+
+.tar td[rowspan] {
+  vertical-align: top;
+  text-align: left;
+  font-size: 14px;
+  padding: 0px 0px 0px 0px;
+}
+.tar td {
+  vertical-align: top;
+  text-align: left;
+  font-size: 14px;
+  padding: 0px 0px 0px 0px;
+}
+.tar th {
+  vertical-align: top;
+  text-align: left;
+  font-size: 14px;
+  padding: 0px 0px 0px 0px;
+} 
+
   </style>
 </head>
 
@@ -22,12 +287,12 @@
     <td colspan=5>Trevor Pugh, PhD, FACMG</td>
   </tr>
   <tr>
-    <td>Email:</td>
-    <td>tpugh@oicr.on.ca</td>
+    <td>Phone:</td>
+    <td>647-468-7844</td>
   </tr>
   <tr>
     <td>Main contact:</td>
-    <td>Beatriz Lujan Toro, MSc</td>
+    <td>Iain Bancarz, PhD</td>
   </tr>
   <tr>
     <td>Email:</td>
@@ -59,3 +324,39 @@
   </tr>
 </table>
 <hr class="header-big-line">
+
+<span DJERBA_COMPONENT_START='demo1' />
+<h3>TODO demo1 plugin output goes here</h3>
+<span DJERBA_COMPONENT_END='demo1' />
+
+<span DJERBA_COMPONENT_START='demo2' />
+<h1>The Answer is: 42</h1>
+<h1>The Question is: What do you get if you multiply six by nine?</h1>
+<span DJERBA_COMPONENT_END='demo2' />
+
+<span DJERBA_COMPONENT_START='gene_information_merger' />
+
+
+<!-- gene information -->
+<hr class="big-white-line" style="width: 100%; ; page-break-before:auto;">
+<hr class="big-white-line" ><div class="twocellmain"><div class="oneoftwocellmain"><h2><h3>Gene<br>Descriptions</h3></h2></div><div class="twooftwocellmain" ><hr class="big-line" >
+
+
+<table class="variants" width="100%" >
+  <thead style="background-color:white"><tr><th style="text-align:left;">Gene</th><th style="text-align:left;">Summary</th></tr></thead>
+  <tbody>
+  <tr style="text-align:left;"><td><i><a href="https://www.oncokb.org/gene/KRAS">KRAS</a></i></td><td><i>KRAS,</i> a GTPase which functions as an upstream regulator of the MAPK and PI3K pathways, is frequently mutated in various cancer types including pancreatic, colorectal and lung cancers.</td></tr>
+  <tr style="text-align:left;"><td><i><a href="https://www.oncokb.org/gene/PIK3CA">PIK3CA</a></i></td><td><i>PIK3CA,</i> the catalytic subunit of PI3-kinase, is frequently mutated in a diverse range of cancers including breast, endometrial and cervical cancers.</td></tr>
+  <tr style="text-align:left;"><td><i><a href="https://www.oncokb.org/gene/PIK3CB">PIK3CB</a></i></td><td><i>PIK3CB,</i> a catalytic subunit of PI3-kinase, is altered by amplification or mutation in various cancer types.</td></tr>
+  </tbody>
+</table>
+
+</div></div>
+
+
+<hr class="header-big-line" style="width:100%; align:right">
+
+<span DJERBA_COMPONENT_END='gene_information_merger' />
+
+</body>
+</html>
