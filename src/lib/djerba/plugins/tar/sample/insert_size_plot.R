@@ -46,7 +46,7 @@ ggplot(insert_size,aes(x=insert_size)) +
       axis.text.x=element_blank(),
       axis.ticks.x=element_blank()
       
-    ) + scale_x_continuous(breaks=c(0,50,167,250,334,501),limits = c(0,501)) 
+    ) + scale_x_continuous(breaks = c(0,50,167,250,334,501,1000), limits = c(0,1000)) 
   
 ,
 ggplot(insert_size,aes(x="",y=insert_size,fill=read_freq)) + 
@@ -64,7 +64,7 @@ ggplot(insert_size,aes(x="",y=insert_size,fill=read_freq)) +
     axis.title.y=element_blank(),
     axis.text.y=element_blank(),
     axis.ticks.y=element_blank()
-  ) +  scale_y_continuous(breaks=c(0,167,250,334,501),limits = c(0,501)) +
+  ) +  scale_y_continuous(breaks = c(0,50,167,250,334,501,1000), limits = c(0,1000)) +
   coord_flip(clip = "off") 
 , ncol = 1, align = 'v',axis = 'tbrl',labels = c("",""),rel_heights = c(0.7,0.3))
 
