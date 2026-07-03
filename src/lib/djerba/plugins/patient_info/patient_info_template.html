@@ -1,5 +1,12 @@
 <%
   from djerba.plugins.patient_info.plugin import main as plugin
+
+  full_name = results.get(plugin.PATIENT_NAME) or ''
+  if ',' in full_name:
+      patient_last_name, patient_first_name = [p.strip() for p in full_name.split(',', 1)]
+  else:
+      patient_last_name = full_name.strip()
+      patient_first_name = ''
 %>
 
 <!-- Patient & Physician -->
@@ -22,7 +29,7 @@
           <h3>Patient Information</h3>
         </td>
 
-        <td style="width:160px;"></td>
+        <td style="width:120px;"></td>
 
         <td colspan="2">
           <h3>Physician Information</h3>
@@ -32,11 +39,11 @@
       <!-- Row 1 -->
       <tr>
         <td style="font-weight:bold; padding-right:6px; white-space:nowrap;">
-          Name:
+          Last Name:
         </td>
 
         <td style="font-weight:normal; white-space:nowrap;">
-          ${results.get(plugin.PATIENT_NAME)}
+          ${patient_last_name}
         </td>
 
         <td></td>
@@ -53,11 +60,11 @@
       <!-- Row 2 -->
       <tr>
         <td style="font-weight:bold; padding-right:6px; white-space:nowrap;">
-          Sex At Birth:
+          First Name:
         </td>
 
         <td style="font-weight:normal; white-space:nowrap;">
-          ${results.get(plugin.PATIENT_SEX)}
+          ${patient_first_name}
         </td>
 
         <td></td>
@@ -74,11 +81,11 @@
       <!-- Row 3 -->
       <tr>
         <td style="font-weight:bold; padding-right:6px; white-space:nowrap;">
-          DOB:
+          Sex At Birth:
         </td>
 
         <td style="font-weight:normal; white-space:nowrap;">
-          ${results.get(plugin.PATIENT_DOB)}
+          ${results.get(plugin.PATIENT_SEX)}
         </td>
 
         <td></td>
@@ -92,12 +99,14 @@
         </td>
       </tr>
 
-      <!-- Row 4: Requisitioner Header + Physician Phone -->
+      <!-- Row 4 -->
       <tr>
-        <td colspan="2">
-          <h3 style="margin:0;">
-            Requisitioner Information
-          </h3>
+        <td style="font-weight:bold; padding-right:6px; white-space:nowrap;">
+          Date of Birth:
+        </td>
+
+        <td style="font-weight:normal; white-space:nowrap;">
+          ${results.get(plugin.PATIENT_DOB)}
         </td>
 
         <td></td>
@@ -111,16 +120,17 @@
         </td>
       </tr>
 
-      <!-- Row 5: Requisitioner Email -->
+      <!-- Row 5 -->
       <tr>
-        <td style="font-weight:bold; padding-right:6px;">
-          Email:
-        </td>
+        <td></td>
 
-        <td colspan="4" style="font-weight:normal;">
-          <a href="mailto:${results.get(plugin.REQ_EMAIL)}">
-            ${results.get(plugin.REQ_EMAIL)}
-          </a>
+        <td></td>
+
+        <td></td>
+
+        <td colspan="2" style="font-weight:normal;">
+          <span style="font-weight:bold; padding-right:6px; white-space:nowrap;">Requisitioner Email:</span>
+          <a href="mailto:${results.get(plugin.REQ_EMAIL)}">${results.get(plugin.REQ_EMAIL)}</a>
         </td>
       </tr>
 
