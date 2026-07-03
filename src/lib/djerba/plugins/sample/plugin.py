@@ -97,7 +97,6 @@ class main(plugin_base):
             if wrapper.my_param_is_null(key):
                 if os.path.exists(os.path.join(work_dir,core_constants.DEFAULT_SAMPLE_INFO)):
                     info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
-                    lims_ids = info.get("lims_ids", [])
                     wrapper.set_my_param(key, info[key])
                 else:
                     msg = "Cannot find {0} in manual config or sample_info.json".format(key)
@@ -113,6 +112,8 @@ class main(plugin_base):
         # SECOND PASS: Get files based on input parameters
         if self.gsiqcetl_OK:
             etl_cache = self.get_qcetl_cache(cache_path)
+            info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
+            lims_ids = info["lims_ids"]
             if wrapper.my_param_is_null(constants.CALLABILITY):
                 self.logger.debug("Fetching callability from GSI-QC-ETL")
                 callability = self.fetch_callability_etl_data(etl_cache, lims_ids, tumour_id, ignore_warning)

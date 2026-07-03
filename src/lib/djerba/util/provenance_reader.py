@@ -392,6 +392,7 @@ class provenance_reader(logger):
         self.sample_name_wg_n = None
         self.sample_name_wg_t = None
         self.sample_name_wt_t = None
+        self.lims_ids = []
 
     def _validate_and_set_sample_names(self, sample_inputs):
         # find sample names in FPR and check against the inputs dictionary (if any)
