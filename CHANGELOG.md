@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v1.12.0: 2026-07-06
 - GCGI-1709: Update title of research report and add watermark to the pdf.
 - Dockerized Djerba by adding a Dockerfile, Docker Compose setup, `.env.example`, and an end-to-end test that validates report generation using an example `config.ini` input and expected output report.
 - GCGI-1736: Patient & Physician report header improvements.
