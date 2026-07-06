@@ -110,6 +110,7 @@ setup(
         'pycairo',
         'pyinstaller',
         'PyPDF2',
+        'reportlab',
         'requests',
         'seaborn',
         'statsmodels',
