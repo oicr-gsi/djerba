@@ -170,6 +170,9 @@ class main(plugin_base):
         # But one donor will not have a duplicate tumour IDs
         data = cached_callabilities.loc[
             cached_callabilities[columns_of_interest.MergedPineryLimsID].apply(
+                # This lambda queries the cache using the following logic:
+                # Keep only rows where the cached MergedPineryLimsID list has at least
+                # one lims ID in common with the lims_ids list.
                 lambda x: bool(set(x) & set(lims_ids))
             ) &
             (cached_callabilities[columns_of_interest.GroupID] == tumour_id),

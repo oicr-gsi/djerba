@@ -37,7 +37,7 @@ class main(helper_base):
         ini.SAMPLE_NAME_WT_T
     ]
     TAR = 'TAR'
-
+    LIMS_IDS = 'lims_ids'
     # identifiers for bam/bai files
     WG_N_BAM = 'whole genome normal bam'
     WG_N_IDX = 'whole genome normal bam index'
@@ -207,7 +207,9 @@ class main(helper_base):
             ini.SAMPLE_NAME_WG_T: names.get(ini.SAMPLE_NAME_WG_T),
             ini.SAMPLE_NAME_WG_N: names.get(ini.SAMPLE_NAME_WG_N),
             ini.SAMPLE_NAME_WT_T: names.get(ini.SAMPLE_NAME_WT_T),
-            "lims_ids": reader.lims_ids
+            # Note: lims_ids is type list. 
+            # The querying in cache happens on the whole list; the list elements are not looped through.
+            self.LIMS_IDS: reader.lims_ids
         }
         # find paths of workflow outputs; values may be None
         path_info = {
