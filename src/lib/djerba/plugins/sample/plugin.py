@@ -61,6 +61,7 @@ class main(plugin_base):
             constants.PURITY,
             constants.PLOIDY,
             core_constants.TUMOUR_ID,
+            constants.LIMS_IDS
         ]
         for key in discovered:
             self.add_ini_discovered(key)
@@ -93,7 +94,7 @@ class main(plugin_base):
         wrapper = self.fill_param_if_null(wrapper, constants.PLOIDY, "purity_ploidy.json")
 
         # Get tumour_id and donor
-        for key in [core_constants.TUMOUR_ID, constants.DONOR]:
+        for key in [core_constants.TUMOUR_ID, constants.DONOR, constants.LIMS_IDS]:
             if wrapper.my_param_is_null(key):
                 if os.path.exists(os.path.join(work_dir,core_constants.DEFAULT_SAMPLE_INFO)):
                     info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
@@ -113,7 +114,7 @@ class main(plugin_base):
         if self.gsiqcetl_OK:
             etl_cache = self.get_qcetl_cache(cache_path)
             info = self.workspace.read_json(core_constants.DEFAULT_SAMPLE_INFO)
-            lims_ids = info["lims_ids"]
+            lims_ids = info[constants.LIMS_IDS]
             if wrapper.my_param_is_null(constants.CALLABILITY):
                 self.logger.debug("Fetching callability from GSI-QC-ETL")
                 callability = self.fetch_callability_etl_data(etl_cache, lims_ids, tumour_id, ignore_warning)
