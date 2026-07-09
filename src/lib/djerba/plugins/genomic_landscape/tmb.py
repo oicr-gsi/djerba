@@ -83,10 +83,11 @@ class tmb_processor(logger):
                 data_filename = constants.TMBCOMP_EXTERNAL
             else:
                 data_filename = constants.TMBCOMP_TCGA
+            codes = set(cancer_type.lower().split('|'))
             tmb_array = []
             with open(os.path.join(data_dir, data_filename)) as data_file:
                 for row in csv.DictReader(data_file, delimiter="\t"):
-                    if row[constants.CANCER_TYPE_HEADER] == cancer_type:
+                    if row[constants.CANCER_TYPE_HEADER] in codes:
                         tmb_array.append(float(row[constants.TMB_HEADER]))
             ecdf = ECDF(tmb_array)
             percentile = int(round(ecdf(tmb) * 100, 0))  # return an integer percentile
@@ -106,10 +107,11 @@ class tmb_processor(logger):
             reader = csv.reader(tcga_file, delimiter="\t")
             for row in reader:
                 tcga_cancer_types.add(row[3])
-        if tcga_code.lower() == 'paad':
+        codes = tcga_code.lower().split('|')
+        if 'paad' in codes:
             cohort = constants.COMPASS
-        elif tcga_code.lower() in tcga_cancer_types:
-            cohort = "".join(("TCGA ", tcga_code.upper()))
+        elif any(code in tcga_cancer_types for code in codes):
+            cohort = "".join(("TCGA ", tcga_code.upper().replace('|', '/')))
         else:
             cohort = constants.NA
         return cohort
