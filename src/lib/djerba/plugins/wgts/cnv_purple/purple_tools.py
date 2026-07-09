@@ -363,6 +363,13 @@ class purple_processor(logger):
     def look_at_purity_fit(self, segment_file, purity):
 
         fitted_segments_df = pd.read_csv(segment_file, sep="\t", comment="!")
+
+        # account for the purple v4.3+ change where major/minor allele copy numbers are not in the segment file
+        if "majorAlleleCopyNumber" not in fitted_segments_df.columns:
+            fitted_segments_df["majorAlleleCopyNumber"] = fitted_segments_df["tumorBAF"] * fitted_segments_df["tumorCopyNumber"]
+        if "minorAlleleCopyNumber" not in fitted_segments_df.columns:
+            fitted_segments_df["minorAlleleCopyNumber"] = fitted_segments_df["tumorCopyNumber"] - fitted_segments_df["majorAlleleCopyNumber"]
+
         fitted_segments_df = fitted_segments_df[
             (fitted_segments_df["germlineStatus"] == "DIPLOID") &
             (fitted_segments_df["bafCount"] > 0)

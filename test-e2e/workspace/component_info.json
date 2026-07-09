@@ -1,0 +1,14 @@
+{
+    "core": {
+        "url": "https://github.com/oicr-gsi/djerba",
+        "version": "1.11.11"
+    },
+    "demo1": {
+        "url": null,
+        "version": "1.0.0"
+    },
+    "demo2": {
+        "url": null,
+        "version": "1.0.0"
+    }
+}

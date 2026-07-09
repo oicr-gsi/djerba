@@ -1,0 +1,102 @@
+{
+    "$id":"https://https://github.com/oicr-gsi/djerba/tree/main/src/lib/djerba/plugins/fusion/fusion_schema.json",
+    "title": "Results Structure for fusion Plugin",
+    "description": "Schema documentation of results structure for fusion plugin.",
+    "type": "object",
+
+    "properties":{
+        "fusion":{
+            "description": "Plugin for Fusions",
+            "type": "object",
+            "properties":{
+
+                "plugin_name":{
+                    "description": "fusion plugin",
+                    "type": "string"
+                },
+                
+                "version":{
+                    "description": "Plguin version (1.1.0)",
+                    "type": "string"
+                },
+
+                "results":{
+                    "description": "Results from fusion plugin",
+                    "type": "object",
+                    "properties":{
+
+                        "NCCN relevant variants":{
+                            "description": "Number of relevant variants as per NCCN",
+                            "type": "integer"
+                        },
+
+                        "Clinically relevant variants":{
+                            "description": "Number of relevant variants as per OncoKB",
+                            "type": "integer"
+                        },
+
+                        "Total variants":{
+                            "description": "Number of fusions identified",
+                            "type": "integer"
+                        },
+
+                        "body":{
+                            "description": "Variant-specific information as objects stored in arrays",
+                            "type": "array",
+                            "properties":{
+
+                                "gene":{
+                                    "description": "Name of gene contianing CNV (i.e., SETD2)",
+                                    "type": "string"
+                                },
+
+                                "gene URL":{
+                                    "description": "OncoKB url to gene",
+                                    "type": "string"
+                                },
+                                
+                                "chromosome":{
+                                    "description": "Chromosomal position (i.e., 3p21.31)",
+                                    "type": "string"
+                                },
+
+                                "oncokb_link":{
+                                    "description": "OncoKB link to fusion",
+                                    "type": "string"
+                                },
+
+                                "frame":{
+                                    "description": "Frame of fusion",
+                                    "type": "string",
+                                    "enum": ["in-frame", "out-of-frame"]
+                                },
+
+                                "translocation":{
+                                    "description": "Translocation (i.e., t(3;7))",
+                                    "type": "string"
+                                },
+
+                                "fusion":{
+                                    "description": "Fusion pair (i.e., SETD2::GNA12)",
+                                    "type": "string"
+                                },
+
+                                "mutation effect":{
+                                    "description": "Effect of fusion",
+                                    "type": "string",
+                                    "enum": ["Loss-of-function", "Likely Loss-of-function", "Likely Gain-of-function", "Gain-of-function"]
+                                },
+                                
+                                "OncoKB":{
+                                    "description": "OncoKB level of evidence",
+                                    "type": "string",
+                                    "enum": ["1", "2", "3A", "3B", "4", "N1", "N2", "N3", "N4"]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -21,10 +21,9 @@ class TestPurplePlugin(PluginTester):
     WGTS_INI_NAME = 'cnv.wgts.ini'
 
     def setUp(self):
+        super().setUp()
         self.path_validator = path_validator()
         self.maxDiff = None
-        self.tmp = tempfile.TemporaryDirectory(prefix='djerba_')
-        self.tmp_dir = self.tmp.name
         self.sup_dir = directory_finder().get_test_dir()
 
     def testWGTScnv(self):
@@ -49,6 +48,8 @@ class TestPurplePlugin(PluginTester):
         """replaces empty method from testing.tools"""
         for key in ['cnv plot']:
             del data['results'][key]
+        if 'gene_information_merger' in data['merge_inputs']:
+            data['merge_inputs']['gene_information_merger'] = self.PLACEHOLDER
         return data 
     
 if __name__ == '__main__':

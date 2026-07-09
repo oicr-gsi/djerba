@@ -1,0 +1,62 @@
+{
+    "$id":"https://https://github.com/oicr-gsi/djerba/tree/main/src/lib/djerba/plugins/tar/sample/tar.sample_schema.json",
+    "title": "Results Structure for tar.sample Plugin",
+    "description": "Schema documentation of results structure for tar.sample plugin.",
+    "type": "object",
+
+    "properties":{
+        "report_title":{
+            "description": "Djerba plugin for tar reporting",
+            "type": "object",
+            "properties":{
+
+                "plugin_name":{
+                    "description": "tar.sample plugin",
+                    "type": "string"
+                },
+
+                "version":{
+                    "description": "Plugin version (1.0.0)",
+                    "type": "string"
+                },
+
+                "results":{
+                    "description": "Results from tar.sample plugin",
+                    "type": "object",
+                    "properties":{
+
+                        "oncotree_code":{
+                            "description": "OncoTree-standardized code for cancer identification",
+                            "type": "string"
+                        },
+
+                        "known_variants": {
+                            "description": "Known variants (i.e., <i>GENE</i> c.100del)",
+                            "type": "string"
+                        },
+
+                        "sample_type": {
+                            "description": "Sample type",
+                            "type": "string"
+                        },
+
+                        "cancer_content": {
+                            "description": "Value for cancer content (i.e., <10)",
+                            "type": "string"
+                        },
+
+                        "raw_coverage": {
+                            "description": "Total coverage",
+                            "type": "integer"
+                        },
+
+                        "unique_coverage": {
+                            "description": "Unique coverage",
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

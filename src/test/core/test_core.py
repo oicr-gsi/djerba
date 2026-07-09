@@ -39,7 +39,7 @@ class TestCore(TestBase):
     SIMPLE_REPORT_UPDATE_JSON = 'simple_report_for_update.json'
     SIMPLE_REPORT_UPDATE_FAILED_JSON = 'simple_report_for_update_failed.json'
     SIMPLE_CONFIG_MD5 = '2311145c9d6782334c05816058d3623f'
-    SIMPLE_REPORT_MD5 = '7afa81bc29e86af6a23830ece99674b0'
+    SIMPLE_REPORT_MD5 = '596d3cef47785aa2a1163a179a18093f'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""
@@ -690,13 +690,13 @@ class TestMainScript(TestCore):
         ]
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
-        self.assertEqual(self.getMD5(ini_path), 'e350cdda6a46d4f58647d172067a2d29')
+        self.assertEqual(self.getMD5(ini_path), 'f7ebb517b700779268e9dcd5f6089f67')
         os.remove(ini_path)
         prepop_path = os.path.join(self.test_source_dir, 'prepop.ini')
         cmd.extend(['--pre-populate', prepop_path])
         result = subprocess_runner().run(cmd)
         self.assertEqual(result.returncode, 0)
-        self.assertEqual(self.getMD5(ini_path), 'a32e075e861539b68ab510cdb61733fb')
+        self.assertEqual(self.getMD5(ini_path), 'e13e0e9dcfe863476bfc6487499382e3')
 
     def test_update_cli_with_ini(self):
         mode = 'update'
@@ -725,7 +725,7 @@ class TestMainScript(TestCore):
         html_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.html')
         with open(html_path) as html_file:
             html_string = html_file.read()
-        self.assert_report_MD5(html_string, 'c60ea6448d35f6b6d5685d3b095cba03')
+        self.assert_report_MD5(html_string, '424e797979305bdf748c61e40c5d1479')
         pdf_path = os.path.join(self.tmp_dir, 'placeholder_report.clinical.pdf')
         self.assertTrue(os.path.isfile(pdf_path))
         updated_path = os.path.join(self.tmp_dir, 'simple_report_for_update.updated.json')

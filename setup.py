@@ -54,7 +54,7 @@ setup(
             'util/data/NCCN_annotations.txt',
             'util/data/cytoBand.txt',
             'util/data/entrez_conversion.txt',
-            'util/data/gencode_v33_hg38_genes.bed',
+            'util/data/gencode_v44_hg38_genes.bed',
             'util/oncokb/20251008-allCuratedGenes.tsv'
         ],
         'djerba.core': install_wildcards,
@@ -110,6 +110,7 @@ setup(
         'pycairo',
         'pyinstaller',
         'PyPDF2',
+        'reportlab',
         'requests',
         'seaborn',
         'statsmodels',

@@ -49,7 +49,7 @@ class TestPwgAnalysisPlugin(PluginTester):
     def test_pwgs_analysis_exists(self):
         # test the scenario where pWGS_case_overview_output.json exist
         shutil.copyfile(os.path.join(self.sup_dir, f"plugins/pwgs/report_json/pwgs.case.json"), os.path.join(self.get_tmp_dir(), "pWGS_case_overview_output.json"))
-        self.run_test_with_scenario("pwgs.analysis.file.exists.scenario.json", "713518f5ff66b6d2b72df5f53f9f8b61")
+        self.run_test_with_scenario("pwgs.analysis.file.exists.scenario.json", "e81cd1c8a2186869b6963b6e90306b11")
 
     def test_pwgs_analysis_not_exists(self):
         # test the scenario where pWGS_case_overview_output.json doesn't exist

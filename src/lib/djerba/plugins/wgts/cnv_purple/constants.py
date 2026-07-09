@@ -28,7 +28,7 @@ TOTAL_VARIANTS = 'total variants'
 
 # data files
 CENTROMERES = "hg38_centromeres.txt"
-GENEBED =  "gencode_v33_hg38_genes.bed"
+GENEBED =  "gencode_v44_hg38_genes.bed"
 ONCOLIST =  "20251008-oncoKBcancerGeneList.tsv"
 
 # whizbam

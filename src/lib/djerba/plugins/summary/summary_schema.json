@@ -1,0 +1,37 @@
+{
+    "$id":"https://https://github.com/oicr-gsi/djerba/tree/main/src/lib/djerba/plugins/summary/summary_schema.json",
+    "title": "Results Structure for summary Plugin",
+    "description": "Schema documentation of results structure for summary plugin.",
+    "type": "object",
+
+    "properties":{
+        "summary":{
+            "description": "Plugin for summary section",
+            "type": "object",
+            "properties":{
+
+                "plugin_name":{
+                    "description": "summary plugin",
+                    "type": "string"
+                },
+
+                "version":{
+                    "description": "Plugin version (0.1)",
+                    "type": "string"
+                },
+
+                "results":{
+                    "description": "Results from summary plugin",
+                    "type": "object",
+                    "properties":{
+
+                        "summary_text":{
+                            "description": "Summary text of key details such as diagnosis, variant analysis results, FDA-approved treatments and therapies, etc.",
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

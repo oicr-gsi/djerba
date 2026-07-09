@@ -1,5 +1,61 @@
 # CHANGELOG
 
+## v1.12.0: 2026-07-06
+- GCGI-1709: Update title of research report and add watermark to the pdf.
+- Dockerized Djerba by adding a Dockerfile, Docker Compose setup, `.env.example`, and an end-to-end test that validates report generation using an example `config.ini` input and expected output report.
+- GCGI-1736: Patient & Physician report header improvements.
+
+## v1.11.12: 2026-06-01
+- GCGI-1708: Separate patient and physician information into two distinct sections and update the director contact details.
+- GCGI-1712: Update main contact name in clinical report header
+- GCGI-1715: Update Ensembl conversion file to v44
+
+## v1.11.11: 2026-04-23
+- GCGI-1521: More detailed JSON schemas for plugin results
+- GCGI-1703: Split `djerba.util.wgts.tools` into new modules `expression_reader` and `variant_sorter`. Use the new modules for TAR as well as WGTS, removing duplicated code in the TAR plugins.
+- GCGI-1705: Write the ichorCNA purity in decimal instead of percentage format into purity.txt
+
+## v1.11.10: 2026-04-01
+- GCGI-1697: Compute major and minor allele copy numbers internally due to their removal in Purple v4.3+ from the segments output file.
+- GCGI-1691: Moved TAR QCs from taking from the consensusCruncher hsmetrics file to taking form the umiconsensus cache
+- Allowed `tar.sample` to be able to handle N/A, NA, None, etc. values for raw coverage, collapsed coverage, and purity
+- GCGI-1698: Added GENECODE version in the `supplement` plugin
+- GCGI-1690: Change bwamem to bwamem2 in the targeted sequencing assay supplement plugin
+- GCGI-1681: Remove candidate number of sites from the `genomic_landscape` plugin
+
+## v1.11.9: 2026-03-17
+- GCGI-1471: Generate default Whizbam links when no mutations are reported in TAR reports, and apply minor fixes to library and file names.
+- GCGI-1570: Make import of `gsiqcetl` package optional. Make `qcetl_cache` path an INI parameter with appropriate default.
+- GCGI-1679: Generate distinct CouchDB archive filenames for reports with different attributes (eg. clinical vs. research)
+- GCGI-1696: Refactor activity tracker; take no action when tracking directory not configured; do not exit main Djerba script on tracker error
+- GCGI-1682: Remove version number in gene ensembl_ids when matching to Hugo_Symbols.
+- Added some `oncotree_code` to `tcga_code` conversions to `tcga_code_key.txt`
+- Update `gencode_v33_hg38_genes.bed` to `gencode_v44_hg38_genes.bed`.
+
+## v1.11.8: 2026-02-20
+- Remove dates from page footers when rendering from cache.
+
+## v1.11.7: 2026-02-19
+- GCGI-1683: Remove date from page footer and change "Date of Report" to "Date Report Prepared" in the `case_overview` plugin.
+
+## v1.11.6: 2026-02-04
+- GCGI-1596: Fix to allow `--log-path` command-line option to work
+- GCGI-1671: Fixes for outdated OncoKB test data. Adds DJERBA_TEST_OUTPUT_DIR hook.
+- GCGI-1661: Filter out SNVs/Indels that don't have at least 3 supporting tumour alt reads
+- GCGI-1673: Bugfix in the `fusion` plugin so that non-reportable genes do not get rendered in the gene information section
+- GCGI-1677: Make low callability warning impossible to ignore by adding an ignore_warning parameter to the `sample` plugin that must be manually specified by the user to bypass
+- GCGI-1678: Remove obsolete warnings related to outdated workflows and instrument version changes.
+- GCGI-1423: Modify update function to handle multiple report types.
+- GCGI-1495: Update RUO disclaimer in the research footer.
+
+## v1.11.5: 2026-01-06
+- GCGI-1668, GCGI-1670: Remove references to the inactive HLA plugin
+- GCGI-1669: Bugfix for empty mutation dataframe
+
+## v1.11.4: 2025-12-10
+- Update TAR assay version description to refer to umiconsensus and mutect2consensus
+- Fix TAR maf file finding in provenance reader
+
 ## v1.11.3: 2025-10-28
 - GCGI-1660: Bugfix for loading plugins with compound names (eg. `tar.sample`)
 - GCGI-1658: Update TAR assay to version 4.0 and two static OncoKB files.

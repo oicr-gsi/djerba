@@ -17,8 +17,21 @@ preProcRNA <- function(gepfile, enscon){
  # rename columns
  colnames(ensConv) <- c("gene_id", "Hugo_Symbol")
 
+ # get rid of all pseudoautosomal region ensembl ids with "_PAR_Y" suffix
+ gepData <- gepData[!grepl("_PAR_Y", gepData$gene_id), ]
+ ensConv <- ensConv[!grepl("_PAR_Y", ensConv$gene_id), ]
+
+ # exclude version numbers in gene_id from matching
+ gepData$gene_id <- sub("\\..*", "", gepData$gene_id)
+ ensConv$gene_id <- sub("\\..*", "", ensConv$gene_id)
+
  # merge in Hugo's, re-order columns, deduplicate
  df <- merge(x=gepData, y=ensConv, by="gene_id", all.x=TRUE)
+ 
+ # remove original data after merging to release space
+ rm(gepData, ensConv)
+ gc()
+ 
  df <- subset(df[,c(ncol(df),2:(ncol(df)-1))], !duplicated(df[,c(ncol(df),2:(ncol(df)-1))][,1]))
  df <- df[!is.na(df$Hugo_Symbol),]
  row.names(df) <- df[,1]
@@ -80,6 +93,10 @@ if (is.null(enscon) |  is.null(gepfile) | is.null(outdir) | is.null(tcgadata) | 
   # write percentiles
   write.table(data.frame(Hugo_Symbol=rownames(df_percentile), df_percentile, check.names=FALSE),
     file=paste0(outdir, "/data_expression_percentile_comparison.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+  
+  # remove CAP-level result data after table writing
+  rm(df_zscore, df_percentile)
+  gc()
 
   print("getting TCGA-level data")
 
@@ -103,11 +120,13 @@ if (is.null(enscon) |  is.null(gepfile) | is.null(outdir) | is.null(tcgadata) | 
   df_stud_common <- df[row.names(df) %in% comg, ]
   df_stud_common_sort <- df_stud_common[ order(row.names(df_stud_common)), ]
   df_stud_tcga <- merge(df_stud_common_sort, df_tcga_common_sort, by=0, all=TRUE)
+  rm(df_tcga_common_sort, df_stud_common_sort)
+  gc()
   df_stud_tcga[is.na(df_stud_tcga)] <- 0
   rownames(df_stud_tcga) <- df_stud_tcga$Row.names
   df_stud_tcga$Row.names <- NULL
   df_zscore <- compZ(df_stud_tcga)
-  df_zscore_sample <- data.frame(Hugo_Symbol=rownames(df_zscore), df_zscore[,1], check.names=FALSE)
+  # df_zscore_sample <- data.frame(Hugo_Symbol=rownames(df_zscore), df_zscore[,1], check.names=FALSE)
   df_percentile <- data.frame(signif(pnorm(as.matrix(df_zscore)), digits=4), check.names=FALSE)
 
   # z-score TCGA

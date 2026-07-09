@@ -8,7 +8,7 @@ import sys
 sys.path.pop(0) # do not import from script directory
 from djerba.core.main import main, arg_processor, DjerbaInvalidNameError
 from djerba.version import get_djerba_version
-from djerba.util.activity import activity_tracker
+from djerba.util.activity import activity_tracker, DjerbaActivityTrackerError
 import djerba.util.constants as constants
 
 def get_parser():
@@ -71,7 +71,11 @@ if __name__ == '__main__':
         sys.exit(0)
     try:
         ap = arg_processor(args)
-        activity_tracker(ap.get_log_level(), ap.get_log_path()).run(args)
+        try:
+            activity_tracker(ap.get_log_level(), ap.get_log_path()).run(args)
+        except DjerbaActivityTrackerError as err:
+            msg = "Activity tracker error. Djerba operation will continue without tracking. {0}".format(err)
+            print(msg, file=sys.stderr)
         main(ap.get_work_dir(), ap.get_log_level(), ap.get_log_path()).run(args)
     except DjerbaInvalidNameError as err:
         print("{0}".format(err), file=sys.stderr)

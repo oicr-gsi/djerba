@@ -48,7 +48,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'TAR.RESEARCH.supp.ini',
             self.JSON: json_location,
-            self.MD5: '0ae695d1074625247127126e2e8b05c0'
+            self.MD5: 'f3233001acbb228ae012f73e2b05a967'
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
    
@@ -57,7 +57,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'TAR.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: '51075d9f455246ab2de896d1bd6e8eff'
+            self.MD5: '0e8dcd5faa162c3c8a80315c22cbbda3'
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
 
@@ -66,7 +66,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'cc76e9fcaee45d619d0e0c05881cbb5f'
+            self.MD5: '021e379516f0fbc0600d42fdbe5bc23d'
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
 
@@ -75,7 +75,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: '5ab3e8b9b7d976e8693f9d1a6526498f'
+            self.MD5: 'df872097012fbf1e03e12929bf17aef5'
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
 
@@ -84,7 +84,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS.RESEARCH.supp.ini',
             self.JSON: json_location,
-            self.MD5: '2f619cd4200dc1eeffb016aca5240dee'
+            self.MD5: '042f66ae12a8cfa14e9dd944104dd435'
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
 
@@ -93,7 +93,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.supp.ini',
             self.JSON: json_location,
-            self.MD5: 'e056e7b1c1cb77ca870f72c215f4925d'
+            self.MD5: 'ad378c8b617adf7f1ebf62753a0e3b6c'
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
 
@@ -102,7 +102,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.RESEARCH.supp.ini',
             self.JSON: json_location,
-            self.MD5: '45bb62981f7a46b1ac9ecf5ddb32e922'
+            self.MD5: '626a2c74d37161d1cfec4ce3328533c7'
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
 
@@ -111,7 +111,7 @@ class TestSupplementaryPluginBody(PluginTester):
         params = {
             self.INI: 'WGTS40X.FAIL.supp.ini',
             self.JSON: json_location,
-            self.MD5: '34a109476016dc9a298f94839ca00c6a'
+            self.MD5: 'a0da6a24c368e1f1c63eef3755c76f4d'
         }
         self.run_basic_test(self.test_source_dir, params, work_dir=self.work_dir)
     

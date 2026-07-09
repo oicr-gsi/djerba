@@ -1,0 +1,126 @@
+{
+    "$id":"https://https://github.com/oicr-gsi/djerba/tree/main/src/lib/djerba/plugins/wgts/snv_indel/wgts.snv_indel_schema.json",
+    "title": "Results Structure for wgts.snv_indel Plugin",
+    "description": "Schema documentation of results structure for wgts.snv_indel plugin.",
+    "type": "object",
+
+    "properties":{
+        "wgts.snv_indel":{
+            "description": "Plugin for WGTS SNV Indel",
+            "type": "object",
+            "properties":{
+                
+                "plugin_name":{
+                    "description": "wgts.snv_indel plugin",
+                    "type": "string"
+                },
+
+                "version":{
+                    "description": "Plguin version (1.0.0)",
+                    "type": "string"
+                },
+
+                "results":{
+                    "description": "Results from wgts.snv_indel plugin",
+                    "type": "object",
+                    "properties":{
+
+                        "somatic mutations":{
+                            "description": "Total number of somatic mutations",
+                            "type": "integer"
+                        },
+
+                        "coding sequence mutations":{
+                            "description": "Total number of CDS mutations",
+                            "type": "integer"
+                        },
+
+                        "oncogenic mutations":{
+                            "description": "Total number of oncogenic mutations",
+                            "type": "integer"
+                        },
+                        
+                        "vaf_plot":{
+                            "description": "VAF plot (base64 encoded SVG)",
+                            "type": "string"
+                        },
+
+                        "has loh data":{
+                            "description": "Presence of loss-of-heterozygosity data",
+                            "type": "boolean"
+                        },
+
+                        "has expression data":{
+                            "description": "Presence of expression data",
+                            "type": "boolean"
+                        },
+
+                        "Body":{
+                            "description": "Variant-specific information as objects stored in arrays",
+                            "type": "array",
+                            "properties":{
+
+                                "Expression Percentile":{
+                                    "description": "Expression percentile",
+                                    "type": "float"
+                                },
+
+                                "Gene":{
+                                    "description": "Name of gene contianing SNV (i.e., TP53)",
+                                    "type": "string"
+                                },
+
+                                "Gene_URL":{
+                                    "description": "OncoKB url to gene",
+                                    "type": "string"
+                                },
+
+                                "protein":{
+                                    "description": "Resulting protein (i.e., p.R196*)",
+                                    "type": "string"
+                                },
+
+                                "protein_url":{
+                                    "description": "OncoKB url to protein",
+                                    "type": "string"
+                                },
+
+                                "type":{
+                                    "description": "SNV type",
+                                    "type": "string",
+                                    "enum": ["Missense Mutation", "Nonsense Mutation", "Frame Shift Del", "Frame Shift Ins", "Splice Site", "Splice Region", "5' Flank"]
+                                },
+
+                                "vaf":{
+                                    "description": "Variant allele frequency",
+                                    "type": "integer"
+                                },
+
+                                "depth":{
+                                    "description": "Read depth (i.e., 27/57)",
+                                    "type": "string"
+                                },
+
+                                "LOH":{
+                                    "description": "Loss of heterozygosity status",
+                                    "type": "boolean"
+                                },
+                                
+                                "Chromosome":{
+                                    "description": "Chromosomal position (i.e., 17p13.1)",
+                                    "type": "string"
+                                },
+                                
+                                "OncoKB":{
+                                    "description": "OncoKB level of evidence",
+                                    "type": "string",
+                                    "enum": ["1", "2", "3A", "3B", "4", "N1", "N2", "N3", "N4"]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
