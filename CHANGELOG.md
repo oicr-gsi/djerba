@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## UNRELEASED
+- GCGI-1753: Updated Djerba expression processing to use TPM based values instead of FPKM.
+
+
 ## v1.12.0: 2026-07-06
 - GCGI-1709: Update title of research report and add watermark to the pdf.
 - Dockerized Djerba by adding a Dockerfile, Docker Compose setup, `.env.example`, and an end-to-end test that validates report generation using an example `config.ini` input and expected output report.
