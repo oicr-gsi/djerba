@@ -2,7 +2,7 @@
 
 ## UNRELEASED
 - GCGI-1753: Updated Djerba expression processing to use TPM based values instead of FPKM.
-
+- GCGI-1748: Make gene ID warnings less verbose
 
 ## v1.12.0: 2026-07-06
 - GCGI-1709: Update title of research report and add watermark to the pdf.
