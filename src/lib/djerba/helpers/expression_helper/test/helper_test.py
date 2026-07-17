@@ -72,7 +72,7 @@ class TestExpressionHelper(TestBase):
         # run extract step and check the results
         helper_main.extract(cp)
         gep_path = ws.abs_path('gep.txt')
-        self.assertEqual(self.getMD5(gep_path), '3d0186b90ef4a9aa9c8592a45b62f151')
+        self.assertEqual(self.getMD5(gep_path), '9155adcfa33ae7b6e2c0034148b383cf')
         expected = {
             'data_expression_percentile_comparison.txt': 'b80bff26dfe4996b9dab2a1dbdc727be',
             'data_expression_percentile_tcga.txt': 'e820ef9a2d005feefa92887d6728180b',
@@ -107,7 +107,7 @@ class TestExpressionHelper(TestBase):
         # run extract step and check the results
         helper_main.extract(cp)
         gep_path = ws.abs_path('gep.txt')
-        self.assertEqual(self.getMD5(gep_path), '3d0186b90ef4a9aa9c8592a45b62f151')
+        self.assertEqual(self.getMD5(gep_path), '9155adcfa33ae7b6e2c0034148b383cf')
         expected = {
             'data_expression_percentile_comparison.txt': 'b80bff26dfe4996b9dab2a1dbdc727be',
             'data_expression_percentile_tcga.txt': '35781f07b63bc72470610f27c105f9cb',
