@@ -2,6 +2,7 @@
 
 ## UNRELEASED
 - GCGI-1753: Updated Djerba expression processing to use TPM based values instead of FPKM.
+- GCGI-1754: Fix Purple CNV gene.tsv parsing for newer version outputs with extra trailing columns.
 
 
 ## v1.12.0: 2026-07-06

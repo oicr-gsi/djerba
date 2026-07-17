@@ -507,7 +507,7 @@ class purple_processor(logger):
     
     def pre_process_CNA(self, purple_gene_file, oncolistpath, tumour_id, ploidy, ploidy_multiplier=2.4):
         oncolist = pd.read_csv(oncolistpath, sep="\t")
-        raw_gene_data = pd.read_csv(purple_gene_file, sep="\t")
+        raw_gene_data = pd.read_csv(purple_gene_file, sep="\t", comment='!', index_col=False)
         
         amp = ploidy_multiplier * float(ploidy)
         hmz = 0.5
@@ -693,5 +693,4 @@ class purple_processor(logger):
             "purple.runPURPLE.max_purity": 1
         }
         return purple_paths
-
 
