@@ -295,6 +295,10 @@ class prepare_fusions(logger):
 
         # Merge df_arriba information into df_mavis
         df_merged = self.left_join(df_mavis, df_arriba, "fusion_pairs")
+        # Delete all delly-only calls
+        # NOTE: this is supposedly because structural variants were not validated.
+        # NOTE: the old version of the fusion plugin also excluded delly-only calls.
+        df_merged = self.delete_delly_only_calls(df_merged)
         # Remove duplicate fusions (but keep if they are different event types)
         df_merged = self.drop_duplicates_merge_columns(df_merged)
         # Remove fusions that are self-self pairs
@@ -306,10 +310,7 @@ class prepare_fusions(logger):
         df_merged = self.simplify_event_type(df_merged)
         # Re-order fusions to be in 5'::3' order.
         df_merged = self.reorder_fusions(df_merged)
-        # Delete all delly-only calls
-        # NOTE: this is supposedly because structural variants were not validated.
-        # NOTE: the old version of the fusion plugin also excluded delly-only calls.
-        df_merged = self.delete_delly_only_calls(df_merged)
+        
 
         return df_merged
         
