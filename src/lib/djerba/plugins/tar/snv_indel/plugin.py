@@ -138,10 +138,7 @@ class main(plugin_base):
                       compression='gzip',
                       comment='#')
 
-      for row in df_pl.iterrows():
-          hugo_symbol = row[1]['Hugo_Symbol']
-          if hugo_symbol not in constants.GENES_TO_KEEP:
-              df_pl = df_pl.drop(row[0])  
+      df_pl = df_pl[df_pl['Hugo_Symbol'].isin(constants.GENES_TO_KEEP)]
 
       out_path = os.path.join(work_dir, 'panel_genes_only.maf.gz')
       df_pl.to_csv(out_path, sep = "\t", compression='gzip', index=False)

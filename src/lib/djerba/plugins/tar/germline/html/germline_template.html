@@ -1,0 +1,65 @@
+<!--This file is the HTML code for the germline variants section of the TAR report.-->
+
+
+<!-- IMPORTS -->
+<%
+  from djerba.util.html import html_builder
+  from djerba.plugins.tar.germline.html import germline_table_builder as gtb
+  import djerba.plugins.tar.germline.constants as constants
+%>
+
+
+<!-- TAR germline variants -->
+${html_builder().section_cells_begin("<h2>Germline variants</h2>","main")}
+
+      <p>
+            Germline variants were assessed across a
+            ${results[constants.PANEL_GENE_COUNT]}-gene hereditary cancer panel,
+            annotated for oncogenicity with OncoKB and for clinical significance
+            with ClinVar.
+      </p>
+
+      % if results[constants.REPORTABLE_GERMLINE_VARIANTS] > 0:
+          <p>
+                The germline variants below are oncogenic as defined by OncoKB.
+          </p>
+          <table class="variants" width="100%">
+                ${gtb.germline_header()}
+                <tbody>
+                % for row in gtb.germline_rows(results[constants.BODY]):
+                      ${row}
+                % endfor
+                </tbody>
+          </table>
+      % else:
+          <p>
+                No oncogenic germline variants were uncovered.
+          </p>
+      % endif
+
+      % if results[constants.VUS_GERMLINE_VARIANTS] > 0:
+          <h3>Germline variants of uncertain significance</h3>
+          <p>
+                The following ${results[constants.VUS_GERMLINE_VARIANTS]}
+                variant(s) are not classified as oncogenic by OncoKB. They are
+                listed for reference and are not reported as clinically
+                actionable.
+          </p>
+          <table class="variants" width="100%">
+                ${gtb.germline_header()}
+                <tbody>
+                % for row in gtb.germline_rows(results[constants.VUS_BODY]):
+                      ${row}
+                % endfor
+                </tbody>
+          </table>
+      % endif
+
+      <table class="suppl" width="100%">
+            <tr>
+              <td width="50%" vertical-align="top"><b>Chr.</b>: Chromosome and cytoband</td>
+              <td width="50%" vertical-align="top"><b>ClinVar</b>: ClinVar clinical significance</td>
+            </tr>
+      </table>
+
+${html_builder().section_cells_end()}

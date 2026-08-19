@@ -1,0 +1,115 @@
+{
+    "$id":"https://github.com/oicr-gsi/djerba/tree/main/src/lib/djerba/plugins/tar/germline/tar.germline_schema.json",
+    "title": "Results Structure for tar.germline Plugin",
+    "description": "Schema documentation of results structure for the tar.germline plugin. Documentation only; the enforced schema is djerba/core/plugin_schema.json.",
+    "type": "object",
+
+    "properties":{
+        "tar.germline":{
+            "description": "Djerba plugin for TAR germline variant reporting",
+            "type": "object",
+            "properties":{
+
+                "plugin_name":{
+                    "description": "tar.germline plugin",
+                    "type": "string"
+                },
+
+                "version":{
+                    "description": "Plugin version (1.0.0)",
+                    "type": "string"
+                },
+
+                "results":{
+                    "description": "Results from tar.germline plugin",
+                    "type": "object",
+                    "properties":{
+
+                        "Total germline variants":{
+                            "description": "Number of panel-gene germline variants surviving preprocessing",
+                            "type": "integer"
+                        },
+
+                        "Reportable germline variants":{
+                            "description": "Number of germline variants at an OncoKB reportable level",
+                            "type": "integer"
+                        },
+
+                        "Germline variants of uncertain significance":{
+                            "description": "Number of germline variants not at an OncoKB reportable level",
+                            "type": "integer"
+                        },
+
+                        "Panel gene count":{
+                            "description": "Size of the Hereditary Cancer Comprehensive Panel gene list",
+                            "type": "integer"
+                        },
+
+                        "Body":{
+                            "description": "Reportable germline variants",
+                            "type": "array",
+                            "items":{
+                                "type": "object",
+                                "properties":{
+                                    "Gene": {
+                                        "description": "Hugo gene symbol",
+                                        "type": "string"
+                                    },
+                                    "Gene_URL": {
+                                        "description": "OncoKB URL for the gene",
+                                        "type": "string"
+                                    },
+                                    "Chromosome": {
+                                        "description": "Chromosome and cytoband",
+                                        "type": "string"
+                                    },
+                                    "Protein": {
+                                        "description": "Protein change, or 'p.? (HGVSc)' for splice variants",
+                                        "type": "string"
+                                    },
+                                    "Protein_URL": {
+                                        "description": "OncoKB URL for the alteration",
+                                        "type": "string"
+                                    },
+                                    "Type": {
+                                        "description": "Variant classification, underscores replaced with spaces",
+                                        "type": "string"
+                                    },
+                                    "VAF (%)": {
+                                        "description": "Variant allele frequency as an integer percentage",
+                                        "type": "integer"
+                                    },
+                                    "t_depth": {
+                                        "description": "Read depth at the variant position",
+                                        "type": "integer"
+                                    },
+                                    "t_alt_count": {
+                                        "description": "Reads supporting the alternate allele",
+                                        "type": "integer"
+                                    },
+                                    "ClinVar": {
+                                        "description": "ClinVar clinical significance from the VEP CLIN_SIG field",
+                                        "type": "string"
+                                    },
+                                    "OncoKB level": {
+                                        "description": "OncoKB therapy level, or oncogenicity as N1-N4",
+                                        "type": "string",
+                                        "enum": ["1","2","3A","3B","4","R1","R2","P","N1","N2"]
+                                    }
+                                }
+                            }
+                        },
+
+                        "VUS body":{
+                            "description": "Germline variants of uncertain significance; same row structure as Body, but the OncoKB level may also be N3, N4 or Unknown",
+                            "type": "array",
+                            "items":{
+                                "type": "object"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
