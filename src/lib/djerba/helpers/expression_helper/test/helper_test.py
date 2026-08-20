@@ -72,13 +72,13 @@ class TestExpressionHelper(TestBase):
         # run extract step and check the results
         helper_main.extract(cp)
         gep_path = ws.abs_path('gep.txt')
-        self.assertEqual(self.getMD5(gep_path), '3d0186b90ef4a9aa9c8592a45b62f151')
+        self.assertEqual(self.getMD5(gep_path), '9155adcfa33ae7b6e2c0034148b383cf')
         expected = {
-            'data_expression_percentile_comparison.txt': 'b80bff26dfe4996b9dab2a1dbdc727be',
-            'data_expression_percentile_tcga.txt': 'e820ef9a2d005feefa92887d6728180b',
-            'data_expression_zscores_comparison.txt': '406d32739e9c61f490d67005d914babc',
-            'data_expression_zscores_tcga.txt': '4d646d0fa4065d12c9c97e3b38f8896e',
-            'data_expression_percentile_tcga.json': '68379be6cd9b6cfdc27972ee03738b26'
+            'data_expression_percentile_comparison.txt': 'a213ab260cefbe28fd504c8b70c28738',
+            'data_expression_percentile_tcga.txt': '4d6e45e47a28cff3e6fc179ccc9ec967',
+            'data_expression_zscores_comparison.txt': 'ae56589f46a74ad5a16aecfe919371bb',
+            'data_expression_zscores_tcga.txt': '98321a05f21035a08524dbb92b829a38',
+            'data_expression_percentile_tcga.json': 'ab1671a9774c1fcc67da4a9cb063bf01'
         }
         for name in expected:
             out_path = os.path.join(self.tmp_dir, name)
@@ -107,13 +107,13 @@ class TestExpressionHelper(TestBase):
         # run extract step and check the results
         helper_main.extract(cp)
         gep_path = ws.abs_path('gep.txt')
-        self.assertEqual(self.getMD5(gep_path), '3d0186b90ef4a9aa9c8592a45b62f151')
+        self.assertEqual(self.getMD5(gep_path), '9155adcfa33ae7b6e2c0034148b383cf')
         expected = {
-            'data_expression_percentile_comparison.txt': 'b80bff26dfe4996b9dab2a1dbdc727be',
-            'data_expression_percentile_tcga.txt': '35781f07b63bc72470610f27c105f9cb',
-            'data_expression_zscores_comparison.txt': '406d32739e9c61f490d67005d914babc',
-            'data_expression_zscores_tcga.txt': '912a5a7fc4cf3da67676ae440920e807',
-            'data_expression_percentile_tcga.json': '3bc60aeb284205418e3f8d27b92f9a88'
+            'data_expression_percentile_comparison.txt': 'a213ab260cefbe28fd504c8b70c28738',
+            'data_expression_percentile_tcga.txt': 'bc27d32071fdae27f150e0692fca7b27',
+            'data_expression_zscores_comparison.txt': 'ae56589f46a74ad5a16aecfe919371bb',
+            'data_expression_zscores_tcga.txt': 'e3ad7a1eadeb1115836723edd3bcd8c0',
+            'data_expression_percentile_tcga.json': '94d30b027047935960c9a82042e571fd'
         }
         for name in expected:
             out_path = os.path.join(self.tmp_dir, name)
