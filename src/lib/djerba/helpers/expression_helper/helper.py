@@ -130,11 +130,12 @@ class main(helper_base):
             # preprocess the GEP file
             reader = csv.reader(in_file, delimiter="\t")
             writer = csv.writer(out_file, delimiter="\t")
-            first = True
+            not_found = 0
+            total = 0
             for row in reader:
-                if first:
+                total += 1
+                if total == 1:
                     row.insert(1, tumour_id)
-                    first = False
                 else:
                     # Skip ensembl IDs with "_PAR_Y" suffix and remove version numbers in reference file
                     gene_id_full = row[0]
@@ -148,9 +149,15 @@ class main(helper_base):
                     except KeyError as err:
                         msg = 'Reference gene ID {0} from {1} '.format(gene_id_full, ref_path) +\
                             'not found in gep results path {0}'.format(gep_path)
-                        self.logger.warn(msg)
+                        self.logger.debug(msg)
                         row.insert(1, '0.0')
+                        not_found += 1
                 writer.writerow(row)
+            if not_found>0:
+                msg = '{0} of {1} reference gene IDs from {2} '.format(not_found, total, ref_path) +\
+                    'not found in gep results path {0}. '.format(gep_path) +\
+                    'Run with --debug for details.'
+                self.logger.warning(msg)
         return self.workspace.abs_path(out_file_name)
 
     def specify_params(self):
