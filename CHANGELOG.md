@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## UNRELEASED
+## v1.13.0: 2026-08-20
 - GCGI-1662: Update `setup.py` to require Python version >= 3.13.0
 - GCGI-1753: Updated Djerba expression processing to use TPM based values instead of FPKM.
 - GCGI-1748: Make gene ID warnings less verbose
