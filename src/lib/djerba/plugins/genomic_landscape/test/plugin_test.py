@@ -56,6 +56,10 @@ class TestGenomicLandscapePlugin(PluginTester):
         self.assertEqual(tmb.read_cohort(data_dir, "luad"), "TCGA LUAD")
         self.assertEqual(tmb.read_cohort(data_dir, "paad"), "COMPASS")
         self.assertEqual(tmb.read_cohort(data_dir, "zzz"), "NA")
+        # the merged percentile pools both cohorts, it does not pick one of them
+        self.assertEqual(tmb.read_cancer_specific_percentile(data_dir, 2.5, "TCGA LUAD", "luad"), 19)
+        self.assertEqual(tmb.read_cancer_specific_percentile(data_dir, 2.5, "TCGA LUSC", "lusc"), 3)
+        self.assertEqual(tmb.read_cancer_specific_percentile(data_dir, 2.5, "TCGA LUAD/LUSC", "luad|lusc"), 12)
 
     def testGenomicLandscapeLowTmbStableMsi(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
