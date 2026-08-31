@@ -108,7 +108,7 @@ class tmb_processor(logger):
             for row in reader:
                 tcga_cancer_types.add(row[3])
         codes = tcga_code.lower().split('|')
-        if 'paad' in codes:
+        if codes == ['paad']:
             cohort = constants.COMPASS
         elif any(code in tcga_cancer_types for code in codes):
             cohort = "".join(("TCGA ", tcga_code.upper().replace('|', '/')))
