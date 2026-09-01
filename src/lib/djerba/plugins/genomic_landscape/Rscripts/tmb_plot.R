@@ -45,7 +45,7 @@ if(biomarker=="tmb"){
     median_tmb <- median(external_tmb_data_type$tmb)
     cohort_label <- paste(tcga_label ,"Cohort")
   }
-  else if (nrow(tcga_tmb_data_type) > 0){
+  else if (all(codes %in% tcga_tmb_data$CANCER.TYPE)){
     median_tmb <- median(tcga_tmb_data_type$tmb)
     cohort_label <- paste("TCGA",tcga_label,"Cohort")
   }
@@ -63,7 +63,7 @@ if(biomarker=="tmb"){
       if (length(codes) == 1 && nrow(external_tmb_data_type) > 0)
         geom_boxplot(data = external_tmb_data_type, aes(x=0,y=tmb,color="Cohort"),width = 0.1, outlier.shape = NA) 
         
-      else if (nrow(tcga_tmb_data_type) > 0)
+      else if (all(codes %in% tcga_tmb_data$CANCER.TYPE))
         geom_boxplot(data = tcga_tmb_data_type, aes(x=0,y=tmb,color="Cohort"), width = 0.1, outlier.shape = NA) 
       else
         geom_boxplot(aes(x=0,y=tmb,color="All TCGA"),width = 0.1, outlier.shape = NA) 
