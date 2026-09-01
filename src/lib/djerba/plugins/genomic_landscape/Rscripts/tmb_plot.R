@@ -40,7 +40,8 @@ if(biomarker=="tmb"){
   tcga_tmb_data_type <- tcga_tmb_data %>% filter(CANCER.TYPE %in% codes)
   
   
-  if (nrow(external_tmb_data_type) > 0){
+  # the external data covers one cancer type, so it does not apply to merged codes
+  if (length(codes) == 1 && nrow(external_tmb_data_type) > 0){
     median_tmb <- median(external_tmb_data_type$tmb)
     cohort_label <- paste(tcga_label ,"Cohort")
   }
@@ -59,7 +60,7 @@ if(biomarker=="tmb"){
   print(
   ggplot(tcga_tmb_data) + 
     {
-      if (nrow(external_tmb_data_type) > 0)
+      if (length(codes) == 1 && nrow(external_tmb_data_type) > 0)
         geom_boxplot(data = external_tmb_data_type, aes(x=0,y=tmb,color="Cohort"),width = 0.1, outlier.shape = NA) 
         
       else if (nrow(tcga_tmb_data_type) > 0)
