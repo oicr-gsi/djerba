@@ -51,6 +51,21 @@ h3 {
   
 }
 
+/* BLAH AQSA */
+.variants .table-title {
+  text-align: center;
+}
+
+.variants td.center {
+    text-align: center;
+}
+
+.twooftwocellmaincenter {
+  page-break-inside: avoid;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 /*----------------#section-delimiting lines--------------------*/
 
 hr.header-big-line{

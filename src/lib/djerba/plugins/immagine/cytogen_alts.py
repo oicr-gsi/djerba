@@ -21,8 +21,7 @@ def monosomy(chromosome, segment_df):
     # First, calculate percentage that total copy number < 1.2
 
     # True if < 1.2, False if >= 1.2
-    bool_CN = chr_df['copyNumber'] < 1.2 
-    #bool_CN = chr_df['majorAlleleCopyNumber'] < 1.2
+    bool_CN = chr_df['copyNumber_round_1dec'] < 1.2 
     # Gets sum of the length for those segments that are True for the above condition
     perc_CN = chr_df.loc[bool_CN, 'length'].sum() / total_length * 100
 
@@ -39,7 +38,8 @@ def monosomy(chromosome, segment_df):
 def hyperdiploidy(segment_df):
     """
     Hyperdiploidy is defined as:
-    The presence of gains (TCN ≥3) in ≥4 of the canonical hyperdiploid chromosomes: 3, 5, 7, 9, 11, 15, 19, 21
+    The presence of gains (TCN >= 3) in >= 4 of the canonical hyperdiploid chromosomes: 3, 5, 7, 9, 11, 15, 19, 21
+    A gain is considered present if at least 80% of the chromosome has copy number >= 3.
     Given the segment file, returns True if it's hyperdiploid or False if it's not.
     """
     canonical_hyperdiploid_chroms = ['chr3', 'chr5', 'chr7', 'chr9', 'chr11', 'chr15', 'chr19', 'chr21']
@@ -54,17 +54,12 @@ def hyperdiploidy(segment_df):
         total_length = chr_df['length'].sum()
 
         # Apply True/False to those segments that meet/don't meet the condition
-        bool_CN = chr_df['copyNumber'] >= 2.8 # small tolerance below 3.0
-        #bool_CN = chr_df['copyNumber'] >= 3
-        #bool_CN = chr_df['majorAlleleCopyNumber'] >= 3
+        bool_CN = chr_df['copyNumber_round_int'] >= 3 
         
-        ## Count it as part of the total chromosome count if there is at least one gain in the chromosome
         # Count it as part of the total chromosome count if at least 80% of the chromosome has copy number >=3
         perc_CN = chr_df.loc[bool_CN, 'length'].sum() / total_length * 100
         if perc_CN > 80:
             count += 1
-        #if bool_CN.any():
-        #    count += 1
     return bool(count >= 4)
 
 def chromosome_1p_deletion(segment_df):
@@ -88,7 +83,7 @@ def chromosome_1p_deletion(segment_df):
     # First, calculate percentage that total copy number <= 1.5
 
     # True if <= 1.5, False if > 1.5
-    bool_CN = chr_df['copyNumber'] <= 1.5
+    bool_CN = chr_df['copyNumber_round_1dec'] <= 1.5 
     #bool_CN = chr_df['majorAlleleCopyNumber'] <= 1.5
     # Gets sum of the length for those segments that are True for the above condition
     perc_CN = chr_df.loc[bool_CN, 'length'].sum() / total_length * 100
@@ -136,7 +131,7 @@ def chromosome_17p_deletion(segment_df):
     # First, calculate percentage that total copy number < 1.2
 
     # True if < 1.2, False if >= 1.2
-    bool_CN = chr_df['copyNumber'] < 1.2
+    bool_CN = chr_df['copyNumber_round_1dec'] < 1.2
     #bool_CN = chr_df['majorAlleleCopyNumber'] < 1.2
     # Gets sum of the length for those segments that are True for the above condition
     perc_CN = chr_df.loc[bool_CN, 'length'].sum() / total_length * 100
@@ -187,7 +182,7 @@ def biallelic_1p32_deletion(segment_df):
 
     # First, calculate percentage that total copy number <= 1
     
-    bool_CN = chr_df['copyNumber'] <= 1.5
+    bool_CN = chr_df['copyNumber_round_int'] <= 1
     # Gets sum of the length for those segments that are True for the above condition
     perc_CN = chr_df.loc[bool_CN, 'length'].sum() / total_length * 100
     
@@ -237,7 +232,7 @@ def monoallelic_1p32_deletion(segment_df):
 
     # First, calculate percentage that total copy number is between 1 and 1.5
     
-    bool_CN = ((chr_df['copyNumber'] >= 1) & (chr_df['copyNumber'] <= 1.5))
+    bool_CN = ((chr_df['copyNumber_round_int'] >= 1) & (chr_df['copyNumber_round_1dec'] <= 1.5))
     # Gets sum of the length for those segments that are True for the above condition
     perc_CN = chr_df.loc[bool_CN, 'length'].sum() / total_length * 100
     
@@ -254,12 +249,12 @@ def chromosome_1p_gain_or_amp(segment_df):
     """
     THIS FUNCTION IS NOT DONE YET. Requires clarification from Trevor.
     Chromosome 1p gain is defined as:
-    Arm-level gain of 1p call when ≥50% of the arm has total copy number ≥3.0 
+    Arm-level gain of 1p call when >= 50% of the arm has total copy number >= 3
     (i.e., gain of at least one extra copy) after purity/ploidy correction
 
     Chromosome 1p amplification is defined as:
-    High-level amplification when a segment (focal or broader) has total copy number ≥6 
-    (high confidence) or total copy number ≥4 for moderate amplification
+    High-level amplification when a segment (focal or broader) has total copy number >= 6
+    (high confidence) or total copy number >= 4 for moderate amplification
     """
     
     # Slice the segment dataframe so it's only the 1p arm, using 121700001 as the cutoff for the p-arm
@@ -271,9 +266,55 @@ def chromosome_1p_gain_or_amp(segment_df):
     # First, calculate percentage that total copy number >= 3.0
     
     # True if >=3.0, False if < 3.0
-    bool_CN = chr_df['copyNumber'] >= 3.0
+    bool_CN = chr_df['copyNumber_round_int'] >= 3.0
     # Gets sum of the length for those segments that are True for the above condition
     perc_CN = chr_df.loc[bool_CN, 'length'].sum() / total_length * 100
     
     return bool(perc_CN >= 50)
 
+
+
+def chromosome_1q_gain_or_amp(segment_df):
+    """
+    Determine whether >=50% of chromosome 1q has total copy number >=3.
+    """
+
+    Q_START = 125100000
+    Q_END = 248956422
+
+    # Get chr1 segments that overlap 1q
+    chr_df = segment_df[
+        (segment_df['chromosome'] == 'chr1') &
+        (segment_df['end'] >= Q_START) &
+        (segment_df['start'] <= Q_END)
+    ].copy()
+
+    # Clip each segment to the 1q boundaries
+    chr_df['overlap_start'] = chr_df['start'].clip(lower=Q_START)
+    chr_df['overlap_end'] = chr_df['end'].clip(upper=Q_END)
+
+    # Calculate ONLY the portion of each segment that lies within 1q
+    chr_df['length'] = (
+        chr_df['overlap_end'] -
+        chr_df['overlap_start'] +
+        1
+    )
+
+    # Total length of 1q
+    total_length = Q_END - Q_START + 1
+
+    # Segments with CN >= 3
+    bool_CN = chr_df['copyNumber_round_int'] >= 3.0
+
+    # Length of 1q with CN >= 3
+    gain_length = chr_df.loc[bool_CN, 'length'].sum()
+
+    # Percentage of 1q with CN >= 3
+    perc_CN = gain_length / total_length * 100
+
+    print(chr_df)
+    print(f"1q total length: {total_length}")
+    print(f"1q length with CN >= 3: {gain_length}")
+    print(f"Percentage of 1q with CN >= 3: {perc_CN:.2f}%")
+
+    return bool(perc_CN >= 50)
