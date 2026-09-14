@@ -240,17 +240,17 @@ class pdf_renderer(logger):
             }
         try:
             pdfkit.from_file(in_path, out_path, options=options)
-            if out_path.endswith(self.RESEARCH_SUFFIX):
-                self.logger.info(
-                    "Applying research watermark to {0}".format(out_path)
-                )
-                temp_pdf = out_path + ".tmp"
-                os.rename(out_path, temp_pdf)
-                try:
-                    self.add_ruo_watermark(temp_pdf, out_path)
-                finally:
-                    if os.path.exists(temp_pdf):
-                        os.remove(temp_pdf)
+            #if out_path.endswith(self.RESEARCH_SUFFIX):
+                #self.logger.info(
+                #    "Applying research watermark to {0}".format(out_path)
+                #)
+                #temp_pdf = out_path + ".tmp"
+                #os.rename(out_path, temp_pdf)
+                #try:
+                    #self.add_ruo_watermark(temp_pdf, out_path)
+                #finally:
+                    #if os.path.exists(temp_pdf):
+                        #os.remove(temp_pdf)
         except Exception as err:
             msg = "Unexpected error of type "+\
                 "{0} in PDF rendering: {1}".format(type(err).__name__, err)
