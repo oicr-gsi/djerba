@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v1.13.1: 2026-09-15
 - GCGI-1735: "Not for PHI" warning next to contact email
 - GCGI-1798: Removed RUO watermark, changed RUO report title and footer 
 - Updated report examples for WGTS and TAR
