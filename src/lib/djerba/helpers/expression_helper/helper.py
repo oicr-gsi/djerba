@@ -28,12 +28,12 @@ class main(helper_base):
 
     # 0-based index for GEP results file
     GENE_ID = 0
-    FPKM = 6
+    TPM = 5
 
     FPR_NAME = 'provenance_helper'
     WGTS = 'WGTS' # currently only used for WGTS
 
-    VERSION = '1.0.0'
+    VERSION = '1.1.0'
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -102,8 +102,8 @@ class main(helper_base):
         TODO This is a legacy CGI-Tools method, is there a cleaner way to do it?
         TODO Should GEP_REFERENCE (list of past GEP results) be updated on a regular basis?
         """
-        # read the gene id and FPKM metric from the GEP file for this report
-        fkpm = {}
+        # read the gene id and TPM metric from the GEP file for this report
+        tpm = {}
         with open(gep_path) as gep_file:
             reader = csv.reader(gep_file, delimiter="\t")
             for row in reader:
@@ -114,7 +114,7 @@ class main(helper_base):
                 try:
                     # Strip version number from ensembl IDs
                     stable_key = row[self.GENE_ID].split('.')[0]
-                    fkpm[stable_key] = row[self.FPKM]
+                    tpm[stable_key] = row[self.TPM]
                 except IndexError as err:
                     msg = "Incorrect number of columns in GEP row: '{0}'".format(row)+\
                           "read from '{0}'".format(gep_path)
@@ -130,11 +130,12 @@ class main(helper_base):
             # preprocess the GEP file
             reader = csv.reader(in_file, delimiter="\t")
             writer = csv.writer(out_file, delimiter="\t")
-            first = True
+            not_found = 0
+            total = 0
             for row in reader:
-                if first:
+                total += 1
+                if total == 1:
                     row.insert(1, tumour_id)
-                    first = False
                 else:
                     # Skip ensembl IDs with "_PAR_Y" suffix and remove version numbers in reference file
                     gene_id_full = row[0]
@@ -144,13 +145,19 @@ class main(helper_base):
                     row[0] = stable_ref_id
 
                     try:
-                        row.insert(1, fkpm[stable_ref_id])
+                        row.insert(1, tpm[stable_ref_id])
                     except KeyError as err:
                         msg = 'Reference gene ID {0} from {1} '.format(gene_id_full, ref_path) +\
                             'not found in gep results path {0}'.format(gep_path)
-                        self.logger.warn(msg)
+                        self.logger.debug(msg)
                         row.insert(1, '0.0')
+                        not_found += 1
                 writer.writerow(row)
+            if not_found>0:
+                msg = '{0} of {1} reference gene IDs from {2} '.format(not_found, total, ref_path) +\
+                    'not found in gep results path {0}. '.format(gep_path) +\
+                    'Run with --debug for details.'
+                self.logger.warning(msg)
         return self.workspace.abs_path(out_file_name)
 
     def specify_params(self):
@@ -158,7 +165,7 @@ class main(helper_base):
             core_constants.EXTRACT_PRIORITY: 100, # run before cnv & snv plugins
             # RODiC is cloned from https://github.com/translational-genomics-laboratory/RODiC
             # repo also forked to https://github.com/oicr-gsi/RODiC
-            self.TCGA_DATA_KEY: '/.mounts/labs/CGI/gsi/tools/RODiC/data',
+            self.TCGA_DATA_KEY: '/.mounts/labs/CGI/gsi/tools/RODiC/TPM-data',
             # the GEP reference file is in Bitbucket for safekeeping
             # https://bitbucket.oicr.on.ca/projects/GSI/repos/djerba_test_data/browse/reference/gep_reference.txt.gz
             self.GEP_REFERENCE_KEY: '/.mounts/labs/CGI/gsi/tools/djerba/gep_reference.txt.gz'

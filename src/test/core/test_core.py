@@ -39,7 +39,7 @@ class TestCore(TestBase):
     SIMPLE_REPORT_UPDATE_JSON = 'simple_report_for_update.json'
     SIMPLE_REPORT_UPDATE_FAILED_JSON = 'simple_report_for_update_failed.json'
     SIMPLE_CONFIG_MD5 = '2311145c9d6782334c05816058d3623f'
-    SIMPLE_REPORT_MD5 = '596d3cef47785aa2a1163a179a18093f'
+    SIMPLE_REPORT_MD5 = '1ff81028581137ad21c4ba181480adc7'
 
     class mock_args:
         """Use instead of argparse to store params for testing"""

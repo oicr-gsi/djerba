@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v1.13.1: 2026-09-15
+- GCGI-1735: "Not for PHI" warning next to contact email
+- GCGI-1798: Removed RUO watermark, changed RUO report title and footer 
+- Updated report examples for WGTS and TAR
+
+## v1.13.0: 2026-08-20
+- GCGI-1662: Update `setup.py` to require Python version >= 3.13.0
+- GCGI-1753: Updated Djerba expression processing to use TPM based values instead of FPKM.
+- GCGI-1748: Make gene ID warnings less verbose
+
 ## v1.12.0: 2026-07-06
 - GCGI-1709: Update title of research report and add watermark to the pdf.
 - Dockerized Djerba by adding a Dockerfile, Docker Compose setup, `.env.example`, and an end-to-end test that validates report generation using an example `config.ini` input and expected output report.
