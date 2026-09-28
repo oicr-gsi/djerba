@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v1.13.1: 2026-09-15
+- GCGI-1735: "Not for PHI" warning next to contact email
+- GCGI-1798: Removed RUO watermark, changed RUO report title and footer 
+- Updated report examples for WGTS and TAR
+
 ## v1.13.0: 2026-08-20
 - GCGI-1662: Update `setup.py` to require Python version >= 3.13.0
 - GCGI-1753: Updated Djerba expression processing to use TPM based values instead of FPKM.
