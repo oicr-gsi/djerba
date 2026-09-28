@@ -6,7 +6,9 @@ Test of the input params helper
 
 import logging
 import os
+import pandas as pd
 import unittest
+import djerba.helpers.input_params_helper.helper as input_params_helper
 from configparser import ConfigParser
 from shutil import copy
 from djerba.core.loaders import helper_loader
@@ -19,6 +21,9 @@ class InputParamsHelper(TestBase):
     HELPER_NAME = 'input_params_helper'
     INPUT_PARAMS_MD5 = '21fecd82ee6be1615db6770d7d32a618'
     INPUT_PARAMS_MD5_UNKNOWN_ONCO = '8e0c3c4688865c897c18ef985194c9ca'
+    INPUT_PARAMS_MD5_ANCESTOR = '37731eb6f0b4bdc8e58aa7f587b18771'
+    INPUT_PARAMS_MD5_TISSUE = '48bde2b96e73a82d1ca538d34d36a6eb'
+    INPUT_PARAMS_MD5_RENAL_SUBTYPE = '3801bda398c3b7742caf633cf1801aa9'
 
 
     def testExtract(self):
@@ -110,6 +115,110 @@ class InputParamsHelper(TestBase):
 
         # Compare it against the md5 of the expected input_params.json
         self.assertEqual(self.getMD5(input_params_path), self.INPUT_PARAMS_MD5_UNKNOWN_ONCO)
+
+
+    def testExtractAncestorOncotreeCode(self):
+        """
+        Output will be a lookup of the nearest OncoTree ancestor, AML, yielding LAML.
+        """
+        test_source_dir = os.path.realpath(os.path.dirname(__file__))
+
+        # Get the config
+        cp = ConfigParser()
+        cp.read(os.path.join(test_source_dir, 'helper_ancestor.ini'))
+
+        loader = helper_loader(logging.WARNING)
+
+        # Get the workspace
+        ws = workspace(self.tmp_dir)
+
+        helper_main = loader.load(self.HELPER_NAME, ws)
+
+        # Run configure step
+        helper_main.configure(cp)
+
+        # Get the input_params.json path that was just generated
+        input_params_path = os.path.join(self.tmp_dir, 'input_params.json')
+
+        # Check if the input_params.json path exists
+        self.assertTrue(os.path.exists(input_params_path))
+
+        # Compare it against the md5 of the expected input_params.json
+        self.assertEqual(self.getMD5(input_params_path), self.INPUT_PARAMS_MD5_ANCESTOR)
+
+
+    def testExtractTissueOncotreeCode(self):
+        """
+        Output will fall back to the lung cohorts, yielding LUAD|LUSC.
+        """
+        test_source_dir = os.path.realpath(os.path.dirname(__file__))
+
+        # Get the config
+        cp = ConfigParser()
+        cp.read(os.path.join(test_source_dir, 'helper_tissue.ini'))
+
+        loader = helper_loader(logging.WARNING)
+
+        # Get the workspace
+        ws = workspace(self.tmp_dir)
+
+        helper_main = loader.load(self.HELPER_NAME, ws)
+
+        # Run configure step
+        helper_main.configure(cp)
+
+        # Get the input_params.json path that was just generated
+        input_params_path = os.path.join(self.tmp_dir, 'input_params.json')
+
+        # Check if the input_params.json path exists
+        self.assertTrue(os.path.exists(input_params_path))
+
+        # Compare it against the md5 of the expected input_params.json
+        self.assertEqual(self.getMD5(input_params_path), self.INPUT_PARAMS_MD5_TISSUE)
+
+
+    def testExtractRenalSubtype(self):
+        """
+        Output will be a lookup of CCRCC, yielding KIRC.
+        """
+        test_source_dir = os.path.realpath(os.path.dirname(__file__))
+
+        # Get the config
+        cp = ConfigParser()
+        cp.read(os.path.join(test_source_dir, 'helper_renal_subtype.ini'))
+
+        loader = helper_loader(logging.WARNING)
+
+        # Get the workspace
+        ws = workspace(self.tmp_dir)
+
+        helper_main = loader.load(self.HELPER_NAME, ws)
+
+        # Run configure step
+        helper_main.configure(cp)
+
+        # Get the input_params.json path that was just generated
+        input_params_path = os.path.join(self.tmp_dir, 'input_params.json')
+
+        # Check if the input_params.json path exists
+        self.assertTrue(os.path.exists(input_params_path))
+
+        # Compare it against the md5 of the expected input_params.json
+        self.assertEqual(self.getMD5(input_params_path), self.INPUT_PARAMS_MD5_RENAL_SUBTYPE)
+
+
+    def testTissueToSiteMapping(self):
+        """
+        Every primary site in the tissue mapping must be present in tcga_code_key.txt.
+        """
+        helper_class = input_params_helper.main
+        helper_dir = os.path.dirname(os.path.realpath(input_params_helper.__file__))
+        df = pd.read_csv(os.path.join(helper_dir, helper_class.TCGA_CODE_KEY), sep = "\t")
+        sites = set(df[helper_class.PRIMARY_SITE])
+
+        # An unmatched site would silently fall back to TCGA_ALL_TUMOR
+        for tissue, site in helper_class.TISSUE_TO_SITE.items():
+            self.assertIn(site, sites, tissue)
 
 if __name__ == '__main__':
     unittest.main()
