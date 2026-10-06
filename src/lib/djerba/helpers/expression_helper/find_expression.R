@@ -100,6 +100,12 @@ if (is.null(enscon) |  is.null(gepfile) | is.null(outdir) | is.null(tcgadata) | 
 
   print("getting TCGA-level data")
 
+  # RODiC TPM-data is stored as log2(TPM + 0.001)
+  # GEP values are linear TPM. Switching to the same scale before pooling for the z-score
+  log_pseudocount <- 0.001
+  df <- as.data.frame(log2(as.matrix(df) + log_pseudocount), check.names=FALSE)
+  gc()
+
   # get TCGA comparator
   file_path <- paste(tcgadata, "/", tcgacode, ".PANCAN.matrix.rdf", sep="")
   if (file.exists(file_path)) {
@@ -112,9 +118,15 @@ if (is.null(enscon) |  is.null(gepfile) | is.null(outdir) | is.null(tcgadata) | 
       df_tcga <- get("TCGA_ALL_TUMOR")
 }
 
-
   # equalize dfs (get common genes)
   comg <- as.character(intersect(row.names(df_tcga), row.names(df)))
+
+  # write sample genes missing from the TCGA comparator, eg. due to gene symbol mismatches
+  # these get no TCGA expression value. The SNV/indel and CNV plugins warn if agny are reported
+  unmatched <- sort(setdiff(row.names(df), row.names(df_tcga)))
+  print(paste0(length(unmatched), " of ", nrow(df), " genes not found in TCGA data"))
+  write.table(data.frame(Hugo_Symbol=unmatched),
+    file=paste0(outdir, "/data_expression_tcga_unmatched.txt"), sep="\t", row.names=FALSE, quote=FALSE)
   df_tcga_common <- df_tcga[row.names(df_tcga) %in% comg, ]
   df_tcga_common_sort <- df_tcga_common[ order(row.names(df_tcga_common)), ]
   df_stud_common <- df[row.names(df) %in% comg, ]
@@ -122,7 +134,8 @@ if (is.null(enscon) |  is.null(gepfile) | is.null(outdir) | is.null(tcgadata) | 
   df_stud_tcga <- merge(df_stud_common_sort, df_tcga_common_sort, by=0, all=TRUE)
   rm(df_tcga_common_sort, df_stud_common_sort)
   gc()
-  df_stud_tcga[is.na(df_stud_tcga)] <- 0
+  # missing values have zero expression
+  df_stud_tcga[is.na(df_stud_tcga)] <- log2(log_pseudocount)
   rownames(df_stud_tcga) <- df_stud_tcga$Row.names
   df_stud_tcga$Row.names <- NULL
   df_zscore <- compZ(df_stud_tcga)

@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## UNRELEASED
+- Transform GEP TPM values to log2(TPM + 0.001) before comparison with RODiC TPM-data, which is stored on that scale.
+- Write genes not found in the TCGA comparator to `data_expression_tcga_unmatched.txt`. SNV/indel and CNV plugins log a warning for each reported gene with no expression value (displayed as NA), noting whether its symbol was missing from the TCGA comparator.
+- Added a warning when gene IDs in the sample GEP results are not found in the GEP reference; these were previously dropped silently and got no expression value.
+
 ## v1.13.1: 2026-09-15
 - GCGI-1735: "Not for PHI" warning next to contact email
 - GCGI-1798: Removed RUO watermark, changed RUO report title and footer 
