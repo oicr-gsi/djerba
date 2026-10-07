@@ -94,6 +94,7 @@ setup(
         'djerba.plugins.wgts.common.cnv': install_wildcards,
         'djerba.plugins.wgts.snv_indel': install_wildcards,
         'alternate_djerba.plugins.demo4': install_wildcards,
+        'djerba.plugins.immagine': install_wildcards
     },
     install_requires=[
         'configparse',
