@@ -390,8 +390,8 @@ class main(plugin_base):
         """
         Extracts the zipped igcaller results directory in the workspace 
         """
+        extract_dir = self.workspace.get_work_dir()
         with zipfile.ZipFile(igcaller_zip) as zf:
-            extract_dir = os.path.join(self.workspace.get_work_dir(), os.path.splitext(os.path.basename(igcaller_zip))[0])
-        zf.extractall(extract_dir)
+            zf.extractall(extract_dir)
 
         return extract_dir
