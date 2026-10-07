@@ -188,7 +188,6 @@ def biallelic_1p32_deletion(segment_df):
 
     """
 
-    ---
     # Slice the segment dataframe so it's only the 1p32 segment
     # (The segment file starts numbering at 1, that's why there's a +1)
 
