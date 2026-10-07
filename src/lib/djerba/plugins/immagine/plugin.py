@@ -209,7 +209,6 @@ class main(plugin_base):
         data[constants.DEL_1P] = cytogen_alts.chromosome_1p_deletion(seg_df)
         data[constants.DEL_17P] = cytogen_alts.chromosome_17p_deletion(seg_df)
         data[constants.AMP_1Q] = cytogen_alts.chromosome_1q_gain_or_amp(seg_df)
-        data[constants.AMP_1P] = cytogen_alts.chromosome_1p_gain_or_amp(seg_df)
         data[constants.HYPERDIPLOIDY] = cytogen_alts.hyperdiploidy(seg_df)
         data[constants.BI_DEL_1P32] = cytogen_alts.biallelic_1p32_deletion(seg_df)
         data[constants.MONO_DEL_1P32] = cytogen_alts.monoallelic_1p32_deletion(seg_df)
