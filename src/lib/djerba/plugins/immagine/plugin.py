@@ -3,6 +3,7 @@ import os
 import sys
 import csv
 import gzip
+import zipfile
 import logging
 import json
 import subprocess
@@ -28,7 +29,7 @@ class main(plugin_base):
         discovered = [
             constants.SBS_FILE,
             constants.PURPLE_CNV_GENE_FILE,
-            constants.TRANSLOCATION_FILE
+            constants.IGCALLER_FILE
         ]
         for key in discovered:
             self.add_ini_discovered(key)
@@ -51,7 +52,7 @@ class main(plugin_base):
         # THIS WILL NEED UPDATING TO FIND THE RIGHT FILE FROM WORKSPACE OR SOMETHING.
         # Giving manually for now.
         wrapper = self.update_wrapper_if_null(wrapper, dpi, constants.PURPLE_CNV_GENE_FILE, constants.SBS_WORKFLOW)
-        wrapper = self.update_wrapper_if_null(wrapper, dpi, constants.TRANSLOCATION_FILE, constants.SBS_WORKFLOW)
+        wrapper = self.update_wrapper_if_null(wrapper, dpi, constants.IGCALLER_FILE, constants.SBS_WORKFLOW)
 
         return wrapper.get_config()
 
@@ -66,12 +67,14 @@ class main(plugin_base):
 
         # Get paths to files.
         work_dir = self.workspace.get_work_dir()
+        finder = directory_finder()
+        self.r_script_dir = finder.get_base_dir() + "/plugins/immagine/Rscripts/"
         mutations_file = os.path.join(work_dir, constants.DATA_MUTATIONS_TXT)
         seg_file = os.path.join(work_dir, constants.PURPLE_SEGMENTS_FILE)
         seg_df = self.process_seg_file(seg_file)
         #cna_file = os.path.join(work_dir, constants.DATA_CNA_TXT)
         cna_file = config[self.identifier][constants.PURPLE_CNV_GENE_FILE]
-        translocation_file = config[self.identifier][constants.TRANSLOCATION_FILE]
+        igcaller_results = config[self.identifier][constants.IGCALLER_FILE]
         ploidy = float(self.workspace.read_json(constants.PURITY_PLOIDY_JSON)['ploidy'])
         hrdetect_sbs_json = config[self.identifier][constants.SBS_FILE]
         if self.workspace.has_file(constants.DATA_EXPRESSION_TXT):
@@ -87,7 +90,7 @@ class main(plugin_base):
             results[gene] = {}
         
         # Update results with translocations.
-        results = self.get_translocations(translocation_file, results)
+        results = self.get_translocations(igcaller_results, results)
 
         # Update results with mutation type.
         results = self.get_mutation_type_and_alt(mutations_file, results)
@@ -104,9 +107,6 @@ class main(plugin_base):
         results = self.get_apobec_signatures(hrdetect_sbs_json, results)
 
         results = self.get_high_risk_myeloma(results)
-
-        # Add an extra column that puts an X if it is to be brought to attention.
-        #results = self.add_X_marker(results)
 
         data['results'] = results
 
@@ -317,7 +317,7 @@ class main(plugin_base):
 
         return results
 
-    def get_translocations(self, translocation_path, results):
+    def get_translocations(self, igcaller_results, results):
         """
         Gets the various IG translocation using igcaller outputs that have been run through an R script.
         This function only cares if ANY translocation with a score above 100 exists with those chromosomes.
@@ -325,6 +325,11 @@ class main(plugin_base):
         That filtering has already been done in the R script.
         """
 
+        # Unzip the igcaller results
+        igcaller_results_unzipped = self.unzip_igcaller_results(igcaller_results)
+        x = self.run_igcaller_postprocess(igcaller_results_unzipped)
+        print(x)
+        translocation_path = os.path.join(self.workspace.get_work_dir(), constants.COMMON_IGCALLS)
         df = pd.read_csv(translocation_path, sep='\t')
         df = df[df['IGCaller_Score'] >= 100]
 
@@ -363,3 +368,31 @@ class main(plugin_base):
 
         results[constants.TRANSLOCATIONS] = final_translocations
         return results
+
+    def run_igcaller_postprocess(self, igcaller_results):
+        """
+        Runs the R script from Dory Abelman that does some post-processing and further filtering of the igcaller results.
+        """
+
+        cmd = [
+            'Rscript', self.r_script_dir + "/filter_igcaller.R",
+            '--base_dir', self.r_script_dir,
+            '--raw_igcaller_dir', igcaller_results,
+            '--cytoband_file', self.r_script_dir + "/cytoBand.txt",
+            '--blacklist_bed', self.r_script_dir + "/hg38-blacklist.v2.bed",
+            '--output_dir', self.workspace.get_work_dir()
+        ]
+
+        runner = subprocess_runner()
+        result = runner.run(cmd, "main R script")
+        return result
+
+    def unzip_igcaller_results(self, igcaller_zip):
+        """
+        Extracts the zipped igcaller results directory in the workspace 
+        """
+        with zipfile.ZipFile(igcaller_zip) as zf:
+            extract_dir = os.path.join(self.workspace.get_work_dir(), os.path.splitext(os.path.basename(igcaller_zip))[0])
+        zf.extractall(extract_dir)
+
+        return extract_dir

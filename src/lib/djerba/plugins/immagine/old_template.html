@@ -11,7 +11,7 @@
         <td width="35%" style="padding: 0; vertical-align: top;">
             
 	    <div style="
-                height: 200px;
+                height: 250px;
 		margin-top: 50px;
                 padding: 10px;
                 box-sizing: border-box;
@@ -21,8 +21,7 @@
             ">
 
             <h3 style="margin-top: 20px;">
-		    Risk Status:<br> 
-		    NOT HIGH RISK
+                Risk Status: NOT HIGH RISK
             </h3>
 
             <table class="info" style="margin-bottom: 20px; width: 100%;">
@@ -41,46 +40,52 @@
 
             <table class="variants" width="100%">
 		<tr>
-                <th colspan="2" class="table-title">HIGH RISK MULTIPLE MYELOMA</th>
+                <th colspan="2" class="table-title">High Risk Myeloma</th>
             	</tr>
+
+                <tr>
+                    <th>Alteration</th>
+                    <th>Detected</th>
+                </tr>
+
                 <tr>
                     <td colspan="2">
-                        <b>Any one of</b>
+                        <b>High Risk Multiple Myeloma - Any one of</b>
                     </td>
                 </tr>
 
-                <tr class="high-risk-myeloma">
+                <tr>
                     <td>Chromosome 17p deletion</td>
                     <td>${'<strong>Detected</strong>' if results[constants.CYTOGEN_ALTS].get(constants.DEL_17P) else '<span style="color: #777;">Not Detected</span>'}</td>
                 </tr>
 
-                <tr class="high-risk-myeloma">
+                <tr>
                     <td>Mutation of p53</td>
                     <td>${'<strong>Detected</strong>' if results[constants.P53_ALT] else '<span style="color: #777;">Not Detected</span>'}</td>
                 </tr>
 
-                <tr class="high-risk-myeloma">
+                <tr>
                     <td>Biallelic deletion of 1p32</td>
                     <td>${'<strong>Detected</strong>' if results[constants.CYTOGEN_ALTS].get(constants.BI_DEL_1P32) else '<span style="color: #777;">Not Detected</span>'}</td>
                 </tr>
 
                 <tr>
                     <td colspan="2">
-                        <b>Any two of</b>
+                        <b>High Risk Multiple Myeloma - Any two of</b>
                     </td>
                 </tr>
 
-                <tr class="high-risk-myeloma">
+                <tr>
                     <td>Any one of: t(4;14), t(14;16) or t(14;20)</td>
                     <td>${'<strong>Detected</strong>' if results.get(constants.HIGH_RISK_TRANSLOC) else '<span style="color: #777;">Not Detected</span>'}</td>
                 </tr>
 
-                <tr class="high-risk-myeloma">
+                <tr>
                     <td>Gain or amplification of Chromosome 1q</td>
                     <td>${'<strong>Detected</strong>' if results[constants.CYTOGEN_ALTS].get(constants.AMP_1Q) else '<span style="color: #777;">Not Detected</span>'}</td>
                 </tr>
 
-                <tr class="high-risk-myeloma">
+                <tr>
                     <td>Monoallelic deletion of 1p32</td>
                     <td>${'<strong>Detected</strong>' if results[constants.CYTOGEN_ALTS].get(constants.MONO_DEL_1P32) else '<span style="color: #777;">Not Detected</span>'}</td>
                 </tr>
@@ -97,7 +102,11 @@
 
         <table class="variants" width="100%">
             <tr>
-                <th colspan="2" class="table-title">IMMUNOGLOBULIN REARRANGEMENTS</th>
+                <th colspan="2" class="table-title">IG Rearrangements</th>
+            </tr>
+            <tr>
+                <th>Translocations</th>
+                <th>Detected</th>
             </tr>
             <tr>
                 <td>IgH;14q32</td>
@@ -151,7 +160,11 @@
 
         <table class="variants" width="100%">
             <tr>
-                <th colspan="2" class="table-title">CYTOGENETIC ABNORMALITIES</th>
+                <th colspan="2" class="table-title">Cytogenetic Alterations</th>
+            </tr>
+            <tr>
+                <th>Alteration</th>
+                <th>Detected</th>
             </tr>
             <tr>
                 <td>Monosomy Chromosome 13</td>
@@ -174,8 +187,8 @@
                 <td class="center">${'<strong>Detected</strong>' if results[constants.CYTOGEN_ALTS].get(constants.DEL_17P) else '<span style="color: #777;">Not Detected</span>'}</td>
             </tr>
             <tr>
-                <td>Gain/amplification of Chromosome 1q</td>
-                <td class="center">${'<strong>Detected</strong>' if results[constants.CYTOGEN_ALTS].get(constants.AMP_1Q) else '<span style="color: #777;">Not Detected</span>'}</td>
+                <td>Gain/amplification of Chromosome 1p</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.CYTOGEN_ALTS].get(constants.AMP_1P) else '<span style="color: #777;">Not Detected</span>'}</td>
             </tr>
             <tr>
                 <td>Hyperdiploidy</td>
@@ -185,14 +198,18 @@
 
         <table class="variants" width="100%">
             <tr>
-                <th colspan="2" class="table-title">APOBEC MUTATIONAL SIGNATURES</th>
+                <th colspan="2" class="table-title">APOBEC Gene Signature</th>
             </tr>
             <tr>
-                <td>COSMIC SBS2</td>
+                <th>COSMIC gene signature</th>
+                <th>Present</th>
+            </tr>
+            <tr>
+                <td>SBS2</td>
                 <td class="center">${'<strong>Detected</strong>' if results[constants.APOBEC_SIGS][constants.SBS2] else '<span style="color: #777;">Not Detected</span>'}</td>
             </tr>
             <tr>
-                <td>COSMIC SBS13</td>
+                <td>SBS13</td>
                 <td class="center">${'<strong>Detected</strong>' if results[constants.APOBEC_SIGS][constants.SBS13] else '<span style="color: #777;">Not Detected</span>'}</td>
             </tr>
         </table>
@@ -209,6 +226,9 @@
 
 <table class="variants" width="100%">
     <thead>
+        <tr>
+            <th colspan="6" class="table-title">Gene Alterations</th>
+        </tr>
         ${immagine_table_builder.make_header(results)}
     </thead>
 

@@ -61,7 +61,6 @@ class immagine_table_builder:
                     hb.td_kwargs(result.get(constants.MUTATION_ALT, "")),
                     hb.td_kwargs(result.get(constants.MUTATION_TYPE, "")),
                     hb.td_kwargs(result.get(constants.COPY_NUMBER, "")),
-                    #hb.td(result.get(constants.EXPRESSION_PERCENTILE, "NA"))
                 ])
 
                 if results[constants.HAS_EXPRESSION_DATA]:
@@ -74,8 +73,7 @@ class immagine_table_builder:
 
                 rows.append(
                     hb.tr_kwargs(
-                        cells,
-                        #style=f"background-color: {category['colour']};"
+                        cells
                     )
                 )
         return rows

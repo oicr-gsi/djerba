@@ -40,12 +40,14 @@ DATA_EXPRESSION_FILE = 'expression_file'
 PURPLE_SEGMENTS_FILE = 'purple.segments.txt'
 PURPLE_CNV_GENE_FILE = 'purple_cnv_gene_file'
 PURITY_PLOIDY_JSON = 'purity_ploidy.json'
+IGCALLER_FILE = 'igcaller_file'
 TRANSLOCATION_FILE = 'translocation_file'
 
 # File names
 DATA_MUTATIONS_TXT = 'data_mutations_extended.txt'
 #DATA_CNA_TXT = 'purple.data_CNA.txt'
 DATA_EXPRESSION_TXT = 'data_expression_percentile_tcga.txt'
+COMMON_IGCALLS = 'igcaller_candidate_common_mm_calls_for_igv_review.tsv'
 
 # List of MM genes
 

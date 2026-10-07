@@ -120,45 +120,26 @@ def chromosome_17p_deletion(segment_df):
     We'll calculate the percentage with a fixed length as sometimes the segment overlaps the centromere.
 
     """
+    # Slice the segment dataframe so it's only the 1p arm, using 22700001 as the cutoff for the p-arm
+    # (The segment file starts numbering at 1, that's why there's a +1)
+    chr_df = segment_df[(segment_df['chromosome'] == "chr17") & (segment_df['start'] <= 22700001)].copy()
 
-    # based on cytoBand.txt:
-    17P_START = 1
-    17P_END = 22700001
-
-    # Get chr17 segments but cut off so it's just the p-arm and not the q-arm
-
-    chr_df = segment_df[
-        (segment_df['chromosome'] == 'chr17') &
-        (segment_df['start'] <= 17P_END) &
-        (segment_df['end'] >= 17P_START)
-    ].copy()
-
-    # Clip the upper portion to the 17p boundary
-    # This ensures that segments overlapping 17q don't go above 100% length of 17p
-    chr_df['overlap_start'] = chr_df['start'].clip(lower=17P_START)
-    chr_df['overlap_end'] = chr_df['end'].clip(upper=17P_END)
-
-    # Calculate ONLY the portion of each segment that lies within 17p
-    chr_df['length'] = (
-        chr_df['overlap_end'] - chr_df['overlap_start'] + 1
-    )
-
-    # Total length of 17p
-    total_length = 17P_END - 17P_START + 1
+    # Get the lengths of each segment
+    chr_df['length'] = chr_df['end'] - chr_df['start'] + 1
+    total_length = 22700000 # fixed 1p length based on cytoBand.txt
 
     # First, calculate percentage that total copy number < 1.2
+
     # True if < 1.2, False if >= 1.2
-    
     bool_CN = chr_df['copyNumber_round_1dec'] < 1.2
-    
+    #bool_CN = chr_df['majorAlleleCopyNumber'] < 1.2
     # Gets sum of the length for those segments that are True for the above condition
     perc_CN = chr_df.loc[bool_CN, 'length'].sum() / total_length * 100
 
     # Next, calculate percentage that minor copy number = 0
-    # True if == 0, False if != 0
 
+    # True if == 0, False if != 0
     bool_MACN = chr_df['minorAlleleCopyNumber'] == 0
-    
     # Gets sum of the length for those segments that are True for the above condition
     perc_MACN = chr_df.loc[bool_MACN, 'length'].sum() / total_length * 100
 
@@ -187,52 +168,33 @@ def biallelic_1p32_deletion(segment_df):
     We'll calculate the percentage with a fixed length.
 
     """
-
-    ---
     # Slice the segment dataframe so it's only the 1p32 segment
     # (The segment file starts numbering at 1, that's why there's a +1)
-
-    # based on cytoBand.txt:
-    1P32_START = 50200001
-    1P32_END = 60800001
-
-    # Get chr1 segments that overlap 1p32
     chr_df = segment_df[
-        (segment_df['chromosome'] == 'chr1') &
-        (segment_df['end'] >= 1P32_START) &
-        (segment_df['start'] <= 1P32_END)
+        (segment_df['chromosome'] == "chr1") &
+        (segment_df['end'] > 50200001) &  
+        (segment_df['start'] <= 60800001)  
     ].copy()
+    
+    # Get the lengths of each segment 
+    chr_df['length'] = chr_df['end'] - chr_df['start'] + 1
+    total_length = 10600000 # fixed 1p length based on cytoBand.txt 
 
-
-    # Clip each segment to the 1p32 boundaries
-    # This ensures that segments overlapping 1q don't go above 100% length of 1p32
-    chr_df['overlap_start'] = chr_df['start'].clip(lower=1P32_START)
-    chr_df['overlap_end'] = chr_df['end'].clip(upper=1P32_END)
-
-    # Calculate ONLY the portion of each segment that lies within 1p32
-    chr_df['length'] = (
-        chr_df['overlap_end'] - chr_df['overlap_start'] + 1
-    )
-
-    # Total length of 1p32
-    total_length = 1P32_END - 1P32_START + 1
-
-    # Segments with required parameters
-    bool_CN = chr_df['copyNumber_round_int'] <= 1 
-
-
+    # First, calculate percentage that total copy number <= 1
+    
+    bool_CN = chr_df['copyNumber_round_int'] <= 1
     # Gets sum of the length for those segments that are True for the above condition
     perc_CN = chr_df.loc[bool_CN, 'length'].sum() / total_length * 100
-
+    
 
     # Second, calculate percentage that minor allele copy number = 0
+    
     bool_MACN = chr_df['minorAlleleCopyNumber'] == 0
-
     # Gets sum of the length for those segments that are True for the above condition
     perc_MACN = chr_df.loc[bool_CN, 'length'].sum() / total_length * 100
 
-    return bool(perc_CN == 50 and perc_MACN == 50)
-
+    return bool(perc_CN == 50 and perc_MACN == 50)   
+ 
     
 def monoallelic_1p32_deletion(segment_df):
     """
@@ -258,76 +220,57 @@ def monoallelic_1p32_deletion(segment_df):
     """
     # Slice the segment dataframe so it's only the 1p32 segment
     # (The segment file starts numbering at 1, that's why there's a +1)
-    
-    # based on cytoBand.txt:
-    1P32_START = 50200001
-    1P32_END = 60800001
-
-    # Get chr1 segments that overlap 1p32
     chr_df = segment_df[
-        (segment_df['chromosome'] == 'chr1') &
-        (segment_df['end'] >= 1P32_START) &
-        (segment_df['start'] <= 1P32_END)
+        (segment_df['chromosome'] == "chr1") &
+        (segment_df['end'] > 50200001) &  
+        (segment_df['start'] <= 60800001)  
     ].copy()
-
-
-    # Clip each segment to the 1p32 boundaries
-    # This ensures that segments overlapping 1q don't go above 100% length of 1p32
-    chr_df['overlap_start'] = chr_df['start'].clip(lower=1P32_START)
-    chr_df['overlap_end'] = chr_df['end'].clip(upper=1P32_END)
-
-    # Calculate ONLY the portion of each segment that lies within 1p32
-    chr_df['length'] = (
-        chr_df['overlap_end'] - chr_df['overlap_start'] + 1
-    )
-
-    # Total length of 1p32
-    total_length = 1P32_END - 1P32_START + 1
-
-    # Segments with required parameters
-    bool_CN = ((chr_df['copyNumber_round_int'] >= 1) & (chr_df['copyNumber_round_1dec'] <= 1.5))
     
+    # Get the lengths of each segment 
+    chr_df['length'] = chr_df['end'] - chr_df['start'] + 1
+    total_length = 10600000 # fixed 1p length based on cytoBand.txt 
 
+    # First, calculate percentage that total copy number is between 1 and 1.5
+    
+    bool_CN = ((chr_df['copyNumber_round_int'] >= 1) & (chr_df['copyNumber_round_1dec'] <= 1.5))
     # Gets sum of the length for those segments that are True for the above condition
     perc_CN = chr_df.loc[bool_CN, 'length'].sum() / total_length * 100
     
 
     # Second, calculate percentage that minor allele copy number = 0
-    bool_MACN = chr_df['minorAlleleCopyNumber'] == 0
     
+    bool_MACN = chr_df['minorAlleleCopyNumber'] == 0
     # Gets sum of the length for those segments that are True for the above condition
     perc_MACN = chr_df.loc[bool_CN, 'length'].sum() / total_length * 100
 
     return bool(perc_CN >= 50 and perc_MACN >= 50)
 
+def chromosome_1p_gain_or_amp(segment_df):
+    """
+    THIS FUNCTION IS NOT DONE YET. Requires clarification from Trevor.
+    Chromosome 1p gain is defined as:
+    Arm-level gain of 1p call when >= 50% of the arm has total copy number >= 3
+    (i.e., gain of at least one extra copy) after purity/ploidy correction
 
-
-#def chromosome_1p_gain_or_amp(segment_df):
-#    """
-#    THIS FUNCTION IS NOT DONE YET. Requires clarification from Trevor.
-#    Chromosome 1p gain is defined as:
-#    Arm-level gain of 1p call when >= 50% of the arm has total copy number >= 3
-#    (i.e., gain of at least one extra copy) after purity/ploidy correction
-#
-#    Chromosome 1p amplification is defined as:
-#    High-level amplification when a segment (focal or broader) has total copy number >= 6
-#    (high confidence) or total copy number >= 4 for moderate amplification
-#    """
-#    
-#    # Slice the segment dataframe so it's only the 1p arm, using 121700001 as the cutoff for the p-arm
-#    # (The segment file starts numbering at 1, that's why there's a +1)
-#    chr_df = segment_df[(segment_df['chromosome'] == "chr1") & (segment_df['start'] <= 121700001)].copy()
-#    # Get the lengths of each segment 
-#    chr_df['length'] = chr_df['end'] - chr_df['start'] + 1
-#    total_length = 121700000 # fixed 1p length based on cytoBand.txt 
-#    # First, calculate percentage that total copy number >= 3.0
-#    
-#    # True if >=3.0, False if < 3.0
-#    bool_CN = chr_df['copyNumber_round_int'] >= 3.0
-#    # Gets sum of the length for those segments that are True for the above condition
-#    perc_CN = chr_df.loc[bool_CN, 'length'].sum() / total_length * 100
-#    
-#    return bool(perc_CN >= 50)
+    Chromosome 1p amplification is defined as:
+    High-level amplification when a segment (focal or broader) has total copy number >= 6
+    (high confidence) or total copy number >= 4 for moderate amplification
+    """
+    
+    # Slice the segment dataframe so it's only the 1p arm, using 121700001 as the cutoff for the p-arm
+    # (The segment file starts numbering at 1, that's why there's a +1)
+    chr_df = segment_df[(segment_df['chromosome'] == "chr1") & (segment_df['start'] <= 121700001)].copy()
+    # Get the lengths of each segment 
+    chr_df['length'] = chr_df['end'] - chr_df['start'] + 1
+    total_length = 121700000 # fixed 1p length based on cytoBand.txt 
+    # First, calculate percentage that total copy number >= 3.0
+    
+    # True if >=3.0, False if < 3.0
+    bool_CN = chr_df['copyNumber_round_int'] >= 3.0
+    # Gets sum of the length for those segments that are True for the above condition
+    perc_CN = chr_df.loc[bool_CN, 'length'].sum() / total_length * 100
+    
+    return bool(perc_CN >= 50)
 
 
 
@@ -336,7 +279,6 @@ def chromosome_1q_gain_or_amp(segment_df):
     Determine whether >=50% of chromosome 1q has total copy number >=3.
     """
 
-    # based on cytoBand.txt:
     Q_START = 125100000
     Q_END = 248956422
 
@@ -348,13 +290,14 @@ def chromosome_1q_gain_or_amp(segment_df):
     ].copy()
 
     # Clip each segment to the 1q boundaries
-    # This ensures that segments overlapping 1q don't go above 100% length of 1q
     chr_df['overlap_start'] = chr_df['start'].clip(lower=Q_START)
     chr_df['overlap_end'] = chr_df['end'].clip(upper=Q_END)
 
     # Calculate ONLY the portion of each segment that lies within 1q
     chr_df['length'] = (
-        chr_df['overlap_end'] - chr_df['overlap_start'] + 1
+        chr_df['overlap_end'] -
+        chr_df['overlap_start'] +
+        1
     )
 
     # Total length of 1q
@@ -363,7 +306,15 @@ def chromosome_1q_gain_or_amp(segment_df):
     # Segments with CN >= 3
     bool_CN = chr_df['copyNumber_round_int'] >= 3.0
 
-    # Percentage
-    perc_CN = chr_df.loc[bool_CN, 'length'].sum() / total_length * 100
+    # Length of 1q with CN >= 3
+    gain_length = chr_df.loc[bool_CN, 'length'].sum()
+
+    # Percentage of 1q with CN >= 3
+    perc_CN = gain_length / total_length * 100
+
+    print(chr_df)
+    print(f"1q total length: {total_length}")
+    print(f"1q length with CN >= 3: {gain_length}")
+    print(f"Percentage of 1q with CN >= 3: {perc_CN:.2f}%")
 
     return bool(perc_CN >= 50)
