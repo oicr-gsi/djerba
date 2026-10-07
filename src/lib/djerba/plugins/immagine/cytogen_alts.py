@@ -122,21 +122,21 @@ def chromosome_17p_deletion(segment_df):
     """
 
     # based on cytoBand.txt:
-    17P_START = 1
-    17P_END = 22700001
+    P17_START = 1
+    P17_END = 22700001
 
     # Get chr17 segments but cut off so it's just the p-arm and not the q-arm
 
     chr_df = segment_df[
         (segment_df['chromosome'] == 'chr17') &
-        (segment_df['start'] <= 17P_END) &
-        (segment_df['end'] >= 17P_START)
+        (segment_df['start'] <= P17_END) &
+        (segment_df['end'] >= P17_START)
     ].copy()
 
     # Clip the upper portion to the 17p boundary
     # This ensures that segments overlapping 17q don't go above 100% length of 17p
-    chr_df['overlap_start'] = chr_df['start'].clip(lower=17P_START)
-    chr_df['overlap_end'] = chr_df['end'].clip(upper=17P_END)
+    chr_df['overlap_start'] = chr_df['start'].clip(lower=P17_START)
+    chr_df['overlap_end'] = chr_df['end'].clip(upper=P17_END)
 
     # Calculate ONLY the portion of each segment that lies within 17p
     chr_df['length'] = (
@@ -144,7 +144,7 @@ def chromosome_17p_deletion(segment_df):
     )
 
     # Total length of 17p
-    total_length = 17P_END - 17P_START + 1
+    total_length = P17_END - P17_START + 1
 
     # First, calculate percentage that total copy number < 1.2
     # True if < 1.2, False if >= 1.2
@@ -193,21 +193,21 @@ def biallelic_1p32_deletion(segment_df):
     # (The segment file starts numbering at 1, that's why there's a +1)
 
     # based on cytoBand.txt:
-    1P32_START = 50200001
-    1P32_END = 60800001
+    P132_START = 50200001
+    P132_END = 60800001
 
     # Get chr1 segments that overlap 1p32
     chr_df = segment_df[
         (segment_df['chromosome'] == 'chr1') &
-        (segment_df['end'] >= 1P32_START) &
-        (segment_df['start'] <= 1P32_END)
+        (segment_df['end'] >= P132_START) &
+        (segment_df['start'] <= P132_END)
     ].copy()
 
 
     # Clip each segment to the 1p32 boundaries
     # This ensures that segments overlapping 1q don't go above 100% length of 1p32
-    chr_df['overlap_start'] = chr_df['start'].clip(lower=1P32_START)
-    chr_df['overlap_end'] = chr_df['end'].clip(upper=1P32_END)
+    chr_df['overlap_start'] = chr_df['start'].clip(lower=P132_START)
+    chr_df['overlap_end'] = chr_df['end'].clip(upper=P132_END)
 
     # Calculate ONLY the portion of each segment that lies within 1p32
     chr_df['length'] = (
@@ -215,7 +215,7 @@ def biallelic_1p32_deletion(segment_df):
     )
 
     # Total length of 1p32
-    total_length = 1P32_END - 1P32_START + 1
+    total_length = P132_END - P132_START + 1
 
     # Segments with required parameters
     bool_CN = chr_df['copyNumber_round_int'] <= 1 
@@ -260,21 +260,21 @@ def monoallelic_1p32_deletion(segment_df):
     # (The segment file starts numbering at 1, that's why there's a +1)
     
     # based on cytoBand.txt:
-    1P32_START = 50200001
-    1P32_END = 60800001
+    P132_START = 50200001
+    P132_END = 60800001
 
     # Get chr1 segments that overlap 1p32
     chr_df = segment_df[
         (segment_df['chromosome'] == 'chr1') &
-        (segment_df['end'] >= 1P32_START) &
-        (segment_df['start'] <= 1P32_END)
+        (segment_df['end'] >= P132_START) &
+        (segment_df['start'] <= P132_END)
     ].copy()
 
 
     # Clip each segment to the 1p32 boundaries
     # This ensures that segments overlapping 1q don't go above 100% length of 1p32
-    chr_df['overlap_start'] = chr_df['start'].clip(lower=1P32_START)
-    chr_df['overlap_end'] = chr_df['end'].clip(upper=1P32_END)
+    chr_df['overlap_start'] = chr_df['start'].clip(lower=P132_START)
+    chr_df['overlap_end'] = chr_df['end'].clip(upper=P132_END)
 
     # Calculate ONLY the portion of each segment that lies within 1p32
     chr_df['length'] = (
@@ -282,7 +282,7 @@ def monoallelic_1p32_deletion(segment_df):
     )
 
     # Total length of 1p32
-    total_length = 1P32_END - 1P32_START + 1
+    total_length = P132_END - P132_START + 1
 
     # Segments with required parameters
     bool_CN = ((chr_df['copyNumber_round_int'] >= 1) & (chr_df['copyNumber_round_1dec'] <= 1.5))
@@ -337,20 +337,20 @@ def chromosome_1q_gain_or_amp(segment_df):
     """
 
     # based on cytoBand.txt:
-    Q_START = 125100000
-    Q_END = 248956422
+    Q1_START = 125100000
+    Q1_END = 248956422
 
     # Get chr1 segments that overlap 1q
     chr_df = segment_df[
         (segment_df['chromosome'] == 'chr1') &
-        (segment_df['end'] >= Q_START) &
-        (segment_df['start'] <= Q_END)
+        (segment_df['end'] >= Q1_START) &
+        (segment_df['start'] <= Q1_END)
     ].copy()
 
     # Clip each segment to the 1q boundaries
     # This ensures that segments overlapping 1q don't go above 100% length of 1q
-    chr_df['overlap_start'] = chr_df['start'].clip(lower=Q_START)
-    chr_df['overlap_end'] = chr_df['end'].clip(upper=Q_END)
+    chr_df['overlap_start'] = chr_df['start'].clip(lower=Q1_START)
+    chr_df['overlap_end'] = chr_df['end'].clip(upper=Q1_END)
 
     # Calculate ONLY the portion of each segment that lies within 1q
     chr_df['length'] = (
@@ -358,7 +358,7 @@ def chromosome_1q_gain_or_amp(segment_df):
     )
 
     # Total length of 1q
-    total_length = Q_END - Q_START + 1
+    total_length = Q1_END - Q1_START + 1
 
     # Segments with CN >= 3
     bool_CN = chr_df['copyNumber_round_int'] >= 3.0
