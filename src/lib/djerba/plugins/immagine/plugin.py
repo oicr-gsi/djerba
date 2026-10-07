@@ -154,7 +154,7 @@ class main(plugin_base):
         # Group B: any two
         translocation = any(results[constants.TRANSLOCATIONS].get(x, False) for x in [constants.t4_14, constants.t14_16, constants.t14_20])
         results[constants.HIGH_RISK_TRANSLOC] = translocation
-        gain_or_amp_1q = results[constants.CYTOGEN_ALTS][constants.AMP_1P]
+        gain_or_amp_1q = results[constants.CYTOGEN_ALTS][constants.AMP_1Q]
         monoallelic_del_1p32 = results[constants.CYTOGEN_ALTS][constants.MONO_DEL_1P32]
 
         #print("translocation default false ", translocation_chr14)
