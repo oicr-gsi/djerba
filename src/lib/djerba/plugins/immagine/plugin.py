@@ -374,7 +374,7 @@ class main(plugin_base):
         """
 
         cmd = [
-            'Rscript', self.r_script_dir + "/filter_igcaller.R",
+            'Rscript', self.r_script_dir + "filter_igcaller.R",
             '--base_dir', self.r_script_dir,
             '--raw_igcaller_dir', igcaller_results,
             '--cytoband_file', self.r_script_dir + "/cytoBand.txt",
