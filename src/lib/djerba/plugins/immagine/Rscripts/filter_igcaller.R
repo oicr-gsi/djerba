@@ -332,11 +332,10 @@ output_dir <- opt$output_dir
 config <- list(
   raw_igcaller_dir = raw_igcaller_dir,
   cytoband_file = cytoband_file,
-  #metadata_csv = metadata_csv,
-  #annotated_igcaller_rds = annotated_igcaller_rds
+  metadata_csv = NULL,
+  annotated_igcaller_rds = NULL,
   blacklist_bed = blacklist_bed,
-  #igv_review_xlsm = args$igv_review_xlsm %||%
-  output_dir = output_dir %||% file.path("Output_tables_2025", "igcaller_cgi_simplified")
+  output_dir = output_dir
 )
 
 required_columns <- c(
@@ -872,6 +871,7 @@ saveRDS(
   automated_filtered_calls,
   file.path(config$output_dir, "igcaller_automated_extra_aggressive_calls.rds")
 )
+
 write_tsv(
   candidate_review_calls,
   file.path(config$output_dir, "igcaller_candidate_common_mm_calls_for_igv_review.tsv"),
@@ -879,37 +879,6 @@ write_tsv(
 )
 
 confirmed_calls <- NULL
-if (file.exists(config$igv_review_xlsm)) {
-  if (!requireNamespace("readxl", quietly = TRUE)) {
-    stop("Package 'readxl' is required to read igv_review_xlsm: ", config$igv_review_xlsm, call. = FALSE)
-  }
-
-  igv_review <- readxl::read_excel(config$igv_review_xlsm)
-  validate_columns(igv_review, c("Looks_real", "Bam_File", "IGCaller_Score", "Common_MM_translocation", "Sorted_translocation"), "IGV review workbook")
-
-  confirmed_calls <- igv_review %>%
-    mutate(
-      Looks_real = as.numeric(Looks_real),
-      IGCaller_Score = as.numeric(IGCaller_Score),
-      Common_MM_translocation = as.integer(Common_MM_translocation)
-    ) %>%
-    filter(Looks_real == 1)
-
-  evidence_override_samples <- igv_review %>%
-    mutate(Looks_real = as.numeric(Looks_real)) %>%
-    filter(Looks_real > 0.7) %>%
-    select(any_of(c("Bam_clean_tmp", "Bam_File", "Patient", "Sample_ID", "Looks_real"))) %>%
-    distinct()
-
-  final_matrix <- make_final_cytoband_matrix(confirmed_calls)
-
-  write_tsv(confirmed_calls, file.path(config$output_dir, "igcaller_igv_confirmed_calls.tsv"), na = "")
-  write_tsv(evidence_override_samples, file.path(config$output_dir, "igcaller_evidence_override_samples_looks_real_gt_0_7.tsv"), na = "")
-  write_tsv(final_matrix, file.path(config$output_dir, "translocation_data_cytoband_updated_simplified.tsv"), na = "")
-  saveRDS(final_matrix, file.path(config$output_dir, "translocation_data_cytoband_updated_simplified.rds"))
-} else {
-  message("IGV review workbook not found; skipping final IGV-confirmed matrix: ", config$igv_review_xlsm)
-}
 
 write_qc_summary(
   file.path(config$output_dir, "igcaller_filter_qc_summary.tsv"),
