@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 - Transform GEP TPM values to log2(TPM + 0.001) before comparison with RODiC TPM-data, which is stored on that scale.
+- Rounding those values to 4 decimals, so zero TPM in the sample ties with zero TPM in TCGA.
+- Genes with no variation across the sample and the comparison pool no longer get a TCGA percentile and are listed in `data_expression_tcga_no_variation.txt`. 
 - Write genes not found in the TCGA comparator to `data_expression_tcga_unmatched.txt`. SNV/indel and CNV plugins log a warning for each reported gene with no expression value (displayed as NA), noting whether its symbol was missing from the TCGA comparator.
 - Added a warning when gene IDs in the sample GEP results are not found in the GEP reference; these were previously dropped silently and got no expression value.
 
