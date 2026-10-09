@@ -25,6 +25,7 @@ class main(helper_base):
     TCGA_DATA_KEY = 'tcga_data'
     TCGA_EXPR_PCT_TEXT = 'data_expression_percentile_tcga.txt'
     TCGA_EXPR_PCT_JSON = 'data_expression_percentile_tcga.json'
+    TCGA_UNMATCHED = 'data_expression_tcga_unmatched.txt'
 
     # 0-based index for GEP results file
     GENE_ID = 0
@@ -92,7 +93,16 @@ class main(helper_base):
         ]
         self.logger.debug("Rscript command: "+" ".join(cmd))
         subprocess_runner(self.log_level, self.log_path).run(cmd)
+        self.check_tcga_unmatched()
         self.write_tcga_json()
+
+    def check_tcga_unmatched(self):
+        """Log the number of sample genes not found in the TCGA comparator data"""
+        # reported genes without expression are warned about by the SNV/indel and CNV plugins
+        with self.workspace.open_file(self.TCGA_UNMATCHED) as input_file:
+            unmatched = set(row[0] for row in csv.reader(input_file, delimiter="\t"))
+        unmatched.discard('Hugo_Symbol')
+        self.logger.info('{0} genes not found in TCGA expression data'.format(len(unmatched)))
 
     def preprocess_gep(self, gep_path, gep_reference, tumour_id):
         """
@@ -132,6 +142,7 @@ class main(helper_base):
             writer = csv.writer(out_file, delimiter="\t")
             not_found = 0
             total = 0
+            ref_ids = set()
             for row in reader:
                 total += 1
                 if total == 1:
@@ -143,6 +154,7 @@ class main(helper_base):
                         continue
                     stable_ref_id = gene_id_full.split('.')[0]
                     row[0] = stable_ref_id
+                    ref_ids.add(stable_ref_id)
 
                     try:
                         row.insert(1, tpm[stable_ref_id])
@@ -158,6 +170,17 @@ class main(helper_base):
                     'not found in gep results path {0}. '.format(gep_path) +\
                     'Run with --debug for details.'
                 self.logger.warning(msg)
+        # sample gene IDs absent from the reference are left out of the GEP file and will have no expression value
+        sample_ids = set(tpm.keys())
+        sample_ids.discard('gene_id') # header of the GEP results file
+        dropped = sorted(sample_ids - ref_ids)
+        for gene_id in dropped:
+            self.logger.debug('Gene ID {0} from {1} not found in reference {2}'.format(gene_id, gep_path, ref_path))
+        if len(dropped) > 0:
+            msg = '{0} of {1} gene IDs from gep results path {2} '.format(len(dropped), len(sample_ids), gep_path) +\
+                'not found in reference {0}, and will have no expression data. '.format(ref_path) +\
+                'Run with --debug for details.'
+            self.logger.warning(msg)
         return self.workspace.abs_path(out_file_name)
 
     def specify_params(self):

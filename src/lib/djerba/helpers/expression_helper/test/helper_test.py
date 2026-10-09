@@ -75,15 +75,16 @@ class TestExpressionHelper(TestBase):
         self.assertEqual(self.getMD5(gep_path), '9155adcfa33ae7b6e2c0034148b383cf')
         expected = {
             'data_expression_percentile_comparison.txt': 'a213ab260cefbe28fd504c8b70c28738',
-            'data_expression_percentile_tcga.txt': '4d6e45e47a28cff3e6fc179ccc9ec967',
+            'data_expression_percentile_tcga.txt': 'd27c6a47019de6dd9e8c16b21fa5d47e',
             'data_expression_zscores_comparison.txt': 'ae56589f46a74ad5a16aecfe919371bb',
-            'data_expression_zscores_tcga.txt': '98321a05f21035a08524dbb92b829a38',
-            'data_expression_percentile_tcga.json': 'ab1671a9774c1fcc67da4a9cb063bf01'
+            'data_expression_zscores_tcga.txt': 'de5d339f78084ed2d490294151994910',
+            'data_expression_percentile_tcga.json': '2d4f29a46c8136d89b4bb6f5e4bf5bea'
         }
         for name in expected:
             out_path = os.path.join(self.tmp_dir, name)
             self.assertTrue(os.path.exists(out_path))
             self.assertEqual(self.getMD5(out_path), expected[name])
+        self.assertTrue(os.path.exists(ws.abs_path(helper_main.TCGA_UNMATCHED)))
 
     def test_extract_unknown_tcga(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -110,10 +111,10 @@ class TestExpressionHelper(TestBase):
         self.assertEqual(self.getMD5(gep_path), '9155adcfa33ae7b6e2c0034148b383cf')
         expected = {
             'data_expression_percentile_comparison.txt': 'a213ab260cefbe28fd504c8b70c28738',
-            'data_expression_percentile_tcga.txt': 'bc27d32071fdae27f150e0692fca7b27',
+            'data_expression_percentile_tcga.txt': '1e5e1e14a0da2772e9aa57691ef1439d',
             'data_expression_zscores_comparison.txt': 'ae56589f46a74ad5a16aecfe919371bb',
-            'data_expression_zscores_tcga.txt': 'e3ad7a1eadeb1115836723edd3bcd8c0',
-            'data_expression_percentile_tcga.json': '94d30b027047935960c9a82042e571fd'
+            'data_expression_zscores_tcga.txt': 'afb28c618de33dd5477cc2541f2b2ea7',
+            'data_expression_percentile_tcga.json': 'a540ffaa3bebc735a6d822afc9e21260'
         }
         for name in expected:
             out_path = os.path.join(self.tmp_dir, name)
