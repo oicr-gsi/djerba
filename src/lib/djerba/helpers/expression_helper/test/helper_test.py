@@ -40,6 +40,8 @@ class TestExpressionHelper(TestBase):
         plugin_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # go 2 directories up
         configured_enscon = config.get(self.HELPER_NAME, helper_main.ENSCON_KEY)
         self.assertTrue(os.path.exists(configured_enscon))
+        configured_tcga_enscon = config.get(self.HELPER_NAME, helper_main.TCGA_ENSCON_KEY)
+        self.assertTrue(os.path.exists(configured_tcga_enscon))
         tcga_code = config.get(self.HELPER_NAME, helper_main.TCGA_CODE_KEY)
         self.assertEqual(tcga_code, 'PAAD')
         # path was derived from file provenance subset, should not change
@@ -63,6 +65,8 @@ class TestExpressionHelper(TestBase):
         plugin_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # go 2 directories up
         enscon = os.path.join(plugin_dir, helper_main.ENSCON_DEFAULT)
         cp.set(self.HELPER_NAME, helper_main.ENSCON_KEY, enscon)
+        tcga_enscon = os.path.join(plugin_dir, helper_main.TCGA_ENSCON_DEFAULT)
+        cp.set(self.HELPER_NAME, helper_main.TCGA_ENSCON_KEY, tcga_enscon)
         rsem = os.path.join(test_data_dir, 'PANX_1547_Lv_M_WT_100-PM-061_LCM6.genes.results')
         cp.set(self.HELPER_NAME, helper_main.RSEM_GENES_RESULTS_KEY, rsem)
         ref = os.path.join(test_data_dir, helper_main.GEP_REFERENCE_DEFAULT)
@@ -99,6 +103,8 @@ class TestExpressionHelper(TestBase):
         plugin_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # go 2 directories up
         enscon = os.path.join(plugin_dir, helper_main.ENSCON_DEFAULT)
         cp.set(self.HELPER_NAME, helper_main.ENSCON_KEY, enscon)
+        tcga_enscon = os.path.join(plugin_dir, helper_main.TCGA_ENSCON_DEFAULT)
+        cp.set(self.HELPER_NAME, helper_main.TCGA_ENSCON_KEY, tcga_enscon)
         rsem = os.path.join(test_data_dir, 'PANX_1547_Lv_M_WT_100-PM-061_LCM6.genes.results')
         cp.set(self.HELPER_NAME, helper_main.RSEM_GENES_RESULTS_KEY, rsem)
         ref = os.path.join(test_data_dir, helper_main.GEP_REFERENCE_DEFAULT)

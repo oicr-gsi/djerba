@@ -32,13 +32,37 @@ preProcRNA <- function(gepfile, enscon){
  rm(gepData, ensConv)
  gc()
  
+ # Ensembl ID of the row kept for each symbol, to match genes whose symbol differs in the TCGA data
+ kept <- !duplicated(df$Hugo_Symbol) & !is.na(df$Hugo_Symbol)
+ gene_ids <- setNames(df$gene_id[kept], df$Hugo_Symbol[kept])
+
  df <- subset(df[,c(ncol(df),2:(ncol(df)-1))], !duplicated(df[,c(ncol(df),2:(ncol(df)-1))][,1]))
  df <- df[!is.na(df$Hugo_Symbol),]
  row.names(df) <- df[,1]
  df <- df[,-1]
 
- # return the data frame
+ # return the data frame, with the Ensembl IDs as an attribute
+ attr(df, "gene_id") <- gene_ids[row.names(df)]
  return(df)
+}
+
+# if gene symbol not in the TCGA data match by Ensembl ID
+matchByEnsembl <- function(genes, gene_ids, tcgaenscon, tcga_genes, matched) {
+
+ if (is.null(tcgaenscon)) {
+  return(setNames(character(0), character(0)))
+ }
+ ensConv <- read.csv(tcgaenscon, sep="\t", header=FALSE, col.names=c("gene_id", "Hugo_Symbol"))
+ ensConv <- ensConv[!grepl("_PAR_Y", ensConv$gene_id), ]
+ ensConv$gene_id <- sub("\\..*", "", ensConv$gene_id)
+
+ ensConv <- ensConv[!(ensConv$Hugo_Symbol %in% ensConv$Hugo_Symbol[duplicated(ensConv$Hugo_Symbol)]), ]
+ tcga_symbol <- setNames(ensConv$Hugo_Symbol, ensConv$gene_id)[gene_ids[genes]]
+ names(tcga_symbol) <- genes
+
+ tcga_symbol <- tcga_symbol[!is.na(tcga_symbol) & tcga_symbol %in% tcga_genes & !(tcga_symbol %in% matched)]
+ tcga_symbol <- tcga_symbol[!duplicated(tcga_symbol)]
+ return(tcga_symbol)
 }
 
 # simple zscore function
@@ -60,7 +84,8 @@ option_list = list(
   make_option(c("-g", "--gepfile"), type="character", default=NULL, help="concatenated gep file", metavar="character"),
   make_option(c("-o", "--outdir"), type="character", default=NULL, help="output directory", metavar="character"),
   make_option(c("-t", "--tcgadata"), type="character", default=NULL, help="tcga datadir", metavar="character"),
-  make_option(c("-c", "--tcgacode"), type="character", default=NULL, help="tcga code", metavar="character")
+  make_option(c("-c", "--tcgacode"), type="character", default=NULL, help="tcga code", metavar="character"),
+  make_option(c("-n", "--tcgaenscon"), type="character", default=NULL, help="ensembl conversion file for the tcga data (optional)", metavar="character")
 )
 opt_parser <- OptionParser(option_list=option_list, add_help_option=FALSE)
 opt <- parse_args(opt_parser)
@@ -69,6 +94,7 @@ gepfile <- opt$gepfile
 outdir <- opt$outdir
 tcgadata <- opt$tcgadata
 tcgacode <- opt$tcgacode
+tcgaenscon <- opt$tcgaenscon
 
 if (is.null(enscon) |  is.null(gepfile) | is.null(outdir) | is.null(tcgadata) | is.null(tcgacode)) {
     print("ERROR: Missing inputs for find_expression.R")
@@ -78,6 +104,7 @@ if (is.null(enscon) |  is.null(gepfile) | is.null(outdir) | is.null(tcgadata) | 
 
   # preprocess the full data frame
   df <- preProcRNA(gepfile, enscon)
+  gene_ids <- attr(df, "gene_id")
   sample <- colnames(df)[1]
 
   print("getting CAP-level data")
@@ -120,15 +147,20 @@ if (is.null(enscon) |  is.null(gepfile) | is.null(outdir) | is.null(tcgadata) | 
   # equalize dfs (get common genes)
   comg <- as.character(intersect(row.names(df_tcga), row.names(df)))
 
+  # genes with a different symbol in the TCGA data: match by Ensembl ID, keep the sample's symbol
+  tcga_alias <- matchByEnsembl(setdiff(row.names(df), comg), gene_ids, tcgaenscon, row.names(df_tcga), comg)
+  print(paste0(length(tcga_alias), " genes matched to TCGA data by Ensembl ID"))
+
   # write sample genes missing from the TCGA comparator, eg. due to gene symbol mismatches
-  # these get no TCGA expression value. The SNV/indel and CNV plugins warn if agny are reported
-  unmatched <- sort(setdiff(row.names(df), row.names(df_tcga)))
+  # these get no TCGA expression value. The SNV/indel and CNV plugins warn if any are reported
+  unmatched <- sort(setdiff(row.names(df), c(comg, names(tcga_alias))))
   print(paste0(length(unmatched), " of ", nrow(df), " genes not found in TCGA data"))
   write.table(data.frame(Hugo_Symbol=unmatched),
     file=paste0(outdir, "/data_expression_tcga_unmatched.txt"), sep="\t", row.names=FALSE, quote=FALSE)
-  df_tcga_common <- df_tcga[row.names(df_tcga) %in% comg, ]
+  df_tcga_common <- df_tcga[c(comg, unname(tcga_alias)), ]
+  row.names(df_tcga_common) <- c(comg, names(tcga_alias))
   df_tcga_common_sort <- df_tcga_common[ order(row.names(df_tcga_common)), ]
-  df_stud_common <- df[row.names(df) %in% comg, ]
+  df_stud_common <- df[row.names(df) %in% c(comg, names(tcga_alias)), ]
   df_stud_common_sort <- df_stud_common[ order(row.names(df_stud_common)), ]
   df_stud_tcga <- merge(df_stud_common_sort, df_tcga_common_sort, by=0, all=TRUE)
   rm(df_tcga_common_sort, df_stud_common_sort)
@@ -142,8 +174,10 @@ if (is.null(enscon) |  is.null(gepfile) | is.null(outdir) | is.null(tcgadata) | 
   df_percentile <- data.frame(signif(pnorm(as.matrix(df_zscore)), digits=4), check.names=FALSE)
 
   # genes not expressed in the sample or the whole pool have no z-score
-  # leavinf them our of the TCGA outputs so they are reported as NA instead of a fake 50th percentile. 
-  no_var <- is.nan(df_zscore[[sample]])
+  # leave them out of the TCGA outputs so they are reported as NA instead of a fake 50th percentile.
+  # In a large pool (TCGA_ALL_TUMOR) the mean of identical values carries a rounding error, so scale() returns z = +/-1 instead of NaN 
+  same_as_sample <- df_stud_tcga[[sample]]
+  no_var <- Reduce(function(same, column) same & column == same_as_sample, df_stud_tcga, rep(TRUE, nrow(df_stud_tcga)))
   print(paste0(sum(no_var), " of ", length(no_var), " genes have no variation in the TCGA pool; no percentile"))
   write.table(data.frame(Hugo_Symbol=sort(rownames(df_zscore)[no_var])),
     file=paste0(outdir, "/data_expression_tcga_no_variation.txt"), sep="\t", row.names=FALSE, quote=FALSE)

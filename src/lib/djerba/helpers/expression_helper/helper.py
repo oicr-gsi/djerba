@@ -18,6 +18,10 @@ class main(helper_base):
     ENSCON_KEY = 'enscon'
     ENSCON_VERSION = 44
     ENSCON_DEFAULT = 'ensembl_conversion_hg38_v{0}.txt'.format(ENSCON_VERSION)
+    # Annotation file of RODiC TPM-data, used to match genes by Ensembl ID when symbols differ
+    TCGA_ENSCON_KEY = 'tcga_enscon'
+    TCGA_ENSCON_VERSION = 23
+    TCGA_ENSCON_DEFAULT = 'ensembl_conversion_hg38_v{0}.txt'.format(TCGA_ENSCON_VERSION)
     GEP_REFERENCE_KEY = 'gep_reference'
     GEP_REFERENCE_DEFAULT = 'gep_reference.txt.gz'
     RSEM_GENES_RESULTS_KEY = 'rsem_genes_results'
@@ -63,6 +67,10 @@ class main(helper_base):
             helper_dir = os.path.dirname(os.path.realpath(__file__))
             ref_path = os.path.join(helper_dir, self.ENSCON_DEFAULT)
             wrapper.set_my_param(self.ENSCON_KEY, ref_path)
+        if wrapper.my_param_is_null(self.TCGA_ENSCON_KEY):
+            helper_dir = os.path.dirname(os.path.realpath(__file__))
+            ref_path = os.path.join(helper_dir, self.TCGA_ENSCON_DEFAULT)
+            wrapper.set_my_param(self.TCGA_ENSCON_KEY, ref_path)
         # set up and run the provenance reader
         samples = sample_name_container()
         samples.set_and_validate(sample_wg_n, sample_wg_t, sample_wt_t)
@@ -89,7 +97,8 @@ class main(helper_base):
             '--gepfile', gep_abs_path,
             '--outdir', self.workspace.get_work_dir(),
             '--tcgadata', wrapper.get_my_string(self.TCGA_DATA_KEY),
-            '--tcgacode', wrapper.get_my_string(self.TCGA_CODE_KEY).upper()
+            '--tcgacode', wrapper.get_my_string(self.TCGA_CODE_KEY).upper(),
+            '--tcgaenscon', wrapper.get_my_string(self.TCGA_ENSCON_KEY)
         ]
         self.logger.debug("Rscript command: "+" ".join(cmd))
         subprocess_runner(self.log_level, self.log_path).run(cmd)
@@ -196,6 +205,7 @@ class main(helper_base):
         for key in defaults.keys():
             self.set_ini_default(key, defaults[key])
         self.add_ini_discovered(self.ENSCON_KEY)
+        self.add_ini_discovered(self.TCGA_ENSCON_KEY)
         self.add_ini_discovered(self.RSEM_GENES_RESULTS_KEY)
         self.add_ini_discovered(self.TCGA_CODE_KEY) # use PAAD for testing
         self.add_ini_discovered(core_constants.TUMOUR_ID)
