@@ -49,7 +49,7 @@ class TestExpressionHelper(TestBase):
         self.assertEqual(self.getMD5_of_string(rsem), '6adf97f83acf6453d4a6a4b1070f3754')
         # check the reference path
         found = config.get(self.HELPER_NAME, helper_main.GEP_REFERENCE_KEY)
-        expected = '/.mounts/labs/CGI/gsi/tools/djerba/gep_reference.txt.gz'
+        expected = '/.mounts/labs/CGI/gsi/tools/djerba/gep_reference_tpm.txt.gz'
         self.assertEqual(found, expected)
 
     def test_extract(self):
@@ -78,11 +78,11 @@ class TestExpressionHelper(TestBase):
         gep_path = ws.abs_path('gep.txt')
         self.assertEqual(self.getMD5(gep_path), '9155adcfa33ae7b6e2c0034148b383cf')
         expected = {
-            'data_expression_percentile_comparison.txt': 'a213ab260cefbe28fd504c8b70c28738',
-            'data_expression_percentile_tcga.txt': 'd27c6a47019de6dd9e8c16b21fa5d47e',
-            'data_expression_zscores_comparison.txt': 'ae56589f46a74ad5a16aecfe919371bb',
-            'data_expression_zscores_tcga.txt': 'de5d339f78084ed2d490294151994910',
-            'data_expression_percentile_tcga.json': '2d4f29a46c8136d89b4bb6f5e4bf5bea'
+            'data_expression_percentile_comparison.txt': '02a3838e4be70f381feeb3b1e4345f16',
+            'data_expression_percentile_tcga.txt': '374d60dc8575f405dbf57b95d7bb4b11',
+            'data_expression_zscores_comparison.txt': 'e44fe0f6fccaf2db79cadda9e65fdfe0',
+            'data_expression_zscores_tcga.txt': '72cfb0e242aa375c572aed5aca0c1e80',
+            'data_expression_percentile_tcga.json': 'bbddde250bbc9cdad21686c49daeeda6'
         }
         for name in expected:
             out_path = os.path.join(self.tmp_dir, name)
@@ -116,11 +116,11 @@ class TestExpressionHelper(TestBase):
         gep_path = ws.abs_path('gep.txt')
         self.assertEqual(self.getMD5(gep_path), '9155adcfa33ae7b6e2c0034148b383cf')
         expected = {
-            'data_expression_percentile_comparison.txt': 'a213ab260cefbe28fd504c8b70c28738',
-            'data_expression_percentile_tcga.txt': '1e5e1e14a0da2772e9aa57691ef1439d',
-            'data_expression_zscores_comparison.txt': 'ae56589f46a74ad5a16aecfe919371bb',
-            'data_expression_zscores_tcga.txt': 'afb28c618de33dd5477cc2541f2b2ea7',
-            'data_expression_percentile_tcga.json': 'a540ffaa3bebc735a6d822afc9e21260'
+            'data_expression_percentile_comparison.txt': '02a3838e4be70f381feeb3b1e4345f16',
+            'data_expression_percentile_tcga.txt': 'dabd73f208a9c21561bdf5b45d1bd17a',
+            'data_expression_zscores_comparison.txt': 'e44fe0f6fccaf2db79cadda9e65fdfe0',
+            'data_expression_zscores_tcga.txt': '2369c6a71ea561df574adad53c932ca3',
+            'data_expression_percentile_tcga.json': '81b37de3775b9923217153c2a3789010'
         }
         for name in expected:
             out_path = os.path.join(self.tmp_dir, name)

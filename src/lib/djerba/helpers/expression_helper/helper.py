@@ -23,7 +23,7 @@ class main(helper_base):
     TCGA_ENSCON_VERSION = 23
     TCGA_ENSCON_DEFAULT = 'ensembl_conversion_hg38_v{0}.txt'.format(TCGA_ENSCON_VERSION)
     GEP_REFERENCE_KEY = 'gep_reference'
-    GEP_REFERENCE_DEFAULT = 'gep_reference.txt.gz'
+    GEP_REFERENCE_DEFAULT = 'gep_reference_tpm.txt.gz'
     RSEM_GENES_RESULTS_KEY = 'rsem_genes_results'
     TCGA_CODE_KEY = 'tcga_code'
     TCGA_DATA_KEY = 'tcga_data'
@@ -200,7 +200,7 @@ class main(helper_base):
             self.TCGA_DATA_KEY: '/.mounts/labs/CGI/gsi/tools/RODiC/TPM-data',
             # the GEP reference file is in Bitbucket for safekeeping
             # https://bitbucket.oicr.on.ca/projects/GSI/repos/djerba_test_data/browse/reference/gep_reference.txt.gz
-            self.GEP_REFERENCE_KEY: '/.mounts/labs/CGI/gsi/tools/djerba/gep_reference.txt.gz'
+            self.GEP_REFERENCE_KEY: '/.mounts/labs/CGI/gsi/tools/djerba/gep_reference_tpm.txt.gz'
         }
         for key in defaults.keys():
             self.set_ini_default(key, defaults[key])
