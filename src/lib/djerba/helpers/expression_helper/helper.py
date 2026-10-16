@@ -18,13 +18,18 @@ class main(helper_base):
     ENSCON_KEY = 'enscon'
     ENSCON_VERSION = 44
     ENSCON_DEFAULT = 'ensembl_conversion_hg38_v{0}.txt'.format(ENSCON_VERSION)
+    # Annotation file of RODiC TPM-data, used to match genes by Ensembl ID when symbols differ
+    TCGA_ENSCON_KEY = 'tcga_enscon'
+    TCGA_ENSCON_VERSION = 23
+    TCGA_ENSCON_DEFAULT = 'ensembl_conversion_hg38_v{0}.txt'.format(TCGA_ENSCON_VERSION)
     GEP_REFERENCE_KEY = 'gep_reference'
-    GEP_REFERENCE_DEFAULT = 'gep_reference.txt.gz'
+    GEP_REFERENCE_DEFAULT = 'gep_reference_tpm.txt.gz'
     RSEM_GENES_RESULTS_KEY = 'rsem_genes_results'
     TCGA_CODE_KEY = 'tcga_code'
     TCGA_DATA_KEY = 'tcga_data'
     TCGA_EXPR_PCT_TEXT = 'data_expression_percentile_tcga.txt'
     TCGA_EXPR_PCT_JSON = 'data_expression_percentile_tcga.json'
+    TCGA_UNMATCHED = 'data_expression_tcga_unmatched.txt'
 
     # 0-based index for GEP results file
     GENE_ID = 0
@@ -62,6 +67,10 @@ class main(helper_base):
             helper_dir = os.path.dirname(os.path.realpath(__file__))
             ref_path = os.path.join(helper_dir, self.ENSCON_DEFAULT)
             wrapper.set_my_param(self.ENSCON_KEY, ref_path)
+        if wrapper.my_param_is_null(self.TCGA_ENSCON_KEY):
+            helper_dir = os.path.dirname(os.path.realpath(__file__))
+            ref_path = os.path.join(helper_dir, self.TCGA_ENSCON_DEFAULT)
+            wrapper.set_my_param(self.TCGA_ENSCON_KEY, ref_path)
         # set up and run the provenance reader
         samples = sample_name_container()
         samples.set_and_validate(sample_wg_n, sample_wg_t, sample_wt_t)
@@ -88,11 +97,21 @@ class main(helper_base):
             '--gepfile', gep_abs_path,
             '--outdir', self.workspace.get_work_dir(),
             '--tcgadata', wrapper.get_my_string(self.TCGA_DATA_KEY),
-            '--tcgacode', wrapper.get_my_string(self.TCGA_CODE_KEY).upper()
+            '--tcgacode', wrapper.get_my_string(self.TCGA_CODE_KEY).upper(),
+            '--tcgaenscon', wrapper.get_my_string(self.TCGA_ENSCON_KEY)
         ]
         self.logger.debug("Rscript command: "+" ".join(cmd))
         subprocess_runner(self.log_level, self.log_path).run(cmd)
+        self.check_tcga_unmatched()
         self.write_tcga_json()
+
+    def check_tcga_unmatched(self):
+        """Log the number of sample genes not found in the TCGA comparator data"""
+        # reported genes without expression are warned about by the SNV/indel and CNV plugins
+        with self.workspace.open_file(self.TCGA_UNMATCHED) as input_file:
+            unmatched = set(row[0] for row in csv.reader(input_file, delimiter="\t"))
+        unmatched.discard('Hugo_Symbol')
+        self.logger.info('{0} genes not found in TCGA expression data'.format(len(unmatched)))
 
     def preprocess_gep(self, gep_path, gep_reference, tumour_id):
         """
@@ -132,6 +151,7 @@ class main(helper_base):
             writer = csv.writer(out_file, delimiter="\t")
             not_found = 0
             total = 0
+            ref_ids = set()
             for row in reader:
                 total += 1
                 if total == 1:
@@ -143,6 +163,7 @@ class main(helper_base):
                         continue
                     stable_ref_id = gene_id_full.split('.')[0]
                     row[0] = stable_ref_id
+                    ref_ids.add(stable_ref_id)
 
                     try:
                         row.insert(1, tpm[stable_ref_id])
@@ -158,6 +179,17 @@ class main(helper_base):
                     'not found in gep results path {0}. '.format(gep_path) +\
                     'Run with --debug for details.'
                 self.logger.warning(msg)
+        # sample gene IDs absent from the reference are left out of the GEP file and will have no expression value
+        sample_ids = set(tpm.keys())
+        sample_ids.discard('gene_id') # header of the GEP results file
+        dropped = sorted(sample_ids - ref_ids)
+        for gene_id in dropped:
+            self.logger.debug('Gene ID {0} from {1} not found in reference {2}'.format(gene_id, gep_path, ref_path))
+        if len(dropped) > 0:
+            msg = '{0} of {1} gene IDs from gep results path {2} '.format(len(dropped), len(sample_ids), gep_path) +\
+                'not found in reference {0}, and will have no expression data. '.format(ref_path) +\
+                'Run with --debug for details.'
+            self.logger.warning(msg)
         return self.workspace.abs_path(out_file_name)
 
     def specify_params(self):
@@ -168,11 +200,12 @@ class main(helper_base):
             self.TCGA_DATA_KEY: '/.mounts/labs/CGI/gsi/tools/RODiC/TPM-data',
             # the GEP reference file is in Bitbucket for safekeeping
             # https://bitbucket.oicr.on.ca/projects/GSI/repos/djerba_test_data/browse/reference/gep_reference.txt.gz
-            self.GEP_REFERENCE_KEY: '/.mounts/labs/CGI/gsi/tools/djerba/gep_reference.txt.gz'
+            self.GEP_REFERENCE_KEY: '/.mounts/labs/CGI/gsi/tools/djerba/gep_reference_tpm.txt.gz'
         }
         for key in defaults.keys():
             self.set_ini_default(key, defaults[key])
         self.add_ini_discovered(self.ENSCON_KEY)
+        self.add_ini_discovered(self.TCGA_ENSCON_KEY)
         self.add_ini_discovered(self.RSEM_GENES_RESULTS_KEY)
         self.add_ini_discovered(self.TCGA_CODE_KEY) # use PAAD for testing
         self.add_ini_discovered(core_constants.TUMOUR_ID)

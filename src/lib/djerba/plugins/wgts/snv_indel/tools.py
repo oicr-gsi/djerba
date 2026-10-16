@@ -302,6 +302,9 @@ class snv_indel_processor(logger):
                 rows.append(row_output)
         rows = var_sorter.sort_variant_rows(rows)
         rows = oncokb_levels.filter_reportable(rows)
+        if is_wgts:
+            genes = [row[var_sorter.GENE] for row in rows]
+            xreader.warn_missing_expression(self.work_dir, expression, genes)
         somatic_total, coding_seq_total = self.get_mutation_totals()
         results = {
             sic.SOMATIC_MUTATIONS: somatic_total,
