@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+- Updated `OncoTree.json` in the genomic landscape plugin to `oncotree_2025_10_03`, the latest stable version.
+
 ## v1.13.1: 2026-09-15
 - GCGI-1735: "Not for PHI" warning next to contact email
 - GCGI-1798: Removed RUO watermark, changed RUO report title and footer 
