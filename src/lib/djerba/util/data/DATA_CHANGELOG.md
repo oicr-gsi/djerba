@@ -1,5 +1,12 @@
 # Data Readme
 
+## Unreleased
+- OncoTree.json update (`genomic_landscape` plugin)
+  - Latest date: Oct 19, 2026
+  - By noctillion
+  - Updated to `oncotree_2025_10_03`, the latest stable version
+  - `curl -X GET --header 'Accept: application/json' 'https://oncotree.mskcc.org/api/tumorTypes/tree?version=oncotree_2025_10_03' > OncoTree.json`
+
 ## Djerba release v1.11.9
 - gencode_v44_hg38_genes.bed
   - Latest date: March 17, 2026 
