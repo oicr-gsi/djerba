@@ -246,6 +246,9 @@ class prepare_fusions(logger):
     def drop_duplicates_merge_columns(self, df):
         """
         """
+        # Early return if df is empty
+        if df.empty:
+            return df
     
         columns = df.groupby("fusion_pairs", as_index=False).agg({
             "event_type": lambda x: ";".join(x.unique()),
@@ -395,6 +398,10 @@ class prepare_fusions(logger):
         Removes fusions of the nature Fusion1-Fusion1
         ex. CDKN2A-CDKN2A
         """
+
+        if df.empty:
+            return df
+
         df = df[~df["fusion_pairs"].apply(
             lambda x: x.split("-")[0] == x.split("-")[1]
             )
