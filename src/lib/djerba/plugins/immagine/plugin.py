@@ -2,6 +2,7 @@
 import os
 import sys
 import csv
+import glob
 import gzip
 import zipfile
 import logging
@@ -28,11 +29,11 @@ class main(plugin_base):
     def specify_params(self):
         discovered = [
             constants.SBS_FILE,
-            constants.PURPLE_CNV_GENE_FILE,
-            constants.IGCALLER_FILE
         ]
         for key in discovered:
             self.add_ini_discovered(key)
+        # Igcaller is not running in a workflow, so it will need to be specified manually:
+        self.add_ini_required(constants.IGCALLER_FILE)
         self.set_ini_default(core_constants.ATTRIBUTES, 'research')
         self.set_priority_defaults(self.PRIORITY)
 
@@ -41,7 +42,8 @@ class main(plugin_base):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
 
-        # This plugin requires three files already created earlier:
+        # This plugin requires three files already created by Djerba.
+        # These files should be in the report's working space
         # - data_mutations_extended.txt
         # - purple.data_CNA.txt
         # - data_expression_percentile_tcga.txt
@@ -49,10 +51,8 @@ class main(plugin_base):
         wrapper = self.get_config_wrapper(config)
         dpi = core_constants.DEFAULT_PATH_INFO
         wrapper = self.update_wrapper_if_null(wrapper, dpi, constants.SBS_FILE, constants.SBS_WORKFLOW)
-        # THIS WILL NEED UPDATING TO FIND THE RIGHT FILE FROM WORKSPACE OR SOMETHING.
-        # Giving manually for now.
-        wrapper = self.update_wrapper_if_null(wrapper, dpi, constants.PURPLE_CNV_GENE_FILE, constants.SBS_WORKFLOW)
-        wrapper = self.update_wrapper_if_null(wrapper, dpi, constants.IGCALLER_FILE, constants.SBS_WORKFLOW)
+        
+        #wrapper = self.update_wrapper_if_null(wrapper, dpi, constants.PURPLE_CNV_GENE_FILE, constants.SBS_WORKFLOW)
 
         return wrapper.get_config()
 
@@ -70,11 +70,16 @@ class main(plugin_base):
         finder = directory_finder()
         self.r_script_dir = finder.get_base_dir() + "/plugins/immagine/Rscripts/"
         mutations_file = os.path.join(work_dir, constants.DATA_MUTATIONS_TXT)
+        
+
         seg_file = os.path.join(work_dir, constants.PURPLE_SEGMENTS_FILE)
         seg_df = self.process_seg_file(seg_file)
-        #cna_file = os.path.join(work_dir, constants.DATA_CNA_TXT)
-        cna_file = config[self.identifier][constants.PURPLE_CNV_GENE_FILE]
-        igcaller_results = config[self.identifier][constants.IGCALLER_FILE]
+        
+        # The purple.cnv.gene file is located in a sub-directory in the workspace which has some PURPLE outputs. Glob for the file pattern to get the file, as the suffix is consistent.
+        #cna_file = config[self.identifier][constants.PURPLE_CNV_GENE_FILE]
+        cna_file_pattern = os.path.join(work_dir, "*", constants.PURPLE_CNV_GENE_FILE_SUFFIX)
+        cna_file = glob.glob(cna_file_pattern)[0]
+        igcaller_zip = config[self.identifier][constants.IGCALLER_FILE]
         ploidy = float(self.workspace.read_json(constants.PURITY_PLOIDY_JSON)['ploidy'])
         hrdetect_sbs_json = config[self.identifier][constants.SBS_FILE]
         if self.workspace.has_file(constants.DATA_EXPRESSION_TXT):
@@ -83,14 +88,18 @@ class main(plugin_base):
         else:
             results[constants.HAS_EXPRESSION_DATA] = False 
 
+
         # Update results with cytogenetic alterations table information.
         results = self.get_cytogenetic_alterations(seg_df, results)
 
         for gene in constants.GENES:
             results[gene] = {}
+
+        # Run igcaller postprocessing
+        igcaller_common_calls = self.run_igcaller_postprocess(igcaller_zip)
         
         # Update results with translocations.
-        results = self.get_translocations(igcaller_results, results)
+        results = self.get_translocations(igcaller_common_calls, results)
 
         # Update results with mutation type.
         results = self.get_mutation_type_and_alt(mutations_file, results)
@@ -147,29 +156,16 @@ class main(plugin_base):
         mutation_of_tp53 = results[constants.P53_ALT]
         biallelic_del_1p32 = results[constants.CYTOGEN_ALTS][constants.BI_DEL_1P32]
 
-        #print("17p del ", chromosome_17p_deletion)
-        #print("tp53 ", mutation_of_tp53)
-        #print("biallelic del 1p32 ", biallelic_del_1p32)
-
         # Group B: any two
         translocation = any(results[constants.TRANSLOCATIONS].get(x, False) for x in [constants.t4_14, constants.t14_16, constants.t14_20])
         results[constants.HIGH_RISK_TRANSLOC] = translocation
         gain_or_amp_1q = results[constants.CYTOGEN_ALTS][constants.AMP_1Q]
         monoallelic_del_1p32 = results[constants.CYTOGEN_ALTS][constants.MONO_DEL_1P32]
 
-        #print("translocation default false ", translocation_chr14)
-        #print("gain amp 1q ", gain_or_amp_1q)
-        #print("monoallelic del 1p32 ", monoallelic_del_1p32)
-
         high_risk_group_A = [chromosome_17p_deletion, mutation_of_tp53, biallelic_del_1p32]
         high_risk_group_B = [translocation, gain_or_amp_1q, monoallelic_del_1p32]
 
-        #print("A ", high_risk_group_A)
-        #print("B ", high_risk_group_B)
-
         high_risk = any(high_risk_group_A) or sum(high_risk_group_B)>=2
-
-        #print("risk ", high_risk)
 
         results[constants.HIGH_RISK] = high_risk
 
@@ -199,6 +195,8 @@ class main(plugin_base):
         etc...
         }
 
+        Note: we do NOT have to adjust copy number by ploidy, because the purple cnv somatic file copy number is already adjusted for purity and ploidy as per the PURPLE documentation.
+
         """
 
         data = {}
@@ -214,8 +212,6 @@ class main(plugin_base):
         data[constants.MONO_DEL_1P32] = cytogen_alts.monoallelic_1p32_deletion(seg_df)
 
         results[constants.CYTOGEN_ALTS] = data
-
-        print(results[constants.CYTOGEN_ALTS])
 
         return results
 
@@ -239,14 +235,16 @@ class main(plugin_base):
     def get_copy_number(self, cna_file, ploidy, results):
         """
         Gets copy number (rounded) from the .purple.cnv.gene.tsv file for relevant genes.
+        
+        Note: we have to adjust gene copy number by ploidy, because the purple gene file min/max copy number is NOT adjusted for purity and ploidy as per the PURPLE documentation.
         """
-        cna_df = pd.read_csv(cna_file, sep = '\t')
 
+        cna_df = pd.read_csv(cna_file, sep = '\t')
+        
         # Round the min and max copy numbers
         cna_df['minCopyNumber_round_int'] = round(cna_df['minCopyNumber'])
         cna_df['maxCopyNumber_round_int'] = round(cna_df['maxCopyNumber'])
 
-        cna_df.to_csv(r'/.mounts/labs/CGI/scratch/aalam/immagine/igcaller/MYC_0160/report/testing.txt', sep = '\t')
         # Only keep genes in list
         subset_cna_df = cna_df[cna_df["gene"].isin(constants.GENES)]
 
@@ -286,7 +284,6 @@ class main(plugin_base):
                 gene = row[0]
                 exp = row[1]
                 if gene in constants.GENES:
-                    #results[gene][constants.EXPRESSION_PERCENTILE] = round(float(exp)*100, 1)
                     results[gene][constants.EXPRESSION_PERCENTILE] = round(float(exp), 1)
 
         return results
@@ -307,7 +304,6 @@ class main(plugin_base):
                     alt = row[34]
                 if pd.isnull(alt):
                     pass
-                    # return an error idk
                 if gene in constants.GENES:
                     results[gene][constants.MUTATION_FOUND] = True
                     results[gene][constants.MUTATION_TYPE] = var_class
@@ -316,7 +312,7 @@ class main(plugin_base):
 
         return results
 
-    def get_translocations(self, igcaller_results, results):
+    def get_translocations(self, igcaller_common_calls, results):
         """
         Gets the various IG translocation using igcaller outputs that have been run through an R script.
         This function only cares if ANY translocation with a score above 100 exists with those chromosomes.
@@ -325,11 +321,9 @@ class main(plugin_base):
         """
 
         # Unzip the igcaller results
-        igcaller_results_unzipped = self.unzip_igcaller_results(igcaller_results)
-        x = self.run_igcaller_postprocess(igcaller_results_unzipped)
-        print(x)
-        translocation_path = os.path.join(self.workspace.get_work_dir(), constants.COMMON_IGCALLS)
-        df = pd.read_csv(translocation_path, sep='\t')
+        #igcaller_results_unzipped = self.unzip_igcaller_results(igcaller_results)
+        #translocation_path = os.path.join(self.workspace.get_work_dir(), constants.COMMON_IGCALLS)
+        df = pd.read_csv(igcaller_common_calls, sep='\t')
         df = df[df['IGCaller_Score'] >= 100]
 
         # Write the t notation, ex. t(14;16)
@@ -368,10 +362,14 @@ class main(plugin_base):
         results[constants.TRANSLOCATIONS] = final_translocations
         return results
 
-    def run_igcaller_postprocess(self, igcaller_results):
+    def run_igcaller_postprocess(self, igcaller_zip):
         """
         Runs the R script from Dory Abelman that does some post-processing and further filtering of the igcaller results.
         """
+
+        # Unzip the file into the workspace first
+
+        igcaller_results = self.unzip_igcaller_results(igcaller_zip)
 
         cmd = [
             'Rscript', self.r_script_dir + "filter_igcaller.R",
@@ -384,14 +382,22 @@ class main(plugin_base):
 
         runner = subprocess_runner()
         result = runner.run(cmd, "main R script")
-        return result
+        
+        output_path = os.path.join(self.workspace.get_work_dir(), constants.COMMON_IGCALLS)
+        
+        return output_path
 
     def unzip_igcaller_results(self, igcaller_zip):
         """
-        Extracts the zipped igcaller results directory in the workspace 
+        Extracts the zipped IgCaller results directory in the workspace.
         """
         extract_dir = self.workspace.get_work_dir()
+
         with zipfile.ZipFile(igcaller_zip) as zf:
             zf.extractall(extract_dir)
 
-        return extract_dir
+        # Get the top-level directory in the ZIP
+        top_level = zf.namelist()[0].split('/')[0]
+        result_dir = os.path.join(extract_dir, top_level)
+
+        return result_dir
