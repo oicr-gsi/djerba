@@ -9,6 +9,7 @@
 - Added a warning when gene IDs in the sample GEP results are not found in the GEP reference; these were previously dropped silently and got no expression value.
 - Added an expression percentile disclaimer to WGTS reports and updated GEP reference to TPM.
 - Fixed a bug that will raise a key error if df_fusion is empty.
+- GCGI-1808: Updated OncoKB links to _TERT_ promoter mutations  
 
 ## v1.13.1: 2026-09-15
 - GCGI-1735: "Not for PHI" warning next to contact email
