@@ -40,6 +40,8 @@ class TestExpressionHelper(TestBase):
         plugin_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # go 2 directories up
         configured_enscon = config.get(self.HELPER_NAME, helper_main.ENSCON_KEY)
         self.assertTrue(os.path.exists(configured_enscon))
+        configured_tcga_enscon = config.get(self.HELPER_NAME, helper_main.TCGA_ENSCON_KEY)
+        self.assertTrue(os.path.exists(configured_tcga_enscon))
         tcga_code = config.get(self.HELPER_NAME, helper_main.TCGA_CODE_KEY)
         self.assertEqual(tcga_code, 'PAAD')
         # path was derived from file provenance subset, should not change
@@ -47,7 +49,7 @@ class TestExpressionHelper(TestBase):
         self.assertEqual(self.getMD5_of_string(rsem), '6adf97f83acf6453d4a6a4b1070f3754')
         # check the reference path
         found = config.get(self.HELPER_NAME, helper_main.GEP_REFERENCE_KEY)
-        expected = '/.mounts/labs/CGI/gsi/tools/djerba/gep_reference.txt.gz'
+        expected = '/.mounts/labs/CGI/gsi/tools/djerba/gep_reference_tpm.txt.gz'
         self.assertEqual(found, expected)
 
     def test_extract(self):
@@ -63,6 +65,8 @@ class TestExpressionHelper(TestBase):
         plugin_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # go 2 directories up
         enscon = os.path.join(plugin_dir, helper_main.ENSCON_DEFAULT)
         cp.set(self.HELPER_NAME, helper_main.ENSCON_KEY, enscon)
+        tcga_enscon = os.path.join(plugin_dir, helper_main.TCGA_ENSCON_DEFAULT)
+        cp.set(self.HELPER_NAME, helper_main.TCGA_ENSCON_KEY, tcga_enscon)
         rsem = os.path.join(test_data_dir, 'PANX_1547_Lv_M_WT_100-PM-061_LCM6.genes.results')
         cp.set(self.HELPER_NAME, helper_main.RSEM_GENES_RESULTS_KEY, rsem)
         ref = os.path.join(test_data_dir, helper_main.GEP_REFERENCE_DEFAULT)
@@ -72,18 +76,19 @@ class TestExpressionHelper(TestBase):
         # run extract step and check the results
         helper_main.extract(cp)
         gep_path = ws.abs_path('gep.txt')
-        self.assertEqual(self.getMD5(gep_path), '9155adcfa33ae7b6e2c0034148b383cf')
+        self.assertEqual(self.getMD5(gep_path), '5efe8457adf3c5dd2b99116e73f80ddf')
         expected = {
-            'data_expression_percentile_comparison.txt': 'a213ab260cefbe28fd504c8b70c28738',
-            'data_expression_percentile_tcga.txt': '4d6e45e47a28cff3e6fc179ccc9ec967',
-            'data_expression_zscores_comparison.txt': 'ae56589f46a74ad5a16aecfe919371bb',
-            'data_expression_zscores_tcga.txt': '98321a05f21035a08524dbb92b829a38',
-            'data_expression_percentile_tcga.json': 'ab1671a9774c1fcc67da4a9cb063bf01'
+            'data_expression_percentile_comparison.txt': '8de9268ea7c6fe7636cd81d3b8243fad',
+            'data_expression_percentile_tcga.txt': '6fb80e9ea20272b57700ddad8bcf104f',
+            'data_expression_zscores_comparison.txt': 'd75a3b56e8fde595f3ef162ac3684510',
+            'data_expression_zscores_tcga.txt': 'f5a6f5e7a50090e791aa187b5b88a7d9',
+            'data_expression_percentile_tcga.json': '4bf80bf81b15a84e8fd46796284d5d4d'
         }
         for name in expected:
             out_path = os.path.join(self.tmp_dir, name)
             self.assertTrue(os.path.exists(out_path))
             self.assertEqual(self.getMD5(out_path), expected[name])
+        self.assertTrue(os.path.exists(ws.abs_path(helper_main.TCGA_UNMATCHED)))
 
     def test_extract_unknown_tcga(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))
@@ -98,6 +103,8 @@ class TestExpressionHelper(TestBase):
         plugin_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # go 2 directories up
         enscon = os.path.join(plugin_dir, helper_main.ENSCON_DEFAULT)
         cp.set(self.HELPER_NAME, helper_main.ENSCON_KEY, enscon)
+        tcga_enscon = os.path.join(plugin_dir, helper_main.TCGA_ENSCON_DEFAULT)
+        cp.set(self.HELPER_NAME, helper_main.TCGA_ENSCON_KEY, tcga_enscon)
         rsem = os.path.join(test_data_dir, 'PANX_1547_Lv_M_WT_100-PM-061_LCM6.genes.results')
         cp.set(self.HELPER_NAME, helper_main.RSEM_GENES_RESULTS_KEY, rsem)
         ref = os.path.join(test_data_dir, helper_main.GEP_REFERENCE_DEFAULT)
@@ -107,13 +114,13 @@ class TestExpressionHelper(TestBase):
         # run extract step and check the results
         helper_main.extract(cp)
         gep_path = ws.abs_path('gep.txt')
-        self.assertEqual(self.getMD5(gep_path), '9155adcfa33ae7b6e2c0034148b383cf')
+        self.assertEqual(self.getMD5(gep_path), '5efe8457adf3c5dd2b99116e73f80ddf')
         expected = {
-            'data_expression_percentile_comparison.txt': 'a213ab260cefbe28fd504c8b70c28738',
-            'data_expression_percentile_tcga.txt': 'bc27d32071fdae27f150e0692fca7b27',
-            'data_expression_zscores_comparison.txt': 'ae56589f46a74ad5a16aecfe919371bb',
-            'data_expression_zscores_tcga.txt': 'e3ad7a1eadeb1115836723edd3bcd8c0',
-            'data_expression_percentile_tcga.json': '94d30b027047935960c9a82042e571fd'
+            'data_expression_percentile_comparison.txt': '8de9268ea7c6fe7636cd81d3b8243fad',
+            'data_expression_percentile_tcga.txt': '91f8b3816168fa450e62f907714a3544',
+            'data_expression_zscores_comparison.txt': 'd75a3b56e8fde595f3ef162ac3684510',
+            'data_expression_zscores_tcga.txt': '2f2fd52adf57e7681e950517fe185d10',
+            'data_expression_percentile_tcga.json': '5f7b238895b43f8fd9dfb5de5ac76d80'
         }
         for name in expected:
             out_path = os.path.join(self.tmp_dir, name)
