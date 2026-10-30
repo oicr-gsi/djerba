@@ -226,3 +226,169 @@
 </table>
 
 </div></div>
+
+
+<div style="page-break-before: always;"></div>
+
+  <hr class="big-white-line"><hr class="big-line">
+
+
+<table width="100%">
+    <colgroup>
+        <col style="width: 75%;">
+        <col style="width: 55%;">
+    </colgroup>
+    <tr>
+        <!-- VARIANTS TABLE -->
+        <td width="100%" style="padding: 0; vertical-align: top;">
+
+            <table class="variants" width="100%">
+                <tr>
+                <th colspan="2" class="table-title">HIGH RISK MULTIPLE MYELOMA</th>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <b>Any one of</b>
+                    </td>
+                </tr>
+
+                <tr class="high-risk-myeloma">
+                    <td>Chromosome 17p deletion</td>
+		    <td>Detected if &gt;80% of TCN &le;1.2 and MACN=0 for &lt;50% of that span.</td>
+                </tr>
+
+                <tr class="high-risk-myeloma">
+                    <td>Mutation of p53</td>
+		    <td>Detected if there is an SNV or a CNV in the <i>TP53</i> gene. SNV in this gene must pass all filters (PASS, VAF&ge;10%, etc), but may not necessarily be defined as oncogenic by OncoKB. CNV in this gene are called detected if there is a deletion, gain, or amplification.</td>
+                </tr>
+
+                <tr class="high-risk-myeloma">
+                    <td>Biallelic deletion of 1p32</td>
+                    <td>Detected if 50% of the 1p32 region has TCN&le;1 and MACN=0.</td>
+                </tr>
+
+                <tr>
+                    <td colspan="2">
+                        <b>Any two of</b>
+                    </td>
+                </tr>
+
+                <tr class="high-risk-myeloma">
+                    <td>Any one of: t(4;14), t(14;16) or t(14;20)</td>
+                    <td>Determined from output of IgCaller in "Immunoglobulin Rearrangements" section.</td>
+                </tr>
+
+                <tr class="high-risk-myeloma">
+                    <td>Gain or amplification of Chromosome 1q</td>
+                    <td>Detected if &ge;50% of chromosome 1q has TCN &ge;3.</td>
+                </tr>
+                <tr class="high-risk-myeloma">
+                    <td>Monoallelic deletion of 1p32</td>
+                    <td>Detected if &ge;50% of the 1p32 region has 1&ge;TCN&le;1.5 and MACN=0.</td>
+                </tr>
+            </table>
+
+        </td>
+
+    </tr>
+</table>
+
+<div style="width: 100%; overflow: hidden;">
+
+    <div style="width: 50%; float: left; padding-right: 10px; box-sizing: border-box;">
+
+        <table class="variants" width="100%">
+            <tr>
+                <th colspan="2" class="table-title">
+		    IMMUNOGLOBULIN REARRANGEMENTS<br>
+		    <span style="font-size: 16px; font-weight: normal;">Tool: IgCaller</span>
+		</th>
+            </tr>
+            <tr>
+                <td>Immunoglobulin Rearrangement</td>
+                <td class="left" rowspan="11" style="vertical-align: left;">
+		    IgCaller is a python program designed to fully characterize the immunoglobulin gene rearrangements and oncogenic translocations in lymphoid neoplasms. A custom Rscript is used to further filter the calls by various quality metrics. In addition to this filtering, calls are kept if IGCaller_Score &ge;100.</td>
+            </tr>
+        </table>
+
+    </div>
+
+    <div style="width: 50%; float: right; padding-left: 10px; box-sizing: border-box;">
+
+        <table class="variants" width="100%">
+            <tr>
+                <th colspan="2" class="table-title">
+		    CYTOGENETIC ABNORMALITIES<br>
+		    <span style="font-size: 16px; font-weight: normal;">Tool: PURPLE</span>
+		</th>
+            </tr>
+            <tr>
+                <td>Monosomy Chromosome 13</td>
+                <td class="left">Detected if &gt;80% of chr13 has TCN&lt;1.2 and MACN=0 for &lt;50% of that span.</td>
+            </tr>
+            <tr>
+                <td>Monosomy Chromosome 14</td>
+                <td class="left">Detected if &gt;80% of chr14 has TCN&lt;1.2 and MACN=0 for &lt;50% of that span.</td>
+            </tr>
+            <tr>
+                <td>Monosomy Chromosome 17</td>
+                <td class="left">Detected if &gt;80% of chr17 has TCN&lt;1.2 and MACN=0 for &lt;50% of that span.</td>
+            </tr>
+            <tr>
+                <td>Chromosome 1p deletion</td>
+                <td class="left">Detected if &gt;80% of the length of 1p has TCN&le;1.5 and median MACN&le;0.5.</td>
+            </tr>
+            <tr>
+                <td>Chromosome 17p deletion</td>
+                <td class="left">Detected if &gt;80% of TCN &le;1.2 and MACN=0 for &lt;50% of that span.</td>
+            </tr>
+            <tr>
+                <td>Gain/amplification of Chromosome 1q</td>
+                <td class="left">Detected if &ge;50% of chromosome 1q has TCN &ge;3. </td>
+            </tr>
+            <tr>
+                <td>Hyperdiploidy</td>
+		<td class="left">Detected if there are gains (TCN &gt;3) in &ge;4 of the canonical hyperdiploid chromosomes: 3, 5, 7, 9, 11, 15, 19, 21. A gain is considered present if at least 80% of the chromosome has CN &ge;3.</td>
+            </tr>
+        </table>
+        <table class="variants" width="100%">
+            <tr>
+		    <th colspan="2" class="table-title">
+			APOBEC MUTATIONAL SIGNATURES<br>
+		     	<span style="font-size: 16px; font-weight: normal;"> Tool: HRDetect</spam>
+		    </th>
+            </tr>
+            <tr>
+                <td>COSMIC SBS2</td>
+                <td class="left">Detected if SBS2 score &gt; 0</td>
+            </tr>
+            <tr>
+                <td>COSMIC SBS13</td>
+		<td class="left">Detected if SBS13 score &gt; 0</td>
+            </tr>
+        </table>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  </div></div>
+
+

@@ -300,36 +300,6 @@ def monoallelic_1p32_deletion(segment_df):
     return bool(perc_CN >= 50 and perc_MACN >= 50)
 
 
-
-#def chromosome_1p_gain_or_amp(segment_df):
-#    """
-#    THIS FUNCTION IS NOT DONE YET. Requires clarification from Trevor.
-#    Chromosome 1p gain is defined as:
-#    Arm-level gain of 1p call when >= 50% of the arm has total copy number >= 3
-#    (i.e., gain of at least one extra copy) after purity/ploidy correction
-#
-#    Chromosome 1p amplification is defined as:
-#    High-level amplification when a segment (focal or broader) has total copy number >= 6
-#    (high confidence) or total copy number >= 4 for moderate amplification
-#    """
-#    
-#    # Slice the segment dataframe so it's only the 1p arm, using 121700001 as the cutoff for the p-arm
-#    # (The segment file starts numbering at 1, that's why there's a +1)
-#    chr_df = segment_df[(segment_df['chromosome'] == "chr1") & (segment_df['start'] <= 121700001)].copy()
-#    # Get the lengths of each segment 
-#    chr_df['length'] = chr_df['end'] - chr_df['start'] + 1
-#    total_length = 121700000 # fixed 1p length based on cytoBand.txt 
-#    # First, calculate percentage that total copy number >= 3.0
-#    
-#    # True if >=3.0, False if < 3.0
-#    bool_CN = chr_df['copyNumber_round_int'] >= 3.0
-#    # Gets sum of the length for those segments that are True for the above condition
-#    perc_CN = chr_df.loc[bool_CN, 'length'].sum() / total_length * 100
-#    
-#    return bool(perc_CN >= 50)
-
-
-
 def chromosome_1q_gain_or_amp(segment_df):
     """
     Determine whether >=50% of chromosome 1q has total copy number >=3.
