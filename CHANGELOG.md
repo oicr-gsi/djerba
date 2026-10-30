@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## UNRELEASED
+## v1.13.2: 2026-10-30
 - GCGI-1809: TAR SNV/indel filter now requires at least 3 supporting reads matching the SOP.
 - Transform GEP TPM values to log2(TPM + 0.001) before comparison with RODiC TPM-data, which is stored on that scale.
 - Rounding those values to 4 decimals, so zero TPM in the sample ties with zero TPM in TCGA. 
