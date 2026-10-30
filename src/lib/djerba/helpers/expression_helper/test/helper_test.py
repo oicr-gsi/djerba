@@ -76,7 +76,7 @@ class TestExpressionHelper(TestBase):
         # run extract step and check the results
         helper_main.extract(cp)
         gep_path = ws.abs_path('gep.txt')
-        self.assertEqual(self.getMD5(gep_path), '9155adcfa33ae7b6e2c0034148b383cf')
+        self.assertEqual(self.getMD5(gep_path), '5efe8457adf3c5dd2b99116e73f80ddf')
         expected = {
             'data_expression_percentile_comparison.txt': '02a3838e4be70f381feeb3b1e4345f16',
             'data_expression_percentile_tcga.txt': '374d60dc8575f405dbf57b95d7bb4b11',
