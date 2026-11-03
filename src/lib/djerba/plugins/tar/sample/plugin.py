@@ -9,17 +9,12 @@ from djerba.plugins.base import plugin_base
 import djerba.plugins.tar.sample.constants as constants
 from djerba.core.workspace import workspace
 import djerba.core.constants as core_constants
+from djerba.util.gsiqcetl import gsiqcetl_plugin_base
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.render_mako import mako_renderer
-try:
-    import gsiqcetl.column
-    from gsiqcetl import QCETLCache
-except ImportError as err:
-    raise RuntimeError('QC-ETL import failure! Try checking python versions') from err
 
-class main(plugin_base):
+class main(gsiqcetl_plugin_base):
     PLUGIN_VERSION = '1.0.0'
-    QCETL_CACHE = "/scratch2/groups/gsi/production/qcetl_v1"
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -128,7 +123,6 @@ class main(plugin_base):
     def get_cached_coverages(self, etl_cache, cache_name):
         return getattr(etl_cache, cache_name).metrics
 
-
     def get_purity(self, wrapper, ichorcna_path):
         # Get purity and write it to purity.txt
         ichorcna_path_exists = os.path.exists(ichorcna_path)
@@ -151,47 +145,6 @@ class main(plugin_base):
             msg = "Both a valid ichorcna file and purity were not specified. If you have the ichorcna file, specify it so purity can be extracted. If not, set ichorcna_file=None and supply purity manually."
             self.logger.error(msg)
             raise ValueError(msg)
-
-
-    def fetch_qc_etl_data(self, group_id, cache_name, qc_metric):
-        etl_cache = QCETLCache(self.QCETL_CACHE)
-        cached_coverages = self.get_cached_coverages(etl_cache, cache_name)
-        columns_of_interest = gsiqcetl.column.HsMetricsColumn
-        # Filter data for the group_id
-        data = cached_coverages.loc[
-            (cached_coverages[columns_of_interest.GroupID] == group_id),
-            [
-                columns_of_interest.GroupID,
-                columns_of_interest.MeanBaitCoverage,
-                columns_of_interest.TissueType,
-            ]
-        ]
-
-        qc_dict = {}
-        if len(data) > 0:
-            # Exclude the reference
-            filtered_data = data[data[columns_of_interest.TissueType] != 'R']
-
-            if len(filtered_data) > 0:
-                # Check if coverage values are unique
-                coverage = filtered_data[columns_of_interest.MeanBaitCoverage].unique()
-                if len(coverage) != 1:
-                    msg = f"Multiple {qc_metric} values found for group_id {group_id}: {coverage}."
-                    self.logger.error(msg)
-                    raise ValueError(msg)
-                else:
-                    selected_value = coverage[0]
-                    qc_dict[qc_metric] = int(round(selected_value, 0))
-            else:
-                msg = f"No valid {qc_metric} found for group_id {group_id} after filtering out the normal."
-                self.logger.error(msg)
-                raise MissingQCETLError(msg)
-        else:
-            msg = f"{qc_metric} associated with group_id {group_id} not found in QC-ETL and no value found in .ini."
-            self.logger.error(msg)
-            raise MissingQCETLError(msg)
-
-        return qc_dict
 
     def render(self, data):
         renderer = mako_renderer(self.get_module_dir())

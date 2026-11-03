@@ -44,9 +44,10 @@ class gsiqcetl_plugin_base(plugin_base):
                 msg = 'QC-ETL import failure! Try checking python versions'
                 raise RuntimeError(msg) from err
             # now check the cache directory
-            self.gsiqcetl_cache_dir = directory_finder(strict=False).get_gsiqcetl_cache_dir()
-            if self.gsiqcetl_cache_dir == None:
-                self.logger.warn("GSI-QC-ETL cache directory is not available")
+            finder = directory_finder(strict=False)
+            self.gsiqcetl_cache_default = finder.get_gsiqcetl_cache_dir()
+            if self.gsiqcetl_cache_default == None:
+                self.logger.warn("Default GSI-QC-ETL cache directory is not available")
             else:
                 self.gsiqcetl_OK = True
                 
@@ -57,7 +58,9 @@ class gsiqcetl_plugin_base(plugin_base):
     # methods originally from main sample plugin
     #########################
 
-    def get_qcetl_cache(self, cache_path):
+    def get_qcetl_cache(self, cache_path=None):
+        if cache_path==None:
+            cache_path = self.gsiqcetl_cache_default
         val = path_validator(self.log_level, self.log_path)
         val.validate_input_dir(cache_path)
         etl_cache = self.QCETLCache(cache_path)
@@ -118,6 +121,49 @@ class gsiqcetl_plugin_base(plugin_base):
             self.logger.debug(msg)
             raise MissingQCETLError(msg)
 
+    #########################
+    # methods originally from TAR sample plugin
+    #########################
+
+    def fetch_qc_etl_data(self, group_id, cache_name, qc_metric):
+        etl_cache = self.get_qcetl_cache()
+        cached_coverages = self.get_cached_coverages(etl_cache, cache_name)
+        columns_of_interest = self.gsiqcetl_column.HsMetricsColumn
+        # Filter data for the group_id
+        data = cached_coverages.loc[
+            (cached_coverages[columns_of_interest.GroupID] == group_id),
+            [
+                columns_of_interest.GroupID,
+                columns_of_interest.MeanBaitCoverage,
+                columns_of_interest.TissueType,
+            ]
+        ]
+
+        qc_dict = {}
+        if len(data) > 0:
+            # Exclude the reference
+            filtered_data = data[data[columns_of_interest.TissueType] != 'R']
+
+            if len(filtered_data) > 0:
+                # Check if coverage values are unique
+                coverage = filtered_data[columns_of_interest.MeanBaitCoverage].unique()
+                if len(coverage) != 1:
+                    msg = f"Multiple {qc_metric} values found for group_id {group_id}: {coverage}."
+                    self.logger.error(msg)
+                    raise ValueError(msg)
+                else:
+                    selected_value = coverage[0]
+                    qc_dict[qc_metric] = int(round(selected_value, 0))
+            else:
+                msg = f"No valid {qc_metric} found for group_id {group_id} after filtering out the normal."
+                self.logger.error(msg)
+                raise MissingQCETLError(msg)
+        else:
+            msg = f"{qc_metric} associated with group_id {group_id} not found in QC-ETL and no value found in .ini."
+            self.logger.error(msg)
+            raise MissingQCETLError(msg)
+        self.logger.debug("Fetched metrics from GSI-QC-ETL: {0}".format(qc_dict))
+        return qc_dict
 
 
 class MissingQCETLError(Exception):
