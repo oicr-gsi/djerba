@@ -1,0 +1,124 @@
+"""Code to support the GSI QC-ETL cache"""
+
+import math
+import os
+from importlib import import_module
+from importlib.util import find_spec
+from djerba.plugins.base import plugin_base
+from djerba.util.environment import directory_finder, DjerbaEnvDirError
+from djerba.util.validator import path_validator
+
+
+class gsiqcetl_plugin_base(plugin_base):
+
+    """Plugin base class which supports queries to the GSI QC-ETL cache.
+    The cache classes are internal to OICR, and not available to external users,
+    so loading is done specially and failure to load is not a fatal error.
+    """
+
+    # QCETL_CACHE_DEFAULT = "/scratch2/groups/gsi/production/qcetl_v1"
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.gsiqcetl_OK = False # True if library and cache dir are both available
+        # check for the gsiqcetl Python library
+        if find_spec('gsiqcetl')==None:
+            # gsiqcetl Python package is not on the PYTHONPATH
+            warning = "GSI-QC-ETL API not found: Coverage and callability must "+\
+                "be specified manually in the INI file. (The GSI-QC-ETL cache and "+\
+                "associated Python package are "+\
+                "internal to OICR and not available externally.)"
+            self.logger.warn(warning)
+            self.gsiqcetl_column = None
+            self.QCETLCache = None
+        else:
+            try:
+                # Import the required classes/modules and assign to instance variables.
+                # We do it this way because for a simple 'import' statement,
+                # the imported names are in scope for the local context only.
+                # So inside a function like this, 'import' does not
+                # make the names available to the rest of the plugin.
+                self.gsiqcetl_column = import_module('gsiqcetl.column')
+                self.QCETLCache = import_module('gsiqcetl.api').QCETLCache
+            except ImportError as err:
+                msg = 'QC-ETL import failure! Try checking python versions'
+                raise RuntimeError(msg) from err
+            # now check the cache directory
+            self.gsiqcetl_cache_dir = directory_finder(strict=False).get_gsiqcetl_cache_dir()
+            if self.gsiqcetl_cache_dir == None:
+                self.logger.warn("GSI-QC-ETL cache directory is not available")
+            else:
+                self.gsiqcetl_OK = True
+                
+    def gsiqcetl_ok(self):
+        return self.gsiqcetl_OK
+
+    #########################
+    # methods originally from main sample plugin
+    #########################
+
+    def get_qcetl_cache(self, cache_path):
+        val = path_validator(self.log_level, self.log_path)
+        val.validate_input_dir(cache_path)
+        etl_cache = self.QCETLCache(cache_path)
+        return etl_cache
+
+    def fetch_callability_etl_data(self, etl_cache, donor, tumour_id, ignore_warning):
+        self.logger.debug("Fetching callability from GSI-QC-ETL for donor "+donor)
+        cached_callabilities = etl_cache.mutectcallability.mutectcallability
+        columns_of_interest = self.gsiqcetl_column.MutetctCallabilityColumn
+        # Note: donor and tumour ID are both not unique, but together are unique. Filter on both.
+        # One donor can have multiple tumour IDs; one tumour ID can be associated with multiple donors
+        # But one donor will not have a duplicate tumour IDs
+        data = cached_callabilities.loc[
+            (cached_callabilities[columns_of_interest.GroupID] == tumour_id) & # filter on tumour_id
+            (cached_callabilities[columns_of_interest.Donor] == donor), # filter also on donor
+            [columns_of_interest.GroupID, columns_of_interest.Donor, columns_of_interest.Callability]
+            ]
+        if len(data) == 1:
+            # Round down to one decimal place
+            callability = math.floor(data.iloc[0][columns_of_interest.Callability].item() * 1000) / 10
+            callability_threshold = 75
+            if callability < callability_threshold and not ignore_warning:
+                msg = f"Callability is below the reportable threshold: {callability:.1f}% < {callability_threshold}%. This may be overridden at the user's discretion by setting ignore_warning=True."
+                self.logger.error(msg)
+                raise LowCallabilityError(msg)
+            self.logger.debug("Found callability: {0}".format(callability))
+            return callability
+        elif len(data) > 1:
+            msg = "Djerba found more than one callability associated with donor {0} and tumour_id {1} in QC-ETL. Double check that the callability found by Djerba is correct; if not, may have to manually specify the callability.".format(donor, tumour_id)
+            self.logger.warning(msg)
+        else:
+            msg = "Djerba couldn't find the callability associated with donor {0} and tumour_id {1} in QC-ETL.".format(donor, tumour_id)
+            self.logger.error(msg)
+            raise MissingQCETLError(msg)
+        
+    def fetch_coverage_etl_data(self, etl_cache, donor, tumour_id):
+        self.logger.debug("Fetching coverage from GSI-QC-ETL for donor "+donor)
+        cached_coverages = etl_cache.bamqc4merged.bamqc4merged
+        columns_of_interest = self.gsiqcetl_column.BamQc4MergedColumn
+        # Note: donor and tumour ID are both not unique, but together are unique. Filter on both.
+        # One donor can have multiple tumour IDs; one tumour ID can be associated with multiple donors
+        # But one donor will not have a duplicate tumour IDs
+        data = cached_coverages.loc[
+            (cached_coverages[columns_of_interest.GroupID] == tumour_id) &
+            (cached_coverages[columns_of_interest.Donor] == donor),
+            [columns_of_interest.GroupID, columns_of_interest.Donor, columns_of_interest.CoverageDeduplicated]
+            ]
+        if len(data) == 1:
+            coverage_value = round(data.iloc[0][columns_of_interest.CoverageDeduplicated].item(),1)
+            self.logger.debug("Found coverage: {0}".format(coverage_value))
+            return(coverage_value)
+        elif len(data) > 1:
+            msg = "Djerba found more than one coverage associated with donor {0} and tumour_id {1} in QC-ETL. Double check that the coverage found by Djerba is correct; if not, may have to manually specify the coverage.".format(donor, tumour_id)
+            self.logger.warning(msg)
+
+        else:
+            msg = "Djerba couldn't find the coverage associated with donor {0} and tumour_id {1} in QC-ETL. ".format(donor, tumour_id)
+            self.logger.debug(msg)
+            raise MissingQCETLError(msg)
+
+
+
+class MissingQCETLError(Exception):
+    pass
