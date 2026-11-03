@@ -13,7 +13,7 @@ import djerba.plugins.sample.constants as constants
 from djerba.plugins.base import plugin_base, DjerbaPluginError
 from djerba.core.workspace import workspace
 import djerba.core.constants as core_constants
-from djerba.util.gsiqcetl import gsiqcetl_plugin_base, MissingQCETLError
+from djerba.util.gsiqcetl import gsiqcetl_plugin_base
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.render_mako import mako_renderer
 from djerba.util.logger import logger
@@ -23,9 +23,6 @@ from djerba.util.validator import path_validator
 class main(gsiqcetl_plugin_base):
 
     PLUGIN_VERSION = '1.0.0'
-    QCETL_CACHE_DEFAULT = "/scratch2/groups/gsi/production/qcetl_v1"
-    QCETL_CACHE_KEY = 'qcetl_cache'
-
 
     def specify_params(self):
         discovered = [
@@ -46,7 +43,6 @@ class main(gsiqcetl_plugin_base):
         self.set_ini_default('extract_priority', 500)
         self.set_ini_default('render_priority', 500)
         self.set_ini_default(constants.CALLABILITY_WARNING, False)
-        self.set_ini_default(self.QCETL_CACHE_KEY, self.QCETL_CACHE_DEFAULT)
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -83,11 +79,10 @@ class main(gsiqcetl_plugin_base):
         donor = wrapper.get_my_string(constants.DONOR)
         tumour_id = wrapper.get_my_string(core_constants.TUMOUR_ID)
         ignore_warning = wrapper.get_my_boolean(constants.CALLABILITY_WARNING)
-        cache_path = wrapper.get_my_string(self.QCETL_CACHE_KEY)
 
         # SECOND PASS: Get files based on input parameters
         if self.gsiqcetl_ok():
-            etl_cache = self.get_qcetl_cache(cache_path)
+            etl_cache = self.get_qcetl_cache()
             if wrapper.my_param_is_null(constants.CALLABILITY):
                 callability = self.fetch_callability_etl_data(etl_cache, donor, tumour_id, ignore_warning)
                 wrapper.set_my_param(constants.CALLABILITY, callability)

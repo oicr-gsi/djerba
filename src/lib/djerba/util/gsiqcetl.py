@@ -45,26 +45,26 @@ class gsiqcetl_plugin_base(plugin_base):
                 raise RuntimeError(msg) from err
             # now check the cache directory
             finder = directory_finder(strict=False)
-            self.gsiqcetl_cache_default = finder.get_gsiqcetl_cache_dir()
-            if self.gsiqcetl_cache_default == None:
-                self.logger.warn("Default GSI-QC-ETL cache directory is not available")
+            self.gsiqcetl_cache_dir = finder.get_gsiqcetl_cache_dir()
+            if self.gsiqcetl_cache_dir == None:
+                self.logger.warn("GSI-QC-ETL cache directory is not available")
             else:
                 self.gsiqcetl_OK = True
                 
     def gsiqcetl_ok(self):
         return self.gsiqcetl_OK
 
+    def get_qcetl_cache(self):
+        if not self.gsiqcetl_ok():
+            msg = "Attempted to get QC-ETL cache, but it is not available"
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+        etl_cache = self.QCETLCache(self.gsiqcetl_cache_dir)
+        return etl_cache
+
     #########################
     # methods originally from main sample plugin
     #########################
-
-    def get_qcetl_cache(self, cache_path=None):
-        if cache_path==None:
-            cache_path = self.gsiqcetl_cache_default
-        val = path_validator(self.log_level, self.log_path)
-        val.validate_input_dir(cache_path)
-        etl_cache = self.QCETLCache(cache_path)
-        return etl_cache
 
     def fetch_callability_etl_data(self, etl_cache, donor, tumour_id, ignore_warning):
         self.logger.debug("Fetching callability from GSI-QC-ETL for donor "+donor)
