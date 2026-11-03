@@ -42,12 +42,13 @@ class gsiqcetl_plugin_base(plugin_base):
                 msg = 'QC-ETL import failure! Try checking python versions'
                 raise RuntimeError(msg) from err
             # now check the cache directory
-            finder = directory_finder(strict=False)
-            self.gsiqcetl_cache_dir = finder.get_gsiqcetl_cache_dir()
-            if self.gsiqcetl_cache_dir == None:
-                self.logger.warn("GSI-QC-ETL cache directory is not available")
-            else:
+            finder = directory_finder()
+            if finder.has_valid_gsiqcetl_dir():
+                self.gsiqcetl_cache_dir = finder.get_gsiqcetl_dir()
                 self.gsiqcetl_OK = True
+            else:
+                self.gsiqcetl_cache_dir = None
+                self.logger.warn("GSI-QC-ETL cache directory is not available")
                 
     def gsiqcetl_ok(self):
         return self.gsiqcetl_OK
