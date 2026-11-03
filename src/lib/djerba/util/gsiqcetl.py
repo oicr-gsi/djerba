@@ -62,22 +62,17 @@ class gsiqcetl_plugin_base(plugin_base):
         etl_cache = self.QCETLCache(self.gsiqcetl_cache_dir)
         return etl_cache
 
-    #########################
-    # methods originally from main sample plugin
-    #########################
-
     def fetch_callability_etl_data(self, etl_cache, donor, tumour_id, ignore_warning):
-        self.logger.debug("Fetching callability from GSI-QC-ETL for donor "+donor)
+        """
+        Fetch callability for the WGTS sample plugin and check against minimum threshold
+        """
+        msg = "Fetching callability from GSI-QC-ETL for "+\
+            f"donor {donor}, tumour ID {tumour_id}"
+        self.logger.debug(msg)
         cached_callabilities = etl_cache.mutectcallability.mutectcallability
         columns_of_interest = self.gsiqcetl_column.MutetctCallabilityColumn
-        # Note: donor and tumour ID are both not unique, but together are unique. Filter on both.
-        # One donor can have multiple tumour IDs; one tumour ID can be associated with multiple donors
-        # But one donor will not have a duplicate tumour IDs
-        data = cached_callabilities.loc[
-            (cached_callabilities[columns_of_interest.GroupID] == tumour_id) & # filter on tumour_id
-            (cached_callabilities[columns_of_interest.Donor] == donor), # filter also on donor
-            [columns_of_interest.GroupID, columns_of_interest.Donor, columns_of_interest.Callability]
-            ]
+        metric_column = columns_of_interest.Callability
+        data = self.filter_by_donor_and_tumour_id(donor, tumour_id, cached_callabilities, columns_of_interest, metric_column)
         if len(data) == 1:
             # Round down to one decimal place
             callability = math.floor(data.iloc[0][columns_of_interest.Callability].item() * 1000) / 10
@@ -97,17 +92,14 @@ class gsiqcetl_plugin_base(plugin_base):
             raise MissingQCETLError(msg)
         
     def fetch_coverage_etl_data(self, etl_cache, donor, tumour_id):
+        """
+        Fetch coverage for the WGTS sample plugin
+        """
         self.logger.debug("Fetching coverage from GSI-QC-ETL for donor "+donor)
         cached_coverages = etl_cache.bamqc4merged.bamqc4merged
         columns_of_interest = self.gsiqcetl_column.BamQc4MergedColumn
-        # Note: donor and tumour ID are both not unique, but together are unique. Filter on both.
-        # One donor can have multiple tumour IDs; one tumour ID can be associated with multiple donors
-        # But one donor will not have a duplicate tumour IDs
-        data = cached_coverages.loc[
-            (cached_coverages[columns_of_interest.GroupID] == tumour_id) &
-            (cached_coverages[columns_of_interest.Donor] == donor),
-            [columns_of_interest.GroupID, columns_of_interest.Donor, columns_of_interest.CoverageDeduplicated]
-            ]
+        metric_column = columns_of_interest.CoverageDeduplicated
+        data = self.filter_by_donor_and_tumour_id(donor, tumour_id, cached_coverages, columns_of_interest, metric_column)
         if len(data) == 1:
             coverage_value = round(data.iloc[0][columns_of_interest.CoverageDeduplicated].item(),1)
             self.logger.debug("Found coverage: {0}".format(coverage_value))
@@ -121,11 +113,22 @@ class gsiqcetl_plugin_base(plugin_base):
             self.logger.debug(msg)
             raise MissingQCETLError(msg)
 
-    #########################
-    # methods originally from TAR sample plugin
-    #########################
+    def filter_by_donor_and_tumour_id(self, donor, tumour_id, cached_data, columns_of_interest, metric_column):
+        # Note: donor and tumour ID are both not unique, but together are unique. Filter on both.
+        # One donor can have multiple tumour IDs; one tumour ID can be associated with multiple donors
+        # But one donor will not have a duplicate tumour IDs
+        data = cached_data.loc[
+            (cached_data[columns_of_interest.GroupID] == tumour_id) &
+            (cached_data[columns_of_interest.Donor] == donor),
+            [columns_of_interest.GroupID, columns_of_interest.Donor, metric_column]
+        ]
+        return data
 
-    def fetch_qc_etl_data(self, group_id, cache_name, qc_metric):
+    def fetch_tar_etl_data(self, group_id, cache_name, qc_metric):
+        """
+        QC-ETL fetch method used in the TAR sample plugin
+        Has a filter to exclude normal data, and a mean bait coverage check
+        """
         etl_cache = self.get_qcetl_cache()
         cached_coverages = self.get_cached_coverages(etl_cache, cache_name)
         columns_of_interest = self.gsiqcetl_column.HsMetricsColumn

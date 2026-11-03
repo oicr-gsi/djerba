@@ -52,11 +52,11 @@ class main(gsiqcetl_plugin_base):
         wrapper.set_my_param(constants.PURITY, purity)
 
         if wrapper.my_param_is_null(constants.RAW_COVERAGE):
-            qc_dict = self.fetch_qc_etl_data(config[self.identifier][constants.GROUP_ID], constants.CACHE_COVERAGE, constants.RAW_COVERAGE)
+            qc_dict = self.fetch_tar_etl_data(config[self.identifier][constants.GROUP_ID], constants.CACHE_COVERAGE, constants.RAW_COVERAGE)
             wrapper.set_my_param(constants.RAW_COVERAGE, qc_dict[constants.RAW_COVERAGE])
 
         if wrapper.my_param_is_null(constants.COVERAGE_PL):
-            qc_dict = self.fetch_qc_etl_data(config[self.identifier][constants.GROUP_ID], constants.CACHE_COLLAPSED, constants.COVERAGE_PL)
+            qc_dict = self.fetch_tar_etl_data(config[self.identifier][constants.GROUP_ID], constants.CACHE_COLLAPSED, constants.COVERAGE_PL)
             wrapper.set_my_param(constants.COVERAGE_PL, qc_dict[constants.COVERAGE_PL])
 
         return wrapper.get_config()
