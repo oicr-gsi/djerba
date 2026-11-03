@@ -15,22 +15,31 @@ class directory_finder(logger):
     DJERBA_TEST_DIR_VAR = 'DJERBA_TEST_DIR'
     DJERBA_TEST_OUTPUT_DIR_VAR = 'DJERBA_TEST_OUTPUT_DIR'
     DJERBA_CORE_HTML_DIR_VAR = 'DJERBA_CORE_HTML_DIR'
+    GSIQCETL_CACHE_DIR_VAR = 'GSIQCETL_CACHE_DIR'
 
-    def __init__(self, log_level=logging.WARNING, log_path=None):
+    def __init__(self, log_level=logging.WARNING, log_path=None, strict=True):
         self.logger = self.get_logger(log_level, __name__, log_path)
         self.validator = path_validator(log_level, log_path)
+        self.strict = strict # directory not found is an error if strict, warning otherwise
 
     def get_directory(self, var):
         value = os.environ.get(var)
         if value == None:
             msg = "No value set for environment variable '{0}'".format(var)
-            self.logger.error(msg)
-            raise DjerbaEnvDirError(msg)
+            if self.strict:
+                self.logger.error(msg)
+                raise DjerbaEnvDirError(msg)
+            else:
+                self.logger.warn(msg)
         elif not self.validator.validate_input_dir(value):
             msg = "Value '{0}' of environment variable '{1}'".format(var, value)+\
                 " is not a valid input directory"
-            self.logger.error(msg)
-            raise DjerbaEnvDirError(msg)
+            if self.strict:
+                self.logger.error(msg)
+                raise DjerbaEnvDirError(msg)
+            else:
+                self.logger.warn(msg)
+                value = None
         else:
             msg = "Directory '{0}' from environment variable '{1}' is OK".format(value, var)
             self.logger.debug(msg)
@@ -44,6 +53,9 @@ class directory_finder(logger):
 
     def get_data_dir(self):
         return self.get_directory(self.DJERBA_RUN_DIR_VAR)
+
+    def get_gsiqcetl_cache_dir(self):
+        return self.get_directory(self.GSIQCETL_CACHE_DIR_VAR)
 
     def get_private_dir(self):
         return self.get_directory(self.DJERBA_PRIVATE_DIR_VAR)
