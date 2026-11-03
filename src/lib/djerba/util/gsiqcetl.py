@@ -16,8 +16,6 @@ class gsiqcetl_plugin_base(plugin_base):
     so loading is done specially and failure to load is not a fatal error.
     """
 
-    # QCETL_CACHE_DEFAULT = "/scratch2/groups/gsi/production/qcetl_v1"
-    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.gsiqcetl_OK = False # True if library and cache dir are both available
@@ -84,8 +82,9 @@ class gsiqcetl_plugin_base(plugin_base):
             self.logger.debug("Found callability: {0}".format(callability))
             return callability
         elif len(data) > 1:
-            msg = "Djerba found more than one callability associated with donor {0} and tumour_id {1} in QC-ETL. Double check that the callability found by Djerba is correct; if not, may have to manually specify the callability.".format(donor, tumour_id)
-            self.logger.warning(msg)
+            msg = "Djerba found more than one callability associated with donor {0} and tumour_id {1} in QC-ETL: {2}. Identify the correct callability and specify manually in the INI file.".format(donor, tumour_id, data)
+            self.logger.error(msg)
+            raise AmbiguousQCETLError(msg)
         else:
             msg = "Djerba couldn't find the callability associated with donor {0} and tumour_id {1} in QC-ETL.".format(donor, tumour_id)
             self.logger.error(msg)
@@ -95,7 +94,9 @@ class gsiqcetl_plugin_base(plugin_base):
         """
         Fetch coverage for the WGTS sample plugin
         """
-        self.logger.debug("Fetching coverage from GSI-QC-ETL for donor "+donor)
+        msg = "Fetching coverage from GSI-QC-ETL for "+\
+            f"donor {donor}, tumour ID {tumour_id}"
+        self.logger.debug(msg)
         cached_coverages = etl_cache.bamqc4merged.bamqc4merged
         columns_of_interest = self.gsiqcetl_column.BamQc4MergedColumn
         metric_column = columns_of_interest.CoverageDeduplicated
@@ -105,12 +106,12 @@ class gsiqcetl_plugin_base(plugin_base):
             self.logger.debug("Found coverage: {0}".format(coverage_value))
             return(coverage_value)
         elif len(data) > 1:
-            msg = "Djerba found more than one coverage associated with donor {0} and tumour_id {1} in QC-ETL. Double check that the coverage found by Djerba is correct; if not, may have to manually specify the coverage.".format(donor, tumour_id)
-            self.logger.warning(msg)
-
+            msg = "Djerba found more than one coverage associated with donor {0} and tumour_id {1} in QC-ETL: {2}. Identify the correct coverage and specify manually in the INI file.".format(donor, tumour_id, data)
+            self.logger.error(msg)
+            raise AmbiguousQCETLError(msg)
         else:
-            msg = "Djerba couldn't find the coverage associated with donor {0} and tumour_id {1} in QC-ETL. ".format(donor, tumour_id)
-            self.logger.debug(msg)
+            msg = "Djerba couldn't find the coverage associated with donor {0} and tumour_id {1} in QC-ETL.".format(donor, tumour_id)
+            self.logger.error(msg)
             raise MissingQCETLError(msg)
 
     def filter_by_donor_and_tumour_id(self, donor, tumour_id, cached_data, columns_of_interest, metric_column):
@@ -141,7 +142,6 @@ class gsiqcetl_plugin_base(plugin_base):
                 columns_of_interest.TissueType,
             ]
         ]
-
         qc_dict = {}
         if len(data) > 0:
             # Exclude the reference
@@ -168,6 +168,9 @@ class gsiqcetl_plugin_base(plugin_base):
         self.logger.debug("Fetched metrics from GSI-QC-ETL: {0}".format(qc_dict))
         return qc_dict
 
+
+class AmbiguousQCETLError(Exception):
+    pass
 
 class MissingQCETLError(Exception):
     pass
