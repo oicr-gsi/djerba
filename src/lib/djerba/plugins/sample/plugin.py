@@ -135,6 +135,3 @@ class main(gsiqcetl_plugin_base):
                 self.logger.error(msg)
                 raise DjerbaPluginError(msg)
         return(wrapper)
-
-class LowCallabilityError(Exception):
-    pass

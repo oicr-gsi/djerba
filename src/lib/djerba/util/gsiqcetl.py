@@ -175,3 +175,6 @@ class AmbiguousQCETLError(Exception):
 
 class MissingQCETLError(Exception):
     pass
+
+class LowCallabilityError(Exception):
+    pass
