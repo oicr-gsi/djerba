@@ -1,9 +1,11 @@
 import os
 import csv
 import gzip
+import json
 import logging
 import pandas as pd
 import djerba.core.constants as core_constants
+import djerba.plugins.genomic_landscape as genomic_landscape
 from djerba.util.environment import directory_finder
 import djerba.util.ini_fields as ini  # TODO new module for these constants?
 import djerba.util.provenance_index as index
@@ -43,6 +45,21 @@ class main(helper_base):
     NA = "NA"
     TCGA_DEFAULT = "TCGA_ALL_TUMOR"
     TCGA_CODE_KEY = "tcga_code_key.txt"
+    PRIMARY_SITE = "primary_site"
+    ONCOTREE_FILE = "OncoTree.json"
+
+    # OncoTree tissue names that differ from the primary_site column in tcga_code_key.txt
+    TISSUE_TO_SITE = {
+        "CNS/Brain": "Brain",
+        "Ovary/Fallopian Tube": "Ovary",
+        "Cervix": "Cervix,Uterus",
+        "Uterus": "Cervix,Uterus",
+        "Biliary Tract": "Biliary Tract,Liver",
+        "Liver": "Biliary Tract,Liver",  # liver maps to the hepatobiliary cohort, not the pancreatic one
+        "Pancreas": "Pancreas, Liver",
+        "Peritoneum": "Peritoneum,Pleura",
+        "Pleura": "Peritoneum,Pleura",
+    }
 
     VERSION = "1.0.0"
 
@@ -163,22 +180,60 @@ class main(helper_base):
             raise ValueError(msg)
 
     def convert_oncotree_to_tcga(self, oncotree_code):
-        
-        # Read tcga_code_key.txt as a database
+
         plugin_dir = os.path.dirname(os.path.realpath(__file__))
         df = pd.read_csv(os.path.join(plugin_dir, self.TCGA_CODE_KEY), sep = "\t", index_col = self.ONCOTREE_CODE)
+        code = oncotree_code.upper()
 
-        # Lookup oncotree_code in the dataframe and get the corresponding tcga_code
-        # Note: the data in the text file should contain no duplicate oncotree code values.
-        # If error occurs (i.e. could not find oncotree_code in table), default to TCGA_ALL_TUMOR with a warning.
-        try:
-            tcga_code = df.loc[oncotree_code.upper(), self.TCGA_CODE]
-        except:
-            tcga_code = self.TCGA_DEFAULT
-            msg = "Could not find ONCOTREE code {0} in tcga_code_key.txt. Defaulting to {1}. If you know the correct corresponding TCGA code, please manually specify it.".format(oncotree_code, self.TCGA_DEFAULT)
-            self.logger.warning(msg)
+        # Direct lookup in tcga_code_key.txt
+        if code in df.index:
+            return self._join_tcga_codes(df.loc[df.index == code, self.TCGA_CODE])
 
-        return tcga_code.upper()
+        oncotree_map = self._build_oncotree_map()
+
+        # Walk OncoTree ancestors and use the nearest one present in the table
+        current = code
+        seen = set()
+        while current in oncotree_map and current not in seen:
+            seen.add(current)
+            parent = oncotree_map[current].get("parent")
+            if not parent or parent == "TISSUE":
+                break
+            if parent in df.index:
+                return self._join_tcga_codes(df.loc[df.index == parent, self.TCGA_CODE])
+            current = parent
+
+        # Fall back to every cohort sharing the same tissue
+        node = oncotree_map.get(code)
+        tissue = node.get("tissue") if node else None
+        if tissue:
+            site = self.TISSUE_TO_SITE.get(tissue, tissue)
+            matches = df[df[self.PRIMARY_SITE] == site]
+            if len(matches) > 0:
+                return self._join_tcga_codes(matches[self.TCGA_CODE])
+
+        msg = "Could not find ONCOTREE code {0} in tcga_code_key.txt. Defaulting to {1}. If you know the correct corresponding TCGA code, please manually specify it.".format(oncotree_code, self.TCGA_DEFAULT)
+        self.logger.warning(msg)
+        return self.TCGA_DEFAULT
+
+    def _build_oncotree_map(self):
+        data_dir = os.path.dirname(genomic_landscape.__file__)
+        json_path = os.path.join(data_dir, "data", self.ONCOTREE_FILE)
+        with open(json_path) as in_file:
+            data = json.load(in_file)
+        oncotree_map = {}
+        nodes = [data["TISSUE"]]
+        while nodes:
+            node = nodes.pop()
+            code = node.get("code")
+            if code and code != "TISSUE":
+                oncotree_map[code] = {"parent": node.get("parent"), "tissue": node.get("tissue")}
+            for child in (node.get("children") or {}).values():
+                nodes.append(child)
+        return oncotree_map
+
+    def _join_tcga_codes(self, tcga_codes):
+        return "|".join(sorted(tcga_codes.str.upper().unique()))
 
 
     def write_input_params_info(self, input_params_info):

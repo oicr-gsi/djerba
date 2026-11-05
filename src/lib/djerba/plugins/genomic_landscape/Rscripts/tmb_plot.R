@@ -31,19 +31,23 @@ if(biomarker=="tmb"){
   tcga_tmb_file <- paste(data_dir, 'tmbcomp-tcga.txt', sep='/')
   tcga_tmb_data <- read.delim(tcga_tmb_file, header = TRUE, stringsAsFactors = F)
   
+  # tcga_code may be several merged codes joined by '|'
+  codes <- unlist(strsplit(sample_tcga, "\\|"))
+  tcga_label <- paste(toupper(codes), collapse="/")
   #subset external data to cancer type
-  external_tmb_data_type <- external_tmb_data %>% filter(if (sample_tcga %in% external_tmb_data$CANCER.TYPE) CANCER.TYPE == sample_tcga else NA)
+  external_tmb_data_type <- external_tmb_data %>% filter(CANCER.TYPE %in% codes)
   #subset tcga data to cancer type
-  tcga_tmb_data_type <- tcga_tmb_data %>% filter(if (sample_tcga %in% tcga_tmb_data$CANCER.TYPE) CANCER.TYPE == sample_tcga else NA)
+  tcga_tmb_data_type <- tcga_tmb_data %>% filter(CANCER.TYPE %in% codes)
   
   
-  if (sample_tcga %in% external_tmb_data_type$CANCER.TYPE){
+  # the external data covers one cancer type, so it does not apply to merged codes
+  if (length(codes) == 1 && nrow(external_tmb_data_type) > 0){
     median_tmb <- median(external_tmb_data_type$tmb)
-    cohort_label <- paste(toupper(sample_tcga) ,"Cohort")
+    cohort_label <- paste(tcga_label ,"Cohort")
   }
-  else if (sample_tcga %in% tcga_tmb_data_type$CANCER.TYPE){
+  else if (all(codes %in% tcga_tmb_data$CANCER.TYPE)){
     median_tmb <- median(tcga_tmb_data_type$tmb)
-    cohort_label <- paste("TCGA",toupper(sample_tcga),"Cohort")
+    cohort_label <- paste("TCGA",tcga_label,"Cohort")
   }
   else{
     median_tmb <- median(tcga_tmb_data$tmb)
@@ -56,10 +60,10 @@ if(biomarker=="tmb"){
   print(
   ggplot(tcga_tmb_data) + 
     {
-      if (sample_tcga %in% external_tmb_data_type$CANCER.TYPE)
+      if (length(codes) == 1 && nrow(external_tmb_data_type) > 0)
         geom_boxplot(data = external_tmb_data_type, aes(x=0,y=tmb,color="Cohort"),width = 0.1, outlier.shape = NA) 
         
-      else if (sample_tcga %in% tcga_tmb_data_type$CANCER.TYPE)
+      else if (all(codes %in% tcga_tmb_data$CANCER.TYPE))
         geom_boxplot(data = tcga_tmb_data_type, aes(x=0,y=tmb,color="Cohort"), width = 0.1, outlier.shape = NA) 
       else
         geom_boxplot(aes(x=0,y=tmb,color="All TCGA"),width = 0.1, outlier.shape = NA) 
