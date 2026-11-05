@@ -1,6 +1,7 @@
 # CHANGELOG
 
 ## Unreleased
+- Updated `OncoTree.json` in the genomic landscape plugin to `oncotree_2025_10_03`, the latest stable version.
 - GCGI-1807: New environment variables for file provenance report and GSI-QC-ETL locations are `DJERBA_FPR_DIR` and `DJERBA_GSIQCETL_DIR` respectively
 - Plugins needing GSI-QC-ETL functionality inherit from new `gsiqcetl_plugin_base` class
 - Multiple coverage/callability values in QC-ETL now raise an error; values can be entered manually
