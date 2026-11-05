@@ -2,20 +2,24 @@
 
 ## Unreleased
 - Updated `OncoTree.json` in the genomic landscape plugin to `oncotree_2025_10_03`, the latest stable version.
+- GCGI-1807: New environment variables for file provenance report and GSI-QC-ETL locations are `DJERBA_FPR_DIR` and `DJERBA_GSIQCETL_DIR` respectively
+- Plugins needing GSI-QC-ETL functionality inherit from new `gsiqcetl_plugin_base` class
+- Multiple coverage/callability values in QC-ETL now raise an error; values can be entered manually
+
 ## v1.13.2: 2026-10-30
 - GCGI-1809: TAR SNV/indel filter now requires at least 3 supporting reads matching the SOP.
 - Transform GEP TPM values to log2(TPM + 0.001) before comparison with RODiC TPM-data, which is stored on that scale.
-- Rounding those values to 4 decimals, so zero TPM in the sample ties with zero TPM in TCGA. 
+- Rounding those values to 4 decimals, so zero TPM in the sample ties with zero TPM in TCGA.
 - Genes whose symbol is not in the TCGA comparator are matched by Ensembl ID instead.
 - Write genes not found in the TCGA comparator to `data_expression_tcga_unmatched.txt`. SNV/indel and CNV plugins log a warning for each reported gene with no expression value (displayed as NA), noting whether its symbol was missing from the TCGA comparator.
 - Added a warning when gene IDs in the sample GEP results are not found in the GEP reference; these were previously dropped silently and got no expression value.
 - Added an expression percentile disclaimer to WGTS reports and updated GEP reference to TPM.
 - Fixed a bug that will raise a key error if df_fusion is empty.
-- GCGI-1808: Updated OncoKB links to _TERT_ promoter mutations  
+- GCGI-1808: Updated OncoKB links to _TERT_ promoter mutations
 
 ## v1.13.1: 2026-09-15
 - GCGI-1735: "Not for PHI" warning next to contact email
-- GCGI-1798: Removed RUO watermark, changed RUO report title and footer 
+- GCGI-1798: Removed RUO watermark, changed RUO report title and footer
 - Updated report examples for WGTS and TAR
 
 ## v1.13.0: 2026-08-20
