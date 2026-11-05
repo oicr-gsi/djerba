@@ -1,5 +1,6 @@
 """Find and read expression values"""
 
+import csv
 import json
 import logging
 import os
@@ -32,3 +33,23 @@ class expression_reader(logger):
         for key in expr.keys():
             expr[key] = float(expr[key])
         return expr
+
+    def warn_missing_expression(self, work_dir, expression, genes):
+        missing = sorted(set(gene for gene in genes if gene not in expression))
+        if len(missing) == 0:
+            return
+        # genes in the sample but not the TCGA reference, written by the expression helper
+        unmatched_path = os.path.join(work_dir, expr_helper.TCGA_UNMATCHED)
+        unmatched = set()
+        if os.path.exists(unmatched_path):
+            with open(unmatched_path) as in_file:
+                unmatched = set(row[0] for row in csv.reader(in_file, delimiter="\t"))
+        for gene in missing:
+            if gene in unmatched:
+                reason = 'gene symbol not found in TCGA comparator data'
+            else:
+                # absent from the sample results, or its gene ID is absent from the GEP reference
+                reason = 'gene not found in sample expression data or GEP reference'
+            msg = 'No expression percentile for reported gene {0}, '.format(gene)+\
+                'will be displayed as NA: {0}'.format(reason)
+            self.logger.warning(msg)

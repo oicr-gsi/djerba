@@ -63,6 +63,7 @@ class preprocess(logger):
 
   # MAF filter thresholds
   MIN_VAF_TAR = 0.01
+  MIN_T_ALT_COUNT = 3 # minimum supporting reads, as required by the SOP
   MAX_UNMATCHED_GNOMAD_AF = 0.001
 
 
@@ -175,6 +176,7 @@ class preprocess(logger):
     is_matched = row[ix.get(self.MATCHED_NORM_SAMPLE_BARCODE)] != 'unmatched'
     filter_flags = re.split(';', row[ix.get(self.FILTER)])
     if row_t_depth >= 1 and \
+        row_t_alt_count >= self.MIN_T_ALT_COUNT and \
         row_t_alt_count/row_t_depth >= vaf_cutoff and \
         (is_matched or row_gnomad_af < self.MAX_UNMATCHED_GNOMAD_AF) and \
         row[ix.get(self.VARIANT_CLASSIFICATION)] in self.MUTATION_TYPES_EXONIC and \
