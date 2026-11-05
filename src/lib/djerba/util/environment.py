@@ -10,6 +10,8 @@ class directory_finder(logger):
     """Find and validate standard directory paths from environment variables"""
     
     DJERBA_BASE_DIR_VAR = 'DJERBA_BASE_DIR' # defined by Modulator
+    DJERBA_FPR_DIR_VAR = 'DJERBA_FPR_DIR' # file provenance report
+    DJERBA_GSIQCETL_DIR_VAR = 'DJERBA_GSIQCETL_DIR'
     DJERBA_RUN_DIR_VAR = 'DJERBA_RUN_DIR'
     DJERBA_PRIVATE_DIR_VAR = 'DJERBA_PRIVATE_DIR'
     DJERBA_TEST_DIR_VAR = 'DJERBA_TEST_DIR'
@@ -45,6 +47,13 @@ class directory_finder(logger):
     def get_data_dir(self):
         return self.get_directory(self.DJERBA_RUN_DIR_VAR)
 
+    def get_fpr_dir(self):
+        """Get directory for the file provenance report"""
+        return self.get_directory(self.DJERBA_FPR_DIR_VAR)
+
+    def get_gsiqcetl_dir(self):
+        return self.get_directory(self.DJERBA_GSIQCETL_DIR_VAR)
+
     def get_private_dir(self):
         return self.get_directory(self.DJERBA_PRIVATE_DIR_VAR)
 
@@ -69,6 +78,12 @@ class directory_finder(logger):
 
     def has_valid_data_dir(self):
         return self.has_valid_directory(self.DJERBA_RUN_DIR_VAR)
+
+    def has_valid_fpr_dir(self):
+        return self.has_valid_directory(self.DJERBA_FPR_DIR_VAR)
+
+    def has_valid_gsiqcetl_dir(self):
+        return self.has_valid_directory(self.DJERBA_GSIQCETL_DIR_VAR)
 
     def has_valid_private_dir(self):
         return self.has_valid_directory(self.DJERBA_PRIVATE_DIR_VAR)

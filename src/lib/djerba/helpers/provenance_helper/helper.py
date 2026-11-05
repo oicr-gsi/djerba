@@ -18,13 +18,13 @@ import djerba.core.constants as core_constants
 import djerba.util.ini_fields as ini  # TODO new module for these constants?
 import djerba.util.provenance_index as index
 from djerba.helpers.base import helper_base
+from djerba.util.environment import directory_finder
 from djerba.util.provenance_reader import provenance_reader, sample_name_container, \
     InvalidConfigurationError
 
 class main(helper_base):
 
-    DEFAULT_PROVENANCE_INPUT = '/scratch2/groups/gsi/production/vidarr/'+\
-        'vidarr_files_report_latest.tsv.gz'
+    DEFAULT_FPR_FILENAME = 'vidarr_files_report_latest.tsv.gz'
     PROVENANCE_INPUT_KEY = 'provenance_input_path'
     STUDY_TITLE = 'project'
     ROOT_SAMPLE_NAME = 'donor'
@@ -248,7 +248,9 @@ class main(helper_base):
     def specify_params(self):
         self.logger.debug("Specifying params for provenance helper")
         self.set_priority_defaults(self.PRIORITY)
-        self.set_ini_default(self.PROVENANCE_INPUT_KEY, self.DEFAULT_PROVENANCE_INPUT)
+        default_dir = directory_finder().get_fpr_dir()
+        default_input = os.path.join(default_dir, self.DEFAULT_FPR_FILENAME)
+        self.set_ini_default(self.PROVENANCE_INPUT_KEY, default_input)
         self.add_ini_discovered(self.STUDY_TITLE)
         self.add_ini_discovered(self.ROOT_SAMPLE_NAME)
         self.add_ini_discovered(self.ASSAY)
