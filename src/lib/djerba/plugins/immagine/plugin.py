@@ -71,14 +71,13 @@ class main(plugin_base):
         self.r_script_dir = finder.get_base_dir() + "/plugins/immagine/Rscripts/"
         mutations_file = os.path.join(work_dir, constants.DATA_MUTATIONS_TXT)
         
-
-        seg_file = os.path.join(work_dir, constants.PURPLE_SEGMENTS_FILE)
-        seg_df = self.process_seg_file(seg_file)
-        
         # The purple.cnv.gene file is located in a sub-directory in the workspace which has some PURPLE outputs. Glob for the file pattern to get the file, as the suffix is consistent.
-        #cna_file = config[self.identifier][constants.PURPLE_CNV_GENE_FILE]
         cna_file_pattern = os.path.join(work_dir, "*", constants.PURPLE_CNV_GENE_FILE_SUFFIX)
         cna_file = glob.glob(cna_file_pattern)[0]
+        seg_file_pattern = os.path.join(work_dir, "*", constants.PURPLE_CNV_SOMATIC_FILE_SUFFIX)
+        seg_file = glob.glob(seg_file_pattern)[0]
+        seg_df = self.process_seg_file(seg_file) 
+        
         igcaller_zip = config[self.identifier][constants.IGCALLER_FILE]
         ploidy = float(self.workspace.read_json(constants.PURITY_PLOIDY_JSON)['ploidy'])
         hrdetect_sbs_json = config[self.identifier][constants.SBS_FILE]
@@ -178,7 +177,8 @@ class main(plugin_base):
         For simplicity, this function returns "present" for a score > 0 and "absent" for a score = 0.
         """
         
-        data = self.workspace.read_json(hrdetect_sbs_json)
+        with open(hrdetect_sbs_json, "r") as f:
+            data = json.load(f)
         exposures = data['exposures'][0]
         apobec_sigs = {name: exposures[name] != 0 for name in ('SBS2', 'SBS13')}
         results[constants.APOBEC_SIGS] = apobec_sigs
