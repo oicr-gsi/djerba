@@ -139,6 +139,9 @@ class cnv_processor(logger):
         self.logger.debug("Sorting and filtering CNV rows")
         rows = var_sorter.sort_variant_rows(rows)
         rows = oncokb_levels.filter_reportable(rows)
+        if is_wgts:
+            genes = [row[var_sorter.GENE] for row in rows]
+            xreader.warn_missing_expression(self.work_dir, mutation_expression, genes)
         results = {
             cnv.PERCENT_GENOME_ALTERED: self.calculate_percent_genome_altered(),
             cnv.TOTAL_VARIANTS: unfiltered_cnv_total,

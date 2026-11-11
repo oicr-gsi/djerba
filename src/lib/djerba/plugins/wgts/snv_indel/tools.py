@@ -29,7 +29,6 @@ from djerba.util.oncokb.tools import gene_summary_reader
 from djerba.util.subprocess_runner import subprocess_runner
 from djerba.util.variant_sorter import variant_sorter
 
-
 class whizbam:
 
     """Class to contain a whizbam link method"""
@@ -207,11 +206,14 @@ class snv_indel_processor(logger):
                         # filtering for TERT hot spot would have already occured so this is a hot spot
                         if row_input[sic.START] == '1295113':
                             alt = 'p.? (c.-124C>T)'
+                            alt_url = html_builder.build_alteration_url(
+                                gene, "5:g.1295228G>A%20%7Bc.-124C>T%7D", oncotree_code
+                            )
                         elif row_input[sic.START] == '1295135':
                             alt = 'p.? (c.-146C>T)'
-                        alt_url = html_builder.build_alteration_url(
-                            gene, "Promoter%20Mutation", oncotree_code
-                        )
+                            alt_url = html_builder.build_alteration_url(
+                                gene, "5:g.1295250G>A%20%7Bc.-146C>T%7D", oncotree_code
+                            )
                     treatment_entry = treatment_option_factory.get_json(
                         tier = oncokb_levels.tier(level),
                         level = level,
@@ -302,6 +304,9 @@ class snv_indel_processor(logger):
                 rows.append(row_output)
         rows = var_sorter.sort_variant_rows(rows)
         rows = oncokb_levels.filter_reportable(rows)
+        if is_wgts:
+            genes = [row[var_sorter.GENE] for row in rows]
+            xreader.warn_missing_expression(self.work_dir, expression, genes)
         somatic_total, coding_seq_total = self.get_mutation_totals()
         results = {
             sic.SOMATIC_MUTATIONS: somatic_total,
@@ -330,11 +335,14 @@ class snv_indel_processor(logger):
             # filtering for TERT hot spot would have already occured so this is a hot spot
             if row[sic.START] == '1295113':
                 protein = 'p.? (c.-124C>T)'
+                protein_url = html_builder.build_alteration_url(
+                    gene, r'5:g.1295228G>A%20%7Bc.-124C>T%7D', oncotree_code
+                )
             elif row[sic.START] == '1295135':
                 protein = 'p.? (c.-146C>T)'
-            protein_url = html_builder.build_alteration_url(
-                gene, "Promoter%20Mutation", oncotree_code
-            )
+                protein_url = html_builder.build_alteration_url(
+                    gene, r'5:g.1295250G>A%20%7Bc.-146C>T%7D', oncotree_code
+                )
         return [protein, protein_url]
 
     def get_tumour_vaf(self, row):
