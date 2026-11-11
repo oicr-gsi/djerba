@@ -99,3 +99,14 @@ class immagine_table_builder:
         else:
             return "This patient does not fit the criteria for high-risk myeloma as defined by the IMWG."
 
+    @classmethod
+    def get_high_risk_statement(klass, results):
+        """
+        Writes the statement "high risk" or "not high risk"
+        """
+        present = results.get(constants.HIGH_RISK)
+        if present:
+            return "HIGH RISK"
+        else:
+            return "NOT HIGH RISK"
+

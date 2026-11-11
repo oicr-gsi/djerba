@@ -195,12 +195,16 @@ class main(plugin_base):
         etc...
         }
 
-        Note: we do NOT have to adjust copy number by ploidy, because the purple cnv somatic file copy number is already adjusted for purity and ploidy as per the PURPLE documentation.
-
+        Interpretation of this section depends on a baseline ploidy centered around 2.0.
+        If the whole genome is centered around 3.0 or higher, there will be false positive amplifications.
+        However, myeloma is almost always diploid.
+        Cases which have had higher than a diploid baseline are usually purity fails. 
+        Interpretation of this section is also cautioned in the definitions.
         """
 
         data = {}
 
+        # Get all cytogen alts
         data[constants.MONOSOMY_13] = cytogen_alts.monosomy("chr13", seg_df)
         data[constants.MONOSOMY_14] = cytogen_alts.monosomy("chr14", seg_df)
         data[constants.MONOSOMY_17] = cytogen_alts.monosomy("chr17", seg_df)
