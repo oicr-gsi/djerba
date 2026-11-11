@@ -502,6 +502,12 @@ class provenance_reader(logger):
         suffix = '\.signatures\.json$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
+    def parse_hrdetect_sbs_path(self):
+        workflows = [self.WF_HRDETECT]
+        mt = self.MT_JSON_TEXT
+        suffix = '\.exposures\.SBS\.json$'
+        return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
+
     def parse_immune_path(self):
         workflow = self.WF_IMMUNE
         mt = self.MT_OCTET_STREAM

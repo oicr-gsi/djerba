@@ -51,6 +51,32 @@ h3 {
   
 }
 
+/* BLAH AQSA */
+.variants .table-title {
+    font-size: 19px;
+    font-weight: bold;
+    text-align: left;
+    padding-bottom: 3px;
+}
+
+.variants td.center {
+    text-align: center;
+}
+
+.twooftwocellmaincenter {
+  page-break-inside: avoid;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.variants .high-risk-myeloma td:first-child {
+    padding-left: 30px;
+}
+
+.variants .high-risk-myeloma td {
+    padding: 8px;
+}
+
 /*----------------#section-delimiting lines--------------------*/
 
 hr.header-big-line{

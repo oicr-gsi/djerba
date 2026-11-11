@@ -1,0 +1,286 @@
+<%
+  import djerba.plugins.immagine.constants as constants
+  from djerba.plugins.immagine.html import immagine_table_builder
+%>
+
+
+<table width="100%" style="border-collapse: separate; border-spacing: 20px 0;">
+    <tr>
+
+        <!-- GREY BOX -->
+        <td width="35%" style="padding: 0; vertical-align: top;">
+            
+	    <div style="
+                height: 200px;
+		margin-top: 50px;
+                padding: 10px;
+                box-sizing: border-box;
+                background-color: rgba(194,194,194,.5);
+                border: 3px solid;
+                border-radius: 12px;
+            ">
+
+            <h3 style="margin-top: 20px;">
+		    Risk Status:<br> 
+		    ${immagine_table_builder.get_high_risk_statement(results)}
+            </h3>
+
+            <table class="info" style="margin-bottom: 20px; width: 100%;">
+                <tr>
+                    <td>
+                        ${immagine_table_builder.get_high_risk_sentence(results)}
+                    </td>
+                </tr>
+            </table>
+
+        </td>
+
+
+        <!-- VARIANTS TABLE -->
+        <td width="65%" style="padding: 0; vertical-align: top;">
+
+            <table class="variants" width="100%">
+		<tr>
+                <th colspan="2" class="table-title">HIGH RISK MULTIPLE MYELOMA</th>
+            	</tr>
+                <tr>
+                    <td colspan="2">
+                        <b>Any one of</b>
+                    </td>
+                </tr>
+
+                <tr class="high-risk-myeloma">
+                    <td>Chromosome 17p deletion</td>
+                    <td>${'<strong>Detected</strong>' if results[constants.CYTOGEN_ALTS].get(constants.DEL_17P) else '<span style="color: #777;">Not Detected</span>'}</td>
+                </tr>
+
+                <tr class="high-risk-myeloma">
+                    <td>Mutation of p53</td>
+                    <td>${'<strong>Detected</strong>' if results[constants.P53_ALT] else '<span style="color: #777;">Not Detected</span>'}</td>
+                </tr>
+
+                <tr class="high-risk-myeloma">
+                    <td>Biallelic deletion of 1p32</td>
+                    <td>${'<strong>Detected</strong>' if results[constants.CYTOGEN_ALTS].get(constants.BI_DEL_1P32) else '<span style="color: #777;">Not Detected</span>'}</td>
+                </tr>
+
+                <tr>
+                    <td colspan="2">
+                        <b>Any two of</b>
+                    </td>
+                </tr>
+
+                <tr class="high-risk-myeloma">
+                    <td>Any one of: t(4;14), t(14;16) or t(14;20)</td>
+                    <td>${'<strong>Detected</strong>' if results.get(constants.HIGH_RISK_TRANSLOC) else '<span style="color: #777;">Not Detected</span>'}</td>
+                </tr>
+
+                <tr class="high-risk-myeloma">
+                    <td>Gain or amplification of Chromosome 1q</td>
+                    <td>${'<strong>Detected</strong>' if results[constants.CYTOGEN_ALTS].get(constants.AMP_1Q) else '<span style="color: #777;">Not Detected</span>'}</td>
+                </tr>
+
+                <tr class="high-risk-myeloma">
+                    <td>Monoallelic deletion of 1p32</td>
+                    <td>${'<strong>Detected</strong>' if results[constants.CYTOGEN_ALTS].get(constants.MONO_DEL_1P32) else '<span style="color: #777;">Not Detected</span>'}</td>
+                </tr>
+            </table>
+
+        </td>
+
+    </tr>
+</table>
+
+<div style="width: 100%; overflow: hidden;">
+
+    <div style="width: 50%; float: left; padding-right: 10px; box-sizing: border-box;">
+
+        <table class="variants" width="100%">
+            <tr>
+                <th colspan="2" class="table-title">IMMUNOGLOBULIN REARRANGEMENTS</th>
+            </tr>
+            <tr>
+                <td>IgH;14q32</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.TRANSLOCATIONS].get(constants.IGH) else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+            <tr>
+                <td>t(4;14)</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.TRANSLOCATIONS].get(constants.t4_14) else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+            <tr>
+                <td>t(14;16)</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.TRANSLOCATIONS].get(constants.t14_16) else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+            <tr>
+                <td>t(14;20)</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.TRANSLOCATIONS].get(constants.t14_20) else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+            <tr>
+                <td>t(8;14)</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.TRANSLOCATIONS].get(constants.t8_14) else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+            <tr>
+                <td>t(11;14)</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.TRANSLOCATIONS].get(constants.t11_14) else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+            <tr>
+                <td>t(6;14)</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.TRANSLOCATIONS].get(constants.t6_14) else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+            <tr>
+                <td>IGK;2p11</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.TRANSLOCATIONS].get(constants.IGK) else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+            <tr>
+                <td>t(2;8)</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.TRANSLOCATIONS].get(constants.t2_8) else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+            <tr>
+                <td>IGL;22q11</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.TRANSLOCATIONS].get(constants.IGL) else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+            <tr>
+                <td>t(8;22)</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.TRANSLOCATIONS].get(constants.t8_22) else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+        </table>
+
+    </div>
+
+    <div style="width: 50%; float: right; padding-left: 10px; box-sizing: border-box;">
+
+        <table class="variants" width="100%">
+            <tr>
+                <th colspan="2" class="table-title">CYTOGENETIC ABNORMALITIES</th>
+            </tr>
+            <tr>
+                <td>Monosomy Chromosome 13</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.CYTOGEN_ALTS].get(constants.MONOSOMY_13) else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+            <tr>
+                <td>Monosomy Chromosome 14</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.CYTOGEN_ALTS].get(constants.MONOSOMY_14) else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+            <tr>
+                <td>Monosomy Chromosome 17</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.CYTOGEN_ALTS].get(constants.MONOSOMY_17) else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+            <tr>
+                <td>Chromosome 1p deletion</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.CYTOGEN_ALTS].get(constants.DEL_1P) else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+            <tr>
+                <td>Chromosome 17p deletion</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.CYTOGEN_ALTS].get(constants.DEL_17P) else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+            <tr>
+                <td>Gain/amplification of Chromosome 1q</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.CYTOGEN_ALTS].get(constants.AMP_1Q) else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+            <tr>
+                <td>Hyperdiploidy</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.CYTOGEN_ALTS].get(constants.HYPERDIPLOIDY) else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+        </table>
+
+        <table class="variants" width="100%">
+            <tr>
+                <th colspan="2" class="table-title">APOBEC MUTATIONAL SIGNATURES</th>
+            </tr>
+            <tr>
+                <td>COSMIC SBS2</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.APOBEC_SIGS][constants.SBS2] else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+            <tr>
+                <td>COSMIC SBS13</td>
+                <td class="center">${'<strong>Detected</strong>' if results[constants.APOBEC_SIGS][constants.SBS13] else '<span style="color: #777;">Not Detected</span>'}</td>
+            </tr>
+        </table>
+
+    </div>
+
+</div>
+
+
+<div style="page-break-before: always;"></div>
+
+
+<!-- TEST MUTATION TABLE trying to make it like the expression plugin -->
+
+<table class="variants" width="100%">
+    <thead>
+        ${immagine_table_builder.make_header(results)}
+    </thead>
+
+    <tbody>
+    % for row in immagine_table_builder.make_rows(results):
+        ${row}
+    % endfor
+    </tbody>
+</table>
+<table class="suppl" width="100%">
+    <tr>
+    % if results.get(constants.HAS_EXPRESSION_DATA):
+        <td width="50%" vertical-align="top"><b>Expr. (%)</b>: Expression Percentile for gene mRNA, or NA if comparison data is not available</td></tr>
+    % endif
+    </tr>
+    <tr>
+        <td colspan="2">
+            <b>Copy Number:</b> DELETION: Loss of one or more gene copies; GAIN: Increased copy number; AMP: High-level amplification.
+        </td>
+    </tr>
+</table>
+
+</div></div>
+
+
+<div style="page-break-before: always;"></div>
+
+  <hr class="big-white-line" ><div class="twocellsupp"><div class="oneoftwocellsupp"><h3><h3 style='margin-bottom: 0; padding-bottom: 0;'>Definitions</h3></h3></div><div class="twooftwocellsupp" ><hr class="big-line" >
+
+
+ 
+
+<p><strong>High-Risk Multiple Myeloma: </strong>
+Defined by the presence of any one of the following: chromosome 17p deletion, <em>TP53</em> mutation, or biallelic deletion of 1p32; or any two of the following: t(4;14), t(14;16), or t(14;20); gain or amplification of chromosome 1q; or monoallelic deletion of 1p32.
+</p>
+
+<p><strong><em>TP53</em> mutation: </strong>
+Defined by an SNV or CNV in <em>TP53</em>. SNVs must pass all filtering criteria (PASS, VAF &ge;10%, etc.), but are not required to be classified as oncogenic by OncoKB. CNVs include deletions, gains, and amplifications.
+</p>
+
+
+<p><strong>Immunoglobulin Rearrangements: </strong>
+Characterized using IgCaller, a Python program designed to identify immunoglobulin gene rearrangements and oncogenic translocations in lymphoid neoplasms. Calls are further filtered using a custom R script and retained if IGCaller_Score &ge;100. Translocations t(4;14), t(14;16), and t(14;20) used in high-risk myeloma classification are determined from IgCaller output.
+</p>
+
+<p><strong>Cytogenetic abnormalities: </strong>
+Characterized using PURPLE-derived copy-number estimates. Chromosomal copy-number alterations are classified according to disease-specific criteria, using absolute copy-number thresholds and assuming a diploid-centred baseline rather than adjusting thresholds for estimated tumour ploidy. Interpretation should be approached with caution in samples with an aneuploid genomic baseline, as absolute copy-number thresholds may not accurately reflect chromosome-level gains or losses relative to the tumour's baseline ploidy.
+</p>
+
+<div style="margin-left: 20px;">
+
+	<p><strong>Monosomy chromosomes 13, 14, and 17: </strong>
+        Defined as &gt;80% of the respective chromosome having TCN &lt;1.2, with MACN = 0 for &lt;50% of that span.</p>
+        <p><strong>Chromosome 1p deletion: </strong>
+        Defined as &gt;80% of chromosome 1p having TCN &le;1.5 and median MACN &le;0.5.</p>
+
+	<p><strong>Chromosome 17p deletion: </strong>
+	Defined as &gt;80% of the region having TCN &le;1.2, with MACN = 0 for &lt;50% of that span.</p>
+
+        <p><strong>Gain or amplification of chromosome 1q: </strong>
+        Defined as &ge;50% of chromosome 1q having TCN &ge;3.</p>
+
+	<p><strong>Hyperdiploidy: </strong>
+        Defined by gains (TCN &gt;3) in &ge;4 canonical hyperdiploid chromosomes (3, 5, 7, 9, 11, 15, 19, and 21), with a gain requiring CN &ge;3 across at least 80% of the chromosome.</p>
+
+    	<p><strong>Biallelic deletion of 1p32: </strong>
+    	Defined as &ge;50% of the 1p32 region having TCN &le;1 and MACN = 0.</p>
+
+	<p><strong>Monoallelic deletion of 1p32: </strong>
+    	Defined as &ge;50% of the 1p32 region having 1 &le; TCN &le;1.5 and MACN = 0.</p>
+</div>
+
+<p><strong>APOBEC Mutational Signatures: </strong>
+Assessed using HRDetect. COSMIC SBS2 and SBS13 signatures are considered detected when their respective scores are &gt;0.
+</p>

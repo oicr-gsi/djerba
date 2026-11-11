@@ -116,6 +116,21 @@ class html_builder:
         return '<td>{0}</td>'.format(content)
 
     @staticmethod
+    def td_kwargs(content, italic=False, **kwargs):
+        if italic:
+            content = '<i>{0}</i>'.format(content)
+        attributes = " ".join(f'{key}="{value}"' for key, value in kwargs.items())
+        if attributes:
+            return '<td {0}>{1}</td>'.format(attributes, content)
+        return '<td>{0}</td>'.format(content)
+
+
+    @staticmethod
+    def tr_kwargs(cells, **kwargs):
+        attributes = " ".join(f'{key}="{value}"' for key, value in kwargs.items())
+        return '<tr {0}>{1}</tr>'.format(attributes,"".join(cells))
+
+    @staticmethod
     def td_oncokb(level):
         # make a table cell with an OncoKB level symbol
         # permitted levels must have a format defined in style.css

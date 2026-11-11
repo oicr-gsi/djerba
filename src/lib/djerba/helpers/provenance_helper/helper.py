@@ -53,6 +53,9 @@ class main(helper_base):
     WF_ICHOR_SEG = 'seg'
     WF_ICHOR_PLOTS = 'plots'
 
+    # For immagine plugin
+    WF_HRDETECT_SBS = 'hrDetect_sbs'
+    
     VERSION = '1.0.0'
 
     def configure(self, config):
@@ -220,6 +223,7 @@ class main(helper_base):
             reader.WF_DELLY: reader.parse_delly_path(),
             reader.WF_GRIDSS: reader.parse_gridss_path(),
             reader.WF_HRDETECT: reader.parse_hrdetect_path(),
+            self.WF_HRDETECT_SBS: reader.parse_hrdetect_sbs_path(),
             reader.WF_MAVIS: reader.parse_mavis_path(),
             reader.WF_MSISENSOR: reader.parse_msi_path(),
             reader.WF_MUTECT: reader.parse_mutect_path(),
