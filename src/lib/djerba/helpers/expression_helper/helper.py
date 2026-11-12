@@ -16,21 +16,29 @@ from djerba.util.subprocess_runner import subprocess_runner
 class main(helper_base):
 
     ENSCON_KEY = 'enscon'
+    ENSCON_VERSION = 44
+    ENSCON_DEFAULT = 'ensembl_conversion_hg38_v{0}.txt'.format(ENSCON_VERSION)
+    # Annotation file of RODiC TPM-data, used to match genes by Ensembl ID when symbols differ
+    TCGA_ENSCON_KEY = 'tcga_enscon'
+    TCGA_ENSCON_VERSION = 23
+    TCGA_ENSCON_DEFAULT = 'ensembl_conversion_hg38_v{0}.txt'.format(TCGA_ENSCON_VERSION)
     GEP_REFERENCE_KEY = 'gep_reference'
+    GEP_REFERENCE_DEFAULT = 'gep_reference_tpm.txt.gz'
     RSEM_GENES_RESULTS_KEY = 'rsem_genes_results'
     TCGA_CODE_KEY = 'tcga_code'
     TCGA_DATA_KEY = 'tcga_data'
     TCGA_EXPR_PCT_TEXT = 'data_expression_percentile_tcga.txt'
     TCGA_EXPR_PCT_JSON = 'data_expression_percentile_tcga.json'
+    TCGA_UNMATCHED = 'data_expression_tcga_unmatched.txt'
 
     # 0-based index for GEP results file
     GENE_ID = 0
-    FPKM = 6
+    TPM = 5
 
     FPR_NAME = 'provenance_helper'
     WGTS = 'WGTS' # currently only used for WGTS
 
-    VERSION = '1.0.0'
+    VERSION = '1.1.0'
 
     def configure(self, config):
         config = self.apply_defaults(config)
@@ -53,12 +61,16 @@ class main(helper_base):
             'tcga_code'
         )
         if wrapper.my_param_is_null(self.GEP_REFERENCE_KEY):
-            ref_path = os.path.join(data_dir, 'results', 'gep_reference.txt.gz')
+            ref_path = os.path.join(data_dir, 'results', self.GEP_REFERENCE_DEFAULT)
             wrapper.set_my_param(self.GEP_REFERENCE_KEY, ref_path)
         if wrapper.my_param_is_null(self.ENSCON_KEY):
             helper_dir = os.path.dirname(os.path.realpath(__file__))
-            ref_path = os.path.join(helper_dir, 'ensemble_conversion_hg38.txt')
+            ref_path = os.path.join(helper_dir, self.ENSCON_DEFAULT)
             wrapper.set_my_param(self.ENSCON_KEY, ref_path)
+        if wrapper.my_param_is_null(self.TCGA_ENSCON_KEY):
+            helper_dir = os.path.dirname(os.path.realpath(__file__))
+            ref_path = os.path.join(helper_dir, self.TCGA_ENSCON_DEFAULT)
+            wrapper.set_my_param(self.TCGA_ENSCON_KEY, ref_path)
         # set up and run the provenance reader
         samples = sample_name_container()
         samples.set_and_validate(sample_wg_n, sample_wg_t, sample_wt_t)
@@ -85,11 +97,21 @@ class main(helper_base):
             '--gepfile', gep_abs_path,
             '--outdir', self.workspace.get_work_dir(),
             '--tcgadata', wrapper.get_my_string(self.TCGA_DATA_KEY),
-            '--tcgacode', wrapper.get_my_string(self.TCGA_CODE_KEY).upper()
+            '--tcgacode', wrapper.get_my_string(self.TCGA_CODE_KEY).upper(),
+            '--tcgaenscon', wrapper.get_my_string(self.TCGA_ENSCON_KEY)
         ]
         self.logger.debug("Rscript command: "+" ".join(cmd))
         subprocess_runner(self.log_level, self.log_path).run(cmd)
+        self.check_tcga_unmatched()
         self.write_tcga_json()
+
+    def check_tcga_unmatched(self):
+        """Log the number of sample genes not found in the TCGA comparator data"""
+        # reported genes without expression are warned about by the SNV/indel and CNV plugins
+        with self.workspace.open_file(self.TCGA_UNMATCHED) as input_file:
+            unmatched = set(row[0] for row in csv.reader(input_file, delimiter="\t"))
+        unmatched.discard('Hugo_Symbol')
+        self.logger.info('{0} genes not found in TCGA expression data'.format(len(unmatched)))
 
     def preprocess_gep(self, gep_path, gep_reference, tumour_id):
         """
@@ -99,8 +121,8 @@ class main(helper_base):
         TODO This is a legacy CGI-Tools method, is there a cleaner way to do it?
         TODO Should GEP_REFERENCE (list of past GEP results) be updated on a regular basis?
         """
-        # read the gene id and FPKM metric from the GEP file for this report
-        fkpm = {}
+        # read the gene id and TPM metric from the GEP file for this report
+        tpm = {}
         with open(gep_path) as gep_file:
             reader = csv.reader(gep_file, delimiter="\t")
             for row in reader:
@@ -111,7 +133,7 @@ class main(helper_base):
                 try:
                     # Strip version number from ensembl IDs
                     stable_key = row[self.GENE_ID].split('.')[0]
-                    fkpm[stable_key] = row[self.FPKM]
+                    tpm[stable_key] = row[self.TPM]
                 except IndexError as err:
                     msg = "Incorrect number of columns in GEP row: '{0}'".format(row)+\
                           "read from '{0}'".format(gep_path)
@@ -127,11 +149,13 @@ class main(helper_base):
             # preprocess the GEP file
             reader = csv.reader(in_file, delimiter="\t")
             writer = csv.writer(out_file, delimiter="\t")
-            first = True
+            not_found = 0
+            total = 0
+            ref_ids = set()
             for row in reader:
-                if first:
+                total += 1
+                if total == 1:
                     row.insert(1, tumour_id)
-                    first = False
                 else:
                     # Skip ensembl IDs with "_PAR_Y" suffix and remove version numbers in reference file
                     gene_id_full = row[0]
@@ -139,15 +163,33 @@ class main(helper_base):
                         continue
                     stable_ref_id = gene_id_full.split('.')[0]
                     row[0] = stable_ref_id
+                    ref_ids.add(stable_ref_id)
 
                     try:
-                        row.insert(1, fkpm[stable_ref_id])
+                        row.insert(1, tpm[stable_ref_id])
                     except KeyError as err:
                         msg = 'Reference gene ID {0} from {1} '.format(gene_id_full, ref_path) +\
                             'not found in gep results path {0}'.format(gep_path)
-                        self.logger.warn(msg)
+                        self.logger.debug(msg)
                         row.insert(1, '0.0')
+                        not_found += 1
                 writer.writerow(row)
+            if not_found>0:
+                msg = '{0} of {1} reference gene IDs from {2} '.format(not_found, total, ref_path) +\
+                    'not found in gep results path {0}. '.format(gep_path) +\
+                    'Run with --debug for details.'
+                self.logger.warning(msg)
+        # sample gene IDs absent from the reference are left out of the GEP file and will have no expression value
+        sample_ids = set(tpm.keys())
+        sample_ids.discard('gene_id') # header of the GEP results file
+        dropped = sorted(sample_ids - ref_ids)
+        for gene_id in dropped:
+            self.logger.debug('Gene ID {0} from {1} not found in reference {2}'.format(gene_id, gep_path, ref_path))
+        if len(dropped) > 0:
+            msg = '{0} of {1} gene IDs from gep results path {2} '.format(len(dropped), len(sample_ids), gep_path) +\
+                'not found in reference {0}, and will have no expression data. '.format(ref_path) +\
+                'Run with --debug for details.'
+            self.logger.warning(msg)
         return self.workspace.abs_path(out_file_name)
 
     def specify_params(self):
@@ -155,14 +197,15 @@ class main(helper_base):
             core_constants.EXTRACT_PRIORITY: 100, # run before cnv & snv plugins
             # RODiC is cloned from https://github.com/translational-genomics-laboratory/RODiC
             # repo also forked to https://github.com/oicr-gsi/RODiC
-            self.TCGA_DATA_KEY: '/.mounts/labs/CGI/gsi/tools/RODiC/data',
+            self.TCGA_DATA_KEY: '/.mounts/labs/CGI/gsi/tools/RODiC/TPM-data',
             # the GEP reference file is in Bitbucket for safekeeping
             # https://bitbucket.oicr.on.ca/projects/GSI/repos/djerba_test_data/browse/reference/gep_reference.txt.gz
-            self.GEP_REFERENCE_KEY: '/.mounts/labs/CGI/gsi/tools/djerba/gep_reference.txt.gz'
+            self.GEP_REFERENCE_KEY: '/.mounts/labs/CGI/gsi/tools/djerba/gep_reference_tpm.txt.gz'
         }
         for key in defaults.keys():
             self.set_ini_default(key, defaults[key])
         self.add_ini_discovered(self.ENSCON_KEY)
+        self.add_ini_discovered(self.TCGA_ENSCON_KEY)
         self.add_ini_discovered(self.RSEM_GENES_RESULTS_KEY)
         self.add_ini_discovered(self.TCGA_CODE_KEY) # use PAAD for testing
         self.add_ini_discovered(core_constants.TUMOUR_ID)

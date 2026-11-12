@@ -17,13 +17,9 @@ RUOPWGS = 'RUOPWGS'
 # - src/lib/djerba/plugins/supplement/body/supplementary_materials_template.html
 # - src/lib/djerba/plugins/supplement/body/plugin.py
 # - src/lib/djerba/plugins/pwgs/case_overview/plugin.py
-WGTS_ASSAY_VERSION = '6.0'
-TAR_ASSAY_VERSION = '4.0'
-PWGS_ASSAY_VERSION = '3.0'
-#RUO
-RUOWGTS_ASSAY_VERSION = '6.0'
-RUOPWGS_ASSAY_VERSION = '2.0'
-
+WGTS_ASSAY_VERSION = '7.0'
+TAR_ASSAY_VERSION = '5.0'
+PWGS_ASSAY_VERSION = '4.0'
 WGTS_SUFFIX = '(v{0})'.format(WGTS_ASSAY_VERSION)
 TAR_SUFFIX = '(v{0})'.format(TAR_ASSAY_VERSION)
 PWGS_SUFFIX = '(v{0})'.format(PWGS_ASSAY_VERSION)

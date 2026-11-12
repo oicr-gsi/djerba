@@ -4,11 +4,13 @@ Includes merge/deduplicate for shared tables, eg. gene info
 """
 
 import json
+import io
 import logging
 import os
 import pdfkit
 import traceback
-from PyPDF2 import PdfMerger
+from PyPDF2 import PdfMerger, PdfReader, PdfWriter
+from reportlab.pdfgen import canvas
 import djerba.core.constants as cc
 from djerba.util.date import get_todays_date
 from djerba.util.environment import directory_finder, DjerbaEnvDirError

@@ -1,5 +1,36 @@
 # CHANGELOG
 
+## v1.13.2: 2026-10-30
+- GCGI-1809: TAR SNV/indel filter now requires at least 3 supporting reads matching the SOP.
+- Transform GEP TPM values to log2(TPM + 0.001) before comparison with RODiC TPM-data, which is stored on that scale.
+- Rounding those values to 4 decimals, so zero TPM in the sample ties with zero TPM in TCGA. 
+- Genes whose symbol is not in the TCGA comparator are matched by Ensembl ID instead.
+- Write genes not found in the TCGA comparator to `data_expression_tcga_unmatched.txt`. SNV/indel and CNV plugins log a warning for each reported gene with no expression value (displayed as NA), noting whether its symbol was missing from the TCGA comparator.
+- Added a warning when gene IDs in the sample GEP results are not found in the GEP reference; these were previously dropped silently and got no expression value.
+- Added an expression percentile disclaimer to WGTS reports and updated GEP reference to TPM.
+- Fixed a bug that will raise a key error if df_fusion is empty.
+- GCGI-1808: Updated OncoKB links to _TERT_ promoter mutations  
+
+## v1.13.1: 2026-09-15
+- GCGI-1735: "Not for PHI" warning next to contact email
+- GCGI-1798: Removed RUO watermark, changed RUO report title and footer 
+- Updated report examples for WGTS and TAR
+
+## v1.13.0: 2026-08-20
+- GCGI-1662: Update `setup.py` to require Python version >= 3.13.0
+- GCGI-1753: Updated Djerba expression processing to use TPM based values instead of FPKM.
+- GCGI-1748: Make gene ID warnings less verbose
+
+## v1.12.0: 2026-07-06
+- GCGI-1709: Update title of research report and add watermark to the pdf.
+- Dockerized Djerba by adding a Dockerfile, Docker Compose setup, `.env.example`, and an end-to-end test that validates report generation using an example `config.ini` input and expected output report.
+- GCGI-1736: Patient & Physician report header improvements.
+
+## v1.11.12: 2026-06-01
+- GCGI-1708: Separate patient and physician information into two distinct sections and update the director contact details.
+- GCGI-1712: Update main contact name in clinical report header
+- GCGI-1715: Update Ensembl conversion file to v44
+
 ## v1.11.11: 2026-04-23
 - GCGI-1521: More detailed JSON schemas for plugin results
 - GCGI-1703: Split `djerba.util.wgts.tools` into new modules `expression_reader` and `variant_sorter`. Use the new modules for TAR as well as WGTS, removing duplicated code in the TAR plugins.

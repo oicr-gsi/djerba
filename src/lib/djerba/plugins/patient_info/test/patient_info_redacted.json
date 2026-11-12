@@ -10,7 +10,7 @@
         "render": 30
     },
     "results": {
-        "hospital_name_and_address": "HOSPITAL NAME AND ADDRESS",
+        "hospital_name_and_address": "HOSPITAL NAME",
         "patient_dob": "YYYY-MM-DD",
         "patient_name": "LAST, FIRST",
         "patient_genetic_sex": "SEX",

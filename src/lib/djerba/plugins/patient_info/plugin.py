@@ -34,7 +34,7 @@ class main(plugin_base):
         PHYSICIAN_LICENCE: 'nnnnnnnn',
         PHYSICIAN_NAME: 'LAST, FIRST',
         PHYSICIAN_PHONE: PHONE_DEFAULT,
-        PHYSICIAN_HOSPITAL: 'HOSPITAL NAME AND ADDRESS'
+        PHYSICIAN_HOSPITAL: 'HOSPITAL NAME'
     }
 
     def configure(self, config):

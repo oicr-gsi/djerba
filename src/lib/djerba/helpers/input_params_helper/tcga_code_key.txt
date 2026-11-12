@@ -17,9 +17,9 @@ MBN	dlbc	Neoplasm Diffuse Large B-cell Lymphoma	Lymphoid	37
 ESCA	esca	Esophageal Carcinoma	Esophagus/Stomach	182
 GBM	gbm	Glioblastoma Multiforme	Brain	87
 HNSC	hnsc	Head and Neck Squamous Cell Carcinoma	Head and Neck	502
-RCC	kich	Kidney Chromophobe	Kidney	65
-CCSK	kirc	Kidney Renal Clear Cell Carcinoma	Kidney	356
-RCC	kirp	Kidney Renal Papillary Cell Carcinoma	Kidney	274
+CHRCC	kich	Kidney Chromophobe	Kidney	65
+CCRCC	kirc	Kidney Renal Clear Cell Carcinoma	Kidney	356
+PRCC	kirp	Kidney Renal Papillary Cell Carcinoma	Kidney	274
 AML	laml	Acute Myeloid Leukemia	Myeloid	199
 ENCG	lgg	Lower Grade Glioma	Brain	510
 HCC	lihc	Hepatocellular Carcinoma	"Biliary Tract,Liver"	358
