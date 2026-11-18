@@ -5,6 +5,7 @@
 - GCGI-1807: New environment variables for file provenance report and GSI-QC-ETL locations are `DJERBA_FPR_DIR` and `DJERBA_GSIQCETL_DIR` respectively
 - Plugins needing GSI-QC-ETL functionality inherit from new `gsiqcetl_plugin_base` class
 - Multiple coverage/callability values in QC-ETL now raise an error; values can be entered manually
+- Added Mavis3 support, including workflow names for file path and versioning.
 
 ## v1.13.2: 2026-10-30
 - GCGI-1809: TAR SNV/indel filter now requires at least 3 supporting reads matching the SOP.

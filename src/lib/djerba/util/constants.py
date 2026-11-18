@@ -55,7 +55,7 @@ UPDATE = 'update'
 COMPARE = 'compare'
 
 # for running Mavis
-MAVIS_SUBDIR_NAME = 'mavis'
+MAVIS3_SUBDIR_NAME = 'mavis3'
 
 # high-level elements of main JSON
 REPORT = 'report'

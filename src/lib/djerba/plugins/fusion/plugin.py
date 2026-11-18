@@ -30,7 +30,7 @@ class main(plugin_base):
         config = self.apply_defaults(config)
         wrapper = self.get_config_wrapper(config)
         wrapper = self.update_file_if_null(wrapper, fc.ARRIBA_PATH, 'arriba')
-        wrapper = self.update_file_if_null(wrapper, fc.MAVIS_PATH, 'mavis')
+        wrapper = self.update_file_if_null(wrapper, fc.MAVIS3_PATH, 'mavis3')
         work_dir = self.workspace.get_work_dir()
         self.update_wrapper_if_null(wrapper, core_constants.DEFAULT_SAMPLE_INFO, fc.WHIZBAM_PROJECT, 'project')
         self.update_wrapper_if_null(wrapper, 'input_params.json', fc.ONCOTREE_CODE, 'oncotree_code')
@@ -69,7 +69,7 @@ class main(plugin_base):
     def specify_params(self):
         discovered = [
             core_constants.PROJECT,
-            fc.MAVIS_PATH,
+            fc.MAVIS3_PATH,
             fc.ARRIBA_PATH,
             core_constants.TUMOUR_ID,
             fc.ONCOTREE_CODE,
