@@ -72,8 +72,8 @@ class TestFusion(PluginTester):
 
     def write_ini_file(self):
         provenance_path = os.path.join(self.data_dir, 'provenance_PANX_1391.tsv.gz')
-        mavis_name = 'PANX_1391_Lv_M_100-NH-020_LCM3.mavis_summary.tab'
-        mavis_path = os.path.join(self.data_dir, mavis_name)
+        mavis3_name = 'PANX_1391_Lv_M_100-NH-020_LCM3.mavis_summary.tab'
+        mavis3_path = os.path.join(self.data_dir, mavis3_name)
         arriba_name = 'arriba.fusions.tsv'
         arriba_path = os.path.join(self.data_dir, arriba_name)
         with open(os.path.join(self.test_source_dir, self.INI_NAME)) as in_file:
@@ -82,7 +82,7 @@ class TestFusion(PluginTester):
         ini_str = template.substitute(
             {
                 'FPR_PATH': provenance_path,
-                'MAVIS_PATH': mavis_path,
+                'MAVIS3_PATH': mavis3_path,
                 'ARRIBA_PATH': arriba_path
             }
         )

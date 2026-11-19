@@ -220,7 +220,7 @@ class main(helper_base):
             reader.WF_DELLY: reader.parse_delly_path(),
             reader.WF_GRIDSS: reader.parse_gridss_path(),
             reader.WF_HRDETECT: reader.parse_hrdetect_path(),
-            reader.WF_MAVIS: reader.parse_mavis_path(),
+            reader.WF_MAVIS3: reader.parse_mavis3_path(),
             reader.WF_MSISENSOR: reader.parse_msi_path(),
             reader.WF_MUTECT: reader.parse_mutect_path(),
             reader.WF_PURPLE: reader.parse_purple_zip_path(),
