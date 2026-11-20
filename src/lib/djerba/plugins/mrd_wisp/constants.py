@@ -6,19 +6,12 @@ COHORT_N = 'hbc_n'
 COVERAGE = 'coverage'
 CTDNA_DETECTION = 'ctdna_detection'
 CTDNA_OUTCOME = 'outcome'
-#DATASET_DETECTION_CUTOFF = 'dataset_detection_cutoff'
 DETECTION_PLOT = 'detection_plot'
 INSERT_SIZE = 'median_insert_size'
 PVALUE = 'p-value'  
-#READS_CHECKED = 'reads_checked'
-#READS_DETECTED = 'reads_detected'
 RESULTS = 'results' 
 SIGNIFICANCE = 'significance_text'       
-#SITES_CHECKED = 'sites_checked'
-#SITES_DETECTED = 'sites_detected'
 SNV_COUNT = 'candidate_snv_count' # need to re-examine for WISP
-#TUMOUR_FRACTION_ZVIRAN = 'TFZ'            
-#TUMOUR_FRACTION_READS = 'TFR'            
 
 # sample constants
 ASSAY = 'assay'
@@ -40,6 +33,7 @@ BAMQC = 'bamqc_results'
 PROVENANCE_OUTPUT = 'provenance_subset.tsv.gz'
 #PWGS_PLOT = 'pwgs_base64'
 RESULTS_FILE = 'results_file' 
+ALL_TIMEPOINTS_DIR = 'all_timepoints_dir'
 SNV_COUNT_FILE = 'primary_snv_count_file'
 WGS_JSON = 'wgs_json'
 #VAF_FILE = 'vaf_file'
@@ -50,18 +44,23 @@ MRD_CALL_FILE = 'mrd_call.txt'
 
 # extract constants
 MRD_CALL = 'mrd_call' 
-ALL_SITES_DETECTED = 'all_sites_detected'
-HBC_SITES_DETECTED = 'hbc_detected_sites' 
 NAME = 'name' 
 STATUS = 'status'
-TUMOUR_SITES_DETECTED = 'tumour_sites_detected' 
+SNV_LOD = 'snv_lod'
+TF = 'tumour_fraction'
 CANDIDATE_SITES = 'candidate_sites_passing_qc' 
-READS_DETECTED = 'reads_detected' 
-READS_CHECKED = 'reads_checked' 
-READ_PERCENTAGE = 'read_percentage' 
-DETECTION_CUTOFF = 'detection_cutoff_sites' 
+TOTAL_FRAGMENTS = 'total_fragments' 
+ALLELE_FRAGMENTS = 'allele_fragments' 
 
 
+# WISP table headers
+WISP_AF = "AlleleFragments"
+WISP_TF = "SNVPurity"
+WISP_DETECTION = "SNV_MRD"
+WISP_TABLE_DATA = "wisp_table_data"
+
+# timepoints
+TIMEPOINT = 'timepoint'
 
 # file extensions
 RESULTS_SUFFIX = '\.wisp_summary\.txt$' 

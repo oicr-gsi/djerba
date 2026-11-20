@@ -36,7 +36,7 @@ class main(plugin_base):
         for metric in qc_metrics:
             wrapper = self.fill_qc_if_null(wrapper, config, metric)
 
-        #wrapper = self.fill_file_if_null(wrapper, pc.SNV_COUNT, pc.SNV_COUNT_SUFFIX)
+        wrapper = self.fill_file_if_null(wrapper, pc.SNV_COUNT, pc.SNV_COUNT_SUFFIX)
         wrapper = self.fill_file_if_null(wrapper, pc.BAMQC, pc.BAMQC_SUFFIX)
 
         return wrapper.get_config()
@@ -50,8 +50,8 @@ class main(plugin_base):
         results =  {
                 pc.INSERT_SIZE: int(config[self.identifier][pc.INSERT_SIZE]),
                 pc.COVERAGE: float(config[self.identifier][pc.COVERAGE]),
-                pc.SNV_COUNT:  int(self.workspace.read_string('candidate_snvs.txt'))
-                #pc.SNV_COUNT: int(self.preprocess_snv_count(config[self.identifier][pc.SNV_COUNT])),
+                pc.SNV_COUNT:  int(self.workspace.read_string('candidate_snvs.txt')),
+                pc.SNV_COUNT: int(self.preprocess_snv_count(config[self.identifier][pc.SNV_COUNT])),
             }
 
         data[pc.RESULTS] = results
@@ -157,7 +157,7 @@ class main(plugin_base):
         self.set_ini_default(pc.QCETL_CACHE, self.QCETL_CACHE)
         discovered = [
             pc.BAMQC,
-            #pc.SNV_COUNT,
+            pc.SNV_COUNT,
             pc.COVERAGE,
             pc.INSERT_SIZE
         ]

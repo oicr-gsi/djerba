@@ -68,4 +68,3 @@ class main(plugin_base):
         #    self.add_ini_discovered(key)
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_priority_defaults(self.PRIORITY)
-

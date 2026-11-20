@@ -23,9 +23,6 @@ PWGS_ASSAY_VERSION = '4.0'
 WGTS_SUFFIX = '(v{0})'.format(WGTS_ASSAY_VERSION)
 TAR_SUFFIX = '(v{0})'.format(TAR_ASSAY_VERSION)
 PWGS_SUFFIX = '(v{0})'.format(PWGS_ASSAY_VERSION)
-#RUO
-RUOWGTS_SUFFIX = '(v{0})'.format(RUOWGTS_ASSAY_VERSION)
-RUOPWGS_SUFFIX = '(v{0})'.format(RUOPWGS_ASSAY_VERSION)
 
 ASSAY_CASE_OVERVIEW = {
     # WGTS/WGS default to 80X
@@ -39,12 +36,6 @@ ASSAY_CASE_OVERVIEW = {
     # other
     TAR: 'Targeted Sequencing - REVOLVE Panel - cfDNA and Buffy Coat '+TAR_SUFFIX,
     PWGS: 'Plasma Whole Genome Sequencing '+PWGS_SUFFIX,
-    # RUO assays
-    RUOWGTS: 'Whole genome and transcriptome sequencing (WGTS)'+\
-    '-80X Tumour, 30X Normal '+WGTS_SUFFIX,
-    RUOWGS: 'Whole genome sequencing (WGS)-80X Tumour, 30X Normal '+WGTS_SUFFIX,
-
-    RUOPWGS: 'RUO Plasma Whole Genome Sequencing '+RUOPWGS_SUFFIX
 }
 
 ASSAY_SUPPLEMENTARY = {
@@ -54,10 +45,6 @@ ASSAY_SUPPLEMENTARY = {
     WGS40X: 'WGS pipeline '+WGTS_ASSAY_VERSION,
     TAR: 'TAR pipeline '+TAR_ASSAY_VERSION,
     PWGS: 'PWGS pipeline '+PWGS_ASSAY_VERSION,
-    #RUO
-    RUOWGTS: 'WGTS pipeline '+RUOWGTS_ASSAY_VERSION, # the assay is validated, so keep assay name as-is
-    RUOWGS: 'WGS pipeline '+RUOWGTS_ASSAY_VERSION, # the assay is valiated, so keep assay name as-is
-    RUOPWGS: 'RUO PWGS pipeline '+RUOPWGS_ASSAY_VERSION # the assay is not validated, so add RUO to assay name
 }
 
 def get_case_overview_description(name):

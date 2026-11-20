@@ -1,0 +1,38 @@
+{
+    "core": {
+        "url": "https://github.com/oicr-gsi/djerba",
+        "version": "1.13.2"
+    },
+    "mrd_wisp.analysis": {
+        "url": null,
+        "version": "1.0"
+    },
+    "mrd_wisp.case_overview": {
+        "url": null,
+        "version": "1.0"
+    },
+    "mrd_wisp.sample": {
+        "url": null,
+        "version": "1.2"
+    },
+    "mrd_wisp.summary": {
+        "url": null,
+        "version": "1.0"
+    },
+    "patient_info": {
+        "url": null,
+        "version": "1.0.0"
+    },
+    "pwgs_cardea_helper": {
+        "url": null,
+        "version": "version_not_defined"
+    },
+    "report_title": {
+        "url": null,
+        "version": "1.0.0"
+    },
+    "supplement.body": {
+        "url": "https://example.com/",
+        "version": "0.1"
+    }
+}

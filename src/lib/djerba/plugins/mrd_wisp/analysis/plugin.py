@@ -22,18 +22,24 @@ from djerba.core.workspace import workspace
 import djerba.core.constants as core_constants
 import djerba.plugins.mrd_wisp.constants as pc
 from djerba.util.image_to_base64 import converter
+from matplotlib.lines import Line2D
 
 class main(plugin_base):
-    PRIORITY = 100
+    PRIORITY = 400
     PLUGIN_VERSION = '1.0'
     DICT = {True: "significantly larger", False: "not significantly larger"}
 
     def specify_params(self):
-        discovered = [
-            pc.RESULTS_FILE,
-        ]
-        for key in discovered:
-            self.add_ini_discovered(key)
+        #discovered = [
+        #    pc.RESULTS_FILE,
+        #]
+        #for key in discovered:
+        #    self.add_ini_discovered(key)
+        
+        self.add_ini_required(pc.RESULTS_FILE)
+        self.add_ini_required(pc.ALL_TIMEPOINTS_DIR)
+        self.add_ini_required("dates_list")
+
         self.set_ini_default(core_constants.ATTRIBUTES, 'clinical')
         self.set_priority_defaults(self.PRIORITY)
 
@@ -50,49 +56,58 @@ class main(plugin_base):
                 self.logger.error(msg)
                 raise RuntimeError(msg)
             wrapper.set_my_param(pc.RESULTS_FILE, results_path)
+        
+        if wrapper.my_param_is_null(pc.ALL_TIMEPOINTS_DIR):
+            msg = "Sorry, no fall-back right now. Manually supply this directory!"
+            raise RuntimeError(msg)
+
+        if wrapper.my_param_is_null("dates_list"):
+            msg = "Sorry, no fall-back right now. Manually supply this directory!"
+            raise RuntimeError(msg)
+
+
         return wrapper.get_config()
 
     def extract(self, config):
         wrapper = self.get_config_wrapper(config)
         output_dir = self.workspace.print_location()
         results_file = wrapper.get_my_string(pc.RESULTS_FILE)
+        all_timepoints_dir = wrapper.get_my_string(pc.ALL_TIMEPOINTS_DIR)
+        dates_list = wrapper.get_my_string("dates_list")
 
-        # Get plugin data and plot PWGS plot
+        # Get plugin data and plot MRD plot
 
         data = self.get_starting_plugin_data(wrapper, self.PLUGIN_VERSION)
-        results = self.get_results(results_file, output_dir)
+        dates_list = [date.strip() for date in dates_list.split(",")]
+        results = self.get_results(results_file, all_timepoints_dir, dates_list,output_dir)
         data[pc.RESULTS] = results
         
-        workspace_dir = self.workspace.get_work_dir()
-        
-
         # Read from the case_overview JSON file and populate results
         
-        json_file_path = os.path.join(workspace_dir, "pWGS_case_overview_output.json")
+        #json_file_path = os.path.join(workspace_dir, "pWGS_case_overview_output.json")
         
-        if os.path.exists(json_file_path):
-            with open(json_file_path, 'r') as json_file:
-                json_data = json.load(json_file)
-                assay = json_data.get(pc.RESULTS, {}).get(pc.ASSAY, "Assay name not found")
-                primary_cancer = json_data.get(pc.RESULTS, {}).get(pc.PRIMARY_CANCER, "Primary cancer not found")
-                study_title = json_data.get(pc.RESULTS, {}).get(pc.STUDY, "Study title not found")
-        else:
-            assay = "Assay name not found"
-            primary_cancer = "Primary cancer not found"
-            study_title = "Study title not found"
+        #if os.path.exists(json_file_path):
+        #    with open(json_file_path, 'r') as json_file:
+        #        json_data = json.load(json_file)
+        #        assay = json_data.get(pc.RESULTS, {}).get(pc.ASSAY, "Assay name not found")
+        #        primary_cancer = json_data.get(pc.RESULTS, {}).get(pc.PRIMARY_CANCER, "Primary cancer not found")
+        #        study_title = json_data.get(pc.RESULTS, {}).get(pc.STUDY, "Study title not found")
+        #else:
+        #    assay = "Assay name not found"
+        #    primary_cancer = "Primary cancer not found"
+        #    study_title = "Study title not found"
 
-        data[pc.RESULTS][pc.ASSAY] = assay
-        data[pc.RESULTS][pc.STUDY] = study_title
-        data[pc.RESULTS][pc.PRIMARY_CANCER] = primary_cancer
+        #data[pc.RESULTS][pc.ASSAY] = assay
+        #data[pc.RESULTS][pc.STUDY] = study_title
+        #data[pc.RESULTS][pc.PRIMARY_CANCER] = primary_cancer
 
         return data 
-
 
     def render(self, data):
         renderer = mako_renderer(self.get_module_dir())
         return renderer.render_name(pc.ANALYSIS_TEMPLATE_NAME, data)
     
-    def get_results(self, results_file, output_dir):
+    def get_results(self, results_file, all_timepoints_dir, dates_list, output_dir):
         '''
         Extracts data and plots graph.
         Writes detection status to a file for the summary plugin.
@@ -111,24 +126,41 @@ class main(plugin_base):
         out_path = os.path.join(output_dir, 'candidate_snvs.txt')
         with open(out_path, "w") as file:
             file.write(str(data[pc.CANDIDATE_SITES]))
-        
+
         # Plot detection plot
         self.logger.info("Generating MRD detection plot...")
-        data = self.calculate_detection_cutoff(data)
-        data = self.make_detection_plot(data, output_dir)
+        timepoints = self.initialize_timepoints(all_timepoints_dir, dates_list)
+        self.make_plot_png(data, timepoints, output_dir)
         self.logger.info("Generated MRD detection plot")
         
+
         self.logger.info("Collecting plugin results...")
         results = data
 
         # Adding significance text based on the MRD call
         data[pc.SIGNIFICANCE] = self.DICT[data[pc.STATUS]]
 
-        # Ommiting some pandas series from the results dictionary so they don't end up in the json.
-        del results[pc.ALL_SITES_DETECTED]
-        del results[pc.HBC_SITES_DETECTED]
-
         self.logger.info("Finished extracting MRD analysis.")
+
+
+        # Experimental: adding all extracted WISP info to one row for the table after the report
+        wisp_table_data = [] 
+        bool_dict = {True: "Detected", False: "Not Detected"}
+        for i, file in enumerate(sorted(os.listdir(all_timepoints_dir))):
+            file_path = os.path.join(all_timepoints_dir, file)
+            df = pd.read_csv(file_path, sep='\t')
+
+            # Get data
+            tumour = df.iloc[0] # First row is always the tumour sample
+
+            wisp_table_data.append({
+                pc.TIMEPOINT: dates_list[i],
+                pc.WISP_DETECTION: bool_dict[bool(tumour["SNV_MRD"])],
+                pc.WISP_TF: float(tumour["SNVPurity"])*100,
+                pc.WISP_AF: int(tumour["AlleleFragments"])
+            })
+
+        data[pc.WISP_TABLE_DATA] = wisp_table_data
 
         return results
         
@@ -146,103 +178,201 @@ class main(plugin_base):
         Tumour cfDNA total reads checked (int)
         Tumour cfDNA read percentage, i.e. mutant/total reads * 100 (perc)
         '''
-    
-    
-        # Get sites detected as a column
-        # Note: Hartwig defines "sites detected" as the sum of "Frag1Variants" and "Frag2PlusVariants"
-        df['SitesDetected'] = df['Frag1Variants'] + df['Frag2PlusVariants']
-    
-        # Tumour information is in the first row; the rest of the rows are healthy blood controls ("normals")
+
+        # Tumour information is in the first row; the rest of the rows MAY be HBCs if HBCs were run.
         tumour = df.iloc[0]
-        normals = df['SitesDetected'][1:].to_numpy() # only need sites detected
     
         # Extract data from dataframe
     
         data = {}
-        data[pc.ALL_SITES_DETECTED] = df['SitesDetected']
-        data[pc.HBC_SITES_DETECTED] = normals
-        data[pc.NAME] = tumour['sample_id']
+        data[pc.NAME] = tumour['SampleId']
         data[pc.STATUS] = bool(tumour['SNV_MRD'])
-        data[pc.TUMOUR_SITES_DETECTED] = int(tumour['SitesDetected'])
+        data[pc.TF] = tumour['SNVPurity']*100
+        data[pc.SNV_LOD] = tumour['SNVLod']*100
         data[pc.CANDIDATE_SITES] = int(tumour['CalcVariants'])
-        data[pc.READS_DETECTED] = int(tumour['AlleleFragments'])
-        data[pc.READS_CHECKED] = int(tumour['TotalFragments'])
-        data[pc.READ_PERCENTAGE] = round(float(data[pc.READS_DETECTED]/data[pc.READS_CHECKED]*100), 2)
+        data[pc.ALLELE_FRAGMENTS] = int(tumour['AlleleFragments'])
+        data[pc.TOTAL_FRAGMENTS] = int(tumour['TotalFragments'])
         
         return data
     
-    
-    def calculate_detection_cutoff(self, data):
-        '''
-        Calculates detection cut-off for the purpose of plotting.
-        It back-calculates this cut-off by projecting the p-value cut-off onto the z-distribution of detected sites.
-        '''
-        # Calculating detection cutoff
-        pvalue_cutoff = pc.DETECTION_ALPHA
-        all_sites_detected = data[pc.ALL_SITES_DETECTED]
-    
-        # The detection cutoff is back-calculated from the p-value.
-        # I.e. the p-value is mapped onto the distribution to "convert" it to detected number of sites
-        z = norm.ppf(1 - pvalue_cutoff)
-        m = np.mean(all_sites_detected)
-        std = np.std(all_sites_detected)
-        detection_cutoff = m + (std*z)
-        
-        data[pc.DETECTION_CUTOFF] = float(detection_cutoff)
-        return data
-    
-    def make_detection_plot(self, data, output_dir):
-        '''
-        Generates the plot showing detected number of sites in the plasma compared to a box plot of healthy blood controls.
-        '''
-    
-        # Generate figure
-        fig, ax = plt.subplots(figsize=(8, 2))
-    
-        # Box plot of normals
-        ax.boxplot(data[pc.HBC_SITES_DETECTED], vert=False, positions=[0], widths=0.3,
-                   patch_artist=False, showfliers=False,
-                   medianprops=dict(color='gray'),
-                   boxprops=dict(color='gray'),
-                   whiskerprops=dict(color='gray'),
-                   capprops=dict(color='gray'))
-    
-        ## Dots on top of box plot
-    
-        # Add individual normal points
-        y_jitter = np.random.normal(0, 0.03, size=len(data[pc.HBC_SITES_DETECTED]))
-    
-        ax.scatter(
-            data[pc.HBC_SITES_DETECTED],
-            y_jitter,
-            color='gray',
-            alpha=0.7,
-            s=20,
-            zorder=4
-        )
 
-        median = np.median(data['hbc_detected_sites'])
-        ax.text(median, -0.25, f'Control Cohort', color='gray', fontsize=8, va='top', ha='center')
+    def initialize_timepoints(self, all_timepoints_dir, dates_list):
+        """
+        All WISP summaries that will be plotted exist in results_folder.
+        (This folder is created by the user for now; TO-DO to get these values from CouchDB)
+        (TO-DO to get this to extract from report JSONS instead of SUMMARIES as report jsons have information like date of requisition).
 
-        # Threshold line
-        ax.axvline(data[pc.DETECTION_CUTOFF], color='gray', linestyle='--', linewidth=1)
-        ax.text(data[pc.DETECTION_CUTOFF], 0.25, f'Detection Cutoff: {int(np.ceil(data[pc.DETECTION_CUTOFF]))} sites',
-                color='gray', fontsize=8, va='bottom', ha='center')
-    
-        # Tumour point
-        ax.scatter(data[pc.TUMOUR_SITES_DETECTED], 0, color='red', s=80, zorder=5)
-        ax.text(data[pc.TUMOUR_SITES_DETECTED], -0.25, f'This Sample: {round(data[pc.TUMOUR_SITES_DETECTED])} sites',
-                color='red', fontsize=8, va='top', ha='center')
-    
-        # Clean up axes
-        ax.set_yticks([])
-        ax.spines[['left', 'top', 'right']].set_visible(False)
-        ax.set_xlabel('Detected Sites')
-    
-        plt.tight_layout()
+        Will extract all information to make plot, no matter how many summaries (from 1 to n).
+        If none, will throw error.
+        """
+        # Initialize input to plot
+        timepoints = []
+
+        for i, file in enumerate(sorted(os.listdir(all_timepoints_dir))):
+            file_path = os.path.join(all_timepoints_dir, file)
+            df = pd.read_csv(file_path, sep='\t')
+
+            # Get data
+            tumour = df.iloc[0] # First row is always the tumour sample
+
+            timepoints.append({
+                "timepoint_label": dates_list[i],
+                "detected": bool(tumour["SNV_MRD"]),
+                "tumour_fraction": float(tumour["SNVPurity"])*100,
+                "limit_of_detection": float(tumour["SNVLod"])*100
+            })
+
+        # Convert to DataFrame
+        timepoints = pd.DataFrame(timepoints)
+        return timepoints
+
+    def make_plot_png(self, data, timepoints, output_dir):
+        """
+        """
+
+        # Generate plot
+        fig, ax = self.plot_tumour_fraction(timepoints)
+
+        # Save plot
         plot_path = os.path.join(output_dir, pc.DETECTION_PLOT)
-        plt.savefig(plot_path)
+        fig.savefig(plot_path, bbox_inches="tight")
+
+        # Convert to base64
         image_converter = converter(self.log_level, self.log_path)
         b64txt = image_converter.convert_png(plot_path)
+        
+        # Add plot to output data
         data[pc.DETECTION_PLOT] = b64txt
+
+        plt.close(fig)
+
         return data
+
+    def plot_tumour_fraction(self, timepoints, max_timepoints=6, figsize=(9, 4)):
+        """
+        Plot tumour fraction over time, with timepoint 1 on the left.
+    
+        "timepoints" (df) has one row/array per timepoint, with columns:
+            timepoint_label (string)    :  text on the x-axis (ex. T0, or dd-mm-yy, etc.)
+            detected (bool)             :  True if MRD detected, False otherwise (sets the colour only)
+            tumour_fraction (float)     :  tumour fraction in % (may be 0)
+            limit_of_detection (float)  :  LOD in % (0 means no LOD to draw)
+    
+        The x-axis always has at least "max_timepoints" slots, so the plot stays
+        the same size and unused slots on the right are simply blank.
+    
+        The y-axis is logarithmic, so a tumour fraction of exactly 0 cannot be
+        plotted directly. Those timepoints are drawn on a reserved bottom row
+        labelled "0". Every other timepoint is plotted at its real value.
+        """
+        
+        
+        # Get values and set detected/undetected colours
+        is_detected = timepoints["detected"]
+        has_positive_fraction = timepoints["tumour_fraction"] > 0 # TF = 0 makes log undefined        
+        colours = np.where(is_detected, "red", "grey")
+        
+        
+        # ------------------------------x-axis range start --------------------------------------
+        # Changes string timepoints to be integer positions on the x-axis
+        x_positions = np.arange(1, len(timepoints) + 1)
+        # Maintain a minimum plot width equivalent to 6 timepoints; expand the plot if there are more than 6.
+        # 6 was chosen as it makes a nice plot size.
+        n_slots = max(max_timepoints, len(timepoints))
+        # ------------------------------x-axis range end --------------------------------------
+    
+    
+        # ------------------------------y-axis range start --------------------------------------
+        # Work out the y-axis range from positive values only (zeros can't be on a log axis)
+        # Makes a panda series that's just TF > 0 and LOD > 0
+        positive_values = pd.concat([
+            timepoints.loc[timepoints["limit_of_detection"] > 0, "limit_of_detection"],
+            timepoints.loc[has_positive_fraction, "tumour_fraction"],
+        ])
+        
+        # A log scale goes by powers of 10
+        # To determine min and max limits of the y-axis, need highest and lowest powers of 10
+        lowest_power = int(np.floor(np.log10(positive_values.min()))) - 1 if len(positive_values) else -3 # 0.001
+        highest_power = (int(np.ceil(np.log10(positive_values.max()))) if len(positive_values) else lowest_power + 3) # 100 
+        
+        # Zeros are drawn on the reserved bottom row; everything else at its real value
+        zero_row_level = 10.0 ** lowest_power
+        plot_tumour_fraction = timepoints["tumour_fraction"].where(has_positive_fraction, zero_row_level)
+        # ------------------------------y-axis range end --------------------------------------
+    
+    
+        # ------------------------------ main plotting start ---------------------------------- 
+        fig, ax = plt.subplots(figsize=figsize)
+        ax.set_yscale("log")
+        
+
+        # Shaded "below limit of detection" region: from the bottom of the plot up to the LOD.
+        # Timepoints with LOD = 0 drop to the bottom (no shading). Extended half a slot either side.
+        y_bottom = 10.0 ** (lowest_power - 0.5)
+        lod = timepoints["limit_of_detection"]
+        lod_top = np.where(lod > 0, lod, y_bottom)
+        lod_x = np.concatenate([[x_positions[0] - 0.5], x_positions, [x_positions[-1] + 0.5]])
+        lod_y = np.concatenate([[lod_top[0]], lod_top, [lod_top[-1]]])
+        ax.fill_between(lod_x, y_bottom, lod_y, color="#cccccc", linewidth=0, zorder=0)
+
+        # Small tick at each LOD value
+        has_lod = lod > 0
+        ax.scatter(x_positions[has_lod], lod[has_lod], marker="s", s=6, color="grey", zorder=3)
+
+        # Points
+        ax.scatter(x_positions, 
+                   plot_tumour_fraction, 
+                   c=colours, 
+                   s=80, 
+                   edgecolor="black", 
+                   zorder=2 # zorder=3 makes the line appear BEHIND the dot
+        ) 
+    
+        # Line joining the points
+        ax.plot(x_positions, 
+                plot_tumour_fraction, 
+                color="grey", 
+                linewidth=1.5, 
+                zorder=1
+        )
+    
+        # TF value above each detected timepoint only (coloured to match its point)
+        labelled_rows = timepoints[is_detected]
+        labelled_colours = colours[is_detected]
+        for x, fraction, colour in zip(x_positions[is_detected], labelled_rows["tumour_fraction"], labelled_colours):
+            ax.annotate(f"{fraction:.3g}", (x, fraction),
+                        textcoords="offset points", xytext=(0, 10),
+                        ha="center", color=colour, fontsize=8, fontweight="bold")        
+        # ------------------------------ main plotting end --------------------------------------
+    
+        
+        # ------------------------------ axes and legend start ----------------------------------
+        # Axes: fixed slots on x, powers of ten on y with the bottom tick as "0"
+        ax.set_xlim(0.5, n_slots + 0.5)
+        ax.set_xticks(x_positions)
+        ax.set_xticklabels(timepoints["timepoint_label"].to_list(), fontsize=8)
+    
+        powers = np.arange(lowest_power, highest_power + 1)
+        ax.set_yticks(10.0 ** powers)
+        ax.set_yticklabels(["0"] + [f"{10.0 ** p:g}" for p in powers[1:]], fontsize=8)
+        ax.set_ylim(10.0 ** (lowest_power - 0.5), 10.0 ** (highest_power + 0.3))
+        ax.minorticks_off()
+    
+        ax.set_ylabel("Tumour Fraction (%)")
+        ax.set_xlabel("Timepoint")
+        ax.grid(axis="y", color="lightgrey", linewidth=0.7)
+        ax.spines[["top", "right"]].set_visible(False)
+        
+        # Legend
+        legend_entries = [
+            Line2D([], [], marker="o", linestyle="", markerfacecolor="red", markeredgecolor="black", label="MRD Detected"),
+            Line2D([], [], marker="o", linestyle="", markerfacecolor="grey", markeredgecolor="black", label="MRD Not Detected"),
+            Line2D([], [], color="grey", linestyle=":", label="Limit of detection"),
+        ]
+        ax.legend(handles=legend_entries, loc="upper center", bbox_to_anchor=(0.5, -0.3),
+                  ncol=3, frameon=False, fontsize=8)
+    
+        fig.tight_layout()
+        # ------------------------------ axes and legend end --------------------------------------
+    
+        return fig, ax
