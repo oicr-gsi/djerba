@@ -32,7 +32,7 @@ class provenance_reader(logger):
     WF_HRDETECT = 'hrDetect'
     WF_ICHORCNA = 'ichorcna'
     WF_IMMUNE = 'immunedeconv'
-    WF_MAVIS = 'mavis'
+    WF_MAVIS3 = 'mavis3'
     WF_MSISENSOR = 'msisensor'
     WF_MUTECT = 'mutect2_matched'
     WF_MUTECT2 = 'mutect2Consensus'
@@ -165,7 +165,7 @@ class provenance_reader(logger):
             [self.WF_RSEM],
             [self.WF_STAR, self.NIASSA_WF_STAR],
             [self.WF_STARFUSION, self.NIASSA_WF_STARFUSION],
-            [self.WF_MAVIS]
+            [self.WF_MAVIS3]
         ]
         counts = {}
         for group in [wgs_to_check, wts_to_check]:
@@ -514,8 +514,8 @@ class provenance_reader(logger):
         suffix = '\.mutect2\.filtered\.maf\.gz$'
         return self._parse_multiple_workflows(workflows, mt, suffix, self.sample_name_wg_t)
 
-    def parse_mavis_path(self):
-        workflow = self.WF_MAVIS
+    def parse_mavis3_path(self):
+        workflow = self.WF_MAVIS3
         mt = self.MT_OCTET_STREAM
         suffix = 'mavis_summary\.tab$'
         return self._parse_file_path(workflow, mt, suffix, self.sample_name_wt_t)

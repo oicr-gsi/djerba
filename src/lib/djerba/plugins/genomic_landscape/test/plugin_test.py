@@ -15,6 +15,7 @@ from djerba.plugins.plugin_tester import PluginTester
 from djerba.core.workspace import workspace
 from djerba.util.environment import directory_finder
 from djerba.plugins.genomic_landscape.hrd import hrd_processor
+from djerba.plugins.genomic_landscape.tmb import tmb_processor
 
 class TestGenomicLandscapePlugin(PluginTester):
     
@@ -44,6 +45,21 @@ class TestGenomicLandscapePlugin(PluginTester):
         self.assertEqual(hrd.annotate_NCCN("HR Proficient", "HGSOC", dir1, dir2), None)
         HRD_annotated = hrd.annotate_NCCN("HRD", "HGSOC", dir1, dir2)
         self.assertEqual(HRD_annotated['Tier'], "Prognostic")
+
+    def testMergedTcgaCodeCohort(self):
+        # contains the TMB comparison files
+        data_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'data'))
+        tmb = tmb_processor(log_level=logging.ERROR, log_path=None)
+        # merged codes are joined with '/' for display
+        self.assertEqual(tmb.read_cohort(data_dir, "luad|lusc"), "TCGA LUAD/LUSC")
+        # a single code is unchanged
+        self.assertEqual(tmb.read_cohort(data_dir, "luad"), "TCGA LUAD")
+        self.assertEqual(tmb.read_cohort(data_dir, "paad"), "COMPASS")
+        self.assertEqual(tmb.read_cohort(data_dir, "zzz"), "NA")
+        # the merged percentile pools both cohorts, it does not pick one of them
+        self.assertEqual(tmb.read_cancer_specific_percentile(data_dir, 2.5, "TCGA LUAD", "luad"), 19)
+        self.assertEqual(tmb.read_cancer_specific_percentile(data_dir, 2.5, "TCGA LUSC", "lusc"), 3)
+        self.assertEqual(tmb.read_cancer_specific_percentile(data_dir, 2.5, "TCGA LUAD/LUSC", "luad|lusc"), 12)
 
     def testGenomicLandscapeLowTmbStableMsi(self):
         test_source_dir = os.path.realpath(os.path.dirname(__file__))

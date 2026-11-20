@@ -48,7 +48,7 @@ class prepare_fusions(logger):
         - main fusions file with mavis and arriba information
         - annotated oncokb file
         """
-        mavis_path = config_wrapper.get_my_string(fc.MAVIS_PATH)
+        mavis_path = config_wrapper.get_my_string(fc.MAVIS3_PATH)
         if not mavis_path: 
             msg = "Could not find mavis file. Perhaps you need to manually specify it?"
             self.logger.error(msg)
