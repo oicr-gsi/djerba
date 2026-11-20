@@ -199,8 +199,15 @@ def format_clin_sig(clin_sig):
     return ', '.join(t.replace('_', ' ').capitalize() for t in terms)
 
 
+def filter_ok(value):
+    """True if every FILTER token is a pass value or an ignored germline flag."""
+    tokens = [t.strip() for t in (value or '').split(';')]
+    return all(t in gc.FILTER_PASS_VALUES or t in gc.FILTER_IGNORED_GERMLINE
+               for t in tokens)
+
+
 def germline_row_ok(row):
-    if row.get(gc.FILTER, '') not in gc.FILTER_PASS_VALUES:
+    if not filter_ok(row.get(gc.FILTER, '')):
         return False
     depth = _to_float(row.get(gc.T_DEPTH))
     alt_count = _to_float(row.get(gc.T_ALT_COUNT))

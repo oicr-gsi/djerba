@@ -90,6 +90,13 @@ GERMLINE_MUTATION_TYPES = [
 # Keep variants with FILTER = PASS or where no filter was specified (. or '').
 FILTER_PASS_VALUES = ['PASS', '.', '']
 
+# FILTER flags that do not exclude a germline variant. vcf2maf adds
+# common_variant when a gnomAD subpopulation AF is high; that is not a quality
+# filter, and for germline reporting a high population frequency is not a
+# reason to drop a variant (e.g. founder BRCA1/2 alleles). Real quality flags
+# such as LowQual still exclude the row.
+FILTER_IGNORED_GERMLINE = {'common_variant'}
+
 # ClinVar significance terms that force a variant to be reported regardless of
 # consequence, so a deep-intronic or UTR pathogenic allele is never dropped.
 CLIN_SIG_PATHOGENIC = ['pathogenic', 'likely_pathogenic']
